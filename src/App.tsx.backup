@@ -1,0 +1,957 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { CheckCircle2 } from 'lucide-react';
+import whiteLogo from '../CI Home Health Logo_White-DfgJTkII.png';
+import SoftAuroraWrapper from './components/SoftAuroraWrapper';
+import executiveReportText from '../EXECUTIVE-REPORT.md?raw';
+import gitCommitsText from '../GIT-COMMITS.md?raw';
+import roiAnalysisText from '../ROI-ANALYSIS.md?raw';
+import sprintMapText from '../SPRINT-MAP.md?raw';
+import stakeholderMetricsText from '../STAKEHOLDER-METRICS.md?raw';
+import tasksCompletedText from '../TASKS-COMPLETED.md?raw';
+
+type TabId = 'portfolio' | 'roi' | 'sprint' | 'metrics' | 'tasks';
+
+type ReportId = 'executive' | 'commits' | 'roi' | 'sprint' | 'stakeholder' | 'tasks';
+
+type SubTabState = {
+  portfolio: 'overview' | 'readiness';
+  roi: 'overview' | 'avoided';
+  sprint: 'trajectory' | 'velocity';
+  metrics: 'inventory' | 'scale';
+  tasks: 'deliverables' | 'overview';
+};
+
+type GlassCardProps = {
+  children: React.ReactNode;
+  className?: string;
+};
+
+type MetallicTextProps = {
+  text: string;
+  className?: string;
+};
+
+type StatBlockProps = {
+  label: string;
+  value: string;
+  sub: string;
+  highlightColor?: string;
+};
+
+const reportData = {
+  tabs: [
+    {
+      id: 'portfolio' as const,
+      label: 'Portfolio',
+      items: [
+        { id: 'overview', label: 'Exec Overview' },
+        { id: 'readiness', label: 'Readiness' },
+      ],
+    },
+    {
+      id: 'roi' as const,
+      label: 'ROI Analysis',
+      items: [
+        { id: 'overview', label: 'Value Arch' },
+        { id: 'avoided', label: 'Avoided Costs' },
+      ],
+    },
+    {
+      id: 'sprint' as const,
+      label: 'Sprint Map',
+      items: [
+        { id: 'trajectory', label: 'Trajectory' },
+        { id: 'velocity', label: 'Velocity' },
+      ],
+    },
+    {
+      id: 'metrics' as const,
+      label: 'Metrics',
+      items: [
+        { id: 'inventory', label: 'Inventory' },
+        { id: 'scale', label: 'Scale' },
+      ],
+    },
+    {
+      id: 'tasks' as const,
+      label: 'Tasks',
+      items: [
+        { id: 'deliverables', label: 'Milestones' },
+        { id: 'overview', label: 'Distribution' },
+      ],
+    },
+  ],
+
+  projects: [
+    { name: 'OASIS-E2 SOC Simulator', read: 92, status: 'FINAL' },
+    { name: 'CMS-485 Form Training', read: 90, status: 'FINAL' },
+    { name: 'QAPI Training Module', read: 88, status: 'FINAL' },
+    { name: 'CIHHC LMS Integration', read: 85, status: 'FINAL' },
+    { name: 'CMS Documentation Toolkit', read: 78, status: 'FINAL' },
+  ],
+
+  portfolioStats: [
+    {
+      label: 'Avg Readiness',
+      value: '87%',
+      sub: 'System-wide implementation readiness across all 5 core home health projects.',
+      color: '#00F0FF',
+    },
+    {
+      label: 'Time to Market',
+      value: '19 Days',
+      sub: 'Total active development window for full ideation to SCORM delivery.',
+      color: '#FF5A1F',
+    },
+    {
+      label: 'Market Value',
+      value: '$168k',
+      sub: 'Equivalent market value created based on the Chapman Alliance Industry Benchmark.',
+      color: '#00F0FF',
+    },
+    {
+      label: 'Estimated ROI',
+      value: '1,920%',
+      sub: 'Return on investment generated from the initial $5,000 hardware capex.',
+      color: '#FF5A1F',
+    },
+  ],
+
+  roiRoles: [
+    { role: 'Senior Frontend Developer', cost: '$18k - $40k', desc: 'React 19, audio engine, SCORM tracking' },
+    { role: 'Content / Clinical SME', cost: '$15k - $29k', desc: '535 scripts, 108 cards, 33 cases' },
+    { role: 'UI/UX Designer', cost: '$8k - $18k', desc: 'Design tokens, animations, brand compliance' },
+    { role: 'Instructional Designer', cost: '$6k - $12k', desc: '6-phase course model, simulator design' },
+    { role: 'Audio Production', cost: '$2.5k - $6k', desc: '3,176 file delivery & indexing system' },
+  ],
+
+  sprintPhases: [
+    { phase: 'Sprint 1', dates: 'Feb 20 - Mar 2', desc: 'CMS-485 arch & SCORM pipeline' },
+    { phase: 'Inter-Sprint', dates: 'Mar 3 - 7', desc: 'QAPI compliance framework' },
+    { phase: 'Sprint 2', dates: 'Mar 8 - 11', desc: 'OASIS engine & remediation' },
+    { phase: 'Peak Day', dates: 'Mar 12', desc: '94-narration autopilot built' },
+    { phase: 'Delivery', dates: 'Mar 13 - 17', desc: 'Toolkit & SCORM packaging' },
+  ],
+
+  velocityStats: [
+    { label: 'Total Commits', value: '150', sub: 'Total codebase commits spread across 3 primary Git repositories.', color: '#FF5A1F' },
+    { label: 'Active Days', value: '19', sub: 'Highly compressed, intensive active development window.', color: '#00F0FF' },
+    { label: 'Daily Velocity', value: '7.9', sub: 'Average code commits delivered per active development day.', color: '#00F0FF' },
+    { label: 'Peak Volume', value: '22', sub: 'Maximum production commits pushed in a single day (March 12).', color: '#FF5A1F' },
+  ],
+
+  inventoryAssets: [
+    { label: 'Training Cards', val: '108', desc: 'Core instruction units' },
+    { label: 'Help Articles', val: '80+', desc: 'Contextual knowledge' },
+    { label: 'Clinical Scenarios', val: '33', desc: 'Branched practice' },
+    { label: 'Audit Cases', val: '8', desc: 'Advanced simulations' },
+    { label: 'Reference Docs', val: '195', desc: 'Clinical Artifacts' },
+    { label: 'SCORM Zips', val: '7', desc: 'Deployment packages' },
+  ],
+
+  scaleModules: [
+    { name: 'QAPI Training', val: '23.5k', pct: '30%', color: '#00F0FF' },
+    { name: 'CMS-485 Form', val: '22.5k', pct: '29%', color: '#00B49D' },
+    { name: 'CMS-Doc Toolkit', val: '18.3k', pct: '24%', color: '#FF5A1F' },
+    { name: 'OASIS-E2 Sim', val: '13.4k', pct: '17%', color: '#C74601' },
+  ],
+
+  deliverables: [
+    { tag: 'Architecture', txt: '6-phase linear workflow locked (Disclosure -> Sections -> Review)' },
+    { tag: 'UI/UX', txt: 'Design System strictly applied (Glassmorphism, Roboto Thin, Contrast)' },
+    { tag: 'Simulation', txt: 'Remediation state machine implemented (QUIZ -> REVIEW -> SUCCESS)' },
+    { tag: 'Audio', txt: '3,176 audio files generated, mapped, and synced to logic triggers' },
+    { tag: 'Data', txt: '27-artifact patient case built (Evelyn Vance, 82F, CHF/DM2)' },
+    { tag: 'Engineering', txt: 'SCORM 1.2 multi-protocol completion cascade (SCORM -> xAPI -> Webhook)' },
+  ],
+
+  taskDistribution: [
+    { label: 'QAPI Training Module', val: 33, max: 33, color: '#FF5A1F' },
+    { label: 'OASIS-E2 SOC Simulator', val: 29, max: 33, color: '#00F0FF' },
+    { label: 'CMS Documentation Toolkit', val: 29, max: 33, color: '#00F0FF' },
+    { label: 'CMS-485 Form Training', val: 22, max: 33, color: '#00F0FF' },
+    { label: 'CIHHC LMS Integration', val: 19, max: 33, color: '#FF5A1F' },
+    { label: 'Cross-Project Infrastructure', val: 9, max: 33, color: '#FF5A1F' },
+  ],
+
+  references: [
+    { id: 'executive' as const, label: 'Executive Report', file: 'EXECUTIVE-REPORT.md', content: executiveReportText },
+    { id: 'commits' as const, label: 'Git Commits', file: 'GIT-COMMITS.md', content: gitCommitsText },
+    { id: 'roi' as const, label: 'ROI Analysis', file: 'ROI-ANALYSIS.md', content: roiAnalysisText },
+    { id: 'sprint' as const, label: 'Sprint Map', file: 'SPRINT-MAP.md', content: sprintMapText },
+    { id: 'stakeholder' as const, label: 'Stakeholder Metrics', file: 'STAKEHOLDER-METRICS.md', content: stakeholderMetricsText },
+    { id: 'tasks' as const, label: 'Tasks Completed', file: 'TASKS-COMPLETED.md', content: tasksCompletedText },
+  ],
+};
+
+// Background replaced by SoftAuroraWrapper
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState<TabId>('portfolio');
+  const [activeReportId, setActiveReportId] = useState<ReportId | null>(null);
+  const [activeSubTabs, setActiveSubTabs] = useState<SubTabState>({
+    portfolio: 'overview',
+    roi: 'overview',
+    sprint: 'trajectory',
+    metrics: 'inventory',
+    tasks: 'deliverables',
+  });
+  const [mounted, setMounted] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Canvas dots background: optimized approach
+  useEffect(() => {
+    const canvas = document.getElementById('bg-dots-canvas') as HTMLCanvasElement | null;
+    if (!canvas) return;
+    canvasRef.current = canvas;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    const spacing = 7.78; // spacing between dots
+    const r = 0.69;
+
+    // create offscreen buffer and draw static dots once
+    const buffer = document.createElement('canvas');
+    buffer.width = width;
+    buffer.height = height;
+    const bctx = buffer.getContext('2d');
+    if (!bctx) return;
+
+    function drawDotsToBuffer() {
+      bctx.clearRect(0, 0, width, height);
+      for (let x = 0; x < width + spacing; x += spacing) {
+        for (let y = 0; y < height + spacing; y += spacing) {
+          const fade = Math.min(1, Math.max(0, x / width));
+          bctx.beginPath();
+          bctx.fillStyle = `rgba(0,240,255,${0.33 * fade})`;
+          bctx.arc(x, y, r, 0, Math.PI * 2);
+          bctx.fill();
+        }
+      }
+    }
+
+    drawDotsToBuffer();
+
+    // draw static buffer onto the visible canvas once
+    function drawOnce() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.drawImage(buffer, 0, 0);
+    }
+
+    drawOnce();
+
+    function onResize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      buffer.width = width;
+      buffer.height = height;
+      drawDotsToBuffer();
+    }
+
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
+  const setSubTab = (tab: TabId, subTab: string) => {
+    setActiveReportId(null);
+    setActiveSubTabs((prev) => ({ ...prev, [tab]: subTab }));
+  };
+
+  const renderInlineText = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).filter(Boolean);
+
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <strong key={`${part}-${index}`} className="text-white font-semibold">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+
+      if (part.startsWith('`') && part.endsWith('`')) {
+        return (
+          <code key={`${part}-${index}`} className="px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.1] text-[#00F0FF] text-[0.92em]">
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+
+      return <React.Fragment key={`${part}-${index}`}>{part}</React.Fragment>;
+    });
+  };
+
+  const splitPipeRow = (line: string) => {
+    const cleaned = line.trim().replace(/^\|/, '').replace(/\|$/, '');
+    return cleaned.split('|').map((cell) => cell.trim());
+  };
+
+  const isTableDivider = (line: string) => {
+    const cleaned = line.trim();
+    return /^\|?\s*[-:]+(\s*\|\s*[-:]+)+\s*\|?$/.test(cleaned);
+  };
+
+  const renderMarkdownReport = (content: string) => {
+    const lines = content.split(/\r?\n/);
+    const nodes: React.ReactNode[] = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const rawLine = lines[i];
+      const line = rawLine.trim();
+
+      if (!line) {
+        i += 1;
+        continue;
+      }
+
+      if (line.startsWith('```')) {
+        const block: string[] = [];
+        i += 1;
+        while (i < lines.length && !lines[i].trim().startsWith('```')) {
+          block.push(lines[i]);
+          i += 1;
+        }
+        i += 1;
+        nodes.push(
+          <pre key={`code-${i}`} className="overflow-x-auto rounded-xl border border-white/[0.08] bg-black/30 px-4 py-3 text-[12px] leading-relaxed text-white/75">
+            {block.join('\n')}
+          </pre>,
+        );
+        continue;
+      }
+
+      if (rawLine.includes('|') && i + 1 < lines.length && isTableDivider(lines[i + 1])) {
+        const header = splitPipeRow(rawLine);
+        const rows: string[][] = [];
+        i += 2;
+
+        while (i < lines.length && lines[i].includes('|') && lines[i].trim() !== '') {
+          rows.push(splitPipeRow(lines[i]));
+          i += 1;
+        }
+
+        nodes.push(
+          <div key={`table-${i}`} className="overflow-x-auto rounded-xl border border-white/[0.08] bg-white/[0.02]">
+            <table className="w-full border-collapse min-w-[640px]">
+              <thead>
+                <tr className="bg-[#00F0FF]/8">
+                  {header.map((cell, idx) => (
+                    <th key={`th-${idx}`} className="text-left text-[11px] uppercase tracking-[0.16em] text-[#00F0FF] font-semibold px-4 py-3 border-b border-white/[0.1]">
+                      {renderInlineText(cell)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, rowIdx) => (
+                  <tr key={`tr-${rowIdx}`} className="odd:bg-white/[0.01] even:bg-transparent">
+                    {row.map((cell, cellIdx) => (
+                      <td key={`td-${rowIdx}-${cellIdx}`} className="px-4 py-3 text-[13px] text-white/80 align-top border-b border-white/[0.05]">
+                        {renderInlineText(cell)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>,
+        );
+        continue;
+      }
+
+      if (/^#{1,3}\s+/.test(line)) {
+        const level = line.match(/^#+/)?.[0].length ?? 1;
+        const text = line.replace(/^#{1,3}\s+/, '');
+        const headingClass =
+          level === 1
+            ? 'text-4xl font-[100] tracking-tight text-white'
+            : level === 2
+              ? 'text-2xl font-[300] tracking-wide text-white/95 mt-6'
+              : 'text-lg font-semibold tracking-wide text-[#00F0FF] mt-4';
+
+        nodes.push(
+          <h2 key={`h-${i}`} className={headingClass}>
+            {renderInlineText(text)}
+          </h2>,
+        );
+        i += 1;
+        continue;
+      }
+
+      if (/^[-*]\s+/.test(line)) {
+        const items: string[] = [];
+        while (i < lines.length && /^[-*]\s+/.test(lines[i].trim())) {
+          items.push(lines[i].trim().replace(/^[-*]\s+/, ''));
+          i += 1;
+        }
+
+        nodes.push(
+          <ul key={`ul-${i}`} className="space-y-2 pl-6 list-disc marker:text-[#FF5A1F] text-white/85">
+            {items.map((item, idx) => (
+              <li key={`li-${idx}`} className="text-[14px] leading-relaxed">
+                {renderInlineText(item)}
+              </li>
+            ))}
+          </ul>,
+        );
+        continue;
+      }
+
+      if (/^\d+\.\s+/.test(line)) {
+        const items: string[] = [];
+        while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) {
+          items.push(lines[i].trim().replace(/^\d+\.\s+/, ''));
+          i += 1;
+        }
+
+        nodes.push(
+          <ol key={`ol-${i}`} className="space-y-2 pl-6 list-decimal marker:text-[#FF5A1F] text-white/85">
+            {items.map((item, idx) => (
+              <li key={`oli-${idx}`} className="text-[14px] leading-relaxed">
+                {renderInlineText(item)}
+              </li>
+            ))}
+          </ol>,
+        );
+        continue;
+      }
+
+      if (/^-{3,}$/.test(line)) {
+        nodes.push(<div key={`hr-${i}`} className="h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent my-2" />);
+        i += 1;
+        continue;
+      }
+
+      nodes.push(
+        <p key={`p-${i}`} className="text-[14px] leading-[1.8] text-white/82">
+          {renderInlineText(rawLine)}
+        </p>,
+      );
+      i += 1;
+    }
+
+    return nodes;
+  };
+
+  const GlassCard = ({ children, className = '' }: GlassCardProps) => (
+    <div className={`glass-reset relative p-8 flex flex-col shadow-none group ${className}`}>
+      <div className="glass-aurora" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-700 pointer-events-none" />
+      {children}
+    </div>
+  );
+
+  const MetallicText = ({ text, className = '' }: MetallicTextProps) => (
+    <span className={`text-transparent bg-clip-text bg-gradient-to-b from-white via-white/90 to-white/40 ${className}`}>
+      {text}
+    </span>
+  );
+
+  const StatBlock = ({ label, value, sub, highlightColor = '#00F0FF' }: StatBlockProps) => (
+    <div className="flex flex-col relative z-10">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-1 h-4 rounded-full" style={{ backgroundColor: highlightColor, boxShadow: `0 0 10px ${highlightColor}` }} />
+        <span className="text-white/60 text-[10px] uppercase tracking-[0.25em] font-bold">{label}</span>
+      </div>
+      <h3 className="text-7xl font-[100] tracking-tighter leading-none mb-4">
+        <MetallicText text={value} />
+      </h3>
+      <p className="text-gray-400 font-light text-sm leading-relaxed max-w-[90%]">{sub}</p>
+    </div>
+  );
+
+  const AccordionSidebar = () => (
+    <div className="w-64 flex-shrink-0 flex flex-col pr-6 h-full overflow-hidden relative z-20">
+      <div className="mb-10 pt-4">
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="text-[#00F0FF] text-[9px] font-bold tracking-[0.3em] uppercase">Module Data</h3>
+        </div>
+      </div>
+
+      <div className="flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
+        {reportData.tabs.map((tab) => {
+          const isExpanded = activeTab === tab.id;
+
+          return (
+            <div key={tab.id} className="flex flex-col">
+              <button
+                onClick={() => {
+                  setActiveReportId(null);
+                  setActiveTab(tab.id);
+                }}
+                className="w-full flex items-center justify-start py-4 group"
+              >
+                <span className={`text-3xl font-[100] tracking-wide transition-all duration-500 ${isExpanded ? 'text-white' : 'text-white/40 group-hover:text-white/80'}`}>
+                  {tab.label}
+                </span>
+                {/* chevron removed to keep nav visually clean */}
+              </button>
+
+              <div
+                className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                  isExpanded ? 'max-h-[400px] opacity-100 mb-6 mt-4' : 'max-h-0 opacity-0 mb-0 mt-0'
+                }`}
+              >
+                <div className="relative pl-4 space-y-4">
+                  {tab.items.map((item) => {
+                    const isActiveSub = activeSubTabs[tab.id] === item.id;
+
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setSubTab(tab.id, item.id);
+                        }}
+                        className="w-full flex items-center gap-6 group relative z-10"
+                      >
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 relative ${isActiveSub ? 'bg-[#00F0FF]/10 border border-[#00F0FF]/40 ml-4' : 'bg-black/40 border border-white/10 group-hover:border-white/30 ml-4'}`}>
+                          {isActiveSub && <div className="absolute inset-0 rounded-full bg-[#00F0FF]/20 filter blur-[8px]" />}
+                          <div className={`w-2 h-2 rounded-full transition-all duration-500 ${isActiveSub ? 'bg-[#00F0FF] shadow-[0_0_12px_#00F0FF]' : 'bg-white/20 group-hover:bg-white/50'}`} />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <span className={`block text-[13px] tracking-[0.1em] uppercase transition-all duration-500 ${isActiveSub ? 'text-white font-bold' : 'text-gray-500 font-light group-hover:text-gray-300'}`}>
+                            {item.label}
+                          </span>
+                        </div>
+                        {/* sub-item chevron removed */}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-6 pt-5 bg-gradient-to-b from-transparent to-black/20">
+        <div className="flex items-center gap-3 mb-3">
+          <h3 className="text-[#FF5A1F] text-[9px] font-bold tracking-[0.3em] uppercase">Report References</h3>
+        </div>
+        <div className="space-y-1.5 pb-2">
+          {reportData.references.map((reference) => {
+            const isSelected = activeReportId === reference.id;
+
+            return (
+              <button
+                key={reference.id}
+                onClick={() => setActiveReportId(reference.id)}
+                className={`w-full text-left px-3 py-2 transition-all duration-300 ${isSelected ? 'text-white' : 'text-white/60 hover:text-white'}`}
+              >
+                <div className="text-[11px] tracking-[0.08em] uppercase font-semibold">{reference.label}</div>
+                <div className="text-[10px] text-white/40 font-light mt-0.5">{reference.file}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderReferenceViewer = () => {
+    if (!activeReportId) {
+      return null;
+    }
+
+    const selectedReport = reportData.references.find((reference) => reference.id === activeReportId);
+
+    if (!selectedReport) {
+      return null;
+    }
+
+    return (
+      <div className="fade-in w-full h-full overflow-y-auto custom-scrollbar pr-3">
+        <div className="max-w-6xl mx-auto py-8">
+          <div className="pb-5 mb-6 flex items-end justify-between gap-4">
+            <div>
+              <div className="text-[#FF5A1F] text-[10px] tracking-[0.25em] uppercase font-bold mb-2">Text Reference</div>
+              <h3 className="text-3xl font-[100] text-white tracking-wide leading-tight">{selectedReport.label}</h3>
+            </div>
+            <div className="text-[10px] uppercase tracking-[0.2em] text-white/40">{selectedReport.file}</div>
+          </div>
+
+          <div className="report-document space-y-4 pr-2 pb-12">
+            {renderMarkdownReport(selectedReport.content)}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderPortfolio = () => {
+    const subTab = activeSubTabs.portfolio;
+
+    return (
+      <div className="w-full h-full flex flex-col overflow-y-auto custom-scrollbar pr-4">
+        {subTab === 'overview' && (
+          <div className="fade-in m-auto w-full max-w-5xl py-10">
+            <div className="grid grid-cols-2 gap-x-24 gap-y-24">
+              {reportData.portfolioStats.map((stat) => (
+                <StatBlock key={stat.label} label={stat.label} value={stat.value} sub={stat.sub} highlightColor={stat.color} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {subTab === 'readiness' && (
+          <div className="fade-in m-auto w-full max-w-5xl py-10 space-y-6">
+            <div className="flex items-center justify-between mb-12">
+              <h3 className="text-2xl font-[100] text-white">System Implementation</h3>
+              <span className="text-[#00F0FF] text-[10px] font-bold tracking-[0.2em] uppercase px-4 py-1.5 rounded-full border border-[#00F0FF]/20 bg-[#00F0FF]/5">Live Sync</span>
+            </div>
+
+            {reportData.projects.map((proj) => (
+              <GlassCard key={proj.name} className="!p-6 hover:border-[#00F0FF]/30 transition-all duration-500 hover:-translate-y-1">
+                <div className="flex items-center gap-8">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center bg-black/40 border border-white/5 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#00F0FF]/20 to-transparent opacity-50" />
+                    <CheckCircle2 className="w-6 h-6 text-[#00F0FF] relative z-10" strokeWidth={1} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-end mb-4">
+                      <h4 className="text-2xl font-light text-white/90 tracking-wide">{proj.name}</h4>
+                      <span className="text-3xl font-[100] text-[#00F0FF]">{proj.read}%</span>
+                    </div>
+                    <div className="h-[2px] w-full bg-white/5 rounded-full overflow-hidden relative">
+                      <div
+                        className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-[#00F0FF]/20 to-[#00F0FF] transition-all duration-1000 ease-out"
+                        style={{ width: mounted ? `${proj.read}%` : '0%' }}
+                      >
+                        <div className="absolute right-0 top-0 bottom-0 w-4 bg-white filter blur-[2px]" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderROI = () => {
+    const subTab = activeSubTabs.roi;
+
+    return (
+      <div className="w-full h-full flex flex-col overflow-y-auto custom-scrollbar pr-4">
+        {subTab === 'overview' && (
+          <div className="fade-in m-auto w-full max-w-5xl py-10">
+            <div className="flex justify-between items-end border-b border-white/10 pb-16 mb-16 relative">
+              <div className="absolute bottom-0 left-0 w-1/3 h-[1px] bg-gradient-to-r from-[#00F0FF] to-transparent" />
+              <div>
+                <span className="text-[#00F0FF] text-[10px] uppercase tracking-[0.3em] font-bold mb-6 block">Generated Market Value</span>
+                <h3 className="text-[8rem] font-[100] tracking-tighter leading-none"><MetallicText text="$168,000" /></h3>
+              </div>
+              <div className="text-right">
+                <span className="text-[#FF5A1F] text-[10px] uppercase tracking-[0.3em] font-bold mb-6 block">Initial Investment</span>
+                <h3 className="text-[4rem] font-[100] tracking-tighter text-white/40 leading-none">$5,000</h3>
+              </div>
+            </div>
+            <div className="flex justify-between items-center bg-white/[0.02] border border-white/[0.05] p-8 rounded-3xl">
+              <div>
+                <p className="text-3xl font-[100] text-white mb-2">Break-Even: Day 1</p>
+                <p className="text-white/40 font-light text-sm tracking-wide">Investment outpaced before Sprint 1 concluded.</p>
+              </div>
+              <div className="px-8 py-4 bg-[#00F0FF]/10 text-[#00F0FF] rounded-xl font-bold tracking-[0.2em] uppercase text-xs border border-[#00F0FF]/30 shadow-[0_0_30px_rgba(0,240,255,0.15)]">
+                3,260% Total ROI
+              </div>
+            </div>
+          </div>
+        )}
+
+        {subTab === 'avoided' && (
+          <div className="fade-in m-auto w-full max-w-5xl py-10 flex flex-col justify-center">
+            <h3 className="text-3xl font-[100] text-white mb-12">Agency Equivalency Modeling</h3>
+            <div className="grid grid-cols-1 gap-y-6">
+              {reportData.roiRoles.map((role) => (
+                <GlassCard key={role.role} className="flex-row justify-between items-center !p-6 hover:border-[#00F0FF]/30 hover:shadow-[0_0_30px_rgba(0,240,255,0.05)] transition-all duration-500">
+                  <div className="flex-1 text-center">
+                    <h4 className="text-xl font-light text-white mb-1">{role.role}</h4>
+                    <p className="text-sm text-white/40 font-light tracking-wide">{role.desc}</p>
+                  </div>
+                  <span className="text-3xl font-[100] text-[#00F0FF] tracking-wide min-w-[200px] text-center">{role.cost}</span>
+                </GlassCard>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderSprint = () => {
+    const subTab = activeSubTabs.sprint;
+
+    return (
+      <div className="w-full h-full flex flex-col overflow-y-auto custom-scrollbar pr-4">
+        {subTab === 'trajectory' && (
+          <div className="fade-in m-auto w-full max-w-5xl relative py-10">
+            <div className="relative">
+              <div className="absolute top-[32px] left-[50px] right-[50px] h-[1px] bg-white/10 z-0">
+                <div className="h-full bg-gradient-to-r from-[#00F0FF] via-[#FF5A1F] to-[#00F0FF] opacity-50 filter blur-[1px]" />
+              </div>
+
+              <div className="flex justify-between relative z-10">
+                {reportData.sprintPhases.map((phase, i) => (
+                  <div key={phase.phase} className="w-40 flex flex-col items-center group">
+                    <div className="w-16 h-16 rounded-full bg-[#0A0D14] border border-white/20 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(0,0,0,0.8)] relative overflow-hidden group-hover:border-[#00F0FF]/50 transition-colors duration-500">
+                      <div className="absolute inset-0 bg-[#00F0FF]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className={`w-2 h-2 rounded-full shadow-[0_0_15px_2px_currentColor] ${i % 2 === 0 ? 'bg-[#00F0FF] text-[#00F0FF]' : 'bg-[#FF5A1F] text-[#FF5A1F]'}`} />
+                    </div>
+                    <div className="text-center">
+                      <h4 className="text-lg font-light text-white mb-2">{phase.phase}</h4>
+                      <p className="text-[9px] uppercase tracking-[0.2em] text-white/40 mb-3">{phase.dates}</p>
+                      <p className="text-xs font-light text-white/60 leading-relaxed">{phase.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {subTab === 'velocity' && (
+          <div className="fade-in m-auto w-full max-w-5xl py-10">
+            <div className="grid grid-cols-2 gap-x-24 gap-y-24">
+              {reportData.velocityStats.map((stat) => (
+                <StatBlock key={stat.label} label={stat.label} value={stat.value} sub={stat.sub} highlightColor={stat.color} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderMetrics = () => {
+    const subTab = activeSubTabs.metrics;
+
+    return (
+      <div className="w-full h-full flex flex-col overflow-y-auto custom-scrollbar pr-4">
+        {subTab === 'inventory' && (
+          <div className="fade-in m-auto w-full max-w-5xl py-10">
+            <div className="grid grid-cols-3 gap-8">
+              {reportData.inventoryAssets.map((asset) => (
+                <GlassCard key={asset.label} className="justify-center text-center py-12 hover:-translate-y-2 transition-transform duration-700">
+                  <span className="text-7xl font-[100] text-white mb-6 block drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">{asset.val}</span>
+                  <div className="w-8 h-[1px] bg-[#00F0FF] mx-auto mb-6" />
+                  <h4 className="text-[11px] font-bold tracking-[0.2em] text-[#00F0FF] mb-3 uppercase">{asset.label}</h4>
+                  <p className="text-xs text-white/40 font-light">{asset.desc}</p>
+                </GlassCard>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {subTab === 'scale' && (
+          <div className="fade-in m-auto w-full max-w-5xl py-10">
+            <div className="grid grid-cols-2 gap-24 items-center">
+              <div className="space-y-20">
+                <StatBlock label="Lines of Code" value="77.8k" sub="Total TypeScript & React lines written from scratch." highlightColor="#00F0FF" />
+                <StatBlock label="Audio Files" value="3,176" sub="Individually rendered WAV/MP3 narration files." highlightColor="#FF5A1F" />
+              </div>
+              <div className="pl-12 border-l border-white/[0.05] space-y-10 relative">
+                <div className="absolute left-0 top-0 w-[1px] h-32 bg-gradient-to-b from-[#00F0FF] to-transparent" />
+                <h3 className="text-[9px] uppercase tracking-[0.3em] text-white/40 font-bold mb-12">Codebase Distribution</h3>
+                {reportData.scaleModules.map((mod) => (
+                  <div key={mod.name} className="group">
+                    <div className="flex justify-between items-end mb-3">
+                      <span className="font-light text-lg text-white/80 group-hover:text-white transition-colors">{mod.name}</span>
+                      <span className="font-[100] text-xl" style={{ color: mod.color }}>{mod.val}</span>
+                    </div>
+                    <div className="w-full h-[2px] bg-white/5 rounded-full overflow-hidden relative">
+                      <div className="absolute top-0 bottom-0 left-0 transition-all duration-1000 ease-out" style={{ width: mod.pct, backgroundColor: mod.color, boxShadow: `0 0 10px ${mod.color}` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderTasks = () => {
+    const subTab = activeSubTabs.tasks;
+
+    return (
+      <div className="w-full h-full flex flex-col overflow-y-auto custom-scrollbar pr-4">
+        {subTab === 'deliverables' && (
+          <div className="fade-in m-auto w-full max-w-5xl py-10">
+            <div className="grid grid-cols-2 gap-x-20 gap-y-12">
+              {reportData.deliverables.map((task) => (
+                <div key={task.tag} className="flex flex-col group p-6 rounded-2xl border border-transparent hover:border-white/[0.05] hover:bg-white/[0.02] transition-all duration-500">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] shadow-[0_0_8px_#00F0FF]" />
+                    <span className="text-[#00F0FF] text-[9px] uppercase tracking-[0.3em] font-bold">{task.tag}</span>
+                  </div>
+                  <p className="text-2xl font-light text-white/70 leading-relaxed group-hover:text-white transition-colors">{task.txt}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {subTab === 'overview' && (
+          <div className="fade-in m-auto w-full max-w-4xl py-10">
+            <div className="mb-20 text-center relative">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#00F0FF]/10 rounded-full filter blur-[80px] pointer-events-none" />
+              <span className="relative z-10 text-[#00F0FF] text-[10px] uppercase tracking-[0.3em] font-bold mb-6 block">Total Completed</span>
+              <h3 className="relative z-10 text-[8rem] font-[100] text-white tracking-tighter leading-none mb-4"><MetallicText text="141 Tasks" /></h3>
+              <p className="relative z-10 text-white/40 font-light text-xl tracking-wide uppercase">Fully completed across 5 domains</p>
+            </div>
+            <div className="space-y-10 px-12">
+              {reportData.taskDistribution.map((stat) => (
+                <div key={stat.label} className="flex items-center gap-8 group">
+                  <div className="w-64 text-right">
+                    <span className="text-base font-light text-white/60 group-hover:text-white transition-colors">{stat.label}</span>
+                  </div>
+                  <div className="flex-1 h-[2px] bg-white/5 relative overflow-hidden rounded-full">
+                    <div className="absolute top-0 bottom-0 left-0 transition-all duration-1000 ease-out" style={{ width: `${(stat.val / stat.max) * 100}%`, backgroundColor: stat.color, boxShadow: `0 0 10px ${stat.color}` }} />
+                  </div>
+                  <div className="w-16 text-left">
+                    <span className="text-3xl font-[100] text-white">{stat.val}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const activeReport = activeReportId ? reportData.references.find((reference) => reference.id === activeReportId) : null;
+  const headerContext = activeReport ? activeReport.label : reportData.tabs.find((tab) => tab.id === activeTab)?.label ?? 'Overview';
+
+  return (
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap');
+
+          body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            background-color: #030409;
+            color: #ffffff;
+          }
+
+          .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+          @keyframes smoothFade {
+            0% { opacity: 0; transform: translateY(10px) scale(0.99); filter: blur(4px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+          }
+
+          .fade-in {
+            animation: smoothFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+        `}
+      </style>
+
+      <div className="w-screen h-screen flex flex-col relative overflow-hidden text-white font-roboto">
+        <SoftAuroraWrapper />
+
+        <header className="relative z-50 flex justify-start items-center px-10 py-6 w-full">
+        </header>
+
+        {/* canvas dots background behind glass (fades toward left) */}
+        <canvas ref={null} id="bg-dots-canvas" className="absolute inset-0 pointer-events-none z-0" />
+        {/* magnified copy of background (dots + aurora) drawn scaled and shown under the glass */}
+        <canvas ref={null} id="bg-magnify-canvas" className="absolute inset-0 pointer-events-none z-10" />
+
+        {/* SVG filter for glass refraction effect (applied to main card) */}
+        <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden>
+          <defs>
+            <filter id="glass-refract" x="-30%" y="-30%" width="160%" height="160%">
+              {/* blur the backdrop so displaced result is softer (approx. 7.7%) */}
+              <feGaussianBlur in="BackgroundImage" stdDeviation="0.77" result="bgblur" />
+              {/* low-frequency noise for smooth wave shapes */}
+              <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" stitchTiles="stitch" result="noise" />
+              {/* heavily blur the noise to produce very smooth gradients */}
+              <feGaussianBlur in="noise" stdDeviation="120" result="noiseSmooth" />
+              {/* reduce noise intensity and preserve only subtle variation */}
+              <feColorMatrix in="noiseSmooth" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.033 0" result="noisy" />
+              {/* displace the blurred backdrop by the smoothed noise; low scale for subtle refraction */}
+              <feDisplacementMap in="bgblur" in2="noisy" scale="0.33" xChannelSelector="R" yChannelSelector="G" result="bgDisp" />
+              {/* blend displaced backdrop with the card using soft-light for a natural gradient tint */}
+              <feBlend in="SourceGraphic" in2="bgDisp" mode="soft-light" />
+            </filter>
+          </defs>
+        </svg>
+
+        <div
+          className="relative z-40 mx-auto my-auto flex flex-col backdrop-blur-3xl border-none rounded-[40px] shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden"
+          style={{ width: '110.4%', maxWidth: '1920px', height: '90vh', backgroundColor: 'rgba(255,255,255,0)', WebkitBackdropFilter: 'blur(24px)', backdropFilter: 'blur(24px)', filter: 'url(#glass-refract)' }}
+        >
+            {/* Gradient refraction fallback overlay (soft, large, pointer-events-none) */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2 }}>
+              <div style={{
+                  position: 'absolute',
+                  left: '20%',
+                  top: '10%',
+                  width: '70%',
+                  height: '80%',
+                  background: 'radial-gradient(60% 50% at 60% 40%, rgba(255,230,150,0.9) 0%, rgba(255,120,50,0.65) 18%, rgba(0,200,180,0.45) 42%, rgba(0,0,0,0) 72%)',
+                  opacity: 0,
+                  filter: 'none',
+                  mixBlendMode: 'soft-light',
+                  transform: 'translateZ(0)'
+                }} />
+            </div>
+            <div className="px-12 py-8 flex justify-between items-center bg-transparent">
+            <div className="flex flex-col gap-2 min-w-0">
+              <div className="text-[#00F0FF] text-[11px] font-bold tracking-[0.28em] uppercase whitespace-nowrap">
+                Executive Dashboard
+              </div>
+              <div className="text-white/75 text-[11px] tracking-[0.18em] uppercase truncate max-w-[520px]">
+                Context: {headerContext}
+              </div>
+            </div>
+            <div>
+              <img src={whiteLogo} alt="CI Home Health Logo" className="h-10 object-contain opacity-90 hover:opacity-100 transition-opacity" />
+            </div>
+          </div>
+
+          <div className="flex-1 flex overflow-hidden p-12 pl-12 gap-16 relative">
+            {/* central glow removed to keep glass uniform */}
+            <AccordionSidebar />
+
+            <div className="flex-1 pl-4 h-full relative z-10">
+              {activeReportId ? (
+                renderReferenceViewer()
+              ) : (
+                <>
+                  {activeTab === 'portfolio' && renderPortfolio()}
+                  {activeTab === 'roi' && renderROI()}
+                  {activeTab === 'sprint' && renderSprint()}
+                  {activeTab === 'metrics' && renderMetrics()}
+                  {activeTab === 'tasks' && renderTasks()}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

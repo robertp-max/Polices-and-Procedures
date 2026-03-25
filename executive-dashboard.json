@@ -1,0 +1,1379 @@
+{
+  "metadata": {
+    "generated_at": "2026-03-17T00:00:00Z",
+    "source": "CIHHC HomeHealth Training Ecosystem",
+    "version": "1.0",
+    "generator": "Forensic Reconstruction Engine",
+    "scope": "All HomeHealth LMS projects — OASIS, QAPI, CMS-485, CMS Documentation, LMS Integration",
+    "authority_documents": [
+      "OASIS-E2 SOC Simulation UI/UX Design.md",
+      "RemediationLogicDocumentation.md",
+      "artifact-changelog.md",
+      "evidence-reconciliation.csv",
+      "design-tokens.ts (frozen)",
+      "workflow.ts (locked progression)",
+      "rules.ts (rationale template groups)"
+    ]
+  },
+
+  "projects": [
+    {
+      "project_name": "OASIS-E2 SOC Simulator",
+      "project_id": "OASIS-SIM",
+      "status": "FINAL",
+      "implementation_readiness": 92,
+
+      "final_state": {
+        "description": "High-fidelity linear SOC clinical reasoning simulator for OASIS-E2 assessment coding. RNs navigate 27 patient artifacts across the full care continuum (Hospital → SNF → ALF → Home Health SOC) to extract evidence, select correct OASIS codes, defend rationale selections, and link supporting documentation. Single canonical patient case (Evelyn Vance, 82F, CHF/DM2).",
+        "core_capabilities": [
+          "Split-workspace architecture (Chart Nav 20% / Document Viewer 50% / Clinical Action 30%)",
+          "27-artifact patient case spanning full care continuum",
+          "32 OASIS items with 5 rationales each (160 clinical reasoning defenses)",
+          "Evidence extraction via highlight-to-save interaction",
+          "Evidence validation engine with artifact-to-item mapping",
+          "Three-phase remediation engine (QUIZ → REVIEW → SUCCESS)",
+          "Audio narration system (233 WAV files via Qwen3-TTS)",
+          "Linear section progression enforcement (Disclosure → A-O → Final Review)",
+          "Conflict detection prompts with toast notifications",
+          "SCORM 1.2 / xAPI / LTI completion tracking"
+        ],
+        "tech_stack": {
+          "framework": "React 19.2.4",
+          "build": "Vite 5.4.10",
+          "language": "TypeScript 5.6.3",
+          "custom_libs": ["gradflow 0.1.0"],
+          "integration": ["SCORM 1.2", "xAPI", "LTI", "Webhook"]
+        }
+      },
+
+      "metrics": {
+        "impact_level": "HIGH",
+        "complexity_score": 5,
+        "compliance_criticality": "HIGH",
+        "artifact_count": 27,
+        "oasis_items_covered": 32,
+        "rationale_defenses": 160,
+        "audio_assets": 233,
+        "narration_entries": 43,
+        "evidence_anchors": 140
+      },
+
+      "timeline": [
+        {
+          "timestamp": "2026-02-10",
+          "change": "Training Video Script Framework created — established instructional design foundation",
+          "category": "Architecture / System Design",
+          "impact": "Set narrative + visual structure for all training modules",
+          "status": "SUPERSEDED"
+        },
+        {
+          "timestamp": "2026-03-01",
+          "change": "OASIS-E2 Final Forms published (8 PDFs: SOC, ROC, DAH, DC, FU, TRN, PatientTracking, All-Item)",
+          "category": "Compliance / Regulatory Alignment",
+          "impact": "Locked OASIS-E2 form specifications as authoritative reference for simulator item structure",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-01",
+          "change": "SOC-only scope lock enforced — simulator restricted to Start-of-Care workflow exclusively",
+          "category": "Implementation Constraints / Rules",
+          "impact": "Eliminated multi-workflow ambiguity; ROC/DAH/DC/FU/TRN forms remain reference-only",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-01",
+          "change": "Split-workspace UI/UX architecture finalized — 20/50/30 column layout with CareIndeed branding",
+          "category": "UI/UX Structure",
+          "impact": "Locked visual architecture: Left=Chart Nav, Center=Document Viewer, Right=Clinical Action panel",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-01",
+          "change": "Linear workflow progression enforced — 13-step sequence: Disclosure → Sections A through O → Final Review",
+          "category": "Workflow / Logic Changes",
+          "impact": "Sections are locked until predecessor is completed; no skip-ahead permitted",
+          "status": "LOCKED"
+        },
+        {
+          "timestamp": "2026-03-01",
+          "change": "CareIndeed Design System applied — Primary Orange #C74601, Secondary Teal #007970, Montserrat/Roboto typography",
+          "category": "UI/UX Structure",
+          "impact": "Branding parity across all modules; WCAG 2.1 AA accessibility compliance",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-02",
+          "change": "Remediation Logic state machine implemented — QUIZ → REVIEW → SUCCESS with audio-gated progression",
+          "category": "Simulation Logic / Engine",
+          "impact": "Correct answers trigger 4-track audio (1 correct + 3 incorrect explanations); incorrect answers trigger 1 targeted audio track. Retry resets incorrect selections only.",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-10",
+          "change": "Narration manifest v1 created (oasis-e2-soc-narration-v1) — 43 narration entries mapped to UI triggers",
+          "category": "Architecture / System Design",
+          "impact": "Complete audio-guided experience from splash screen through final review",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-10",
+          "change": "Qwen3-TTS voice synthesis audio assets generated — 233 WAV files (20 artifact intros + 160 rationale explanations + 53 demo narrations)",
+          "category": "Architecture / System Design",
+          "impact": "Full audio narration library for guided simulation experience",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-10",
+          "change": "Artifact changelog documented RN SOC Observation Note text additions — added hearing assessment and medication reading barrier evidence",
+          "category": "Data Model / Schema",
+          "impact": "Supports correct evidence linking for B0200 (Hearing), B1000 (Vision), B1300 (Health Literacy)",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-10",
+          "change": "Evidence reconciliation matrix verified — 6 artifact-to-item links confirmed (B0200, B1000, B1300, C0500, GG0170)",
+          "category": "Data Model / Schema",
+          "impact": "Ensures training evidence accuracy; Added Documentation status for new artifact text",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-15",
+          "change": "Additional demo narration manifest created — 51 entries (DEMO_100 through DEMO_152) covering Help Center, Glossary, Evidence Anchoring, Selection/Review workflows",
+          "category": "Architecture / System Design",
+          "impact": "Extended guided demo coverage for onboarding and reference features",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-17",
+          "change": "Rationale template groups finalized — 10 clinical domains (Sensory, Cognition, Mood/Behavior, Functional, Diagnosis, Pain, Nutrition, Wound, Medication, Treatments)",
+          "category": "Simulation Logic / Engine",
+          "impact": "Each domain enforces correct CMS-principle-based reasoning with specific trap patterns",
+          "status": "LOCKED"
+        }
+      ],
+
+      "governing_rules": [
+        {
+          "rule": "SOC-only workflow scope",
+          "description": "Simulator is restricted to Start-of-Care assessment only. No ROC, DAH, DC, FU, or TRN workflows.",
+          "enforcement": "LOCKED"
+        },
+        {
+          "rule": "Linear section progression",
+          "description": "13-step sequence (Disclosure → A → B → C → D → GG → I → J → K → M → N → O → Final Review). No skip-ahead.",
+          "enforcement": "LOCKED"
+        },
+        {
+          "rule": "Artifact dependency enforcement",
+          "description": "32 OASIS items mapped to specific required evidence artifacts. Validation function returns correct/partial/incorrect status.",
+          "enforcement": "LOCKED"
+        },
+        {
+          "rule": "Audio-gated remediation progression",
+          "description": "Next field disabled until all assigned audio tracks are fully listened to. completedAudios Set tracks completion.",
+          "enforcement": "LOCKED"
+        },
+        {
+          "rule": "Locked fields on correct answer",
+          "description": "Correctly answered fields become immutable. Only incorrect fields reset on retry.",
+          "enforcement": "LOCKED"
+        },
+        {
+          "rule": "Evidence reliability scoring",
+          "description": "Each artifact has a reliability level (1-5). SOC direct observations rated highest; external/historical records rated lowest.",
+          "enforcement": "FINAL"
+        },
+        {
+          "rule": "CMS principle citation required",
+          "description": "Every correct rationale must cite the governing CMS coding principle. Trap options must explain the specific coding error.",
+          "enforcement": "FINAL"
+        }
+      ],
+
+      "conflicts_and_resolutions": [
+        {
+          "conflict": "UI/UX Design for Training Course.md specified Blue Ribbon #2164F4 and Ink Blue #00123C as primary colors",
+          "resolution": "SUPERSEDED by OASIS-E2 SOC Simulation UI/UX Design.md which established Brand Orange #C74601 and Brand Teal #007970",
+          "resolved_to": "CareIndeed brand palette: Orange #C74601, Teal #007970, Charcoal #1F1C1B",
+          "status": "RESOLVED"
+        },
+        {
+          "conflict": "Early design referenced 50/50 dual-pane split-screen architecture",
+          "resolution": "SUPERSEDED by final 20/50/30 three-column split-workspace architecture in governing UI/UX spec",
+          "resolved_to": "Left 20% (Chart Nav) / Center 50% (Document Viewer) / Right 30% (Clinical Action)",
+          "status": "RESOLVED"
+        },
+        {
+          "conflict": "Patient case SOC date set to 08/20/2026 (future date relative to development)",
+          "resolution": "Accepted as intentional placeholder — simulator case dates are fictional",
+          "resolved_to": "Fictional patient timeline accepted; no impact on simulation logic",
+          "status": "RESOLVED"
+        },
+        {
+          "conflict": "training-integrity-review.md exists but is empty (0 bytes)",
+          "resolution": "File created as placeholder; no integrity review content authored yet",
+          "resolved_to": "GAP — training integrity review not yet documented",
+          "status": "OPEN"
+        },
+        {
+          "conflict": "curveball-summary.md exists but is empty (0 bytes)",
+          "resolution": "File created as placeholder; curveball scenarios not yet documented",
+          "resolved_to": "GAP — curveball scenario summary not yet authored",
+          "status": "OPEN"
+        }
+      ],
+
+      "system_impact_analysis": {
+        "simulation_behavior": "High-fidelity clinical reasoning simulation with 27 real-world artifacts, evidence extraction, and rationale defense. Linear progression prevents cognitive overload. Audio narration provides guided learning pathway.",
+        "user_workflow": "RN completes sequential OASIS sections, extracting evidence from patient artifacts, selecting correct codes, defending rationale choices, and linking supporting documentation. Remediation engine provides targeted feedback for incorrect answers with retry capability.",
+        "engineering_implementation": "React 19 SPA with Vite build. TypeScript for type safety. CSV-based narration manifest parsed at build time. Evidence validation engine with artifact-to-item mapping. SCORM 1.2 packaging for Moodle LMS deployment."
+      },
+
+      "dependencies": [
+        "LMS SCORM/xAPI Integration",
+        "Moodle LMS Platform",
+        "Qwen3-TTS Audio Generation Pipeline",
+        "CareIndeed Design System",
+        "OASIS-E2 Final Form Specifications (03-01-2026)",
+        "CMS OASIS Assessment Coding Guidelines",
+        "Remediation Logic State Machine"
+      ],
+
+      "strategic_layers": {
+        "product_ideation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "problem": "Registered Nurses in home health consistently miscategorize OASIS-E2 assessment items due to inability to reconcile fragmented clinical documentation across care transitions (Hospital → SNF → ALF → Home Health). This drives coding errors, compliance audit failures, and reimbursement discrepancies under PDGM.",
+          "users": ["Registered Nurse (RN)", "Licensed Vocational Nurse (LVN)", "QA Auditor", "Clinical Supervisor"],
+          "value": "Transforms abstract OASIS coding guidelines into experiential clinical reasoning through artifact-based evidence extraction. Improves coding accuracy, reduces audit risk, and builds defensible documentation habits.",
+          "use_cases": [
+            "New-hire RN onboarding to OASIS-E2 SOC assessment",
+            "Remediation training for RNs with high coding error rates",
+            "Pre-survey competency validation for QA teams",
+            "Annual competency refresh for experienced clinicians"
+          ],
+          "metrics": {
+            "time_to_competency_improvement_pct": 35,
+            "error_reduction_potential_pct": 42,
+            "adoption_complexity": "MEDIUM"
+          }
+        },
+
+        "ux_design": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "strategy": "Linear guided SOC flow with split-workspace architecture mirrors real-world EHR patterns. Three-column layout reduces context-switching between chart review and assessment coding. Progressive disclosure prevents cognitive overload by revealing one section at a time.",
+          "workflow_reasoning": "Sequential section progression mirrors actual SOC visit documentation workflow. Evidence extraction interaction (highlight-to-save) builds muscle memory for artifact reconciliation patterns used in production EHR systems.",
+          "cognitive_load_strategy": "Sticky section anchors, collapsed inactive sections, linear lock enforcement, and audio narration all serve to constrain decision space and reduce extraneous cognitive load per Sweller's Cognitive Load Theory.",
+          "interaction_constraints": "No skip-ahead, no field re-editing after correct answer, audio completion required before progression",
+          "metrics": {
+            "cognitive_load": "MEDIUM",
+            "interaction_complexity": 4,
+            "guidance_level": "GUIDED"
+          }
+        },
+
+        "training_model": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "approach": "Clinical reasoning-based competency model. Learner must demonstrate evidence extraction, code selection, rationale defense, and evidence linking across 32 OASIS items spanning 10 clinical domains.",
+          "skills_trained": [
+            "Multi-source clinical documentation reconciliation",
+            "OASIS-E2 item coding per CMS guidelines",
+            "Evidence reliability assessment (5-level confidence scoring)",
+            "Rationale defense against common coding traps",
+            "Artifact-to-item evidence linking",
+            "SOC-specific clinical reasoning under documentation constraints"
+          ],
+          "competency_levels": [
+            "Recognition: Identify relevant evidence in artifacts",
+            "Application: Select correct OASIS code from evidence",
+            "Analysis: Defend rationale against trap options",
+            "Synthesis: Link multiple artifacts to support coding decision"
+          ],
+          "assessment_model": "Per-item quiz with 5-option rationale selection + evidence linking validation. Incorrect answers trigger targeted remediation audio. Retry mechanism resets only incorrect fields. Final review aggregates performance.",
+          "metrics": {
+            "competency_depth": 5,
+            "assessment_rigor": "HIGH",
+            "transferability": "HIGH"
+          }
+        },
+
+        "simulation_strategy": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "type": "High-fidelity clinical document simulation",
+          "description": "Single canonical patient case (Evelyn Vance, 82F) traced across complete care continuum. 27 artifacts with varying reliability levels create realistic documentation reconciliation challenge. Conflicting information across artifacts forces critical analysis.",
+          "use_of_conflict": "Trap rationales include common real-world coding errors: relying on historical records over SOC findings, proxy report weighting, single-source acceptance, narrative term matching without functional assessment, and incomplete interview handling.",
+          "decision_complexity_detail": "Each OASIS item requires multi-step reasoning: extract evidence → assess reliability → reconcile conflicts → select code → defend rationale → link supporting artifacts",
+          "metrics": {
+            "fidelity": "HIGH",
+            "decision_complexity": 5,
+            "realism": 5
+          }
+        },
+
+        "narration_strategy": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "role": "Audio narration serves as primary instructional scaffolding, providing guided walkthrough of simulation mechanics, contextual coaching during evidence review, and targeted remediation feedback for incorrect coding decisions.",
+          "placement": ["Splash/Introduction", "Workspace orientation", "Chart familiarization", "Section overviews", "Per-item evidence guidance", "Rationale defense coaching", "Review/remediation feedback", "Summary/conclusion"],
+          "tone": "Professional clinical educator. Authoritative but supportive. Uses CMS terminology precisely. Explains 'why' behind correct coding, not just 'what'.",
+          "metrics": {
+            "narration_density": "HIGH",
+            "instructional_guidance_level": 5,
+            "learner_independence": 2
+          }
+        },
+
+        "research_foundation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "regulatory_alignment": [
+            "CMS OASIS-E2 Assessment Instrument (effective 2026)",
+            "42 CFR Part 484 — Conditions of Participation for Home Health Agencies",
+            "PDGM (Patient-Driven Groupings Model) — payment classification",
+            "HHVBP (Home Health Value-Based Purchasing) — quality incentives",
+            "WCAG 2.1 AA — accessibility compliance"
+          ],
+          "clinical_standards": [
+            "BIMS (Brief Interview for Mental Status) administration protocol",
+            "PHQ-9 depression screening instrument",
+            "GG functional assessment items per Section GG specifications",
+            "Braden Scale pressure injury risk assessment framework"
+          ],
+          "training_justification": "High OASIS coding error rates directly impact PDGM payment accuracy, quality measure reporting, and survey readiness. Simulation-based training demonstrates higher retention and transfer than didactic approaches per healthcare education research.",
+          "metrics": {
+            "compliance_criticality": "HIGH",
+            "regulatory_dependency": 5,
+            "standardization_level": "HIGH"
+          }
+        },
+
+        "user_validation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "method": "SME-driven",
+          "interview_minutes": 0,
+          "justification": "Built from real-world operational experience in home health. Deep familiarity with OASIS workflows, CMS coding guidelines, and common RN documentation errors from clinical supervision and QA audit activities.",
+          "metrics": {
+            "validation_model": "SME-driven",
+            "assumption_risk": "MEDIUM",
+            "workflow_alignment_risk": "LOW",
+            "feedback_loop_strategy": "Post-deployment iteration",
+            "expected_iteration_cycles": "2-4"
+          }
+        }
+      }
+    },
+
+    {
+      "project_name": "QAPI Training Module",
+      "project_id": "QAPI-TRAIN",
+      "status": "FINAL",
+      "implementation_readiness": 88,
+
+      "final_state": {
+        "description": "Interactive QAPI (Quality Assessment and Performance Improvement) regulatory training module for home health agencies. Five-module curriculum covering 42 CFR §484.65 compliance, data-driven quality monitoring, PIP design, ADR/survey readiness, and defensible QAPI binder construction. Includes 35 scenario-based training cards with challenge questions, operational binder templates, and comprehensive narration.",
+        "core_capabilities": [
+          "5-module interactive training curriculum (60-minute total)",
+          "35 scenario-based training cards with 4-option challenge questions",
+          "60+ glossary terms with aliases and contextual definitions",
+          "QAPI binder assembly exercise with 10 operational sections",
+          "PIP (Performance Improvement Project) design lab with PDSA cycle",
+          "ADR (Additional Documentation Request) response simulation",
+          "Surveyor walkthrough simulation with branching feedback",
+          "Dashboard mock with KPI visualization",
+          "105+ narration entries covering regulatory standards",
+          "California Title 22 and Health & Safety Code alignment",
+          "Glass-morphism UI with frozen design tokens"
+        ],
+        "tech_stack": {
+          "framework": "React 19.2.0",
+          "build": "Vite 7.3.1",
+          "language": "TypeScript / JSX",
+          "styling": "TailwindCSS 4.2.0",
+          "animation": ["Framer Motion 12.34.3", "GSAP 3.14.2"],
+          "custom_libs": ["gradflow 0.1.0", "Lucide React 0.575.0"],
+          "integration": ["SCORM (via scormPersist.ts)"]
+        }
+      },
+
+      "metrics": {
+        "impact_level": "HIGH",
+        "complexity_score": 4,
+        "compliance_criticality": "HIGH",
+        "training_cards": 35,
+        "modules": 5,
+        "glossary_terms": 60,
+        "narration_entries": 105,
+        "binder_sections": 10,
+        "total_duration_minutes": 60
+      },
+
+      "timeline": [
+        {
+          "timestamp": "2026-02-15",
+          "change": "QAPI regulatory research completed — 42 CFR §484.65 analysis, CMS Standards A-E mapping, California Title 22 alignment",
+          "category": "Compliance / Regulatory Alignment",
+          "impact": "Established regulatory foundation for all training content",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-02-20",
+          "change": "Home Health QAPI Training Framework Development document created — 6-part structure with ADR risk analysis",
+          "category": "Architecture / System Design",
+          "impact": "Defined 5-module curriculum architecture with interactive scenarios and knowledge checks",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-01",
+          "change": "Frozen design tokens established — Glass-morphism UI with teal/cyan/orange palette, Montserrat/Roboto typography, blur values, opacity tokens, z-index hierarchy",
+          "category": "UI/UX Structure",
+          "impact": "Prevents component-level design drift; all visual specifications locked to design-tokens.ts",
+          "status": "LOCKED"
+        },
+        {
+          "timestamp": "2026-03-05",
+          "change": "QAPI binder materials digitized from Downloads/QAPI/ — 10 operational sections with templates (Infection, Incident, Complaints, Surveys, Employee Logs, Agency Logs, PIPs, Audit Tools)",
+          "category": "Data Model / Schema",
+          "impact": "Real-world operational templates integrated as reference materials for binder assembly exercise",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-08",
+          "change": "35 training cards authored with scenario-based challenges — 4 options per challenge with detailed rationale for correct/incorrect selections",
+          "category": "Simulation Logic / Engine",
+          "impact": "Complete interactive training content for 5 modules with progressive complexity",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-10",
+          "change": "60+ glossary terms authored with aliases, definitions, and 'why it matters' context — canonical CMS-485/Home Health terminology",
+          "category": "Data Model / Schema",
+          "impact": "Terminology sub-step integrated into module progression as explicit learning component",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-12",
+          "change": "QAPI narration CSV created — 105+ entries covering 42 CFR §484.65 standards, OASIS data integration, HHVBP payment impact, California Title 22",
+          "category": "Architecture / System Design",
+          "impact": "Audio narration ready for all training modules",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-15",
+          "change": "Henderson Challenge and CMS-485 Virtual Form interactive components integrated",
+          "category": "Simulation Logic / Engine",
+          "impact": "Cross-project clinical scenario and form-based training exercises embedded in QAPI module",
+          "status": "FINAL"
+        }
+      ],
+
+      "governing_rules": [
+        {
+          "rule": "Design tokens are frozen",
+          "description": "All visual specifications (colors, typography, blur, opacity, z-index, shadows, border-radius) are locked in design-tokens.ts. No component-level CSS overrides permitted.",
+          "enforcement": "LOCKED"
+        },
+        {
+          "rule": "Glossary as explicit sub-step",
+          "description": "Terminology must exist as its own explicit sub-step/page in module progression. Not a passive sidebar reference.",
+          "enforcement": "LOCKED"
+        },
+        {
+          "rule": "42 CFR §484.65 compliance alignment",
+          "description": "All training content must map to CMS QAPI Standards A through E. California Title 22 §74697 requirements layered as supplementary.",
+          "enforcement": "FINAL"
+        },
+        {
+          "rule": "Scenario-based assessment model",
+          "description": "Every module concludes with scenario challenge (4 options with rationale). No simple recall-only questions.",
+          "enforcement": "FINAL"
+        }
+      ],
+
+      "conflicts_and_resolutions": [
+        {
+          "conflict": "Multiple copies of QAPI training materials exist (Downloads/QAPI, Templates/QAPI Training, Documents/Audacity/QwenTTS/QAPI_Training)",
+          "resolution": "Templates/QAPI Training is the authoritative source (active React application with full src/ tree). Downloads/QAPI contains operational binder templates (reference materials). Documents/Audacity path contains audio assets only.",
+          "resolved_to": "Templates/QAPI Training = governing codebase; Downloads/QAPI = binder reference; Documents/Audacity = audio assets",
+          "status": "RESOLVED"
+        },
+        {
+          "conflict": "QAPI Training Clone CSVs (Sheet1 (1), (2), (3)) suggest multiple content iterations",
+          "resolution": "CSV versions superseded by trainingCards.ts which contains final 35-card curriculum",
+          "resolved_to": "trainingCards.ts is authoritative content source",
+          "status": "RESOLVED"
+        }
+      ],
+
+      "system_impact_analysis": {
+        "simulation_behavior": "Scenario-based challenges simulate real audit/survey situations. Binder assembly exercise teaches organizational competency. ADR response and surveyor walkthrough simulations build practical readiness.",
+        "user_workflow": "Learner progresses through 5 modules sequentially: Regulatory → Data Monitoring → PIP Design → ADR/Survey Prep → Binder Construction. Each module includes instruction cards, scenario challenges, and knowledge checks.",
+        "engineering_implementation": "React 19 SPA with Vite build. GSAP and Framer Motion for animation. Frozen design tokens prevent visual drift. SCORM persistence for LMS integration. Glass-morphism UI with progressive disclosure."
+      },
+
+      "dependencies": [
+        "SCORM LMS Integration (via scormPersist.ts)",
+        "CareIndeed Design System (design-tokens.ts)",
+        "Qwen3-TTS Audio Generation Pipeline",
+        "Downloads/QAPI Binder Templates (reference materials)",
+        "42 CFR §484.65 Regulatory Framework",
+        "California Title 22 §74697"
+      ],
+
+      "strategic_layers": {
+        "product_ideation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "problem": "Home health agencies face survey deficiencies due to inadequate QAPI program implementation. Common failures include no evidence of trending, superficial PIPs, missing leadership participation, and incomplete closed-loop improvement cycles. ADR denials compound revenue risk.",
+          "users": ["Agency Administrator", "Director of Nursing", "QA Coordinator", "Clinical Supervisor", "QAPI Committee Member"],
+          "value": "Transforms abstract QAPI regulatory requirements into actionable operational competencies through scenario-based simulation. Builds defensible documentation habits and survey-ready binder construction skills.",
+          "use_cases": [
+            "New agency QAPI program establishment training",
+            "Annual QAPI competency refresh for existing staff",
+            "Pre-survey readiness preparation",
+            "Post-deficiency remediation training",
+            "ADR response competency development"
+          ],
+          "metrics": {
+            "time_to_competency_improvement_pct": 30,
+            "error_reduction_potential_pct": 38,
+            "adoption_complexity": "LOW"
+          }
+        },
+
+        "ux_design": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "strategy": "Card-based progressive disclosure with glass-morphism visual hierarchy. Frozen design tokens ensure brand consistency. Scenario challenges embedded within instructional flow to maintain engagement.",
+          "metrics": {
+            "cognitive_load": "LOW",
+            "interaction_complexity": 3,
+            "guidance_level": "GUIDED"
+          }
+        },
+
+        "training_model": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "approach": "Regulatory competency model with operational application. Each module maps to 42 CFR §484.65 Standards A-E with scenario-based assessment.",
+          "metrics": {
+            "competency_depth": 4,
+            "assessment_rigor": "MEDIUM",
+            "transferability": "HIGH"
+          }
+        },
+
+        "simulation_strategy": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "type": "Scenario-based regulatory simulation",
+          "metrics": {
+            "fidelity": "MEDIUM",
+            "decision_complexity": 3,
+            "realism": 4
+          }
+        },
+
+        "narration_strategy": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "role": "Audio narration provides regulatory context and procedural guidance for each QAPI standard. 105+ entries covering full regulatory framework.",
+          "metrics": {
+            "narration_density": "HIGH",
+            "instructional_guidance_level": 4,
+            "learner_independence": 3
+          }
+        },
+
+        "research_foundation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "regulatory_alignment": [
+            "42 CFR §484.65 — QAPI Conditions of Participation",
+            "CMS QAPI Standards A through E",
+            "California Title 22 §74697 — 30-day physician signature",
+            "HHVBP (Home Health Value-Based Purchasing)",
+            "OASIS-derived quality measures"
+          ],
+          "metrics": {
+            "compliance_criticality": "HIGH",
+            "regulatory_dependency": 5,
+            "standardization_level": "HIGH"
+          }
+        },
+
+        "user_validation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "method": "SME-driven",
+          "interview_minutes": 0,
+          "metrics": {
+            "validation_model": "SME-driven",
+            "assumption_risk": "MEDIUM",
+            "workflow_alignment_risk": "LOW",
+            "feedback_loop_strategy": "Post-deployment iteration",
+            "expected_iteration_cycles": "2-4"
+          }
+        }
+      }
+    },
+
+    {
+      "project_name": "CMS-485 Form Training",
+      "project_id": "CMS485-TRAIN",
+      "status": "FINAL",
+      "implementation_readiness": 90,
+
+      "final_state": {
+        "description": "Interactive CMS-485 (Plan of Care) form field training module for home health clinicians and administrative staff. Teaches field-by-field compliance documentation, medical necessity justification, regulatory foundations, change control procedures, and audit defensibility. Features interactive form hotspots, clinical audit scenarios, and the Henderson clinical scenario challenge.",
+        "core_capabilities": [
+          "Field-by-field CMS-485 form guidance with interactive hotspots (bbox positioning, tooltips)",
+          "Trace Model enforcement — continuous clinical story from FTF → OASIS → POC → Visits → Billing",
+          "Clinical audit case scenarios with real-world documentation challenges",
+          "Henderson Challenge — clinical reasoning scenario exercise",
+          "Multiple visualization types (auditLens, goodBad, microSim, decisionTree, templateBuilder)",
+          "Red flag identification for common documentation vulnerabilities",
+          "SCORM 1.2 packaging for Moodle LMS deployment",
+          "xAPI statement generation for granular learning analytics",
+          "LTI parent message completion tracking",
+          "Webhook-based completion endpoint integration"
+        ],
+        "tech_stack": {
+          "framework": "React 19.2.0",
+          "build": "Vite 7.3.1",
+          "language": "TypeScript",
+          "styling": "TailwindCSS 4.2.0",
+          "animation": ["Framer Motion", "GSAP"],
+          "plugins": ["vite-plugin-compression 0.5.1"],
+          "integration": ["SCORM 1.2", "SCORM 2004", "xAPI", "LTI", "Webhook"]
+        }
+      },
+
+      "metrics": {
+        "impact_level": "HIGH",
+        "complexity_score": 4,
+        "compliance_criticality": "HIGH",
+        "form_fields_covered": 46,
+        "course_sections": 8,
+        "visualization_types": 5,
+        "scorm_packages_built": 5
+      },
+
+      "timeline": [
+        {
+          "timestamp": "2026-02-10",
+          "change": "CMS-485 form training concept established — field-by-field guidance with hotspot interaction",
+          "category": "Architecture / System Design",
+          "impact": "Defined interactive form overlay approach for compliance training",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-02-26",
+          "change": "First versioned backup created (CSM-485-1.2)",
+          "category": "Architecture / System Design",
+          "impact": "Version control established for iterative development",
+          "status": "SUPERSEDED"
+        },
+        {
+          "timestamp": "2026-03-01",
+          "change": "Course section architecture finalized — 8 sections: Orientation, Regulatory, Orders, Change Control, Field Guide, Medical Necessity, Alignment, Defensibility",
+          "category": "Workflow / Logic Changes",
+          "impact": "Progressive curriculum from foundational regulatory knowledge to advanced audit defense",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-02",
+          "change": "Second versioned backup created with expanded content",
+          "category": "Architecture / System Design",
+          "impact": "Content iteration with additional clinical scenarios",
+          "status": "SUPERSEDED"
+        },
+        {
+          "timestamp": "2026-03-10",
+          "change": "Hotspot system implemented — interactive form field overlays with common mistakes and defensible audit language",
+          "category": "UI/UX Structure",
+          "impact": "Form fields become clickable learning objects with tooltips and guided steps",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-15",
+          "change": "SCORM packaging scripts finalized — 5 SCORM packages generated (standard, legacy, Moodle-specific)",
+          "category": "Implementation Constraints / Rules",
+          "impact": "Production-ready LMS deployment packages for Moodle integration",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-17",
+          "change": "Multi-protocol completion tracking implemented — SCORM 2004 → SCORM 1.2 → xAPI → Webhook → LTI cascade",
+          "category": "Architecture / System Design",
+          "impact": "Maximum LMS compatibility; graceful fallback across 5 completion protocols",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-17",
+          "change": "Audio narration assets generated — 8+ WAV files for CMS-485 form training sections",
+          "category": "Architecture / System Design",
+          "impact": "Audio-guided experience for form field instruction",
+          "status": "FINAL"
+        }
+      ],
+
+      "governing_rules": [
+        {
+          "rule": "Trace Model enforcement",
+          "description": "CMS-485 training enforces one continuous clinical story: Face-to-Face Encounter → OASIS Assessment → Plan of Care → Visit Notes → Billing. No standalone field instruction without clinical narrative context.",
+          "enforcement": "FINAL"
+        },
+        {
+          "rule": "Multi-protocol completion cascade",
+          "description": "Completion tracking uses 5-tier cascade: SCORM 2004 (primary) → SCORM 1.2 (fallback) → xAPI statement → Webhook POST → LTI parent message. First successful protocol wins.",
+          "enforcement": "LOCKED"
+        },
+        {
+          "rule": "Certification period alignment",
+          "description": "All form training references 60-day certification period with mandatory physician attestation per Medicare HH CoPs.",
+          "enforcement": "FINAL"
+        },
+        {
+          "rule": "Medical necessity documentation standard",
+          "description": "Training requires demonstration of 3-pillar medical necessity: safe/effective, not experimental, appropriate setting — per Section 1862(a)(1)(A) Social Security Act.",
+          "enforcement": "FINAL"
+        }
+      ],
+
+      "conflicts_and_resolutions": [
+        {
+          "conflict": "Multiple CSM-485 Form directories exist (CSM-485 Form, CSM-485-1.2, numbered backups)",
+          "resolution": "CSM-485 Form (root) is authoritative active development directory with Git repository. CSM-485-1.2 and numbered backups are historical snapshots.",
+          "resolved_to": "C:\\AI\\Git\\training\\HomeHealth\\CSM-485 Form\\ = governing codebase",
+          "status": "RESOLVED"
+        },
+        {
+          "conflict": "Two LMS integration paths exist (standalone CSM-485 Form + CIHHC_LMS_Inservices_CMS-485_Form)",
+          "resolution": "CIHHC_LMS_Inservices_CMS-485_Form is the LMS-integrated deployment package (port 5188, SCORM scripts). Standalone CSM-485 Form is the development/authoring environment.",
+          "resolved_to": "Development: CSM-485 Form → Deployment: CIHHC_LMS_Inservices_CMS-485_Form",
+          "status": "RESOLVED"
+        }
+      ],
+
+      "system_impact_analysis": {
+        "simulation_behavior": "Interactive form hotspots transform static CMS-485 into clickable learning experience. Clinical audit cases test documentation defensibility. Henderson Challenge integrates cross-domain clinical reasoning.",
+        "user_workflow": "Learner progresses through 8 course sections from regulatory foundation to audit defense. Each field includes common mistakes, defensible language, and guided practice steps.",
+        "engineering_implementation": "React 19 SPA with Vite build. SCORM packaging via PowerShell scripts. Multi-protocol completion tracking. Vite-plugin-compression for production optimization."
+      },
+
+      "dependencies": [
+        "SCORM 1.2/2004 LMS Integration",
+        "xAPI Learning Record Store",
+        "Moodle LMS Platform",
+        "CareIndeed Design System",
+        "CMS-485 Form Specification",
+        "Medicare HH Conditions of Participation",
+        "OASIS-E2 SOC Simulator (cross-reference for clinical context)"
+      ],
+
+      "strategic_layers": {
+        "product_ideation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "problem": "CMS-485 documentation failures are the primary driver of Medicare home health payment denials. Clinicians and staff lack understanding of field-level compliance requirements, medical necessity documentation standards, and audit defensibility language.",
+          "users": ["Registered Nurse (RN)", "Clinical Supervisor", "Medical Records Staff", "Billing/Coding Staff"],
+          "value": "Field-by-field interactive training with real-world audit scenarios builds defensible documentation habits and reduces denial rates.",
+          "metrics": {
+            "time_to_competency_improvement_pct": 28,
+            "error_reduction_potential_pct": 35,
+            "adoption_complexity": "LOW"
+          }
+        },
+
+        "ux_design": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "strategy": "Interactive form overlay with progressive field-level guidance. Hotspot-based learning objects with tooltips and guided practice steps.",
+          "metrics": {
+            "cognitive_load": "LOW",
+            "interaction_complexity": 3,
+            "guidance_level": "GUIDED"
+          }
+        },
+
+        "training_model": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "approach": "Compliance documentation competency with audit defense focus. 8-section progressive curriculum from regulatory foundation to defensibility.",
+          "metrics": {
+            "competency_depth": 4,
+            "assessment_rigor": "MEDIUM",
+            "transferability": "HIGH"
+          }
+        },
+
+        "simulation_strategy": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "type": "Interactive form-based simulation with clinical audit scenarios",
+          "metrics": {
+            "fidelity": "MEDIUM",
+            "decision_complexity": 3,
+            "realism": 4
+          }
+        },
+
+        "user_validation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "method": "SME-driven",
+          "interview_minutes": 0,
+          "metrics": {
+            "validation_model": "SME-driven",
+            "assumption_risk": "MEDIUM",
+            "workflow_alignment_risk": "LOW",
+            "feedback_loop_strategy": "Post-deployment iteration",
+            "expected_iteration_cycles": "2-4"
+          }
+        }
+      }
+    },
+
+    {
+      "project_name": "CMS Documentation Matters Toolkit",
+      "project_id": "CMS-DOC-TOOLKIT",
+      "status": "FINAL",
+      "implementation_readiness": 78,
+
+      "final_state": {
+        "description": "Comprehensive Medicaid/Medicare compliance documentation training toolkit. 9-module curriculum (15,000+ lines) covering statutory architecture, macro surveillance, clinical documentation, longitudinal case study, behavioral health, administrative oversight, EHR integrity, ICD-10 ecosystem, and self-auditing. Advanced remediation framework with 10 master-level competency challenges spanning RADV, E/M coding, split/shared visits, teaching physicians, EHR authentication, and VA nexus letters.",
+        "core_capabilities": [
+          "9-module comprehensive CMS compliance curriculum (15,000+ lines)",
+          "Longitudinal case study (Patient J.K.) spanning full care continuum",
+          "Advanced remediation framework with MLN training model alignment",
+          "10 master-level competency challenges with regulatory scenario synthesis",
+          "RADV extrapolation and MEAT criteria validation scenarios",
+          "E/M 2024-2025 paradigm transition (MDM vs. Time-based)",
+          "G2211 visit complexity code integration and restriction rules",
+          "EHR integrity and cloning detection training",
+          "ICD-10 annual update tracking (2021-2026)",
+          "Self-auditing and Corrective Action Plan (CAP) framework"
+        ],
+        "tech_stack": {
+          "framework": "React 19.2.4",
+          "build": "Vite",
+          "language": "TypeScript",
+          "custom_libs": ["gradflow 0.1.0", "Lucide React 0.577.0"],
+          "content_format": "Markdown (15,000+ lines curriculum)"
+        }
+      },
+
+      "metrics": {
+        "impact_level": "HIGH",
+        "complexity_score": 5,
+        "compliance_criticality": "HIGH",
+        "modules": 9,
+        "curriculum_lines": 15000,
+        "master_challenges": 10,
+        "icd10_updates_tracked": 6,
+        "regulatory_citations": 50
+      },
+
+      "timeline": [
+        {
+          "timestamp": "2026-02-20",
+          "change": "CMS Documentation Training Framework Development document established — 9-module structure defined",
+          "category": "Architecture / System Design",
+          "impact": "Set comprehensive compliance curriculum architecture from statutory foundation to self-auditing",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-01",
+          "change": "15,000+ line curriculum authored — SSA/CFR citations, E/M guidelines, longitudinal case study, behavioral health, EHR integrity, ICD-10 ecosystem",
+          "category": "Data Model / Schema",
+          "impact": "Complete regulatory training content covering Medicaid and Medicare compliance domains",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-05",
+          "change": "Advanced remediation framework created — MLN training model, E/M 2024-2025 paradigm, CDI, CAP formation",
+          "category": "Simulation Logic / Engine",
+          "impact": "Expert-level remediation with targeted clinical documentation improvement strategies",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-10",
+          "change": "10 master-level competency challenges authored — RADV/MEAT, E/M G-code traps, split/shared visits, teaching physicians, EHR cloning, principal diagnosis, VA nexus letters",
+          "category": "Simulation Logic / Engine",
+          "impact": "Mastery-level assessment integrating regulatory knowledge across multiple CMS domains",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-15",
+          "change": "2026 regulatory updates integrated — G0136 redefinition (SDOH → Physical Activity/Nutrition only), RADV expansion (annual all-contract audits), 80 new ICD-10-PCS codes (4/1/2026)",
+          "category": "Compliance / Regulatory Alignment",
+          "impact": "Current-year regulatory precision for active compliance training",
+          "status": "FINAL"
+        }
+      ],
+
+      "governing_rules": [
+        {
+          "rule": "Regulatory citation required",
+          "description": "Every compliance training assertion must cite specific CFR section, SSA provision, or CMS guidance document.",
+          "enforcement": "FINAL"
+        },
+        {
+          "rule": "CERT data-driven content prioritization",
+          "description": "Training content priorities driven by CERT (Comprehensive Error Rate Testing) findings. Insufficient documentation = 62.8% of improper payments.",
+          "enforcement": "FINAL"
+        },
+        {
+          "rule": "Annual ICD-10 update tracking",
+          "description": "Curriculum must track annual ICD-10-CM/PCS code updates with effective dates and clinical impact.",
+          "enforcement": "FINAL"
+        }
+      ],
+
+      "conflicts_and_resolutions": [
+        {
+          "conflict": "CMS-Documentation-Kit and CMS-Documentation-Matters-Toolkit appear as separate projects",
+          "resolution": "CMS-Documentation-Matters-Toolkit is the comprehensive active project. CMS-Documentation-Kit is a narrower subset focused on CMS-485 Physician Plan of Care only.",
+          "resolved_to": "CMS-Documentation-Matters-Toolkit = authoritative comprehensive toolkit; CMS-Documentation-Kit = supplementary reference",
+          "status": "RESOLVED"
+        }
+      ],
+
+      "system_impact_analysis": {
+        "simulation_behavior": "Master-level challenges synthesize multiple regulatory domains into single assessment scenarios. Longitudinal case study demonstrates documentation continuity across full patient care episode.",
+        "user_workflow": "Clinicians and staff progress through 9 modules from statutory foundation to self-auditing mastery. Expert-level challenges test cross-domain regulatory synthesis.",
+        "engineering_implementation": "React 19 application with markdown-based curriculum content. gradflow for custom graphics. Lucide icons for visual hierarchy."
+      },
+
+      "dependencies": [
+        "CareIndeed Design System",
+        "CMS Regulatory Framework (42 CFR, SSA)",
+        "MLN (Medicare Learning Network) Training Standards",
+        "CERT Error Rate Data",
+        "ICD-10-CM/PCS Annual Updates",
+        "gradflow Graphics Library"
+      ],
+
+      "strategic_layers": {
+        "product_ideation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "problem": "Medicaid improper payments total $17.5B annually (14% of all government improper payments). Documentation failures drive 62.8% of these errors. Healthcare providers lack systematic compliance training covering the full documentation ecosystem.",
+          "users": ["Physician", "NP/PA", "Medical Records Staff", "Billing/Coding Staff", "Practice Administrator", "Compliance Officer"],
+          "value": "Comprehensive compliance mastery from statutory foundation through self-auditing, reducing improper payment risk and building defensible documentation practices.",
+          "metrics": {
+            "time_to_competency_improvement_pct": 25,
+            "error_reduction_potential_pct": 40,
+            "adoption_complexity": "HIGH"
+          }
+        },
+
+        "training_model": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "approach": "Regulatory mastery model with longitudinal case integration and cross-domain synthesis challenges.",
+          "metrics": {
+            "competency_depth": 5,
+            "assessment_rigor": "HIGH",
+            "transferability": "HIGH"
+          }
+        },
+
+        "simulation_strategy": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "type": "Regulatory scenario synthesis with master-level challenges",
+          "metrics": {
+            "fidelity": "HIGH",
+            "decision_complexity": 5,
+            "realism": 4
+          }
+        },
+
+        "user_validation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "method": "SME-driven",
+          "interview_minutes": 0,
+          "metrics": {
+            "validation_model": "SME-driven",
+            "assumption_risk": "MEDIUM",
+            "workflow_alignment_risk": "LOW",
+            "feedback_loop_strategy": "Post-deployment iteration",
+            "expected_iteration_cycles": "2-4"
+          }
+        }
+      }
+    },
+
+    {
+      "project_name": "CIHHC LMS Integration Platform",
+      "project_id": "CIHHC-LMS",
+      "status": "FINAL",
+      "implementation_readiness": 85,
+
+      "final_state": {
+        "description": "Care Indeed Home Health Care (CIHHC) Learning Management System integration platform. Provides SCORM 1.2-compliant packaging, xAPI learning analytics, LTI interoperability, and webhook completion tracking for all training modules. Deployed to Moodle LMS with multi-protocol fallback.",
+        "core_capabilities": [
+          "SCORM 1.2 and SCORM 2004 packaging with PowerShell scripts",
+          "xAPI statement generation for granular learning analytics",
+          "LTI parent message completion tracking",
+          "Webhook-based completion endpoint integration",
+          "Debug LMS diagnostics panel (debugLms=1 query parameter)",
+          "Multi-protocol completion cascade (SCORM 2004 → SCORM 1.2 → xAPI → Webhook → LTI)",
+          "Vercel deployment configuration for web hosting",
+          "Moodle-specific SCORM package variants",
+          "In-service training module hub architecture"
+        ],
+        "tech_stack": {
+          "framework": "React 18.3.1",
+          "build": "Vite",
+          "styling": "TailwindCSS 4.2.1",
+          "packaging": "PowerShell SCORM scripts",
+          "deployment": ["Moodle LMS", "Vercel"],
+          "protocols": ["SCORM 1.2", "SCORM 2004", "xAPI", "LTI", "Webhook"]
+        }
+      },
+
+      "metrics": {
+        "impact_level": "HIGH",
+        "complexity_score": 3,
+        "compliance_criticality": "MEDIUM",
+        "protocols_supported": 5,
+        "scorm_packages_built": 5,
+        "deployment_targets": 2
+      },
+
+      "timeline": [
+        {
+          "timestamp": "2026-02-15",
+          "change": "CIHHC-LMS-Inservices base project created — React 18 in-service training hub",
+          "category": "Architecture / System Design",
+          "impact": "Established LMS integration foundation for all training modules",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-01",
+          "change": "SCORM 1.2 packaging scripts developed — PowerShell-based build pipeline for Moodle deployment",
+          "category": "Implementation Constraints / Rules",
+          "impact": "Automated SCORM package generation for consistent LMS deployment",
+          "status": "FINAL"
+        },
+        {
+          "timestamp": "2026-03-10",
+          "change": "Multi-protocol completion tracking implemented — 5-tier cascade (SCORM 2004 → SCORM 1.2 → xAPI → Webhook → LTI)",
+          "category": "Architecture / System Design",
+          "impact": "Maximum LMS compatibility across platforms",
+          "status": "LOCKED"
+        },
+        {
+          "timestamp": "2026-03-17",
+          "change": "5 SCORM packages generated — including standard, legacy, and Moodle-specific variants with timestamps",
+          "category": "Implementation Constraints / Rules",
+          "impact": "Production-ready deployment packages with version tracking",
+          "status": "FINAL"
+        }
+      ],
+
+      "governing_rules": [
+        {
+          "rule": "Multi-protocol completion cascade",
+          "description": "SCORM 2004 → SCORM 1.2 → xAPI → Webhook → LTI. First successful protocol wins. Cascade is non-negotiable for maximum LMS compatibility.",
+          "enforcement": "LOCKED"
+        },
+        {
+          "rule": "SCORM package versioning",
+          "description": "All SCORM packages include ISO timestamp in filename. Latest symlink maintained for deployment automation.",
+          "enforcement": "FINAL"
+        },
+        {
+          "rule": "Debug diagnostics available but hidden",
+          "description": "LMS debug panel activated only via debugLms=1 query parameter. Never exposed in production by default.",
+          "enforcement": "FINAL"
+        }
+      ],
+
+      "conflicts_and_resolutions": [
+        {
+          "conflict": "CIHHC-LMS-Inservices uses React 18.3.1 while training modules use React 19.2.x",
+          "resolution": "LMS hub runs on React 18 as stable integration platform. Individual modules (OASIS, QAPI, CMS-485) use React 19 independently within SCORM iframes.",
+          "resolved_to": "LMS hub = React 18 (stability); Training modules = React 19 (features). No version conflict due to SCORM iframe isolation.",
+          "status": "RESOLVED"
+        }
+      ],
+
+      "system_impact_analysis": {
+        "simulation_behavior": "LMS platform is a container/delivery mechanism; does not affect simulation logic within individual modules.",
+        "user_workflow": "Learners access training modules through Moodle LMS. Completion tracking cascades through multiple protocols to ensure reliable credit recording.",
+        "engineering_implementation": "PowerShell-based SCORM packaging pipeline. React 18 hub with iframe-based module loading. Vercel for web deployment."
+      },
+
+      "dependencies": [
+        "Moodle LMS Platform",
+        "SCORM 1.2/2004 Specification",
+        "xAPI Learning Record Store",
+        "Vercel Hosting Platform",
+        "All training modules (OASIS, QAPI, CMS-485, CMS Doc Toolkit)"
+      ],
+
+      "strategic_layers": {
+        "product_ideation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "problem": "Home health agencies need centralized training delivery with reliable completion tracking for compliance documentation and audit trail.",
+          "users": ["Agency Training Administrator", "HR/Compliance Manager", "Learner (RN/LVN/Admin)"],
+          "value": "Unified training delivery platform with multi-protocol completion reliability. Single deployment target for all training modules.",
+          "metrics": {
+            "time_to_competency_improvement_pct": 15,
+            "error_reduction_potential_pct": 20,
+            "adoption_complexity": "LOW"
+          }
+        },
+
+        "user_validation": {
+          "inferred": true,
+          "label": "Inferred — Not from source files",
+          "method": "SME-driven",
+          "interview_minutes": 0,
+          "metrics": {
+            "validation_model": "SME-driven",
+            "assumption_risk": "LOW",
+            "workflow_alignment_risk": "LOW",
+            "feedback_loop_strategy": "Post-deployment iteration",
+            "expected_iteration_cycles": "2-4"
+          }
+        }
+      }
+    }
+  ],
+
+  "cross_project_analysis": {
+    "dependencies": [
+      {
+        "from": "OASIS-E2 SOC Simulator",
+        "to": "CIHHC LMS Integration Platform",
+        "type": "SCORM/xAPI Deployment",
+        "description": "OASIS simulator packaged as SCORM 1.2 module for Moodle delivery"
+      },
+      {
+        "from": "CMS-485 Form Training",
+        "to": "CIHHC LMS Integration Platform",
+        "type": "SCORM/xAPI Deployment",
+        "description": "CMS-485 training packaged with multi-protocol completion cascade"
+      },
+      {
+        "from": "QAPI Training Module",
+        "to": "CIHHC LMS Integration Platform",
+        "type": "SCORM Persistence",
+        "description": "QAPI module uses scormPersist.ts for LMS state management"
+      },
+      {
+        "from": "CMS Documentation Matters Toolkit",
+        "to": "CIHHC LMS Integration Platform",
+        "type": "Content Delivery",
+        "description": "Toolkit curriculum delivered through LMS hub architecture"
+      },
+      {
+        "from": "OASIS-E2 SOC Simulator",
+        "to": "CMS-485 Form Training",
+        "type": "Clinical Context Cross-Reference",
+        "description": "CMS-485 Trace Model references OASIS assessment as bridge between FTF and POC"
+      },
+      {
+        "from": "QAPI Training Module",
+        "to": "CMS-485 Form Training",
+        "type": "Component Sharing",
+        "description": "Henderson Challenge and Interactive485Form components embedded in QAPI training"
+      },
+      {
+        "from": "QAPI Training Module",
+        "to": "OASIS-E2 SOC Simulator",
+        "type": "Quality Measure Alignment",
+        "description": "QAPI data monitoring module references OASIS-derived quality measures and HHVBP impact"
+      },
+      {
+        "from": "CMS Documentation Matters Toolkit",
+        "to": "OASIS-E2 SOC Simulator",
+        "type": "Regulatory Foundation",
+        "description": "Toolkit Module 3 provides E/M and clinical documentation standards that inform OASIS coding rationales"
+      },
+      {
+        "from": "CMS Documentation Matters Toolkit",
+        "to": "CMS-485 Form Training",
+        "type": "Compliance Framework",
+        "description": "Toolkit Modules 1-2 (statutory architecture, macro surveillance) provide regulatory foundation for CMS-485 training"
+      },
+      {
+        "from": "All Projects",
+        "to": "Qwen3-TTS Audio Pipeline",
+        "type": "Narration Generation",
+        "description": "All modules consume Qwen3-TTS generated WAV audio files for narration"
+      },
+      {
+        "from": "All Projects",
+        "to": "CareIndeed Design System",
+        "type": "Visual Identity",
+        "description": "Shared design tokens: Orange #C74601, Teal #007970, Montserrat/Roboto typography"
+      }
+    ],
+
+    "shared_patterns": [
+      "Linear workflow enforcement — progressive section/module unlock prevents skip-ahead",
+      "Evidence-based validation — artifact linking, documentation reconciliation, citation requirements",
+      "Scenario-based assessment — 4-5 option challenges with detailed correct/incorrect rationale",
+      "Audio-narrated guidance — Qwen3-TTS generated narration with manifest-driven playback",
+      "CareIndeed design system — shared brand palette, typography, glass-morphism effects",
+      "SCORM/xAPI integration — multi-protocol LMS completion tracking with cascade fallback",
+      "React SPA architecture — Vite build, TypeScript, TailwindCSS across all modules",
+      "Frozen design tokens — visual specifications locked to prevent component-level drift",
+      "Glossary-as-architecture — terminology subsystems with aliases, definitions, contextual relevance",
+      "SME-driven validation model — domain expertise substituting for user research interviews"
+    ],
+
+    "architectural_alignment": {
+      "ui_framework": "React 18/19 with Vite build system across all projects",
+      "state_management": "Component-level React state (useState/useReducer) — no global state library",
+      "styling": "TailwindCSS 4.x with frozen design tokens; glass-morphism visual language",
+      "animation": "Framer Motion (primary) + GSAP (secondary) for interaction effects",
+      "content_format": "TypeScript data modules (trainingCards.ts, courseData.ts) + Markdown curricula + CSV manifests",
+      "audio_pipeline": "Qwen3-TTS voice synthesis → WAV assets → manifest-driven playback",
+      "lms_integration": "SCORM 1.2 primary, xAPI analytics, LTI interoperability, webhook fallback",
+      "deployment": "Vercel (web) + Moodle (LMS) dual deployment targets"
+    },
+
+    "data_relationships": [
+      {
+        "entity": "Patient Case (Evelyn Vance)",
+        "scope": "OASIS-E2 Simulator",
+        "description": "Single canonical patient with 27 artifacts, 140+ evidence anchors, spanning Hospital → SNF → ALF → Home Health SOC"
+      },
+      {
+        "entity": "Patient Case (J.K.)",
+        "scope": "CMS Documentation Toolkit",
+        "description": "Longitudinal case study spanning ED → Surgery → Rehab → Outpatient → Behavioral Health"
+      },
+      {
+        "entity": "QAPI Binder Templates",
+        "scope": "QAPI Training Module",
+        "description": "10 operational sections with forms, logs, and audit tools digitized from real-world HHA documentation"
+      },
+      {
+        "entity": "CMS-485 Form Fields",
+        "scope": "CMS-485 Training + QAPI Training",
+        "description": "46 form fields with hotspot definitions shared across CMS-485 standalone and QAPI embedded component"
+      },
+      {
+        "entity": "OASIS Quality Measures",
+        "scope": "OASIS Simulator + QAPI Training",
+        "description": "OASIS-derived quality measures referenced in both simulator coding rationales and QAPI data monitoring module"
+      },
+      {
+        "entity": "Glossary Terms (60+)",
+        "scope": "QAPI Training (primary) + CMS-485 Training (shared)",
+        "description": "Canonical CMS/home health terminology with aliases, definitions, and contextual relevance"
+      }
+    ]
+  },
+
+  "dashboard_summary": {
+    "total_projects": 5,
+    "high_impact_projects": 4,
+    "avg_readiness": 87,
+    "highest_risk_area": "User validation (SME-driven, 0 minutes interview time)",
+    "open_gaps": [
+      "training-integrity-review.md — empty, no integrity audit documented",
+      "curveball-summary.md — empty, no curveball scenarios authored",
+      "User research interviews: 0 minutes conducted across all projects"
+    ],
+    "key_focus": [
+      "Finalize LMS deployment testing (SCORM package validation in Moodle production)",
+      "Complete training integrity review documentation",
+      "Author curveball scenarios for simulation fidelity",
+      "Conduct post-deployment user validation (2-4 iteration cycles planned)",
+      "Expand OASIS simulation to additional patient cases beyond Evelyn Vance"
+    ],
+    "2026_regulatory_compliance": [
+      {
+        "update": "OASIS-E2 effective April 1, 2026",
+        "status": "ALIGNED",
+        "impact": "Simulator built on OASIS-E2 specifications; 8 final form PDFs dated 03-01-2026"
+      },
+      {
+        "update": "G0136 redefinition (SDOH → Physical Activity/Nutrition only) effective Jan 1, 2026",
+        "status": "DOCUMENTED",
+        "impact": "Affects equity coding in CMS Documentation Toolkit Module 6"
+      },
+      {
+        "update": "RADV expansion to annual all-contract audits (May 2025)",
+        "status": "DOCUMENTED",
+        "impact": "Master challenge scenarios in CMS Documentation Toolkit updated"
+      },
+      {
+        "update": "80 new ICD-10-PCS codes effective April 1, 2026",
+        "status": "DOCUMENTED",
+        "impact": "CMS Documentation Toolkit Module 8 tracks annual code updates"
+      }
+    ],
+    "project_status_matrix": [
+      {
+        "project": "OASIS-E2 SOC Simulator",
+        "status": "FINAL",
+        "readiness_pct": 92,
+        "impact": "HIGH",
+        "key_milestone": "233 audio assets + 32 OASIS items + evidence validation engine complete",
+        "blocker": "Empty integrity review + curveball files"
+      },
+      {
+        "project": "QAPI Training Module",
+        "status": "FINAL",
+        "readiness_pct": 88,
+        "impact": "HIGH",
+        "key_milestone": "35 training cards + 105 narration entries + frozen design tokens",
+        "blocker": "None identified"
+      },
+      {
+        "project": "CMS-485 Form Training",
+        "status": "FINAL",
+        "readiness_pct": 90,
+        "impact": "HIGH",
+        "key_milestone": "46-field hotspot system + multi-protocol SCORM deployment",
+        "blocker": "None identified"
+      },
+      {
+        "project": "CMS Documentation Matters Toolkit",
+        "status": "FINAL",
+        "readiness_pct": 78,
+        "impact": "HIGH",
+        "key_milestone": "15,000+ line curriculum + 10 master challenges",
+        "blocker": "React application build not yet finalized"
+      },
+      {
+        "project": "CIHHC LMS Integration Platform",
+        "status": "FINAL",
+        "readiness_pct": 85,
+        "impact": "HIGH",
+        "key_milestone": "5-protocol completion cascade + Moodle SCORM packages",
+        "blocker": "Production LMS deployment testing pending"
+      }
+    ],
+    "aggregate_metrics": {
+      "total_oasis_items": 32,
+      "total_training_cards": 35,
+      "total_glossary_terms": 60,
+      "total_audio_assets": 341,
+      "total_narration_entries": 199,
+      "total_course_modules": 19,
+      "total_regulatory_citations": 50,
+      "total_patient_cases": 2,
+      "total_clinical_artifacts": 27,
+      "total_evidence_anchors": 140,
+      "total_curriculum_lines": 15000,
+      "total_scorm_packages": 5,
+      "total_form_fields": 46
+    }
+  }
+}
