@@ -4,7 +4,6 @@ import {
   ChevronRight, Home
 } from 'lucide-react';
 import type { Policy } from '../types/policy';
-import { DOMAIN_LABELS } from '../data/policies';
 import { DOMAIN_META, SUBDOMAIN_META } from '../data/taxonomy';
 
 interface DashboardProps {

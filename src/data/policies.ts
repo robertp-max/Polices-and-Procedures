@@ -54,7 +54,7 @@ function make(
 // DOMAIN: GV — Governance & Administration
 // ──────────────────────────────────────────────────────────────
 const GV: Policy[] = [
-  make('GV-GA-001','Governing Body Authority & Responsibilities','GV','Governance & Administration','GA','Governance & Administration','REQUIRED','Defines the authority, composition, and oversight responsibilities of the agency\'s governing body in compliance with 42 CFR 484.105.'),
+  make('GV-GB-001','Governing Body Authority & Responsibilities','GV','Governance & Administration','GB','Governing Body','REQUIRED','Defines the authority, composition, and oversight responsibilities of the agency\'s governing body in compliance with 42 CFR 484.105.'),
   make('GV-GA-002','Organizational Structure & Reporting','GV','Governance & Administration','GA','Governance & Administration','REQUIRED','Establishes the formal organizational hierarchy, reporting relationships, and lines of authority for all agency operations.'),
   make('GV-GA-003','Administrator Qualifications & Responsibilities','GV','Governance & Administration','GA','Governance & Administration','REQUIRED','Defines minimum qualifications, duties, and accountability requirements for the agency administrator per CMS CoP.'),
   make('GV-GA-004','Scope of Services Definition','GV','Governance & Administration','GA','Governance & Administration','REQUIRED','Formally defines the range of home health services the agency is authorized and staffed to provide.'),

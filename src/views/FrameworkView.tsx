@@ -22,6 +22,13 @@ export default function FrameworkView({ policies }: FrameworkViewProps) {
     return set.size;
   }, [policies]);
 
+  const stats = [
+    { label: 'TAXONOMY DOMAINS', value: String(domains.size), sub: 'Top-Level Categories', color: 'text-orange-700', bg: 'bg-orange-50', border: 'border-orange-200' },
+    { label: 'SUBDOMAINS', value: String(totalSubdomains), sub: 'Structural Pillars', color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200' },
+    { label: 'TOTAL POLICIES', value: String(policies.length), sub: 'Managed Artifacts', color: 'text-teal-600', bg: 'bg-teal-50', border: 'border-teal-200' },
+    { label: 'GOVERNANCE', value: '100%', sub: 'IBM Watson Knowledge Catalog v5.x', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  ];
+
   const layers = [
     { id: 0, label: 'Regulatory Foundation', desc: 'CMS CoPs · State Licensure · Accreditation Standards', bg: 'bg-gray-800', text: 'text-white', icon: ShieldCheck, count: 'Federal & State' },
     { id: 1, label: 'Taxonomy Domains', desc: 'Top-level organizational categories', bg: 'bg-[#007970]', text: 'text-white', icon: Layers, count: `${domains.size} Domains` },
@@ -43,6 +50,18 @@ export default function FrameworkView({ policies }: FrameworkViewProps) {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Enterprise Policy Architecture</h1>
         <p className="text-gray-500 text-sm mt-1">Care Indeed Home Health — Taxonomy Framework v6.0</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {stats.map((stat, i) => (
+          <div key={i} className={`${stat.bg} ${stat.border} border border-t-4 border-t-current rounded-xl p-5 shadow-sm`}>
+            <div className="flex justify-between items-start">
+              <span className={`text-xs font-bold tracking-widest uppercase opacity-80 ${stat.color}`}>{stat.label}</span>
+            </div>
+            <div className={`text-3xl font-bold mt-2 ${stat.color}`}>{stat.value}</div>
+            <div className="text-xs text-gray-500 font-medium mt-1 uppercase">{stat.sub}</div>
+          </div>
+        ))}
       </div>
 
       {/* Tabs */}

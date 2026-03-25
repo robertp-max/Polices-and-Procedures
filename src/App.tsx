@@ -41,11 +41,6 @@ export default function App() {
     setPolicies(prev => prev.map(p => p.id === updated.id ? updated : p));
   }
 
-  function navigateTo(view: ViewId, policyId?: string) {
-    if (policyId) setSelectedPolicyId(policyId);
-    setCurrentView(view);
-  }
-
   function selectPolicy(policyId: string) {
     setSelectedPolicyId(policyId);
     setCurrentView('detail');
@@ -62,7 +57,7 @@ export default function App() {
   const selectedPolicy = selectedPolicyId ? policies.find(p => p.id === selectedPolicyId) ?? null : null;
   const popupPolicy = popupPolicyId ? policies.find(p => p.id === popupPolicyId) ?? null : null;
 
-  const samplePolicy = policies.find(p => p.policyId === 'GV-GA-001') ?? null;
+  const samplePolicy = policies.find(p => p.policyId === 'GV-GB-001') ?? null;
 
   const viewLabel: Record<string, string> = {
     dashboard: 'Dashboard',
@@ -71,7 +66,7 @@ export default function App() {
     auditor: 'Auditor Review',
     export: 'Master Export',
     framework: 'Enterprise Policy Framework',
-    sample: 'Sample Policy — GV-GA-001',
+    sample: 'Sample Policy — GV-GB-001',
   };
 
   return (

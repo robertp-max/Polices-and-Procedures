@@ -1,21 +1,12 @@
 import React, { useState } from 'react';
-import { DownloadCloud, HardDrive, BookOpen, ToggleLeft, ToggleRight, FileJson, CheckSquare, Square } from 'lucide-react';
+import { DownloadCloud, HardDrive, BookOpen, FileJson, CheckSquare, Square } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import { TierBadge, StatusBadge } from '../components/StatusBadge';
-import { DOMAIN_LABELS } from '../data/policies';
 import type { Policy } from '../types/policy';
 
 interface MasterExportProps {
   policies: Policy[];
   onUpdatePolicy: (updated: Policy) => void;
-}
-
-function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
-  return (
-    <button onClick={onClick} className="text-gray-500 hover:text-gray-700 transition-colors">
-      {on ? <ToggleRight className="w-5 h-5 text-[#007970]" /> : <ToggleLeft className="w-5 h-5 text-gray-300" />}
-    </button>
-  );
 }
 
 export default function MasterExport({ policies, onUpdatePolicy }: MasterExportProps) {
@@ -25,8 +16,6 @@ export default function MasterExport({ policies, onUpdatePolicy }: MasterExportP
   const eligible = policies.filter(p => p.status === 'Approved' || p.status === 'Published');
   const masterFlagged = eligible.filter(p => p.publishToMasterFile);
   const scormFlagged = eligible.filter(p => p.publishToScorm);
-
-  const byDomain = DOMAIN_LABELS as Record<string, string>;
 
   function toggleMasterFile(p: Policy) {
     onUpdatePolicy({ ...p, publishToMasterFile: !p.publishToMasterFile });

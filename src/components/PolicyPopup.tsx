@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   X, Shield, Search, CheckCircle, BookOpen, FileText, CheckSquare,
-  Archive, Settings, Info, List, AlertTriangle, ChevronRight
+  Archive, Settings, Info, List, AlertTriangle, ChevronRight, Printer
 } from 'lucide-react';
 import type { Policy } from '../types/policy';
 import {
@@ -40,7 +40,7 @@ const SimpleTable = ({ headers, rows }: { headers: string[]; rows: string[][] })
 
 export default function PolicyPopup({ policy, onClose, embedded }: PolicyPopupProps) {
   const [activeTab, setActiveTab] = useState('overview');
-  const isSample = policy.policyId === 'GV-GA-001';
+  const isSample = policy.policyId === 'GV-GB-001';
 
   const tabs = [
     { id: 'overview', label: 'Overview & Definitions', icon: Info },
@@ -60,6 +60,10 @@ export default function PolicyPopup({ policy, onClose, embedded }: PolicyPopupPr
     lastReviewed: policy.reviewedAt || 'Pending',
     nextReview: 'Pending',
   };
+
+  function handlePrint() {
+    window.print();
+  }
 
   const renderContent = () => (
     <>
@@ -313,45 +317,13 @@ export default function PolicyPopup({ policy, onClose, embedded }: PolicyPopupPr
 
   if (embedded) {
     return (
-      <div className="bg-[#f1f5f9] w-full rounded-xl shadow-sm overflow-hidden">
-        <nav className="bg-white border-b border-gray-200 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex items-center gap-2 px-4 py-3 overflow-x-auto">
-          {tabs.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-[#007970] text-white shadow-md'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                <Icon size={16} className={activeTab === tab.id ? 'text-white' : 'text-gray-400'} />
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
-        <div className="p-6 lg:p-10">
-          <div className="max-w-6xl mx-auto">
-            {renderContent()}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm overflow-y-auto py-6 px-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-[#f1f5f9] w-full max-w-6xl rounded-xl shadow-2xl overflow-hidden relative animate-in"
-        onClick={e => e.stopPropagation()}
-      >
-        <nav className="bg-white border-b border-gray-200 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex items-center gap-2 px-4 py-3 overflow-x-auto">
+      <div className="policy-print-root bg-[#f1f5f9] w-full rounded-xl shadow-sm overflow-hidden">
+        <style>{`@media print {
+          .policy-no-print { display: none !important; }
+          .policy-print-root { background: #fff !important; box-shadow: none !important; border: 0 !important; }
+          .policy-print-scroll { max-height: none !important; overflow: visible !important; }
+        }`}</style>
+        <nav className="policy-no-print bg-white border-b border-gray-200 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex items-center gap-2 px-4 py-3 overflow-x-auto">
           {tabs.map(tab => {
             const Icon = tab.icon;
             return (
@@ -370,13 +342,64 @@ export default function PolicyPopup({ policy, onClose, embedded }: PolicyPopupPr
             );
           })}
           <button
+            onClick={handlePrint}
+            className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <Printer size={14} /> Print
+          </button>
+        </nav>
+        <div className="policy-print-scroll p-6 lg:p-10">
+          <div className="max-w-6xl mx-auto">
+            {renderContent()}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="policy-no-print fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm overflow-y-auto py-6 px-4"
+      onClick={onClose}
+    >
+      <div className="policy-print-root bg-[#f1f5f9] w-full max-w-6xl rounded-xl shadow-2xl overflow-hidden relative animate-in" onClick={e => e.stopPropagation()}>
+        <style>{`@media print {
+          .policy-no-print { display: none !important; }
+          .policy-print-root { position: static !important; background: #fff !important; box-shadow: none !important; border: 0 !important; max-width: 100% !important; }
+          .policy-print-scroll { max-height: none !important; overflow: visible !important; }
+        }`}</style>
+        <nav className="policy-no-print bg-white border-b border-gray-200 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex items-center gap-2 px-4 py-3 overflow-x-auto">
+          {tabs.map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-[#007970] text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                }`}
+              >
+                <Icon size={16} className={activeTab === tab.id ? 'text-white' : 'text-gray-400'} />
+                {tab.label}
+              </button>
+            );
+          })}
+          <button
+            onClick={handlePrint}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <Printer size={14} /> Print
+          </button>
+          <button
             onClick={onClose}
-            className="ml-auto p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
+            className="policy-no-print p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
           >
             <X size={20} />
           </button>
         </nav>
-        <div className="p-6 lg:p-10 max-h-[80vh] overflow-y-auto">
+        <div className="policy-print-scroll p-6 lg:p-10 max-h-[80vh] overflow-y-auto">
           <div className="max-w-6xl mx-auto">
             {renderContent()}
           </div>
