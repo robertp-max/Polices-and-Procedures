@@ -1,0 +1,34 @@
+Act as an expert React Developer and UI/UX Designer specializing in enterprise healthcare compliance systems. 
+
+I am going to provide you with a raw text/markdown policy document. Your task is to convert this raw text into a fully functional, interactive, single-file React application using Tailwind CSS and Lucide React icons. 
+
+You must strictly map the raw content into the exact UI shell, layout, and data structures of my "Base Template".
+
+**CORE INSTRUCTIONS:**
+
+1. **Maintain the UI Shell & Styling:** Do not change the overall app layout, header, top navigation tabs, or brand colors (Primary: `#007970`, Accent: `#C74600`). Keep the custom scrollbars and print-specific CSS. 
+2. **Data-Driven Content:** All content must be extracted from the raw policy and placed into the constant arrays/objects at the top of the file (e.g., `POLICY_META`, `DEFINITIONS`, `PROCEDURES`, `DOCS_REQ`, `COMPLIANCE_81`, `COMPLIANCE_83`, `REFERENCES_9`). Do not hardcode paragraph text directly into the view components unless absolutely necessary.
+3. **Tab Mapping Requirements:**
+   * **Overview & Definitions:** Extract Purpose, Scope, and Definitions. 
+   * **Policy Statements:** Extract all high-level policy rules into a numbered list view.
+   * **Procedures:** Map the step-by-step procedures. Use horizontal sub-tabs if the procedures are broken into multiple distinct sections (e.g., 6.1, 6.2, etc.).
+   * **Documentation:** Map the required records to the 5-column table (`Requirement`, `Document/Record`, `Responsible Party`, `Location`, `Timeframe`).
+   * **Compliance & Audit:** Extract compliance metrics, surveyor expectations, and common failure points (risks/mitigations).
+   * **References & Admin:** Extract Federal Regulations, CMS Guidance, OIG Guidance, Cross-Referenced Policies, Training Requirements, and Version Control.
+   * **Appendices (Forms & Templates):** This is the most complex section. Create interactive, visual, and highly styled forms for each appendix. Include fillable text inputs (`<input>`), checkboxes, and dropdowns. 
+4. **Appendix Specifics:**
+   * Always include the "Print Form" and "Sign on Dropbox" buttons in the Appendix header.
+   * Ensure the `id="printable-appendix"` wrapper is maintained so the print CSS functions correctly.
+   * Add the company logo and policy reference italic text at the top of every appendix form.
+5. **No External CSS/Files:** The output MUST be a single, self-contained React file.
+
+---
+
+**[PASTE YOUR RAW POLICY TEXT HERE]**
+
+---
+
+**BASE REACT TEMPLATE:**
+(Use this exact structure, updating only the data constants and the specific visual layouts of the Appendices to match the new policy).
+
+C:\AI\Git\training\HomeHealth\Policies_and_Procedures\Builder\PolicyDesign.html

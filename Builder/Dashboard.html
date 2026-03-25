@@ -1,0 +1,1049 @@
+import React, { useState } from 'react';
+import { 
+  AlertTriangle, Clock, Calendar, FileText, Activity, 
+  CheckCircle, ChevronRight, ShieldAlert, FileSignature, 
+  AlertOctagon, LayoutList, Search, Home, BookOpen, 
+  ClipboardCheck, BarChart2, SlidersHorizontal, ArrowRightCircle,
+  PlayCircle, X, CheckSquare, FileCheck, RefreshCw, FileEdit, Archive,
+  Wifi, HelpCircle, Bell, Shield, Settings, Printer, List
+} from 'lucide-react';
+
+// ==========================================
+// MOCK DATA (DASHBOARD)
+// ==========================================
+const POLICY_METRICS = {
+  total: 232,
+  drafts: 48,
+  pendingApproval: 12,
+  published: 165,
+  upcomingReview: 7,
+  archived: 45
+};
+
+const URGENT_TASKS = [
+  { id: "AUD-001", module: "Auditor", task: "Quarterly Clinical Record Aggregate Report", schedule: "Quarterly", deadline: "Day 2", status: "CRITICAL", responsible: "QA Nurse", action: "Review Report" },
+  { id: "CAL-021", module: "Calendar", task: "Policy & Procedure Review (Comprehensive)", schedule: "Annually", deadline: "Day 5", status: "ESCALATION", responsible: "Compliance Officer", action: "Initiate Review" },
+  { id: "CAL-044", module: "Calendar", task: "Full-Scale Emergency Drill", schedule: "Annually", deadline: "12 Days", status: "WARNING", responsible: "EP Coordinator", action: "Verify Schedule" },
+  { id: "CAL-010", module: "Calendar", task: "QAPI Committee Meeting", schedule: "Quarterly", deadline: "Day 14", status: "WARNING", responsible: "QAPI Coordinator", action: "Prepare Agenda" },
+  { id: "AUD-070", module: "Auditor", task: "Annual OIG Work Plan Audit", schedule: "Annually", deadline: "Day 28", status: "WARNING", responsible: "Compliance Officer", action: "Assign Auditor" },
+  { id: "POL-102", module: "Library", task: "Annual Employee Handbook Update", schedule: "Annually", deadline: "Completed", status: "COMPLIANT", responsible: "HR Director", action: "View Record" }
+];
+
+const MASTER_CALENDAR_TASKS = [
+  { id: "CAL-001", category: "Governance", task: "Governing Body Meeting", schedule: "Quarterly", lastEvent: "Jul 15, 2026", nextDate: "Oct 15, 2026", status: "DUE SOON", responsible: "Administrator" },
+  { id: "CAL-002", category: "Governance", task: "Annual Budget & Operations Plan Review", schedule: "Annually", lastEvent: "Dec 01, 2025", nextDate: "Dec 01, 2026", status: "ON TRACK", responsible: "Administrator" },
+  { id: "CAL-010", category: "QAPI", task: "QAPI Committee Meeting", schedule: "Quarterly", lastEvent: "Jul 28, 2026", nextDate: "Oct 28, 2026", status: "ON TRACK", responsible: "QAPI Coordinator" },
+  { id: "CAL-020", category: "Program Eval", task: "Annual Agency Evaluation (Group of Professionals)", schedule: "Annually", lastEvent: "Dec 10, 2025", nextDate: "Dec 15, 2026", status: "ON TRACK", responsible: "Administrator" },
+  { id: "CAL-021", category: "Program Eval", task: "Policy & Procedure Review (Comprehensive)", schedule: "Annually", lastEvent: "Nov 20, 2025", nextDate: "Nov 20, 2026", status: "WARNING", responsible: "Compliance Officer" },
+  { id: "CAL-030", category: "Infection Control", task: "Infection Control Committee Meeting", schedule: "Quarterly", lastEvent: "Aug 05, 2026", nextDate: "Nov 05, 2026", status: "ON TRACK", responsible: "Infection Preventionist" },
+  { id: "CAL-040", category: "Emergency Prep", task: "Emergency Preparedness Plan Review & Update", schedule: "Every 2 Years", lastEvent: "Oct 10, 2024", nextDate: "Oct 10, 2026", status: "DUE SOON", responsible: "EP Coordinator" },
+  { id: "CAL-044", category: "Emergency Prep", task: "Full-Scale Community Drill", schedule: "Annually", lastEvent: "Nov 10, 2025", nextDate: "Nov 15, 2026", status: "ON TRACK", responsible: "EP Coordinator" },
+  { id: "CAL-045", category: "Emergency Prep", task: "Tabletop Exercise (Additional Exercise)", schedule: "Every 2 Years", lastEvent: "May 15, 2025", nextDate: "May 15, 2027", status: "ON TRACK", responsible: "EP Coordinator" },
+  { id: "CAL-060", category: "Compliance", task: "Compliance Committee Meeting", schedule: "Quarterly", lastEvent: "Aug 12, 2026", nextDate: "Nov 12, 2026", status: "ON TRACK", responsible: "Compliance Officer" },
+  { id: "CAL-061", category: "Compliance", task: "Annual Compliance Risk Assessment", schedule: "Annually", lastEvent: "Dec 05, 2025", nextDate: "Dec 01, 2026", status: "ON TRACK", responsible: "Compliance Officer" },
+  { id: "CAL-066", category: "HIPAA", task: "HIPAA Privacy & Security Committee Meeting", schedule: "Quarterly", lastEvent: "Sep 01, 2026", nextDate: "Dec 01, 2026", status: "ON TRACK", responsible: "Privacy Officer" },
+  { id: "CAL-073", category: "Safety", task: "Safety Committee Meeting", schedule: "Quarterly", lastEvent: "Jul 20, 2026", nextDate: "Oct 20, 2026", status: "DUE SOON", responsible: "Safety Officer" }
+];
+
+const MODULE_HEALTH = [
+  { name: "Master Calendar", icon: Calendar, score: 100, critical: 0, color: "text-[#008540]" },
+  { name: "Policy Library", icon: BookOpen, score: 98, critical: 0, color: "text-[#007970]" }
+];
+
+// ==========================================
+// DATA STRUCTURES (POLICY DOCUMENT)
+// ==========================================
+const POLICY_META = {
+  id: "GV-GB-001",
+  title: "Governing Body Authority & Responsibilities",
+  domain: "GV — Governance & Administration",
+  subdomain: "GB — Governing Body",
+  version: "6.0",
+  effective: "2025-07-10",
+  approvedBy: "Governing Body Chair — Care Indeed Home Health Care, Inc.",
+  lastReviewed: "2025-07-10",
+  nextReviewDate: "2026-07-10",
+  supersedes: "N/A (Initial Version)"
+};
+
+const DEFINITIONS = [
+  { term: "Governing Body", definition: "The individual(s), board of directors, trustees, partnership, corporation, or other legally constituted authority that has ultimate responsibility for the management and operation of Care Indeed Home Health Care, Inc., as defined by 42 CFR § 484.2 and § 484.105." },
+  { term: "Administrator", definition: "The individual appointed by the Governing Body who is responsible for managing the agency's day-to-day operations and who meets all qualifications specified in agency policy GV-OG-002 and applicable California state law." },
+  { term: "Clinical Manager", definition: "The registered nurse (or qualified individual per California state law) designated by the Governing Body to oversee clinical services including patient care delivery, clinical staff supervision, and OASIS compliance. Also referred to as Director of Nursing (DON)." },
+  { term: "Fiduciary Duty", definition: "The legal obligation of Governing Body members to act in good faith, with due diligence, and in the best interest of the agency and the patients it serves." },
+  { term: "Quorum", definition: "The minimum number of Governing Body members required to be present (physically or via approved teleconference) to conduct official business, as defined in the agency's bylaws or operating agreement." },
+  { term: "QAPI", definition: "Quality Assessment and Performance Improvement — the structured program required by 42 CFR § 484.65 for ongoing quality monitoring and improvement." }
+];
+
+const PROCEDURES = {
+  "6.1": [
+    ["6.1.1", "Agency Owner / Corporate Entity", "Formally establish the Governing Body through articles of incorporation, operating agreement, partnership agreement, or equivalent legal instrument for Care Indeed Home Health Care, Inc. The establishing document must identify: (a) the legal form of the Governing Body; (b) the minimum and maximum number of members; (c) the quorum requirement; (d) the terms of appointment or election.", "Prior to initial Medicare certification and maintained continuously thereafter."],
+    ["6.1.2", "Governing Body Chair", "Maintain a current roster of all Governing Body members including: full legal name, title/role, date of appointment, term expiration date, voting status, and contact information.", "Updated within 7 calendar days of any membership change."],
+    ["6.1.3", "Governing Body", "Ensure composition includes, at minimum, individuals with competency in: (a) healthcare operations or clinical services; (b) financial management; (c) regulatory compliance. If any competency area is not represented by a current member, the Governing Body shall retain qualified advisory counsel within 30 calendar days of identifying the gap.", "Ongoing; reviewed annually at the first quarterly meeting of each calendar year."],
+    ["6.1.4", "Compliance Officer", "Verify that no Governing Body member appears on the OIG List of Excluded Individuals/Entities (LEIE) or the System for Award Management (SAM) exclusion database at the time of appointment and monthly thereafter, per policy HR-TA-003.", "At appointment and monthly thereafter."]
+  ],
+  "6.2": [
+    {
+      title: "6.2.1 — Legal Authority and Agency Operations",
+      rows: [
+        ["6.2.1.1", "Governing Body", "Assume and maintain full legal authority for the overall operation, management, and fiscal viability of Care Indeed Home Health Care, Inc.", "Continuous."],
+        ["6.2.1.2", "Governing Body", "Ensure the agency maintains current and valid: (a) California home health license — HCAI License No. 406412878; (b) Medicare certification; (c) Medicaid enrollment (if applicable); (d) accreditation (if applicable) — per policy GV-EA-004.", "Continuous; verified at each quarterly meeting."],
+        ["6.2.1.3", "Governing Body", "Review and approve the agency's defined scope of services (policy GV-OG-003) at least annually. Ensure the agency does not provide services beyond those for which it is licensed, staffed, and competent to deliver.", "Annually, within 30 calendar days of the start of the fiscal year."]
+      ]
+    },
+    {
+      title: "6.2.2 — Appointment and Oversight of Key Personnel",
+      rows: [
+        ["6.2.2.1", "Governing Body", "Appoint a qualified Administrator and document the appointment in Governing Body minutes. The Administrator must meet all qualifications defined in policy GV-OG-002 and applicable California state law.", "Prior to agency operation and within 30 calendar days of any vacancy."],
+        ["6.2.2.2", "Governing Body", "Appoint or confirm the appointment of a qualified Clinical Manager (Director of Nursing) responsible for all clinical services, per 42 CFR § 484.105(c).", "Prior to agency operation and within 30 calendar days of any vacancy."],
+        ["6.2.2.3", "Governing Body", "Appoint or confirm the designation of a Compliance Officer with authority and independence to operate the corporate compliance program, per policy CO-CP-002.", "Prior to agency operation and within 30 calendar days of any vacancy."],
+        ["6.2.2.4", "Governing Body", "Conduct or commission an annual performance evaluation of the Administrator. Results and any corrective directives shall be documented in executive session minutes.", "Annually; completed within 60 calendar days of the end of each fiscal year."],
+        ["6.2.2.5", "Governing Body", "Review and approve the agency's succession plan for the Administrator, Clinical Manager, and Compliance Officer, per policy GV-GB-004.", "Annually at the second quarterly meeting; updated within 14 calendar days of any key leadership vacancy."]
+      ]
+    },
+    {
+      title: "6.2.3 — Policy and Compliance Oversight",
+      rows: [
+        ["6.2.3.1", "Governing Body", "Approve all REQUIRED-tier policies prior to implementation and ensure a defined policy review cycle exists per policies GV-PM-001 and GV-PM-002.", "Prior to implementation of each REQUIRED policy; review cycle approved annually."],
+        ["6.2.3.2", "Governing Body", "Receive and review a compliance status report from the Compliance Officer at each quarterly meeting. The report must address: (a) active compliance investigations; (b) audit findings; (c) regulatory changes affecting the agency; (d) training completion rates.", "Quarterly."],
+        ["6.2.3.3", "Compliance Officer", "Prepare and submit the quarterly compliance report to the Governing Body no fewer than 7 calendar days before each scheduled quarterly meeting.", "7 calendar days before each quarterly meeting."],
+        ["6.2.3.4", "Governing Body", "Review and act upon any compliance deficiency identified as high-risk within 14 calendar days of receiving the compliance report. Action must be documented in meeting minutes or a special resolution.", "Within 14 calendar days of report receipt."]
+      ]
+    },
+    {
+      title: "6.2.4 — Quality Assessment and Performance Improvement (QAPI)",
+      rows: [
+        ["6.2.4.1", "Governing Body", "Approve the agency's QAPI plan, per policy QA-PG-002, and ensure that the plan includes measurable quality indicators, performance improvement projects, and patient safety initiatives.", "Annually."],
+        ["6.2.4.2", "Clinical Manager", "Present a QAPI performance report to the Governing Body at each quarterly meeting.", "Quarterly."],
+        ["6.2.4.3", "Governing Body", "Review, discuss, and document its response to the QAPI report. Direct corrective action if thresholds breached.", "Quarterly."]
+      ]
+    },
+    {
+      title: "6.2.5 — Financial Oversight",
+      rows: [
+        ["6.2.5.1", "Governing Body", "Review and approve the annual operating budget per policy FN-FP-005.", "Annually."],
+        ["6.2.5.2", "Administrator", "Present a financial performance report to the Governing Body at each quarterly meeting.", "Quarterly."],
+        ["6.2.5.3", "Governing Body", "Review financial reports and direct corrective action if variances exist. Directives must be documented in meeting minutes.", "Quarterly."]
+      ]
+    },
+    {
+      title: "6.2.6 — Emergency Preparedness",
+      rows: [
+        ["6.2.6.1", "Governing Body", "Approve the agency's Emergency Operations and Business Continuity Plan per policy OP-FM-005.", "Annually."],
+        ["6.2.6.2", "Administrator", "Report the results of the most recent emergency preparedness drill or exercise to the Governing Body.", "Post-drill."]
+      ]
+    }
+  ],
+  "6.3": [
+    ["6.3.1", "Governing Body Chair", "Schedule and convene regular Governing Body meetings no fewer than 4 times per calendar year (quarterly).", "Quarterly."],
+    ["6.3.2", "Governing Body Chair", "Convene special meetings when urgent matters arise. Notice of a special meeting must be provided to all members at least 48 hours in advance.", "As needed."],
+    ["6.3.3", "Designated Secretary", "Prepare and distribute the meeting agenda to all Governing Body members no fewer than 7 calendar days before.", "7 days prior."],
+    ["6.3.4", "Designated Secretary", "Record formal minutes for each meeting per policy GV-GB-002.", "14 days post-meeting."],
+    ["6.3.5", "Governing Body Chair", "Ensure a quorum is present before conducting any official business.", "Start of meeting."]
+  ],
+  "6.4": [
+    ["6.4.1", "All Members", "Complete and submit the Conflict of Interest Disclosure Form (Appendix B).", "Annually."],
+    ["6.4.2", "Compliance Officer", "Review all submitted conflict of interest disclosures within 14 calendar days of receipt.", "14 days of receipt."],
+    ["6.4.3", "Governing Body", "Act on conflict of interest recommendations. Members must recuse if conflicted.", "At meeting."]
+  ]
+};
+
+// ==========================================
+// CI BRANDED UI COMPONENTS
+// ==========================================
+const TriageCard = ({ title, count, subtitle, type }) => {
+  // Brand Kit Colors: Red 300, Orange 500, Yellow 300, Green 300
+  const borders = {
+    critical: "border-l-4 border-l-[#D70101] border-[#E5E4E3]",
+    escalation: "border-l-4 border-l-[#C74601] border-[#E5E4E3]",
+    warning: "border-l-4 border-l-[#FFC700] border-[#E5E4E3]",
+    compliant: "border-l-4 border-l-[#008540] border-[#E5E4E3]"
+  };
+
+  const textColors = {
+    critical: "text-[#D70101]",
+    escalation: "text-[#C74601]",
+    warning: "text-[#8B6C00]", // Darker yellow for text readability
+    compliant: "text-[#008540]"
+  };
+
+  const iconBg = {
+    critical: "bg-[#D70101] text-white",
+    escalation: "bg-[#C74601] text-white",
+    warning: "bg-[#FFC700] text-black",
+    compliant: "bg-[#008540] text-white"
+  };
+
+  const icons = {
+    critical: <AlertOctagon size={24} />,
+    escalation: <AlertTriangle size={24} />,
+    warning: <Clock size={24} />,
+    compliant: <CheckCircle size={24} />
+  };
+
+  return (
+    <div className={`p-5 rounded-xl border flex flex-col justify-between bg-white shadow-sm transition-all duration-200 hover:shadow-md ${borders[type]}`}>
+      <div className="flex justify-between items-start mb-4">
+        <div className={`p-2 rounded-lg shadow-sm ${iconBg[type]}`}>
+          {icons[type]}
+        </div>
+        <span className={`text-3xl font-montserrat font-extrabold ${textColors[type]}`}>{count}</span>
+      </div>
+      <div>
+        <h3 className={`text-sm font-montserrat font-bold uppercase tracking-wide mb-1 ${textColors[type]}`}>{title}</h3>
+        <p className="text-xs font-roboto font-medium text-[#524048]">{subtitle}</p>
+      </div>
+    </div>
+  );
+};
+
+const MetricBadge = ({ icon: Icon, label, count, borderColor, textColor, bgColor }) => (
+  <div className={`flex flex-col p-5 rounded-xl border border-[#E5E4E3] bg-white hover:border-[#007970] hover:shadow-sm transition-all group`}>
+    <div className="flex items-center justify-between mb-3">
+      <div className={`p-2.5 rounded-lg ${bgColor || 'bg-[#FAFBF8]'} ${textColor}`}>
+        <Icon size={20} />
+      </div>
+      <h4 className="text-2xl font-montserrat font-extrabold text-[#1F1C1B]">{count}</h4>
+    </div>
+    <p className="text-xs font-montserrat font-bold text-[#524048] uppercase tracking-wide truncate" title={label}>{label}</p>
+  </div>
+);
+
+const StatusBadge = ({ status }) => {
+  const styles = {
+    "CRITICAL": "bg-[#D70101] text-white border-[#D70101]",
+    "ESCALATION": "bg-[#C74601] text-white border-[#C74601]",
+    "WARNING": "bg-[#FFC700] text-black border-[#FFC700]",
+    "DUE SOON": "bg-[#FFC700] text-black border-[#FFC700]",
+    "ON TRACK": "bg-[#008540] text-white border-[#008540]",
+    "COMPLIANT": "bg-[#008540] text-white border-[#008540]"
+  };
+  return (
+    <span className={`px-2.5 py-1 rounded-md text-[10px] font-montserrat font-bold uppercase tracking-wider border shadow-sm ${styles[status] || "bg-[#FAFBF8] text-[#524048] border-[#E5E4E3]"}`}>
+      {status}
+    </span>
+  );
+};
+
+// ==========================================
+// VIEWS
+// ==========================================
+const ViewCommandCenter = () => (
+  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    
+    {/* HEADER SECTION */}
+    <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <h1 className="font-montserrat text-3xl font-extrabold text-[#1F1C1B] tracking-tight">Command Center</h1>
+        <p className="font-roboto text-[#524048] text-sm mt-1 font-medium">Care Indeed Compliance Overview</p>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-[#524048] font-medium font-roboto">Last updated: Today, 08:42 AM</span>
+        <button className="p-2 text-[#524048] hover:text-[#007970] hover:bg-[#007970]/10 rounded-lg transition-colors">
+          <RefreshCw size={18} />
+        </button>
+      </div>
+    </div>
+
+    {/* TRIAGE CARDS */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <TriageCard title="Critical" count="1" subtitle="Action required today (0-7 Days)" type="critical" />
+        <TriageCard title="Escalation" count="1" subtitle="Requires management review (7-14 Days)" type="escalation" />
+        <TriageCard title="Warning" count="3" subtitle="Approaching deadlines (14-30 Days)" type="warning" />
+        <TriageCard title="Compliant" count="84" subtitle="Tasks completed this month" type="compliant" />
+    </div>
+
+    {/* MAIN CONTENT GRID */}
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      
+      {/* LEFT COLUMN: 2/3 width */}
+      <div className="xl:col-span-2 space-y-8">
+        
+        {/* POLICY LIFECYCLE METRICS */}
+        <div className="bg-white rounded-xl shadow-sm border border-[#E5E4E3] overflow-hidden">
+          <div className="px-6 py-5 border-b border-[#E5E4E3] flex items-center justify-between bg-[#FAFBF8]">
+            <h3 className="font-montserrat font-extrabold text-lg text-[#1F1C1B] flex items-center gap-2">
+              <BookOpen className="text-[#007970]" size={20}/> Policy Lifecycle Metrics
+            </h3>
+            <button className="text-sm font-bold font-montserrat text-[#007970] hover:text-[#005c55] flex items-center gap-1.5 transition-colors">
+              Library <ChevronRight size={16} />
+            </button>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <MetricBadge icon={LayoutList} label="Total Policies" count={POLICY_METRICS.total} textColor="text-[#1F1C1B]" />
+              <MetricBadge icon={FileEdit} label="In Draft" count={POLICY_METRICS.drafts} textColor="text-[#524048]" />
+              <MetricBadge icon={Clock} label="Pending Approval" count={POLICY_METRICS.pendingApproval} textColor="text-[#C74601]" bgColor="bg-[#C74601]/10" />
+              <MetricBadge icon={FileCheck} label="Published Active" count={POLICY_METRICS.published} textColor="text-[#007970]" bgColor="bg-[#007970]/10" />
+              <MetricBadge icon={RefreshCw} label="Review Approaching" count={POLICY_METRICS.upcomingReview} textColor="text-[#8B6C00]" bgColor="bg-[#FFC700]/20" />
+              <MetricBadge icon={Archive} label="Archived" count={POLICY_METRICS.archived} textColor="text-[#7A7A7A]" />
+            </div>
+          </div>
+        </div>
+
+        {/* URGENT TASKS */}
+        <div className="bg-white rounded-xl shadow-sm border border-[#E5E4E3] overflow-hidden">
+          <div className="px-6 py-5 border-b border-[#E5E4E3] flex items-center justify-between bg-[#FAFBF8]">
+            <h3 className="font-montserrat font-extrabold text-lg text-[#1F1C1B] flex items-center gap-2">
+              <AlertTriangle className="text-[#D70101]" size={20}/> Urgent Action Required
+            </h3>
+            <button className="text-sm font-bold font-montserrat text-[#007970] hover:text-[#005c55] transition-colors">View All</button>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-[#FAFBF8] text-[#524048] font-montserrat font-bold border-b border-[#E5E4E3]">
+                <tr>
+                  <th className="px-6 py-4">Task / ID</th>
+                  <th className="px-6 py-4">Schedule</th>
+                  <th className="px-6 py-4">Deadline</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E5E4E3] font-roboto">
+                {URGENT_TASKS.map((task, i) => (
+                  <tr key={i} className="hover:bg-[#FAFBF8] transition-colors group">
+                    <td className="px-6 py-4">
+                      <p className="font-semibold text-[#1F1C1B]">{task.task}</p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className="text-[10px] font-bold text-[#524048] uppercase">{task.id}</span>
+                        <StatusBadge status={task.status} />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1F1C1B] bg-[#E5E4E3] px-2.5 py-1 rounded-md">
+                        <Clock size={12} className="text-[#524048]" /> {task.schedule}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-[#1F1C1B]">{task.deadline}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <button className="p-2 text-[#524048] hover:text-[#007970] hover:bg-[#007970]/10 rounded-lg transition-colors">
+                          <SlidersHorizontal size={16} />
+                        </button>
+                        <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#E5E4E3] text-[#1F1C1B] text-xs font-bold font-montserrat rounded-lg hover:border-[#007970] hover:text-[#007970] transition-colors shadow-sm">
+                          {task.action} <ArrowRightCircle size={14}/>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT COLUMN: 1/3 width */}
+      <div className="space-y-6">
+        
+        {/* MODULE HEALTH */}
+        <div className="bg-white rounded-xl shadow-sm border border-[#E5E4E3] overflow-hidden">
+          <div className="px-6 py-5 border-b border-[#E5E4E3] bg-[#FAFBF8]">
+            <h3 className="font-montserrat font-extrabold text-lg text-[#1F1C1B]">Module Health</h3>
+          </div>
+          <div className="p-6 space-y-4">
+            {MODULE_HEALTH.map((mod, i) => (
+              <div key={i} className="flex items-start gap-4 p-4 rounded-xl border border-[#E5E4E3] bg-[#FAFBF8] hover:bg-white hover:border-[#007970]/50 transition-colors">
+                <div className={`p-2.5 bg-white rounded-lg shadow-sm shrink-0 border border-[#E5E4E3] ${mod.color}`}>
+                  <mod.icon size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-montserrat font-bold text-[#1F1C1B] text-sm truncate">{mod.name}</h4>
+                  <div className="flex items-center justify-between mt-1.5 font-roboto">
+                    <p className="text-[10px] text-[#524048] font-bold uppercase tracking-wider">Compliance</p>
+                    <p className={`text-xs font-bold ${mod.score < 95 ? 'text-[#C74601]' : 'text-[#008540]'}`}>{mod.score}%</p>
+                  </div>
+                  <div className="w-full bg-[#E5E4E3] rounded-full h-1.5 mt-2 overflow-hidden">
+                    <div className={`h-1.5 rounded-full ${mod.score < 95 ? 'bg-[#C74601]' : 'bg-[#008540]'}`} style={{ width: `${mod.score}%` }}></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* AUDITOR MODE WIDGET */}
+        <div className="bg-[#007970] text-white p-6 rounded-xl shadow-md border border-[#005c55] relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 opacity-10 pointer-events-none">
+            <FileSignature size={120} />
+          </div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                <FileSignature size={20} className="text-white" />
+              </div>
+              <h4 className="font-montserrat font-extrabold text-lg">Auditor Mode</h4>
+            </div>
+            <p className="text-sm font-roboto text-white/80 mb-6 leading-relaxed">Enable surveyor view to provide read-only, restricted access to approved policies during an audit.</p>
+            <button className="w-full bg-white text-[#007970] font-montserrat font-extrabold text-sm py-2.5 rounded-lg shadow-sm hover:bg-[#FAFBF8] transition-colors">
+              Enable View
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+);
+
+const ViewMasterCalendar = () => {
+  const [checklistTask, setChecklistTask] = useState(null);
+
+  const mockSteps = [
+    "Verify attendance and quorum requirements.",
+    "Review and approve prior meeting minutes.",
+    "Review required compliance, audit, and incident reports.",
+    "Approve any outstanding policy updates or procedures.",
+    "Log formal minutes and document clear action items."
+  ];
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 h-full flex flex-col">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="font-montserrat text-3xl font-extrabold text-[#1F1C1B] tracking-tight flex items-center gap-3">
+            <Calendar className="text-[#007970]" size={28}/> Master Calendar
+          </h1>
+          <p className="font-roboto text-[#524048] text-sm mt-1 font-medium">Track and manage federally mandated requirements.</p>
+        </div>
+        <button className="bg-[#007970] text-white px-4 py-2.5 rounded-lg text-sm font-montserrat font-bold shadow-sm hover:bg-[#005c55] transition-colors whitespace-nowrap">
+          + Schedule Event
+        </button>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-[#E5E4E3] overflow-hidden flex-1 flex flex-col">
+        <div className="overflow-x-auto flex-1">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead className="bg-[#007970] text-white font-montserrat font-bold sticky top-0 z-10">
+               <tr>
+                  <th className="px-6 py-4 border-b border-[#005c55]">Requirement / Task</th>
+                  <th className="px-6 py-4 border-b border-[#005c55]">Schedule</th>
+                  <th className="px-6 py-4 border-b border-[#005c55]">Last Event</th>
+                  <th className="px-6 py-4 border-b border-[#005c55]">Next Target</th>
+                  <th className="px-6 py-4 border-b border-[#005c55]">Status</th>
+                  <th className="px-6 py-4 border-b border-[#005c55] text-right">Actions</th>
+               </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E5E4E3] font-roboto">
+               {MASTER_CALENDAR_TASKS.map((task, i) => (
+                  <tr key={i} className="hover:bg-[#FAFBF8] transition-colors">
+                     <td className="px-6 py-4">
+                        <p className="font-semibold text-[#1F1C1B]">{task.task}</p>
+                        <p className="text-[11px] font-bold text-[#524048] mt-1 uppercase tracking-wider">Ref: {task.id} • {task.category}</p>
+                     </td>
+                     <td className="px-6 py-4">
+                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#FAFBF8] text-[#1F1C1B] font-semibold text-xs border border-[#E5E4E3]">
+                         <Clock size={12} className="text-[#524048]"/> {task.schedule}
+                       </span>
+                     </td>
+                     <td className="px-6 py-4 text-[#524048] font-medium">{task.lastEvent}</td>
+                     <td className="px-6 py-4 text-[#1F1C1B] font-semibold">{task.nextDate}</td>
+                     <td className="px-6 py-4"><StatusBadge status={task.status} /></td>
+                     <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                           <button className="p-2 text-[#524048] hover:text-[#1F1C1B] hover:bg-[#E5E4E3] rounded-lg transition-colors" title="Modify Schedule">
+                             <SlidersHorizontal size={16} />
+                           </button>
+                           <button 
+                              onClick={() => setChecklistTask(task)}
+                              className="text-[#007970] bg-[#007970]/10 hover:bg-[#007970]/20 px-3 py-1.5 rounded-lg text-xs font-bold font-montserrat transition-colors flex items-center gap-1.5"
+                           >
+                              <PlayCircle size={14} /> Start
+                           </button>
+                        </div>
+                     </td>
+                  </tr>
+               ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* GUIDED CHECKLIST MODAL */}
+      {checklistTask && (
+        <div className="fixed inset-0 bg-[#1F1C1B]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+            
+            <div className="bg-[#007970] p-6 sm:p-8 text-white relative shrink-0">
+               <button onClick={() => setChecklistTask(null)} className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors">
+                  <X size={24} />
+               </button>
+               <div className="flex items-center gap-2 mb-2">
+                  <CheckSquare size={20} className="text-[#E5FEFF]"/>
+                  <span className="text-xs font-montserrat font-bold tracking-wider uppercase text-[#E5FEFF]">Guided Workflow</span>
+               </div>
+               <h2 className="font-montserrat font-extrabold text-2xl leading-tight text-white">{checklistTask.task}</h2>
+               <p className="text-white/80 font-roboto mt-2 text-sm font-medium">{checklistTask.category} • Required Schedule: {checklistTask.schedule}</p>
+            </div>
+
+            <div className="p-6 sm:p-8 overflow-y-auto flex-1 font-roboto">
+               <h3 className="font-montserrat font-bold text-lg text-[#1F1C1B] mb-4 pb-2 border-b border-[#E5E4E3]">Required Action Items</h3>
+               <div className="space-y-3">
+                  {mockSteps.map((step, idx) => (
+                     <label key={idx} className="flex items-start gap-3 p-4 rounded-lg border border-[#E5E4E3] hover:border-[#007970]/50 hover:bg-[#FAFBF8] cursor-pointer transition-colors group">
+                        <input type="checkbox" className="mt-0.5 w-5 h-5 shrink-0 text-[#007970] rounded border-[#E5E4E3] focus:ring-[#007970]" />
+                        <span className="font-medium text-[#1F1C1B] text-sm group-hover:text-[#007970] leading-snug">{step}</span>
+                     </label>
+                  ))}
+               </div>
+               
+               <div className="mt-8 bg-[#C74601]/5 border border-[#C74601]/20 p-5 rounded-xl">
+                  <p className="text-sm font-montserrat font-bold text-[#1F1C1B] mb-2">Documentation Required</p>
+                  <p className="text-xs text-[#524048] mb-4">Please attach the official meeting minutes or evaluation report.</p>
+                  <button className="text-xs text-white bg-[#1F1C1B] px-4 py-2 rounded-lg font-montserrat font-bold shadow-sm hover:bg-black transition-colors">
+                     + Attach File
+                  </button>
+               </div>
+            </div>
+
+            <div className="p-6 bg-[#FAFBF8] border-t border-[#E5E4E3] flex justify-end gap-3 shrink-0">
+               <button onClick={() => setChecklistTask(null)} className="px-4 py-2 rounded-lg font-montserrat font-bold text-sm text-[#524048] hover:bg-[#E5E4E3] transition-colors">
+                  Cancel
+               </button>
+               <button onClick={() => setChecklistTask(null)} className="px-5 py-2 rounded-lg font-montserrat font-bold text-sm bg-[#007970] text-white shadow-sm hover:bg-[#005c55] transition-colors">
+                  Complete & Log Event
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ==========================================
+// PRINTABLE POLICY DOCUMENT COMPONENT
+// ==========================================
+const SectionTitlePrint = ({ icon: Icon, title, className="" }) => (
+  <div className={`flex items-center gap-3 mb-4 mt-8 pb-2 border-b border-[#E5E4E3] avoid-page-break ${className}`}>
+    {Icon && <Icon className="text-[#007970]" size={24} />}
+    <h2 className="font-montserrat text-2xl font-extrabold text-[#1F1C1B]">{title}</h2>
+  </div>
+);
+
+const PrintTable = ({ headers, rows, compact = false }) => (
+  <table className={`w-full text-left border-collapse border border-[#E5E4E3] mb-6 bg-white avoid-row-break ${compact ? 'text-xs' : 'text-sm'}`}>
+    <thead>
+      <tr className="bg-[#007970] text-white print-table-header">
+        {headers.map((h, i) => (
+          <th key={i} className="p-3 font-montserrat font-bold border border-[#004d47]">{h}</th>
+        ))}
+      </tr>
+    </thead>
+    <tbody className="divide-y divide-[#E5E4E3]">
+      {rows.map((row, i) => (
+        <tr key={i} className="avoid-page-break hover:bg-[#FAFBF8]">
+          {row.map((cell, j) => (
+            <td key={j} className="p-3 text-[#1F1C1B] align-top leading-relaxed border-r border-[#E5E4E3] whitespace-pre-line">{cell}</td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
+const ViewPolicyLibrary = () => {
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <div className="bg-[#E5E4E3] font-roboto text-[#1F1C1B] w-full min-h-full rounded-xl overflow-hidden shadow-inner">
+      
+      {/* DOCUMENT A4/LETTER WRAPPER */}
+      <div className="document-container max-w-[850px] mx-auto bg-white shadow-xl p-12 my-8 relative">
+
+        {/* COVER BLOCK / META DATA */}
+        <div className="bg-[#007970] rounded-xl p-8 text-white mb-10 avoid-page-break relative mt-4">
+          
+          {/* Print Button - Positioned top right of the green border */}
+          <button 
+            onClick={handlePrint}
+            className="absolute top-6 right-6 flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-md font-montserrat font-bold text-sm transition-colors border border-white/20 no-print shadow-sm z-10"
+          >
+            <Printer size={16} />
+            Print
+          </button>
+
+          <div className="flex justify-between items-start mb-6 pr-28">
+            <div>
+              <h1 className="font-montserrat text-3xl font-extrabold mb-3 leading-tight tracking-tight">
+                {POLICY_META.title}
+              </h1>
+              <span className="bg-white text-[#007970] font-montserrat font-bold px-4 py-1.5 rounded-full text-sm inline-block shadow-sm">
+                ID: {POLICY_META.id}
+              </span>
+            </div>
+          </div>
+          
+          <div className="w-full h-px bg-white/20 mb-6"></div>
+
+          <div className="grid grid-cols-3 gap-6 text-sm">
+            <div>
+              <span className="block text-[10px] text-white/70 uppercase tracking-widest font-montserrat font-bold mb-1">DOMAIN</span>
+              <span className="font-medium leading-tight inline-block">{POLICY_META.domain}</span>
+            </div>
+            <div>
+              <span className="block text-[10px] text-white/70 uppercase tracking-widest font-montserrat font-bold mb-1">APPROVED BY</span>
+              <span className="font-medium leading-tight inline-block">{POLICY_META.approvedBy}</span>
+            </div>
+            <div>
+              <span className="block text-[10px] text-white/70 uppercase tracking-widest font-montserrat font-bold mb-1">SUPERSEDES</span>
+              <span className="font-medium leading-tight inline-block">{POLICY_META.supersedes}</span>
+            </div>
+            <div>
+              <span className="block text-[10px] text-white/70 uppercase tracking-widest font-montserrat font-bold mb-1 mt-2">EFFECTIVE DATE</span>
+              <span className="font-medium leading-tight inline-block">{POLICY_META.effective}</span>
+            </div>
+            <div>
+              <span className="block text-[10px] text-white/70 uppercase tracking-widest font-montserrat font-bold mb-1 mt-2">LAST REVIEWED</span>
+              <span className="font-medium leading-tight inline-block">{POLICY_META.lastReviewed}</span>
+            </div>
+            <div>
+              <span className="block text-[10px] text-white/70 uppercase tracking-widest font-montserrat font-bold mb-1 mt-2">NEXT REVIEW DATE</span>
+              <span className="font-medium leading-tight inline-block">{POLICY_META.nextReviewDate}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. PURPOSE */}
+        <div className="avoid-page-break">
+          <SectionTitlePrint icon={Shield} title="2. Purpose" />
+          <p className="text-[#1F1C1B] leading-relaxed text-[15px] mb-6">
+            This policy establishes the authority, composition, functions, and oversight responsibilities of the Governing Body of Care Indeed Home Health Care, Inc. The Governing Body is the ultimate authority accountable for the operation, management, fiscal viability, and regulatory compliance of the home health agency. This policy ensures the agency satisfies the requirements set forth in <strong>42 CFR § 484.105</strong> — Condition of Participation: Organization and Administration of Services, which mandates that a home health agency must have a governing body that assumes full legal authority and responsibility for the agency's overall operation and management.
+          </p>
+        </div>
+
+        {/* 3. SCOPE */}
+        <div className="avoid-page-break mb-8">
+          <SectionTitlePrint icon={Search} title="3. Scope" />
+          <p className="text-[#1F1C1B] font-bold mb-3">This policy applies to:</p>
+          <ul className="space-y-2 mb-4 ml-2">
+            {[
+              "All members of the Governing Body of Care Indeed Home Health Care, Inc.",
+              "The Agency Administrator",
+              "The Director of Nursing / Clinical Manager",
+              "The Compliance Officer",
+              "All senior leadership personnel who report directly to the Governing Body",
+              "All contracted management entities performing governing body functions"
+            ].map((item, i) => (
+              <li key={i} className="flex items-start">
+                <CheckCircle className="text-[#007970] mr-2 mt-0.5 flex-shrink-0" size={16} />
+                <span className="text-[#1F1C1B] text-[15px]">{item}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="bg-[#FAFBF8] border-l-4 border-[#C74601] p-4 text-[#524048] text-sm italic">
+            Note: This policy does not apply to day-to-day clinical or operational staff except to the extent that Governing Body decisions establish requirements, standards, or directives that govern their work.
+          </div>
+        </div>
+
+        {/* 4. POLICY STATEMENT */}
+        <div className="mb-8">
+          <SectionTitlePrint icon={List} title="4. Policy Statement" />
+          <div className="space-y-4">
+            {[
+              "4.1 Care Indeed Home Health Care, Inc. shall maintain a designated Governing Body that holds full legal authority and responsibility for the overall operation, management, and regulatory compliance of the home health agency, as required by 42 CFR § 484.105(a).",
+              "4.2 The Governing Body shall be responsible for ensuring that Care Indeed Home Health Care, Inc. operates in compliance with all applicable federal, state, and local laws, regulations, and licensure requirements at all times.",
+              "4.3 The Governing Body shall appoint a qualified Administrator who is authorized to act on behalf of the Governing Body in the day-to-day management of the agency and who meets the qualifications defined in agency policy GV-OG-002 and applicable California state requirements.",
+              "4.4 The Governing Body shall ensure the appointment and ongoing oversight of a qualified Clinical Manager (Director of Nursing) responsible for all clinical services, in compliance with 42 CFR § 484.105(c).",
+              "4.5 The Governing Body shall approve and oversee the agency's: Scope of services (GV-OG-003), Organizational structure (GV-OG-001), Strategic plan (GV-OG-004), Policy framework (GV-PM-001), QAPI program (QA-PG-001), Compliance program (CO-CP-001), Budget (FN-FP-005), and Emergency plan (OP-FM-005).",
+              "4.6 The Governing Body shall meet at a frequency sufficient to fulfill its oversight responsibilities, but not less than quarterly, with meetings documented in formal minutes per policy GV-GB-002.",
+              "4.7 The Governing Body shall not delegate its ultimate accountability for regulatory compliance, patient safety, or fiscal integrity. Delegation of specific authority shall comply with policy GV-OG-005.",
+              "4.8 All members of the Governing Body shall disclose and manage conflicts of interest in accordance with policy GV-GB-003.",
+              "4.9 Only the most current approved version of this policy shall be considered valid. Superseded versions must not be used for any operational or compliance purpose."
+            ].map((stmt, i) => (
+              <div key={i} className="flex items-start avoid-page-break">
+                <span className="font-montserrat font-bold text-[#007970] mr-3 min-w-[28px]">{stmt.split(' ')[0]}</span>
+                <p className="text-[#1F1C1B] text-[15px] leading-relaxed">{stmt.substring(stmt.indexOf(' ') + 1)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 5. DEFINITIONS */}
+        <div className="mb-8">
+          <SectionTitlePrint icon={BookOpen} title="5. Definitions" />
+          <PrintTable 
+            headers={["Term", "Definition"]}
+            rows={DEFINITIONS.map(d => [d.term, d.definition])}
+          />
+        </div>
+
+        {/* 6. PROCEDURES */}
+        <div className="mb-8">
+          <SectionTitlePrint icon={Settings} title="6. Procedures" />
+          
+          <h3 className="font-montserrat font-bold text-lg text-[#007970] mb-3 mt-6">6.1 Establishment and Composition</h3>
+          <PrintTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.1"]} />
+
+          <h3 className="font-montserrat font-bold text-lg text-[#007970] mb-3 mt-8">6.2 Core Responsibilities</h3>
+          <div className="bg-[#FAFBF8] border border-[#E5E4E3] p-4 rounded text-sm text-[#1F1C1B] font-medium mb-4 avoid-page-break">
+            The Governing Body of Care Indeed Home Health Care, Inc. shall fulfill the following responsibilities directly and shall <strong className="text-[#C74601]">not delegate ultimate accountability</strong> for any of these functions.
+          </div>
+          
+          {PROCEDURES["6.2"].map((section, idx) => (
+            <div key={idx} className="avoid-page-break">
+              <h4 className="font-bold text-[#1F1C1B] bg-gray-100 p-2 border-l-4 border-[#007970] mb-2">{section.title}</h4>
+              <PrintTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={section.rows} />
+            </div>
+          ))}
+
+          <h3 className="font-montserrat font-bold text-lg text-[#007970] mb-3 mt-6">6.3 Governing Body Meetings</h3>
+          <PrintTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.3"]} />
+
+          <h3 className="font-montserrat font-bold text-lg text-[#007970] mb-3 mt-6">6.4 Conflict of Interest Management</h3>
+          <PrintTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.4"]} />
+
+        </div>
+
+        {/* PAGE BREAK BEFORE APPENDICES OR LONG TABLES */}
+        <div className="page-break-before"></div>
+
+        {/* 7. DOCUMENTATION */}
+        <div className="mb-8">
+          <SectionTitlePrint icon={FileText} title="7. Documentation Requirements" />
+          <PrintTable 
+            headers={["Requirement", "Document / Record", "Responsible Party", "Location", "Timeframe"]}
+            rows={[
+              ["Governing Body establishment", "Articles of incorporation, operating agreement, bylaws", "Corporate Entity", "Corporate records", "Permanently"],
+              ["Governing Body roster", "Current roster (Appendix A)", "GB Chair", "Governance file", "Update within 7 days"],
+              ["Meeting minutes", "Formal minutes (Appendix D)", "Secretary", "Governance file", "Draft within 14 days"],
+              ["Administrator appointment", "Written documentation", "GB Chair", "Personnel file", "At appointment"],
+              ["Conflict of Interest", "Disclosure Forms (Appendix B)", "Compliance", "Compliance file", "Annually"],
+              ["Annual budget approval", "Documented GB approval", "GB (approval)", "Financial records", "Annually"],
+              ["Policy acknowledgment", "Signed acknowledgment (Appendix C)", "Administrator", "Policy file", "Within 14 days"]
+            ]} 
+          />
+        </div>
+
+        {/* 8. COMPLIANCE */}
+        <div className="mb-8">
+          <SectionTitlePrint icon={CheckSquare} title="8. Compliance & Audit" />
+          
+          <h3 className="font-bold text-[#1F1C1B] mb-2 mt-4">8.1 Surveyor Expectations (CMS Appendix B)</h3>
+          <ul className="list-disc pl-5 space-y-2 text-sm text-[#524048] mb-6">
+            <li>Evidence that a Governing Body exists and is functioning (roster/bylaws).</li>
+            <li>Evidence that the Governing Body has appointed a qualified Administrator.</li>
+            <li>Evidence that the Governing Body oversees QAPI and does not just "rubber stamp" reports.</li>
+            <li>Evidence of fiscal oversight and policy review cycles.</li>
+            <li>Meeting frequency and documentation quality.</li>
+          </ul>
+
+          <h3 className="font-bold text-[#C74601] mb-2">8.2 Common Failure Points & Risks</h3>
+          <PrintTable 
+            headers={["Failure Point", "Risk", "Mitigation"]}
+            rows={[
+              ["No documented evidence GB exists", "Condition-level deficiency. Potential termination.", "Maintain establishing docs and roster."],
+              ["GB meetings held but not documented", "Surveyor treats them as not occurring.", "Use Appendix D template; draft in 14 days."],
+              ["Key leadership vacancies unfilled", "Failure to ensure adequate management.", "Fill or designate interim within 14 days."]
+            ]}
+          />
+        </div>
+        
+        {/* PAGE BREAK BEFORE APPENDICES */}
+        <div className="page-break-before"></div>
+
+        <div className="text-center mb-10 pb-6 border-b border-[#E5E4E3]">
+           <img 
+              src="https://cdn.jsdelivr.net/gh/robertp-max/CSM-485-Form@main/src/assets/CI%20Home%20Health%20Logo_Gray.png" 
+              alt="Care Indeed" 
+              className="h-16 object-contain mx-auto mb-4"
+            />
+           <h2 className="font-montserrat text-4xl font-extrabold text-[#007970] mb-2 uppercase tracking-wide">Appendices</h2>
+           <p className="text-[#524048] font-montserrat uppercase tracking-widest text-sm font-bold">
+             Forms, Templates & Structures
+           </p>
+        </div>
+
+        {/* APPENDIX A */}
+        <div className="avoid-page-break mb-12">
+          <div className="bg-[#E5E4E3] p-3 rounded mb-4">
+            <h3 className="font-montserrat font-bold text-lg text-[#1F1C1B]">Appendix A: Governing Body Membership Roster</h3>
+            <p className="text-xs text-[#524048] italic">Policy: GV-GB-001 | Updated: 2025-07-10</p>
+          </div>
+          <p className="text-sm mb-4"><strong>Instructions:</strong> The Chair shall update this roster within 7 calendar days of any membership change.</p>
+          
+          <table className="w-full text-left border-collapse border border-gray-400 text-xs">
+            <thead>
+              <tr className="bg-gray-100"><th className="p-2 border border-gray-400">Name</th><th className="p-2 border border-gray-400">Role</th><th className="p-2 border border-gray-400">Voting Status</th><th className="p-2 border border-gray-400">Term Exp</th><th className="p-2 border border-gray-400">OIG Screened</th></tr>
+            </thead>
+            <tbody>
+              {[1,2,3,4,5].map(i => (
+                <tr key={i}><td className="p-4 border border-gray-400"></td><td className="p-4 border border-gray-400"></td><td className="p-4 border border-gray-400"></td><td className="p-4 border border-gray-400"></td><td className="p-4 border border-gray-400"></td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* APPENDIX B */}
+        <div className="page-break-before avoid-page-break mb-12">
+          <div className="bg-[#E5E4E3] p-3 rounded mb-4">
+            <h3 className="font-montserrat font-bold text-lg text-[#1F1C1B]">Appendix B: Conflict of Interest Disclosure</h3>
+            <p className="text-xs text-[#524048] italic">Policy: GV-GB-001 | Required Annually</p>
+          </div>
+          
+          <div className="border border-gray-300 p-6 rounded">
+            <div className="grid grid-cols-2 gap-4 mb-6 border-b border-gray-200 pb-4">
+              <div><span className="text-xs font-bold text-gray-500 uppercase block">Name:</span><div className="h-6 border-b border-gray-400"></div></div>
+              <div><span className="text-xs font-bold text-gray-500 uppercase block">Role:</span><div className="h-6 border-b border-gray-400"></div></div>
+            </div>
+            
+            <p className="font-bold text-sm mb-3">Do you hold any financial or ownership interest in any entity that does business with Care Indeed?</p>
+            <div className="flex gap-4 mb-6"><span>[  ] Yes</span> <span>[  ] No</span></div>
+
+            <p className="font-bold text-sm mb-3">Do you serve on the board of any other healthcare entity or referral source?</p>
+            <div className="flex gap-4 mb-6"><span>[  ] Yes</span> <span>[  ] No</span></div>
+
+            <p className="text-xs mt-8 mb-4">I certify the information provided is true and complete.</p>
+            <div className="flex gap-8">
+               <div className="w-2/3"><div className="h-8 border-b-2 border-gray-800"></div><span className="text-xs">Signature</span></div>
+               <div className="w-1/3"><div className="h-8 border-b-2 border-gray-800"></div><span className="text-xs">Date</span></div>
+            </div>
+          </div>
+        </div>
+
+        {/* APPENDIX G: ORG CHART */}
+        <div className="page-break-before avoid-page-break">
+          <div className="bg-[#007970] p-4 rounded mb-6 text-white text-center">
+            <h3 className="font-montserrat font-bold text-xl">Appendix G: Agency Organizational Chart</h3>
+            <p className="text-xs italic text-white/80">Reflects 42 CFR § 484.105 Reporting Hierarchy</p>
+          </div>
+
+          <div className="flex flex-col items-center w-full py-8 bg-[#FAFBF8] border border-gray-200 rounded-xl print:bg-white print:border-none">
+              
+              {/* Level 1 */}
+              <div className="bg-[#007970] text-white p-4 rounded-xl w-64 text-center shadow-md border-2 border-[#004d47] z-10">
+                <h4 className="font-bold text-lg uppercase tracking-wider mb-1">Governing Body</h4>
+                <p className="text-[10px] text-[#007970] bg-white px-2 py-0.5 rounded-full inline-block font-bold">Ultimate Legal Authority</p>
+              </div>
+
+              <div className="w-1 h-8 bg-gray-400"></div>
+              <div className="w-[400px] border-t-4 border-gray-400"></div>
+              <div className="flex justify-between w-[400px]">
+                  <div className="w-1 h-8 bg-gray-400"></div>
+                  <div className="w-1 h-8 bg-gray-400"></div>
+              </div>
+
+              {/* Level 2 */}
+              <div className="flex gap-8 justify-center">
+                  <div className="flex flex-col items-center w-[200px]">
+                    <div className="bg-gray-800 text-white p-3 rounded-lg w-full text-center border-2 border-black">
+                        <h4 className="font-bold text-xs uppercase mb-2">Compliance Officer</h4>
+                        <div className="h-6 bg-gray-100 rounded"></div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col items-center w-[400px]">
+                    <div className="bg-[#C74601] text-white p-4 rounded-lg w-64 text-center border-2 border-[#943400] z-10">
+                        <h4 className="font-bold text-sm uppercase mb-2">Administrator</h4>
+                        <div className="h-8 bg-white/20 rounded border border-white/40"></div>
+                    </div>
+
+                    <div className="w-1 h-8 bg-gray-400"></div>
+                    <div className="w-[350px] border-t-4 border-gray-400"></div>
+                    <div className="flex justify-between w-[350px]">
+                        <div className="w-1 h-8 bg-gray-400"></div>
+                        <div className="w-1 h-8 bg-gray-400"></div>
+                        <div className="w-1 h-8 bg-gray-400"></div>
+                    </div>
+
+                    {/* Level 3 */}
+                    <div className="flex justify-between w-[380px]">
+                        <div className="flex flex-col items-center w-[110px]">
+                          <div className="bg-white border-2 border-[#007970] p-2 rounded-lg w-full text-center">
+                              <h4 className="font-bold text-[10px] text-[#007970] uppercase mb-1">Clinical Manager</h4>
+                              <div className="h-5 bg-gray-100 border border-gray-200 rounded"></div>
+                          </div>
+                          <div className="w-1 h-4 bg-gray-300"></div>
+                          <div className="bg-gray-50 border border-gray-200 p-1.5 rounded w-[100px] text-center text-[9px] text-gray-600">
+                              Clinical Staff (RN, PT, OT)
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center w-[110px]">
+                          <div className="bg-white border-2 border-gray-400 p-2 rounded-lg w-full text-center">
+                              <h4 className="font-bold text-[10px] text-gray-700 uppercase mb-1">Medical Director</h4>
+                              <div className="h-5 bg-gray-100 border border-gray-200 rounded"></div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center w-[110px]">
+                          <div className="bg-white border-2 border-gray-400 p-2 rounded-lg w-full text-center">
+                              <h4 className="font-bold text-[10px] text-gray-700 uppercase mb-1">Business Ops</h4>
+                              <div className="h-5 bg-gray-100 border border-gray-200 rounded"></div>
+                          </div>
+                          <div className="w-1 h-4 bg-gray-300"></div>
+                          <div className="bg-gray-50 border border-gray-200 p-1.5 rounded w-[100px] text-center text-[9px] text-gray-600">
+                              HR, Finance, Intake
+                          </div>
+                        </div>
+                    </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+
+        <div className="text-center text-[10px] text-[#524048] mt-16 pt-4 border-t border-[#E5E4E3]">
+          Care Indeed Home Health Care, Inc. — Official Policy Document (GV-GB-001) — Printed format generated by Policy Management System.
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// APP SHELL (DASHBOARD)
+// ==========================================
+export default function App() {
+  const [activeTab, setActiveTab] = useState('command');
+  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'command': return <ViewCommandCenter />;
+      case 'calendar': return <ViewMasterCalendar />;
+      case 'library': return <ViewPolicyLibrary />;
+      default: return <ViewCommandCenter />; 
+    }
+  };
+
+  const navItems = [
+    { id: 'command', label: 'Dashboard', icon: Home },
+    { id: 'calendar', label: 'Master Calendar', icon: Calendar },
+    { id: 'library', label: 'Policy Library', icon: BookOpen },
+    { id: 'auditor', label: 'Auditor Review', icon: ClipboardCheck },
+    { id: 'reports', label: 'Master Report', icon: BarChart2 }
+  ];
+
+  return (
+    <div className="h-screen w-full flex bg-[#E5E4E3] font-roboto overflow-hidden text-[#1F1C1B]">
+      
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap');
+          .font-montserrat { font-family: 'Montserrat', sans-serif; }
+          .font-roboto { font-family: 'Roboto', sans-serif; }
+
+          .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+          @media print {
+            .no-print { display: none !important; }
+            .document-container { margin: 0 !important; padding: 0 !important; box-shadow: none !important; max-width: 100% !important; width: 100% !important; }
+            body, html, #root, .h-screen, .flex-1, .overflow-y-auto { height: auto !important; overflow: visible !important; }
+            .avoid-page-break { page-break-inside: avoid; }
+            .page-break-before { page-break-before: always; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          }
+        `}
+      </style>
+
+      {/* Side Navigation */}
+      <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} flex flex-col shrink-0 bg-[#1F1C1B] text-white/80 transition-all duration-300 ease-in-out z-20 no-print`}>
+        {/* Logo Area */}
+        <div className={`h-20 flex items-center border-b border-white/10 shrink-0 ${isSidebarCollapsed ? 'justify-center px-4' : 'justify-start px-6'}`}>
+          {!isSidebarCollapsed ? (
+            <img 
+              src="https://executive-dashboard-eosin.vercel.app/assets/CI%20Home%20Health%20Logo_White-DfgJTkII-DfgJTkII.png" 
+              alt="CareIndeed" 
+              className="w-[140px] object-contain opacity-95 transition-transform hover:scale-105"
+              onError={(e) => { e.target.src = 'https://via.placeholder.com/240x100?text=CareIndeed' }}
+            />
+          ) : (
+            <div className="w-10 h-10 bg-[#C74601] rounded-md flex items-center justify-center shadow-md">
+               <span className="text-white font-montserrat font-black text-sm">CI</span>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation */}
+        <div className="flex-1 overflow-y-auto py-6 flex flex-col gap-1 px-3 custom-scrollbar">
+          {!isSidebarCollapsed && (
+             <p className="text-[10px] font-montserrat font-bold text-white/50 uppercase tracking-widest mb-2 px-3">Main Menu</p>
+          )}
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button 
+                key={item.id}
+                onClick={() => setActiveTab(item.id)} 
+                className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-start'} gap-3 px-3 py-2.5 rounded-lg transition-all font-bold font-montserrat text-sm ${
+                  isActive ? 'bg-[#C74601] text-white shadow-md' : 'hover:bg-white/10 hover:text-white'
+                }`}
+                title={isSidebarCollapsed ? item.label : undefined}
+              >
+                <Icon size={18} className={isActive ? "text-white" : "text-white/60"} /> 
+                {!isSidebarCollapsed && <span>{item.label}</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Bottom Actions */}
+        <div className="p-4 border-t border-white/10 space-y-2 font-montserrat">
+           <button className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-start'} gap-3 px-3 py-2.5 rounded-lg text-white/60 hover:bg-white/5 hover:text-white transition-all font-bold text-sm`}>
+             <HelpCircle size={18} />
+             {!isSidebarCollapsed && <span>Help Center</span>}
+           </button>
+           {!isSidebarCollapsed && (
+             <div className="mt-4 px-3 bg-white/5 rounded-lg py-3">
+                <div className="flex items-center justify-between text-xs">
+                   <span className="text-white/50 font-bold">System Status</span>
+                   <span className="flex items-center gap-1 text-[#008540] font-bold">
+                     <span className="w-1.5 h-1.5 rounded-full bg-[#008540]"></span> Online
+                   </span>
+                </div>
+             </div>
+           )}
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        
+        {/* Top Header */}
+        <header className="h-16 bg-white border-b border-[#E5E4E3] flex items-center justify-between px-6 shrink-0 z-10 no-print">
+          <div className="flex items-center gap-4">
+            <button 
+               onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
+               className="p-1.5 text-[#524048] hover:bg-[#FAFBF8] rounded-md transition-colors"
+            >
+               <LayoutList size={20} />
+            </button>
+            <div className="relative hidden sm:block w-64 md:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#524048]" size={16} />
+              <input 
+                 type="text" 
+                 placeholder="Search policies, tasks, ID..." 
+                 className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg pl-9 pr-4 py-2 text-sm w-full focus:bg-white focus:border-[#007970] focus:ring-1 focus:ring-[#007970] outline-none transition-all font-roboto" 
+              />
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 shrink-0">
+            <button className="relative p-2 text-[#524048] hover:text-[#1F1C1B] hover:bg-[#FAFBF8] rounded-full transition-colors">
+               <Bell size={20} />
+               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#D70101] rounded-full border border-white"></span>
+            </button>
+            <div className="h-8 w-8 bg-[#E5E4E3] rounded-full border-2 border-[#E5E4E3] overflow-hidden shrink-0 cursor-pointer hover:border-[#007970] transition-colors">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=f1f5f9" alt="User" />
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable Content Wrapper */}
+        <main className="flex-1 overflow-y-auto bg-[#FAFBF8] p-6 lg:p-8 custom-scrollbar">
+          <div className="max-w-[1400px] mx-auto h-full">
+            {renderContent()}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

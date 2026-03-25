@@ -1,0 +1,664 @@
+# **Governing Body Authority & Responsibilities**
+
+---
+
+## **1\. Policy Header**
+
+| Field | Value |
+| :---- | :---- |
+| Policy ID | GV-GB-001 |
+| Policy Title | Governing Body Authority & Responsibilities |
+| Domain | GV — Governance & Administration |
+| Subdomain | GB — Governing Body |
+| Classification Tier | REQUIRED |
+| Status | ACTIVE |
+| Review Cycle | Annual |
+| Access Tier | Tier 4 — Privileged |
+| Policy Owner / Steward | Governing Body |
+| Effective Date | 2025-07-10 |
+| Version | 6.0 |
+| Approved By | Governing Body Chair — Care Indeed Home Health Care, Inc. |
+| Last Reviewed | 2025-07-10 |
+| Next Review Date | 2026-07-10 |
+| Supersedes | N/A (Initial Version) |
+
+---
+
+## **2\. Purpose**
+
+This policy establishes the authority, composition, functions, and oversight responsibilities of the Governing Body of Care Indeed Home Health Care, Inc. The Governing Body is the ultimate authority accountable for the operation, management, fiscal viability, and regulatory compliance of the home health agency. This policy ensures the agency satisfies the requirements set forth in 42 CFR § 484.105 — Condition of Participation: Organization and Administration of Services, which mandates that a home health agency must have a governing body that assumes full legal authority and responsibility for the agency's overall operation and management.
+
+---
+
+## **3\. Scope**
+
+This policy applies to:
+
+* All members of the Governing Body of Care Indeed Home Health Care, Inc. (including voting and non-voting members)  
+* The Agency Administrator  
+* The Director of Nursing / Clinical Manager  
+* The Compliance Officer  
+* All senior leadership personnel who report directly to the Governing Body or Administrator  
+* All contracted management entities performing governing body functions on behalf of the agency
+
+This policy does not apply to day-to-day clinical or operational staff except to the extent that Governing Body decisions establish requirements, standards, or directives that govern their work.
+
+---
+
+## **4\. Policy Statement**
+
+4.1 Care Indeed Home Health Care, Inc. shall maintain a designated Governing Body that holds full legal authority and responsibility for the overall operation, management, and regulatory compliance of the home health agency, as required by 42 CFR § 484.105(a).
+
+4.2 The Governing Body shall be responsible for ensuring that Care Indeed Home Health Care, Inc. operates in compliance with all applicable federal, state, and local laws, regulations, and licensure requirements at all times.
+
+4.3 The Governing Body shall appoint a qualified Administrator who is authorized to act on behalf of the Governing Body in the day-to-day management of the agency and who meets the qualifications defined in agency policy GV-OG-002 and applicable California state requirements.
+
+4.4 The Governing Body shall ensure the appointment and ongoing oversight of a qualified Clinical Manager (Director of Nursing) responsible for all clinical services, in compliance with 42 CFR § 484.105(c).
+
+4.5 The Governing Body shall approve and oversee the agency's:
+
+* Scope of services (GV-OG-003)  
+* Organizational structure and reporting lines (GV-OG-001)  
+* Annual strategic plan and operational goals (GV-OG-004)  
+* Policy framework and all REQUIRED-tier policies (GV-PM-001, GV-PM-002)  
+* QAPI program (QA-PG-001, QA-PG-002)  
+* Corporate compliance program (CO-CP-001)  
+* Annual operating budget (FN-FP-005)  
+* Emergency preparedness plan (OP-FM-005)
+
+4.6 The Governing Body shall meet at a frequency sufficient to fulfill its oversight responsibilities, but not less than quarterly, with meetings documented in formal minutes per policy GV-GB-002.
+
+4.7 The Governing Body shall not delegate its ultimate accountability for regulatory compliance, patient safety, or fiscal integrity. Delegation of specific authority shall comply with policy GV-OG-005.
+
+4.8 All members of the Governing Body shall disclose and manage conflicts of interest in accordance with policy GV-GB-003.
+
+4.9 Only the most current approved version of this policy shall be considered valid. Superseded versions must not be used for any operational or compliance purpose. Any revision to this policy requires re-acknowledgment by all Governing Body members and senior leadership within 14 calendar days of the revised effective date.
+
+---
+
+## **5\. Definitions**
+
+| Term | Definition |
+| :---- | :---- |
+| Governing Body | The individual(s), board of directors, trustees, partnership, corporation, or other legally constituted authority that has ultimate responsibility for the management and operation of Care Indeed Home Health Care, Inc., as defined by 42 CFR § 484.2 and § 484.105. |
+| Administrator | The individual appointed by the Governing Body who is responsible for managing the agency's day-to-day operations and who meets all qualifications specified in agency policy GV-OG-002 and applicable California state law. |
+| Clinical Manager | The registered nurse (or qualified individual per California state law) designated by the Governing Body to oversee clinical services including patient care delivery, clinical staff supervision, and OASIS compliance. Also referred to as Director of Nursing (DON). |
+| Fiduciary Duty | The legal obligation of Governing Body members to act in good faith, with due diligence, and in the best interest of the agency and the patients it serves. |
+| Quorum | The minimum number of Governing Body members required to be present (physically or via approved teleconference) to conduct official business, as defined in the agency's bylaws or operating agreement. |
+| QAPI | Quality Assessment and Performance Improvement — the structured program required by 42 CFR § 484.65 for ongoing quality monitoring and improvement. |
+
+---
+
+## **6\. Procedures**
+
+### **6.1 Establishment and Composition of the Governing Body**
+
+| Step | Responsible Party | Action | Timeframe |
+| :---- | :---- | :---- | :---- |
+| 6.1.1 | Agency Owner / Corporate Entity | Formally establish the Governing Body through articles of incorporation, operating agreement, partnership agreement, or equivalent legal instrument for Care Indeed Home Health Care, Inc. The establishing document must identify: (a) the legal form of the Governing Body; (b) the minimum and maximum number of members; (c) the quorum requirement; (d) the terms of appointment or election. | Prior to initial Medicare certification and maintained continuously thereafter. |
+| 6.1.2 | Governing Body Chair | Maintain a current roster of all Governing Body members including: full legal name, title/role, date of appointment, term expiration date, voting status, and contact information. | Updated within 7 calendar days of any membership change. |
+| 6.1.3 | Governing Body | Ensure composition includes, at minimum, individuals with competency in: (a) healthcare operations or clinical services; (b) financial management; (c) regulatory compliance. If any competency area is not represented by a current member, the Governing Body shall retain qualified advisory counsel within 30 calendar days of identifying the gap. | Ongoing; reviewed annually at the first quarterly meeting of each calendar year. |
+| 6.1.4 | Compliance Officer | Verify that no Governing Body member appears on the OIG List of Excluded Individuals/Entities (LEIE) or the System for Award Management (SAM) exclusion database at the time of appointment and monthly thereafter, per policy HR-TA-003. | At appointment and monthly thereafter. |
+
+---
+
+### **6.2 Core Responsibilities of the Governing Body**
+
+The Governing Body of Care Indeed Home Health Care, Inc. shall fulfill the following responsibilities directly and shall not delegate ultimate accountability for any of these functions:
+
+#### **6.2.1 — Legal Authority and Agency Operations**
+
+| Step | Responsible Party | Action | Timeframe |
+| :---- | :---- | :---- | :---- |
+| 6.2.1.1 | Governing Body | Assume and maintain full legal authority for the overall operation, management, and fiscal viability of Care Indeed Home Health Care, Inc. | Continuous. |
+| 6.2.1.2 | Governing Body | Ensure the agency maintains current and valid: (a) California home health license — HCAI License No. 406412878; (b) Medicare certification; (c) Medicaid enrollment (if applicable); (d) accreditation (if applicable) — per policy GV-EA-004. | Continuous; verified at each quarterly meeting. |
+| 6.2.1.3 | Governing Body | Review and approve the agency's defined scope of services (policy GV-OG-003) at least annually. Ensure the agency does not provide services beyond those for which it is licensed, staffed, and competent to deliver. | Annually, within 30 calendar days of the start of the fiscal year. |
+
+#### **6.2.2 — Appointment and Oversight of Key Personnel**
+
+| Step | Responsible Party | Action | Timeframe |
+| :---- | :---- | :---- | :---- |
+| 6.2.2.1 | Governing Body | Appoint a qualified Administrator and document the appointment in Governing Body minutes. The Administrator must meet all qualifications defined in policy GV-OG-002 and applicable California state law. | Prior to agency operation and within 30 calendar days of any vacancy. |
+| 6.2.2.2 | Governing Body | Appoint or confirm the appointment of a qualified Clinical Manager (Director of Nursing) responsible for all clinical services, per 42 CFR § 484.105(c). | Prior to agency operation and within 30 calendar days of any vacancy. |
+| 6.2.2.3 | Governing Body | Appoint or confirm the designation of a Compliance Officer with authority and independence to operate the corporate compliance program, per policy CO-CP-002. | Prior to agency operation and within 30 calendar days of any vacancy. |
+| 6.2.2.4 | Governing Body | Conduct or commission an annual performance evaluation of the Administrator. Results and any corrective directives shall be documented in executive session minutes. | Annually; completed within 60 calendar days of the end of each fiscal year. |
+| 6.2.2.5 | Governing Body | Review and approve the agency's succession plan for the Administrator, Clinical Manager, and Compliance Officer, per policy GV-GB-004. | Annually at the second quarterly meeting; updated within 14 calendar days of any key leadership vacancy. |
+
+#### **6.2.3 — Policy and Compliance Oversight**
+
+| Step | Responsible Party | Action | Timeframe |
+| :---- | :---- | :---- | :---- |
+| 6.2.3.1 | Governing Body | Approve all REQUIRED-tier policies prior to implementation and ensure a defined policy review cycle exists per policies GV-PM-001 and GV-PM-002. | Prior to implementation of each REQUIRED policy; review cycle approved annually. |
+| 6.2.3.2 | Governing Body | Receive and review a compliance status report from the Compliance Officer at each quarterly meeting. The report must address: (a) active compliance investigations; (b) audit findings; (c) regulatory changes affecting the agency; (d) training completion rates. | Quarterly. |
+| 6.2.3.3 | Compliance Officer | Prepare and submit the quarterly compliance report to the Governing Body no fewer than 7 calendar days before each scheduled quarterly meeting. | 7 calendar days before each quarterly meeting. |
+| 6.2.3.4 | Governing Body | Review and act upon any compliance deficiency identified as high-risk within 14 calendar days of receiving the compliance report. Action must be documented in meeting minutes or a special resolution. | Within 14 calendar days of report receipt. |
+
+#### **6.2.4 — Quality Assessment and Performance Improvement (QAPI) Oversight**
+
+| Step | Responsible Party | Action | Timeframe |
+| :---- | :---- | :---- | :---- |
+| 6.2.4.1 | Governing Body | Approve the agency's QAPI plan, per policy QA-PG-002, and ensure that the plan includes measurable quality indicators, performance improvement projects, and patient safety initiatives. | Annually; approved at the first quarterly meeting of each calendar year. |
+| 6.2.4.2 | Clinical Manager / QA Designee | Present a QAPI performance report to the Governing Body at each quarterly meeting including: (a) quality indicator trends; (b) status of active PIPs; (c) adverse event summary; (d) patient satisfaction data; (e) Star Rating / Home Health Compare trends (policy QA-SM-004). | Quarterly. |
+| 6.2.4.3 | Governing Body | Review, discuss, and document its response to the QAPI report. If any quality indicator falls below the defined threshold for 2 consecutive reporting periods, the Governing Body shall direct corrective action and assign accountability with a defined resolution deadline. | At each quarterly meeting; corrective action directive within 14 calendar days if thresholds are breached. |
+
+#### **6.2.5 — Financial Oversight**
+
+| Step | Responsible Party | Action | Timeframe |
+| :---- | :---- | :---- | :---- |
+| 6.2.5.1 | Governing Body | Review and approve the annual operating budget per policy FN-FP-005. | Annually; approved no later than 30 calendar days before the start of each fiscal year. |
+| 6.2.5.2 | Administrator | Present a financial performance report to the Governing Body at each quarterly meeting including: (a) revenue vs. budget variance; (b) accounts receivable aging; (c) claims denial rate and trending; (d) cash flow position. | Quarterly. |
+| 6.2.5.3 | Governing Body | Review financial reports and direct corrective action if: (a) actual revenue deviates more than 10% below budget for 2 consecutive months; (b) claims denial rate exceeds 5%; (c) days in accounts receivable exceed 60\. Directives must be documented in meeting minutes. | At each quarterly meeting. |
+
+#### **6.2.6 — Emergency Preparedness**
+
+| Step | Responsible Party | Action | Timeframe |
+| :---- | :---- | :---- | :---- |
+| 6.2.6.1 | Governing Body | Approve the agency's Emergency Operations and Business Continuity Plan per policy OP-FM-005 and 42 CFR § 484.102. | Annually; approved at the third quarterly meeting. |
+| 6.2.6.2 | Administrator | Report the results of the most recent emergency preparedness drill or exercise to the Governing Body, including identified gaps and corrective actions. | At the quarterly meeting following each drill (minimum 2 drills per year). |
+
+---
+
+### **6.3 Governing Body Meetings**
+
+| Step | Responsible Party | Action | Timeframe |
+| :---- | :---- | :---- | :---- |
+| 6.3.1 | Governing Body Chair | Schedule and convene regular Governing Body meetings no fewer than 4 times per calendar year (quarterly). The meeting schedule for the upcoming year must be established and distributed to all members by December 15 of the preceding year. | Quarterly; schedule distributed by December 15\. |
+| 6.3.2 | Governing Body Chair | Convene special meetings when urgent matters arise, including but not limited to: (a) CMS survey findings requiring immediate corrective action; (b) serious adverse events; (c) regulatory enforcement actions; (d) key leadership vacancies. Notice of a special meeting must be provided to all members at least 48 hours in advance unless the matter constitutes an imminent threat to patient safety, in which case notice may be shortened to the minimum practicable. | As needed; notice within 48 hours or shorter for imminent patient safety threats. |
+| 6.3.3 | Designated Secretary / Administrator | Prepare and distribute the meeting agenda to all Governing Body members no fewer than 7 calendar days before each scheduled meeting. The agenda must include standing items: (a) approval of prior minutes; (b) Administrator report; (c) compliance report; (d) QAPI report; (e) financial report; (f) old business; (g) new business. | 7 calendar days before each meeting. |
+| 6.3.4 | Designated Secretary | Record formal minutes for each meeting per policy GV-GB-002. Minutes must document: (a) date, time, and location; (b) members present and absent; (c) quorum determination; (d) all motions, seconds, and voting outcomes; (e) all directives issued with assigned responsible parties and deadlines; (f) executive session topics (without protected details). | Draft minutes completed within 14 calendar days of the meeting; approved at the next regular meeting. |
+| 6.3.5 | Governing Body Chair | Ensure a quorum is present before conducting any official business. If quorum is not achieved, the meeting shall be rescheduled within 14 calendar days. | At the start of each meeting. |
+
+---
+
+### **6.4 Conflict of Interest Management**
+
+| Step | Responsible Party | Action | Timeframe |
+| :---- | :---- | :---- | :---- |
+| 6.4.1 | All Governing Body Members | Complete and submit the Conflict of Interest Disclosure Form (Appendix B) at the time of appointment, annually thereafter, and within 7 calendar days of any change in circumstances that could create a new conflict, per policy GV-GB-003. | At appointment; annually; within 7 days of change. |
+| 6.4.2 | Compliance Officer | Review all submitted conflict of interest disclosures within 14 calendar days of receipt and present a summary to the Governing Body with recommendations for management or recusal. | Within 14 calendar days of receipt. |
+| 6.4.3 | Governing Body | Act on conflict of interest recommendations. Any member with a disclosed conflict shall recuse from discussion and voting on the affected matter. Recusals must be documented in meeting minutes. | At the meeting where the affected matter is addressed. |
+
+---
+
+### **6.5 Escalation and Exception Handling**
+
+| Condition | Escalation Path | Corrective Action | Timeframe |
+| :---- | :---- | :---- | :---- |
+| Governing Body fails to meet quarterly | Administrator notifies all members and the Compliance Officer in writing. | Administrator schedules a make-up meeting. If Governing Body does not convene within 30 calendar days, the Compliance Officer documents the deficiency and initiates corrective action per QA-AE-003. | Make-up meeting within 30 calendar days of the missed quarter. |
+| Quorum not achieved for 2 consecutive scheduled meetings | Governing Body Chair escalates to the full membership in writing. | Chair initiates membership recruitment or replacement per the agency's bylaws. Issue must be resolved before the next scheduled meeting. | Within 30 calendar days. |
+| Key leadership vacancy (Administrator, Clinical Manager, Compliance Officer) exceeds 30 days unfilled | Governing Body Chair | Governing Body must appoint an interim designee within 14 calendar days of vacancy and document the appointment. Permanent appointment must occur within 90 calendar days. | Interim: 14 days. Permanent: 90 days. |
+| CMS survey results in Condition-level deficiency | Administrator convenes a special Governing Body meeting. | Governing Body directs development of a Plan of Correction within CMS-required timeframes (typically 10 calendar days). Governing Body receives weekly status updates until resolution is confirmed. | Special meeting within 48 hours of receipt of findings; Plan of Correction per CMS deadline. |
+| Compliance Officer reports fraud, waste, or abuse concern to Governing Body | Governing Body Chair | Governing Body directs investigation per CO-CP-007 and ensures non-retaliation per CO-CP-005. Governing Body receives investigation status updates at each meeting until resolution. | Investigation initiated within 7 calendar days; updates at each meeting. |
+
+---
+
+## **7\. Documentation Requirements**
+
+| Requirement | Document / Record | Responsible Party | Location | Timeframe |
+| :---- | :---- | :---- | :---- | :---- |
+| Governing Body establishment | Articles of incorporation, operating agreement, bylaws, or equivalent legal instrument establishing the Governing Body of Care Indeed Home Health Care, Inc. | Agency Owner / Corporate Entity | Corporate records repository (physical or electronic). | Maintained permanently; updated within 14 calendar days of any amendment. |
+| Governing Body membership roster | Current roster including member name, role, appointment date, term, voting status, and contact information (Appendix A). | Governing Body Chair | Agency governance file; copy maintained by Administrator. | Updated within 7 calendar days of any change. |
+| Meeting minutes | Formal minutes for all regular and special meetings, per policy GV-GB-002 (Appendix D template). | Designated Secretary | Agency governance file; copy provided to each member. | Draft within 14 calendar days of meeting; approved at next regular meeting. Retained for minimum 7 years. |
+| Meeting agendas | Agenda for each regular and special meeting. | Administrator / Designated Secretary | Agency governance file. | Distributed 7 calendar days before each meeting; retained for minimum 7 years. |
+| Administrator appointment | Written documentation of the Governing Body's appointment of the Administrator, including qualifications verified. | Governing Body Chair | Governing Body minutes; Administrator personnel file. | At time of appointment. |
+| Clinical Manager appointment | Written documentation of the appointment or confirmation of the Clinical Manager. | Governing Body Chair | Governing Body minutes; Clinical Manager personnel file. | At time of appointment. |
+| Compliance Officer designation | Written documentation of the designation and authority granted to the Compliance Officer. | Governing Body Chair | Governing Body minutes; Compliance Officer personnel file. | At time of designation. |
+| Conflict of Interest disclosures | Completed Conflict of Interest Disclosure Forms (Appendix B) for each Governing Body member. | Compliance Officer (collection); each member (completion) | Compliance file; copy in governance file. | At appointment; annually; within 7 days of change. Retained for minimum 7 years. |
+| Quarterly compliance reports | Compliance Officer's written report to the Governing Body. | Compliance Officer | Agency governance file; compliance records. | Submitted 7 days before each quarterly meeting; retained for minimum 7 years. |
+| Quarterly QAPI reports | Clinical Manager / QA Designee's written report to the Governing Body. | Clinical Manager / QA Designee | Agency governance file; QAPI records. | Presented at each quarterly meeting; retained for minimum 7 years. |
+| Financial reports | Quarterly financial performance report presented to the Governing Body. | Administrator | Agency governance file; financial records. | Presented at each quarterly meeting; retained per CO-HP-007. |
+| Annual budget approval | Documented Governing Body approval of the annual operating budget. | Administrator (preparation); Governing Body (approval) | Governing Body minutes; financial records. | Annually; approved 30 days before fiscal year start. |
+| QAPI plan approval | Documented Governing Body approval of the annual QAPI plan. | Clinical Manager / QA Designee (preparation); Governing Body (approval) | Governing Body minutes; QAPI records. | Annually at first quarterly meeting. |
+| Emergency preparedness plan approval | Documented Governing Body approval of the emergency plan. | Administrator (preparation); Governing Body (approval) | Governing Body minutes; emergency preparedness file. | Annually at third quarterly meeting. |
+| Exclusion screening results | Documentation of OIG/SAM screening for each Governing Body member. | Compliance Officer | Compliance file. | At appointment; monthly thereafter. |
+| Policy acknowledgment | Signed acknowledgment of this policy by all Governing Body members and senior leadership (Appendix C). | Each member / leader (completion); Administrator (collection) | Policy acknowledgment file. | Within 14 calendar days of policy effective date or revision; within 14 calendar days of new appointment. |
+| Annual Governance Self-Assessment | Completed self-assessment per policy GV-GB-005 (if adopted). | Governing Body Chair | Governance file. | Annually. |
+
+---
+
+## **8\. Compliance & Audit Considerations**
+
+### **8.1 How Compliance Is Measured**
+
+| Compliance Indicator | Measurement Method | Acceptable Standard |
+| :---- | :---- | :---- |
+| Governing Body is legally established and documented. | Review of establishing documents (articles, bylaws, operating agreement). | Current, complete, and on file at all times. |
+| Governing Body meets at least quarterly. | Review of meeting minutes with dates and attendance. | 4 or more meetings per calendar year with quorum present at each. |
+| Key personnel (Administrator, Clinical Manager, Compliance Officer) are appointed and documented. | Review of Governing Body minutes; personnel files; appointment letters. | Current appointments documented; no vacancy exceeds 30 days without interim designee. |
+| QAPI plan is reviewed and approved annually. | Review of Governing Body minutes for documented approval. | Annual approval documented at first quarterly meeting. |
+| Compliance reports are presented quarterly. | Review of Governing Body agendas and minutes; compliance report files. | Reports submitted 7 days before each meeting; discussion documented in minutes. |
+| Conflict of Interest disclosures are current. | Review of Appendix B forms for each member; annual renewal dates. | 100% completion rate; no lapsed disclosures. |
+| Budget is approved annually. | Review of Governing Body minutes; budget document. | Approved no later than 30 days before fiscal year start. |
+| Governing Body members are screened for exclusion. | Review of OIG/SAM screening logs. | Initial screening at appointment; monthly screening documented. |
+| Policy acknowledgments are current. | Review of signed Appendix C forms. | 100% acknowledgment within 14 calendar days of effective date or new appointment. |
+
+---
+
+### **8.2 What Surveyors and Auditors Will Look For**
+
+CMS surveyors conducting a standard survey under the State Operations Manual (SOM) Appendix B will specifically verify:
+
+1. Evidence that a Governing Body exists and is functioning. Surveyors will request establishing documents and a current membership roster. A sole proprietor must demonstrate individual acceptance of governing body responsibilities.  
+2. Evidence that the Governing Body has appointed a qualified Administrator. Surveyors will review Governing Body minutes for appointment documentation and verify qualifications per California state requirements.  
+3. Evidence of Clinical Manager oversight. Surveyors will look for Governing Body minutes documenting appointment, reporting, and oversight of clinical services leadership.  
+4. Evidence that the Governing Body oversees QAPI. Surveyors will examine whether the Governing Body has reviewed, approved, and acted upon quality data. Passive receipt of reports without documented action is a common deficiency.  
+5. Evidence of policy oversight. Surveyors will verify that the Governing Body has approved the agency's policies and that a review cycle exists.  
+6. Evidence of fiscal oversight. Surveyors will review whether the Governing Body monitors the agency's financial viability and acts on adverse trends.  
+7. Meeting frequency and documentation quality. Surveyors will request all meeting minutes for the survey look-back period and assess completeness, including attendance, quorum, and documented decisions.
+
+---
+
+### **8.3 Common Failure Points**
+
+| Failure Point | Risk | Mitigation |
+| :---- | :---- | :---- |
+| No documented evidence that a Governing Body exists or functions. | Condition-level deficiency under 42 CFR § 484.105. Potential termination of Medicare certification. | Maintain establishing documents, current roster, and quarterly minutes on file and readily accessible. |
+| Governing Body meetings are held but not documented. | Surveyor will treat undocumented meetings as not having occurred. | Use Appendix D template; complete draft minutes within 14 calendar days. |
+| Governing Body "rubber stamps" reports without documented discussion or action. | Surveyors will cite passive governance as failure to exercise oversight. | Minutes must document specific discussion points, questions, directives, and assigned follow-up. |
+| Key leadership vacancies are unfilled for extended periods. | Surveyor will cite failure to ensure adequate management. | Fill or designate interim within 14 calendar days per Section 6.5. |
+| No documented conflict of interest disclosures. | OIG compliance program requirement; potential survey finding. | Enforce annual disclosure per Appendix B; Compliance Officer tracks compliance. |
+| QAPI plan approved but no evidence of Governing Body review of quality data. | Surveyor will cite failure of governing body oversight of QAPI (42 CFR § 484.65 cross-reference). | Require quarterly QAPI report presentation and document Governing Body response. |
+
+---
+
+## **9\. References**
+
+### **9.1 Federal Regulations**
+
+| Citation | Title | Relevance |
+| :---- | :---- | :---- |
+| 42 CFR § 484.2 | Definitions | Defines "governing body" and key terms for home health agencies. |
+| 42 CFR § 484.105 | Condition of Participation: Organization and Administration of Services | Primary regulatory basis for this policy. Requires a governing body with full legal authority for agency operation and management. |
+| 42 CFR § 484.105(a) | Standard: Governing body | Mandates governing body responsibility for agency operations, appointment of administrator, and oversight of services. |
+| 42 CFR § 484.105(b) | Standard: Administrator | Requires appointment of a qualified administrator responsible to the governing body. |
+| 42 CFR § 484.105(c) | Standard: Clinical manager | Requires designation of a qualified clinical manager for oversight of clinical services. |
+| 42 CFR § 484.60 | Condition of Participation: Care planning, coordination, and quality of care | Governing body accountability for ensuring care planning and quality. |
+| 42 CFR § 484.65 | Condition of Participation: Quality assessment and performance improvement (QAPI) | Governing body must ensure an effective QAPI program. |
+| 42 CFR § 484.70 | Condition of Participation: Infection prevention and control | Governing body oversight of infection prevention. |
+| 42 CFR § 484.100 | Condition of Participation: Compliance with Federal, State, and local laws | Governing body must ensure full legal compliance. |
+| 42 CFR § 484.102 | Condition of Participation: Emergency preparedness | Governing body must approve emergency preparedness plan. |
+| 42 CFR § 484.110 | Condition of Participation: Clinical records | Governing body oversight of clinical records policies. |
+
+---
+
+### **9.2 CMS Guidance**
+
+| Document | Relevance |
+| :---- | :---- |
+| CMS State Operations Manual, Appendix B — Guidance to Surveyors: Home Health Agencies | Provides interpretive guidelines for survey of 42 CFR § 484.105 compliance; defines surveyor expectations for governing body evidence. |
+| CMS OASIS-E2 Guidance Manual (effective April 2026\) | While not directly governing the Governing Body, the Governing Body is accountable for ensuring the agency's OASIS program meets CMS requirements (see CL-OA domain policies). |
+
+---
+
+### **9.3 OIG Guidance**
+
+| Document | Relevance |
+| :---- | :---- |
+| OIG Compliance Program Guidance for Home Health Agencies (1998; supplemented) | Establishes expectation that the governing body actively oversees the compliance program and receives regular compliance reports. |
+
+---
+
+### **9.4 Cross-Referenced Agency Policies**
+
+*Note: All policy IDs below reflect the updated v6.0 framework codes. The legacy GV-GA-xxx codes from the original policy draft have been replaced with their correct current framework identifiers.*
+
+| Policy ID | Policy Title | Relationship to GV-GB-001 |
+| :---- | :---- | :---- |
+| GV-OG-001 | Organizational Structure & Reporting | Governing Body approves organizational structure. |
+| GV-OG-002 | Administrator Qualifications & Responsibilities | Governing Body appoints and evaluates Administrator. |
+| GV-OG-003 | Scope of Services Definition | Governing Body approves scope of services. |
+| GV-OG-004 | Strategic Planning & Annual Goals | Governing Body approves strategic plan. |
+| GV-OG-005 | Delegation of Authority | Governs limits of Governing Body delegation. |
+| GV-PM-001 | Policy Development & Approval Process | Governing Body approves REQUIRED-tier policies. |
+| GV-PM-002 | Policy Review & Revision Cycle | Governing Body ensures policy review cycle. |
+| GV-PM-003 | Policy Acknowledgment & Staff Attestation | Staff acknowledgment of this and all policies. |
+| GV-GB-002 | Board Meeting & Minutes Requirements | Details meeting documentation standards. |
+| GV-GB-003 | Conflict of Interest Disclosure | Governs member conflict disclosures. |
+| GV-GB-004 | Succession Planning for Key Leadership | Governing Body reviews succession plan. |
+| GV-GB-005 | Annual Governance Self-Assessment | Governing Body self-assessment tool. |
+| GV-EA-004 | Agency Licensure & Certification Maintenance | Governing Body ensures licensure/certification currency. |
+| GV-EA-005 | Agency Closure or Change of Ownership | Governing Body directs CHOW process. |
+| QA-PG-001 | QAPI Program Establishment & Governance | Governing Body oversees QAPI program. |
+| QA-PG-002 | QAPI Plan Development & Annual Review | Governing Body approves QAPI plan. |
+| QA-AE-003 | Corrective Action Plan Development & Tracking | Escalation path for governance deficiencies. |
+| QA-SM-004 | Home Health Compare & Star Rating Monitoring | Data reported to Governing Body quarterly. |
+| CO-CP-001 | Corporate Compliance Program | Governing Body oversees compliance program. |
+| CO-CP-002 | Compliance Officer Designation & Authority | Governing Body appoints Compliance Officer. |
+| CO-CP-005 | Whistleblower Protection & Non-Retaliation | Governing Body ensures non-retaliation. |
+| CO-CP-007 | Compliance Investigation Process | Governing Body directs investigations. |
+| CO-HP-007 | Record Retention & Destruction | Retention standards for governance records. |
+| FN-FP-005 | Annual Budget & Financial Planning | Governing Body approves budget. |
+| HR-TA-003 | OIG/SAM Exclusion Screening | Screening of Governing Body members. |
+| OP-FM-005 | Emergency Operations & Business Continuity | Governing Body approves emergency plan. |
+| EN-TG-001 | Enterprise Policy Taxonomy & Classification Governance | Framework under which this policy is classified. |
+
+---
+
+## **10\. Training & Acknowledgment Requirements**
+
+10.1 All Governing Body members of Care Indeed Home Health Care, Inc. shall receive orientation to this policy within 14 calendar days of appointment. Orientation shall be conducted by the Administrator or Compliance Officer and must cover: (a) the legal authority and responsibilities of the Governing Body; (b) meeting and quorum requirements; (c) conflict of interest obligations; (d) QAPI, compliance, and financial oversight expectations; (e) CMS survey process and surveyor expectations for governance documentation.
+
+10.2 All Governing Body members and senior leadership personnel within scope of this policy (Section 3\) shall sign the Policy Acknowledgment Form (Appendix C) within 14 calendar days of the policy effective date, any revision, or new appointment.
+
+10.3 The Administrator shall maintain a tracking log of all policy acknowledgments and report any non-compliance to the Governing Body Chair within 7 calendar days of the acknowledgment deadline. Failure to acknowledge within the required timeframe shall result in written notification from the Governing Body Chair with a mandatory completion deadline of 7 additional calendar days.
+
+10.4 Annual refresher training on governing body responsibilities shall be conducted at the first quarterly meeting of each calendar year. Attendance shall be documented in meeting minutes.
+
+---
+
+## **11\. Version Control**
+
+11.1 This policy is maintained under the agency's enterprise policy lifecycle management system per policy EN-LC-001.
+
+11.2 Only the most current approved version of this policy, as reflected in the policy header, is valid for any operational, compliance, or regulatory purpose. All superseded versions must be archived and clearly marked as "SUPERSEDED — NOT FOR USE."
+
+11.3 Any substantive revision to this policy requires: (a) review and approval by the Governing Body, documented in meeting minutes; (b) re-acknowledgment by all personnel within scope, within 14 calendar days of the revised effective date; (c) update to the enterprise policy index per EN-TG-001.
+
+11.4 Non-substantive revisions (formatting, typographical corrections, updated cross-references) may be approved by the Administrator with notification to the Governing Body at the next regular meeting. Non-substantive revisions do not require re-acknowledgment.
+
+---
+
+## **APPENDICES**
+
+---
+
+### **Appendix A — Governing Body Membership Roster**
+
+Care Indeed Home Health Care, Inc. Policy Reference: GV-GB-001 | Version: 6.0 | Date: 2025-07-10 Address: 890 Santa Cruz Ave, Menlo Park, CA 94025 | Phone: (408) 728-6020
+
+Purpose: To maintain a current, accurate record of all individuals serving on the Governing Body, as required by 42 CFR § 484.105 and agency policy GV-GB-001, Section 6.1.2.
+
+Instructions: The Governing Body Chair (or designee) shall update this roster within 7 calendar days of any membership change. A copy shall be maintained in the agency governance file and provided to the Administrator. This roster must be readily accessible for CMS survey review.
+
+| \# | Full Legal Name | Title / Role on Governing Body | Voting Status (Voting / Non-Voting / Advisory) | Date of Appointment | Term Expiration Date | Competency Area (Clinical / Financial / Regulatory / Other) | Phone Number | Email Address | OIG/SAM Screening Current? (Y/N) | Date of Last OIG/SAM Screen |
+| :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
+| 1 |  |  |  |  |  |  |  |  |  |  |
+| 2 |  |  |  |  |  |  |  |  |  |  |
+| 3 |  |  |  |  |  |  |  |  |  |  |
+| 4 |  |  |  |  |  |  |  |  |  |  |
+| 5 |  |  |  |  |  |  |  |  |  |  |
+| 6 |  |  |  |  |  |  |  |  |  |  |
+| 7 |  |  |  |  |  |  |  |  |  |  |
+
+Roster Maintained By: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ Title: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+Date Last Updated: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+Quorum Requirement: \_\_\_\_\_\_\_\_\_ of \_\_\_\_\_\_\_\_\_ voting members
+
+Total Voting Members: \_\_\_\_\_\_\_\_\_ | Total Non-Voting / Advisory Members: \_\_\_\_\_\_\_\_\_
+
+---
+
+### **Appendix B — Conflict of Interest Disclosure Form**
+
+Care Indeed Home Health Care, Inc. Policy Reference: GV-GB-001 / GV-GB-003 | Version: 6.0 | Date: 2025-07-10
+
+Purpose: To identify, document, and manage actual or potential conflicts of interest for all Governing Body members, as required by agency policy GV-GB-003 and OIG Compliance Program Guidance. This form supports the Governing Body's fiduciary duty and ensures transparency in governance decisions.
+
+Instructions: Each Governing Body member shall complete this form: (1) at the time of initial appointment; (2) annually, at the first quarterly meeting of each calendar year; and (3) within 7 calendar days of any change in circumstances that could create a new actual or potential conflict. Submit the completed form to the Compliance Officer. The Compliance Officer shall review all disclosures within 14 calendar days and present a summary to the Governing Body with recommendations.
+
+SECTION 1 — MEMBER INFORMATION
+
+| Field | Response |
+| :---- | :---- |
+| Full Legal Name |  |
+| Title / Role on Governing Body |  |
+| Date of Appointment |  |
+| Disclosure Period | From: \_\_\_\_\_\_\_\_\_\_\_\_\_ To: \_\_\_\_\_\_\_\_\_\_\_\_\_ |
+| Type of Disclosure | ☐ Initial ☐ Annual Renewal ☐ Change in Circumstances |
+
+SECTION 2 — FINANCIAL INTERESTS
+
+Do you, or any member of your immediate family (spouse, domestic partner, parent, child, sibling), hold any of the following interests that could relate to the agency's operations, vendors, referral sources, or competitors?
+
+| \# | Question | Yes | No | If Yes, Describe |
+| :---- | :---- | :---- | :---- | :---- |
+| 2.1 | Ownership interest (equity, stock, partnership) in any entity that does business with, competes with, or provides referrals to Care Indeed Home Health Care, Inc.? | ☐ | ☐ |  |
+| 2.2 | Employment, consulting, or advisory relationship with any entity that does business with, competes with, or provides referrals to this agency? | ☐ | ☐ |  |
+| 2.3 | Financial interest in any vendor, supplier, or contractor used by the agency? | ☐ | ☐ |  |
+| 2.4 | Receipt of compensation, gifts, gratuities, or other benefits (exceeding $50 in aggregate annually) from any entity that does business with or seeks to do business with the agency? | ☐ | ☐ |  |
+
+SECTION 3 — PROFESSIONAL & ORGANIZATIONAL RELATIONSHIPS
+
+| \# | Question | Yes | No | If Yes, Describe |
+| :---- | :---- | :---- | :---- | :---- |
+| 3.1 | Do you serve on the board of directors, governing body, or advisory board of any other healthcare entity, referral source, or competitor? | ☐ | ☐ |  |
+| 3.2 | Do you have any professional relationship with any physician, physician group, hospital, skilled nursing facility, or other provider that refers patients to or receives referrals from Care Indeed Home Health Care, Inc.? | ☐ | ☐ |  |
+| 3.3 | Do you have any other relationship or interest that could reasonably be perceived as creating a conflict of interest with your duties as a Governing Body member? | ☐ | ☐ |  |
+
+SECTION 4 — ATTESTATION
+
+I hereby certify that the information provided above is true, complete, and accurate to the best of my knowledge. I understand that:
+
+* I have an ongoing obligation to disclose any new conflict within 7 calendar days of becoming aware of it.  
+* I must recuse myself from discussion and voting on any matter in which I have a disclosed conflict.  
+* Failure to disclose a known conflict may result in removal from the Governing Body of Care Indeed Home Health Care, Inc.
+
+Signature: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ Date: \_\_\_\_\_\_\_\_\_\_\_\_\_
+
+Printed Name: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+FOR COMPLIANCE OFFICER USE ONLY
+
+| Field | Response |
+| :---- | :---- |
+| Date Received |  |
+| Reviewed By (Compliance Officer Name) |  |
+| Date Reviewed |  |
+| Conflicts Identified? | ☐ None ☐ Yes — See management plan below |
+| Management Plan / Recommendation |  |
+| Presented to Governing Body? | ☐ Yes — Date: \_\_\_\_\_\_\_\_\_\_\_\_\_ ☐ Pending |
+| Governing Body Action Taken |  |
+
+---
+
+### **Appendix C — Policy Acknowledgment Form**
+
+Care Indeed Home Health Care, Inc. Policy Reference: GV-GB-001 | Version: 6.0
+
+Purpose: To document that all individuals within the scope of this policy have received, read, and understand their obligations under GV-GB-001 — Governing Body Authority & Responsibilities, as required by policy GV-PM-003.
+
+Instructions: Each individual within the scope of this policy must sign this form within 14 calendar days of the policy effective date, any policy revision, or new appointment. The Administrator shall collect all signed forms and maintain them in the policy acknowledgment file. Failure to acknowledge within the required timeframe shall be escalated per Section 10.3.
+
+ACKNOWLEDGMENT
+
+I, the undersigned, acknowledge that:
+
+* I have received and read Policy GV-GB-001 — Governing Body Authority & Responsibilities, Version 6.0, effective 2025-07-10.  
+* I understand the responsibilities, requirements, and expectations described in this policy as they apply to my role at Care Indeed Home Health Care, Inc.  
+* I understand that I am accountable for complying with this policy and that non-compliance may result in corrective action.  
+* I have had the opportunity to ask questions and receive clarification regarding any aspect of this policy.
+
+| Field | Response |
+| :---- | :---- |
+| Full Name (Printed) |  |
+| Title / Role |  |
+| Signature |  |
+| Date Signed |  |
+
+Collected By: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ Date Filed: \_\_\_\_\_\_\_\_\_\_\_\_\_
+
+---
+
+### **Appendix D — Governing Body Meeting Minutes Template**
+
+Care Indeed Home Health Care, Inc. GOVERNING BODY MEETING MINUTES Policy Reference: GV-GB-001 / GV-GB-002 | Version: 6.0
+
+Purpose: To provide a standardized format for documenting Governing Body meetings that satisfies CMS surveyor expectations, ensures audit defensibility, and captures all required elements per policy GV-GB-002.
+
+Instructions: The Designated Secretary shall use this template for all regular and special Governing Body meetings. Draft minutes shall be completed within 14 calendar days of the meeting. Minutes shall be submitted to the Governing Body Chair for preliminary review and approved by the full Governing Body at the next regular meeting. Approved minutes shall be maintained in the agency governance file and retained for a minimum of 7 years per policy CO-HP-007.
+
+MEETING INFORMATION
+
+| Field | Response |
+| :---- | :---- |
+| Meeting Type | ☐ Regular Quarterly ☐ Special ☐ Annual |
+| Date |  |
+| Time | Start: \_\_\_\_\_\_\_\_\_\_\_\_\_ End: \_\_\_\_\_\_\_\_\_\_\_\_\_ |
+| Location | ☐ In-Person: Care Indeed Home Health Care, Inc. — 890 Santa Cruz Ave, Menlo Park, CA 94025 ☐ Teleconference / Video |
+| Minutes Recorded By |  |
+
+ATTENDANCE
+
+| \# | Member Name | Role | Present (Y/N) | Attendance Method (In-Person / Remote) |
+| :---- | :---- | :---- | :---- | :---- |
+| 1 |  |  |  |  |
+| 2 |  |  |  |  |
+| 3 |  |  |  |  |
+| 4 |  |  |  |  |
+| 5 |  |  |  |  |
+
+Quorum Required: \_\_\_\_\_\_\_\_\_ | Members Present: \_\_\_\_\_\_\_\_\_ | Quorum Achieved: ☐ Yes ☐ No
+
+Guests / Non-Members Present:
+
+| Name | Title | Purpose of Attendance |
+| :---- | :---- | :---- |
+|  |  |  |
+
+STANDING AGENDA ITEMS
+
+1\. Call to Order Called to order at \_\_\_\_\_\_\_\_\_\_\_\_\_ by \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+2\. Approval of Prior Meeting Minutes Minutes from \_\_\_\_\_\_\_\_\_\_\_\_\_ (date) meeting reviewed. ☐ Approved as written ☐ Approved with amendments (describe): \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ Motion by: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ Second by: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+3\. Administrator Report
+
+| Topic | Summary of Report | Discussion / Questions | Action Required | Responsible Party | Deadline |
+| :---- | :---- | :---- | :---- | :---- | :---- |
+|  |  |  |  |  |  |
+
+4\. Compliance Report (Compliance Officer)
+
+| Topic | Summary | Discussion / Questions | Action Required | Responsible Party | Deadline |
+| :---- | :---- | :---- | :---- | :---- | :---- |
+| Active investigations |  |  |  |  |  |
+| Audit findings |  |  |  |  |  |
+| Regulatory changes |  |  |  |  |  |
+| Training completion rates |  |  |  |  |  |
+
+5\. QAPI Report (Clinical Manager / QA Designee)
+
+| Topic | Summary | Discussion / Questions | Action Required | Responsible Party | Deadline |
+| :---- | :---- | :---- | :---- | :---- | :---- |
+| Quality indicator trends |  |  |  |  |  |
+| Active PIPs status |  |  |  |  |  |
+| Adverse events summary |  |  |  |  |  |
+| Patient satisfaction data |  |  |  |  |  |
+| Star Rating / HH Compare |  |  |  |  |  |
+
+6\. Financial Report (Administrator)
+
+| Topic | Summary | Discussion / Questions | Action Required | Responsible Party | Deadline |
+| :---- | :---- | :---- | :---- | :---- | :---- |
+| Revenue vs. budget |  |  |  |  |  |
+| A/R aging |  |  |  |  |  |
+| Claims denial rate |  |  |  |  |  |
+| Cash flow position |  |  |  |  |  |
+
+7\. Old Business
+
+| Topic | Status Update | Action Required | Responsible Party | Deadline |
+| :---- | :---- | :---- | :---- | :---- |
+|  |  |  |  |  |
+
+8\. New Business
+
+| Topic | Discussion | Motion / Decision | Moved By | Seconded By | Vote Result |
+| :---- | :---- | :---- | :---- | :---- | :---- |
+|  |  |  |  |  |  |
+
+9\. Executive Session (if applicable) ☐ Executive session convened at \_\_\_\_\_\_\_\_\_\_\_\_\_ for the purpose of: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ ☐ Executive session adjourned at \_\_\_\_\_\_\_\_\_\_\_\_\_ (Detailed content of executive session recorded separately per agency bylaws.)
+
+10\. Adjournment Meeting adjourned at \_\_\_\_\_\_\_\_\_\_\_\_\_ by \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ Motion by: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ Second by: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+Next Regular Meeting Scheduled: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+MINUTES APPROVAL
+
+| Field | Response |
+| :---- | :---- |
+| Draft Completed By |  |
+| Date Draft Completed |  |
+| Reviewed By (Chair) |  |
+| Date Reviewed |  |
+| Approved by Governing Body | Date: \_\_\_\_\_\_\_\_\_\_\_\_\_ |
+| Approval Documented in Minutes of | (Next meeting date): \_\_\_\_\_\_\_\_\_\_\_\_\_ |
+
+---
+
+### **Appendix E — Governing Body Quarterly Oversight Checklist**
+
+Care Indeed Home Health Care, Inc. Policy Reference: GV-GB-001 | Version: 6.0
+
+Purpose: To provide the Governing Body Chair and Administrator with a structured checklist to verify that all required oversight activities are completed each quarter, supporting continuous survey readiness and compliance with 42 CFR § 484.105.
+
+Instructions: The Administrator shall complete this checklist prior to each quarterly meeting and present it to the Governing Body Chair. Any item marked "No" or "N/A" must include an explanation and a corrective action plan with a defined deadline. The completed checklist shall be filed in the agency governance file.
+
+Quarter: ☐ Q1 ☐ Q2 ☐ Q3 ☐ Q4 | Calendar Year: \_\_\_\_\_\_\_\_\_\_\_
+
+| \# | Oversight Item | Completed (Y/N/N-A) | Evidence Location | Notes / Corrective Action if "No" |
+| :---- | :---- | :---- | :---- | :---- |
+| 1 | Governing Body meeting convened this quarter with quorum? |  |  |  |
+| 2 | Meeting agenda distributed at least 7 days prior? |  |  |  |
+| 3 | Prior meeting minutes approved? |  |  |  |
+| 4 | Administrator report presented? |  |  |  |
+| 5 | Compliance Officer report presented? |  |  |  |
+| 6 | QAPI report presented? |  |  |  |
+| 7 | Financial report presented? |  |  |  |
+| 8 | All Governing Body member OIG/SAM screenings current (monthly)? |  |  |  |
+| 9 | All Conflict of Interest disclosures current? |  |  |  |
+| 10 | All key leadership positions filled (Administrator, Clinical Manager, Compliance Officer)? |  |  |  |
+| 11 | Governing Body membership roster current? |  |  |  |
+| 12 | Policy acknowledgments current for all members/leaders in scope? |  |  |  |
+| 13 | Q1 Only: Annual QAPI plan reviewed and approved? |  |  |  |
+| 14 | Q1 Only: Annual refresher training on governance responsibilities conducted? |  |  |  |
+| 15 | Q1 Only: Governing Body composition reviewed for competency coverage? |  |  |  |
+| 16 | Q2 Only: Succession plan reviewed and approved? |  |  |  |
+| 17 | Q3 Only: Emergency preparedness plan reviewed and approved? |  |  |  |
+| 18 | Pre-Fiscal Year: Annual operating budget reviewed and approved? |  |  |  |
+| 19 | All directives from prior meeting assigned, tracked, and status reported? |  |  |  |
+| 20 | Any Condition-level survey findings requiring Governing Body action? |  |  |  |
+
+Completed By: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ Title: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+Date: \_\_\_\_\_\_\_\_\_\_\_\_\_ Presented to Governing Body Chair: ☐ Yes — Date: \_\_\_\_\_\_\_\_\_\_\_\_\_
+
+---
+
+### **Appendix F — Governing Body Annual Calendar of Required Actions**
+
+Care Indeed Home Health Care, Inc. Policy Reference: GV-GB-001 | Version: 6.0
+
+Purpose: To provide a consolidated annual calendar of all Governing Body actions required by this policy and cross-referenced policies, ensuring no required action is missed.
+
+Instructions: The Administrator shall use this calendar for annual planning. It should be reviewed and updated at the beginning of each calendar year and distributed to all Governing Body members with the Q1 meeting agenda.
+
+| Quarter | Required Actions | Policy Reference | Responsible Party |
+| :---- | :---- | :---- | :---- |
+| Q1 | Convene regular quarterly meeting. | GV-GB-001 §6.3 | Governing Body Chair |
+|  | Review and approve the annual QAPI plan. | GV-GB-001 §6.2.4.1; QA-PG-002 | Governing Body |
+|  | Conduct annual Governing Body composition review (competency coverage). | GV-GB-001 §6.1.3 | Governing Body Chair |
+|  | Collect annual Conflict of Interest disclosures from all members. | GV-GB-001 §6.4.1; GV-GB-003 | Compliance Officer |
+|  | Conduct annual refresher training on governance responsibilities. | GV-GB-001 §10.4 | Administrator |
+|  | Conduct annual Governance Self-Assessment (if adopted). | GV-GB-005 | Governing Body Chair |
+| Q2 | Convene regular quarterly meeting. | GV-GB-001 §6.3 | Governing Body Chair |
+|  | Review and approve succession plan for key leadership. | GV-GB-001 §6.2.2.5; GV-GB-004 | Governing Body |
+|  | Review scope of services (if fiscal year begins Q3). | GV-GB-001 §6.2.1.3; GV-OG-003 | Governing Body |
+| Q3 | Convene regular quarterly meeting. | GV-GB-001 §6.3 | Governing Body Chair |
+|  | Review and approve Emergency Preparedness Plan. | GV-GB-001 §6.2.6.1; OP-FM-005 | Governing Body |
+|  | Review emergency drill results. | GV-GB-001 §6.2.6.2 | Administrator |
+| Q4 | Convene regular quarterly meeting. | GV-GB-001 §6.3 | Governing Body Chair |
+|  | Review and approve annual operating budget for upcoming fiscal year. | GV-GB-001 §6.2.5.1; FN-FP-005 | Governing Body |
+|  | Complete annual Administrator performance evaluation. | GV-GB-001 §6.2.2.4 | Governing Body |
+|  | Establish and distribute next year's meeting schedule by December 15\. | GV-GB-001 §6.3.1 | Governing Body Chair |
+|  | Review and approve scope of services for upcoming year (if fiscal year begins Q1). | GV-GB-001 §6.2.1.3; GV-OG-003 | Governing Body |
+| Ongoing (Every Meeting) | Review Administrator report. | GV-GB-001 §6.2.5.2 | Administrator |
+|  | Review Compliance Officer report. | GV-GB-001 §6.2.3.2 | Compliance Officer |
+|  | Review QAPI report. | GV-GB-001 §6.2.4.2 | Clinical Manager |
+|  | Review financial report. | GV-GB-001 §6.2.5.2 | Administrator |
+|  | Review status of prior meeting directives. | GV-GB-001 §6.3.4 | Designated Secretary |
+|  | Verify OIG/SAM screening currency for all members. | GV-GB-001 §6.1.4; HR-TA-003 | Compliance Officer |
+| Ongoing (Monthly) | OIG/SAM exclusion screening of all Governing Body members. | GV-GB-001 §6.1.4; HR-TA-003 | Compliance Officer |
+

@@ -12,8 +12,8 @@ interface MasterExportProps {
 
 function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="text-white/60 hover:text-white transition-colors">
-      {on ? <ToggleRight className="w-5 h-5 text-[#00F0FF]" /> : <ToggleLeft className="w-5 h-5 text-white/25" />}
+    <button onClick={onClick} className="text-gray-500 hover:text-gray-700 transition-colors">
+      {on ? <ToggleRight className="w-5 h-5 text-[#007970]" /> : <ToggleLeft className="w-5 h-5 text-gray-300" />}
     </button>
   );
 }
@@ -74,32 +74,32 @@ export default function MasterExport({ policies, onUpdatePolicy }: MasterExportP
   ];
 
   const renderPolicyRows = (list: Policy[], flag: 'master' | 'scorm') => (
-    <div className="divide-y divide-white/[0.04]">
+    <div className="divide-y divide-gray-100">
       {eligible.map(p => {
         const active = flag === 'master' ? p.publishToMasterFile : p.publishToScorm;
         const inList = list.some(l => l.id === p.id);
         return (
           <div
             key={p.id}
-            className={`flex items-center gap-4 px-5 py-3 transition-all ${inList ? 'bg-[#00F0FF]/[0.02]' : ''}`}
+            className={`flex items-center gap-4 px-5 py-3 transition-all ${inList ? 'bg-[#007970]/5' : ''}`}
           >
             <button
               onClick={() => flag === 'master' ? toggleMasterFile(p) : toggleScorm(p)}
               className="shrink-0"
             >
               {active
-                ? <CheckSquare className="w-4 h-4 text-[#00F0FF]" />
-                : <Square className="w-4 h-4 text-white/20" />}
+                ? <CheckSquare className="w-4 h-4 text-[#007970]" />
+                : <Square className="w-4 h-4 text-gray-300" />}
             </button>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[#00F0FF] text-[10px] font-bold">{p.policyId}</span>
+                <span className="font-mono text-[#007970] text-[10px] font-bold">{p.policyId}</span>
                 <TierBadge tier={p.tier} />
                 <StatusBadge status={p.status} />
               </div>
-              <div className="text-white/65 text-xs font-medium truncate mt-0.5">{p.title}</div>
+              <div className="text-gray-600 text-xs font-medium truncate mt-0.5">{p.title}</div>
             </div>
-            <div className="text-white/30 text-[10px] shrink-0">{p.domainCode}</div>
+            <div className="text-gray-400 text-[10px] shrink-0">{p.domainCode}</div>
           </div>
         );
       })}
@@ -111,34 +111,34 @@ export default function MasterExport({ policies, onUpdatePolicy }: MasterExportP
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Eligible Policies', value: eligible.length, color: 'text-white/70' },
-          { label: 'Master File Queue', value: masterFlagged.length, color: 'text-[#00F0FF]' },
-          { label: 'SCORM Queue', value: scormFlagged.length, color: 'text-[#FF5A1F]' },
-          { label: 'Drive Sync', value: '—', color: 'text-white/30' },
+          { label: 'Eligible Policies', value: eligible.length, color: 'text-gray-700' },
+          { label: 'Master File Queue', value: masterFlagged.length, color: 'text-[#007970]' },
+          { label: 'SCORM Queue', value: scormFlagged.length, color: 'text-[#C74600]' },
+          { label: 'Drive Sync', value: '—', color: 'text-gray-400' },
         ].map(s => (
           <GlassCard key={s.label} className="p-4">
             <div className={`text-2xl font-bold mb-1 ${s.color}`}>{s.value}</div>
-            <div className="text-white/35 text-xs">{s.label}</div>
+            <div className="text-gray-500 text-xs">{s.label}</div>
           </GlassCard>
         ))}
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-white/10 pb-0">
+      <div className="flex items-center gap-1 border-b border-gray-200 pb-0">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
               activeTab === tab.id
-                ? 'border-[#00F0FF] text-[#00F0FF]'
-                : 'border-transparent text-white/40 hover:text-white/60'
+                ? 'border-[#007970] text-[#007970]'
+                : 'border-transparent text-gray-400 hover:text-gray-600'
             }`}
           >
             {tab.label}
             {tab.count !== null && (
               <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                activeTab === tab.id ? 'bg-[#00F0FF]/15' : 'bg-white/5'
+                activeTab === tab.id ? 'bg-[#007970]/10' : 'bg-gray-100'
               }`}>
                 {tab.count}
               </span>
@@ -151,20 +151,20 @@ export default function MasterExport({ policies, onUpdatePolicy }: MasterExportP
       {activeTab === 'master' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="text-white/40 text-xs">
+            <div className="text-gray-500 text-xs">
               Select policies to include in the master policy file export.
-              Only <span className="text-[#00F0FF]">Approved</span> and <span className="text-[#00F0FF]">Published</span> policies are eligible.
+              Only <span className="text-[#007970] font-medium">Approved</span> and <span className="text-[#007970] font-medium">Published</span> policies are eligible.
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => toggleAll('master', true)}
-                className="px-3 py-1.5 rounded-lg text-xs border border-white/10 text-white/40 hover:text-white/70 hover:border-white/25 transition-all"
+                className="px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all"
               >
                 Select All
               </button>
               <button
                 onClick={() => toggleAll('master', false)}
-                className="px-3 py-1.5 rounded-lg text-xs border border-white/10 text-white/40 hover:text-white/70 hover:border-white/25 transition-all"
+                className="px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all"
               >
                 Clear All
               </button>
@@ -173,8 +173,8 @@ export default function MasterExport({ policies, onUpdatePolicy }: MasterExportP
                 disabled={masterFlagged.length === 0}
                 className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                   exportDone
-                    ? 'border-emerald-500/40 text-emerald-300 bg-emerald-500/10'
-                    : 'border-[#00F0FF]/40 text-[#00F0FF] hover:bg-[#00F0FF]/10 disabled:opacity-30 disabled:cursor-not-allowed'
+                    ? 'border-emerald-500/40 text-emerald-700 bg-emerald-50'
+                    : 'border-[#007970]/40 text-[#007970] hover:bg-[#007970]/10 disabled:opacity-30 disabled:cursor-not-allowed'
                 }`}
               >
                 <FileJson className="w-3.5 h-3.5" />
@@ -183,13 +183,13 @@ export default function MasterExport({ policies, onUpdatePolicy }: MasterExportP
             </div>
           </div>
           <GlassCard className="overflow-hidden">
-            <div className="flex items-center gap-3 px-5 py-2.5 bg-white/[0.02] border-b border-white/[0.06]">
-              <div className="text-white/30 text-[10px] uppercase tracking-wider w-4" />
-              <div className="text-white/30 text-[10px] uppercase tracking-wider flex-1">Policy</div>
-              <div className="text-white/30 text-[10px] uppercase tracking-wider w-16">Domain</div>
+            <div className="flex items-center gap-3 px-5 py-2.5 bg-gray-50 border-b border-gray-200">
+              <div className="text-gray-400 text-[10px] uppercase tracking-wider w-4" />
+              <div className="text-gray-400 text-[10px] uppercase tracking-wider flex-1">Policy</div>
+              <div className="text-gray-400 text-[10px] uppercase tracking-wider w-16">Domain</div>
             </div>
             {eligible.length === 0 ? (
-              <div className="text-center py-12 text-white/25 text-sm">
+              <div className="text-center py-12 text-gray-400 text-sm">
                 No approved or published policies yet.
               </div>
             ) : (
@@ -203,47 +203,47 @@ export default function MasterExport({ policies, onUpdatePolicy }: MasterExportP
       {activeTab === 'scorm' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="text-white/40 text-xs">
+            <div className="text-gray-500 text-xs">
               Queue policies for SCORM package generation. Each policy will be compiled into a SCORM 1.2 / 2004 module.
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => toggleAll('scorm', true)}
-                className="px-3 py-1.5 rounded-lg text-xs border border-white/10 text-white/40 hover:text-white/70 hover:border-white/25 transition-all"
+                className="px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all"
               >
                 Queue All
               </button>
               <button
                 onClick={() => toggleAll('scorm', false)}
-                className="px-3 py-1.5 rounded-lg text-xs border border-white/10 text-white/40 hover:text-white/70 hover:border-white/25 transition-all"
+                className="px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all"
               >
                 Clear Queue
               </button>
               <button
                 disabled
-                className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold border border-[#FF5A1F]/30 text-[#FF5A1F]/50 cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold border border-[#C74600]/30 text-[#C74600]/50 cursor-not-allowed"
               >
                 <BookOpen className="w-3.5 h-3.5" />
                 Generate SCORM ({scormFlagged.length})
               </button>
             </div>
           </div>
-          <GlassCard className="p-4 border border-[#FF5A1F]/20 bg-[#FF5A1F]/[0.03]">
-            <div className="text-[#FF5A1F] text-xs font-semibold mb-1">SCORM Integration Hook</div>
-            <div className="text-white/40 text-xs leading-relaxed">
+          <GlassCard className="p-4 border border-[#C74600]/20 bg-orange-50">
+            <div className="text-[#C74600] text-xs font-semibold mb-1">SCORM Integration Hook</div>
+            <div className="text-gray-500 text-xs leading-relaxed">
               SCORM generation requires a build service integration (e.g., Rustici, Articulate API, or custom pipeline).
-              This button will call <code className="text-[#FF5A1F]/70 bg-[#FF5A1F]/10 px-1 rounded">POST /api/scorm/generate</code> with
-              the selected policy IDs. Set <code className="text-white/50 bg-white/5 px-1 rounded">VITE_SCORM_API_URL</code> in your .env to activate.
+              This button will call <code className="text-[#C74600]/70 bg-[#C74600]/10 px-1 rounded">POST /api/scorm/generate</code> with
+              the selected policy IDs. Set <code className="text-gray-600 bg-gray-100 px-1 rounded">VITE_SCORM_API_URL</code> in your .env to activate.
             </div>
           </GlassCard>
           <GlassCard className="overflow-hidden">
-            <div className="flex items-center gap-3 px-5 py-2.5 bg-white/[0.02] border-b border-white/[0.06]">
-              <div className="text-white/30 text-[10px] uppercase tracking-wider w-4" />
-              <div className="text-white/30 text-[10px] uppercase tracking-wider flex-1">Policy</div>
-              <div className="text-white/30 text-[10px] uppercase tracking-wider w-16">Domain</div>
+            <div className="flex items-center gap-3 px-5 py-2.5 bg-gray-50 border-b border-gray-200">
+              <div className="text-gray-400 text-[10px] uppercase tracking-wider w-4" />
+              <div className="text-gray-400 text-[10px] uppercase tracking-wider flex-1">Policy</div>
+              <div className="text-gray-400 text-[10px] uppercase tracking-wider w-16">Domain</div>
             </div>
             {eligible.length === 0 ? (
-              <div className="text-center py-12 text-white/25 text-sm">No eligible policies yet.</div>
+              <div className="text-center py-12 text-gray-400 text-sm">No eligible policies yet.</div>
             ) : (
               renderPolicyRows(scormFlagged, 'scorm')
             )}
@@ -255,22 +255,22 @@ export default function MasterExport({ policies, onUpdatePolicy }: MasterExportP
       {activeTab === 'drive' && (
         <GlassCard className="p-8">
           <div className="flex items-center gap-3 mb-4">
-            <HardDrive className="w-6 h-6 text-white/30" />
-            <h3 className="text-white/70 font-semibold">Google Drive Sync</h3>
+            <HardDrive className="w-6 h-6 text-gray-400" />
+            <h3 className="text-gray-700 font-semibold">Google Drive Sync</h3>
           </div>
           <div className="space-y-4 max-w-xl">
-            <div className="p-4 bg-white/[0.02] rounded-xl border border-white/[0.06] text-white/40 text-sm leading-relaxed">
-              <div className="font-semibold text-white/60 mb-2">Integration Hook</div>
-              <p>This panel manages Google Drive folder sync for exported policy files. Each policy record has a <code className="text-[#00F0FF]/60 bg-[#00F0FF]/5 px-1 rounded">driveFileId</code> field that stores the associated Google Drive file ID.</p>
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-gray-500 text-sm leading-relaxed">
+              <div className="font-semibold text-gray-600 mb-2">Integration Hook</div>
+              <p>This panel manages Google Drive folder sync for exported policy files. Each policy record has a <code className="text-[#007970] bg-[#007970]/5 px-1 rounded">driveFileId</code> field that stores the associated Google Drive file ID.</p>
             </div>
-            <div className="p-4 bg-white/[0.02] rounded-xl border border-white/[0.06] text-sm font-mono text-white/35 leading-relaxed">
-              <div className="text-white/50 mb-2"># Required environment variables</div>
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-sm font-mono text-gray-500 leading-relaxed">
+              <div className="text-gray-600 mb-2"># Required environment variables</div>
               <div>VITE_GOOGLE_DRIVE_FOLDER_ID=your_folder_id</div>
               <div>VITE_GOOGLE_SERVICE_ACCOUNT=path/to/service-account.json</div>
             </div>
             <button
               disabled
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/10 text-white/25 cursor-not-allowed text-sm"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 text-gray-400 cursor-not-allowed text-sm"
             >
               <DownloadCloud className="w-4 h-4" />
               Connect Google Drive (configure .env first)

@@ -1,0 +1,31 @@
+Act as an expert React Developer and Senior Software Architect. We are updating our Home Health Agency "Policy Command Center" dashboard. The goal is to move beyond just static document management and implement an "Active Compliance" system using a strict CareIndeed brand kit (Deep Teal #007970, Rust Orange #C74600, high contrast, no pastels, Montserrat for headers, Roboto for body).
+
+I have a completed React UI template for the frontend. Please help me wire up the backend logic, state management, and data handling for the following interactive behaviors:
+
+1. THE TRIAGE HERO SECTION & METRICS
+- State Management: We need a central state store that tallies `URGENT_TASKS` based on their deadline. 
+- Behavior: 
+  - 0-7 Days = Critical (Red/Orange #C74600)
+  - 7-14 Days = Escalation (Dark Gray/Black)
+  - 14-30 Days = Warning (Outlined/Teal)
+- Policy Lifecycle Metrics: When clicking on a specific policy metric (e.g., "Pending Approval"), it should automatically filter the main Policy Library view to show only those documents.
+
+2. MASTER CALENDAR ("CAL" MODULE)
+- Data Source: Use the JSON schema from our previous compliance research mapped to 42 CFR Part 484.
+- Behavior 1: "Override" Button. When clicked, it should open a modal allowing an Administrator to alter the expected schedule (e.g., from Annually to Bi-Annually) and require a reason (stored in the audit trail).
+- Behavior 2: "Start" Button. When clicked, it opens a "Guided Workflow Modal". 
+  - This modal should dynamically pull a checklist of required actions specific to that meeting type (e.g., QAPI vs Emergency Drill).
+  - It must require the user to check all boxes and upload a file (Meeting Minutes / Sign-in sheet) before the "Complete & Log Event" button unlocks.
+  - Upon completion, the task's `lastEvent` updates to today, and `nextDate` advances according to the preferred schedule.
+
+3. URGENT ACTIONS TABLE (Command Center)
+- Behavior: When an item in the "Urgent Action Required" table is clicked, it should pull up a split view. 
+  - Left side: The operational task required.
+  - Right side: The linked agency Policy document (e.g., QA-QP-001) in read-only mode to provide direct guidance on how to complete the task.
+
+4. AUDITOR READ-ONLY MODE
+- Behavior: When the "Enable Auditor View" button is toggled on, the application should strip away all "Action", "Override", and "Edit" buttons globally. It should lock into a clean, read-only proof-of-compliance view showing high-level scores and linked policies, ensuring a surveyor cannot alter schedules.
+
+Please review this logic and provide the React context providers and backend data models needed to support these 4 interactive behaviors.
+
+design: C:\AI\Git\training\HomeHealth\Policies_and_Procedures\Builder\Dashboard.html
