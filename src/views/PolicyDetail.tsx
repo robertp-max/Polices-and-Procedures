@@ -91,12 +91,12 @@ export default function PolicyDetail({ policy, onBack, onUpdatePolicy }: PolicyD
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-roboto text-[#1F1C1B]">
       {/* Back + Header */}
       <div>
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 text-gray-400 hover:text-gray-700 text-sm transition-colors mb-4"
+          className="flex items-center gap-1.5 text-[#524048] hover:text-[#007970] text-sm font-montserrat font-semibold transition-colors mb-4"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Library
         </button>
@@ -108,8 +108,8 @@ export default function PolicyDetail({ policy, onBack, onUpdatePolicy }: PolicyD
               <TierBadge tier={policy.tier} />
               <StatusBadge status={policy.status} />
             </div>
-            <h1 className="text-xl font-bold text-gray-900 leading-snug">{policy.title}</h1>
-            <p className="text-gray-500 text-sm mt-1">{policy.briefDescription}</p>
+            <h1 className="text-2xl font-montserrat font-bold text-[#1F1C1B] leading-snug">{policy.title}</h1>
+            <p className="text-[#524048] text-base mt-1 font-roboto">{policy.briefDescription}</p>
           </div>
 
           {transitions.length > 0 && (
@@ -121,7 +121,7 @@ export default function PolicyDetail({ policy, onBack, onUpdatePolicy }: PolicyD
                   <button
                     key={nextStatus}
                     onClick={() => transitionStatus(nextStatus)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold transition-all ${action.color}`}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold font-montserrat transition-all ${action.color}`}
                   >
                     <Icon className="w-3.5 h-3.5" />
                     {action.label}
@@ -134,7 +134,7 @@ export default function PolicyDetail({ policy, onBack, onUpdatePolicy }: PolicyD
       </div>
 
       {/* Metadata */}
-      <GlassCard className="p-5">
+      <GlassCard className="p-5 bg-[#FAFBF8] border-[#E5E4E3]">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-xs">
           {[
             { label: 'Domain', value: `${policy.domainCode} — ${policy.domain}` },
@@ -145,23 +145,23 @@ export default function PolicyDetail({ policy, onBack, onUpdatePolicy }: PolicyD
             { label: 'SCORM', value: policy.publishToScorm ? 'Queued' : 'Not queued' },
           ].map(item => (
             <div key={item.label}>
-              <div className="text-gray-400 uppercase tracking-wider text-[9px] font-semibold mb-0.5">{item.label}</div>
-              <div className="text-gray-700 font-medium">{item.value}</div>
+              <div className="text-[#747470] uppercase tracking-wider text-[9px] font-semibold mb-0.5 font-montserrat">{item.label}</div>
+              <div className="text-[#1F1C1B] font-medium font-roboto">{item.value}</div>
             </div>
           ))}
         </div>
       </GlassCard>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 pb-0">
+      <div className="flex gap-1 border-b border-[#E5E4E3] pb-0">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
+            className={`px-4 py-2.5 text-sm font-montserrat font-semibold transition-all border-b-2 -mb-px ${
               activeTab === tab.id
                 ? 'border-[#007970] text-[#007970]'
-                : 'border-transparent text-gray-400 hover:text-gray-600'
+                : 'border-transparent text-[#524048] hover:text-[#007970]'
             }`}
           >
             {tab.label}
@@ -171,19 +171,19 @@ export default function PolicyDetail({ policy, onBack, onUpdatePolicy }: PolicyD
 
       {/* Tab Content */}
       {activeTab === 'policy' && (
-        <GlassCard className="p-6">
+        <GlassCard className="p-6 bg-white border-[#E5E4E3]">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-700 font-semibold text-sm uppercase tracking-wider">Policy Body</h3>
-            <button className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 border border-gray-200 hover:border-gray-300 px-3 py-1.5 rounded-lg transition-all">
+            <h3 className="text-[#1F1C1B] font-montserrat font-semibold text-sm uppercase tracking-wider">Policy Body</h3>
+            <button className="flex items-center gap-1.5 text-xs text-[#524048] hover:text-[#007970] border border-[#E5E4E3] hover:border-[#007970] px-3 py-1.5 rounded-lg font-montserrat transition-all">
               <Edit3 className="w-3 h-3" /> Edit Content
             </button>
           </div>
-          <div className="min-h-[200px] p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-600 text-sm leading-relaxed italic">
+          <div className="min-h-[200px] p-4 bg-[#FAFBF8] rounded-lg border border-[#E5E4E3] text-[#524048] text-sm leading-relaxed italic">
             {policy.policyBody}
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="text-gray-700 font-semibold text-sm uppercase tracking-wider mb-3">Training Content</div>
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-500 text-sm leading-relaxed italic">
+          <div className="mt-4 pt-4 border-t border-[#E5E4E3]">
+            <div className="text-[#1F1C1B] font-montserrat font-semibold text-sm uppercase tracking-wider mb-3">Training Content</div>
+            <div className="p-4 bg-[#FAFBF8] rounded-lg border border-[#E5E4E3] text-[#524048] text-sm leading-relaxed italic">
               {policy.trainingContent}
             </div>
           </div>
@@ -191,19 +191,19 @@ export default function PolicyDetail({ policy, onBack, onUpdatePolicy }: PolicyD
       )}
 
       {activeTab === 'procedure' && (
-        <GlassCard className="p-6">
+        <GlassCard className="p-6 bg-white border-[#E5E4E3]">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-700 font-semibold text-sm uppercase tracking-wider">Procedures</h3>
-            <button className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 border border-gray-200 hover:border-gray-300 px-3 py-1.5 rounded-lg transition-all">
+            <h3 className="text-[#1F1C1B] font-montserrat font-semibold text-sm uppercase tracking-wider">Procedures</h3>
+            <button className="flex items-center gap-1.5 text-xs text-[#524048] hover:text-[#007970] border border-[#E5E4E3] hover:border-[#007970] px-3 py-1.5 rounded-lg font-montserrat transition-all">
               <Edit3 className="w-3 h-3" /> Edit Procedures
             </button>
           </div>
-          <div className="min-h-[200px] p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-600 text-sm leading-relaxed italic">
+          <div className="min-h-[200px] p-4 bg-[#FAFBF8] rounded-lg border border-[#E5E4E3] text-[#524048] text-sm leading-relaxed italic">
             {policy.procedureBody}
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="text-gray-700 font-semibold text-sm uppercase tracking-wider mb-3">Revision Notes</div>
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-500 text-sm leading-relaxed">
+          <div className="mt-4 pt-4 border-t border-[#E5E4E3]">
+            <div className="text-[#1F1C1B] font-montserrat font-semibold text-sm uppercase tracking-wider mb-3">Revision Notes</div>
+            <div className="p-4 bg-[#FAFBF8] rounded-lg border border-[#E5E4E3] text-[#524048] text-sm leading-relaxed">
               {policy.revisionNotes}
             </div>
           </div>
@@ -212,42 +212,42 @@ export default function PolicyDetail({ policy, onBack, onUpdatePolicy }: PolicyD
 
       {activeTab === 'review' && (
         <div className="space-y-4">
-          <GlassCard className="p-5">
-            <h3 className="text-gray-700 font-semibold text-sm uppercase tracking-wider mb-4">Add Review Comment</h3>
+          <GlassCard className="p-5 bg-white border-[#E5E4E3]">
+            <h3 className="text-[#1F1C1B] font-montserrat font-semibold text-sm uppercase tracking-wider mb-4">Add Review Comment</h3>
             <div className="space-y-3">
               <div>
-                <label className="text-gray-400 text-[10px] uppercase tracking-wider font-semibold block mb-1">Reviewer Name</label>
+                <label className="text-[#524048] text-[10px] uppercase tracking-wider font-semibold block mb-1">Reviewer Name</label>
                 <input
                   type="text"
                   value={reviewerName}
                   onChange={e => setReviewerName(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm px-3 py-2 focus:outline-none focus:border-[#007970]"
+                  className="w-full bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg text-[#1F1C1B] text-sm px-3 py-2 focus:outline-none focus:border-[#007970] font-roboto"
                 />
               </div>
               <div>
-                <label className="text-gray-400 text-[10px] uppercase tracking-wider font-semibold block mb-1">Comment</label>
+                <label className="text-[#524048] text-[10px] uppercase tracking-wider font-semibold block mb-1">Comment</label>
                 <textarea
                   rows={3}
                   placeholder="Enter review comment…"
                   value={newComment}
                   onChange={e => setNewComment(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm px-3 py-2 focus:outline-none focus:border-[#007970] resize-none"
+                  className="w-full bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg text-[#1F1C1B] text-sm px-3 py-2 focus:outline-none focus:border-[#007970] resize-none font-roboto"
                 />
               </div>
               <div>
-                <label className="text-gray-400 text-[10px] uppercase tracking-wider font-semibold block mb-1">Suggested Change <span className="normal-case text-gray-300">(optional)</span></label>
+                <label className="text-[#524048] text-[10px] uppercase tracking-wider font-semibold block mb-1">Suggested Change <span className="normal-case text-[#B0B0B0]">(optional)</span></label>
                 <textarea
                   rows={2}
                   placeholder="Describe the suggested change…"
                   value={newSuggestion}
                   onChange={e => setNewSuggestion(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm px-3 py-2 focus:outline-none focus:border-[#007970] resize-none"
+                  className="w-full bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg text-[#1F1C1B] text-sm px-3 py-2 focus:outline-none focus:border-[#007970] resize-none font-roboto"
                 />
               </div>
               <button
                 onClick={addComment}
                 disabled={!newComment.trim()}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#007970] text-[#007970] text-sm font-semibold hover:bg-[#007970]/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#007970] text-[#007970] text-sm font-semibold font-montserrat hover:bg-[#007970]/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 <Send className="w-3.5 h-3.5" /> Add Comment
               </button>
@@ -255,26 +255,26 @@ export default function PolicyDetail({ policy, onBack, onUpdatePolicy }: PolicyD
           </GlassCard>
 
           {policy.reviewerComments.length === 0 ? (
-            <GlassCard className="p-8 text-center">
-              <p className="text-gray-400 text-sm">No review comments yet.</p>
+            <GlassCard className="p-8 text-center bg-[#FAFBF8] border-[#E5E4E3]">
+              <p className="text-[#B0B0B0] text-sm font-roboto">No review comments yet.</p>
             </GlassCard>
           ) : (
             policy.reviewerComments.map(comment => (
-              <GlassCard key={comment.id} className="p-5">
+              <GlassCard key={comment.id} className="p-5 bg-white border-[#E5E4E3]">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-gray-700 font-semibold text-sm">{comment.reviewerName}</span>
-                      <span className="text-gray-300 text-xs">·</span>
-                      <span className="text-gray-400 text-xs">{new Date(comment.createdAt).toLocaleDateString()}</span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${COMMENT_STATUS_COLORS[comment.status]}`}>
+                      <span className="text-[#1F1C1B] font-montserrat font-semibold text-sm">{comment.reviewerName}</span>
+                      <span className="text-[#B0B0B0] text-xs">·</span>
+                      <span className="text-[#524048] text-xs">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border font-montserrat ${COMMENT_STATUS_COLORS[comment.status]}`}>
                         {comment.status}
                       </span>
                     </div>
-                    <p className="text-gray-600 text-sm leading-relaxed">{comment.commentText}</p>
+                    <p className="text-[#524048] text-sm leading-relaxed font-roboto">{comment.commentText}</p>
                     {comment.suggestedChange && (
                       <div className="mt-2 pl-3 border-l-2 border-[#007970]/30">
-                        <p className="text-[#007970]/70 text-xs italic">{comment.suggestedChange}</p>
+                        <p className="text-[#007970]/70 text-xs italic font-roboto">{comment.suggestedChange}</p>
                       </div>
                     )}
                   </div>
@@ -285,7 +285,7 @@ export default function PolicyDetail({ policy, onBack, onUpdatePolicy }: PolicyD
                         <button
                           key={s}
                           onClick={() => updateCommentStatus(comment.id, s)}
-                          className="px-2 py-1 rounded text-[10px] border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-all"
+                          className="px-2 py-1 rounded text-[10px] border border-[#E5E4E3] text-[#524048] hover:text-[#007970] hover:border-[#007970] font-montserrat transition-all"
                         >
                           {s}
                         </button>

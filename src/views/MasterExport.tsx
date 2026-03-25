@@ -96,38 +96,38 @@ export default function MasterExport({ policies, onUpdatePolicy }: MasterExportP
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 font-roboto text-[#1F1C1B]">
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Eligible Policies', value: eligible.length, color: 'text-gray-700' },
+          { label: 'Eligible Policies', value: eligible.length, color: 'text-[#1F1C1B]' },
           { label: 'Master File Queue', value: masterFlagged.length, color: 'text-[#007970]' },
           { label: 'SCORM Queue', value: scormFlagged.length, color: 'text-[#C74600]' },
-          { label: 'Drive Sync', value: '—', color: 'text-gray-400' },
+          { label: 'Drive Sync', value: '—', color: 'text-[#B0B0B0]' },
         ].map(s => (
-          <GlassCard key={s.label} className="p-4">
-            <div className={`text-2xl font-bold mb-1 ${s.color}`}>{s.value}</div>
-            <div className="text-gray-500 text-xs">{s.label}</div>
+          <GlassCard key={s.label} className="p-4 bg-[#FAFBF8] border-[#E5E4E3]">
+            <div className={`text-2xl font-montserrat font-bold mb-1 ${s.color}`}>{s.value}</div>
+            <div className="text-[#524048] text-xs font-roboto">{s.label}</div>
           </GlassCard>
         ))}
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-gray-200 pb-0">
+      <div className="flex items-center gap-1 border-b border-[#E5E4E3] pb-0">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-montserrat font-semibold transition-all border-b-2 -mb-px ${
               activeTab === tab.id
                 ? 'border-[#007970] text-[#007970]'
-                : 'border-transparent text-gray-400 hover:text-gray-600'
+                : 'border-transparent text-[#524048] hover:text-[#007970]'
             }`}
           >
             {tab.label}
             {tab.count !== null && (
-              <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                activeTab === tab.id ? 'bg-[#007970]/10' : 'bg-gray-100'
+              <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold font-montserrat ${
+                activeTab === tab.id ? 'bg-[#007970]/10' : 'bg-[#FAFBF8]'
               }`}>
                 {tab.count}
               </span>
@@ -172,13 +172,13 @@ export default function MasterExport({ policies, onUpdatePolicy }: MasterExportP
             </div>
           </div>
           <GlassCard className="overflow-hidden">
-            <div className="flex items-center gap-3 px-5 py-2.5 bg-gray-50 border-b border-gray-200">
-              <div className="text-gray-400 text-[10px] uppercase tracking-wider w-4" />
-              <div className="text-gray-400 text-[10px] uppercase tracking-wider flex-1">Policy</div>
-              <div className="text-gray-400 text-[10px] uppercase tracking-wider w-16">Domain</div>
+            <div className="flex items-center gap-3 px-5 py-2.5 bg-[#FAFBF8] border-b border-[#E5E4E3]">
+              <div className="text-[#747470] text-[10px] uppercase tracking-wider w-4 font-montserrat" />
+              <div className="text-[#747470] text-[10px] uppercase tracking-wider flex-1 font-montserrat">Policy</div>
+              <div className="text-[#747470] text-[10px] uppercase tracking-wider w-16 font-montserrat">Domain</div>
             </div>
             {eligible.length === 0 ? (
-              <div className="text-center py-12 text-gray-400 text-sm">
+              <div className="text-center py-12 text-[#B0B0B0] text-sm font-roboto">
                 No approved or published policies yet.
               </div>
             ) : (

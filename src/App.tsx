@@ -8,7 +8,7 @@ import { ALL_POLICIES } from './data/policies';
 import type { Policy } from './types/policy';
 import Dashboard from './views/DashboardNew';
 import FrameworkView from './views/FrameworkView';
-import PolicyLibrary from './views/PolicyLibrary';
+import EnterpriseTaxonomyDashboard from './views/EnterpriseTaxonomyDashboard';
 import PolicyDetail from './views/PolicyDetail';
 import AuditorReview from './views/AuditorReview';
 import MasterExport from './views/MasterExport';
@@ -212,7 +212,7 @@ export default function App() {
               </div>
             )}
             {currentView === 'library' && (
-              <PolicyLibrary policies={policies} onSelectPolicy={selectPolicy} />
+              <EnterpriseTaxonomyDashboard />
             )}
             {currentView === 'detail' && selectedPolicy && (
               <PolicyDetail
