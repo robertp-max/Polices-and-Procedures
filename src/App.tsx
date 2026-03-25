@@ -135,7 +135,7 @@ export default function App() {
                         onClick={() => setCurrentView('library')}
                         className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
                           currentView === 'library' || currentView === 'detail'
-                            ? 'text-[#00F0FF]'
+                            ? 'text-[#007970] bg-white/10'
                             : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
                         }`}
                       >
@@ -149,7 +149,7 @@ export default function App() {
                             onClick={() => setCurrentView(child.id)}
                             className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
                               currentView === child.id
-                                ? 'text-[#00F0FF]'
+                                ? 'text-[#007970] bg-white/10'
                                 : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
                             }`}
                           >
