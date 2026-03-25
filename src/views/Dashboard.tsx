@@ -2,11 +2,12 @@ import React, { useMemo } from 'react';
 import { BarChart2, CheckCircle2, Clock, FileText, AlertTriangle, Archive, XCircle, RefreshCw } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import type { Policy } from '../types/policy';
+import type { ViewId } from '../App';
 import { DOMAIN_LABELS } from '../data/policies';
 
 interface DashboardProps {
   policies: Policy[];
-  onNavigate: (view: string, policyId?: string) => void;
+  onNavigate: (view: ViewId, policyId?: string) => void;
 }
 
 export default function Dashboard({ policies, onNavigate }: DashboardProps) {
@@ -164,7 +165,7 @@ export default function Dashboard({ policies, onNavigate }: DashboardProps) {
           ].map((action) => (
             <button
               key={action.label}
-              onClick={() => onNavigate(action.view)}
+              onClick={() => onNavigate(action.view as ViewId)}
               className={`text-left p-4 rounded-lg border bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200 ${action.color}`}
             >
               <div className="text-white/80 font-semibold text-sm">{action.label}</div>

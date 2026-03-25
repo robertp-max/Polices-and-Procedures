@@ -13,7 +13,7 @@ import PolicyDetail from './views/PolicyDetail';
 import AuditorReview from './views/AuditorReview';
 import MasterExport from './views/MasterExport';
 
-type ViewId = 'dashboard' | 'library' | 'detail' | 'auditor' | 'export';
+export type ViewId = 'dashboard' | 'library' | 'detail' | 'auditor' | 'export';
 
 const NAV_ITEMS = [
   { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard },
