@@ -1,0 +1,1007 @@
+import React, { useState, useMemo, useCallback } from 'react';
+import {
+  Shield, Search, ChevronRight, X, CheckCircle,
+  AlertTriangle, FileText, Building2, Users, Target,
+  DollarSign, Monitor, BarChart3, Scale, Heart, Cpu, Briefcase, 
+  GitBranch, Landmark, ShieldCheck, Gavel, ChevronLeft, Printer, 
+  LayoutList, Lock, FileCheck, Layers, LayoutDashboard,
+  Activity, Stethoscope, FileEdit, FileDigit, TrendingUp, 
+  AlertOctagon, Eye, UserPlus, GraduationCap, HeartHandshake, 
+  Clock, FileBadge, Receipt, Tags, PieChart, LogIn, Truck, 
+  MessageSquare, Key, DatabaseBackup, MonitorCog, Smartphone, 
+  BarChart2, UserCheck, Home, Siren, FolderTree, RefreshCw, 
+  BarChart, Database, ClipboardList, Network, FileCode2,
+  FileSignature, ClipboardCheck, Download, Share2, Flame, Copy,
+  Library
+} from 'lucide-react';
+
+// ══════════════════════════════════════════════════════════════
+// DATA DEFINITIONS & TAXONOMY
+// ══════════════════════════════════════════════════════════════
+
+const REGULATORY_ITEMS = [
+  { id: 'title22', name: 'Title 22 (California)', shortName: 'Title 22', color: '#facc15', icon: Landmark },
+  { id: '42cfr', name: '42 CFR Part 484', shortName: '42 CFR §484', color: '#00c2b4', icon: Scale },
+  { id: 'cms', name: 'CMS State Operations', shortName: 'CMS State Ops', color: '#ec4899', icon: FileCheck },
+  { id: 'hipaa', name: 'HIPAA Privacy & Security', shortName: 'HIPAA', color: '#3b82f6', icon: Lock },
+  { id: 'osha', name: 'OSHA / Cal-OSHA', shortName: 'OSHA', color: '#f59e0b', icon: Shield },
+  { id: 'oig', name: 'OIG Compliance Guidance', shortName: 'OIG', color: '#8b5cf6', icon: ShieldCheck },
+  { id: 'fca', name: 'False Claims Act', shortName: 'FCA', color: '#a855f7', icon: Gavel },
+];
+
+const DOMAINS = [
+  { code: 'GV', name: 'GOVERNANCE', fullName: 'GV — Governance & Administration', icon: Building2, color: '#00c2b4', subdomains: [{ code: 'GB', name: 'Governing Body', icon: Users }, { code: 'OG', name: 'Organization', icon: Network }, { code: 'PM', name: 'Policy Management', icon: FileText }, { code: 'EA', name: 'External Affairs', icon: Briefcase }] },
+  { code: 'CL', name: 'CLINICAL OPS', fullName: 'CL — Clinical Operations', icon: Heart, color: '#ef4444', subdomains: [{ code: 'PA', name: 'Patient Assessment', icon: Stethoscope }, { code: 'CP', name: 'Care Planning', icon: ClipboardList }, { code: 'OA', name: 'OASIS', icon: FileDigit }, { code: 'SD', name: 'Service Delivery', icon: Activity }, { code: 'IC', name: 'Infection Control', icon: ShieldCheck }, { code: 'DC', name: 'Discharge', icon: LogIn }, { code: 'CA', name: 'Clinical Assessment', icon: Search }, { code: 'CD', name: 'Clinical Documentation', icon: FileEdit }, { code: 'PR', name: 'Patient Rights', icon: Shield }] },
+  { code: 'QA', name: 'QAPI', fullName: 'QA — Quality Assessment & Performance Improvement', icon: BarChart3, color: '#06b6d4', subdomains: [{ code: 'PG', name: 'QAPI Program', icon: Scale }, { code: 'SM', name: 'Star Monitoring', icon: Eye }, { code: 'AE', name: 'Adverse Events', icon: AlertOctagon }, { code: 'PI', name: 'PIPs', icon: TrendingUp }] },
+  { code: 'HR', name: 'HUMAN RES.', fullName: 'HR — Human Resources', icon: Users, color: '#8b5cf6', subdomains: [{ code: 'TA', name: 'Talent Acquisition', icon: UserPlus }, { code: 'TD', name: 'Training & Dev', icon: GraduationCap }, { code: 'WM', name: 'Workforce Mgmt', icon: Clock }, { code: 'ER', name: 'Employee Relations', icon: HeartHandshake }, { code: 'JD', name: 'Job Descriptions', icon: FileBadge }] },
+  { code: 'CO', name: 'COMPLIANCE', fullName: 'CO — Compliance & Regulatory', icon: Shield, color: '#3b82f6', subdomains: [{ code: 'CP', name: 'Compliance Program', icon: ShieldCheck }, { code: 'HP', name: 'HIPAA & Privacy', icon: Lock }, { code: 'FA', name: 'Fraud & Abuse', icon: Search }, { code: 'RA', name: 'Regulatory Affairs', icon: Scale }, { code: 'DC', name: 'Doc Compliance', icon: FileCheck }] },
+  { code: 'FN', name: 'FINANCE', fullName: 'FN — Finance & Revenue Cycle', icon: DollarSign, color: '#10b981', subdomains: [{ code: 'FP', name: 'Financial Planning', icon: PieChart }, { code: 'RC', name: 'Revenue Cycle', icon: RefreshCw }, { code: 'BL', name: 'Billing', icon: Receipt }, { code: 'CM', name: 'Coding & Classification', icon: Tags }] },
+  { code: 'OP', name: 'OPERATIONS', fullName: 'OP — Operations & Facilities', icon: Briefcase, color: '#f97316', subdomains: [{ code: 'IM', name: 'Intake Mgmt', icon: LogIn }, { code: 'SL', name: 'Service Logistics', icon: Truck }, { code: 'PA', name: 'Patient Access', icon: MessageSquare }, { code: 'FM', name: 'Facility Admin', icon: Building2 }] },
+  { code: 'IT', name: 'IT & SECURITY', fullName: 'IT — Information Technology & Security', icon: Monitor, color: '#6366f1', subdomains: [{ code: 'SC', name: 'Security Controls', icon: Key }, { code: 'DR', name: 'Data & Recovery', icon: DatabaseBackup }, { code: 'SA', name: 'Systems Admin', icon: MonitorCog }, { code: 'UP', name: 'Use Policies', icon: Smartphone }] },
+  { code: 'RM', name: 'RISK MGMT', fullName: 'RM — Risk Management & Safety', icon: AlertTriangle, color: '#eab308', subdomains: [{ code: 'ER', name: 'Enterprise Risk', icon: BarChart2 }, { code: 'SS', name: 'Staff Safety', icon: UserCheck }, { code: 'PS', name: 'Patient Safety', icon: Home }, { code: 'EP', name: 'Emergency Plan', icon: Siren }] },
+  { code: 'EN', name: 'ENTERPRISE', fullName: 'EN — Enterprise Governance & Control', icon: Cpu, color: '#ec4899', subdomains: [{ code: 'TG', name: 'Taxonomy Gov', icon: FolderTree }, { code: 'LC', name: 'Lifecycle Control', icon: RefreshCw }, { code: 'CM', name: 'Compliance Metrics', icon: BarChart }] }
+];
+
+const CLASSIFICATION_FILTERS = [
+  { id: 'master_template', name: 'Master Template', color: '#3b82f6', icon: Copy },
+  { id: 'audit_critical', name: 'Audit Critical', color: '#ef4444', icon: FileCheck },
+  { id: 'shared_enterprise', name: 'Shared Enterprise', color: '#10b981', icon: Share2 },
+  { id: 'high_risk', name: 'High Risk', color: '#f97316', icon: Flame },
+  { id: 'digital_candidate', name: 'Digital Candidate', color: '#a855f7', icon: Monitor },
+];
+
+const rawPolicies = {
+  'GV-GB': ['001: Governing Body Authority & Responsibilities', '002: Board Meeting & Minutes Requirements', '003: Conflict of Interest Disclosure', '004: Succession Planning for Key Leadership', '005: Annual Governance Self-Assessment'],
+  'GV-OG': ['001: Organizational Structure & Reporting', '002: Administrator Qualifications & Responsibilities', '003: Scope of Services Definition', '004: Strategic Planning & Annual Goals', '005: Delegation of Authority'],
+  'GV-PM': ['001: Policy Development & Approval Process', '002: Policy Review & Revision Cycle', '003: Policy Acknowledgment & Staff Attestation', '004: Communication & Notification Standards', '005: Stakeholder Grievance & Feedback Management'],
+  'GV-EA': ['001: Interagency Agreements & Contracts', '002: Community Liaison & Public Relations', '003: Legal Counsel Engagement & Oversight', '004: Agency Licensure & Certification Maintenance', '005: Agency Closure or Change of Ownership'],
+  'CL-CP': ['001: Plan of Care Development & Approval', '002: Plan of Care Review & Update', '003: Physician Orders & Order Management', '004: Verbal Order Receipt & Authentication', '005: Coordination of Care', '006: Discharge Planning & Criteria', '007: Transfer & Referral Procedures', '008: Physician Recertification Timing Compliance', '009: Physician Order Signature Tracking & Escalation'],
+  'CL-SD': ['001: Skilled Nursing Assessment & Services', '002: Physical Therapy Services', '003: Occupational Therapy Services', '004: Speech-Language Pathology Services', '005: Medical Social Work Services', '006: Home Health Aide Services & Supervision', '007: Home Health Aide Competency Evaluation', '008: Clinical Supervision & Oversight', '009: Telehealth & Remote Monitoring Services', '010: IV Therapy & Infusion Services', '011: Wound Care Assessment & Management', '012: Medication Management & Administration', '013: Medication Reconciliation at Transitions', '014: Pain Assessment & Management', '015: Fall Risk Assessment & Prevention', '016: Infection Prevention & Control', '017: Patient Education & Self-Management', '018: Diabetic Management & Monitoring', '019: Cardiac Care & Monitoring', '020: Respiratory Care & Management', '021: Pediatric Home Health Services', '022: Behavioral Health Screening & Referral', '023: Palliative & End-of-Life Care', '024: Missed Visit & Rescheduling', '025: Ordered Visit Frequency Compliance & Monitoring'],
+  'CL-CA': ['001: Patient Assessment — Comprehensive', '002: OASIS Data Collection & Accuracy', '003: OASIS Transmission & Correction', '004: Recertification Assessment & Process', '005: Homebound Status Determination & Documentation', '006: Face-to-Face Encounter Compliance', '007: Face-to-Face Encounter Tracking & Expiration Monitoring'],
+  'CL-CD': ['001: Clinical Documentation Standards', '002: Clinical Record Content & Organization', '003: Clinical Record Authentication & Signature Requirements', '004: Timely Documentation Completion & Lock Requirements'],
+  'CL-PR': ['001: Patient Rights & Responsibilities', '002: Advance Directive Compliance', '003: Informed Consent', '004: Restraint & Seclusion Prohibition', '005: Emergency Preparedness — Clinical', '006: Abuse, Neglect & Exploitation Reporting'],
+  'CL-OA': ['001: OASIS Completion Timeliness & Accountability', '002: OASIS Quality Review & Error Correction', '003: OASIS Clinician Authorization & Competency', '004: OASIS Item-Level Guidance Compliance', '005: OASIS Data Integrity & Security', '006: Documentation Hierarchy and Evidence Source Prioritization', '007: Evidence-Based OASIS Coding Substantiation', '008: Conflicting Documentation Source Resolution', '009: Point-in-Time Assessment at Start of Care', '010: CMS Look-Back Period Compliance for Assessment Items', '011: Standardized Assessment Tool Administration and Validity', '012: Clinical Reasoning Documentation for Coding Decisions', '013: Cross-Document Verification Prior to Assessment Finalization', '014: Medication Reconciliation — Prescribed Regimen vs. Actual Patient Behavior', '015: Assessment Completion Timeframe Compliance', '016: Scoring Methodology Integrity for Multi-Item Assessments', '017: Contemporaneous Documentation Requirement', '018: Clinician Competency Validation for OASIS Assessment', '019: Pre-Submission Quality Review for Comprehensive Assessments'],
+  'QA-PG': ['001: QAPI Program Establishment & Governance', '002: QAPI Plan Development & Annual Review', '003: QAPI Committee Structure & Meeting Requirements'],
+  'QA-PI': ['001: Performance Improvement Project Management', '002: Quality Indicator Monitoring & Reporting', '003: Clinical Outcome Benchmarking', '004: Data-Driven Decision Making', '005: Staff Competency Integration with QAPI', '006: Visit Utilization & LUPA Risk Management Program', '007: Staff Competency Impact on Patient Outcomes'],
+  'QA-AE': ['001: Adverse Event Identification & Reporting', '002: Root Cause Analysis Process', '003: Corrective Action Plan Development & Tracking', '004: Patient Safety Program'],
+  'QA-SM': ['001: Utilization Review & Management', '002: Infection Surveillance & Trending', '003: Patient Satisfaction Survey & Analysis', '004: Home Health Compare & Star Rating Monitoring', '005: Policy Effectiveness Monitoring and Outcome Validation'],
+  'HR-TA': ['001: Recruitment & Hiring Standards', '002: Criminal Background Check & Screening', '003: OIG/SAM Exclusion Screening', '004: Licensure & Certification Verification', '005: Employee Orientation & Onboarding', '006: Job Description & Role Definition'],
+  'HR-TD': ['001: Annual Mandatory Training Requirements', '002: Continuing Education & Professional Development', '003: Clinical Staff Competency Evaluation', '004: Student & Intern Supervision', '005: Emergency Preparedness Training & Drills'],
+  'HR-ER': ['001: Performance Evaluation & Review', '002: Disciplinary Action & Progressive Discipline', '003: Employee Grievance & Complaint Process', '004: Anti-Harassment & Non-Discrimination', '005: Substance Abuse & Drug-Free Workplace', '006: Separation & Exit Process', '007: Workforce Diversity & Inclusion', '008: Remote Work & Flexible Scheduling', '009: Mandatory Abuse Reporting by Staff'],
+  'HR-WM': ['001: Staffing Levels & Workload Management', '002: Contractor & Per Diem Staff Management', '003: Employee Health & Immunization Requirements', '004: Workplace Safety & Injury Prevention', '005: Employee Personnel File Management', '006: Volunteer Management & Oversight', '007: Personnel File Content & Compliance Requirements'],
+  'HR-JD': ['000: Governing Body Structure & Responsibilities', '001: Administrator', '002: Administrator Designee', '003: Director of Nursing / Clinical Manager', '004: Clinical Designee', '005: Registered Nurse (RN)', '006: Licensed Vocational Nurse (LVN)', '007: Home Health Aide (HHA)', '008: Medical Social Worker (MSW)', '009: Physical Therapist (PT)', '010: Occupational Therapist (OT)'],
+  'CO-CP': ['001: Corporate Compliance Program', '002: Compliance Officer Designation & Authority', '003: Compliance Committee Structure & Function', '004: Code of Conduct & Ethics', '005: Whistleblower Protection & Non-Retaliation', '006: Compliance Hotline & Reporting Mechanisms', '007: Compliance Investigation Process'], 
+  'CO-RA': ['001: Regulatory Change Monitoring & Implementation', '002: Internal Compliance Auditing Program', '003: External Audit & Survey Readiness', '004: Medicare Conditions of Participation Compliance', '005: State Licensure & Regulatory Compliance', '006: Accreditation Standards Compliance', '007: Sanctions & Enforcement Response'],
+  'CO-FA': ['001: Anti-Kickback & Stark Law Compliance', '002: False Claims Act Awareness & Prevention', '003: Fraud, Waste & Abuse Prevention'],
+  'CO-HP': ['001: HIPAA Privacy Program', '002: HIPAA Security Program', '003: HIPAA Breach Notification', '004: Minimum Necessary Standard', '005: Business Associate Agreement Management', '006: Patient Access to Records', '007: Record Retention & Destruction'],
+  'CO-DC': ['001: Assessment Audit Trail and Data Integrity', '002: Documentation Audit & Monitoring Program', '003: Late Entry, Correction & Amendment Standards', '004: Clinical, Documentation, and Billing Alignment Audit'],
+  'FN-BC': ['001: Medicare Billing & Claims Submission', '002: Claims Denial Management & Appeals', '003: Patient Billing & Financial Responsibility', '004: Overpayment Identification & Refund', '005: Pre-Claim Review Compliance', '006: Request for Anticipated Payment (RAP) Management', '007: Payment & Reimbursement Reconciliation'],
+  'FN-CM': ['001: PDGM Classification & Coding Accuracy', '002: ICD-10 Coding Standards & Accuracy', '003: Medical Necessity Documentation', '004: Episode Management & Authorization', '005: LUPA Prevention & Monitoring'],
+  'FN-FP': ['001: Payer Contract Management', '002: Charge Capture & Fee Schedule Management', '003: Revenue Cycle Performance Monitoring', '004: Bad Debt & Charity Care', '005: Annual Budget & Financial Planning', '006: Supply & Equipment Cost Management', '007: Financial Compliance & Fraud Monitoring Controls'],
+  'OP-IM': ['001: Referral & Intake Management', '002: Patient Acceptance & Admission Criteria', '003: Service Area Definition & Coverage'],
+  'OP-SL': ['001: Scheduling & Visit Management', '002: After-Hours & On-Call Services', '003: Vehicle & Transportation Safety', '004: Equipment & Supply Management', '005: Communication & Documentation Systems', '006: Service Delivery During Public Health Emergencies', '007: Inclement Weather & Hazardous Conditions'],
+  'OP-PA': ['001: Patient Complaint & Grievance Resolution', '002: Patient Identification & Verification', '003: Interpreter & Language Access Services', '004: Cultural Competency in Service Delivery', '005: Patient Property & Belongings'],
+  'OP-FM': ['001: Office Operations & Facility Management', '002: Branch Office & Satellite Operations', '003: Vendor & Supplier Management', '004: Mail & Correspondence Management', '005: Emergency Operations & Business Continuity'],
+  'IT-SC': ['001: Information Security Program', '002: Access Control & User Authentication', '003: Data Encryption Standards', '004: Network Security & Firewall Management', '005: Endpoint Security & Malware Protection', '006: Data Classification & Handling'],
+  'IT-DR': ['001: Data Backup & Recovery', '002: Disaster Recovery & IT Continuity', '003: Audit Log Management & Monitoring', '004: Cloud Services & Data Storage', '005: Security Incident Response'],
+  'IT-SA': ['001: Electronic Health Record System Management', '002: Software Acquisition & License Management', '003: System Change Management', '004: Vendor & Third-Party Security Assessment', '005: Physical Security of IT Assets'],
+  'IT-UP': ['001: Mobile Device & BYOD Security', '002: Internet & Email Acceptable Use', '003: Social Media & Public Communications', '004: Security Awareness Training'],
+  'RM-ER': ['001: Enterprise Risk Management Program', '002: Incident Reporting & Investigation', '003: Risk Assessment & Prioritization', '004: Liability & Insurance Management', '005: Risk Trending & Pattern Analysis', '006: Claims Management & Litigation Support'],
+  'RM-SS': ['001: Staff Safety & Personal Security', '002: Workplace Violence Prevention', '003: Motor Vehicle Safety & Accident Reporting'], 
+  'RM-PS': ['001: Environmental Safety Assessment', '002: Hazardous Materials & Waste Management', '003: Product & Equipment Safety Recall Management', '004: Patient Elopement & Wandering Risk', '005: High-Risk Medication Safety'],
+  'RM-EP': ['001: Pandemic & Infectious Disease Response', '002: Emergency Preparedness Training & Testing Program', '003: Patient Emergency Communication Plan'],
+  'EN-TG': ['001: Enterprise Policy Taxonomy & Classification Governance', '002: Regulatory Cross-Reference & Mapping'],
+  'EN-LC': ['001: Policy Lifecycle Management & Version Control', '002: Policy Exception & Waiver Management', '003: Policy Assignment and Role-Based Applicability Governance', '004: Policy Retirement and Obsolescence Management'],
+  'EN-CM': ['001: Policy Compliance Metrics & Dashboard Reporting', '002: Inter-Domain Policy Coordination & Conflict Resolution']
+};
+
+const newPoliciesData = [
+  { id: 'CO-HP-101', title: 'HIPAA, CMIA & Sensitive Data Privacy Management', domainCode: 'CO', subCode: 'HP' },
+  { id: 'CO-BA-101', title: 'Business Associate & Vendor PHI Management', domainCode: 'CO', subCode: 'HP' },
+  { id: 'CO-IR-101', title: 'Security Incident Response & Breach Notification', domainCode: 'CO', subCode: 'HP' },
+  { id: 'CO-DG-101', title: 'Data Governance & Minimum Necessary Enforcement', domainCode: 'CO', subCode: 'DC' },
+  { id: 'CO-FW-101', title: 'Fraud, Waste & Abuse Prevention (Comprehensive)', domainCode: 'CO', subCode: 'FA' },
+  { id: 'CO-AI-101', title: 'AI & Automated Systems Governance', domainCode: 'CO', subCode: 'DC' },
+  { id: 'HR-TR-101', title: 'Workforce Training, Competency & Policy Acknowledgment', domainCode: 'HR', subCode: 'TD' },
+  { id: 'HR-EH-101', title: 'Employee Health, Exposure & Occupational Clearance', domainCode: 'HR', subCode: 'WM' },
+  { id: 'RM-OS-101', title: 'Cal/OSHA Occupational Safety Program (IIPP)', domainCode: 'RM', subCode: 'SS' },
+  { id: 'RM-EP-004', title: 'Public Health Emergency Integration', domainCode: 'RM', subCode: 'EP' } 
+];
+
+const FORMS_DATASET = [
+  // ── ENTERPRISE CONTROL (EN) ──
+  { id: 'EN-FM-001', name: 'Universal Policy Acknowledgment Form', type: 'Attestation', policies: ['ALL (270 Policies)'], domainCode: 'EN', usage: 'Required', frequency: 'Triggered', classifications: ['master_template', 'shared_enterprise', 'digital_candidate'] },
+  { id: 'EN-FM-002', name: 'Master Policy Index / Taxonomy Register', type: 'Tracking Tool', policies: ['EN-TG-001'], domainCode: 'EN', usage: 'Required', frequency: 'Ongoing', classifications: ['master_template', 'shared_enterprise'] },
+  { id: 'EN-FM-003', name: 'Policy Classification Tier Matrix', type: 'Matrix', policies: ['EN-TG-001'], domainCode: 'EN', usage: 'Required', frequency: 'Annual', classifications: ['master_template'] },
+  { id: 'EN-FM-004', name: 'Domain Owner Assignment Roster', type: 'Tracking Tool', policies: ['EN-TG-001'], domainCode: 'EN', usage: 'Required', frequency: 'Ongoing', classifications: ['shared_enterprise'] },
+  { id: 'EN-FM-005', name: 'Regulatory Crosswalk Template', type: 'Template', policies: ['EN-TG-002'], domainCode: 'EN', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical', 'master_template'] },
+  { id: 'EN-FM-006', name: 'Compliance Gap Analysis Worksheet', type: 'Worksheet', policies: ['EN-TG-002'], domainCode: 'EN', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical'] },
+  { id: 'EN-FM-007', name: 'Policy Development & Revision Template', type: 'Template', policies: ['EN-LC-001'], domainCode: 'EN', usage: 'Required', frequency: 'Triggered', classifications: ['master_template'] },
+  { id: 'EN-FM-008', name: 'Policy Approval Routing Form', type: 'Form', policies: ['EN-LC-001'], domainCode: 'EN', usage: 'Required', frequency: 'Triggered', classifications: ['digital_candidate'] },
+  { id: 'EN-FM-009', name: 'Version Control Change Log', type: 'Log', policies: ['EN-LC-001'], domainCode: 'EN', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'EN-FM-010', name: 'Annual Policy Review Schedule', type: 'Tracking Tool', policies: ['EN-LC-001'], domainCode: 'EN', usage: 'Required', frequency: 'Annual', classifications: ['shared_enterprise'] },
+  { id: 'EN-FM-011', name: 'Policy Exception / Waiver Request Form', type: 'Form', policies: ['EN-LC-002'], domainCode: 'EN', usage: 'Conditional', frequency: 'Triggered', classifications: ['digital_candidate', 'high_risk'] },
+  { id: 'EN-FM-012', name: 'Exception & Waiver Tracking Log', type: 'Log', policies: ['EN-LC-002'], domainCode: 'EN', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'EN-FM-013', name: 'Role-Based Policy Assignment Matrix', type: 'Matrix', policies: ['EN-LC-003'], domainCode: 'EN', usage: 'Required', frequency: 'Annual', classifications: ['shared_enterprise'] },
+  { id: 'EN-FM-014', name: 'Policy Acknowledgment Tracking Log', type: 'Log', policies: ['EN-LC-003'], domainCode: 'EN', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical', 'shared_enterprise'] },
+  { id: 'EN-FM-015', name: 'Policy Retirement Request Form', type: 'Form', policies: ['EN-LC-004'], domainCode: 'EN', usage: 'Conditional', frequency: 'Triggered', classifications: [] },
+  { id: 'EN-FM-016', name: 'Policy Obsolescence Impact Assessment', type: 'Assessment', policies: ['EN-LC-004'], domainCode: 'EN', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'EN-FM-017', name: 'Enterprise Compliance Dashboard Template', type: 'Template', policies: ['EN-CM-001'], domainCode: 'EN', usage: 'Required', frequency: 'Monthly', classifications: ['master_template', 'audit_critical'] },
+  { id: 'EN-FM-018', name: 'Departmental KPI Reporting Form', type: 'Form', policies: ['EN-CM-001'], domainCode: 'EN', usage: 'Required', frequency: 'Quarterly', classifications: ['shared_enterprise'] },
+  { id: 'EN-FM-019', name: 'Non-Compliance Remediation Plan', type: 'Worksheet', policies: ['EN-CM-001'], domainCode: 'EN', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk', 'audit_critical'] },
+  { id: 'EN-FM-020', name: 'Policy Conflict Resolution Request Form', type: 'Form', policies: ['EN-CM-002'], domainCode: 'EN', usage: 'Conditional', frequency: 'Triggered', classifications: [] },
+  { id: 'EN-FM-021', name: 'Inter-Domain Coordination Meeting Minutes', type: 'Template', policies: ['EN-CM-002'], domainCode: 'EN', usage: 'Required', frequency: 'Triggered', classifications: ['master_template'] },
+
+  // ── GOVERNANCE & ADMINISTRATION (GV) ── 
+  { id: 'GV-FM-001', name: 'Agency Closure / Change of Ownership Checklist', type: 'Checklist', policies: ['GV-EA-005'], domainCode: 'GV', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk', 'audit_critical'] },
+  { id: 'GV-FM-002', name: 'Agency Credential & Licensure Register', type: 'Tracking Tool', policies: ['GV-EA-005', 'GV-EA-004'], domainCode: 'GV', usage: 'Required', frequency: 'Ongoing', classifications: ['shared_enterprise', 'audit_critical'] },
+  { id: 'GV-FM-003', name: 'Official Agency Organizational Chart', type: 'Worksheet', policies: ['GV-GB-001', 'GV-OG-001'], domainCode: 'GV', usage: 'Required', frequency: 'Annual', classifications: ['master_template', 'audit_critical'] },
+  { id: 'GV-FM-004', name: 'Governing Body Meeting Agenda Template', type: 'Template', policies: ['GV-GB-001', 'GV-GB-002'], domainCode: 'GV', usage: 'Required', frequency: 'Triggered', classifications: ['master_template'] },
+  { id: 'GV-FM-005', name: 'Governing Body Meeting Minutes Template', type: 'Template', policies: ['GV-GB-001', 'GV-GB-002'], domainCode: 'GV', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'GV-FM-006', name: 'Conflict of Interest Disclosure Form', type: 'Attestation', policies: ['GV-GB-001', 'GV-GB-003'], domainCode: 'GV', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical', 'digital_candidate'] },
+  { id: 'GV-FM-007', name: 'Administrator Delegation of Authority Agreement', type: 'Form', policies: ['GV-GB-001', 'GV-OG-005'], domainCode: 'GV', usage: 'Required', frequency: 'Triggered', classifications: ['high_risk', 'audit_critical'] },
+  { id: 'GV-FM-008', name: 'Governing Body Annual Self-Assessment Tool', type: 'Assessment', policies: ['GV-GB-001', 'GV-GB-005'], domainCode: 'GV', usage: 'Required', frequency: 'Annual', classifications: [] },
+  { id: 'GV-FM-009', name: 'Annual Strategic Planning Worksheet', type: 'Worksheet', policies: ['GV-OG-004'], domainCode: 'GV', usage: 'Required', frequency: 'Annual', classifications: [] },
+  { id: 'GV-FM-010', name: 'Legal Counsel Engagement Authorization', type: 'Form', policies: ['GV-EA-003'], domainCode: 'GV', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'GV-FM-011', name: 'Governing Body Roster & Contact Matrix', type: 'Tracking Tool', policies: ['GV-GB-001'], domainCode: 'GV', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'GV-FM-012', name: 'Executive Session Confidentiality Agreement', type: 'Attestation', policies: ['GV-GB-002'], domainCode: 'GV', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'GV-FM-013', name: 'Administrator Succession Plan Template', type: 'Template', policies: ['GV-GB-004'], domainCode: 'GV', usage: 'Required', frequency: 'Annual', classifications: ['high_risk', 'audit_critical'] },
+  { id: 'GV-FM-014', name: 'Administrator Qualification Verification Checklist', type: 'Checklist', policies: ['GV-OG-002'], domainCode: 'GV', usage: 'Required', frequency: 'Upon Hire', classifications: ['audit_critical'] },
+  { id: 'GV-FM-015', name: 'Clinical Manager Qualification Checklist', type: 'Checklist', policies: ['GV-OG-002'], domainCode: 'GV', usage: 'Required', frequency: 'Upon Hire', classifications: ['audit_critical'] },
+  { id: 'GV-FM-016', name: 'Scope of Services Definition Matrix', type: 'Matrix', policies: ['GV-OG-003'], domainCode: 'GV', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical', 'master_template'] },
+  { id: 'GV-FM-017', name: 'Delegation of Authority (DOA) Log', type: 'Log', policies: ['GV-OG-005'], domainCode: 'GV', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'GV-FM-018', name: 'Interagency Agreement / Contract Register', type: 'Tracking Tool', policies: ['GV-EA-001'], domainCode: 'GV', usage: 'Required', frequency: 'Ongoing', classifications: ['shared_enterprise'] },
+  { id: 'GV-FM-019', name: 'Agency Licensure & Certification Tracking Log', type: 'Log', policies: ['GV-EA-004'], domainCode: 'GV', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'GV-FM-020', name: 'Media/PR External Communication Request', type: 'Form', policies: ['GV-EA-002'], domainCode: 'GV', usage: 'Conditional', frequency: 'Triggered', classifications: ['digital_candidate'] },
+
+  // ── HUMAN RESOURCES (HR) ──
+  { id: 'HR-FM-001', name: 'Reasonable Suspicion Observation Checklist', type: 'Checklist', policies: ['HR-ER-005'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk', 'digital_candidate'] },
+  { id: 'HR-FM-002', name: 'Drug/Alcohol Test Result Action Form', type: 'Form', policies: ['HR-ER-005'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'HR-FM-003', name: 'Interview & Applicant Evaluation Form', type: 'Assessment', policies: ['HR-TA-001'], domainCode: 'HR', usage: 'Required', frequency: 'Triggered', classifications: ['digital_candidate'] },
+  { id: 'HR-FM-004', name: 'Employee Reference Check Log', type: 'Log', policies: ['HR-TA-001'], domainCode: 'HR', usage: 'Required', frequency: 'Triggered', classifications: [] },
+  { id: 'HR-FM-005', name: 'OIG/SAM Monthly Exclusion Verification Log', type: 'Log', policies: ['HR-TA-003'], domainCode: 'HR', usage: 'Required', frequency: 'Monthly', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'HR-FM-006', name: 'License & Cert Primary Source Verification', type: 'Checklist', policies: ['HR-TA-004'], domainCode: 'HR', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'HR-FM-007', name: 'New Hire Onboarding & Orientation Checklist', type: 'Checklist', policies: ['HR-TA-005'], domainCode: 'HR', usage: 'Required', frequency: 'Upon Hire', classifications: ['digital_candidate'] },
+  { id: 'HR-FM-008', name: 'Annual Performance Evaluation Form', type: 'Assessment', policies: ['HR-ER-001'], domainCode: 'HR', usage: 'Required', frequency: 'Annual', classifications: ['master_template'] },
+  { id: 'HR-FM-009', name: 'Progressive Disciplinary Action Form', type: 'Form', policies: ['HR-ER-002'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'HR-FM-010', name: 'Employee Grievance / Complaint Form', type: 'Form', policies: ['HR-ER-003'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: ['digital_candidate'] },
+  { id: 'HR-FM-011', name: 'Employee Exit Interview Form', type: 'Assessment', policies: ['HR-ER-006'], domainCode: 'HR', usage: 'Required', frequency: 'Triggered', classifications: [] },
+  { id: 'HR-FM-012', name: 'TB Screening & Questionnaire', type: 'Assessment', policies: ['HR-WM-003'], domainCode: 'HR', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical'] },
+  { id: 'HR-FM-013', name: 'Hepatitis B Vaccine Declination Form', type: 'Attestation', policies: ['HR-WM-003', 'HR-EH-101'], domainCode: 'HR', usage: 'Conditional', frequency: 'Upon Hire', classifications: ['audit_critical'] },
+  { id: 'HR-FM-014', name: 'Employee Health & Occupational Injury Report', type: 'Form', policies: ['HR-WM-004', 'RM-OS-101'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'HR-FM-015', name: 'Personnel File Content Audit Checklist', type: 'Checklist', policies: ['HR-WM-007'], domainCode: 'HR', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical'] },
+  { id: 'HR-FM-016', name: 'Clinical Staff Competency Validation Checklist', type: 'Checklist', policies: ['HR-TD-003', 'CL-SD-007'], domainCode: 'HR', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical', 'shared_enterprise'] },
+  { id: 'HR-FM-017', name: 'Training Attendance & Completion Roster', type: 'Tracking Tool', policies: ['HR-TR-101'], domainCode: 'HR', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical', 'shared_enterprise'] },
+  { id: 'HR-FM-018', name: 'Bloodborne Pathogen Exposure Incident Report', type: 'Form', policies: ['HR-EH-101'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk', 'audit_critical'] },
+  { id: 'HR-FM-019', name: 'Return-to-Work Medical Clearance Form', type: 'Form', policies: ['HR-EH-101'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'HR-FM-020', name: 'Criminal Background Check Consent & Authorization', type: 'Attestation', policies: ['HR-TA-002'], domainCode: 'HR', usage: 'Required', frequency: 'Upon Hire', classifications: ['audit_critical', 'digital_candidate'] },
+  { id: 'HR-FM-021', name: 'Background Check Adjudication Matrix', type: 'Matrix', policies: ['HR-TA-002'], domainCode: 'HR', usage: 'Required', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'HR-FM-022', name: 'Job Description Master Template', type: 'Template', policies: ['HR-JD-001', 'HR-JD-011'], domainCode: 'HR', usage: 'Required', frequency: 'Upon Hire', classifications: ['master_template', 'audit_critical'] },
+  { id: 'HR-FM-023', name: 'Employee Equipment & Asset Return Checklist', type: 'Checklist', policies: ['HR-ER-006', 'IT-SA-005'], domainCode: 'HR', usage: 'Required', frequency: 'Triggered', classifications: [] },
+  { id: 'HR-FM-024', name: 'Remote Work / Telecommuting Agreement', type: 'Attestation', policies: ['HR-ER-008'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: ['digital_candidate'] },
+  { id: 'HR-FM-025', name: 'Harassment & Discrimination Incident Report', type: 'Form', policies: ['HR-ER-004'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk', 'digital_candidate'] },
+  { id: 'HR-FM-026', name: 'Mandatory Abuse Reporter Attestation Form', type: 'Attestation', policies: ['HR-ER-009'], domainCode: 'HR', usage: 'Required', frequency: 'Upon Hire', classifications: ['audit_critical', 'digital_candidate'] },
+  { id: 'HR-FM-027', name: 'Independent Contractor / Per Diem Agreement', type: 'Template', policies: ['HR-WM-002'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'HR-FM-028', name: 'Influenza Vaccination Declination Form', type: 'Attestation', policies: ['HR-WM-003'], domainCode: 'HR', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical', 'digital_candidate'] },
+  { id: 'HR-FM-029', name: 'Personnel File Access & Sign-Out Log', type: 'Log', policies: ['HR-WM-005'], domainCode: 'HR', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'HR-FM-030', name: 'Volunteer Application & Confidentiality Agreement', type: 'Form', policies: ['HR-WM-006'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: [] },
+  { id: 'HR-FM-031', name: 'Student / Intern Affiliation Agreement', type: 'Form', policies: ['HR-TD-004'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: [] },
+  { id: 'HR-FM-032', name: 'Employee CEU & External Training Log', type: 'Log', policies: ['HR-TD-002'], domainCode: 'HR', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'HR-FM-033', name: 'I-9 & Contractor Eligibility Audit Checklist', type: 'Checklist', policies: ['HR-WM-002', 'HR-TA-001'], domainCode: 'HR', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical'] },
+  { id: 'HR-FM-034', name: 'Grievance Investigation Summary Report', type: 'Assessment', policies: ['HR-ER-003'], domainCode: 'HR', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+
+  // ── CLINICAL OPS (CL) ──
+  { id: 'CL-FM-001', name: 'Plan of Care (CMS-485) Compliance Checklist', type: 'Checklist', policies: ['CL-CP-001'], domainCode: 'CL', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'CL-FM-002', name: 'Verbal Order Authentication Tracking Log', type: 'Tracking Tool', policies: ['CL-CP-004', 'CL-CP-009'], domainCode: 'CL', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'CL-FM-003', name: 'Patient Transfer / Discharge Summary Template', type: 'Template', policies: ['CL-CP-006', 'CL-CP-007'], domainCode: 'CL', usage: 'Required', frequency: 'Triggered', classifications: ['master_template'] },
+  { id: 'CL-FM-004', name: 'Missed Visit Notification & Reschedule Log', type: 'Log', policies: ['CL-SD-024'], domainCode: 'CL', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'CL-FM-005', name: 'Home Health Aide Care Plan & Assignment', type: 'Worksheet', policies: ['CL-SD-006'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['audit_critical'] },
+  { id: 'CL-FM-006', name: 'HHA 14-Day Supervisory Visit Note', type: 'Assessment', policies: ['CL-SD-008'], domainCode: 'CL', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'CL-FM-007', name: 'LPN/LVN 30-Day Supervisory Visit Note', type: 'Assessment', policies: ['CL-SD-008'], domainCode: 'CL', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'CL-FM-008', name: 'Medication Reconciliation & Discrepancy Log', type: 'Log', policies: ['CL-SD-013', 'CL-OA-014'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['high_risk'] },
+  { id: 'CL-FM-009', name: 'Fall Risk Assessment Tool (MAHC-10/Morse)', type: 'Assessment', policies: ['CL-SD-015'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: [] },
+  { id: 'CL-FM-010', name: 'Face-to-Face Encounter Validation Form', type: 'Form', policies: ['CL-CA-006', 'CL-CA-007'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'CL-FM-011', name: 'Homebound Status Documentation Worksheet', type: 'Worksheet', policies: ['CL-CA-005'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['audit_critical'] },
+  { id: 'CL-FM-012', name: 'Advance Beneficiary Notice of Non-coverage (ABN)', type: 'Form', policies: ['CL-PR-001', 'FN-BC-003'], domainCode: 'CL', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk', 'shared_enterprise'] },
+  { id: 'CL-FM-013', name: 'Notice of Medicare Non-Coverage (NOMNC)', type: 'Form', policies: ['CL-PR-001'], domainCode: 'CL', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'CL-FM-014', name: 'Patient Consent to Care & Service Agreement', type: 'Attestation', policies: ['CL-PR-003'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['audit_critical', 'digital_candidate'] },
+  { id: 'CL-FM-015', name: 'Advance Directive Acknowledgment Form', type: 'Attestation', policies: ['CL-PR-002'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: [] },
+  { id: 'CL-FM-016', name: 'Patient Rights & Responsibilities Acknowledgment', type: 'Attestation', policies: ['CL-PR-001'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['digital_candidate'] },
+  { id: 'CL-FM-017', name: 'OASIS Cross-Document Verification Tool', type: 'Worksheet', policies: ['CL-OA-013'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['audit_critical'] },
+  { id: 'CL-FM-018', name: 'Abuse, Neglect & Exploitation Reporting Form', type: 'Form', policies: ['CL-PR-006'], domainCode: 'CL', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'CL-FM-019', name: 'Physician Order Signature Tracking Log', type: 'Tracking Tool', policies: ['CL-CP-003', 'CL-CP-009'], domainCode: 'CL', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'CL-FM-020', name: 'Interdisciplinary Care Coordination Note', type: 'Template', policies: ['CL-CP-005'], domainCode: 'CL', usage: 'Required', frequency: 'Triggered', classifications: [] },
+  { id: 'CL-FM-021', name: 'Case Conference Meeting Minutes', type: 'Template', policies: ['CL-CP-005'], domainCode: 'CL', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'CL-FM-022', name: 'Wound Care Assessment & Measurement Flowsheet', type: 'Assessment', policies: ['CL-SD-011'], domainCode: 'CL', usage: 'Conditional', frequency: 'Per Visit', classifications: ['high_risk'] },
+  { id: 'CL-FM-023', name: 'IV Therapy & Infusion Administration Log', type: 'Log', policies: ['CL-SD-010'], domainCode: 'CL', usage: 'Conditional', frequency: 'Per Visit', classifications: ['high_risk'] },
+  { id: 'CL-FM-024', name: 'Pain Assessment & Management Flowsheet', type: 'Assessment', policies: ['CL-SD-014'], domainCode: 'CL', usage: 'Required', frequency: 'Per Visit', classifications: [] },
+  { id: 'CL-FM-025', name: 'Diabetic Management & Blood Glucose Log', type: 'Log', policies: ['CL-SD-018'], domainCode: 'CL', usage: 'Conditional', frequency: 'Per Visit', classifications: [] },
+  { id: 'CL-FM-026', name: 'Patient Education & Teach-Back Validation Form', type: 'Attestation', policies: ['CL-SD-017'], domainCode: 'CL', usage: 'Required', frequency: 'Triggered', classifications: ['digital_candidate'] },
+  { id: 'CL-FM-027', name: 'Telehealth/Remote Monitoring Consent & Log', type: 'Log', policies: ['CL-SD-009'], domainCode: 'CL', usage: 'Conditional', frequency: 'Ongoing', classifications: ['digital_candidate'] },
+  { id: 'CL-FM-028', name: 'Face-to-Face (F2F) Encounter Tracking Log', type: 'Tracking Tool', policies: ['CL-CA-007'], domainCode: 'CL', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'CL-FM-029', name: 'OASIS Error Correction & Retransmission Log', type: 'Log', policies: ['CL-OA-002', 'CL-OA-003'], domainCode: 'CL', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'CL-FM-030', name: 'Clinical Reasoning & Coding Substantiation Worksheet', type: 'Worksheet', policies: ['CL-OA-012'], domainCode: 'CL', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'CL-FM-031', name: 'Clinical Record Late Entry/Addendum Form', type: 'Form', policies: ['CL-CD-003'], domainCode: 'CL', usage: 'Conditional', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'CL-FM-032', name: 'OASIS Timeliness Tracking & Late Submission Log', type: 'Log', policies: ['CL-OA-001', 'CL-OA-015'], domainCode: 'CL', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'CL-FM-033', name: 'OASIS Clinician Authorization Matrix', type: 'Matrix', policies: ['CL-OA-003', 'CL-OA-018'], domainCode: 'CL', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical', 'shared_enterprise'] },
+  { id: 'CL-FM-034', name: 'OASIS Coding Substantiation & Item-Level Worksheet', type: 'Worksheet', policies: ['CL-OA-004', 'CL-OA-007', 'CL-OA-012'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'CL-FM-035', name: 'Source of Truth / Documentation Hierarchy Dispute Log', type: 'Log', policies: ['CL-OA-006', 'CL-OA-008'], domainCode: 'CL', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'CL-FM-036', name: 'SOC Point-in-Time Assessment Verification', type: 'Checklist', policies: ['CL-OA-009'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['audit_critical'] },
+  { id: 'CL-FM-037', name: 'CMS Look-Back Period Compliance Tool', type: 'Assessment', policies: ['CL-OA-010'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['audit_critical'] },
+  { id: 'CL-FM-038', name: 'Validated Clinical Tool & Scoring Summary (PHQ, BIMS, etc.)', type: 'Worksheet', policies: ['CL-OA-011', 'CL-OA-016'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['master_template'] },
+  { id: 'CL-FM-039', name: 'Assessment Contemporaneous Entry Waiver', type: 'Form', policies: ['CL-OA-017'], domainCode: 'CL', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'CL-FM-040', name: 'OASIS Pre-Submission Comprehensive Quality Review Form', type: 'Checklist', policies: ['CL-OA-019', 'CL-OA-002'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['audit_critical', 'digital_candidate'] },
+  { id: 'CL-FM-041', name: 'Physical Therapy Evaluation & Treatment Plan', type: 'Assessment', policies: ['CL-SD-002'], domainCode: 'CL', usage: 'Conditional', frequency: 'Per Episode', classifications: ['digital_candidate'] },
+  { id: 'CL-FM-042', name: 'Occupational Therapy Evaluation & Treatment Plan', type: 'Assessment', policies: ['CL-SD-003'], domainCode: 'CL', usage: 'Conditional', frequency: 'Per Episode', classifications: ['digital_candidate'] },
+  { id: 'CL-FM-043', name: 'Speech-Language Pathology Evaluation', type: 'Assessment', policies: ['CL-SD-004'], domainCode: 'CL', usage: 'Conditional', frequency: 'Per Episode', classifications: ['digital_candidate'] },
+  { id: 'CL-FM-044', name: 'Medical Social Work Comprehensive Assessment', type: 'Assessment', policies: ['CL-SD-005'], domainCode: 'CL', usage: 'Conditional', frequency: 'Per Episode', classifications: ['digital_candidate'] },
+  { id: 'CL-FM-045', name: 'Pediatric Patient Assessment Addendum', type: 'Assessment', policies: ['CL-SD-021'], domainCode: 'CL', usage: 'Conditional', frequency: 'Per Episode', classifications: ['high_risk'] },
+  { id: 'CL-FM-046', name: 'Behavioral Health Screening & Referral Log', type: 'Log', policies: ['CL-SD-022'], domainCode: 'CL', usage: 'Conditional', frequency: 'Triggered', classifications: [] },
+  { id: 'CL-FM-047', name: 'Palliative Care / End-of-Life Needs Assessment', type: 'Assessment', policies: ['CL-SD-023'], domainCode: 'CL', usage: 'Conditional', frequency: 'Per Episode', classifications: ['high_risk'] },
+  { id: 'CL-FM-048', name: 'Cardiac Care & Monitoring Flowsheet', type: 'Log', policies: ['CL-SD-019'], domainCode: 'CL', usage: 'Conditional', frequency: 'Per Visit', classifications: [] },
+  { id: 'CL-FM-049', name: 'Respiratory Care & Management Flowsheet', type: 'Log', policies: ['CL-SD-020'], domainCode: 'CL', usage: 'Conditional', frequency: 'Per Visit', classifications: [] },
+  { id: 'CL-FM-050', name: 'Coordination of Care / Interdisciplinary Communication Log', type: 'Log', policies: ['CL-CP-005'], domainCode: 'CL', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'CL-FM-051', name: 'Restraint & Seclusion Prohibition Acknowledgment', type: 'Attestation', policies: ['CL-PR-004'], domainCode: 'CL', usage: 'Required', frequency: 'Per Episode', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'CL-FM-052', name: 'Physician Recertification Timing Tracker', type: 'Tracking Tool', policies: ['CL-CP-008'], domainCode: 'CL', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical', 'high_risk'] },
+
+  // ── COMPLIANCE (CO) ──
+  { id: 'CO-FM-001', name: 'FWA Indicator Checklist', type: 'Checklist', policies: ['CO-CP-001', 'CO-CP-002', 'CO-CP-003', 'CO-CP-004'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'CO-FM-002', name: 'FWA Incident Log', type: 'Log', policies: ['CO-CP-001', 'CO-CP-007', 'CO-CP-008'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'CO-FM-003', name: 'Notice of Privacy Practices (NPP) Template', type: 'Template', policies: ['CO-HP-001'], domainCode: 'CO', usage: 'Required', frequency: 'Per Episode', classifications: ['master_template'] },
+  { id: 'CO-FM-004', name: 'NPP Patient Acknowledgment Form', type: 'Attestation', policies: ['CO-HP-001', 'CL-PR-001'], domainCode: 'CO', usage: 'Required', frequency: 'Per Episode', classifications: ['digital_candidate'] },
+  { id: 'CO-FM-005', name: 'Privacy Disclosure Log', type: 'Log', policies: ['CO-HP-001', 'CO-HP-006'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'CO-FM-006', name: 'Privacy Complaint Log', type: 'Log', policies: ['CO-HP-001', 'OP-PA-001'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'CO-FM-007', name: 'Security Risk Assessment (SRA) Summary', type: 'Assessment', policies: ['CO-HP-002', 'IT-SC-001'], domainCode: 'CO', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical'] },
+  { id: 'CO-FM-008', name: 'Breach Risk Assessment Tool', type: 'Assessment', policies: ['CO-HP-003', 'IT-DR-005'], domainCode: 'CO', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'CO-FM-009', name: 'Breach Notification Letter Template', type: 'Template', policies: ['CO-HP-003'], domainCode: 'CO', usage: 'Conditional', frequency: 'Triggered', classifications: ['master_template'] },
+  { id: 'CO-FM-010', name: 'HIPAA Breach Log', type: 'Log', policies: ['CO-HP-003', 'IT-DR-005'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'CO-FM-011', name: 'PHI Access Matrix', type: 'Matrix', policies: ['CO-HP-004', 'IT-SC-002', 'HR-TA-005'], domainCode: 'CO', usage: 'Required', frequency: 'Annual', classifications: ['shared_enterprise'] },
+  { id: 'CO-FM-012', name: 'Business Associate Agreement (BAA) Registry', type: 'Tracking Tool', policies: ['CO-HP-005', 'OP-FM-003'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: ['shared_enterprise'] },
+  { id: 'CO-FM-013', name: 'BAA Compliance Checklist', type: 'Checklist', policies: ['CO-HP-005', 'OP-FM-003'], domainCode: 'CO', usage: 'Required', frequency: 'Triggered', classifications: [] },
+  { id: 'CO-FM-014', name: 'Patient Records Request Log', type: 'Log', policies: ['CO-HP-006', 'CL-CD-002'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'CO-FM-015', name: 'Record Destruction Log', type: 'Log', policies: ['CO-HP-007', 'IT-DR-001'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'CO-FM-016', name: 'Record Retention Reference Card', type: 'Reference', policies: ['CO-HP-007', 'EN-LC-001'], domainCode: 'CO', usage: 'Optional', frequency: 'Ongoing', classifications: ['master_template'] },
+  { id: 'CO-FM-017', name: 'Assessment Audit Trail Review Checklist', type: 'Checklist', policies: ['CO-DC-001', 'CL-OA-005'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'CO-FM-018', name: 'Visit Note Audit Checklist', type: 'Checklist', policies: ['CO-DC-002', 'QA-PI-002', 'CL-CD-001'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'CO-FM-019', name: 'Audit Report Template', type: 'Template', policies: ['CO-DC-002', 'QA-PG-003'], domainCode: 'CO', usage: 'Required', frequency: 'Triggered', classifications: ['master_template'] },
+  { id: 'CO-FM-020', name: 'Triangulation Audit Worksheet', type: 'Worksheet', policies: ['CO-DC-004', 'FN-BC-001', 'CL-CD-004'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'CO-FM-021', name: 'Documentation Correction Reference Card', type: 'Reference', policies: ['CO-DC-003'], domainCode: 'CO', usage: 'Optional', frequency: 'Ongoing', classifications: ['master_template'] },
+  { id: 'CO-FM-022', name: 'Compliance Hotline Intake Form', type: 'Form', policies: ['CO-CP-006'], domainCode: 'CO', usage: 'Required', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'CO-FM-023', name: 'Compliance Investigation Report', type: 'Assessment', policies: ['CO-CP-007'], domainCode: 'CO', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'CO-FM-024', name: 'Gift & Gratuity Disclosure Log', type: 'Log', policies: ['CO-CP-004'], domainCode: 'CO', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'CO-FM-025', name: 'Medicare CoP Readiness Audit Tool', type: 'Checklist', policies: ['CO-RA-004'], domainCode: 'CO', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical'] },
+  { id: 'CO-FM-026', name: 'CMIA Sensitive Data Release Authorization', type: 'Attestation', policies: ['CO-HP-101'], domainCode: 'CO', usage: 'Required', frequency: 'Triggered', classifications: ['high_risk', 'digital_candidate'] },
+  { id: 'CO-FM-027', name: 'Vendor PHI Risk Assessment Worksheet', type: 'Worksheet', policies: ['CO-BA-101'], domainCode: 'CO', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'CO-FM-028', name: 'Incident Containment & Eradication Log', type: 'Log', policies: ['CO-IR-101'], domainCode: 'CO', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk', 'audit_critical'] },
+  { id: 'CO-FM-029', name: 'Minimum Necessary Exception Request', type: 'Form', policies: ['CO-DG-101'], domainCode: 'CO', usage: 'Conditional', frequency: 'Triggered', classifications: ['digital_candidate'] },
+  { id: 'CO-FM-030', name: 'OIG Self-Disclosure Protocol Checklist', type: 'Checklist', policies: ['CO-FW-101'], domainCode: 'CO', usage: 'Conditional', frequency: 'Triggered', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'CO-FM-031', name: 'AI Tool Use Request & Approval Form', type: 'Form', policies: ['CO-AI-101'], domainCode: 'CO', usage: 'Conditional', frequency: 'Triggered', classifications: ['digital_candidate'] },
+
+  // ── QAPI (QA) ──
+  { id: 'QA-FM-001', name: 'QAPI Committee Meeting Minutes Template', type: 'Template', policies: ['QA-PG-003'], domainCode: 'QA', usage: 'Required', frequency: 'Quarterly', classifications: ['audit_critical', 'master_template'] },
+  { id: 'QA-FM-002', name: 'Performance Improvement Project (PIP) Charter', type: 'Template', policies: ['QA-PI-001'], domainCode: 'QA', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'QA-FM-003', name: 'Quality Indicator Monthly Dashboard', type: 'Tracking Tool', policies: ['QA-PI-002'], domainCode: 'QA', usage: 'Required', frequency: 'Monthly', classifications: ['shared_enterprise'] },
+  { id: 'QA-FM-004', name: 'Adverse Event Root Cause Analysis (RCA) Worksheet', type: 'Worksheet', policies: ['QA-AE-002'], domainCode: 'QA', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'QA-FM-005', name: 'Corrective Action Plan (CAP) Tracking Tool', type: 'Tracking Tool', policies: ['QA-AE-003'], domainCode: 'QA', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'QA-FM-006', name: 'Infection Control Line List & Surveillance Log', type: 'Log', policies: ['QA-SM-002', 'CL-SD-016'], domainCode: 'QA', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'QA-FM-007', name: 'LUPA Prevention & Visit Utilization Log', type: 'Log', policies: ['QA-PI-006', 'FN-CM-005'], domainCode: 'QA', usage: 'Required', frequency: 'Ongoing', classifications: ['shared_enterprise'] },
+  { id: 'QA-FM-008', name: 'Patient Satisfaction Survey (HHCAHPS) Proxy', type: 'Assessment', policies: ['QA-SM-003'], domainCode: 'QA', usage: 'Optional', frequency: 'Triggered', classifications: [] },
+
+  // ── FINANCE (FN) ──
+  { id: 'FN-FM-001', name: 'Daily Claims Submission & Acceptance Log', type: 'Log', policies: ['FN-BC-001'], domainCode: 'FN', usage: 'Required', frequency: 'Daily', classifications: [] },
+  { id: 'FN-FM-002', name: 'Claim Denial & Appeal Tracking Log', type: 'Tracking Tool', policies: ['FN-BC-002'], domainCode: 'FN', usage: 'Required', frequency: 'Ongoing', classifications: ['high_risk'] },
+  { id: 'FN-FM-003', name: 'Request for Anticipated Payment (RAP) Tracking Log', type: 'Log', policies: ['FN-BC-006'], domainCode: 'FN', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'FN-FM-004', name: 'Patient Financial Responsibility Agreement', type: 'Attestation', policies: ['FN-BC-003'], domainCode: 'FN', usage: 'Required', frequency: 'Per Episode', classifications: ['digital_candidate'] },
+  { id: 'FN-FM-005', name: 'Credit Card / Auto-Pay Authorization Form', type: 'Form', policies: ['FN-BC-003'], domainCode: 'FN', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'FN-FM-006', name: 'Overpayment Identification & Refund Log', type: 'Log', policies: ['FN-BC-004'], domainCode: 'FN', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'FN-FM-007', name: 'Bad Debt & Charity Care Application', type: 'Form', policies: ['FN-FP-004'], domainCode: 'FN', usage: 'Conditional', frequency: 'Triggered', classifications: [] },
+  { id: 'FN-FM-008', name: 'Pre-Claim Review (PCR) Checklist', type: 'Checklist', policies: ['FN-BC-005'], domainCode: 'FN', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+
+  // ── IT & SECURITY (IT) ──
+  { id: 'IT-FM-001', name: 'User Access Request & Authorization Form', type: 'Form', policies: ['IT-SC-002'], domainCode: 'IT', usage: 'Required', frequency: 'Triggered', classifications: ['digital_candidate'] },
+  { id: 'IT-FM-002', name: 'System Access Revocation Checklist', type: 'Checklist', policies: ['IT-SC-002', 'HR-ER-006'], domainCode: 'IT', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical', 'high_risk'] },
+  { id: 'IT-FM-003', name: 'IT Hardware Asset & Disposal Log', type: 'Log', policies: ['IT-SA-005'], domainCode: 'IT', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'IT-FM-004', name: 'Software & Application License Register', type: 'Tracking Tool', policies: ['IT-SA-002'], domainCode: 'IT', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'IT-FM-005', name: 'BYOD (Bring Your Own Device) Agreement', type: 'Attestation', policies: ['IT-UP-001'], domainCode: 'IT', usage: 'Required', frequency: 'Upon Hire', classifications: ['digital_candidate'] },
+  { id: 'IT-FM-006', name: 'Internet & Email Acceptable Use Agreement', type: 'Attestation', policies: ['IT-UP-002'], domainCode: 'IT', usage: 'Required', frequency: 'Upon Hire', classifications: ['digital_candidate'] },
+  { id: 'IT-FM-007', name: 'Social Media Policy Acknowledgment', type: 'Attestation', policies: ['IT-UP-003'], domainCode: 'IT', usage: 'Required', frequency: 'Upon Hire', classifications: ['digital_candidate'] },
+  { id: 'IT-FM-008', name: 'Data Backup & Restore Testing Log', type: 'Log', policies: ['IT-DR-001'], domainCode: 'IT', usage: 'Required', frequency: 'Monthly', classifications: ['audit_critical'] },
+  { id: 'IT-FM-009', name: 'IT Security Incident Report Form', type: 'Form', policies: ['IT-DR-005'], domainCode: 'IT', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'IT-FM-010', name: 'System Change Management Request (CMR) Form', type: 'Form', policies: ['IT-SA-003'], domainCode: 'IT', usage: 'Required', frequency: 'Triggered', classifications: [] },
+  { id: 'IT-FM-011', name: 'Information Security Risk Assessment (SRA) Template', type: 'Template', policies: ['IT-SC-001'], domainCode: 'IT', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical', 'master_template'] },
+  { id: 'IT-FM-012', name: 'Privileged Access User (PAU) Agreement', type: 'Attestation', policies: ['IT-SC-002'], domainCode: 'IT', usage: 'Required', frequency: 'Upon Hire', classifications: ['high_risk', 'digital_candidate'] },
+  { id: 'IT-FM-013', name: 'Encryption Exception Request Form', type: 'Form', policies: ['IT-SC-003'], domainCode: 'IT', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'IT-FM-014', name: 'Firewall Rule Change Authorization Form', type: 'Form', policies: ['IT-SC-004'], domainCode: 'IT', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'IT-FM-015', name: 'VPN / Remote Access Request Form', type: 'Form', policies: ['IT-SC-004'], domainCode: 'IT', usage: 'Required', frequency: 'Triggered', classifications: ['digital_candidate'] },
+  { id: 'IT-FM-016', name: 'Endpoint Malware Infection Log', type: 'Log', policies: ['IT-SC-005'], domainCode: 'IT', usage: 'Required', frequency: 'Ongoing', classifications: ['high_risk'] },
+  { id: 'IT-FM-017', name: 'Data Classification & Handling Matrix', type: 'Matrix', policies: ['IT-SC-006'], domainCode: 'IT', usage: 'Required', frequency: 'Annual', classifications: ['shared_enterprise', 'audit_critical'] },
+  { id: 'IT-FM-018', name: 'Disaster Recovery Tabletop Exercise Report', type: 'Assessment', policies: ['IT-DR-002'], domainCode: 'IT', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical'] },
+  { id: 'IT-FM-019', name: 'Audit Log Review Checklist', type: 'Checklist', policies: ['IT-DR-003'], domainCode: 'IT', usage: 'Required', frequency: 'Monthly', classifications: ['audit_critical'] },
+  { id: 'IT-FM-020', name: 'Cloud Service Provider Security Questionnaire', type: 'Assessment', policies: ['IT-DR-004', 'IT-SA-004'], domainCode: 'IT', usage: 'Required', frequency: 'Triggered', classifications: ['shared_enterprise', 'high_risk'] },
+  { id: 'IT-FM-021', name: 'EHR Downtime Communication Protocol Checklist', type: 'Checklist', policies: ['IT-SA-001'], domainCode: 'IT', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'IT-FM-022', name: 'EHR Access Audit Log', type: 'Log', policies: ['IT-SA-001'], domainCode: 'IT', usage: 'Required', frequency: 'Quarterly', classifications: ['audit_critical'] },
+  { id: 'IT-FM-023', name: 'Server Room / MDF Physical Access Log', type: 'Log', policies: ['IT-SA-005'], domainCode: 'IT', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'IT-FM-024', name: 'IT Media & Storage Device Destruction Certificate', type: 'Attestation', policies: ['IT-SA-005'], domainCode: 'IT', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'IT-FM-025', name: 'Remote Device Wipe Authorization Form', type: 'Form', policies: ['IT-UP-001'], domainCode: 'IT', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'IT-FM-026', name: 'Phishing Simulation Campaign Report', type: 'Assessment', policies: ['IT-UP-004'], domainCode: 'IT', usage: 'Required', frequency: 'Quarterly', classifications: [] },
+  { id: 'IT-FM-027', name: 'Security Awareness Training Completion Roster', type: 'Tracking Tool', policies: ['IT-UP-004'], domainCode: 'IT', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical', 'shared_enterprise'] },
+
+  // ── OPERATIONS (OP) ──
+  { id: 'OP-FM-001', name: 'Branch Registration Tracker', type: 'Tracking Tool', policies: ['OP-FM-002', 'GV-EA-004'], domainCode: 'OP', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'OP-FM-002', name: 'Quarterly Facility Inspection Report', type: 'Assessment', policies: ['OP-FM-002', 'RM-PS-001'], domainCode: 'OP', usage: 'Required', frequency: 'Quarterly', classifications: ['audit_critical'] },
+  { id: 'OP-FM-003', name: 'Vendor Request Form', type: 'Form', policies: ['OP-FM-003', 'FN-FP-006'], domainCode: 'OP', usage: 'Required', frequency: 'Triggered', classifications: ['digital_candidate'] },
+  { id: 'OP-FM-004', name: 'Vendor Qualification Checklist', type: 'Checklist', policies: ['OP-FM-003', 'CO-FA-001'], domainCode: 'OP', usage: 'Required', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'OP-FM-005', name: 'Approved Vendor List', type: 'Tracking Tool', policies: ['OP-FM-003'], domainCode: 'OP', usage: 'Required', frequency: 'Ongoing', classifications: ['shared_enterprise'] },
+  { id: 'OP-FM-006', name: 'Vendor Performance Issue Log', type: 'Log', policies: ['OP-FM-003', 'QA-AE-001'], domainCode: 'OP', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'OP-FM-007', name: 'Vendor Performance Evaluation Form', type: 'Assessment', policies: ['OP-FM-003', 'QA-PI-001'], domainCode: 'OP', usage: 'Required', frequency: 'Annual', classifications: [] },
+  { id: 'OP-FM-008', name: 'Vendor Corrective Action Notice', type: 'Form', policies: ['OP-FM-003', 'GV-EA-001'], domainCode: 'OP', usage: 'Conditional', frequency: 'Triggered', classifications: [] },
+  { id: 'OP-FM-009', name: 'Emergency Procurement Authorization', type: 'Form', policies: ['OP-FM-003', 'RM-EP-001', 'FN-FP-006'], domainCode: 'OP', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'OP-FM-010', name: 'Incoming Mail Log', type: 'Log', policies: ['OP-FM-004'], domainCode: 'OP', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'OP-FM-011', name: 'Time-Sensitive Tracking Log', type: 'Log', policies: ['OP-FM-004', 'FN-BC-002', 'CL-CP-009'], domainCode: 'OP', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'OP-FM-012', name: 'Outgoing Mail Log', type: 'Log', policies: ['OP-FM-004'], domainCode: 'OP', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'OP-FM-013', name: 'Standard Fax Cover Sheet', type: 'Template', policies: ['OP-FM-004', 'CL-CP-003'], domainCode: 'OP', usage: 'Required', frequency: 'Ongoing', classifications: ['master_template', 'shared_enterprise'] },
+  { id: 'OP-FM-014', name: 'Patient Intake Information Sheet', type: 'Form', policies: ['OP-IM-001'], domainCode: 'OP', usage: 'Required', frequency: 'Per Episode', classifications: ['digital_candidate'] },
+  { id: 'OP-FM-015', name: 'Non-Admit / Referral Rejection Log', type: 'Log', policies: ['OP-IM-002'], domainCode: 'OP', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'OP-FM-016', name: 'Vehicle Mileage & Safety Inspection Log', type: 'Log', policies: ['OP-SL-003'], domainCode: 'OP', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'OP-FM-017', name: 'Patient Property & Belongings Inventory', type: 'Checklist', policies: ['OP-PA-005'], domainCode: 'OP', usage: 'Conditional', frequency: 'Triggered', classifications: [] },
+  { id: 'OP-FM-018', name: 'Interpreter Service Utilization Log', type: 'Log', policies: ['OP-PA-003'], domainCode: 'OP', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+
+  // ── RISK MANAGEMENT (RM) ──
+  { id: 'RM-FM-001', name: 'Hazard Vulnerability Analysis (HVA) Worksheet', type: 'Worksheet', policies: ['OP-FM-005', 'RM-EP-001', 'RM-EP-002'], domainCode: 'RM', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical', 'shared_enterprise'] },
+  { id: 'RM-FM-002', name: 'EMT Emergency Contact Card', type: 'Reference', policies: ['OP-FM-005', 'HR-TD-005'], domainCode: 'RM', usage: 'Required', frequency: 'Annual', classifications: [] },
+  { id: 'RM-FM-003', name: 'Emergency Quick Reference Guide', type: 'Reference', policies: ['OP-FM-005', 'CL-PR-005'], domainCode: 'RM', usage: 'Required', frequency: 'Ongoing', classifications: ['shared_enterprise'] },
+  { id: 'RM-FM-004', name: 'EP Exercise Documentation Form', type: 'Assessment', policies: ['OP-FM-005', 'RM-EP-002'], domainCode: 'RM', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical'] },
+  { id: 'RM-FM-005', name: 'After-Action Review (AAR) Form', type: 'Assessment', policies: ['OP-FM-005', 'RM-EP-002', 'QA-AE-002'], domainCode: 'RM', usage: 'Required', frequency: 'Triggered', classifications: ['audit_critical'] },
+  { id: 'RM-FM-006', name: 'Pandemic Plan Readiness Checklist', type: 'Checklist', policies: ['RM-EP-001'], domainCode: 'RM', usage: 'Required', frequency: 'Annual', classifications: ['high_risk', 'audit_critical'] },
+  { id: 'RM-FM-007', name: 'Patient Priority Classification Matrix', type: 'Matrix', policies: ['RM-EP-001'], domainCode: 'RM', usage: 'Required', frequency: 'Ongoing', classifications: ['shared_enterprise', 'audit_critical'] },
+  { id: 'RM-FM-008', name: 'Enterprise Risk Register', type: 'Tracking Tool', policies: ['RM-ER-001'], domainCode: 'RM', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] },
+  { id: 'RM-FM-009', name: 'Workplace Violence Incident Report', type: 'Form', policies: ['RM-SS-002'], domainCode: 'RM', usage: 'Conditional', frequency: 'Triggered', classifications: ['high_risk'] },
+  { id: 'RM-FM-010', name: 'Hazardous Materials (SDS) Inventory', type: 'Log', policies: ['RM-PS-002'], domainCode: 'RM', usage: 'Required', frequency: 'Annual', classifications: ['audit_critical'] },
+  { id: 'RM-FM-011', name: 'Equipment Safety Recall Log', type: 'Log', policies: ['RM-PS-003'], domainCode: 'RM', usage: 'Required', frequency: 'Ongoing', classifications: [] },
+  { id: 'RM-FM-012', name: 'High-Risk Medication Double-Check Log', type: 'Log', policies: ['RM-PS-005'], domainCode: 'RM', usage: 'Required', frequency: 'Ongoing', classifications: ['high_risk'] },
+  { id: 'RM-FM-013', name: 'Cal/OSHA IIPP Hazard Identification Checklist', type: 'Checklist', policies: ['RM-OS-101'], domainCode: 'RM', usage: 'Required', frequency: 'Quarterly', classifications: ['audit_critical'] },
+  { id: 'RM-FM-014', name: 'Cal/OSHA Hazard Correction Record', type: 'Log', policies: ['RM-OS-101'], domainCode: 'RM', usage: 'Required', frequency: 'Ongoing', classifications: ['audit_critical'] }
+];
+
+const getPolicyIcon = (title) => {
+  const t = title.toLowerCase();
+  if (t.includes('security') || t.includes('lock') || t.includes('protection')) return Lock;
+  if (t.includes('oasis') || t.includes('digit') || t.includes('data')) return FileDigit;
+  if (t.includes('assess') || t.includes('exam')) return Stethoscope;
+  if (t.includes('clinical') || t.includes('care') || t.includes('nurse')) return Activity;
+  if (t.includes('billing') || t.includes('payment') || t.includes('dollar')) return DollarSign;
+  if (t.includes('legal') || t.includes('governing') || t.includes('authority')) return Scale;
+  if (t.includes('risk') || t.includes('emergency') || t.includes('incident')) return AlertTriangle;
+  if (t.includes('human') || t.includes('staff') || t.includes('employee')) return Users;
+  if (t.includes('check') || t.includes('compliance') || t.includes('audit')) return FileCheck;
+  return FileText;
+};
+
+const getFormIcon = (type, size=16) => {
+  switch (type.toLowerCase()) {
+    case 'attestation': return <FileSignature size={size} />;
+    case 'checklist': return <ClipboardCheck size={size} />;
+    case 'log': return <Database size={size} />;
+    case 'assessment': return <BarChart3 size={size} />;
+    case 'worksheet': return <LayoutList size={size} />;
+    case 'template': return <Layers size={size} />;
+    case 'tracking tool': return <Target size={size} />;
+    default: return <FileText size={size} />;
+  }
+};
+
+const getFormTypeColor = (type) => {
+  switch (type.toLowerCase()) {
+    case 'attestation': return 'text-[#a855f7] border-[#a855f7]/30';
+    case 'checklist': return 'text-[#00c2b4] border-[#00c2b4]/30';
+    case 'log': return 'text-[#3b82f6] border-[#3b82f6]/30';
+    case 'assessment': return 'text-[#f97316] border-[#f97316]/30';
+    case 'template': return 'text-[#ec4899] border-[#ec4899]/30';
+    case 'tracking tool': return 'text-[#06b6d4] border-[#06b6d4]/30';
+    case 'matrix': return 'text-[#facc15] border-[#facc15]/30';
+    default: return 'text-gray-300 border-gray-400/30';
+  }
+};
+
+function matches(policyId, patterns) {
+  return patterns.some(pattern => {
+    if (pattern.endsWith('*')) return policyId.startsWith(pattern.replace('*', ''));
+    return policyId === pattern;
+  });
+}
+
+function getTagsForPolicy(id) {
+  const tags = [];
+  const idUpper = id.toUpperCase();
+  if (matches(idUpper, ['GV-EA-004', 'GV-OG-002', 'GV-OG-003', 'HR-TA-001', 'HR-TA-004', 'HR-EH-101', 'RM-OS-101', 'RM-EP-001', 'RM-EP-002', 'FN-BC-001', 'FN-FP-005'])) tags.push('title22');
+  if (matches(idUpper, ['CO-HP-*', 'CO-BA-101', 'CO-IR-101', 'CO-DG-101', 'CO-DC-001'])) {
+    if (!matches(idUpper, ['CO-FW-101', 'CO-AI-101', 'HR-TR-101', 'HR-EH-101'])) tags.push('hipaa');
+  }
+  if (matches(idUpper, ['FN-BC-001', 'FN-CM-003', 'CL-CD-001', 'QA-PI-002', 'CO-CP-005', 'CO-FW-101'])) tags.push('fca');
+  if (matches(idUpper, ['CL-SD-001', 'CL-SD-002', 'CL-SD-012', 'CL-SD-016', 'CL-SD-017', 'CL-CD-001', 'QA-*', 'HR-TR-101'])) tags.push('cms');
+  if (matches(idUpper, ['CO-*', 'FN-BC-001', 'FN-CM-003', 'CL-CD-001', 'CL-SD-001', 'CL-SD-002', 'QA-*', 'HR-TA-002', 'HR-TA-003'])) tags.push('oig');
+  if (matches(idUpper, ['RM-SS-*', 'RM-OS-101', 'HR-EH-101'])) tags.push('osha');
+  if (matches(idUpper, ['RM-OS-101'])) tags.push('ca');
+  if (matches(idUpper, ['GV-*', 'CL-*', 'QA-*', 'OP-*'])) tags.push('42cfr');
+  return [...new Set(tags)];
+}
+
+const FULL_POLICY_DATASET = [];
+
+Object.entries(rawPolicies).forEach(([prefix, items]) => {
+  const [domainCode, subdomainCode] = prefix.split('-');
+  const domain = DOMAINS.find(d => d.code === domainCode);
+  const subdomain = domain?.subdomains.find(s => s.code === subdomainCode);
+
+  items.forEach(item => {
+    const [idNum, ...titleParts] = item.split(': ');
+    const title = titleParts.join(': ');
+    const fullId = `${domainCode}-${subdomainCode}-${idNum}`;
+    
+    FULL_POLICY_DATASET.push({
+      id: fullId.toLowerCase(),
+      policyId: fullId,
+      title: title,
+      domain: domain?.fullName || 'Unknown Domain',
+      domainCode: domainCode,
+      subdomainName: subdomain?.name || 'Unknown Subdomain',
+      subdomainCode: subdomainCode,
+      subdomainIcon: subdomain?.icon || FileText,
+      classificationTier: 'REQUIRED',
+      status: 'ACTIVE',
+      version: '6.0',
+      effectiveDate: '2025-07-10',
+      nextReviewDate: '2026-07-10',
+      policyOwner: 'Administrator',
+      approvedBy: 'Governing Body Chair',
+      purpose: `This policy establishes standards for ${title} to ensure compliance with enterprise and regulatory requirements.`,
+      scope: ['All applicable personnel', 'Management'],
+      linkedPolicies: [],
+      enforcementRules: ['Standard enforcement protocols apply'],
+      appendices: [],
+      icon: getPolicyIcon(title),
+      regulatoryTags: getTagsForPolicy(fullId)
+    });
+  });
+});
+
+newPoliciesData.forEach(p => {
+  const domain = DOMAINS.find(d => d.code === p.domainCode);
+  const subdomain = domain?.subdomains.find(s => s.code === p.subCode);
+  FULL_POLICY_DATASET.push({
+    id: p.id.toLowerCase(),
+    policyId: p.id,
+    title: p.title,
+    domain: domain?.fullName || 'Unknown Domain',
+    domainCode: p.domainCode,
+    subdomainName: subdomain?.name || 'Unknown Subdomain',
+    subdomainCode: p.subCode,
+    subdomainIcon: subdomain?.icon || FileText,
+    classificationTier: 'REQUIRED',
+    status: 'ACTIVE',
+    version: '1.0',
+    effectiveDate: '2025-07-10',
+    nextReviewDate: '2026-07-10',
+    policyOwner: 'Compliance Officer',
+    approvedBy: 'Governing Body Chair',
+    purpose: `This policy establishes standards for ${p.title}.`,
+    scope: ['All applicable personnel'],
+    linkedPolicies: [],
+    enforcementRules: ['Standard enforcement protocols apply'],
+    appendices: [],
+    icon: getPolicyIcon(p.title),
+    regulatoryTags: getTagsForPolicy(p.id)
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ══════════════════════════════════════════════════════════════
+
+export default function App() {
+  // App views: 'policies' or 'forms'
+  const [currentAppView, setCurrentAppView] = useState('policies'); 
+  
+  // Policy Browser State
+  const [selectedDomain, setSelectedDomain] = useState('ALL');
+  const [selectedSubdomain, setSelectedSubdomain] = useState('BROWSE');
+  const [activeRegFilter, setActiveRegFilter] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Forms Browser State
+  const [formDomain, setFormDomain] = useState('ALL');
+  const [formClassifications, setFormClassifications] = useState(new Set());
+  const [formSearch, setFormSearch] = useState('');
+
+  // ── POLICY LIBRARY LOGIC ──
+  const handleDomainSelect = (code) => {
+    setSelectedDomain(code);
+    setSelectedSubdomain('BROWSE'); 
+  };
+
+  const handleSubdomainSelect = (code) => {
+    setSelectedSubdomain(code);
+  };
+
+  const filteredSubdomains = useMemo(() => {
+    if (selectedDomain === 'ALL') {
+      return DOMAINS.flatMap(d => d.subdomains.map(s => ({ ...s, domainCode: d.code, domainColor: d.color })));
+    }
+    const domain = DOMAINS.find(d => d.code === selectedDomain);
+    return domain?.subdomains.map(s => ({ ...s, domainCode: domain.code, domainColor: domain.color })) || [];
+  }, [selectedDomain]);
+
+  const visiblePolicies = useMemo(() => {
+    let p = FULL_POLICY_DATASET;
+    if (selectedDomain !== 'ALL') p = p.filter(x => x.domainCode === selectedDomain);
+    if (selectedSubdomain !== 'BROWSE' && selectedSubdomain !== 'ALL') p = p.filter(x => x.subdomainCode === selectedSubdomain);
+    if (activeRegFilter !== 'ALL') p = p.filter(x => x.regulatoryTags.includes(activeRegFilter));
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      p = p.filter(x => x.policyId.toLowerCase().includes(q) || x.title.toLowerCase().includes(q));
+    }
+    return p;
+  }, [selectedDomain, selectedSubdomain, searchQuery, activeRegFilter]);
+
+  // ── FORMS LIBRARY LOGIC ──
+  const toggleClassification = useCallback((id) => {
+    setFormClassifications(prev => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  }, []);
+
+  const visibleForms = useMemo(() => {
+    let f = FORMS_DATASET;
+    if (formDomain !== 'ALL') f = f.filter(x => x.domainCode === formDomain);
+    if (formClassifications.size > 0) {
+      f = f.filter(x => {
+        for (const cls of formClassifications) {
+          if (!x.classifications?.includes(cls)) return false;
+        }
+        return true;
+      });
+    }
+    if (formSearch.trim()) {
+      const q = formSearch.toLowerCase();
+      f = f.filter(x =>
+        x.id.toLowerCase().includes(q) ||
+        x.name.toLowerCase().includes(q) ||
+        x.type.toLowerCase().includes(q) ||
+        x.policies.some(p => p.toLowerCase().includes(q))
+      );
+    }
+    return f;
+  }, [formDomain, formClassifications, formSearch]);
+
+
+  return (
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap');
+          
+          .font-montserrat { font-family: 'Montserrat', sans-serif; }
+          .font-roboto { font-family: 'Roboto', sans-serif; }
+          .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+          /* Custom scrollbars hidden completely */
+          .custom-scrollbar::-webkit-scrollbar, .custom-scrollbar-x::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
+          }
+          .custom-scrollbar, .custom-scrollbar-x {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+
+          @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+          .animate-fadeUp { animation: fadeUp 0.4s ease-out forwards; }
+          
+          @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+
+          /* Cinematic Mesh Background Update */
+          .vibrant-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background-image: 
+              radial-gradient(circle at 10% 10%, rgba(0, 194, 180, 0.2) 0%, transparent 60%),
+              radial-gradient(circle at 90% 10%, rgba(168, 85, 247, 0.15) 0%, transparent 60%),
+              radial-gradient(circle at 90% 90%, rgba(249, 115, 22, 0.15) 0%, transparent 60%),
+              radial-gradient(circle at 10% 90%, rgba(59, 130, 246, 0.2) 0%, transparent 60%);
+            filter: blur(60px); 
+            animation: meshBreathe 15s ease-in-out infinite alternate;
+          }
+
+          @keyframes meshBreathe {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1.05); opacity: 0.8; }
+          }
+
+          /* Interactive zero-opacity hover elements */
+          .glass-interactive {
+            background-color: transparent !important;
+            transition: border-color 300ms ease, color 300ms ease, transform 300ms ease, opacity 300ms ease, box-shadow 300ms ease !important;
+          }
+          .glass-interactive:hover {
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+          }
+
+          .glass-panel {
+            background: transparent !important;
+            backdrop-filter: blur(12px);
+          }
+
+          /* Custom Grid Layout */
+          .grid-cols-7-custom {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 1.25rem;
+          }
+          @media (max-width: 2200px) { .grid-cols-7-custom { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+          @media (max-width: 1800px) { .grid-cols-7-custom { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+          @media (max-width: 1500px) { .grid-cols-7-custom { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+          @media (max-width: 1200px) { .grid-cols-7-custom { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+          @media (max-width: 850px) { .grid-cols-7-custom { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+          @media (max-width: 550px) { .grid-cols-7-custom { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+        `}
+      </style>
+
+      {/* Background Root - Deep Space Base */}
+      <div className="fixed inset-0 bg-[#020408] flex items-center justify-center overflow-hidden p-4 md:p-8 text-white selection:bg-[#00c2b4]/30">
+        
+        {/* Animated Mesh Gradient Layer */}
+        <div className="absolute inset-0 vibrant-bg"></div>
+
+        {/* Cinematic 16:9 Letterbox Container */}
+        <div className="relative z-10 w-full aspect-video max-h-full max-w-[calc(100vh*16/9)] bg-transparent backdrop-blur-[12px] border-[0.77px] border-white/20 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden rounded-3xl md:rounded-[40px]">
+          
+          {/* Inner Scaling Wrapper */}
+          <div 
+            className="flex w-full h-full relative flex-col bg-transparent"
+            style={{
+              width: 'calc(100% / 0.67)',
+              height: 'calc(100% / 0.67)',
+              transform: 'scale(0.67)',
+              transformOrigin: 'top left'
+            }}
+          >
+
+            {/* MAIN APP CONTENT AREA */}
+            <main className="flex-1 flex flex-col relative z-10 w-full h-full overflow-hidden bg-transparent">
+              
+              {/* UNIFIED HEADER COMPONENT */}
+              <div className="px-10 pt-10 pb-4 flex items-center justify-between shrink-0 bg-transparent border-b-0 border-transparent">
+                <div className="flex flex-col">
+                  <h1 className="font-montserrat text-3xl leading-tight font-light text-white tracking-wide flex items-center gap-4">
+                    {currentAppView === 'policies' ? (
+                      <><Library className="text-[#00c2b4]" size={36} strokeWidth={1.5} /> Enterprise Policy Library</>
+                    ) : (
+                      <><Layers className="text-[#a855f7]" size={36} strokeWidth={1.5} /> Enterprise Forms Library</>
+                    )}
+                  </h1>
+                  
+                  {/* ANIMATED STATS / ICONS */}
+                  <div className="flex items-center gap-3 mt-4 ml-1">
+                    <div className="glass-interactive px-3 py-1.5 rounded-full border-[0.77px] border-[#00c2b4]/40 flex items-center gap-2 relative overflow-hidden group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00c2b4]/20 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite]"></div>
+                      <FileText size={12} className="text-[#00c2b4] animate-pulse" />
+                      <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-white">269 POLICIES</span>
+                    </div>
+                    <div className="glass-interactive px-3 py-1.5 rounded-full border-[0.77px] border-[#a855f7]/40 flex items-center gap-2 relative overflow-hidden group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#a855f7]/20 to-transparent -translate-x-full animate-[shimmer_3s_infinite_0.5s]"></div>
+                      <Layers size={12} className="text-[#a855f7] animate-pulse" />
+                      <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-white">281 FORMS</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-6">
+                  {/* SEARCH BAR */}
+                  <div className="flex items-center bg-transparent border-[0.77px] border-white/20 rounded-full px-5 py-2.5 w-64 focus-within:border-white/50 transition-all">
+                    <Search size={14} className="text-white/30 mr-3 shrink-0" />
+                    <input 
+                      type="text" 
+                      placeholder={`Search ${currentAppView}...`}
+                      value={currentAppView === 'policies' ? searchQuery : formSearch}
+                      onChange={e => currentAppView === 'policies' ? setSearchQuery(e.target.value) : setFormSearch(e.target.value)}
+                      className="bg-transparent border-none outline-none text-white text-xs w-full placeholder-white/30 font-light font-roboto" 
+                    />
+                  </div>
+
+                  {/* VIEW TOGGLE */}
+                  <div className="flex items-center p-1 rounded-full border-[0.77px] border-white/20 bg-transparent">
+                    <button
+                      onClick={() => setCurrentAppView('policies')}
+                      className={`px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase transition-all ${
+                        currentAppView === 'policies'
+                          ? 'border-[0.77px] border-[#00c2b4] text-[#00c2b4] shadow-[0_0_10px_rgba(0,194,180,0.1)]'
+                          : 'border-[0.77px] border-transparent text-white/40 hover:text-white'
+                      }`}
+                    >
+                      Policies
+                    </button>
+                    <button
+                      onClick={() => setCurrentAppView('forms')}
+                      className={`px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase transition-all ${
+                        currentAppView === 'forms'
+                          ? 'border-[0.77px] border-[#a855f7] text-[#a855f7] shadow-[0_0_10px_rgba(168,85,247,0.1)]'
+                          : 'border-[0.77px] border-transparent text-white/40 hover:text-white'
+                      }`}
+                    >
+                      Forms
+                    </button>
+                  </div>
+
+                  {/* EXPORT BUTTON */}
+                  <button className="glass-interactive px-5 py-2.5 rounded-full font-bold text-[10px] tracking-[0.2em] flex items-center gap-2 text-white uppercase border-[0.77px] border-white/20 hover:border-white/40">
+                    <Printer size={14} /> EXPORT CATALOG
+                  </button>
+                </div>
+              </div>
+
+              {/* VIEW 1: POLICY BROWSER */}
+              {currentAppView === 'policies' && (
+                <div className="flex-1 flex min-h-0 bg-transparent animate-fadeUp">
+                  <aside className="w-[280px] p-6 shrink-0 overflow-y-auto custom-scrollbar bg-transparent border-r-0 border-transparent">
+                    {/* Integrated Regulatory Filters */}
+                    <div className="mb-8">
+                      <h2 className="text-[8px] font-bold text-white/30 tracking-[0.2em] uppercase mb-4 pl-2 font-montserrat">Regulatory Filters</h2>
+                      <div className="flex flex-wrap gap-1.5 pl-2">
+                        {REGULATORY_ITEMS.map(reg => (
+                          <button 
+                            key={reg.id} 
+                            onClick={() => setActiveRegFilter(prev => prev === reg.id ? 'ALL' : reg.id)}
+                            className={`glass-interactive flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-widest border-[0.77px] transition-all ${
+                              activeRegFilter === reg.id ? 'border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'border-white/20 text-white/50 hover:border-white/40'
+                            }`}
+                            style={activeRegFilter === reg.id ? { borderColor: reg.color, color: reg.color } : {}}
+                          >
+                            <reg.icon size={10} style={{ color: activeRegFilter === reg.id ? reg.color : undefined }} />
+                            {reg.shortName.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <h2 className="text-[8px] font-bold text-white/30 tracking-[0.2em] uppercase mb-4 pl-2 font-montserrat">Strategic Domains</h2>
+                    <div className="space-y-1.5 pl-2">
+                      <button 
+                        onClick={() => handleDomainSelect('ALL')}
+                        className={`glass-interactive w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[9px] font-bold tracking-widest uppercase border-[0.77px] transition-all ${
+                          selectedDomain === 'ALL' ? 'border-white/20 text-white shadow-[0_0_10px_rgba(255,255,255,0.05)]' : 'border-transparent text-gray-400 hover:border-white/10'
+                        }`}
+                      >
+                        <Layers size={12} /> Global Repository
+                      </button>
+                      {DOMAINS.map(d => (
+                        <button 
+                          key={d.code} 
+                          onClick={() => handleDomainSelect(d.code)}
+                          className={`glass-interactive w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[9px] font-bold tracking-widest uppercase border-[0.77px] transition-all ${
+                            selectedDomain === d.code ? 'border-white/20 text-white shadow-[0_0_10px_rgba(255,255,255,0.05)]' : 'border-transparent text-gray-400 hover:border-white/10'
+                          }`}
+                        >
+                          <d.icon size={12} style={{ color: selectedDomain === d.code ? d.color : undefined }} />
+                          {d.name}
+                        </button>
+                      ))}
+                    </div>
+                  </aside>
+
+                  <section className="flex-1 flex flex-col overflow-hidden bg-transparent">
+                    <div className="px-10 py-6 flex items-center justify-between shrink-0 bg-transparent">
+                      <div className="flex items-center gap-4">
+                        {selectedSubdomain !== 'BROWSE' && (
+                          <button 
+                            onClick={() => setSelectedSubdomain('BROWSE')}
+                            className="glass-interactive p-2 rounded-full text-white/40 border-[0.77px] border-white/20 hover:text-white transition-colors"
+                          >
+                            <ChevronLeft size={18} />
+                          </button>
+                        )}
+                        <div>
+                          <h2 className="text-[14px] font-bold text-white uppercase tracking-[0.2em] flex items-center gap-3 font-montserrat">
+                            {selectedSubdomain === 'BROWSE' ? (selectedDomain === 'ALL' ? 'All Subdomains' : `${selectedDomain} Subdomains`) : selectedSubdomain}
+                          </h2>
+                        </div>
+                      </div>
+                      <div className="text-[12px] font-mono text-gray-500 tracking-wider">
+                         SHOWING: <span className="text-white font-bold">{selectedSubdomain === 'BROWSE' ? filteredSubdomains.length : visiblePolicies.length}</span> RESULTS
+                      </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar px-10 py-10 bg-transparent">
+                      {selectedSubdomain === 'BROWSE' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                          {filteredSubdomains.map(sub => (
+                            <button 
+                              key={`${sub.domainCode}-${sub.code}`}
+                              onClick={() => handleSubdomainSelect(sub.code)}
+                              className="glass-interactive glass-panel border-[0.77px] border-white/10 p-6 rounded-2xl flex items-center gap-5 text-left group hover:border-[#00c2b4]/40"
+                            >
+                              <div className="w-12 h-12 rounded-xl border-[0.77px] border-white/10 flex items-center justify-center bg-transparent group-hover:border-[#00c2b4]/40 transition-colors" style={{ color: sub.domainColor }}>
+                                <sub.icon size={20} strokeWidth={1.5} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-mono text-gray-500 mb-1">{sub.domainCode}-{sub.code}</p>
+                                <p className="text-[11px] font-bold text-white tracking-wide uppercase truncate font-montserrat group-hover:text-[#00c2b4] transition-colors">{sub.name}</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                          {visiblePolicies.map(policy => (
+                            <button 
+                              key={policy.id}
+                              className="glass-interactive glass-panel border-[0.77px] border-white/10 p-6 rounded-2xl flex flex-col h-[180px] text-left group relative overflow-hidden hover:border-[#00c2b4]/40 cursor-default"
+                            >
+                              <div className="flex justify-between items-start mb-4 relative z-10">
+                                <span className="text-[10px] font-mono font-bold tracking-widest text-[#00c2b4] border-[0.77px] border-[#00c2b4]/30 px-2 py-1 rounded bg-transparent">
+                                  {policy.policyId}
+                                </span>
+                                <policy.icon size={16} className="text-gray-500 group-hover:text-[#00c2b4] transition-colors" />
+                              </div>
+                              <h3 className="text-sm font-medium leading-relaxed text-gray-200 group-hover:text-white mb-auto line-clamp-3 font-roboto relative z-10">
+                                {policy.title}
+                              </h3>
+                              {policy.regulatoryTags.length > 0 && (
+                                <div className="flex gap-1.5 mt-4 relative z-10">
+                                  {policy.regulatoryTags.slice(0,3).map(tag => {
+                                    const reg = REGULATORY_ITEMS.find(r => r.id === tag);
+                                    return reg ? <div key={tag} className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: reg.color}} title={reg.shortName}/> : null;
+                                  })}
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                </div>
+              )}
+
+              {/* VIEW 2: FORMS BROWSER */}
+              {currentAppView === 'forms' && (
+                <div className="flex-1 flex flex-col min-h-0 animate-fadeUp bg-transparent px-10">
+                  <div className="flex flex-col h-full w-full mx-auto bg-transparent">
+                    
+                    <div className="my-6 shrink-0 bg-transparent">
+                      <div className="flex flex-wrap gap-2">
+                        <button 
+                          onClick={() => setFormDomain('ALL')} 
+                          className={`glass-interactive px-3 py-1.5 rounded-full font-montserrat text-[8px] font-bold tracking-widest uppercase border-[0.77px] transition-all ${formDomain === 'ALL' ? 'border-[#a855f7] text-[#a855f7] shadow-[0_0_15px_rgba(168,85,247,0.1)]' : 'border-white/20 text-gray-400 hover:text-white'}`}
+                        >
+                          ALL DOMAINS
+                        </button>
+                        {DOMAINS.map(d => {
+                          const isActive = formDomain === d.code;
+                          const Icon = d.icon;
+                          return (
+                            <button 
+                              key={d.code} 
+                              onClick={() => setFormDomain(d.code)} 
+                              className={`glass-interactive px-3 py-1.5 rounded-full font-montserrat text-[8px] font-bold tracking-widest uppercase flex items-center gap-1.5 border-[0.77px] transition-all ${isActive ? 'border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'border-white/20 text-gray-400 hover:text-white'}`}
+                            >
+                              <Icon size={10} className={isActive ? '' : 'opacity-60'} style={{ color: isActive ? d.color : undefined }} /> {d.name}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pb-4 mb-6 shrink-0 bg-transparent border-b-0 border-transparent">
+                      <button onClick={() => setFormClassifications(new Set())}
+                        className={`glass-interactive px-3 py-1.5 rounded-lg font-montserrat font-bold text-[8px] uppercase tracking-wider border-[0.77px] transition-all ${formClassifications.size === 0 ? 'text-white border-white/20' : 'text-gray-500 border-transparent hover:border-white/10'}`}>
+                        ALL FORMS
+                      </button>
+                      {CLASSIFICATION_FILTERS.map(c => {
+                        const isActive = formClassifications.has(c.id);
+                        const Icon = c.icon;
+                        return (
+                          <button key={c.id} onClick={() => toggleClassification(c.id)}
+                            className={`glass-interactive px-3 py-1.5 rounded-lg font-montserrat font-bold text-[8px] uppercase tracking-wider flex items-center gap-1.5 border-[0.77px] transition-all ${
+                              isActive ? '' : 'border-transparent text-gray-500 hover:border-white/10'
+                            }`}
+                            style={isActive ? { borderColor: c.color, color: c.color } : {}}>
+                            <Icon size={10} /> {c.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex justify-between items-center mb-6 shrink-0 bg-transparent border-b-0 border-transparent pb-2">
+                       <div className="text-[12px] font-mono text-gray-500 tracking-wider">
+                         SHOWING: <span className="text-white font-bold">{visibleForms.length}</span> ARTIFACTS
+                       </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar pb-10 pr-2 bg-transparent">
+                      <div className="grid-cols-7-custom">
+                        {visibleForms.map(form => {
+                          const domain = DOMAINS.find(d => d.code === form.domainCode);
+                          const color = domain?.color || '#ffffff';
+                          const typeColorClass = getFormTypeColor(form.type);
+
+                          return (
+                            <div key={form.id} className="glass-interactive glass-panel flex flex-col justify-between p-6 rounded-2xl group h-[250px] relative overflow-hidden border-[0.77px] border-white/10 hover:border-[#a855f7]/40 cursor-default">
+                              
+                              <div className="relative z-10">
+                                <div className="flex justify-between items-start mb-4">
+                                  <div className="text-[10px] font-bold font-mono tracking-widest px-2.5 py-1 rounded border-[0.77px] border-white/10 bg-transparent shadow-sm" style={{color: color}}>
+                                    {form.id}
+                                  </div>
+                                  <div className={`p-2 rounded-lg border-[0.77px] shadow-sm bg-transparent ${typeColorClass}`} title={form.type}>
+                                    {getFormIcon(form.type, 14)}
+                                  </div>
+                                </div>
+                                
+                                <h3 className="text-[13px] text-gray-200 font-medium leading-relaxed mb-4 line-clamp-3 group-hover:text-white transition-colors font-roboto">
+                                  {form.name}
+                                </h3>
+
+                                {form.classifications?.length > 0 && (
+                                  <div className="flex flex-col gap-1.5 mb-5">
+                                    {form.classifications.slice(0,2).map(cId => {
+                                      const cls = CLASSIFICATION_FILTERS.find(c => c.id === cId);
+                                      if (!cls) return null;
+                                      const Icon = cls.icon;
+                                      return (
+                                        <div key={cId} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-wider border-[0.77px] w-max bg-transparent"
+                                          style={{ borderColor: `${cls.color}50`, color: cls.color }}>
+                                          <Icon size={10} /> {cls.name}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="mt-auto pt-4 border-t-[0.77px] border-white/10 relative z-10">
+                                <div className="text-[8px] uppercase tracking-widest text-gray-500 mb-2.5 font-bold flex items-center justify-between font-montserrat">
+                                  <span className="flex items-center gap-1.5"><GitBranch size={10} /> Mapped Policies</span>
+                                  <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-11 right-0 bg-transparent p-1.5 rounded-lg border-[0.77px] border-white/20 shadow-2xl backdrop-blur-xl">
+                                    <button className="p-1.5 rounded-md hover:border-white/20 border-[0.77px] border-transparent text-gray-300 hover:text-white transition-all bg-transparent" title="Preview Form"><Eye size={14} /></button>
+                                    <button className="p-1.5 rounded-md hover:border-white/20 border-[0.77px] border-transparent text-gray-300 hover:text-white transition-all bg-transparent" title="Download Source"><Download size={14} /></button>
+                                  </div>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {form.policies.slice(0,3).map(pp => (
+                                    <span key={pp} className="px-2.5 py-1 rounded text-[9px] font-mono bg-transparent border-[0.77px] border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition-colors cursor-default shadow-sm" title={`Linked to ${pp}`}>
+                                      {pp}
+                                    </span>
+                                  ))}
+                                  {form.policies.length > 3 && (
+                                    <span className="px-2.5 py-1 rounded text-[9px] font-mono bg-transparent border-[0.77px] border-white/10 text-gray-400 cursor-default shadow-sm">
+                                      +{form.policies.length - 3}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </main>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,586 @@
+import React, { useState, useMemo, useCallback } from 'react';
+import {
+  Shield, Search, ChevronRight, X, CheckCircle,
+  AlertTriangle, FileText, Building2, Users, Target,
+  DollarSign, Monitor, Zap, BarChart3, Scale, Heart, Cpu, Briefcase, 
+  GitBranch, Landmark, ShieldCheck, Gavel, ChevronLeft, Printer, LayoutList, Lock, FileCheck
+} from 'lucide-react';
+
+// ══════════════════════════════════════════════════════════════
+// ENTERPRISE POLICY TAXONOMY
+// ══════════════════════════════════════════════════════════════
+
+const REGULATORY_ITEMS = [
+  { id: '42cfr', name: '42 CFR Part 484', shortName: '42 CFR §484', color: '#00e59b', icon: Scale, category: 'regulatory' },
+  { id: 'cms', name: 'CMS State Operations Manual', shortName: 'CMS SOM', color: '#ec4899', icon: FileCheck, category: 'regulatory' },
+  { id: 'hipaa', name: 'HIPAA Privacy & Security', shortName: 'HIPAA', color: '#3b82f6', icon: Lock, category: 'regulatory' },
+  { id: 'osha', name: 'OSHA / Cal-OSHA', shortName: 'OSHA', color: '#f59e0b', icon: Shield, category: 'regulatory' },
+  { id: 'ca', name: 'California State Law', shortName: 'CA', color: '#ef4444', icon: Landmark, category: 'regulatory' },
+  { id: 'oig', name: 'OIG / LEIE', shortName: 'OIG', color: '#8b5cf6', icon: ShieldCheck, category: 'regulatory' },
+  { id: 'ibm', name: 'IBM Compliance Framework', shortName: 'IBM', color: '#06b6d4', icon: Cpu, category: 'framework' },
+  { id: 'fca', name: 'False Claims Act', shortName: 'FCA', color: '#a855f7', icon: Gavel, category: 'risk' },
+];
+
+const DOMAINS = [
+  {
+    code: 'GV', name: 'Governance', fullName: 'GV — Governance & Administration', icon: Building2, color: '#00e59b',
+    subdomains: [{ code: 'GB', name: 'Governing Body' }, { code: 'OG', name: 'Organization' }, { code: 'PM', name: 'Policy Management' }, { code: 'EA', name: 'External Affairs' }]
+  },
+  {
+    code: 'CL', name: 'Clinical Operations', fullName: 'CL — Clinical Operations', icon: Heart, color: '#ef4444',
+    subdomains: [{ code: 'PA', name: 'Patient Assessment' }, { code: 'CP', name: 'Care Planning' }, { code: 'OA', name: 'OASIS' }, { code: 'SD', name: 'Service Delivery' }, { code: 'IC', name: 'Infection Control' }, { code: 'DC', name: 'Discharge' }]
+  },
+  {
+    code: 'QA', name: 'QAPI', fullName: 'QA — Quality Assessment & Performance Improvement', icon: BarChart3, color: '#06b6d4',
+    subdomains: [{ code: 'PG', name: 'QAPI Program' }, { code: 'SM', name: 'Star Monitoring' }, { code: 'AE', name: 'Adverse Events' }, { code: 'PI', name: 'PIPs' }]
+  },
+  {
+    code: 'HR', name: 'Human Resources', fullName: 'HR — Human Resources', icon: Users, color: '#8b5cf6',
+    subdomains: [{ code: 'TA', name: 'Talent Acquisition' }, { code: 'TD', name: 'Training & Dev' }, { code: 'WM', name: 'Workforce Mgmt' }, { code: 'ER', name: 'Employee Relations' }]
+  },
+  {
+    code: 'CO', name: 'Compliance', fullName: 'CO — Compliance & Regulatory', icon: Shield, color: '#3b82f6',
+    subdomains: [{ code: 'CP', name: 'Compliance Program' }, { code: 'HP', name: 'HIPAA & Privacy' }, { code: 'FA', name: 'Fraud & Abuse' }, { code: 'DC', name: 'Doc Compliance' }]
+  },
+  {
+    code: 'FN', name: 'Finance', fullName: 'FN — Finance & Revenue Cycle', icon: DollarSign, color: '#10b981',
+    subdomains: [{ code: 'FP', name: 'Financial Planning' }, { code: 'RC', name: 'Revenue Cycle' }, { code: 'BL', name: 'Billing' }]
+  },
+  {
+    code: 'OP', name: 'Operations', fullName: 'OP — Operations & Facilities', icon: Briefcase, color: '#f97316',
+    subdomains: [{ code: 'FM', name: 'Facilities' }, { code: 'SM', name: 'Supply Mgmt' }, { code: 'RC', name: 'Records' }]
+  },
+  {
+    code: 'IT', name: 'IT & Security', fullName: 'IT — Information Technology & Security', icon: Monitor, color: '#6366f1',
+    subdomains: [{ code: 'SP', name: 'Security Program' }, { code: 'AC', name: 'Access Control' }, { code: 'NW', name: 'Network' }, { code: 'BC', name: 'Backup/DR' }]
+  },
+  {
+    code: 'RM', name: 'Risk Management', fullName: 'RM — Risk Management & Safety', icon: AlertTriangle, color: '#eab308',
+    subdomains: [{ code: 'RA', name: 'Risk Assessment' }, { code: 'SS', name: 'Staff Safety' }, { code: 'PS', name: 'Patient Safety' }, { code: 'LI', name: 'Liability' }]
+  },
+  {
+    code: 'EN', name: 'Enterprise Control', fullName: 'EN — Enterprise Governance & Control', icon: Cpu, color: '#ec4899',
+    subdomains: [{ code: 'TG', name: 'Taxonomy' }, { code: 'LC', name: 'Lifecycle' }, { code: 'AI', name: 'AI Governance' }]
+  }
+];
+
+// Hardcoded core policies (ensuring completely unique IDs)
+const HARDCODED_POLICIES = [
+  { id:'gv-gb-001', policyId:'GV-GB-001', title:'Governing Body Authority & Responsibilities', domain:'GV — Governance & Administration', domainCode:'GV', subdomain:'GB — Governing Body', subdomainCode:'GB', classificationTier:'REQUIRED', status:'ACTIVE', version:'6.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'Governing Body Chair', approvedBy:'Governing Body Chair — Care Indeed Home Health Care, Inc.', cfrMapping:['42 CFR § 484.2','42 CFR § 484.105','42 CFR § 484.105(a)','42 CFR § 484.105(b)','42 CFR § 484.105(c)','42 CFR § 484.60','42 CFR § 484.65','42 CFR § 484.70','42 CFR § 484.100','42 CFR § 484.102','42 CFR § 484.110'], purpose:'This policy establishes the authority, composition, functions, and oversight responsibilities of the Governing Body of Care Indeed Home Health Care, Inc. The Governing Body is the ultimate authority accountable for the operation, management, fiscal viability, and regulatory compliance of the home health agency. This policy ensures the agency satisfies the requirements set forth in 42 CFR § 484.105 — Condition of Participation: Organization and Administration of Services, which mandates that a home health agency must have a governing body that assumes full legal authority and responsibility for the agency\'s overall operation and management.', scope:['All members of the Governing Body of Care Indeed Home Health Care, Inc. (including voting and non-voting members)','The Agency Administrator','The Director of Nursing / Clinical Manager','The Compliance Officer','All senior leadership personnel who report directly to the Governing Body or Administrator','All contracted management entities performing governing body functions on behalf of the agency'], linkedPolicies:['CO-CP-001','CO-CP-002','CO-CP-005','CO-CP-007','CO-HP-007','EN-TG-001','FN-FP-005','GV-EA-004','GV-EA-005','GV-GB-002','GV-GB-003','GV-GB-004','GV-GB-005','GV-OG-001','GV-OG-002','GV-OG-003','GV-OG-004','GV-OG-005','GV-PM-001','GV-PM-002','GV-PM-003','HR-TA-003','OP-FM-005','QA-AE-003','QA-PG-001','QA-PG-002','QA-SM-004'], enforcementRules:['Governing Body must meet quarterly (min 4x/year)','Key personnel appointed within 30 days of vacancy','OIG/SAM screening at appointment and monthly','Conflict of interest disclosures at appointment and annually','Quarterly compliance and QAPI reports reviewed by Governing Body','GV-EA-004 license/certification verification at least quarterly'], appendices:['Appendix A: Membership Roster','Appendix B: Conflict of Interest Form','Appendix C: Policy Acknowledgment','Appendix D: Meeting Minutes Template','Appendix E: Quarterly Oversight Checklist','Appendix F: Annual Calendar','Appendix G: Org Chart'], riskLevel:'HIGH', regulatoryTags:['42cfr','ca','ibm','cms','hipaa','oig','fca'] },
+  { id:'gv-gb-002', policyId:'GV-GB-002', title:'Board Meeting & Minutes Requirements', domain:'GV — Governance & Administration', domainCode:'GV', subdomain:'GB — Governing Body', subdomainCode:'GB', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'Governing Body Chair', approvedBy:'Governing Body Chair', cfrMapping:['42 CFR § 484.105(a)'], purpose:'Establishes documentation standards for all Governing Body meetings.', scope:['Governing Body members','Designated Secretary','Administrator'], linkedPolicies:['GV-GB-001','GV-GB-003'], enforcementRules:['Draft minutes within 14 calendar days','Minutes retained minimum 7 years','Quorum documented at each meeting'], appendices:['Meeting Minutes Template'], riskLevel:'MEDIUM', regulatoryTags:['42cfr','ibm'] },
+  { id:'gv-og-001', policyId:'GV-OG-001', title:'Organizational Structure & Reporting', domain:'GV — Governance & Administration', domainCode:'GV', subdomain:'OG — Organizational Structure', subdomainCode:'OG', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'Administrator', approvedBy:'Governing Body Chair', cfrMapping:['42 CFR § 484.105'], purpose:'Defines the organizational structure and reporting relationships.', scope:['All personnel'], linkedPolicies:['GV-GB-001','GV-OG-002'], enforcementRules:['Org chart approved annually by Governing Body','Updated within 30 days of structural changes'], appendices:['Organizational Chart'], riskLevel:'LOW', regulatoryTags:['42cfr','ca','ibm'] },
+  { id:'cl-pa-001', policyId:'CL-PA-001', title:'Comprehensive Patient Assessment', domain:'CL — Clinical Operations', domainCode:'CL', subdomain:'PA — Patient Assessment', subdomainCode:'PA', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'Clinical Manager', approvedBy:'Governing Body Chair', cfrMapping:['42 CFR § 484.55'], purpose:'Establishes comprehensive assessment requirements.', scope:['All clinical staff','Clinical Manager'], linkedPolicies:['CL-OA-001','CL-CP-001'], enforcementRules:['Initial assessment within 48 hours','Reassessment per OASIS timepoints'], appendices:['Assessment Checklist'], riskLevel:'HIGH', regulatoryTags:['42cfr','ca','ibm'] },
+  { id:'cl-cp-001', policyId:'CL-CP-001', title:'Plan of Care Development & Updates', domain:'CL — Clinical Operations', domainCode:'CL', subdomain:'CP — Care Planning & Coordination', subdomainCode:'CP', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'Clinical Manager', approvedBy:'Governing Body Chair', cfrMapping:['42 CFR § 484.60'], purpose:'Establishes requirements for individualized plan of care.', scope:['All clinical staff','Physicians'], linkedPolicies:['CL-PA-001','CL-OA-001','CL-SD-001'], enforcementRules:['POC established within 5 days of SOC','Physician signature within 30 days'], appendices:['POC Template'], riskLevel:'HIGH', regulatoryTags:['42cfr','ca','ibm'] },
+  { id:'qa-pg-001', policyId:'QA-PG-001', title:'QAPI Program Establishment & Governance', domain:'QA — QAPI', domainCode:'QA', subdomain:'PG — QAPI Program Governance', subdomainCode:'PG', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'Clinical Manager', approvedBy:'Governing Body Chair', cfrMapping:['42 CFR § 484.65'], purpose:'Establishes QAPI program structure.', scope:['Governing Body','Administrator','Clinical Manager','QA Designee','All staff'], linkedPolicies:['GV-GB-001','QA-PG-002','QA-AE-003'], enforcementRules:['QAPI program operational at all times'], appendices:['QAPI Program Charter'], riskLevel:'HIGH', regulatoryTags:['42cfr','ibm'] },
+  { id:'co-cp-001', policyId:'CO-CP-001', title:'Corporate Compliance Program', domain:'CO — Compliance & Regulatory', domainCode:'CO', subdomain:'CP — Corporate Compliance Program', subdomainCode:'CP', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'Compliance Officer', approvedBy:'Governing Body Chair', cfrMapping:['42 CFR § 484.100','OIG Compliance Guidance'], purpose:'Establishes corporate compliance program.', scope:['All personnel','Governing Body'], linkedPolicies:['GV-GB-001','CO-CP-002','CO-CP-005','CO-CP-007'], enforcementRules:['Compliance program operational at all times','Annual compliance risk assessment'], appendices:['Compliance Program Charter'], riskLevel:'HIGH', regulatoryTags:['42cfr','hipaa','fca','ibm'] },
+  { id:'hr-ta-001', policyId:'HR-TA-001', title:'Personnel Qualifications & Credentialing', domain:'HR — Human Resources', domainCode:'HR', subdomain:'TA — Talent Acquisition & Screening', subdomainCode:'TA', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'HR Director', approvedBy:'Governing Body Chair', cfrMapping:['42 CFR § 484.115'], purpose:'Ensures all personnel meet qualifications.', scope:['All staff','HR Department'], linkedPolicies:['HR-TA-003','CL-SD-003'], enforcementRules:['Credentials verified before patient contact','License renewal tracked'], appendices:['Credentialing Checklist'], riskLevel:'HIGH', regulatoryTags:['42cfr','ca','ibm'] },
+  { id:'fn-fp-005', policyId:'FN-FP-005', title:'Annual Budget & Financial Planning', domain:'FN — Finance & Revenue Cycle', domainCode:'FN', subdomain:'FP — Financial Planning & Budgeting', subdomainCode:'FP', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'Administrator', approvedBy:'Governing Body Chair', cfrMapping:['42 CFR § 484.105(a)'], purpose:'Annual operating budget.', scope:['Administrator','Governing Body'], linkedPolicies:['GV-GB-001'], enforcementRules:['Approved 30 days before fiscal year start','Quarterly financial reporting'], appendices:['Budget Template'], riskLevel:'MEDIUM', regulatoryTags:['42cfr','ibm'] },
+  { id:'op-fm-005', policyId:'OP-FM-005', title:'Emergency Operations & Business Continuity', domain:'OP — Operations & Facilities', domainCode:'OP', subdomain:'FM — Facilities & Emergency Preparedness', subdomainCode:'FM', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'Administrator', approvedBy:'Governing Body Chair', cfrMapping:['42 CFR § 484.102'], purpose:'Emergency operations plan.', scope:['All personnel'], linkedPolicies:['GV-GB-001'], enforcementRules:['Approved annually at Q3','Minimum 2 drills/year'], appendices:['Emergency Contact List','Drill Report Template'], riskLevel:'HIGH', regulatoryTags:['42cfr','ca','ibm'] },
+  { id:'it-sp-001', policyId:'IT-SP-001', title:'Information Security Program', domain:'IT — Information Technology & Security', domainCode:'IT', subdomain:'SP — Security Program', subdomainCode:'SP', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'IT Administrator', approvedBy:'Governing Body Chair', cfrMapping:['HIPAA Security Rule'], purpose:'Agency information security program.', scope:['All personnel','IT Administrator'], linkedPolicies:['CO-HP-101','CO-IR-101','IT-AC-001'], enforcementRules:['Annual security risk assessment','Security awareness training'], appendices:['Security Program Charter'], riskLevel:'HIGH', regulatoryTags:['hipaa','ca','ibm'] },
+  { id:'rm-os-101', policyId:'RM-OS-101', title:'Cal/OSHA Occupational Safety Program (IIPP)', domain:'RM — Risk Management & Safety', domainCode:'RM', subdomain:'SS — Staff Safety', subdomainCode:'SS', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'Risk Manager', approvedBy:'Governing Body Chair', cfrMapping:['Cal/OSHA Title 8','SB 553'], purpose:'Cal/OSHA IIPP and safety program.', scope:['All personnel'], linkedPolicies:['HR-EH-101','CL-IC-001'], enforcementRules:['IIPP core 7 elements','Workplace Violence Prevention (SB 553)','Annual safety training'], appendices:['IIPP Document','Incident Report Form'], riskLevel:'HIGH', regulatoryTags:['osha','ca','ibm'] },
+  { id:'en-tg-001', policyId:'EN-TG-001', title:'Enterprise Policy Taxonomy & Classification', domain:'EN — Enterprise Governance & Control', domainCode:'EN', subdomain:'TG — Taxonomy', subdomainCode:'TG', classificationTier:'REQUIRED', status:'ACTIVE', version:'1.0', effectiveDate:'2025-07-10', nextReviewDate:'2026-07-10', policyOwner:'Administrator', approvedBy:'Governing Body Chair', cfrMapping:['42 CFR § 484.105(a)'], purpose:'Governs the enterprise taxonomy framework.', scope:['All policy authors','Administrator'], linkedPolicies:['GV-PM-001','EN-LC-001'], enforcementRules:['10-domain taxonomy enforced'], appendices:['Taxonomy Matrix'], riskLevel:'MEDIUM', regulatoryTags:['42cfr','ibm'] },
+];
+
+// Ensure unique hardcoded policies
+const uniqueHardcoded = Array.from(new Map(HARDCODED_POLICIES.map(p => [p.id, p])).values());
+
+// Generate the remaining policies dynamically up to exactly 253
+const GENERATED_POLICIES = [];
+const TARGET_TOTAL = 253;
+const allSubdomainsFlat = DOMAINS.flatMap(d => d.subdomains.map(s => ({ ...s, domainCode: d.code, domainName: d.fullName })));
+const tiers = ['REQUIRED', 'ESSENTIAL', 'OPERATIONAL', 'REFERENCE'];
+const statuses = ['ACTIVE', 'DRAFT', 'UNDER_REVIEW', 'DEPRECATED'];
+const regs = ['42cfr', 'hipaa', 'osha', 'ca', 'ibm', 'fca'];
+const risks = ['HIGH', 'MEDIUM', 'LOW'];
+
+let counter = 1000;
+let subIndex = 0;
+
+while (uniqueHardcoded.length + GENERATED_POLICIES.length < TARGET_TOTAL) {
+  const sub = allSubdomainsFlat[subIndex % allSubdomainsFlat.length];
+  counter++;
+  
+  // Randomly assign 1 to 3 regulatory tags for rich filtering
+  const regCount = (counter % 3) + 1; 
+  const assignedRegs = [];
+  for (let r = 0; r < regCount; r++) {
+    assignedRegs.push(regs[(counter + r) % regs.length]);
+  }
+  
+  GENERATED_POLICIES.push({
+    id: `${sub.domainCode.toLowerCase()}-${sub.code.toLowerCase()}-${counter}`,
+    policyId: `${sub.domainCode}-${sub.code}-${counter}`,
+    title: `${sub.name} Standard Operating Procedure ${counter}`,
+    domain: sub.domainName,
+    domainCode: sub.domainCode,
+    subdomain: `${sub.code} — ${sub.name}`,
+    subdomainCode: sub.code,
+    classificationTier: tiers[counter % tiers.length],
+    // Make mostly ACTIVE to look like a healthy system
+    status: statuses[(counter % 7 === 0) ? 1 : (counter % 11 === 0) ? 2 : (counter % 13 === 0) ? 3 : 0],
+    version: `1.${counter % 5}`,
+    effectiveDate: '2025-07-10',
+    nextReviewDate: '2026-07-10',
+    policyOwner: 'Department Director',
+    approvedBy: 'Governing Body Chair',
+    cfrMapping: ['Standard CFR Mapping'],
+    purpose: `This procedure establishes the operational standards for ${sub.name} within the ${sub.domainCode} domain, ensuring compliance with state and federal guidelines.`,
+    scope: ['Applicable Department Staff', 'Management'],
+    linkedPolicies: [],
+    enforcementRules: ['Standard enforcement rule 1', 'Annual review required'],
+    appendices: [],
+    riskLevel: risks[counter % 3],
+    regulatoryTags: [...new Set(assignedRegs)]
+  });
+  
+  subIndex++;
+}
+
+const FULL_POLICY_DATASET = [...uniqueHardcoded, ...GENERATED_POLICIES];
+
+// ══════════════════════════════════════════════════════════════
+// COMPONENTS
+// ══════════════════════════════════════════════════════════════
+
+const StatusBadge = ({status, small}) => {
+  const c = {
+    ACTIVE: {bg:'rgba(0,229,155,0.12)', border:'rgba(0,229,155,0.3)', text:'#00e59b'},
+    DRAFT: {bg:'rgba(249,115,22,0.12)', border:'rgba(249,115,22,0.3)', text:'#f97316'},
+    UNDER_REVIEW: {bg:'rgba(59,130,246,0.12)', border:'rgba(59,130,246,0.3)', text:'#3b82f6'},
+    DEPRECATED: {bg:'rgba(107,114,128,0.12)', border:'rgba(107,114,128,0.3)', text:'#9ca3af'},
+  };
+  const s = c[status] || c.ACTIVE;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-widest ${small ? 'px-2 py-0.5 text-[7px]' : 'px-4 py-1.5 text-[10px]'}`} style={{background:s.bg, border:`1px solid ${s.border}`, color:s.text}}>
+      <span className={`${small ? 'w-1 h-1' : 'w-1.5 h-1.5'} rounded-full`} style={{background:s.text}}/>
+      {status.replace('_',' ')}
+    </span>
+  );
+};
+
+const TierBadge = ({tier, small}) => {
+  const c = {
+    REQUIRED: {bg:'rgba(255,255,255,0.03)', border:'rgba(255,255,255,0.1)', text:'white'},
+    ESSENTIAL: {bg:'rgba(255,255,255,0.03)', border:'rgba(255,255,255,0.1)', text:'rgba(255,255,255,0.8)'},
+    OPERATIONAL: {bg:'rgba(255,255,255,0.03)', border:'rgba(255,255,255,0.1)', text:'rgba(255,255,255,0.6)'},
+    REFERENCE: {bg:'rgba(255,255,255,0.03)', border:'rgba(255,255,255,0.1)', text:'rgba(255,255,255,0.4)'},
+  };
+  const s = c[tier] || c.REFERENCE;
+  return (
+    <span className={`inline-flex rounded-full font-bold uppercase tracking-widest ${small ? 'px-2 py-0.5 text-[7px]' : 'px-4 py-1.5 text-[10px]'}`} style={{background:s.bg, border:`1px solid ${s.border}`, color:s.text}}>
+      {tier}
+    </span>
+  );
+};
+
+// ── DETAIL VIEW COMPONENT (Embedded, not a modal) ──
+const PolicyDetailView = ({ policy, onBack }) => {
+  return (
+    <div className="animate-fadeIn w-full flex flex-col h-full">
+      {/* Header Area */}
+      <div className="shrink-0 mb-8">
+        <div className="flex justify-between items-center mb-8">
+          <button onClick={onBack} className="text-[#00e59b] font-montserrat text-[11px] font-bold tracking-[0.2em] flex items-center gap-2 hover:opacity-80 uppercase transition-opacity">
+            <ChevronLeft size={16} /> POLICY TAXONOMY
+          </button>
+          <button className="border border-white/20 hover:bg-white/5 px-5 py-2.5 rounded-full font-bold text-[10px] tracking-[0.2em] transition-colors flex items-center gap-2 text-white uppercase">
+            <Printer size={14} /> EXPORT
+          </button>
+        </div>
+
+        <div className="flex gap-3 mb-6">
+          <span className="border border-white/10 bg-white/[0.03] px-4 py-1.5 rounded-full text-[10px] font-bold text-white tracking-widest uppercase">{policy.policyId}</span>
+          <StatusBadge status={policy.status} />
+          <TierBadge tier={policy.classificationTier} />
+        </div>
+
+        <h1 className="font-montserrat text-4xl md:text-[44px] leading-tight font-light text-white mb-10 tracking-wide">
+          {policy.title}
+        </h1>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold block mb-1.5">Domain</span><span className="text-[13px] text-white/90 font-light">{policy.domain}</span></div>
+          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold block mb-1.5">Tier</span><span className="text-[13px] text-white/90 font-light">{policy.classificationTier}</span></div>
+          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold block mb-1.5">Approved By</span><span className="text-[13px] text-white/90 font-light">{policy.approvedBy}</span></div>
+          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold block mb-1.5">Version</span><span className="text-[13px] text-white/90 font-light">v{policy.version}</span></div>
+        </div>
+
+        {/* Static Tabs */}
+        <div className="flex border-b border-white/10 overflow-x-auto no-scrollbar">
+          {['Overview & Definitions', 'Policy Statements', 'Procedures', 'Documentation', 'Compliance & Audit', 'References & Admin', 'Appendices (Forms)'].map((tab, idx) => (
+            <button key={idx} className={`pb-4 px-6 font-montserrat text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap transition-colors ${idx === 0 ? 'text-[#00e59b] border-b-2 border-[#00e59b]' : 'text-white/40 hover:text-white/80'}`}>
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Content Area - First Page Layout mapped dynamically */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar pr-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mt-6">
+          <div className="border-l-[3px] border-[#00e59b] pl-6">
+            <h2 className="font-montserrat text-[15px] font-bold text-white flex items-center mb-5 tracking-widest uppercase">
+              <Target className="text-[#00e59b] mr-3" size={20} /> 2. Purpose
+            </h2>
+            <p className="text-white/70 font-roboto text-sm leading-relaxed">
+              {policy.purpose}
+            </p>
+          </div>
+          
+          <div className="border-l-[3px] border-[#e85200] pl-6">
+            <h2 className="font-montserrat text-[15px] font-bold text-white flex items-center mb-5 tracking-widest uppercase">
+              <Search className="text-[#e85200] mr-3" size={20} /> 3. Scope
+            </h2>
+            <ul className="space-y-4">
+              {policy.scope.map((item, i) => (
+                <li key={i} className="flex items-start">
+                  <CheckCircle className="text-[#e85200] mr-3 mt-0.5 flex-shrink-0" size={16} />
+                  <span className="text-white/70 font-roboto text-sm">{item}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 p-4 bg-[#e85200]/10 border border-[#e85200]/20 text-[#e85200] rounded-lg text-xs font-medium leading-relaxed font-roboto">
+              This policy applies specifically to the operations and staff categorized under the scope elements defined above.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// ══════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ══════════════════════════════════════════════════════════════
+
+export default function FrameworkCommandShell() {
+  // Navigation & Filtering State
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'detail'
+  const [selectedPolicy, setSelectedPolicy] = useState(null);
+
+  const [selectedDomain, setSelectedDomain] = useState('ALL');
+  const [selectedSubdomain, setSelectedSubdomain] = useState('ALL');
+  const [activeRegFilters, setActiveRegFilters] = useState(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Pre-flatten all subdomains for the 14x3 persistent view
+  const allSubdomainsList = useMemo(() => {
+    return DOMAINS.flatMap(d => d.subdomains.map(s => ({ ...s, domainCode: d.code, color: d.color })));
+  }, []);
+
+  const currentDomain = DOMAINS.find(d => d.code === selectedDomain);
+  const subdomainOptions = selectedDomain === 'ALL' ? allSubdomainsList : currentDomain?.subdomains || [];
+
+  const scopedPolicies = useMemo(() => {
+    let p = FULL_POLICY_DATASET;
+    if (selectedDomain !== 'ALL') p = p.filter(x => x.domainCode === selectedDomain);
+    if (selectedSubdomain !== 'ALL') p = p.filter(x => x.subdomainCode === selectedSubdomain);
+    return p;
+  }, [selectedDomain, selectedSubdomain]);
+
+  const visiblePolicies = useMemo(() => {
+    let p = scopedPolicies;
+    if (activeRegFilters.size > 0) {
+      p = p.filter(x => {
+        for (const f of activeRegFilters) {
+          if (!x.regulatoryTags.includes(f)) return false;
+        }
+        return true;
+      });
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      p = p.filter(x =>
+        x.policyId.toLowerCase().includes(q) ||
+        x.title.toLowerCase().includes(q) ||
+        x.policyOwner.toLowerCase().includes(q) ||
+        x.cfrMapping.some(c => c.toLowerCase().includes(q))
+      );
+    }
+    return p;
+  }, [scopedPolicies, activeRegFilters, searchQuery]);
+
+  const statusCounts = useMemo(() => ({
+    ACTIVE: visiblePolicies.filter(p => p.status === 'ACTIVE').length,
+    DRAFT: visiblePolicies.filter(p => p.status === 'DRAFT').length,
+    UNDER_REVIEW: visiblePolicies.filter(p => p.status === 'UNDER_REVIEW').length,
+  }), [visiblePolicies]);
+
+  const toggleRegFilter = useCallback((id) => {
+    setActiveRegFilters(prev => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  }, []);
+
+  const handleDomainChange = useCallback((code) => {
+    setSelectedDomain(code);
+    setSelectedSubdomain('ALL');
+    setViewMode('grid');
+  }, []);
+
+  const handleSubdomainChange = useCallback((code) => {
+    setSelectedSubdomain(code);
+    setViewMode('grid');
+  }, []);
+
+  const handlePolicyClick = useCallback((policy) => {
+    setSelectedPolicy(policy);
+    setViewMode('detail');
+  }, []);
+
+  const handleBackToGrid = useCallback(() => {
+    setViewMode('grid');
+    setSelectedPolicy(null);
+  }, []);
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .font-roboto { font-family: 'Roboto', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+
+        /* The 14-column grid for Subdomains when ALL is selected */
+        .subdomain-grid-14 {
+          display: grid;
+          grid-template-columns: repeat(14, 1fr);
+          grid-auto-rows: min-content;
+          gap: 8px;
+        }
+
+        /* The horizontal-scrolling 11-column grid for Policies */
+        .pp-grid-wrapper {
+          width: 100%;
+          overflow-x: auto;
+          padding-bottom: 20px;
+        }
+        .pp-grid-11 {
+          display: grid;
+          grid-template-columns: repeat(11, 240px);
+          width: max-content; 
+          gap: 12px;
+        }
+      `}</style>
+
+      {/* SINGLE GLASS SHELL IMPLEMENATION */}
+      <div className="min-h-screen font-roboto text-white relative bg-[#111111] overflow-hidden">
+        
+        {/* The single container housing the entire interface */}
+        <div className="relative w-full max-w-[2200px] mx-auto p-8 md:p-12 flex flex-col h-screen">
+
+          {/* Conditional Header rendering - either Dashboard Title or Detail Header */}
+          {viewMode === 'grid' && (
+            <div className="shrink-0">
+              <div className="flex justify-between items-center mb-8">
+                 <div className="flex items-center gap-4">
+                    <button className="text-[#00e59b] font-montserrat text-[11px] font-bold tracking-[0.2em] flex items-center gap-2 hover:opacity-80 uppercase transition-opacity">
+                       <ChevronLeft size={16} /> TAXONOMY ROOT
+                    </button>
+                 </div>
+                 <div className="flex gap-4">
+                     <button className="border border-white/20 hover:bg-white/5 px-5 py-2.5 rounded-full font-bold text-[10px] tracking-[0.2em] transition-colors flex items-center gap-2 text-white uppercase">
+                        <Printer size={14} /> EXPORT LIST
+                     </button>
+                 </div>
+              </div>
+
+              <h1 className="font-montserrat text-4xl md:text-[44px] leading-tight font-light text-white mb-12 tracking-wide">
+                Enterprise Framework <span className="text-white/30 text-3xl ml-2 font-mono align-middle">v6.0</span>
+              </h1>
+
+              {/* DOMAIN SELECTION */}
+              <div className="mb-8">
+                <h2 className="font-montserrat text-[13px] font-bold text-white flex items-center tracking-widest uppercase border-l-[3px] border-[#00e59b] pl-4 mb-4">
+                  <LayoutList className="text-[#00e59b] mr-3" size={18} /> Domain Context
+                </h2>
+                
+                <div className="flex gap-2 overflow-x-auto no-scrollbar pl-5 pb-2">
+                  <button onClick={() => handleDomainChange('ALL')}
+                    className={`flex-shrink-0 px-5 py-2 rounded-full font-montserrat font-bold text-[11px] uppercase tracking-wider transition-colors ${
+                      selectedDomain === 'ALL'
+                        ? 'bg-white/10 text-white border border-white/20'
+                        : 'text-white/50 border border-transparent hover:text-white'
+                    }`}>
+                    ALL DOMAINS
+                  </button>
+                  
+                  {DOMAINS.map(d => {
+                    const isActive = selectedDomain === d.code;
+                    const Icon = d.icon;
+                    return (
+                      <button key={d.code} onClick={() => handleDomainChange(d.code)}
+                        className={`flex-shrink-0 px-5 py-2 rounded-full font-montserrat font-bold text-[11px] uppercase tracking-wider transition-colors flex items-center gap-2 ${
+                          isActive ? 'bg-[#00e59b]/20 text-[#00e59b] border border-[#00e59b]/50' : 'text-white/50 border border-transparent hover:text-white'
+                        }`}>
+                        <Icon size={14} className={isActive ? 'text-[#00e59b]' : 'text-white/30'} />
+                        {d.name}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Persistent Subdomain Selection */}
+                <div className="pl-10 mt-4 pb-2 border-l-2 border-white/10 ml-2 relative">
+                  {selectedDomain === 'ALL' ? (
+                    // Persistent 14x3 dense layout for ALL Subdomains
+                    <div className="subdomain-grid-14 custom-scrollbar overflow-y-auto max-h-[120px] pr-2">
+                       <button onClick={() => handleSubdomainChange('ALL')}
+                          className={`col-span-2 px-3 py-1.5 rounded-md font-montserrat font-bold text-[9px] uppercase tracking-wider transition-colors text-left ${
+                            selectedSubdomain === 'ALL' ? 'text-white bg-white/10 border border-white/20' : 'text-white/30 hover:text-white'
+                          }`}>
+                          ALL SUBDOMAINS
+                       </button>
+                       {subdomainOptions.map(s => {
+                         const isActive = selectedSubdomain === s.code;
+                         return (
+                           <button key={`${s.domainCode || 'ALL'}-${s.code}`} onClick={() => handleSubdomainChange(s.code)}
+                              className={`px-2 py-1.5 rounded-md font-montserrat font-bold text-[9px] uppercase tracking-wider transition-colors text-center truncate ${
+                                isActive ? 'bg-white/10 border border-white/20 text-white' : 'text-white/40 hover:text-white border border-transparent'
+                              }`}
+                              style={{ color: isActive ? s.color : undefined, borderColor: isActive ? `${s.color}60` : undefined, backgroundColor: isActive ? `${s.color}15` : undefined }}>
+                              {s.code}
+                           </button>
+                         );
+                       })}
+                    </div>
+                  ) : (
+                    // Horizontal scroll layout for specific domain
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                      <button onClick={() => handleSubdomainChange('ALL')}
+                        className={`flex-shrink-0 px-4 py-1.5 rounded-full font-montserrat font-bold text-[10px] uppercase tracking-wider transition-colors ${
+                          selectedSubdomain === 'ALL' ? 'text-white bg-white/5 border border-white/10' : 'text-white/30 hover:text-white'
+                        }`}>
+                        ALL SUBDOMAINS
+                      </button>
+                      {subdomainOptions.map(s => {
+                        const isActive = selectedSubdomain === s.code;
+                        return (
+                          <button key={`${selectedDomain}-${s.code}`} onClick={() => handleSubdomainChange(s.code)}
+                            className={`flex-shrink-0 px-4 py-1.5 rounded-full font-montserrat font-bold text-[10px] uppercase tracking-wider transition-colors ${
+                              isActive ? 'text-[#00e59b] border border-[#00e59b]/30 bg-[#00e59b]/10' : 'text-white/40 hover:text-white border border-transparent'
+                            }`}>
+                            {s.code} - {s.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* CONTROL STRIP (Unified search, stats, and regulatory) */}
+              <div className="mb-6 border-y border-white/10 py-5">
+                 <div className="flex flex-wrap items-center justify-between gap-8">
+                    <div className="w-full md:w-80 relative flex items-center border-b border-white/20 pb-2">
+                       <Search size={16} className="text-[#00e59b] mr-3" />
+                       <input type="text" placeholder="Search Title, ID, or Keywords..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                          className="bg-transparent w-full text-white outline-none font-roboto text-sm placeholder:text-white/30" />
+                       {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-0 text-white/30 hover:text-white"><X size={14}/></button>}
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                       <div className="flex items-center gap-3">
+                          <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">Scope:</span>
+                          <span className="text-[14px] font-mono text-white">{visiblePolicies.length} <span className="text-white/30 text-xs font-roboto">Policies</span></span>
+                       </div>
+                       <div className="w-px h-6 bg-white/10"></div>
+                       <div className="flex items-center gap-4">
+                          {[{k:'ACTIVE', c:'#00e59b'}, {k:'DRAFT', c:'#f97316'}, {k:'UNDER_REVIEW', c:'#3b82f6'}].map(s => statusCounts[s.k] > 0 && (
+                             <div key={s.k} className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full" style={{background: s.c}}></span>
+                                <span className="text-[12px] font-mono text-white/80">{statusCounts[s.k]}</span>
+                             </div>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="mt-5 flex flex-wrap gap-4 items-center">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold mr-2">Regulatory Mapping:</span>
+                    {REGULATORY_ITEMS.map(reg => {
+                      const isActive = activeRegFilters.has(reg.id);
+                      const Icon = reg.icon;
+                      return (
+                        <button key={reg.id} onClick={() => toggleRegFilter(reg.id)}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all"
+                          style={{
+                            borderColor: isActive ? reg.color : 'rgba(255,255,255,0.1)',
+                            background: isActive ? `${reg.color}15` : 'transparent',
+                            color: isActive ? reg.color : 'rgba(255,255,255,0.5)'
+                          }}>
+                          <Icon size={14} />
+                          <span className="text-[10px] font-bold tracking-widest uppercase">{reg.shortName}</span>
+                        </button>
+                      );
+                    })}
+                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* DYNAMIC CONTENT AREA (Yellow Box replacement) */}
+          {viewMode === 'grid' ? (
+            <div className="flex-1 pp-grid-wrapper custom-scrollbar">
+              <div className="pp-grid-11 animate-fadeIn">
+                {visiblePolicies.map(policy => {
+                  const domain = DOMAINS.find(d => d.code === policy.domainCode);
+                  const color = domain?.color || '#ffffff';
+                  return (
+                    <button key={policy.id} onClick={() => handlePolicyClick(policy)}
+                      className="flex flex-col justify-between text-left p-4 rounded-xl transition-all border border-white/5 hover:bg-white/[0.02] hover:border-white/10 group min-h-[140px]">
+                      
+                      <div>
+                         <div className="flex items-center justify-between mb-3">
+                           <span className="text-[10px] font-bold font-mono tracking-wider" style={{color: color}}>
+                             {policy.policyId}
+                           </span>
+                         </div>
+                         <h3 className="text-xs text-white/80 font-medium leading-snug line-clamp-3 group-hover:text-white transition-colors">
+                           {policy.title}
+                         </h3>
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between">
+                         <span className="text-[8px] uppercase tracking-widest text-white/30 font-bold border border-white/10 px-2 py-0.5 rounded">
+                           {policy.classificationTier.substring(0,3)}
+                         </span>
+                         <span className="w-1.5 h-1.5 rounded-full" style={{
+                           background: policy.status === 'ACTIVE' ? '#00e59b' : policy.status === 'DRAFT' ? '#f97316' : '#3b82f6'
+                         }}></span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {visiblePolicies.length === 0 && (
+                <div className="text-center py-20 text-white/20 w-full absolute left-0 right-0">
+                  <Search size={40} className="mx-auto mb-4 text-white/10"/>
+                  <p className="text-lg font-light font-montserrat">No policies match criteria.</p>
+                  <p className="text-sm mt-2 text-white/30">Adjust scope or regulatory filters to view documentation.</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <PolicyDetailView policy={selectedPolicy} onBack={handleBackToGrid} />
+          )}
+
+        </div>
+      </div>
+    </>
+  );
+}
