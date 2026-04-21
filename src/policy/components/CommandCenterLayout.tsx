@@ -192,6 +192,9 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                   transition: 'opacity 700ms cubic-bezier(.22,1,.36,1)',
                   opacity: splashExit ? 0 : 1,
                   pointerEvents: splashExit ? ('none' as const) : ('auto' as const),
+                  background: isLight
+                    ? 'rgba(255,255,255,0.777)'
+                    : 'linear-gradient(160deg, rgba(66,8,8,0.777) 0%, rgba(10,2,2,0.777) 100%)',
                 }}
               >
                 {/* Splash inner card — brand-aligned enterprise panel.
