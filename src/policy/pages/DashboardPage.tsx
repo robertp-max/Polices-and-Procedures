@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import {
   REGULATORY_EVENTS,
-  computeKpis,
   domainSummary,
   daysUntil,
   relativeLabel,
@@ -18,6 +17,7 @@ import {
   URGENCY_PALETTE,
   type RegulatoryEvent,
 } from '@/policy/data/regulatoryEvents';
+import { useComplianceKpis } from '@/policy/compliance';
 import { KpiTile } from '@/policy/components/regulatory/KpiTile';
 import {
   DomainBadge,
@@ -41,7 +41,9 @@ import { computeDependencyBlockStatus } from '@/policy/utils/nextDueDateEngine';
 export function DashboardPage() {
   const navigate = useNavigate();
   const today = TODAY_ANCHOR;
-  const kpis = useMemo(() => computeKpis(REGULATORY_EVENTS, today), [today]);
+  // useComplianceKpis runs the full enforcement engine against live store state.
+  // These numbers reflect actual form/step/approval completion — not static seed flags.
+  const kpis = useComplianceKpis();
   const domains = useMemo(() => domainSummary(REGULATORY_EVENTS), []);
   const store = useRegulatoryExecutionStore();
   const pendingApprovals = useAllPendingApprovalsCount();

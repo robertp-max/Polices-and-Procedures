@@ -2168,25 +2168,34 @@ export interface DashboardKpis {
   dueSoon30: number;
 }
 
+/**
+ * computeKpis — seed-data KPIs derived from static event urgency.
+ *
+ * IMPORTANT: This function only sees static seed-data urgency flags.
+ * For KPIs that reflect live form/step/approval completion state,
+ * use `useComplianceKpis()` from @/policy/compliance instead.
+ * That hook runs the full enforcement engine against the Zustand store.
+ */
 export function computeKpis(events: RegulatoryEvent[] = REGULATORY_EVENTS, today: Date = TODAY_ANCHOR): DashboardKpis {
   const actionable = events.filter(e => !e.isContext);
+
   const dueThisWeek = actionable.filter(e => {
     const n = daysUntil(e.date, today);
-    return n >= 0 && n <= 7;
+    return n >= 0 && n <= 7 && e.urgency !== 'complete';
   }).length;
 
   const dueSoon30 = actionable.filter(e => {
     const n = daysUntil(e.date, today);
-    return n >= 0 && n <= 30 && e.urgency !== 'overdue';
+    return n >= 0 && n <= 30 && e.urgency !== 'complete' && e.urgency !== 'overdue';
   }).length;
 
   const overdue = actionable.filter(e => e.urgency === 'overdue').length;
   const critical = actionable.filter(e => e.urgency === 'critical' || e.urgency === 'overdue').length;
+
   const missing = actionable.filter(e =>
-    e.requiredForms.some(f => f.status === 'missing') || e.minutes?.status === 'missing'
+    e.requiredForms.some(f => f.status === 'missing') || e.minutes?.status === 'missing',
   ).length;
 
-  // Blocked: urgency already flagged blocked OR has unmet upstream dependency
   const blocked = actionable.filter(e => {
     if (e.urgency === 'blocked') return true;
     const deps = e.dependencies?.dependsOn ?? [];
@@ -2197,22 +2206,26 @@ export function computeKpis(events: RegulatoryEvent[] = REGULATORY_EVENTS, today
     });
   }).length;
 
-  const completed = actionable.filter(e => e.urgency === 'complete').length;
-  const completedPct = Math.round(((completed + (actionable.length - critical - missing - dueThisWeek + completed)) / Math.max(1, actionable.length * 1.2)) * 100);
+  const completed    = actionable.filter(e => e.urgency === 'complete').length;
+  const completedPct = actionable.length > 0
+    ? Math.round((completed / actionable.length) * 100)
+    : 0;
 
-  const billingAtRisk = actionable.filter(e => e.domain === 'Finance' || e.policyRefs.some(p => p.startsWith('FN-') || p.startsWith('CL-POC'))).length;
+  const billingAtRisk = actionable.filter(
+    e => e.domain === 'Finance' || e.policyRefs.some(p => p.startsWith('FN-') || p.startsWith('CL-POC')),
+  ).length;
 
   return {
-    total: 148,
-    dueThisWeek: Math.max(dueThisWeek, 26),
-    dueThisWeekTrend: 4,
-    overdue: Math.max(overdue, 3),
-    completedPct: Math.min(98, Math.max(92, completedPct)),
-    missingEvidence: Math.max(missing, 5),
-    criticalCount: Math.max(critical, 4),
-    billingAtRisk: Math.max(billingAtRisk, 7),
-    blocked: Math.max(blocked, 2),
-    dueSoon30: Math.max(dueSoon30, 12),
+    total:            actionable.length,
+    dueThisWeek,
+    dueThisWeekTrend: 0,
+    overdue,
+    completedPct,
+    missingEvidence:  missing,
+    criticalCount:    critical,
+    billingAtRisk,
+    blocked,
+    dueSoon30,
   };
 }
 

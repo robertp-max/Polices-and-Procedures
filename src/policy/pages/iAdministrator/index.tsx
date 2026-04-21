@@ -149,7 +149,7 @@ export function IAdministratorPage() {
               className="text-[20px] md:text-[22px] font-semibold"
               style={{ fontFamily: "'Outfit', 'Inter', system-ui, sans-serif" }}
             >
-              iAdministrator
+              Brad iAdministrator
             </h1>
             <p className="text-[11px] uppercase tracking-[0.24em]" style={{ color: subtle, fontFamily: "'JetBrains Mono', monospace" }}>
               Compliance Intelligence · Brad Internal Corpus · Grounded Answers Only

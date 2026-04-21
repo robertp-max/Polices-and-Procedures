@@ -7,10 +7,63 @@ import {
   CheckSquare, Send, FileBarChart, PlayCircle,
   HelpCircle, Search, ChevronLeft, Menu,
   ShieldCheck, Zap, FingerprintPattern as Fingerprint,
-  GraduationCap, Sparkles,
+  GraduationCap,
 } from 'lucide-react';
 import TravelightBG from '@/components/TravelightBG';
 import { useShellStore } from '@/policy/stores/uiStore';
+
+function BradRobotIcon({ size = 24, strokeWidth = 1.5, className }: { size?: number; strokeWidth?: number; className?: string }) {
+  const sw = strokeWidth ?? 1.5;
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
+      <defs>
+        <radialGradient id="brad-bg-glow" cx="50%" cy="55%" r="55%">
+          <stop offset="0%"   stopColor="#00D9C5" stopOpacity="0.50" />
+          <stop offset="50%"  stopColor="#FF8C1A" stopOpacity="0.20" />
+          <stop offset="100%" stopColor="#FF6200" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="brad-line-grad" x1="5" y1="4" x2="19" y2="20" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="#00D9C5" />
+          <stop offset="100%" stopColor="#FF8C1A" />
+        </linearGradient>
+      </defs>
+
+      {/* Radial glow bloom */}
+      <circle cx="12" cy="13" r="11" fill="url(#brad-bg-glow)" />
+
+      {/* Radiating light spokes */}
+      <line x1="12" y1="0.5"  x2="12" y2="2"    stroke="#00D9C5" strokeOpacity="0.55" strokeWidth="1"    strokeLinecap="round" />
+      <line x1="12" y1="22"   x2="12" y2="23.5"  stroke="#FF8C1A" strokeOpacity="0.55" strokeWidth="1"    strokeLinecap="round" />
+      <line x1="0.5"  y1="13" x2="2"   y2="13"   stroke="#00D9C5" strokeOpacity="0.50" strokeWidth="1"    strokeLinecap="round" />
+      <line x1="22"   y1="13" x2="23.5" y2="13"  stroke="#FF8C1A" strokeOpacity="0.50" strokeWidth="1"    strokeLinecap="round" />
+      <line x1="2.2"  y1="4.2"  x2="3.3"  y2="5.3"  stroke="#00D9C5" strokeOpacity="0.40" strokeWidth="0.9" strokeLinecap="round" />
+      <line x1="21.8" y1="4.2"  x2="20.7" y2="5.3"  stroke="#FF8C1A" strokeOpacity="0.40" strokeWidth="0.9" strokeLinecap="round" />
+      <line x1="2.2"  y1="21.8" x2="3.3"  y2="20.7" stroke="#00D9C5" strokeOpacity="0.35" strokeWidth="0.9" strokeLinecap="round" />
+      <line x1="21.8" y1="21.8" x2="20.7" y2="20.7" stroke="#FF8C1A" strokeOpacity="0.35" strokeWidth="0.9" strokeLinecap="round" />
+
+      {/* Left ear */}
+      <rect x="2.75" y="11.25" width="2.75" height="3.5" rx="1" stroke="url(#brad-line-grad)" strokeWidth={sw * 0.75} />
+      {/* Right ear */}
+      <rect x="18.5"  y="11.25" width="2.75" height="3.5" rx="1" stroke="url(#brad-line-grad)" strokeWidth={sw * 0.75} />
+
+      {/* Robot head */}
+      <rect x="5.5" y="8" width="13" height="10.5" rx="2.25" stroke="url(#brad-line-grad)" strokeWidth={sw} />
+
+      {/* Antenna stem */}
+      <line x1="12" y1="8" x2="12" y2="5.25" stroke="url(#brad-line-grad)" strokeWidth={sw} strokeLinecap="round" />
+      {/* Antenna tip */}
+      <circle cx="12" cy="4" r="1.5" fill="#00D9C5" />
+
+      {/* Left eye — teal */}
+      <circle cx="9.5"  cy="12.75" r="1.6" fill="#00D9C5" />
+      {/* Right eye — orange */}
+      <circle cx="14.5" cy="12.75" r="1.6" fill="#FF8C1A" />
+
+      {/* Mouth smile */}
+      <path d="M9.25 16.5 Q12 18.25 14.75 16.5" stroke="url(#brad-line-grad)" strokeWidth={sw * 0.85} strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
 
 /* ═══════════════════════════════════════════════════════════════
    CANONICAL SHELL — CI-ION premium one-glass design
@@ -33,7 +86,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', to: '/dashboard', label: 'Command Center', subItems: [{ to: '/dashboard', label: 'Overview' }], icon: LayoutDashboard },
-  { id: 'iadmin', to: '/iadministrator', label: 'iAdministrator', icon: Sparkles },
+  { id: 'iadmin', to: '/iadministrator', label: 'Brad', icon: BradRobotIcon },
   { id: 'compliance', to: '/calendar', label: 'Compliance', subItems: [{ to: '/calendar', label: 'Calendar' }, { to: '/calendar/minutes', label: 'Minutes' }, { to: '/audit', label: 'Audit Mode' }], icon: ClipboardCheck },
   { id: 'taxonomy', to: '/framework', label: 'Taxonomy', subItems: [{ to: '/framework', label: 'Framework' }, { to: '/library', label: 'Policies' }, { to: '/forms', label: 'Forms' }], icon: Network },
   { id: 'drafts', to: '/drafts', label: 'Drafts', icon: FileEdit },
