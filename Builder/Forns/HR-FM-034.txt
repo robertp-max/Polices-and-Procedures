@@ -1,0 +1,66 @@
+FORM ID: HR-FM-034
+TITLE: HR Audit Readiness Checklist
+TYPE: Checklist
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, shared_enterprise
+
+LINKED POLICIES:
+- HR-WM-007
+
+PURPOSE:
+Annual survey readiness checklist for all HR records, credentialing, training, and personnel documentation.
+
+INSTRUCTIONS:
+Executed by HR in Q1 of each year and within 60 days prior to any scheduled survey. Findings reported on HR Compliance Dashboard.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — HR Audit Readiness Checklist Checklist
+layout: checklist
+
+checklist_items:
+- Active employee roster matches HRIS and scheduling
+- Every employee has a complete personnel file (HR-FM-015)
+- OIG / SAM exclusion screening current for all employees and contractors
+- Licenses / certifications current with Primary Source Verification
+- TB screening and HepB records current
+- New-hire orientation checklists complete for all hires in past 12 months
+- Annual performance evaluations current
+- Annual mandatory trainings complete (HIPAA, BBP, Harassment, FWA, EP)
+- Disciplinary actions properly documented
+- Terminated employees' access revoked (IT-FM-002) within 24 hours
+- Contract / agency staff files match employee standard
+- OSHA 300 Log maintained and summary posted (Feb 1 – Apr 30)
+- Personnel file retention schedule followed
+- No gaps > 30 days in any tracking log
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- HR Director — Printed Name (type=text, col=2)
+- HR Director — Signature (type=signature, col=1)
+- HR Director — Date (type=date, col=1)
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-034 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-WM-007

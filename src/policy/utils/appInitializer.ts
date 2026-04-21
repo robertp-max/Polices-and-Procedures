@@ -1,6 +1,9 @@
 import { useFrameworkStore } from '@/policy/stores/frameworkStore';
 import { usePolicyStore } from '@/policy/stores/policyStore';
 import { useCalendarStore } from '@/policy/stores/calendarStore';
+import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
+import { sweepEscalations } from '@/policy/enforcement/useEnforcement';
+import { useAutogenStore } from '@/policy/stores/autogenStore';
 
 /**
  * Initializes the policy application by hydrating all stores with framework seed data.
@@ -29,6 +32,16 @@ export function initializeApp(): void {
   const calendarState = useCalendarStore.getState();
   if (calendarState.tasks.length === 0) {
     console.warn('Calendar store: tasks not hydrated');
+  }
+
+  // Enforcement sweep — materialize any latent escalations on startup so
+  // the Audit dashboard is immediately populated with real signal.
+  try {
+    const { generatedEvents, triggeredEvents } = useAutogenStore.getState();
+    sweepEscalations([...REGULATORY_EVENTS, ...generatedEvents, ...triggeredEvents]);
+  } catch (e) {
+    // Never block app startup on the enforcement sweep.
+    console.warn('Enforcement sweep failed at startup', e);
   }
 
   // Log successful initialization

@@ -1,0 +1,60 @@
+FORM ID: OP-FM-003
+TITLE: Vendor Request Form
+TYPE: Form
+DOMAIN: OP
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: digital_candidate
+
+LINKED POLICIES:
+- OP-FM-003
+- FN-FP-006
+
+PURPOSE:
+Request to initiate vendor relationship with approvals required before any contracting.
+
+INSTRUCTIONS:
+Submitted by sponsor. Reviewed by Procurement, Legal, Compliance, and Security.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Vendor Legal Name (type=text, required=true, col=4)
+- Services / Products Proposed (type=textarea, required=true, col=4)
+- Estimated Annual Spend (type=text, col=2)
+- PHI Access Expected (Y/N) (type=select, col=2, options=[Yes | No])
+- Alternatives Considered (type=textarea, col=4)
+- Business Sponsor (type=text, col=2)
+- Target Start Date (type=date, col=2)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Sponsor — Printed Name (type=text, col=2)
+- Sponsor — Signature (type=signature, col=1)
+- Sponsor — Date (type=date, col=1)
+- Procurement — Printed Name (type=text, col=2)
+- Procurement — Signature (type=signature, col=1)
+- Procurement — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form OP-FM-003 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: OP-FM-003, FN-FP-006

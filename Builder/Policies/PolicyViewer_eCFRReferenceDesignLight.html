@@ -1,0 +1,360 @@
+/* ========================================================================
+PROMPT FOR CLAUDE / DEVELOPER:
+
+GOAL: 
+Implement an inline document viewer that fetches and displays official 
+eCFR (Code of Federal Regulations) content directly within the Care Indeed 
+policy library UI. This prevents users from losing context by navigating away.
+
+THE PROBLEM & ARCHITECTURE:
+1. The eCFR website strictly blocks iframes using `X-Frame-Options: SAMEORIGIN`.
+2. The official eCFR Developer API (Renderer V1) does NOT support CORS for 
+   browser-based requests (it lacks the `Access-Control-Allow-Origin` header).
+3. Client-side fetch requests will fail with "Failed to fetch" due to browser security.
+
+IMPLEMENTATION INSTRUCTIONS:
+To make this work in production, you MUST create a small backend proxy route 
+(e.g., in Next.js, Node/Express, or AWS Lambda) to bypass CORS.
+
+1. Backend Route (e.g., `/api/ecfr-proxy`):
+   Take the `title` and `section` from the frontend, make a server-to-server 
+   GET request to: 
+   `https://www.ecfr.gov/api/renderer/v1/content/current/title-{title}?sectno={section}`
+   Return the HTML response to the frontend.
+
+2. Frontend Component (This file):
+   Update the `fetchRegulation` function below to point to YOUR new backend 
+   route instead of the public CORS proxies (which are rate-limited and flaky).
+   The UI is fully built below: it handles loading states, error states (graceful 
+   fallback to external links), and automatically strips/styles the raw HTML 
+   using Care Indeed's typography and color variables.
+======================================================================== */
+
+import React, { useState, useEffect } from 'react';
+import { Archive, BookOpen, ExternalLink, X, Settings, AlertTriangle } from 'lucide-react';
+
+// ==========================================
+// DATA STRUCTURES
+// ==========================================
+
+const REFERENCES_9 = {
+  federal: [
+    ["42 CFR § 484.2", "Definitions", "Defines 'governing body' and key terms for home health agencies.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-A/section-484.2"],
+    ["42 CFR § 484.105", "Condition of Participation: Organization and Administration of Services", "Primary regulatory basis for this policy. Requires a governing body with full legal authority for agency operation and management.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105"],
+    ["42 CFR § 484.105(a)", "Standard: Governing body", "Mandates governing body responsibility for agency operations, appointment of administrator, and oversight of services.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105#p-484.105(a)"],
+    ["42 CFR § 484.105(b)", "Standard: Administrator", "Requires appointment of a qualified administrator responsible to the governing body.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105#p-484.105(b)"],
+    ["42 CFR § 484.105(c)", "Standard: Clinical manager", "Requires designation of a qualified clinical manager for oversight of clinical services.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105#p-484.105(c)"],
+    ["42 CFR § 484.60", "Condition of Participation: Care planning, coordination, and quality of care", "Governing body accountability for ensuring care planning and quality.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-B/section-484.60"],
+    ["42 CFR § 484.65", "Condition of Participation: Quality assessment and performance improvement (QAPI)", "Governing body must ensure an effective QAPI program.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-B/section-484.65"],
+    ["42 CFR § 484.70", "Condition of Participation: Infection prevention and control", "Governing body oversight of infection prevention.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-B/section-484.70"],
+    ["42 CFR § 484.100", "Condition of Participation: Compliance with Federal, State, and local laws", "Governing body must ensure full legal compliance.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.100"],
+    ["42 CFR § 484.102", "Condition of Participation: Emergency preparedness", "Governing body must approve emergency preparedness plan.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.102"],
+    ["42 CFR § 484.110", "Condition of Participation: Clinical records", "Governing body oversight of clinical records policies.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.110"]
+  ],
+  crossRef: [
+    ["GV-OG-001", "Organizational Structure & Reporting", "Governing Body approves organizational structure."],
+    ["GV-OG-002", "Administrator Qualifications & Responsibilities", "Governing Body appoints and evaluates Administrator."],
+    ["GV-OG-003", "Scope of Services Definition", "Governing Body approves scope of services."],
+    ["GV-PM-001", "Policy Development & Approval Process", "Governing Body approves REQUIRED-tier policies."],
+    ["GV-GB-002", "Board Meeting & Minutes Requirements", "Details meeting documentation standards."],
+    ["CO-CP-001", "Corporate Compliance Program", "Governing Body oversees compliance program."]
+  ]
+};
+
+// ==========================================
+// UI COMPONENTS
+// ==========================================
+
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] rounded-2xl p-6 md:p-8 mb-8 border border-[#E5E4E3] ${className}`}>
+    {children}
+  </div>
+);
+
+const SectionTitle = ({ icon: Icon, title, color = "text-[#007970]" }) => (
+  <h2 className={`font-montserrat text-[22px] font-bold flex items-center mb-6 ${color}`}>
+    {Icon && <Icon className="mr-3" size={24} />}
+    {title}
+  </h2>
+);
+
+const FederalRegulationsTable = ({ headers, rows, onRowClick }) => {
+  return (
+    <div className="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-[#E5E4E3] shadow-sm mb-6 bg-white">
+      <table className="w-full text-left border-collapse min-w-max">
+        <thead>
+          <tr className="bg-[#FAFBF8] text-[#524048]">
+            {headers.map((h, i) => (
+              <th key={i} className="p-4 font-montserrat font-bold text-[13px] tracking-wider uppercase border-b border-[#E5E4E3]">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[#E5E4E3]">
+          {rows.map((row, i) => (
+            <tr 
+              key={i} 
+              className="hover:bg-[#E5FEFF] transition-colors cursor-pointer group"
+              onClick={() => onRowClick(row)}
+              title="Click to view regulation overlay"
+            >
+              <td className="p-4 text-[#007970] font-roboto font-bold text-sm align-top leading-relaxed whitespace-pre-line break-words flex items-center gap-2">
+                {row[0]} <ExternalLink size={14} className="text-[#007970]/50 group-hover:text-[#007970] transition-colors" />
+              </td>
+              <td className="p-4 text-[#1F1C1B] font-roboto text-sm align-top leading-relaxed whitespace-pre-line break-words">{row[1]}</td>
+              <td className="p-4 text-[#1F1C1B] font-roboto text-sm align-top leading-relaxed whitespace-pre-line break-words">{row[2]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
+
+export default function App() {
+  const [activeIframe, setActiveIframe] = useState(null);
+  const [htmlContent, setHtmlContent] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Robust Fetching Strategy for eCFR API
+  useEffect(() => {
+    if (!activeIframe) {
+      setHtmlContent(null);
+      setError(null);
+      return;
+    }
+
+    const fetchRegulation = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const url = activeIframe[3];
+        // Extract Title and Section from the provided eCFR URL
+        const titleMatch = url.match(/title-(\d+)/);
+        const sectionMatch = url.match(/section-([\d.]+)/);
+
+        if (!titleMatch || !sectionMatch) {
+          throw new Error("Could not parse Title or Section from URL.");
+        }
+
+        const title = titleMatch[1];
+        const section = sectionMatch[1];
+
+        // Official eCFR Developer API (Renderer V1)
+        const apiUrl = `https://www.ecfr.gov/api/renderer/v1/content/current/title-${title}?sectno=${section}`;
+        
+        let rawHtml = null;
+
+        // Developer Note: Swap this logic for your actual backend endpoint in production!
+        // Using allorigins.win/get returns a JSON response to prevent MIME type blocking
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+        const response = await fetch(proxyUrl);
+        
+        if (!response.ok) throw new Error("Proxy fetch failed");
+        
+        const data = await response.json();
+        
+        // Ensure eCFR didn't return a 404 or block the proxy
+        if (data.status && data.status.http_code !== 200) {
+           throw new Error(`eCFR responded with ${data.status.http_code}`);
+        }
+        
+        if (!data.contents) throw new Error("No HTML contents returned");
+        
+        rawHtml = data.contents;
+
+        // Clean the HTML: Strip <html>, <head>, and <body> tags so it embeds cleanly into our div
+        const bodyMatch = rawHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        const cleanHtml = bodyMatch ? bodyMatch[1] : rawHtml;
+
+        setHtmlContent(cleanHtml);
+      } catch (err) {
+        console.error("Failed to fetch regulation from eCFR API:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRegulation();
+  }, [activeIframe]);
+
+  return (
+    <>
+      {/* Global & Scoped Styles */}
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Roboto:wght@400;500;700&display=swap');
+          .font-montserrat { font-family: 'Montserrat', sans-serif; }
+          .font-roboto { font-family: 'Roboto', sans-serif; }
+          
+          .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: #D9D6D5; border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #7A7A70; border: 2px solid transparent; background-clip: padding-box; }
+          
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+
+          /* eCFR Injected HTML Styles */
+          .ecfr-viewer-content {
+            font-family: 'Roboto', sans-serif;
+            color: #1F1C1B;
+            line-height: 1.7;
+            max-width: 900px;
+            margin: 0 auto;
+          }
+          .ecfr-viewer-content .sectno {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            color: #007970;
+            margin-right: 0.5rem;
+            font-size: 1.1em;
+          }
+          .ecfr-viewer-content .subject {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #1F1C1B;
+            font-size: 1.1em;
+          }
+          .ecfr-viewer-content p {
+            margin-top: 1.25rem;
+            margin-bottom: 1.25rem;
+          }
+          .ecfr-viewer-content .extract {
+            background-color: #FAFBF8;
+            border-left: 4px solid #E5E4E3;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+          }
+          .ecfr-viewer-content a {
+            color: #007970;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+          }
+        `}
+      </style>
+
+      {/* Page background mirrors the app shell tone so the single main card reads flat */}
+      <div className="min-h-screen w-full bg-[#F2EFE8] font-roboto text-[#1F1C1B]">
+        <div className="flex-1 flex flex-col items-stretch px-0 md:px-6 py-0 md:py-6">
+          <div className="max-w-[1280px] mx-auto w-full animate-fadeIn relative">
+
+            {/* ─── THE SINGLE MAIN CARD — header + content flow inside, no nested Cards ─── */}
+            <div className="relative min-h-[600px] w-full bg-white rounded-none md:rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.05)] border border-[#E5E4E3] overflow-hidden transition-all duration-300">
+
+            {/* Base Content — hidden when the inline eCFR overlay is active */}
+            <div className={`transition-all duration-500 ease-in-out px-6 md:px-10 py-8 ${activeIframe ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+              <SectionTitle icon={Archive} title="9. References" />
+
+              <div className="mb-10">
+                <h3 className="font-montserrat font-bold text-[12px] uppercase tracking-[0.14em] text-[#524048] mb-4">9.1 Federal Regulations (42 CFR Part 484)</h3>
+                <FederalRegulationsTable headers={["Citation", "Title", "Relevance"]} rows={REFERENCES_9.federal} onRowClick={setActiveIframe} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                <div>
+                  <h3 className="font-montserrat font-bold text-[12px] uppercase tracking-[0.14em] text-[#524048] mb-3">9.2 CMS Guidance</h3>
+                  <div className="border-l-2 border-[#007970] pl-4 py-1">
+                    <p className="font-montserrat font-bold text-[14px] text-[#007970]">CMS State Operations Manual, Appx B — Guidance to Surveyors</p>
+                    <p className="text-[14px] text-[#1F1C1B] mt-2 leading-relaxed">Provides interpretive guidelines for survey of 42 CFR § 484.105 compliance; defines surveyor expectations for governing body evidence.</p>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-montserrat font-bold text-[12px] uppercase tracking-[0.14em] text-[#524048] mb-3">9.3 OIG Guidance</h3>
+                  <div className="border-l-2 border-[#C74601] pl-4 py-1">
+                    <p className="font-montserrat font-bold text-[14px] text-[#C74601]">OIG Compliance Program Guidance for Home Health Agencies</p>
+                    <p className="text-[14px] text-[#1F1C1B] mt-2 leading-relaxed">Establishes expectation that the governing body actively oversees the compliance program and receives regular compliance reports.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* The "Green Box" Overlay Viewer Container - Absolute inset-0 makes it cover the entire container */}
+            {activeIframe && (
+              <div className="absolute inset-0 bg-white rounded-2xl z-50 flex flex-col overflow-hidden animate-fadeIn border-[3px] border-[#007970] shadow-[0_12px_40px_rgba(0,121,112,0.18)]">
+                
+                {/* Header Block with Actions */}
+                <div className="bg-[#007970] p-5 flex justify-between items-center shrink-0 text-white shadow-md z-10">
+                  <div className="flex items-center gap-3">
+                    <BookOpen size={20} className="text-white/90" />
+                    <span className="text-[16px] font-bold uppercase tracking-widest font-montserrat">{activeIframe[0]}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={() => window.open(activeIframe[3], '_blank')}
+                      className="flex items-center gap-2 bg-white text-[#007970] px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#E5FEFF] transition-colors shadow-sm"
+                    >
+                      Visit eCFR <ExternalLink size={14} />
+                    </button>
+                    <button 
+                      onClick={() => setActiveIframe(null)} 
+                      className="text-white hover:text-[#C74601] hover:bg-white transition-colors bg-black/10 hover:bg-black/20 p-2 rounded-full flex items-center justify-center" 
+                      title="Close Preview"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Disclaimer Sub-header */}
+                <div className="bg-[#FAFBF8] p-2 border-b border-[#E5E4E3] shrink-0 text-[11px] text-[#524048] font-medium text-center shadow-sm">
+                  API Sourced Regulatory Content: {activeIframe[3]}
+                </div>
+                
+                {/* Scrollable Document Container */}
+                <div className="flex-1 bg-white relative overflow-y-auto p-6 md:p-12 custom-scrollbar">
+                  
+                  {loading && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-10">
+                      <Settings className="text-[#007970] animate-[spin_3s_linear_infinite] mb-4" size={40} />
+                      <p className="text-[#524048] font-montserrat font-bold text-sm uppercase tracking-widest">Retrieving Federal Regulation...</p>
+                    </div>
+                  )}
+                  
+                  {error && !loading && (
+                    <div className="flex flex-col items-center justify-center h-full text-center space-y-4 animate-fadeIn">
+                      <div className="bg-[#FFEEE5] p-5 rounded-full">
+                        <AlertTriangle className="text-[#C74601]" size={40} />
+                      </div>
+                      <h4 className="font-montserrat font-bold text-[#1F1C1B] text-xl">Unable to Load Preview</h4>
+                      <p className="text-[#524048] font-roboto max-w-md text-base">
+                        We couldn't retrieve the regulation content from the eCFR database. The agency may be updating their records or experiencing downtime.
+                      </p>
+                      <button 
+                        onClick={() => window.open(activeIframe[3], '_blank')}
+                        className="mt-4 flex items-center gap-2 bg-[#007970] text-white px-6 py-3 rounded-xl font-montserrat font-bold text-sm uppercase tracking-wider hover:bg-[#005e57] transition-colors shadow-sm"
+                      >
+                        Read on Official eCFR Website <ExternalLink size={16} />
+                      </button>
+                    </div>
+                  )}
+
+                  {htmlContent && !loading && !error && (
+                    <div 
+                      className="ecfr-viewer-content animate-fadeIn"
+                      dangerouslySetInnerHTML={{ __html: htmlContent }} 
+                    />
+                  )}
+
+                </div>
+              </div>
+            )}
+
+            </div>
+            {/* ─── /main card ─── */}
+
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

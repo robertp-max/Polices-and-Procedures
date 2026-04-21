@@ -1,0 +1,61 @@
+FORM ID: IT-FM-001
+TITLE: User Access Request & Authorization Form
+TYPE: Form
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: digital_candidate
+
+LINKED POLICIES:
+- IT-SC-002
+
+PURPOSE:
+Request for user access to specific agency information systems, specifying role, access level, and business justification.
+
+INSTRUCTIONS:
+Submitted by hiring manager; reviewed by IT and Privacy/Security. Access provisioned within 2 business days of approval.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- User Full Name (type=text, required=true, col=2)
+- Employee ID (type=text, col=2)
+- Role / Title (type=text, col=2)
+- Manager (type=text, col=2)
+- Systems Requested (EHR, HRIS, Billing, etc.) (type=textarea, required=true, col=4)
+- Access Level (Read / Modify / Admin) (type=textarea, col=4)
+- Business Justification (type=textarea, required=true, col=4)
+- Effective Date (type=date, col=2)
+- Expiration / Termination Date (type=date, col=2)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Requesting Manager — Printed Name (type=text, col=2)
+- Requesting Manager — Signature (type=signature, col=1)
+- Requesting Manager — Date (type=date, col=1)
+- IT Security — Printed Name (type=text, col=2)
+- IT Security — Signature (type=signature, col=1)
+- IT Security — Date (type=date, col=1)
+- User — Printed Name (type=text, col=2)
+- User — Signature (type=signature, col=1)
+- User — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-001 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: IT-SC-002

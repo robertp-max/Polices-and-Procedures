@@ -1,0 +1,57 @@
+FORM ID: IT-FM-018
+TITLE: Disaster Recovery Tabletop Exercise Report
+TYPE: Assessment
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- IT-DR-002
+
+PURPOSE:
+Report of annual disaster-recovery tabletop exercise covering scenario, participants, findings, and corrective actions.
+
+INSTRUCTIONS:
+Performed at least annually per 45 CFR § 164.308(a)(7)(ii)(D). Findings feed DR plan updates.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Assessment Responses
+layout: grid
+
+fields:
+- Exercise Date (type=date, required=true, col=2)
+- Facilitator (type=text, col=2)
+- Scenario Simulated (type=textarea, required=true, col=4)
+- Participants (type=textarea, col=4)
+- Observations / Findings (type=textarea, col=4)
+- Gaps in Plan or Execution (type=textarea, col=4)
+- Corrective Actions (type=textarea, col=4)
+- Plan Updates Required (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Security Officer — Printed Name (type=text, col=2)
+- Security Officer — Signature (type=signature, col=1)
+- Security Officer — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-018 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: IT-DR-002

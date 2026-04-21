@@ -14,6 +14,7 @@ const PublishPage       = lazy(() => import('@/policy/pages/PublishPage').then(m
 const TaxonomyPage      = lazy(() => import('@/policy/pages/TaxonomyPage').then(m => ({ default: m.TaxonomyPage })))
 const GovernancePage    = lazy(() => import('@/policy/pages/GovernancePage').then(m => ({ default: m.GovernancePage })))
 const MasterCalendarPage = lazy(() => import('@/policy/pages/MasterCalendarPage').then(m => ({ default: m.MasterCalendarPage })))
+const AuditModePage      = lazy(() => import('@/policy/pages/AuditModePage').then(m => ({ default: m.AuditModePage })))
 const DemoPage          = lazy(() => import('@/policy/pages/DemoPage').then(m => ({ default: m.DemoPage })))
 const FrameworkPage     = lazy(() => import('@/policy/pages/FrameworkPage').then(m => ({ default: m.FrameworkPage })))
 const FormsPage         = lazy(() => import('@/policy/pages/FormsPage').then(m => ({ default: m.FormsPage })))
@@ -21,11 +22,21 @@ const GVPolicyDetailView = lazy(() => import('@/policy/pages/GVPolicyDetailView'
 const PrintPage         = lazy(() => import('@/policy/pages/PrintPage').then(m => ({ default: m.PrintPage })))
 const GVGBPrintDocument = lazy(() => import('@/policy/pages/GVGBPrintDocument').then(m => ({ default: m.GVGBPrintDocument })))
 const GVGBAppendixPrint = lazy(() => import('@/policy/pages/GVGBAppendixPrint').then(m => ({ default: m.GVGBAppendixPrint })))
+const FormViewer        = lazy(() => import('@/policy/components/FormViewer').then(m => ({ default: m.FormViewer })))
+const IAdministratorPage = lazy(() => import('@/policy/pages/iAdministrator').then(m => ({ default: m.IAdministratorPage })))
+
+// ── Onboarding & Competency Journey ─────────────────────────────
+const JourneyHomePage    = lazy(() => import('@/policy/journey/pages/JourneyHomePage').then(m => ({ default: m.JourneyHomePage })))
+const AppendixFPage      = lazy(() => import('@/policy/journey/pages/AppendixFPage').then(m => ({ default: m.AppendixFPage })))
+const ModulePlayerPage   = lazy(() => import('@/policy/journey/pages/ModulePlayerPage').then(m => ({ default: m.ModulePlayerPage })))
+const SupervisorPage     = lazy(() => import('@/policy/journey/pages/SupervisorPage').then(m => ({ default: m.SupervisorPage })))
+const AdminPage          = lazy(() => import('@/policy/journey/pages/AdminPage').then(m => ({ default: m.AdminPage })))
+const UserGuidePage      = lazy(() => import('@/policy/journey/pages/UserGuidePage').then(m => ({ default: m.UserGuidePage })))
 
 // Minimal route-level loading fallback (transparent, no flash)
 const PageLoader = () => (
   <div className="flex-1 flex items-center justify-center h-full">
-    <div className="w-5 h-5 rounded-full border-2 border-white/10 border-t-[#00c2b4] animate-spin" />
+    <div className="w-5 h-5 rounded-full border-2 border-white/10 border-t-[#FFC107] animate-spin" />
   </div>
 )
 
@@ -56,6 +67,7 @@ function App() {
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/calendar" element={<MasterCalendarPage />} />
+                  <Route path="/audit" element={<AuditModePage />} />
                   <Route path="/library" element={<LibraryPage />} />
                   <Route path="/library/:policyId" element={<PolicyDetailPage />} />
                   <Route path="/drafts" element={<DraftsPage />} />
@@ -65,9 +77,20 @@ function App() {
                   <Route path="/taxonomy" element={<TaxonomyPage />} />
                   <Route path="/framework" element={<FrameworkPage />} />
                   <Route path="/forms" element={<FormsPage />} />
+                  <Route path="/forms/:formId" element={<FormViewer />} />
                   <Route path="/governance" element={<GovernancePage />} />
                   <Route path="/demo" element={<DemoPage />} />
+                  <Route path="/iadministrator" element={<IAdministratorPage />} />
                   <Route path="/gv-policy/:policyId" element={<GVPolicyDetailView />} />
+
+                  {/* Onboarding & Competency Journey */}
+                  <Route path="/journey"                    element={<JourneyHomePage />} />
+                  <Route path="/journey/appendix-f"         element={<AppendixFPage />} />
+                  <Route path="/journey/module/:moduleId"   element={<ModulePlayerPage />} />
+                  <Route path="/journey/supervisor"         element={<SupervisorPage />} />
+                  <Route path="/journey/admin"              element={<AdminPage />} />
+                  <Route path="/journey/guide"              element={<UserGuidePage />} />
+
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </Suspense>

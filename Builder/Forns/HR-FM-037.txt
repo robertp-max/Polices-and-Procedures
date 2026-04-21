@@ -1,0 +1,55 @@
+FORM ID: HR-FM-037
+TITLE: Confidentiality & Non-Disclosure Agreement
+TYPE: Attestation
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Upon Hire
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: digital_candidate
+
+LINKED POLICIES:
+- HR-TA-001
+- CO-HP-001
+
+PURPOSE:
+Confidentiality and non-disclosure agreement binding all workforce members to protect PHI and agency proprietary information.
+
+INSTRUCTIONS:
+Signed at hire and upon role change with expanded access. Remains in effect after termination.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Attestation
+layout: attestation
+
+body:
+I understand and agree that:
+
+acknowledgments:
+- I will access PHI only for legitimate business purposes and on a minimum-necessary basis.
+- I will not disclose PHI or proprietary information to any unauthorized person or entity.
+- My obligation continues after my role or employment ends.
+- Violation may result in immediate termination, civil liability, and criminal penalty under HIPAA.
+- I will immediately report any suspected breach to the Privacy Officer.
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Employee — Printed Name (type=text, col=2)
+- Employee — Signature (type=signature, col=1)
+- Employee — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-037 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-TA-001, CO-HP-001

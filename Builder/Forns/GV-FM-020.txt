@@ -1,0 +1,59 @@
+FORM ID: GV-FM-020
+TITLE: Media/PR External Communication Request
+TYPE: Form
+DOMAIN: GV
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: digital_candidate
+
+LINKED POLICIES:
+- GV-EA-002
+
+PURPOSE:
+Controls the review and approval of any external communication (media, PR, social, public statement) representing Care Indeed.
+
+INSTRUCTIONS:
+Submitted by the requester to the Administrator at least 5 business days before intended release; legal review required for statements touching regulatory or litigation matters.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Requester Name / Role (type=text, required=true, col=2)
+- Intended Release Date (type=date, required=true, col=2)
+- Media / Channel (type=text, col=2)
+- Topic (type=text, col=2)
+- Proposed Content (attach if long) (type=textarea, col=4)
+- Involves Patient Info? (Y/N) (type=select, col=2, options=[Yes | No])
+- Legal Review Needed? (Y/N) (type=select, col=2, options=[Yes | No])
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Requester — Printed Name (type=text, col=2)
+- Requester — Signature (type=signature, col=1)
+- Requester — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+- Legal (if required) — Printed Name (type=text, col=2)
+- Legal (if required) — Signature (type=signature, col=1)
+- Legal (if required) — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form GV-FM-020 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: GV-EA-002

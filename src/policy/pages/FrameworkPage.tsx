@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
   Layers,
@@ -77,6 +78,7 @@ const DOMAIN_DESCRIPTIONS: Record<string, string> = {
 
 export function FrameworkPage() {
   const [activeTab, setActiveTab] = useState<'hierarchy' | 'lifecycle'>('hierarchy');
+  const navigate = useNavigate();
   const allSubdomains = DOMAINS.flatMap(d => d.subdomains.map(s => `${d.code}-${s}`));
 
   const stats = [
@@ -228,10 +230,16 @@ export function FrameworkPage() {
                 GOVERNANCE LIFECYCLE
               </button>
             </div>
-            <button className="fw-glass-btn hover:border-[#00e59b]/40 px-6 py-3 rounded-full font-bold text-[10px] tracking-[0.2em] flex items-center gap-2 text-[#00e59b] uppercase transition-all">
+            <button
+              onClick={() => navigate('/library')}
+              className="fw-glass-btn hover:border-[#00e59b]/40 px-6 py-3 rounded-full font-bold text-[10px] tracking-[0.2em] flex items-center gap-2 text-[#00e59b] uppercase transition-all"
+            >
               <ListFilter size={14} /> VIEW POLICIES
             </button>
-            <button className="fw-glass-btn hover:border-[#8b5cf6]/40 px-6 py-3 rounded-full font-bold text-[10px] tracking-[0.2em] flex items-center gap-2 text-[#8b5cf6] uppercase transition-all">
+            <button
+              onClick={() => navigate('/forms')}
+              className="fw-glass-btn hover:border-[#8b5cf6]/40 px-6 py-3 rounded-full font-bold text-[10px] tracking-[0.2em] flex items-center gap-2 text-[#8b5cf6] uppercase transition-all"
+            >
               <FileCode size={14} /> VIEW FORMS
             </button>
           </div>
@@ -303,10 +311,10 @@ export function FrameworkPage() {
                       const Icon = domain.icon;
                       const isRightSide = (i % 5) >= 3;
                       return (
-                        <button key={domain.code} className="fw-glass-btn flex flex-col items-center justify-center w-[95px] aspect-square rounded-2xl fw-group cursor-default relative">
+                        <button key={domain.code} className="fw-glass-btn flex flex-col items-center justify-center w-[110px] aspect-square rounded-2xl fw-group cursor-default relative">
                           <Icon size={24} style={{ color: domain.color }} className="mb-2 opacity-70" />
                           <span className="font-mono font-bold text-[15px] leading-none mb-1 text-white/80">{domain.code}</span>
-                          <span className="text-[8px] text-white/40 font-bold uppercase tracking-widest text-center px-1 line-clamp-1">{domain.name}</span>
+                          <span className="text-[8px] text-white/40 font-bold uppercase tracking-[0.12em] text-center px-1 whitespace-nowrap">{domain.name}</span>
                           <div className={`fw-tooltip ${isRightSide ? 'fw-tooltip-left' : ''}`}>
                             <strong className="block text-white mb-1">{domain.name} Domain</strong>
                             {DOMAIN_DESCRIPTIONS[domain.code]}

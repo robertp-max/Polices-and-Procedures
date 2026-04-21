@@ -1,0 +1,55 @@
+FORM ID: CL-FM-036
+TITLE: Transfer / Discharge Summary
+TYPE: Template
+DOMAIN: CL
+USAGE: Required
+FREQUENCY: Per Episode
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, master_template
+
+LINKED POLICIES:
+- CL-CP-006
+- CL-CP-007
+
+PURPOSE:
+Standardized template capturing the required data elements for Transfer / Discharge Summary, aligned with Care Indeed policy, applicable federal/state regulation, and the enterprise gold standard (GV-GB-001).
+
+INSTRUCTIONS:
+Completed by the responsible workforce member (per episode). All fields are mandatory unless marked optional. Retained per agency record-retention schedule and made available for internal audit, state licensure, and CMS survey review.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Title / Subject (type=text, col=4)
+- Date (type=date, col=2)
+- Prepared By (type=text, col=2)
+- Body / Narrative (type=textarea, col=4)
+- Attachments / References (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CL-FM-036 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CL-CP-006, CL-CP-007

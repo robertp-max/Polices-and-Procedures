@@ -1,0 +1,57 @@
+FORM ID: IT-FM-008
+TITLE: Data Backup & Restore Testing Log
+TYPE: Log
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Monthly
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: landscape
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- IT-DR-001
+
+PURPOSE:
+Monthly log of data backup verification and periodic restore testing per 45 CFR § 164.308(a)(7)(ii)(A).
+
+INSTRUCTIONS:
+Backups verified daily; full restore test performed monthly. Results retained for 6 years.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Log Entries
+layout: table
+
+table_columns:
+- System / Dataset
+- Backup Date
+- Success/Fail
+- Backup Size
+- Restore Test Date
+- Restore Result
+- Performed By
+table_row_count: 15
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-008 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: IT-DR-001

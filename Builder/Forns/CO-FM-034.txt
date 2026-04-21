@@ -1,0 +1,63 @@
+FORM ID: CO-FM-034
+TITLE: Medicare CoP Compliance Verification Checklist
+TYPE: Checklist
+DOMAIN: CO
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- CO-RA-004
+
+PURPOSE:
+Medicare Conditions of Participation compliance verification checklist covering all CoPs applicable to home health.
+
+INSTRUCTIONS:
+Performed annually and prior to any CMS survey. Covers each CoP with evidentiary references.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Medicare CoP Compliance Verification Checklist Checklist
+layout: checklist
+
+checklist_items:
+- 484.100 — Basis and Scope
+- 484.102 — Emergency Preparedness
+- 484.105 — Organization and Administration of Services
+- 484.110 — Clinical Records
+- 484.115 — Personnel Qualifications
+- 484.40 — Release of Patient Identifiable OASIS Info
+- 484.45 — Reporting OASIS Information
+- 484.50 — Patient Rights
+- 484.55 — Comprehensive Assessment of Patients
+- 484.60 — Care Planning, Coordination, and Quality of Care
+- 484.65 — Quality Assessment and Performance Improvement (QAPI)
+- 484.70 — Infection Prevention and Control
+- 484.75 — Skilled Professional Services
+- 484.80 — Home Health Aide Services
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CO-FM-034 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CO-RA-004

@@ -1,0 +1,61 @@
+FORM ID: HR-FM-038
+TITLE: Competency Remediation Plan
+TYPE: Form
+DOMAIN: HR
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- HR-TD-003
+
+PURPOSE:
+Remediation plan for an employee failing a clinical competency validation, specifying training, supervised practice, and re-validation.
+
+INSTRUCTIONS:
+Issued within 5 business days of failed validation. Maximum remediation period 60 days; failure to achieve competency may result in reassignment or termination.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Employee Name / Role (type=text, required=true, col=2)
+- Failed Competency (type=text, required=true, col=2)
+- Date of Initial Validation (type=date, col=2)
+- Remediation Period (type=text, col=2)
+- Required Training / Study (type=textarea, col=4)
+- Supervised Practice (# visits / hours) (type=text, col=2)
+- Preceptor Assigned (type=text, col=2)
+- Re-validation Date / Method (type=text, col=4)
+- Consequences of Continued Failure (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Employee — Printed Name (type=text, col=2)
+- Employee — Signature (type=signature, col=1)
+- Employee — Date (type=date, col=1)
+- Preceptor — Printed Name (type=text, col=2)
+- Preceptor — Signature (type=signature, col=1)
+- Preceptor — Date (type=date, col=1)
+- Clinical Manager — Printed Name (type=text, col=2)
+- Clinical Manager — Signature (type=signature, col=1)
+- Clinical Manager — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-038 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-TD-003

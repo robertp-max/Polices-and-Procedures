@@ -1,0 +1,64 @@
+FORM ID: CO-FM-031
+TITLE: AI Tool Use Request & Approval Form
+TYPE: Form
+DOMAIN: CO
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: digital_candidate
+
+LINKED POLICIES:
+- CO-AI-101
+
+PURPOSE:
+Request and approval form for the use of any AI tool, model, or automation that processes agency data or influences patient care decisions.
+
+INSTRUCTIONS:
+Submitted by the workforce sponsor; reviewed by Privacy, Security, Legal, and Clinical leadership before activation.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- AI Tool / Vendor Name (type=text, required=true, col=4)
+- Sponsor Name / Role (type=text, required=true, col=2)
+- Intended Use Case (type=textarea, required=true, col=4)
+- Data Types Processed (type=textarea, col=4)
+- Contains PHI? (Y/N) (type=select, col=2, options=[Yes | No])
+- Clinical Decision Influence? (Y/N) (type=select, col=2, options=[Yes | No])
+- Vendor BAA Status (type=text, col=4)
+- Bias / Fairness Considerations (type=textarea, col=4)
+- Validation / Oversight Plan (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Sponsor — Printed Name (type=text, col=2)
+- Sponsor — Signature (type=signature, col=1)
+- Sponsor — Date (type=date, col=1)
+- Privacy Officer — Printed Name (type=text, col=2)
+- Privacy Officer — Signature (type=signature, col=1)
+- Privacy Officer — Date (type=date, col=1)
+- Security Officer — Printed Name (type=text, col=2)
+- Security Officer — Signature (type=signature, col=1)
+- Security Officer — Date (type=date, col=1)
+- Clinical Manager — Printed Name (type=text, col=2)
+- Clinical Manager — Signature (type=signature, col=1)
+- Clinical Manager — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CO-FM-031 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CO-AI-101

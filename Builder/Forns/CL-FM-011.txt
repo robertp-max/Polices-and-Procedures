@@ -1,0 +1,56 @@
+FORM ID: CL-FM-011
+TITLE: Missed Visit Documentation Form
+TYPE: Form
+DOMAIN: CL
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- CL-SD-024
+
+PURPOSE:
+Standardized form capturing the required data elements for Missed Visit Documentation Form, aligned with Care Indeed policy, applicable federal/state regulation, and the enterprise gold standard (GV-GB-001).
+
+INSTRUCTIONS:
+Completed by the responsible workforce member (triggered). All fields are mandatory unless marked optional. Retained per agency record-retention schedule and made available for internal audit, state licensure, and CMS survey review.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Subject of Form (type=text, col=4)
+- Related Reference / ID (type=text, col=2)
+- Date of Event (type=date, col=2)
+- Description / Narrative (type=textarea, col=4)
+- Outcome / Decision (type=textarea, col=4)
+- Follow-Up Required (Y/N) (type=select, col=2, options=[Yes | No])
+- Follow-Up Owner (type=text, col=2)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CL-FM-011 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CL-SD-024

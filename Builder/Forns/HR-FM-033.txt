@@ -1,0 +1,54 @@
+FORM ID: HR-FM-033
+TITLE: Mandatory Reporter Attestation
+TYPE: Attestation
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- HR-ER-009
+
+PURPOSE:
+Annual attestation that employees in mandated-reporter roles understand their legal duty under California Welfare & Institutions Code §§ 15630-15637 (elder and dependent-adult abuse) and will comply.
+
+INSTRUCTIONS:
+Signed at hire and annually. Reports must be made within 2 hours / 2 business days per statute.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Attestation
+layout: attestation
+
+body:
+I acknowledge that as a mandated reporter:
+
+acknowledgments:
+- I understand California law requires me to report known or suspected physical abuse, neglect, financial abuse, isolation, or abandonment of elders and dependent adults.
+- I will report to Adult Protective Services and local law enforcement as required by WIC § 15630.
+- Reports will be made within 2 hours by phone and within 2 business days by written report.
+- Confidentiality of the reporter is protected by law.
+- Failure to report is a misdemeanor and may result in employment discipline up to termination.
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Employee — Printed Name (type=text, col=2)
+- Employee — Signature (type=signature, col=1)
+- Employee — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-033 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-ER-009

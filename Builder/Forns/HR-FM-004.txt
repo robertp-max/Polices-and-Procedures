@@ -1,0 +1,60 @@
+FORM ID: HR-FM-004
+TITLE: Employee Reference Check Log
+TYPE: Log
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: landscape
+CLASSIFICATIONS: none
+
+LINKED POLICIES:
+- HR-TA-001
+
+PURPOSE:
+Log of every professional reference checked for candidates, including questions asked, responses, and verifier signature.
+
+INSTRUCTIONS:
+Minimum three professional references required before any offer. Results reviewed by HR and hiring manager. Retained for 3 years.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Log Entries
+layout: table
+
+table_columns:
+- Candidate
+- Reference Name
+- Title / Relationship
+- Company
+- Phone / Email
+- Dates Known
+- Rating
+- Key Comments
+- Verifier
+- Date
+table_row_count: 12
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-004 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-TA-001

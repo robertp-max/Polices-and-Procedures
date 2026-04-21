@@ -1,0 +1,57 @@
+FORM ID: HR-FM-026
+TITLE: Volunteer Service Agreement
+TYPE: Attestation
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: none
+
+LINKED POLICIES:
+- HR-WM-006
+
+PURPOSE:
+Service agreement with a volunteer performing non-clinical tasks for Care Indeed, defining scope, hours, training, and acknowledgments.
+
+INSTRUCTIONS:
+Signed prior to any on-site or patient-facing volunteer activity. Volunteers do not perform skilled care or sign clinical records.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Attestation
+layout: attestation
+
+body:
+I acknowledge:
+
+acknowledgments:
+- I have completed HIPAA awareness and Code of Conduct training.
+- I will not access, view, or share Protected Health Information beyond what is necessary for my role.
+- I am not providing skilled clinical care and will not sign clinical records.
+- I understand the agency may terminate my volunteer engagement at any time.
+- I am a volunteer, not an employee, and receive no compensation or benefits.
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Volunteer — Printed Name (type=text, col=2)
+- Volunteer — Signature (type=signature, col=1)
+- Volunteer — Date (type=date, col=1)
+- Administrator / Designee — Printed Name (type=text, col=2)
+- Administrator / Designee — Signature (type=signature, col=1)
+- Administrator / Designee — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-026 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-WM-006

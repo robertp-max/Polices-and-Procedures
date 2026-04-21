@@ -1,0 +1,59 @@
+FORM ID: GV-FM-009
+TITLE: Annual Strategic Planning Worksheet
+TYPE: Worksheet
+DOMAIN: GV
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: none
+
+LINKED POLICIES:
+- GV-OG-004
+
+PURPOSE:
+Documentation of the agency's annual strategic planning process, including mission/vision review, SWOT analysis, goals, KPIs, and resource allocation.
+
+INSTRUCTIONS:
+Completed annually by the Governing Body with input from senior leadership. Approved goals cascade to QAPI and operational plans.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Worksheet
+layout: grid
+
+fields:
+- Planning Year (type=text, required=true, col=2)
+- Facilitator (type=text, col=2)
+- Mission / Vision Review Notes (type=textarea, col=4)
+- Strengths (type=textarea, col=4)
+- Weaknesses (type=textarea, col=4)
+- Opportunities (type=textarea, col=4)
+- Threats (type=textarea, col=4)
+- Top 3-5 Strategic Goals (type=textarea, col=4)
+- Key KPIs & Targets (type=textarea, col=4)
+- Resource / Budget Commitments (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Chair — Printed Name (type=text, col=2)
+- Chair — Signature (type=signature, col=1)
+- Chair — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form GV-FM-009 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: GV-OG-004

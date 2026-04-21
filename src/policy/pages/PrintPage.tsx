@@ -15,7 +15,7 @@ function GfmTable({ text }: { text: string }) {
   return (
     <table className="w-full text-left border-collapse text-xs mb-5 print-color-exact">
       <thead>
-        <tr style={{ backgroundColor: '#007970', color: '#ffffff' }}>
+        <tr style={{ backgroundColor: '#D4AF37', color: '#ffffff' }}>
           {headers.map((h, i) => (
             <th key={i} style={{ border: '1px solid #004d47', padding: '6px 10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>
               {h}
@@ -74,7 +74,7 @@ function PrintSectionPanel({ section, isTopLevel }: { section: PolicyContentSect
           fontFamily: 'Montserrat, sans-serif',
           fontWeight: section.level === 2 ? 800 : 700,
           fontSize: section.level === 2 ? '13px' : section.level === 3 ? '11px' : '10px',
-          color: section.level === 2 ? '#1F1C1B' : '#007970',
+          color: section.level === 2 ? '#1F1C1B' : '#D4AF37',
           borderBottom: isTopLevel ? '1px solid #E5E4E3' : 'none',
           paddingBottom: isTopLevel ? '6px' : '0',
           marginBottom: '8px',
@@ -154,7 +154,7 @@ export function PrintPage() {
       <article className="print-document mx-auto max-w-[850px] bg-white shadow-xl print:max-w-full print:shadow-none">
 
         {/* COVER BLOCK */}
-        <div className="avoid-break" style={{ backgroundColor: '#007970', padding: '40px 48px', color: '#ffffff' }}>
+        <div className="avoid-break" style={{ backgroundColor: '#D4AF37', padding: '40px 48px', color: '#ffffff' }}>
           {isDraft && (
             <div style={{ marginBottom: '16px', display: 'inline-block', backgroundColor: 'rgba(199,70,0,0.9)', padding: '4px 12px', borderRadius: '4px', fontSize: '10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
               DRAFT — NOT FOR OFFICIAL USE

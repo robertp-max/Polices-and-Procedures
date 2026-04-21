@@ -1,0 +1,453 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Loader2, SlidersHorizontal, HelpCircle } from 'lucide-react';
+import { useShellStore } from '@/policy/stores/uiStore';
+import { CommandBar } from './components/CommandBar';
+import { StructuredAnswer } from './components/StructuredAnswer';
+import { RequirementsSnapshot } from './components/RequirementsSnapshot';
+import { CitationChips } from './components/CitationChips';
+import { ReferenceCards } from './components/ReferenceCards';
+import { AvailableActions } from './components/AvailableActions';
+import { StudioTabs, STUDIO_TABS, type StudioTabId } from './components/StudioTabs';
+import { RightPanelPreview } from './components/RightPanelPreview';
+import { NoAnswer } from './components/NoAnswer';
+import { HealthStrip } from './components/HealthStrip';
+import { OperationalGaps } from './components/OperationalGaps';
+import { RegulatoryAlerts } from './components/RegulatoryAlerts';
+import { BradHelpCenter } from './components/BradHelpCenter';
+import { useIaHealth, useIaQuery, useIaReference } from './lib/useIa';
+import { iaClient } from './lib/iaClient';
+import type { AvailableAction, IntentKind, StructuredResponse } from './lib/responseTypes';
+
+/* ═══════════════════════════════════════════════════════════════
+   iAdministrator page — Compliance Intelligence command center.
+
+   Layout:
+     top   : health strip (corpus + Ollama status)
+     left  : command bar, studio tabs, structured response stack
+     right : execution workspace (reference preview)
+
+   NO chat history. Each command stands on its own. Switching a
+   studio tab while a query is active re-runs the last input under
+   the new intent.
+   ═══════════════════════════════════════════════════════════════ */
+
+const DEFAULT_SUGGESTIONS = [
+  'Run pre-survey audit',
+  'Identify compliance gaps in QAPI',
+  'Show missing forms for governing body',
+  'Open plan of care policy',
+  'Create governing body brief for CMIA risk',
+  'What is required before billing a Medicare claim?',
+];
+
+export function IAdministratorPage() {
+  const theme = useShellStore(s => s.theme);
+  const isLight = theme === 'care-indeed-light';
+
+  const { health, loading: healthLoading, error: healthError, refresh } = useIaHealth();
+  const query = useIaQuery();
+  const reference = useIaReference();
+
+  const [activeTab, setActiveTab] = useState<StudioTabId>('answer');
+  const [rebuildState, setRebuildState] = useState<'idle' | 'running' | 'error'>('idle');
+  const [rebuildError, setRebuildError] = useState<string | null>(null);
+  const [runningActionId, setRunningActionId] = useState<string | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  /* ── Submit handler ─────────────────────────────────────────── */
+  const submitCommand = useCallback((input: string, explicitIntent?: IntentKind) => {
+    const intent = explicitIntent ?? tabToIntent(activeTab);
+    query.submit({ input, intent });
+  }, [query, activeTab]);
+
+  /* ── Tab change re-runs the last command under the new intent ── */
+  const onTabChange = useCallback((tab: StudioTabId) => {
+    setActiveTab(tab);
+    if (query.lastInput && !query.loading) {
+      query.submit({ input: query.lastInput, intent: tabToIntent(tab) });
+    }
+  }, [query]);
+
+  /* ── Action dispatch ────────────────────────────────────────── */
+  const handleAction = useCallback(async (action: AvailableAction) => {
+    setRunningActionId(action.id);
+    try {
+      if (action.type.startsWith('open_') && action.targetId) {
+        await reference.load(action.targetId);
+        return;
+      }
+      if (action.type.startsWith('generate_') && action.studioOutputType) {
+        const intent = studioTypeToIntent(action.studioOutputType);
+        if (intent && query.lastInput) {
+          const tabId = STUDIO_TABS.find(t => t.intent === intent)?.id;
+          if (tabId) setActiveTab(tabId);
+          await query.submit({ input: query.lastInput, intent });
+        }
+        return;
+      }
+      // print_form / download_pdf / attach_to_event / mark_complete:
+      // staged for future workflow layer; show reference for now.
+      if (action.targetId) await reference.load(action.targetId);
+    } finally {
+      setRunningActionId(null);
+    }
+  }, [reference, query]);
+
+  const handleRebuild = useCallback(async () => {
+    setRebuildState('running');
+    setRebuildError(null);
+    try {
+      await iaClient.rebuildIndex();
+      refresh();
+      setRebuildState('idle');
+    } catch (err) {
+      setRebuildState('error');
+      setRebuildError((err as Error)?.message ?? 'Rebuild failed');
+    }
+  }, [refresh]);
+
+  /* ── Phase-1 SSE: pre-load right panel the moment retrieval completes ── */
+  useEffect(() => {
+    const topDocId = query.phase1TopDocId;
+    if (!topDocId) return;
+    // Only pre-load if the user hasn't opened something manually.
+    if (reference.reference) return;
+    void reference.load(topDocId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query.phase1TopDocId]);
+
+  /* ── Auto-select reference from first linkedReference / citation ── */
+  useEffect(() => {
+    const r = query.response;
+    if (!r || r.noAnswerFound) return;
+    if (reference.reference) return; // don't override a user selection
+    const auto =
+      r.linkedReferences[0]?.id ??
+      r.citations[0]?.policyId ??
+      r.availableActions.find(a => a.type.startsWith('open_'))?.targetId;
+    if (auto) void reference.load(auto);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query.response?.id]);
+
+  const suggestions = useMemo(() =>
+    query.response ? undefined : DEFAULT_SUGGESTIONS,
+    [query.response],
+  );
+
+  /* ── Render ─────────────────────────────────────────────────── */
+  const bgText = isLight ? '#1F1C1B' : '#E0E0E0';
+  const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
+  const subtle = isLight ? '#747474' : 'rgba(255,255,255,0.45)';
+
+  return (
+    <div className="w-full h-full flex flex-col" style={{ color: bgText }}>
+      {/* ── Header + health strip ───────────────────────────────── */}
+      <div className="w-full px-6 md:px-8 pt-4 md:pt-6">
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <div>
+            <h1
+              className="text-[20px] md:text-[22px] font-semibold"
+              style={{ fontFamily: "'Outfit', 'Inter', system-ui, sans-serif" }}
+            >
+              iAdministrator
+            </h1>
+            <p className="text-[11px] uppercase tracking-[0.24em]" style={{ color: subtle, fontFamily: "'JetBrains Mono', monospace" }}>
+              Compliance Intelligence · Brad Internal Corpus · Grounded Answers Only
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2 text-[10px] uppercase tracking-[0.24em]" style={{ color: subtle, fontFamily: "'JetBrains Mono', monospace" }}>
+              <SlidersHorizontal size={12} strokeWidth={2} />
+              Policies · Forms · Appendices
+            </div>
+            <button
+              type="button"
+              onClick={() => setHelpOpen(true)}
+              title="Open Brad Help Center"
+              aria-label="Open Brad Help Center"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors"
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                color: isLight ? '#C74601' : '#FFC107',
+                background: isLight ? '#FFF7ED' : 'rgba(255,193,7,0.08)',
+                border: `1px solid ${isLight ? '#FFD5BF' : 'rgba(255,193,7,0.25)'}`,
+              }}
+            >
+              <HelpCircle size={13} strokeWidth={2} />
+              Help
+            </button>
+          </div>
+        </div>
+        <HealthStrip
+          health={health}
+          loading={healthLoading}
+          error={healthError}
+          isLight={isLight}
+          onRebuild={rebuildState === 'running' ? undefined : handleRebuild}
+        />
+        {rebuildState === 'running' && (
+          <div className="mt-2 text-[11px] flex items-center gap-2" style={{ color: subtle, fontFamily: "'JetBrains Mono', monospace" }}>
+            <Loader2 size={12} className="animate-spin" /> Rebuilding index — this can take a few minutes on first run.
+          </div>
+        )}
+        {rebuildError && (
+          <div className="mt-2 text-[11px]" style={{ color: isLight ? '#B91C1C' : '#FCA5A5', fontFamily: "'JetBrains Mono', monospace" }}>
+            Rebuild failed: {rebuildError}
+          </div>
+        )}
+      </div>
+
+      {/* ── Two-column workspace ─────────────────────────────────── */}
+      <div className="flex-1 w-full px-6 md:px-8 py-4 md:py-6 overflow-hidden grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] xl:grid-cols-[minmax(0,1fr)_minmax(0,480px)] gap-4 md:gap-6">
+        {/* LEFT column: command input + structured response */}
+        <div className="flex flex-col min-h-0 gap-4 overflow-hidden">
+          <CommandBar
+            onSubmit={submitCommand}
+            loading={query.loading}
+            isLight={isLight}
+            suggestions={suggestions}
+          />
+
+          <StudioTabs
+            active={activeTab}
+            onChange={onTabChange}
+            isLight={isLight}
+            disabled={query.loading && !query.response}
+          />
+
+          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar -mr-2 pr-2 flex flex-col gap-4">
+            {query.error && (
+              <div
+                className="rounded-xl px-3 py-2 text-[12px]"
+                style={{
+                  color: isLight ? '#B91C1C' : '#FCA5A5',
+                  background: isLight ? '#FEF2F2' : 'rgba(252,165,165,0.05)',
+                  border: `1px solid ${isLight ? '#FECACA' : 'rgba(252,165,165,0.2)'}`,
+                }}
+              >
+                {query.error}
+              </div>
+            )}
+
+            {query.loading && !query.response && (
+              <PendingState
+                isLight={isLight}
+                intent={tabToIntent(activeTab)}
+                retrieving={query.retrieving}
+              />
+            )}
+
+            {query.response && (
+              <ResponseStack
+                response={query.response}
+                isLight={isLight}
+                activeReferenceId={reference.reference?.id ?? null}
+                runningActionId={runningActionId}
+                onOpenReference={id => void reference.load(id)}
+                onAction={handleAction}
+              />
+            )}
+
+            {!query.loading && !query.response && !query.error && (
+              <WelcomeState isLight={isLight} />
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT column: execution workspace */}
+        <div className="hidden lg:flex flex-col min-h-0">
+          <RightPanelPreview
+            reference={reference.reference}
+            loading={reference.loading}
+            error={reference.error}
+            isLight={isLight}
+            onClose={reference.clear}
+            onOpenLinked={id => void reference.load(id)}
+          />
+        </div>
+      </div>
+
+      {/* Meta footer — timings + intent badge (only when we have a response). */}
+      {query.response?.meta && (
+        <div
+          className="px-6 md:px-8 py-2 text-[10px] uppercase tracking-[0.24em] flex items-center gap-3"
+          style={{
+            color: subtle,
+            borderTop: `1px solid ${border}`,
+            fontFamily: "'JetBrains Mono', monospace",
+          }}
+        >
+          <span style={{ color: isLight ? '#C74601' : '#FFC107', fontWeight: 600 }}>Generated by Brad</span>
+          <span>·</span>
+          <span>intent: {query.response.meta.intent}</span>
+          <span>·</span>
+          <span>{query.response.meta.elapsedMs} ms</span>
+          <span>·</span>
+          <span>{query.response.meta.retrievedChunkIds.length} passages</span>
+        </div>
+      )}
+
+      {/* Brad Help Center overlay */}
+      <BradHelpCenter isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Response stack — orchestrates the order sub-components render in.
+   ───────────────────────────────────────────────────────────── */
+function ResponseStack({
+  response,
+  isLight,
+  activeReferenceId,
+  runningActionId,
+  onOpenReference,
+  onAction,
+}: {
+  response: StructuredResponse;
+  isLight: boolean;
+  activeReferenceId: string | null;
+  runningActionId: string | null;
+  onOpenReference: (id: string) => void;
+  onAction: (action: AvailableAction) => void;
+}) {
+  if (response.noAnswerFound) {
+    return (
+      <>
+        <NoAnswer reason={response.noAnswerReason} isLight={isLight} />
+        {response.linkedReferences.length > 0 && (
+          <ReferenceCards
+            references={response.linkedReferences}
+            isLight={isLight}
+            activeId={activeReferenceId}
+            onOpenReference={onOpenReference}
+          />
+        )}
+        {response.availableActions.length > 0 && (
+          <AvailableActions
+            actions={response.availableActions}
+            isLight={isLight}
+            runningActionId={runningActionId}
+            onAction={onAction}
+          />
+        )}
+        {/* Operational state still relevant even when corpus has no answer */}
+        <OperationalGaps
+          operationalGaps={response.operationalGaps}
+          lifecycleAlerts={response.lifecycleAlerts}
+          phaseStatus={response.phaseStatus}
+          isLight={isLight}
+        />
+        <RegulatoryAlerts regulatoryAlerts={response.regulatoryAlerts} isLight={isLight} />
+      </>
+    );
+  }
+  return (
+    <>
+      <StructuredAnswer response={response} isLight={isLight} onOpenReference={onOpenReference} />
+      {response.requirementsSnapshot.length > 0 && (
+        <RequirementsSnapshot items={response.requirementsSnapshot} isLight={isLight} onOpenReference={onOpenReference} />
+      )}
+      {response.citations.length > 0 && (
+        <CitationChips citations={response.citations} isLight={isLight} onOpenReference={onOpenReference} />
+      )}
+      {response.linkedReferences.length > 0 && (
+        <ReferenceCards
+          references={response.linkedReferences}
+          isLight={isLight}
+          activeId={activeReferenceId}
+          onOpenReference={onOpenReference}
+        />
+      )}
+      {response.availableActions.length > 0 && (
+        <AvailableActions
+          actions={response.availableActions}
+          isLight={isLight}
+          runningActionId={runningActionId}
+          onAction={onAction}
+        />
+      )}
+      {/* Phase 1-2: Operational gaps + lifecycle alerts + regulatory updates */}
+      <OperationalGaps
+        operationalGaps={response.operationalGaps}
+        lifecycleAlerts={response.lifecycleAlerts}
+        phaseStatus={response.phaseStatus}
+        isLight={isLight}
+      />
+      <RegulatoryAlerts regulatoryAlerts={response.regulatoryAlerts} isLight={isLight} />
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Placeholder states.
+   ───────────────────────────────────────────────────────────── */
+function PendingState({ isLight, intent, retrieving }: { isLight: boolean; intent: IntentKind; retrieving: boolean }) {
+  const muted = isLight ? '#747474' : 'rgba(255,255,255,0.45)';
+  const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
+  const surface = isLight ? '#FFFFFF' : 'rgba(255,255,255,0.025)';
+  const label = STUDIO_TABS.find(t => t.intent === intent)?.label ?? 'Compliance Answer';
+  const stageMsg = retrieving
+    ? 'Brad is retrieving corpus …'
+    : `Brad is generating ${label.toLowerCase()} …`;
+  return (
+    <div
+      className="rounded-2xl p-6 flex items-center gap-3"
+      style={{ background: surface, border: `1px solid ${border}`, color: muted }}
+    >
+      <Loader2 size={16} className="animate-spin" />
+      <span className="text-[12px] uppercase tracking-[0.24em]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        {stageMsg}
+      </span>
+    </div>
+  );
+}
+
+function WelcomeState({ isLight }: { isLight: boolean }) {
+  const muted = isLight ? '#747474' : 'rgba(255,255,255,0.45)';
+  const text = isLight ? '#1F1C1B' : '#E0E0E0';
+  const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
+  const surface = isLight ? '#FFFFFF' : 'rgba(255,255,255,0.025)';
+  const accent = isLight ? '#C74601' : '#FFC107';
+
+  return (
+    <div
+      className="rounded-2xl p-6"
+      style={{ background: surface, border: `1px solid ${border}` }}
+    >
+      <div
+        className="text-[10px] font-bold uppercase tracking-[0.3em] mb-3"
+        style={{ color: accent, fontFamily: "'JetBrains Mono', monospace" }}
+      >
+        Brad · Ready
+      </div>
+      <p className="text-[14px] leading-relaxed" style={{ color: text }}>
+        Ask Brad a compliance question or issue a command. Brad retrieves only from the internal Home Health corpus — policies, procedures, forms, and appendices — and returns a structured, citation-backed answer with actionable references.
+      </p>
+      <p className="text-[12px] mt-2" style={{ color: muted }}>
+        Tip · quote an ID like <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>HR-FM-020</span> or <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>CO-HP-001</span> to anchor Brad's answer.
+      </p>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Small mappers used across the page.
+   ───────────────────────────────────────────────────────────── */
+function tabToIntent(tab: StudioTabId): IntentKind {
+  return STUDIO_TABS.find(t => t.id === tab)?.intent ?? 'question';
+}
+
+function studioTypeToIntent(st: NonNullable<StructuredResponse['studioOutputType']>): IntentKind | null {
+  switch (st) {
+    case 'audit_checklist':      return 'pre_survey_audit';
+    case 'action_plan':          return 'action_plan';
+    case 'governing_body_brief': return 'governing_body_brief';
+    case 'qapi_digest':          return 'qapi_digest';
+    case 'knowledge_article':    return 'knowledge_article';
+    case 'summary':              return 'question';
+    default:                     return null;
+  }
+}
+
+export default IAdministratorPage;

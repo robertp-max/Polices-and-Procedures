@@ -1,109 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ═══════════════════════════════════════════════════════════════
-   CANONICAL DESIGN SYSTEM — ported from Builder/Main/main.html
-   This is the single source of truth for all visual behavior.
-   ═══════════════════════════════════════════════════════════════ */
+/* ===============================================================
+   CANONICAL DESIGN SYSTEM — CI-ION Premium ONE-GLASS
+   Deep-maroon TravelightBG + a single translucent glass canvas
+   (33% alpha) that holds ALL page content. Page sections are
+   FLAT on this glass — no stacked sub-cards, no nested layers.
+   =============================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap');
+:root {
+  /* Brand palette */
+  --ci-maroon-deep:   #0A0202;
+  --ci-maroon-black:  #310707;
+  --ci-maroon-base:   #420808;
+  --ci-maroon-glow:   #5D0E0E;
+  --ci-gold:          #FFC107;
+  --ci-gold-dark:     #D4AF37;
+  --ci-gold-deep:     #8C6B0A;
+  /* RGB triplet for the accent highlight — lets inline styles
+     author "rgba(var(--ci-accent-rgb), 0.2)" and auto-theme. */
+  --ci-accent-rgb:    255, 193, 7;
+  --ci-accent-rgb-2:  217, 164, 6;
 
-@layer base {
-  body {
-    font-family: 'Roboto', sans-serif;
-    color: white;
-  }
-  h1, h2, h3, h4 {
-    font-family: 'Montserrat', sans-serif;
-  }
+  /* Reusable CALENDAR cell tints — referenced via inline style so
+     components don't need to branch on theme. */
+  --ci-cell-out:      rgba(10,2,2,0.55);
+  --ci-cell-today:    linear-gradient(180deg, rgba(255,193,7,0.10) 0%, rgba(10,2,2,0.55) 100%);
+  --ci-cell-day:      rgba(20,4,4,0.55);
+  --ci-text:          #E0E0E0;
+  --ci-text-muted:    rgba(255,255,255,0.45);
+  --ci-border:        rgba(255,255,255,0.08);
+  --ci-border-strong: rgba(255,255,255,0.14);
+  --ci-hairline:      rgba(255,255,255,0.06);
+
+  /* The single main glass — 33% opacity deep-maroon */
+  --glass-main: linear-gradient(160deg, rgba(66,8,8,0.33) 0%, rgba(10,2,2,0.33) 100%);
+  --glass-panel: var(--glass-main);
+
+  /* Flat helper — used when we need a faint ambient zone without
+     breaking the one-glass illusion. No background, hairline only. */
+  --glass-soft-bg:   rgba(255,255,255,0.018);
+  --glass-soft-bdr:  rgba(255,255,255,0.06);
+
+  /* Shadow ladder — reserved for the ONE main glass only */
+  --shadow-glass: 0 40px 120px -30px rgba(0,0,0,.85), 0 18px 48px -18px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.07);
+  --shadow-btn:   0 12px 32px -10px rgba(0,0,0,.55);
+
+  /* Motion easings */
+  --ease-standard: cubic-bezier(.22,1,.36,1);
+  --ease-drift:    cubic-bezier(.45,0,.55,1);
 }
 
-html,
-body,
-#root {
-  height: 100vh;
-  width: 100vw;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+@layer base {
+  html, body, #root {
+    margin: 0;
+    padding: 0;
+    background: var(--ci-maroon-deep);
+  }
+  body {
+    font-family: 'Outfit', 'Roboto', sans-serif;
+    color: var(--ci-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Outfit', 'Montserrat', sans-serif;
+    letter-spacing: 0.015em;
+  }
 }
 
 .font-montserrat { font-family: 'Montserrat', sans-serif; }
-.font-roboto { font-family: 'Roboto', sans-serif; }
+.font-roboto     { font-family: 'Roboto', sans-serif; }
+.font-outfit     { font-family: 'Outfit', sans-serif; }
+.font-mono-jb    { font-family: 'JetBrains Mono', monospace; }
 
-/* ── Elegant Custom Scrollbars ── */
+/* Elegant Custom Scrollbars (warm gold tint) */
 .custom-scrollbar::-webkit-scrollbar,
-.custom-scrollbar-x::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+.custom-scrollbar-x::-webkit-scrollbar { width: 8px; height: 8px; }
 .custom-scrollbar::-webkit-scrollbar-track,
-.custom-scrollbar-x::-webkit-scrollbar-track {
-  background: transparent;
-}
+.custom-scrollbar-x::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb,
-.custom-scrollbar-x::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
+.custom-scrollbar-x::-webkit-scrollbar-thumb { background: rgba(255,193,7,0.14); border-radius: 10px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover,
-.custom-scrollbar-x::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
+.custom-scrollbar-x::-webkit-scrollbar-thumb:hover { background: rgba(255,193,7,0.28); }
 
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
 
-/* ── Float Animation ── */
+/* Float animation */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  50%      { transform: translateY(-4px); }
 }
-.anim-float {
-  animation: float 6s ease-in-out infinite;
-}
+.anim-float { animation: float 6s ease-in-out infinite; }
 
-/* ── Vibrant Animated Gradient Background ──
-   Teal, Orange, Purple, Blue loop.
-   Brightness reduced to 0.23, speed 90s, scale 1.77.
-*/
-@keyframes vibrantShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-.vibrant-bg {
-  background: linear-gradient(-45deg, #00c2b4, #f97316, #a855f7, #3b82f6, #00c2b4);
-  background-size: 234% 234%;
-  animation: vibrantShift 90s ease-in-out infinite;
-  filter: brightness(0.23);
-  transform: scale(1.77);
-  transform-origin: center center;
-}
+/* Legacy alias: keep .vibrant-bg as a transparent no-op */
+.vibrant-bg { background: transparent; }
 
-/* ── 3300ms Glass Interactive Hover Logic ──
-   Fade out (leave): 5864ms (77.7% slower).
-   Fade in (hover): 3300ms.
-*/
+/* 3300ms Glass Interactive Hover Logic (warm gold tint) */
 .glass-interactive {
-  background-color: rgba(255, 255, 255, 0);
-  transition: background-color 5864ms linear, border-color 300ms ease, color 300ms ease, transform 300ms ease, opacity 300ms ease, box-shadow 300ms ease !important;
+  background-color: rgba(255,193,7,0);
+  transition:
+    background-color 5864ms linear,
+    border-color 300ms ease,
+    color 300ms ease,
+    transform 300ms ease,
+    opacity 300ms ease,
+    box-shadow 300ms ease !important;
 }
 .glass-interactive:hover {
-  background-color: rgba(255, 255, 255, 0.33) !important;
-  transition: background-color 3300ms linear, border-color 300ms ease, color 300ms ease, transform 300ms ease, opacity 300ms ease, box-shadow 300ms ease !important;
+  background-color: rgba(255,193,7,0.14) !important;
+  transition:
+    background-color 3300ms linear,
+    border-color 300ms ease,
+    color 300ms ease,
+    transform 300ms ease,
+    opacity 300ms ease,
+    box-shadow 300ms ease !important;
 }
 
-/* ── Icon Interactive Timing ──
-   Hover: 330ms fast entry.
-   Decay: 2541ms (770% slower).
-*/
+/* Icon Interactive Timing */
 .icon-interactive {
   opacity: 0.4;
   transition: opacity 2541ms linear, color 2541ms linear, transform 500ms ease !important;
@@ -113,135 +133,1004 @@ body,
   transition: opacity 330ms linear, color 330ms linear, transform 500ms ease !important;
 }
 
-/* ── Fade In / Animate In ── */
+/* Fade-in / Animate-in */
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
-.animate-in {
-  animation: fadeIn 0.5s ease-in;
-}
-.fade-in {
-  animation-name: fadeIn;
-}
-.duration-500 {
-  animation-duration: 500ms;
-}
-.duration-1000 {
-  animation-duration: 1000ms;
-}
+.animate-in { animation: fadeIn 0.5s ease-in; }
+.fade-in    { animation-name: fadeIn; }
+.duration-500  { animation-duration: 500ms; }
+.duration-1000 { animation-duration: 1000ms; }
 
-/* ── Zoom In ── */
+/* Zoom in 95 */
 @keyframes zoomIn95 {
   from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  to   { opacity: 1; transform: scale(1); }
 }
-.zoom-in-95 {
-  animation-name: zoomIn95;
-}
+.zoom-in-95 { animation-name: zoomIn95; }
 
-/* ── Slide In From Right ── */
+/* Slide In From Right */
 @keyframes slideInFromRight8 {
   from { opacity: 0; transform: translateX(2rem); }
-  to { opacity: 1; transform: translateX(0); }
+  to   { opacity: 1; transform: translateX(0); }
 }
-.slide-in-from-right-8 {
-  animation-name: slideInFromRight8;
+.slide-in-from-right-8 { animation-name: slideInFromRight8; }
+
+/* Splash button ping glow */
+@keyframes splashPing { 75%, 100% { transform: scale(2); opacity: 0; } }
+
+/* Regulatory Execution Center — soft urgent pulse for KPI tiles */
+@keyframes rec-pulse-soft {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.0), 0 20px 50px -18px rgba(0,0,0,0.65); }
+  50%      { box-shadow: 0 0 0 6px rgba(239,68,68,0.10), 0 20px 50px -18px rgba(0,0,0,0.65); }
+}
+.animate-pulse-soft {
+  animation: rec-pulse-soft 2.8s cubic-bezier(.4,0,.6,1) infinite;
 }
 
-/* ── Legacy Glass Utilities (for module compatibility) ── */
-.glass-morphism {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  box-shadow:
-    0 8px 32px 0 rgba(31, 38, 135, 0.37),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
-}
-
-/* glass-card — transparent at rest, shell-aligned */
-.glass-card {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
+/* ──────────────────────────────────────────────────────────────
+   Legacy glass utilities — reduced to FLAT helpers so nothing
+   stacks on top of the single main glass. No backdrop-filter,
+   no inner shadows, no background tint — just a hairline border
+   + a faint ambient wash so content blocks have rhythm on-glass.
+   ────────────────────────────────────────────────────────────── */
+.glass-morphism,
+.glass-card,
+.glass-card-strong,
 .glass-intense {
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(24px) saturate(200%);
-  -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow:
-    0 12px 48px 0 rgba(31, 38, 135, 0.5),
-    inset 0 2px 4px 0 rgba(255, 255, 255, 0.15),
-    inset 0 -2px 4px 0 rgba(0, 0, 0, 0.1);
+  background: transparent;
+  border: 1px solid var(--ci-hairline);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
-.glass-card-strong {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* Section divider — used in place of nested cards to separate
+   zones on the single glass without adding a stacked surface. */
+.on-glass-section {
+  border-top: 1px solid var(--ci-hairline);
 }
 
-/* ── Demo page view transitions ── */
+/* Gold accent utilities */
+.text-gold      { color: var(--ci-gold); }
+.border-gold    { border-color: var(--ci-gold); }
+.bg-gold        { background-color: var(--ci-gold); color: var(--ci-maroon-deep); }
+.ring-gold      { box-shadow: 0 0 0 2px rgba(255,193,7,0.35); }
+.glow-gold      { box-shadow: 0 0 24px rgba(255,193,7,0.35); }
+.gradient-gold  { background: linear-gradient(to bottom,#FFC107,#D9A406); color: var(--ci-maroon-deep); }
+
+/* Demo page view transitions */
 @keyframes demoViewEnter {
   from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.demo-view-enter {
-  animation: demoViewEnter 0.35s ease-out forwards;
-}
+.demo-view-enter { animation: demoViewEnter 0.35s ease-out forwards; }
 
 .demo-glass-card {
-  background-color: rgba(255, 255, 255, 0.01);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: transparent;
+  border: 1px solid var(--ci-hairline);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .demo-glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  background-color: rgba(255, 255, 255, 0.04);
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255,193,7,0.30);
+  background-color: rgba(255,193,7,0.035);
 }
 
 @keyframes demoFadeIn {
   from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.demo-fadeIn {
-  animation: demoFadeIn 0.4s ease-out forwards;
-}
+.demo-fadeIn { animation: demoFadeIn 0.4s ease-out forwards; }
 .demo-policy-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
-/* ── Additional Legacy Animations ── */
+/* ── Phase 2 Executive Presentation ─────────────────────────── */
+@keyframes presChapterEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.pres-chapter-enter {
+  animation: presChapterEnter 0.35s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+/* Scrollbar tint for light-mode presentation panel */
+.pres-scrollbar::-webkit-scrollbar { width: 6px; }
+.pres-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.pres-scrollbar::-webkit-scrollbar-thumb { background: #D1D1D1; border-radius: 8px; }
+.pres-scrollbar::-webkit-scrollbar-thumb:hover { background: #007970; }
+
+/* Legacy animations (kept for compatibility) */
 @keyframes wiggle {
   0%, 100% { transform: rotate(-2deg); }
-  50% { transform: rotate(2deg); }
+  50%      { transform: rotate(2deg); }
 }
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  50%      { transform: translateY(-4px); }
 }
 @keyframes heartbeat {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50%      { transform: scale(1.05); }
 }
 @keyframes spin {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to   { transform: rotate(360deg); }
 }
 @keyframes flip {
   0%, 100% { transform: rotateY(0deg); }
-  50% { transform: rotateY(180deg); }
+  50%      { transform: rotateY(180deg); }
 }
-.anim-wiggle { animation: wiggle 2s ease-in-out infinite; }
-.anim-bounce { animation: bounce 2s ease-in-out infinite; }
+.anim-wiggle    { animation: wiggle 2s ease-in-out infinite; }
+.anim-bounce    { animation: bounce 2s ease-in-out infinite; }
 .anim-heartbeat { animation: heartbeat 1.5s ease-in-out infinite; }
-.anim-spin { animation: spin 8s linear infinite; }
-.anim-flip { animation: flip 6s ease-in-out infinite; }
+.anim-spin      { animation: spin 8s linear infinite; }
+.anim-flip      { animation: flip 6s ease-in-out infinite; }
+
+/* Focus-visible accessibility */
+*:focus-visible {
+  outline: 2px solid var(--ci-gold);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--ci-gold);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255,193,7,0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CARE INDEED LIGHT MODE — theme token overrides
+   Only applied when <html data-theme="care-indeed-light">.
+   Dark mode (ci-ion-dark) keeps every token above unchanged.
+   ══════════════════════════════════════════════════════════════ */
+/* Care Indeed Brand Kit (per CI Brand.md):
+   • Primary Teal  #007970  ← highlights, accents, headings, focus
+   • Secondary     #C74600  ← CTA buttons ONLY (and critical alerts)
+   • Bold contrast, no pastels on UI surfaces.
+   Light mode remaps the legacy CI-ION "gold" token onto TEAL so every
+   downstream component that reads var(--ci-gold) auto-switches. */
+html[data-theme="care-indeed-light"] {
+  /* === Care Indeed brand-kit tokens (CIHHCBRANDKIT.HTML) ========= */
+  /* Primary (orange) — reserved for CTAs on light backgrounds */
+  --ci-primary-100:   #FFFAF7;
+  --ci-primary-200:   #FFEEE5;
+  --ci-primary-300:   #FFD5BF;
+  --ci-primary-400:   #E56E2E;
+  --ci-primary-500:   #C74601;   /* base CTA */
+  --ci-primary-600:   #421700;   /* hover / pressed */
+  /* Secondary (teal) — brand accent for highlights/active states  */
+  --ci-secondary-100: #F7FEFF;
+  --ci-secondary-200: #E5FEFF;
+  --ci-secondary-300: #C4F4F5;
+  --ci-secondary-400: #7ADEDF;
+  --ci-secondary-500: #007970;   /* base */
+  --ci-secondary-600: #004142;   /* hover / pressed */
+  /* Neutrals */
+  --ci-neutral-100:   #FAFBF8;   /* surface */
+  --ci-neutral-200:   #E5E4E3;   /* hairline borders */
+  --ci-neutral-300:   #D1D1D1;   /* heavier borders / divider */
+  --ci-neutral-400:   #747474;   /* placeholder, tertiary */
+  --ci-neutral-500:   #52404B;   /* body secondary */
+  --ci-neutral-600:   #1F1C1B;   /* primary body / headings */
+  /* Sentiment */
+  --ci-success-100:   #E5F4EE;
+  --ci-success-200:   #85D4B2;
+  --ci-success-300:   #008540;
+  --ci-warning-100:   #FFF0E5;
+  --ci-warning-200:   #FFE073;
+  --ci-warning-300:   #FFC700;
+  --ci-error-100:     #FBE6E6;
+  --ci-error-200:     #F49E9E;
+  --ci-error-300:     #D70101;
+
+  /* Legacy CI-ION token remaps so existing inline styles auto-switch.
+     Data highlights (progress bars, active chips, tags, tiles) use
+     brand SECONDARY TEAL #007970. Primary orange is reserved for the
+     CTA buttons at call-site (splash "Enter Environment", etc.). */
+  --ci-gold:          #007970;   /* brand secondary (data accents) */
+  --ci-gold-dark:     #C74601;   /* brand primary (CTA) */
+  --ci-gold-deep:     #004142;   /* secondary-600 hover */
+  --ci-accent-rgb:    0, 121, 112;       /* CI secondary teal */
+  --ci-accent-rgb-2:  0, 65, 66;         /* CI secondary-600 */
+  --ci-cell-out:      #FAFBF8;           /* out-of-month neutral wash */
+  --ci-cell-today:    linear-gradient(180deg, #E5FEFF 0%, #FFFFFF 100%);
+  --ci-cell-day:      #FFFFFF;
+
+  --ci-text:          #1F1C1B;           /* neutral-600 body */
+  --ci-text-muted:    #52404B;           /* neutral-500 (≥7:1 on #FFF) */
+  --ci-border:        #E5E4E3;
+  --ci-border-strong: #D1D1D1;
+  --ci-hairline:      #E5E4E3;
+  --glass-main:       #FFFFFF;           /* card surface is SOLID white */
+  --glass-panel:      #FFFFFF;
+  --shadow-glass:     none;
+}
+html[data-theme="care-indeed-light"] body {
+  background: transparent;
+  color: var(--ci-text);
+  font-family: 'Roboto', 'Outfit', sans-serif;
+}
+html[data-theme="care-indeed-light"] h1,
+html[data-theme="care-indeed-light"] h2,
+html[data-theme="care-indeed-light"] h3,
+html[data-theme="care-indeed-light"] h4,
+html[data-theme="care-indeed-light"] h5,
+html[data-theme="care-indeed-light"] h6 {
+  font-family: 'Montserrat', 'Outfit', sans-serif;
+  color: #1F1C1B;
+}
+html[data-theme="care-indeed-light"] .custom-scrollbar::-webkit-scrollbar-thumb,
+html[data-theme="care-indeed-light"] .custom-scrollbar-x::-webkit-scrollbar-thumb {
+  background: #D1D1D1;
+}
+html[data-theme="care-indeed-light"] .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+html[data-theme="care-indeed-light"] .custom-scrollbar-x::-webkit-scrollbar-thumb:hover {
+  background: #C74601;
+}
+html[data-theme="care-indeed-light"] *:focus-visible {
+  outline: 2px solid #C74601;
+  outline-offset: 2px;
+}
+html[data-theme="care-indeed-light"] button:focus-visible,
+html[data-theme="care-indeed-light"] input:focus-visible,
+html[data-theme="care-indeed-light"] select:focus-visible,
+html[data-theme="care-indeed-light"] textarea:focus-visible,
+html[data-theme="care-indeed-light"] a:focus-visible {
+  outline: 2px solid #C74601;
+  box-shadow: 0 0 0 4px rgba(199,70,1,0.22) !important;
+}
+html[data-theme="care-indeed-light"] .glass-interactive {
+  background-color: rgba(0,121,112,0);
+}
+html[data-theme="care-indeed-light"] .glass-interactive:hover {
+  background-color: rgba(0,121,112,0.10) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PRINT RESET — forms & policies print as clean full-page paper.
+
+   Strategy: use the CSS visibility technique so every browser
+   (Chrome, Firefox, Safari, Edge) correctly hides chrome and
+   shows only the content sheet, even when the content sits inside
+   multiple overflow:hidden / position:absolute shell layers.
+
+   Five shell layers get overflow:visible + height:auto resets so
+   multi-page documents flow naturally across pages:
+     [data-shell-outer]  — fixed outer viewport wrapper
+     [data-shell-card]   — glass card (absolute, overflow:hidden)
+     [data-shell-main]   — <main> (overflow:hidden, flex-1)
+     [data-shell-scroll] — inner scroll div (absolute, overflow:auto)
+
+   @page margin 0mm suppresses the browser's own URL / date / page-
+   number header+footer strip. Safe padding lives on .form-page /
+   .policy-page so content breathes but the *page itself* has no
+   chrome.
+   ══════════════════════════════════════════════════════════════ */
+@page {
+  size: auto;
+  margin: 0mm;
+}
+
+@media print {
+  /* ── 1. Global baseline ── */
+  html, body, #root {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* ── 2. Always-hidden chrome ── */
+  .no-print,
+  .ia-no-print,
+  [data-shell-bg] {
+    display: none !important;
+  }
+
+  /* ── 3. Reset every shell containment layer so content flows ── */
+  [data-shell-outer] {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    z-index: auto !important;
+  }
+  [data-shell-card] {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+  }
+  /* The flex wrapper inside the card */
+  [data-shell-card] > div {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  [data-shell-main] {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none !important;
+    overflow: visible !important;
+  }
+  [data-shell-scroll] {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* ── 4. Form content sheet ── */
+  .form-page {
+    background: #ffffff !important;
+    color: #1F1C1B !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0.5in !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  .form-page input,
+  .form-page textarea,
+  .form-page select {
+    color: #1F1C1B !important;
+    border-color: #999 !important;
+    background: transparent !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── 5. Policy content sheets ── */
+  .policy-page {
+    background: #ffffff !important;
+    color: #1F1C1B !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0.5in !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+    flex: none !important;
+  }
+  /* Scrollable inner content div — release overflow so all tab content
+     flows to paper (user navigates to desired tab before printing) */
+  .policy-content {
+    position: static !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    flex: none !important;
+    padding: 0 !important;
+  }
+  .policy-page input,
+  .policy-page textarea,
+  .policy-page select {
+    color: #1F1C1B !important;
+    border-color: #999 !important;
+    background: transparent !important;
+  }
+
+  /* ── 6. iAdministrator legacy print root ── */
+  body:has(.ia-form-print-root) * { visibility: hidden; }
+  body:has(.ia-form-print-root) .ia-form-print-root,
+  body:has(.ia-form-print-root) .ia-form-print-root * { visibility: visible; }
+  .ia-form-print-root {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    padding: 0.5in;
+    background: #ffffff;
+    color: #1F1C1B;
+    overflow: visible;
+  }
+  .ia-form-print-root input,
+  .ia-form-print-root textarea,
+  .ia-form-print-root select {
+    border-color: #aaa !important;
+    color: #1F1C1B !important;
+    background: transparent !important;
+  }
+
+  /* ── 7. Page-break helpers ── */
+  .avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* ── 8. Preserve colour-critical elements (logos, badges) ── */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FLAT DESIGN — no 3D, no shadows, no lift-on-hover.
+   Applies to BOTH themes. Preserves :focus-visible ring so
+   keyboard accessibility is not degraded (WCAG 2.4.7).
+   ══════════════════════════════════════════════════════════════ */
+*,
+*::before,
+*::after {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+*:focus-visible {
+  box-shadow: 0 0 0 4px rgba(255,193,7,0.22) !important;
+}
+html[data-theme="care-indeed-light"] *:focus-visible {
+  box-shadow: 0 0 0 4px rgba(199,70,1,0.22) !important;
+}
+/* Kill hover Y-translate / scale — that's what truncates calendar
+   event pills and generally creates the "3D lift" feel. */
+*:hover {
+  transform: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CARE INDEED LIGHT MODE — comprehensive token cascade.
+   Inverts every Tailwind "text-white/N", "border-white/N",
+   "bg-white/N" and "divide-white/N" utility so existing pages
+   become readable on the light-glass surface without touching
+   ~50 component files. Dark mode is unaffected.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Text — white → CI neutral-600 (#1F1C1B). WCAG AAA 16.4:1 on #FFF.
+   The full opacity ladder is collapsed to three brand-accurate tiers
+   (body / secondary / tertiary) so nothing falls below 4.5:1. */
+html[data-theme="care-indeed-light"] .text-white,
+html[data-theme="care-indeed-light"] .text-white\/95,
+html[data-theme="care-indeed-light"] .text-white\/90,
+html[data-theme="care-indeed-light"] .text-white\/85,
+html[data-theme="care-indeed-light"] .text-white\/80 { color: #1F1C1B !important; }   /* neutral-600 */
+html[data-theme="care-indeed-light"] .text-white\/75,
+html[data-theme="care-indeed-light"] .text-white\/70,
+html[data-theme="care-indeed-light"] .text-white\/65,
+html[data-theme="care-indeed-light"] .text-white\/60,
+html[data-theme="care-indeed-light"] .text-white\/55,
+html[data-theme="care-indeed-light"] .text-white\/50 { color: #52404B !important; }   /* neutral-500 (≥7:1) */
+html[data-theme="care-indeed-light"] .text-white\/45,
+html[data-theme="care-indeed-light"] .text-white\/40,
+html[data-theme="care-indeed-light"] .text-white\/35,
+html[data-theme="care-indeed-light"] .text-white\/30,
+html[data-theme="care-indeed-light"] .text-white\/25,
+html[data-theme="care-indeed-light"] .text-white\/20,
+html[data-theme="care-indeed-light"] .text-white\/15,
+html[data-theme="care-indeed-light"] .text-white\/10,
+html[data-theme="care-indeed-light"] .text-white\/5  { color: #747474 !important; }   /* neutral-400 (4.54:1 AA) */
+
+/* Borders — white → CI neutral hairlines */
+html[data-theme="care-indeed-light"] .border-white,
+html[data-theme="care-indeed-light"] .border-white\/50,
+html[data-theme="care-indeed-light"] .border-white\/40,
+html[data-theme="care-indeed-light"] .border-white\/30 { border-color: #D1D1D1 !important; } /* neutral-300 */
+html[data-theme="care-indeed-light"] .border-white\/20,
+html[data-theme="care-indeed-light"] .border-white\/15,
+html[data-theme="care-indeed-light"] .border-white\/10,
+html[data-theme="care-indeed-light"] .border-white\/5  { border-color: #E5E4E3 !important; } /* neutral-200 */
+
+/* Backgrounds — translucent white → SOLID CI neutral-100 surfaces.
+   The shell card is now 100% opaque white, so inner surfaces must be
+   off-white (#FAFBF8) with a neutral-200 border to remain visible. */
+html[data-theme="care-indeed-light"] .bg-white\/60,
+html[data-theme="care-indeed-light"] .bg-white\/50,
+html[data-theme="care-indeed-light"] .bg-white\/40,
+html[data-theme="care-indeed-light"] .bg-white\/30,
+html[data-theme="care-indeed-light"] .bg-white\/20,
+html[data-theme="care-indeed-light"] .bg-white\/10,
+html[data-theme="care-indeed-light"] .bg-white\/5,
+html[data-theme="care-indeed-light"] .bg-white\/\[0\.03\],
+html[data-theme="care-indeed-light"] .bg-white\/\[0\.02\] { background-color: #FAFBF8 !important; color: #1F1C1B !important; }
+
+/* Dividers — neutral-200 */
+html[data-theme="care-indeed-light"] .divide-white\/5 > :not([hidden]) ~ :not([hidden]),
+html[data-theme="care-indeed-light"] .divide-white\/10 > :not([hidden]) ~ :not([hidden]) { border-color: #E5E4E3 !important; }
+
+/* Placeholders — neutral-400 meets AA on white */
+html[data-theme="care-indeed-light"] .placeholder-white\/30::placeholder,
+html[data-theme="care-indeed-light"] .placeholder-white\/40::placeholder,
+html[data-theme="care-indeed-light"] .placeholder-white\/50::placeholder,
+html[data-theme="care-indeed-light"] .placeholder-white\/60::placeholder { color: #747474 !important; }
+
+/* Common accent colors used in detail views — remap for WCAG AA
+   contrast on the light glass. These are darker variants of the
+   same hues, not new colors. */
+html[data-theme="care-indeed-light"] .text-\[\#00e59b\],
+html[data-theme="care-indeed-light"] .text-\[\#00a370\] { color: #007970 !important; }
+html[data-theme="care-indeed-light"] .border-\[\#00e59b\] { border-color: #007970 !important; }
+html[data-theme="care-indeed-light"] .bg-\[\#00e59b\]\/10,
+html[data-theme="care-indeed-light"] .bg-\[\#00e59b\]\/15,
+html[data-theme="care-indeed-light"] .bg-\[\#00e59b\]\/20 { background-color: rgba(0,121,112,0.10) !important; }
+html[data-theme="care-indeed-light"] .text-\[\#e85200\] { color: #9E3A01 !important; }
+html[data-theme="care-indeed-light"] .border-\[\#e85200\] { border-color: #9E3A01 !important; }
+html[data-theme="care-indeed-light"] .bg-\[\#e85200\]\/10,
+html[data-theme="care-indeed-light"] .bg-\[\#e85200\]\/20 { background-color: rgba(158,58,1,0.08) !important; }
+/* Per Care Indeed brand kit: ALL yellow/gold highlight chrome
+   (text / border / fill) becomes the primary brand TEAL in light
+   mode. Orange is reserved for CTA buttons only. */
+html[data-theme="care-indeed-light"] .text-\[\#FFC107\],
+html[data-theme="care-indeed-light"] .hover\:text-\[\#FFC107\]:hover,
+html[data-theme="care-indeed-light"] .group-hover\:text-\[\#FFC107\]:hover,
+html[data-theme="care-indeed-light"] .group:hover .group-hover\:text-\[\#FFC107\],
+html[data-theme="care-indeed-light"] .text-\[\#D4AF37\],
+html[data-theme="care-indeed-light"] .text-\[\#FFDF00\],
+html[data-theme="care-indeed-light"] .text-\[\#FFB400\] { color: #007970 !important; }
+
+html[data-theme="care-indeed-light"] .border-\[\#FFC107\],
+html[data-theme="care-indeed-light"] .border-\[\#FFC107\]\/50,
+html[data-theme="care-indeed-light"] .border-\[\#FFC107\]\/40,
+html[data-theme="care-indeed-light"] .border-\[\#FFC107\]\/30,
+html[data-theme="care-indeed-light"] .border-\[\#FFC107\]\/20,
+html[data-theme="care-indeed-light"] .hover\:border-\[\#FFC107\]\/40:hover,
+html[data-theme="care-indeed-light"] .hover\:border-\[\#FFC107\]\/50:hover,
+html[data-theme="care-indeed-light"] .group-hover\:border-\[\#FFC107\]\/40:hover,
+html[data-theme="care-indeed-light"] .group:hover .group-hover\:border-\[\#FFC107\]\/40,
+html[data-theme="care-indeed-light"] .border-\[\#D4AF37\] { border-color: rgba(0,121,112,0.45) !important; }
+
+/* Bare solid gold fill → solid brand teal (e.g. "Today" pill, active
+   chip, primary tag). Paired text colors (dark maroon hex literals)
+   flip to white for contrast on the teal fill. */
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\] { background-color: #007970 !important; color: #ffffff !important; }
+html[data-theme="care-indeed-light"] .text-\[\#420808\],
+html[data-theme="care-indeed-light"] .text-\[\#0A0202\],
+html[data-theme="care-indeed-light"] .text-\[\#310707\],
+html[data-theme="care-indeed-light"] .text-\[\#5D0E0E\] { color: #ffffff !important; }
+
+/* Transparent gold tints → translucent teal wash of same weight. */
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\]\/5,
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\]\/10,
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\]\/15,
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\]\/20,
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\]\/25,
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\]\/30,
+html[data-theme="care-indeed-light"] .hover\:bg-\[\#FFC107\]\/5:hover,
+html[data-theme="care-indeed-light"] .hover\:bg-\[\#FFC107\]\/10:hover,
+html[data-theme="care-indeed-light"] .hover\:bg-\[\#FFC107\]\/15:hover,
+html[data-theme="care-indeed-light"] .hover\:bg-\[\#FFC107\]\/20:hover,
+html[data-theme="care-indeed-light"] .group-hover\:bg-\[\#FFC107\]\/10:hover,
+html[data-theme="care-indeed-light"] .group:hover .group-hover\:bg-\[\#FFC107\]\/10,
+html[data-theme="care-indeed-light"] .bg-\[\#D4AF37\]\/10,
+html[data-theme="care-indeed-light"] .bg-\[\#D4AF37\]\/20 { background-color: rgba(0,121,112,0.12) !important; }
+
+/* Accent "from-" / "to-" gradient stops used in some title effects */
+html[data-theme="care-indeed-light"] .from-\[\#FFC107\] { --tw-gradient-from: #007970 var(--tw-gradient-from-position) !important; }
+html[data-theme="care-indeed-light"] .to-\[\#FFC107\]   { --tw-gradient-to:   #007970 var(--tw-gradient-to-position)   !important; }
+html[data-theme="care-indeed-light"] .via-\[\#FFC107\]  { --tw-gradient-via:  #007970 !important; }
+
+/* ring utilities using gold — swap to teal */
+html[data-theme="care-indeed-light"] .ring-\[\#FFC107\],
+html[data-theme="care-indeed-light"] .ring-\[\#FFC107\]\/30,
+html[data-theme="care-indeed-light"] .ring-\[\#FFC107\]\/40,
+html[data-theme="care-indeed-light"] .ring-\[\#FFC107\]\/50 { --tw-ring-color: rgba(0,121,112,0.40) !important; }
+
+/* fill / stroke utilities — teal in light */
+html[data-theme="care-indeed-light"] .fill-\[\#FFC107\]  { fill: #007970 !important; }
+html[data-theme="care-indeed-light"] .stroke-\[\#FFC107\] { stroke: #007970 !important; }
+
+/* CI-ION dark-maroon surface colors used by legacy pages (e.g. the
+   calendar's <select> options) — swap to white/slate for light. */
+html[data-theme="care-indeed-light"] .bg-\[\#310707\],
+html[data-theme="care-indeed-light"] .bg-\[\#5D0E0E\],
+html[data-theme="care-indeed-light"] .bg-\[\#0A0202\] { background-color: #ffffff !important; color: #0f172a !important; }
+html[data-theme="care-indeed-light"] option.bg-\[\#310707\] { color: #0f172a !important; }
+
+/* Tailwind "orange-300" and friends used for emphasis in dark →
+   darker variants so they pass contrast on light. */
+html[data-theme="care-indeed-light"] .text-orange-300 { color: #9a3412 !important; }
+html[data-theme="care-indeed-light"] .text-red-400 { color: #b91c1c !important; }
+html[data-theme="care-indeed-light"] .text-red-300 { color: #b91c1c !important; }
+html[data-theme="care-indeed-light"] .text-yellow-400 { color: #854d0e !important; }
+html[data-theme="care-indeed-light"] .text-yellow-300 { color: #854d0e !important; }
+html[data-theme="care-indeed-light"] .text-blue-400 { color: #1d4ed8 !important; }
+html[data-theme="care-indeed-light"] .text-blue-300 { color: #1d4ed8 !important; }
+
+/* ──────────────────────────────────────────────────────────────
+   LIGHT-MODE CASCADE PART 2 — remap every dark-only surface class
+   used by legacy pages so they read correctly on the light glass.
+   Dark mode is completely untouched.
+   ────────────────────────────────────────────────────────────── */
+
+/* Translucent BLACK backgrounds (inputs, select dropdowns, pill chips,
+   helper boxes throughout the Regulatory & Journey modules) → SOLID
+   neutral panels per Care Indeed brand. No translucency, no blur. */
+html[data-theme="care-indeed-light"] .bg-black\/60,
+html[data-theme="care-indeed-light"] .bg-black\/50,
+html[data-theme="care-indeed-light"] .bg-black\/40,
+html[data-theme="care-indeed-light"] .bg-black\/30,
+html[data-theme="care-indeed-light"] .bg-black\/25,
+html[data-theme="care-indeed-light"] .bg-black\/20 { background-color: #FAFBF8 !important; color: #1F1C1B !important; border-color: #E5E4E3 !important; }
+html[data-theme="care-indeed-light"] .bg-black\/15,
+html[data-theme="care-indeed-light"] .bg-black\/10,
+html[data-theme="care-indeed-light"] .bg-black\/5  { background-color: #FFFFFF !important; color: #1F1C1B !important; }
+html[data-theme="care-indeed-light"] .bg-black     { background-color: #FFFFFF !important; color: #1F1C1B !important; }
+
+/* Form inputs — brand kit spec (white surface, neutral-300 border,
+   neutral-600 text, neutral-400 placeholder, primary-500 focus ring) */
+html[data-theme="care-indeed-light"] input,
+html[data-theme="care-indeed-light"] select,
+html[data-theme="care-indeed-light"] textarea {
+  color: #1F1C1B !important;
+}
+html[data-theme="care-indeed-light"] input.bg-black\/30,
+html[data-theme="care-indeed-light"] input.bg-black\/20,
+html[data-theme="care-indeed-light"] select.bg-black\/30,
+html[data-theme="care-indeed-light"] select.bg-black\/20,
+html[data-theme="care-indeed-light"] textarea.bg-black\/30,
+html[data-theme="care-indeed-light"] textarea.bg-black\/20 {
+  background-color: #FFFFFF !important;
+  color: #1F1C1B !important;
+  border-color: #D1D1D1 !important;
+}
+html[data-theme="care-indeed-light"] input::placeholder,
+html[data-theme="care-indeed-light"] textarea::placeholder {
+  color: #747474 !important;
+}
+html[data-theme="care-indeed-light"] input:focus,
+html[data-theme="care-indeed-light"] select:focus,
+html[data-theme="care-indeed-light"] textarea:focus {
+  border-color: #C74601 !important;
+}
+
+/* Maroon surface hex colors still embedded in some modules → neutral */
+html[data-theme="care-indeed-light"] .hover\:bg-\[\#420808\]:hover,
+html[data-theme="care-indeed-light"] .hover\:bg-\[\#310707\]:hover,
+html[data-theme="care-indeed-light"] .hover\:bg-\[\#0A0202\]:hover,
+html[data-theme="care-indeed-light"] .hover\:bg-\[\#5D0E0E\]:hover {
+  background-color: #FFEEE5 !important;  /* primary-200 soft wash */
+}
+html[data-theme="care-indeed-light"] .border-\[\#420808\],
+html[data-theme="care-indeed-light"] .border-\[\#310707\],
+html[data-theme="care-indeed-light"] .border-\[\#0A0202\],
+html[data-theme="care-indeed-light"] .border-\[\#5D0E0E\] {
+  border-color: #E5E4E3 !important;
+}
+
+/* Maroon-tinted inline gradients used as page backdrops (legacy pages
+   wrap content in a linear-gradient). We cannot target inline styles
+   directly, so pages that need a backdrop should use these helpers. */
+html[data-theme="care-indeed-light"] [data-maroon-fill] {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   LIGHT-MODE 3D REMOVAL — kill every drop-shadow + filter-shadow +
+   lift-on-hover residue. The global FLAT DESIGN rule below already
+   kills box-shadow; this adds drop-shadow coverage for light mode.
+   Dark mode keeps drop-shadow for the gold glow CI-ION direction.
+   ────────────────────────────────────────────────────────────── */
+html[data-theme="care-indeed-light"] .drop-shadow-sm,
+html[data-theme="care-indeed-light"] .drop-shadow,
+html[data-theme="care-indeed-light"] .drop-shadow-md,
+html[data-theme="care-indeed-light"] .drop-shadow-lg,
+html[data-theme="care-indeed-light"] .drop-shadow-xl,
+html[data-theme="care-indeed-light"] .drop-shadow-2xl {
+  filter: none !important;
+}
+/* Kill common "hover lift" Y-translate classes in light — the global
+   *:hover {transform:none} already does this, this is belt-and-braces
+   for classes applied without :hover (e.g. framer-motion). */
+html[data-theme="care-indeed-light"] .hover\:-translate-y-0\.5:hover,
+html[data-theme="care-indeed-light"] .hover\:-translate-y-1:hover,
+html[data-theme="care-indeed-light"] .hover\:-translate-y-2:hover {
+  transform: none !important;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   LIGHT-MODE GLASSMORPHIC EMPHASIS — every .glass-card / .glass-*
+   helper becomes a soft frosted panel on the main glass. Dark mode
+   keeps the flat (transparent-border-only) treatment. Note: the
+   global FLAT DESIGN reset below still kills box-shadow, so the
+   glass hint comes from border highlights + a subtle inset
+   gradient instead of an elevation shadow.
+   ────────────────────────────────────────────────────────────── */
+/* NO GLASS in light mode — every .glass-* utility becomes a solid
+   enterprise panel per the Care Indeed brand kit. Card surfaces use
+   the neutral-100 wash with a neutral-200 hairline so they read as
+   structure, not glass. Blur + translucency are explicitly removed. */
+html[data-theme="care-indeed-light"] .glass-morphism,
+html[data-theme="care-indeed-light"] .glass-card,
+html[data-theme="care-indeed-light"] .glass-card-strong,
+html[data-theme="care-indeed-light"] .glass-intense,
+html[data-theme="care-indeed-light"] .demo-glass-card {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E4E3 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-theme="care-indeed-light"] .demo-glass-card:hover {
+  background: #FAFBF8 !important;
+  border-color: #C74601 !important;
+}
+/* Legacy ".vibrant-bg" — solid neutral wash in light mode (no blur). */
+html[data-theme="care-indeed-light"] .vibrant-bg {
+  background: #FAFBF8 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   LIGHT-MODE GOLD LEGACY UTILITIES — the gold-token utilities at
+   the top of this stylesheet are static; in light mode we remap
+   the concrete outputs so every .text-gold / .bg-gold / .ring-gold
+   / .glow-gold / .gradient-gold site becomes CI brand teal.
+   ────────────────────────────────────────────────────────────── */
+html[data-theme="care-indeed-light"] .text-gold    { color: #007970 !important; }
+html[data-theme="care-indeed-light"] .border-gold  { border-color: #007970 !important; }
+html[data-theme="care-indeed-light"] .bg-gold      { background-color: #007970 !important; color: #ffffff !important; }
+html[data-theme="care-indeed-light"] .ring-gold    { box-shadow: 0 0 0 2px rgba(0,121,112,0.35) !important; }
+/* Glow-gold → kept as a soft teal halo in light; FLAT DESIGN below
+   still neutralises the box-shadow so this is only visible where
+   we opt back in via [data-glass-hint]. */
+html[data-theme="care-indeed-light"] .glow-gold    { box-shadow: 0 0 24px rgba(0,121,112,0.28); }
+html[data-theme="care-indeed-light"] .gradient-gold {
+  background: linear-gradient(to bottom,#007970,#005751) !important;
+  color: #ffffff !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WCAG CONTRAST GUARDRAILS — Care Indeed light mode
+   Anything that was a low-contrast slate/zinc/gray tint on a light
+   background is pinned to a brand neutral that meets WCAG AA 4.5:1
+   on #FFFFFF / #FAFBF8 surfaces. Solid colors only, no opacity
+   escape hatch.
+   ══════════════════════════════════════════════════════════════ */
+/* Light slate/zinc/gray scales used on light backgrounds → neutral-400 floor */
+html[data-theme="care-indeed-light"] .text-slate-100,
+html[data-theme="care-indeed-light"] .text-slate-200,
+html[data-theme="care-indeed-light"] .text-slate-300,
+html[data-theme="care-indeed-light"] .text-zinc-100,
+html[data-theme="care-indeed-light"] .text-zinc-200,
+html[data-theme="care-indeed-light"] .text-zinc-300,
+html[data-theme="care-indeed-light"] .text-gray-100,
+html[data-theme="care-indeed-light"] .text-gray-200,
+html[data-theme="care-indeed-light"] .text-gray-300,
+html[data-theme="care-indeed-light"] .text-neutral-100,
+html[data-theme="care-indeed-light"] .text-neutral-200,
+html[data-theme="care-indeed-light"] .text-neutral-300,
+html[data-theme="care-indeed-light"] .text-stone-100,
+html[data-theme="care-indeed-light"] .text-stone-200,
+html[data-theme="care-indeed-light"] .text-stone-300 { color: #747474 !important; } /* neutral-400 — 4.54:1 AA */
+
+/* Mid-tone grays → neutral-500 (#52404B, 7:1 AAA) */
+html[data-theme="care-indeed-light"] .text-slate-400,
+html[data-theme="care-indeed-light"] .text-zinc-400,
+html[data-theme="care-indeed-light"] .text-gray-400,
+html[data-theme="care-indeed-light"] .text-neutral-400,
+html[data-theme="care-indeed-light"] .text-stone-400,
+html[data-theme="care-indeed-light"] .text-slate-500,
+html[data-theme="care-indeed-light"] .text-zinc-500,
+html[data-theme="care-indeed-light"] .text-gray-500,
+html[data-theme="care-indeed-light"] .text-neutral-500,
+html[data-theme="care-indeed-light"] .text-stone-500 { color: #52404B !important; }
+
+/* Darker grays → neutral-600 body */
+html[data-theme="care-indeed-light"] .text-slate-600,
+html[data-theme="care-indeed-light"] .text-slate-700,
+html[data-theme="care-indeed-light"] .text-slate-800,
+html[data-theme="care-indeed-light"] .text-slate-900,
+html[data-theme="care-indeed-light"] .text-zinc-600,
+html[data-theme="care-indeed-light"] .text-zinc-700,
+html[data-theme="care-indeed-light"] .text-zinc-800,
+html[data-theme="care-indeed-light"] .text-zinc-900,
+html[data-theme="care-indeed-light"] .text-gray-600,
+html[data-theme="care-indeed-light"] .text-gray-700,
+html[data-theme="care-indeed-light"] .text-gray-800,
+html[data-theme="care-indeed-light"] .text-gray-900,
+html[data-theme="care-indeed-light"] .text-neutral-600,
+html[data-theme="care-indeed-light"] .text-neutral-700,
+html[data-theme="care-indeed-light"] .text-neutral-800,
+html[data-theme="care-indeed-light"] .text-neutral-900,
+html[data-theme="care-indeed-light"] .text-stone-600,
+html[data-theme="care-indeed-light"] .text-stone-700,
+html[data-theme="care-indeed-light"] .text-stone-800,
+html[data-theme="care-indeed-light"] .text-stone-900,
+html[data-theme="care-indeed-light"] .text-black { color: #1F1C1B !important; }
+
+/* Slate/gray backgrounds on light → neutral-100 surface */
+html[data-theme="care-indeed-light"] .bg-slate-50,
+html[data-theme="care-indeed-light"] .bg-slate-100,
+html[data-theme="care-indeed-light"] .bg-zinc-50,
+html[data-theme="care-indeed-light"] .bg-zinc-100,
+html[data-theme="care-indeed-light"] .bg-gray-50,
+html[data-theme="care-indeed-light"] .bg-gray-100,
+html[data-theme="care-indeed-light"] .bg-neutral-50,
+html[data-theme="care-indeed-light"] .bg-neutral-100 { background-color: #FAFBF8 !important; }
+
+html[data-theme="care-indeed-light"] .bg-slate-200,
+html[data-theme="care-indeed-light"] .bg-zinc-200,
+html[data-theme="care-indeed-light"] .bg-gray-200,
+html[data-theme="care-indeed-light"] .bg-neutral-200 { background-color: #E5E4E3 !important; }
+
+/* Slate/gray borders → neutral-200 hairline */
+html[data-theme="care-indeed-light"] .border-slate-100,
+html[data-theme="care-indeed-light"] .border-slate-200,
+html[data-theme="care-indeed-light"] .border-zinc-100,
+html[data-theme="care-indeed-light"] .border-zinc-200,
+html[data-theme="care-indeed-light"] .border-gray-100,
+html[data-theme="care-indeed-light"] .border-gray-200,
+html[data-theme="care-indeed-light"] .border-neutral-100,
+html[data-theme="care-indeed-light"] .border-neutral-200 { border-color: #E5E4E3 !important; }
+
+html[data-theme="care-indeed-light"] .border-slate-300,
+html[data-theme="care-indeed-light"] .border-zinc-300,
+html[data-theme="care-indeed-light"] .border-gray-300,
+html[data-theme="care-indeed-light"] .border-neutral-300,
+html[data-theme="care-indeed-light"] .border-slate-400,
+html[data-theme="care-indeed-light"] .border-zinc-400,
+html[data-theme="care-indeed-light"] .border-gray-400 { border-color: #D1D1D1 !important; }
+
+/* Sentiment token remaps — push pale sentiment text to AA colors */
+html[data-theme="care-indeed-light"] .text-emerald-300,
+html[data-theme="care-indeed-light"] .text-emerald-400,
+html[data-theme="care-indeed-light"] .text-green-300,
+html[data-theme="care-indeed-light"] .text-green-400,
+html[data-theme="care-indeed-light"] .text-green-500 { color: #008540 !important; }
+html[data-theme="care-indeed-light"] .text-red-200,
+html[data-theme="care-indeed-light"] .text-rose-300,
+html[data-theme="care-indeed-light"] .text-rose-400,
+html[data-theme="care-indeed-light"] .text-red-500 { color: #D70101 !important; }
+html[data-theme="care-indeed-light"] .text-amber-200,
+html[data-theme="care-indeed-light"] .text-amber-300,
+html[data-theme="care-indeed-light"] .text-amber-400,
+html[data-theme="care-indeed-light"] .text-yellow-200,
+html[data-theme="care-indeed-light"] .text-yellow-500 { color: #9A6700 !important; } /* warning text — darkened for AA */
+html[data-theme="care-indeed-light"] .text-purple-300,
+html[data-theme="care-indeed-light"] .text-purple-400,
+html[data-theme="care-indeed-light"] .text-violet-300,
+html[data-theme="care-indeed-light"] .text-violet-400,
+html[data-theme="care-indeed-light"] .text-fuchsia-400 { color: #6b21a8 !important; } /* purple-800 */
+html[data-theme="care-indeed-light"] .text-pink-300,
+html[data-theme="care-indeed-light"] .text-pink-400 { color: #be185d !important; } /* pink-700 */
+html[data-theme="care-indeed-light"] .text-cyan-300,
+html[data-theme="care-indeed-light"] .text-cyan-400,
+html[data-theme="care-indeed-light"] .text-sky-300,
+html[data-theme="care-indeed-light"] .text-sky-400,
+html[data-theme="care-indeed-light"] .text-teal-300,
+html[data-theme="care-indeed-light"] .text-teal-400 { color: #007970 !important; } /* brand teal */
+html[data-theme="care-indeed-light"] .text-orange-400,
+html[data-theme="care-indeed-light"] .text-orange-500 { color: #C74601 !important; } /* brand primary orange */
+html[data-theme="care-indeed-light"] .text-indigo-300,
+html[data-theme="care-indeed-light"] .text-indigo-400 { color: #3730a3 !important; } /* indigo-800 */
+
+/* Placeholder defaults — anywhere a non-branded placeholder leaks */
+html[data-theme="care-indeed-light"] *::placeholder { color: #747474 !important; }
+
+/* ──────────────────────────────────────────────────────────────
+   Tailwind arbitrary-value overrides — the legacy #FFC107 gold
+   is burned directly into many pages as `text-[#FFC107]`,
+   `bg-[#FFC107]/10`, `border-[#FFC107]/40`, etc.
+   In light mode we route those arbitrary classes to the brand
+   secondary teal so they pass AA and match the KpiTile accent
+   (which already swaps via var(--ci-gold)).
+   ────────────────────────────────────────────────────────────── */
+html[data-theme="care-indeed-light"] .text-\[\#FFC107\],
+html[data-theme="care-indeed-light"] .hover\:text-\[\#FFC107\]:hover,
+html[data-theme="care-indeed-light"] .group:hover .group-hover\:text-\[\#FFC107\],
+html[data-theme="care-indeed-light"] .text-\[\#FFC107\]\/75,
+html[data-theme="care-indeed-light"] .text-\[\#FFC107\]\/80,
+html[data-theme="care-indeed-light"] .text-\[\#FFC107\]\/90 { color: #007970 !important; }
+
+html[data-theme="care-indeed-light"] .border-\[\#FFC107\],
+html[data-theme="care-indeed-light"] .border-\[\#FFC107\]\/20,
+html[data-theme="care-indeed-light"] .border-\[\#FFC107\]\/30,
+html[data-theme="care-indeed-light"] .border-\[\#FFC107\]\/40,
+html[data-theme="care-indeed-light"] .border-\[\#FFC107\]\/50,
+html[data-theme="care-indeed-light"] .hover\:border-\[\#FFC107\]\/40:hover,
+html[data-theme="care-indeed-light"] .hover\:border-\[\#FFC107\]\/50:hover,
+html[data-theme="care-indeed-light"] .group:hover .group-hover\:border-\[\#FFC107\]\/40 {
+  border-color: rgba(0, 121, 112, 0.40) !important;
+}
+
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\]\/5,
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\]\/10,
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\]\/15,
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\]\/20,
+html[data-theme="care-indeed-light"] .hover\:bg-\[\#FFC107\]\/5:hover,
+html[data-theme="care-indeed-light"] .hover\:bg-\[\#FFC107\]\/10:hover,
+html[data-theme="care-indeed-light"] .hover\:bg-\[\#FFC107\]\/15:hover,
+html[data-theme="care-indeed-light"] .group:hover .group-hover\:bg-\[\#FFC107\]\/10 {
+  background-color: rgba(0, 121, 112, 0.08) !important;
+}
+
+/* Pure yellow `text-[#facc15]`, `text-[#eab308]` → darkened for AA */
+html[data-theme="care-indeed-light"] .text-\[\#facc15\],
+html[data-theme="care-indeed-light"] .text-\[\#eab308\],
+html[data-theme="care-indeed-light"] .text-\[\#FACC15\],
+html[data-theme="care-indeed-light"] .text-\[\#EAB308\] { color: #9A6700 !important; }
+
+/* Arbitrary amber/emerald/cyan used inline — push to brand or AA tones */
+html[data-theme="care-indeed-light"] .text-\[\#f59e0b\],
+html[data-theme="care-indeed-light"] .text-\[\#F59E0B\] { color: #C74601 !important; }
+html[data-theme="care-indeed-light"] .text-\[\#10b981\],
+html[data-theme="care-indeed-light"] .text-\[\#10B981\] { color: #008540 !important; }
+html[data-theme="care-indeed-light"] .text-\[\#06b6d4\],
+html[data-theme="care-indeed-light"] .text-\[\#06B6D4\] { color: #007970 !important; }
+
+/* Labels on SOLID brand-colored pills/buttons must stay WHITE.
+   The broad .text-white → neutral-600 cascade above would otherwise
+   erase the label on a filled CTA. Re-pins white for every element
+   (and its descendants) that sits on a solid brand fill. */
+html[data-theme="care-indeed-light"] .bg-\[\#C74601\],
+html[data-theme="care-indeed-light"] .bg-\[\#C74601\] *,
+html[data-theme="care-indeed-light"] .bg-\[\#C74600\],
+html[data-theme="care-indeed-light"] .bg-\[\#C74600\] *,
+html[data-theme="care-indeed-light"] .bg-\[\#421700\],
+html[data-theme="care-indeed-light"] .bg-\[\#421700\] *,
+html[data-theme="care-indeed-light"] .bg-\[\#007970\],
+html[data-theme="care-indeed-light"] .bg-\[\#007970\] *,
+html[data-theme="care-indeed-light"] .bg-\[\#004142\],
+html[data-theme="care-indeed-light"] .bg-\[\#004142\] *,
+html[data-theme="care-indeed-light"] .bg-\[\#008540\],
+html[data-theme="care-indeed-light"] .bg-\[\#008540\] *,
+html[data-theme="care-indeed-light"] .bg-\[\#D70101\],
+html[data-theme="care-indeed-light"] .bg-\[\#D70101\] *,
+html[data-theme="care-indeed-light"] [data-on-brand] .text-white,
+html[data-theme="care-indeed-light"] [data-on-brand] { color: #FFFFFF !important; }
+
+/* ══════════════════════════════════════════════════════════════
+   0.5s SOPHISTICATED THEME TRANSITION
+   Uses the View Transitions API where available (Chromium 111+,
+   Safari 18+) for a smooth crossfade; falls back to a property
+   transition class for older browsers.
+   ══════════════════════════════════════════════════════════════ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 500ms;
+  animation-timing-function: cubic-bezier(.22,1,.36,1);
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) { animation-name: ciThemeFadeOut; }
+::view-transition-new(root) { animation-name: ciThemeFadeIn; }
+
+@keyframes ciThemeFadeOut {
+  from { opacity: 1; transform: scale(1); filter: blur(0); }
+  to   { opacity: 0; transform: scale(0.985); filter: blur(3px); }
+}
+@keyframes ciThemeFadeIn {
+  from { opacity: 0; transform: scale(1.015); filter: blur(3px); }
+  to   { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+html.ci-theme-transitioning,
+html.ci-theme-transitioning *,
+html.ci-theme-transitioning *::before,
+html.ci-theme-transitioning *::after {
+  transition:
+    background-color 500ms cubic-bezier(.22,1,.36,1),
+    background 500ms cubic-bezier(.22,1,.36,1),
+    color 500ms cubic-bezier(.22,1,.36,1),
+    border-color 500ms cubic-bezier(.22,1,.36,1),
+    fill 500ms cubic-bezier(.22,1,.36,1),
+    stroke 500ms cubic-bezier(.22,1,.36,1) !important;
+}

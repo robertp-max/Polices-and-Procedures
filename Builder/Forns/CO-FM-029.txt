@@ -1,0 +1,56 @@
+FORM ID: CO-FM-029
+TITLE: Minimum Necessary Exception Request
+TYPE: Form
+DOMAIN: CO
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: digital_candidate
+
+LINKED POLICIES:
+- CO-DG-101
+
+PURPOSE:
+Request for an exception to the HIPAA minimum-necessary rule when a broader use/disclosure of PHI is required for a legitimate purpose.
+
+INSTRUCTIONS:
+Submitted to the Privacy Officer for written approval prior to use/disclosure.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Requester Name / Role (type=text, required=true, col=2)
+- Date Requested (type=date, required=true, col=2)
+- PHI Scope Requested (type=textarea, required=true, col=4)
+- Purpose / Legitimate Need (type=textarea, required=true, col=4)
+- Why Minimum Necessary is Insufficient (type=textarea, col=4)
+- Duration of Use (type=text, col=2)
+- Safeguards Applied (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Requester — Printed Name (type=text, col=2)
+- Requester — Signature (type=signature, col=1)
+- Requester — Date (type=date, col=1)
+- Privacy Officer — Printed Name (type=text, col=2)
+- Privacy Officer — Signature (type=signature, col=1)
+- Privacy Officer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CO-FM-029 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CO-DG-101

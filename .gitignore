@@ -4,3 +4,21 @@ dist
 *.mp4
 *.mp3
 *.docx
+
+# Environment & secrets
+.env
+.env.*.local
+.env.local
+
+# Service-account credentials (NEVER commit)
+server/credentials/*.json
+!server/credentials/.gitkeep
+!server/credentials/README.md
+Builder/**/*.json
+
+# Compliance Intelligence local index (rebuild with `npm run ia:index`)
+.cache/
+
+# Temporary scratch files
+tmp-*.json
+tmp-*.log

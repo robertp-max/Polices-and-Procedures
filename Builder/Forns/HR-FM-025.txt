@@ -1,0 +1,60 @@
+FORM ID: HR-FM-025
+TITLE: Student / Intern Supervision Agreement
+TYPE: Attestation
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: none
+
+LINKED POLICIES:
+- HR-TD-004
+
+PURPOSE:
+Supervision agreement defining roles, expectations, and sign-off authority for student / intern clinical rotations at Care Indeed.
+
+INSTRUCTIONS:
+Signed at the start of every rotation. Students may not perform skilled care independently or sign clinical documentation as provider of record.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Attestation
+layout: attestation
+
+body:
+Student acknowledges:
+
+acknowledgments:
+- I will not perform skilled clinical care independently; all care will be supervised by my preceptor.
+- I will not sign clinical documentation as the provider of record.
+- I will complete all required Care Indeed orientation and HIPAA training before the first patient interaction.
+- I will abide by all Care Indeed policies, including confidentiality, code of conduct, and infection control.
+- I understand that non-compliance may result in termination of my rotation and notification to my school.
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Student — Printed Name (type=text, col=2)
+- Student — Signature (type=signature, col=1)
+- Student — Date (type=date, col=1)
+- Preceptor — Printed Name (type=text, col=2)
+- Preceptor — Signature (type=signature, col=1)
+- Preceptor — Date (type=date, col=1)
+- Clinical Manager — Printed Name (type=text, col=2)
+- Clinical Manager — Signature (type=signature, col=1)
+- Clinical Manager — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-025 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-TD-004

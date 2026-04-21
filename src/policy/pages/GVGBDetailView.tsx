@@ -4,7 +4,7 @@
  * Layout and structure matches GV-GB-001.html exactly.
  * All real content embedded — no placeholders.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Printer, FileText, Shield, Search, CheckCircle, BookOpen,
@@ -12,6 +12,7 @@ import {
   LayoutList, ChevronRight, FileLock2, Award, ExternalLink,
   ArrowLeft,
 } from 'lucide-react';
+import { useShellStore } from '@/policy/stores/uiStore';
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -223,7 +224,7 @@ const Card = ({ children, className = '' }: { children: React.ReactNode; classNa
   </div>
 );
 
-const SectionTitle = ({ icon: Icon, title, color = 'text-[#007970]' }: { icon?: React.ElementType; title: string; color?: string }) => (
+const SectionTitle = ({ icon: Icon, title, color = 'text-[#D4AF37]' }: { icon?: React.ElementType; title: string; color?: string }) => (
   <h2 className={`font-montserrat text-2xl font-bold flex items-center mb-6 ${color}`}>
     {Icon && <Icon className="mr-3" size={28} />}
     {title}
@@ -234,7 +235,7 @@ const SimpleTable = ({ headers, rows }: { headers: string[]; rows: (string | Rea
   <div className="overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm mb-6">
     <table className="w-full table-fixed text-left border-collapse">
       <thead>
-        <tr className="bg-[#007970] text-white">
+        <tr className="bg-[#D4AF37] text-white">
           {headers.map((h, i) => (
             <th key={i} className="p-4 font-montserrat font-bold text-sm tracking-wide border-b border-[#006059]">{h}</th>
           ))}
@@ -258,7 +259,7 @@ const TabButton = ({ active, onClick, children }: { active: boolean; onClick: ()
     onClick={onClick}
     className={`px-5 py-2.5 rounded-full font-montserrat font-bold text-sm transition-all duration-200 whitespace-nowrap ${
       active
-        ? 'bg-[#007970] text-white shadow-md'
+        ? 'bg-[#D4AF37] text-white shadow-md'
         : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
     }`}
   >
@@ -292,7 +293,7 @@ const ViewOverview = () => (
             'All contracted management entities performing governing body functions on behalf of the agency',
           ].map((item, i) => (
             <li key={i} className="flex items-start">
-              <CheckCircle className="text-[#007970] mr-3 mt-0.5 flex-shrink-0" size={18} />
+              <CheckCircle className="text-[#D4AF37] mr-3 mt-0.5 flex-shrink-0" size={18} />
               <span className="text-gray-700 text-[15px]">{item}</span>
             </li>
           ))}
@@ -308,7 +309,7 @@ const ViewOverview = () => (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {DEFINITIONS.map((def, i) => (
           <div key={i} className="bg-gray-50 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <h4 className="font-montserrat font-extrabold text-[#007970] mb-2">{def.term}</h4>
+            <h4 className="font-montserrat font-extrabold text-[#D4AF37] mb-2">{def.term}</h4>
             <p className="text-gray-600 text-sm leading-relaxed">{def.definition}</p>
           </div>
         ))}
@@ -324,7 +325,7 @@ const ViewPolicyStatements = () => (
       <div className="space-y-4">
         {POLICY_STATEMENTS.map((stmt, i) => (
           <div key={i} className="flex items-start bg-gray-50 border border-gray-200 p-5 rounded-xl shadow-sm">
-            <div className="bg-[#007970] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold font-montserrat flex-shrink-0 mr-5 shadow-inner text-sm">
+            <div className="bg-[#D4AF37] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold font-montserrat flex-shrink-0 mr-5 shadow-inner text-sm">
               4.{i + 1}
             </div>
             <p className="text-gray-800 leading-relaxed pt-2 text-[15px] whitespace-pre-line">{stmt.substring(4)}</p>
@@ -446,7 +447,7 @@ const ViewCompliance = () => (
             'Meeting frequency and documentation quality. Surveyors will request all meeting minutes for the survey look-back period and assess completeness, including attendance, quorum, and documented decisions.',
           ].map((item, i) => (
             <li key={i} className="text-[15px] text-[#1F1C1B] font-roboto flex items-start">
-              <ChevronRight className="text-[#007970] mt-0.5 mr-2 flex-shrink-0" />
+              <ChevronRight className="text-[#D4AF37] mt-0.5 mr-2 flex-shrink-0" />
               {i + 1}. {item}
             </li>
           ))}
@@ -482,11 +483,11 @@ const ViewReferencesAdmin = () => (
         <div>
           <h3 className="font-montserrat font-bold text-lg text-gray-800 mb-4 pb-2 border-b border-gray-200">9.2 CMS Guidance</h3>
           <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-3">
-            <p className="font-bold text-sm text-[#007970]">CMS State Operations Manual, Appx B — Guidance to Surveyors</p>
+            <p className="font-bold text-sm text-[#D4AF37]">CMS State Operations Manual, Appx B — Guidance to Surveyors</p>
             <p className="text-sm text-gray-700 mt-1">Provides interpretive guidelines for survey of 42 CFR § 484.105 compliance; defines surveyor expectations for governing body evidence.</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-            <p className="font-bold text-sm text-[#007970]">CMS OASIS-E2 Guidance Manual</p>
+            <p className="font-bold text-sm text-[#D4AF37]">CMS OASIS-E2 Guidance Manual</p>
             <p className="text-sm text-gray-700 mt-1">While not directly governing the Governing Body, the Governing Body is accountable for ensuring the agency's OASIS program meets CMS requirements.</p>
           </div>
         </div>
@@ -514,7 +515,7 @@ const ViewReferencesAdmin = () => (
             <tbody className="divide-y divide-gray-200 bg-white">
               {REFERENCES_CROSS.map((row, i) => (
                 <tr key={i} className="hover:bg-gray-50">
-                  <td className="p-3 text-sm font-bold text-[#007970] whitespace-nowrap">{row[0]}</td>
+                  <td className="p-3 text-sm font-bold text-[#D4AF37] whitespace-nowrap">{row[0]}</td>
                   <td className="p-3 text-sm text-gray-800 font-medium">{row[1]}</td>
                   <td className="p-3 text-sm text-gray-600">{row[2]}</td>
                 </tr>
@@ -536,7 +537,7 @@ const ViewReferencesAdmin = () => (
             'Annual refresher training on governing body responsibilities shall be conducted at the first quarterly meeting of each calendar year. Attendance shall be documented in meeting minutes.',
           ].map((item, i) => (
             <li key={i} className="flex items-start bg-gray-50 p-4 rounded-lg">
-              <div className="bg-[#007970] text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs mr-3 flex-shrink-0">{i + 1}</div>
+              <div className="bg-[#D4AF37] text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs mr-3 flex-shrink-0">{i + 1}</div>
               <p className="text-[15px] leading-relaxed text-gray-800">{item}</p>
             </li>
           ))}
@@ -608,14 +609,14 @@ const AppendixA = () => (
           {[1, 2, 3, 4, 5, 6, 7].map(i => (
             <tr key={i}>
               <td className="p-2 text-gray-400 border-r text-center text-xs">{i}</td>
-              <td className="p-2 border-r"><input type="text" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#007970] text-xs" placeholder="Type here..." /></td>
-              <td className="p-2 border-r"><input type="text" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#007970] text-xs" /></td>
+              <td className="p-2 border-r"><input type="text" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#D4AF37] text-xs" placeholder="Type here..." /></td>
+              <td className="p-2 border-r"><input type="text" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#D4AF37] text-xs" /></td>
               <td className="p-2 border-r"><select className="border border-gray-200 rounded p-1 w-full bg-transparent text-xs"><option>Voting</option><option>Non-Voting</option><option>Advisory</option></select></td>
               <td className="p-2 border-r"><input type="date" className="border border-gray-200 rounded p-1 text-xs w-full bg-transparent" /></td>
               <td className="p-2 border-r"><input type="date" className="border border-gray-200 rounded p-1 text-xs w-full bg-transparent" /></td>
-              <td className="p-2 border-r"><input type="text" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#007970] text-xs" /></td>
-              <td className="p-2 border-r"><input type="email" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#007970] text-xs" /></td>
-              <td className="p-2 text-center"><input type="checkbox" className="w-4 h-4 text-[#007970]" /></td>
+              <td className="p-2 border-r"><input type="text" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#D4AF37] text-xs" /></td>
+              <td className="p-2 border-r"><input type="email" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#D4AF37] text-xs" /></td>
+              <td className="p-2 text-center"><input type="checkbox" className="w-4 h-4 text-[#D4AF37]" /></td>
             </tr>
           ))}
         </tbody>
@@ -689,8 +690,8 @@ const AppendixB = () => (
         </table>
       </section>
 
-      <section className="bg-[#007970]/5 p-6 rounded-lg border border-[#007970]/20">
-        <h4 className="font-bold text-lg text-[#007970] mb-4">SECTION 4 — ATTESTATION</h4>
+      <section className="bg-[#D4AF37]/5 p-6 rounded-lg border border-[#D4AF37]/20">
+        <h4 className="font-bold text-lg text-[#D4AF37] mb-4">SECTION 4 — ATTESTATION</h4>
         <p className="text-sm text-gray-700 mb-6">I hereby certify that the information provided above is true, complete, and accurate to the best of my knowledge. I understand that I have an ongoing obligation to disclose any new conflict within 7 calendar days, I must recuse myself from voting on conflicted matters, and failure to disclose a known conflict may result in removal from the Governing Body.</p>
         <div className="grid grid-cols-2 gap-8">
           <div>
@@ -699,7 +700,7 @@ const AppendixB = () => (
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Date Signed</label>
-            <input type="date" className="border-b-2 border-gray-300 w-full focus:outline-none focus:border-[#007970] pb-2 text-gray-500 bg-transparent" />
+            <input type="date" className="border-b-2 border-gray-300 w-full focus:outline-none focus:border-[#D4AF37] pb-2 text-gray-500 bg-transparent" />
           </div>
         </div>
       </section>
@@ -723,7 +724,7 @@ const AppendixC = () => (
       {[['Full Name (Printed)', 'text'], ['Title / Role', 'text']].map(([label, type], i) => (
         <div key={i}>
           <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{label}</label>
-          <input type={type} className="border-b-2 border-gray-300 w-full focus:outline-none focus:border-[#007970] p-1" />
+          <input type={type} className="border-b-2 border-gray-300 w-full focus:outline-none focus:border-[#D4AF37] p-1" />
         </div>
       ))}
       <div className="col-span-2 mt-4">
@@ -732,7 +733,7 @@ const AppendixC = () => (
       </div>
       <div className="col-span-2 mt-4">
         <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Date Signed</label>
-        <input type="date" className="border-b-2 border-gray-300 w-full md:w-1/2 focus:outline-none focus:border-[#007970] p-1 text-gray-600" />
+        <input type="date" className="border-b-2 border-gray-300 w-full md:w-1/2 focus:outline-none focus:border-[#D4AF37] p-1 text-gray-600" />
       </div>
     </div>
   </div>
@@ -764,7 +765,7 @@ const AppendixD = () => (
       </div>
 
       <div>
-        <h4 className="font-bold bg-[#007970] text-white p-3 rounded-t-lg uppercase text-sm tracking-wide">ATTENDANCE &amp; QUORUM</h4>
+        <h4 className="font-bold bg-[#D4AF37] text-white p-3 rounded-t-lg uppercase text-sm tracking-wide">ATTENDANCE &amp; QUORUM</h4>
         <table className="w-full text-sm border-l border-r border-b border-gray-300 bg-white rounded-b-lg overflow-hidden">
           <thead><tr className="bg-gray-100 border-b border-gray-300"><th className="p-3 border-r text-left">Member Name</th><th className="p-3 border-r w-24 text-center">Present?</th><th className="p-3 text-left">Attendance Method</th></tr></thead>
           <tbody>
@@ -785,7 +786,7 @@ const AppendixD = () => (
       </div>
 
       <div>
-        <h4 className="font-bold bg-[#007970] text-white p-3 rounded-t-lg uppercase text-sm tracking-wide">STANDING AGENDA ITEMS (Summary)</h4>
+        <h4 className="font-bold bg-[#D4AF37] text-white p-3 rounded-t-lg uppercase text-sm tracking-wide">STANDING AGENDA ITEMS (Summary)</h4>
         <div className="space-y-4 bg-white border-l border-r border-b border-gray-300 p-6 rounded-b-lg">
           {['3. Administrator Report', '4. Compliance Report', '5. QAPI Report', '6. Financial Report'].map((item, i) => (
             <div key={i} className="border border-gray-200 p-4 rounded-lg bg-gray-50">
@@ -825,7 +826,7 @@ const AppendixE = () => {
   return (
     <div className="max-w-6xl mx-auto">
       <AppendixHeader id="E" title="Quarterly Governance Oversight Checklist" />
-      <p className="text-sm text-gray-600 mb-6 bg-[#007970]/10 p-5 rounded-lg border border-[#007970]/20 leading-relaxed">
+      <p className="text-sm text-gray-600 mb-6 bg-[#D4AF37]/10 p-5 rounded-lg border border-[#D4AF37]/20 leading-relaxed">
         <strong>Purpose:</strong> To provide the Governing Body Chair and Administrator with a structured checklist to verify that all required oversight activities are completed each quarter, supporting continuous survey readiness and compliance with 42 CFR § 484.105.
       </p>
       <div className="flex items-center gap-6 mb-6 font-bold text-gray-700 bg-gray-100 p-4 rounded-lg">
@@ -834,7 +835,7 @@ const AppendixE = () => {
       </div>
       <div className="border border-gray-300 rounded-lg overflow-hidden">
         <table className="w-full text-sm text-left">
-          <thead className="bg-[#007970] text-white">
+          <thead className="bg-[#D4AF37] text-white">
             <tr><th className="p-3 border-r border-[#006059] w-12 text-center">#</th><th className="p-3 border-r border-[#006059]">Oversight Item</th><th className="p-3 border-r border-[#006059] w-28 text-center">Y / N / N-A</th><th className="p-3 w-64">Notes / Corrective Action if "No"</th></tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -847,7 +848,7 @@ const AppendixE = () => {
                     <option value="" /><option value="Y">Y</option><option value="N">N</option><option value="NA">N/A</option>
                   </select>
                 </td>
-                <td className="p-3"><input type="text" className="w-full bg-transparent border-b border-gray-200 focus:outline-none focus:border-[#007970]" placeholder="Document here..." /></td>
+                <td className="p-3"><input type="text" className="w-full bg-transparent border-b border-gray-200 focus:outline-none focus:border-[#D4AF37]" placeholder="Document here..." /></td>
               </tr>
             ))}
           </tbody>
@@ -886,14 +887,14 @@ const AppendixF = () => (
 const AppendixG = () => (
   <div className="max-w-5xl mx-auto pb-12 overflow-x-auto">
     <AppendixHeader id="G" title="Agency Organizational Chart" />
-    <p className="text-sm text-gray-600 mb-10 bg-[#007970]/5 p-5 rounded-xl border border-[#007970]/20 text-center leading-relaxed max-w-4xl mx-auto">
+    <p className="text-sm text-gray-600 mb-10 bg-[#D4AF37]/5 p-5 rounded-xl border border-[#D4AF37]/20 text-center leading-relaxed max-w-4xl mx-auto">
       <strong>Agency Organizational Structure:</strong> This chart illustrates the reporting relationships and accountability framework from the Governing Body through the senior administrative and clinical leadership, as required by 42 CFR § 484.105.
     </p>
     <div className="min-w-[900px] flex flex-col items-center w-full pb-10">
       {/* Level 1 */}
-      <div className="bg-[#007970] text-white p-5 rounded-2xl w-72 text-center shadow-lg border-2 border-[#004d47] z-10">
+      <div className="bg-[#D4AF37] text-white p-5 rounded-2xl w-72 text-center shadow-lg border-2 border-[#004d47] z-10">
         <h4 className="font-bold text-lg uppercase tracking-wider mb-2">Governing Body</h4>
-        <p className="text-xs text-[#007970] bg-white px-3 py-1 rounded-full inline-block font-bold shadow-sm">Ultimate Legal Authority</p>
+        <p className="text-xs text-[#D4AF37] bg-white px-3 py-1 rounded-full inline-block font-bold shadow-sm">Ultimate Legal Authority</p>
       </div>
       <div className="w-px h-8 bg-gray-300" />
       <div className="w-[464px] border-t-4 border-gray-300" />
@@ -921,14 +922,14 @@ const AppendixG = () => (
           {/* Level 3 */}
           <div className="flex justify-between w-full">
             {[
-              { label: 'Clinical Manager', color: 'border-[#007970]', textColor: 'text-[#007970]', sub: 'Clinical Staff\n(RN, PT, OT, ST, MSW, CHHA)' },
+              { label: 'Clinical Manager', color: 'border-[#D4AF37]', textColor: 'text-[#D4AF37]', sub: 'Clinical Staff\n(RN, PT, OT, ST, MSW, CHHA)' },
               { label: 'Medical Director', color: 'border-gray-400', textColor: 'text-gray-700', sub: null },
               { label: 'Business Operations', color: 'border-gray-400', textColor: 'text-gray-700', sub: 'HR, Finance, Intake,\n& Scheduling' },
             ].map((role, i) => (
               <div key={i} className="flex flex-col items-center w-[192px]">
                 <div className={`bg-white border-2 ${role.color} p-4 rounded-xl w-full text-center shadow-sm`}>
                   <h4 className={`font-bold text-xs ${role.textColor} uppercase tracking-wider mb-3`}>{role.label}</h4>
-                  <input type="text" placeholder="Enter Name..." className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs text-center focus:outline-none focus:border-[#007970] placeholder-gray-400 text-gray-800 font-medium" />
+                  <input type="text" placeholder="Enter Name..." className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs text-center focus:outline-none focus:border-[#D4AF37] placeholder-gray-400 text-gray-800 font-medium" />
                 </div>
                 {role.sub && (
                   <>
@@ -965,7 +966,7 @@ const ViewAppendices = () => {
   return (
     <div className="h-full flex flex-col pb-6 relative">
       {/* Header card with title + buttons — exact HTML design */}
-      <Card className="flex-shrink-0 mb-4 border-b-4 border-[#007970]">
+      <Card className="flex-shrink-0 mb-4 border-b-4 border-[#D4AF37]">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <SectionTitle icon={LayoutList} title="Appendices (Forms & Templates)" />
           <div className="flex gap-3 flex-shrink-0">
@@ -1020,6 +1021,17 @@ type TabId = typeof NAV_TABS[number]['id'];
 export function GVGBDetailView() {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const navigate = useNavigate();
+  const setDetailMode = useShellStore(s => s.setDetailMode);
+
+  useEffect(() => {
+    const prev = document.title;
+    document.title = 'Care Indeed Home Health Care, Inc. - Policies and Procedures';
+    setDetailMode(true);
+    return () => {
+      document.title = prev;
+      setDetailMode(false);
+    };
+  }, [setDetailMode]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -1038,14 +1050,14 @@ export function GVGBDetailView() {
     <div className="space-y-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
 
       {/* ── DOCUMENT HEADER / COVER BLOCK ────────────────────────────────── */}
-      <div className="bg-[#007970] text-white relative p-8">
+      <div className="bg-[#D4AF37] text-white relative p-8">
         {/* Back + Print row */}
         <div className="flex items-start justify-between mb-4">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-1.5 text-xs font-montserrat font-bold text-white/70 hover:text-white transition-colors"
           >
-            <ArrowLeft size={13} /> Back to Library
+            <ArrowLeft size={13} /> Return to Policy Library
           </button>
           <button
             onClick={() => window.open(`/print/${POLICY_META.id}`, '_blank', 'noopener,noreferrer')}
@@ -1097,7 +1109,7 @@ export function GVGBDetailView() {
               onClick={() => setActiveTab(id)}
               className={`flex items-center gap-1.5 px-5 py-3.5 text-xs font-montserrat font-bold whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === id
-                  ? 'border-[#007970] text-[#007970] bg-white'
+                  ? 'border-[#D4AF37] text-[#D4AF37] bg-white'
                   : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-white'
               }`}
             >

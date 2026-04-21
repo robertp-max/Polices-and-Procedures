@@ -1,0 +1,62 @@
+FORM ID: HR-FM-001
+TITLE: Reasonable Suspicion Observation Checklist
+TYPE: Checklist
+DOMAIN: HR
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: high_risk, digital_candidate
+
+LINKED POLICIES:
+- HR-ER-005
+
+PURPOSE:
+Structured observation checklist used by a supervisor when there is reasonable suspicion that an employee is impaired while performing job duties, per 42 CFR § 484.70 and the agency Drug-Free Workplace Policy.
+
+INSTRUCTIONS:
+Completed by a trained supervisor (not the employee). All observations must be documented contemporaneously. If reasonable suspicion is confirmed, employee is immediately removed from duty and referred for testing.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Reasonable Suspicion Observation Checklist Checklist
+layout: checklist
+
+checklist_items:
+- Slurred, rapid, or incoherent speech observed
+- Unsteady gait, swaying, stumbling, or difficulty with balance
+- Bloodshot, glassy, or dilated eyes observed
+- Odor of alcohol, marijuana, or other substance detected
+- Inappropriate behavior (aggression, confusion, euphoria, drowsiness)
+- Impaired coordination or fine motor control observed
+- Deterioration in work performance, judgment, or decision making
+- Physical signs (tremor, sweating, flushed appearance)
+- Possession of paraphernalia or containers on premises
+- Credible report from a patient, family member, or colleague
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Observing Supervisor — Printed Name (type=text, col=2)
+- Observing Supervisor — Signature (type=signature, col=1)
+- Observing Supervisor — Date (type=date, col=1)
+- Second Witness — Printed Name (type=text, col=2)
+- Second Witness — Signature (type=signature, col=1)
+- Second Witness — Date (type=date, col=1)
+- HR / Administrator — Printed Name (type=text, col=2)
+- HR / Administrator — Signature (type=signature, col=1)
+- HR / Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-001 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-ER-005

@@ -1,0 +1,58 @@
+FORM ID: OP-FM-002
+TITLE: Quarterly Facility Inspection Report
+TYPE: Assessment
+DOMAIN: OP
+USAGE: Required
+FREQUENCY: Quarterly
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- OP-FM-002
+- RM-PS-001
+
+PURPOSE:
+Quarterly inspection report documenting physical-facility condition and safety status at each branch.
+
+INSTRUCTIONS:
+Performed by Facilities Manager. Deficiencies resolved; documented in log.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Assessment Responses
+layout: grid
+
+fields:
+- Subject / Patient / Area Assessed (type=text, col=4)
+- Assessment Date (type=date, col=2)
+- Overall Risk Rating (type=select, col=2, options=[Low | Moderate | High])
+- Findings Summary (type=textarea, col=4)
+- Strengths Identified (type=textarea, col=4)
+- Opportunities for Improvement (type=textarea, col=4)
+- Recommended Action Plan (type=textarea, col=4)
+- Follow-Up Date (type=date, col=2)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Inspector — Printed Name (type=text, col=2)
+- Inspector — Signature (type=signature, col=1)
+- Inspector — Date (type=date, col=1)
+- Branch Manager — Printed Name (type=text, col=2)
+- Branch Manager — Signature (type=signature, col=1)
+- Branch Manager — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form OP-FM-002 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: OP-FM-002, RM-PS-001

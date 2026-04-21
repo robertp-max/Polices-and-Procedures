@@ -1,0 +1,58 @@
+FORM ID: HR-FM-010
+TITLE: Employee Grievance / Complaint Form
+TYPE: Form
+DOMAIN: HR
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: digital_candidate
+
+LINKED POLICIES:
+- HR-ER-003
+
+PURPOSE:
+Confidential form by which an employee reports a work-related grievance, complaint, harassment, or retaliation concern for HR investigation.
+
+INSTRUCTIONS:
+Submitted to HR or the Compliance Officer. Kept confidential to the maximum extent possible. Retaliation for submission is strictly prohibited.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Complainant Name (may be anonymous) (type=text, col=2)
+- Date Submitted (type=date, required=true, col=2)
+- Nature of Concern (type=select, required=true, col=4, options=[Working Conditions | Harassment / Discrimination | Retaliation | Wage / Hour | Safety | Policy Violation | Other])
+- Individuals Involved (type=text, col=4)
+- Date(s) and Location(s) of Events (type=textarea, col=4)
+- Detailed Description (type=textarea, required=true, col=4)
+- Witnesses (type=textarea, col=4)
+- Evidence / Supporting Documents (type=textarea, col=4)
+- Preferred Resolution (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Complainant (if not anonymous) — Printed Name (type=text, col=2)
+- Complainant (if not anonymous) — Signature (type=signature, col=1)
+- Complainant (if not anonymous) — Date (type=date, col=1)
+- HR Receiver — Printed Name (type=text, col=2)
+- HR Receiver — Signature (type=signature, col=1)
+- HR Receiver — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-010 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-ER-003

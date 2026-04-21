@@ -248,7 +248,7 @@ export function FrameworkShowcase() {
         {/* Title row */}
         <div className="flex justify-between items-center mb-4">
           <div>
-            <p className="text-[10px] font-montserrat font-bold text-[#00c2b4] uppercase tracking-widest mb-1">TAXONOMY OVERVIEW</p>
+            <p className="text-[10px] font-montserrat font-bold text-[#FFC107] uppercase tracking-widest mb-1">TAXONOMY OVERVIEW</p>
             <h1 className="font-montserrat text-2xl font-light text-white tracking-wide">
               Enterprise Framework&nbsp;<span className="text-white/25 text-lg font-mono align-middle">v6.0</span>
             </h1>

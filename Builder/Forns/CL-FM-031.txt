@@ -1,0 +1,60 @@
+FORM ID: CL-FM-031
+TITLE: OASIS Pre-Submission QA Checklist
+TYPE: Checklist
+DOMAIN: CL
+USAGE: Required
+FREQUENCY: Per Episode
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- CL-OA-002
+- CL-OA-019
+
+PURPOSE:
+Standardized checklist capturing the required data elements for OASIS Pre-Submission QA Checklist, aligned with Care Indeed policy, applicable federal/state regulation, and the enterprise gold standard (GV-GB-001).
+
+INSTRUCTIONS:
+Completed by the responsible workforce member (per episode). All fields are mandatory unless marked optional. Retained per agency record-retention schedule and made available for internal audit, state licensure, and CMS survey review.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — OASIS Pre-Submission QA Checklist Checklist
+layout: checklist
+
+checklist_items:
+- OASIS Pre-Submission QA Checklist — Regulatory requirement reviewed and understood
+- OASIS Pre-Submission QA Checklist — Applicable policy section located and re-read
+- OASIS Pre-Submission QA Checklist — Required documentation identified and accessible
+- OASIS Pre-Submission QA Checklist — All data fields confirmed complete and accurate
+- OASIS Pre-Submission QA Checklist — Signatures / attestations obtained from required parties
+- OASIS Pre-Submission QA Checklist — Copy filed in the appropriate record per retention schedule
+- OASIS Pre-Submission QA Checklist — Completion entered in tracking log / dashboard
+- OASIS Pre-Submission QA Checklist — Any deficiencies escalated to supervisor / Compliance Officer
+- OASIS Pre-Submission QA Checklist — Corrective action documented and tracked to closure
+- OASIS Pre-Submission QA Checklist — Annual review date set and added to calendar
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CL-FM-031 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CL-OA-002, CL-OA-019

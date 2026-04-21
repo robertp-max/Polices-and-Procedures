@@ -1,0 +1,57 @@
+FORM ID: CL-FM-025
+TITLE: Telehealth Service Consent & Documentation
+TYPE: Attestation
+DOMAIN: CL
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: digital_candidate
+
+LINKED POLICIES:
+- CL-SD-009
+
+PURPOSE:
+Standardized attestation capturing the required data elements for Telehealth Service Consent & Documentation, aligned with Care Indeed policy, applicable federal/state regulation, and the enterprise gold standard (GV-GB-001).
+
+INSTRUCTIONS:
+Completed by the responsible workforce member (triggered). All fields are mandatory unless marked optional. Retained per agency record-retention schedule and made available for internal audit, state licensure, and CMS survey review.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Attestation
+layout: attestation
+
+body:
+By signing below, I hereby certify and attest that:
+
+acknowledgments:
+- I have read, reviewed, and understood the requirements of this form.
+- The information I have provided is accurate, complete, and truthful to the best of my knowledge.
+- I understand my obligation to report any changes in the information provided within 7 calendar days.
+- I understand that false statements may result in corrective action up to and including termination.
+- I agree to comply with all applicable Care Indeed policies, procedures, and regulatory requirements.
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CL-FM-025 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CL-SD-009

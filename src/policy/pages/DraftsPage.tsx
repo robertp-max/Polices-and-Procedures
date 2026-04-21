@@ -14,32 +14,40 @@ export function DraftsPage() {
   return (
     <div className="flex-1 w-full h-full flex flex-col relative z-10 font-sans animate-in fade-in duration-500 overflow-y-auto custom-scrollbar p-8 md:p-12 lg:p-16">
       {/* HEADER */}
-      <div className="mb-10">
-        <h2 className="font-montserrat text-3xl font-extrabold text-white">Draft Workspace</h2>
-        <p className="mt-3 font-roboto text-base text-white/60">
+      <div className="mb-12">
+        <div className="text-[10px] font-montserrat font-bold text-[#FFC107] uppercase tracking-[0.28em] mb-2">
+          Authoring
+        </div>
+        <h2 className="font-outfit font-light text-white leading-tight" style={{ fontSize: 28, letterSpacing: '-0.01em' }}>
+          Draft Workspace
+        </h2>
+        <p className="mt-2 font-roboto text-[12px] text-white/55">
           Access and edit policies in Draft or Revision Requested status.
         </p>
       </div>
 
-      {/* STATS ROW */}
-      <div className="grid grid-cols-3 gap-6 mb-10">
+      {/* STATS ROW — flat on glass */}
+      <div className="grid grid-cols-3 gap-10 mb-12">
         {[
-          { label: 'Total Drafts', value: drafts.length, cls: 'text-[#00c2b4]' },
-          { label: 'Revision Requested', value: drafts.filter(p => p.lifecycleStatus === 'Revision Requested').length, cls: 'text-[#C74600]' },
-          { label: 'Pure Draft', value: drafts.filter(p => p.lifecycleStatus === 'Draft').length, cls: 'text-white' },
-        ].map(({ label, value, cls }) => (
-          <div key={label} className="glass-interactive group border border-white/10 rounded-2xl p-8 cursor-default">
-            <p className="mb-3 text-xs font-montserrat font-bold uppercase tracking-widest text-white/50 icon-interactive">{label}</p>
-            <p className={`font-montserrat text-5xl font-extrabold icon-interactive ${cls}`}>{value}</p>
+          { label: 'Total Drafts', value: drafts.length, cls: 'text-[#FFC107]', accent: 'rgba(var(--ci-accent-rgb),0.45)' },
+          { label: 'Revision Requested', value: drafts.filter(p => p.lifecycleStatus === 'Revision Requested').length, cls: 'text-[#C74600]', accent: 'rgba(199,70,0,0.45)' },
+          { label: 'Pure Draft', value: drafts.filter(p => p.lifecycleStatus === 'Draft').length, cls: 'text-white', accent: 'rgba(255,255,255,0.28)' },
+        ].map(({ label, value, cls, accent }) => (
+          <div key={label} className="group pl-5" style={{ borderLeft: `2px solid ${accent}` }}>
+            <p className="mb-3 text-[10.5px] font-montserrat font-bold uppercase tracking-[0.22em] text-white/55">{label}</p>
+            <p className={`font-outfit text-5xl font-light leading-none ${cls}`} style={{ letterSpacing: '-0.015em' }}>{value}</p>
           </div>
         ))}
       </div>
 
-      {/* DRAFTS LIST */}
-      <section className="border border-white/10 overflow-hidden rounded-2xl">
-        <div className="flex items-center gap-3 border-b border-white/5 px-8 py-5">
-          <Edit3 size={18} className="text-white/50" />
-          <p className="text-sm font-montserrat font-bold uppercase tracking-widest text-white/70">
+      {/* DRAFTS LIST — flat section, hairline header only */}
+      <section>
+        <div
+          className="flex items-center gap-3 pb-3 mb-2"
+          style={{ borderBottom: '1px solid rgba(var(--ci-accent-rgb),0.22)' }}
+        >
+          <Edit3 size={16} className="text-[#FFC107]/80" strokeWidth={1.75} />
+          <p className="text-[12px] font-montserrat font-bold uppercase tracking-[0.18em] text-white/75">
             {drafts.length} polic{drafts.length !== 1 ? 'ies' : 'y'} ready to edit
           </p>
         </div>
@@ -55,11 +63,11 @@ export function DraftsPage() {
               <Link
                 key={policy.id}
                 to={`/drafts/${policy.id}`}
-                className="group glass-interactive flex items-start gap-5 border-l-4 border-l-transparent px-8 py-6 transition-all hover:border-l-[#00c2b4]"
+                className="group flex items-start gap-5 border-l-2 border-l-transparent pl-5 pr-3 py-5 transition-all hover:border-l-[#FFC107] hover:bg-white/[0.02]"
               >
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-3">
-                    <span className="font-mono text-sm font-bold text-[#00c2b4] group-hover:underline">{policy.id}</span>
+                    <span className="font-mono text-sm font-bold text-[#FFC107] group-hover:underline">{policy.id}</span>
                     <StatusBadge status={policy.lifecycleStatus} />
                     <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-montserrat font-bold uppercase tracking-wide text-white/70">
                       {policy.tier}

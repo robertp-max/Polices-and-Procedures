@@ -259,7 +259,7 @@ const CHECKLIST_ITEMS = [
 
 // ─── PRIMITIVE HELPERS ───────────────────────────────────────────────────────
 
-const TEAL = '#007970';
+const TEAL = '#D4AF37';
 const RUST = '#C74600';
 const DARK = '#1F1C1B';
 const MID  = '#524048';

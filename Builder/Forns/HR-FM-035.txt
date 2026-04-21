@@ -1,0 +1,57 @@
+FORM ID: HR-FM-035
+TITLE: Workforce Diversity & Inclusion Action Plan
+TYPE: Template
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: none
+
+LINKED POLICIES:
+- HR-ER-007
+
+PURPOSE:
+Annual Diversity, Equity, & Inclusion action plan including workforce demographics, goals, and initiatives.
+
+INSTRUCTIONS:
+Developed annually by HR with input from leadership. Shared with Governing Body at Q1 meeting.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Plan Year (type=text, required=true, col=2)
+- Plan Author (type=text, required=true, col=2)
+- Workforce Demographics Summary (type=textarea, col=4)
+- DEI Strengths (type=textarea, col=4)
+- DEI Opportunities (type=textarea, col=4)
+- Specific Goals (Measurable) (type=textarea, col=4)
+- Initiatives & Budget (type=textarea, col=4)
+- KPIs for Tracking Progress (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- HR Director — Printed Name (type=text, col=2)
+- HR Director — Signature (type=signature, col=1)
+- HR Director — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-035 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-ER-007

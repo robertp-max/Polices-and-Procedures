@@ -6,8 +6,10 @@ import {
   DollarSign, Monitor, BarChart3, Scale, Heart, Cpu, Briefcase,
   GitBranch, Landmark, ShieldCheck, Gavel, ChevronLeft, Printer, LayoutList, Lock, FileCheck, Layers,
   Settings, RefreshCw, CheckCircle2, Play, BookOpen, List, CheckSquare, Archive, ExternalLink,
-  Bell, HelpCircle, Clock
+  Bell, HelpCircle, Clock, Sparkles
 } from 'lucide-react';
+import ciLogoWhite from '@/assets/ci-logo-white.png';
+import { ExecutivePresentation } from './DemoPhase2';
 
 // ══════════════════════════════════════════════════════════════
 // SHARED DATA
@@ -1360,14 +1362,38 @@ function TabAppendices({ policy }: { policy: DemoPolicy }) {
         </div>
       </div>
 
-      {/* Appendix tab pills */}
-      <div className="flex space-x-2 overflow-x-auto mb-6 pl-6 pb-1 scrollbar-none">
-        {apps.map(app => (
-          <button key={app.id} onClick={() => setActiveApp(app.id)}
-            className={`px-3 py-1.5 rounded-full font-montserrat font-bold text-[10px] uppercase tracking-wider transition-colors whitespace-nowrap ${activeApp === app.id ? 'bg-[#00e59b]/20 text-[#00e59b] border border-[#00e59b]/50' : 'text-white/50 border border-transparent hover:text-white'}`}>
-            {app.label}
-          </button>
-        ))}
+      {/* ── Appendix Cards — Care Indeed logo cards (large, survey-ready) ── */}
+      <div className="grid grid-cols-7 gap-3 mb-8 px-6">
+        {apps.map(app => {
+          const isActive = activeApp === app.id;
+          const subtitle = app.label.replace(/^Appx [A-G]:\s*/, '');
+          return (
+            <button
+              key={app.id}
+              onClick={() => setActiveApp(app.id)}
+              className={`group relative flex flex-col items-center justify-center rounded-xl px-3 py-4 transition-all duration-300 border ${
+                isActive
+                  ? 'bg-[#00e59b]/15 border-[#00e59b] shadow-[0_10px_30px_-10px_rgba(0,229,155,0.45)]'
+                  : 'bg-white/[0.02] border-white/10 hover:border-[#00e59b]/50 hover:bg-white/[0.05]'
+              }`}
+              style={{ minHeight: 108 }}
+              title={app.title}
+            >
+              <img
+                src={ciLogoWhite}
+                alt="Care Indeed"
+                className={`w-auto object-contain transition-opacity ${isActive ? 'opacity-100' : 'opacity-70 group-hover:opacity-95'}`}
+                style={{ height: 26 }}
+              />
+              <span className={`mt-2 font-montserrat font-bold text-[10px] uppercase tracking-[0.18em] leading-tight text-center ${isActive ? 'text-[#00e59b]' : 'text-white/70 group-hover:text-white'}`}>
+                {subtitle}
+              </span>
+              <span className={`mt-1 text-[8px] font-bold tracking-[0.3em] ${isActive ? 'text-[#00e59b]/80' : 'text-white/30'}`}>
+                APPX · {app.id}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="pl-6">
@@ -1923,7 +1949,7 @@ function DemoLibraryView({ onBack, onSelectPolicy }: { onBack: () => void; onSel
                   <div className="text-[10px] font-bold font-mono tracking-wider" style={{ color }}>{policy.policyId}</div>
                   <button
                     onClick={e => { e.stopPropagation(); navigate('/library'); }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded bg-white/10 hover:bg-white/20 text-white/50 hover:text-[#00c2b4] shrink-0"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded bg-white/10 hover:bg-white/20 text-white/50 hover:text-[#FFC107] shrink-0"
                     title="View in Library">
                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                   </button>
@@ -1950,12 +1976,14 @@ function DemoLibraryView({ onBack, onSelectPolicy }: { onBack: () => void; onSel
 
 
 // ══════════════════════════════════════════════════════════════
-// MAIN DEMO PAGE — Orchestrates the 3-step flow
+// MAIN DEMO PAGE — Two-phase system
 // ══════════════════════════════════════════════════════════════
 
 type DemoView = 'cover' | 'library' | 'detail';
+type DemoPhase = '1' | '2';
 
 export function DemoPage() {
+  const [phase, setPhase] = useState<DemoPhase>('1');
   const [view, setView] = useState<DemoView>('cover');
   const [detailPolicy, setDetailPolicy] = useState<DemoPolicy | null>(null);
 
@@ -1964,19 +1992,70 @@ export function DemoPage() {
   const openDetail = useCallback((p: DemoPolicy) => { setDetailPolicy(p); setView('detail'); }, []);
   const backToLibrary = useCallback(() => { setView('library'); setDetailPolicy(null); }, []);
 
+  const switchToPhase1 = useCallback(() => setPhase('1'), []);
+  const switchToPhase2 = useCallback(() => setPhase('2'), []);
+
   return (
     <div className="h-full overflow-hidden flex flex-col">
-      {view === 'cover' && (
-        <div className="h-full overflow-y-auto custom-scrollbar">
-          <TaxonomyCoverView onViewPolicies={goToLibrary} />
+
+      {/* ── Phase Selector Bar ── */}
+      <div
+        className="shrink-0 flex items-center gap-1 px-4 py-2 border-b"
+        style={{ borderColor: 'var(--ci-hairline)', background: 'var(--glass-soft-bg)' }}
+      >
+        <button
+          onClick={switchToPhase1}
+          className="flex items-center gap-2 px-4 py-1.5 rounded-lg font-montserrat text-[10px] font-bold tracking-[0.18em] uppercase transition-all"
+          style={{
+            background: phase === '1' ? 'rgba(var(--ci-accent-rgb), 0.08)' : 'transparent',
+            color: phase === '1' ? 'var(--ci-gold)' : 'var(--ci-text-muted)',
+            border: phase === '1' ? '1px solid rgba(var(--ci-accent-rgb), 0.25)' : '1px solid transparent',
+          }}
+        >
+          <Play size={11} />
+          Phase 1 — Live System Demo
+        </button>
+
+        <div className="w-px h-4 mx-1" style={{ background: 'var(--ci-hairline)' }} />
+
+        <button
+          onClick={switchToPhase2}
+          className="flex items-center gap-2 px-4 py-1.5 rounded-lg font-montserrat text-[10px] font-bold tracking-[0.18em] uppercase transition-all"
+          style={{
+            background: phase === '2' ? 'rgba(199,70,1,0.07)' : 'transparent',
+            color: phase === '2' ? '#C74601' : 'var(--ci-text-muted)',
+            border: phase === '2' ? '1px solid rgba(199,70,1,0.22)' : '1px solid transparent',
+          }}
+        >
+          <Sparkles size={11} />
+          Phase 2 — Executive Presentation
+        </button>
+      </div>
+
+      {/* ── Phase 1: Live System Demo ── */}
+      {phase === '1' && (
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          {view === 'cover' && (
+            <div className="h-full overflow-y-auto custom-scrollbar">
+              <TaxonomyCoverView onViewPolicies={goToLibrary} />
+            </div>
+          )}
+          {view === 'library' && (
+            <DemoLibraryView onBack={goToCover} onSelectPolicy={openDetail} />
+          )}
+          {view === 'detail' && detailPolicy && (
+            <DemoPolicyDetailView policy={detailPolicy} onBack={backToLibrary} />
+          )}
         </div>
       )}
-      {view === 'library' && (
-        <DemoLibraryView onBack={goToCover} onSelectPolicy={openDetail} />
+
+      {/* ── Phase 2: Executive Presentation ── */}
+      {phase === '2' && (
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <ExecutivePresentation onBack={switchToPhase1} />
+        </div>
       )}
-      {view === 'detail' && detailPolicy && (
-        <DemoPolicyDetailView policy={detailPolicy} onBack={backToLibrary} />
-      )}
+
     </div>
   );
 }

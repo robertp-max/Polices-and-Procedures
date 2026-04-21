@@ -1,0 +1,59 @@
+FORM ID: HR-FM-012
+TITLE: TB Screening & Questionnaire
+TYPE: Assessment
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- HR-WM-003
+
+PURPOSE:
+Tuberculosis screening questionnaire administered to every workforce member per CDC guidelines and California Title 22 § 74731, prior to any patient contact and annually thereafter.
+
+INSTRUCTIONS:
+Completed at hire and annually. Symptomatic or exposure-positive individuals are referred for chest X-ray and evaluation. Records retained for duration of employment + 30 years.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Assessment Responses
+layout: grid
+
+fields:
+- Employee Full Name (type=text, required=true, col=2)
+- Date of Screening (type=date, required=true, col=2)
+- Prior TB Test Date / Result (type=text, col=4)
+- Do you have a persistent cough > 3 weeks? (Y/N) (type=select, col=2, options=[Yes | No])
+- Unexplained fever, night sweats, or weight loss? (Y/N) (type=select, col=2, options=[Yes | No])
+- Known exposure to active TB in past 12 months? (Y/N) (type=select, col=2, options=[Yes | No])
+- Immunocompromised condition? (Y/N) (type=select, col=2, options=[Yes | No])
+- TB Test Required? (Y/N) — Method (type=select, col=4, options=[Yes — IGRA | Yes — TST | No — Cleared by history])
+- Test Result (type=text, col=4)
+- Action Required (if positive) (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Employee — Printed Name (type=text, col=2)
+- Employee — Signature (type=signature, col=1)
+- Employee — Date (type=date, col=1)
+- Screener — Printed Name (type=text, col=2)
+- Screener — Signature (type=signature, col=1)
+- Screener — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-012 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-WM-003

@@ -1,0 +1,59 @@
+FORM ID: EN-FM-007
+TITLE: Policy Development & Revision Template
+TYPE: Template
+DOMAIN: EN
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: master_template
+
+LINKED POLICIES:
+- EN-LC-001
+
+PURPOSE:
+Standardized authoring template ensuring every new or revised policy follows the gold-standard ten-section structure (Purpose, Scope, Definitions, Policy Statements, Procedures, Roles, Documentation, Compliance, References, Appendices).
+
+INSTRUCTIONS:
+Used by any workforce member developing or revising a policy. Draft is routed via the Policy Approval Routing Form (EN-FM-008) for formal review and approval prior to publication.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Proposed Policy ID (type=text, required=true, col=2)
+- Proposed Title (type=text, required=true, col=2)
+- Policy Tier (1/2/3) (type=select, col=2, options=[Tier 1 — Enterprise Critical | Tier 2 — Operational Standard | Tier 3 — Supporting])
+- Domain / Subdomain (type=text, col=2)
+- Policy Owner (type=text, col=2)
+- Target Effective Date (type=date, col=2)
+- Purpose Statement (type=textarea, col=4)
+- Scope (type=textarea, col=4)
+- Regulatory References (type=textarea, col=4)
+- Summary of Changes (if revision) (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Author — Printed Name (type=text, col=2)
+- Author — Signature (type=signature, col=1)
+- Author — Date (type=date, col=1)
+- Domain Steward — Printed Name (type=text, col=2)
+- Domain Steward — Signature (type=signature, col=1)
+- Domain Steward — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form EN-FM-007 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: EN-LC-001

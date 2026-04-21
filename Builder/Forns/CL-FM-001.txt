@@ -1,0 +1,77 @@
+FORM ID: CL-FM-001
+TITLE: Start of Care (SOC) Comprehensive Assessment
+TYPE: Assessment
+DOMAIN: CL
+USAGE: Required
+FREQUENCY: Per Episode
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, master_template
+
+LINKED POLICIES:
+- CL-CA-001
+- CL-OA-009
+
+PURPOSE:
+Comprehensive Start-of-Care (SOC) assessment required within 48 hours of referral or as ordered by physician, per 42 CFR § 484.55.
+
+INSTRUCTIONS:
+Performed by an RN (or qualified discipline for therapy-only) in the patient's home. All required OASIS items completed concurrently (CL-FM-002).
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Assessment Responses
+layout: grid
+
+fields:
+- Patient Full Legal Name (type=text, required=true, col=2)
+- MRN (type=text, required=true, col=1)
+- DOB (type=date, required=true, col=1)
+- Referral Date (type=date, required=true, col=2)
+- SOC Date (type=date, required=true, col=2)
+- Physician (type=text, col=4)
+- Primary Dx (ICD-10) (type=text, col=2)
+- Secondary Dx (type=text, col=2)
+- Chief Complaint (type=textarea, col=4)
+- History of Present Illness (type=textarea, col=4)
+- Past Medical / Surgical History (type=textarea, col=4)
+- Current Medications (reconciliation required) (type=textarea, col=4)
+- Allergies (meds, environmental, food) (type=text, col=4)
+- Functional Status (ADL / IADL) (type=textarea, col=4)
+- Cognitive Status (type=textarea, col=4)
+- Mental / Behavioral Status (type=textarea, col=4)
+- Home Environment & Safety Assessment (type=textarea, col=4)
+- Fall Risk Assessment Score (type=text, col=2)
+- Pain Assessment (0-10 + character) (type=text, col=2)
+- Skin Assessment (wounds, pressure injury) (type=textarea, col=4)
+- Cardiopulmonary Exam (type=textarea, col=4)
+- Neuro Exam (type=textarea, col=4)
+- GU / GI Exam (type=textarea, col=4)
+- Support System / Caregiver (type=textarea, col=4)
+- Homebound Status Rationale (type=textarea, required=true, col=4)
+- Patient Goals (type=textarea, col=4)
+- Plan of Care Summary (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Assessing Clinician (RN) — Printed Name (type=text, col=2)
+- Assessing Clinician (RN) — Signature (type=signature, col=1)
+- Assessing Clinician (RN) — Date (type=date, col=1)
+- Patient / Representative — Printed Name (type=text, col=2)
+- Patient / Representative — Signature (type=signature, col=1)
+- Patient / Representative — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CL-FM-001 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CL-CA-001, CL-OA-009

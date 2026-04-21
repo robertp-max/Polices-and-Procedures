@@ -1,0 +1,59 @@
+FORM ID: RM-FM-005
+TITLE: After-Action Review (AAR) Form
+TYPE: Assessment
+DOMAIN: RM
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- OP-FM-005
+- RM-EP-002
+- QA-AE-002
+
+PURPOSE:
+After-Action Review (AAR) of an actual incident or activation of the EP plan, capturing lessons learned.
+
+INSTRUCTIONS:
+Completed within 5 business days of event.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Assessment Responses
+layout: grid
+
+fields:
+- Event / Incident (type=text, required=true, col=4)
+- Event Date (type=date, col=2)
+- AAR Facilitator (type=text, col=2)
+- Summary of Event (type=textarea, col=4)
+- What Went Well (type=textarea, col=4)
+- What Did Not Go Well (type=textarea, col=4)
+- Why — Root Causes (type=textarea, col=4)
+- Corrective / Preventive Actions (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Facilitator — Printed Name (type=text, col=2)
+- Facilitator — Signature (type=signature, col=1)
+- Facilitator — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form RM-FM-005 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: OP-FM-005, RM-EP-002, QA-AE-002

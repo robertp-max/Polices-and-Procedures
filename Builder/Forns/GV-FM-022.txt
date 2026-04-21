@@ -1,0 +1,57 @@
+FORM ID: GV-FM-022
+TITLE: Executive Session Minutes Template
+TYPE: Template
+DOMAIN: GV
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: high_risk, master_template
+
+LINKED POLICIES:
+- GV-GB-002
+
+PURPOSE:
+Specialized minutes template for Executive Sessions of the Governing Body, with enhanced confidentiality and restricted distribution.
+
+INSTRUCTIONS:
+Used exclusively for Executive Sessions. Stored separately from regular minutes. Accessible only to attendees, Legal Counsel, and authorized regulators.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Executive Session Date (type=date, required=true, col=2)
+- Recorder (type=text, required=true, col=2)
+- Attendees (type=textarea, col=4)
+- Purpose of Executive Session (type=textarea, required=true, col=4)
+- Confidentiality Agreements Signed? (Y/N) (type=select, col=2, options=[Yes | No])
+- Discussion Summary (type=textarea, col=4)
+- Decisions / Motions (type=textarea, col=4)
+- Action Items (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Chair — Printed Name (type=text, col=2)
+- Chair — Signature (type=signature, col=1)
+- Chair — Date (type=date, col=1)
+- Recorder — Printed Name (type=text, col=2)
+- Recorder — Signature (type=signature, col=1)
+- Recorder — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form GV-FM-022 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: GV-GB-002

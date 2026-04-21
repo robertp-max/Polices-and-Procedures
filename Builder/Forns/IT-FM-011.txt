@@ -1,0 +1,54 @@
+FORM ID: IT-FM-011
+TITLE: Information Security Risk Assessment (SRA) Template
+TYPE: Template
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, master_template
+
+LINKED POLICIES:
+- IT-SC-001
+
+PURPOSE:
+HIPAA Security Risk Analysis template covering Administrative, Physical, and Technical safeguards across all systems handling ePHI.
+
+INSTRUCTIONS:
+Performed annually and after any significant change. Feeds the security risk register.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Title / Subject (type=text, col=4)
+- Date (type=date, col=2)
+- Prepared By (type=text, col=2)
+- Body / Narrative (type=textarea, col=4)
+- Attachments / References (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Security Officer — Printed Name (type=text, col=2)
+- Security Officer — Signature (type=signature, col=1)
+- Security Officer — Date (type=date, col=1)
+- Privacy Officer — Printed Name (type=text, col=2)
+- Privacy Officer — Signature (type=signature, col=1)
+- Privacy Officer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-011 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: IT-SC-001

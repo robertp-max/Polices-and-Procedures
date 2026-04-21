@@ -1,0 +1,59 @@
+FORM ID: FN-FM-010
+TITLE: PDGM LUPA Mitigation Tracker
+TYPE: Tracking Tool
+DOMAIN: FN
+USAGE: Required
+FREQUENCY: Ongoing
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: landscape
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- QA-PI-006
+- FN-CM-005
+
+PURPOSE:
+Tracker identifying LUPA-risk episodes with mitigation actions (added visits, care coordination) to avoid payment reduction.
+
+INSTRUCTIONS:
+Updated daily. Escalation triggers at day 25, 40, and 55 of certification period.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Tracking Tool Entries
+layout: table
+
+table_columns:
+- Episode
+- Day of Cert
+- Visits Done
+- LUPA Threshold
+- Gap
+- Mitigation Action
+- Owner
+- Result
+table_row_count: 15
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form FN-FM-010 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: QA-PI-006, FN-CM-005

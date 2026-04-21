@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  ChevronLeft, Printer, Target, CheckCircle, BookOpen, List,
+  ChevronLeft, Printer, Download, Target, CheckCircle, BookOpen, List,
   Settings, FileText, CheckSquare, Archive, LayoutList, Bell,
   HelpCircle, Clock, Search, AlertTriangle, ChevronRight,
   GitBranch, ExternalLink, Landmark, Scale, FileCheck, Lock,
   Shield, ShieldCheck, Gavel
 } from 'lucide-react';
+import ciLogoWhite from '@/assets/ci-logo-white.png';
+import { useShellStore } from '@/policy/stores/uiStore';
 
 // ══════════════════════════════════════════════════════════════
 // SHARED POLICY DETAIL VIEW
@@ -797,13 +799,38 @@ function TabAppendices({ policy }: { policy: SharedPolicy }) {
           </button>
         </div>
       </div>
-      <div className="flex space-x-2 overflow-x-auto mb-6 pl-6 pb-1 custom-scrollbar">
-        {apps.map(app => (
-          <button key={app.id} onClick={() => setActiveApp(app.id)}
-            className={`px-3 py-1.5 rounded-full font-montserrat font-bold text-[10px] uppercase tracking-wider transition-colors whitespace-nowrap ${activeApp === app.id ? 'bg-[#00e59b]/20 text-[#00e59b] border border-[#00e59b]/50' : 'text-white/50 border border-transparent hover:text-white'}`}>
-            {app.label}
-          </button>
-        ))}
+      {/* ── Appendix Cards — Care Indeed logo cards (large, survey-ready) ── */}
+      <div className="grid grid-cols-7 gap-3 mb-8 px-6">
+        {apps.map(app => {
+          const isActive = activeApp === app.id;
+          const subtitle = app.label.replace(/^Appx [A-G]:\s*/, '');
+          return (
+            <button
+              key={app.id}
+              onClick={() => setActiveApp(app.id)}
+              className={`group relative flex flex-col items-center justify-center rounded-xl px-3 py-4 transition-all duration-300 border ${
+                isActive
+                  ? 'bg-[#00e59b]/15 border-[#00e59b] shadow-[0_10px_30px_-10px_rgba(0,229,155,0.45)]'
+                  : 'bg-white/[0.02] border-white/10 hover:border-[#00e59b]/50 hover:bg-white/[0.05]'
+              }`}
+              style={{ minHeight: 108 }}
+              title={app.title}
+            >
+              <img
+                src={ciLogoWhite}
+                alt="Care Indeed"
+                className={`w-auto object-contain transition-opacity ${isActive ? 'opacity-100' : 'opacity-70 group-hover:opacity-95'}`}
+                style={{ height: 26 }}
+              />
+              <span className={`mt-2 font-montserrat font-bold text-[10px] uppercase tracking-[0.18em] leading-tight text-center ${isActive ? 'text-[#00e59b]' : 'text-white/70 group-hover:text-white'}`}>
+                {subtitle}
+              </span>
+              <span className={`mt-1 text-[8px] font-bold tracking-[0.3em] ${isActive ? 'text-[#00e59b]/80' : 'text-white/30'}`}>
+                APPX · {app.id}
+              </span>
+            </button>
+          );
+        })}
       </div>
       <div className="pl-6">
         <div className="text-center mb-8 pb-6 border-b border-white/10">
@@ -1018,16 +1045,55 @@ function TabAmendments({ policy }: { policy: SharedPolicy }) {
 // MAIN EXPORT — SharedPolicyDetailView
 // ══════════════════════════════════════════════════════════════
 
+// CI-ION dark mode domain accents (bright for black glass).
 const SHARED_DOMAINS_COLOR: Record<string, string> = {
-  GV: '#00c2b4', CL: '#ef4444', QA: '#06b6d4', HR: '#8b5cf6',
+  GV: '#FFC107', CL: '#ef4444', QA: '#06b6d4', HR: '#8b5cf6',
   CO: '#3b82f6', FN: '#10b981', OP: '#f97316', IT: '#6366f1',
   RM: '#eab308', EN: '#ec4899',
+};
+// Care Indeed brand kit — light mode:
+//   • GV (flagship governance domain)   ─▶ TEAL #007970 (primary brand highlight)
+//   • Other domains ─▶ darker hue variants that each clear WCAG AA
+//     (≥4.5:1) on the translucent white glass.
+const SHARED_DOMAINS_COLOR_LIGHT: Record<string, string> = {
+  GV: '#007970', CL: '#b91c1c', QA: '#0e7490', HR: '#6d28d9',
+  CO: '#1d4ed8', FN: '#047857', OP: '#C74600', IT: '#4338ca',
+  RM: '#854d0e', EN: '#be185d',
 };
 
 export function SharedPolicyDetailView({ policy, onBack }: { policy: SharedPolicy; onBack: () => void }) {
   const [activeTab, setActiveTab] = useState('overview');
   const isGV = policy.policyId === 'GV-GB-001';
-  const domainColor = SHARED_DOMAINS_COLOR[policy.domainCode] || '#00e59b';
+  const theme = useShellStore(s => s.theme);
+  const isLight = theme === 'care-indeed-light';
+  const domainColor = isLight
+    ? (SHARED_DOMAINS_COLOR_LIGHT[policy.domainCode] || '#007970')
+    : (SHARED_DOMAINS_COLOR[policy.domainCode] || '#00e59b');
+  const tabAccent = isLight ? '#007970' : '#00e59b';
+  const setDetailMode = useShellStore(s => s.setDetailMode);
+
+  useEffect(() => {
+    const prev = document.title;
+    document.title = 'Care Indeed Home Health Care, Inc. - Policies and Procedures';
+    setDetailMode(true);
+    return () => {
+      document.title = prev;
+      setDetailMode(false);
+    };
+  }, [setDetailMode]);
+
+  const handlePrint = () => {
+    window.print();
+  };
+  const handleDownload = () => {
+    const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${policy.policyId}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const navTabs = [
     { id: 'overview',      label: 'Overview & Definitions',  icon: Target },
@@ -1045,19 +1111,32 @@ export function SharedPolicyDetailView({ policy, onBack }: { policy: SharedPolic
   ];
 
   return (
-    <div className="demo-view-enter text-white flex flex-col h-full">
+    <div className="demo-view-enter text-white flex flex-col h-full policy-page">
       {/* Fixed header area */}
       <div className="shrink-0 p-6 md:p-8 pb-0">
-        {/* Top nav */}
-        <div className="flex justify-between items-center mb-6">
+        {/* Top nav — Return to Policy Library (left) · Print / Download (right) */}
+        <div className="no-print flex justify-between items-center mb-6">
           <button onClick={onBack}
             className="font-montserrat text-[11px] font-bold tracking-[0.2em] flex items-center gap-2 hover:opacity-80 uppercase transition-opacity"
             style={{ color: domainColor }}>
-            <ChevronLeft size={16} /> BACK TO LIBRARY
+            <ChevronLeft size={16} /> RETURN TO POLICY LIBRARY
           </button>
-          <button className="border border-white/20 hover:bg-white/5 px-5 py-2.5 rounded-full font-bold text-[10px] tracking-[0.2em] transition-colors flex items-center gap-2 text-white uppercase font-montserrat">
-            <Printer size={14} /> EXPORT
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="border border-white/20 hover:bg-white/5 px-5 py-2.5 rounded-full font-bold text-[10px] tracking-[0.2em] transition-colors flex items-center gap-2 text-white uppercase font-montserrat"
+            >
+              <Printer size={14} /> PRINT
+            </button>
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="border border-white/20 hover:bg-white/5 px-5 py-2.5 rounded-full font-bold text-[10px] tracking-[0.2em] transition-colors flex items-center gap-2 text-white uppercase font-montserrat"
+            >
+              <Download size={14} /> DOWNLOAD
+            </button>
+          </div>
         </div>
 
         {/* Policy badges */}
@@ -1088,9 +1167,10 @@ export function SharedPolicyDetailView({ policy, onBack }: { policy: SharedPolic
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`pb-3 px-4 font-montserrat text-[10px] font-bold tracking-[0.15em] uppercase whitespace-nowrap transition-colors flex items-center gap-2 border-b-2 ${
                   activeTab === tab.id
-                    ? 'text-[#00e59b] border-[#00e59b]'
+                    ? ''
                     : 'text-white/40 hover:text-white/80 border-transparent'
-                }`}>
+                }`}
+                style={activeTab === tab.id ? { color: tabAccent, borderColor: tabAccent } : undefined}>
                 <Icon size={13} /> {tab.label}
               </button>
             );
@@ -1098,8 +1178,9 @@ export function SharedPolicyDetailView({ policy, onBack }: { policy: SharedPolic
         </div>
       </div>
 
-      {/* Scrollable content */}
-      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-6 md:px-8 pb-8">
+      {/* Scrollable content — data-shell-scroll is reset in print so this
+          flows naturally; policy-page supplies the white bg + padding. */}
+      <div className="policy-content flex-1 min-h-0 overflow-y-auto custom-scrollbar px-6 md:px-8 pb-8">
         {activeTab === 'overview'      && <TabOverview policy={policy} />}
         {activeTab === 'statements'    && <TabStatements policy={policy} />}
         {activeTab === 'procedures'    && <TabProcedures policy={policy} />}

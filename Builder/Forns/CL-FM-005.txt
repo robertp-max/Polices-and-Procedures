@@ -1,0 +1,70 @@
+FORM ID: CL-FM-005
+TITLE: Plan of Care (485 Form)
+TYPE: Template
+DOMAIN: CL
+USAGE: Required
+FREQUENCY: Per Episode
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, master_template
+
+LINKED POLICIES:
+- CL-CP-001
+
+PURPOSE:
+Home Health Plan of Care (CMS Form 485) documenting physician orders, diagnoses, services, frequency, duration, and goals per 42 CFR § 484.60.
+
+INSTRUCTIONS:
+Signed by the attending physician within 30 days of SOC and prior to billing. Updated at each recertification.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Patient Name (type=text, required=true, col=2)
+- MRN (type=text, required=true, col=1)
+- SOC Date (type=date, col=1)
+- Certification Period (From / To) (type=text, required=true, col=2)
+- Primary Dx (ICD-10) (type=text, required=true, col=2)
+- Secondary Dx (type=textarea, col=4)
+- DME / Supplies (type=textarea, col=4)
+- Safety Measures (type=textarea, col=4)
+- Nutritional Requirements (type=textarea, col=4)
+- Allergies (type=text, col=4)
+- Functional Limitations (type=text, col=4)
+- Activities Permitted (type=text, col=4)
+- Mental Status (type=text, col=2)
+- Prognosis (type=select, col=2, options=[Poor | Guarded | Fair | Good | Excellent])
+- SN Orders / Frequency / Duration (type=textarea, col=4)
+- PT Orders / Frequency / Duration (type=textarea, col=4)
+- OT Orders / Frequency / Duration (type=textarea, col=4)
+- SLP Orders / Frequency / Duration (type=textarea, col=4)
+- MSW Orders / Frequency / Duration (type=textarea, col=4)
+- HHA Orders / Frequency / Duration (type=textarea, col=4)
+- Goals / Rehab Potential / Discharge Plans (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- RN Case Manager — Printed Name (type=text, col=2)
+- RN Case Manager — Signature (type=signature, col=1)
+- RN Case Manager — Date (type=date, col=1)
+- Attending Physician — Printed Name (type=text, col=2)
+- Attending Physician — Signature (type=signature, col=1)
+- Attending Physician — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CL-FM-005 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CL-CP-001

@@ -1,0 +1,67 @@
+FORM ID: CO-FM-006
+TITLE: Survey / Inspection Readiness Self-Assessment
+TYPE: Checklist
+DOMAIN: CO
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- CO-RA-003
+
+PURPOSE:
+Mock-survey self-assessment tool to verify survey readiness across all Conditions of Participation, operated annually and prior to any announced survey.
+
+INSTRUCTIONS:
+Executed by the Compliance Officer with leadership team. Identified deficiencies drive an immediate corrective action plan (CO-FM-008).
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Survey / Inspection Readiness Self-Assessment Checklist
+layout: checklist
+
+checklist_items:
+- CoP Governance — 42 CFR § 484.105 — records current
+- CoP Patient Rights — 42 CFR § 484.50 — all acknowledgments on file
+- CoP QAPI — 42 CFR § 484.65 — committee and minutes current
+- CoP Personnel Qualifications — 42 CFR § 484.115 — licenses, PSV current
+- CoP Clinical Records — 42 CFR § 484.110 — sample chart review passed
+- CoP Home Health Aide — 42 CFR § 484.80 — supervision and competencies
+- CoP Skilled Services — 42 CFR § 484.75 — POC / assessments current
+- CoP Emergency Prep — 42 CFR § 484.102 — plan, drills, training current
+- CoP Infection Control — 42 CFR § 484.70 — surveillance current
+- OASIS transmission timeliness verified
+- Face-to-face encounter documentation complete for active patients
+- Workforce OIG / SAM screens current
+- HIPAA Workforce training current
+- Plan of Care signatures current
+- Physician orders signed within required window
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+- Clinical Manager — Printed Name (type=text, col=2)
+- Clinical Manager — Signature (type=signature, col=1)
+- Clinical Manager — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CO-FM-006 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CO-RA-003

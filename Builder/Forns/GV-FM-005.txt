@@ -1,0 +1,60 @@
+FORM ID: GV-FM-005
+TITLE: Governing Body Meeting Minutes Template
+TYPE: Template
+DOMAIN: GV
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- GV-GB-001
+- GV-GB-002
+
+PURPOSE:
+Meeting minutes template capturing attendees, discussions, decisions, motions, votes, and action items for every Governing Body meeting, retained permanently.
+
+INSTRUCTIONS:
+Recorder produces a draft within 5 business days; approved at the next meeting. Minutes are maintained in the Governance record.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Meeting Date (type=date, required=true, col=2)
+- Recorder (type=text, required=true, col=2)
+- Members Present (type=textarea, col=4)
+- Members Absent (type=textarea, col=4)
+- Quorum Confirmed? (Y/N) (type=select, col=2, options=[Yes | No])
+- Approval of Prior Minutes (type=textarea, col=4)
+- Discussion Summary (type=textarea, col=4)
+- Motions / Votes (type=textarea, col=4)
+- Action Items (Owner / Due) (type=textarea, col=4)
+- Adjournment Time (type=text, col=2)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Chair — Printed Name (type=text, col=2)
+- Chair — Signature (type=signature, col=1)
+- Chair — Date (type=date, col=1)
+- Recorder — Printed Name (type=text, col=2)
+- Recorder — Signature (type=signature, col=1)
+- Recorder — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form GV-FM-005 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: GV-GB-001, GV-GB-002

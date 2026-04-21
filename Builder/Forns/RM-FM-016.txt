@@ -1,0 +1,61 @@
+FORM ID: RM-FM-016
+TITLE: Annual Risk Reassessment Report
+TYPE: Assessment
+DOMAIN: RM
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, shared_enterprise
+
+LINKED POLICIES:
+- RM-ER-001
+- RM-ER-003
+
+PURPOSE:
+Annual risk reassessment report summarizing enterprise risk posture for presentation to the Governing Body.
+
+INSTRUCTIONS:
+Prepared by Risk Management Committee and Compliance Officer.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Assessment Responses
+layout: grid
+
+fields:
+- Reporting Year (type=text, required=true, col=2)
+- Prepared By (type=text, col=2)
+- Overview of Risk Posture (type=textarea, col=4)
+- Top 5 Residual Risks (type=textarea, col=4)
+- Changes since Last Year (type=textarea, col=4)
+- Mitigation Effectiveness (type=textarea, col=4)
+- Resource / Budget Requests (type=textarea, col=4)
+- Recommendations to Governing Body (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Risk Committee Chair — Printed Name (type=text, col=2)
+- Risk Committee Chair — Signature (type=signature, col=1)
+- Risk Committee Chair — Date (type=date, col=1)
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form RM-FM-016 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: RM-ER-001, RM-ER-003

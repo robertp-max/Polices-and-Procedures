@@ -1,0 +1,55 @@
+FORM ID: FN-FM-007
+TITLE: Bad Debt & Charity Care Application
+TYPE: Form
+DOMAIN: FN
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: none
+
+LINKED POLICIES:
+- FN-FP-004
+
+PURPOSE:
+Application for bad debt adjustment or charity care consideration for uncollectible patient balances.
+
+INSTRUCTIONS:
+Reviewed by Finance Committee. Decisions documented; writeoffs posted per policy.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Patient Name / Account # (type=text, required=true, col=4)
+- Balance Owed (type=text, required=true, col=2)
+- Days Past Due (type=number, col=2)
+- Collection Attempts (summary) (type=textarea, col=4)
+- Financial Hardship Documentation (type=textarea, col=4)
+- Recommendation (Charity / Bad Debt / Continue Collection) (type=select, col=2, options=[Charity Care | Bad Debt Writeoff | Continue Collection])
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Finance Manager — Printed Name (type=text, col=2)
+- Finance Manager — Signature (type=signature, col=1)
+- Finance Manager — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form FN-FM-007 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: FN-FP-004

@@ -1,0 +1,55 @@
+FORM ID: HR-FM-018
+TITLE: Background Check Authorization & Summary
+TYPE: Form
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Upon Hire
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, high_risk
+
+LINKED POLICIES:
+- HR-TA-002
+
+PURPOSE:
+Authorizes the agency to obtain a criminal-background check, fingerprint screening, driving record, and credit check where role-appropriate.
+
+INSTRUCTIONS:
+Signed prior to any background check. FCRA-compliant disclosures provided. Results retained separately from the personnel file.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Applicant Full Legal Name (incl. former names) (type=text, required=true, col=4)
+- Date of Birth (type=date, required=true, col=2)
+- SSN (last 4) (type=text, col=2)
+- Current Address (type=text, col=4)
+- Prior Addresses (7 years) (type=textarea, col=4)
+- Driver's License # / State (type=text, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Applicant — Printed Name (type=text, col=2)
+- Applicant — Signature (type=signature, col=1)
+- Applicant — Date (type=date, col=1)
+- HR Representative — Printed Name (type=text, col=2)
+- HR Representative — Signature (type=signature, col=1)
+- HR Representative — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-018 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-TA-002

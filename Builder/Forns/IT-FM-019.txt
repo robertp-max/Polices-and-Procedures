@@ -1,0 +1,60 @@
+FORM ID: IT-FM-019
+TITLE: Audit Log Review Checklist
+TYPE: Checklist
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Monthly
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- IT-DR-003
+
+PURPOSE:
+Monthly checklist of audit-log reviews across critical systems to detect inappropriate access or activity.
+
+INSTRUCTIONS:
+Performed monthly. Anomalies investigated and documented.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Audit Log Review Checklist Checklist
+layout: checklist
+
+checklist_items:
+- EHR audit logs reviewed for unusual patient access patterns
+- Privileged account activity reviewed
+- Failed login attempts review
+- After-hours access review
+- Mass export / print events review
+- Remote access sessions review
+- Firewall logs review for alerts
+- DLP alerts reviewed
+- MDM alerts reviewed
+- Findings documented in audit log register
+- Incidents created for any actionable finding
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Security Analyst — Printed Name (type=text, col=2)
+- Security Analyst — Signature (type=signature, col=1)
+- Security Analyst — Date (type=date, col=1)
+- Security Officer — Printed Name (type=text, col=2)
+- Security Officer — Signature (type=signature, col=1)
+- Security Officer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-019 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: IT-DR-003

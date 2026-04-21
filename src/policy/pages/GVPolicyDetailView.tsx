@@ -4,7 +4,7 @@
  * Same visual framework as GVGBDetailView.tsx.
  * Each policy has full structured content across all tabs.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Printer, FileText, Shield, Search, CheckCircle, BookOpen,
@@ -12,6 +12,20 @@ import {
   ChevronRight, ArrowLeft, Paperclip, Bell, HelpCircle,
   ClipboardList, Clock,
 } from 'lucide-react';
+import { useShellStore } from '@/policy/stores/uiStore';
+
+function useDetailShell() {
+  const setDetailMode = useShellStore(s => s.setDetailMode);
+  useEffect(() => {
+    const prev = document.title;
+    document.title = 'Care Indeed Home Health Care, Inc. - Policies and Procedures';
+    setDetailMode(true);
+    return () => {
+      document.title = prev;
+      setDetailMode(false);
+    };
+  }, [setDetailMode]);
+}
 
 // ─── SHARED HELPERS ───────────────────────────────────────────────────────────
 
@@ -1673,8 +1687,8 @@ function ViewAppendices({ pc }: { pc: PolicyContent }) {
           <button key={i} onClick={() => setActiveAppx(i)}
             className={`px-4 py-2 rounded-lg text-sm font-montserrat font-bold transition-all border shadow-sm ${
               i === activeAppx
-                ? 'bg-[#00e59b]/20 text-white border-[#007970] shadow-md'
-                : 'bg-white text-white/60 border-white/10 hover:border-[#007970] hover:text-[#00e59b]'
+                ? 'bg-[#00e59b]/20 text-white border-[#D4AF37] shadow-md'
+                : 'bg-white text-white/60 border-white/10 hover:border-[#D4AF37] hover:text-[#00e59b]'
             }`}>
             {d.label}
           </button>
@@ -1693,6 +1707,7 @@ export function GVPolicyDetailView() {
   const { policyId } = useParams<{ policyId: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>('overview');
+  useDetailShell();
 
   const pc = policyId ? POLICY_MAP[policyId] : undefined;
 
@@ -1742,7 +1757,7 @@ export function GVPolicyDetailView() {
             onClick={() => navigate(-1)}
             className="flex items-center gap-1.5 text-xs font-montserrat font-bold text-white/70 hover:text-white transition-colors"
           >
-            <ArrowLeft size={13} /> Back to Library
+            <ArrowLeft size={13} /> Return to Policy Library
           </button>
           <button
             onClick={() => window.open(`/print/${pc.id}`, '_blank', 'noopener,noreferrer')}

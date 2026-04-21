@@ -1,0 +1,57 @@
+FORM ID: EN-FM-022
+TITLE: Enterprise Policy Compliance Scorecard
+TYPE: Tracking Tool
+DOMAIN: EN
+USAGE: Required
+FREQUENCY: Quarterly
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: landscape
+CLASSIFICATIONS: shared_enterprise
+
+LINKED POLICIES:
+- EN-CM-001
+
+PURPOSE:
+Enterprise policy compliance scorecard aggregating each domain's adherence metrics into a single quarterly board-level view.
+
+INSTRUCTIONS:
+Prepared by the Compliance Officer at quarter-end for presentation to the QAPI Committee and Governing Body.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Tracking Tool Entries
+layout: table
+
+table_columns:
+- Domain
+- # Policies
+- % Current Review
+- % Acknowledgment
+- % Audit Findings Closed
+- Composite Score
+- Trend
+table_row_count: 10
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form EN-FM-022 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: EN-CM-001

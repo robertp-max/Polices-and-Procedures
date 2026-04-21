@@ -1,0 +1,56 @@
+FORM ID: OP-FM-005
+TITLE: Approved Vendor List
+TYPE: Tracking Tool
+DOMAIN: OP
+USAGE: Required
+FREQUENCY: Ongoing
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: landscape
+CLASSIFICATIONS: shared_enterprise
+
+LINKED POLICIES:
+- OP-FM-003
+
+PURPOSE:
+Approved Vendor List — master roster of vendors authorized for agency use with contract dates and category.
+
+INSTRUCTIONS:
+Maintained by Procurement. Expired vendors removed; renewal triggers new OP-FM-003/004.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Tracking Tool Entries
+layout: table
+
+table_columns:
+- Vendor
+- Category
+- Contract Start
+- Contract End
+- PHI Access
+- Status
+table_row_count: 15
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form OP-FM-005 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: OP-FM-003

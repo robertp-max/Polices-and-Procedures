@@ -1,0 +1,67 @@
+FORM ID: GV-FM-001
+TITLE: Agency Closure / Change of Ownership Checklist
+TYPE: Checklist
+DOMAIN: GV
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: high_risk, audit_critical
+
+LINKED POLICIES:
+- GV-EA-005
+
+PURPOSE:
+Control checklist governing the orderly closure, sale, merger, or change of ownership of Care Indeed Home Health Care, Inc., ensuring patient continuity-of-care, record retention, and regulatory notifications.
+
+INSTRUCTIONS:
+Initiated at least 90 calendar days prior to any closure or change-of-ownership event. Each task shall be dated and initialed by the responsible leader.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Agency Closure / Change of Ownership Checklist Checklist
+layout: checklist
+
+checklist_items:
+- Governing Body resolution approving closure / CHOW
+- Notice filed with CDPH Licensing & Certification ≥ 30 days in advance
+- CMS Form 855A/855R submitted to MAC
+- State Medicaid agency notified in writing
+- All active patients given ≥ 15 day written notice and continuity-of-care plan
+- Transferring agency identified for all active episodes
+- Medical records transfer / retention plan executed
+- OASIS transmission final run completed
+- Final claim submission cycle closed
+- Workforce separation notices issued per WARN Act if applicable
+- IRS / SSA / state tax filings finalized
+- Business Associate Agreements terminated or transferred
+- Bank accounts, credit lines, and vendor contracts closed
+- Physical records secured; electronic records archived for 7 years (HIPAA)
+- Final report submitted to Governing Body and filed in Governance record
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+- Governing Body Chair — Printed Name (type=text, col=2)
+- Governing Body Chair — Signature (type=signature, col=1)
+- Governing Body Chair — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form GV-FM-001 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: GV-EA-005

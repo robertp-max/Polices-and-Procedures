@@ -1,0 +1,58 @@
+FORM ID: RM-FM-004
+TITLE: EP Exercise Documentation Form
+TYPE: Assessment
+DOMAIN: RM
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- OP-FM-005
+- RM-EP-002
+
+PURPOSE:
+Documentation of emergency preparedness exercise (tabletop, functional, full-scale) per 42 CFR § 484.102.
+
+INSTRUCTIONS:
+Minimum one exercise per year. Findings feed plan updates.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Assessment Responses
+layout: grid
+
+fields:
+- Exercise Date (type=date, required=true, col=2)
+- Exercise Type (type=select, col=2, options=[Tabletop | Functional | Full-Scale | Community])
+- Scenario (type=textarea, col=4)
+- Participants (type=textarea, col=4)
+- Objectives / Capabilities Tested (type=textarea, col=4)
+- Observations (type=textarea, col=4)
+- Identified Gaps (type=textarea, col=4)
+- Improvements Planned (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Facilitator — Printed Name (type=text, col=2)
+- Facilitator — Signature (type=signature, col=1)
+- Facilitator — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form RM-FM-004 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: OP-FM-005, RM-EP-002

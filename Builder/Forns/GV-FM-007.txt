@@ -1,0 +1,61 @@
+FORM ID: GV-FM-007
+TITLE: Administrator Delegation of Authority Agreement
+TYPE: Form
+DOMAIN: GV
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: high_risk, audit_critical
+
+LINKED POLICIES:
+- GV-GB-001
+- GV-OG-005
+
+PURPOSE:
+Formal written delegation of specific operational authorities from the Governing Body or Administrator to a designated individual, with effective date, scope, duration, and revocation provisions.
+
+INSTRUCTIONS:
+Executed for any delegation lasting more than 10 business days. Retained in the Governance record and referenced on GV-FM-017 Delegation Log.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Delegating Authority (Role) (type=text, required=true, col=2)
+- Delegate (Name / Role) (type=text, required=true, col=2)
+- Effective Start Date (type=date, required=true, col=2)
+- Effective End Date (type=date, col=2)
+- Specific Authorities Delegated (type=textarea, required=true, col=4)
+- Limitations on Delegated Authority (type=textarea, col=4)
+- Reporting Expectations (type=textarea, col=4)
+- Revocation Conditions (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Delegating Authority — Printed Name (type=text, col=2)
+- Delegating Authority — Signature (type=signature, col=1)
+- Delegating Authority — Date (type=date, col=1)
+- Delegate — Printed Name (type=text, col=2)
+- Delegate — Signature (type=signature, col=1)
+- Delegate — Date (type=date, col=1)
+- Witness — Printed Name (type=text, col=2)
+- Witness — Signature (type=signature, col=1)
+- Witness — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form GV-FM-007 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: GV-GB-001, GV-OG-005

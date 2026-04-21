@@ -1,0 +1,59 @@
+FORM ID: GV-FM-002
+TITLE: Agency Credential & Licensure Register
+TYPE: Tracking Tool
+DOMAIN: GV
+USAGE: Required
+FREQUENCY: Ongoing
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: landscape
+CLASSIFICATIONS: shared_enterprise, audit_critical
+
+LINKED POLICIES:
+- GV-EA-005
+- GV-EA-004
+
+PURPOSE:
+Master register of every agency-level credential and licensure (CMS certification, CDPH license, state business licenses, DEA, accreditation, NPI, tax IDs) with number, issue/expiry dates, and renewal ownership.
+
+INSTRUCTIONS:
+Maintained by the Administrator. Expirations within 120 days trigger a renewal work order. Verified at each quarterly Compliance Committee meeting.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Tracking Tool Entries
+layout: table
+
+table_columns:
+- Credential Type
+- Issuing Authority
+- Number
+- Issue Date
+- Expiry Date
+- Renewal Owner
+- Status
+- Evidence File
+table_row_count: 12
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form GV-FM-002 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: GV-EA-005, GV-EA-004

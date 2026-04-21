@@ -1,0 +1,55 @@
+FORM ID: IT-FM-006
+TITLE: Internet & Email Acceptable Use Agreement
+TYPE: Attestation
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Upon Hire
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: digital_candidate
+
+LINKED POLICIES:
+- IT-UP-002
+
+PURPOSE:
+Acceptable Use Policy acknowledgment for agency internet, email, and electronic communications.
+
+INSTRUCTIONS:
+Signed at hire and annually.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Attestation
+layout: attestation
+
+body:
+I acknowledge and agree that:
+
+acknowledgments:
+- Internet and email resources are for business purposes; incidental personal use is allowed if it does not interfere with work.
+- I will not send PHI via unencrypted email or public channels.
+- I will not access offensive, illegal, or malicious content from agency networks.
+- All communications may be monitored, logged, and audited.
+- I will not use agency email for personal business activities, solicitation, or political advocacy.
+- Violations may result in discipline up to termination and legal action.
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- User — Printed Name (type=text, col=2)
+- User — Signature (type=signature, col=1)
+- User — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-006 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: IT-UP-002

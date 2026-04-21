@@ -1,0 +1,60 @@
+FORM ID: CO-FM-008
+TITLE: Plan of Correction (PoC) Template
+TYPE: Template
+DOMAIN: CO
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, master_template
+
+LINKED POLICIES:
+- CO-RA-007
+
+PURPOSE:
+Standardized Plan of Correction template used to respond to any regulatory finding, with root cause, corrective actions, responsible parties, and ongoing monitoring.
+
+INSTRUCTIONS:
+Completed and submitted within required timeframe (typically 10 business days of CMS Form 2567 receipt). Monitoring continues for at least one review cycle.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Survey Agency (type=text, required=true, col=2)
+- Survey Date (type=date, required=true, col=2)
+- Finding / Citation (type=textarea, required=true, col=4)
+- CFR / Standard (type=text, col=2)
+- Severity / Scope (type=text, col=2)
+- Root Cause Analysis (type=textarea, required=true, col=4)
+- Corrective Actions (type=textarea, required=true, col=4)
+- Responsible Parties (type=textarea, col=4)
+- Completion Date (type=date, col=2)
+- Monitoring Method / Frequency (type=textarea, col=4)
+- Evidence of Sustained Compliance (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CO-FM-008 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CO-RA-007

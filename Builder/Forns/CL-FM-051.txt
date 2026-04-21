@@ -1,0 +1,60 @@
+FORM ID: CL-FM-051
+TITLE: Clinician Competency Validation — OASIS
+TYPE: Checklist
+DOMAIN: CL
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- CL-OA-003
+- CL-OA-018
+
+PURPOSE:
+Standardized checklist capturing the required data elements for Clinician Competency Validation — OASIS, aligned with Care Indeed policy, applicable federal/state regulation, and the enterprise gold standard (GV-GB-001).
+
+INSTRUCTIONS:
+Completed by the responsible workforce member (annual). All fields are mandatory unless marked optional. Retained per agency record-retention schedule and made available for internal audit, state licensure, and CMS survey review.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Clinician Competency Validation — OASIS Checklist
+layout: checklist
+
+checklist_items:
+- Clinician Competency Validation — OASIS — Regulatory requirement reviewed and understood
+- Clinician Competency Validation — OASIS — Applicable policy section located and re-read
+- Clinician Competency Validation — OASIS — Required documentation identified and accessible
+- Clinician Competency Validation — OASIS — All data fields confirmed complete and accurate
+- Clinician Competency Validation — OASIS — Signatures / attestations obtained from required parties
+- Clinician Competency Validation — OASIS — Copy filed in the appropriate record per retention schedule
+- Clinician Competency Validation — OASIS — Completion entered in tracking log / dashboard
+- Clinician Competency Validation — OASIS — Any deficiencies escalated to supervisor / Compliance Officer
+- Clinician Competency Validation — OASIS — Corrective action documented and tracked to closure
+- Clinician Competency Validation — OASIS — Annual review date set and added to calendar
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CL-FM-051 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CL-OA-003, CL-OA-018

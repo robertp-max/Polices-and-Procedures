@@ -95,6 +95,22 @@ export function DraftPolicyPage() {
     }
   }, [beginDraftEdit, initializeDraft, policy, workspace]);
 
+  // Find the best section to edit — skip level-1 title (body="---")
+  const derivedSection = workspace
+    ? (selectedSectionId
+        ? (workspace.sections.find(s => s.id === selectedSectionId) ?? null)
+        : (workspace.sections.find(s => s.body && s.body.trim() !== '---' && s.body.trim().length > 5) ??
+           (workspace.sections.length > 1 ? workspace.sections[1] : workspace.sections[0]) ??
+           null))
+    : null;
+
+  // Auto-set selectedSectionId once a good section is found
+  useEffect(() => {
+    if (!selectedSectionId && derivedSection) {
+      setSelectedSectionId(derivedSection.id);
+    }
+  }, [selectedSectionId, derivedSection]);
+
   if (!policy) {
     return (
       <div className="rounded-xl border border-[#D70101]/30 bg-[#D70101]/5 p-4 font-roboto text-sm text-[#D70101]">
@@ -114,21 +130,6 @@ export function DraftPolicyPage() {
   function promote() {
     setLifecycleStatus(policy!.id, 'Under Review', 'Author', 'Promoted from draft workspace');
   }
-
-  // Find the best section to edit — skip level-1 title (body="---")
-  const derivedSection =
-    selectedSectionId
-      ? (workspace.sections.find(s => s.id === selectedSectionId) ?? null)
-      : (workspace.sections.find(s => s.body && s.body.trim() !== '---' && s.body.trim().length > 5) ??
-         (workspace.sections.length > 1 ? workspace.sections[1] : workspace.sections[0]) ??
-         null);
-
-  // Auto-set selectedSectionId once a good section is found
-  useEffect(() => {
-    if (!selectedSectionId && derivedSection) {
-      setSelectedSectionId(derivedSection.id);
-    }
-  }, [selectedSectionId, derivedSection]);
 
   const editableBody = derivedSection?.body ?? '';
 

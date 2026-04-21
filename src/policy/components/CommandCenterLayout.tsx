@@ -1,19 +1,24 @@
 ﻿import { useState, useEffect, type PropsWithChildren } from 'react';
-import logo from '@/assets/ci-logo-white.png';
+import ciIonLogo from '@/assets/ci-ion-logo.png';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardCheck, Network, FileEdit,
   CheckSquare, Send, FileBarChart, PlayCircle,
-  HelpCircle, Search, ChevronRight, ChevronLeft, Menu,
-  ShieldCheck, Zap,
+  HelpCircle, Search, ChevronLeft, Menu,
+  ShieldCheck, Zap, FingerprintPattern as Fingerprint,
+  GraduationCap, Sparkles,
 } from 'lucide-react';
+import TravelightBG from '@/components/TravelightBG';
+import { useShellStore } from '@/policy/stores/uiStore';
 
 /* ═══════════════════════════════════════════════════════════════
-   CANONICAL SHELL — ported from Builder/Main/main.html
-   Single source of truth for layout, animation, and navigation.
+   CANONICAL SHELL — CI-ION premium one-glass design
+   TravelightBG backdrop + a SINGLE deep-maroon translucent glass
+   canvas that fills the viewport. All page content lives on this
+   one glass — no stacked sub-cards.
    ═══════════════════════════════════════════════════════════════ */
 
-// ── Navigation structure with expanded SubItems ──
 interface NavSubItem {
   to: string;
   label: string;
@@ -28,16 +33,27 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', to: '/dashboard', label: 'Command Center', subItems: [{ to: '/dashboard', label: 'Overview' }], icon: LayoutDashboard },
-  { id: 'compliance', to: '/calendar', label: 'Compliance', subItems: [{ to: '/calendar', label: 'Calendar' }, { to: '/calendar/minutes', label: 'Minutes' }], icon: ClipboardCheck },
+  { id: 'iadmin', to: '/iadministrator', label: 'iAdministrator', icon: Sparkles },
+  { id: 'compliance', to: '/calendar', label: 'Compliance', subItems: [{ to: '/calendar', label: 'Calendar' }, { to: '/calendar/minutes', label: 'Minutes' }, { to: '/audit', label: 'Audit Mode' }], icon: ClipboardCheck },
   { id: 'taxonomy', to: '/framework', label: 'Taxonomy', subItems: [{ to: '/framework', label: 'Framework' }, { to: '/library', label: 'Policies' }, { to: '/forms', label: 'Forms' }], icon: Network },
   { id: 'drafts', to: '/drafts', label: 'Drafts', icon: FileEdit },
   { id: 'review', to: '/review', label: 'Review Queue', icon: CheckSquare },
   { id: 'publish', to: '/publish', label: 'Publishing', icon: Send },
   { id: 'reports', to: '/governance', label: 'Master Report', icon: FileBarChart },
+  {
+    id: 'journey', to: '/journey', label: 'Onboarding',
+    subItems: [
+      { to: '/journey',            label: 'Journey' },
+      { to: '/journey/appendix-f', label: 'Appendix F' },
+      { to: '/journey/supervisor', label: 'Supervisor' },
+      { to: '/journey/admin',      label: 'Admin / HR' },
+      { to: '/journey/guide',      label: 'User Guide' },
+    ],
+    icon: GraduationCap,
+  },
   { id: 'demo', to: '/demo', label: 'Demo', icon: PlayCircle },
 ];
 
-// ── Fullscreen API helper ──
 function enterFullscreen() {
   const el = document.documentElement as HTMLElement & {
     webkitRequestFullscreen?: () => Promise<void>;
@@ -48,38 +64,19 @@ function enterFullscreen() {
   else if (el.msRequestFullscreen) el.msRequestFullscreen();
 }
 
-// ── Viewport-aware scale: design canvas 1920×1080, 5% enlargement bias ──
-const DESIGN_W = 1920;
-const DESIGN_H = 1080;
-const SCALE_BIAS = 1.155; // 1.05 base × 1.10 to absorb the 110% browser-zoom sweet-spot at 4K/200% OS scale
-const VIEWPORT_FILL = 0.75; // glass card occupies ~75% of viewport on desktop
-const SCALE_MIN = 0.3;      // never shrink below 30% — keeps desktop usable on small windows
-const MOBILE_BP = 1024;     // below this width → full-screen mode (tablet/phone)
+// ── Viewport detection (mobile vs. desktop) ──────────────
+const MOBILE_BP = 1024;
 
-function useShellScale(): { scale: number; isMobile: boolean } {
-  const compute = () => {
-    const mobile = window.innerWidth < MOBILE_BP;
-    const scale = mobile
-      ? 1
-      : Math.max(
-          Math.min(
-            window.innerWidth * VIEWPORT_FILL / DESIGN_W,
-            window.innerHeight * VIEWPORT_FILL / DESIGN_H
-          ) * SCALE_BIAS,
-          SCALE_MIN
-        );
-    return { scale, isMobile: mobile };
-  };
-  const [state, setState] = useState(compute);
+function useIsMobile(): boolean {
+  const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < MOBILE_BP);
   useEffect(() => {
-    const update = () => setState(compute());
+    const update = () => setMobile(window.innerWidth < MOBILE_BP);
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
-  return state;
+  return mobile;
 }
 
-// ── Resolve active nav from current path ──
 function resolveActiveNav(pathname: string): NavItem {
   for (const item of NAV_ITEMS) {
     if (item.subItems) {
@@ -94,121 +91,340 @@ function resolveActiveNav(pathname: string): NavItem {
 
 export function CommandCenterLayout({ children }: PropsWithChildren) {
   const [showSplash, setShowSplash] = useState(true);
+  const [launching, setLaunching] = useState(false);
+  const [splashExit, setSplashExit] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSubMenu, setActiveSubMenu] = useState<NavItem | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const { scale, isMobile } = useShellScale();
+  const isMobile = useIsMobile();
+
+  const detailMode = useShellStore(s => s.detailMode);
+  const theme = useShellStore(s => s.theme);
+  const toggleTheme = useShellStore(s => s.toggleTheme);
+  const isLight = theme === 'care-indeed-light';
+  const logo = isLight ? ciLogoGray : ciIonLogo;
+
+  // Route-based detail detection (for detail pages opened via URL).
+  const pathIsDetail =
+    /^\/library\/.+/.test(location.pathname) ||
+    /^\/gv-policy\/.+/.test(location.pathname) ||
+    /^\/forms\/.+/.test(location.pathname);
+  const hideChrome = detailMode || pathIsDetail;
 
   const currentNav = resolveActiveNav(location.pathname);
 
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  const handleEnter = () => {
+    setLaunching(true);
+    setSplashExit(true);
+    window.setTimeout(() => {
+      enterFullscreen();
+      setShowSplash(false);
+    }, 1100);
+  };
+
   return (
     <>
-      {/* ── 1. Background Root ── */}
-      <div className="fixed inset-0 bg-[#020406] flex items-center justify-center overflow-hidden text-white">
+      {/* ── 1. Premium background (TravelightBG) — fills viewport ── */}
+      <TravelightBG isLight={isLight} />
 
-        {/* ── 2. Animated Gradient Layer ── */}
-        <div className="absolute inset-0 vibrant-bg" />
-
-        {/* ── 3. Cinematic 16:9 Design Canvas — viewport-scaled to 1920×1080 ── */}
+      {/* ── 2. Single premium glass canvas — near-fullscreen ── */}
+      <div data-shell-outer="" className={`fixed inset-0 ${isLight ? 'text-slate-800' : 'text-[#E0E0E0]'}`} style={{ zIndex: 1 }}>
         <div
-          className={`relative z-10 bg-transparent backdrop-blur-[3.55px] backdrop-brightness-[0.67] backdrop-saturate-[1.33] border border-white/20 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden ${isMobile ? 'w-full h-full rounded-none' : 'rounded-3xl md:rounded-[40px]'}`}
-          style={isMobile
-            ? { width: '100%', height: '100%' }
-            : { width: DESIGN_W, height: DESIGN_H, transform: `scale(${scale})`, transformOrigin: 'center center' }
-          }
+          data-shell-card=""
+          className={`absolute overflow-hidden ${isMobile ? 'inset-0 rounded-none' : 'rounded-3xl md:rounded-[2rem]'}`}
+          style={{
+            ...(isMobile
+              ? {}
+              : {
+                  top:    'clamp(16px, 1.6vw, 28px)',
+                  bottom: 'clamp(16px, 1.6vw, 28px)',
+                  left:   'clamp(16px, 1.6vw, 28px)',
+                  right:  'clamp(16px, 1.6vw, 28px)',
+                }),
+
+            /* ── Glass surface ──
+               Light  : Care Indeed single sheet of glass — exactly
+                        bg-white/[0.0777] + backdrop-blur-3xl + the
+                        design-system shadow (from CI Design System.pdf).
+                        Opens snap to solid paper at 100% for policy/form
+                        detail views.
+               Dark   : CI-ION maroon glass at 30.44% (7.77% reduction
+                        from 33%); full opacity in detail mode. */
+            ...(isLight
+              ? {
+                  // Care Indeed light mode — SOLID WHITE enterprise
+                  // surface. No glass, no blur, no frosted effect.
+                  // Card is 100% opaque white with a 1px neutral-200
+                  // border and a soft 1-layer shadow so it reads as a
+                  // polished enterprise content sheet above the
+                  // GradFlow smoke background.
+                  background: '#FFFFFF',
+                  border: '1px solid #E5E4E3',
+                }
+              : {
+                  background: hideChrome
+                    ? 'linear-gradient(160deg, rgba(66,8,8,1) 0%, rgba(10,2,2,1) 100%)'
+                    : 'linear-gradient(160deg, rgba(66,8,8,0.3044) 0%, rgba(10,2,2,0.3044) 100%)',
+                  backdropFilter: 'blur(22px) saturate(145%)',
+                  WebkitBackdropFilter: 'blur(22px) saturate(145%)',
+                  border: '1px solid rgba(255,255,255,0.09)',
+                  boxShadow:
+                    '0 40px 120px -30px rgba(0,0,0,0.85), 0 18px 48px -18px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07), inset 0 0 0 1px rgba(255,255,255,0.015)',
+                }),
+          }}
         >
 
-          {/* ── 4. Content Wrapper ── */}
+          {/* ── 3. Content wrapper ── */}
           <div className="flex w-full h-full relative">
 
-            {/* ══════════════════════════════════════════
-                5. SPLASH VIEW
-               ══════════════════════════════════════════ */}
             {showSplash ? (
-              <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center animate-in fade-in duration-1000 p-20">
-                <div className="flex flex-col items-center max-w-2xl text-center">
-                  {/* Logo Group */}
-                  <img
-                    src={logo}
-                    alt="Care Indeed"
-                    className="h-20 w-auto opacity-100 object-contain drop-shadow-2xl mb-12"
-                  />
+              /* ══════════════════════════════════════════
+                 4. SPLASH VIEW — CI-ION Premium
+                 ══════════════════════════════════════════ */
+              <div
+                className="absolute inset-0 z-[60] flex items-center justify-center animate-in fade-in duration-700 p-8 md:p-20"
+                style={{
+                  transition: 'opacity 700ms cubic-bezier(.22,1,.36,1)',
+                  opacity: splashExit ? 0 : 1,
+                  pointerEvents: splashExit ? ('none' as const) : ('auto' as const),
+                }}
+              >
+                {/* Splash inner card — brand-aligned enterprise panel.
+                    Light: clean surface with a 1px neutral-200 border
+                    on top of the solid-white shell. Dark: hairline on
+                    the CI-ION maroon glass. Never uses blur / glass in
+                    light mode. */}
+                <div
+                  className="relative flex flex-col items-center justify-between"
+                  style={{
+                    width: 'min(440px, calc(100vw - 64px))',
+                    minHeight: 580,
+                    padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem)',
+                    borderRadius: '24px',
+                    background: isLight ? '#FFFFFF' : 'transparent',
+                    border: isLight
+                      ? '1px solid #E5E4E3'
+                      : '1px solid rgba(255,255,255,0.0777)',
+                  }}
+                >
+                  <div className="w-full flex flex-col items-center gap-8 relative z-10">
+                    {/* Splash logo → theme toggle (both views) */}
+                    <button
+                      type="button"
+                      onClick={toggleTheme}
+                      aria-label={`Switch to ${isLight ? 'CI-ION dark' : 'Care Indeed light'} theme`}
+                      title={`Switch to ${isLight ? 'CI-ION dark' : 'Care Indeed light'} theme`}
+                      className="group rounded-xl p-1 hover:scale-[1.03] transition-transform cursor-pointer focus-visible:outline-offset-4"
+                    >
+                      <img
+                        src={logo}
+                        alt={`Care Indeed — click to switch to ${isLight ? 'CI-ION dark' : 'Care Indeed light'} theme`}
+                        className={`h-14 w-auto object-contain ${isLight ? '' : 'drop-shadow-2xl'}`}
+                        style={isLight ? { opacity: 1 } : { filter: 'brightness(0) invert(1)', opacity: 0.95 }}
+                      />
+                    </button>
 
-                  {/* Title & Version */}
-                  <div className="space-y-4 mb-12">
-                    <h1 className="text-6xl font-light tracking-[0.15em] uppercase text-white leading-tight">
-                      Enterprise Policy <br />
-                      <span className="font-bold text-[#00c2b4]">Architecture</span>
-                    </h1>
-                    <div className="flex items-center justify-center gap-6">
-                      <span className="h-px w-12 bg-white/20" />
-                      <p className="text-xl font-bold tracking-[0.4em] text-white/40 uppercase">Version 6.0</p>
-                      <span className="h-px w-12 bg-white/20" />
+                    {/* Status pill — brand-aligned. Light: white surface,
+                        neutral-300 border, neutral-500 body text
+                        (WCAG AA on #FFF), teal dot. */}
+                    <div
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
+                      role="status"
+                      aria-live="polite"
+                      style={{
+                        fontSize: 10,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        letterSpacing: '.25em',
+                        border: `1px solid ${
+                          launching
+                            ? (isLight ? '#C74601' : 'rgba(255,255,255,.3)')
+                            : (isLight ? '#D1D1D1' : 'rgba(255,255,255,.1)')
+                        }`,
+                        background: launching
+                          ? (isLight ? '#FFEEE5' : 'rgba(255,255,255,.2)')
+                          : (isLight ? '#FFFFFF' : 'rgba(255,255,255,.05)'),
+                        color: launching
+                          ? (isLight ? '#C74601' : '#fff')
+                          : (isLight ? '#52404B' : 'rgba(255,255,255,.75)'),
+                        transition: 'all .3s ease',
+                      }}
+                    >
+                      <span style={{ position: 'relative', display: 'flex', height: 6, width: 6 }}>
+                        <span
+                          style={{
+                            position: 'absolute',
+                            display: 'inline-flex',
+                            height: '100%',
+                            width: '100%',
+                            borderRadius: '50%',
+                            opacity: 0.75,
+                            background: launching ? (isLight ? '#C74601' : '#fff') : (isLight ? '#007970' : '#FFC107'),
+                            animation: 'splashPing 1s cubic-bezier(0,0,.2,1) infinite',
+                          }}
+                        />
+                        <span
+                          style={{
+                            position: 'relative',
+                            display: 'inline-flex',
+                            borderRadius: '50%',
+                            height: 6,
+                            width: 6,
+                            background: launching ? (isLight ? '#C74601' : '#fff') : (isLight ? '#007970' : '#FFC107'),
+                          }}
+                        />
+                      </span>
+                      {launching ? 'AUTHENTICATING' : 'SYSTEM READY'}
+                    </div>
+
+                    {/* Title — solid brand tokens only. No gradient clip.
+                        Fixes the "text disappears after theme switch" bug. */}
+                    <div className="text-center w-full">
+                      <h1
+                        className="font-heading mb-3"
+                        style={{
+                          fontSize: '1.75rem',
+                          fontWeight: 500,
+                          lineHeight: 1.15,
+                          letterSpacing: '-0.01em',
+                          color: isLight ? '#1F1C1B' : '#ffffff',
+                        }}
+                      >
+                        Enterprise Policy
+                        <br />
+                        <span style={{ fontWeight: 600, color: isLight ? '#C74601' : '#FFC107' }}>
+                          Architecture
+                        </span>
+                      </h1>
+                      <p
+                        className="font-body uppercase"
+                        style={{
+                          fontSize: 10,
+                          letterSpacing: '.35em',
+                          fontWeight: 500,
+                          color: isLight ? '#747474' : 'rgba(255,255,255,0.40)',
+                        }}
+                      >
+                        Enterprise Taxonomy v6.0
+                      </p>
                     </div>
                   </div>
 
-                  {/* Subtext */}
-                  <p className="text-white/40 text-lg font-light leading-relaxed mb-16 tracking-wide max-w-lg">
-                    Regulatory Compliance foundation and Clinical Governance Framework for Home Health Operations.
-                  </p>
+                  <div className="w-full flex flex-col items-center gap-6 relative z-10 mt-8">
+                    <p
+                      className="text-center font-body"
+                      style={{
+                        fontSize: 13,
+                        lineHeight: 1.55,
+                        fontWeight: 400,
+                        color: isLight ? '#52404B' : 'rgba(255,255,255,0.50)',
+                      }}
+                    >
+                      Regulatory compliance foundation &amp; clinical governance framework for Home Health Operations.
+                    </p>
 
-                  {/* ── 6. Entry Button ── */}
-                  <button
-                    onClick={() => {
-                      enterFullscreen();
-                      setShowSplash(false);
-                    }}
-                    className="glass-interactive group relative flex items-center gap-6 px-12 py-6 rounded-2xl border border-white/10 hover:border-[#00c2b4]/40 transition-all duration-300"
-                  >
-                    <div className="flex flex-col items-start">
-                      <span className="text-[10px] font-bold tracking-[0.3em] text-[#00c2b4] uppercase mb-1">Initialize System</span>
-                      <span className="text-2xl font-light tracking-widest text-white uppercase">Enter Environment</span>
+                    {/* Primary CTA — brand primary-500 → primary-600 on
+                        hover. Solid color (no gradient), no shadow,
+                        rounded-lg=12px per CI brand kit. */}
+                    <div className="w-full px-2 flex flex-col gap-3">
+                      <button
+                        onClick={handleEnter}
+                        disabled={launching}
+                        type="button"
+                        aria-label="Enter Care Indeed policy environment"
+                        className="relative w-full font-heading"
+                        style={{
+                          padding: '1rem 1.5rem',
+                          borderRadius: '12px',
+                          fontWeight: 600,
+                          textTransform: 'uppercase',
+                          letterSpacing: '.18em',
+                          fontSize: '.82rem',
+                          color: isLight ? '#FFFFFF' : '#0A0202',
+                          cursor: launching ? 'wait' : 'pointer',
+                          background: isLight
+                            ? (launching ? '#421700' : '#C74601')
+                            : 'linear-gradient(to bottom,#FFC107,#D9A406)',
+                          border: 'none',
+                          outline: 'none',
+                          overflow: 'hidden',
+                          transition: 'background-color .2s ease',
+                        }}
+                        onMouseEnter={e => {
+                          if (!launching && isLight) e.currentTarget.style.background = '#421700';
+                        }}
+                        onMouseLeave={e => {
+                          if (!launching && isLight) e.currentTarget.style.background = '#C74601';
+                        }}
+                      >
+                        {launching ? (
+                          <div className="flex items-center justify-center gap-3">
+                            <Fingerprint size={18} className="animate-pulse" />
+                            <span style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: '.1em', fontSize: '.82rem' }}>ENCRYPTING</span>
+                          </div>
+                        ) : 'Enter Environment'}
+                      </button>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-[#00c2b4]/20 transition-colors">
-                      <ChevronRight className="text-[#00c2b4]" size={28} />
-                    </div>
-                  </button>
-                </div>
 
-                {/* ── 7. System Badges Footer ── */}
-                <div className="absolute bottom-16 left-0 right-0 flex justify-center gap-12 text-white/20">
-                  <div className="flex items-center gap-3">
-                    <ShieldCheck size={18} strokeWidth={1} />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Validated Compliance</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Network size={18} strokeWidth={1} />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]">IBM Framework Alignment</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Zap size={18} strokeWidth={1} />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Real-time Authoring</span>
+                    <div className="grid grid-cols-3 gap-2 w-full pt-2">
+                      {[
+                        { icon: ShieldCheck, label: 'Compliance' },
+                        { icon: Network, label: 'Framework' },
+                        { icon: Zap, label: 'Authoring' },
+                      ].map(({ icon: Icon, label }) => (
+                        <div
+                          key={label}
+                          className="flex flex-col items-center gap-1.5 font-heading"
+                          style={{ color: isLight ? '#52404B' : 'rgba(255,255,255,0.35)' }}
+                        >
+                          <Icon size={14} strokeWidth={1.75} aria-hidden="true" />
+                          <span className="font-semibold uppercase" style={{ fontSize: 9, letterSpacing: '.18em' }}>{label}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div
+                      className="text-center font-body"
+                      style={{
+                        fontSize: 10,
+                        letterSpacing: '.1em',
+                        fontWeight: 400,
+                        color: isLight ? '#747474' : 'rgba(255,255,255,0.35)',
+                      }}
+                    >
+                      © 2026 CareIndeed · Policy Command Center
+                    </div>
                   </div>
                 </div>
               </div>
             ) : (
               <>
                 {/* ══════════════════════════════════════════
-                    8 & 9. FULL-SCREEN MODAL MENU
+                    FULL-SCREEN MODAL MENU
                    ══════════════════════════════════════════ */}
                 {isMenuOpen && (
                   <div className="absolute inset-0 z-50 flex items-center justify-center animate-in fade-in duration-500">
-                    {/* 9. Modal Background Overlay — 33% #00292e tint */}
                     <div
-                      className="absolute inset-0 bg-[#00292e] cursor-pointer"
-                      style={{ opacity: 0.33 }}
+                      className="absolute inset-0 cursor-pointer"
+                      style={{
+                        background: isLight
+                          ? '#FFFFFF'
+                          : 'rgba(10,2,2,0.65)',
+                        backdropFilter: isLight ? 'none' : 'blur(20px) saturate(130%)',
+                        WebkitBackdropFilter: isLight ? 'none' : 'blur(20px) saturate(130%)',
+                      }}
                       onClick={() => {
                         setIsMenuOpen(false);
                         setActiveSubMenu(null);
                       }}
                     />
-
-                    {/* Modal Content Container */}
                     <div className="relative z-10 w-full max-w-5xl px-8 flex justify-center items-center pointer-events-none">
                       <div className="pointer-events-auto w-full">
                         {!activeSubMenu ? (
-                          /* ── 10. Main 3×3 Navigation Grid ── */
                           <div className="grid grid-cols-3 gap-x-12 gap-y-16 md:gap-y-20 animate-in zoom-in-95 duration-500">
                             {NAV_ITEMS.map((item) => {
                               const isActive = currentNav.id === item.id;
@@ -225,12 +441,17 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                                   }}
                                   className="flex flex-col items-center justify-center gap-6 group outline-none"
                                 >
-                                  <item.icon
-                                    size={48}
-                                    strokeWidth={1}
-                                    className={`icon-interactive group-hover:scale-110 ${isActive ? 'text-[#00c2b4] !opacity-100' : 'text-white'}`}
-                                  />
-                                  <span className={`icon-interactive text-lg font-light uppercase tracking-[0.2em] ${isActive ? 'text-[#00c2b4] !opacity-100' : 'text-white'}`}>
+                                  <span style={isActive ? { color: isLight ? '#007970' : '#FFC107' } : undefined}>
+                                    <item.icon
+                                      size={48}
+                                      strokeWidth={1}
+                                      className={`icon-interactive group-hover:scale-110 ${isActive ? '!opacity-100' : isLight ? 'text-slate-700' : 'text-white'}`}
+                                    />
+                                  </span>
+                                  <span
+                                    className={`icon-interactive text-lg font-light uppercase tracking-[0.2em] ${isActive ? '!opacity-100' : isLight ? 'text-slate-700' : 'text-white'}`}
+                                    style={isActive ? { color: isLight ? '#007970' : '#FFC107' } : undefined}
+                                  >
                                     {item.label}
                                   </span>
                                 </button>
@@ -238,15 +459,15 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                             })}
                           </div>
                         ) : (
-                          /* ── 11. Submenu View ── */
                           <div className="flex flex-col items-center animate-in slide-in-from-right-8 fade-in duration-500">
                             <button
                               onClick={() => setActiveSubMenu(null)}
-                              className="mb-16 flex items-center gap-3 text-[#00c2b4] hover:text-white transition-colors uppercase tracking-[0.2em] font-bold text-sm"
+                              className={`mb-16 flex items-center gap-3 ${isLight ? 'hover:text-slate-900' : 'hover:text-white'} transition-colors uppercase tracking-[0.2em] font-bold text-sm`}
+                              style={{ color: isLight ? '#007970' : '#FFC107' }}
                             >
                               <ChevronLeft size={18} /> Back to Main Menu
                             </button>
-                            <h3 className="text-2xl font-light text-white/40 uppercase tracking-[0.3em] mb-12 flex items-center gap-4">
+                            <h3 className={`text-2xl font-light ${isLight ? 'text-slate-700' : 'text-white/40'} uppercase tracking-[0.3em] mb-12 flex items-center gap-4`}>
                               <activeSubMenu.icon size={28} strokeWidth={1} />
                               {activeSubMenu.label}
                             </h3>
@@ -261,7 +482,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                                   }}
                                   className="group text-5xl md:text-6xl font-light outline-none"
                                 >
-                                  <span className="icon-interactive uppercase tracking-[0.1em] text-white block group-hover:scale-105">
+                                  <span className={`icon-interactive uppercase tracking-[0.1em] ${isLight ? 'text-slate-900' : 'text-white'} block group-hover:scale-105`}>
                                     {sub.label}
                                   </span>
                                 </button>
@@ -275,74 +496,117 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                 )}
 
                 {/* ══════════════════════════════════════════
-                    12. MAIN APP CONTENT AREA
+                    MAIN APP CONTENT
                    ══════════════════════════════════════════ */}
                 <div className={`flex-1 flex flex-col relative z-10 w-full overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isMenuOpen ? 'blur-[12px] opacity-30 scale-[0.98]' : ''}`}>
 
-                  {/* ── 13. Header ── */}
-                  <header className="w-full px-6 md:px-10 pt-8 md:pt-10 pb-4 flex items-start justify-between shrink-0 relative z-20">
-                    {/* ── 14. Centered Logo Zone — desktop only ── */}
-                    {!isMobile && (
-                      <div className="absolute left-1/2 top-8 md:top-10 -translate-x-1/2 flex items-center justify-center h-12 pointer-events-none">
-                        <img
-                          src={logo}
-                          alt="Care Indeed"
-                          className="h-6 md:h-8 w-auto opacity-100 object-contain drop-shadow-md"
-                        />
-                      </div>
-                    )}
-
-                    {/* ── 15. Left Control Cluster ── */}
-                    <div className="flex items-center gap-6">
-                      <button
-                        onClick={() => {
-                          setIsMenuOpen(!isMenuOpen);
-                          setActiveSubMenu(null);
-                        }}
-                        className="glass-interactive flex items-center justify-center w-12 h-12 rounded-full text-white/70 hover:text-white border border-transparent shadow-sm"
-                      >
-                        <Menu size={24} />
-                      </button>
-                      {isMobile ? (
-                        <img
-                          src={logo}
-                          alt="Care Indeed"
-                          className="h-7 w-auto opacity-100 object-contain drop-shadow-md"
-                        />
-                      ) : (
-                        <div className="flex flex-col gap-1.5">
-                          <h1 className="text-[#00c2b4] text-[10px] md:text-[11px] font-bold tracking-[0.25em] uppercase">Policy Taxonomy</h1>
-                          <p className="text-white/40 text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase">Context: {currentNav.label}</p>
-                        </div>
+                  {!hideChrome && (
+                    <header className="w-full px-6 md:px-10 pt-8 md:pt-10 pb-4 flex items-start justify-between shrink-0 relative z-20">
+                      {!isMobile && (
+                        <button
+                          type="button"
+                          onClick={toggleTheme}
+                          aria-label={`Switch to ${isLight ? 'CI-ION Dark' : 'Care Indeed Light'} theme`}
+                          title={`Switch to ${isLight ? 'CI-ION Dark' : 'Care Indeed Light'} theme`}
+                          className="absolute left-1/2 top-8 md:top-10 -translate-x-1/2 flex items-center justify-center h-12 cursor-pointer hover:scale-105 transition-transform"
+                        >
+                          <img
+                            src={logo}
+                            alt="Care Indeed — theme toggle"
+                            className={`h-6 md:h-8 w-auto object-contain ${isLight ? '' : 'drop-shadow-md'}`}
+                            style={isLight ? undefined : { filter: 'brightness(0) invert(1)', opacity: 0.95 }}
+                          />
+                        </button>
                       )}
-                    </div>
 
-                    {/* ── 16 & 17. Right Utility Cluster ── */}
-                    <div className="flex items-center gap-4 md:gap-6">
-                      {/* 16. Search Field */}
-                      <div className="hidden sm:flex items-center bg-transparent border border-white/10 rounded-full px-5 py-2.5 w-48 md:w-64 focus-within:border-[#00c2b4]/50 transition-all">
-                        <Search size={14} className="text-white/30 mr-3 shrink-0" />
-                        <input
-                          type="text"
-                          placeholder="Search policies..."
-                          className="bg-transparent border-none outline-none text-white text-xs w-full placeholder-white/30 font-light"
-                        />
+                      <div className="flex items-center gap-6">
+                        <button
+                          onClick={() => {
+                            setIsMenuOpen(!isMenuOpen);
+                            setActiveSubMenu(null);
+                          }}
+                          className={`glass-interactive flex items-center justify-center w-12 h-12 rounded-full ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'} border border-transparent shadow-sm`}
+                        >
+                          <Menu size={24} />
+                        </button>
+                        {isMobile ? (
+                          <button
+                            type="button"
+                            onClick={toggleTheme}
+                            aria-label="Toggle theme"
+                            className="cursor-pointer"
+                          >
+                            <img
+                              src={logo}
+                              alt="Care Indeed"
+                              className={`h-7 w-auto object-contain ${isLight ? '' : 'drop-shadow-md'}`}
+                              style={isLight ? undefined : { filter: 'brightness(0) invert(1)', opacity: 0.95 }}
+                            />
+                          </button>
+                        ) : (
+                          <div className="flex flex-col gap-1.5">
+                            <h1
+                              className="text-[10px] md:text-[11px] font-bold tracking-[0.25em] uppercase"
+                              style={{ color: isLight ? '#007970' : '#FFC107' }}
+                            >
+                              Policy Taxonomy
+                            </h1>
+                            <p className={`${isLight ? 'text-slate-500' : 'text-white/40'} text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase`}>Context: {currentNav.label}</p>
+                          </div>
+                        )}
                       </div>
-                      {/* 17. Help Button */}
-                      <button className="glass-interactive flex items-center justify-center w-10 h-10 rounded-full text-white/50 hover:text-white transition-colors border border-transparent">
-                        <HelpCircle size={20} />
-                      </button>
-                      {/* 17. User Avatar */}
-                      <div className="glass-interactive flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-[#007970] to-[#004a45] text-white font-bold text-sm shadow-md cursor-pointer relative border border-transparent">
-                        JD
-                        <div className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-[#00c2b4] shadow-[0_0_8px_rgba(0,194,180,0.8)]" />
-                      </div>
-                    </div>
-                  </header>
 
-                  {/* ── 12. Main Content Injection Area ── */}
-                  <main className="flex-1 w-full h-full relative overflow-hidden">
-                    <div className="absolute inset-0 overflow-y-auto custom-scrollbar">
+                      <div className="flex items-center gap-4 md:gap-6">
+                        <div
+                          className={`hidden sm:flex items-center bg-transparent border rounded-full px-5 py-2.5 w-48 md:w-64 transition-all ${
+                            isLight
+                              ? 'border-slate-300 focus-within:border-[#007970]/60'
+                              : 'border-white/10 focus-within:border-[#FFC107]/50'
+                          }`}
+                        >
+                          <Search size={14} className={`${isLight ? 'text-slate-400' : 'text-white/30'} mr-3 shrink-0`} aria-hidden="true" />
+                          <label htmlFor="ci-global-search" className="sr-only">
+                            Search policies
+                          </label>
+                          <input
+                            id="ci-global-search"
+                            type="text"
+                            placeholder="Search policies..."
+                            className={`bg-transparent border-none outline-none ${isLight ? 'text-slate-900 placeholder-slate-500' : 'text-white placeholder-white/40'} text-xs w-full font-light`}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          aria-label="Help"
+                          className={`glass-interactive flex items-center justify-center w-10 h-10 rounded-full ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/50 hover:text-white'} transition-colors border border-transparent`}
+                        >
+                          <HelpCircle size={20} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Account: Jane Doe"
+                          className="glass-interactive flex items-center justify-center w-10 h-10 rounded-full text-white font-bold text-sm cursor-pointer relative border border-transparent"
+                          style={{
+                            background: isLight
+                              ? '#007970'
+                              : 'linear-gradient(135deg, rgba(93,14,14,0.9), rgba(49,7,7,0.9))',
+                          }}
+                        >
+                          JD
+                          <span
+                            aria-hidden="true"
+                            className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full"
+                            style={{
+                              background: isLight ? '#C74600' : '#FFC107',
+                            }}
+                          />
+                        </button>
+                      </div>
+                    </header>
+                  )}
+
+                  <main data-shell-main="" className="flex-1 w-full h-full relative overflow-hidden">
+                    <div data-shell-scroll="" className="absolute inset-0 overflow-y-auto custom-scrollbar">
                       {children}
                     </div>
                   </main>

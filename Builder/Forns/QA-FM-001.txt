@@ -1,0 +1,58 @@
+FORM ID: QA-FM-001
+TITLE: QAPI Committee Meeting Minutes Template
+TYPE: Template
+DOMAIN: QA
+USAGE: Required
+FREQUENCY: Quarterly
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, master_template
+
+LINKED POLICIES:
+- QA-PG-003
+
+PURPOSE:
+Quarterly QAPI Committee meeting minutes template per 42 CFR § 484.65(b), documenting data review, improvement projects, and board reporting.
+
+INSTRUCTIONS:
+Minutes finalized within 5 business days. Aggregate report provided to Governing Body.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Meeting Date (type=date, required=true, col=2)
+- Chair (type=text, col=2)
+- Attendees (type=textarea, col=4)
+- Data Reviewed (Outcomes, Incidents, HHCAHPS) (type=textarea, col=4)
+- Active PIPs Status (type=textarea, col=4)
+- New PIPs Chartered (type=textarea, col=4)
+- Adverse Events / Sentinel Review (type=textarea, col=4)
+- Decisions / Motions (type=textarea, col=4)
+- Action Items (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- QAPI Chair — Printed Name (type=text, col=2)
+- QAPI Chair — Signature (type=signature, col=1)
+- QAPI Chair — Date (type=date, col=1)
+- Recorder — Printed Name (type=text, col=2)
+- Recorder — Signature (type=signature, col=1)
+- Recorder — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form QA-FM-001 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: QA-PG-003

@@ -1,0 +1,54 @@
+FORM ID: IT-FM-007
+TITLE: Social Media Policy Acknowledgment
+TYPE: Attestation
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Upon Hire
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: digital_candidate
+
+LINKED POLICIES:
+- IT-UP-003
+
+PURPOSE:
+Acknowledgment of agency social media policy governing personal and professional social media use as it relates to Care Indeed, patients, and colleagues.
+
+INSTRUCTIONS:
+Signed at hire and annually.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Attestation
+layout: attestation
+
+body:
+I acknowledge that:
+
+acknowledgments:
+- I will not post, share, or reference any PHI on social media — ever.
+- I will not speak on behalf of the agency without authorization.
+- I will not disparage patients, colleagues, or the agency on public channels.
+- Any personal opinions I post are mine alone, and I will disclose my agency affiliation if relevant.
+- Violations may result in discipline up to termination.
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- User — Printed Name (type=text, col=2)
+- User — Signature (type=signature, col=1)
+- User — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-007 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: IT-UP-003

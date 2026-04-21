@@ -1,0 +1,55 @@
+FORM ID: HR-FM-029
+TITLE: Anti-Harassment Policy Acknowledgment
+TYPE: Attestation
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, digital_candidate
+
+LINKED POLICIES:
+- HR-ER-004
+
+PURPOSE:
+Annual acknowledgment of Care Indeed's Anti-Harassment, Anti-Retaliation, and EEO Policy per federal and California law.
+
+INSTRUCTIONS:
+Signed at hire and annually. Training completion (CA SB 1343, 2 hrs supervisors / 1 hr non-supervisors) evidenced on HR-FM-017.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Attestation
+layout: attestation
+
+body:
+I acknowledge and agree that:
+
+acknowledgments:
+- I have received and read the Anti-Harassment, Anti-Retaliation, and EEO Policy.
+- I understand harassment based on protected characteristics is prohibited and subject to discipline up to termination.
+- I understand retaliation against anyone reporting a concern in good faith is strictly prohibited.
+- I know how to report harassment, discrimination, or retaliation concerns (HR, Compliance Officer, Hotline).
+- I have completed the state-required Harassment Prevention Training.
+- I agree to abide by this policy in all work activities.
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Employee — Printed Name (type=text, col=2)
+- Employee — Signature (type=signature, col=1)
+- Employee — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-029 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-ER-004

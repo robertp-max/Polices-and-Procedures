@@ -1,0 +1,64 @@
+FORM ID: HR-FM-020
+TITLE: Contractor / Per Diem Onboarding Checklist
+TYPE: Checklist
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Upon Hire
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- HR-WM-002
+
+PURPOSE:
+Onboarding checklist for contract, agency, or per-diem staff verifying credentialing, exclusion, orientation, and initial skills competency prior to patient assignment.
+
+INSTRUCTIONS:
+Completed before first patient visit. Same credentialing standards as employees — NO exceptions. Revalidated at contract renewal.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Contractor / Per Diem Onboarding Checklist Checklist
+layout: checklist
+
+checklist_items:
+- Staffing agency contract / BAA executed
+- Individual contractor background check on file
+- OIG / SAM exclusion clear (current month)
+- Primary Source license verification completed
+- Evidence of malpractice or agency coverage
+- HIPAA training completed within last 12 months
+- Bloodborne pathogens training within 12 months
+- TB screening current
+- Orientation to agency policies completed
+- Skills competency validated for assigned scope
+- Scheduling system access provisioned
+- Expiration tracking loaded to HR-FM-021
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Contractor — Printed Name (type=text, col=2)
+- Contractor — Signature (type=signature, col=1)
+- Contractor — Date (type=date, col=1)
+- HR Representative — Printed Name (type=text, col=2)
+- HR Representative — Signature (type=signature, col=1)
+- HR Representative — Date (type=date, col=1)
+- Clinical Manager — Printed Name (type=text, col=2)
+- Clinical Manager — Signature (type=signature, col=1)
+- Clinical Manager — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-020 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: HR-WM-002

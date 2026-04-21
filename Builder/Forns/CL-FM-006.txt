@@ -1,0 +1,59 @@
+FORM ID: CL-FM-006
+TITLE: Physician Orders Sheet
+TYPE: Template
+DOMAIN: CL
+USAGE: Required
+FREQUENCY: Per Episode
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, master_template
+
+LINKED POLICIES:
+- CL-CP-003
+
+PURPOSE:
+Capture of additional physician orders (new, changed, or discontinued) beyond those on the original 485 Plan of Care.
+
+INSTRUCTIONS:
+Documented at time of order. Verbal/telephone orders must be signed by physician within the timeframe required by state law (CA: within 7 days).
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Patient MRN (type=text, required=true, col=1)
+- Patient Name (type=text, required=true, col=3)
+- Order Date / Time (type=text, required=true, col=2)
+- Order Type (type=select, col=2, options=[Telephone | Verbal | Written | Secure Message | Fax])
+- Ordering Physician (type=text, required=true, col=2)
+- NPI (type=text, col=2)
+- Order Detail (verbatim) (type=textarea, required=true, col=4)
+- Clinical Indication (type=textarea, col=4)
+- Received By (Clinician) (type=text, col=2)
+- Physician Signature Due Date (type=date, col=2)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Receiving Clinician — Printed Name (type=text, col=2)
+- Receiving Clinician — Signature (type=signature, col=1)
+- Receiving Clinician — Date (type=date, col=1)
+- Attending Physician — Printed Name (type=text, col=2)
+- Attending Physician — Signature (type=signature, col=1)
+- Attending Physician — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CL-FM-006 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CL-CP-003

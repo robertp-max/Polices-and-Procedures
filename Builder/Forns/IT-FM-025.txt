@@ -1,0 +1,54 @@
+FORM ID: IT-FM-025
+TITLE: Remote Device Wipe Authorization Form
+TYPE: Form
+DOMAIN: IT
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: high_risk
+
+LINKED POLICIES:
+- IT-UP-001
+
+PURPOSE:
+Authorization to remotely wipe an agency-managed or BYOD device due to loss, theft, or separation.
+
+INSTRUCTIONS:
+Executed within 1 hour of qualifying event. Retained in asset record.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Device Owner / User (type=text, required=true, col=2)
+- Device Type / Serial (type=text, col=2)
+- Reason for Wipe (type=select, required=true, col=2, options=[Lost | Stolen | Termination | Compromise Suspected | Other])
+- Date/Time Wiped (type=text, col=2)
+- Wipe Confirmed (Method) (type=text, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Security Officer — Printed Name (type=text, col=2)
+- Security Officer — Signature (type=signature, col=1)
+- Security Officer — Date (type=date, col=1)
+- HR (if separation) — Printed Name (type=text, col=2)
+- HR (if separation) — Signature (type=signature, col=1)
+- HR (if separation) — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-025 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: IT-UP-001

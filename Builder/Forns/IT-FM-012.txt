@@ -1,0 +1,58 @@
+FORM ID: IT-FM-012
+TITLE: Privileged Access User (PAU) Agreement
+TYPE: Attestation
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Upon Hire
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: high_risk, digital_candidate
+
+LINKED POLICIES:
+- IT-SC-002
+
+PURPOSE:
+Privileged Access User agreement for any user with administrative access to systems containing ePHI.
+
+INSTRUCTIONS:
+Executed before privileges granted and annually thereafter.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Attestation
+layout: attestation
+
+body:
+As a privileged user I agree that:
+
+acknowledgments:
+- I will use my privileged account ONLY for administrative tasks; regular work uses my standard account.
+- I will not share my privileged credentials or bypass access controls.
+- I will promptly document privileged actions in the audit log as required.
+- I understand that all privileged activity is logged, monitored, and audited.
+- I will report any suspected misuse or compromise immediately.
+- Violations may result in revocation, discipline, and legal action.
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Privileged User — Printed Name (type=text, col=2)
+- Privileged User — Signature (type=signature, col=1)
+- Privileged User — Date (type=date, col=1)
+- Security Officer — Printed Name (type=text, col=2)
+- Security Officer — Signature (type=signature, col=1)
+- Security Officer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-012 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: IT-SC-002

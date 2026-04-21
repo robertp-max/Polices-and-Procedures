@@ -1,0 +1,57 @@
+FORM ID: IT-FM-017
+TITLE: Data Classification & Handling Matrix
+TYPE: Matrix
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: landscape
+CLASSIFICATIONS: shared_enterprise, audit_critical
+
+LINKED POLICIES:
+- IT-SC-006
+
+PURPOSE:
+Matrix classifying agency data (Public, Internal, Confidential, Restricted/PHI) and the required handling controls at each level.
+
+INSTRUCTIONS:
+Reviewed annually by Privacy and Security Officers. All new data types classified at creation.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Matrix
+layout: table
+
+table_columns:
+- Classification
+- Examples
+- Storage
+- Transmission
+- Sharing
+- Retention
+- Destruction
+table_row_count: 6
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-017 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: IT-SC-006

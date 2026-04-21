@@ -1,0 +1,56 @@
+FORM ID: EN-FM-029
+TITLE: Enterprise Taxonomy Version Release Notes
+TYPE: Template
+DOMAIN: EN
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: master_template
+
+LINKED POLICIES:
+- EN-TG-001
+
+PURPOSE:
+Release-notes template documenting each published version of the enterprise policy taxonomy.
+
+INSTRUCTIONS:
+Issued with every taxonomy version release. Distributed to all Domain Owners and published in the Policy Library.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Taxonomy Version (type=text, required=true, col=2)
+- Release Date (type=date, required=true, col=2)
+- Summary of Changes (type=textarea, col=4)
+- New Policies Added (type=textarea, col=4)
+- Policies Revised (type=textarea, col=4)
+- Policies Retired (type=textarea, col=4)
+- Impact to Workforce (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Policy Administrator — Printed Name (type=text, col=2)
+- Policy Administrator — Signature (type=signature, col=1)
+- Policy Administrator — Date (type=date, col=1)
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form EN-FM-029 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: EN-TG-001

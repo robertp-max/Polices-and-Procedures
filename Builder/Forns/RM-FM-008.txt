@@ -1,0 +1,60 @@
+FORM ID: RM-FM-008
+TITLE: Enterprise Risk Register
+TYPE: Tracking Tool
+DOMAIN: RM
+USAGE: Required
+FREQUENCY: Ongoing
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: landscape
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- RM-ER-001
+
+PURPOSE:
+Enterprise Risk Register capturing identified strategic, operational, clinical, financial, regulatory, and cyber risks.
+
+INSTRUCTIONS:
+Updated quarterly by the Risk Management Committee; reviewed annually by the Governing Body.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Tracking Tool Entries
+layout: table
+
+table_columns:
+- Risk ID
+- Category
+- Description
+- Inherent Likelihood
+- Inherent Impact
+- Controls
+- Residual Likelihood
+- Residual Impact
+- Owner
+- Status
+table_row_count: 20
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form RM-FM-008 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: RM-ER-001

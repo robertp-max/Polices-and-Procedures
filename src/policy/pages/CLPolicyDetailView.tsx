@@ -4,13 +4,14 @@
  * All 70 CL policies rendered with full structured content.
  * Architecture mirrors GVPolicyDetailView.tsx.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Printer, FileText, Shield, Search, CheckCircle, BookOpen,
   AlertTriangle, Settings, List, CheckSquare, Archive, Info,
   ChevronRight, ArrowLeft, Paperclip,
 } from 'lucide-react';
+import { useShellStore } from '@/policy/stores/uiStore';
 
 // ─── ALL 70 CL POLICY IDS ─────────────────────────────────────────────────────
 export const CL_POLICY_IDS: string[] = [
@@ -36,7 +37,7 @@ const Card = ({ children, className = '' }: { children: React.ReactNode; classNa
   <div className={`bg-white shadow-sm rounded-xl p-6 mb-6 ${className}`}>{children}</div>
 );
 
-const SectionTitle = ({ icon: Icon, title, color = 'text-[#007970]' }: {
+const SectionTitle = ({ icon: Icon, title, color = 'text-[#D4AF37]' }: {
   icon?: React.ElementType; title: string; color?: string;
 }) => (
   <h2 className={`font-montserrat text-2xl font-bold flex items-center mb-6 ${color}`}>
@@ -51,7 +52,7 @@ const SimpleTable = ({ headers, rows }: {
   <div className="overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm mb-6">
     <table className="w-full table-fixed text-left border-collapse">
       <thead>
-        <tr className="bg-[#007970] text-white">
+        <tr className="bg-[#D4AF37] text-white">
           {headers.map((h, i) => (
             <th key={i} className="p-4 font-montserrat font-bold text-sm tracking-wide border-b border-[#006059]">{h}</th>
           ))}
@@ -1110,7 +1111,7 @@ function ViewOverview({ pc }: { pc: PolicyContent }) {
           <ul className="space-y-3">
             {pc.scopeItems.map((item, i) => (
               <li key={i} className="flex items-start">
-                <CheckCircle className="text-[#007970] mr-3 mt-0.5 flex-shrink-0" size={18} />
+                <CheckCircle className="text-[#D4AF37] mr-3 mt-0.5 flex-shrink-0" size={18} />
                 <span className="text-gray-700 text-[15px]">{item}</span>
               </li>
             ))}
@@ -1122,7 +1123,7 @@ function ViewOverview({ pc }: { pc: PolicyContent }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {pc.definitions.map((def, i) => (
             <div key={i} className="bg-gray-50 border border-gray-200 p-5 rounded-xl shadow-sm">
-              <h4 className="font-montserrat font-extrabold text-[#007970] mb-2">{def.term}</h4>
+              <h4 className="font-montserrat font-extrabold text-[#D4AF37] mb-2">{def.term}</h4>
               <p className="text-gray-600 text-sm leading-relaxed">{def.definition}</p>
             </div>
           ))}
@@ -1140,7 +1141,7 @@ function ViewPolicy({ pc }: { pc: PolicyContent }) {
         <div className="space-y-4">
           {pc.statements.map((stmt, i) => (
             <div key={i} className="flex items-start bg-gray-50 border border-gray-200 p-5 rounded-xl shadow-sm">
-              <div className="bg-[#007970] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold font-montserrat flex-shrink-0 mr-5 shadow-inner text-sm">
+              <div className="bg-[#D4AF37] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold font-montserrat flex-shrink-0 mr-5 shadow-inner text-sm">
                 4.{i + 1}
               </div>
               <p className="text-gray-800 leading-relaxed pt-2 text-[15px]">{stmt.substring(stmt.indexOf(' ') + 1)}</p>
@@ -1196,7 +1197,7 @@ function ViewCompliance({ pc }: { pc: PolicyContent }) {
           <ul className="space-y-4">
             {pc.surveyorItems.map((item, i) => (
               <li key={i} className="text-[15px] text-[#1F1C1B] font-roboto flex items-start">
-                <ChevronRight className="text-[#007970] mt-0.5 mr-2 flex-shrink-0" />
+                <ChevronRight className="text-[#D4AF37] mt-0.5 mr-2 flex-shrink-0" />
                 {i + 1}. {item}
               </li>
             ))}
@@ -1241,7 +1242,7 @@ function ViewReferences({ pc }: { pc: PolicyContent }) {
         <ul className="space-y-4 mb-6">
           {pc.trainingItems.map((item, i) => (
             <li key={i} className="flex items-start bg-gray-50 border border-gray-200 p-4 rounded-xl">
-              <span className="text-[#007970] font-bold mr-3 text-sm">11.{i + 1}</span>
+              <span className="text-[#D4AF37] font-bold mr-3 text-sm">11.{i + 1}</span>
               <p className="text-[15px] text-gray-700 leading-relaxed">{item}</p>
             </li>
           ))}
@@ -1274,6 +1275,17 @@ export function CLPolicyDetailView() {
   const { policyId } = useParams<{ policyId: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const setDetailMode = useShellStore(s => s.setDetailMode);
+
+  useEffect(() => {
+    const prev = document.title;
+    document.title = 'Care Indeed Home Health Care, Inc. - Policies and Procedures';
+    setDetailMode(true);
+    return () => {
+      document.title = prev;
+      setDetailMode(false);
+    };
+  }, [setDetailMode]);
 
   const pc = policyId ? POLICY_MAP[policyId] : undefined;
 
@@ -1300,19 +1312,19 @@ export function CLPolicyDetailView() {
 
   const tierColor = pc.tier === 'REQUIRED' ? 'bg-[#D70101]'
     : pc.tier === 'ESSENTIAL' ? 'bg-[#C74600]'
-    : 'bg-[#007970]';
+    : 'bg-[#D4AF37]';
 
   return (
     <div className="space-y-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
 
       {/* HEADER */}
-      <div className="bg-[#007970] text-white relative p-8">
+      <div className="bg-[#D4AF37] text-white relative p-8">
         <div className="flex items-start justify-between mb-4">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-1.5 text-xs font-montserrat font-bold text-white/70 hover:text-white transition-colors"
           >
-            <ArrowLeft size={13} /> Back to Library
+            <ArrowLeft size={13} /> Return to Policy Library
           </button>
           <button
             onClick={() => window.open(`/print/${pc.id}`, '_blank', 'noopener,noreferrer')}
@@ -1359,7 +1371,7 @@ export function CLPolicyDetailView() {
               onClick={() => setActiveTab(id as TabId)}
               className={`flex items-center gap-2 px-4 py-4 text-sm font-montserrat font-bold whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === id
-                  ? 'border-[#007970] text-[#007970]'
+                  ? 'border-[#D4AF37] text-[#D4AF37]'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >

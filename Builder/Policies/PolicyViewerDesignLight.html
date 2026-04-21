@@ -1,0 +1,945 @@
+/* ========================================================================
+PROMPT FOR CLAUDE / DEVELOPER:
+"Care Indeed Light-Mode policy viewer. Single-card, flattened layout —
+no card-on-card. All content (header, meta row, tabs and content sections)
+lives on ONE main white card so the aesthetic matches the rest of the
+app (see images 1–5). Sub-content uses soft tinted tiles (FAFBF8 or
+F7FEFF) only when hierarchy needs the accent, never full-weight cards.
+
+Adds three tabs beyond the original seven to mirror the shipped product:
+Policy Alerts, FAQ, and Amendment Log.
+
+Brand Kit:
+- Primary Actions / Borders:   Teal     #007970
+- Warnings / Critical:         Orange   #C74601
+- Text:                        Headings #1F1C1B  / Labels #524048
+- Surfaces:                    White    #FFFFFF  / Cream  #FAFBF8 / Teal tint #E5FEFF
+
+CRITICAL: Make policy cross-references render as hyperlinks; keep all
+existing appendix-form integration points ('A' through 'G') intact."
+========================================================================
+*/
+import React, { useState } from 'react';
+import {
+  FileText, Shield, Search, CheckCircle, BookOpen, AlertTriangle,
+  Settings, List, CheckSquare, Info, LayoutList, ChevronRight, ChevronDown,
+  Archive, FileLock2, Award, Printer, ExternalLink, ChevronLeft, Download,
+  Bell, HelpCircle, History,
+} from 'lucide-react';
+
+// ==========================================
+// DATA STRUCTURES (100% QA Audited Content)
+// ==========================================
+
+const POLICY_META = {
+  id: "GV-GB-001",
+  title: "Governing Body Authority & Responsibilities",
+  domain: "GV — Governance & Administration",
+  subdomain: "GB — Governing Body",
+  version: "6.0",
+  effective: "2025-07-10",
+  approvedBy: "Governing Body Chair — Care Indeed Home Health Care, Inc.",
+  lastReviewed: "2025-07-10",
+  nextReviewDate: "2026-07-10",
+  supersedes: "N/A (Initial Version)"
+};
+
+const DEFINITIONS = [
+  { term: "Governing Body", definition: "The individual(s), board of directors, trustees, partnership, corporation, or other legally constituted authority that has ultimate responsibility for the management and operation of Care Indeed Home Health Care, Inc., as defined by 42 CFR § 484.2 and § 484.105." },
+  { term: "Administrator", definition: "The individual appointed by the Governing Body who is responsible for managing the agency's day-to-day operations and who meets all qualifications specified in agency policy GV-OG-002 and applicable California state law." },
+  { term: "Clinical Manager", definition: "The registered nurse (or qualified individual per California state law) designated by the Governing Body to oversee clinical services including patient care delivery, clinical staff supervision, and OASIS compliance. Also referred to as Director of Nursing (DON)." },
+  { term: "Fiduciary Duty", definition: "The legal obligation of Governing Body members to act in good faith, with due diligence, and in the best interest of the agency and the patients it serves." },
+  { term: "Quorum", definition: "The minimum number of Governing Body members required to be present (physically or via approved teleconference) to conduct official business, as defined in the agency's bylaws or operating agreement." },
+  { term: "QAPI", definition: "Quality Assessment and Performance Improvement — the structured program required by 42 CFR § 484.65 for ongoing quality monitoring and improvement." }
+];
+
+const PROCEDURES = {
+  "6.1": [
+    ["6.1.1", "Agency Owner / Corporate Entity", "Formally establish the Governing Body through articles of incorporation, operating agreement, partnership agreement, or equivalent legal instrument for Care Indeed Home Health Care, Inc. The establishing document must identify: (a) the legal form of the Governing Body; (b) the minimum and maximum number of members; (c) the quorum requirement; (d) the terms of appointment or election.", "Prior to initial Medicare certification and maintained continuously thereafter."],
+    ["6.1.2", "Governing Body Chair", "Maintain a current roster of all Governing Body members including: full legal name, title/role, date of appointment, term expiration date, voting status, and contact information.", "Updated within 7 calendar days of any membership change."],
+    ["6.1.3", "Governing Body", "Ensure composition includes, at minimum, individuals with competency in: (a) healthcare operations or clinical services; (b) financial management; (c) regulatory compliance. If any competency area is not represented by a current member, the Governing Body shall retain qualified advisory counsel within 30 calendar days of identifying the gap.", "Ongoing; reviewed annually at the first quarterly meeting of each calendar year."],
+    ["6.1.4", "Compliance Officer", "Verify that no Governing Body member appears on the OIG List of Excluded Individuals/Entities (LEIE) or the System for Award Management (SAM) exclusion database at the time of appointment and monthly thereafter, per policy HR-TA-003.", "At appointment and monthly thereafter."]
+  ],
+  "6.2": [
+    {
+      title: "6.2.1 — Legal Authority and Agency Operations",
+      rows: [
+        ["6.2.1.1", "Governing Body", "Assume and maintain full legal authority for the overall operation, management, and fiscal viability of Care Indeed Home Health Care, Inc.", "Continuous."],
+        ["6.2.1.2", "Governing Body", "Ensure the agency maintains current and valid: (a) California home health license — HCAI License No. 406412878; (b) Medicare certification; (c) Medicaid enrollment (if applicable); (d) accreditation (if applicable) — per policy GV-EA-004.", "Continuous; verified at each quarterly meeting."],
+        ["6.2.1.3", "Governing Body", "Review and approve the agency's defined scope of services (policy GV-OG-003) at least annually. Ensure the agency does not provide services beyond those for which it is licensed, staffed, and competent to deliver.", "Annually, within 30 calendar days of the start of the fiscal year."]
+      ]
+    },
+    {
+      title: "6.2.2 — Appointment and Oversight of Key Personnel",
+      rows: [
+        ["6.2.2.1", "Governing Body", "Appoint a qualified Administrator and document the appointment in Governing Body minutes. The Administrator must meet all qualifications defined in policy GV-OG-002 and applicable California state law.", "Prior to agency operation and within 30 calendar days of any vacancy."],
+        ["6.2.2.2", "Governing Body", "Appoint or confirm the appointment of a qualified Clinical Manager (Director of Nursing) responsible for all clinical services, per 42 CFR § 484.105(c).", "Prior to agency operation and within 30 calendar days of any vacancy."],
+        ["6.2.2.3", "Governing Body", "Appoint or confirm the designation of a Compliance Officer with authority and independence to operate the corporate compliance program, per policy CO-CP-002.", "Prior to agency operation and within 30 calendar days of any vacancy."],
+        ["6.2.2.4", "Governing Body", "Conduct or commission an annual performance evaluation of the Administrator. Results and any corrective directives shall be documented in executive session minutes.", "Annually; completed within 60 calendar days of the end of each fiscal year."],
+        ["6.2.2.5", "Governing Body", "Review and approve the agency's succession plan for the Administrator, Clinical Manager, and Compliance Officer, per policy GV-GB-004.", "Annually at the second quarterly meeting; updated within 14 calendar days of any key leadership vacancy."]
+      ]
+    },
+    {
+      title: "6.2.3 — Policy and Compliance Oversight",
+      rows: [
+        ["6.2.3.1", "Governing Body", "Approve all REQUIRED-tier policies prior to implementation and ensure a defined policy review cycle exists per policies GV-PM-001 and GV-PM-002.", "Prior to implementation of each REQUIRED policy; review cycle approved annually."],
+        ["6.2.3.2", "Governing Body", "Receive and review a compliance status report from the Compliance Officer at each quarterly meeting. The report must address: (a) active compliance investigations; (b) audit findings; (c) regulatory changes affecting the agency; (d) training completion rates.", "Quarterly."],
+        ["6.2.3.3", "Compliance Officer", "Prepare and submit the quarterly compliance report to the Governing Body no fewer than 7 calendar days before each scheduled quarterly meeting.", "7 calendar days before each quarterly meeting."],
+        ["6.2.3.4", "Governing Body", "Review and act upon any compliance deficiency identified as high-risk within 14 calendar days of receiving the compliance report. Action must be documented in meeting minutes or a special resolution.", "Within 14 calendar days of report receipt."]
+      ]
+    },
+    {
+      title: "6.2.4 — Quality Assessment and Performance Improvement (QAPI) Oversight",
+      rows: [
+        ["6.2.4.1", "Governing Body", "Approve the agency's QAPI plan, per policy QA-PG-002, and ensure that the plan includes measurable quality indicators, performance improvement projects, and patient safety initiatives.", "Annually; approved at the first quarterly meeting of each calendar year."],
+        ["6.2.4.2", "Clinical Manager / QA Designee", "Present a QAPI performance report to the Governing Body at each quarterly meeting including: (a) quality indicator trends; (b) status of active PIPs; (c) adverse event summary; (d) patient satisfaction data; (e) Star Rating / Home Health Compare trends (policy QA-SM-004).", "Quarterly."],
+        ["6.2.4.3", "Governing Body", "Review, discuss, and document its response to the QAPI report. If any quality indicator falls below the defined threshold for 2 consecutive reporting periods, the Governing Body shall direct corrective action and assign accountability with a defined resolution deadline.", "At each quarterly meeting; corrective action directive within 14 calendar days if thresholds are breached."]
+      ]
+    },
+    {
+      title: "6.2.5 — Financial Oversight",
+      rows: [
+        ["6.2.5.1", "Governing Body", "Review and approve the annual operating budget per policy FN-FP-005.", "Annually; approved no later than 30 calendar days before the start of each fiscal year."],
+        ["6.2.5.2", "Administrator", "Present a financial performance report to the Governing Body at each quarterly meeting including: (a) revenue vs. budget variance; (b) accounts receivable aging; (c) claims denial rate and trending; (d) cash flow position.", "Quarterly."],
+        ["6.2.5.3", "Governing Body", "Review financial reports and direct corrective action if: (a) actual revenue deviates more than 10% below budget for 2 consecutive months; (b) claims denial rate exceeds 5%; (c) days in accounts receivable exceed 60. Directives must be documented in meeting minutes.", "At each quarterly meeting."]
+      ]
+    },
+    {
+      title: "6.2.6 — Emergency Preparedness",
+      rows: [
+        ["6.2.6.1", "Governing Body", "Approve the agency's Emergency Operations and Business Continuity Plan per policy OP-FM-005 and 42 CFR § 484.102.", "Annually; approved at the third quarterly meeting."],
+        ["6.2.6.2", "Administrator", "Report the results of the most recent emergency preparedness drill or exercise to the Governing Body, including identified gaps and corrective actions.", "At the quarterly meeting following each drill (minimum 2 drills per year)."]
+      ]
+    }
+  ],
+  "6.3": [
+    ["6.3.1", "Governing Body Chair", "Schedule and convene regular Governing Body meetings no fewer than 4 times per calendar year (quarterly). The meeting schedule for the upcoming year must be established and distributed to all members by December 15 of the preceding year.", "Quarterly; schedule distributed by December 15."],
+    ["6.3.2", "Governing Body Chair", "Convene special meetings when urgent matters arise, including but not limited to: (a) CMS survey findings requiring immediate corrective action; (b) serious adverse events; (c) regulatory enforcement actions; (d) key leadership vacancies. Notice of a special meeting must be provided to all members at least 48 hours in advance unless the matter constitutes an imminent threat to patient safety, in which case notice may be shortened to the minimum practicable.", "As needed; notice within 48 hours or shorter for imminent patient safety threats."],
+    ["6.3.3", "Designated Secretary / Administrator", "Prepare and distribute the meeting agenda to all Governing Body members no fewer than 7 calendar days before each scheduled meeting. The agenda must include standing items: (a) approval of prior minutes; (b) Administrator report; (c) compliance report; (d) QAPI report; (e) financial report; (f) old business; (g) new business.", "7 calendar days before each meeting."],
+    ["6.3.4", "Designated Secretary", "Record formal minutes for each meeting per policy GV-GB-002. Minutes must document: (a) date, time, and location; (b) members present and absent; (c) quorum determination; (d) all motions, seconds, and voting outcomes; (e) all directives issued with assigned responsible parties and deadlines; (f) executive session topics (without protected details).", "Draft minutes completed within 14 calendar days of the meeting; approved at the next regular meeting."],
+    ["6.3.5", "Governing Body Chair", "Ensure a quorum is present before conducting any official business. If quorum is not achieved, the meeting shall be rescheduled within 14 calendar days.", "At the start of each meeting."]
+  ],
+  "6.4": [
+    ["6.4.1", "All Governing Body Members", "Complete and submit the Conflict of Interest Disclosure Form (Appendix B) at the time of appointment, annually thereafter, and within 7 calendar days of any change in circumstances that could create a new conflict, per policy GV-GB-003.", "At appointment; annually; within 7 days of change."],
+    ["6.4.2", "Compliance Officer", "Review all submitted conflict of interest disclosures within 14 calendar days of receipt and present a summary to the Governing Body with recommendations for management or recusal.", "Within 14 calendar days of receipt."],
+    ["6.4.3", "Governing Body", "Act on conflict of interest recommendations. Any member with a disclosed conflict shall recuse from discussion and voting on the affected matter. Recusals must be documented in meeting minutes.", "At the meeting where the affected matter is addressed."]
+  ],
+  "6.5": [
+    ["Governing Body fails to meet quarterly", "Administrator notifies all members and the Compliance Officer in writing.", "Administrator schedules a make-up meeting. If Governing Body does not convene within 30 calendar days, the Compliance Officer documents the deficiency and initiates corrective action per QA-AE-003.", "Make-up meeting within 30 calendar days of the missed quarter."],
+    ["Quorum not achieved for 2 consecutive scheduled meetings", "Governing Body Chair escalates to the full membership in writing.", "Chair initiates membership recruitment or replacement per the agency's bylaws. Issue must be resolved before the next scheduled meeting.", "Within 30 calendar days."],
+    ["Key leadership vacancy (Administrator, Clinical Manager, Compliance Officer) exceeds 30 days unfilled", "Governing Body Chair", "Governing Body must appoint an interim designee within 14 calendar days of vacancy and document the appointment. Permanent appointment must occur within 90 calendar days.", "Interim: 14 days. Permanent: 90 days."],
+    ["CMS survey results in Condition-level deficiency", "Administrator convenes a special Governing Body meeting.", "Governing Body directs development of a Plan of Correction within CMS-required timeframes (typically 10 calendar days). Governing Body receives weekly status updates until resolution is confirmed.", "Special meeting within 48 hours of receipt of findings; Plan of Correction per CMS deadline."],
+    ["Compliance Officer reports fraud, waste, or abuse concern to Governing Body", "Governing Body Chair", "Governing Body directs investigation per CO-CP-007 and ensures non-retaliation per CO-CP-005. Governing Body receives investigation status updates at each meeting until resolution.", "Investigation initiated within 7 calendar days; updates at each meeting."]
+  ]
+};
+
+const DOCS_REQ = [
+  ["Governing Body establishment", "Articles of incorporation, operating agreement, bylaws, or equivalent legal instrument establishing the Governing Body of Care Indeed Home Health Care, Inc.", "Agency Owner / Corporate Entity", "Corporate records repository (physical or electronic).", "Maintained permanently; updated within 14 calendar days of any amendment."],
+  ["Governing Body membership roster", "Current roster including member name, role, appointment date, term, voting status, and contact information (Appendix A).", "Governing Body Chair", "Agency governance file; copy maintained by Administrator.", "Updated within 7 calendar days of any change."],
+  ["Meeting minutes", "Formal minutes for all regular and special meetings, per policy GV-GB-002 (Appendix D template).", "Designated Secretary", "Agency governance file; copy provided to each member.", "Draft within 14 calendar days of meeting; approved at next regular meeting. Retained for minimum 7 years."],
+  ["Meeting agendas", "Agenda for each regular and special meeting.", "Administrator / Designated Secretary", "Agency governance file.", "Distributed 7 calendar days before each meeting; retained for minimum 7 years."],
+  ["Administrator appointment", "Written documentation of the Governing Body's appointment of the Administrator, including qualifications verified.", "Governing Body Chair", "Governing Body minutes; Administrator personnel file.", "At time of appointment."],
+  ["Clinical Manager appointment", "Written documentation of the appointment or confirmation of the Clinical Manager.", "Governing Body Chair", "Governing Body minutes; Clinical Manager personnel file.", "At time of appointment."],
+  ["Compliance Officer designation", "Written documentation of the designation and authority granted to the Compliance Officer.", "Governing Body Chair", "Governing Body minutes; Compliance Officer personnel file.", "At time of designation."],
+  ["Conflict of Interest disclosures", "Completed Conflict of Interest Disclosure Forms (Appendix B) for each Governing Body member.", "Compliance Officer (collection); each member (completion)", "Compliance file; copy in governance file.", "At appointment; annually; within 7 days of change. Retained for minimum 7 years."],
+  ["Quarterly compliance reports", "Compliance Officer's written report to the Governing Body.", "Compliance Officer", "Agency governance file; compliance records.", "Submitted 7 days before each quarterly meeting; retained for minimum 7 years."],
+  ["Quarterly QAPI reports", "Clinical Manager / QA Designee's written report to the Governing Body.", "Clinical Manager / QA Designee", "Agency governance file; QAPI records.", "Presented at each quarterly meeting; retained for minimum 7 years."],
+  ["Financial reports", "Quarterly financial performance report presented to the Governing Body.", "Administrator", "Agency governance file; financial records.", "Presented at each quarterly meeting; retained per CO-HP-007."],
+  ["Annual budget approval", "Documented Governing Body approval of the annual operating budget.", "Administrator (preparation); Governing Body (approval)", "Governing Body minutes; financial records.", "Annually; approved 30 days before fiscal year start."],
+  ["QAPI plan approval", "Documented Governing Body approval of the annual QAPI plan.", "Clinical Manager / QA Designee (preparation); Governing Body (approval)", "Governing Body minutes; QAPI records.", "Annually at first quarterly meeting."],
+  ["Emergency preparedness plan approval", "Documented Governing Body approval of the emergency plan.", "Administrator (preparation); Governing Body (approval)", "Governing Body minutes; emergency preparedness file.", "Annually at third quarterly meeting."],
+  ["Exclusion screening results", "Documentation of OIG/SAM screening for each Governing Body member.", "Compliance Officer", "Compliance file.", "At appointment; monthly thereafter."],
+  ["Policy acknowledgment", "Signed acknowledgment of this policy by all Governing Body members and senior leadership (Appendix C).", "Each member / leader (completion); Administrator (collection)", "Policy acknowledgment file.", "Within 14 calendar days of policy effective date or revision; within 14 calendar days of new appointment."],
+  ["Annual Governance Self-Assessment", "Completed self-assessment per policy GV-GB-005 (if adopted).", "Governing Body Chair", "Governance file.", "Annually."]
+];
+
+const COMPLIANCE_81 = [
+  ["Governing Body is legally established and documented.", "Review of establishing documents (articles, bylaws, operating agreement).", "Current, complete, and on file at all times."],
+  ["Governing Body meets at least quarterly.", "Review of meeting minutes with dates and attendance.", "4 or more meetings per calendar year with quorum present at each."],
+  ["Key personnel (Administrator, Clinical Manager, Compliance Officer) are appointed and documented.", "Review of Governing Body minutes; personnel files; appointment letters.", "Current appointments documented; no vacancy exceeds 30 days without interim designee."],
+  ["QAPI plan is reviewed and approved annually.", "Review of Governing Body minutes for documented approval.", "Annual approval documented at first quarterly meeting."],
+  ["Compliance reports are presented quarterly.", "Review of Governing Body agendas and minutes; compliance report files.", "Reports submitted 7 days before each meeting; discussion documented in minutes."],
+  ["Conflict of Interest disclosures are current.", "Review of Appendix B forms for each member; annual renewal dates.", "100% completion rate; no lapsed disclosures."],
+  ["Budget is approved annually.", "Review of Governing Body minutes; budget document.", "Approved no later than 30 days before fiscal year start."],
+  ["Governing Body members are screened for exclusion.", "Review of OIG/SAM screening logs.", "Initial screening at appointment; monthly screening documented."],
+  ["Policy acknowledgments are current.", "Review of signed Appendix C forms.", "100% acknowledgment within 14 calendar days of effective date or new appointment."]
+];
+
+const COMPLIANCE_83 = [
+  ["No documented evidence that a Governing Body exists or functions.", "Condition-level deficiency under 42 CFR § 484.105. Potential termination of Medicare certification.", "Maintain establishing documents, current roster, and quarterly minutes on file and readily accessible."],
+  ["Governing Body meetings are held but not documented.", "Surveyor will treat undocumented meetings as not having occurred.", "Use Appendix D template; complete draft minutes within 14 calendar days."],
+  ["Governing Body \"rubber stamps\" reports without documented discussion or action.", "Surveyors will cite passive governance as failure to exercise oversight.", "Minutes must document specific discussion points, questions, directives, and assigned follow-up."],
+  ["Key leadership vacancies are unfilled for extended periods.", "Surveyor will cite failure to ensure adequate management.", "Fill or designate interim within 14 calendar days per Section 6.5."],
+  ["No documented conflict of interest disclosures.", "OIG compliance program requirement; potential survey finding.", "Enforce annual disclosure per Appendix B; Compliance Officer tracks compliance."],
+  ["QAPI plan approved but no evidence of Governing Body review of quality data.", "Surveyor will cite failure of governing body oversight of QAPI (42 CFR § 484.65 cross-reference).", "Require quarterly QAPI report presentation and document Governing Body response."]
+];
+
+const REFERENCES_9 = {
+  federal: [
+    ["42 CFR § 484.2", "Definitions", "Defines 'governing body' and key terms for home health agencies."],
+    ["42 CFR § 484.105", "Condition of Participation: Organization and Administration of Services", "Primary regulatory basis for this policy. Requires a governing body with full legal authority for agency operation and management."],
+    ["42 CFR § 484.105(a)", "Standard: Governing body", "Mandates governing body responsibility for agency operations, appointment of administrator, and oversight of services."],
+    ["42 CFR § 484.105(b)", "Standard: Administrator", "Requires appointment of a qualified administrator responsible to the governing body."],
+    ["42 CFR § 484.105(c)", "Standard: Clinical manager", "Requires designation of a qualified clinical manager for oversight of clinical services."],
+    ["42 CFR § 484.60", "Condition of Participation: Care planning, coordination, and quality of care", "Governing body accountability for ensuring care planning and quality."],
+    ["42 CFR § 484.65", "Condition of Participation: Quality assessment and performance improvement (QAPI)", "Governing body must ensure an effective QAPI program."],
+    ["42 CFR § 484.70", "Condition of Participation: Infection prevention and control", "Governing body oversight of infection prevention."],
+    ["42 CFR § 484.100", "Condition of Participation: Compliance with Federal, State, and local laws", "Governing body must ensure full legal compliance."],
+    ["42 CFR § 484.102", "Condition of Participation: Emergency preparedness", "Governing body must approve emergency preparedness plan."],
+    ["42 CFR § 484.110", "Condition of Participation: Clinical records", "Governing body oversight of clinical records policies."]
+  ],
+  crossRef: [
+    ["GV-OG-001", "Organizational Structure & Reporting", "Governing Body approves organizational structure."],
+    ["GV-OG-002", "Administrator Qualifications & Responsibilities", "Governing Body appoints and evaluates Administrator."],
+    ["GV-OG-003", "Scope of Services Definition", "Governing Body approves scope of services."],
+    ["GV-OG-004", "Strategic Planning & Annual Goals", "Governing Body approves strategic plan."],
+    ["GV-OG-005", "Delegation of Authority", "Governs limits of Governing Body delegation."],
+    ["GV-PM-001", "Policy Development & Approval Process", "Governing Body approves REQUIRED-tier policies."],
+    ["GV-PM-002", "Policy Review & Revision Cycle", "Governing Body ensures policy review cycle."],
+    ["GV-PM-003", "Policy Acknowledgment & Staff Attestation", "Staff acknowledgment of this and all policies."],
+    ["GV-GB-002", "Board Meeting & Minutes Requirements", "Details meeting documentation standards."],
+    ["GV-GB-003", "Conflict of Interest Disclosure", "Governs member conflict disclosures."],
+    ["GV-GB-004", "Succession Planning for Key Leadership", "Governing Body reviews succession plan."],
+    ["GV-GB-005", "Annual Governance Self-Assessment", "Governing Body self-assessment tool."],
+    ["GV-EA-004", "Agency Licensure & Certification Maintenance", "Governing Body ensures licensure/certification currency."],
+    ["GV-EA-005", "Agency Closure or Change of Ownership", "Governing Body directs CHOW process."],
+    ["QA-PG-001", "QAPI Program Establishment & Governance", "Governing Body oversees QAPI program."],
+    ["QA-PG-002", "QAPI Plan Development & Annual Review", "Governing Body approves QAPI plan."],
+    ["QA-AE-003", "Corrective Action Plan Development & Tracking", "Escalation path for governance deficiencies."],
+    ["QA-SM-004", "Home Health Compare & Star Rating Monitoring", "Data reported to Governing Body quarterly."],
+    ["CO-CP-001", "Corporate Compliance Program", "Governing Body oversees compliance program."],
+    ["CO-CP-002", "Compliance Officer Designation & Authority", "Governing Body appoints Compliance Officer."],
+    ["CO-CP-005", "Whistleblower Protection & Non-Retaliation", "Governing Body ensures non-retaliation."],
+    ["CO-CP-007", "Compliance Investigation Process", "Governing Body directs investigations."],
+    ["CO-HP-007", "Record Retention & Destruction", "Retention standards for governance records."],
+    ["FN-FP-005", "Annual Budget & Financial Planning", "Governing Body approves budget."],
+    ["HR-TA-003", "OIG/SAM Exclusion Screening", "Screening of Governing Body members."],
+    ["OP-FM-005", "Emergency Operations & Business Continuity", "Governing Body approves emergency plan."],
+    ["EN-TG-001", "Enterprise Policy Taxonomy & Classification Governance", "Framework under which this policy is classified."]
+  ]
+};
+
+const POLICY_ALERTS = [
+  { severity: "critical", date: "2025-12-01", source: "Federal Register Vol 90", title: "CMS Proposed Rule — HHA Governing Body Requirements", detail: "CMS has published a proposed rule (CMS-1892-P) that would expand documentation requirements for HHA Governing Bodies, including mandatory annual composition reviews and competency attestations. Comment period closes 2026-02-15. Review proposed changes against GV-GB-001 §6.1." },
+  { severity: "warning",  date: "2025-11-15", source: "California HCAI/CDPH",    title: "California AB 2029 — HHA Board Composition", detail: "AB 2029 pending HCAI implementation guidance would require at least one independent clinical professional on the Governing Body of Medicare-certified HHAs in California. Monitor HCAI bulletins for implementation dates." },
+  { severity: "info",     date: "2025-11-01", source: "OIG Work Plan FY2026",    title: "OIG Work Plan — Governing Body Oversight Practices", detail: "The OIG FY2026 Work Plan includes a review of Governing Body documentation practices at Medicare-certified HHAs. Ensure GV-GB-001 Appendix A (Roster) and Appendix D (Minutes) are complete and current." },
+  { severity: "info",     date: "2025-09-01", source: "HCAI / CDPH",              title: "HCAI / CDPH — Licensure & Multi-Agency Oversight", detail: "California home health licensure (HCAI) and public health oversight (CDPH) operate alongside Medicare certification. When license numbers, service areas, or ownership change, verify GV-EA-004 and Governing Body minutes document review." },
+  { severity: "warning",  date: "2025-08-15", source: "CMS SOM Appendix B",       title: "CMS Emergency Preparedness (42 CFR § 484.102)", detail: "Surveyors routinely verify Governing Body approval of the emergency plan and evidence of drill critique. Align OP-FM-005 documentation with §6.2.6 and ensure quarterly meeting minutes reflect review when required." },
+];
+
+const POLICY_FAQ = [
+  { q: "Can a single individual serve as both the Administrator and a Governing Body voting member?",
+    a: "Yes — 42 CFR § 484.105(b) permits the Administrator to serve as a Governing Body member. However, the Administrator alone cannot constitute quorum, and any votes on Administrator compensation, performance, or termination must be handled by non-Administrator members. Conflicts of interest must be disclosed per GV-GB-003." },
+  { q: "What is required if we cannot achieve quorum at a scheduled quarterly meeting?",
+    a: "Per §6.3.5 the meeting shall be rescheduled within 14 calendar days. If quorum is not achieved for 2 consecutive scheduled meetings, escalate per §6.5 (membership recruitment or replacement per the agency's bylaws; issue resolved before the next scheduled meeting)." },
+  { q: "Does every Governing Body member need OIG/SAM exclusion screening?",
+    a: "Yes. Per §6.1.4 and policy HR-TA-003 the Compliance Officer verifies that no Governing Body member appears on the OIG LEIE or SAM exclusion database at appointment and monthly thereafter. Retain screening evidence for the minimum CMS record retention period." },
+  { q: "How many members are required on the Governing Body?",
+    a: "42 CFR § 484.105(a) does not prescribe a minimum number. The agency's establishing document (articles / operating agreement / bylaws) must identify the minimum and maximum number of members and the quorum requirement. Competency coverage in §6.1.3 (healthcare operations, financial management, regulatory compliance) must be satisfied — use advisory counsel within 30 days when any competency is not represented." },
+];
+
+const AMENDMENT_LOG = [
+  { version: "6.0", date: "2025-07-10", author: "Compliance Officer", current: true,
+    summary: "Major comprehensive version — added §2.6 (Emergency Preparedness oversight); expanded §6.4 (Conflict of Interest); restructured all appendices into interactive digital forms (Appendix A–G). Aligned with updated OIG HHA Compliance Program Guidance (Nov 2023) and CMS SOM Appendix B 2024 update.",
+    sections: "§4.1, §6.2.6, §6.4, All Appendices A–G" },
+  { version: "5.1", date: "2024-11-15", author: "Governing Body Chair", current: false,
+    summary: "Minor update — clarified quorum requirements in §6.3 to align with revised agency bylaws; added GV-GB-005 cross-reference; updated Section 11 version control table.",
+    sections: "§6.3, §6.4, §11" },
+  { version: "5.0", date: "2024-07-01", author: "Administrator", current: false,
+    summary: "Annual review — no substantive policy changes. Updated effective date, review dates, and regulatory citations to reflect current 42 CFR §484 regulations.",
+    sections: "All metadata fields" },
+  { version: "4.2", date: "2023-10-12", author: "Compliance Officer", current: false,
+    summary: "Emergency update — added monthly OIG/SAM exclusion screening requirement for all Governing Body members per updated OIG Compliance Program Guidance for HHAs issued October 2023.",
+    sections: "§6.1.4 (new), §7, Appendix A" },
+];
+
+// ==========================================
+// UI COMPONENTS — Flattened (no card-on-card)
+// ==========================================
+
+// Section container lives DIRECTLY on the main card. No wrapper shadow/border.
+// Use `Surface` only for internal tinted sub-tiles (definitions grid, alerts).
+const Section = ({ children, className = "" }) => (
+  <section className={`mb-10 ${className}`}>{children}</section>
+);
+
+const Surface = ({ children, tone = "cream", className = "" }) => {
+  const bg =
+    tone === "cream" ? "bg-[#FAFBF8] border-[#E5E4E3]" :
+    tone === "teal"  ? "bg-[#E5FEFF] border-[#007970]/20" :
+    tone === "amber" ? "bg-[#FFEEE5] border-[#FFD5BF]"  :
+                       "bg-white border-[#E5E4E3]";
+  return <div className={`border rounded-xl ${bg} ${className}`}>{children}</div>;
+};
+
+const SectionTitle = ({ icon: Icon, title, color = "text-[#007970]" }) => (
+  <h2 className={`font-montserrat text-[20px] font-bold flex items-center mb-5 ${color}`}>
+    {Icon && <Icon className="mr-3" size={22} />}
+    {title}
+  </h2>
+);
+
+const SimpleTable = ({ headers, rows }) => (
+  <div className="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-[#E5E4E3] shadow-sm mb-6 bg-white">
+    <table className="w-full text-left border-collapse min-w-max">
+      <thead>
+        <tr className="bg-[#FAFBF8] text-[#524048]">
+          {headers.map((h, i) => (
+            <th key={i} className="p-4 font-montserrat font-bold text-[13px] tracking-wider uppercase border-b border-[#E5E4E3]">{h}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-[#E5E4E3]">
+        {rows.map((row, i) => (
+          <tr key={i} className="hover:bg-[#F7FEFF] transition-colors">
+            {row.map((cell, j) => (
+              <td key={j} className={`p-4 text-[#1F1C1B] font-roboto text-sm align-top leading-relaxed whitespace-pre-line break-words ${j === 0 ? 'font-medium' : ''}`}>
+                {cell}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
+const TabButton = ({ active, onClick, children }) => (
+  <button
+    onClick={onClick}
+    className={`px-5 py-3 font-montserrat font-bold text-sm transition-all duration-200 whitespace-nowrap border-b-[3px] ${
+      active 
+        ? 'text-[#007970] border-[#007970]' 
+        : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
+    }`}
+  >
+    {children}
+  </button>
+);
+
+// ==========================================
+// MAIN VIEWS
+// ==========================================
+
+const ViewOverview = () => (
+  <div className="animate-fadeIn">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
+      <Section className="mb-0">
+        <SectionTitle icon={Shield} title="2. Purpose" />
+        <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px]">
+          This policy establishes the authority, composition, functions, and oversight responsibilities of the Governing Body of Care Indeed Home Health Care, Inc. The Governing Body is the ultimate authority accountable for the operation, management, fiscal viability, and regulatory compliance of the home health agency. This policy ensures the agency satisfies the requirements set forth in <strong>42 CFR § 484.105</strong> — Condition of Participation: Organization and Administration of Services, which mandates that a home health agency must have a governing body that assumes full legal authority and responsibility for the agency's overall operation and management.
+        </p>
+      </Section>
+
+      <Section className="mb-0">
+        <SectionTitle icon={Search} title="3. Scope" />
+        <ul className="space-y-2.5 mb-5">
+          {[
+            "All members of the Governing Body of Care Indeed Home Health Care, Inc. (including voting and non-voting members)",
+            "The Agency Administrator",
+            "The Director of Nursing / Clinical Manager",
+            "The Compliance Officer",
+            "All senior leadership personnel who report directly to the Governing Body or Administrator",
+            "All contracted management entities performing governing body functions on behalf of the agency"
+          ].map((item, i) => (
+            <li key={i} className="flex items-start">
+              <CheckCircle className="text-[#007970] mr-3 mt-0.5 flex-shrink-0" size={16} />
+              <span className="text-[#1F1C1B] font-roboto text-[14px] leading-relaxed">{item}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="px-4 py-3 bg-[#FFEEE5] border-l-[3px] border-[#C74601] text-[#C74601] rounded-r-md text-[13px] font-medium leading-relaxed font-roboto">
+          This policy does not apply to day-to-day clinical or operational staff except to the extent that Governing Body decisions establish requirements, standards, or directives that govern their work.
+        </div>
+      </Section>
+    </div>
+
+    <Section>
+      <SectionTitle icon={BookOpen} title="5. Definitions" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {DEFINITIONS.map((def, i) => (
+          <div key={i} className="bg-[#FAFBF8] border border-[#E5E4E3] p-5 rounded-lg hover:border-[#007970]/40 transition-colors">
+            <h4 className="font-montserrat font-bold text-[#007970] mb-2 text-[13px] tracking-wide">{def.term}</h4>
+            <p className="text-[#1F1C1B] font-roboto text-[13.5px] leading-relaxed">{def.definition}</p>
+          </div>
+        ))}
+      </div>
+    </Section>
+  </div>
+);
+
+const ViewPolicyStatements = () => {
+  const statements = [
+    "4.1 Care Indeed Home Health Care, Inc. shall maintain a designated Governing Body that holds full legal authority and responsibility for the overall operation, management, and regulatory compliance of the home health agency, as required by 42 CFR § 484.105(a).",
+    "4.2 The Governing Body shall be responsible for ensuring that Care Indeed Home Health Care, Inc. operates in compliance with all applicable federal, state, and local laws, regulations, and licensure requirements at all times.",
+    "4.3 The Governing Body shall appoint a qualified Administrator who is authorized to act on behalf of the Governing Body in the day-to-day management of the agency and who meets the qualifications defined in agency policy GV-OG-002 and applicable California state requirements.",
+    "4.4 The Governing Body shall ensure the appointment and ongoing oversight of a qualified Clinical Manager (Director of Nursing) responsible for all clinical services, in compliance with 42 CFR § 484.105(c).",
+    "4.5 The Governing Body shall approve and oversee the agency's:\n• Scope of services (GV-OG-003)\n• Organizational structure and reporting lines (GV-OG-001)\n• Annual strategic plan and operational goals (GV-OG-004)\n• Policy framework and all REQUIRED-tier policies (GV-PM-001, GV-PM-002)\n• QAPI program (QA-PG-001, QA-PG-002)\n• Corporate compliance program (CO-CP-001)\n• Annual operating budget (FN-FP-005)\n• Emergency preparedness plan (OP-FM-005)",
+    "4.6 The Governing Body shall meet at a frequency sufficient to fulfill its oversight responsibilities, but not less than quarterly, with meetings documented in formal minutes per policy GV-GB-002.",
+    "4.7 The Governing Body shall not delegate its ultimate accountability for regulatory compliance, patient safety, or fiscal integrity. Delegation of specific authority shall comply with policy GV-OG-005.",
+    "4.8 All members of the Governing Body shall disclose and manage conflicts of interest in accordance with policy GV-GB-003.",
+    "4.9 Only the most current approved version of this policy shall be considered valid. Superseded versions must not be used for any operational or compliance purpose. Any revision to this policy requires re-acknowledgment by all Governing Body members and senior leadership within 14 calendar days of the revised effective date."
+  ];
+
+  return (
+    <div className="animate-fadeIn">
+      <SectionTitle icon={List} title="4. Policy Statement" />
+      <div className="divide-y divide-[#E5E4E3] border-t border-[#E5E4E3]">
+        {statements.map((stmt, i) => (
+          <div key={i} className="flex items-start gap-5 py-4">
+            <div className="text-[#007970] font-montserrat font-bold text-[13px] shrink-0 w-10 pt-1 text-right">
+              4.{i+1}
+            </div>
+            <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[14.5px] whitespace-pre-line">{stmt.substring(4)}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const ViewProcedures = () => {
+  const [activeSub, setActiveSub] = useState('6.2');
+
+  const tabs = [
+    { id: '6.1', label: '6.1 Establishment' },
+    { id: '6.2', label: '6.2 Core Responsibilities' },
+    { id: '6.3', label: '6.3 Meetings' },
+    { id: '6.4', label: '6.4 Conflict of Interest' },
+    { id: '6.5', label: '6.5 Escalation' }
+  ];
+
+  return (
+    <div className="animate-fadeIn">
+      <SectionTitle icon={Settings} title="6. Procedures" />
+      <div className="flex space-x-1 overflow-x-auto custom-scrollbar border-b border-[#E5E4E3] mb-6">
+        {tabs.map(tab => (
+          <TabButton key={tab.id} active={activeSub === tab.id} onClick={() => setActiveSub(tab.id)}>
+            {tab.label}
+          </TabButton>
+        ))}
+      </div>
+
+      {activeSub === '6.1' && (
+        <Section>
+          <h3 className="font-montserrat font-bold text-[15px] text-[#007970] mb-4 uppercase tracking-wide">6.1 Establishment and Composition</h3>
+          <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.1"]} />
+        </Section>
+      )}
+
+      {activeSub === '6.2' && (
+        <div className="space-y-8">
+          <div className="bg-[#FFEEE5] border-l-[3px] border-[#C74601] text-[#C74601] px-5 py-4 rounded-r-md text-[14px] font-medium flex items-start font-roboto">
+            <AlertTriangle className="mr-3 flex-shrink-0 mt-0.5" size={20} />
+            <p>The Governing Body of Care Indeed Home Health Care, Inc. shall fulfill the following responsibilities directly and shall <strong className="font-extrabold text-[#1F1C1B]">not delegate ultimate accountability</strong> for any of these functions.</p>
+          </div>
+          {PROCEDURES["6.2"].map((section, idx) => (
+            <Section key={idx} className="mb-0">
+              <h3 className="font-montserrat font-bold text-[15px] text-[#007970] mb-4 uppercase tracking-wide">{section.title}</h3>
+              <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={section.rows} />
+            </Section>
+          ))}
+        </div>
+      )}
+
+      {activeSub === '6.3' && (
+        <Section>
+          <h3 className="font-montserrat font-bold text-[15px] text-[#007970] mb-4 uppercase tracking-wide">6.3 Governing Body Meetings</h3>
+          <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.3"]} />
+        </Section>
+      )}
+
+      {activeSub === '6.4' && (
+        <Section>
+          <h3 className="font-montserrat font-bold text-[15px] text-[#007970] mb-4 uppercase tracking-wide">6.4 Conflict of Interest Management</h3>
+          <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.4"]} />
+        </Section>
+      )}
+
+      {activeSub === '6.5' && (
+        <Section>
+          <h3 className="font-montserrat font-bold text-[15px] text-[#C74601] mb-4 uppercase tracking-wide flex items-center">
+            <AlertTriangle className="mr-2" size={18} /> 6.5 Escalation and Exception Handling
+          </h3>
+          <SimpleTable headers={["Condition", "Escalation Path", "Corrective Action", "Timeframe"]} rows={PROCEDURES["6.5"]} />
+        </Section>
+      )}
+    </div>
+  );
+};
+
+const ViewDocumentation = () => (
+  <div className="animate-fadeIn">
+    <SectionTitle icon={FileText} title="7. Documentation Requirements" />
+    <SimpleTable
+      headers={["Requirement", "Document / Record", "Responsible Party", "Location", "Timeframe"]}
+      rows={DOCS_REQ}
+    />
+  </div>
+);
+
+const ViewCompliance = () => (
+  <div className="animate-fadeIn">
+    <Section>
+      <SectionTitle icon={CheckSquare} title="8.1 How Compliance Is Measured" />
+      <SimpleTable
+        headers={["Compliance Indicator", "Measurement Method", "Acceptable Standard"]}
+        rows={COMPLIANCE_81}
+      />
+    </Section>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <Section className="mb-0">
+        <SectionTitle icon={Search} title="8.2 Surveyor Expectations" />
+        <p className="text-[14px] text-[#524048] mb-5 font-roboto leading-relaxed">CMS surveyors conducting a standard survey under SOM Appendix B will specifically verify:</p>
+        <ul className="space-y-3.5">
+          {[
+            "Evidence that a Governing Body exists and is functioning. Surveyors will request establishing documents and a current membership roster. A sole proprietor must demonstrate individual acceptance of governing body responsibilities.",
+            "Evidence that the Governing Body has appointed a qualified Administrator. Surveyors will review Governing Body minutes for appointment documentation and verify qualifications per California state requirements.",
+            "Evidence of Clinical Manager oversight. Surveyors will look for Governing Body minutes documenting appointment, reporting, and oversight of clinical services leadership.",
+            "Evidence that the Governing Body oversees QAPI. Surveyors will examine whether the Governing Body has reviewed, approved, and acted upon quality data. Passive receipt of reports without documented action is a common deficiency.",
+            "Evidence of policy oversight. Surveyors will verify that the Governing Body has approved the agency's policies and that a review cycle exists.",
+            "Evidence of fiscal oversight. Surveyors will review whether the Governing Body monitors the agency's financial viability and acts on adverse trends.",
+            "Meeting frequency and documentation quality. Surveyors will request all meeting minutes for the survey look-back period and assess completeness, including attendance, quorum, and documented decisions.",
+          ].map((t, i) => (
+            <li key={i} className="text-[13.5px] leading-relaxed text-[#1F1C1B] font-roboto flex items-start">
+              <ChevronRight className="text-[#007970] mt-0.5 mr-2 flex-shrink-0" size={16}/>
+              <span><strong className="font-montserrat font-bold text-[#007970] mr-1">{i+1}.</strong>{t}</span>
+            </li>
+          ))}
+        </ul>
+      </Section>
+
+      <Section className="mb-0">
+        <SectionTitle icon={AlertTriangle} title="8.3 Common Failure Points" color="text-[#C74601]" />
+        <div className="space-y-3">
+          {COMPLIANCE_83.map((item, i) => (
+            <div key={i} className="bg-[#FAFBF8] border border-[#E5E4E3] border-l-[3px] border-l-[#C74601] p-4 rounded-r-md">
+              <p className="font-bold text-[#C74601] text-[13.5px] mb-2 font-montserrat">{item[0]}</p>
+              <p className="text-[13px] text-[#524048] mb-2 font-roboto"><strong className="text-[#1F1C1B]">Risk:</strong> {item[1]}</p>
+              <p className="text-[13px] text-[#1F1C1B] font-roboto"><strong className="text-[#007970]">Mitigation:</strong> {item[2]}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+    </div>
+  </div>
+);
+
+const ViewReferencesAdmin = () => (
+  <div className="animate-fadeIn">
+    <Section>
+      <SectionTitle icon={Archive} title="9. References" />
+
+      <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-3">9.1 Federal Regulations (42 CFR Part 484)</h3>
+      <div className="mb-8">
+        <SimpleTable headers={["Citation", "Title", "Relevance"]} rows={REFERENCES_9.federal} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div>
+          <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-3">9.2 CMS Guidance</h3>
+          <div className="bg-[#FAFBF8] p-4 rounded-md border border-[#E5E4E3] mb-3">
+            <p className="font-bold text-[13.5px] text-[#007970]">CMS State Operations Manual, Appx B — Guidance to Surveyors</p>
+            <p className="text-[13px] text-[#1F1C1B] mt-1.5 leading-relaxed">Provides interpretive guidelines for survey of 42 CFR § 484.105 compliance; defines surveyor expectations for governing body evidence.</p>
+          </div>
+          <div className="bg-[#FAFBF8] p-4 rounded-md border border-[#E5E4E3]">
+            <p className="font-bold text-[13.5px] text-[#007970]">CMS OASIS-E2 Guidance Manual</p>
+            <p className="text-[13px] text-[#1F1C1B] mt-1.5 leading-relaxed">While not directly governing the Governing Body, the Governing Body is accountable for ensuring the agency's OASIS program meets CMS requirements.</p>
+          </div>
+        </div>
+        <div>
+          <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-3">9.3 OIG Guidance</h3>
+          <div className="bg-[#E5FEFF] p-4 rounded-md border border-[#007970]/20 h-full">
+            <p className="font-bold text-[13.5px] text-[#007970]">OIG Compliance Program Guidance for Home Health Agencies</p>
+            <p className="text-[13px] text-[#1F1C1B] mt-1.5 leading-relaxed">Establishes expectation that the governing body actively oversees the compliance program and receives regular compliance reports.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-2">9.4 Cross-Referenced Agency Policies</h3>
+      <p className="text-[12px] text-[#524048] mb-3 italic font-roboto">Note: All policy IDs below reflect the updated v6.0 framework codes.</p>
+      <div className="max-h-96 overflow-y-auto custom-scrollbar border border-[#E5E4E3] rounded-md">
+        <table className="w-full text-left border-collapse">
+          <thead className="sticky top-0 bg-[#FAFBF8] border-b border-[#E5E4E3]">
+            <tr>
+              <th className="p-3 font-montserrat font-bold text-[11px] uppercase tracking-wider text-[#524048]">Policy ID</th>
+              <th className="p-3 font-montserrat font-bold text-[11px] uppercase tracking-wider text-[#524048]">Policy Title</th>
+              <th className="p-3 font-montserrat font-bold text-[11px] uppercase tracking-wider text-[#524048]">Relationship</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#E5E4E3] bg-white">
+            {REFERENCES_9.crossRef.map((row, i) => (
+              <tr key={i} className="hover:bg-[#F7FEFF] transition-colors">
+                <td className="p-3 text-[12.5px] whitespace-nowrap">
+                  <a href={`#policy-${row[0]}`} className="font-bold text-[#007970] hover:underline underline-offset-2">{row[0]}</a>
+                </td>
+                <td className="p-3 text-[13px] text-[#1F1C1B] font-medium">{row[1]}</td>
+                <td className="p-3 text-[13px] text-[#524048] leading-relaxed">{row[2]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Section>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <Section className="mb-0">
+        <SectionTitle icon={Award} title="10. Training Requirements" />
+        <ul className="space-y-4">
+          {[
+            "All Governing Body members of Care Indeed Home Health Care, Inc. shall receive orientation to this policy within 14 calendar days of appointment. Orientation shall be conducted by the Administrator or Compliance Officer and must cover: (a) the legal authority and responsibilities of the Governing Body; (b) meeting and quorum requirements; (c) conflict of interest obligations; (d) QAPI, compliance, and financial oversight expectations; (e) CMS survey process and surveyor expectations for governance documentation.",
+            "All Governing Body members and senior leadership personnel within scope of this policy (Section 3) shall sign the Policy Acknowledgment Form (Appendix C) within 14 calendar days of the policy effective date, any revision, or new appointment.",
+            "The Administrator shall maintain a tracking log of all policy acknowledgments and report any non-compliance to the Governing Body Chair within 7 calendar days of the acknowledgment deadline. Failure to acknowledge within the required timeframe shall result in written notification from the Governing Body Chair with a mandatory completion deadline of 7 additional calendar days.",
+            "Annual refresher training on governing body responsibilities shall be conducted at the first quarterly meeting of each calendar year. Attendance shall be documented in meeting minutes.",
+          ].map((t, i) => (
+            <li key={i} className="flex items-start">
+              <div className="bg-[#E5FEFF] text-[#007970] rounded-md w-7 h-7 flex items-center justify-center font-bold text-[12px] mr-3 flex-shrink-0 font-montserrat">{i+1}</div>
+              <p className="text-[13.5px] leading-relaxed text-[#1F1C1B] pt-0.5 font-roboto">{t}</p>
+            </li>
+          ))}
+        </ul>
+      </Section>
+
+      <Section className="mb-0">
+        <SectionTitle icon={FileLock2} title="11. Version Control" />
+        <ul className="space-y-4">
+          {[
+            "This policy is maintained under the agency's enterprise policy lifecycle management system per policy EN-LC-001.",
+            "Only the most current approved version of this policy, as reflected in the policy header, is valid for any operational, compliance, or regulatory purpose. All superseded versions must be archived and clearly marked as \"SUPERSEDED — NOT FOR USE.\"",
+            "Any substantive revision to this policy requires: (a) review and approval by the Governing Body, documented in meeting minutes; (b) re-acknowledgment by all personnel within scope, within 14 calendar days of the revised effective date; (c) update to the enterprise policy index per EN-TG-001.",
+            "Non-substantive revisions (formatting, typographical corrections, updated cross-references) may be approved by the Administrator with notification to the Governing Body at the next regular meeting. Non-substantive revisions do not require re-acknowledgment.",
+          ].map((t, i) => (
+            <li key={i} className="flex items-start">
+              <div className="bg-[#FAFBF8] text-[#524048] rounded-md w-7 h-7 flex items-center justify-center font-bold text-[12px] mr-3 flex-shrink-0 border border-[#E5E4E3] font-montserrat">{i+1}</div>
+              <p className="text-[13.5px] leading-relaxed text-[#1F1C1B] pt-0.5 font-roboto">{t}</p>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    </div>
+  </div>
+);
+
+const ViewAppendices = () => {
+  const [activeApp, setActiveApp] = useState('A');
+
+  const apps = [
+    { id: 'A', label: 'Appendix A: Roster', title: 'Governing Body Membership Roster' },
+    { id: 'B', label: 'Appendix B: Conflicts', title: 'Conflict of Interest Form' },
+    { id: 'C', label: 'Appendix C: Acknowledge', title: 'Policy Acknowledgment Form' },
+    { id: 'D', label: 'Appendix D: Minutes', title: 'Meeting Minutes Template' },
+    { id: 'E', label: 'Appendix E: Checklist', title: 'Quarterly Oversight Checklist' },
+    { id: 'F', label: 'Appendix F: Calendar', title: 'Annual Calendar' },
+    { id: 'G', label: 'Appendix G: Org Chart', title: 'Agency Organizational Chart' }
+  ];
+
+  const active = apps.find(a => a.id === activeApp);
+
+  return (
+    <div className="animate-fadeIn">
+      <SectionTitle icon={LayoutList} title="12. Appendices (Forms)" />
+
+      {/* Horizontal appendix strip — flat, lives on the main card */}
+      <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar border-b border-[#E5E4E3] mb-6 no-print">
+        {apps.map(app => (
+          <button
+            key={app.id}
+            onClick={() => setActiveApp(app.id)}
+            className={`whitespace-nowrap px-4 py-2.5 rounded-t-md font-montserrat font-bold text-[12px] uppercase tracking-wide transition-colors border-b-[3px] ${
+              activeApp === app.id
+                ? 'text-[#007970] border-[#007970] bg-[#FAFBF8]'
+                : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
+            }`}
+          >
+            {app.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Form viewport — the ONLY surface with a light border; NOT a card-on-card.
+          This is the target container where the live appendix form component renders. */}
+      <div
+        id="printable-appendix"
+        className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg p-8 lg:p-10 min-h-[500px] print-area"
+      >
+        <div className="flex items-center justify-between mb-6 border-b border-[#E5E4E3] pb-4">
+          <div>
+            <p className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048]">Appendix {active.id}</p>
+            <h3 className="font-montserrat text-xl font-bold text-[#1F1C1B] mt-1">{active.title}</h3>
+          </div>
+          <span className="bg-white border border-[#E5E4E3] text-[#524048] px-3 py-1 rounded-md text-[11px] font-montserrat font-bold uppercase tracking-wider">
+            GV-GB-001 · App. {active.id}
+          </span>
+        </div>
+
+        {/*  Live form injection target — rendered by ExistingAppendixForm based on activeApp */}
+        <div className="text-center py-10">
+          <Settings className="mx-auto text-[#007970]/30 mb-4 animate-[spin_12s_linear_infinite]" size={44} />
+          <p className="text-[#524048] font-roboto text-[13.5px] mb-5 leading-relaxed max-w-xl mx-auto">
+            The interactive {active.title} form renders here. Integration point for the existing Appendix form components ('A' through 'G').
+          </p>
+          <code className="inline-block bg-white border border-[#E5E4E3] text-[#524048] px-3 py-1.5 rounded text-[12px] font-mono">
+            {'<ExistingAppendixForm variant="'}<span className="text-[#007970] font-bold">{activeApp}</span>{'" />'}
+          </code>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Policy Alerts ─────────────────────────────────────── */
+const ViewPolicyAlerts = () => {
+  const toneFor = (sev) => {
+    if (sev === 'critical') return { label: 'CRITICAL', bg: 'bg-[#FDECE6]', border: 'border-[#C74601]', text: 'text-[#C74601]' };
+    if (sev === 'warning')  return { label: 'WARNING',  bg: 'bg-[#FFF6E5]', border: 'border-[#D8A100]', text: 'text-[#9A6B00]' };
+    return { label: 'INFO', bg: 'bg-[#EAF6F5]', border: 'border-[#007970]', text: 'text-[#007970]' };
+  };
+  return (
+    <div className="animate-fadeIn">
+      <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-5">
+        Policy Alerts — {POLICY_ALERTS.length} Active
+      </h3>
+      <ul className="space-y-3">
+        {POLICY_ALERTS.map((a, i) => {
+          const t = toneFor(a.severity);
+          return (
+            <li key={i} className={`${t.bg} border-l-[3px] ${t.border} border-y border-r border-[#E5E4E3] rounded-r-md px-5 py-4 font-roboto`}>
+              <div className="flex items-center gap-3 mb-1.5 text-[11px] uppercase tracking-wider font-montserrat font-bold">
+                <span className={t.text}>{t.label}</span>
+                <span className="text-[#524048]">{a.date}</span>
+                <span className="text-[#524048]">· {a.source}</span>
+              </div>
+              <p className="font-montserrat font-bold text-[14.5px] text-[#1F1C1B] mb-1.5">{a.title}</p>
+              <p className="text-[13px] text-[#1F1C1B] leading-relaxed">{a.detail}</p>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+};
+
+/* ─── FAQ ───────────────────────────────────────────────── */
+const ViewFAQ = () => {
+  const [open, setOpen] = useState(0);
+  return (
+    <div className="animate-fadeIn">
+      <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-5">
+        Frequently Asked Questions — {POLICY_FAQ.length} Entries
+      </h3>
+      <div className="divide-y divide-[#E5E4E3] border-t border-b border-[#E5E4E3]">
+        {POLICY_FAQ.map((f, i) => {
+          const isOpen = open === i;
+          return (
+            <div key={i}>
+              <button
+                onClick={() => setOpen(isOpen ? -1 : i)}
+                className="w-full flex items-start gap-3 py-4 text-left hover:bg-[#FAFBF8] transition-colors px-2 -mx-2 rounded"
+              >
+                <span className="font-montserrat font-bold text-[12px] text-[#007970] uppercase tracking-wider shrink-0 mt-0.5">Q{i+1}</span>
+                <span className="flex-1 font-roboto text-[14px] text-[#1F1C1B] leading-relaxed">{f.q}</span>
+                <ChevronDown size={18} className={`text-[#524048] shrink-0 mt-0.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isOpen && (
+                <div className="pb-5 pl-12 pr-2 animate-fadeIn">
+                  <div className="bg-[#FAFBF8] border-l-[3px] border-[#007970] px-4 py-3 rounded-r-md">
+                    <p className="font-montserrat font-bold text-[11px] text-[#007970] uppercase tracking-wider mb-1">A{i+1}</p>
+                    <p className="font-roboto text-[13.5px] text-[#1F1C1B] leading-relaxed">{f.a}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/* ─── Amendment Log ─────────────────────────────────────── */
+const ViewAmendmentLog = () => (
+  <div className="animate-fadeIn">
+    <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-5">
+      Amendment Log — {AMENDMENT_LOG.length} Entries
+    </h3>
+    <ol className="relative border-l-2 border-[#E5E4E3] ml-2 space-y-6">
+      {AMENDMENT_LOG.map((a, i) => (
+        <li key={i} className="pl-6 relative">
+          <span
+            className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 ${
+              a.current ? 'bg-[#007970] border-[#007970]' : 'bg-white border-[#C8C4C2]'
+            }`}
+          />
+          <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+            <span className="font-montserrat font-bold text-[13px] text-[#007970]">v{a.version}</span>
+            {a.current && (
+              <span className="bg-[#007970] text-white px-2 py-0.5 rounded text-[9.5px] font-montserrat font-bold uppercase tracking-wider">Current</span>
+            )}
+            <span className="font-roboto text-[12px] text-[#524048]">{a.date}</span>
+            <span className="font-roboto text-[12px] text-[#524048]">— {a.author}</span>
+          </div>
+          <p className="font-roboto text-[13.5px] text-[#1F1C1B] leading-relaxed mb-1.5">{a.summary}</p>
+          {a.sections && (
+            <p className="font-roboto text-[11.5px] text-[#524048]"><strong className="font-montserrat font-bold uppercase tracking-wider">Sections:</strong> {a.sections}</p>
+          )}
+        </li>
+      ))}
+    </ol>
+  </div>
+);
+
+// ==========================================
+// MAIN APP SHELL — single card, flattened
+// ==========================================
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const navItems = [
+    { id: 'overview',      label: 'Overview & Definitions', icon: Info },
+    { id: 'policy',        label: 'Policy Statements',      icon: Shield },
+    { id: 'procedures',    label: 'Procedures',             icon: Settings },
+    { id: 'documentation', label: 'Documentation',          icon: FileText },
+    { id: 'compliance',    label: 'Compliance & Audit',     icon: CheckSquare },
+    { id: 'references',    label: 'References & Admin',     icon: Archive },
+    { id: 'appendices',    label: 'Appendices (Forms)',     icon: LayoutList },
+    { id: 'alerts',        label: 'Policy Alerts',          icon: Bell },
+    { id: 'faq',           label: 'FAQ',                    icon: HelpCircle },
+    { id: 'amendments',    label: 'Amendment Log',          icon: History },
+  ];
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'overview':      return <ViewOverview />;
+      case 'policy':        return <ViewPolicyStatements />;
+      case 'procedures':    return <ViewProcedures />;
+      case 'documentation': return <ViewDocumentation />;
+      case 'compliance':    return <ViewCompliance />;
+      case 'references':    return <ViewReferencesAdmin />;
+      case 'appendices':    return <ViewAppendices />;
+      case 'alerts':        return <ViewPolicyAlerts />;
+      case 'faq':           return <ViewFAQ />;
+      case 'amendments':    return <ViewAmendmentLog />;
+      default:              return <ViewOverview />;
+    }
+  };
+
+  return (
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Roboto:wght@400;500;700&display=swap');
+          .font-montserrat { font-family: 'Montserrat', sans-serif; }
+          .font-roboto { font-family: 'Roboto', sans-serif; }
+
+          .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: #D9D6D5; border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #7A7A70; border: 2px solid transparent; background-clip: padding-box; }
+
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+
+          @media print {
+            body * { visibility: hidden; }
+            #printable-appendix, #printable-appendix * { visibility: visible; -webkit-print-color-adjust: exact !important; }
+            #printable-appendix { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; padding: 0; }
+            .no-print { display: none !important; }
+            ::-webkit-scrollbar { display: none; }
+          }
+        `}
+      </style>
+
+      {/* Page background — mirrors the app shell tone so the card reads flat against it */}
+      <div className="min-h-screen w-full bg-[#F2EFE8] flex flex-col font-roboto text-[#1F1C1B]">
+        <div className="flex-1 flex flex-col items-stretch px-0 md:px-6 py-0 md:py-6">
+
+          {/* ─── THE MAIN CARD — header + tabs + content all flow inside ─── */}
+          <div className="flex-1 w-full max-w-[1280px] mx-auto bg-white rounded-none md:rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.05)] border border-[#E5E4E3] flex flex-col overflow-hidden">
+
+            {/* Action bar */}
+            <div className="flex items-center justify-between px-6 md:px-10 py-4 border-b border-[#E5E4E3] no-print">
+              <button className="flex items-center gap-1.5 text-[#007970] font-montserrat font-bold text-[12px] uppercase tracking-[0.12em] hover:opacity-80 transition-opacity">
+                <ChevronLeft size={16} />
+                Return to Policy Library
+              </button>
+              <div className="flex items-center gap-2.5">
+                <button onClick={() => window.print()} className="flex items-center gap-2 px-3.5 py-1.5 bg-white border border-[#E5E4E3] rounded-md text-[#1F1C1B] font-montserrat font-bold text-[11px] uppercase tracking-wider hover:bg-[#FAFBF8] transition-colors">
+                  <Printer size={14} />
+                  Print
+                </button>
+                <button className="flex items-center gap-2 px-3.5 py-1.5 bg-white border border-[#E5E4E3] rounded-md text-[#1F1C1B] font-montserrat font-bold text-[11px] uppercase tracking-wider hover:bg-[#FAFBF8] transition-colors">
+                  <Download size={14} />
+                  Download
+                </button>
+              </div>
+            </div>
+
+            {/* Header block — badges, title, meta — lives flat on the card */}
+            <div className="px-6 md:px-10 pt-7 pb-6 border-b border-[#E5E4E3]">
+              <div className="flex items-center gap-2 mb-5 flex-wrap">
+                <span className="text-[#007970] border border-[#007970]/30 bg-[#E5FEFF] px-3 py-0.5 rounded-full text-[10.5px] font-montserrat font-bold uppercase tracking-[0.12em]">{POLICY_META.id}</span>
+                <span className="text-white bg-[#007970] px-3 py-0.5 rounded-full text-[10.5px] font-montserrat font-bold uppercase tracking-[0.12em]">Active</span>
+                <span className="text-[#524048] border border-[#E5E4E3] bg-white px-3 py-0.5 rounded-full text-[10.5px] font-montserrat font-bold uppercase tracking-[0.12em]">Required</span>
+              </div>
+
+              <h1 className="font-montserrat font-light text-[34px] md:text-[40px] leading-tight text-[#1F1C1B] mb-6 tracking-tight">
+                {POLICY_META.title}
+              </h1>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
+                <MetaField label="Domain"      value={POLICY_META.domain} />
+                <MetaField label="Tier"        value="REQUIRED" />
+                <MetaField label="Approved By" value="Governing Body Chair" />
+                <MetaField label="Version"     value={`v${POLICY_META.version}`} />
+              </div>
+            </div>
+
+            {/* Tabs — inline on the same card, directly under the header */}
+            <nav className="border-b border-[#E5E4E3] overflow-x-auto custom-scrollbar no-print">
+              <div className="flex items-center gap-1 px-6 md:px-8 min-w-max">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`flex items-center gap-1.5 px-3 md:px-4 py-3.5 transition-colors font-bold border-b-[2px] ${
+                        isActive
+                          ? 'text-[#007970] border-[#007970]'
+                          : 'text-[#524048] border-transparent hover:text-[#1F1C1B]'
+                      }`}
+                    >
+                      <Icon size={13} className={isActive ? 'text-[#007970]' : 'text-[#524048]'} />
+                      <span className="font-montserrat text-[11px] tracking-[0.08em] whitespace-nowrap uppercase">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </nav>
+
+            {/* Content — flows directly on the main card, no inner cards */}
+            <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar px-6 md:px-10 py-8">
+              <div className="max-w-[1120px]">
+                {renderContent()}
+              </div>
+            </main>
+
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+const MetaField = ({ label, value }) => (
+  <div>
+    <span className="block text-[#524048] text-[10px] uppercase tracking-[0.14em] font-montserrat font-bold mb-1">{label}</span>
+    <strong className="text-[#1F1C1B] font-roboto font-medium text-[13.5px]">{value}</strong>
+  </div>
+);

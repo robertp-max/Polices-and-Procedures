@@ -1,0 +1,59 @@
+FORM ID: CO-FM-013
+TITLE: HIPAA Workforce Training Log
+TYPE: Log
+DOMAIN: CO
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: landscape
+CLASSIFICATIONS: audit_critical, shared_enterprise
+
+LINKED POLICIES:
+- CO-HP-001
+- CO-HP-002
+
+PURPOSE:
+HIPAA Privacy and Security workforce training completion log per 45 CFR § 164.530(b)(1).
+
+INSTRUCTIONS:
+Initial training within 30 days of hire; annual refresh; and within 60 days of any material policy change.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Log Entries
+layout: table
+
+table_columns:
+- Employee Name
+- Role
+- Training Module
+- Delivery Method
+- Date
+- Score
+- Pass / Fail
+- Next Due
+table_row_count: 15
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CO-FM-013 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CO-HP-001, CO-HP-002

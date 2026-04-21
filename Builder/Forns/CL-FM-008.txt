@@ -1,0 +1,58 @@
+FORM ID: CL-FM-008
+TITLE: Physician Order Signature Tracking Log
+TYPE: Tracking Tool
+DOMAIN: CL
+USAGE: Required
+FREQUENCY: Ongoing
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: landscape
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- CL-CP-009
+
+PURPOSE:
+Log of all POC and physician orders pending physician signature, ordered by age to drive follow-up.
+
+INSTRUCTIONS:
+Reviewed weekly by Clinical Manager. Orders unsigned > 30 days escalated and billing suspended for the episode until resolved.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Tracking Tool Entries
+layout: table
+
+table_columns:
+- Order / POC ID
+- Patient MRN
+- Physician
+- Date Sent
+- Days Pending
+- Follow-Up Attempts
+- Next Action
+- Status
+table_row_count: 15
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CL-FM-008 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CL-CP-009

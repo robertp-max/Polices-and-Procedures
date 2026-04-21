@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useShellStore } from '../stores/uiStore';
+import { remapForLight } from '../utils/lightColorRemap';
 import {
   Shield, Search, FileText, Building2, Users,
   DollarSign, Monitor, BarChart3, Scale, Heart, Cpu, Briefcase,
@@ -21,7 +23,7 @@ import { SharedPolicyDetailView, type SharedPolicy } from '../components/SharedP
 
 const REGULATORY_ITEMS = [
   { id: 'title22', name: 'Title 22 (California)', shortName: 'Title 22', color: '#facc15', icon: Landmark },
-  { id: '42cfr', name: '42 CFR Part 484', shortName: '42 CFR §484', color: '#00c2b4', icon: Scale },
+  { id: '42cfr', name: '42 CFR Part 484', shortName: '42 CFR §484', color: '#FFC107', icon: Scale },
   { id: 'cms', name: 'CMS State Operations', shortName: 'CMS State Ops', color: '#ec4899', icon: FileCheck },
   { id: 'hipaa', name: 'HIPAA Privacy & Security', shortName: 'HIPAA', color: '#3b82f6', icon: Lock },
   { id: 'osha', name: 'OSHA / Cal-OSHA', shortName: 'OSHA', color: '#f59e0b', icon: Shield },
@@ -31,7 +33,7 @@ const REGULATORY_ITEMS = [
 
 const DOMAINS = [
   {
-    code: 'GV', name: 'GOVERNANCE', fullName: 'GV — Governance & Administration', icon: Building2, color: '#00c2b4',
+    code: 'GV', name: 'GOVERNANCE', fullName: 'GV — Governance & Administration', icon: Building2, color: '#FFC107',
     subdomains: [
       { code: 'GB', name: 'Governing Body', icon: Users },
       { code: 'OG', name: 'Organization', icon: Network },
@@ -267,6 +269,9 @@ function toSharedPolicy(p: PolicyRecord): SharedPolicy {
 
 export function LibraryPage() {
   const navigate = useNavigate();
+  const theme = useShellStore(s => s.theme);
+  const isLight = theme === 'care-indeed-light';
+  const mapColor = (c: string) => remapForLight(c, isLight);
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyRecord | null>(null);
   const [selectedDomain, setSelectedDomain] = useState('ALL');
   const [selectedSubdomain, setSelectedSubdomain] = useState<string>('ALL');
@@ -319,6 +324,19 @@ export function LibraryPage() {
         @keyframes fadeUpLib { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         .animate-fadeUpLib { animation: fadeUpLib 0.4s ease-out forwards; }
         @keyframes shimmerLib { 0% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
+        /* Care Indeed light mode: solid brand surfaces for every lib panel */
+        html[data-theme="care-indeed-light"] .glass-interactive-lib,
+        html[data-theme="care-indeed-light"] .glass-panel-lib {
+          background: #FAFBF8 !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          border-color: #E5E4E3 !important;
+        }
+        html[data-theme="care-indeed-light"] .glass-interactive-lib:hover {
+          background: #FFFFFF !important;
+          border-color: #C74601 !important;
+          box-shadow: none !important;
+        }
       `}</style>
 
       {selectedPolicy ? (
@@ -329,13 +347,13 @@ export function LibraryPage() {
         <div className="px-10 pt-10 pb-4 flex items-center justify-between shrink-0">
           <div className="flex flex-col">
             <h1 className="font-montserrat text-3xl font-light text-white flex items-center gap-4">
-              <Library className="text-[#00c2b4]" size={36} strokeWidth={1.5}/> Enterprise Policy Library
+              <Library className="text-[#FFC107]" size={36} strokeWidth={1.5}/> Enterprise Policy Library
             </h1>
             <div className="flex items-center gap-3 mt-4 ml-1">
-              <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] border-[#00c2b4]/40 flex items-center gap-2 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00c2b4]/20 to-transparent -translate-x-full"
+              <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] border-[#FFC107]/40 flex items-center gap-2 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FFC107]/20 to-transparent -translate-x-full"
                   style={{animation:'shimmerLib 2.5s infinite'}}/>
-                <FileText size={12} className="text-[#00c2b4] animate-pulse"/>
+                <FileText size={12} className="text-[#FFC107] animate-pulse"/>
                 <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-white">269 POLICIES</span>
               </div>
               <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] border-[#a855f7]/40 flex items-center gap-2 relative overflow-hidden cursor-pointer"
@@ -368,7 +386,7 @@ export function LibraryPage() {
 
             {/* Policies / Forms toggle */}
             <div className="flex items-center p-1 rounded-full border-[0.77px] border-white/20">
-              <button className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-[#00c2b4] text-[#00c2b4] font-montserrat">
+              <button className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-[#FFC107] text-[#FFC107] font-montserrat">
                 Policies
               </button>
               <button onClick={() => navigate('/forms')}
@@ -399,7 +417,7 @@ export function LibraryPage() {
                     onClick={() => setActiveRegFilter(isActive && reg.id !== 'ALL' ? 'ALL' : reg.id)}
                     className="glass-interactive-lib flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-widest border-[0.77px] font-montserrat transition-colors"
                     style={isActive
-                      ? { borderColor: reg.color, color: reg.color }
+                      ? { borderColor: mapColor(reg.color), color: mapColor(reg.color) }
                       : { borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}>
                     <Icon size={10}/> {reg.shortName.toUpperCase()}
                   </button>
@@ -418,14 +436,15 @@ export function LibraryPage() {
               {DOMAINS.map(d => {
                 const isActive = selectedDomain === d.code;
                 const Icon = d.icon;
+                const dColor = mapColor(d.color);
                 return (
                   <button key={d.code}
                     onClick={() => handleDomainSelect(d.code)}
                     className="glass-interactive-lib w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[9px] font-bold border-[0.77px] font-montserrat tracking-wider uppercase transition-colors text-left"
                     style={isActive
-                      ? { borderColor: `${d.color}60`, color: d.color, backgroundColor: `${d.color}10` }
+                      ? { borderColor: `${dColor}60`, color: dColor, backgroundColor: `${dColor}10` }
                       : { borderColor: 'transparent', color: 'rgba(255,255,255,0.4)' }}>
-                    <Icon size={13} style={{ color: isActive ? d.color : undefined }}/> {d.name}
+                    <Icon size={13} style={{ color: isActive ? dColor : undefined }}/> {d.name}
                   </button>
                 );
               })}
@@ -478,14 +497,14 @@ export function LibraryPage() {
                           if (selectedDomain === 'ALL') setSelectedDomain(sub.domainCode);
                           handleSubdomainSelect(sub.code);
                         }}
-                        className="glass-interactive-lib glass-panel-lib border-[0.77px] border-white/10 p-6 rounded-2xl flex items-center gap-5 text-left hover:border-[#00c2b4]/40 transition-colors group">
+                        className="glass-interactive-lib glass-panel-lib border-[0.77px] border-white/10 p-6 rounded-2xl flex items-center gap-5 text-left hover:border-[#FFC107]/40 transition-colors group">
                         <div className="w-12 h-12 rounded-xl border-[0.77px] border-white/10 flex items-center justify-center shrink-0"
-                          style={{ color: sub.domainColor }}>
+                          style={{ color: mapColor(sub.domainColor) }}>
                           <SubIcon size={20} strokeWidth={1.5}/>
                         </div>
                         <div className="min-w-0">
                           <p className="text-[13px] font-mono text-gray-500 mb-0.5">{sub.domainCode}-{sub.code}</p>
-                          <p className="text-[13px] font-bold text-white uppercase font-montserrat group-hover:text-[#00c2b4] transition-colors truncate">{sub.name}</p>
+                          <p className="text-[13px] font-bold text-white uppercase font-montserrat group-hover:text-[#FFC107] transition-colors truncate">{sub.name}</p>
                           <p className="text-[9px] text-white/30 font-montserrat mt-1">{count} policies</p>
                         </div>
                       </button>
@@ -497,12 +516,12 @@ export function LibraryPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-fadeUpLib">
                   {visiblePolicies.map(policy => {
                     const domain = DOMAINS.find(d => d.code === policy.domainCode);
-                    const color = domain?.color || '#ffffff';
+                    const color = mapColor(domain?.color || '#ffffff');
                     const regDots = REGULATORY_ITEMS.filter(r => policy.regulatoryTags.includes(r.id));
                     return (
                       <button key={policy.id}
                         onClick={() => setSelectedPolicy(policy)}
-                        className="glass-interactive-lib glass-panel-lib border-[0.77px] border-white/10 p-6 rounded-2xl flex flex-col h-[180px] hover:border-[#00c2b4]/40 transition-colors group cursor-pointer text-left">
+                        className="glass-interactive-lib glass-panel-lib border-[0.77px] border-white/10 p-6 rounded-2xl flex flex-col h-[180px] hover:border-[#FFC107]/40 transition-colors group cursor-pointer text-left">
                         <span className="inline-block text-[11px] font-mono font-bold tracking-widest border-[0.77px] px-2 py-1 rounded mb-3 w-max"
                           style={{ color, borderColor: `${color}40` }}>
                           {policy.policyId}
@@ -512,7 +531,7 @@ export function LibraryPage() {
                         </h3>
                         <div className="flex items-center gap-1.5 mt-3">
                           {regDots.slice(0, 4).map(r => (
-                            <span key={r.id} className="w-1.5 h-1.5 rounded-full" style={{ background: r.color }} title={r.shortName}/>
+                            <span key={r.id} className="w-1.5 h-1.5 rounded-full" style={{ background: mapColor(r.color) }} title={r.shortName}/>
                           ))}
                           {regDots.length > 4 && <span className="text-[8px] text-white/30">+{regDots.length - 4}</span>}
                         </div>

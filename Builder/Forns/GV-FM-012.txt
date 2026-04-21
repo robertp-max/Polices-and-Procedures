@@ -1,0 +1,54 @@
+FORM ID: GV-FM-012
+TITLE: Executive Session Confidentiality Agreement
+TYPE: Attestation
+DOMAIN: GV
+USAGE: Conditional
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: high_risk
+
+LINKED POLICIES:
+- GV-GB-002
+
+PURPOSE:
+Confidentiality acknowledgment executed prior to any Executive Session of the Governing Body, binding attendees to non-disclosure of executive-session deliberations.
+
+INSTRUCTIONS:
+Signed by each attendee at the start of every Executive Session. Retained with the Executive Session minutes.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Attestation
+layout: attestation
+
+body:
+Prior to participating in this Executive Session, I acknowledge and agree that:
+
+acknowledgments:
+- The matters discussed in this Executive Session are confidential and privileged.
+- I shall not disclose the substance of the discussion to any person who is not an authorized participant, except as required by law.
+- I shall not use any information obtained in this Session for personal benefit or to the detriment of the Agency.
+- My obligation of confidentiality continues after my term, role, or relationship with the Agency ends.
+- A breach of this agreement may result in removal, legal action, and/or termination of my relationship with the Agency.
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Executive Session Attendee — Printed Name (type=text, col=2)
+- Executive Session Attendee — Signature (type=signature, col=1)
+- Executive Session Attendee — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form GV-FM-012 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: GV-GB-002

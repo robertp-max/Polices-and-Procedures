@@ -1,0 +1,58 @@
+FORM ID: FN-FM-013
+TITLE: Charge Capture Audit & Fee Schedule Review
+TYPE: Checklist
+DOMAIN: FN
+USAGE: Required
+FREQUENCY: Annual
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- FN-FP-002
+
+PURPOSE:
+Annual audit of charge-capture completeness and fee schedule accuracy against payer contracts and CMS fee schedules.
+
+INSTRUCTIONS:
+Performed by Finance / Compliance. Deficiencies corrected and tracked.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Charge Capture Audit & Fee Schedule Review Checklist
+layout: checklist
+
+checklist_items:
+- All service lines present in charge master
+- CPT / HCPCS codes current for fiscal year
+- Modifiers applied correctly
+- Payer contract rates matched in system
+- Physician orders cross-checked against billed services
+- Non-billable items identified and excluded
+- Bundled-service logic validated
+- Denial patterns analyzed for charge-capture gaps
+- Annual fee-schedule update approved by leadership
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Finance Manager — Printed Name (type=text, col=2)
+- Finance Manager — Signature (type=signature, col=1)
+- Finance Manager — Date (type=date, col=1)
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form FN-FM-013 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: FN-FP-002

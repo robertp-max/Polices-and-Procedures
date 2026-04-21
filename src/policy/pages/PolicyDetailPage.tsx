@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   Printer, FileText, Book, ClipboardCheck, Shield,
@@ -8,6 +8,7 @@ import { DraftBanner } from '@/policy/components/DraftBanner';
 import { StatusBadge } from '@/policy/components/StatusBadge';
 import { getPolicyContent } from '@/policy/data/policyContentMap';
 import { usePolicyStore } from '@/policy/stores/policyStore';
+import { useShellStore } from '@/policy/stores/uiStore';
 import type { PolicyContentSection } from '@/policy/types';
 import { GVGBDetailView } from '@/policy/pages/GVGBDetailView';
 import { GVPolicyDetailView, GV_POLICY_IDS } from '@/policy/pages/GVPolicyDetailView';
@@ -110,6 +111,17 @@ function SectionPanel({ section }: { section: PolicyContentSection }) {
 export function PolicyDetailPage() {
   const params = useParams<{ policyId: string }>();
   const [activeTab, setActiveTab] = useState('overview');
+  const setDetailMode = useShellStore(s => s.setDetailMode);
+
+  useEffect(() => {
+    const prev = document.title;
+    document.title = 'Care Indeed Home Health Care, Inc. - Policies and Procedures';
+    setDetailMode(true);
+    return () => {
+      document.title = prev;
+      setDetailMode(false);
+    };
+  }, [setDetailMode]);
 
   const policy = usePolicyStore(state =>
     state.policies.find(item => item.id === params.policyId),
@@ -170,7 +182,7 @@ export function PolicyDetailPage() {
             to="/library"
             className="flex items-center gap-1.5 text-xs font-montserrat font-bold text-white/70 hover:text-white transition-colors"
           >
-            <ArrowLeft size={13} /> Back to Library
+            <ArrowLeft size={13} /> Return to Policy Library
           </Link>
           {isOfficialVersion && (
             <Link

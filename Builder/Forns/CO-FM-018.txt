@@ -1,0 +1,55 @@
+FORM ID: CO-FM-018
+TITLE: Patient Authorization to Release PHI
+TYPE: Form
+DOMAIN: CO
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: digital_candidate
+
+LINKED POLICIES:
+- CO-HP-006
+
+PURPOSE:
+HIPAA-compliant patient authorization for release of PHI to a third party beyond treatment / payment / operations use cases.
+
+INSTRUCTIONS:
+Required for disclosures not otherwise permitted by HIPAA. Valid for the period specified or until revoked in writing.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Patient Name / DOB / MRN (type=text, required=true, col=4)
+- Recipient of Information (type=text, required=true, col=4)
+- Specific PHI to be Released (type=textarea, required=true, col=4)
+- Purpose of Disclosure (type=textarea, required=true, col=4)
+- Expiration Date / Event (type=text, required=true, col=2)
+- Right to Revoke Acknowledged (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Patient / Representative — Printed Name (type=text, col=2)
+- Patient / Representative — Signature (type=signature, col=1)
+- Patient / Representative — Date (type=date, col=1)
+- Witness — Printed Name (type=text, col=2)
+- Witness — Signature (type=signature, col=1)
+- Witness — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form CO-FM-018 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: CO-HP-006

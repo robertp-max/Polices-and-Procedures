@@ -1,0 +1,51 @@
+FORM ID: GV-FM-021
+TITLE: Board Member Appointment & Resignation Record
+TYPE: Form
+DOMAIN: GV
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- GV-GB-001
+
+PURPOSE:
+Official record of every Governing Body member appointment, reappointment, and resignation, for permanent retention.
+
+INSTRUCTIONS:
+Completed at each appointment or resignation event. Filed with the Governance Record; referenced in GV-FM-011 Roster.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Data Capture
+layout: grid
+
+fields:
+- Member Name (type=text, required=true, col=2)
+- Action (type=select, required=true, col=2, options=[Appointment | Reappointment | Resignation | Removal])
+- Effective Date (type=date, required=true, col=2)
+- Term End Date (if applicable) (type=date, col=2)
+- Reason (for resignation / removal) (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Governing Body Chair — Printed Name (type=text, col=2)
+- Governing Body Chair — Signature (type=signature, col=1)
+- Governing Body Chair — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form GV-FM-021 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: GV-GB-001

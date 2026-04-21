@@ -1,0 +1,59 @@
+FORM ID: EN-FM-014
+TITLE: Policy Acknowledgment Tracking Log
+TYPE: Log
+DOMAIN: EN
+USAGE: Required
+FREQUENCY: Ongoing
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2026-07-10
+ORIENTATION: landscape
+CLASSIFICATIONS: audit_critical, shared_enterprise
+
+LINKED POLICIES:
+- EN-LC-003
+
+PURPOSE:
+Tracks which workforce members have completed the Universal Policy Acknowledgment (EN-FM-001) for each assigned policy, with date, outstanding list, and escalation triggers.
+
+INSTRUCTIONS:
+Updated in real time as acknowledgments are submitted. Individuals with outstanding acknowledgments beyond 30 days are reported to their supervisor and the Compliance Officer.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Log Entries
+layout: table
+
+table_columns:
+- Workforce ID
+- Employee Name
+- Role
+- Policy ID
+- Policy Version
+- Assigned Date
+- Acknowledged Date
+- Status
+- Days Outstanding
+table_row_count: 15
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Completed By — Printed Name (type=text, col=2)
+- Completed By — Signature (type=signature, col=1)
+- Completed By — Date (type=date, col=1)
+- Supervisor / Reviewer — Printed Name (type=text, col=2)
+- Supervisor / Reviewer — Signature (type=signature, col=1)
+- Supervisor / Reviewer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form EN-FM-014 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10
+- Linked Policies: EN-LC-003
