@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Loader2, SlidersHorizontal, HelpCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, SlidersHorizontal, HelpCircle, MessageSquare, Search } from 'lucide-react';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { CommandBar } from './components/CommandBar';
 import { StructuredAnswer } from './components/StructuredAnswer';
@@ -14,7 +15,9 @@ import { HealthStrip } from './components/HealthStrip';
 import { OperationalGaps } from './components/OperationalGaps';
 import { RegulatoryAlerts } from './components/RegulatoryAlerts';
 import { BradHelpCenter } from './components/BradHelpCenter';
-import { useIaHealth, useIaQuery, useIaReference } from './lib/useIa';
+import { ChatThread } from './components/ChatThread';
+import { ActiveCasePanel } from './components/ActiveCasePanel';
+import { useIaHealth, useIaQuery, useIaReference, useChatThread } from './lib/useIa';
 import { iaClient } from './lib/iaClient';
 import type { AvailableAction, IntentKind, StructuredResponse } from './lib/responseTypes';
 
@@ -43,16 +46,19 @@ const DEFAULT_SUGGESTIONS = [
 export function IAdministratorPage() {
   const theme = useShellStore(s => s.theme);
   const isLight = theme === 'care-indeed-light';
+  const navigate = useNavigate();
 
-  const { health, loading: healthLoading, error: healthError, refresh } = useIaHealth();
+  const { health, loading: healthLoading, error: healthError, backendMode, refresh } = useIaHealth();
   const query = useIaQuery();
   const reference = useIaReference();
+  const chat = useChatThread();
 
   const [activeTab, setActiveTab] = useState<StudioTabId>('answer');
   const [rebuildState, setRebuildState] = useState<'idle' | 'running' | 'error'>('idle');
   const [rebuildError, setRebuildError] = useState<string | null>(null);
   const [runningActionId, setRunningActionId] = useState<string | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [chatMode, setChatMode] = useState(false);
 
   /* ── Submit handler ─────────────────────────────────────────── */
   const submitCommand = useCallback((input: string, explicitIntent?: IntentKind) => {
@@ -94,6 +100,16 @@ export function IAdministratorPage() {
   }, [reference, query]);
 
   const handleRebuild = useCallback(async () => {
+    // Guard: never attempt rebuild when no backend is available
+    if (backendMode !== 'available' && backendMode !== 'index_not_built') {
+      setRebuildState('error');
+      setRebuildError(
+        backendMode === 'static_deploy'
+          ? 'Rebuild is not available in this deployment. The corpus index must be built locally using `npm run ia:index`.'
+          : 'Backend unavailable — cannot rebuild index.',
+      );
+      return;
+    }
     setRebuildState('running');
     setRebuildError(null);
     try {
@@ -102,9 +118,17 @@ export function IAdministratorPage() {
       setRebuildState('idle');
     } catch (err) {
       setRebuildState('error');
-      setRebuildError((err as Error)?.message ?? 'Rebuild failed');
+      const errMsg = (err as Error)?.message ?? 'Rebuild failed';
+      // Translate technical error codes into user-friendly messages
+      setRebuildError(
+        errMsg.includes('static_deploy')
+          ? 'Rebuild unavailable: static deployment has no backend runtime.'
+          : errMsg.includes('405') || errMsg.includes('method_mismatch')
+            ? 'Rebuild failed (405): API endpoint rejected the request method. Check server routing.'
+            : errMsg,
+      );
     }
-  }, [refresh]);
+  }, [refresh, backendMode]);
 
   /* ── Phase-1 SSE: pre-load right panel the moment retrieval completes ── */
   useEffect(() => {
@@ -155,7 +179,47 @@ export function IAdministratorPage() {
               Compliance Intelligence · Brad Internal Corpus · Grounded Answers Only
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Mode toggle: Query ↔ Chat */}
+            <div
+              className="flex items-center rounded-lg p-0.5"
+              style={{ background: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)', border: `1px solid ${border}` }}
+            >
+              <button
+                type="button"
+                onClick={() => setChatMode(false)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-[0.15em] transition-all"
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  background: !chatMode ? (isLight ? '#fff' : 'rgba(255,255,255,0.1)') : 'transparent',
+                  color: !chatMode ? '#C8A96E' : subtle,
+                  boxShadow: !chatMode ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                }}
+                title="Single-query mode"
+              >
+                <Search size={11} strokeWidth={2} /> Query
+              </button>
+              <button
+                type="button"
+                onClick={() => setChatMode(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-[0.15em] transition-all"
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  background: chatMode ? (isLight ? '#fff' : 'rgba(255,255,255,0.1)') : 'transparent',
+                  color: chatMode ? '#C8A96E' : subtle,
+                  boxShadow: chatMode ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                }}
+                title="Chat mode — stateful case-based conversation"
+              >
+                <MessageSquare size={11} strokeWidth={2} /> Chat
+                {chat.session?.lifeSafetyFlag && (
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: '#DC2626' }}
+                  />
+                )}
+              </button>
+            </div>
             <div className="hidden md:flex items-center gap-2 text-[10px] uppercase tracking-[0.24em]" style={{ color: subtle, fontFamily: "'JetBrains Mono', monospace" }}>
               <SlidersHorizontal size={12} strokeWidth={2} />
               Policies · Forms · Appendices
@@ -182,8 +246,13 @@ export function IAdministratorPage() {
           health={health}
           loading={healthLoading}
           error={healthError}
+          backendMode={backendMode}
           isLight={isLight}
-          onRebuild={rebuildState === 'running' ? undefined : handleRebuild}
+          onRebuild={
+            backendMode === 'available' || backendMode === 'index_not_built'
+              ? rebuildState === 'running' ? undefined : handleRebuild
+              : undefined   // disabled — no backend in this deployment
+          }
         />
         {rebuildState === 'running' && (
           <div className="mt-2 text-[11px] flex items-center gap-2" style={{ color: subtle, fontFamily: "'JetBrains Mono', monospace" }}>
@@ -199,72 +268,120 @@ export function IAdministratorPage() {
 
       {/* ── Two-column workspace ─────────────────────────────────── */}
       <div className="flex-1 w-full px-6 md:px-8 py-4 md:py-6 overflow-hidden grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] xl:grid-cols-[minmax(0,1fr)_minmax(0,480px)] gap-4 md:gap-6">
-        {/* LEFT column: command input + structured response */}
-        <div className="flex flex-col min-h-0 gap-4 overflow-hidden">
-          <CommandBar
-            onSubmit={submitCommand}
-            loading={query.loading}
-            isLight={isLight}
-            suggestions={suggestions}
-          />
 
-          <StudioTabs
-            active={activeTab}
-            onChange={onTabChange}
-            isLight={isLight}
-            disabled={query.loading && !query.response}
-          />
-
-          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar -mr-2 pr-2 flex flex-col gap-4">
-            {query.error && (
-              <div
-                className="rounded-xl px-3 py-2 text-[12px]"
-                style={{
-                  color: isLight ? '#B91C1C' : '#FCA5A5',
-                  background: isLight ? '#FEF2F2' : 'rgba(252,165,165,0.05)',
-                  border: `1px solid ${isLight ? '#FECACA' : 'rgba(252,165,165,0.2)'}`,
-                }}
-              >
-                {query.error}
-              </div>
-            )}
-
-            {query.loading && !query.response && (
-              <PendingState
+        {/* ── CHAT MODE ─────────────────────────────────────────── */}
+        {chatMode ? (
+          <>
+            {/* LEFT: Chat thread */}
+            <div className="flex flex-col min-h-0 overflow-hidden">
+              <ChatThread
+                messages={chat.messages}
+                session={chat.session}
+                loading={chat.loading}
+                retrieving={chat.retrieving}
+                phase1Mode={chat.phase1Mode}
+                error={chat.error}
                 isLight={isLight}
-                intent={tabToIntent(activeTab)}
-                retrieving={query.retrieving}
-              />
-            )}
-
-            {query.response && (
-              <ResponseStack
-                response={query.response}
-                isLight={isLight}
-                activeReferenceId={reference.reference?.id ?? null}
-                runningActionId={runningActionId}
+                onSubmit={chat.submit}
+                onNewCase={chat.newThread}
                 onOpenReference={id => void reference.load(id)}
                 onAction={handleAction}
               />
-            )}
+            </div>
 
-            {!query.loading && !query.response && !query.error && (
-              <WelcomeState isLight={isLight} />
-            )}
-          </div>
-        </div>
+            {/* RIGHT: Active case panel or reference preview */}
+            <div className="hidden lg:flex flex-col min-h-0 gap-3">
+              {reference.reference ? (
+                <RightPanelPreview
+                  reference={reference.reference}
+                  loading={reference.loading}
+                  error={reference.error}
+                  isLight={isLight}
+                  onClose={reference.clear}
+                  onOpenLinked={id => void reference.load(id)}
+                />
+              ) : (
+                <ActiveCasePanel
+                  session={chat.session}
+                  isLight={isLight}
+                  onNewCase={chat.newThread}
+                  onOpenReference={id => void reference.load(id)}
+                  onSessionUpdate={chat.updateSession}
+                />
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* ── QUERY MODE (existing behavior) ───────────────────── */}
+            {/* LEFT column: command input + structured response */}
+            <div className="flex flex-col min-h-0 gap-4 overflow-hidden">
+              <CommandBar
+                onSubmit={submitCommand}
+                loading={query.loading}
+                isLight={isLight}
+                suggestions={suggestions}
+              />
 
-        {/* RIGHT column: execution workspace */}
-        <div className="hidden lg:flex flex-col min-h-0">
-          <RightPanelPreview
-            reference={reference.reference}
-            loading={reference.loading}
-            error={reference.error}
-            isLight={isLight}
-            onClose={reference.clear}
-            onOpenLinked={id => void reference.load(id)}
-          />
-        </div>
+              <StudioTabs
+                active={activeTab}
+                onChange={onTabChange}
+                isLight={isLight}
+                disabled={query.loading && !query.response}
+              />
+
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar -mr-2 pr-2 flex flex-col gap-4">
+                {query.error && (
+                  <div
+                    className="rounded-xl px-3 py-2 text-[12px]"
+                    style={{
+                      color: isLight ? '#B91C1C' : '#FCA5A5',
+                      background: isLight ? '#FEF2F2' : 'rgba(252,165,165,0.05)',
+                      border: `1px solid ${isLight ? '#FECACA' : 'rgba(252,165,165,0.2)'}`,
+                    }}
+                  >
+                    {query.error}
+                  </div>
+                )}
+
+                {query.loading && !query.response && (
+                  <PendingState
+                    isLight={isLight}
+                    intent={tabToIntent(activeTab)}
+                    retrieving={query.retrieving}
+                  />
+                )}
+
+                {query.response && (
+                  <ResponseStack
+                    response={query.response}
+                    isLight={isLight}
+                    activeReferenceId={reference.reference?.id ?? null}
+                    runningActionId={runningActionId}
+                    onOpenReference={id => void reference.load(id)}
+                    onAction={handleAction}
+                  />
+                )}
+
+                {!query.loading && !query.response && !query.error && (
+                  <WelcomeState isLight={isLight} />
+                )}
+              </div>
+            </div>
+
+            {/* RIGHT column: execution workspace */}
+            <div className="hidden lg:flex flex-col min-h-0">
+              <RightPanelPreview
+                reference={reference.reference}
+                loading={reference.loading}
+                error={reference.error}
+                isLight={isLight}
+                onClose={reference.clear}
+                onOpenLinked={id => void reference.load(id)}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Meta footer — timings + intent badge (only when we have a response). */}
@@ -289,6 +406,17 @@ export function IAdministratorPage() {
 
       {/* Brad Help Center overlay */}
       <BradHelpCenter isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
+
+      {/* Hidden executive proposal trigger — double-click bottom-left corner */}
+      <button
+        type="button"
+        onDoubleClick={() => navigate('/brad-proposal')}
+        aria-label="Hidden executive proposal"
+        title=""
+        tabIndex={-1}
+        className="fixed bottom-0 left-0 w-10 h-10 z-50 cursor-default"
+        style={{ background: 'transparent', border: 'none', outline: 'none' }}
+      />
     </div>
   );
 }

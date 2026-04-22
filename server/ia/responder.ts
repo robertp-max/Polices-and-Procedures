@@ -48,6 +48,10 @@ export interface RespondInput {
   operationalContext?: string;
   /** Pre-computed regulatory context string for prompt injection. */
   regulatoryContext?: string;
+  /** Session context block for chat-mode continuity. */
+  sessionContext?: string;
+  /** Chat-mode system prompt override. */
+  chatSystemPrompt?: string;
   /** Structured operational gaps for deterministic response attachment. */
   operationalGaps?: OperationalGap[];
   /** Structured lifecycle alerts for deterministic response attachment. */
@@ -81,6 +85,8 @@ export async function generateStructuredResponse(
     docs,
     operationalContext: args.operationalContext,
     regulatoryContext: args.regulatoryContext,
+    sessionContext: args.sessionContext,
+    chatSystemPrompt: args.chatSystemPrompt,
   });
 
   let llmJson: RawLLMJson;

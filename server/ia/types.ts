@@ -358,6 +358,26 @@ export interface QueryRequest {
   k?: number;
 }
 
+/** Chat-mode request (stateful, thread-based). */
+export interface ChatRequest {
+  /** Thread ID — omit to start a new conversation. */
+  threadId?: string;
+  /** User message text. */
+  input: string;
+  /** Role hint (optional, improves routing). */
+  userRole?: string;
+}
+
+/** Single chat message (user or Brad). */
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'brad';
+  content: string;
+  timestamp: string;
+  /** Full structured response (brad messages only). */
+  structuredResponse?: StructuredResponse;
+}
+
 export interface ReferencePreview {
   id: string;
   type: DocumentType;

@@ -1,7 +1,10 @@
 import path from 'node:path';
 import fs from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { log } from '../logger.js';
 import type {
+  ChatMessage,
+  ChatRequest,
   CorpusChunk,
   CorpusDoc,
   IndexManifest,
@@ -19,6 +22,12 @@ import { retrieve } from './retrieval.js';
 import { generateStructuredResponse } from './responder.js';
 import { operationalService } from './operational/service.js';
 import { regulatoryMatcher } from './regulatory/matcher.js';
+import { sessionStore } from './session/store.js';
+import { processTurn, recordAssistantTurn, toSessionSummary } from './session/manager.js';
+import { buildContextEnvelope } from './session/envelope.js';
+import { recordAuditEntry } from './session/audit.js';
+import { buildChatSystemPrompt } from './prompt.js';
+import type { SessionSummary } from './session/types.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Top-level service. Owns:
@@ -53,6 +62,25 @@ export interface Phase1Event {
   embeddingsReady: boolean;
   topDocId: string | null;
   topDocIds: string[];
+}
+
+/** Chat phase-1 event — session classified before LLM responds. */
+export interface ChatPhase1Event {
+  threadId: string;
+  mode: string;
+  urgency: string;
+  lifeSafetyFlag: boolean;
+  incidentType: string | null;
+  intent: string;
+  chunkCount: number;
+  topDocId: string | null;
+}
+
+/** Full chat turn result. */
+export interface ChatTurnResult {
+  threadId: string;
+  message: ChatMessage;
+  sessionSummary: SessionSummary;
 }
 
 export class IaService {
@@ -256,6 +284,193 @@ export class IaService {
       lifecycleAlerts: opCtx.lifecycleAlerts,
       regulatoryAlerts: regUpdates,
     });
+  }
+
+  /** Chat-mode entry point. Maintains session state per thread.
+   *  Optional `onPhase1` fires after classification (before LLM) for
+   *  immediate SSE feedback to the UI (emergency banner, case panel update). */
+  async answerInThread(
+    req: ChatRequest,
+    onPhase1?: (event: ChatPhase1Event) => void,
+  ): Promise<ChatTurnResult> {
+    if (!this.state) {
+      throw Object.assign(new Error('ia.index.not_ready'), { code: 'not_ready' });
+    }
+
+    // Assign or create thread ID
+    const threadId = req.threadId ?? randomUUID();
+
+    // Session classification + state update
+    const turnCtx = processTurn(threadId, req.input);
+
+    // Use session-enhanced retrieval query
+    const enhancedRequest: QueryRequest = {
+      input: turnCtx.retrievalQuery,
+      intent: undefined,  // let retrieval classify from the enhanced query
+    };
+
+    const { hits, query, directMatches } = await retrieve({
+      input: enhancedRequest,
+      chunks: this.state.chunks,
+      lexical: this.state.lexical,
+      docs: this.state.docs,
+      ollama: this.ollama,
+      embeddingsReady: this.state.embeddingsReady,
+    });
+
+    const directMatchDocIds = Array.from(new Set(directMatches.map(c => c.docId)));
+    const VALID_ID = /^[A-Z]{2}-[A-Z]{1,3}-\d{3,4}$/;
+    const topDocIds = Array.from(new Set(hits.map(h => h.chunk.docId)))
+      .filter(id => VALID_ID.test(id))
+      .slice(0, 5);
+
+    // Fire phase1 event immediately
+    if (onPhase1) {
+      onPhase1({
+        threadId,
+        mode: turnCtx.sessionState.mode,
+        urgency: turnCtx.sessionState.urgency,
+        lifeSafetyFlag: turnCtx.sessionState.lifeSafetyFlag,
+        incidentType: turnCtx.sessionState.detectedIncidentType,
+        intent: query.intent,
+        chunkCount: hits.length,
+        topDocId: directMatchDocIds[0] ?? topDocIds[0] ?? null,
+      });
+    }
+
+    // Build chat-mode system prompt
+    const chatSystemPrompt = buildChatSystemPrompt({
+      intent: query.intent,
+      mode: turnCtx.sessionState.mode,
+      urgency: turnCtx.sessionState.urgency,
+      lifeSafetyFlag: turnCtx.sessionState.lifeSafetyFlag,
+    });
+
+    // Operational + regulatory context
+    const opCtx = operationalService.getContextForQuery(req.input, query.intent);
+    const corpusPolicyIds = Array.from(new Set(hits.map(h => h.chunk.docId)));
+    const regUpdates = regulatoryMatcher.getRelevantUpdates(req.input, query.intent, corpusPolicyIds);
+
+    // ── Context Envelope (unifies ALL context into ONE clean block) ──
+    // Replaces separate operationalContext / regulatoryContext / sessionContext injections.
+    // The LLM now sees a single prioritized envelope — no more reconciling 3+ blobs.
+    const envelope = buildContextEnvelope({
+      sessionState: turnCtx.sessionState,
+      operationalGaps: opCtx.gaps,
+      lifecycleAlerts: opCtx.lifecycleAlerts,
+      regulatoryAlerts: regUpdates,
+    });
+
+    // Generate response with single envelope
+    let response = await generateStructuredResponse({
+      input: req.input,    // use original user input (not the expanded retrieval query)
+      intent: query.intent,
+      hits,
+      directMatchDocIds,
+      docs: this.state.docs,
+      ollama: this.ollama,
+      sessionContext: envelope.compiled,   // single unified block
+      chatSystemPrompt,
+      operationalGaps: opCtx.gaps,
+      lifecycleAlerts: opCtx.lifecycleAlerts,
+      regulatoryAlerts: regUpdates,
+    });
+
+    // ── Emergency Hard Enforcement ───────────────────────────────────
+    // DO NOT trust the model to lead with emergency action.
+    // Deterministically enforce it here.
+    if (envelope.lifeSafetyActive) {
+      const EMERGENCY_LEAD = 'EMERGENCY — Call 911 immediately. ';
+      if (!response.directAnswer.startsWith('EMERGENCY')) {
+        response = {
+          ...response,
+          directAnswer: EMERGENCY_LEAD + response.directAnswer,
+          riskLevel: 'critical',
+          enforcementLevel: 'condition_level',
+          confidence: 'high',
+        };
+      }
+    }
+
+    // ── Confidence downgrade when operating on seed/partial data ────
+    // If all operational/regulatory data is seed-only, cap confidence at medium.
+    // This prevents false certainty — the UI will show a data quality note.
+    if (envelope.dataQuality.allSeedData && !envelope.lifeSafetyActive) {
+      if (response.confidence === 'high') {
+        response = { ...response, confidence: 'medium' };
+      }
+    }
+    // Attach data quality note to meta for UI display
+    if (response.meta) {
+      (response.meta as Record<string, unknown>)['dataQualityNote'] = envelope.dataQuality.note;
+      (response.meta as Record<string, unknown>)['allSeedData'] = envelope.dataQuality.allSeedData;
+    }
+
+    // Update session with response data
+    recordAssistantTurn(threadId, response);
+
+    const updatedState = sessionStore.load(threadId);
+    const sessionSummary = toSessionSummary(updatedState ?? turnCtx.sessionState);
+
+    // ── Audit log ─────────────────────────────────────────────────
+    const emergencyEnforced = envelope.lifeSafetyActive &&
+      response.directAnswer.startsWith('EMERGENCY');
+    recordAuditEntry({
+      threadId,
+      mode: turnCtx.sessionState.mode,
+      urgency: turnCtx.sessionState.urgency,
+      incidentType: turnCtx.sessionState.detectedIncidentType,
+      userInput: req.input,
+      response,
+      operationalGaps: opCtx.gaps,
+      regulatoryAlerts: regUpdates,
+      lifeSafetyFlag: envelope.lifeSafetyActive,
+      emergencyEnforced,
+      caseStatus: sessionSummary.caseStatus,
+    });
+
+    const message: ChatMessage = {
+      id: randomUUID(),
+      role: 'brad',
+      content: response.directAnswer,
+      timestamp: new Date().toISOString(),
+      structuredResponse: response,
+    };
+
+    log.info('ia.chat.turn', {
+      threadId,
+      mode: sessionSummary.mode,
+      urgency: sessionSummary.urgency,
+      intent: query.intent,
+      lifeSafetyFlag: sessionSummary.lifeSafetyFlag,
+    });
+
+    return { threadId, message, sessionSummary };
+  }
+
+  /** Get session summary for a thread. */
+  getSession(threadId: string): SessionSummary | null {
+    const state = sessionStore.load(threadId);
+    return state ? toSessionSummary(state) : null;
+  }
+
+  /** List recent sessions. */
+  listSessions() {
+    return sessionStore.list();
+  }
+
+  /** Close/reset a session. */
+  closeSession(threadId: string): void {
+    sessionStore.delete(threadId);
+  }
+
+  /** Resolve a case with a specific status (resolved, requires_followup, closed). */
+  resolveSession(threadId: string, status: 'resolved' | 'requires_followup' | 'closed'): void {
+    const state = sessionStore.load(threadId);
+    if (!state) return;
+    state.caseStatus = status;
+    state.updatedAt = new Date().toISOString();
+    sessionStore.save(state);
   }
 
   /** Fetch a document preview for the right-panel. */

@@ -24,6 +24,7 @@ const GVGBPrintDocument = lazy(() => import('@/policy/pages/GVGBPrintDocument').
 const GVGBAppendixPrint = lazy(() => import('@/policy/pages/GVGBAppendixPrint').then(m => ({ default: m.GVGBAppendixPrint })))
 const FormViewer        = lazy(() => import('@/policy/components/FormViewer').then(m => ({ default: m.FormViewer })))
 const IAdministratorPage = lazy(() => import('@/policy/pages/iAdministrator').then(m => ({ default: m.IAdministratorPage })))
+const BradProposalPage  = lazy(() => import('@/policy/pages/BradProposal').then(m => ({ default: m.BradProposalPage })))
 
 // ── Onboarding & Competency Journey ─────────────────────────────
 const JourneyHomePage    = lazy(() => import('@/policy/journey/pages/JourneyHomePage').then(m => ({ default: m.JourneyHomePage })))
@@ -56,6 +57,9 @@ function App() {
 
         {/* Generic print page */}
         <Route path="/print/:policyId" element={<PrintPage />} />
+
+        {/* Hidden executive proposal — accessed via Brad iAdministrator corner trigger */}
+        <Route path="/brad-proposal" element={<BradProposalPage />} />
 
         {/* All other routes inside the Command Center shell */}
         <Route

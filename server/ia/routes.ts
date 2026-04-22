@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { ApiError } from '../errors.js';
-import type { IaService, Phase1Event } from './service.js';
-import type { QueryRequest } from './types.js';
+import type { IaService, Phase1Event, ChatPhase1Event } from './service.js';
+import type { ChatRequest, QueryRequest } from './types.js';
 import { operationalService } from './operational/service.js';
 import { regulatoryMatcher } from './regulatory/matcher.js';
+import { auditLog } from './session/audit.js';
+import { sessionStore } from './session/store.js';
 
 /* ═══════════════════════════════════════════════════════════════
    /api/ia/* HTTP surface.
@@ -125,6 +127,105 @@ export function createIaRouter(service: IaService): Router {
       }
       next(err);
     }
+  });
+
+  /* ── Chat endpoints (stateful two-way conversation) ───────────── */
+
+  router.post('/chat', async (req, res, next) => {
+    try {
+      const body = req.body as Partial<ChatRequest>;
+      if (!body?.input || typeof body.input !== 'string' || body.input.trim().length === 0) {
+        throw new ApiError('validation_error', 'Field `input` is required.', 400);
+      }
+      if (body.input.length > 2000) {
+        throw new ApiError('validation_error', 'Field `input` exceeds 2000 characters.', 400);
+      }
+      const chatReq: ChatRequest = {
+        threadId: typeof body.threadId === 'string' ? body.threadId : undefined,
+        input: body.input.trim(),
+        userRole: typeof body.userRole === 'string' ? body.userRole : undefined,
+      };
+
+      // SSE streaming
+      if (req.headers.accept?.includes('text/event-stream')) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.flushHeaders();
+        const sendEvent = (event: string, data: unknown) => {
+          res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+        };
+        try {
+          const result = await service.answerInThread(chatReq, (p1: ChatPhase1Event) => {
+            sendEvent('phase1', p1);
+          });
+          sendEvent('complete', result);
+        } catch (err) {
+          sendEvent('error', { message: (err as Error)?.message ?? 'Internal error' });
+        } finally {
+          res.end();
+        }
+        return;
+      }
+
+      // Regular JSON
+      const result = await service.answerInThread(chatReq);
+      res.json(result);
+    } catch (err) {
+      if ((err as { code?: string })?.code === 'not_ready') {
+        return next(new ApiError('internal_error', 'Compliance index not ready.', 503));
+      }
+      next(err);
+    }
+  });
+
+  router.get('/sessions', (_req, res, next) => {
+    try {
+      res.json({ items: service.listSessions() });
+    } catch (err) { next(err); }
+  });
+
+  router.get('/sessions/:threadId', (req, res, next) => {
+    try {
+      const threadId = String(req.params.threadId ?? '').trim();
+      const summary = service.getSession(threadId);
+      if (!summary) throw new ApiError('event_not_found', `Session not found: ${threadId}`, 404);
+      res.json(summary);
+    } catch (err) { next(err); }
+  });
+
+  router.delete('/sessions/:threadId', (req, res, next) => {
+    try {
+      const threadId = String(req.params.threadId ?? '').trim();
+      service.closeSession(threadId);
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  /** Resolve / close a case with a specific status. */
+  router.post('/sessions/:threadId/resolve', (req, res, next) => {
+    try {
+      const threadId = String(req.params.threadId ?? '').trim();
+      const status = (req.body as Record<string, string>)?.status ?? 'resolved';
+      const allowed = ['resolved', 'requires_followup', 'closed'];
+      if (!allowed.includes(status)) {
+        throw new ApiError('validation_error', `Invalid status. Allowed: ${allowed.join(', ')}`, 400);
+      }
+      const state = sessionStore.load(threadId);
+      if (!state) throw new ApiError('event_not_found', `Session not found: ${threadId}`, 404);
+      state.caseStatus = status as 'resolved' | 'requires_followup' | 'closed';
+      state.updatedAt = new Date().toISOString();
+      sessionStore.save(state);
+      res.json({ ok: true, threadId, caseStatus: status });
+    } catch (err) { next(err); }
+  });
+
+  /** Audit log — recent entries for survey defense. */
+  router.get('/audit/recent', (_req, res, next) => {
+    try {
+      const entries = auditLog.readRecent(100);
+      res.json({ entries });
+    } catch (err) { next(err); }
   });
 
   /* ── Operational Assessment endpoints (Phase 1+) ──────────────── */

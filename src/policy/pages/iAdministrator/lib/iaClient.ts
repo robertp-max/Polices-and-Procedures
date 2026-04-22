@@ -5,6 +5,12 @@ import type {
   ReferencePreview,
   StructuredResponse,
 } from './responseTypes';
+import type {
+  ChatPhase1Event,
+  ChatRequest,
+  ChatTurnResult,
+  SessionSummary,
+} from './sessionTypes';
 
 /* ═══════════════════════════════════════════════════════════════
    iAdministrator — thin HTTP client for /api/ia/*.
@@ -31,8 +37,53 @@ export class IaClientError extends Error {
   }
 }
 
+/**
+ * Classified backend availability states.
+ * Lets the UI show precise messages instead of a generic "error".
+ */
+export type BackendMode =
+  | 'available'       // backend is running, health check passed
+  | 'static_deploy'   // Vercel / CDN returns HTML — no backend running
+  | 'method_mismatch' // 405 — route exists but wrong HTTP method
+  | 'not_found'       // 404 — route doesn't exist on this deployment
+  | 'unreachable'     // network-level failure (CORS, no connection)
+  | 'index_not_built' // backend up, but index not yet built
+  | 'checking';       // in-flight
+
+/**
+ * Detect whether a Response is HTML (index.html) instead of JSON.
+ * Happens when Vercel's static rewrite catches an /api/* path.
+ */
+async function detectStaticDeploy(res: Response): Promise<boolean> {
+  const ct = res.headers.get('content-type') ?? '';
+  if (ct.includes('text/html')) return true;
+  // Peek at body without consuming it — clone first
+  try {
+    const text = await res.clone().text();
+    return text.trimStart().startsWith('<!');
+  } catch {
+    return false;
+  }
+}
+
 async function json<T>(res: Response): Promise<T> {
+  // Detect static-deploy (HTML response from Vercel CDN wildcard rewrite)
+  if (await detectStaticDeploy(res)) {
+    throw new IaClientError(
+      res.status,
+      'static_deploy',
+      'Brad requires a local server runtime. The API backend is not available in this deployment. Start `npm run dev` to use Brad locally.',
+    );
+  }
   if (!res.ok) {
+    // 405 specifically = method mismatch on a live route
+    if (res.status === 405) {
+      throw new IaClientError(
+        405,
+        'method_mismatch',
+        `API route exists but rejected the HTTP method (${res.status}). Likely a route registration issue on the server.`,
+      );
+    }
     let code = 'http_error';
     let message = `HTTP ${res.status}`;
     try {
@@ -152,6 +203,90 @@ export const iaClient = {
         callbacks.onError((err as Error)?.message ?? 'Stream read error');
       }
     }
+  },
+
+  /** Chat-mode: stateful two-way conversation per thread. */
+  async chatStream(
+    req: ChatRequest,
+    callbacks: {
+      onPhase1?: (event: ChatPhase1Event) => void;
+      onComplete: (result: ChatTurnResult) => void;
+      onError: (message: string) => void;
+    },
+    signal?: AbortSignal,
+  ): Promise<void> {
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}/chat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'accept': 'text/event-stream',
+        },
+        body: JSON.stringify(req),
+        signal,
+      });
+    } catch (err) {
+      if ((err as { name?: string }).name !== 'AbortError') {
+        callbacks.onError((err as Error)?.message ?? 'Network error');
+      }
+      return;
+    }
+    if (!res.ok || !res.body) {
+      callbacks.onError(`HTTP ${res.status}`);
+      return;
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let curEvent = '';
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (line.startsWith('event: ')) {
+            curEvent = line.slice('event: '.length).trim();
+          } else if (line.startsWith('data: ')) {
+            try {
+              const parsed = JSON.parse(line.slice('data: '.length));
+              if (curEvent === 'phase1' && callbacks.onPhase1) {
+                callbacks.onPhase1(parsed as ChatPhase1Event);
+              } else if (curEvent === 'complete') {
+                callbacks.onComplete(parsed as ChatTurnResult);
+              } else if (curEvent === 'error') {
+                callbacks.onError((parsed as { message?: string }).message ?? 'Stream error');
+              }
+            } catch { /* skip malformed */ }
+            curEvent = '';
+          }
+        }
+      }
+    } catch (err) {
+      if ((err as { name?: string }).name !== 'AbortError') {
+        callbacks.onError((err as Error)?.message ?? 'Stream read error');
+      }
+    }
+  },
+
+  async getSession(threadId: string): Promise<SessionSummary> {
+    const res = await fetch(`${BASE}/sessions/${encodeURIComponent(threadId)}`);
+    return json<SessionSummary>(res);
+  },
+
+  async closeSession(threadId: string): Promise<void> {
+    await fetch(`${BASE}/sessions/${encodeURIComponent(threadId)}`, { method: 'DELETE' });
+  },
+
+  async resolveSession(threadId: string, status: 'resolved' | 'requires_followup' | 'closed'): Promise<void> {
+    await fetch(`${BASE}/sessions/${encodeURIComponent(threadId)}/resolve`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
   },
 
   async getReference(id: string, signal?: AbortSignal): Promise<ReferencePreview> {

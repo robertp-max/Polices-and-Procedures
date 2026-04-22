@@ -290,8 +290,11 @@ export function formatEventDate(dateISO: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+import { MANDATED_EVENTS_EXPANDED } from './mandatedEventsExpanded';
+
 /* ─── Event dataset ──────────────────────────────────────────── */
 export const REGULATORY_EVENTS: RegulatoryEvent[] = [
+  ...MANDATED_EVENTS_EXPANDED,
   /* ══════════ MAY 2026 — the "now" window ══════════ */
 
   {
@@ -1791,55 +1794,58 @@ export const REGULATORY_EVENTS: RegulatoryEvent[] = [
     regulatoryDriver: '42 CFR §484.65 — QAPI CoP requires at least one agency-wide PIP per calendar year. The quarterly governance review cadence is agency policy-driven (NOT a universal federal quarterly mandate). Annual PIP must include baseline measurement, target, intervention, remeasurement, and sustainment evidence.',
     category: 'qapi-quarterly-governance',
     processFlow: [
-      {
-        id: 'qapi-gov-dashboard', label: 'Compile QAPI dashboard',
-        description: 'Pull OASIS outcome reports, HHVBP metrics, adverse events, hotline activity, and infection surveillance data. Build consolidated dashboard.',
-        dueOffsetDays: -5, status: 'pending',
-      },
-      {
-        id: 'qapi-gov-pip-baseline', label: 'Establish annual PIP baseline (Q1 only)',
-        description: 'Select PIP topic from QAPI data or Governing Body priority. Establish baseline measure and improvement target for the calendar year. Document PIP charter.',
-        instructions: 'At least one PIP per calendar year required. PIP charter must include: indicator, baseline rate, target rate, intervention plan, measurement frequency, and remeasurement date.',
-        expectedOutput: 'Signed PIP charter with baseline and target',
-        dueOffsetDays: 0, status: 'pending',
-      },
-      {
-        id: 'qapi-gov-review', label: 'QAPI governance review session',
-        description: 'Review dashboard with committee. Discuss action log. Assign/close escalations. Review PIP charter.',
-        dueOffsetDays: 0, status: 'pending',
-      },
-      {
-        id: 'qapi-gov-report', label: 'Produce quarterly report-out packet',
-        description: 'Produce QAPI quarterly report for Governing Body. Include: dashboard summary, PIP status, action log, escalations.',
-        dueOffsetDays: 5, status: 'pending',
-      },
-      {
-        id: 'qapi-gov-govbody', label: 'Submit report to Governing Body',
-        description: 'Deliver quarterly QAPI report to Governing Body 7 days before next board meeting.',
-        dueOffsetDays: 7, status: 'pending',
-        onCompleteText: 'QAPI Q1 governance report delivered.',
-      },
+      { id: 'qapi-gov-dashboard', label: 'Compile Q1 QAPI data dashboard', description: 'Pull OASIS outcome reports, HHVBP metrics, adverse events, hotline activity, and infection surveillance data.', instructions: '1. Pull Q1 OASIS quality metrics\n2. Pull infection event log from IC coordinator\n3. Pull complaint/grievance log\n4. Pull HHCAHPS data if available\n5. Set annual baselines for all tracked indicators\n6. Complete QA-FM-020', expectedOutput: 'Q1 Data Dashboard (QA-FM-020) with baselines for all tracked indicators', requiredFormIds: ['QA-FM-020'], onCompleteText: 'Q1 dashboard compiled with annual baselines set.', status: 'pending', dueOffsetDays: -7 },
+      { id: 'qapi-gov-chart-audit', label: 'Complete Q1 chart audits', description: 'Minimum 10% stratified sample chart audit.', instructions: '1. Select 10% sample of active records\n2. Audit: OASIS completeness, POC currency, physician signatures, timeliness, medication reconciliation\n3. Complete QA-FM-025 Audit Summary', expectedOutput: 'Q1 Chart Audit Summary (QA-FM-025)', requiredFormIds: ['QA-FM-025'], onCompleteText: 'Q1 chart audits complete.', status: 'pending', dueOffsetDays: -5 },
+      { id: 'qapi-gov-pip-baseline', label: 'Establish annual PIP baseline and charter', description: 'Select PIP topic from Q1 QAPI data. Establish baseline measure, improvement target, and intervention plan for the calendar year.', instructions: '1. Review Q1 dashboard for high-risk, high-volume, or problem-prone indicators\n2. Select PIP topic based on data and Governing Body priorities\n3. Establish baseline measurement (Q1 rate)\n4. Set annual target with rationale\n5. Define intervention plan with owner, timeline, and measurement frequency\n6. Complete PIP Charter (QA-FM-021) with all required fields\n7. At least one PIP required per calendar year per 42 CFR §484.65(d)', expectedOutput: 'Signed PIP Charter (QA-FM-021) with baseline, target, intervention plan, and remeasurement schedule', requiredFormIds: ['QA-FM-021'], onCompleteText: 'Annual PIP charter complete with baseline. Intervention begins per charter schedule.', status: 'pending', dueOffsetDays: 0 },
+      { id: 'qapi-gov-review', label: 'Conduct Q1 QAPI governance review session', description: 'Full Q1 QAPI review per structured agenda.', instructions: '1. Confirm quorum: Administrator, DON, Clinical Manager, QA/Compliance, IC Lead\n2. Walk through Q1 dashboard\n3. Review Q1 incident summary\n4. IC presents Q1 data\n5. Present and ratify PIP charter\n6. Assign corrective actions\n7. Identify GB escalation items\n8. Attestation and sign-off', expectedOutput: 'Q1 QAPI review complete with PIP charter ratified and actions assigned', requiredFormIds: ['QA-FM-024'], onCompleteText: 'Q1 QAPI governance review complete.', status: 'pending', dueOffsetDays: 0 },
+      { id: 'qapi-gov-minutes', label: 'Finalize Q1 meeting minutes within 7 days', description: 'Draft, sign, and file within 7 calendar days.', instructions: '1. Complete QA-FM-024 with Q1 discussion\n2. Include PIP charter ratification vote\n3. Obtain signatures: Administrator, Clinical Manager, QAPI Committee Chair', expectedOutput: 'Signed Q1 QAPI Minutes (QA-FM-024) filed in audit repository', requiredFormIds: ['QA-FM-024'], onCompleteText: 'Q1 minutes filed.', status: 'pending', dueOffsetDays: 7 },
+      { id: 'qapi-gov-govbody', label: 'Submit Q1 QAPI Report to Governing Body', description: 'Deliver quarterly QAPI report with PIP charter to Governing Body 7 days before board meeting.', instructions: '1. Complete QA-FM-023 Q1 report\n2. Include PIP charter summary\n3. Administrator signs off\n4. Submit 7 days before Q1 Governing Body meeting', expectedOutput: 'Signed Q1 QAPI Governance Report to GB with submission record', requiredFormIds: ['QA-FM-023'], onCompleteText: 'Q1 QAPI report delivered to Governing Body.', status: 'pending', dueOffsetDays: 7 },
     ],
     requiredForms: [
-      { id: 'qapi-gov-dashboard-f', label: 'QAPI Data Dashboard (quarterly)',         formId: 'QA-FM-020', status: 'missing', dueOffsetDays: 0 },
-      { id: 'qapi-gov-pip-charter', label: 'Annual PIP Charter (baseline + target)',  formId: 'QA-FM-021', status: 'missing', dueOffsetDays: 0 },
-      { id: 'qapi-gov-action-log',  label: 'QAPI Action Item Log',                    formId: 'QA-FM-022', status: 'missing', dueOffsetDays: 5 },
-      { id: 'qapi-gov-report-f',    label: 'Quarterly QAPI Governance Report',        formId: 'QA-FM-023', status: 'missing', dueOffsetDays: 7 },
+      { id: 'qapi-gov-dashboard-f',  label: 'Q1 QAPI Data Dashboard',         formId: 'QA-FM-020', status: 'missing', dueOffsetDays: -7 },
+      { id: 'qapi-gov-pip-charter',  label: 'Annual PIP Charter',              formId: 'QA-FM-021', status: 'missing', dueOffsetDays:  0 },
+      { id: 'qapi-gov-action-log',   label: 'QAPI Action Item Log',            formId: 'QA-FM-022', status: 'missing', dueOffsetDays:  3 },
+      { id: 'qapi-gov-report-f',     label: 'Quarterly QAPI Governance Report',formId: 'QA-FM-023', status: 'missing', dueOffsetDays:  7 },
+      { id: 'qapi-gov-minutes-f',    label: 'QAPI Meeting Minutes Q1',         formId: 'QA-FM-024', status: 'missing', dueOffsetDays:  7 },
+      { id: 'qapi-gov-audit-f',      label: 'Chart Audit Summary Q1',          formId: 'QA-FM-025', status: 'missing', dueOffsetDays: -5 },
     ],
+    minutes: {
+      status: 'missing', dueOffsetDays: 7, assignee: 'QAPI Coordinator',
+      requiredSections: ['Attendance & quorum confirmation', 'Q1 dashboard review — all indicators with annual baselines set', 'Q1 incident analysis', 'Q1 IC data integration', 'Annual PIP charter ratification vote and outcome', 'New corrective actions with owners', 'GB escalation items', 'Attestation', 'Next meeting date'],
+      signOffRoles: ['Administrator', 'Clinical Manager', 'QAPI Committee Chair'],
+    },
+    agenda: {
+      distributeBusinessDaysBefore: 5,
+      standingTopics: [
+        { id: 'q1-t1', title: 'Opening & Compliance Validation', discussionPoints: ['Confirm quorum', 'Disclose COI', 'This is the Q1 kick-off — annual PIP charter will be established today'], durationMin: 10 },
+        { id: 'q1-t2', title: 'Q1 Dashboard Review — Annual Baseline Setting', discussionPoints: ['Q1 indicator results become annual baselines for all tracked measures', 'Identify high-risk, high-volume, or problem-prone indicators', 'Select annual PIP topic from Q1 data'], requiredInputs: ['QA-FM-020 Q1 Dashboard', 'QA-FM-025 Chart Audit'], owner: 'QAPI Lead', durationMin: 30 },
+        { id: 'q1-t3', title: 'Annual PIP Charter Ratification', discussionPoints: ['Present selected PIP topic with baseline data', 'Committee confirms: indicator, baseline rate, annual target, intervention plan, measurement schedule', 'Vote to ratify PIP charter'], requiredInputs: ['QA-FM-021 PIP Charter draft'], owner: 'QAPI Lead', durationMin: 25 },
+        { id: 'q1-t4', title: 'Q1 Incident & IC Analysis', discussionPoints: ['Q1 incidents by category', 'IC Q1 data — any QAPI-actionable trends?'], requiredInputs: ['QA-FM-026 Incident Log', 'QA-FM-027 IC Log'], owner: 'Clinical Manager', durationMin: 20 },
+        { id: 'q1-t5', title: 'Q1 Corrective Actions & GB Escalation', discussionPoints: ['Assign Q1 corrective actions with owners', 'Identify items for GB report'], durationMin: 20 },
+        { id: 'q1-t6', title: 'Closing & Attestation', discussionPoints: ['Confirm all actions assigned', 'All present attest', 'Q2 review date confirmed'], durationMin: 10 },
+      ],
+      dataInputs: [
+        { label: 'Q1 QAPI Data Dashboard', formId: 'QA-FM-020', owner: 'QAPI Lead' },
+        { label: 'Q1 Chart Audit Summary', formId: 'QA-FM-025', owner: 'Clinical Manager' },
+        { label: 'PIP Charter Draft', formId: 'QA-FM-021', owner: 'QAPI Lead' },
+      ],
+    },
     approvals: [
-      { id: 'qapi-gov-rule-pip', targetKind: 'form', targetLabel: 'Annual PIP Charter', approverRole: 'QAPI Committee Chair', required: true, escalationDays: 7 },
-      { id: 'qapi-gov-rule-event', targetKind: 'event', targetLabel: 'Quarterly QAPI Governance Review', approverRole: 'QAPI Committee Chair', required: true, escalationDays: 7 },
+      { id: 'qapi-gov-rule-pip',   targetKind: 'form',    targetLabel: 'Annual PIP Charter',                   approverRole: 'QAPI Committee Chair', required: true, escalationDays: 7 },
+      { id: 'qapi-gov-rule-min',   targetKind: 'minutes', targetLabel: 'Q1 QAPI Meeting Minutes',              approverRole: 'QAPI Committee Chair', required: true, escalationDays: 7, escalateToRole: 'Administrator' },
+      { id: 'qapi-gov-rule-event', targetKind: 'report',  targetLabel: 'Q1 QAPI Governance Report to GB',      approverRole: 'Administrator',        required: true, escalationDays: 5 },
     ],
     complianceFlags: {
-      auditRisk: 'high', overdueAfterDays: 0,
-      citation: '42 CFR §484.65 — QAPI Condition of Participation',
-      surveyorNote: 'The quarterly QAPI governance review is agency policy-driven, NOT a universal federal quarterly mandate. The annual PIP requirement IS federal. A PIP must be active and documented at the time of survey.',
+      auditRisk: 'critical', overdueAfterDays: 0,
+      citation: '42 CFR §484.65 — QAPI CoP; §484.65(d) — Annual PIP requirement',
+      surveyorNote: 'Q1 is the PIP initiation point. If a PIP charter with documented baseline and target cannot be produced, the annual PIP requirement is unfulfilled. This is a direct §484.65(d) deficiency.',
       missingEvidenceIf: ['missing', 'pending'],
     },
     followUps: [
-      { id: 'qapi-gov-fu-pip', label: 'Execute PIP interventions per charter schedule', ownerRole: 'QAPI Coordinator', dueOffsetDays: 90, closureCriteria: 'First remeasurement completed and documented', escalationDays: 14 },
+      { id: 'qapi-gov-fu-pip',    label: 'Execute PIP interventions per charter schedule',     ownerRole: 'QAPI Coordinator', dueOffsetDays: 30, closureCriteria: 'First intervention steps documented in QA-FM-021.', escalationDays: 14, escalateToRole: 'Administrator' },
+      { id: 'qapi-gov-fu-gb',     label: 'Submit Q1 QAPI report to Governing Body',           ownerRole: 'QAPI Coordinator', dueOffsetDays: 7,  closureCriteria: 'QA-FM-023 submitted with GB receipt.', escalationDays: 3, escalateToRole: 'Administrator' },
     ],
-    dependencies: { feeds: ['EVT-GB-MAY-001'], dependsOn: ['EVT-QAPI-MAY-001'] },
+    dependencies: { feeds: ['EVT-GB-MAY-001', 'EVT-QAPI-2026-Q2'], dependsOn: [] },
     sourceOfTruth: 'app', timezone: 'America/Los_Angeles',
   },
 
