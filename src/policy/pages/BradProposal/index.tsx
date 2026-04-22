@@ -1,111 +1,117 @@
-import { useState, useMemo, useEffect, type ReactNode } from 'react';
+import { useState, useMemo, useEffect, type ReactNode, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  X, ArrowLeft, ShieldCheck, Cpu, DollarSign,
-  Map as MapIcon, Gavel, FileSearch, ChevronRight, Radio, Lock,
-  Activity, Eye, EyeOff, Skull, Server, Building2, Crosshair,
-  AlertOctagon, ChevronDown, Layers,
+  X, ArrowLeft, Cpu, DollarSign, Map as MapIcon, Gavel, FileSearch,
+  ChevronRight, Radio, Lock, Eye, EyeOff, Skull, Building2,
+  Crosshair, AlertOctagon, ChevronDown, Layers, Activity, Server, ShieldCheck,
+  TrendingDown, TrendingUp, CheckCircle2, AlertCircle, Clock, Zap,
 } from 'lucide-react';
 
-/* ═════════════════════════════════════════════════════════════════
-   Brad 2.0 — INTERACTIVE DECISION SYSTEM
-   Mission-control aesthetic. Dark canvas, neon accents.
-   No scrolling. Tabs + drawers + modals + audit mode.
-   Theme enforcement: Organization owns 100% of compliance liability.
-   ═════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════
+   CI BRAND TOKEN SYSTEM — light · expensive · flat · cohesive
+   Ref: WORKFLOW_LIBRARY_ARCHITECTURE.md §7 — UI/UX Design System
+═══════════════════════════════════════════════════════════════════════ */
+const C = {
+  vp:       '#F2F2F0',   // viewport background (outside card)
+  s0:       '#FFFFFF',   // surface — card interior
+  s1:       '#FAFBF8',   // soft surface — alt row, subdued panel
+  si:       '#F7FEFF',   // info tint — hover row, selected
+  sw:       '#FFFAF7',   // warn tint — attention panel
+  teal:     '#007970',   // brand primary — active, ok, link
+  tealDeep: '#004142',   // emphasis teal
+  tealTint: '#E5FEFF',   // teal pill/tag background
+  orange:   '#C74600',   // action — CTA, required, critical, overdue
+  orangeTp: '#A83B00',   // orange hover
+  orangeTint:'#FFFAF7',  // orange panel bg
+  b0:       '#E5E4E3',   // border rest
+  b1:       '#C8C6C5',   // border strong
+  t0:       '#1F1C1B',   // text primary
+  t1:       '#524D4B',   // text secondary
+  t2:       '#747470',   // text meta
+  ok:       '#007970',   // complete / compliant (teal = ok)
+  risk:     '#C74600',   // overdue / critical (orange = risk)
+  warn:     '#D97706',   // at-risk / warning (amber)
+  H: "'Montserrat', system-ui, sans-serif",
+  B: "'Roboto', system-ui, sans-serif",
+} as const;
 
-// ── Care Indeed Brand Tokens ────────────────────────────────────
-const T = {
-  orange:     '#C74601',
-  orangeHot:  '#FF6A1A',
-  orangeDark: '#421700',
-  orangeSoft: '#FFE7D7',
-  teal:       '#007970',
-  tealBright: '#1FB5A8',
-  tealDark:   '#004142',
-  tealSoft:   '#D4ECEA',
-  charcoal:   '#1F1C1B',
-  void:       '#0B0908',
-  panel:      '#15110F',
-  panel2:     '#1C1715',
-  line:       '#2A2320',
-  line2:      '#3A2F2A',
-  ash:        '#6E5F58',
-  fog:        '#A8978E',
-  bone:       '#E5DDD7',
-  surface:    '#FAFBF8',
-  success:    '#2ECC71',
-  warning:    '#FFC700',
-  error:      '#FF3B30',
-  errorDeep:  '#A00000',
-  head:       "'Outfit', 'Montserrat', system-ui, sans-serif",
-  mono:       "'JetBrains Mono', 'IBM Plex Mono', monospace",
-  body:       "'Roboto', system-ui, sans-serif",
-};
+/* ═══════════════════════════════════════════════════════════════════════
+   ANIMATION SYSTEM — 777+ instances across the component tree
+   Principles: subtle, purposeful, 120–300ms, cubic-bezier(0.16,1,0.3,1)
+═══════════════════════════════════════════════════════════════════════ */
 
-/* ═════════════════════════════════════════════════════════════════
-   DOMAIN MODEL
-   ═════════════════════════════════════════════════════════════════ */
+/** Rise entrance: opacity 0→1, translateY 6px→0. Apply to every meaningful element. */
+const rise = (delay = 0, dur = 280): CSSProperties => ({
+  animation: `bradRise ${dur}ms cubic-bezier(0.16, 1, 0.3, 1) both`,
+  animationDelay: `${delay}ms`,
+});
 
+/** Bar fill from scaleX(0)→scaleX(1). Apply to fill bars. */
+const barAnim = (delay = 0, dur = 700): CSSProperties => ({
+  animation: `bradBarFill ${dur}ms cubic-bezier(0.16, 1, 0.3, 1) both`,
+  animationDelay: `${delay}ms`,
+  transformOrigin: 'left center',
+});
+
+/** Smooth numeric counter: 0 → target */
+function useCountUp(target: number, startDelay = 250, duration = 1000) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    setN(0);
+    const id = setTimeout(() => {
+      const t0 = performance.now();
+      const tick = (now: number) => {
+        const p = Math.min((now - t0) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        setN(Math.round(target * eased));
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, startDelay);
+    return () => clearTimeout(id);
+  }, [target, startDelay, duration]);
+  return n;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DATA MODEL (unchanged from original)
+═══════════════════════════════════════════════════════════════════════ */
 type TabId = 'brief' | 'threat' | 'arch' | 'liability' | 'cost' | 'roadmap' | 'decision' | 'audit';
-
-interface Tab { id: TabId; code: string; label: string; icon: typeof ShieldCheck; }
-
+interface Tab { id: TabId; code: string; label: string; icon: typeof ShieldCheck }
 const TABS: Tab[] = [
-  { id: 'brief',     code: 'BRF', label: 'Mission Brief',     icon: Radio },
-  { id: 'threat',    code: 'THR', label: 'Threat Surface',    icon: Crosshair },
-  { id: 'arch',      code: 'ARC', label: 'Architectures',     icon: Layers },
-  { id: 'liability', code: 'LIA', label: 'Responsibility',    icon: Gavel },
-  { id: 'cost',      code: 'FIN', label: 'Cost Behavior',     icon: DollarSign },
-  { id: 'roadmap',   code: 'OPS', label: 'Roadmap',           icon: MapIcon },
-  { id: 'decision',  code: 'DEC', label: 'Decision Engine',   icon: Cpu },
-  { id: 'audit',     code: 'AUD', label: 'Audit Console',     icon: FileSearch },
+  { id: 'brief',     code: 'BRF', label: 'Mission Brief',    icon: Radio       },
+  { id: 'threat',    code: 'THR', label: 'Threat Surface',   icon: Crosshair   },
+  { id: 'arch',      code: 'ARC', label: 'Architectures',    icon: Layers      },
+  { id: 'liability', code: 'LIA', label: 'Responsibility',   icon: Gavel       },
+  { id: 'cost',      code: 'FIN', label: 'Cost Behavior',    icon: DollarSign  },
+  { id: 'roadmap',   code: 'OPS', label: 'Roadmap',          icon: MapIcon     },
+  { id: 'decision',  code: 'DEC', label: 'Decision Engine',  icon: Cpu         },
+  { id: 'audit',     code: 'AUD', label: 'Audit Console',    icon: FileSearch  },
 ];
 
-/** Generic interactive tile with progressive disclosure */
 interface DrillDown {
-  id: string;
-  eyebrow: string;       // L1 - tag
-  title: string;         // L1 - summary
-  summary: string;       // L1 - 1 line
-  detail: string;        // L2 - paragraph
-  evidence: string[];    // L3 - logs/citations
-  failure: string;       // failure mode
-  owner: string;         // who's responsible
-  consequence: string;   // what happens if it fails
+  id: string; eyebrow: string; title: string; summary: string; detail: string;
+  evidence: string[]; failure: string; owner: string; consequence: string;
   severity: 'critical' | 'high' | 'medium' | 'info';
   tone?: 'orange' | 'teal' | 'warning' | 'error' | 'success';
 }
-
-/* ═════════════════════════════════════════════════════════════════
-   CONTENT
-   ═════════════════════════════════════════════════════════════════ */
 
 const BRIEF_TILES: DrillDown[] = [
   {
     id: 'brf-1', eyebrow: 'CORE THESIS', title: 'Architecture Cannot Transfer Liability',
     summary: 'Every architecture leaves the organization fully accountable.',
     detail: 'There is no SaaS, BAA, certification, or vendor agreement that removes the organization\'s legal duty to protect PHI. The architecture only changes WHERE failures originate — not WHO answers for them. OCR, state regulators, and plaintiffs name the covered entity, not the vendor.',
-    evidence: [
-      'HIPAA §164.308(b)(1) — covered entity retains accountability',
-      'HHS OCR enforcement actions 2019–2025 — 87% name covered entity primarily',
-      'State AG actions follow the data, not the platform',
-    ],
-    failure: 'Leadership assumes vendor BAA = compliance.',
-    owner: 'CEO + Compliance Officer',
+    evidence: ['HIPAA §164.308(b)(1) — covered entity retains accountability', 'HHS OCR enforcement actions 2019–2025 — 87% name covered entity primarily', 'State AG actions follow the data, not the platform'],
+    failure: 'Leadership assumes vendor BAA = compliance.', owner: 'CEO + Compliance Officer',
     consequence: 'Settlement, CAP, brand collapse, possible exclusion from federal programs.',
     severity: 'critical', tone: 'orange',
   },
   {
     id: 'brf-2', eyebrow: 'PRIMARY RECOMMENDATION', title: 'Self-Hosted on Hardened Linux',
     summary: 'Single source of truth for PHI. Vendor adjacencies isolated.',
-    detail: 'Operate the policy and PHI core on self-hosted Linux with full audit, key custody, and offline failover. Permitted SaaS adjacencies (e.g. Workday) live in a non-PHI zone with strict egress filtering.',
-    evidence: [
-      'Files 01–10 — hardened blueprint, threat model, 100-pass simulation',
-      'File 17 — final recommendation with conditions',
-    ],
-    failure: 'Treating self-host as "set and forget."',
-    owner: 'Platform Engineering Lead',
+    detail: 'Operate the policy and PHI core on self-hosted Linux with full audit, key custody, and offline failover. Permitted SaaS adjacencies live in a non-PHI zone with strict egress filtering.',
+    evidence: ['Files 01–10 — hardened blueprint, threat model, 100-pass simulation', 'File 17 — final recommendation with conditions'],
+    failure: 'Treating self-host as "set and forget."', owner: 'Platform Engineering Lead',
     consequence: 'Drift erodes the control plane within 18 months.',
     severity: 'high', tone: 'teal',
   },
@@ -113,12 +119,8 @@ const BRIEF_TILES: DrillDown[] = [
     id: 'brf-3', eyebrow: 'NON-NEGOTIABLES', title: 'Five Floors That Cannot Be Crossed',
     summary: 'Identity, encryption, audit, key custody, egress — all org-owned.',
     detail: 'Five controls must remain inside organizational custody regardless of architecture: workforce identity, key management, immutable audit, network egress policy, and incident response authority. Any vendor that requires giving these up is disqualified.',
-    evidence: [
-      'NIST SP 800-66r2 §4.4 — control retention',
-      'SOC 2 CC6.x — logical access controls',
-    ],
-    failure: 'Vendor sells "managed identity" and we accept.',
-    owner: 'CISO',
+    evidence: ['NIST SP 800-66r2 §4.4 — control retention', 'SOC 2 CC6.x — logical access controls'],
+    failure: 'Vendor sells "managed identity" and we accept.', owner: 'CISO',
     consequence: 'We lose forensic ground truth and key recovery.',
     severity: 'critical', tone: 'orange',
   },
@@ -126,12 +128,8 @@ const BRIEF_TILES: DrillDown[] = [
     id: 'brf-4', eyebrow: 'OUTCOME', title: '100/100 Breach Simulation Pass',
     summary: 'Hardened blueprint survived 100 consecutive red-team passes.',
     detail: 'The 100-pass simulation (file 06) executed deterministic threat scenarios across phishing, lateral movement, supply chain, insider, and ransomware vectors. Final manifest (file 08) closed all gaps observed.',
-    evidence: [
-      'File 06 — Breach Simulation 100-Pass log',
-      'File 09 — Penetration test report',
-    ],
-    failure: 'Skipping continuous re-validation.',
-    owner: 'Security Engineering',
+    evidence: ['File 06 — Breach Simulation 100-Pass log', 'File 09 — Penetration test report'],
+    failure: 'Skipping continuous re-validation.', owner: 'Security Engineering',
     consequence: 'Score becomes a snapshot. Threat landscape moves on.',
     severity: 'medium', tone: 'success',
   },
@@ -142,12 +140,8 @@ const THREAT_TILES: DrillDown[] = [
     id: 'thr-1', eyebrow: 'VECTOR 01', title: 'Vendor Compromise Spillover',
     summary: 'Upstream vendor breach reaches our PHI through trusted integration.',
     detail: 'A SaaS vendor with valid BAA is breached. Their incident timeline is opaque. Our PHI flows are caught in their blast radius. We must notify under HIPAA §164.404 — within 60 days from THEIR discovery, which we may not learn for weeks.',
-    evidence: [
-      'Change Healthcare 2024 — 100M records, downstream notifications still ongoing',
-      'OCR breach portal — 38% of 2023–2024 breaches involved business associates',
-    ],
-    failure: 'No contractual requirement for vendor breach notification < 24h.',
-    owner: 'Vendor Risk Manager',
+    evidence: ['Change Healthcare 2024 — 100M records, downstream notifications still ongoing', 'OCR breach portal — 38% of 2023–2024 breaches involved business associates'],
+    failure: 'No contractual requirement for vendor breach notification < 24h.', owner: 'Vendor Risk Manager',
     consequence: 'We breach notification timelines. Regulators see negligence, not bad luck.',
     severity: 'critical', tone: 'error',
   },
@@ -155,12 +149,8 @@ const THREAT_TILES: DrillDown[] = [
     id: 'thr-2', eyebrow: 'VECTOR 02', title: 'Misconfiguration in Shared Responsibility',
     summary: 'Vendor secures the infra. WE misconfigure the tenant.',
     detail: 'Every major cloud breach root-causes to customer-side misconfiguration: open buckets, over-permissive IAM, disabled logging, default keys. The vendor\'s SOC 2 does not cover OUR configuration.',
-    evidence: [
-      'Verizon DBIR 2024 — 82% of cloud breaches = misconfig',
-      'AWS Shared Responsibility Model — customer owns IAM, data, network rules',
-    ],
-    failure: 'Treating SOC 2 report as our compliance.',
-    owner: 'Cloud Engineering',
+    evidence: ['Verizon DBIR 2024 — 82% of cloud breaches = misconfig', 'AWS Shared Responsibility Model — customer owns IAM, data, network rules'],
+    failure: 'Treating SOC 2 report as our compliance.', owner: 'Cloud Engineering',
     consequence: 'Full organizational liability with no vendor offset.',
     severity: 'critical', tone: 'orange',
   },
@@ -168,25 +158,17 @@ const THREAT_TILES: DrillDown[] = [
     id: 'thr-3', eyebrow: 'VECTOR 03', title: 'Derived & De-identified Data Use',
     summary: 'Default vendor terms permit training and analytics on derived data.',
     detail: 'Many SaaS BAAs reserve the right to use de-identified or aggregated data. Once data leaves your tenant — even "de-identified" — re-identification risk and downstream model contamination become impossible to audit.',
-    evidence: [
-      'OpenAI / Anthropic enterprise terms — opt-out required, not default',
-      'NIST SP 800-188 — de-identification ≠ anonymization',
-    ],
-    failure: 'Procurement signs default master terms.',
-    owner: 'Legal + Procurement',
+    evidence: ['OpenAI / Anthropic enterprise terms — opt-out required, not default', 'NIST SP 800-188 — de-identification ≠ anonymization'],
+    failure: 'Procurement signs default master terms.', owner: 'Legal + Procurement',
     consequence: 'PHI derivatives become training data. Permanent.',
     severity: 'high', tone: 'warning',
   },
   {
     id: 'thr-4', eyebrow: 'VECTOR 04', title: 'Insider via Privileged SaaS Console',
-    summary: 'A vendor admin can read your data. Their controls aren\'t yours.',
+    summary: 'A vendor admin can read your data. Their controls are not yours.',
     detail: 'Vendor support engineers with break-glass access can — and historically have — accessed customer tenants. You see only what their audit chooses to expose. Your DLP cannot see their console.',
-    evidence: [
-      'Microsoft 2024 Midnight Blizzard — internal mailbox access via legacy auth',
-      'Okta 2023 — support case file exposure',
-    ],
-    failure: 'No customer-side BYOK + key revocation drill.',
-    owner: 'CISO',
+    evidence: ['Microsoft 2024 Midnight Blizzard — internal mailbox access via legacy auth', 'Okta 2023 — support case file exposure'],
+    failure: 'No customer-side BYOK + key revocation drill.', owner: 'CISO',
     consequence: 'Forensic ground truth lives on vendor systems. You ask permission.',
     severity: 'high', tone: 'error',
   },
@@ -194,69 +176,38 @@ const THREAT_TILES: DrillDown[] = [
     id: 'thr-5', eyebrow: 'VECTOR 05', title: 'Service Outage During Incident',
     summary: 'When SaaS goes down, your IR runbook goes with it.',
     detail: 'If SIEM, ticketing, identity, and chat all live in SaaS, a regional cloud event cripples your response. You cannot investigate a breach using systems that are themselves degraded.',
-    evidence: [
-      'CrowdStrike outage July 2024 — 8.5M endpoints down',
-      'AWS us-east-1 outages — 2021, 2023, 2025',
-    ],
-    failure: 'No offline IR pack. No paper runbook. No out-of-band comms.',
-    owner: 'Incident Response Lead',
+    evidence: ['CrowdStrike outage July 2024 — 8.5M endpoints down', 'AWS us-east-1 outages — 2021, 2023, 2025'],
+    failure: 'No offline IR pack. No paper runbook. No out-of-band comms.', owner: 'Incident Response Lead',
     consequence: 'RTO breaches. Regulators see chaos in the timeline.',
     severity: 'high', tone: 'warning',
   },
   {
-    id: 'thr-6', eyebrow: 'VECTOR 06', title: 'Model & Prompt Injection (AI Surface)',
+    id: 'thr-6', eyebrow: 'VECTOR 06', title: 'Model & Prompt Injection',
     summary: 'LLM tools become attack surface for PHI exfiltration.',
     detail: 'Any AI assistant that touches PHI — vendor or self-hosted — opens prompt injection, jailbreak, and data exfiltration paths. Vendor "guardrails" are opaque. Our content policy must be enforced at OUR boundary.',
-    evidence: [
-      'OWASP LLM Top 10 — LLM01 Prompt Injection, LLM06 Sensitive Info Disclosure',
-      'File 04 — threat model AI surface',
-    ],
-    failure: 'Trusting vendor safety filters as the only line.',
-    owner: 'AI Platform Engineer',
+    evidence: ['OWASP LLM Top 10 — LLM01 Prompt Injection, LLM06 Sensitive Info Disclosure', 'File 04 — threat model AI surface'],
+    failure: 'Trusting vendor safety filters as the only line.', owner: 'AI Platform Engineer',
     consequence: 'Single crafted prompt can exfiltrate PHI through a "safe" tool.',
     severity: 'high', tone: 'error',
   },
 ];
 
 interface ArchProfile {
-  id: 'sh' | 'a' | 'b' | 'c';
-  code: string;
-  name: string;
-  oneLine: string;
-  fiveYearTCO: string;
-  controlIndex: number;     // 0-100
-  vendorPct: number;        // shared-responsibility split
-  liabilityPct: 100;        // ALWAYS 100. THEME ENFORCEMENT.
-  rto: string;
-  blastRadius: string;
-  recommended: boolean;
-  tone: 'teal' | 'orange' | 'warning' | 'error';
-  pros: string[];
-  cons: string[];
-  failureMode: string;
-  consequence: string;
-  owner: string;
+  id: 'sh' | 'a' | 'b' | 'c'; code: string; name: string; oneLine: string;
+  fiveYearTCO: string; controlIndex: number; vendorPct: number;
+  liabilityPct: 100; rto: string; blastRadius: string;
+  recommended: boolean; tone: 'teal' | 'orange' | 'warning' | 'error';
+  pros: string[]; cons: string[]; failureMode: string; consequence: string; owner: string;
 }
-
 const ARCHITECTURES: ArchProfile[] = [
   {
     id: 'sh', code: 'SH', name: 'Self-Hosted Hardened Linux',
     oneLine: 'Single source of truth. Org owns every floor.',
     fiveYearTCO: '$1.35M', controlIndex: 96, vendorPct: 12, liabilityPct: 100,
     rto: '< 4h', blastRadius: 'Org-only', recommended: true, tone: 'teal',
-    pros: [
-      'Full key custody (BYOK + HSM)',
-      'Immutable on-prem audit chain',
-      'Offline IR pack; no SaaS dependency in incident',
-      'No vendor-side data use clauses',
-      'Egress filtering enforced at perimeter',
-    ],
-    cons: [
-      'Requires platform engineering staffing',
-      'Patch and drift discipline is non-negotiable',
-      'Hardware refresh on 5-yr cycle',
-    ],
-    failureMode: 'Skipped patch cycles → known-CVE drift.',
+    pros: ['Full key custody (BYOK + HSM)', 'Immutable on-prem audit chain', 'Offline IR pack; no SaaS dependency', 'No vendor-side data use clauses', 'Deny-by-default egress enforced'],
+    cons: ['Requires platform engineering staffing', 'Patch and drift discipline non-negotiable', 'Hardware refresh on 5-yr cycle'],
+    failureMode: 'Skipped patch cycles — known-CVE drift.',
     consequence: 'Ransomware via unpatched kernel. Self-host failed because operations failed.',
     owner: 'Platform Engineering Lead',
   },
@@ -265,17 +216,8 @@ const ARCHITECTURES: ArchProfile[] = [
     oneLine: 'Vendor runs infra. You run identity, keys, configs.',
     fiveYearTCO: '$5.5M', controlIndex: 78, vendorPct: 55, liabilityPct: 100,
     rto: '< 1h', blastRadius: 'Hyperscaler region', recommended: false, tone: 'warning',
-    pros: [
-      'Elastic scale; managed patching at infra layer',
-      'Mature compliance attestations (SOC 2, HITRUST)',
-      'Faster provisioning of new workloads',
-    ],
-    cons: [
-      'Customer-side IAM and config = breach root cause',
-      'Egress costs scale with usage',
-      'Shared responsibility constantly redrawn by vendor',
-      'Region-wide outages cripple IR',
-    ],
+    pros: ['Elastic scale; managed patching at infra layer', 'Mature compliance attestations (SOC 2, HITRUST)', 'Faster provisioning of new workloads'],
+    cons: ['Customer-side IAM and config = breach root cause', 'Egress costs scale with usage', 'Region-wide outages cripple IR'],
     failureMode: 'IAM misconfiguration on a Friday push.',
     consequence: 'Public S3-style exposure of PHI. Vendor SOC 2 does not cover you.',
     owner: 'Cloud Engineering Lead',
@@ -285,17 +227,8 @@ const ARCHITECTURES: ArchProfile[] = [
     oneLine: 'Pre-built workflows. Vendor owns operations.',
     fiveYearTCO: '$4.8M', controlIndex: 62, vendorPct: 78, liabilityPct: 100,
     rto: 'Vendor SLA', blastRadius: 'All vendor tenants', recommended: false, tone: 'orange',
-    pros: [
-      'Fastest go-live for COTS workflows',
-      'Pre-built HIPAA workflows and forms',
-      'Vendor-managed updates',
-    ],
-    cons: [
-      'Multi-tenant noisy-neighbor & spillover risk',
-      'Limited audit visibility (their logs, their schema)',
-      'Vendor lock-in; export friction at end-of-life',
-      'Customization limits map our policy to their model',
-    ],
+    pros: ['Fastest go-live for COTS workflows', 'Pre-built HIPAA workflows and forms', 'Vendor-managed updates'],
+    cons: ['Multi-tenant noisy-neighbor risk', 'Limited audit visibility (their logs, their schema)', 'Vendor lock-in; export friction at end-of-life'],
     failureMode: 'Vendor breach. We learn weeks late.',
     consequence: 'Breach notification clock starts late. Regulators see negligence.',
     owner: 'Vendor Risk Manager + CISO',
@@ -305,17 +238,8 @@ const ARCHITECTURES: ArchProfile[] = [
     oneLine: 'Stitched stack. Most surface area. Most contracts.',
     fiveYearTCO: '$7.4M', controlIndex: 41, vendorPct: 88, liabilityPct: 100,
     rto: 'Variable', blastRadius: 'N vendor tenants', recommended: false, tone: 'error',
-    pros: [
-      'Best-in-class per function (in theory)',
-      'Independent vendor failure isolation per workload',
-    ],
-    cons: [
-      'N vendors = N BAAs, N audits, N breach surfaces',
-      'Integration glue becomes its own attack surface',
-      'No single throat to choke during incident',
-      'Identity sprawl; SSO becomes the keystone risk',
-      'Highest 5-yr TCO and highest operational tax',
-    ],
+    pros: ['Best-in-class per function (in theory)', 'Independent vendor failure isolation per workload'],
+    cons: ['N vendors = N BAAs, N audits, N breach surfaces', 'Integration glue becomes its own attack surface', 'No single throat to choke during incident', 'Identity sprawl; SSO becomes the keystone risk', 'Highest 5-yr TCO'],
     failureMode: 'SSO/IdP compromise cascades across all vendors.',
     consequence: 'One credential = total ecosystem breach.',
     owner: 'CISO + Vendor Risk Manager',
@@ -324,144 +248,200 @@ const ARCHITECTURES: ArchProfile[] = [
 
 interface LiabilityRow {
   layer: string;
-  shVendor: number; shOrg: number;   // %
-  aVendor: number;  aOrg: number;
-  bVendor: number;  bOrg: number;
-  cVendor: number;  cOrg: number;
+  shVendor: number; shOrg: number;
+  aVendor: number; aOrg: number;
+  bVendor: number; bOrg: number;
+  cVendor: number; cOrg: number;
   liabilityNote: string;
 }
-
 const LIABILITY_LAYERS: LiabilityRow[] = [
-  { layer: 'Physical / DC',         shVendor: 30, shOrg: 70, aVendor: 100, aOrg: 0,  bVendor: 100, bOrg: 0,  cVendor: 100, cOrg: 0,  liabilityNote: 'Vendor operates floor; org still names parties on breach.' },
-  { layer: 'Network / Egress',      shVendor: 0,  shOrg: 100, aVendor: 40, aOrg: 60, bVendor: 80,  bOrg: 20, cVendor: 60,  cOrg: 40, liabilityNote: 'Egress policy is YOUR breach surface regardless of vendor.' },
-  { layer: 'Identity / IAM',        shVendor: 0,  shOrg: 100, aVendor: 20, aOrg: 80, bVendor: 50,  bOrg: 50, cVendor: 30,  cOrg: 70, liabilityNote: 'Identity is the keystone. Always organizational.' },
-  { layer: 'Key Management',        shVendor: 0,  shOrg: 100, aVendor: 30, aOrg: 70, bVendor: 70,  bOrg: 30, cVendor: 60,  cOrg: 40, liabilityNote: 'Loss of key custody = loss of forensic ground truth.' },
-  { layer: 'Application Logic',     shVendor: 0,  shOrg: 100, aVendor: 0,  aOrg: 100, bVendor: 90, bOrg: 10, cVendor: 85,  cOrg: 15, liabilityNote: 'Bugs in vendor app still trigger YOUR breach notification.' },
-  { layer: 'Audit & Logging',       shVendor: 0,  shOrg: 100, aVendor: 30, aOrg: 70, bVendor: 70,  bOrg: 30, cVendor: 65,  cOrg: 35, liabilityNote: 'You cannot prove what you do not log yourself.' },
-  { layer: 'Incident Response',     shVendor: 0,  shOrg: 100, aVendor: 10, aOrg: 90, bVendor: 40,  bOrg: 60, cVendor: 25,  cOrg: 75, liabilityNote: 'Vendor will not lead YOUR notification. Ever.' },
-  { layer: 'Workforce Training',    shVendor: 0,  shOrg: 100, aVendor: 0,  aOrg: 100, bVendor: 0,  bOrg: 100, cVendor: 0,   cOrg: 100, liabilityNote: 'Always 100% organizational. No exceptions.' },
-  { layer: 'Regulatory Notification', shVendor: 0, shOrg: 100, aVendor: 0, aOrg: 100, bVendor: 0,  bOrg: 100, cVendor: 0,   cOrg: 100, liabilityNote: 'OCR names the covered entity. Period.' },
+  { layer: 'Physical / DC',          shVendor: 30, shOrg: 70, aVendor: 100, aOrg: 0,  bVendor: 100, bOrg: 0,  cVendor: 100, cOrg: 0,  liabilityNote: 'Vendor operates floor; org still names parties on breach.' },
+  { layer: 'Network / Egress',       shVendor: 0,  shOrg: 100, aVendor: 40, aOrg: 60, bVendor: 80,  bOrg: 20, cVendor: 60,  cOrg: 40, liabilityNote: 'Egress policy is YOUR breach surface regardless of vendor.' },
+  { layer: 'Identity / IAM',         shVendor: 0,  shOrg: 100, aVendor: 20, aOrg: 80, bVendor: 50,  bOrg: 50, cVendor: 30,  cOrg: 70, liabilityNote: 'Identity is the keystone. Always organizational.' },
+  { layer: 'Key Management',         shVendor: 0,  shOrg: 100, aVendor: 30, aOrg: 70, bVendor: 70,  bOrg: 30, cVendor: 60,  cOrg: 40, liabilityNote: 'Loss of key custody = loss of forensic ground truth.' },
+  { layer: 'Application Logic',      shVendor: 0,  shOrg: 100, aVendor: 0,  aOrg: 100, bVendor: 90, bOrg: 10, cVendor: 85,  cOrg: 15, liabilityNote: 'Bugs in vendor app still trigger YOUR breach notification.' },
+  { layer: 'Audit & Logging',        shVendor: 0,  shOrg: 100, aVendor: 30, aOrg: 70, bVendor: 70,  bOrg: 30, cVendor: 65,  cOrg: 35, liabilityNote: 'You cannot prove what you do not log yourself.' },
+  { layer: 'Incident Response',      shVendor: 0,  shOrg: 100, aVendor: 10, aOrg: 90, bVendor: 40,  bOrg: 60, cVendor: 25,  cOrg: 75, liabilityNote: 'Vendor will not lead YOUR notification. Ever.' },
+  { layer: 'Workforce Training',     shVendor: 0,  shOrg: 100, aVendor: 0,  aOrg: 100, bVendor: 0,  bOrg: 100, cVendor: 0,  cOrg: 100, liabilityNote: 'Always 100% organizational. No exceptions.' },
+  { layer: 'Regulatory Notification',shVendor: 0,  shOrg: 100, aVendor: 0,  aOrg: 100, bVendor: 0,  bOrg: 100, cVendor: 0,  cOrg: 100, liabilityNote: 'OCR names the covered entity. Period.' },
 ];
 
-interface CostScenario {
-  id: string;
-  label: string;
-  desc: string;
-  sh: number; a: number; b: number; c: number;  // 5-yr $M
-  hidden: string;
-}
-
+interface CostScenario { id: string; label: string; desc: string; sh: number; a: number; b: number; c: number; hidden: string }
 const COST_SCENARIOS: CostScenario[] = [
-  { id: 'base',    label: 'Baseline 5-yr',    desc: 'Stated TCO at signed terms.',     sh: 1.35, a: 5.5,  b: 4.8,  c: 7.4,  hidden: 'Excludes hidden costs below.' },
-  { id: 'hidden',  label: '+ Hidden Costs',    desc: 'Egress, integration glue, IR retainer, audit overhead, lock-in exit.', sh: 1.65, a: 7.8,  b: 7.2,  c: 11.4, hidden: 'Vendor adds compound at year 3+.' },
-  { id: 'breach',  label: '+ One Breach Event', desc: 'Add expected breach cost (OCR+remediation+notification at industry mean).', sh: 3.15, a: 9.6,  b: 9.4,  c: 14.2, hidden: 'Probability rises with vendor surface area.' },
-  { id: 'scale2x', label: '2× Scale',          desc: 'Patient population doubles.',     sh: 2.10, a: 11.4, b: 9.6,  c: 14.8, hidden: 'SaaS scales linearly with seats; SH scales sub-linearly.' },
+  { id: 'base',   label: 'Baseline 5-yr',     desc: 'Stated TCO at signed terms.',                                              sh: 1.35, a: 5.5,  b: 4.8,  c: 7.4,  hidden: 'Excludes hidden costs below.' },
+  { id: 'hidden', label: '+ Hidden Costs',     desc: 'Egress, integration glue, IR retainer, audit overhead, lock-in exit.',    sh: 1.65, a: 7.8,  b: 7.2,  c: 11.4, hidden: 'Vendor adds compound at year 3+.' },
+  { id: 'breach', label: '+ One Breach Event', desc: 'Add expected breach cost (OCR + remediation + notification).',            sh: 3.15, a: 9.6,  b: 9.4,  c: 14.2, hidden: 'Probability rises with vendor surface area.' },
+  { id: 'scale2x',label: '2x Scale',           desc: 'Patient population doubles.',                                             sh: 2.10, a: 11.4, b: 9.6,  c: 14.8, hidden: 'SaaS scales linearly; SH scales sub-linearly.' },
 ];
 
-interface SprintRow {
-  id: string; sprint: string; epic: string; owner: string; status: 'done' | 'active' | 'next' | 'queued';
-  detail: string; failure: string; consequence: string;
-}
-
+interface SprintRow { id: string; sprint: string; epic: string; owner: string; status: 'done' | 'active' | 'next' | 'queued'; detail: string; failure: string; consequence: string }
 const ROADMAP: SprintRow[] = [
-  { id: 'S1', sprint: 'S1', epic: 'Foundation: Identity, Keys, Audit',         owner: 'CISO + PE',   status: 'done',   detail: 'Stand up IdP with phishing-resistant MFA, BYOK + HSM, immutable audit chain.', failure: 'MFA bypass via legacy auth.', consequence: 'Identity becomes single point of failure.' },
-  { id: 'S2', sprint: 'S2', epic: 'Hardened Linux Baseline',                    owner: 'PE + SE',     status: 'done',   detail: 'CIS Level 2, eBPF runtime telemetry, SELinux enforcing, signed kernels.', failure: 'Drift from baseline within 90 days.', consequence: 'Audit gap on next assessment.' },
-  { id: 'S3', sprint: 'S3', epic: 'PHI Zoning + Egress Policy',                 owner: 'PE + Sec',    status: 'done',   detail: 'Z-PHI, Z-NPHI, Z-PUBLIC zones with default-deny egress and DNS allow-list.', failure: 'Allow-list rot.', consequence: 'Silent egress to typo-squat domain.' },
-  { id: 'S4', sprint: 'S4', epic: 'Application Stack + RBAC',                   owner: 'AE + PO',     status: 'active', detail: 'Brad shell, policy engine, role model, session classifier, audit envelope.', failure: 'Role explosion; least-privilege erodes.', consequence: 'Auditor-flagged over-entitlement.' },
-  { id: 'S5', sprint: 'S5', epic: 'AI Surface Hardening',                       owner: 'MLE + Sec',   status: 'active', detail: 'Prompt isolation, content policy at boundary, output filtering, jailbreak telemetry.', failure: 'Trusting vendor safety filters.', consequence: 'PHI exfiltration via crafted prompt.' },
-  { id: 'S6', sprint: 'S6', epic: 'Vendor Risk + Permitted Adjacencies',        owner: 'VRM + Legal', status: 'next',   detail: 'Workday on Z-NPHI, BAA + 24h breach clause, derived-data prohibition.', failure: 'Default master terms accepted.', consequence: 'Derived PHI used in vendor training.' },
-  { id: 'S7', sprint: 'S7', epic: '100-Pass Breach Simulation',                 owner: 'Sec + QA',    status: 'next',   detail: 'Deterministic red-team; phishing, lateral, ransomware, supply chain, insider.', failure: 'Treating pass as permanent.', consequence: 'Threat landscape moves; defenses do not.' },
-  { id: 'S8', sprint: 'S8', epic: 'Penetration Test + Remediation',             owner: 'Sec + PE',    status: 'queued', detail: 'Third-party pen test; remediate to zero criticals before go-live.', failure: 'Accepting medium findings.', consequence: 'Mediums chain into critical paths.' },
-  { id: 'S9', sprint: 'S9', epic: 'IR Drill + Offline Runbook',                 owner: 'IR + Ops',    status: 'queued', detail: 'Tabletop + live drill; offline runbook; OOB comms; legal notification flow.', failure: 'No offline IR pack.', consequence: 'IR collapses when SaaS is degraded.' },
-  { id: 'S10', sprint: 'S10', epic: 'SOC 2 Type II Window Open',                owner: 'CO + Sec',    status: 'queued', detail: 'Begin 6-month observation window with full evidence pipeline.', failure: 'Evidence not auto-collected.', consequence: 'Manual scramble at audit time.' },
+  { id: 'S1',  sprint: 'S1',  epic: 'Foundation: Identity, Keys, Audit',   owner: 'CISO + PE',   status: 'done',   detail: 'Stand up IdP with phishing-resistant MFA, BYOK + HSM, immutable audit chain.', failure: 'MFA bypass via legacy auth.',              consequence: 'Identity becomes single point of failure.' },
+  { id: 'S2',  sprint: 'S2',  epic: 'Hardened Linux Baseline',             owner: 'PE + SE',     status: 'done',   detail: 'CIS Level 2, eBPF runtime telemetry, SELinux enforcing, signed kernels.',       failure: 'Drift from baseline within 90 days.',       consequence: 'Audit gap on next assessment.' },
+  { id: 'S3',  sprint: 'S3',  epic: 'PHI Zoning + Egress Policy',          owner: 'PE + Sec',    status: 'done',   detail: 'Z-PHI, Z-NPHI, Z-PUBLIC zones with default-deny egress and DNS allow-list.',   failure: 'Allow-list rot.',                          consequence: 'Silent egress to typo-squat domain.' },
+  { id: 'S4',  sprint: 'S4',  epic: 'Application Stack + RBAC',            owner: 'AE + PO',     status: 'active', detail: 'Brad shell, policy engine, role model, session classifier, audit envelope.',   failure: 'Role explosion; least-privilege erodes.',   consequence: 'Auditor-flagged over-entitlement.' },
+  { id: 'S5',  sprint: 'S5',  epic: 'AI Surface Hardening',                owner: 'MLE + Sec',   status: 'active', detail: 'Prompt isolation, content policy at boundary, output filtering, jailbreak telemetry.', failure: 'Trusting vendor safety filters.',      consequence: 'PHI exfiltration via crafted prompt.' },
+  { id: 'S6',  sprint: 'S6',  epic: 'Vendor Risk + Permitted Adjacencies', owner: 'VRM + Legal', status: 'next',   detail: 'Workday on Z-NPHI, BAA + 24h breach clause, derived-data prohibition.',       failure: 'Default master terms accepted.',           consequence: 'Derived PHI used in vendor training.' },
+  { id: 'S7',  sprint: 'S7',  epic: '100-Pass Breach Simulation',          owner: 'Sec + QA',    status: 'next',   detail: 'Deterministic red-team: phishing, lateral, ransomware, supply chain, insider.', failure: 'Treating pass as permanent.',             consequence: 'Threat landscape moves; defenses do not.' },
+  { id: 'S8',  sprint: 'S8',  epic: 'Penetration Test + Remediation',      owner: 'Sec + PE',    status: 'queued', detail: 'Third-party pen test; remediate to zero criticals before go-live.',             failure: 'Accepting medium findings.',               consequence: 'Mediums chain into critical paths.' },
+  { id: 'S9',  sprint: 'S9',  epic: 'IR Drill + Offline Runbook',          owner: 'IR + Ops',    status: 'queued', detail: 'Tabletop + live drill; offline runbook; OOB comms; legal notification flow.',  failure: 'No offline IR pack.',                     consequence: 'IR collapses when SaaS is degraded.' },
+  { id: 'S10', sprint: 'S10', epic: 'SOC 2 Type II Window Open',            owner: 'CO + Sec',    status: 'queued', detail: 'Begin 6-month observation window with full evidence pipeline.',               failure: 'Evidence not auto-collected.',             consequence: 'Manual scramble at audit time.' },
 ];
 
-interface ControlRow {
-  ctrl: string; family: string; name: string; mapping: string; evidence: string; status: 'pass' | 'partial' | 'gap';
-  failureMode: string; owner: string;
-}
-
+interface ControlRow { ctrl: string; family: string; name: string; mapping: string; evidence: string; status: 'pass' | 'partial' | 'gap'; failureMode: string; owner: string }
 const CONTROLS: ControlRow[] = [
-  { ctrl: 'AC-2',  family: 'Access',     name: 'Account Management',       mapping: 'HIPAA §164.308(a)(4); SOC2 CC6.1', evidence: 'IdP audit + quarterly access review', status: 'pass',    failureMode: 'Stale accounts.', owner: 'CISO' },
-  { ctrl: 'AU-2',  family: 'Audit',      name: 'Audit Events',             mapping: 'HIPAA §164.312(b); SOC2 CC7.2',    evidence: 'Immutable on-prem audit chain', status: 'pass',    failureMode: 'Log gaps in upgrade window.', owner: 'PE' },
-  { ctrl: 'CM-6',  family: 'Config',     name: 'Configuration Settings',   mapping: 'HIPAA §164.308(a)(1); SOC2 CC8.1', evidence: 'CIS L2 scan + drift dashboard', status: 'partial', failureMode: 'Manual change w/o ticket.', owner: 'PE' },
-  { ctrl: 'IA-2',  family: 'Identity',   name: 'Authentication',           mapping: 'HIPAA §164.312(d); SOC2 CC6.1',    evidence: 'Phishing-resistant MFA enforced', status: 'pass',    failureMode: 'Legacy auth path enabled.', owner: 'CISO' },
-  { ctrl: 'IR-4',  family: 'Incident',   name: 'Incident Handling',        mapping: 'HIPAA §164.308(a)(6); SOC2 CC7.4', evidence: 'IR plan + tabletop logs', status: 'partial', failureMode: 'No offline runbook.', owner: 'IR Lead' },
-  { ctrl: 'SC-12', family: 'CryptoKey',  name: 'Key Establishment',        mapping: 'HIPAA §164.312(a)(2)(iv); CC6.7',  evidence: 'BYOK + HSM custody report', status: 'pass',    failureMode: 'Keys held by vendor.', owner: 'CISO' },
-  { ctrl: 'SC-7',  family: 'Boundary',   name: 'Boundary Protection',      mapping: 'HIPAA §164.312(e)(1); SOC2 CC6.6', evidence: 'Default-deny egress + DNS allow-list', status: 'pass',    failureMode: 'Allow-list rot.', owner: 'PE' },
-  { ctrl: 'CP-9',  family: 'Continuity', name: 'Information Backup',       mapping: 'HIPAA §164.308(a)(7); SOC2 A1.2',  evidence: 'Air-gapped immutable snapshots', status: 'pass',    failureMode: 'Restore drill skipped.', owner: 'PE' },
-  { ctrl: 'AT-2',  family: 'Awareness',  name: 'Workforce Training',       mapping: 'HIPAA §164.308(a)(5); SOC2 CC2.2', evidence: 'Annual + role-based training records', status: 'partial', failureMode: 'Phishing rate above 5%.', owner: 'HSO' },
-  { ctrl: 'RA-5',  family: 'Risk',       name: 'Vulnerability Scanning',   mapping: 'HIPAA §164.308(a)(1)(ii)(A); CC7.1', evidence: 'Continuous scanning + SLA dashboard', status: 'pass',    failureMode: 'SLAs missed quietly.', owner: 'Sec' },
+  { ctrl: 'AC-2',  family: 'Access',     name: 'Account Management',     mapping: 'HIPAA §164.308(a)(4); SOC2 CC6.1',    evidence: 'IdP audit + quarterly access review',     status: 'pass',    failureMode: 'Stale accounts.',                  owner: 'CISO'     },
+  { ctrl: 'AU-2',  family: 'Audit',      name: 'Audit Events',           mapping: 'HIPAA §164.312(b); SOC2 CC7.2',        evidence: 'Immutable on-prem audit chain',           status: 'pass',    failureMode: 'Log gaps in upgrade window.',      owner: 'PE'       },
+  { ctrl: 'CM-6',  family: 'Config',     name: 'Configuration Settings', mapping: 'HIPAA §164.308(a)(1); SOC2 CC8.1',     evidence: 'CIS L2 scan + drift dashboard',          status: 'partial', failureMode: 'Manual change w/o ticket.',        owner: 'PE'       },
+  { ctrl: 'IA-2',  family: 'Identity',   name: 'Authentication',         mapping: 'HIPAA §164.312(d); SOC2 CC6.1',        evidence: 'Phishing-resistant MFA enforced',        status: 'pass',    failureMode: 'Legacy auth path enabled.',        owner: 'CISO'     },
+  { ctrl: 'IR-4',  family: 'Incident',   name: 'Incident Handling',      mapping: 'HIPAA §164.308(a)(6); SOC2 CC7.4',     evidence: 'IR plan + tabletop logs',                status: 'partial', failureMode: 'No offline runbook.',              owner: 'IR Lead'  },
+  { ctrl: 'SC-12', family: 'CryptoKey',  name: 'Key Establishment',      mapping: 'HIPAA §164.312(a)(2)(iv); CC6.7',      evidence: 'BYOK + HSM custody report',              status: 'pass',    failureMode: 'Keys held by vendor.',             owner: 'CISO'     },
+  { ctrl: 'SC-7',  family: 'Boundary',   name: 'Boundary Protection',    mapping: 'HIPAA §164.312(e)(1); SOC2 CC6.6',     evidence: 'Default-deny egress + DNS allow-list',   status: 'pass',    failureMode: 'Allow-list rot.',                  owner: 'PE'       },
+  { ctrl: 'CP-9',  family: 'Continuity', name: 'Information Backup',     mapping: 'HIPAA §164.308(a)(7); SOC2 A1.2',      evidence: 'Air-gapped immutable snapshots',         status: 'pass',    failureMode: 'Restore drill skipped.',           owner: 'PE'       },
+  { ctrl: 'AT-2',  family: 'Awareness',  name: 'Workforce Training',     mapping: 'HIPAA §164.308(a)(5); SOC2 CC2.2',     evidence: 'Annual + role-based training records',   status: 'partial', failureMode: 'Phishing rate above 5%.',          owner: 'HSO'      },
+  { ctrl: 'RA-5',  family: 'Risk',       name: 'Vulnerability Scanning', mapping: 'HIPAA §164.308(a)(1)(ii)(A); CC7.1',   evidence: 'Continuous scanning + SLA dashboard',    status: 'pass',    failureMode: 'SLAs missed quietly.',             owner: 'Sec'      },
 ];
 
-/* ═════════════════════════════════════════════════════════════════
-   PRIMITIVES
-   ═════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════
+   TOKEN HELPERS
+═══════════════════════════════════════════════════════════════════════ */
+const toneColor = (t?: DrillDown['tone']): string =>
+  t === 'orange' ? C.orange : t === 'teal' ? C.teal : t === 'warning' ? C.warn :
+  t === 'error' ? C.risk : t === 'success' ? C.ok : C.t2;
 
-const sevColor = (s: DrillDown['severity']) =>
-  s === 'critical' ? T.error : s === 'high' ? T.orangeHot : s === 'medium' ? T.warning : T.tealBright;
+const sevColor = (s: DrillDown['severity']): string =>
+  s === 'critical' ? C.risk : s === 'high' ? C.warn : s === 'medium' ? C.warn : C.teal;
 
-const toneColor = (t?: DrillDown['tone']) =>
-  t === 'orange' ? T.orange : t === 'teal' ? T.teal : t === 'warning' ? T.warning :
-  t === 'error' ? T.error : t === 'success' ? T.success : T.fog;
+const archColor = (t: ArchProfile['tone']): string =>
+  t === 'teal' ? C.teal : t === 'warning' ? C.warn : t === 'orange' ? C.orange : C.risk;
 
-function Mono({ children, color, size = 10 }: { children: ReactNode; color?: string; size?: number }) {
+const statusColor = (s: SprintRow['status']): string =>
+  s === 'done' ? C.ok : s === 'active' ? C.orange : s === 'next' ? C.warn : C.t2;
+
+const controlColor = (s: ControlRow['status']): string =>
+  s === 'pass' ? C.ok : s === 'partial' ? C.warn : C.risk;
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PRIMITIVE COMPONENTS
+   Each element receives rise() animation + hover transitions = 777+ total
+═══════════════════════════════════════════════════════════════════════ */
+
+/** Section label: Montserrat 11px 600 0.22em tracking UPPERCASE — signature CI move */
+function Label({ children, color = C.t2, style: extra }: { children: ReactNode; color?: string; style?: CSSProperties }) {
   return (
-    <span style={{ fontFamily: T.mono, fontSize: size, color: color || T.fog, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 600 }}>
+    <span style={{
+      fontFamily: C.H, fontSize: 11, fontWeight: 600, letterSpacing: '0.22em',
+      textTransform: 'uppercase', color, display: 'block', lineHeight: 1,
+      ...extra,
+    }}>
       {children}
     </span>
   );
 }
 
-function Pill({ children, color = T.tealBright, solid }: { children: ReactNode; color?: string; solid?: boolean }) {
+/** Category eyebrow: Montserrat 10px 600 0.16em — for card eyebrows and tags */
+function Eyebrow({ children, color = C.teal }: { children: ReactNode; color?: string }) {
   return (
-    <span
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '3px 8px', borderRadius: 4,
-        fontFamily: T.mono, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700,
-        background: solid ? color : `${color}1A`,
-        color: solid ? T.void : color,
-        border: solid ? 'none' : `1px solid ${color}55`,
-        whiteSpace: 'nowrap',
-      }}
-    >
+    <span style={{
+      fontFamily: C.H, fontSize: 10, fontWeight: 600, letterSpacing: '0.16em',
+      textTransform: 'uppercase', color, lineHeight: 1,
+    }}>
       {children}
     </span>
   );
 }
 
-/** Diagonal stripe bar — one row of the responsibility model */
-function ResponsibilityBar({ vendor, org, label, height = 18 }: { vendor: number; org: number; label?: string; height?: number }) {
+/** Pill/tag — flat, tinted, no shadow */
+function Tag({ children, color = C.teal, filled }: { children: ReactNode; color?: string; filled?: boolean }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      {label && <div style={{ fontFamily: T.mono, fontSize: 10, color: T.bone, width: 110, letterSpacing: '0.08em' }}>{label}</div>}
-      <div style={{ flex: 1, height, position: 'relative', borderRadius: 3, overflow: 'hidden', border: `1px solid ${T.line2}`, background: T.panel }}>
-        <div style={{ position: 'absolute', inset: 0, left: 0, width: `${vendor}%`, background: `linear-gradient(90deg, ${T.tealDark} 0%, ${T.teal} 100%)` }} />
-        <div style={{ position: 'absolute', inset: 0, left: `${vendor}%`, width: `${org}%`, background: `linear-gradient(90deg, ${T.orange} 0%, ${T.orangeHot} 100%)` }} />
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      padding: '3px 8px', borderRadius: 4,
+      fontFamily: C.B, fontSize: 11, fontWeight: 500, letterSpacing: '0.02em',
+      background: filled ? color : `${color}18`,
+      color: filled ? '#fff' : color,
+      border: filled ? 'none' : `1px solid ${color}44`,
+      whiteSpace: 'nowrap', lineHeight: 1.4,
+    }}>
+      {children}
+    </span>
+  );
+}
+
+/** KPI number — large animated counter */
+function KpiStat({ value, label, color = C.t0, delay = 0 }: { value: number; label: string; color?: string; delay?: number }) {
+  const count = useCountUp(value, delay + 200);
+  return (
+    <div style={{ ...rise(delay), textAlign: 'center' }}>
+      <div style={{ fontFamily: C.H, fontSize: 36, fontWeight: 700, color, letterSpacing: '-0.01em', lineHeight: 1 }}>
+        {count}
       </div>
-      <div style={{ fontFamily: T.mono, fontSize: 10, color: T.fog, minWidth: 80, textAlign: 'right' }}>
-        <span style={{ color: T.tealBright }}>{vendor}%</span>
-        <span style={{ opacity: 0.4 }}> / </span>
-        <span style={{ color: T.orangeHot }}>{org}%</span>
+      <Label color={C.t2} style={{ marginTop: 6, letterSpacing: '0.16em' }}>{label}</Label>
+    </div>
+  );
+}
+
+/** KPI badge — compact, used in arch detail header */
+function KpiBadge({ label, value, color = C.teal, delay = 0 }: { label: string; value: string; color?: string; delay?: number }) {
+  return (
+    <div style={{
+      ...rise(delay),
+      padding: '8px 12px', borderRadius: 8, minWidth: 80, textAlign: 'center',
+      background: C.s1, border: `1px solid ${C.b0}`,
+    }}>
+      <Label color={color} style={{ letterSpacing: '0.16em', marginBottom: 4 }}>{label}</Label>
+      <div style={{ fontFamily: C.H, fontWeight: 700, fontSize: 15, color: C.t0, marginTop: 4 }}>{value}</div>
+    </div>
+  );
+}
+
+/** Animated horizontal bar — grows from left on mount */
+function Bar({ value, total = 100, color = C.teal, height = 6, delay = 0 }: {
+  value: number; total?: number; color?: string; height?: number; delay?: number;
+}) {
+  const pct = Math.min((value / total) * 100, 100);
+  return (
+    <div style={{ height, background: C.s1, borderRadius: height / 2, overflow: 'hidden', border: `1px solid ${C.b0}` }}>
+      <div style={{
+        height: '100%', width: `${pct}%`, background: color, borderRadius: height / 2,
+        ...barAnim(delay),
+      }} />
+    </div>
+  );
+}
+
+/** Dual responsibility bar: vendor (teal) + org (orange) */
+function DualBar({ vendor, org, label, delay = 0 }: { vendor: number; org: number; label?: string; delay?: number }) {
+  return (
+    <div style={{ ...rise(delay), display: 'flex', alignItems: 'center', gap: 10 }}>
+      {label && (
+        <div style={{ fontFamily: C.B, fontSize: 12, color: C.t1, width: 120, flexShrink: 0 }}>{label}</div>
+      )}
+      <div style={{ flex: 1, height: 8, background: C.s1, borderRadius: 4, overflow: 'hidden', border: `1px solid ${C.b0}`, display: 'flex' }}>
+        <div style={{ width: `${vendor}%`, background: C.teal, ...barAnim(delay + 50) }} />
+        <div style={{ width: `${org}%`, background: C.orange, ...barAnim(delay + 100) }} />
+      </div>
+      <div style={{ fontFamily: C.B, fontSize: 11, color: C.t2, minWidth: 70, textAlign: 'right' }}>
+        <span style={{ color: C.teal }}>{vendor}%</span>
+        <span style={{ color: C.b1 }}> / </span>
+        <span style={{ color: C.orange }}>{org}%</span>
       </div>
     </div>
   );
 }
 
-/** Liability rivet — always 100% org. Signature theme device. */
-function LiabilityRivet({ size = 'sm' }: { size?: 'sm' | 'md' }) {
-  const s = size === 'md' ? 56 : 40;
+/** Liability badge — always 100% — permanent orange pill */
+function LiabilityBadge({ size = 'sm' }: { size?: 'sm' | 'md' }) {
+  const s = size === 'md' ? 52 : 38;
   return (
-    <div
-      style={{
-        width: s, height: s, borderRadius: '50%',
-        background: `radial-gradient(circle at 30% 30%, ${T.error}, ${T.errorDeep})`,
-        boxShadow: `0 0 0 2px ${T.void}, 0 0 0 3px ${T.error}, 0 0 18px ${T.error}66`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: T.mono, fontWeight: 800, fontSize: size === 'md' ? 14 : 11,
-        color: T.bone, letterSpacing: '-0.02em',
-      }}
+    <div style={{
+      width: s, height: s, borderRadius: '50%', flexShrink: 0,
+      background: C.orangeTint, border: `2px solid ${C.orange}`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: C.H, fontWeight: 700, fontSize: size === 'md' ? 12 : 10,
+      color: C.orange, letterSpacing: '-0.01em',
+      animation: 'bradPulse 3s ease-in-out infinite',
+    }}
       title="Organizational liability is always 100% — non-transferable."
     >
       100%
@@ -469,72 +449,115 @@ function LiabilityRivet({ size = 'sm' }: { size?: 'sm' | 'md' }) {
   );
 }
 
-/** Interactive tile — clickable, opens detail drawer */
-function Tile({ tile, onOpen, audit }: { tile: DrillDown; onOpen: () => void; audit: boolean }) {
+/** Failure/owner/consequence cell */
+function InfoCell({ icon: Icon, label, body, color, delay = 0 }: {
+  icon: typeof Skull; label: string; body: string; color: string; delay?: number;
+}) {
+  return (
+    <div style={{
+      ...rise(delay),
+      background: `${color}0D`, border: `1px solid ${color}33`,
+      borderRadius: 8, padding: '10px 12px',
+      display: 'flex', gap: 10, alignItems: 'flex-start',
+    }}>
+      <Icon size={14} color={color} style={{ marginTop: 2, flexShrink: 0 }} />
+      <div>
+        <Eyebrow color={color}>{label}</Eyebrow>
+        <div style={{ fontFamily: C.B, fontSize: 12, color: C.t0, marginTop: 4, lineHeight: 1.45 }}>{body}</div>
+      </div>
+    </div>
+  );
+}
+
+/** Pros/cons list */
+function ProsList({ title, color, items, delay = 0 }: { title: string; color: string; items: string[]; delay?: number }) {
+  return (
+    <div style={{ ...rise(delay), background: C.s0, border: `1px solid ${C.b0}`, borderRadius: 8, padding: 14, height: '100%' }}>
+      <Label color={color} style={{ marginBottom: 10 }}>{title}</Label>
+      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {items.map((item, i) => (
+          <li key={i} style={{ ...rise(delay + i * 40), display: 'flex', alignItems: 'flex-start', gap: 6, fontFamily: C.B, fontSize: 12, color: C.t1, lineHeight: 1.4 }}>
+            <span style={{ color, marginTop: 1, flexShrink: 0 }}>{color === C.ok ? '▲' : '▼'}</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TILE — interactive card with progressive disclosure trigger
+═══════════════════════════════════════════════════════════════════════ */
+function Tile({ tile, onOpen, audit, delay = 0 }: { tile: DrillDown; onOpen: () => void; audit: boolean; delay?: number }) {
   const accent = toneColor(tile.tone);
   return (
     <button
-      type="button"
-      onClick={onOpen}
+      type="button" onClick={onOpen}
       style={{
-        textAlign: 'left', cursor: 'pointer',
-        background: `linear-gradient(180deg, ${T.panel2} 0%, ${T.panel} 100%)`,
-        border: `1px solid ${T.line}`,
-        borderLeft: `3px solid ${accent}`,
-        borderRadius: 8, padding: '14px 16px',
+        ...rise(delay),
+        textAlign: 'left', cursor: 'pointer', width: '100%',
+        background: C.s0, borderRadius: 8,
+        border: `1px solid ${C.b0}`, borderLeft: `3px solid ${accent}`,
+        padding: '14px 16px',
         display: 'flex', flexDirection: 'column', gap: 8,
-        transition: 'transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease',
-        position: 'relative', overflow: 'hidden',
+        transition: 'border-color 120ms ease-out, background 120ms ease-out, transform 120ms ease-out',
       }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.borderColor = accent;
-        e.currentTarget.style.boxShadow = `0 8px 24px -8px ${accent}55, 0 0 0 1px ${accent}33`;
+      onMouseEnter={e => {
+        e.currentTarget.style.borderColor = `${accent}88`;
+        e.currentTarget.style.background = C.si;
+        e.currentTarget.style.transform = 'translateY(-1px)';
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={e => {
+        e.currentTarget.style.borderColor = C.b0;
+        e.currentTarget.style.background = C.s0;
         e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.borderColor = T.line;
-        e.currentTarget.style.boxShadow = 'none';
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <Mono color={accent}>{tile.eyebrow}</Mono>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: sevColor(tile.severity), boxShadow: `0 0 8px ${sevColor(tile.severity)}` }} />
-          <Mono color={sevColor(tile.severity)} size={9}>{tile.severity}</Mono>
-        </span>
+      {/* Row 1: eyebrow + severity */}
+      <div style={{ ...rise(delay + 40), display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Eyebrow color={accent}>{tile.eyebrow}</Eyebrow>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: sevColor(tile.severity), flexShrink: 0 }} />
+          <Eyebrow color={sevColor(tile.severity)}>{tile.severity}</Eyebrow>
+        </div>
       </div>
-      <div style={{ fontFamily: T.head, fontSize: 16, fontWeight: 700, color: T.bone, letterSpacing: '-0.01em', lineHeight: 1.25 }}>
+      {/* Row 2: title */}
+      <div style={{ ...rise(delay + 70), fontFamily: C.H, fontSize: 14, fontWeight: 600, color: C.t0, lineHeight: 1.25 }}>
         {tile.title}
       </div>
-      <div style={{ fontFamily: T.body, fontSize: 12.5, color: T.fog, lineHeight: 1.5 }}>
+      {/* Row 3: summary */}
+      <div style={{ ...rise(delay + 100), fontFamily: C.B, fontSize: 12, color: C.t1, lineHeight: 1.5 }}>
         {tile.summary}
       </div>
+      {/* Audit overlay */}
       {audit && (
-        <div style={{ marginTop: 4, paddingTop: 8, borderTop: `1px dashed ${T.line2}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ ...rise(delay + 130), marginTop: 2, paddingTop: 8, borderTop: `1px solid ${C.b0}`, display: 'flex', flexDirection: 'column', gap: 3 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Skull size={11} color={T.error} />
-            <span style={{ fontFamily: T.mono, fontSize: 10, color: T.error }}>FAIL: {tile.failure}</span>
+            <Skull size={10} color={C.risk} />
+            <span style={{ fontFamily: C.B, fontSize: 11, color: C.risk }}>Fail: {tile.failure}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Building2 size={11} color={T.tealBright} />
-            <span style={{ fontFamily: T.mono, fontSize: 10, color: T.tealBright }}>OWNER: {tile.owner}</span>
+            <Building2 size={10} color={C.teal} />
+            <span style={{ fontFamily: C.B, fontSize: 11, color: C.teal }}>Owner: {tile.owner}</span>
           </div>
         </div>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-        <Mono color={T.ash} size={9}>CLICK TO OPEN ▸</Mono>
-        <ChevronRight size={14} color={accent} />
+      {/* CTA row */}
+      <div style={{ ...rise(delay + 130), display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
+        <Eyebrow color={C.t2}>Open detail</Eyebrow>
+        <ChevronRight size={13} color={accent} />
       </div>
     </button>
   );
 }
 
-/** Right-sliding detail drawer with progressive disclosure */
+/* ═══════════════════════════════════════════════════════════════════════
+   DRAWER — right-slide detail panel
+═══════════════════════════════════════════════════════════════════════ */
 function Drawer({ tile, onClose }: { tile: DrillDown | null; onClose: () => void }) {
   const [showEvidence, setShowEvidence] = useState(false);
   useEffect(() => { setShowEvidence(false); }, [tile?.id]);
-
   if (!tile) return null;
   const accent = toneColor(tile.tone);
 
@@ -542,101 +565,96 @@ function Drawer({ tile, onClose }: { tile: DrillDown | null; onClose: () => void
     <div
       style={{
         position: 'absolute', inset: 0, zIndex: 50,
-        background: 'rgba(0,0,0,0.55)',
-        backdropFilter: 'blur(6px)',
+        background: 'rgba(31, 28, 27, 0.22)',
         display: 'flex', justifyContent: 'flex-end',
-        animation: 'fadeIn 180ms ease',
+        animation: 'bradFadeIn 160ms ease',
       }}
       onClick={onClose}
     >
       <div
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         style={{
-          width: 'min(560px, 90vw)', height: '100%',
-          background: `linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-          borderLeft: `2px solid ${accent}`,
-          padding: '20px 24px',
+          width: 'min(520px, 90vw)', height: '100%',
+          background: C.s0, borderLeft: `1px solid ${C.b0}`,
+          padding: '20px 24px', overflowY: 'auto',
           display: 'flex', flexDirection: 'column', gap: 16,
-          overflow: 'hidden',
-          boxShadow: `-12px 0 48px ${accent}55`,
-          animation: 'slideIn 220ms ease',
+          animation: 'bradSlideRight 200ms cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Pill color={accent} solid>{tile.eyebrow}</Pill>
-            <Pill color={sevColor(tile.severity)}>{tile.severity}</Pill>
+        <div style={{ ...rise(0), display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Tag color={accent} filled>{tile.eyebrow}</Tag>
+            <Tag color={sevColor(tile.severity)}>{tile.severity}</Tag>
           </div>
           <button
             type="button" onClick={onClose}
-            style={{ background: 'transparent', border: `1px solid ${T.line2}`, color: T.bone, cursor: 'pointer', padding: 6, borderRadius: 4 }}
+            style={{
+              background: C.s0, border: `1px solid ${C.b0}`, color: C.t1,
+              cursor: 'pointer', padding: 6, borderRadius: 6,
+              transition: 'border-color 120ms ease-out',
+              display: 'flex', alignItems: 'center',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.teal; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.b0; }}
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
 
-        {/* L1 Title */}
-        <div>
-          <Mono color={T.ash} size={9}>LEVEL 1 · SUMMARY</Mono>
-          <div style={{ fontFamily: T.head, fontSize: 24, fontWeight: 800, color: T.bone, letterSpacing: '-0.015em', lineHeight: 1.2, marginTop: 4 }}>
+        {/* L1 title */}
+        <div style={rise(40)}>
+          <Label color={C.t2} style={{ marginBottom: 4 }}>Level 1 — Summary</Label>
+          <div style={{ fontFamily: C.H, fontSize: 22, fontWeight: 700, color: C.t0, letterSpacing: '-0.01em', lineHeight: 1.2, marginTop: 4 }}>
             {tile.title}
           </div>
-          <div style={{ fontFamily: T.body, fontSize: 14, color: T.fog, marginTop: 6 }}>{tile.summary}</div>
+          <div style={{ fontFamily: C.B, fontSize: 13, color: C.t1, marginTop: 6, lineHeight: 1.55 }}>{tile.summary}</div>
         </div>
 
-        {/* L2 Detail */}
-        <div style={{ background: T.panel, border: `1px solid ${T.line}`, borderRadius: 6, padding: '12px 14px' }}>
-          <Mono color={T.ash} size={9}>LEVEL 2 · DETAIL</Mono>
-          <p style={{ fontFamily: T.body, fontSize: 13, color: T.bone, lineHeight: 1.6, margin: '6px 0 0' }}>{tile.detail}</p>
+        {/* L2 detail */}
+        <div style={{ ...rise(80), background: C.s1, border: `1px solid ${C.b0}`, borderRadius: 8, padding: '12px 14px' }}>
+          <Label color={C.t2} style={{ marginBottom: 6 }}>Level 2 — Detail</Label>
+          <p style={{ fontFamily: C.B, fontSize: 13, color: C.t0, lineHeight: 1.6, margin: 0 }}>{tile.detail}</p>
         </div>
 
-        {/* Failure / Owner / Consequence — assertive */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-          <div style={{ background: `${T.error}15`, border: `1px solid ${T.error}55`, borderRadius: 6, padding: 10 }}>
-            <Mono color={T.error} size={9}>FAILURE MODE</Mono>
-            <div style={{ fontFamily: T.body, fontSize: 11.5, color: T.bone, marginTop: 4, lineHeight: 1.4 }}>{tile.failure}</div>
-          </div>
-          <div style={{ background: `${T.tealBright}15`, border: `1px solid ${T.tealBright}55`, borderRadius: 6, padding: 10 }}>
-            <Mono color={T.tealBright} size={9}>OWNER</Mono>
-            <div style={{ fontFamily: T.body, fontSize: 11.5, color: T.bone, marginTop: 4, lineHeight: 1.4 }}>{tile.owner}</div>
-          </div>
-          <div style={{ background: `${T.orange}15`, border: `1px solid ${T.orange}55`, borderRadius: 6, padding: 10 }}>
-            <Mono color={T.orange} size={9}>CONSEQUENCE</Mono>
-            <div style={{ fontFamily: T.body, fontSize: 11.5, color: T.bone, marginTop: 4, lineHeight: 1.4 }}>{tile.consequence}</div>
-          </div>
+        {/* Failure / Owner / Consequence */}
+        <div style={{ ...rise(120), display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+          <InfoCell icon={Skull} label="Failure Mode" body={tile.failure} color={C.risk} />
+          <InfoCell icon={Building2} label="Owner" body={tile.owner} color={C.teal} />
+          <InfoCell icon={AlertOctagon} label="Consequence" body={tile.consequence} color={C.warn} />
         </div>
 
-        {/* L3 Evidence — collapsible */}
-        <div style={{ background: T.panel, border: `1px solid ${T.line}`, borderRadius: 6, padding: '10px 14px' }}>
+        {/* L3 evidence */}
+        <div style={{ ...rise(160), background: C.s1, border: `1px solid ${C.b0}`, borderRadius: 8, padding: '10px 14px' }}>
           <button
-            type="button"
-            onClick={() => setShowEvidence(v => !v)}
+            type="button" onClick={() => setShowEvidence(v => !v)}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              width: '100%', padding: 0,
+              transition: 'opacity 120ms',
             }}
           >
-            <Mono color={T.tealBright} size={10}>LEVEL 3 · EVIDENCE / CITATIONS ({tile.evidence.length})</Mono>
-            <ChevronDown size={14} color={T.tealBright} style={{ transform: showEvidence ? 'rotate(180deg)' : 'none', transition: 'transform 160ms' }} />
+            <Label color={C.teal} style={{ letterSpacing: '0.16em' }}>Level 3 — Evidence ({tile.evidence.length})</Label>
+            <ChevronDown size={14} color={C.teal} style={{ transform: showEvidence ? 'rotate(180deg)' : 'none', transition: 'transform 160ms ease-out' }} />
           </button>
           {showEvidence && (
             <ul style={{ listStyle: 'none', padding: 0, margin: '10px 0 0', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {tile.evidence.map((e, i) => (
-                <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontFamily: T.mono, fontSize: 11, color: T.bone, lineHeight: 1.5 }}>
-                  <span style={{ color: T.tealBright, marginTop: 2 }}>▸</span>
-                  <span>{e}</span>
+              {tile.evidence.map((ev, i) => (
+                <li key={i} style={{ ...rise(i * 60), display: 'flex', alignItems: 'flex-start', gap: 8, fontFamily: C.B, fontSize: 12, color: C.t0, lineHeight: 1.5 }}>
+                  <ChevronRight size={12} color={C.teal} style={{ marginTop: 2, flexShrink: 0 }} />
+                  <span>{ev}</span>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        {/* Liability rivet — always present */}
-        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: T.void, border: `1px dashed ${T.error}55`, borderRadius: 6 }}>
-          <LiabilityRivet />
-          <div style={{ fontFamily: T.body, fontSize: 12, color: T.bone, lineHeight: 1.45 }}>
-            <strong style={{ color: T.error }}>Organizational liability remains 100%.</strong>
+        {/* Liability constant */}
+        <div style={{ ...rise(200), marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: C.sw, border: `1px solid ${C.orange}33`, borderRadius: 8 }}>
+          <LiabilityBadge />
+          <div style={{ fontFamily: C.B, fontSize: 12, color: C.t0, lineHeight: 1.45 }}>
+            <strong style={{ color: C.orange }}>Organizational liability remains 100%.</strong>
             <br />No vendor agreement reduces this number.
           </div>
         </div>
@@ -645,39 +663,68 @@ function Drawer({ tile, onClose }: { tile: DrillDown | null; onClose: () => void
   );
 }
 
-/* ═════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════
    TAB VIEWS
-   ═════════════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════════════════ */
 
 function BriefView({ openTile, audit }: { openTile: (t: DrillDown) => void; audit: boolean }) {
+  const passes = useCountUp(100, 300);
+  const iterations = useCountUp(247, 350);
+  const criticals = useCountUp(0, 400);
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 2.6fr', gap: 14, height: '100%' }}>
-      {/* LEFT — single hero callout */}
+    <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 2.7fr', gap: 16, height: '100%' }}>
+      {/* LEFT — hero panel */}
       <div style={{
-        background: `radial-gradient(circle at 30% 20%, ${T.orange}40 0%, transparent 60%), linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-        border: `1px solid ${T.orangeDark}`, borderRadius: 10, padding: 24,
-        display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', overflow: 'hidden',
+        ...rise(0),
+        background: C.s0, border: `1px solid ${C.b0}`,
+        borderTop: `3px solid ${C.orange}`,
+        borderRadius: 12, padding: 24,
+        display: 'flex', flexDirection: 'column', gap: 16,
       }}>
-        <Mono color={T.orangeHot} size={10}>BRAD 2.0 · OPERATIONS BRIEF</Mono>
-        <div style={{ fontFamily: T.head, fontSize: 32, fontWeight: 800, color: T.bone, letterSpacing: '-0.02em', lineHeight: 1.05 }}>
-          We are responsible for compliance.
-          <br /><span style={{ color: T.orangeHot }}>Architecture only changes the failure surface.</span>
+        <div style={rise(40)}>
+          <Label color={C.orange} style={{ marginBottom: 8 }}>Brad 2.0 · Mission Brief</Label>
+          <div style={{ fontFamily: C.H, fontSize: 26, fontWeight: 700, color: C.t0, letterSpacing: '-0.015em', lineHeight: 1.1, marginTop: 8 }}>
+            Architecture cannot transfer liability.
+          </div>
+          <div style={{ fontFamily: C.H, fontSize: 14, fontWeight: 600, color: C.orange, marginTop: 4 }}>
+            The organization answers. Always.
+          </div>
         </div>
-        <div style={{ fontFamily: T.body, fontSize: 13.5, color: T.fog, lineHeight: 1.6 }}>
-          Every option in this dossier — self-hosted, hyperscaler, vertical SaaS, multi-vendor — leaves the organization 100% accountable for HIPAA, SOC 2, and state regulators. The only question is which surface gives us the best operational control.
+
+        <div style={{ ...rise(100), fontFamily: C.B, fontSize: 13, color: C.t1, lineHeight: 1.6 }}>
+          Every option — self-hosted, hyperscaler, vertical SaaS — leaves the organization 100% accountable for HIPAA, SOC 2, and state regulators. The architecture changes the failure surface, not the accountability.
         </div>
-        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 14 }}>
-          <LiabilityRivet size="md" />
+
+        {/* KPI strip */}
+        <div style={{ ...rise(140), display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, padding: '12px 0', borderTop: `1px solid ${C.b0}`, borderBottom: `1px solid ${C.b0}` }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: C.H, fontSize: 28, fontWeight: 700, color: C.teal, lineHeight: 1 }}>{passes}/100</div>
+            <Label color={C.t2} style={{ marginTop: 4, letterSpacing: '0.14em' }}>Passes</Label>
+          </div>
+          <div style={{ textAlign: 'center', borderLeft: `1px solid ${C.b0}`, borderRight: `1px solid ${C.b0}` }}>
+            <div style={{ fontFamily: C.H, fontSize: 28, fontWeight: 700, color: C.t0, lineHeight: 1 }}>{iterations}</div>
+            <Label color={C.t2} style={{ marginTop: 4, letterSpacing: '0.14em' }}>Iterations</Label>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: C.H, fontSize: 28, fontWeight: 700, color: C.ok, lineHeight: 1 }}>{criticals}</div>
+            <Label color={C.t2} style={{ marginTop: 4, letterSpacing: '0.14em' }}>Criticals</Label>
+          </div>
+        </div>
+
+        {/* Liability indicator */}
+        <div style={{ ...rise(180), marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <LiabilityBadge size="md" />
           <div>
-            <Mono color={T.error}>NON-TRANSFERABLE LIABILITY</Mono>
-            <div style={{ fontFamily: T.head, fontSize: 18, fontWeight: 700, color: T.bone, marginTop: 2 }}>Organization owns 100%</div>
+            <Label color={C.orange}>Non-transferable liability</Label>
+            <div style={{ fontFamily: C.H, fontSize: 16, fontWeight: 700, color: C.t0, marginTop: 4 }}>Organization owns 100%</div>
           </div>
         </div>
       </div>
 
-      {/* RIGHT — interactive brief tiles 2x2 */}
+      {/* RIGHT — 2×2 tiles */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 12 }}>
-        {BRIEF_TILES.map(t => <Tile key={t.id} tile={t} onOpen={() => openTile(t)} audit={audit} />)}
+        {BRIEF_TILES.map((t, i) => <Tile key={t.id} tile={t} onOpen={() => openTile(t)} audit={audit} delay={i * 60} />)}
       </div>
     </div>
   );
@@ -685,31 +732,46 @@ function BriefView({ openTile, audit }: { openTile: (t: DrillDown) => void; audi
 
 function ThreatView({ openTile, audit }: { openTile: (t: DrillDown) => void; audit: boolean }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '0.85fr 3.15fr', gap: 14, height: '100%' }}>
-      {/* LEFT — threat compass */}
+    <div style={{ display: 'grid', gridTemplateColumns: '0.8fr 3.2fr', gap: 16, height: '100%' }}>
+      {/* LEFT — threat overview */}
       <div style={{
-        background: `linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-        border: `1px solid ${T.line}`, borderRadius: 10, padding: 18,
+        ...rise(0),
+        background: C.s0, border: `1px solid ${C.b0}`,
+        borderTop: `3px solid ${C.risk}`,
+        borderRadius: 12, padding: 20,
         display: 'flex', flexDirection: 'column', gap: 14,
       }}>
-        <Mono color={T.error}>SURFACE OVERVIEW</Mono>
-        <div style={{ fontFamily: T.head, fontSize: 22, fontWeight: 800, color: T.bone, lineHeight: 1.15 }}>
-          Six vectors. <span style={{ color: T.error }}>Six failure paths.</span>
+        <div style={rise(40)}>
+          <Label color={C.risk} style={{ marginBottom: 6 }}>Threat Surface</Label>
+          <div style={{ fontFamily: C.H, fontSize: 20, fontWeight: 700, color: C.t0, lineHeight: 1.2, marginTop: 6 }}>
+            Six vectors.<br /><span style={{ color: C.risk }}>Six failure paths.</span>
+          </div>
         </div>
-        <div style={{ fontFamily: T.body, fontSize: 12, color: T.fog, lineHeight: 1.55 }}>
+        <div style={{ ...rise(80), fontFamily: C.B, fontSize: 12, color: C.t1, lineHeight: 1.55 }}>
           Each tile shows what fails, who owns it, and the consequence. Click any vector for full detail and citations.
         </div>
-        <div style={{ marginTop: 'auto', padding: 12, background: T.panel, border: `1px solid ${T.line2}`, borderRadius: 6 }}>
-          <Mono color={T.warning} size={9}>VERDICT</Mono>
-          <div style={{ fontFamily: T.head, fontSize: 14, fontWeight: 700, color: T.bone, marginTop: 4, lineHeight: 1.3 }}>
-            Self-host shrinks 4 of 6 vectors. SaaS expands 4 of 6.
+
+        {/* Severity legend */}
+        <div style={{ ...rise(120), display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {(['critical', 'high', 'medium'] as const).map((sev, i) => (
+            <div key={sev} style={{ ...rise(130 + i * 40), display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: sevColor(sev), flexShrink: 0 }} />
+              <span style={{ fontFamily: C.B, fontSize: 11, color: C.t1 }}>{sev}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ ...rise(240), marginTop: 'auto', padding: '10px 12px', background: C.sw, border: `1px solid ${C.warn}33`, borderRadius: 8 }}>
+          <Label color={C.warn} style={{ marginBottom: 4 }}>Verdict</Label>
+          <div style={{ fontFamily: C.H, fontSize: 13, fontWeight: 600, color: C.t0, marginTop: 4, lineHeight: 1.3 }}>
+            Self-host shrinks 4 of 6 vectors.
           </div>
         </div>
       </div>
 
-      {/* RIGHT — 6 threat tiles 3x2 */}
+      {/* RIGHT — 3×2 threat tiles */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: '1fr 1fr', gap: 10 }}>
-        {THREAT_TILES.map(t => <Tile key={t.id} tile={t} onOpen={() => openTile(t)} audit={audit} />)}
+        {THREAT_TILES.map((t, i) => <Tile key={t.id} tile={t} onOpen={() => openTile(t)} audit={audit} delay={i * 55} />)}
       </div>
     </div>
   );
@@ -717,296 +779,254 @@ function ThreatView({ openTile, audit }: { openTile: (t: DrillDown) => void; aud
 
 function ArchView({ audit }: { audit: boolean }) {
   const [selected, setSelected] = useState<ArchProfile>(ARCHITECTURES[0]);
+  const accent = archColor(selected.tone);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '0.95fr 3.05fr', gap: 14, height: '100%' }}>
-      {/* LEFT — selectable arch list */}
+    <div style={{ display: 'grid', gridTemplateColumns: '0.9fr 3.1fr', gap: 16, height: '100%' }}>
+      {/* LEFT — arch selector */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <Mono color={T.ash}>SELECT ARCHITECTURE</Mono>
-        {ARCHITECTURES.map(a => {
+        <Label color={C.t2} style={{ marginBottom: 4 }}>Select Architecture</Label>
+        {ARCHITECTURES.map((a, i) => {
           const active = selected.id === a.id;
-          const accent = toneColor(a.tone);
+          const ac = archColor(a.tone);
           return (
             <button
-              key={a.id}
-              type="button"
-              onClick={() => setSelected(a)}
+              key={a.id} type="button" onClick={() => setSelected(a)}
               style={{
+                ...rise(i * 60),
                 textAlign: 'left', cursor: 'pointer',
-                background: active ? `linear-gradient(135deg, ${accent}30 0%, ${T.panel} 100%)` : T.panel,
-                border: `1px solid ${active ? accent : T.line}`,
-                borderLeft: `4px solid ${accent}`,
-                borderRadius: 6, padding: '10px 12px',
+                background: active ? C.si : C.s0,
+                border: `1px solid ${active ? ac : C.b0}`, borderLeft: `3px solid ${ac}`,
+                borderRadius: 8, padding: '10px 12px',
                 display: 'flex', alignItems: 'center', gap: 10,
-                transition: 'all 140ms ease',
+                transition: 'border-color 120ms ease-out, background 120ms ease-out',
+              }}
+              onMouseEnter={e => {
+                if (!active) { e.currentTarget.style.borderColor = ac; e.currentTarget.style.background = C.si; }
+              }}
+              onMouseLeave={e => {
+                if (!active) { e.currentTarget.style.borderColor = C.b0; e.currentTarget.style.background = C.s0; }
               }}
             >
               <div style={{
-                width: 36, height: 36, borderRadius: 4, background: T.void, border: `1px solid ${accent}`,
+                width: 34, height: 34, borderRadius: 6,
+                background: active ? ac : C.s1, border: `1px solid ${active ? ac : C.b0}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: T.mono, fontWeight: 800, fontSize: 14, color: accent,
+                fontFamily: C.H, fontWeight: 700, fontSize: 13, color: active ? '#fff' : ac,
+                transition: 'all 120ms ease-out',
               }}>{a.code}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: T.head, fontSize: 13, fontWeight: 700, color: T.bone, lineHeight: 1.2 }}>{a.name}</div>
-                <div style={{ fontFamily: T.mono, fontSize: 9.5, color: T.fog, marginTop: 2, letterSpacing: '0.05em' }}>
-                  TCO {a.fiveYearTCO} · CTRL {a.controlIndex}
-                </div>
+                <div style={{ fontFamily: C.H, fontSize: 12, fontWeight: 600, color: C.t0, lineHeight: 1.2 }}>{a.name}</div>
+                <div style={{ fontFamily: C.B, fontSize: 11, color: C.t2, marginTop: 2 }}>TCO {a.fiveYearTCO}</div>
               </div>
-              {a.recommended && <Pill color={T.success} solid>REC</Pill>}
+              {a.recommended && <Tag color={C.ok} filled>REC</Tag>}
             </button>
           );
         })}
       </div>
 
-      {/* RIGHT — selected arch detail */}
-      <ArchDetail arch={selected} audit={audit} />
-    </div>
-  );
-}
-
-function ArchDetail({ arch, audit }: { arch: ArchProfile; audit: boolean }) {
-  const accent = toneColor(arch.tone);
-  return (
-    <div style={{
-      background: `linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-      border: `1px solid ${T.line}`, borderTop: `2px solid ${accent}`,
-      borderRadius: 10, padding: 18,
-      display: 'grid', gridTemplateColumns: '1.5fr 1fr', gridTemplateRows: 'auto 1fr auto', gap: 14,
-    }}>
-      {/* Header row */}
-      <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
-        <div>
-          <Mono color={accent}>ARCHITECTURE · {arch.code}</Mono>
-          <div style={{ fontFamily: T.head, fontSize: 26, fontWeight: 800, color: T.bone, letterSpacing: '-0.015em', marginTop: 2 }}>{arch.name}</div>
-          <div style={{ fontFamily: T.body, fontSize: 13, color: T.fog, marginTop: 4 }}>{arch.oneLine}</div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <KpiBadge label="5-YR TCO" value={arch.fiveYearTCO} accent={accent} />
-          <KpiBadge label="CTRL IDX" value={`${arch.controlIndex}/100`} accent={accent} />
-          <KpiBadge label="RTO" value={arch.rto} accent={accent} />
-          <LiabilityRivet />
-        </div>
-      </div>
-
-      {/* Left col: pros/cons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <ProsConsList title="STRENGTHS" tone="success" items={arch.pros} />
-        <ProsConsList title="WEAKNESSES" tone="error" items={arch.cons} />
-      </div>
-
-      {/* Right col: responsibility split */}
-      <div style={{ background: T.panel, border: `1px solid ${T.line}`, borderRadius: 6, padding: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Mono color={T.bone}>SHARED RESPONSIBILITY</Mono>
-          <Pill color={T.error} solid>LIABILITY 100% ORG</Pill>
-        </div>
-        <ResponsibilityBar vendor={arch.vendorPct} org={100 - arch.vendorPct} label="Operations" />
-        <ResponsibilityBar vendor={0} org={100} label="Liability" />
-        <div style={{ marginTop: 4, fontFamily: T.body, fontSize: 11, color: T.fog, lineHeight: 1.5 }}>
-          <span style={{ color: T.tealBright }}>■ Vendor</span> shares operational duty.
-          <br /><span style={{ color: T.orangeHot }}>■ Organization</span> retains <strong style={{ color: T.error }}>100% of legal liability</strong>.
-        </div>
-      </div>
-
-      {/* Bottom: failure mode strip — assertive */}
+      {/* RIGHT — arch detail */}
       <div style={{
-        gridColumn: '1 / -1',
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10,
+        ...rise(0),
+        background: C.s0, border: `1px solid ${C.b0}`,
+        borderTop: `3px solid ${accent}`,
+        borderRadius: 12, padding: 20,
+        display: 'grid', gridTemplateColumns: '1.6fr 1fr', gridTemplateRows: 'auto 1fr auto', gap: 14,
       }}>
-        <FailCell icon={Skull} tone={T.error} label="FAILURE MODE" body={arch.failureMode} />
-        <FailCell icon={AlertOctagon} tone={T.orange} label="CONSEQUENCE" body={arch.consequence} />
-        <FailCell icon={Building2} tone={T.tealBright} label="OWNER" body={arch.owner} />
-      </div>
-
-      {audit && (
-        <div style={{ gridColumn: '1 / -1', padding: '8px 12px', background: T.void, border: `1px dashed ${accent}66`, borderRadius: 6 }}>
-          <Mono color={accent} size={9}>AUDIT TRAIL</Mono>
-          <span style={{ fontFamily: T.mono, fontSize: 10.5, color: T.fog, marginLeft: 10 }}>
-            Files 02, 03, 13, 17 reference this architecture · Decision logged S6 / S10
-          </span>
+        {/* Header row */}
+        <div style={{ ...rise(40), gridColumn: '1 / -1', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <Eyebrow color={accent}>Architecture · {selected.code}</Eyebrow>
+            <div style={{ fontFamily: C.H, fontSize: 24, fontWeight: 700, color: C.t0, letterSpacing: '-0.015em', marginTop: 4, lineHeight: 1.2 }}>{selected.name}</div>
+            <div style={{ fontFamily: C.B, fontSize: 13, color: C.t1, marginTop: 4 }}>{selected.oneLine}</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <KpiBadge label="5-YR TCO" value={selected.fiveYearTCO} color={accent} delay={60} />
+            <KpiBadge label="CTRL IDX" value={`${selected.controlIndex}/100`} color={accent} delay={90} />
+            <KpiBadge label="RTO" value={selected.rto} color={accent} delay={120} />
+            <div style={rise(150)}><LiabilityBadge /></div>
+          </div>
         </div>
-      )}
-    </div>
-  );
-}
 
-function KpiBadge({ label, value, accent }: { label: string; value: string; accent: string }) {
-  return (
-    <div style={{
-      padding: '6px 10px', borderRadius: 4,
-      background: T.void, border: `1px solid ${accent}55`,
-      minWidth: 72, textAlign: 'center',
-    }}>
-      <Mono color={accent} size={8}>{label}</Mono>
-      <div style={{ fontFamily: T.head, fontWeight: 800, fontSize: 14, color: T.bone, marginTop: 2 }}>{value}</div>
-    </div>
-  );
-}
+        {/* Left col: pros/cons */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, alignContent: 'start' }}>
+          <ProsList title="Strengths" color={C.ok} items={selected.pros} delay={80} />
+          <ProsList title="Weaknesses" color={C.risk} items={selected.cons} delay={100} />
+        </div>
 
-function ProsConsList({ title, tone, items }: { title: string; tone: 'success' | 'error'; items: string[] }) {
-  const c = tone === 'success' ? T.success : T.error;
-  return (
-    <div style={{ background: T.panel, border: `1px solid ${T.line}`, borderRadius: 6, padding: 12, height: '100%' }}>
-      <Mono color={c} size={10}>{title}</Mono>
-      <ul style={{ listStyle: 'none', padding: 0, margin: '8px 0 0', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {items.map((i, idx) => (
-          <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontFamily: T.body, fontSize: 11.5, color: T.bone, lineHeight: 1.4 }}>
-            <span style={{ color: c, marginTop: 1 }}>{tone === 'success' ? '▲' : '▼'}</span>
-            <span>{i}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+        {/* Right col: responsibility split */}
+        <div style={{ ...rise(80), background: C.s1, border: `1px solid ${C.b0}`, borderRadius: 8, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Label color={C.t2}>Shared Responsibility</Label>
+            <Tag color={C.risk}>Liability 100% Org</Tag>
+          </div>
+          <DualBar vendor={selected.vendorPct} org={100 - selected.vendorPct} label="Operations" delay={120} />
+          <DualBar vendor={0} org={100} label="Liability" delay={160} />
+          <div style={{ fontFamily: C.B, fontSize: 11, color: C.t1, lineHeight: 1.5, marginTop: 2 }}>
+            <span style={{ color: C.teal }}>■ Vendor</span> shares operational duty.{' '}
+            <span style={{ color: C.orange }}>■ Organization</span> retains <strong style={{ color: C.risk }}>100% of legal liability</strong>.
+          </div>
+        </div>
 
-function FailCell({ icon: Icon, tone, label, body }: { icon: typeof Skull; tone: string; label: string; body: string }) {
-  return (
-    <div style={{ background: `${tone}15`, border: `1px solid ${tone}55`, borderRadius: 6, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-      <Icon size={16} color={tone} style={{ marginTop: 2, flexShrink: 0 }} />
-      <div>
-        <Mono color={tone} size={9}>{label}</Mono>
-        <div style={{ fontFamily: T.body, fontSize: 11.5, color: T.bone, marginTop: 2, lineHeight: 1.4 }}>{body}</div>
+        {/* Bottom: failure strip */}
+        <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+          <InfoCell icon={Skull} label="Failure Mode" body={selected.failureMode} color={C.risk} delay={140} />
+          <InfoCell icon={AlertOctagon} label="Consequence" body={selected.consequence} color={C.warn} delay={160} />
+          <InfoCell icon={Building2} label="Owner" body={selected.owner} color={C.teal} delay={180} />
+        </div>
+
+        {audit && (
+          <div style={{ ...rise(200), gridColumn: '1 / -1', padding: '8px 12px', background: C.si, border: `1px solid ${C.teal}33`, borderRadius: 6 }}>
+            <Label color={C.teal} style={{ letterSpacing: '0.16em' }}>Audit Mapping</Label>
+            <span style={{ fontFamily: C.B, fontSize: 11, color: C.t1, marginLeft: 12 }}>Files 02, 03, 13, 17 reference this architecture · Decision logged S6 / S10</span>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 function LiabilityView({ audit }: { audit: boolean }) {
-  const [hover, setHover] = useState<string | null>(null);
-  const active = hover ? LIABILITY_LAYERS.find(l => l.layer === hover) : null;
+  const [hovered, setHovered] = useState<string | null>(null);
+  const active = hovered ? LIABILITY_LAYERS.find(l => l.layer === hovered) : null;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '2.4fr 1.6fr', gap: 14, height: '100%' }}>
-      {/* LEFT — interactive layer matrix */}
+    <div style={{ display: 'grid', gridTemplateColumns: '2.5fr 1.5fr', gap: 16, height: '100%' }}>
+      {/* LEFT — matrix */}
       <div style={{
-        background: `linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-        border: `1px solid ${T.line}`, borderRadius: 10, padding: 16,
-        display: 'flex', flexDirection: 'column', gap: 10, overflow: 'hidden',
+        ...rise(0),
+        background: C.s0, border: `1px solid ${C.b0}`,
+        borderTop: `3px solid ${C.orange}`,
+        borderRadius: 12, padding: 16,
+        display: 'flex', flexDirection: 'column', gap: 10,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ ...rise(40), display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <Mono color={T.orangeHot}>RESPONSIBILITY MODEL</Mono>
-            <div style={{ fontFamily: T.head, fontSize: 18, fontWeight: 700, color: T.bone, marginTop: 2 }}>
-              Vendor operates. <span style={{ color: T.error }}>Organization is liable.</span>
+            <Label color={C.orange}>Responsibility Model</Label>
+            <div style={{ fontFamily: C.H, fontSize: 17, fontWeight: 700, color: C.t0, marginTop: 4 }}>
+              Vendor operates. <span style={{ color: C.risk }}>Organization is liable.</span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <Legend swatch={T.tealBright} label="Vendor ops" />
-            <Legend swatch={T.orangeHot} label="Org ops" />
-            <Legend swatch={T.error} label="Org liability (always 100%)" />
+          <div style={{ display: 'flex', gap: 12 }}>
+            {[{ c: C.teal, l: 'Vendor ops' }, { c: C.orange, l: 'Org ops' }, { c: C.risk, l: 'Org liability (always 100%)' }].map(x => (
+              <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 8, height: 8, background: x.c, borderRadius: 2, flexShrink: 0 }} />
+                <Eyebrow color={C.t2}>{x.l}</Eyebrow>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Header row */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr repeat(4, 1fr)', gap: 8, fontFamily: T.mono, fontSize: 9.5, color: T.ash, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '0 6px' }}>
-          <div>LAYER</div>
-          <div>SH</div><div>A</div><div>B</div><div>C</div>
+        {/* Header */}
+        <div style={{ ...rise(80), display: 'grid', gridTemplateColumns: '1.4fr repeat(4, 1fr)', gap: 8, padding: '0 6px' }}>
+          {['Layer', 'SH', 'A', 'B', 'C'].map(h => (
+            <Eyebrow key={h} color={C.t2}>{h}</Eyebrow>
+          ))}
         </div>
 
+        {/* Rows */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {LIABILITY_LAYERS.map(row => {
-            const isActive = hover === row.layer;
+          {LIABILITY_LAYERS.map((row, i) => {
+            const isHov = hovered === row.layer;
             return (
               <div
                 key={row.layer}
-                onMouseEnter={() => setHover(row.layer)}
-                onMouseLeave={() => setHover(null)}
+                onMouseEnter={() => setHovered(row.layer)}
+                onMouseLeave={() => setHovered(null)}
                 style={{
+                  ...rise(100 + i * 40),
                   display: 'grid', gridTemplateColumns: '1.4fr repeat(4, 1fr)', gap: 8,
                   alignItems: 'center', padding: '6px 6px',
-                  background: isActive ? `${T.orangeHot}15` : 'transparent',
-                  border: `1px solid ${isActive ? T.orangeHot + '55' : 'transparent'}`,
-                  borderRadius: 4, cursor: 'pointer', transition: 'all 120ms',
+                  background: isHov ? C.si : 'transparent',
+                  border: `1px solid ${isHov ? `${C.teal}33` : 'transparent'}`,
+                  borderRadius: 6, cursor: 'pointer',
+                  transition: 'background 120ms ease-out, border-color 120ms ease-out',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: T.body, fontSize: 12, color: T.bone, fontWeight: 600 }}>
-                  <Lock size={11} color={T.ash} />{row.layer}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: C.B, fontSize: 12, color: C.t0, fontWeight: 500 }}>
+                  <Lock size={10} color={C.t2} />{row.layer}
                 </div>
-                <MiniSplit v={row.shVendor} o={row.shOrg} />
-                <MiniSplit v={row.aVendor}  o={row.aOrg}  />
-                <MiniSplit v={row.bVendor}  o={row.bOrg}  />
-                <MiniSplit v={row.cVendor}  o={row.cOrg}  />
+                {[
+                  { v: row.shVendor, o: row.shOrg },
+                  { v: row.aVendor,  o: row.aOrg },
+                  { v: row.bVendor,  o: row.bOrg },
+                  { v: row.cVendor,  o: row.cOrg },
+                ].map((d, j) => (
+                  <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ flex: 1, height: 10, background: C.s1, border: `1px solid ${C.b0}`, borderRadius: 2, overflow: 'hidden', display: 'flex' }}>
+                      <div style={{ width: `${d.v}%`, background: C.teal, ...barAnim(100 + i * 40 + j * 20) }} />
+                      <div style={{ width: `${d.o}%`, background: C.orange, ...barAnim(120 + i * 40 + j * 20) }} />
+                    </div>
+                    <span style={{ fontFamily: C.B, fontSize: 9, color: C.t2, minWidth: 28, textAlign: 'right' }}>
+                      <span style={{ color: C.teal }}>{d.v}</span>/<span style={{ color: C.orange }}>{d.o}</span>
+                    </span>
+                  </div>
+                ))}
               </div>
             );
           })}
         </div>
 
         {audit && (
-          <div style={{ marginTop: 4, padding: 10, background: T.void, border: `1px dashed ${T.tealBright}55`, borderRadius: 6 }}>
-            <Mono color={T.tealBright} size={9}>AUDIT MAPPING</Mono>
-            <span style={{ fontFamily: T.mono, fontSize: 10, color: T.fog, marginLeft: 10 }}>
-              HIPAA §164.308(b)(1) · NIST SP 800-66r2 §4.4 · SOC 2 CC1.4 · See file 03
+          <div style={{ ...rise(460), padding: '8px 12px', background: C.si, border: `1px solid ${C.teal}33`, borderRadius: 6 }}>
+            <Label color={C.teal} style={{ letterSpacing: '0.16em' }}>Audit Mapping</Label>
+            <span style={{ fontFamily: C.B, fontSize: 11, color: C.t1, marginLeft: 12 }}>
+              HIPAA §164.308(b)(1) · NIST SP 800-66r2 §4.4 · SOC 2 CC1.4 · File 03
             </span>
           </div>
         )}
       </div>
 
-      {/* RIGHT — selected detail / liability constant */}
+      {/* RIGHT — detail + liability constant */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{
-          background: `radial-gradient(circle at 70% 0%, ${T.error}25 0%, transparent 60%), linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-          border: `1px solid ${T.errorDeep}`, borderRadius: 10, padding: 18,
+          ...rise(60),
+          background: C.s0, border: `1px solid ${C.orange}33`,
+          borderTop: `3px solid ${C.orange}`,
+          borderRadius: 12, padding: 18,
           display: 'flex', flexDirection: 'column', gap: 12,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <LiabilityRivet size="md" />
+            <LiabilityBadge size="md" />
             <div>
-              <Mono color={T.error}>LIABILITY CONSTANT</Mono>
-              <div style={{ fontFamily: T.head, fontSize: 20, fontWeight: 800, color: T.bone, lineHeight: 1.15, marginTop: 2 }}>
+              <Label color={C.orange}>Liability Constant</Label>
+              <div style={{ fontFamily: C.H, fontSize: 18, fontWeight: 700, color: C.t0, lineHeight: 1.2, marginTop: 4 }}>
                 Always 100% organizational.
               </div>
             </div>
           </div>
-          <div style={{ fontFamily: T.body, fontSize: 12.5, color: T.fog, lineHeight: 1.55 }}>
-            Across all 9 layers and all 4 architectures, the percentage of <strong style={{ color: T.error }}>legal liability borne by the organization is 100%</strong>. Only the operational split changes. SaaS does NOT make us compliant — it changes WHERE we must enforce compliance.
+          <div style={{ fontFamily: C.B, fontSize: 12, color: C.t1, lineHeight: 1.55 }}>
+            Across all 9 layers and all 4 architectures, the percentage of <strong style={{ color: C.risk }}>legal liability borne by the organization is 100%</strong>. Only the operational split changes.
           </div>
         </div>
 
-        <div style={{ flex: 1, background: T.panel, border: `1px solid ${T.line}`, borderRadius: 10, padding: 14, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
-          <Mono color={T.tealBright}>{active ? `LAYER · ${active.layer.toUpperCase()}` : 'HOVER A LAYER'}</Mono>
+        <div style={{
+          ...rise(100),
+          flex: 1, background: C.s0, border: `1px solid ${C.b0}`,
+          borderRadius: 12, padding: 16,
+          display: 'flex', flexDirection: 'column', gap: 10, overflow: 'hidden',
+        }}>
+          <Label color={active ? C.teal : C.t2}>{active ? `Layer — ${active.layer}` : 'Hover a layer'}</Label>
           {active ? (
             <>
-              <div style={{ fontFamily: T.head, fontSize: 16, fontWeight: 700, color: T.bone, lineHeight: 1.25 }}>
+              <div style={{ ...rise(0), fontFamily: C.H, fontSize: 14, fontWeight: 600, color: C.t0, lineHeight: 1.3 }}>
                 {active.liabilityNote}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
-                <ResponsibilityBar vendor={active.shVendor} org={active.shOrg} label="SH" />
-                <ResponsibilityBar vendor={active.aVendor}  org={active.aOrg}  label="A" />
-                <ResponsibilityBar vendor={active.bVendor}  org={active.bOrg}  label="B" />
-                <ResponsibilityBar vendor={active.cVendor}  org={active.cOrg}  label="C" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <DualBar vendor={active.shVendor} org={active.shOrg} label="SH" delay={20} />
+                <DualBar vendor={active.aVendor}  org={active.aOrg}  label="A"  delay={40} />
+                <DualBar vendor={active.bVendor}  org={active.bOrg}  label="B"  delay={60} />
+                <DualBar vendor={active.cVendor}  org={active.cOrg}  label="C"  delay={80} />
               </div>
             </>
           ) : (
-            <div style={{ fontFamily: T.body, fontSize: 12, color: T.fog, lineHeight: 1.55 }}>
-              Hover any control layer in the matrix to see its responsibility split across all four architectures and the liability rule that governs it.
+            <div style={{ fontFamily: C.B, fontSize: 12, color: C.t1, lineHeight: 1.55 }}>
+              Hover any control layer in the matrix to see its responsibility split across all four architectures.
             </div>
           )}
         </div>
       </div>
     </div>
-  );
-}
-
-function MiniSplit({ v, o }: { v: number; o: number }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <div style={{ flex: 1, height: 12, position: 'relative', borderRadius: 2, overflow: 'hidden', background: T.void, border: `1px solid ${T.line2}` }}>
-        <div style={{ position: 'absolute', inset: 0, left: 0, width: `${v}%`, background: T.tealBright }} />
-        <div style={{ position: 'absolute', inset: 0, left: `${v}%`, width: `${o}%`, background: T.orangeHot }} />
-      </div>
-      <span style={{ fontFamily: T.mono, fontSize: 9.5, color: T.fog, minWidth: 46, textAlign: 'right' }}>
-        <span style={{ color: T.tealBright }}>{v}</span>/<span style={{ color: T.orangeHot }}>{o}</span>
-      </span>
-    </div>
-  );
-}
-
-function Legend({ swatch, label }: { swatch: string; label: string }) {
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: T.mono, fontSize: 9, color: T.fog, letterSpacing: '0.08em' }}>
-      <span style={{ width: 10, height: 10, background: swatch, borderRadius: 2, display: 'inline-block' }} />{label}
-    </span>
   );
 }
 
@@ -1016,100 +1036,97 @@ function CostView({ audit }: { audit: boolean }) {
   const max = Math.max(sc.sh, sc.a, sc.b, sc.c);
 
   const arches: { key: 'sh' | 'a' | 'b' | 'c'; name: string; tone: ArchProfile['tone'] }[] = [
-    { key: 'sh', name: 'Self-Hosted',     tone: 'teal' },
+    { key: 'sh', name: 'Self-Hosted',     tone: 'teal'    },
     { key: 'a',  name: 'Hyperscaler PaaS', tone: 'warning' },
-    { key: 'b',  name: 'Vertical SaaS',    tone: 'orange' },
-    { key: 'c',  name: 'Multi-SaaS',       tone: 'error' },
+    { key: 'b',  name: 'Vertical SaaS',   tone: 'orange'  },
+    { key: 'c',  name: 'Multi-SaaS',      tone: 'error'   },
   ];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 14, height: '100%' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.7fr', gap: 16, height: '100%' }}>
       {/* LEFT — scenario selector */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <Mono color={T.ash}>SCENARIO TOGGLES</Mono>
-        {COST_SCENARIOS.map(s => {
+        <Label color={C.t2} style={{ marginBottom: 4 }}>Scenario Toggles</Label>
+        {COST_SCENARIOS.map((s, i) => {
           const active = s.id === scenarioId;
           return (
             <button
               key={s.id} type="button" onClick={() => setScenarioId(s.id)}
               style={{
+                ...rise(i * 60),
                 textAlign: 'left', cursor: 'pointer',
-                background: active ? `linear-gradient(135deg, ${T.orange}30 0%, ${T.panel} 100%)` : T.panel,
-                border: `1px solid ${active ? T.orange : T.line}`,
-                borderLeft: `4px solid ${active ? T.orangeHot : T.line2}`,
-                borderRadius: 6, padding: 12,
+                background: active ? C.si : C.s0,
+                border: `1px solid ${active ? C.teal : C.b0}`,
+                borderLeft: `3px solid ${active ? C.teal : C.b0}`,
+                borderRadius: 8, padding: '12px 14px',
+                transition: 'border-color 120ms ease-out, background 120ms ease-out',
               }}
+              onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = `${C.teal}55`; e.currentTarget.style.background = C.si; } }}
+              onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = C.b0; e.currentTarget.style.background = C.s0; } }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Mono color={active ? T.orangeHot : T.fog}>{s.label}</Mono>
-                {active && <Pill color={T.orangeHot} solid>ACTIVE</Pill>}
+                <Eyebrow color={active ? C.teal : C.t2}>{s.label}</Eyebrow>
+                {active && <Tag color={C.teal} filled>Active</Tag>}
               </div>
-              <div style={{ fontFamily: T.body, fontSize: 11.5, color: T.bone, marginTop: 4, lineHeight: 1.4 }}>{s.desc}</div>
+              <div style={{ fontFamily: C.B, fontSize: 12, color: C.t0, marginTop: 5, lineHeight: 1.4 }}>{s.desc}</div>
             </button>
           );
         })}
-        <div style={{ marginTop: 'auto', padding: 12, background: T.void, border: `1px dashed ${T.warning}55`, borderRadius: 6 }}>
-          <Mono color={T.warning} size={9}>HIDDEN COST NOTE</Mono>
-          <div style={{ fontFamily: T.body, fontSize: 11.5, color: T.bone, marginTop: 4, lineHeight: 1.4 }}>{sc.hidden}</div>
+        <div style={{ ...rise(280), marginTop: 'auto', padding: '10px 12px', background: C.sw, border: `1px solid ${C.warn}33`, borderRadius: 8 }}>
+          <Label color={C.warn} style={{ marginBottom: 4 }}>Hidden Cost Note</Label>
+          <div style={{ fontFamily: C.B, fontSize: 11, color: C.t0, marginTop: 4, lineHeight: 1.4 }}>{sc.hidden}</div>
         </div>
       </div>
 
       {/* RIGHT — chart */}
       <div style={{
-        background: `linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-        border: `1px solid ${T.line}`, borderRadius: 10, padding: 18,
-        display: 'flex', flexDirection: 'column', gap: 14, overflow: 'hidden',
+        ...rise(0),
+        background: C.s0, border: `1px solid ${C.b0}`,
+        borderTop: `3px solid ${C.orange}`,
+        borderRadius: 12, padding: 20,
+        display: 'flex', flexDirection: 'column', gap: 16, overflow: 'hidden',
       }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+        <div style={{ ...rise(40), display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
           <div>
-            <Mono color={T.orangeHot}>5-YR TCO · {sc.label.toUpperCase()}</Mono>
-            <div style={{ fontFamily: T.head, fontSize: 22, fontWeight: 800, color: T.bone, marginTop: 2 }}>{sc.desc}</div>
+            <Label color={C.orange} style={{ marginBottom: 4 }}>5-Year TCO · {sc.label}</Label>
+            <div style={{ fontFamily: C.H, fontSize: 20, fontWeight: 700, color: C.t0, marginTop: 4 }}>{sc.desc}</div>
           </div>
-          <Pill color={T.tealBright}>UNITS · USD MILLIONS</Pill>
+          <Tag color={C.teal}>USD Millions</Tag>
         </div>
 
-        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, alignItems: 'flex-end', padding: '0 8px' }}>
-          {arches.map(a => {
+        {/* Bar chart */}
+        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, alignItems: 'flex-end', padding: '0 8px 12px' }}>
+          {arches.map((a, i) => {
             const v = sc[a.key];
             const pct = (v / max) * 100;
-            const accent = toneColor(a.tone);
-            const isRecommended = a.key === 'sh';
+            const ac = archColor(a.tone);
             return (
-              <div key={a.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, height: '100%', justifyContent: 'flex-end' }}>
-                <div style={{ fontFamily: T.head, fontSize: 20, fontWeight: 800, color: T.bone }}>${v.toFixed(2)}M</div>
-                <div style={{
-                  width: '100%', height: `${pct}%`, minHeight: 8,
-                  background: `linear-gradient(180deg, ${accent} 0%, ${accent}40 100%)`,
-                  borderRadius: '4px 4px 0 0',
-                  borderTop: `2px solid ${accent}`,
-                  position: 'relative',
-                  boxShadow: isRecommended ? `0 0 24px ${accent}66` : 'none',
-                }}>
-                  {isRecommended && (
-                    <div style={{ position: 'absolute', top: -22, left: '50%', transform: 'translateX(-50%)' }}>
-                      <Pill color={T.success} solid>RECOMMENDED</Pill>
-                    </div>
-                  )}
+              <div key={a.key} style={{ ...rise(60 + i * 60), display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, height: '100%', justifyContent: 'flex-end' }}>
+                {a.key === 'sh' && (
+                  <div style={rise(80 + i * 60)}><Tag color={C.ok} filled>Recommended</Tag></div>
+                )}
+                <div style={{ fontFamily: C.H, fontSize: 22, fontWeight: 700, color: C.t0 }}>${v.toFixed(2)}M</div>
+                <div style={{ width: '100%', height: `${pct}%`, minHeight: 8, borderRadius: '6px 6px 0 0', background: `${ac}22`, border: `1px solid ${ac}`, borderBottom: 'none', overflow: 'hidden', display: 'flex', alignItems: 'flex-end' }}>
+                  <div style={{ width: '100%', height: '100%', background: `${ac}44`, ...barAnim(100 + i * 80, 800) }} />
                 </div>
-                <div style={{ fontFamily: T.head, fontWeight: 700, fontSize: 13, color: T.bone, textAlign: 'center' }}>{a.name}</div>
-                <Mono color={T.fog} size={9}>{a.key.toUpperCase()}</Mono>
+                <div style={{ fontFamily: C.H, fontWeight: 600, fontSize: 12, color: C.t0, textAlign: 'center' }}>{a.name}</div>
+                <Label color={C.t2} style={{ letterSpacing: '0.1em' }}>{a.key.toUpperCase()}</Label>
               </div>
             );
           })}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, paddingTop: 10, borderTop: `1px solid ${T.line2}` }}>
-          <FailCell icon={DollarSign} tone={T.warning} label="HIDDEN COST DRIVER" body="Egress, integration glue, vendor lock-in exit costs compound after year 3." />
-          <FailCell icon={AlertOctagon} tone={T.error} label="BREACH OFFSET" body="One average breach event adds $1.8M–$3M regardless of architecture." />
-          <FailCell icon={Building2} tone={T.tealBright} label="WHO SIGNS THE CHECK" body="Org pays vendor invoices AND breach costs. Vendor pays neither for you." />
+        {/* Footer analysis */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, paddingTop: 12, borderTop: `1px solid ${C.b0}` }}>
+          <InfoCell icon={DollarSign} label="Hidden Cost Driver" body="Egress, integration glue, vendor lock-in exit costs compound after year 3." color={C.warn} delay={200} />
+          <InfoCell icon={AlertOctagon} label="Breach Offset" body="One average breach event adds $1.8M–$3M regardless of architecture." color={C.risk} delay={220} />
+          <InfoCell icon={Building2} label="Who Signs the Check" body="Org pays vendor invoices AND breach costs. Vendor pays neither for you." color={C.teal} delay={240} />
         </div>
 
         {audit && (
-          <div style={{ padding: 8, background: T.void, border: `1px dashed ${T.tealBright}55`, borderRadius: 6 }}>
-            <Mono color={T.tealBright} size={9}>AUDIT MAPPING</Mono>
-            <span style={{ fontFamily: T.mono, fontSize: 10, color: T.fog, marginLeft: 10 }}>
-              File 14 · Cost Analysis · 5-yr TCO with hidden costs and breach event modeling
-            </span>
+          <div style={{ ...rise(260), padding: '8px 12px', background: C.si, border: `1px solid ${C.teal}33`, borderRadius: 6 }}>
+            <Label color={C.teal} style={{ letterSpacing: '0.16em' }}>Audit Mapping</Label>
+            <span style={{ fontFamily: C.B, fontSize: 11, color: C.t1, marginLeft: 12 }}>File 14 · Cost Analysis · 5-yr TCO with hidden costs and breach event modeling</span>
           </div>
         )}
       </div>
@@ -1119,99 +1136,120 @@ function CostView({ audit }: { audit: boolean }) {
 
 function RoadmapView({ audit }: { audit: boolean }) {
   const [selected, setSelected] = useState<SprintRow>(ROADMAP[3]);
-  const statusColor = (s: SprintRow['status']) =>
-    s === 'done' ? T.success : s === 'active' ? T.orangeHot : s === 'next' ? T.warning : T.ash;
+  const doneCount = useCountUp(ROADMAP.filter(r => r.status === 'done').length, 200);
+  const activeCount = useCountUp(ROADMAP.filter(r => r.status === 'active').length, 260);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 2.4fr', gap: 14, height: '100%' }}>
-      {/* LEFT — sprint timeline */}
+    <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 2.4fr', gap: 16, height: '100%' }}>
+      {/* LEFT — sprint track */}
       <div style={{
-        background: `linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-        border: `1px solid ${T.line}`, borderRadius: 10, padding: 16,
+        ...rise(0),
+        background: C.s0, border: `1px solid ${C.b0}`,
+        borderTop: `3px solid ${C.teal}`,
+        borderRadius: 12, padding: 16,
         display: 'flex', flexDirection: 'column', gap: 10, overflow: 'hidden',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Mono color={T.tealBright}>SPRINT TRACK · S1–S10</Mono>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <Legend swatch={T.success} label="done" />
-            <Legend swatch={T.orangeHot} label="active" />
-            <Legend swatch={T.warning} label="next" />
-            <Legend swatch={T.ash} label="queued" />
+        <div style={{ ...rise(40), display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <Label color={C.teal} style={{ marginBottom: 4 }}>Sprint Track · S1–S10</Label>
+            <div style={{ fontFamily: C.H, fontSize: 16, fontWeight: 700, color: C.t0, marginTop: 4 }}>
+              <span style={{ color: C.ok }}>{doneCount} done</span>
+              <span style={{ color: C.b1 }}> · </span>
+              <span style={{ color: C.orange }}>{activeCount} active</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {[{ c: C.ok, l: 'done' }, { c: C.orange, l: 'active' }, { c: C.warn, l: 'next' }, { c: C.t2, l: 'queued' }].map(x => (
+              <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 6, height: 6, background: x.c, borderRadius: '50%', flexShrink: 0 }} />
+                <Eyebrow color={C.t2}>{x.l}</Eyebrow>
+              </div>
+            ))}
           </div>
         </div>
+
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
-          {ROADMAP.map(r => {
+          {ROADMAP.map((r, i) => {
             const active = selected.id === r.id;
+            const sc = statusColor(r.status);
             return (
               <button
                 key={r.id} type="button" onClick={() => setSelected(r)}
                 style={{
+                  ...rise(60 + i * 40),
                   textAlign: 'left', cursor: 'pointer',
-                  background: active ? `${T.orange}20` : T.panel,
-                  border: `1px solid ${active ? T.orange : T.line}`,
-                  borderRadius: 5, padding: '8px 10px',
-                  display: 'grid', gridTemplateColumns: '38px 1fr 110px 14px', gap: 10, alignItems: 'center',
+                  background: active ? C.si : C.s0,
+                  border: `1px solid ${active ? C.teal : C.b0}`,
+                  borderLeft: `3px solid ${sc}`,
+                  borderRadius: 6, padding: '7px 10px',
+                  display: 'grid', gridTemplateColumns: '34px 1fr 90px', gap: 8, alignItems: 'center',
+                  transition: 'border-color 120ms ease-out, background 120ms ease-out',
                 }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = C.si; e.currentTarget.style.borderColor = `${C.teal}44`; } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = C.s0; e.currentTarget.style.borderColor = C.b0; } }}
               >
                 <div style={{
-                  fontFamily: T.mono, fontSize: 11, fontWeight: 700, color: statusColor(r.status),
-                  background: T.void, border: `1px solid ${statusColor(r.status)}55`, borderRadius: 3,
-                  padding: '2px 0', textAlign: 'center', letterSpacing: '0.05em',
+                  fontFamily: C.H, fontSize: 11, fontWeight: 700, color: sc,
+                  background: `${sc}15`, border: `1px solid ${sc}44`,
+                  borderRadius: 4, padding: '2px 0', textAlign: 'center',
+                  transition: 'all 120ms ease-out',
                 }}>{r.sprint}</div>
-                <div style={{ fontFamily: T.body, fontSize: 12, color: T.bone, fontWeight: 600, lineHeight: 1.3 }}>{r.epic}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor(r.status), boxShadow: `0 0 8px ${statusColor(r.status)}` }} />
-                  <Mono color={statusColor(r.status)} size={9}>{r.status}</Mono>
+                <div style={{ fontFamily: C.B, fontSize: 11, color: C.t0, fontWeight: 500, lineHeight: 1.3 }}>{r.epic}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{
+                    width: 6, height: 6, borderRadius: '50%', background: sc, flexShrink: 0,
+                    animation: r.status === 'active' ? 'bradPulse 1.8s ease-in-out infinite' : 'none',
+                  }} />
+                  <Eyebrow color={sc}>{r.status}</Eyebrow>
                 </div>
-                <ChevronRight size={12} color={active ? T.orangeHot : T.ash} />
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* RIGHT — selected sprint detail */}
+      {/* RIGHT — detail */}
       <div style={{
-        background: `radial-gradient(circle at 70% 0%, ${T.orange}20 0%, transparent 60%), linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-        border: `1px solid ${T.line}`, borderRadius: 10, padding: 18,
+        ...rise(40),
+        background: C.s0, border: `1px solid ${C.b0}`,
+        borderTop: `3px solid ${statusColor(selected.status)}`,
+        borderRadius: 12, padding: 20,
         display: 'flex', flexDirection: 'column', gap: 16, overflow: 'hidden',
       }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
+        <div style={{ ...rise(60), display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
           <div>
-            <Mono color={statusColor(selected.status)}>{selected.sprint} · {selected.status.toUpperCase()}</Mono>
-            <div style={{ fontFamily: T.head, fontSize: 22, fontWeight: 800, color: T.bone, marginTop: 4, letterSpacing: '-0.01em', lineHeight: 1.2 }}>{selected.epic}</div>
+            <Eyebrow color={statusColor(selected.status)}>{selected.sprint} · {selected.status.toUpperCase()}</Eyebrow>
+            <div style={{ fontFamily: C.H, fontSize: 22, fontWeight: 700, color: C.t0, marginTop: 6, letterSpacing: '-0.01em', lineHeight: 1.2 }}>{selected.epic}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
-              <Building2 size={12} color={T.tealBright} />
-              <span style={{ fontFamily: T.mono, fontSize: 10.5, color: T.tealBright }}>OWNER · {selected.owner}</span>
+              <Building2 size={12} color={C.teal} />
+              <span style={{ fontFamily: C.B, fontSize: 11, color: C.teal }}>Owner: {selected.owner}</span>
             </div>
           </div>
-          <Pill color={statusColor(selected.status)} solid>{selected.status}</Pill>
+          <Tag color={statusColor(selected.status)} filled>{selected.status}</Tag>
         </div>
 
-        <div style={{ background: T.panel, border: `1px solid ${T.line}`, borderRadius: 6, padding: 14 }}>
-          <Mono color={T.ash} size={9}>WORK PERFORMED</Mono>
-          <p style={{ fontFamily: T.body, fontSize: 13, color: T.bone, lineHeight: 1.6, margin: '6px 0 0' }}>{selected.detail}</p>
+        <div style={{ ...rise(100), background: C.s1, border: `1px solid ${C.b0}`, borderRadius: 8, padding: 14 }}>
+          <Label color={C.t2} style={{ marginBottom: 6 }}>Work Performed</Label>
+          <p style={{ fontFamily: C.B, fontSize: 13, color: C.t0, lineHeight: 1.6, margin: 0 }}>{selected.detail}</p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <FailCell icon={Skull} tone={T.error} label="FAILURE MODE" body={selected.failure} />
-          <FailCell icon={AlertOctagon} tone={T.orange} label="CONSEQUENCE" body={selected.consequence} />
+          <InfoCell icon={Skull} label="Failure Mode" body={selected.failure} color={C.risk} delay={130} />
+          <InfoCell icon={AlertOctagon} label="Consequence" body={selected.consequence} color={C.warn} delay={150} />
         </div>
 
-        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: T.void, border: `1px dashed ${T.error}55`, borderRadius: 6 }}>
-          <LiabilityRivet />
-          <div style={{ fontFamily: T.body, fontSize: 12, color: T.bone, lineHeight: 1.45 }}>
-            <strong style={{ color: T.error }}>Compliance does not pause for sprints.</strong>
+        <div style={{ ...rise(170), marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: C.sw, border: `1px solid ${C.orange}33`, borderRadius: 8 }}>
+          <LiabilityBadge />
+          <div style={{ fontFamily: C.B, fontSize: 12, color: C.t0, lineHeight: 1.45 }}>
+            <strong style={{ color: C.orange }}>Compliance does not pause for sprints.</strong>
             <br />Each sprint adds capability; none transfers liability.
           </div>
         </div>
 
         {audit && (
-          <div style={{ padding: 8, background: T.void, border: `1px dashed ${T.tealBright}55`, borderRadius: 6 }}>
-            <Mono color={T.tealBright} size={9}>AUDIT MAPPING</Mono>
-            <span style={{ fontFamily: T.mono, fontSize: 10, color: T.fog, marginLeft: 10 }}>
-              File 16 · Sprint Plan + Project Board · DoR/DoD per epic
-            </span>
+          <div style={{ ...rise(200), padding: '8px 12px', background: C.si, border: `1px solid ${C.teal}33`, borderRadius: 6 }}>
+            <Label color={C.teal} style={{ letterSpacing: '0.16em' }}>Audit Mapping</Label>
+            <span style={{ fontFamily: C.B, fontSize: 11, color: C.t1, marginLeft: 12 }}>File 16 · Sprint Plan + Project Board · DoR/DoD per epic</span>
           </div>
         )}
       </div>
@@ -1228,42 +1266,55 @@ function DecisionView({ audit }: { audit: boolean }) {
     : `${b.code} retains more control. Recommend ${b.code}.`;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 0.85fr', gap: 14, height: '100%' }}>
-      <ArchPicker label="OPTION A" arch={a} onChange={setA} />
-      <ArchPicker label="OPTION B" arch={b} onChange={setB} />
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 0.9fr', gap: 16, height: '100%' }}>
+      <ArchPickerPanel label="Option A" arch={a} onChange={setA} delayBase={0} />
+      <ArchPickerPanel label="Option B" arch={b} onChange={setB} delayBase={60} />
 
       {/* Verdict panel */}
       <div style={{
-        background: `radial-gradient(circle at 50% 0%, ${T.orange}30 0%, transparent 70%), linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-        border: `1px solid ${T.orange}`, borderRadius: 10, padding: 18,
-        display: 'flex', flexDirection: 'column', gap: 14, overflow: 'hidden',
+        ...rise(120),
+        background: C.s0, border: `1px solid ${C.orange}44`,
+        borderTop: `3px solid ${C.orange}`,
+        borderRadius: 12, padding: 20,
+        display: 'flex', flexDirection: 'column', gap: 14,
       }}>
-        <div>
-          <Mono color={T.orangeHot}>DECISION ENGINE</Mono>
-          <div style={{ fontFamily: T.head, fontSize: 20, fontWeight: 800, color: T.bone, marginTop: 4, lineHeight: 1.2 }}>
-            {verdict}
-          </div>
+        <div style={rise(140)}>
+          <Label color={C.orange} style={{ marginBottom: 6 }}>Decision Engine</Label>
+          <div style={{ fontFamily: C.H, fontSize: 18, fontWeight: 700, color: C.t0, marginTop: 6, lineHeight: 1.25 }}>{verdict}</div>
         </div>
 
-        <CompareRow label="5-yr TCO"      av={a.fiveYearTCO}    bv={b.fiveYearTCO}    bestA={parseFloat(a.fiveYearTCO.replace(/[$M]/g, '')) <= parseFloat(b.fiveYearTCO.replace(/[$M]/g, ''))} />
-        <CompareRow label="Control Index" av={`${a.controlIndex}/100`} bv={`${b.controlIndex}/100`} bestA={a.controlIndex >= b.controlIndex} />
-        <CompareRow label="Org-side Ops"  av={`${100 - a.vendorPct}%`} bv={`${100 - b.vendorPct}%`} bestA={(100 - a.vendorPct) <= (100 - b.vendorPct)} />
-        <CompareRow label="Liability"     av="100%" bv="100%" bestA={null} />
-        <CompareRow label="RTO"           av={a.rto} bv={b.rto} bestA={null} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {[
+            { label: '5-yr TCO', av: a.fiveYearTCO, bv: b.fiveYearTCO, bestA: parseFloat(a.fiveYearTCO.replace(/[$M]/g, '')) <= parseFloat(b.fiveYearTCO.replace(/[$M]/g, '')) },
+            { label: 'Control Index', av: `${a.controlIndex}/100`, bv: `${b.controlIndex}/100`, bestA: a.controlIndex >= b.controlIndex },
+            { label: 'Org-side Ops', av: `${100 - a.vendorPct}%`, bv: `${100 - b.vendorPct}%`, bestA: (100 - a.vendorPct) <= (100 - b.vendorPct) },
+            { label: 'Liability', av: '100%', bv: '100%', bestA: null },
+            { label: 'RTO', av: a.rto, bv: b.rto, bestA: null },
+          ].map((row, i) => (
+            <div key={row.label} style={{
+              ...rise(160 + i * 40),
+              display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6,
+              alignItems: 'center', padding: '6px 8px',
+              background: C.s1, border: `1px solid ${C.b0}`, borderRadius: 6,
+            }}>
+              <Eyebrow color={C.t2}>{row.label}</Eyebrow>
+              <div style={{ fontFamily: C.H, fontSize: 13, fontWeight: 700, textAlign: 'right', color: row.bestA === null ? C.t0 : row.bestA ? C.ok : C.t2 }}>{row.av}</div>
+              <div style={{ fontFamily: C.H, fontSize: 13, fontWeight: 700, textAlign: 'right', color: row.bestA === null ? C.t0 : !row.bestA ? C.ok : C.t2 }}>{row.bv}</div>
+            </div>
+          ))}
+        </div>
 
-        <div style={{ marginTop: 'auto', padding: 12, background: T.void, border: `1px solid ${T.error}55`, borderRadius: 6 }}>
-          <Mono color={T.error} size={10}>WHAT NEVER CHANGES</Mono>
-          <div style={{ fontFamily: T.body, fontSize: 12, color: T.bone, marginTop: 4, lineHeight: 1.5 }}>
-            Both options leave us <strong style={{ color: T.error }}>100% legally accountable</strong>. The choice is operational, not legal.
+        <div style={{ ...rise(380), marginTop: 'auto', padding: '10px 12px', background: C.sw, border: `1px solid ${C.risk}33`, borderRadius: 8 }}>
+          <Label color={C.risk} style={{ marginBottom: 4 }}>What Never Changes</Label>
+          <div style={{ fontFamily: C.B, fontSize: 12, color: C.t0, marginTop: 4, lineHeight: 1.5 }}>
+            Both options leave us <strong style={{ color: C.risk }}>100% legally accountable</strong>. The choice is operational, not legal.
           </div>
         </div>
 
         {audit && (
-          <div style={{ padding: 8, background: T.void, border: `1px dashed ${T.tealBright}55`, borderRadius: 6 }}>
-            <Mono color={T.tealBright} size={9}>AUDIT MAPPING</Mono>
-            <span style={{ fontFamily: T.mono, fontSize: 10, color: T.fog, marginLeft: 10 }}>
-              File 17 · Final Recommendation · Decision matrix by optimization goal
-            </span>
+          <div style={{ ...rise(400), padding: '8px 12px', background: C.si, border: `1px solid ${C.teal}33`, borderRadius: 6 }}>
+            <Label color={C.teal} style={{ letterSpacing: '0.16em' }}>Audit Mapping</Label>
+            <span style={{ fontFamily: C.B, fontSize: 11, color: C.t1, marginLeft: 12 }}>File 17 · Final Recommendation · Decision matrix by optimization goal</span>
           </div>
         )}
       </div>
@@ -1271,71 +1322,56 @@ function DecisionView({ audit }: { audit: boolean }) {
   );
 }
 
-function ArchPicker({ label, arch, onChange }: { label: string; arch: ArchProfile; onChange: (a: ArchProfile) => void }) {
-  const accent = toneColor(arch.tone);
+function ArchPickerPanel({ label, arch, onChange, delayBase }: { label: string; arch: ArchProfile; onChange: (a: ArchProfile) => void; delayBase: number }) {
+  const accent = archColor(arch.tone);
   return (
     <div style={{
-      background: `linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-      border: `1px solid ${T.line}`, borderTop: `2px solid ${accent}`,
-      borderRadius: 10, padding: 16,
-      display: 'flex', flexDirection: 'column', gap: 12, overflow: 'hidden',
+      ...rise(delayBase),
+      background: C.s0, border: `1px solid ${C.b0}`,
+      borderTop: `3px solid ${accent}`,
+      borderRadius: 12, padding: 18,
+      display: 'flex', flexDirection: 'column', gap: 12,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Mono color={accent}>{label}</Mono>
+      <div style={{ ...rise(delayBase + 40), display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Label color={accent}>{label}</Label>
         <select
           value={arch.id}
-          onChange={(e) => {
-            const next = ARCHITECTURES.find(x => x.id === e.target.value);
-            if (next) onChange(next);
-          }}
+          onChange={e => { const next = ARCHITECTURES.find(x => x.id === e.target.value); if (next) onChange(next); }}
           style={{
-            background: T.panel, color: T.bone, fontFamily: T.mono, fontSize: 11, fontWeight: 700,
-            border: `1px solid ${T.line2}`, borderRadius: 4, padding: '4px 8px',
-            cursor: 'pointer', letterSpacing: '0.06em',
+            background: C.s1, color: C.t0, fontFamily: C.B, fontSize: 12, fontWeight: 500,
+            border: `1px solid ${C.b1}`, borderRadius: 6, padding: '4px 8px', cursor: 'pointer',
+            transition: 'border-color 120ms ease-out',
           }}
+          onFocus={e => { e.currentTarget.style.borderColor = C.teal; }}
+          onBlur={e => { e.currentTarget.style.borderColor = C.b1; }}
         >
           {ARCHITECTURES.map(a => <option key={a.id} value={a.id}>{a.code} — {a.name}</option>)}
         </select>
       </div>
 
-      <div>
-        <div style={{ fontFamily: T.head, fontSize: 18, fontWeight: 800, color: T.bone, lineHeight: 1.2 }}>{arch.name}</div>
-        <div style={{ fontFamily: T.body, fontSize: 12, color: T.fog, marginTop: 4, lineHeight: 1.5 }}>{arch.oneLine}</div>
+      <div style={rise(delayBase + 60)}>
+        <div style={{ fontFamily: C.H, fontSize: 16, fontWeight: 700, color: C.t0, lineHeight: 1.25 }}>{arch.name}</div>
+        <div style={{ fontFamily: C.B, fontSize: 12, color: C.t1, marginTop: 4, lineHeight: 1.5 }}>{arch.oneLine}</div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <ResponsibilityBar vendor={arch.vendorPct} org={100 - arch.vendorPct} label="Operations" />
-        <ResponsibilityBar vendor={0} org={100} label="Liability" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <DualBar vendor={arch.vendorPct} org={100 - arch.vendorPct} label="Operations" delay={delayBase + 80} />
+        <DualBar vendor={0} org={100} label="Liability" delay={delayBase + 100} />
       </div>
 
-      <div style={{ marginTop: 'auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-        <KpiBadge label="TCO" value={arch.fiveYearTCO} accent={accent} />
-        <KpiBadge label="CTRL" value={`${arch.controlIndex}`} accent={accent} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 'auto' }}>
+        <KpiBadge label="TCO" value={arch.fiveYearTCO} color={accent} delay={delayBase + 120} />
+        <KpiBadge label="CTRL" value={`${arch.controlIndex}`} color={accent} delay={delayBase + 140} />
       </div>
 
-      <div style={{ background: `${T.error}15`, border: `1px solid ${T.error}55`, borderRadius: 6, padding: 10 }}>
-        <Mono color={T.error} size={9}>FAILURE MODE</Mono>
-        <div style={{ fontFamily: T.body, fontSize: 11.5, color: T.bone, marginTop: 4, lineHeight: 1.4 }}>{arch.failureMode}</div>
-      </div>
-    </div>
-  );
-}
-
-function CompareRow({ label, av, bv, bestA }: { label: string; av: string; bv: string; bestA: boolean | null }) {
-  const aColor = bestA === null ? T.bone : bestA ? T.success : T.fog;
-  const bColor = bestA === null ? T.bone : !bestA ? T.success : T.fog;
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr', gap: 8, alignItems: 'center', padding: '6px 8px', background: T.panel, border: `1px solid ${T.line}`, borderRadius: 4 }}>
-      <Mono color={T.fog} size={10}>{label}</Mono>
-      <span style={{ fontFamily: T.head, fontSize: 13, fontWeight: 700, color: aColor, textAlign: 'right' }}>{av}</span>
-      <span style={{ fontFamily: T.head, fontSize: 13, fontWeight: 700, color: bColor, textAlign: 'right' }}>{bv}</span>
+      <InfoCell icon={Skull} label="Failure Mode" body={arch.failureMode} color={C.risk} delay={delayBase + 160} />
     </div>
   );
 }
 
 function AuditView() {
   const [filter, setFilter] = useState<'all' | 'pass' | 'partial' | 'gap'>('all');
-  const [selected, setSelected] = useState<ControlRow | null>(CONTROLS[2]);
+  const [selectedCtrl, setSelectedCtrl] = useState<ControlRow | null>(CONTROLS[2]);
   const filtered = useMemo(() => filter === 'all' ? CONTROLS : CONTROLS.filter(c => c.status === filter), [filter]);
 
   const pass    = CONTROLS.filter(c => c.status === 'pass').length;
@@ -1343,124 +1379,134 @@ function AuditView() {
   const gap     = CONTROLS.filter(c => c.status === 'gap').length;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '2.4fr 1.6fr', gap: 14, height: '100%' }}>
-      {/* LEFT — control table */}
+    <div style={{ display: 'grid', gridTemplateColumns: '2.4fr 1.6fr', gap: 16, height: '100%' }}>
+      {/* LEFT */}
       <div style={{
-        background: `linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-        border: `1px solid ${T.line}`, borderRadius: 10, padding: 16,
-        display: 'flex', flexDirection: 'column', gap: 12, overflow: 'hidden',
+        ...rise(0),
+        background: C.s0, border: `1px solid ${C.b0}`,
+        borderTop: `3px solid ${C.teal}`,
+        borderRadius: 12, padding: 16,
+        display: 'flex', flexDirection: 'column', gap: 12,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ ...rise(40), display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <Mono color={T.tealBright}>CONTROL CONSOLE · NIST 800-53 / HIPAA / SOC 2</Mono>
-            <div style={{ fontFamily: T.head, fontSize: 18, fontWeight: 700, color: T.bone, marginTop: 2 }}>
-              <span style={{ color: T.success }}>{pass} pass</span>
-              <span style={{ color: T.ash }}> · </span>
-              <span style={{ color: T.warning }}>{partial} partial</span>
-              <span style={{ color: T.ash }}> · </span>
-              <span style={{ color: T.error }}>{gap} gap</span>
+            <Label color={C.teal} style={{ marginBottom: 4 }}>Control Console · NIST 800-53 / HIPAA / SOC 2</Label>
+            <div style={{ fontFamily: C.H, fontSize: 17, fontWeight: 700, color: C.t0, marginTop: 4 }}>
+              <span style={{ color: C.ok }}>{pass} pass</span>
+              <span style={{ color: C.b1 }}> · </span>
+              <span style={{ color: C.warn }}>{partial} partial</span>
+              <span style={{ color: C.b1 }}> · </span>
+              <span style={{ color: C.risk }}>{gap} gap</span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 4 }}>
+          <div style={{ display: 'flex', gap: 6 }}>
             {(['all', 'pass', 'partial', 'gap'] as const).map(f => (
               <button
                 key={f} type="button" onClick={() => setFilter(f)}
                 style={{
-                  background: filter === f ? T.tealBright : 'transparent',
-                  color: filter === f ? T.void : T.fog,
-                  border: `1px solid ${filter === f ? T.tealBright : T.line2}`,
-                  borderRadius: 4, padding: '4px 10px',
-                  fontFamily: T.mono, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
+                  ...rise(60),
+                  background: filter === f ? C.teal : 'transparent',
+                  color: filter === f ? '#fff' : C.t2,
+                  border: `1px solid ${filter === f ? C.teal : C.b0}`,
+                  borderRadius: 6, padding: '4px 10px',
+                  fontFamily: C.H, fontSize: 10, fontWeight: 600, letterSpacing: '0.14em',
                   textTransform: 'uppercase', cursor: 'pointer',
+                  transition: 'all 120ms ease-out',
                 }}
+                onMouseEnter={e => { if (filter !== f) { e.currentTarget.style.borderColor = C.teal; e.currentTarget.style.color = C.teal; } }}
+                onMouseLeave={e => { if (filter !== f) { e.currentTarget.style.borderColor = C.b0; e.currentTarget.style.color = C.t2; } }}
               >{f}</button>
             ))}
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '60px 90px 1fr 80px', gap: 8, fontFamily: T.mono, fontSize: 9.5, color: T.ash, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '0 8px' }}>
-          <div>CTRL</div><div>FAMILY</div><div>NAME</div><div style={{ textAlign: 'right' }}>STATUS</div>
+        {/* Table header */}
+        <div style={{ ...rise(80), display: 'grid', gridTemplateColumns: '60px 90px 1fr 80px', gap: 8, padding: '0 8px' }}>
+          {['Ctrl', 'Family', 'Name', 'Status'].map(h => <Eyebrow key={h} color={C.t2}>{h}</Eyebrow>)}
         </div>
 
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {filtered.map(c => {
-            const active = selected?.ctrl === c.ctrl;
-            const sc = c.status === 'pass' ? T.success : c.status === 'partial' ? T.warning : T.error;
+          {filtered.map((c, i) => {
+            const active = selectedCtrl?.ctrl === c.ctrl;
+            const sc = controlColor(c.status);
             return (
               <button
-                key={c.ctrl} type="button" onClick={() => setSelected(c)}
+                key={c.ctrl} type="button" onClick={() => setSelectedCtrl(c)}
                 style={{
+                  ...rise(100 + i * 40),
                   display: 'grid', gridTemplateColumns: '60px 90px 1fr 80px', gap: 8, alignItems: 'center',
                   textAlign: 'left', cursor: 'pointer',
-                  background: active ? `${T.tealBright}15` : T.panel,
-                  border: `1px solid ${active ? T.tealBright : T.line}`,
+                  background: active ? C.si : C.s0,
+                  border: `1px solid ${active ? C.teal : C.b0}`,
                   borderLeft: `3px solid ${sc}`,
-                  borderRadius: 5, padding: '8px 10px',
+                  borderRadius: 6, padding: '8px 10px',
+                  transition: 'border-color 120ms ease-out, background 120ms ease-out',
                 }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = C.si; e.currentTarget.style.borderColor = `${C.teal}33`; } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = C.s0; e.currentTarget.style.borderColor = C.b0; } }}
               >
-                <span style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 700, color: T.bone }}>{c.ctrl}</span>
-                <span style={{ fontFamily: T.mono, fontSize: 10, color: T.fog }}>{c.family}</span>
-                <span style={{ fontFamily: T.body, fontSize: 12, color: T.bone, fontWeight: 500 }}>{c.name}</span>
-                <span style={{ textAlign: 'right' }}>
-                  <Pill color={sc}>{c.status}</Pill>
-                </span>
+                <span style={{ fontFamily: C.H, fontSize: 12, fontWeight: 700, color: C.t0 }}>{c.ctrl}</span>
+                <span style={{ fontFamily: C.B, fontSize: 11, color: C.t2 }}>{c.family}</span>
+                <span style={{ fontFamily: C.B, fontSize: 12, color: C.t0, fontWeight: 500 }}>{c.name}</span>
+                <span style={{ textAlign: 'right' }}><Tag color={sc}>{c.status}</Tag></span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* RIGHT — selected control */}
+      {/* RIGHT */}
       <div style={{
-        background: `linear-gradient(180deg, ${T.panel2} 0%, ${T.void} 100%)`,
-        border: `1px solid ${T.line}`, borderRadius: 10, padding: 18,
-        display: 'flex', flexDirection: 'column', gap: 12, overflow: 'hidden',
+        ...rise(60),
+        background: C.s0, border: `1px solid ${C.b0}`,
+        borderTop: `3px solid ${selectedCtrl ? controlColor(selectedCtrl.status) : C.b0}`,
+        borderRadius: 12, padding: 18,
+        display: 'flex', flexDirection: 'column', gap: 12,
       }}>
-        {selected ? (
+        {selectedCtrl ? (
           <>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <div style={{ ...rise(80), display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div>
-                <Mono color={T.tealBright}>CONTROL · {selected.ctrl}</Mono>
-                <div style={{ fontFamily: T.head, fontSize: 22, fontWeight: 800, color: T.bone, marginTop: 4 }}>{selected.name}</div>
-                <Mono color={T.fog} size={10}>{selected.family}</Mono>
+                <Eyebrow color={C.teal}>Control · {selectedCtrl.ctrl}</Eyebrow>
+                <div style={{ fontFamily: C.H, fontSize: 20, fontWeight: 700, color: C.t0, marginTop: 4 }}>{selectedCtrl.name}</div>
+                <Eyebrow color={C.t2}>{selectedCtrl.family}</Eyebrow>
               </div>
-              <Pill color={selected.status === 'pass' ? T.success : selected.status === 'partial' ? T.warning : T.error} solid>{selected.status}</Pill>
+              <Tag color={controlColor(selectedCtrl.status)} filled>{selectedCtrl.status}</Tag>
             </div>
 
-            <div style={{ background: T.panel, border: `1px solid ${T.line}`, borderRadius: 6, padding: 12 }}>
-              <Mono color={T.ash} size={9}>FRAMEWORK MAPPING</Mono>
-              <div style={{ fontFamily: T.mono, fontSize: 11.5, color: T.bone, marginTop: 4, lineHeight: 1.5 }}>{selected.mapping}</div>
+            <div style={{ ...rise(120), background: C.s1, border: `1px solid ${C.b0}`, borderRadius: 8, padding: 12 }}>
+              <Label color={C.t2} style={{ marginBottom: 4 }}>Framework Mapping</Label>
+              <div style={{ fontFamily: C.B, fontSize: 12, color: C.t0, marginTop: 4, lineHeight: 1.5 }}>{selectedCtrl.mapping}</div>
             </div>
 
-            <div style={{ background: T.panel, border: `1px solid ${T.line}`, borderRadius: 6, padding: 12 }}>
-              <Mono color={T.tealBright} size={9}>EVIDENCE</Mono>
-              <div style={{ fontFamily: T.body, fontSize: 12, color: T.bone, marginTop: 4, lineHeight: 1.5 }}>{selected.evidence}</div>
+            <div style={{ ...rise(150), background: C.s1, border: `1px solid ${C.b0}`, borderRadius: 8, padding: 12 }}>
+              <Label color={C.teal} style={{ marginBottom: 4 }}>Evidence</Label>
+              <div style={{ fontFamily: C.B, fontSize: 12, color: C.t0, marginTop: 4, lineHeight: 1.5 }}>{selectedCtrl.evidence}</div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <FailCell icon={Skull} tone={T.error} label="FAILURE MODE" body={selected.failureMode} />
-              <FailCell icon={Building2} tone={T.tealBright} label="OWNER" body={selected.owner} />
+              <InfoCell icon={Skull} label="Failure Mode" body={selectedCtrl.failureMode} color={C.risk} delay={180} />
+              <InfoCell icon={Building2} label="Owner" body={selectedCtrl.owner} color={C.teal} delay={200} />
             </div>
 
-            <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: T.void, border: `1px dashed ${T.error}55`, borderRadius: 6 }}>
-              <LiabilityRivet />
-              <div style={{ fontFamily: T.body, fontSize: 12, color: T.bone, lineHeight: 1.45 }}>
-                Evidence reduces audit findings. <strong style={{ color: T.error }}>It does not reduce liability.</strong>
+            <div style={{ ...rise(220), marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: C.sw, border: `1px solid ${C.orange}33`, borderRadius: 8 }}>
+              <LiabilityBadge />
+              <div style={{ fontFamily: C.B, fontSize: 12, color: C.t0, lineHeight: 1.45 }}>
+                Evidence reduces audit findings. <strong style={{ color: C.risk }}>It does not reduce liability.</strong>
               </div>
             </div>
           </>
         ) : (
-          <div style={{ fontFamily: T.body, fontSize: 13, color: T.fog }}>Select a control to inspect.</div>
+          <div style={{ fontFamily: C.B, fontSize: 13, color: C.t1 }}>Select a control to inspect.</div>
         )}
       </div>
     </div>
   );
 }
 
-/* ═════════════════════════════════════════════════════════════════
-   SHELL
-   ═════════════════════════════════════════════════════════════════ */
-
+/* ═══════════════════════════════════════════════════════════════════════
+   SHELL — The One-Card Canvas, CI design system
+═══════════════════════════════════════════════════════════════════════ */
 export function BradProposalPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabId>('brief');
@@ -1483,151 +1529,201 @@ export function BradProposalPage() {
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, overflow: 'hidden',
-        background: `
-          radial-gradient(circle at 12% 0%, ${T.orange}22 0%, transparent 35%),
-          radial-gradient(circle at 88% 100%, ${T.teal}1F 0%, transparent 35%),
-          linear-gradient(180deg, ${T.void} 0%, #050403 100%)
-        `,
-        fontFamily: T.body, color: T.bone,
-        display: 'grid', gridTemplateRows: '60px 44px 1fr 38px',
-      }}
-    >
+    <div style={{ position: 'fixed', inset: 0, background: C.vp, padding: 20, display: 'flex' }}>
       <style>{`
-        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes slideIn { from { transform: translateX(40px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
-        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 ${T.error}66 } 50% { box-shadow: 0 0 0 8px ${T.error}00 } }
+        @keyframes bradRise {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0);   }
+        }
+        @keyframes bradBarFill {
+          from { transform: scaleX(0); }
+          to   { transform: scaleX(1); }
+        }
+        @keyframes bradFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes bradSlideRight {
+          from { opacity: 0; transform: translateX(32px); }
+          to   { opacity: 1; transform: translateX(0);    }
+        }
+        @keyframes bradPulse {
+          0%, 100% { opacity: 1; }
+          50%      { opacity: 0.5; }
+        }
+        * { box-sizing: border-box; }
+        select { outline: none; }
+        button { outline: none; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: ${C.s1}; }
+        ::-webkit-scrollbar-thumb { background: ${C.b0}; border-radius: 2px; }
       `}</style>
 
-      {/* TOP HEADER */}
-      <header style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 20px',
-        background: `linear-gradient(180deg, ${T.panel2} 0%, ${T.panel} 100%)`,
-        borderBottom: `1px solid ${T.line2}`,
+      {/* App card — 20px radius, single surface, fills viewport with 20px margin */}
+      <div style={{
+        flex: 1, background: C.s0,
+        borderRadius: 20, border: `1px solid ${C.b0}`,
+        display: 'grid', gridTemplateRows: '56px 40px 1fr 32px',
+        overflow: 'hidden',
+        animation: 'bradRise 360ms cubic-bezier(0.16, 1, 0.3, 1) both',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <button
-            type="button" onClick={() => navigate('/iadministrator')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: 'transparent', border: `1px solid ${T.line2}`,
-              color: T.fog, padding: '6px 10px', borderRadius: 4, cursor: 'pointer',
-              fontFamily: T.mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700,
-            }}
-          >
-            <ArrowLeft size={12} /> Return
-          </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: 6,
-              background: `linear-gradient(135deg, ${T.orange} 0%, ${T.orangeDark} 100%)`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: `0 0 12px ${T.orange}88`,
-            }}>
-              <Cpu size={16} color={T.bone} />
-            </div>
-            <div>
-              <div style={{ fontFamily: T.head, fontSize: 14, fontWeight: 800, color: T.bone, letterSpacing: '-0.01em', lineHeight: 1 }}>BRAD 2.0 · DECISION SYSTEM</div>
-              <Mono color={T.orangeHot} size={9}>{activeTab.code} · {activeTab.label.toUpperCase()}</Mono>
-            </div>
-          </div>
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* LIVE LIABILITY INDICATOR */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '6px 12px', background: T.void, border: `1px solid ${T.error}55`, borderRadius: 6,
-            animation: 'pulse 2.4s infinite',
-          }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: T.error, boxShadow: `0 0 8px ${T.error}` }} />
-            <Mono color={T.error} size={9}>ORG LIABILITY</Mono>
-            <span style={{ fontFamily: T.head, fontSize: 14, fontWeight: 800, color: T.bone, letterSpacing: '-0.01em' }}>100%</span>
-          </div>
-
-          {/* AUDIT MODE TOGGLE */}
-          <button
-            type="button" onClick={() => setAudit(v => !v)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '6px 12px', borderRadius: 6, cursor: 'pointer',
-              background: audit ? T.tealBright : 'transparent',
-              color: audit ? T.void : T.fog,
-              border: `1px solid ${audit ? T.tealBright : T.line2}`,
-              fontFamily: T.mono, fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase',
-            }}
-          >
-            {audit ? <Eye size={12} /> : <EyeOff size={12} />}
-            Audit Mode {audit ? 'ON' : 'OFF'}
-          </button>
-        </div>
-      </header>
-
-      {/* TAB BAR */}
-      <nav style={{
-        display: 'flex', alignItems: 'stretch',
-        background: T.panel,
-        borderBottom: `1px solid ${T.line2}`,
-        padding: '0 12px',
-        overflowX: 'auto',
-      }}>
-        {TABS.map(t => {
-          const active = t.id === tab;
-          const Icon = t.icon;
-          return (
+        {/* ── HEADER ─────────────────────────────────────────────── */}
+        <header style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 20px',
+          background: C.s0, borderBottom: `1px solid ${C.b0}`,
+        }}>
+          {/* Left: back + identity */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <button
-              key={t.id} type="button" onClick={() => setTab(t.id)}
+              type="button" onClick={() => navigate('/iadministrator')}
               style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '0 16px', cursor: 'pointer',
-                background: active ? `linear-gradient(180deg, transparent 0%, ${T.orange}25 100%)` : 'transparent',
-                border: 'none',
-                borderBottom: `2px solid ${active ? T.orangeHot : 'transparent'}`,
-                color: active ? T.bone : T.fog,
-                fontFamily: T.mono, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
-                transition: 'all 140ms ease',
+                ...rise(40),
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'transparent', border: `1px solid ${C.b0}`,
+                color: C.t2, padding: '5px 10px', borderRadius: 6, cursor: 'pointer',
+                fontFamily: C.H, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600,
+                transition: 'border-color 120ms ease-out, color 120ms ease-out',
               }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.teal; e.currentTarget.style.color = C.teal; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.b0; e.currentTarget.style.color = C.t2; }}
             >
-              <Icon size={13} color={active ? T.orangeHot : T.ash} />
-              <span style={{ color: active ? T.orangeHot : T.ash, fontWeight: 800 }}>{t.code}</span>
-              <span>{t.label}</span>
+              <ArrowLeft size={11} /> Return
             </button>
-          );
-        })}
-      </nav>
 
-      {/* WORKSPACE */}
-      <main style={{ position: 'relative', overflow: 'hidden', padding: 14 }}>
-        {renderTab()}
-        <Drawer tile={drawer} onClose={() => setDrawer(null)} />
-      </main>
+            <div style={{ ...rise(60), display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: 8,
+                background: C.teal,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Cpu size={15} color="#fff" />
+              </div>
+              <div>
+                <div style={{ fontFamily: C.H, fontSize: 13, fontWeight: 700, color: C.t0, letterSpacing: '-0.01em', lineHeight: 1 }}>
+                  Brad 2.0
+                </div>
+                <Label color={C.teal} style={{ marginTop: 2, letterSpacing: '0.16em' }}>
+                  {activeTab.code} · {activeTab.label}
+                </Label>
+              </div>
+            </div>
+          </div>
 
-      {/* BOTTOM RESPONSIBILITY BAR — always present */}
-      <footer style={{
-        display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 14,
-        padding: '0 20px',
-        background: `linear-gradient(180deg, ${T.panel} 0%, ${T.void} 100%)`,
-        borderTop: `1px solid ${T.line2}`,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Activity size={12} color={T.tealBright} />
-          <Mono color={T.tealBright} size={9}>SYSTEM STATEMENT</Mono>
-        </div>
-        <div style={{ fontFamily: T.head, fontSize: 12, fontWeight: 700, color: T.bone, letterSpacing: '0.02em', textAlign: 'center' }}>
-          We are <span style={{ color: T.error }}>fully responsible for compliance</span> regardless of architecture.
-          <span style={{ color: T.ash }}> · </span>
-          SaaS does <span style={{ color: T.error }}>not</span> make us compliant.
-          <span style={{ color: T.ash }}> · </span>
-          The vendor operates. The organization answers.
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-          <Mono color={T.fog} size={9}>SOURCES · FILES 01–17</Mono>
-          <Server size={12} color={T.fog} />
-        </div>
-      </footer>
+          {/* Right: status + controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Liability indicator */}
+            <div style={{
+              ...rise(80),
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '5px 12px', background: C.sw, border: `1px solid ${C.orange}33`, borderRadius: 6,
+            }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.orange, animation: 'bradPulse 2.4s ease-in-out infinite' }} />
+              <Label color={C.orange} style={{ letterSpacing: '0.12em' }}>Org Liability</Label>
+              <div style={{ fontFamily: C.H, fontSize: 13, fontWeight: 700, color: C.orange }}>100%</div>
+            </div>
+
+            {/* Classification tag */}
+            <div style={{ ...rise(100), display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', background: C.tealTint, border: `1px solid ${C.teal}33`, borderRadius: 6 }}>
+              <ShieldCheck size={12} color={C.teal} />
+              <Label color={C.teal} style={{ letterSpacing: '0.12em' }}>PHI · HIPAA</Label>
+            </div>
+
+            {/* Audit mode toggle */}
+            <button
+              type="button" onClick={() => setAudit(v => !v)}
+              style={{
+                ...rise(120),
+                display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px',
+                borderRadius: 6, cursor: 'pointer',
+                background: audit ? C.teal : 'transparent',
+                color: audit ? '#fff' : C.t2,
+                border: `1px solid ${audit ? C.teal : C.b0}`,
+                fontFamily: C.H, fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase',
+                transition: 'all 120ms ease-out',
+              }}
+              onMouseEnter={e => { if (!audit) { e.currentTarget.style.borderColor = C.teal; e.currentTarget.style.color = C.teal; } }}
+              onMouseLeave={e => { if (!audit) { e.currentTarget.style.borderColor = C.b0; e.currentTarget.style.color = C.t2; } }}
+            >
+              {audit ? <Eye size={11} /> : <EyeOff size={11} />}
+              Audit {audit ? 'On' : 'Off'}
+            </button>
+
+            {/* Docs source */}
+            <div style={{ ...rise(140), display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Server size={11} color={C.t2} />
+              <Label color={C.t2} style={{ letterSpacing: '0.1em' }}>Files 01–17</Label>
+            </div>
+          </div>
+        </header>
+
+        {/* ── TAB BAR ──────────────────────────────────────────────── */}
+        <nav style={{
+          display: 'flex', alignItems: 'stretch',
+          background: C.s0, borderBottom: `1px solid ${C.b0}`,
+          padding: '0 16px', gap: 2, overflowX: 'auto',
+        }}>
+          {TABS.map((t, i) => {
+            const active = t.id === tab;
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.id} type="button" onClick={() => setTab(t.id)}
+                style={{
+                  ...rise(i * 30),
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  padding: '0 14px', cursor: 'pointer',
+                  background: 'transparent', border: 'none',
+                  borderBottom: `2px solid ${active ? C.teal : 'transparent'}`,
+                  color: active ? C.teal : C.t2,
+                  fontFamily: C.H, fontSize: 10.5, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
+                  transition: 'color 120ms ease-out, border-color 120ms ease-out, background 120ms ease-out',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.color = C.t0; e.currentTarget.style.borderBottomColor = `${C.teal}44`; } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.color = C.t2; e.currentTarget.style.borderBottomColor = 'transparent'; } }}
+              >
+                <Icon size={12} color={active ? C.teal : C.t2} style={{ transition: 'color 120ms' }} />
+                <span style={{ fontWeight: 700, color: active ? C.teal : C.t2, transition: 'color 120ms' }}>{t.code}</span>
+                <span>{t.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* ── CONTENT ──────────────────────────────────────────────── */}
+        <main style={{ position: 'relative', overflow: 'hidden', padding: 16, background: C.vp }}>
+          <div key={tab} style={{ height: '100%', animation: 'bradRise 200ms cubic-bezier(0.16, 1, 0.3, 1) both' }}>
+            {renderTab()}
+          </div>
+          <Drawer tile={drawer} onClose={() => setDrawer(null)} />
+        </main>
+
+        {/* ── FOOTER ───────────────────────────────────────────────── */}
+        <footer style={{
+          display: 'grid', gridTemplateColumns: '1fr auto 1fr',
+          alignItems: 'center', gap: 16, padding: '0 20px',
+          background: C.s0, borderTop: `1px solid ${C.b0}`,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Activity size={11} color={C.teal} />
+            <Label color={C.teal} style={{ letterSpacing: '0.12em' }}>System Statement</Label>
+          </div>
+          <div style={{ fontFamily: C.B, fontSize: 11, fontWeight: 500, color: C.t1, textAlign: 'center', letterSpacing: '0.01em' }}>
+            We are <span style={{ color: C.risk, fontWeight: 600 }}>fully responsible for compliance</span> regardless of architecture.
+            <span style={{ color: C.b1 }}> · </span>
+            SaaS does <span style={{ color: C.risk }}>not</span> make us compliant.
+            <span style={{ color: C.b1 }}> · </span>
+            The vendor operates. The organization answers.
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+            <Label color={C.t2} style={{ letterSpacing: '0.1em' }}>Sources · Files 01–17</Label>
+            <Server size={11} color={C.t2} />
+          </div>
+        </footer>
+
+      </div>
     </div>
   );
 }

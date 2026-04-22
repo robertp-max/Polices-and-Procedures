@@ -1,34 +1,125 @@
 /* ========================================================================
-PROMPT FOR CLAUDE / DEVELOPER:
-"Care Indeed Light-Mode policy viewer. Single-card, flattened layout —
-no card-on-card. All content (header, meta row, tabs and content sections)
-lives on ONE main white card so the aesthetic matches the rest of the
-app (see images 1–5). Sub-content uses soft tinted tiles (FAFBF8 or
-F7FEFF) only when hierarchy needs the accent, never full-weight cards.
+   CARE INDEED POLICY VIEWER
+   - Clean "No Islands" Flat Design
+   - Strict Typography (Montserrat / Roboto)
+   - Updated Form Section Headers & Removed Extraneous Lines
+   ======================================================================== */
 
-Adds three tabs beyond the original seven to mirror the shipped product:
-Policy Alerts, FAQ, and Amendment Log.
-
-Brand Kit:
-- Primary Actions / Borders:   Teal     #007970
-- Warnings / Critical:         Orange   #C74601
-- Text:                        Headings #1F1C1B  / Labels #524048
-- Surfaces:                    White    #FFFFFF  / Cream  #FAFBF8 / Teal tint #E5FEFF
-
-CRITICAL: Make policy cross-references render as hyperlinks; keep all
-existing appendix-form integration points ('A' through 'G') intact."
-========================================================================
-*/
 import React, { useState } from 'react';
-import {
-  FileText, Shield, Search, CheckCircle, BookOpen, AlertTriangle,
-  Settings, List, CheckSquare, Info, LayoutList, ChevronRight, ChevronDown,
+import { 
+  FileText, Shield, Search, CheckCircle, BookOpen, AlertTriangle, 
+  Settings, List, CheckSquare, Info, LayoutList, ChevronRight, 
   Archive, FileLock2, Award, Printer, ExternalLink, ChevronLeft, Download,
-  Bell, HelpCircle, History,
+  Plus, Trash2, Save, Calendar, User, Clock, AlertCircle,
+  Building2, Briefcase, HeartPulse
 } from 'lucide-react';
 
 // ==========================================
-// DATA STRUCTURES (100% QA Audited Content)
+// ORG CHART TREE COMPONENTS
+// ==========================================
+
+const TreeRow = ({ children }) => {
+  const count = React.Children.count(children);
+  return (
+    <div className="flex flex-row justify-center items-start w-full">
+      {React.Children.map(children, (child, index) => {
+        const isFirst = index === 0;
+        const isLast = index === count - 1;
+        const isOnly = count === 1;
+        return (
+          <div className="relative flex flex-col items-center px-4 sm:px-6">
+            {!isOnly && (
+              <>
+                <div className={`absolute top-0 h-8 w-1/2 left-0 ${!isFirst ? 'border-t-2 border-[#E5E4E3]' : ''}`} />
+                <div className={`absolute top-0 h-8 w-1/2 right-0 ${!isLast ? 'border-t-2 border-[#E5E4E3]' : ''}`} />
+              </>
+            )}
+            <div className="absolute top-0 w-[2px] h-8 bg-[#E5E4E3]" />
+            <div className="mt-8 z-10 w-full flex justify-center">{child}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const TreeNode = ({ card, children }) => (
+  <div className="flex flex-col items-center">
+    <div className="z-10">{card}</div>
+    {children && (
+      <>
+        <div className="w-[2px] h-8 bg-[#E5E4E3]"></div>
+        <TreeRow>{children}</TreeRow>
+      </>
+    )}
+  </div>
+);
+
+const OrgGoverningBodyCard = () => (
+  <div className="bg-[#007970] rounded-[20px] p-6 w-72 text-center flex flex-col items-center justify-center relative overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-[#004142]/20 hover:-translate-y-1">
+    <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/10 rounded-full blur-2xl"></div>
+    <Building2 size={24} className="text-[#E5FEFF] mb-3 opacity-90" />
+    <h2 className="text-white font-montserrat font-bold text-[15px] tracking-[0.15em] mb-3">GOVERNING BODY</h2>
+    <div className="bg-[#E5FEFF] text-[#007970] rounded-full px-4 py-1.5 text-[10px] font-montserrat font-bold tracking-widest uppercase shadow-sm">
+      Ultimate Legal Authority
+    </div>
+  </div>
+);
+
+const OrgAdministratorCard = () => (
+  <div className="bg-[#C74601] rounded-[20px] p-5 w-60 text-center shadow-md relative overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-[#421700]/10">
+    <div className="flex justify-center mb-2">
+      <div className="bg-white/20 p-2 rounded-full text-white"><User size={18} /></div>
+    </div>
+    <h3 className="text-white font-montserrat font-bold text-[13px] tracking-widest mb-3">ADMINISTRATOR</h3>
+    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#FFD5BF]/50 pb-1.5 text-white focus:outline-none focus:border-white transition-colors bg-transparent placeholder-white/70 font-roboto text-sm" />
+  </div>
+);
+
+const OrgComplianceCard = () => (
+  <div className="bg-white rounded-[20px] p-5 w-60 text-center shadow-sm border border-[#E5E4E3] flex flex-col hover:border-[#1F1C1B]/30 hover:shadow-md transition-all duration-300 group">
+    <div className="flex justify-center mb-2">
+      <div className="bg-[#FAFBF8] border border-[#E5E4E3] p-2 rounded-full text-[#524D4B]"><Briefcase size={18} /></div>
+    </div>
+    <h3 className="font-montserrat font-bold text-[#1F1C1B] text-[12px] tracking-widest mb-3">COMPLIANCE OFFICER</h3>
+    <input type="text" placeholder="Enter Name..." className="mt-auto w-full text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#C74601] transition-colors bg-transparent placeholder-[#747470] font-roboto text-sm" />
+  </div>
+);
+
+const OrgClinicalCard = () => (
+  <div className="bg-white rounded-[14px] p-5 w-56 text-center border border-[#E5E4E3] flex flex-col hover:border-[#007970]/50 hover:shadow-md transition-all duration-300 group">
+    <h4 className="font-montserrat font-bold text-[#007970] text-[11px] tracking-widest mb-4">CLINICAL MANAGER</h4>
+    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#007970] transition-colors bg-transparent placeholder-[#747470] mb-4 font-roboto text-sm" />
+    <div className="mt-auto bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg py-2 px-2 text-[10px] font-medium tracking-wide text-[#524D4B] font-roboto">
+      RN, PT, OT, ST, MSW, CHHA
+    </div>
+  </div>
+);
+
+const OrgMedicalDirectorCard = () => (
+  <div className="bg-white rounded-[14px] p-5 w-56 text-center border border-[#E5E4E3] flex flex-col hover:border-[#004142]/50 hover:shadow-md transition-all duration-300 group">
+    <div className="bg-[#004142] text-white rounded-lg py-1.5 px-3 mb-4 mx-auto shadow-sm flex items-center space-x-1.5">
+      <HeartPulse size={12} />
+      <h4 className="font-montserrat font-bold text-[10px] tracking-widest uppercase">MEDICAL DIRECTOR</h4>
+    </div>
+    <input type="text" placeholder="Enter Name..." className="w-full mt-auto text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#004142] transition-colors bg-transparent placeholder-[#747470] text-sm font-roboto" />
+  </div>
+);
+
+const OrgBusinessOpsCard = () => (
+  <div className="bg-white rounded-[14px] p-5 w-56 text-center border border-[#E5E4E3] flex flex-col hover:border-[#1F1C1B]/40 hover:shadow-md transition-all duration-300 group">
+    <div className="bg-[#1F1C1B] text-white rounded-lg py-1.5 px-3 mb-4 mx-auto shadow-sm">
+      <h4 className="font-montserrat font-bold text-[10px] tracking-widest uppercase">BUSINESS OPS</h4>
+    </div>
+    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#1F1C1B] transition-colors bg-transparent placeholder-[#747470] mb-4 text-sm font-roboto" />
+    <div className="mt-auto bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg py-2 px-2 text-[10px] font-medium tracking-wide text-[#524D4B] font-roboto">
+      HR, Finance, Intake, Scheduling
+    </div>
+  </div>
+);
+
+// ==========================================
+// DATA STRUCTURES (100% Preserved)
 // ==========================================
 
 const POLICY_META = {
@@ -36,6 +127,11 @@ const POLICY_META = {
   title: "Governing Body Authority & Responsibilities",
   domain: "GV — Governance & Administration",
   subdomain: "GB — Governing Body",
+  classificationTier: "REQUIRED",
+  status: "ACTIVE",
+  reviewCycle: "Annual",
+  accessTier: "Tier 4 — Privileged",
+  policyOwner: "Governing Body",
   version: "6.0",
   effective: "2025-07-10",
   approvedBy: "Governing Body Chair — Care Indeed Home Health Care, Inc.",
@@ -176,124 +272,76 @@ const COMPLIANCE_83 = [
 
 const REFERENCES_9 = {
   federal: [
-    ["42 CFR § 484.2", "Definitions", "Defines 'governing body' and key terms for home health agencies."],
-    ["42 CFR § 484.105", "Condition of Participation: Organization and Administration of Services", "Primary regulatory basis for this policy. Requires a governing body with full legal authority for agency operation and management."],
-    ["42 CFR § 484.105(a)", "Standard: Governing body", "Mandates governing body responsibility for agency operations, appointment of administrator, and oversight of services."],
-    ["42 CFR § 484.105(b)", "Standard: Administrator", "Requires appointment of a qualified administrator responsible to the governing body."],
-    ["42 CFR § 484.105(c)", "Standard: Clinical manager", "Requires designation of a qualified clinical manager for oversight of clinical services."],
-    ["42 CFR § 484.60", "Condition of Participation: Care planning, coordination, and quality of care", "Governing body accountability for ensuring care planning and quality."],
-    ["42 CFR § 484.65", "Condition of Participation: Quality assessment and performance improvement (QAPI)", "Governing body must ensure an effective QAPI program."],
-    ["42 CFR § 484.70", "Condition of Participation: Infection prevention and control", "Governing body oversight of infection prevention."],
-    ["42 CFR § 484.100", "Condition of Participation: Compliance with Federal, State, and local laws", "Governing body must ensure full legal compliance."],
-    ["42 CFR § 484.102", "Condition of Participation: Emergency preparedness", "Governing body must approve emergency preparedness plan."],
-    ["42 CFR § 484.110", "Condition of Participation: Clinical records", "Governing body oversight of clinical records policies."]
+    ["42 CFR § 484.2", "Definitions", "Defines 'governing body' and key terms for home health agencies.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-A/section-484.2"],
+    ["42 CFR § 484.105", "Condition of Participation: Organization and Administration of Services", "Primary regulatory basis for this policy. Requires a governing body with full legal authority for agency operation and management.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105"],
+    ["42 CFR § 484.105(a)", "Standard: Governing body", "Mandates governing body responsibility for agency operations, appointment of administrator, and oversight of services.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105#p-484.105(a)"],
+    ["42 CFR § 484.105(b)", "Standard: Administrator", "Requires appointment of a qualified administrator responsible to the governing body.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105#p-484.105(b)"],
+    ["42 CFR § 484.105(c)", "Standard: Clinical manager", "Requires designation of a qualified clinical manager for oversight of clinical services.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105#p-484.105(c)"],
+    ["42 CFR § 484.60", "Condition of Participation: Care planning, coordination, and quality of care", "Governing body accountability for ensuring care planning and quality.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-B/section-484.60"],
+    ["42 CFR § 484.65", "Condition of Participation: Quality assessment and performance improvement (QAPI)", "Governing body must ensure an effective QAPI program.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-B/section-484.65"],
+    ["42 CFR § 484.70", "Condition of Participation: Infection prevention and control", "Governing body oversight of infection prevention.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-B/section-484.70"],
+    ["42 CFR § 484.100", "Condition of Participation: Compliance with Federal, State, and local laws", "Governing body must ensure full legal compliance.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.100"],
+    ["42 CFR § 484.102", "Condition of Participation: Emergency preparedness", "Governing body must approve emergency preparedness plan.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.102"],
+    ["42 CFR § 484.110", "Condition of Participation: Clinical records", "Governing body oversight of clinical records policies.", "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.110"]
   ],
   crossRef: [
-    ["GV-OG-001", "Organizational Structure & Reporting", "Governing Body approves organizational structure."],
-    ["GV-OG-002", "Administrator Qualifications & Responsibilities", "Governing Body appoints and evaluates Administrator."],
-    ["GV-OG-003", "Scope of Services Definition", "Governing Body approves scope of services."],
-    ["GV-OG-004", "Strategic Planning & Annual Goals", "Governing Body approves strategic plan."],
-    ["GV-OG-005", "Delegation of Authority", "Governs limits of Governing Body delegation."],
-    ["GV-PM-001", "Policy Development & Approval Process", "Governing Body approves REQUIRED-tier policies."],
-    ["GV-PM-002", "Policy Review & Revision Cycle", "Governing Body ensures policy review cycle."],
-    ["GV-PM-003", "Policy Acknowledgment & Staff Attestation", "Staff acknowledgment of this and all policies."],
-    ["GV-GB-002", "Board Meeting & Minutes Requirements", "Details meeting documentation standards."],
-    ["GV-GB-003", "Conflict of Interest Disclosure", "Governs member conflict disclosures."],
-    ["GV-GB-004", "Succession Planning for Key Leadership", "Governing Body reviews succession plan."],
-    ["GV-GB-005", "Annual Governance Self-Assessment", "Governing Body self-assessment tool."],
-    ["GV-EA-004", "Agency Licensure & Certification Maintenance", "Governing Body ensures licensure/certification currency."],
-    ["GV-EA-005", "Agency Closure or Change of Ownership", "Governing Body directs CHOW process."],
-    ["QA-PG-001", "QAPI Program Establishment & Governance", "Governing Body oversees QAPI program."],
-    ["QA-PG-002", "QAPI Plan Development & Annual Review", "Governing Body approves QAPI plan."],
-    ["QA-AE-003", "Corrective Action Plan Development & Tracking", "Escalation path for governance deficiencies."],
-    ["QA-SM-004", "Home Health Compare & Star Rating Monitoring", "Data reported to Governing Body quarterly."],
-    ["CO-CP-001", "Corporate Compliance Program", "Governing Body oversees compliance program."],
-    ["CO-CP-002", "Compliance Officer Designation & Authority", "Governing Body appoints Compliance Officer."],
-    ["CO-CP-005", "Whistleblower Protection & Non-Retaliation", "Governing Body ensures non-retaliation."],
-    ["CO-CP-007", "Compliance Investigation Process", "Governing Body directs investigations."],
-    ["CO-HP-007", "Record Retention & Destruction", "Retention standards for governance records."],
-    ["FN-FP-005", "Annual Budget & Financial Planning", "Governing Body approves budget."],
-    ["HR-TA-003", "OIG/SAM Exclusion Screening", "Screening of Governing Body members."],
-    ["OP-FM-005", "Emergency Operations & Business Continuity", "Governing Body approves emergency plan."],
-    ["EN-TG-001", "Enterprise Policy Taxonomy & Classification Governance", "Framework under which this policy is classified."]
+    ["GV-OG-001", "Organizational Structure & Reporting", "Governing Body approves organizational structure.", "https://example.com/policies/gv-og-001"],
+    ["GV-OG-002", "Administrator Qualifications & Responsibilities", "Governing Body appoints and evaluates Administrator.", "https://example.com/policies/gv-og-002"],
+    ["GV-OG-003", "Scope of Services Definition", "Governing Body approves scope of services.", "https://example.com/policies/gv-og-003"],
+    ["GV-OG-004", "Strategic Planning & Annual Goals", "Governing Body approves strategic plan.", "https://example.com/policies/gv-og-004"],
+    ["GV-OG-005", "Delegation of Authority", "Governs limits of Governing Body delegation.", "https://example.com/policies/gv-og-005"],
+    ["GV-PM-001", "Policy Development & Approval Process", "Governing Body approves REQUIRED-tier policies.", "https://example.com/policies/gv-pm-001"],
+    ["GV-PM-002", "Policy Review & Revision Cycle", "Governing Body ensures policy review cycle.", "https://example.com/policies/gv-pm-002"],
+    ["GV-PM-003", "Policy Acknowledgment & Staff Attestation", "Staff acknowledgment of this and all policies.", "https://example.com/policies/gv-pm-003"],
+    ["GV-GB-002", "Board Meeting & Minutes Requirements", "Details meeting documentation standards.", "https://example.com/policies/gv-gb-002"],
+    ["GV-GB-003", "Conflict of Interest Disclosure", "Governs member conflict disclosures.", "https://example.com/policies/gv-gb-003"],
+    ["GV-GB-004", "Succession Planning for Key Leadership", "Governing Body reviews succession plan.", "https://example.com/policies/gv-gb-004"],
+    ["GV-GB-005", "Annual Governance Self-Assessment", "Governing Body self-assessment tool.", "https://example.com/policies/gv-gb-005"],
+    ["GV-EA-004", "Agency Licensure & Certification Maintenance", "Governing Body ensures licensure/certification currency.", "https://example.com/policies/gv-ea-004"],
+    ["GV-EA-005", "Agency Closure or Change of Ownership", "Governing Body directs CHOW process.", "https://example.com/policies/gv-ea-005"],
+    ["QA-PG-001", "QAPI Program Establishment & Governance", "Governing Body oversees QAPI program.", "https://example.com/policies/qa-pg-001"],
+    ["QA-PG-002", "QAPI Plan Development & Annual Review", "Governing Body approves QAPI plan.", "https://example.com/policies/qa-pg-002"],
+    ["QA-AE-003", "Corrective Action Plan Development & Tracking", "Escalation path for governance deficiencies.", "https://example.com/policies/qa-ae-003"],
+    ["QA-SM-004", "Home Health Compare & Star Rating Monitoring", "Data reported to Governing Body quarterly.", "https://example.com/policies/qa-sm-004"],
+    ["CO-CP-001", "Corporate Compliance Program", "Governing Body oversees compliance program.", "https://example.com/policies/co-cp-001"],
+    ["CO-CP-002", "Compliance Officer Designation & Authority", "Governing Body appoints Compliance Officer.", "https://example.com/policies/co-cp-002"],
+    ["CO-CP-005", "Whistleblower Protection & Non-Retaliation", "Governing Body ensures non-retaliation.", "https://example.com/policies/co-cp-005"],
+    ["CO-CP-007", "Compliance Investigation Process", "Governing Body directs investigations.", "https://example.com/policies/co-cp-007"],
+    ["CO-HP-007", "Record Retention & Destruction", "Retention standards for governance records.", "https://example.com/policies/co-hp-007"],
+    ["FN-FP-005", "Annual Budget & Financial Planning", "Governing Body approves budget.", "https://example.com/policies/fn-fp-005"],
+    ["HR-TA-003", "OIG/SAM Exclusion Screening", "Screening of Governing Body members.", "https://example.com/policies/hr-ta-003"],
+    ["OP-FM-005", "Emergency Operations & Business Continuity", "Governing Body approves emergency plan.", "https://example.com/policies/op-fm-005"],
+    ["EN-TG-001", "Enterprise Policy Taxonomy & Classification Governance", "Framework under which this policy is classified.", "https://example.com/policies/en-tg-001"]
   ]
 };
 
-const POLICY_ALERTS = [
-  { severity: "critical", date: "2025-12-01", source: "Federal Register Vol 90", title: "CMS Proposed Rule — HHA Governing Body Requirements", detail: "CMS has published a proposed rule (CMS-1892-P) that would expand documentation requirements for HHA Governing Bodies, including mandatory annual composition reviews and competency attestations. Comment period closes 2026-02-15. Review proposed changes against GV-GB-001 §6.1." },
-  { severity: "warning",  date: "2025-11-15", source: "California HCAI/CDPH",    title: "California AB 2029 — HHA Board Composition", detail: "AB 2029 pending HCAI implementation guidance would require at least one independent clinical professional on the Governing Body of Medicare-certified HHAs in California. Monitor HCAI bulletins for implementation dates." },
-  { severity: "info",     date: "2025-11-01", source: "OIG Work Plan FY2026",    title: "OIG Work Plan — Governing Body Oversight Practices", detail: "The OIG FY2026 Work Plan includes a review of Governing Body documentation practices at Medicare-certified HHAs. Ensure GV-GB-001 Appendix A (Roster) and Appendix D (Minutes) are complete and current." },
-  { severity: "info",     date: "2025-09-01", source: "HCAI / CDPH",              title: "HCAI / CDPH — Licensure & Multi-Agency Oversight", detail: "California home health licensure (HCAI) and public health oversight (CDPH) operate alongside Medicare certification. When license numbers, service areas, or ownership change, verify GV-EA-004 and Governing Body minutes document review." },
-  { severity: "warning",  date: "2025-08-15", source: "CMS SOM Appendix B",       title: "CMS Emergency Preparedness (42 CFR § 484.102)", detail: "Surveyors routinely verify Governing Body approval of the emergency plan and evidence of drill critique. Align OP-FM-005 documentation with §6.2.6 and ensure quarterly meeting minutes reflect review when required." },
-];
-
-const POLICY_FAQ = [
-  { q: "Can a single individual serve as both the Administrator and a Governing Body voting member?",
-    a: "Yes — 42 CFR § 484.105(b) permits the Administrator to serve as a Governing Body member. However, the Administrator alone cannot constitute quorum, and any votes on Administrator compensation, performance, or termination must be handled by non-Administrator members. Conflicts of interest must be disclosed per GV-GB-003." },
-  { q: "What is required if we cannot achieve quorum at a scheduled quarterly meeting?",
-    a: "Per §6.3.5 the meeting shall be rescheduled within 14 calendar days. If quorum is not achieved for 2 consecutive scheduled meetings, escalate per §6.5 (membership recruitment or replacement per the agency's bylaws; issue resolved before the next scheduled meeting)." },
-  { q: "Does every Governing Body member need OIG/SAM exclusion screening?",
-    a: "Yes. Per §6.1.4 and policy HR-TA-003 the Compliance Officer verifies that no Governing Body member appears on the OIG LEIE or SAM exclusion database at appointment and monthly thereafter. Retain screening evidence for the minimum CMS record retention period." },
-  { q: "How many members are required on the Governing Body?",
-    a: "42 CFR § 484.105(a) does not prescribe a minimum number. The agency's establishing document (articles / operating agreement / bylaws) must identify the minimum and maximum number of members and the quorum requirement. Competency coverage in §6.1.3 (healthcare operations, financial management, regulatory compliance) must be satisfied — use advisory counsel within 30 days when any competency is not represented." },
-];
-
-const AMENDMENT_LOG = [
-  { version: "6.0", date: "2025-07-10", author: "Compliance Officer", current: true,
-    summary: "Major comprehensive version — added §2.6 (Emergency Preparedness oversight); expanded §6.4 (Conflict of Interest); restructured all appendices into interactive digital forms (Appendix A–G). Aligned with updated OIG HHA Compliance Program Guidance (Nov 2023) and CMS SOM Appendix B 2024 update.",
-    sections: "§4.1, §6.2.6, §6.4, All Appendices A–G" },
-  { version: "5.1", date: "2024-11-15", author: "Governing Body Chair", current: false,
-    summary: "Minor update — clarified quorum requirements in §6.3 to align with revised agency bylaws; added GV-GB-005 cross-reference; updated Section 11 version control table.",
-    sections: "§6.3, §6.4, §11" },
-  { version: "5.0", date: "2024-07-01", author: "Administrator", current: false,
-    summary: "Annual review — no substantive policy changes. Updated effective date, review dates, and regulatory citations to reflect current 42 CFR §484 regulations.",
-    sections: "All metadata fields" },
-  { version: "4.2", date: "2023-10-12", author: "Compliance Officer", current: false,
-    summary: "Emergency update — added monthly OIG/SAM exclusion screening requirement for all Governing Body members per updated OIG Compliance Program Guidance for HHAs issued October 2023.",
-    sections: "§6.1.4 (new), §7, Appendix A" },
-];
-
 // ==========================================
-// UI COMPONENTS — Flattened (no card-on-card)
+// CLEAN FLAT UI COMPONENTS
 // ==========================================
 
-// Section container lives DIRECTLY on the main card. No wrapper shadow/border.
-// Use `Surface` only for internal tinted sub-tiles (definitions grid, alerts).
-const Section = ({ children, className = "" }) => (
-  <section className={`mb-10 ${className}`}>{children}</section>
-);
-
-const Surface = ({ children, tone = "cream", className = "" }) => {
-  const bg =
-    tone === "cream" ? "bg-[#FAFBF8] border-[#E5E4E3]" :
-    tone === "teal"  ? "bg-[#E5FEFF] border-[#007970]/20" :
-    tone === "amber" ? "bg-[#FFEEE5] border-[#FFD5BF]"  :
-                       "bg-white border-[#E5E4E3]";
-  return <div className={`border rounded-xl ${bg} ${className}`}>{children}</div>;
-};
-
-const SectionTitle = ({ icon: Icon, title, color = "text-[#007970]" }) => (
-  <h2 className={`font-montserrat text-[20px] font-bold flex items-center mb-5 ${color}`}>
-    {Icon && <Icon className="mr-3" size={22} />}
-    {title}
+const SectionTitle = ({ icon: Icon, title, color = "text-[#1F1C1B]" }) => (
+  <h2 className={`font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase mb-8 flex items-center gap-4 w-full ${color}`}>
+    {Icon && <Icon className="shrink-0 text-[#007970]" size={20} />}
+    <span className="shrink-0">{title}</span>
+    <span className="flex-grow h-px bg-[#007970]"></span>
   </h2>
 );
 
 const SimpleTable = ({ headers, rows }) => (
-  <div className="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-[#E5E4E3] shadow-sm mb-6 bg-white">
+  <div className="w-full overflow-x-auto overflow-y-hidden mb-10 border-y border-[#E5E4E3]">
     <table className="w-full text-left border-collapse min-w-max">
       <thead>
-        <tr className="bg-[#FAFBF8] text-[#524048]">
+        <tr>
           {headers.map((h, i) => (
-            <th key={i} className="p-4 font-montserrat font-bold text-[13px] tracking-wider uppercase border-b border-[#E5E4E3]">{h}</th>
+            <th key={i} className="py-4 px-3 font-montserrat font-semibold text-[11px] tracking-[0.12em] uppercase text-[#524048] border-b border-[#E5E4E3]">{h}</th>
           ))}
         </tr>
       </thead>
       <tbody className="divide-y divide-[#E5E4E3]">
         {rows.map((row, i) => (
-          <tr key={i} className="hover:bg-[#F7FEFF] transition-colors">
+          <tr key={i} className="hover:bg-[#FAFBF8] transition-colors">
             {row.map((cell, j) => (
-              <td key={j} className={`p-4 text-[#1F1C1B] font-roboto text-sm align-top leading-relaxed whitespace-pre-line break-words ${j === 0 ? 'font-medium' : ''}`}>
+              <td key={j} className={`py-4 px-3 text-[#1F1C1B] font-roboto text-[14px] align-top leading-relaxed whitespace-pre-line break-words ${j === 0 ? 'font-medium' : ''}`}>
                 {cell}
               </td>
             ))}
@@ -307,9 +355,9 @@ const SimpleTable = ({ headers, rows }) => (
 const TabButton = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-3 font-montserrat font-bold text-sm transition-all duration-200 whitespace-nowrap border-b-[3px] ${
+    className={`px-5 py-3 font-montserrat font-semibold text-[13px] transition-all duration-200 whitespace-nowrap border-b-[3px] ${
       active 
-        ? 'text-[#007970] border-[#007970]' 
+        ? 'text-[#C74601] border-[#C74601]' 
         : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
     }`}
   >
@@ -317,54 +365,531 @@ const TabButton = ({ active, onClick, children }) => (
   </button>
 );
 
+// Form Building Blocks
+const FormInput = ({ label, required, ...props }) => (
+  <div className="mb-4 w-full">
+    <label className="text-[#52404B] font-montserrat font-semibold text-[11px] uppercase tracking-[0.12em] leading-tight mb-2 block">
+      {label} {required && <span className="text-[#C74601]">*</span>}
+    </label>
+    <input 
+      className="w-full h-11 border border-[#E5E4E3] rounded-[8px] px-3 font-roboto text-[14px] text-[#1F1C1B] focus:border-[#007970] focus:ring-1 focus:ring-[#007970] outline-none transition-all bg-white"
+      {...props}
+    />
+  </div>
+);
+
+const FormTextarea = ({ label, required, ...props }) => (
+  <div className="mb-4 w-full">
+    <label className="text-[#52404B] font-montserrat font-semibold text-[11px] uppercase tracking-[0.12em] leading-tight mb-2 block">
+      {label} {required && <span className="text-[#C74601]">*</span>}
+    </label>
+    <textarea 
+      className="w-full border border-[#E5E4E3] rounded-[8px] p-3 font-roboto text-[14px] text-[#1F1C1B] focus:border-[#007970] focus:ring-1 focus:ring-[#007970] outline-none transition-all bg-white min-h-[100px]"
+      {...props}
+    />
+  </div>
+);
+
+const PrimaryButton = ({ children, onClick, icon: Icon, className="" }) => (
+  <button 
+    onClick={onClick}
+    className={`flex items-center justify-center gap-2 bg-[#007970] text-white hover:bg-[#004142] px-6 py-3 rounded-[8px] font-semibold font-montserrat shadow-sm transition-colors ${className}`}
+  >
+    {Icon && <Icon size={18} />}
+    {children}
+  </button>
+);
+
+// ==========================================
+// APPENDIX FORMS (INTERACTIVE)
+// ==========================================
+
+const FormSuccessMessage = ({ show, message = "Saved successfully!" }) => {
+  if (!show) return null;
+  return (
+    <div className="bg-white border-l-[3px] border-[#007970] text-[#007970] py-2 pl-4 flex items-center mb-6 animate-fadeIn font-medium text-sm">
+      <CheckCircle className="mr-3 flex-shrink-0" size={20} />
+      {message}
+    </div>
+  );
+};
+
+const AppendixA_Roster = () => {
+  const [members, setMembers] = useState([
+    { id: 1, name: "Jane Doe", role: "Chair", date: "2023-01-15", term: "2026-01-15", voting: "Yes", contact: "jane.doe@example.com" }
+  ]);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const addMember = () => setMembers([...members, { id: Date.now(), name: "", role: "", date: "", term: "", voting: "Yes", contact: "" }]);
+  const removeMember = (id) => setMembers(members.filter(m => m.id !== id));
+  const updateMember = (id, field, value) => setMembers(members.map(m => m.id === id ? { ...m, [field]: value } : m));
+  const handleSave = () => { setShowSuccess(true); setTimeout(() => setShowSuccess(false), 3000); };
+
+  return (
+    <div className="animate-fadeIn w-full bg-white">
+      <div className="mb-8">
+        <div className="flex justify-between items-center gap-4 mb-2 w-full">
+          <h3 className="font-montserrat text-[13px] font-semibold text-[#1F1C1B] tracking-[0.22em] uppercase shrink-0">Appendix A: Governing Body Roster</h3>
+          <div className="flex-grow h-px bg-[#007970]"></div>
+          <button onClick={addMember} className="shrink-0 text-[#007970] hover:bg-[#FAFBF8] px-4 py-2 rounded-[8px] font-semibold text-[13px] transition-colors flex items-center gap-2 border border-[#E5E4E3]">
+            <Plus size={16} /> Add Member
+          </button>
+        </div>
+      </div>
+      
+      <FormSuccessMessage show={showSuccess} message="Roster updated successfully." />
+
+      <div className="overflow-x-auto w-full mb-8 border-y border-[#E5E4E3]">
+        <table className="w-full text-left border-collapse min-w-max">
+          <thead>
+            <tr>
+              {['Name', 'Role', 'Appt Date', 'Term Ends', 'Voting?', 'Contact', ''].map(h => (
+                <th key={h} className="py-4 px-3 font-montserrat font-semibold text-[11px] tracking-[0.12em] uppercase text-[#524048] border-b border-[#E5E4E3]">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#E5E4E3]">
+            {members.map(m => (
+              <tr key={m.id} className="bg-white">
+                <td className="p-2"><input className="w-full h-11 border border-[#E5E4E3] rounded-[8px] px-3 font-roboto text-[14px] text-[#1F1C1B] focus:border-[#007970] outline-none" value={m.name} onChange={(e) => updateMember(m.id, 'name', e.target.value)} placeholder="Full Name"/></td>
+                <td className="p-2"><input className="w-full h-11 border border-[#E5E4E3] rounded-[8px] px-3 font-roboto text-[14px] text-[#1F1C1B] focus:border-[#007970] outline-none" value={m.role} onChange={(e) => updateMember(m.id, 'role', e.target.value)} placeholder="Title/Role"/></td>
+                <td className="p-2"><input type="date" className="w-full h-11 border border-[#E5E4E3] rounded-[8px] px-3 font-roboto text-[14px] text-[#1F1C1B] focus:border-[#007970] outline-none" value={m.date} onChange={(e) => updateMember(m.id, 'date', e.target.value)}/></td>
+                <td className="p-2"><input type="date" className="w-full h-11 border border-[#E5E4E3] rounded-[8px] px-3 font-roboto text-[14px] text-[#1F1C1B] focus:border-[#007970] outline-none" value={m.term} onChange={(e) => updateMember(m.id, 'term', e.target.value)}/></td>
+                <td className="p-2">
+                  <select className="w-full h-11 border border-[#E5E4E3] rounded-[8px] px-3 font-roboto text-[14px] text-[#1F1C1B] focus:border-[#007970] outline-none bg-white" value={m.voting} onChange={(e) => updateMember(m.id, 'voting', e.target.value)}>
+                    <option>Yes</option><option>No</option>
+                  </select>
+                </td>
+                <td className="p-2"><input className="w-full h-11 border border-[#E5E4E3] rounded-[8px] px-3 font-roboto text-[14px] text-[#1F1C1B] focus:border-[#007970] outline-none" value={m.contact} onChange={(e) => updateMember(m.id, 'contact', e.target.value)} placeholder="Email / Phone"/></td>
+                <td className="p-2 text-center">
+                  <button onClick={() => removeMember(m.id)} className="text-[#C74601] hover:opacity-70 p-2 transition-opacity"><Trash2 size={16}/></button>
+                </td>
+              </tr>
+            ))}
+            {members.length === 0 && (
+              <tr><td colSpan="7" className="p-6 text-center text-[#524048]">No roster members. Click "Add Member" to begin.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <PrimaryButton onClick={handleSave} icon={Save}>Save Roster</PrimaryButton>
+    </div>
+  );
+};
+
+const AppendixB_COI = () => {
+  const [formData, setFormData] = useState({ name: '', role: '', hasConflict: null, description: '', signature: '', date: '' });
+  const [showSuccess, setShowSuccess] = useState(false);
+  const handleSave = () => { setShowSuccess(true); setTimeout(() => setShowSuccess(false), 3000); };
+
+  return (
+    <div className="animate-fadeIn w-full max-w-3xl">
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-2 w-full">
+          <h3 className="font-montserrat text-[13px] font-semibold text-[#1F1C1B] tracking-[0.22em] uppercase shrink-0">Appendix B: Conflict of Interest Form</h3>
+          <div className="flex-grow h-px bg-[#007970]"></div>
+        </div>
+        <p className="text-[#524048] text-[14px] font-roboto">
+          Must be completed upon appointment, annually, and within 7 days of any new conflict arising.
+        </p>
+      </div>
+
+      <FormSuccessMessage show={showSuccess} message="Disclosure form submitted successfully." />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <FormInput label="Full Name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+        <FormInput label="Role / Title" required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} />
+      </div>
+
+      <div className="mb-10">
+        <div className="flex items-center gap-4 mb-6">
+          <h4 className="font-montserrat font-semibold tracking-[0.22em] uppercase text-[#1F1C1B] text-[13px] shrink-0">Conflict Details</h4>
+          <div className="flex-grow h-px bg-[#007970]"></div>
+        </div>
+        <label className="text-[#1F1C1B] font-semibold text-[14px] font-roboto block mb-4">
+          Do you or any immediate family member have a financial interest, arrangement, or relationship that could constitute a conflict of interest with Care Indeed Home Health Care, Inc.? <span className="text-[#C74601]">*</span>
+        </label>
+        <div className="flex flex-col sm:flex-row gap-6 mb-6">
+          <label className="flex items-center cursor-pointer text-[#1F1C1B] font-roboto text-[15px]">
+            <input type="radio" name="conflict" className="w-5 h-5 text-[#007970] focus:ring-[#007970] border-[#E5E4E3] mr-3" 
+                   checked={formData.hasConflict === false} onChange={() => setFormData({...formData, hasConflict: false})} />
+            No, I have no conflicts to disclose.
+          </label>
+          <label className="flex items-center cursor-pointer text-[#1F1C1B] font-roboto text-[15px]">
+            <input type="radio" name="conflict" className="w-5 h-5 text-[#007970] focus:ring-[#007970] border-[#E5E4E3] mr-3" 
+                   checked={formData.hasConflict === true} onChange={() => setFormData({...formData, hasConflict: true})} />
+            Yes, I have a conflict to disclose.
+          </label>
+        </div>
+
+        {formData.hasConflict && (
+          <div className="animate-fadeIn border-l-[3px] border-[#C74601] pl-6 py-2">
+            <FormTextarea 
+              label="Please describe the nature of the conflict:" required 
+              value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} 
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="mt-12">
+        <div className="flex items-center gap-4 mb-6 w-full">
+          <h3 className="font-montserrat font-semibold text-[13px] text-[#1F1C1B] tracking-[0.22em] uppercase shrink-0">Signatures & Attestation</h3>
+          <div className="flex-grow h-px bg-[#007970]"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <FormInput label="Electronic Signature (Type Name)" required value={formData.signature} onChange={e => setFormData({...formData, signature: e.target.value})} />
+          <FormInput label="Date" type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+        </div>
+      </div>
+
+      <PrimaryButton onClick={handleSave} icon={Save} className="mt-4">Submit Disclosure</PrimaryButton>
+    </div>
+  );
+};
+
+const AppendixC_Ack = () => {
+  const [formData, setFormData] = useState({ checks: [false, false, false], signature: '', date: '' });
+  const [showSuccess, setShowSuccess] = useState(false);
+  const toggleCheck = (index) => {
+    const newChecks = [...formData.checks];
+    newChecks[index] = !newChecks[index];
+    setFormData({...formData, checks: newChecks});
+  };
+  const handleSave = () => { setShowSuccess(true); setTimeout(() => setShowSuccess(false), 3000); };
+
+  const statements = [
+    "I have received, read, and understand the Governing Body Authority & Responsibilities Policy (GV-GB-001).",
+    "I understand my fiduciary duties and ultimate accountability for the agency's quality of care, regulatory compliance, and fiscal operations.",
+    "I agree to comply with all requirements outlined within this policy, including confidentiality, conflict of interest, and meeting attendance requirements."
+  ];
+
+  return (
+    <div className="animate-fadeIn w-full max-w-3xl">
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-2 w-full">
+          <h3 className="font-montserrat text-[13px] font-semibold text-[#1F1C1B] tracking-[0.22em] uppercase shrink-0">Appendix C: Policy Acknowledgment Form</h3>
+          <div className="flex-grow h-px bg-[#007970]"></div>
+        </div>
+        <p className="text-[#524048] font-roboto text-[14px]">
+          By signing below, you attest to your understanding and agreement to the policy terms.
+        </p>
+      </div>
+
+      <FormSuccessMessage show={showSuccess} message="Acknowledgment recorded successfully." />
+
+      <div className="space-y-6 mb-12 pt-4">
+        {statements.map((stmt, i) => (
+          <label key={i} className="flex items-start cursor-pointer group">
+            <input type="checkbox" className="w-5 h-5 mt-0.5 text-[#007970] rounded border-[#E5E4E3] focus:ring-[#007970] mr-5 cursor-pointer" 
+                   checked={formData.checks[i]} onChange={() => toggleCheck(i)} />
+            <span className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed group-hover:text-[#007970] transition-colors">{stmt}</span>
+          </label>
+        ))}
+      </div>
+
+      <div className="mt-12">
+        <div className="flex items-center gap-4 mb-6 w-full">
+          <h3 className="font-montserrat font-semibold text-[13px] text-[#1F1C1B] tracking-[0.22em] uppercase shrink-0">Signatures & Attestation</h3>
+          <div className="flex-grow h-px bg-[#007970]"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <FormInput label="Electronic Signature (Type Name)" required value={formData.signature} onChange={e => setFormData({...formData, signature: e.target.value})} />
+          <FormInput label="Date" type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+        </div>
+      </div>
+
+      <PrimaryButton 
+        onClick={handleSave} 
+        icon={Save} 
+        className={`mt-4 ${!formData.checks.every(c => c) ? 'opacity-50 cursor-not-allowed' : ''}`}
+      >
+        Acknowledge Policy
+      </PrimaryButton>
+    </div>
+  );
+};
+
+const AppendixD_Minutes = () => {
+  const [formData, setFormData] = useState({ date: '', time: '', location: '', attendees: '', absentees: '', quorum: 'Yes', items: [{ title: '', notes: '', action: '' }] });
+  const [showSuccess, setShowSuccess] = useState(false);
+  const addItem = () => setFormData({ ...formData, items: [...formData.items, { title: '', notes: '', action: '' }] });
+  const updateItem = (index, field, value) => {
+    const newItems = [...formData.items];
+    newItems[index][field] = value;
+    setFormData({ ...formData, items: newItems });
+  };
+  const handleSave = () => { setShowSuccess(true); setTimeout(() => setShowSuccess(false), 3000); };
+
+  return (
+    <div className="animate-fadeIn w-full max-w-4xl">
+      <div className="mb-8">
+        <div className="flex justify-between items-center gap-4 mb-2 w-full">
+          <h3 className="font-montserrat text-[13px] font-semibold text-[#1F1C1B] tracking-[0.22em] uppercase shrink-0">Appendix D: Meeting Minutes</h3>
+          <div className="flex-grow h-px bg-[#007970]"></div>
+          <PrimaryButton onClick={handleSave} icon={Save} className="shrink-0">Save Minutes</PrimaryButton>
+        </div>
+        <p className="text-[#524048] text-[14px] font-roboto">Standard template for Governing Body meetings.</p>
+      </div>
+
+      <FormSuccessMessage show={showSuccess} message="Minutes saved to governance records." />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <FormInput label="Meeting Date" type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+        <FormInput label="Time" type="time" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} />
+        <FormInput label="Location / Link" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+        <FormTextarea label="Attendees" rows="2" value={formData.attendees} onChange={e => setFormData({...formData, attendees: e.target.value})} />
+        <div className="space-y-4">
+          <FormInput label="Absentees" value={formData.absentees} onChange={e => setFormData({...formData, absentees: e.target.value})} />
+          <div className="w-full">
+            <label className="text-[#52404B] font-montserrat font-semibold text-[11px] uppercase tracking-[0.12em] leading-tight mb-2 block">Quorum Present?</label>
+            <select className="w-full h-11 border border-[#E5E4E3] bg-white rounded-[8px] px-3 font-roboto text-[14px] text-[#1F1C1B] outline-none focus:border-[#007970]" value={formData.quorum} onChange={e => setFormData({...formData, quorum: e.target.value})}>
+              <option>Yes</option><option>No</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-4">
+        <div className="flex justify-between items-center gap-4 mb-8">
+          <h4 className="font-montserrat font-semibold tracking-[0.22em] uppercase text-[#1F1C1B] text-[13px] shrink-0">Agenda Items & Discussion</h4>
+          <div className="flex-grow h-px bg-[#007970]"></div>
+          <button onClick={addItem} className="text-[13px] font-semibold text-[#007970] hover:underline flex items-center shrink-0"><Plus size={16} className="mr-1"/> Add Item</button>
+        </div>
+
+        {formData.items.map((item, index) => (
+          <div key={index} className="mb-10 pl-6 border-l-[3px] border-[#E5E4E3] focus-within:border-[#007970] transition-colors relative">
+            <div className="absolute top-0 -left-[20px] bg-white text-[#007970] font-semibold font-montserrat w-8 h-8 flex items-center justify-center border border-[#E5E4E3] rounded-full text-[12px]">{index + 1}</div>
+            <FormInput label="Topic / Report Title" value={item.title} onChange={e => updateItem(index, 'title', e.target.value)} />
+            <FormTextarea label="Discussion Notes" rows="3" value={item.notes} onChange={e => updateItem(index, 'notes', e.target.value)} />
+            <FormInput label="Directives / Action Items (Include Responsible Party & Deadline)" value={item.action} onChange={e => updateItem(index, 'action', e.target.value)} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const AppendixE_Checklist = () => {
+  const [showSuccess, setShowSuccess] = useState(false);
+  const sections = [
+    {
+      title: "Quality & Clinical",
+      items: ["Quarterly QAPI Report reviewed", "Clinical Manager presented adverse events", "Patient satisfaction data reviewed", "Home Health Compare / Star Ratings reviewed"]
+    },
+    {
+      title: "Compliance & Risk",
+      items: ["Quarterly Compliance Report reviewed", "OIG/SAM Exclusion logs verified", "Audits & Investigation updates received", "Conflict of Interest disclosures current"]
+    },
+    {
+      title: "Financial & Administrative",
+      items: ["Quarterly Financial Report reviewed", "Budget variance discussed", "Administrator evaluation complete (Annual)", "Emergency Preparedness drill reviewed (Bi-annual)"]
+    }
+  ];
+  const handleSave = () => { setShowSuccess(true); setTimeout(() => setShowSuccess(false), 3000); };
+
+  return (
+    <div className="animate-fadeIn w-full max-w-4xl mx-auto">
+      <div className="mb-8">
+        <div className="flex justify-between items-center gap-4 mb-2 w-full">
+          <h3 className="font-montserrat text-[13px] font-semibold text-[#1F1C1B] tracking-[0.22em] uppercase shrink-0">Appendix E: Quarterly Oversight Checklist</h3>
+          <div className="flex-grow h-px bg-[#007970]"></div>
+          <PrimaryButton onClick={handleSave} icon={Save} className="shrink-0">Save Checklist</PrimaryButton>
+        </div>
+        <p className="text-[#524048] text-[14px] font-roboto mt-1">Use this checklist during meetings to ensure all 42 CFR § 484.105 requirements are met.</p>
+      </div>
+
+      <FormSuccessMessage show={showSuccess} message="Checklist progress saved." />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {sections.map((sec, i) => (
+          <div key={i} className="flex flex-col">
+            <div className="flex items-center gap-4 mb-4">
+              <h4 className="font-montserrat font-semibold text-[#1F1C1B] text-[11px] uppercase tracking-[0.16em] shrink-0">
+                {sec.title}
+              </h4>
+              <div className="flex-grow h-px bg-[#E5E4E3]"></div>
+            </div>
+            <div className="space-y-4">
+              {sec.items.map((item, j) => (
+                <label key={j} className="flex items-start cursor-pointer group">
+                  <input type="checkbox" className="w-5 h-5 mt-0.5 text-[#007970] rounded border-[#E5E4E3] focus:ring-[#007970] mr-3" />
+                  <span className="text-[#1F1C1B] text-[14px] font-roboto group-hover:text-[#007970] transition-colors">{item}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const AppendixF_Calendar = () => (
+  <div className="animate-fadeIn w-full">
+    <div className="mb-10 w-full">
+      <div className="flex items-center gap-4 mb-2 w-full">
+        <Calendar className="text-[#007970] shrink-0" size={20} /> 
+        <h3 className="font-montserrat text-[13px] font-semibold text-[#1F1C1B] tracking-[0.22em] uppercase shrink-0">Appendix F: Annual Calendar</h3>
+        <div className="flex-grow h-px bg-[#007970]"></div>
+      </div>
+      <p className="text-[#524048] text-[14px] font-roboto mt-1">Required cyclical governance tasks by quarter.</p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12 pt-4">
+      {[
+        { q: "Q1", title: "First Quarter (Jan - Mar)", items: ["Approve Annual QAPI Plan", "Review Governance Self-Assessment", "Review updated Scope of Services", "Standard quarterly reports (Compliance, Finance, QAPI)"] },
+        { q: "Q2", title: "Second Quarter (Apr - Jun)", items: ["Review Leadership Succession Plan", "Confirm/Renew Insurance Policies", "Review mid-year budget adjustments", "Standard quarterly reports"] },
+        { q: "Q3", title: "Third Quarter (Jul - Sep)", items: ["Approve Emergency Preparedness Plan", "Review Annual Training completion rates", "Review Agency Licensure/Certification renewals", "Standard quarterly reports"] },
+        { q: "Q4", title: "Fourth Quarter (Oct - Dec)", items: ["Approve Annual Operating Budget for next year", "Administrator Annual Performance Review", "Establish next year's meeting schedule", "Standard quarterly reports"] }
+      ].map((quarter, i) => (
+        <div key={i} className="flex flex-col relative">
+          <div className="absolute -left-6 -top-4 text-[80px] font-semibold text-[#F2F2F0] z-0 pointer-events-none tracking-tighter opacity-50">{quarter.q}</div>
+          <div className="relative z-10 pl-2">
+            <div className="flex items-center gap-4 mb-4">
+              <h4 className="font-montserrat font-semibold text-[#1F1C1B] text-[12px] uppercase tracking-[0.16em] shrink-0">{quarter.title}</h4>
+              <div className="flex-grow h-px bg-[#E5E4E3]"></div>
+            </div>
+            <ul className="space-y-4">
+              {quarter.items.map((item, j) => (
+                <li key={j} className="flex items-start text-[14px] font-roboto text-[#1F1C1B]">
+                  <CheckCircle className="text-[#007970] mr-3 mt-0.5 flex-shrink-0" size={18} />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const AppendixG_OrgChart = () => (
+  <div className="animate-fadeIn w-full flex flex-col">
+    <div className="mb-8 w-full">
+      <div className="flex items-center gap-4 mb-2 w-full">
+        <h3 className="font-montserrat text-[13px] font-semibold text-[#1F1C1B] tracking-[0.22em] uppercase shrink-0">Appendix G: Agency Organizational Chart</h3>
+        <div className="flex-grow h-px bg-[#007970]"></div>
+      </div>
+      <p className="text-[#524048] text-[14px] font-roboto mt-1">
+        GV-FM-003 · v6.0 — Official agency org chart establishing reporting relationships from the Governing Body through senior clinical and administrative leadership as required by 42 CFR § 484.105.
+      </p>
+    </div>
+
+    <div className="bg-[#E5FEFF]/40 border-l-[3px] border-[#007970] rounded-r-[8px] px-5 py-4 mb-8">
+      <p className="font-roboto text-[#1F1C1B] text-[13px] leading-relaxed">
+        <strong className="font-montserrat font-semibold text-[#007970]">Instructions:</strong>{" "}
+        Updated within 7 calendar days of any reorganization or leadership change. Posted in the Administrator's office and included in every surveyor packet.
+      </p>
+    </div>
+
+    <div className="overflow-x-auto w-full pb-8 cursor-grab active:cursor-grabbing">
+      <div className="min-w-[900px] flex justify-center pt-4 px-4">
+        <TreeNode card={<OrgGoverningBodyCard />}>
+          <TreeNode card={<OrgComplianceCard />} />
+          <TreeNode card={<OrgAdministratorCard />}>
+            <TreeNode card={<OrgClinicalCard />} />
+            <TreeNode card={<OrgMedicalDirectorCard />} />
+            <TreeNode card={<OrgBusinessOpsCard />} />
+          </TreeNode>
+        </TreeNode>
+      </div>
+    </div>
+  </div>
+);
+
 // ==========================================
 // MAIN VIEWS
 // ==========================================
 
 const ViewOverview = () => (
-  <div className="animate-fadeIn">
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
-      <Section className="mb-0">
-        <SectionTitle icon={Shield} title="2. Purpose" />
-        <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px]">
-          This policy establishes the authority, composition, functions, and oversight responsibilities of the Governing Body of Care Indeed Home Health Care, Inc. The Governing Body is the ultimate authority accountable for the operation, management, fiscal viability, and regulatory compliance of the home health agency. This policy ensures the agency satisfies the requirements set forth in <strong>42 CFR § 484.105</strong> — Condition of Participation: Organization and Administration of Services, which mandates that a home health agency must have a governing body that assumes full legal authority and responsibility for the agency's overall operation and management.
-        </p>
-      </Section>
+  <div className="animate-fadeIn pb-12 w-full max-w-[1000px]">
+    {/* Clean Typography Header */}
+    <section className="mb-14">
+      <h1 className="font-montserrat font-semibold text-[28px] md:text-[32px] leading-tight text-[#1F1C1B] mb-1">
+        {POLICY_META.title}
+      </h1>
+      <p className="font-montserrat font-medium text-[11px] text-[#007970] tracking-[0.22em] uppercase mb-10">
+        Policy ID: {POLICY_META.id}
+      </p>
 
-      <Section className="mb-0">
-        <SectionTitle icon={Search} title="3. Scope" />
-        <ul className="space-y-2.5 mb-5">
-          {[
-            "All members of the Governing Body of Care Indeed Home Health Care, Inc. (including voting and non-voting members)",
-            "The Agency Administrator",
-            "The Director of Nursing / Clinical Manager",
-            "The Compliance Officer",
-            "All senior leadership personnel who report directly to the Governing Body or Administrator",
-            "All contracted management entities performing governing body functions on behalf of the agency"
-          ].map((item, i) => (
-            <li key={i} className="flex items-start">
-              <CheckCircle className="text-[#007970] mr-3 mt-0.5 flex-shrink-0" size={16} />
-              <span className="text-[#1F1C1B] font-roboto text-[14px] leading-relaxed">{item}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="px-4 py-3 bg-[#FFEEE5] border-l-[3px] border-[#C74601] text-[#C74601] rounded-r-md text-[13px] font-medium leading-relaxed font-roboto">
-          This policy does not apply to day-to-day clinical or operational staff except to the extent that Governing Body decisions establish requirements, standards, or directives that govern their work.
+      {/* Flat Meta Data Grid */}
+      <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-8 mb-12">
+        {[
+          ["Domain", POLICY_META.domain],
+          ["Subdomain", POLICY_META.subdomain],
+          ["Classification Tier", POLICY_META.classificationTier],
+          ["Status", POLICY_META.status],
+          ["Review Cycle", POLICY_META.reviewCycle],
+          ["Access Tier", POLICY_META.accessTier],
+          ["Policy Owner", POLICY_META.policyOwner],
+          ["Version", POLICY_META.version],
+          ["Effective Date", POLICY_META.effective],
+          ["Approved By", POLICY_META.approvedBy],
+          ["Last Reviewed", POLICY_META.lastReviewed],
+          ["Next Review Date", POLICY_META.nextReviewDate]
+        ].map(([k, v]) => (
+          <div key={k} className="flex flex-col">
+            <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">{k}</dt>
+            <dd className="font-roboto text-[14px] text-[#1F1C1B]">{v}</dd>
+          </div>
+        ))}
+        <div className="col-span-2 md:col-span-4 flex flex-col pt-2">
+          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">Supersedes</dt>
+          <dd className="font-roboto text-[14px] text-[#1F1C1B]">{POLICY_META.supersedes}</dd>
         </div>
-      </Section>
-    </div>
+      </dl>
+    </section>
 
-    <Section>
+    {/* Section 2 & 3 */}
+    <section className="mb-16">
+      <SectionTitle icon={Shield} title="2. Purpose" />
+      <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px] mb-12">
+        This policy establishes the authority, composition, functions, and oversight responsibilities of the Governing Body of Care Indeed Home Health Care, Inc. The Governing Body is the ultimate authority accountable for the operation, management, fiscal viability, and regulatory compliance of the home health agency. This policy ensures the agency satisfies the requirements set forth in <strong>42 CFR § 484.105</strong> — Condition of Participation: Organization and Administration of Services, which mandates that a home health agency must have a governing body that assumes full legal authority and responsibility for the agency's overall operation and management.
+      </p>
+
+      <SectionTitle icon={Search} title="3. Scope" />
+      <p className="text-[#1F1C1B] font-roboto font-bold mb-4 text-[15px]">This policy applies to:</p>
+      <ul className="space-y-4 mb-8">
+        {[
+          "All members of the Governing Body of Care Indeed Home Health Care, Inc. (including voting and non-voting members)",
+          "The Agency Administrator",
+          "The Director of Nursing / Clinical Manager",
+          "The Compliance Officer",
+          "All senior leadership personnel who report directly to the Governing Body or Administrator",
+          "All contracted management entities performing governing body functions on behalf of the agency"
+        ].map((item, i) => (
+          <li key={i} className="flex items-start">
+            <CheckCircle className="text-[#007970] mr-3 mt-0.5 flex-shrink-0" size={18} />
+            <span className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed">{item}</span>
+          </li>
+        ))}
+      </ul>
+      
+      {/* Flat border-left Callout */}
+      <div className="border-l-[3px] border-[#C74601] pl-5 py-2 mt-6">
+        <p className="font-roboto text-[#C74601] text-[14px] font-medium leading-relaxed">
+          This policy does not apply to day-to-day clinical or operational staff except to the extent that Governing Body decisions establish requirements, standards, or directives that govern their work.
+        </p>
+      </div>
+    </section>
+
+    {/* Section 5: Definitions (Clean Grid) */}
+    <section className="mb-14">
       <SectionTitle icon={BookOpen} title="5. Definitions" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-10 pt-4">
         {DEFINITIONS.map((def, i) => (
-          <div key={i} className="bg-[#FAFBF8] border border-[#E5E4E3] p-5 rounded-lg hover:border-[#007970]/40 transition-colors">
-            <h4 className="font-montserrat font-bold text-[#007970] mb-2 text-[13px] tracking-wide">{def.term}</h4>
-            <p className="text-[#1F1C1B] font-roboto text-[13.5px] leading-relaxed">{def.definition}</p>
+          <div key={i} className="flex flex-col">
+            <h4 className="font-montserrat font-semibold text-[#1F1C1B] mb-3 text-[13px] tracking-[0.12em] uppercase">{def.term}</h4>
+            <p className="text-[#524048] font-roboto text-[14px] leading-relaxed">{def.definition}</p>
           </div>
         ))}
       </div>
-    </Section>
+    </section>
   </div>
 );
 
@@ -382,19 +907,19 @@ const ViewPolicyStatements = () => {
   ];
 
   return (
-    <div className="animate-fadeIn">
+    <section className="pb-12 animate-fadeIn max-w-[1000px]">
       <SectionTitle icon={List} title="4. Policy Statement" />
-      <div className="divide-y divide-[#E5E4E3] border-t border-[#E5E4E3]">
+      <div className="flex flex-col space-y-6">
         {statements.map((stmt, i) => (
-          <div key={i} className="flex items-start gap-5 py-4">
-            <div className="text-[#007970] font-montserrat font-bold text-[13px] shrink-0 w-10 pt-1 text-right">
+          <div key={i} className="flex items-start">
+            <div className="text-[#007970] font-semibold font-montserrat w-16 flex-shrink-0 text-[14px] pt-[2px]">
               4.{i+1}
             </div>
-            <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[14.5px] whitespace-pre-line">{stmt.substring(4)}</p>
+            <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px] whitespace-pre-line">{stmt.substring(4)}</p>
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 };
 
@@ -410,418 +935,313 @@ const ViewProcedures = () => {
   ];
 
   return (
-    <div className="animate-fadeIn">
-      <SectionTitle icon={Settings} title="6. Procedures" />
-      <div className="flex space-x-1 overflow-x-auto custom-scrollbar border-b border-[#E5E4E3] mb-6">
-        {tabs.map(tab => (
-          <TabButton key={tab.id} active={activeSub === tab.id} onClick={() => setActiveSub(tab.id)}>
-            {tab.label}
-          </TabButton>
-        ))}
-      </div>
-
-      {activeSub === '6.1' && (
-        <Section>
-          <h3 className="font-montserrat font-bold text-[15px] text-[#007970] mb-4 uppercase tracking-wide">6.1 Establishment and Composition</h3>
-          <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.1"]} />
-        </Section>
-      )}
-
-      {activeSub === '6.2' && (
-        <div className="space-y-8">
-          <div className="bg-[#FFEEE5] border-l-[3px] border-[#C74601] text-[#C74601] px-5 py-4 rounded-r-md text-[14px] font-medium flex items-start font-roboto">
-            <AlertTriangle className="mr-3 flex-shrink-0 mt-0.5" size={20} />
-            <p>The Governing Body of Care Indeed Home Health Care, Inc. shall fulfill the following responsibilities directly and shall <strong className="font-extrabold text-[#1F1C1B]">not delegate ultimate accountability</strong> for any of these functions.</p>
-          </div>
-          {PROCEDURES["6.2"].map((section, idx) => (
-            <Section key={idx} className="mb-0">
-              <h3 className="font-montserrat font-bold text-[15px] text-[#007970] mb-4 uppercase tracking-wide">{section.title}</h3>
-              <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={section.rows} />
-            </Section>
+    <section className="h-full flex flex-col pb-12 animate-fadeIn max-w-[1000px]">
+      <div className="flex-shrink-0 pb-0 overflow-hidden mb-10">
+        <SectionTitle icon={Settings} title="6. Procedures" />
+        <div className="flex space-x-2 overflow-x-auto custom-scrollbar border-b border-[#E5E4E3]">
+          {tabs.map(tab => (
+            <TabButton key={tab.id} active={activeSub === tab.id} onClick={() => setActiveSub(tab.id)}>
+              {tab.label}
+            </TabButton>
           ))}
         </div>
-      )}
+      </div>
 
-      {activeSub === '6.3' && (
-        <Section>
-          <h3 className="font-montserrat font-bold text-[15px] text-[#007970] mb-4 uppercase tracking-wide">6.3 Governing Body Meetings</h3>
-          <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.3"]} />
-        </Section>
-      )}
+      <div className="flex-1">
+        {activeSub === '6.1' && (
+          <div className="mb-12">
+            <h3 className="font-montserrat font-semibold text-[15px] text-[#1F1C1B] mb-6">6.1 Establishment and Composition</h3>
+            <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.1"]} />
+          </div>
+        )}
 
-      {activeSub === '6.4' && (
-        <Section>
-          <h3 className="font-montserrat font-bold text-[15px] text-[#007970] mb-4 uppercase tracking-wide">6.4 Conflict of Interest Management</h3>
-          <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.4"]} />
-        </Section>
-      )}
+        {activeSub === '6.2' && (
+          <div className="space-y-12">
+            <div className="border-l-[3px] border-[#C74601] pl-5 py-2 mb-8">
+              <p className="font-roboto text-[#C74601] text-[14px] font-medium leading-relaxed">
+                The Governing Body of Care Indeed Home Health Care, Inc. shall fulfill the following responsibilities directly and shall <strong className="font-bold text-[#1F1C1B]">not delegate ultimate accountability</strong> for any of these functions.
+              </p>
+            </div>
+            {PROCEDURES["6.2"].map((section, idx) => (
+              <div key={idx} className="mb-12">
+                <h3 className="font-montserrat font-semibold text-[15px] text-[#1F1C1B] mb-6">{section.title}</h3>
+                <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={section.rows} />
+              </div>
+            ))}
+          </div>
+        )}
 
-      {activeSub === '6.5' && (
-        <Section>
-          <h3 className="font-montserrat font-bold text-[15px] text-[#C74601] mb-4 uppercase tracking-wide flex items-center">
-            <AlertTriangle className="mr-2" size={18} /> 6.5 Escalation and Exception Handling
-          </h3>
-          <SimpleTable headers={["Condition", "Escalation Path", "Corrective Action", "Timeframe"]} rows={PROCEDURES["6.5"]} />
-        </Section>
-      )}
-    </div>
+        {activeSub === '6.3' && (
+          <div className="mb-12">
+            <h3 className="font-montserrat font-semibold text-[15px] text-[#1F1C1B] mb-6">6.3 Governing Body Meetings</h3>
+            <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.3"]} />
+          </div>
+        )}
+
+        {activeSub === '6.4' && (
+          <div className="mb-12">
+            <h3 className="font-montserrat font-semibold text-[15px] text-[#1F1C1B] mb-6">6.4 Conflict of Interest Management</h3>
+            <SimpleTable headers={["Step", "Responsible Party", "Action", "Timeframe"]} rows={PROCEDURES["6.4"]} />
+          </div>
+        )}
+
+        {activeSub === '6.5' && (
+          <div className="mb-12">
+            <h3 className="font-montserrat font-semibold text-[15px] text-[#C74601] mb-6 flex items-center">
+              <AlertTriangle className="mr-3" size={20} /> 6.5 Escalation and Exception Handling
+            </h3>
+            <SimpleTable headers={["Condition", "Escalation Path", "Corrective Action", "Timeframe"]} rows={PROCEDURES["6.5"]} />
+          </div>
+        )}
+      </div>
+    </section>
   );
 };
 
 const ViewDocumentation = () => (
-  <div className="animate-fadeIn">
+  <section className="pb-12 animate-fadeIn max-w-[1000px]">
     <SectionTitle icon={FileText} title="7. Documentation Requirements" />
-    <SimpleTable
+    <SimpleTable 
       headers={["Requirement", "Document / Record", "Responsible Party", "Location", "Timeframe"]}
       rows={DOCS_REQ}
     />
-  </div>
+  </section>
 );
 
 const ViewCompliance = () => (
-  <div className="animate-fadeIn">
-    <Section>
+  <section className="space-y-16 pb-12 animate-fadeIn max-w-[1000px]">
+    <div>
       <SectionTitle icon={CheckSquare} title="8.1 How Compliance Is Measured" />
-      <SimpleTable
+      <SimpleTable 
         headers={["Compliance Indicator", "Measurement Method", "Acceptable Standard"]}
         rows={COMPLIANCE_81}
       />
-    </Section>
-
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-      <Section className="mb-0">
-        <SectionTitle icon={Search} title="8.2 Surveyor Expectations" />
-        <p className="text-[14px] text-[#524048] mb-5 font-roboto leading-relaxed">CMS surveyors conducting a standard survey under SOM Appendix B will specifically verify:</p>
-        <ul className="space-y-3.5">
-          {[
-            "Evidence that a Governing Body exists and is functioning. Surveyors will request establishing documents and a current membership roster. A sole proprietor must demonstrate individual acceptance of governing body responsibilities.",
-            "Evidence that the Governing Body has appointed a qualified Administrator. Surveyors will review Governing Body minutes for appointment documentation and verify qualifications per California state requirements.",
-            "Evidence of Clinical Manager oversight. Surveyors will look for Governing Body minutes documenting appointment, reporting, and oversight of clinical services leadership.",
-            "Evidence that the Governing Body oversees QAPI. Surveyors will examine whether the Governing Body has reviewed, approved, and acted upon quality data. Passive receipt of reports without documented action is a common deficiency.",
-            "Evidence of policy oversight. Surveyors will verify that the Governing Body has approved the agency's policies and that a review cycle exists.",
-            "Evidence of fiscal oversight. Surveyors will review whether the Governing Body monitors the agency's financial viability and acts on adverse trends.",
-            "Meeting frequency and documentation quality. Surveyors will request all meeting minutes for the survey look-back period and assess completeness, including attendance, quorum, and documented decisions.",
-          ].map((t, i) => (
-            <li key={i} className="text-[13.5px] leading-relaxed text-[#1F1C1B] font-roboto flex items-start">
-              <ChevronRight className="text-[#007970] mt-0.5 mr-2 flex-shrink-0" size={16}/>
-              <span><strong className="font-montserrat font-bold text-[#007970] mr-1">{i+1}.</strong>{t}</span>
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      <Section className="mb-0">
-        <SectionTitle icon={AlertTriangle} title="8.3 Common Failure Points" color="text-[#C74601]" />
-        <div className="space-y-3">
-          {COMPLIANCE_83.map((item, i) => (
-            <div key={i} className="bg-[#FAFBF8] border border-[#E5E4E3] border-l-[3px] border-l-[#C74601] p-4 rounded-r-md">
-              <p className="font-bold text-[#C74601] text-[13.5px] mb-2 font-montserrat">{item[0]}</p>
-              <p className="text-[13px] text-[#524048] mb-2 font-roboto"><strong className="text-[#1F1C1B]">Risk:</strong> {item[1]}</p>
-              <p className="text-[13px] text-[#1F1C1B] font-roboto"><strong className="text-[#007970]">Mitigation:</strong> {item[2]}</p>
-            </div>
-          ))}
-        </div>
-      </Section>
     </div>
-  </div>
+
+    <div>
+      <SectionTitle icon={Search} title="8.2 Surveyor Expectations" />
+      <p className="text-[15px] text-[#1F1C1B] mb-8 font-roboto leading-relaxed">CMS surveyors conducting a standard survey under SOM Appendix B will specifically verify:</p>
+      <div className="flex flex-col space-y-6 pt-2">
+        {[
+          "Evidence that a Governing Body exists and is functioning. Surveyors will request establishing documents and a current membership roster. A sole proprietor must demonstrate individual acceptance of governing body responsibilities.",
+          "Evidence that the Governing Body has appointed a qualified Administrator. Surveyors will review Governing Body minutes for appointment documentation and verify qualifications per California state requirements.",
+          "Evidence of Clinical Manager oversight. Surveyors will look for Governing Body minutes documenting appointment, reporting, and oversight of clinical services leadership.",
+          "Evidence that the Governing Body oversees QAPI. Surveyors will examine whether the Governing Body has reviewed, approved, and acted upon quality data. Passive receipt of reports without documented action is a common deficiency.",
+          "Evidence of policy oversight. Surveyors will verify that the Governing Body has approved the agency's policies and that a review cycle exists.",
+          "Evidence of fiscal oversight. Surveyors will review whether the Governing Body monitors the agency's financial viability and acts on adverse trends.",
+          "Meeting frequency and documentation quality. Surveyors will request all meeting minutes for the survey look-back period and assess completeness, including attendance, quorum, and documented decisions."
+        ].map((text, i) => (
+          <div key={i} className="flex items-start">
+            <div className="text-[#007970] font-semibold font-montserrat w-10 flex-shrink-0 text-[14px] pt-[2px]">
+              {i+1}.
+            </div>
+            <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px] whitespace-pre-line">{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div>
+      <SectionTitle icon={AlertTriangle} title="8.3 Common Failure Points" color="text-[#C74601]" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {COMPLIANCE_83.map((item, i) => (
+           <div key={i} className="border-l-[3px] border-[#C74601] pl-5 py-2">
+             <p className="font-semibold font-montserrat text-[#1F1C1B] text-[13px] uppercase tracking-[0.1em] mb-2">{item[0]}</p>
+             <p className="text-[14px] font-roboto text-[#524048] mb-2"><strong>Risk:</strong> {item[1]}</p>
+             <p className="text-[14px] font-roboto text-[#007970]"><strong>Mitigation:</strong> {item[2]}</p>
+           </div>
+        ))}
+      </div>
+    </div>
+  </section>
 );
 
 const ViewReferencesAdmin = () => (
-  <div className="animate-fadeIn">
-    <Section>
+  <section className="space-y-16 pb-12 animate-fadeIn max-w-[1000px]">
+    <div>
       <SectionTitle icon={Archive} title="9. References" />
-
-      <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-3">9.1 Federal Regulations (42 CFR Part 484)</h3>
-      <div className="mb-8">
-        <SimpleTable headers={["Citation", "Title", "Relevance"]} rows={REFERENCES_9.federal} />
+      
+      <div className="mb-12">
+        <h3 className="font-montserrat font-semibold text-[13px] uppercase tracking-[0.15em] text-[#1F1C1B] mb-6">9.1 Federal Regulations (42 CFR Part 484)</h3>
+        <SimpleTable 
+          headers={["Citation", "Title", "Relevance"]}
+          rows={REFERENCES_9.federal.map(row => [
+            <a href={row[3]} target="_blank" rel="noopener noreferrer" className="flex items-center text-[#007970] font-semibold hover:underline">
+              {row[0]} <ExternalLink size={14} className="ml-1 flex-shrink-0" />
+            </a>,
+            row[1],
+            row[2]
+          ])}
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div>
-          <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-3">9.2 CMS Guidance</h3>
-          <div className="bg-[#FAFBF8] p-4 rounded-md border border-[#E5E4E3] mb-3">
-            <p className="font-bold text-[13.5px] text-[#007970]">CMS State Operations Manual, Appx B — Guidance to Surveyors</p>
-            <p className="text-[13px] text-[#1F1C1B] mt-1.5 leading-relaxed">Provides interpretive guidelines for survey of 42 CFR § 484.105 compliance; defines surveyor expectations for governing body evidence.</p>
-          </div>
-          <div className="bg-[#FAFBF8] p-4 rounded-md border border-[#E5E4E3]">
-            <p className="font-bold text-[13.5px] text-[#007970]">CMS OASIS-E2 Guidance Manual</p>
-            <p className="text-[13px] text-[#1F1C1B] mt-1.5 leading-relaxed">While not directly governing the Governing Body, the Governing Body is accountable for ensuring the agency's OASIS program meets CMS requirements.</p>
-          </div>
-        </div>
-        <div>
-          <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-3">9.3 OIG Guidance</h3>
-          <div className="bg-[#E5FEFF] p-4 rounded-md border border-[#007970]/20 h-full">
-            <p className="font-bold text-[13.5px] text-[#007970]">OIG Compliance Program Guidance for Home Health Agencies</p>
-            <p className="text-[13px] text-[#1F1C1B] mt-1.5 leading-relaxed">Establishes expectation that the governing body actively oversees the compliance program and receives regular compliance reports.</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 mb-12">
+         <div>
+            <h3 className="font-montserrat font-semibold text-[13px] uppercase tracking-[0.15em] text-[#1F1C1B] mb-6">9.2 CMS Guidance</h3>
+            <div className="mb-8">
+               <p className="font-semibold font-montserrat text-[13px] text-[#1F1C1B] uppercase tracking-[0.1em]">CMS State Operations Manual, Appx B</p>
+               <p className="text-[14px] font-roboto text-[#524048] mt-2 leading-relaxed">Provides interpretive guidelines for survey of 42 CFR § 484.105 compliance; defines surveyor expectations for governing body evidence.</p>
+            </div>
+            <div>
+               <p className="font-semibold font-montserrat text-[13px] text-[#1F1C1B] uppercase tracking-[0.1em]">CMS OASIS-E2 Guidance Manual</p>
+               <p className="text-[14px] font-roboto text-[#524048] mt-2 leading-relaxed">While not directly governing the Governing Body, the Governing Body is accountable for ensuring the agency's OASIS program meets CMS requirements.</p>
+            </div>
+         </div>
+         <div>
+            <h3 className="font-montserrat font-semibold text-[13px] uppercase tracking-[0.15em] text-[#1F1C1B] mb-6">9.3 OIG Guidance</h3>
+            <div>
+               <p className="font-semibold font-montserrat text-[13px] text-[#1F1C1B] uppercase tracking-[0.1em]">OIG Compliance Program Guidance</p>
+               <p className="text-[14px] font-roboto text-[#524048] mt-2 leading-relaxed">Establishes expectation that the governing body actively oversees the compliance program and receives regular compliance reports.</p>
+            </div>
+         </div>
       </div>
 
-      <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-2">9.4 Cross-Referenced Agency Policies</h3>
-      <p className="text-[12px] text-[#524048] mb-3 italic font-roboto">Note: All policy IDs below reflect the updated v6.0 framework codes.</p>
-      <div className="max-h-96 overflow-y-auto custom-scrollbar border border-[#E5E4E3] rounded-md">
-        <table className="w-full text-left border-collapse">
-          <thead className="sticky top-0 bg-[#FAFBF8] border-b border-[#E5E4E3]">
-            <tr>
-              <th className="p-3 font-montserrat font-bold text-[11px] uppercase tracking-wider text-[#524048]">Policy ID</th>
-              <th className="p-3 font-montserrat font-bold text-[11px] uppercase tracking-wider text-[#524048]">Policy Title</th>
-              <th className="p-3 font-montserrat font-bold text-[11px] uppercase tracking-wider text-[#524048]">Relationship</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#E5E4E3] bg-white">
-            {REFERENCES_9.crossRef.map((row, i) => (
-              <tr key={i} className="hover:bg-[#F7FEFF] transition-colors">
-                <td className="p-3 text-[12.5px] whitespace-nowrap">
-                  <a href={`#policy-${row[0]}`} className="font-bold text-[#007970] hover:underline underline-offset-2">{row[0]}</a>
-                </td>
-                <td className="p-3 text-[13px] text-[#1F1C1B] font-medium">{row[1]}</td>
-                <td className="p-3 text-[13px] text-[#524048] leading-relaxed">{row[2]}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div>
+        <h3 className="font-montserrat font-semibold text-[13px] uppercase tracking-[0.15em] text-[#1F1C1B] mb-6">9.4 Cross-Referenced Agency Policies</h3>
+        <SimpleTable 
+          headers={["Policy ID", "Policy Title", "Relationship"]}
+          rows={REFERENCES_9.crossRef.map(row => [
+            <a href={row[3]} target="_blank" rel="noopener noreferrer" className="flex items-center text-[#007970] font-semibold hover:underline whitespace-nowrap">
+              {row[0]} <ExternalLink size={14} className="ml-1 flex-shrink-0" />
+            </a>,
+            row[1],
+            row[2]
+          ])}
+        />
       </div>
-    </Section>
-
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-      <Section className="mb-0">
-        <SectionTitle icon={Award} title="10. Training Requirements" />
-        <ul className="space-y-4">
-          {[
-            "All Governing Body members of Care Indeed Home Health Care, Inc. shall receive orientation to this policy within 14 calendar days of appointment. Orientation shall be conducted by the Administrator or Compliance Officer and must cover: (a) the legal authority and responsibilities of the Governing Body; (b) meeting and quorum requirements; (c) conflict of interest obligations; (d) QAPI, compliance, and financial oversight expectations; (e) CMS survey process and surveyor expectations for governance documentation.",
-            "All Governing Body members and senior leadership personnel within scope of this policy (Section 3) shall sign the Policy Acknowledgment Form (Appendix C) within 14 calendar days of the policy effective date, any revision, or new appointment.",
-            "The Administrator shall maintain a tracking log of all policy acknowledgments and report any non-compliance to the Governing Body Chair within 7 calendar days of the acknowledgment deadline. Failure to acknowledge within the required timeframe shall result in written notification from the Governing Body Chair with a mandatory completion deadline of 7 additional calendar days.",
-            "Annual refresher training on governing body responsibilities shall be conducted at the first quarterly meeting of each calendar year. Attendance shall be documented in meeting minutes.",
-          ].map((t, i) => (
-            <li key={i} className="flex items-start">
-              <div className="bg-[#E5FEFF] text-[#007970] rounded-md w-7 h-7 flex items-center justify-center font-bold text-[12px] mr-3 flex-shrink-0 font-montserrat">{i+1}</div>
-              <p className="text-[13.5px] leading-relaxed text-[#1F1C1B] pt-0.5 font-roboto">{t}</p>
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      <Section className="mb-0">
-        <SectionTitle icon={FileLock2} title="11. Version Control" />
-        <ul className="space-y-4">
-          {[
-            "This policy is maintained under the agency's enterprise policy lifecycle management system per policy EN-LC-001.",
-            "Only the most current approved version of this policy, as reflected in the policy header, is valid for any operational, compliance, or regulatory purpose. All superseded versions must be archived and clearly marked as \"SUPERSEDED — NOT FOR USE.\"",
-            "Any substantive revision to this policy requires: (a) review and approval by the Governing Body, documented in meeting minutes; (b) re-acknowledgment by all personnel within scope, within 14 calendar days of the revised effective date; (c) update to the enterprise policy index per EN-TG-001.",
-            "Non-substantive revisions (formatting, typographical corrections, updated cross-references) may be approved by the Administrator with notification to the Governing Body at the next regular meeting. Non-substantive revisions do not require re-acknowledgment.",
-          ].map((t, i) => (
-            <li key={i} className="flex items-start">
-              <div className="bg-[#FAFBF8] text-[#524048] rounded-md w-7 h-7 flex items-center justify-center font-bold text-[12px] mr-3 flex-shrink-0 border border-[#E5E4E3] font-montserrat">{i+1}</div>
-              <p className="text-[13.5px] leading-relaxed text-[#1F1C1B] pt-0.5 font-roboto">{t}</p>
-            </li>
-          ))}
-        </ul>
-      </Section>
     </div>
-  </div>
+
+    <div>
+      <SectionTitle icon={Award} title="10. Training Requirements" />
+      <div className="flex flex-col space-y-6 pt-2">
+        {[
+          "All Governing Body members of Care Indeed Home Health Care, Inc. shall receive orientation to this policy within 14 calendar days of appointment. Orientation shall be conducted by the Administrator or Compliance Officer and must cover: (a) the legal authority and responsibilities of the Governing Body; (b) meeting and quorum requirements; (c) conflict of interest obligations; (d) QAPI, compliance, and financial oversight expectations; (e) CMS survey process and surveyor expectations for governance documentation.",
+          "All Governing Body members and senior leadership personnel within scope of this policy (Section 3) shall sign the Policy Acknowledgment Form (Appendix C) within 14 calendar days of the policy effective date, any revision, or new appointment.",
+          "The Administrator shall maintain a tracking log of all policy acknowledgments and report any non-compliance to the Governing Body Chair within 7 calendar days of the acknowledgment deadline. Failure to acknowledge within the required timeframe shall result in written notification from the Governing Body Chair with a mandatory completion deadline of 7 additional calendar days.",
+          "Annual refresher training on governing body responsibilities shall be conducted at the first quarterly meeting of each calendar year. Attendance shall be documented in meeting minutes."
+        ].map((text, i) => (
+          <div key={i} className="flex items-start">
+            <div className="text-[#007970] font-semibold font-montserrat w-12 flex-shrink-0 text-[14px] pt-[2px]">
+              {i+1}.
+            </div>
+            <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px] whitespace-pre-line">{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div>
+      <SectionTitle icon={FileLock2} title="11. Version Control" />
+      <div className="flex flex-col space-y-6 pt-2">
+        {[
+          "This policy is maintained under the agency's enterprise policy lifecycle management system per policy EN-LC-001.",
+          "Only the most current approved version of this policy, as reflected in the policy header, is valid for any operational, compliance, or regulatory purpose. All superseded versions must be archived and clearly marked as \"SUPERSEDED — NOT FOR USE.\"",
+          "Any substantive revision to this policy requires: (a) review and approval by the Governing Body, documented in meeting minutes; (b) re-acknowledgment by all personnel within scope, within 14 calendar days of the revised effective date; (c) update to the enterprise policy index per EN-TG-001.",
+          "Non-substantive revisions (formatting, typographical corrections, updated cross-references) may be approved by the Administrator with notification to the Governing Body at the next regular meeting. Non-substantive revisions do not require re-acknowledgment."
+        ].map((text, i) => (
+          <div key={i} className="flex items-start">
+             <div className="text-[#007970] font-semibold font-montserrat w-12 flex-shrink-0 text-[14px] pt-[2px]">
+              {i+1}.
+            </div>
+            <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px] whitespace-pre-line">{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
 );
 
 const ViewAppendices = () => {
   const [activeApp, setActiveApp] = useState('A');
 
   const apps = [
-    { id: 'A', label: 'Appendix A: Roster', title: 'Governing Body Membership Roster' },
-    { id: 'B', label: 'Appendix B: Conflicts', title: 'Conflict of Interest Form' },
-    { id: 'C', label: 'Appendix C: Acknowledge', title: 'Policy Acknowledgment Form' },
-    { id: 'D', label: 'Appendix D: Minutes', title: 'Meeting Minutes Template' },
-    { id: 'E', label: 'Appendix E: Checklist', title: 'Quarterly Oversight Checklist' },
-    { id: 'F', label: 'Appendix F: Calendar', title: 'Annual Calendar' },
-    { id: 'G', label: 'Appendix G: Org Chart', title: 'Agency Organizational Chart' }
+    { id: 'A', label: 'Appendix A: Roster' },
+    { id: 'B', label: 'Appendix B: Conflicts' },
+    { id: 'C', label: 'Appendix C: Acknowledge' },
+    { id: 'D', label: 'Appendix D: Minutes' },
+    { id: 'E', label: 'Appendix E: Checklist' },
+    { id: 'F', label: 'Appendix F: Calendar' },
+    { id: 'G', label: 'Appendix G: Org Chart' }
   ];
 
-  const active = apps.find(a => a.id === activeApp);
-
-  return (
-    <div className="animate-fadeIn">
-      <SectionTitle icon={LayoutList} title="12. Appendices (Forms)" />
-
-      {/* Horizontal appendix strip — flat, lives on the main card */}
-      <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar border-b border-[#E5E4E3] mb-6 no-print">
-        {apps.map(app => (
-          <button
-            key={app.id}
-            onClick={() => setActiveApp(app.id)}
-            className={`whitespace-nowrap px-4 py-2.5 rounded-t-md font-montserrat font-bold text-[12px] uppercase tracking-wide transition-colors border-b-[3px] ${
-              activeApp === app.id
-                ? 'text-[#007970] border-[#007970] bg-[#FAFBF8]'
-                : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
-            }`}
-          >
-            {app.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Form viewport — the ONLY surface with a light border; NOT a card-on-card.
-          This is the target container where the live appendix form component renders. */}
-      <div
-        id="printable-appendix"
-        className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg p-8 lg:p-10 min-h-[500px] print-area"
-      >
-        <div className="flex items-center justify-between mb-6 border-b border-[#E5E4E3] pb-4">
-          <div>
-            <p className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048]">Appendix {active.id}</p>
-            <h3 className="font-montserrat text-xl font-bold text-[#1F1C1B] mt-1">{active.title}</h3>
-          </div>
-          <span className="bg-white border border-[#E5E4E3] text-[#524048] px-3 py-1 rounded-md text-[11px] font-montserrat font-bold uppercase tracking-wider">
-            GV-GB-001 · App. {active.id}
-          </span>
-        </div>
-
-        {/*  Live form injection target — rendered by ExistingAppendixForm based on activeApp */}
-        <div className="text-center py-10">
-          <Settings className="mx-auto text-[#007970]/30 mb-4 animate-[spin_12s_linear_infinite]" size={44} />
-          <p className="text-[#524048] font-roboto text-[13.5px] mb-5 leading-relaxed max-w-xl mx-auto">
-            The interactive {active.title} form renders here. Integration point for the existing Appendix form components ('A' through 'G').
-          </p>
-          <code className="inline-block bg-white border border-[#E5E4E3] text-[#524048] px-3 py-1.5 rounded text-[12px] font-mono">
-            {'<ExistingAppendixForm variant="'}<span className="text-[#007970] font-bold">{activeApp}</span>{'" />'}
-          </code>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/* ─── Policy Alerts ─────────────────────────────────────── */
-const ViewPolicyAlerts = () => {
-  const toneFor = (sev) => {
-    if (sev === 'critical') return { label: 'CRITICAL', bg: 'bg-[#FDECE6]', border: 'border-[#C74601]', text: 'text-[#C74601]' };
-    if (sev === 'warning')  return { label: 'WARNING',  bg: 'bg-[#FFF6E5]', border: 'border-[#D8A100]', text: 'text-[#9A6B00]' };
-    return { label: 'INFO', bg: 'bg-[#EAF6F5]', border: 'border-[#007970]', text: 'text-[#007970]' };
+  const renderAppendixContent = () => {
+    switch (activeApp) {
+      case 'A': return <AppendixA_Roster />;
+      case 'B': return <AppendixB_COI />;
+      case 'C': return <AppendixC_Ack />;
+      case 'D': return <AppendixD_Minutes />;
+      case 'E': return <AppendixE_Checklist />;
+      case 'F': return <AppendixF_Calendar />;
+      case 'G': return <AppendixG_OrgChart />;
+      default: return null;
+    }
   };
-  return (
-    <div className="animate-fadeIn">
-      <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-5">
-        Policy Alerts — {POLICY_ALERTS.length} Active
-      </h3>
-      <ul className="space-y-3">
-        {POLICY_ALERTS.map((a, i) => {
-          const t = toneFor(a.severity);
-          return (
-            <li key={i} className={`${t.bg} border-l-[3px] ${t.border} border-y border-r border-[#E5E4E3] rounded-r-md px-5 py-4 font-roboto`}>
-              <div className="flex items-center gap-3 mb-1.5 text-[11px] uppercase tracking-wider font-montserrat font-bold">
-                <span className={t.text}>{t.label}</span>
-                <span className="text-[#524048]">{a.date}</span>
-                <span className="text-[#524048]">· {a.source}</span>
-              </div>
-              <p className="font-montserrat font-bold text-[14.5px] text-[#1F1C1B] mb-1.5">{a.title}</p>
-              <p className="text-[13px] text-[#1F1C1B] leading-relaxed">{a.detail}</p>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-};
 
-/* ─── FAQ ───────────────────────────────────────────────── */
-const ViewFAQ = () => {
-  const [open, setOpen] = useState(0);
   return (
-    <div className="animate-fadeIn">
-      <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-5">
-        Frequently Asked Questions — {POLICY_FAQ.length} Entries
-      </h3>
-      <div className="divide-y divide-[#E5E4E3] border-t border-b border-[#E5E4E3]">
-        {POLICY_FAQ.map((f, i) => {
-          const isOpen = open === i;
-          return (
-            <div key={i}>
-              <button
-                onClick={() => setOpen(isOpen ? -1 : i)}
-                className="w-full flex items-start gap-3 py-4 text-left hover:bg-[#FAFBF8] transition-colors px-2 -mx-2 rounded"
+    <section className="h-full flex flex-col md:flex-row gap-12 animate-fadeIn relative pb-12 max-w-[1200px]">
+      
+      {/* FLAT LEFT MENU */}
+      <div className="w-full md:w-64 flex-shrink-0 no-print">
+        <div className="sticky top-6">
+          <h2 className="font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase text-[#1F1C1B] mb-6 flex items-center w-full">
+            <LayoutList className="mr-3 shrink-0 text-[#007970]" size={20} />
+            <span className="shrink-0">Appendices</span>
+            <span className="flex-grow h-px bg-[#007970] ml-4"></span>
+          </h2>
+          <div className="flex flex-col">
+            {apps.map(app => (
+              <button 
+                key={app.id} 
+                onClick={() => setActiveApp(app.id)}
+                className={`text-left px-4 py-3 font-montserrat font-semibold text-[13px] transition-all duration-200 border-l-[3px] ${
+                  activeApp === app.id 
+                    ? 'text-[#C74601] border-[#C74601] bg-white' 
+                    : 'bg-white text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
+                }`}
               >
-                <span className="font-montserrat font-bold text-[12px] text-[#007970] uppercase tracking-wider shrink-0 mt-0.5">Q{i+1}</span>
-                <span className="flex-1 font-roboto text-[14px] text-[#1F1C1B] leading-relaxed">{f.q}</span>
-                <ChevronDown size={18} className={`text-[#524048] shrink-0 mt-0.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                {app.label}
               </button>
-              {isOpen && (
-                <div className="pb-5 pl-12 pr-2 animate-fadeIn">
-                  <div className="bg-[#FAFBF8] border-l-[3px] border-[#007970] px-4 py-3 rounded-r-md">
-                    <p className="font-montserrat font-bold text-[11px] text-[#007970] uppercase tracking-wider mb-1">A{i+1}</p>
-                    <p className="font-roboto text-[13.5px] text-[#1F1C1B] leading-relaxed">{f.a}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* RIGHT PANEL: Dynamic Form Content - Clean & Flat */}
+      <div id="printable-appendix" className="flex-1 bg-white relative print-area min-h-[600px] flex border border-[#007970] rounded-[8px] p-6">
+        {renderAppendixContent()}
+      </div>
+
+    </section>
   );
 };
-
-/* ─── Amendment Log ─────────────────────────────────────── */
-const ViewAmendmentLog = () => (
-  <div className="animate-fadeIn">
-    <h3 className="font-montserrat font-bold text-[11px] uppercase tracking-widest text-[#524048] mb-5">
-      Amendment Log — {AMENDMENT_LOG.length} Entries
-    </h3>
-    <ol className="relative border-l-2 border-[#E5E4E3] ml-2 space-y-6">
-      {AMENDMENT_LOG.map((a, i) => (
-        <li key={i} className="pl-6 relative">
-          <span
-            className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 ${
-              a.current ? 'bg-[#007970] border-[#007970]' : 'bg-white border-[#C8C4C2]'
-            }`}
-          />
-          <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-            <span className="font-montserrat font-bold text-[13px] text-[#007970]">v{a.version}</span>
-            {a.current && (
-              <span className="bg-[#007970] text-white px-2 py-0.5 rounded text-[9.5px] font-montserrat font-bold uppercase tracking-wider">Current</span>
-            )}
-            <span className="font-roboto text-[12px] text-[#524048]">{a.date}</span>
-            <span className="font-roboto text-[12px] text-[#524048]">— {a.author}</span>
-          </div>
-          <p className="font-roboto text-[13.5px] text-[#1F1C1B] leading-relaxed mb-1.5">{a.summary}</p>
-          {a.sections && (
-            <p className="font-roboto text-[11.5px] text-[#524048]"><strong className="font-montserrat font-bold uppercase tracking-wider">Sections:</strong> {a.sections}</p>
-          )}
-        </li>
-      ))}
-    </ol>
-  </div>
-);
 
 // ==========================================
-// MAIN APP SHELL — single card, flattened
+// MAIN APP SHELL
 // ==========================================
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview');
 
   const navItems = [
-    { id: 'overview',      label: 'Overview & Definitions', icon: Info },
-    { id: 'policy',        label: 'Policy Statements',      icon: Shield },
-    { id: 'procedures',    label: 'Procedures',             icon: Settings },
-    { id: 'documentation', label: 'Documentation',          icon: FileText },
-    { id: 'compliance',    label: 'Compliance & Audit',     icon: CheckSquare },
-    { id: 'references',    label: 'References & Admin',     icon: Archive },
-    { id: 'appendices',    label: 'Appendices (Forms)',     icon: LayoutList },
-    { id: 'alerts',        label: 'Policy Alerts',          icon: Bell },
-    { id: 'faq',           label: 'FAQ',                    icon: HelpCircle },
-    { id: 'amendments',    label: 'Amendment Log',          icon: History },
+    { id: 'overview', label: 'Overview & Definitions', icon: Info },
+    { id: 'policy', label: 'Policy Statements', icon: Shield },
+    { id: 'procedures', label: 'Procedures', icon: Settings },
+    { id: 'documentation', label: 'Documentation', icon: FileText },
+    { id: 'compliance', label: 'Compliance & Audit', icon: CheckSquare },
+    { id: 'references', label: 'References & Admin', icon: Archive },
+    { id: 'appendices', label: 'Appendices (Forms)', icon: LayoutList }
   ];
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'overview':      return <ViewOverview />;
-      case 'policy':        return <ViewPolicyStatements />;
-      case 'procedures':    return <ViewProcedures />;
+      case 'overview': return <ViewOverview />;
+      case 'policy': return <ViewPolicyStatements />;
+      case 'procedures': return <ViewProcedures />;
       case 'documentation': return <ViewDocumentation />;
-      case 'compliance':    return <ViewCompliance />;
-      case 'references':    return <ViewReferencesAdmin />;
-      case 'appendices':    return <ViewAppendices />;
-      case 'alerts':        return <ViewPolicyAlerts />;
-      case 'faq':           return <ViewFAQ />;
-      case 'amendments':    return <ViewAmendmentLog />;
-      default:              return <ViewOverview />;
+      case 'compliance': return <ViewCompliance />;
+      case 'references': return <ViewReferencesAdmin />;
+      case 'appendices': return <ViewAppendices />;
+      default: return <ViewOverview />;
     }
   };
 
@@ -829,24 +1249,24 @@ export default function App() {
     <>
       <style>
         {`
-          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Roboto:wght@400;500;700&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap');
           .font-montserrat { font-family: 'Montserrat', sans-serif; }
           .font-roboto { font-family: 'Roboto', sans-serif; }
-
+          
           .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
           .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
           .custom-scrollbar::-webkit-scrollbar-thumb { background: #D9D6D5; border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
           .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #7A7A70; border: 2px solid transparent; background-clip: padding-box; }
-
+          
           @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
-            to   { opacity: 1; transform: translateY(0); }
+            to { opacity: 1; transform: translateY(0); }
           }
           .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
 
           @media print {
             body * { visibility: hidden; }
-            #printable-appendix, #printable-appendix * { visibility: visible; -webkit-print-color-adjust: exact !important; }
+            #printable-appendix, #printable-appendix * { visibility: visible; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
             #printable-appendix { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; padding: 0; }
             .no-print { display: none !important; }
             ::-webkit-scrollbar { display: none; }
@@ -854,92 +1274,57 @@ export default function App() {
         `}
       </style>
 
-      {/* Page background — mirrors the app shell tone so the card reads flat against it */}
-      <div className="min-h-screen w-full bg-[#F2EFE8] flex flex-col font-roboto text-[#1F1C1B]">
-        <div className="flex-1 flex flex-col items-stretch px-0 md:px-6 py-0 md:py-6">
-
-          {/* ─── THE MAIN CARD — header + tabs + content all flow inside ─── */}
-          <div className="flex-1 w-full max-w-[1280px] mx-auto bg-white rounded-none md:rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.05)] border border-[#E5E4E3] flex flex-col overflow-hidden">
-
-            {/* Action bar */}
-            <div className="flex items-center justify-between px-6 md:px-10 py-4 border-b border-[#E5E4E3] no-print">
-              <button className="flex items-center gap-1.5 text-[#007970] font-montserrat font-bold text-[12px] uppercase tracking-[0.12em] hover:opacity-80 transition-opacity">
-                <ChevronLeft size={16} />
-                Return to Policy Library
-              </button>
-              <div className="flex items-center gap-2.5">
-                <button onClick={() => window.print()} className="flex items-center gap-2 px-3.5 py-1.5 bg-white border border-[#E5E4E3] rounded-md text-[#1F1C1B] font-montserrat font-bold text-[11px] uppercase tracking-wider hover:bg-[#FAFBF8] transition-colors">
-                  <Printer size={14} />
-                  Print
-                </button>
-                <button className="flex items-center gap-2 px-3.5 py-1.5 bg-white border border-[#E5E4E3] rounded-md text-[#1F1C1B] font-montserrat font-bold text-[11px] uppercase tracking-wider hover:bg-[#FAFBF8] transition-colors">
-                  <Download size={14} />
-                  Download
-                </button>
-              </div>
-            </div>
-
-            {/* Header block — badges, title, meta — lives flat on the card */}
-            <div className="px-6 md:px-10 pt-7 pb-6 border-b border-[#E5E4E3]">
-              <div className="flex items-center gap-2 mb-5 flex-wrap">
-                <span className="text-[#007970] border border-[#007970]/30 bg-[#E5FEFF] px-3 py-0.5 rounded-full text-[10.5px] font-montserrat font-bold uppercase tracking-[0.12em]">{POLICY_META.id}</span>
-                <span className="text-white bg-[#007970] px-3 py-0.5 rounded-full text-[10.5px] font-montserrat font-bold uppercase tracking-[0.12em]">Active</span>
-                <span className="text-[#524048] border border-[#E5E4E3] bg-white px-3 py-0.5 rounded-full text-[10.5px] font-montserrat font-bold uppercase tracking-[0.12em]">Required</span>
-              </div>
-
-              <h1 className="font-montserrat font-light text-[34px] md:text-[40px] leading-tight text-[#1F1C1B] mb-6 tracking-tight">
-                {POLICY_META.title}
-              </h1>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
-                <MetaField label="Domain"      value={POLICY_META.domain} />
-                <MetaField label="Tier"        value="REQUIRED" />
-                <MetaField label="Approved By" value="Governing Body Chair" />
-                <MetaField label="Version"     value={`v${POLICY_META.version}`} />
-              </div>
-            </div>
-
-            {/* Tabs — inline on the same card, directly under the header */}
-            <nav className="border-b border-[#E5E4E3] overflow-x-auto custom-scrollbar no-print">
-              <div className="flex items-center gap-1 px-6 md:px-8 min-w-max">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id)}
-                      className={`flex items-center gap-1.5 px-3 md:px-4 py-3.5 transition-colors font-bold border-b-[2px] ${
-                        isActive
-                          ? 'text-[#007970] border-[#007970]'
-                          : 'text-[#524048] border-transparent hover:text-[#1F1C1B]'
-                      }`}
-                    >
-                      <Icon size={13} className={isActive ? 'text-[#007970]' : 'text-[#524048]'} />
-                      <span className="font-montserrat text-[11px] tracking-[0.08em] whitespace-nowrap uppercase">{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </nav>
-
-            {/* Content — flows directly on the main card, no inner cards */}
-            <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar px-6 md:px-10 py-8">
-              <div className="max-w-[1120px]">
-                {renderContent()}
-              </div>
-            </main>
-
+      {/* STRICT WHITE BACKGROUND ON ENTIRE CANVAS */}
+      <div className="h-screen w-full bg-[#FFFFFF] flex flex-col font-roboto overflow-hidden text-[#1F1C1B]">
+        
+        {/* GLOBAL ACTION BAR - CLEAN & FLAT */}
+        <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-[#E5E4E3] z-20 flex-shrink-0 no-print">
+          <button className="flex items-center gap-2 text-[#007970] font-montserrat font-semibold text-[13px] uppercase tracking-wider hover:underline transition-all">
+            <ChevronLeft size={18} />
+            Return to Policy Library
+          </button>
+          <div className="flex items-center gap-4">
+            <button onClick={() => window.print()} className="flex items-center gap-2 text-[#1F1C1B] font-montserrat font-semibold text-[12px] uppercase tracking-wider hover:opacity-70 transition-opacity">
+              <Printer size={16} /> Print
+            </button>
+            <button className="flex items-center gap-2 text-[#007970] font-montserrat font-semibold text-[12px] uppercase tracking-wider hover:opacity-70 transition-opacity">
+              <Download size={16} /> Download
+            </button>
           </div>
         </div>
+
+        {/* TOP NAVIGATION TABS - CLEAN ORANGE HIGHLIGHTS NO BG CHANGE */}
+        <nav className="bg-white border-b border-[#E5E4E3] z-10 flex-shrink-0 overflow-x-auto custom-scrollbar no-print">
+          <div className="flex items-center gap-2 px-6 min-w-max">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`flex items-center gap-2 px-4 py-4 transition-all duration-200 font-semibold group border-b-[3px] ${
+                    isActive 
+                      ? 'text-[#C74601] border-[#C74601] bg-white' 
+                      : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3] bg-white'
+                  }`}
+                >
+                  <Icon size={18} className={`${isActive ? 'text-[#C74601]' : 'text-[#007970] opacity-70 group-hover:opacity-100'}`} />
+                  <span className="font-montserrat text-[12px] tracking-[0.1em] whitespace-nowrap uppercase">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* MAIN CONTENT AREA - PURE WHITE */}
+        <main className="flex-1 p-6 md:p-10 lg:p-12 overflow-y-auto scroll-smooth custom-scrollbar bg-white">
+          <div className="max-w-[1200px] mx-auto h-full">
+            {renderContent()}
+          </div>
+        </main>
+
       </div>
     </>
   );
 }
-
-const MetaField = ({ label, value }) => (
-  <div>
-    <span className="block text-[#524048] text-[10px] uppercase tracking-[0.14em] font-montserrat font-bold mb-1">{label}</span>
-    <strong className="text-[#1F1C1B] font-roboto font-medium text-[13.5px]">{value}</strong>
-  </div>
-);

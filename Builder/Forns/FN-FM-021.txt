@@ -1,0 +1,70 @@
+FORM ID: FN-FM-021
+TITLE: Statistical Extrapolation Worksheet
+TYPE: Worksheet
+DOMAIN: FN
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- FN-BC-001
+- CO-CP-001
+
+PURPOSE:
+Documents statistical-sampling methodology and extrapolation computations when systemic overpayment is identified (aligned with MPIM Ch. 8 / PIM Ch. 3). Ensures defensibility in government-audit, RAC, UPIC, and self-disclosure scenarios.
+
+INSTRUCTIONS:
+Qualified statistician (internal or external) completes. Compliance & CFO review and sign. Supports FN-FM-020 Overpayment Identification and FN-FM-022 Quantification.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Case ID (link to FN-FM-020) (type=text, required=true, col=2)
+- Statistician Name / Credentials (type=text, required=true, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Sampling Methodology
+layout: grid
+
+fields:
+- Universe / Sampling Frame (claims population) (type=textarea, col=4)
+- Sampling Unit (claim / episode / beneficiary) (type=select, col=2, options=[Claim | Episode | Beneficiary | Other])
+- Sampling Method (simple random / stratified / cluster) (type=select, col=2, options=[Simple Random | Stratified | Cluster | Other])
+- Sample Size (type=text, col=2)
+- Confidence Level (90/95/99) (type=select, col=2, options=[90 | 95 | 99])
+- Precision (type=text, col=2)
+- RAT-STATS or Software Used (type=text, col=2)
+- Seed / Reproducibility Info (type=text, col=2)
+
+SECTION 3: Section 3 — Extrapolation Results
+layout: grid
+
+fields:
+- Sample Error Rate (type=text, col=2)
+- Point Estimate (type=text, col=2)
+- Lower Bound (one-sided 90%) (type=text, col=2)
+- Recommended Extrapolated Overpayment (most favorable to provider per MPIM) (type=text, col=2)
+- Methodology Narrative (type=textarea, col=4)
+
+SECTION 4: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Statistician — Printed Name (type=text, col=2)
+- Statistician — Signature (type=signature, col=1)
+- Statistician — Date (type=date, col=1)
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+- CFO — Printed Name (type=text, col=2)
+- CFO — Signature (type=signature, col=1)
+- CFO — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form FN-FM-021 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: FN-BC-001, CO-CP-001

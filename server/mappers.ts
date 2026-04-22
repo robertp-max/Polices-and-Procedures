@@ -8,8 +8,15 @@ import type { calendar_v3 } from 'googleapis';
 
 /** Payload the frontend sends to create/update events. */
 export interface PlannerEventPayload {
-  /** Internal App event ID (stored in extendedProperties.private.appEventId). */
-  appEventId: string;
+  /**
+   * STRICT — the stable system UUID for this event. Persisted to Google at
+   * `extendedProperties.private.event_id`. Historical name `appEventId` is
+   * preserved as an alias for backward compatibility; server code MUST
+   * read `event_id` but SHOULD accept `appEventId` on ingress.
+   */
+  event_id: string;
+  /** @deprecated legacy alias for `event_id` — kept for wire compatibility. */
+  appEventId?: string;
   title: string;
   summary?: string;
   description?: string;
@@ -37,6 +44,13 @@ export interface PlannerEventPayload {
   auditRisk?: string;
   completionState?: string;
   location?: string;
+
+  /** SANDBOX test event (safe to delete) vs PROD (deletion-restricted). */
+  env?: 'SANDBOX' | 'PROD';
+  /** Monotonic client version — sync engine refuses stale overwrites. */
+  version?: number;
+  /** Attendees are included in the change-detection hash. */
+  attendees?: string[];
 }
 
 /** What the frontend receives back for each event. */
@@ -46,8 +60,14 @@ export interface PlannerEventResponse extends PlannerEventPayload {
   createdAt?: string;
   updatedAt?: string;
   source: 'google';
-  /** Whether the upsert created a new Google event or updated an existing one. */
-  action?: 'created' | 'updated';
+  /** Result of the last sync pass for this event. */
+  action?: 'created' | 'updated' | 'skipped' | 'deleted' | 'failed';
+  /** Hash of the fields that participate in change detection. */
+  hash?: string;
+  /** Monotonic server-tracked version. */
+  version?: number;
+  /** Last successful sync timestamp. */
+  lastSyncedAt?: string;
 }
 
 function toRfc3339(date: string, time: string | undefined, fallbackSecondsEnd = false): string {
@@ -59,11 +79,14 @@ function toRfc3339(date: string, time: string | undefined, fallbackSecondsEnd = 
 export function toGoogleEvent(
   p: PlannerEventPayload,
   defaultTz: string,
+  extras: { hash?: string; version?: number } = {},
 ): calendar_v3.Schema$Event {
   const tz = p.timezone ?? defaultTz;
   const allDay = !!p.allDay || (!p.time && !p.timeEnd);
+  const eventId = p.event_id || p.appEventId || '';
+  const envTag: 'SANDBOX' | 'PROD' = p.env ?? 'PROD';
 
-  const description = buildDescription(p);
+  const description = buildDescription({ ...p, event_id: eventId, env: envTag });
 
   const base: calendar_v3.Schema$Event = {
     summary: p.title,
@@ -71,7 +94,12 @@ export function toGoogleEvent(
     location: p.location,
     extendedProperties: {
       private: pruneStrings({
-        appEventId: p.appEventId,
+        // PRIMARY identity keys — strict-match lookup uses these.
+        event_id: eventId,
+        env: envTag,
+        // Legacy alias kept so old events remain discoverable. New code
+        // must never rely on this for identity.
+        appEventId: eventId,
         domain: p.domain,
         category: p.category,
         cadence: p.cadence,
@@ -83,7 +111,9 @@ export function toGoogleEvent(
         evidenceStatus: p.evidenceStatus,
         auditRisk: p.auditRisk,
         completionState: p.completionState,
-        source: 'ci-regulatory-planner',
+        source: 'CI_ENGINE',
+        hash: extras.hash,
+        version: extras.version != null ? String(extras.version) : undefined,
       }),
     },
   };
@@ -112,9 +142,15 @@ export function fromGoogleEvent(g: calendar_v3.Schema$Event): PlannerEventRespon
   const endDateInclusive = allDay && g.end?.date ? addDaysISO(g.end.date, -1) : splitIso(endIso, allDay).date;
   const endTime = allDay ? undefined : splitIso(endIso, false).time;
 
+  // Primary id key is event_id; fall back to the legacy appEventId only when
+  // no new-shape key is present (migration path).
+  const eventId = ext.event_id || ext.appEventId || '';
+  const envTag = (ext.env === 'SANDBOX' ? 'SANDBOX' : 'PROD') as 'SANDBOX' | 'PROD';
+
   return {
     googleEventId: g.id ?? '',
-    appEventId: ext.appEventId ?? '',
+    event_id: eventId,
+    appEventId: eventId,
     title: g.summary ?? '',
     summary: undefined,
     description: g.description ?? '',
@@ -139,8 +175,22 @@ export function fromGoogleEvent(g: calendar_v3.Schema$Event): PlannerEventRespon
     htmlLink: g.htmlLink ?? undefined,
     createdAt: g.created ?? undefined,
     updatedAt: g.updated ?? undefined,
+    env: envTag,
+    hash: ext.hash,
+    version: ext.version ? Number(ext.version) : undefined,
     source: 'google',
   };
+}
+
+/** Extract a normalized event_id from a Google event, preferring the new key. */
+export function readEventId(g: calendar_v3.Schema$Event): string {
+  const ext = (g.extendedProperties?.private ?? {}) as Record<string, string>;
+  return ext.event_id || ext.appEventId || '';
+}
+
+/** Normalize incoming payloads: accept either event_id or legacy appEventId. */
+export function normalizeEventId(p: PlannerEventPayload): string {
+  return p.event_id || p.appEventId || '';
 }
 
 function buildDescription(p: PlannerEventPayload): string {
@@ -155,7 +205,19 @@ function buildDescription(p: PlannerEventPayload): string {
   if (p.regulatoryDriver)  meta.push(`Driver: ${p.regulatoryDriver}`);
   if (p.auditRisk)         meta.push(`Audit risk: ${p.auditRisk}`);
   if (meta.length) parts.push('\n— Regulatory Planner —\n' + meta.join('\n'));
-  parts.push(`\n(app event: ${p.appEventId})`);
+  // Machine-readable fallback ID block. extendedProperties.private.event_id is
+  // the PRIMARY channel; this block exists so the identity survives manual
+  // copy-paste of events between calendars and is greppable in the Google UI.
+  const envTag = p.env ?? 'PROD';
+  const eventId = p.event_id || p.appEventId || '';
+  parts.push(
+    [
+      '[CI-EVENT]',
+      `event_id=${eventId}`,
+      `env=${envTag}`,
+      `source=CI_ENGINE`,
+    ].join('\n'),
+  );
   return parts.filter(Boolean).join('\n\n');
 }
 

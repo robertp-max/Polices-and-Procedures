@@ -1,0 +1,65 @@
+FORM ID: HR-FM-063
+TITLE: Wage Complaint Intake
+TYPE: Form
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- HR-TC-003
+- HR-ER-005
+
+PURPOSE:
+Intake of wage / hour / meal & rest / pay-stub complaints. Triggers HR investigation (HR-FM-048/050), legal review, and remediation (back wages, waiting-time penalties, 226 pay-stub correction). Anti-retaliation protections apply.
+
+INSTRUCTIONS:
+HR logs within same day of receipt; legal reviews within 5 business days; remediation within 30 days where substantiated.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Complainant (or Anonymous) (type=text, col=2)
+- Employee ID (type=text, col=2)
+- Complaint ID (type=text, required=true, col=2)
+- Date Received (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Complaint
+layout: grid
+
+fields:
+- Nature (unpaid OT / off-the-clock / meal premium / rest premium / pay-stub / final-pay / minimum wage / other) (type=select, required=true, col=2, options=[Unpaid OT | Off-the-clock | Meal Premium | Rest Premium | Pay-stub (Labor Code 226) | Final Pay | Minimum Wage | Other])
+- Period Covered (type=text, col=2)
+- Amount in Dispute (type=text, col=2)
+- Narrative (type=textarea, col=4)
+- Documentation Provided (time records, pay stubs) (type=textarea, col=4)
+
+SECTION 3: Section 3 — Disposition
+layout: grid
+
+fields:
+- Investigation Opened (Y/N) (type=select, col=2, options=[Yes | No])
+- Finding (substantiated / not / partial) (type=select, col=2, options=[Substantiated | Not Substantiated | Partial | Pending])
+- Remediation (back wages / corrected pay stubs / training / control change) (type=textarea, col=4)
+- Waiting-Time Penalty (CA Labor Code § 203) assessed? (Y/N) (type=select, col=2, options=[Yes | No | NA])
+- Closure Date (type=date, col=2)
+
+SECTION 4: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- HR — Printed Name (type=text, col=2)
+- HR — Signature (type=signature, col=1)
+- HR — Date (type=date, col=1)
+- Legal Counsel — Printed Name (type=text, col=2)
+- Legal Counsel — Signature (type=signature, col=1)
+- Legal Counsel — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-063 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: HR-TC-003, HR-ER-005

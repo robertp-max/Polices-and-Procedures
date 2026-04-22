@@ -2,22 +2,37 @@
 =============================================================================
 PROMPT FOR CLAUDE (Copy and paste this to Claude for the next iteration):
 =============================================================================
-Role: You are an expert Frontend UI/UX Developer with an obsessive eye for detail, specializing in React and Tailwind CSS. 
+Role: You are an expert Frontend UI/UX Developer with an obsessive eye for
+detail, specializing in React and Tailwind CSS.
 
-Task: Polish and perfect the "Light Mode" design of the CareIndeed Enterprise Form (Policy Classification Tier Matrix) provided in the code below. 
+Task: Polish and perfect the "Light Mode" design of the CareIndeed Enterprise
+Form Viewer (Policy Classification Tier Matrix) below. This template renders
+every form in the Enterprise Forms Library, so design decisions must generalise.
 
 Strict Requirements & Guidelines:
-1. Light Mode Aesthetics: The form must look crisp and professional in light mode. Use clean white backgrounds (`bg-white`), subtle off-white section containers if necessary (`bg-[#FAFBF8]`), and ensure all text has high contrast (use `#1F1C1B` for primary text and `#52404B` for secondary labels).
-2. Logo Constraints: You MUST use the Care Indeed GREY logo (e.g., using text/fill color `#52404B` or `#1F1C1B`). Do NOT under any circumstances use a white logo, as it will be completely invisible on the light background.
-3. Typography: Strictly adhere to the brand fonts: 'Montserrat' for headings, labels, and primary UI elements; 'Roboto' for standard body text and input values.
-4. Obsessive Alignment (CRITICAL): Check all flex and grid containers. All input fields, borders, and labels must align perfectly on their respective vertical and horizontal axes. 
-5. Signatures & Attestation Section (CRITICAL FOCUS): You notoriously mess up the alignment of signature lines. You must ensure the 3-column layout ("Printed Name", "Signature", "Date") is perfectly flush. 
-   - Ensure the label heights do not disrupt the input alignment. 
-   - The bottom borders (`border-b`) and dashed borders (`border-dashed`) MUST form a perfectly straight horizontal line across the entire row.
-   - Use strict `grid-cols-3` with `items-end` or explicitly fixed heights to guarantee the input baselines match perfectly regardless of the text inside the labels.
-6. Borders & Radii: Use `#E5E4E3` for standard field borders with an `8px` border radius where applicable, matching the CareIndeed design system.
-
-Please provide the updated, perfectly aligned React component.
+1. Light Mode Aesthetics: crisp and professional in light mode. White page
+   background, `#FAFBF8` subtle section panels where used, `#1F1C1B` primary
+   text, `#52404B` secondary labels, `#007970` teal accents, `#C74601` orange
+   accents.
+2. Brand Logo: Use the official Care Indeed GRAY PNG logo at
+   `./logo-gray-Dju7zS6k.png`. Do NOT use the white logo (invisible on white)
+   and do NOT re-draw the mark as an inline SVG.
+3. Typography: 'Montserrat' for headings, labels, UI elements; 'Roboto' for
+   body text and input values.
+4. Obsessive Left-Alignment (CRITICAL): Every element — header lockup,
+   metadata strip, callouts, section titles, input labels, input fields,
+   table columns, signature rows, and footer lines — MUST share the exact
+   same left edge. The container enforces a single content column;
+   flex/grid children never drift off-axis.
+5. Signatures & Attestation (CRITICAL FOCUS): 3-column layout ("Printed
+   Name", "Signature", "Date") must be perfectly flush. Bottom borders form
+   one unbroken horizontal line across the row regardless of label wrap.
+6. Print Safety (CRITICAL): Content must NEVER touch the paper edge when
+   printed. Use `@page` with 0.6in margins on all four sides AND a visible
+   `#E5E4E3` bordered content frame with internal padding. Force color
+   printing, suppress hover/transition, keep signature rows together, keep
+   table headers repeating across page breaks.
+7. Borders & Radii: `#E5E4E3` borders at `8px` radius for inputs/panels.
 =============================================================================
 */
 
@@ -62,7 +77,7 @@ const DatePickerField = ({ labelHTML, inputClass, iconClass }) => {
     e.stopPropagation();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
   };
-  
+
   const prevMonth = (e) => {
     e.stopPropagation();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
@@ -87,8 +102,8 @@ const DatePickerField = ({ labelHTML, inputClass, iconClass }) => {
     <div className="flex flex-col relative" ref={containerRef}>
       {labelHTML}
       <div className="relative" onClick={handleOpen}>
-        <input 
-          type="text" 
+        <input
+          type="text"
           readOnly
           value={formatDate(selectedDate)}
           className={`${inputClass} cursor-pointer`}
@@ -98,9 +113,9 @@ const DatePickerField = ({ labelHTML, inputClass, iconClass }) => {
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 top-full right-0 bg-white border border-[#E5E4E3] rounded-[8px] shadow-lg p-4 w-72">
+        <div className="absolute z-50 mt-2 top-full left-0 bg-white border border-[#E5E4E3] rounded-[8px] shadow-lg p-4 w-72 no-print">
           <div className="flex justify-between items-center mb-4">
-            <button 
+            <button
               type="button"
               onClick={prevMonth}
               className="p-1.5 hover:bg-[#F7FEFF] rounded text-[#007970] transition-colors"
@@ -110,7 +125,7 @@ const DatePickerField = ({ labelHTML, inputClass, iconClass }) => {
             <div className="font-montserrat font-semibold text-[#1F1C1B] text-sm">
               {currentMonth.toLocaleString('default', { month: 'long' })} {currentMonth.getFullYear()}
             </div>
-            <button 
+            <button
               type="button"
               onClick={nextMonth}
               className="p-1.5 hover:bg-[#F7FEFF] rounded text-[#007970] transition-colors"
@@ -126,7 +141,7 @@ const DatePickerField = ({ labelHTML, inputClass, iconClass }) => {
           <div className="grid grid-cols-7 gap-1">
             {days.map((day, idx) => {
               if (!day) return <div key={`empty-${idx}`} />;
-              
+
               const isToday = new Date().toDateString() === new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).toDateString();
               const isSelected = selectedDate && selectedDate.toDateString() === new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).toDateString();
 
@@ -136,8 +151,8 @@ const DatePickerField = ({ labelHTML, inputClass, iconClass }) => {
                   key={idx}
                   onClick={(e) => handleDateSelect(day, e)}
                   className={`h-8 w-full rounded-[4px] flex items-center justify-center font-roboto text-sm transition-all
-                    ${isSelected ? 'bg-[#007970] text-white font-medium shadow-sm' : 
-                      isToday ? 'text-[#C74601] font-bold border border-[#C74601]' : 
+                    ${isSelected ? 'bg-[#007970] text-white font-medium shadow-sm' :
+                      isToday ? 'text-[#C74601] font-bold border border-[#C74601]' :
                       'text-[#1F1C1B] hover:bg-[#E5FEFF] hover:text-[#007970]'}`}
                 >
                   {day}
@@ -152,271 +167,294 @@ const DatePickerField = ({ labelHTML, inputClass, iconClass }) => {
 };
 
 const App = () => {
+  // Shared field/label tokens — used everywhere so every row lands on the same left edge.
+  const LABEL_CLASS =
+    "font-montserrat font-semibold text-[11px] text-[#52404B] mb-2 uppercase tracking-[0.12em] leading-tight";
+  const INPUT_CLASS =
+    "w-full h-11 border border-[#E5E4E3] rounded-[8px] px-3 font-roboto text-[14px] text-[#1F1C1B] " +
+    "focus:border-[#007970] focus:ring-1 focus:ring-[#007970] outline-none transition-all bg-white";
+  const SIG_INPUT_CLASS =
+    "w-full h-10 border-b border-[#C8C6C5] px-0 font-roboto text-[14px] text-[#1F1C1B] " +
+    "focus:border-[#007970] outline-none transition-all bg-transparent";
+  const SIG_INPUT_DASHED =
+    "w-full h-10 border-b border-dashed border-[#C8C6C5] px-0 font-roboto text-[14px] text-[#1F1C1B] " +
+    "focus:border-[#007970] outline-none transition-all bg-transparent";
+
   return (
-    <div className="min-h-screen bg-white font-roboto text-[#1F1C1B]">
-      {/* Import Brand Fonts */}
+    <div className="min-h-screen bg-[#F2F2F0] font-roboto text-[#1F1C1B]">
+      {/* Brand fonts + print rules. @page enforces 0.6in safe margins on all 4
+          sides; the content card carries a visible border + internal padding so
+          text is never clipped at the paper edge. */}
       <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
         .font-roboto { font-family: 'Roboto', sans-serif; }
+
+        @page { size: Letter; margin: 0.6in; }
+
+        @media print {
+          html, body { background: #FFFFFF !important; }
+          .screen-shell { background: #FFFFFF !important; padding: 0 !important; }
+          .form-frame {
+            box-shadow: none !important;
+            border: 1px solid #C8C6C5 !important;
+            border-radius: 0 !important;
+            padding: 0.5in !important;
+            margin: 0 !important;
+            max-width: none !important;
+          }
+          .no-print { display: none !important; }
+          a, button { color: inherit !important; }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            transition: none !important;
+          }
+          .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+          thead { display: table-header-group; }
+          tr, td, th { break-inside: avoid; page-break-inside: avoid; }
+        }
       `}} />
 
-      <div className="max-w-6xl mx-auto px-6 py-12 lg:px-12">
-        
-        {/* Header Section — gray brand lockup per Care Indeed Light-mode brand kit.
-            Do NOT use the orange/white logo marks on a light background. */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-4 gap-4">
-          <div className="flex items-center gap-4">
-            {/* CareIndeed gray brand lockup */}
-            <div className="flex items-center gap-2.5">
-              <svg width="38" height="38" viewBox="0 0 100 100" aria-hidden="true">
-                <circle cx="50" cy="50" r="46" fill="none" stroke="#52404B" strokeWidth="3.5" />
-                <path d="M32 58 C32 46 40 40 50 40 C60 40 68 46 68 58" fill="none" stroke="#52404B" strokeWidth="4" strokeLinecap="round" />
-                <circle cx="50" cy="35" r="5" fill="#52404B" />
-              </svg>
-              <div className="flex flex-col leading-tight">
-                <span className="font-montserrat font-bold text-[18px] text-[#1F1C1B] tracking-tight">
-                  Care<span className="text-[#52404B]">Indeed</span>
-                </span>
-                <span className="font-montserrat font-medium text-[9.5px] text-[#52404B] tracking-[0.16em] uppercase">
-                  The Heart of Home Health
-                </span>
-              </div>
+      {/* Screen shell — gives the form a comfortable gutter on larger
+          screens so the bordered card reads as a document, not a web page. */}
+      <div className="screen-shell mx-auto max-w-[8.5in] px-4 py-8 md:px-8 md:py-12">
+
+        {/* Content frame — the "paper". Visible border on all 4 sides,
+            generous internal padding so every element has breathing room
+            and nothing is clipped when printing. */}
+        <div
+          className="form-frame bg-white border border-[#E5E4E3] rounded-[12px] shadow-sm
+                     px-8 py-10 md:px-12 md:py-14"
+        >
+
+          {/* ─────────────────────────────────────────────────────────────
+              HEADER — gray PNG logo anchored hard to the left edge;
+              form meta sits on the same top baseline on the right.
+              ───────────────────────────────────────────────────────────── */}
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex items-center">
+              <img
+                src="./logo-gray-Dju7zS6k.png"
+                alt="Care Indeed — The Heart of Home Health"
+                className="h-12 w-auto select-none"
+                draggable={false}
+              />
             </div>
 
-            <div className="hidden md:block w-px h-10 bg-[#E5E4E3] mx-2"></div>
-
-            <h1 className="font-montserrat font-semibold text-sm tracking-[0.18em] text-[#007970] uppercase">
-              Enterprise Forms Library
-            </h1>
-          </div>
-
-          <div className="text-right flex flex-col items-end">
-            <span className="font-montserrat font-semibold text-[11px] text-[#524048] tracking-[0.18em] uppercase">Matrix</span>
-            <span className="font-roboto font-medium text-[13px] text-[#1F1C1B]">EN-FM-003</span>
-          </div>
-        </header>
-
-        {/* Divider — solid teal, no gradient fade-to-white (flatter, more legible) */}
-        <div className="h-px w-full bg-[#007970] mb-10"></div>
-
-        {/* Form Title & Metadata */}
-        <div className="mb-8">
-          <h2 className="font-montserrat font-semibold text-4xl text-[#1F1C1B] mb-8">
-            Policy Classification Tier Matrix
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 text-sm">
-            <div>
-              <span className="block font-montserrat font-semibold text-[11px] text-[#747470] tracking-wider uppercase mb-1">Form ID</span>
-              <span className="font-roboto font-medium text-[#1F1C1B]">EN-FM-003</span>
+            <div className="flex flex-col sm:items-end text-left sm:text-right">
+              <span className="font-montserrat font-semibold text-[10px] text-[#747470] tracking-[0.2em] uppercase">
+                Enterprise Forms Library
+              </span>
+              <span className="font-roboto font-medium text-[13px] text-[#1F1C1B] mt-0.5">
+                EN-FM-003 · v6.0
+              </span>
             </div>
-            <div>
-              <span className="block font-montserrat font-semibold text-[11px] text-[#747470] tracking-wider uppercase mb-1">Version</span>
-              <span className="font-roboto text-[#1F1C1B]">v6.0</span>
-            </div>
-            <div>
-              <span className="block font-montserrat font-semibold text-[11px] text-[#747470] tracking-wider uppercase mb-1">Effective</span>
-              <span className="font-roboto text-[#1F1C1B]">2025-07-10</span>
-            </div>
-            <div>
-              <span className="block font-montserrat font-semibold text-[11px] text-[#747470] tracking-wider uppercase mb-1">Next Review</span>
-              <span className="font-roboto text-[#1F1C1B]">2026-07-10</span>
-            </div>
-          </div>
+          </header>
 
-          <div className="mb-10">
-            <span className="block font-montserrat font-semibold text-[11px] text-[#747470] tracking-wider uppercase mb-2">Linked Policy IDs</span>
-            <span className="inline-block bg-[#E5FEFF] text-[#007970] font-roboto font-medium text-xs px-3 py-1.5 rounded-[4px]">
-              EN-TG-001
-            </span>
-          </div>
-        </div>
+          {/* Solid teal rule — same left/right extents as every section below. */}
+          <div className="h-px w-full bg-[#007970] mb-10"></div>
 
-        {/* Callouts */}
-        <div className="flex flex-col gap-4 mb-12">
-          {/* Purpose */}
-          <div className="bg-[#F7FEFF] border-l-4 border-[#007970] p-5 rounded-r-[8px]">
-            <h3 className="font-montserrat font-bold text-[11px] text-[#007970] tracking-widest uppercase mb-2">Purpose</h3>
-            <p className="font-roboto text-[#1F1C1B] text-sm leading-relaxed">
-              Three-tier classification matrix (Tier 1 Enterprise Critical / Tier 2 Operational Standard / Tier 3 Supporting) assigned to every policy to drive review cadence, approval routing, and acknowledgment frequency.
+          {/* ─────────────────────────────────────────────────────────────
+              FORM TITLE & METADATA
+              All four meta cells share the same baseline and left edge
+              as the title above and the sections below.
+              ───────────────────────────────────────────────────────────── */}
+          <section className="mb-10">
+            <h2 className="font-montserrat font-semibold text-[28px] md:text-[32px] leading-tight text-[#1F1C1B] mb-1">
+              Policy Classification Tier Matrix
+            </h2>
+            <p className="font-montserrat font-medium text-[11px] text-[#007970] tracking-[0.22em] uppercase mb-8">
+              Enterprise / Compliance · Form EN-FM-003
             </p>
-          </div>
 
-          {/* Instructions */}
-          <div className="bg-[#FFFAF7] border-l-4 border-[#C74601] p-5 rounded-r-[8px]">
-            <h3 className="font-montserrat font-bold text-[11px] text-[#C74601] tracking-widest uppercase mb-2">Instructions</h3>
-            <p className="font-roboto text-[#1F1C1B] text-sm leading-relaxed">
-              Completed during initial policy authoring and re-validated annually or upon any change in regulatory exposure, patient-safety impact, or financial risk of the subject policy.
-            </p>
-          </div>
-        </div>
+            <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-5 mb-6">
+              {[
+                ["Form ID", "EN-FM-003"],
+                ["Version", "v6.0"],
+                ["Effective", "2025-07-10"],
+                ["Next Review", "2026-07-10"],
+              ].map(([k, v]) => (
+                <div key={k} className="flex flex-col">
+                  <dt className="font-montserrat font-semibold text-[10px] text-[#747470] tracking-[0.16em] uppercase mb-1">{k}</dt>
+                  <dd className="font-roboto text-[14px] text-[#1F1C1B]">{v}</dd>
+                </div>
+              ))}
+            </dl>
 
-        {/* Section 1: Identification */}
-        <div className="mb-12">
-          <h3 className="font-montserrat font-semibold text-lg text-[#1F1C1B] tracking-wide mb-4 flex items-center gap-4">
-            SECTION 1 — IDENTIFICATION
-            <div className="flex-grow h-px bg-[#007970]"></div>
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <div className="flex flex-col">
-              <label className="font-montserrat font-medium text-[12px] text-[#52404B] mb-2 uppercase tracking-wide">
-                Form Completed By (Full Name) <span className="text-[#C74601]">*</span>
-              </label>
-              <input 
-                type="text" 
-                className="w-full border border-[#E5E4E3] rounded-[8px] p-3 font-roboto text-[#1F1C1B] focus:border-[#007970] focus:ring-1 focus:ring-[#007970] outline-none transition-all"
-                placeholder=""
-              />
+            <div>
+              <span className="block font-montserrat font-semibold text-[10px] text-[#747470] tracking-[0.16em] uppercase mb-2">
+                Linked Policy IDs
+              </span>
+              <span className="inline-block bg-[#E5FEFF] text-[#007970] font-roboto font-medium text-xs px-3 py-1.5 rounded-[4px]">
+                EN-TG-001
+              </span>
             </div>
-            
-            <div className="flex flex-col">
-              <label className="font-montserrat font-medium text-[12px] text-[#52404B] mb-2 uppercase tracking-wide">
-                Title / Role <span className="text-[#C74601]">*</span>
-              </label>
-              <input 
-                type="text" 
-                className="w-full border border-[#E5E4E3] rounded-[8px] p-3 font-roboto text-[#1F1C1B] focus:border-[#007970] focus:ring-1 focus:ring-[#007970] outline-none transition-all"
-                placeholder=""
-              />
+          </section>
+
+          {/* ─────────────────────────────────────────────────────────────
+              CALLOUTS — full-width panels, flush-left, equal padding.
+              ───────────────────────────────────────────────────────────── */}
+          <section className="flex flex-col gap-4 mb-12 avoid-break">
+            <div className="bg-[#F7FEFF] border-l-4 border-[#007970] rounded-r-[8px] px-5 py-4">
+              <h3 className="font-montserrat font-bold text-[11px] text-[#007970] tracking-[0.22em] uppercase mb-2">
+                Purpose
+              </h3>
+              <p className="font-roboto text-[#1F1C1B] text-[13.5px] leading-relaxed">
+                Three-tier classification matrix (Tier 1 Enterprise Critical / Tier 2 Operational Standard / Tier 3 Supporting) assigned to every policy to drive review cadence, approval routing, and acknowledgment frequency.
+              </p>
             </div>
 
-            <div className="flex flex-col">
-              <label className="font-montserrat font-medium text-[12px] text-[#52404B] mb-2 uppercase tracking-wide">
-                Department / Branch
-              </label>
-              <input 
-                type="text" 
-                className="w-full border border-[#E5E4E3] rounded-[8px] p-3 font-roboto text-[#1F1C1B] focus:border-[#007970] focus:ring-1 focus:ring-[#007970] outline-none transition-all"
-                placeholder=""
-              />
+            <div className="bg-[#FFFAF7] border-l-4 border-[#C74601] rounded-r-[8px] px-5 py-4">
+              <h3 className="font-montserrat font-bold text-[11px] text-[#C74601] tracking-[0.22em] uppercase mb-2">
+                Instructions
+              </h3>
+              <p className="font-roboto text-[#1F1C1B] text-[13.5px] leading-relaxed">
+                Completed during initial policy authoring and re-validated annually or upon any change in regulatory exposure, patient-safety impact, or financial risk of the subject policy.
+              </p>
             </div>
+          </section>
 
-            <DatePickerField 
-              labelHTML={
-                <label className="font-montserrat font-medium text-[12px] text-[#52404B] mb-2 uppercase tracking-wide">
-                  Date Completed <span className="text-[#C74601]">*</span>
+          {/* ─────────────────────────────────────────────────────────────
+              SECTION 1 — IDENTIFICATION
+              Uniform label/input tokens so all four fields land on
+              identical baselines.
+              ───────────────────────────────────────────────────────────── */}
+          <section className="mb-12 avoid-break">
+            <h3 className="font-montserrat font-semibold text-[13px] text-[#1F1C1B] tracking-[0.22em] uppercase mb-4 flex items-center gap-4">
+              <span className="shrink-0">Section 1 — Identification</span>
+              <span className="flex-grow h-px bg-[#007970]"></span>
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+              <div className="flex flex-col">
+                <label className={LABEL_CLASS}>
+                  Form Completed By (Full Name) <span className="text-[#C74601]">*</span>
                 </label>
-              }
-              inputClass="w-full border border-[#E5E4E3] rounded-[8px] p-3 pr-10 font-roboto text-[#1F1C1B] focus:border-[#007970] focus:ring-1 focus:ring-[#007970] outline-none transition-all bg-white"
-              iconClass="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#747470] w-5 h-5 pointer-events-none"
-            />
-          </div>
-        </div>
+                <input type="text" className={INPUT_CLASS} />
+              </div>
 
-        {/* Section 2: Matrix */}
-        <div className="mb-12">
-          <h3 className="font-montserrat font-semibold text-lg text-[#1F1C1B] tracking-wide mb-4 flex items-center gap-4">
-            SECTION 2 — MATRIX
-            <div className="flex-grow h-px bg-[#007970]"></div>
-          </h3>
+              <div className="flex flex-col">
+                <label className={LABEL_CLASS}>
+                  Title / Role <span className="text-[#C74601]">*</span>
+                </label>
+                <input type="text" className={INPUT_CLASS} />
+              </div>
 
-          <div className="overflow-x-auto rounded-[8px] border border-[#E5E4E3]">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#FAFBF8] border-b border-[#E5E4E3]">
-                  {["Policy ID", "Current Tier", "Proposed Tier", "Regulatory Driver", "Patient-Safety Driver", "Financial Driver", "Approver", "Decision Date"].map((header, i) => (
-                    <th key={i} className="py-4 px-4 font-montserrat font-semibold text-[10px] text-[#52404B] uppercase tracking-wider whitespace-nowrap">
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[...Array(8)].map((_, index) => (
-                  <tr key={index} className="border-b border-[#E5E4E3] last:border-0 hover:bg-[#F7FEFF] transition-colors">
-                    {[...Array(8)].map((_, colIndex) => (
-                      <td key={colIndex} className="py-3 px-4 h-12"></td>
+              <div className="flex flex-col">
+                <label className={LABEL_CLASS}>Department / Branch</label>
+                <input type="text" className={INPUT_CLASS} />
+              </div>
+
+              <DatePickerField
+                labelHTML={
+                  <label className={LABEL_CLASS}>
+                    Date Completed <span className="text-[#C74601]">*</span>
+                  </label>
+                }
+                inputClass={`${INPUT_CLASS} pr-10`}
+                iconClass="absolute right-3 top-1/2 -translate-y-1/2 text-[#747470] w-5 h-5 pointer-events-none"
+              />
+            </div>
+          </section>
+
+          {/* ─────────────────────────────────────────────────────────────
+              SECTION 2 — MATRIX
+              Table stretches edge-to-edge of the content column so
+              its left/right match the rest of the page.
+              ───────────────────────────────────────────────────────────── */}
+          <section className="mb-12">
+            <h3 className="font-montserrat font-semibold text-[13px] text-[#1F1C1B] tracking-[0.22em] uppercase mb-4 flex items-center gap-4">
+              <span className="shrink-0">Section 2 — Matrix</span>
+              <span className="flex-grow h-px bg-[#007970]"></span>
+            </h3>
+
+            <div className="overflow-x-auto rounded-[8px] border border-[#E5E4E3]">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#FAFBF8] border-b border-[#E5E4E3]">
+                    {["Policy ID", "Current Tier", "Proposed Tier", "Regulatory Driver", "Patient-Safety Driver", "Financial Driver", "Approver", "Decision Date"].map((header, i) => (
+                      <th
+                        key={i}
+                        className="py-3 px-3 font-montserrat font-semibold text-[10px] text-[#52404B] uppercase tracking-[0.12em] whitespace-nowrap"
+                      >
+                        {header}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {[...Array(8)].map((_, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-[#E5E4E3] last:border-0 hover:bg-[#F7FEFF] transition-colors"
+                    >
+                      {[...Array(8)].map((_, colIndex) => (
+                        <td key={colIndex} className="py-3 px-3 h-11"></td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* ─────────────────────────────────────────────────────────────
+              SECTION 3 — SIGNATURES & ATTESTATION
+              grid-cols-3 + items-end guarantees Printed Name / Signature /
+              Date baselines sit on ONE continuous horizontal rule,
+              regardless of label wrap.
+              ───────────────────────────────────────────────────────────── */}
+          <section className="mb-14 avoid-break">
+            <h3 className="font-montserrat font-semibold text-[13px] text-[#1F1C1B] tracking-[0.22em] uppercase mb-6 flex items-center gap-4">
+              <span className="shrink-0">Section 3 — Signatures &amp; Attestation</span>
+              <span className="flex-grow h-px bg-[#007970]"></span>
+            </h3>
+
+            {[
+              { who: "Completed By", key: "cb" },
+              { who: "Supervisor / Reviewer", key: "sv" },
+            ].map((row) => (
+              <div
+                key={row.key}
+                className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 mb-10 last:mb-0 items-end avoid-break"
+              >
+                {/* min-h-[2.6em] on every label reserves space for two
+                    lines of text so all three input underlines stay on the
+                    same baseline even when one label wraps and others don't. */}
+                <div className="flex flex-col">
+                  <label className={`${LABEL_CLASS} min-h-[2.6em]`}>{row.who} — Printed Name</label>
+                  <input type="text" className={SIG_INPUT_CLASS} />
+                </div>
+                <div className="flex flex-col">
+                  <label className={`${LABEL_CLASS} min-h-[2.6em]`}>{row.who} — Signature</label>
+                  <input type="text" className={SIG_INPUT_DASHED} />
+                </div>
+                <DatePickerField
+                  labelHTML={<label className={`${LABEL_CLASS} min-h-[2.6em]`}>{row.who} — Date</label>}
+                  inputClass={`${SIG_INPUT_CLASS} pr-8`}
+                  iconClass="absolute right-0 top-1/2 -translate-y-1/2 text-[#747470] w-4 h-4 pointer-events-none"
+                />
+              </div>
+            ))}
+          </section>
+
+          {/* ─────────────────────────────────────────────────────────────
+              FOOTER — same left edge as everything above.
+              ───────────────────────────────────────────────────────────── */}
+          <footer className="pt-5 border-t border-[#E5E4E3]">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 text-[10px] text-[#747470] font-roboto">
+              <div className="flex flex-col gap-1">
+                <p>Care Indeed Home Health Care, Inc. · Form EN-FM-003 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10</p>
+                <p>Linked Policies: EN-TG-001</p>
+              </div>
+              <div className="flex flex-col gap-1 md:text-right">
+                <p>EN-FM-003 · v6.0</p>
+              </div>
+            </div>
+          </footer>
+
         </div>
-
-        {/* Section 3: Signatures & Attestation */}
-        <div className="mb-16">
-          <h3 className="font-montserrat font-semibold text-lg text-[#1F1C1B] tracking-wide mb-6 flex items-center gap-4">
-            SECTION 3 — SIGNATURES & ATTESTATION
-            <div className="flex-grow h-px bg-[#007970]"></div>
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10">
-            {/* Completed By Row */}
-            <div className="flex flex-col">
-              <label className="font-montserrat font-medium text-[11px] text-[#52404B] mb-2 uppercase tracking-wider">
-                Completed By — Printed Name
-              </label>
-              <input 
-                type="text" 
-                className="w-full border-b border-[#E5E4E3] py-2 font-roboto text-[#1F1C1B] focus:border-[#007970] outline-none transition-all bg-transparent"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-montserrat font-medium text-[11px] text-[#52404B] mb-2 uppercase tracking-wider">
-                Completed By — Signature
-              </label>
-              <input 
-                type="text" 
-                className="w-full border-b border-dashed border-[#E5E4E3] py-2 font-roboto text-[#1F1C1B] focus:border-[#007970] outline-none transition-all bg-transparent"
-              />
-            </div>
-            <DatePickerField 
-              labelHTML={
-                <label className="font-montserrat font-medium text-[11px] text-[#52404B] mb-2 uppercase tracking-wider">
-                  Completed By — Date
-                </label>
-              }
-              inputClass="w-full border-b border-[#E5E4E3] py-2 pr-8 font-roboto text-[#1F1C1B] focus:border-[#007970] outline-none transition-all bg-transparent cursor-pointer"
-              iconClass="absolute right-0 top-1/2 transform -translate-y-1/2 text-[#747470] w-4 h-4 pointer-events-none"
-            />
-
-            {/* Supervisor Row */}
-            <div className="flex flex-col">
-              <label className="font-montserrat font-medium text-[11px] text-[#52404B] mb-2 uppercase tracking-wider">
-                Supervisor / Reviewer — Printed Name
-              </label>
-              <input 
-                type="text" 
-                className="w-full border-b border-[#E5E4E3] py-2 font-roboto text-[#1F1C1B] focus:border-[#007970] outline-none transition-all bg-transparent"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-montserrat font-medium text-[11px] text-[#52404B] mb-2 uppercase tracking-wider">
-                Supervisor / Reviewer — Signature
-              </label>
-              <input 
-                type="text" 
-                className="w-full border-b border-dashed border-[#E5E4E3] py-2 font-roboto text-[#1F1C1B] focus:border-[#007970] outline-none transition-all bg-transparent"
-              />
-            </div>
-            <DatePickerField 
-              labelHTML={
-                <label className="font-montserrat font-medium text-[11px] text-[#52404B] mb-2 uppercase tracking-wider">
-                  Supervisor / Reviewer — Date
-                </label>
-              }
-              inputClass="w-full border-b border-[#E5E4E3] py-2 pr-8 font-roboto text-[#1F1C1B] focus:border-[#007970] outline-none transition-all bg-transparent cursor-pointer"
-              iconClass="absolute right-0 top-1/2 transform -translate-y-1/2 text-[#747470] w-4 h-4 pointer-events-none"
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <footer className="flex flex-col md:flex-row justify-between items-start md:items-end pt-6 border-t border-[#E5E4E3] text-[10px] text-[#747470] font-roboto gap-4">
-          <div className="flex flex-col gap-1">
-            <p>Care Indeed Home Health Care, Inc. · Form EN-FM-003 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10</p>
-            <p>Linked Policies: EN-TG-001</p>
-            <p><span className="font-montserrat font-bold text-[#007970] tracking-wider uppercase">Accreditation Status:</span> ACHC Accredited · Home Health Agency</p>
-          </div>
-          <div className="text-right flex flex-col gap-1">
-            <p className="font-montserrat font-bold text-[#007970] tracking-widest uppercase">Care Indeed · Policies and Procedures</p>
-            <p>EN-FM-003 · v6.0</p>
-          </div>
-        </footer>
-
       </div>
     </div>
   );

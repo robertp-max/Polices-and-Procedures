@@ -10,9 +10,10 @@ import {
   Printer, FileText, Shield, Search, CheckCircle, BookOpen,
   AlertTriangle, Settings, List, CheckSquare, Archive, Info,
   LayoutList, ChevronRight, FileLock2, Award, ExternalLink,
-  ArrowLeft,
+  ArrowLeft, Building2, User, Briefcase, HeartPulse,
 } from 'lucide-react';
 import { useShellStore } from '@/policy/stores/uiStore';
+import { FormViewer } from '@/policy/components/FormViewer';
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -884,63 +885,139 @@ const AppendixF = () => (
   </div>
 );
 
+// ─── Org Chart Tree Primitives (GV-FM-003 · v6.0 spec) ──────────────────────
+
+const OrgTreeRow = ({ children }: { children: React.ReactNode }) => {
+  const count = React.Children.count(children);
+  return (
+    <div className="flex flex-row justify-center items-start w-full">
+      {React.Children.map(children, (child, index) => {
+        const isFirst = index === 0;
+        const isLast  = index === count - 1;
+        const isOnly  = count === 1;
+        return (
+          <div className="relative flex flex-col items-center px-4 sm:px-6">
+            {!isOnly && (
+              <>
+                <div className={`absolute top-0 h-8 w-1/2 left-0 ${!isFirst ? 'border-t-2 border-[#E5E4E3]' : ''}`} />
+                <div className={`absolute top-0 h-8 w-1/2 right-0 ${!isLast  ? 'border-t-2 border-[#E5E4E3]' : ''}`} />
+              </>
+            )}
+            <div className="absolute top-0 w-[2px] h-8 bg-[#E5E4E3]" />
+            <div className="mt-8 z-10 w-full flex justify-center">{child}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const OrgTreeNode = ({ card, children }: { card: React.ReactNode; children?: React.ReactNode }) => (
+  <div className="flex flex-col items-center">
+    <div className="z-10">{card}</div>
+    {children && (
+      <>
+        <div className="w-[2px] h-8 bg-[#E5E4E3]" />
+        <OrgTreeRow>{children}</OrgTreeRow>
+      </>
+    )}
+  </div>
+);
+
 const AppendixG = () => (
-  <div className="max-w-5xl mx-auto pb-12 overflow-x-auto">
+  <div className="pb-12">
     <AppendixHeader id="G" title="Agency Organizational Chart" />
-    <p className="text-sm text-gray-600 mb-10 bg-[#D4AF37]/5 p-5 rounded-xl border border-[#D4AF37]/20 text-center leading-relaxed max-w-4xl mx-auto">
-      <strong>Agency Organizational Structure:</strong> This chart illustrates the reporting relationships and accountability framework from the Governing Body through the senior administrative and clinical leadership, as required by 42 CFR § 484.105.
-    </p>
-    <div className="min-w-[900px] flex flex-col items-center w-full pb-10">
-      {/* Level 1 */}
-      <div className="bg-[#D4AF37] text-white p-5 rounded-2xl w-72 text-center shadow-lg border-2 border-[#004d47] z-10">
-        <h4 className="font-bold text-lg uppercase tracking-wider mb-2">Governing Body</h4>
-        <p className="text-xs text-[#D4AF37] bg-white px-3 py-1 rounded-full inline-block font-bold shadow-sm">Ultimate Legal Authority</p>
-      </div>
-      <div className="w-px h-8 bg-gray-300" />
-      <div className="w-[464px] border-t-4 border-gray-300" />
-      <div className="flex justify-between w-[464px]">
-        <div className="w-px h-8 bg-gray-300" /><div className="w-px h-8 bg-gray-300" />
-      </div>
-      {/* Level 2 */}
-      <div className="flex gap-8 justify-center">
-        <div className="flex flex-col items-center w-[256px]">
-          <div className="bg-gray-800 text-white p-5 rounded-xl w-full text-center shadow-md border-2 border-gray-900">
-            <h4 className="font-bold text-sm uppercase tracking-wider mb-3">Compliance Officer</h4>
-            <input type="text" placeholder="Enter Name..." className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-center focus:outline-none focus:border-gray-500 placeholder-gray-500 font-medium" />
-          </div>
-        </div>
-        <div className="flex flex-col items-center w-[608px]">
-          <div className="bg-[#C74600] text-white p-5 rounded-xl w-72 text-center shadow-md z-10 border-2 border-[#943400]">
-            <h4 className="font-bold text-sm uppercase tracking-wider mb-3">Administrator</h4>
-            <input type="text" placeholder="Enter Name..." className="w-full bg-[#943400]/50 border border-[#943400] rounded-lg p-2 text-sm text-center focus:outline-none focus:border-[#e85200] placeholder-white/60 font-medium" />
-          </div>
-          <div className="w-px h-8 bg-gray-300" />
-          <div className="w-[416px] border-t-4 border-gray-300" />
-          <div className="flex justify-between w-[416px]">
-            <div className="w-px h-8 bg-gray-300" /><div className="w-px h-8 bg-gray-300" /><div className="w-px h-8 bg-gray-300" />
-          </div>
-          {/* Level 3 */}
-          <div className="flex justify-between w-full">
-            {[
-              { label: 'Clinical Manager', color: 'border-[#D4AF37]', textColor: 'text-[#D4AF37]', sub: 'Clinical Staff\n(RN, PT, OT, ST, MSW, CHHA)' },
-              { label: 'Medical Director', color: 'border-gray-400', textColor: 'text-gray-700', sub: null },
-              { label: 'Business Operations', color: 'border-gray-400', textColor: 'text-gray-700', sub: 'HR, Finance, Intake,\n& Scheduling' },
-            ].map((role, i) => (
-              <div key={i} className="flex flex-col items-center w-[192px]">
-                <div className={`bg-white border-2 ${role.color} p-4 rounded-xl w-full text-center shadow-sm`}>
-                  <h4 className={`font-bold text-xs ${role.textColor} uppercase tracking-wider mb-3`}>{role.label}</h4>
-                  <input type="text" placeholder="Enter Name..." className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs text-center focus:outline-none focus:border-[#D4AF37] placeholder-gray-400 text-gray-800 font-medium" />
-                </div>
-                {role.sub && (
-                  <>
-                    <div className="w-px h-6 bg-gray-300" />
-                    <div className="bg-gray-50 border border-gray-200 p-2.5 rounded-lg w-[170px] text-center text-xs text-gray-600 font-medium shadow-sm whitespace-pre-line">{role.sub}</div>
-                  </>
-                )}
+
+    {/* Purpose callout — matches FormsViewerLightDesign.html */}
+    <div className="bg-[#E5FEFF]/40 border-l-[3px] border-[#007970] rounded-r-[8px] px-5 py-4 mb-8 max-w-3xl">
+      <p className="font-roboto text-[#1F1C1B] text-[13px] leading-relaxed">
+        <span className="font-montserrat font-semibold text-[#007970]">GV-FM-003 · v6.0 — </span>
+        Official agency organizational chart establishing reporting relationships from the Governing Body
+        through senior clinical and administrative leadership as required by 42 CFR § 484.105.
+        Updated within 7 calendar days of any reorganization or leadership change.
+      </p>
+    </div>
+
+    {/* Interactive tree — horizontally scrollable */}
+    <div className="overflow-x-auto w-full pb-8 cursor-grab active:cursor-grabbing">
+      <div className="min-w-[900px] flex justify-center pt-4 px-4">
+        <OrgTreeNode
+          card={
+            <div className="bg-[#007970] rounded-[20px] p-6 w-72 text-center flex flex-col items-center relative overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/10 rounded-full blur-2xl" />
+              <Building2 size={24} className="text-[#E5FEFF] mb-3 opacity-90" />
+              <h2 className="text-white font-montserrat font-bold text-[15px] tracking-[0.15em] mb-3">GOVERNING BODY</h2>
+              <div className="bg-[#E5FEFF] text-[#007970] rounded-full px-4 py-1.5 text-[10px] font-montserrat font-bold tracking-widest uppercase shadow-sm">
+                Ultimate Legal Authority
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          }
+        >
+          {/* Compliance Officer */}
+          <OrgTreeNode
+            card={
+              <div className="bg-white rounded-[20px] p-5 w-56 text-center shadow-sm border border-[#E5E4E3] flex flex-col hover:border-[#1F1C1B]/30 hover:shadow-md transition-all duration-300">
+                <div className="flex justify-center mb-2">
+                  <div className="bg-[#FAFBF8] border border-[#E5E4E3] p-2 rounded-full text-[#524D4B]"><Briefcase size={18} /></div>
+                </div>
+                <h3 className="font-montserrat font-bold text-[#1F1C1B] text-[12px] tracking-widest mb-3">COMPLIANCE OFFICER</h3>
+                <input type="text" placeholder="Enter Name…" className="w-full text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#C74601] bg-transparent placeholder-[#747470] font-roboto text-sm transition-colors" />
+              </div>
+            }
+          />
+
+          {/* Administrator → level-3 children */}
+          <OrgTreeNode
+            card={
+              <div className="bg-[#C74601] rounded-[20px] p-5 w-60 text-center shadow-md relative overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div className="flex justify-center mb-2">
+                  <div className="bg-white/20 p-2 rounded-full text-white"><User size={18} /></div>
+                </div>
+                <h3 className="text-white font-montserrat font-bold text-[13px] tracking-widest mb-3">ADMINISTRATOR</h3>
+                <input type="text" placeholder="Enter Name…" className="w-full text-center border-b-2 border-[#FFD5BF]/50 pb-1.5 text-white focus:outline-none focus:border-white bg-transparent placeholder-white/70 font-roboto text-sm transition-colors" />
+              </div>
+            }
+          >
+            {/* Clinical Manager */}
+            <OrgTreeNode
+              card={
+                <div className="bg-white rounded-[14px] p-5 w-52 text-center border border-[#E5E4E3] flex flex-col hover:border-[#007970]/50 hover:shadow-md transition-all duration-300">
+                  <h4 className="font-montserrat font-bold text-[#007970] text-[11px] tracking-widest mb-3">CLINICAL MANAGER</h4>
+                  <input type="text" placeholder="Enter Name…" className="w-full text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#007970] bg-transparent placeholder-[#747470] mb-3 font-roboto text-sm transition-colors" />
+                  <div className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg py-2 px-2 text-[10px] font-medium tracking-wide text-[#524D4B] font-roboto">
+                    RN, PT, OT, ST, MSW, CHHA
+                  </div>
+                </div>
+              }
+            />
+            {/* Medical Director */}
+            <OrgTreeNode
+              card={
+                <div className="bg-white rounded-[14px] p-5 w-52 text-center border border-[#E5E4E3] flex flex-col hover:border-[#004142]/50 hover:shadow-md transition-all duration-300">
+                  <div className="bg-[#004142] text-white rounded-lg py-1.5 px-3 mb-3 mx-auto shadow-sm flex items-center gap-1.5">
+                    <HeartPulse size={12} />
+                    <h4 className="font-montserrat font-bold text-[10px] tracking-widest uppercase">MEDICAL DIRECTOR</h4>
+                  </div>
+                  <input type="text" placeholder="Enter Name…" className="w-full text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#004142] bg-transparent placeholder-[#747470] font-roboto text-sm transition-colors" />
+                </div>
+              }
+            />
+            {/* Business Ops */}
+            <OrgTreeNode
+              card={
+                <div className="bg-white rounded-[14px] p-5 w-52 text-center border border-[#E5E4E3] flex flex-col hover:border-[#1F1C1B]/40 hover:shadow-md transition-all duration-300">
+                  <div className="bg-[#1F1C1B] text-white rounded-lg py-1.5 px-3 mb-3 mx-auto shadow-sm">
+                    <h4 className="font-montserrat font-bold text-[10px] tracking-widest uppercase">BUSINESS OPS</h4>
+                  </div>
+                  <input type="text" placeholder="Enter Name…" className="w-full text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#1F1C1B] bg-transparent placeholder-[#747470] mb-3 font-roboto text-sm transition-colors" />
+                  <div className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg py-2 px-2 text-[10px] font-medium tracking-wide text-[#524D4B] font-roboto">
+                    HR, Finance, Intake, Scheduling
+                  </div>
+                </div>
+              }
+            />
+          </OrgTreeNode>
+        </OrgTreeNode>
       </div>
     </div>
   </div>
@@ -949,19 +1026,18 @@ const AppendixG = () => (
 // ─── APPENDICES SHELL (with Print Form + Sign on Dropbox) ────────────────────
 
 const APPENDIX_DEFS = [
-  { id: 'A', label: 'Membership Roster',        title: 'Governing Body Membership Roster',    Component: AppendixA },
-  { id: 'B', label: 'Conflict of Interest',     title: 'Conflict of Interest Form',            Component: AppendixB },
-  { id: 'C', label: 'Policy Acknowledgment',    title: 'Policy Acknowledgment Form',           Component: AppendixC },
-  { id: 'D', label: 'Meeting Minutes',          title: 'Meeting Minutes Template',             Component: AppendixD },
-  { id: 'E', label: 'Oversight Checklist',      title: 'Quarterly Oversight Checklist',        Component: AppendixE },
-  { id: 'F', label: 'Governance Calendar',      title: 'Annual Governance Calendar',           Component: AppendixF },
-  { id: 'G', label: 'Org Chart',                title: 'Agency Organizational Chart',          Component: AppendixG },
+  { id: 'A', label: 'Membership Roster',     title: 'Governing Body Membership Roster',  formId: 'GV-FM-011', Component: AppendixA },
+  { id: 'B', label: 'Conflict of Interest',  title: 'Conflict of Interest Form',          formId: 'GV-FM-006', Component: AppendixB },
+  { id: 'C', label: 'Policy Acknowledgment', title: 'Policy Acknowledgment Form',         formId: 'GV-FM-024', Component: AppendixC },
+  { id: 'D', label: 'Meeting Minutes',       title: 'Meeting Minutes Template',           formId: 'GV-FM-005', Component: AppendixD },
+  { id: 'E', label: 'Oversight Checklist',   title: 'Quarterly Oversight Checklist',      formId: 'GV-FM-008', Component: AppendixE },
+  { id: 'F', label: 'Governance Calendar',   title: 'Annual Governance Calendar',         formId: 'GV-FM-004', Component: AppendixF },
+  { id: 'G', label: 'Org Chart',             title: 'Agency Organizational Chart',        formId: 'GV-FM-003', Component: AppendixG },
 ];
 
 const ViewAppendices = () => {
   const [activeApp, setActiveApp] = useState('A');
   const activeAppDef = APPENDIX_DEFS.find(a => a.id === activeApp)!;
-  const { Component: ActiveComponent } = activeAppDef;
 
   return (
     <div className="h-full flex flex-col pb-6 relative">
@@ -996,9 +1072,9 @@ const ViewAppendices = () => {
         </div>
       </Card>
 
-      {/* Active appendix form — its own contained area, scrollable */}
-      <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-y-auto p-6 lg:p-10">
-        <ActiveComponent />
+      {/* Active appendix form — Brad's FormViewer inside the green box */}
+      <div className="flex-1 bg-white rounded-xl shadow-sm border-2 border-[#007970] overflow-y-auto">
+        <FormViewer formId={activeAppDef.formId} />
       </div>
     </div>
   );

@@ -1,0 +1,192 @@
+DOCUMENT ID: HR-JD-002
+TITLE: Administrator Designee
+TYPE: Job Description
+DOMAIN: HR
+SUBDOMAIN: JD
+USAGE: Required
+FREQUENCY: Biennial Review
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2027-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: leadership, administrative, succession
+
+LINKED POLICIES:
+- HR-TA-006 (Job Description & Role Definition)
+- HR-TA-001 (Recruitment & Hiring Standards)
+- GV-GB-004 (Succession Planning for Key Leadership)
+- GV-GB-001 (Governing Body Authority & Responsibilities)
+
+POSITION SUMMARY:
+The Administrator Designee is the individual formally designated by the Administrator to exercise all administrative authority and fulfill all regulatory obligations of the Administrator role during any period when the Administrator is absent, unavailable, or unable to perform their duties. The Administrator Designee must meet the same minimum qualifications required of the Administrator under 42 CFR § 484.115. The designation must be documented in writing and retained on file. This is not a standalone hired position in all agencies; the designee may hold a concurrent role (e.g., Director of Nursing, Operations Manager) and is formally designated by written action of the Administrator and Governing Body.
+
+---
+
+SECTION 1: Core Responsibilities
+layout: list
+
+responsibilities:
+- Exercise full administrative authority and responsibility for agency operations during the Administrator's absence.
+- Ensure uninterrupted compliance with all 42 CFR Part 484 Conditions of Participation during Administrator unavailability.
+- Serve as the regulatory contact for CMS, state agency, and accreditation body communications when required.
+- Maintain agency operations, staffing decisions, and patient care oversight continuity.
+- Execute urgent administrative and compliance actions that cannot be deferred during Administrator absence.
+- Notify the Governing Body and relevant stakeholders when assuming Administrator responsibilities for extended periods.
+- Maintain currency on all operational, compliance, and regulatory matters to enable immediate assumption of Administrator role.
+- Document the scope and dates of any activation of the Administrator Designee authority.
+- Participate in succession planning activities and cross-training with the Administrator.
+
+SECTION 2: Minimum Qualifications
+layout: list
+
+qualifications:
+- Must meet the same minimum qualifications as the Administrator per 42 CFR § 484.115: Licensed physician; OR Licensed registered nurse (RN); OR Baccalaureate degree in health administration, public health, business administration, or related field with minimum 1 year supervisory or administrative experience in health services.
+- No current exclusion from federal or state healthcare programs (OIG/SAM).
+- Meets California CDPH qualification requirements for Administrator designee designation.
+- Minimum 2 years of supervisory or administrative experience in a healthcare setting, preferably home health.
+- Demonstrated knowledge of agency operations and Medicare home health regulations.
+- Written designation by Administrator on file with Governing Body notification.
+
+SECTION 3: Required Competencies
+layout: list
+
+competencies:
+- Working knowledge of 42 CFR Part 484 Medicare Home Health Conditions of Participation.
+- Ability to manage day-to-day agency operations including staffing, compliance, and clinical oversight.
+- Understanding of QAPI program structure and quality reporting obligations.
+- Knowledge of HR functions: hiring, credentialing, performance management, and disciplinary processes.
+- Familiarity with financial operations: payroll authorization, vendor management, and accounts approval (as authorized).
+- Survey readiness and CMS notification requirements.
+- Decision-making under time pressure; escalation judgment.
+- Strong communication: staff, Governing Body, regulatory agencies.
+
+SECTION 4: Regulatory Responsibilities
+layout: list
+
+regulations:
+- 42 CFR § 484.105(b) — Assumes Administrator obligations in the Administrator's absence.
+- 42 CFR § 484.115 — Meets personnel qualifications equivalent to Administrator.
+- 42 USC § 1320a-7 — OIG/SAM exclusion-free status required.
+- CA Health & Safety Code § 1726 — State designation compliance.
+- All regulatory obligations that activate upon assumption of Administrator role.
+
+SECTION 5: Documentation Responsibilities
+layout: list
+
+documentation:
+- Maintain a current written Administrator Designee Designation Form on file (GV-FM or HR file).
+- Document all periods of Administrator Designee activation (dates, scope, actions taken).
+- Counter-sign critical documents requiring Administrator authorization when activated.
+- Ensure currency of own credentials, licensure (if applicable), and OIG/SAM screening.
+
+SECTION 6: Supervision Responsibilities
+layout: list
+
+supervision:
+- When activated: assumes all supervisory authority of the Administrator over agency personnel.
+- In primary role (if serving a concurrent position): supervision as defined by primary job description.
+
+SECTION 7: Physical Requirements
+layout: list
+
+physical:
+- Sedentary to light work: office-based administrative functions during activation.
+- Valid California driver's license and transportation if site visits or external representation is required.
+
+SECTION 8: Working Conditions
+layout: list
+
+conditions:
+- This designation may be concurrent with another defined position at the agency.
+- Availability required to assume Administrator role with minimal notice.
+- Subject to 24/7 accountability during Administrator Designee activation.
+
+SECTION 9: Performance Expectations
+layout: list
+
+expectations:
+- Written designation current and renewed as required (upon each role change or annually).
+- OIG/SAM screening current and documented.
+- Demonstrates readiness to assume Administrator role within one business day of activation.
+- All credentials and qualifications maintained equivalent to Administrator requirements.
+- No lapses in administrative coverage — every absence of the Administrator has a documented designee on file.
+
+SECTION 10: Policy Cross-References
+layout: list
+
+policies:
+- HR-TA-006 — Job Description & Role Definition (controls this document)
+- GV-GB-001 — Governing Body Authority & Responsibilities (authority basis for designation)
+- GV-GB-004 — Succession Planning for Key Leadership (designation mechanism)
+- HR-TA-004 — Licensure & Certification Verification (if licensed professional; own credentials)
+- HR-TA-003 — OIG/SAM Exclusion Screening (self-screening compliance)
+- All policies under HR-JD-001 activate in full upon assumption of Administrator role.
+
+SECTION 11: Measurable Performance Standards
+layout: list
+
+standards:
+- Written designation form on file: 100% current at all times; renewed within 30 days of any role change or lapse — per GV-GB-004; 0 coverage gaps.
+- OIG/SAM screening (self): current monthly; 0 lapses in exclusion-free status — per HR-TA-003.
+- Administrator qualifications (42 CFR § 484.115): maintained continuously; credentials verified and documented in personnel file — 0 expired credentials.
+- Activation documentation: completed within 24 hours of each activation event (start date, scope, end date) — 100% of activations logged.
+- Administrative coverage: 0 hours where Administrator is absent without a documented designee on file — per GV-GB-004.
+- Readiness: able to assume full Administrator authority within 1 business day of any activation — verified through annual cross-training with Administrator.
+
+SECTION 12: Documentation Ownership
+layout: list
+
+owned_records:
+- Administrator Designee Designation Form: co-signed by Administrator and filed in governance record; Designee retains personal copy.
+- Activation Log: records each activation period — start date, end date, scope of authority exercised, significant actions taken; retained in governance file.
+- Own credential and licensure records (if applicable): maintained in personal personnel file.
+- OIG/SAM screening records (self): monthly; retained in personnel file.
+- During activation: owns all documentation responsibilities listed under HR-JD-001 for the duration of the activation period.
+
+SECTION 13: Escalation Responsibilities
+layout: list
+
+escalation:
+- Unplanned Administrator absence extends beyond 1 business day with no documented handoff → Immediately activate designation; notify Governing Body Chair and all Administrator direct reports.
+- CMS or state survey, enforcement visit, or Immediate Jeopardy citation received during activation → Immediately notify Governing Body Chair and Legal Counsel; do not independently commit to survey responses without Board awareness.
+- Compliance or patient safety issue requiring Administrator-level regulatory notification discovered during activation → Notify Governing Body Chair within 24 hours; file required reports; document all actions taken.
+- Scope of required action exceeds Designee authority or expertise during activation → Notify Governing Body Chair immediately for direction; document consultation.
+- Return of Administrator after extended absence → Formal deactivation documented with transition summary provided to Administrator.
+
+SECTION 14: Required Forms
+layout: list
+
+forms:
+- Administrator Designee Designation Form (GV-FM or HR-equivalent): maintains own copy; reviewed and updated annually.
+- HR-FM-031 — Job Description Acknowledgment Form (signed at designation and upon any material change).
+- OIG/SAM Screening Log (self): monthly entry; retained in personnel file.
+- Activation Log (agency-standard format): completed for each activation event.
+- During activation: all forms required under HR-JD-001 become the Designee's responsibility for the duration.
+
+SECTION 15: Onboarding & Competency Requirements
+layout: list
+
+This role is governed by the Role-Based Onboarding & Competency Journey.
+
+Required Training Path:
+- General Orientation (GAO Series)
+- Role-Specific LMS Track (ADM-000 Series)
+
+Competency Requirements:
+- Initial competency validation (HR-TD-003 Appendix A)
+- Supervised experience (if applicable)
+- Clearance required prior to independent duties
+
+Ongoing Compliance:
+- Annual training (HR-TD-001)
+- Annual competency evaluation
+- Monthly compliance screening (OIG/SAM)
+
+Refer to:
+Role-Based Onboarding & Competency Journey (Master Framework)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Document HR-JD-002 · Version 6.0 · Effective 2025-07-10 · Next Review 2027-07-10
+- Linked Policies: HR-TA-006, GV-GB-001, GV-GB-004
+- Regulatory Authority: 42 CFR § 484.105(b); § 484.115
+- Reports To: Administrator (HR-JD-001)

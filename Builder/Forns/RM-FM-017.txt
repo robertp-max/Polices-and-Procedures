@@ -1,0 +1,73 @@
+FORM ID: RM-FM-017
+TITLE: Risk Committee Meeting Minutes
+TYPE: Template
+DOMAIN: RM
+USAGE: Required
+FREQUENCY: Quarterly
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, master_template
+
+LINKED POLICIES:
+- RM-EP-001
+- RM-RM-001
+- GV-GB-001
+
+PURPOSE:
+Quarterly Risk Committee meeting minutes template capturing enterprise risk register review, top-risk scoring updates, mitigation-plan progress, emergency preparedness oversight, and cross-domain risk-integration decisions (clinical, operational, financial, cyber, regulatory, safety, strategic).
+
+INSTRUCTIONS:
+Prepared by Risk Manager (or designee) within 5 business days of meeting. Approved at next Risk Committee meeting. Feeds Governing Body minutes (GV-FM-005) quarterly. Archived minimum 7 years.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Meeting Date (type=date, required=true, col=2)
+- Meeting Location / Platform (type=text, col=2)
+- Risk Committee Chair (type=text, col=2)
+- Members Present (incl. dept reps: Clinical, Ops, IT, Finance, Compliance, HR) (type=textarea, col=4)
+- Members Absent (type=textarea, col=4)
+- Quorum Confirmed? (Y/N) (type=select, col=2, options=[Yes | No])
+- Approval of Prior Minutes (type=textarea, col=4)
+- Enterprise Risk Register Review (RM-FM-008) (type=textarea, col=4)
+- Top-5 Risks / Changes This Cycle (type=textarea, col=4)
+- HIGH Risks Without Mitigation — Escalation Decisions (type=textarea, col=4)
+- Emergency Preparedness / HVA Status (RM-FM-001) (type=textarea, col=4)
+- Litigation & Claims Register Review (RM-FM-015) (type=textarea, col=4)
+- Insurance Coverage / Broker Updates (type=textarea, col=4)
+- Cross-Domain Integration Items (CO, QA, IT, HR, CL) (type=textarea, col=4)
+- Motions / Votes (with dissents, recusals) (type=textarea, col=4)
+- Recommendations to Governing Body (type=textarea, col=4)
+- Action Items (Owner / Due) (type=textarea, col=4)
+- Adjournment Time (type=text, col=2)
+- Next Meeting Date (type=date, col=2)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Risk Committee Chair — Printed Name (type=text, col=2)
+- Risk Committee Chair — Signature (type=signature, col=1)
+- Risk Committee Chair — Date (type=date, col=1)
+- Risk Manager — Printed Name (type=text, col=2)
+- Risk Manager — Signature (type=signature, col=1)
+- Risk Manager — Date (type=date, col=1)
+- Recorder — Printed Name (type=text, col=2)
+- Recorder — Signature (type=signature, col=1)
+- Recorder — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form RM-FM-017 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: RM-EP-001, RM-RM-001, GV-GB-001

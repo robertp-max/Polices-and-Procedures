@@ -13,7 +13,10 @@
     "preview": "vite preview",
     "ia:index": "tsx server/cli/build-index.ts",
     "ia:health": "node -e \"fetch('http://127.0.0.1:8787/api/ia/health').then(r=>r.json()).then(j=>console.log(JSON.stringify(j,null,2)))\"",
-    "push-events": "tsx scripts/pushAllEvents.ts"
+    "push-events": "tsx scripts/pushAllEvents.ts",
+    "cleanup-duplicates": "tsx scripts/cleanupDuplicates.ts",
+    "cleanup-duplicates:apply": "tsx scripts/cleanupDuplicates.ts --apply",
+    "compile:workflows": "tsx scripts/compileWorkflows.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

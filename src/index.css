@@ -402,30 +402,93 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
 /* ══════════════════════════════════════════════════════════════
    PRINT RESET — forms & policies print as clean full-page paper.
 
-   Strategy: use the CSS visibility technique so every browser
-   (Chrome, Firefox, Safari, Edge) correctly hides chrome and
-   shows only the content sheet, even when the content sits inside
-   multiple overflow:hidden / position:absolute shell layers.
+   Design anchor: Builder/Policies/FormsViewerLightDesign.html
 
-   Five shell layers get overflow:visible + height:auto resets so
-   multi-page documents flow naturally across pages:
-     [data-shell-outer]  — fixed outer viewport wrapper
-     [data-shell-card]   — glass card (absolute, overflow:hidden)
-     [data-shell-main]   — <main> (overflow:hidden, flex-1)
-     [data-shell-scroll] — inner scroll div (absolute, overflow:auto)
+   FORM STRATEGY — visibility technique (identical to ia-form-print-root):
+     body:has(.form-page) hides everything via visibility:hidden,
+     then .form-page + all its children are made visible:visible.
+     .form-page is pulled to position:fixed top:0 left:0 so it
+     lands at the very top of the print canvas regardless of where
+     it sits in the shell DOM (fixed/absolute shell layers, overflow
+     containers, nested flex wrappers — none of them can clip it).
+     zoom:0.6 scales the ENTIRE card (logo, header, teal rule,
+     title, callouts, fields, signatures, footer) proportionally so
+     the design looks exactly like the screen view, just smaller.
+     @page margin:0 suppresses browser URL/date/page-number chrome.
 
-   @page margin 0mm suppresses the browser's own URL / date / page-
-   number header+footer strip. Safe padding lives on .form-page /
-   .policy-page so content breathes but the *page itself* has no
-   chrome.
+   POLICY STRATEGY — shell reset technique:
+     Shell layers are freed from fixed/absolute so policy content
+     flows naturally across pages.
    ══════════════════════════════════════════════════════════════ */
 @page {
-  size: auto;
-  margin: 0mm;
+  size: Letter;
+  margin: 0;
 }
 
 @media print {
-  /* ── 1. Global baseline ── */
+  /* ── 0. Global colour preservation ── */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ── 1. Always-hidden browser/app chrome ── */
+  .no-print,
+  .ia-no-print,
+  [data-shell-bg] {
+    display: none !important;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     FORM PRINT  (visibility technique)
+     Works regardless of how many overflow/fixed/absolute shell
+     layers wrap the form-page in the production DOM.
+     ══════════════════════════════════════════════════════════ */
+
+  /* Step 1: make everything invisible */
+  body:has(.form-page) * {
+    visibility: hidden !important;
+  }
+
+  /* Step 2: make form-page and ALL its descendants visible */
+  body:has(.form-page) .form-page,
+  body:has(.form-page) .form-page * {
+    visibility: visible !important;
+  }
+
+  /* Step 3: anchor form-page to the top-left of the print canvas */
+  body:has(.form-page) .form-page {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    /* Fill the full paper width so layout matches screen */
+    width: 100vw !important;
+    max-width: 100vw !important;
+    /* Strip card chrome — no shadow/border/radius in print */
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    /* Natural screen padding provides the physical paper margin */
+    overflow: visible !important;
+    /* Scale the entire form to fit one sheet.
+       zoom:0.6 → virtual canvas = 8.5/0.6 × 11/0.6 = 14.2in × 18.3in.
+       A form ≤1750px tall at screen scale fits on a single Letter page. */
+    zoom: 0.6;
+  }
+
+  /* Inputs: print-safe colours (zoom handles size/spacing) */
+  body:has(.form-page) .form-page input,
+  body:has(.form-page) .form-page textarea,
+  body:has(.form-page) .form-page select {
+    color: #1F1C1B !important;
+    border-color: #999 !important;
+    background: transparent !important;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     POLICY PRINT  (shell-reset technique, multi-page flow)
+     ══════════════════════════════════════════════════════════ */
   html, body, #root {
     background: #ffffff !important;
     margin: 0 !important;
@@ -433,15 +496,6 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
     height: auto !important;
     overflow: visible !important;
   }
-
-  /* ── 2. Always-hidden chrome ── */
-  .no-print,
-  .ia-no-print,
-  [data-shell-bg] {
-    display: none !important;
-  }
-
-  /* ── 3. Reset every shell containment layer so content flows ── */
   [data-shell-outer] {
     position: static !important;
     inset: auto !important;
@@ -462,7 +516,6 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
     border-radius: 0 !important;
     overflow: visible !important;
   }
-  /* The flex wrapper inside the card */
   [data-shell-card] > div {
     display: block !important;
     width: 100% !important;
@@ -484,30 +537,11 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
     height: auto !important;
     overflow: visible !important;
   }
-
-  /* ── 4. Form content sheet ── */
-  .form-page {
-    background: #ffffff !important;
-    color: #1F1C1B !important;
-    border: none !important;
+  .screen-shell {
+    padding: 0 !important;
     margin: 0 !important;
-    padding: 0.5in !important;
-    width: 100% !important;
     max-width: 100% !important;
-    min-height: 0 !important;
-    overflow: visible !important;
   }
-  .form-page input,
-  .form-page textarea,
-  .form-page select {
-    color: #1F1C1B !important;
-    border-color: #999 !important;
-    background: transparent !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  /* ── 5. Policy content sheets ── */
   .policy-page {
     background: #ffffff !important;
     color: #1F1C1B !important;
@@ -521,8 +555,6 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
     display: block !important;
     flex: none !important;
   }
-  /* Scrollable inner content div — release overflow so all tab content
-     flows to paper (user navigates to desired tab before printing) */
   .policy-content {
     position: static !important;
     height: auto !important;
@@ -540,7 +572,9 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
     background: transparent !important;
   }
 
-  /* ── 6. iAdministrator legacy print root ── */
+  /* ══════════════════════════════════════════════════════════
+     iAdministrator legacy print root (unchanged approach)
+     ══════════════════════════════════════════════════════════ */
   body:has(.ia-form-print-root) * { visibility: hidden; }
   body:has(.ia-form-print-root) .ia-form-print-root,
   body:has(.ia-form-print-root) .ia-form-print-root * { visibility: visible; }
@@ -548,10 +582,11 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
     position: fixed;
     top: 0; left: 0;
     width: 100%;
-    padding: 0.5in;
+    padding: 0.35in 0.45in;
     background: #ffffff;
     color: #1F1C1B;
     overflow: visible;
+    zoom: 0.6;
   }
   .ia-form-print-root input,
   .ia-form-print-root textarea,
@@ -561,16 +596,28 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
     background: transparent !important;
   }
 
-  /* ── 7. Page-break helpers ── */
+  /* ── Page-break helpers ── */
   .avoid-break {
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
-  /* ── 8. Preserve colour-critical elements (logos, badges) ── */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  /* ── Appendices panel ── */
+  .appendices-panel {
+    position: static !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .appendices-scroll {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .appendices-scroll > div {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 }
 
@@ -1134,3 +1181,65 @@ html.ci-theme-transitioning *::after {
     fill 500ms cubic-bezier(.22,1,.36,1),
     stroke 500ms cubic-bezier(.22,1,.36,1) !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   LIGHT POLICY VIEW — dark-mode Tailwind class overrides
+   Applied when [data-theme="light"] is set on the policy page
+   wrapper so all tab content sections automatically switch to
+   light-mode colors without touching each heading individually.
+   ══════════════════════════════════════════════════════════════ */
+[data-theme="light"] .text-white { color: #1F1C1B !important; }
+[data-theme="light"] .text-white\/90 { color: #1F1C1B !important; }
+[data-theme="light"] .text-white\/80 { color: #524D4B !important; }
+[data-theme="light"] .text-white\/70 { color: #524D4B !important; }
+[data-theme="light"] .text-white\/60 { color: #747470 !important; }
+[data-theme="light"] .text-white\/50 { color: #747470 !important; }
+[data-theme="light"] .text-white\/40 { color: #9E9D9A !important; }
+[data-theme="light"] .text-white\/30 { color: #B5B4B1 !important; }
+[data-theme="light"] .text-white\/20 { color: #D5D4D2 !important; }
+[data-theme="light"] .text-white\/10 { color: #E5E4E3 !important; }
+[data-theme="light"] .border-white\/20 { border-color: #D5D4D2 !important; }
+[data-theme="light"] .border-white\/10 { border-color: #E5E4E3 !important; }
+[data-theme="light"] .border-white\/\[0\.08\] { border-color: #EDECEB !important; }
+[data-theme="light"] .bg-white\/5 { background-color: #F7F6F5 !important; }
+[data-theme="light"] .bg-white\/\[0\.02\] { background-color: #FAFBF9 !important; }
+[data-theme="light"] .bg-white\/10 { background-color: #F2F2F0 !important; }
+[data-theme="light"] .bg-white\/\[0\.05\] { background-color: #F5F5F3 !important; }
+[data-theme="light"] .hover\:bg-white\/10:hover { background-color: #F2F2F0 !important; }
+[data-theme="light"] .hover\:text-white:hover { color: #1F1C1B !important; }
+[data-theme="light"] .divide-white\/5 > * { border-color: #EDECEB !important; }
+[data-theme="light"] .divide-white\/10 > * { border-color: #E5E4E3 !important; }
+
+/* ══════════════════════════════════════════════════════════════
+   POLICY VIEWER — DIRECTIONAL CAROUSEL TRANSITIONS
+   Sequential two-step: exit completes (500ms) → enter begins (500ms).
+   forward  = next tab  → exit slides left,  enter slides in from right
+   backward = prev tab  → exit slides right, enter slides in from left
+   ══════════════════════════════════════════════════════════════ */
+@keyframes policy-exit-fwd {
+  from { opacity: 1; transform: translateX(0);     }
+  to   { opacity: 0; transform: translateX(-36px); }
+}
+@keyframes policy-exit-bwd {
+  from { opacity: 1; transform: translateX(0);    }
+  to   { opacity: 0; transform: translateX(36px); }
+}
+@keyframes policy-enter-fwd {
+  from { opacity: 0; transform: translateX(36px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+@keyframes policy-enter-bwd {
+  from { opacity: 0; transform: translateX(-36px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+.policy-slide-exit-fwd  { animation: policy-exit-fwd  0.5s cubic-bezier(0.4,0,0.2,1) forwards; }
+.policy-slide-exit-bwd  { animation: policy-exit-bwd  0.5s cubic-bezier(0.4,0,0.2,1) forwards; }
+.policy-slide-enter-fwd { animation: policy-enter-fwd 0.5s cubic-bezier(0.4,0,0.2,1) forwards; }
+.policy-slide-enter-bwd { animation: policy-enter-bwd 0.5s cubic-bezier(0.4,0,0.2,1) forwards; }
+
+/* Help modal — fade-in backdrop */
+@keyframes help-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+.policy-help-modal-panel { animation: help-modal-in 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; }

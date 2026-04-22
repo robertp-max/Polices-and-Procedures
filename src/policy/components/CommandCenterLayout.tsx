@@ -87,7 +87,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', to: '/dashboard', label: 'Command Center', subItems: [{ to: '/dashboard', label: 'Overview' }], icon: LayoutDashboard },
   { id: 'iadmin', to: '/iadministrator', label: 'Brad', icon: BradRobotIcon },
-  { id: 'compliance', to: '/calendar', label: 'Compliance', subItems: [{ to: '/calendar', label: 'Calendar' }, { to: '/calendar/minutes', label: 'Minutes' }, { to: '/audit', label: 'Audit Mode' }], icon: ClipboardCheck },
+  { id: 'compliance', to: '/workflows', label: 'Compliance', subItems: [{ to: '/workflows', label: 'Workflows' }, { to: '/calendar', label: 'Calendar' }, { to: '/calendar/minutes', label: 'Minutes' }, { to: '/audit', label: 'Audit Mode' }], icon: ClipboardCheck },
   { id: 'taxonomy', to: '/framework', label: 'Taxonomy', subItems: [{ to: '/framework', label: 'Framework' }, { to: '/library', label: 'Policies' }, { to: '/forms', label: 'Forms' }], icon: Network },
   { id: 'drafts', to: '/drafts', label: 'Drafts', icon: FileEdit },
   { id: 'review', to: '/review', label: 'Review Queue', icon: CheckSquare },
@@ -210,14 +210,13 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         from 33%); full opacity in detail mode. */
             ...(isLight
               ? {
-                  // Care Indeed light mode — SOLID WHITE enterprise
-                  // surface. No glass, no blur, no frosted effect.
-                  // Card is 100% opaque white with a 1px neutral-200
-                  // border and a soft 1-layer shadow so it reads as a
-                  // polished enterprise content sheet above the
-                  // GradFlow smoke background.
+                  // Care Indeed light mode — one-card canvas matching
+                  // the Workflow Library aesthetic. Solid white surface,
+                  // 1px #E5E4E3 hairline, almost-invisible outer shadow
+                  // for subtle elevation against the #FAFBF8 gutter.
                   background: '#FFFFFF',
                   border: '1px solid #E5E4E3',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                 }
               : {
                   background: hideChrome

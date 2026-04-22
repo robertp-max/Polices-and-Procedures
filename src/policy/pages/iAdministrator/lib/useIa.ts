@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { iaClient, IaClientError, type BackendMode } from './iaClient';
+import {
+  answerWorkflowQuery,
+  isWorkflowQuery,
+} from '@/policy/brad/workflowKnowledge';
 import type {
   HealthResponse,
   IntentKind,
@@ -293,6 +297,26 @@ export function useChatThread(): ChatThreadState {
     setRetrieving(true);
     setError(null);
     setPhase1Mode(undefined);
+
+    // ── Workflow short-circuit ─────────────────────────────────────
+    // If this is a workflow question, answer deterministically from the
+    // compiled workflow corpus. Brad must NOT improvise workflow logic.
+    if (isWorkflowQuery(input)) {
+      const answer = answerWorkflowQuery(input);
+      if (answer) {
+        const bradMsg: ChatMessage = {
+          id: genId(),
+          role: 'brad',
+          content: answer.markdown,
+          timestamp: new Date().toISOString(),
+        };
+        setMessages(prev => [...prev, bradMsg]);
+        setLoading(false);
+        setRetrieving(false);
+        inflight.current = null;
+        return;
+      }
+    }
 
     const currentThreadId = threadId;
 

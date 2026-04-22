@@ -1,0 +1,57 @@
+FORM ID: FN-FM-028
+TITLE: Charity Determination & Notification
+TYPE: Determination
+DOMAIN: FN
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- FN-FP-003
+
+PURPOSE:
+Formal determination notice issued to patient following review of FN-FM-027 Charity Application, documenting eligibility, sliding-scale or full-write-off calculation, effective dates, and patient appeal rights.
+
+INSTRUCTIONS:
+CFO (or designee) determines within 14 days of complete application; letter mailed to patient; account adjusted (FN-FM-026). Retain 10 years.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Patient Name (type=text, required=true, col=2)
+- Account # (type=text, required=true, col=2)
+- Application Date (FN-FM-027) (type=date, col=2)
+- Determination Date (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Determination
+layout: grid
+
+fields:
+- Eligibility (Full / Partial / Denied) (type=select, required=true, col=2, options=[Full | Partial | Denied])
+- Sliding Scale % Applied (if partial) (type=text, col=2)
+- Original Balance (type=text, col=2)
+- Adjusted / Discounted Balance (type=text, col=2)
+- Write-Off Amount (type=text, col=2)
+- Effective Date (type=date, col=2)
+- Coverage Period (type=text, col=2)
+- Rationale / Policy Reference (type=textarea, col=4)
+- Appeal Rights Notice Provided? (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- CFO — Printed Name (type=text, col=2)
+- CFO — Signature (type=signature, col=1)
+- CFO — Date (type=date, col=1)
+- Patient Notified Via (mail / email / portal) (type=text, col=2)
+- Notification Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form FN-FM-028 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: FN-FP-003

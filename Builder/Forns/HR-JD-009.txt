@@ -1,0 +1,231 @@
+DOCUMENT ID: HR-JD-009
+TITLE: Physical Therapist (PT)
+TYPE: Job Description
+DOMAIN: HR
+SUBDOMAIN: JD
+USAGE: Required
+FREQUENCY: Biennial Review
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2027-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: clinical, licensed_professional, skilled_care, therapy
+
+LINKED POLICIES:
+- HR-TA-006 (Job Description & Role Definition)
+- HR-TA-004 (Licensure & Certification Verification)
+- HR-TA-005 (Employee Orientation & Onboarding)
+
+POSITION SUMMARY:
+The Physical Therapist (PT) provides skilled physical therapy services to home health patients when ordered by the attending physician and included in the plan of care. Physical therapy in Medicare home health is a skilled service that may independently establish eligibility when a skilled therapy need exists. The PT evaluates patients' physical function, mobility, strength, balance, and pain, and develops and implements individualized therapeutic programs to restore function, prevent deterioration, and maximize independence. The PT may supervise Physical Therapist Assistants (PTAs) as authorized by law. This role is governed by 42 CFR § 484.115, the California Physical Therapy Practice Act (BPC § 2600 et seq.), and Medicare skilled service criteria.
+
+---
+
+SECTION 1: Core Responsibilities
+layout: list
+
+responsibilities:
+- Conduct comprehensive physical therapy evaluations at Start of Care, when clinically indicated, and at discharge.
+- Develop individualized physical therapy plans including measurable goals, frequency, and duration in coordination with the physician.
+- Provide skilled physical therapy interventions: therapeutic exercise, gait training, balance and fall prevention, neuromuscular re-education, manual therapy, pain management modalities, and functional mobility training.
+- Assess and establish Medicare homebound status criteria when physical therapy is the qualifying skilled service.
+- Complete OASIS assessments at required time points when physical therapy is the primary qualifying service (or when RN is unavailable and PT is the assessing clinician).
+- Provide patient and caregiver education: home exercise programs, safety techniques, assistive device training, and fall prevention strategies.
+- Supervise Physical Therapist Assistants (PTAs): co-sign PTA notes per California PT Practice Act requirements; conduct supervisory visits as required.
+- Participate in interdisciplinary care coordination with RN, OT, SLP, MSW, and physician.
+- Document all evaluations, treatment notes, and discharge summaries within agency-required timeframes.
+- Participate in QAPI activities including outcome monitoring and performance improvement.
+- Maintain compliance with HIPAA and applicable licensure requirements.
+- Complete mandatory training per agency policy and schedule.
+
+SECTION 2: Minimum Qualifications
+layout: list
+
+qualifications:
+- Required: Current, unrestricted Physical Therapist (PT) license in the state of California (CA Physical Therapy Board).
+- Required: Graduate of an accredited professional physical therapy program (Bachelor's, Master's, or DPT).
+- Required: Minimum one (1) year of physical therapy clinical experience; home health experience preferred.
+- Required: No current exclusion from federal or state healthcare programs (OIG/SAM).
+- Required: Current BLS/CPR certification.
+- Required: Valid California driver's license and personal vehicle with current insurance.
+- Required: Completion of agency new-hire orientation and OASIS competency training (if assessing clinician).
+- Required: TB screening current per agency policy.
+- Preferred: Doctor of Physical Therapy (DPT) degree.
+- Preferred: OASIS competency in home health assessments.
+- Preferred: Specialty certifications (geriatrics, orthopedics, neurology, vestibular rehabilitation).
+
+SECTION 3: Required Competencies
+layout: list
+
+competencies:
+- Physical therapy evaluation: musculoskeletal, neurological, cardiovascular-pulmonary, and integumentary systems.
+- Gait analysis, assistive device fitting, and mobility training.
+- Balance assessment and fall risk reduction programs (including standardized tools: Berg Balance Scale, TUG).
+- Therapeutic exercise prescription and progression.
+- Home safety assessment: identification of fall hazards and environmental modification recommendations.
+- OASIS assessment competency (if serving as primary assessing clinician per Medicare policy).
+- Medicare skilled PT criteria: documenting medical necessity, skilled intervention need, and measurable progress.
+- PTA supervision: co-signature, direction, and supervisory visit requirements.
+- Clinical documentation: evaluation, progress notes, discharge summary, timeliness, and authentication.
+- Infection prevention: Standard Precautions in home environments.
+- EHR proficiency for clinical documentation and care coordination.
+
+SECTION 4: Regulatory Responsibilities
+layout: list
+
+regulations:
+- 42 CFR § 484.115 — Meets PT personnel qualifications for home health.
+- 42 CFR § 484.55 — Authorized to complete OASIS assessments when the primary skilled service.
+- 42 CFR § 484.60 — Plan of care development and physician coordination for therapy episodes.
+- 42 CFR § 484.110 — Clinical record documentation requirements.
+- 42 CFR § 484.70 — Infection prevention at point of care.
+- CA Physical Therapy Practice Act (BPC § 2600) — Practice within PT scope; PTA supervision compliance.
+- HIPAA 45 CFR Parts 160 & 164 — PHI privacy and security.
+- Mandatory Reporter (CA Penal Code § 11166; CA W&I Code § 15630) — Elder/dependent adult and child abuse reporting.
+- 42 USC § 1320a-7 — OIG/SAM exclusion-free status.
+
+SECTION 5: Documentation Responsibilities
+layout: list
+
+documentation:
+- Complete initial evaluation within required timeframe; document measurable goals, prognosis, and plan.
+- Complete treatment notes for each visit within 24 hours (or agency-required timeframe).
+- Authenticate all documentation with PT signature, license number, date, and time.
+- Complete and co-sign PTA visit notes within required timeframe if supervising a PTA.
+- Document patient progress toward goals, skilled need justification, and any status changes.
+- Complete discharge summary at episode end with functional outcomes documented.
+- Maintain own PT license, BLS/CPR, OIG/SAM, and CEU documentation in personnel file.
+
+SECTION 6: Supervision Responsibilities
+layout: list
+
+supervision:
+- Supervises Physical Therapist Assistants (PTAs) per California PT Practice Act (minimum supervisory visit every 30 calendar days; co-signature of PTA notes).
+- Reports to: Director of Nursing / Clinical Manager (HR-JD-003).
+
+SECTION 7: Physical Requirements
+layout: list
+
+physical:
+- Medium to heavy work: hands-on therapeutic interventions, patient transfers, gait training, and physical assistance.
+- Lifting and support of patients during mobility tasks (up to 50 lbs with mechanical assist).
+- Fine motor skills for manual therapy and therapeutic modalities.
+- Valid California driver's license and reliable, insured personal vehicle.
+- Ability to navigate varied residential environments including stairs and confined spaces.
+
+SECTION 8: Working Conditions
+layout: list
+
+conditions:
+- Field-based: patient home visits throughout service area.
+- Variable schedule; some evening or weekend availability may be required.
+- Exposure to infectious disease risk managed per Standard Precautions.
+- Physical demands associated with hands-on therapeutic interventions.
+- Mileage reimbursed per agency policy.
+
+SECTION 9: Performance Expectations
+layout: list
+
+expectations:
+- PT evaluation and visit notes completed within agency-required timeframes: ≥ 95% compliance.
+- Measurable functional goals documented at SOC; progress documented at each visit.
+- PTA co-signature compliance: 100% within required timeframe.
+- Clinical documentation audit scores meet or exceed agency threshold.
+- OASIS accuracy (when completing assessments): ≥ 98% submission timeliness.
+- Mandatory training completion: 100% on schedule.
+- Licensure, CEU, BLS/CPR, and OIG/SAM current without lapse.
+- No substantiated scope-of-practice or clinical documentation integrity violations.
+
+SECTION 10: Policy Cross-References
+layout: list
+
+policies:
+- HR-TA-006 — Job Description & Role Definition (controls this document)
+- HR-TA-004 — Licensure & Certification Verification (own PT license and CEU credentials)
+- HR-TA-005 — Employee Orientation & Onboarding (initial competency validation requirements)
+- CL-SD-002 — Physical Therapy Services (skilled PT service delivery standards)
+- CL-CA-001 — Patient Assessment — Comprehensive (OASIS completion when PT is primary skilled service)
+- CL-OA-001 — OASIS Completion Timeliness & Accountability (submission deadlines when PT is assessing clinician)
+- CL-CD-001 — Clinical Documentation Standards (evaluation, progress note, and discharge summary requirements)
+- CL-CD-003 — Clinical Record Authentication & Signature Requirements (PT signature and PTA co-signature standards)
+- CL-SD-016 — Infection Prevention & Control (Standard Precautions at point of care)
+- CL-PR-006 — Abuse, Neglect & Exploitation Reporting (mandatory reporter obligations)
+
+SECTION 11: Measurable Performance Standards
+layout: list
+
+standards:
+- PT evaluation and visit note completion: ≥ 95% of notes completed within 24 hours of service — per CL-CD-001; no note > 5 business days past service date.
+- PTA co-signature compliance: 100% of PTA visit notes co-signed by PT within required timeframe (per CA PT Practice Act and agency policy) — 0 unsigned PTA notes.
+- OASIS submission timeliness (when PT is assessing clinician): ≥ 98% submitted within 5 calendar days of applicable date — per CL-OA-001 and 42 CFR § 484.45.
+- Measurable goal documentation: 100% of PT evaluations include at least 2 measurable, time-bound functional goals — per CL-SD-002 and Medicare skilled PT criteria.
+- Clinical documentation audit compliance: pass rate ≥ agency threshold on monthly audits — per QA-PG-001.
+- PT license and BLS/CPR: current without lapse at all times — 0 expired credentials in active service — per HR-TA-004.
+- CEU requirements (CA PT Board): completed per licensure renewal cycle — 0 CEU-deficient license renewals.
+- Mandatory training completion: 100% of required annual and compliance trainings completed by due date — per HR-TA-005.
+- OIG/SAM screening (self): monthly; 0 lapses — per HR-TA-003.
+- Mandatory reporter obligations: abuse/neglect reports filed within 24 hours — 0 lapses — per CL-PR-006.
+
+SECTION 12: Documentation Ownership
+layout: list
+
+owned_records:
+- PT Initial Evaluation: author and authenticated owner; completed at SOC or PT-qualifying episode start; retained in patient record.
+- PT Visit / Treatment Notes (Progress Notes): author and authenticated owner for each PT-delivered visit; retained in patient record.
+- PTA Co-Signature Records: PT is co-signatory on all PTA visit notes; retained in patient record.
+- PT Discharge Summary: author; documents functional outcomes, goal attainment, and recommendations; completed at episode end.
+- OASIS Assessments (when PT is primary assessing clinician): author and authenticated owner; retained in patient EHR.
+- Home Safety Assessment documentation: author; documents hazards identified and modifications recommended; part of PT evaluation or visit note.
+- Own credential file entries: PT license, BLS/CPR, OIG/SAM, TB screening, CEU documentation — maintained in personnel file.
+
+SECTION 13: Escalation Responsibilities
+layout: list
+
+escalation:
+- Patient medical emergency during PT session (cardiac event, fall with injury, acute pain, sudden neurological change) → Call 911 if life-threatening; notify physician and DON within 1 hour; document all actions and notifications.
+- Suspected patient abuse, neglect, or exploitation → Mandatory report to APS/law enforcement within 24 hours per CA Penal Code § 11166; notify DON same business day.
+- Patient condition deterioration indicating skilled PT is no longer safe to deliver independently → Notify physician and DON immediately; do not proceed with treatment until medically cleared.
+- PTA practicing outside PT-authorized plan or refusing supervision → Notify DON immediately; do not co-sign unauthorized PTA notes; document findings.
+- PT license lapse (own) → Immediately cease patient care; notify DON same business day; do not return to patient care until reinstatement confirmed.
+- OASIS rejection or transmission failure (when PT is assessing clinician) → Notify DON within 24 hours; correct and resubmit within 2 business days.
+- Patient refuses PT services → Document refusal; notify DON and physician within same business day.
+
+SECTION 14: Required Forms
+layout: list
+
+forms:
+- PT Initial Evaluation Form (agency EHR or agency-standard): completed at episode start; includes measurable goals.
+- PT Visit / Progress Note (agency EHR format): completed at each visit within 24 hours.
+- PT Discharge Summary (agency EHR or CL-FM series): completed at episode end.
+- CL-FM-002 — OASIS-E1 Assessment Form (completed when PT is primary assessing clinician).
+- PTA Co-Signature Form or EHR co-signature entry: completed for each PTA visit note within required timeframe.
+- Home Safety Assessment Form (CL-FM or agency standard): completed when home safety hazards are identified.
+- HR-FM-031 — Job Description Acknowledgment Form (signed at hire and upon JD revision).
+
+SECTION 15: Onboarding & Competency Requirements
+layout: list
+
+This role is governed by the Role-Based Onboarding & Competency Journey.
+
+Required Training Path:
+- General Orientation (GAO Series)
+- Role-Specific LMS Track (PT-000 Series)
+
+Competency Requirements:
+- Initial competency validation (HR-TD-003 Appendix A)
+- Supervised experience (if applicable)
+- Clearance required prior to independent duties
+
+Ongoing Compliance:
+- Annual training (HR-TD-001)
+- Annual competency evaluation
+- Monthly compliance screening (OIG/SAM)
+
+Refer to:
+Role-Based Onboarding & Competency Journey (Master Framework)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Document HR-JD-009 · Version 6.0 · Effective 2025-07-10 · Next Review 2027-07-10
+- Linked Policies: HR-TA-006, HR-TA-004, HR-TA-005
+- Regulatory Authority: 42 CFR § 484.115; § 484.55; CA BPC § 2600
+- Reports To: Director of Nursing / Clinical Manager (HR-JD-003)

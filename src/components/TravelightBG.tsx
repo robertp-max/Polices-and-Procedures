@@ -1,11 +1,10 @@
 import { useEffect, useRef } from 'react'
-import { GradFlow } from 'gradflow'
 
 /* ═══════════════════════════════════════════════════════════════
    TravelightBG — premium app backdrop
    - Dark theme  : CI-ION (maroon + gold "travelling light" canvas)
-   - Light theme : Care Indeed — GradFlow WebGL smoke gradient using
-     the brand primary palette (orange + deep orange + warm amber).
+   - Light theme : Care Indeed — flat #FAFBF8 canvas matching the
+     Workflow Library one-card aesthetic.
    ═══════════════════════════════════════════════════════════════ */
 
 function TravelightCanvas() {
@@ -96,13 +95,10 @@ interface TravelightBGProps {
 
 export default function TravelightBG({ isLight = false }: TravelightBGProps) {
   if (isLight) {
-    // ── Care Indeed light-mode background — GradFlow WebGL smoke ─────
-    // Hardware-accelerated smoke gradient sourced from
-    // https://gradflow.meera.dev with the exact brand-primary palette
-    // (orange + deep orange + warm amber). The animated canvas sits
-    // behind the solid-white shell card, so the gradient is only ever
-    // visible in the viewport margins and the card edges read as
-    // clean, enterprise-grade content surface.
+    // ── Care Indeed light-mode background — flat canvas ──────────────
+    // Clean #FAFBF8 canvas matching the Workflow Library one-card
+    // aesthetic. No WebGL smoke, no orange gradient, no animation —
+    // the shell card reads as a crisp enterprise content surface.
     return (
       <div
         data-shell-bg=""
@@ -114,22 +110,9 @@ export default function TravelightBG({ isLight = false }: TravelightBGProps) {
           height: '100vh',
           zIndex: 0,
           pointerEvents: 'none',
-          overflow: 'hidden',
-          background: '#FFFAF7', // primary-100 fallback until WebGL paints
+          background: '#FAFBF8',
         }}
-      >
-        <GradFlow
-          config={{
-            color1: { r: 255, g: 38, b: 0 },
-            color2: { r: 199, g: 0, b: 0 },
-            color3: { r: 255, g: 142, b: 36 },
-            speed: 0.3,
-            scale: 0.5,
-            type: 'smoke',
-            noise: 0.03,
-          }}
-        />
-      </div>
+      />
     )
   }
 

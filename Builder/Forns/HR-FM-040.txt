@@ -1,0 +1,78 @@
+FORM ID: HR-FM-040
+TITLE: Leave of Absence Request (FMLA / CFRA / PDL / ADA)
+TYPE: Request
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- HR-ER-003
+- HR-ER-004
+- HR-HS-003
+
+PURPOSE:
+Standardized leave-of-absence request capturing the leave category (FMLA, CFRA, PDL, ADA, paid sick, personal), dates, medical certification referral, intermittent/continuous schedule, and employer designation notice workflow.
+
+INSTRUCTIONS:
+Employee submits to HR; HR issues Notice of Eligibility/Rights within 5 business days of FMLA/CFRA request per 29 CFR § 825.300. Medical certification issued separately. HR completes Designation Notice within 5 business days of sufficient certification.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Employee (Full Name) (type=text, required=true, col=2)
+- Employee ID (type=text, required=true, col=2)
+- Department / Supervisor (type=text, col=2)
+- Date Submitted (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Leave Details
+layout: grid
+
+fields:
+- Leave Category (type=select, required=true, col=2, options=[FMLA | CFRA | PDL | ADA | Paid Sick Leave | Workers Comp | Personal Unpaid | Bereavement | Jury Duty | Other])
+- Reason (type=textarea, col=4)
+- Anticipated Start Date (type=date, required=true, col=2)
+- Anticipated End Date (type=date, col=2)
+- Continuous or Intermittent (type=select, col=2, options=[Continuous | Intermittent | Reduced Schedule])
+- Relationship to Family Member (if applicable) (type=text, col=2)
+- Prior FMLA/CFRA used (hours) (type=text, col=2)
+
+SECTION 3: Section 3 — Medical Certification
+layout: grid
+
+fields:
+- Medical Certification Required? (Y/N) (type=select, col=2, options=[Yes | No])
+- Certification Due Date (15 days) (type=date, col=2)
+- Certification Received Date (type=date, col=2)
+- Second/Third Opinion Required? (Y/N) (type=select, col=2, options=[Yes | No])
+
+SECTION 4: Section 4 — Employer Designation
+layout: grid
+
+fields:
+- Notice of Eligibility Issued Date (5 business days) (type=date, col=2)
+- Designation Notice Issued Date (type=date, col=2)
+- Leave Designated As (type=select, col=2, options=[FMLA-qualifying | CFRA-qualifying | Both | Not-qualifying])
+- Pay Status During Leave (type=select, col=2, options=[Unpaid | PTO substitution | Partial paid])
+- Benefit Continuation Plan (type=textarea, col=4)
+- Return-to-Work Requirements (type=textarea, col=4)
+
+SECTION 5: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Employee — Printed Name (type=text, col=2)
+- Employee — Signature (type=signature, col=1)
+- Employee — Date (type=date, col=1)
+- HR Representative — Printed Name (type=text, col=2)
+- HR Representative — Signature (type=signature, col=1)
+- HR Representative — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-040 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: HR-ER-003, HR-ER-004, HR-HS-003

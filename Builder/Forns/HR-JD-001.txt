@@ -1,0 +1,236 @@
+DOCUMENT ID: HR-JD-001
+TITLE: Administrator
+TYPE: Job Description
+DOMAIN: HR
+SUBDOMAIN: JD
+USAGE: Required
+FREQUENCY: Biennial Review
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2027-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: leadership, executive, regulatory_critical
+
+LINKED POLICIES:
+- HR-TA-006 (Job Description & Role Definition)
+- HR-TA-001 (Recruitment & Hiring Standards)
+- HR-TA-004 (Licensure & Certification Verification)
+- GV-GB-001 (Governing Body Authority & Responsibilities)
+- GV-GB-004 (Succession Planning for Key Leadership)
+
+POSITION SUMMARY:
+The Administrator is the individual appointed by the Governing Body who is responsible for the day-to-day management and operations of Care Indeed Home Health Care, Inc., as required under 42 CFR § 484.105(b). The Administrator serves as the single accountable executive for operational, financial, compliance, and clinical oversight functions of the agency and acts as the primary liaison between the Governing Body and all agency operations. The Administrator must meet minimum qualifications as specified under 42 CFR § 484.115 and applicable California licensure requirements.
+
+---
+
+SECTION 1: Core Responsibilities
+layout: list
+
+responsibilities:
+- Direct and supervise all agency operations in compliance with Medicare Conditions of Participation (42 CFR Part 484) and applicable state law.
+- Appoint and oversee the Administrator Designee (HR-JD-002) to ensure continuity during absences.
+- Work collaboratively with the Director of Nursing / Clinical Manager (HR-JD-003) to ensure clinical quality, compliance, and patient safety.
+- Serve as primary liaison to the Governing Body; prepare and present quarterly reports including compliance, QAPI, and financial performance.
+- Ensure the agency maintains all required Medicare certifications, state licenses, and accreditations.
+- Oversee implementation and ongoing management of the Compliance Program (CO domain).
+- Review and approve agency policies and procedures; ensure annual review cycles are maintained.
+- Maintain and submit the Annual Institutional Plan and Budget for Governing Body approval (42 CFR § 484.105(h)).
+- Ensure annual Acceptance-to-Service policy and Public Information disclosures are reviewed and updated (42 CFR § 484.105(i)).
+- Oversee all HR functions including hiring, credentialing, training, performance management, and disciplinary processes.
+- Respond to CMS/state survey findings; develop and implement Plans of Correction within required timeframes.
+- Ensure timely reporting of all required reportable events to CMS, state agencies, and Governing Body.
+- Maintain a current and operational QAPI program in coordination with the QAPI Lead.
+- Ensure all staff meet OIG/SAM exclusion screening requirements and that excluded individuals are not employed.
+- Authorize contracts, business associate agreements, and vendor arrangements as designated by Governing Body authority.
+
+SECTION 2: Minimum Qualifications
+layout: list
+
+qualifications:
+- Required: Meets at least one of the following — Licensed physician; Licensed registered nurse (RN); Hold a baccalaureate degree in health administration, public health, business administration, or related field with a minimum of 1 year supervisory or administrative experience in health services (42 CFR § 484.115).
+- Required: No current exclusion from federal or state healthcare programs (OIG/SAM).
+- Required: Meets California CDPH Administrator qualification requirements for licensed home health agencies.
+- Preferred: Master's degree in health administration (MHA), public health (MPH), nursing (MSN), or business administration (MBA).
+- Preferred: Minimum 3 years of progressive leadership experience in a Medicare-certified home health agency.
+- Required: No history of healthcare fraud, program integrity violations, or unresolved compliance sanctions.
+
+SECTION 3: Required Competencies
+layout: list
+
+competencies:
+- Comprehensive knowledge of 42 CFR Part 484 Medicare Home Health Conditions of Participation.
+- Financial management: budget development, variance analysis, revenue cycle oversight.
+- Human resources leadership: workforce planning, hiring, performance management, employment law.
+- Compliance program management: HIPAA, OIG, False Claims Act, anti-kickback statute.
+- QAPI program oversight and quality outcome interpretation (OASIS-based measures, HHCAHPS).
+- Strategic planning, organizational development, and change management.
+- Survey readiness and response: CMS Certification and Survey Provider Enhanced Reporting (CASPER), Plans of Correction.
+- Strong written and verbal communication; ability to represent the agency to external stakeholders.
+- Proficiency with EHR systems and agency management software.
+- Crisis management and emergency operations decision-making.
+
+SECTION 4: Regulatory Responsibilities
+layout: list
+
+regulations:
+- 42 CFR § 484.105(b) — Appointment and operational accountability as Administrator.
+- 42 CFR § 484.115 — Meets personnel qualifications for Administrator role.
+- 42 CFR § 484.105(h) — Annual Institutional Plan & Budget submission.
+- 42 CFR § 484.105(i) — Annual Acceptance-to-Service and public information review.
+- 42 CFR § 484.65 — QAPI program executive accountability.
+- 42 USC § 1320a-7 — OIG/SAM exclusion compliance (self and all agency employees).
+- HIPAA 45 CFR Parts 160 & 164 — Privacy/Security Officer designation (or oversight of designated officers).
+- CA Health & Safety Code § 1726 et seq. — State licensure compliance and reporting.
+- 29 CFR § 1910 / Cal/OSHA IIPP — Workplace safety program oversight.
+- False Claims Act (31 USC § 3729 et seq.) — Revenue integrity and claims accuracy accountability.
+
+SECTION 5: Documentation Responsibilities
+layout: list
+
+documentation:
+- Execute Administrator Appointment/Delegation documentation at hire and when designating Administrator Designee.
+- Sign and submit Plans of Correction to CMS/state following survey findings.
+- Co-sign Annual Institutional Plan and Budget approval records.
+- Review and approve all agency policies prior to Governing Body ratification.
+- Maintain current employment and credential documentation in personnel file.
+- Document all reportable event notifications to regulatory bodies.
+- Approve and retain Compliance Program review records.
+
+SECTION 6: Supervision Responsibilities
+layout: list
+
+supervision:
+- Direct reports typically include: Administrator Designee (HR-JD-002), Director of Nursing/Clinical Manager (HR-JD-003), Compliance Officer/Coordinator, Finance Director/Manager, HR Director, Operations Director.
+- Authority to hire, evaluate, discipline, and terminate all agency personnel (except Governing Body members).
+- Responsible for annual performance evaluations of all direct reports.
+
+SECTION 7: Physical Requirements
+layout: list
+
+physical:
+- Sedentary to light work: prolonged periods of sitting, computer use, and administrative tasks.
+- Ability to attend meetings, conduct facility walkthroughs, and represent agency externally.
+- Valid California driver's license and reliable transportation for any multi-site oversight responsibilities.
+
+SECTION 8: Working Conditions
+layout: list
+
+conditions:
+- Full-time, exempt position; hours extend beyond standard business hours as agency needs require.
+- Primary work location: agency office; may include field visits, regulatory meetings, and external engagements.
+- Subject to 24/7 accountability for agency operations and emergency response.
+- On-call availability required for reportable events, sentinel events, and survey activity.
+
+SECTION 9: Performance Expectations
+layout: list
+
+expectations:
+- Zero CoP-level (Condition of Participation) deficiencies left uncorrected beyond Plan of Correction due date.
+- Annual Institutional Plan and Budget submitted and approved before fiscal year start.
+- 100% OIG/SAM screening compliance for all agency personnel.
+- QAPI program operational with documented quarterly reviews and measurable improvement projects.
+- All licensures, certifications, and accreditations current — no lapses.
+- All direct-report performance evaluations completed on schedule.
+- Agency patient satisfaction scores (HHCAHPS) at or above applicable benchmarks.
+- Governing Body meeting materials prepared and distributed ≥7 days in advance of each meeting.
+
+SECTION 10: Policy Cross-References
+layout: list
+
+policies:
+- HR-TA-006 — Job Description & Role Definition (controls this document)
+- HR-TA-001 — Recruitment & Hiring Standards (owns agency-wide hiring compliance)
+- HR-TA-004 — Licensure & Certification Verification (owns credential verification program)
+- HR-TA-005 — Employee Orientation & Onboarding (owns program)
+- GV-GB-001 — Governing Body Authority & Responsibilities (accountable to Board under this policy)
+- GV-GB-004 — Succession Planning for Key Leadership (designates Administrator Designee)
+- CO-CP-001 — Corporate Compliance Program (executive accountable; presents quarterly to Board)
+- QA-PG-001 — QAPI Program Governance (executive accountable; ensures program is operational)
+- EN-PM-001 — Policy Management (approves all agency policies pre-Board ratification)
+- CO-RA-001 — Regulatory Licensure & Certification Management (owner: ensures zero licensure lapses)
+- HR-TA-003 — OIG/SAM Exclusion Screening (accountable for 100% screening of all personnel)
+
+SECTION 11: Measurable Performance Standards
+layout: list
+
+standards:
+- Plans of Correction: submitted to CMS/state within mandated deadline (typically 10 calendar days of survey exit) — 0 late submissions; 0 CoP deficiencies left unresolved past POC due date — per 42 CFR § 488.28.
+- OIG/SAM screening compliance: 100% of employees and contractors screened at hire and monthly — 0 excluded individuals in active service — per HR-TA-003 and 42 USC § 1320a-7.
+- Annual Institutional Plan & Budget: submitted to Governing Body ≥ 30 days before fiscal year start — 0 late submissions — per GV-GB-001 and 42 CFR § 484.105(h).
+- Policy review cycle: 100% of policies with annual review requirement completed within fiscal year — 0 overdue reviews — per EN-PM-001.
+- Reportable events: notification to applicable regulatory body within regulatory deadline (event-type specific) — 0 late mandatory reports.
+- QAPI program: ≥ 1 active documented Performance Improvement Project (PIP) at all times; quarterly review documented in writing — per QA-PG-001.
+- Agency licensure/certification renewals: applications submitted ≥ 90 days before expiration — 0 lapses — per CO-RA-001.
+- Direct-report performance evaluations: 100% completed within 30 days of scheduled due date — per HR-PM-001.
+- Governing Body meeting packets: distributed ≥ 7 days prior to each meeting — 100% compliance — per GV-GB-002.
+- HIPAA training for all personnel: 100% completion within required timeframe — per HIPAA 45 CFR § 164.530(b).
+
+SECTION 12: Documentation Ownership
+layout: list
+
+owned_records:
+- Plans of Correction (all survey deficiencies): primary author and regulatory signatory; retained in compliance file.
+- Annual Institutional Plan and Budget submission: primary author; co-signed by Governing Body Chair.
+- Administrator Designee Designation Form: owner and signatory; filed in governance record.
+- Quarterly Governing Body Report (Compliance + QAPI + Financial): author and presenter; retained with Board minutes.
+- All agency policy approval records (pre-Board ratification): review and approval signatory on each policy.
+- Regulatory event notification records (CMS/state/APS/law enforcement filings): owner and custodian.
+- Compliance Program Annual Review documentation: oversight signatory; filed with CO domain records.
+- Agency-level contracts and Business Associate Agreements: authorized signatory; retained in legal/vendor file.
+- Administrator Appointment documentation (own): retained in personnel file.
+- GV-FM-019 — Agency Licensure & Certification Tracking Log: oversight owner; reviewed quarterly.
+
+SECTION 13: Escalation Responsibilities
+layout: list
+
+escalation:
+- Immediate Jeopardy (IJ) citation from CMS or state surveyor → Notify Governing Body Chair within 24 hours; engage Legal Counsel same day; suspend deficient practice immediately; initiate POC.
+- Patient death, serious injury, or sentinel event attributable to agency action or inaction → Notify Governing Body Chair within 24 hours; file all mandatory reports within regulatory deadline; RCA initiated within 72 hours.
+- OIG/SAM exclusion found for any employee or contractor → Remove from patient care immediately; Compliance Officer + Governing Body Chair + Legal Counsel notified same business day.
+- Clinical Manager or Administrator Designee sudden vacancy → Activate succession plan (GV-GB-004); activate Designee (HR-JD-002) or Clinical Designee (HR-JD-004); Governing Body notified within 48 hours.
+- HIPAA breach determination (per breach risk assessment) → Privacy Officer activates breach notification protocol; Administrator notified; Governing Body briefed if material breach within 72 hours; HHS notification per 45 CFR § 164.408 deadline.
+- Agency licensure lapse, denial, or suspension → Governing Body Chair notified immediately; patient care continuity plan activated; legal response initiated.
+- Employee or patient complaint directly naming the Administrator → Escalate to Governing Body Chair for independent review; no self-investigation.
+- Financial fraud allegation or embezzlement discovery → Governing Body Chair + Legal Counsel + Compliance Officer notified immediately; forensic review initiated.
+
+SECTION 14: Required Forms
+layout: list
+
+forms:
+- HR-FM-031 — Job Description Acknowledgment Form (signed at hire and upon material JD revision)
+- HR-FM-001 — Reasonable Suspicion Observation Checklist (oversight; approves suspension orders)
+- GV-FM-005 — Governing Body Meeting Minutes (presents quarterly reports)
+- GV-FM-019 — Agency Licensure & Certification Tracking Log (oversight owner)
+- CO-FM-016 — Reportable Event Notification Log (owner and signatory)
+- QA-FM-001 — QAPI Committee Meeting Minutes (executive reviewer)
+- EN-FM-002 — Master Policy Index / Taxonomy Register (approves)
+- Administrator Designee Designation Form (signatory; GV-FM or HR file equivalent)
+- Plans of Correction document (CMS/state format; Administrator is required signatory)
+
+SECTION 15: Onboarding & Competency Requirements
+layout: list
+
+This role is governed by the Role-Based Onboarding & Competency Journey.
+
+Required Training Path:
+- General Orientation (GAO Series)
+- Role-Specific LMS Track (ADM-000 Series)
+
+Competency Requirements:
+- Initial competency validation (HR-TD-003 Appendix A)
+- Supervised experience (if applicable)
+- Clearance required prior to independent duties
+
+Ongoing Compliance:
+- Annual training (HR-TD-001)
+- Annual competency evaluation
+- Monthly compliance screening (OIG/SAM)
+
+Refer to:
+Role-Based Onboarding & Competency Journey (Master Framework)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Document HR-JD-001 · Version 6.0 · Effective 2025-07-10 · Next Review 2027-07-10
+- Linked Policies: HR-TA-006, HR-TA-001, HR-TA-004, GV-GB-001, GV-GB-004
+- Regulatory Authority: 42 CFR § 484.105(b); § 484.115
+- Reports To: Governing Body (HR-JD-000)

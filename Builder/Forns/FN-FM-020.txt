@@ -1,0 +1,66 @@
+FORM ID: FN-FM-020
+TITLE: Overpayment Identification Worksheet (60-Day Rule)
+TYPE: Worksheet
+DOMAIN: FN
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- FN-BC-001
+- CO-CP-001
+
+PURPOSE:
+Worksheet to capture the point at which a potential overpayment is identified for ACA § 6402/42 CFR § 401.305 60-day-rule tracking, including diligence timeline, scope (single vs systemic), quantification approach, and return method.
+
+INSTRUCTIONS:
+Compliance / CFO initiates within 1 business day of identification. Reasonable-diligence investigation must conclude within 6 months; refund due within 60 days of confirmed quantification. All decisions documented.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Case ID (type=text, required=true, col=2)
+- Initiator (type=text, required=true, col=2)
+- Date Identified (start of 60-day clock) (type=date, required=true, col=2)
+- Source of Identification (internal audit / hotline / RAC / MAC / self-review) (type=select, col=2, options=[Internal audit | Hotline | RAC | MAC | UPIC | Self-review | Other])
+
+SECTION 2: Section 2 — Scope & Analysis
+layout: grid
+
+fields:
+- Single Occurrence or Systemic? (type=select, required=true, col=2, options=[Single | Systemic])
+- Claims Affected (count / dollars) (type=textarea, col=4)
+- Root Cause (preliminary) (type=textarea, col=4)
+- Extrapolation Required? (Y/N) (type=select, col=2, options=[Yes | No])
+- Diligence Plan (owners / milestones) (type=textarea, col=4)
+- Expected Diligence Close Date (type=date, col=2)
+
+SECTION 3: Section 3 — Disposition Path
+layout: grid
+
+fields:
+- Self-Disclosure Considered? (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+- Self-Disclosure Pathway (OIG / CMS SRDP / MAC voluntary refund / N/A) (type=select, col=2, options=[OIG SDP | CMS SRDP | MAC Voluntary Refund | NA])
+- Legal Counsel Engaged? (Y/N) (type=select, col=2, options=[Yes | No])
+- Target Refund/Disclosure Date (type=date, col=2)
+- Notes (type=textarea, col=4)
+
+SECTION 4: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+- CFO — Printed Name (type=text, col=2)
+- CFO — Signature (type=signature, col=1)
+- CFO — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form FN-FM-020 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: FN-BC-001, CO-CP-001

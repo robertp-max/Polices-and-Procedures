@@ -1,0 +1,66 @@
+FORM ID: EN-FM-033
+TITLE: Mandatory Events Completion Report
+TYPE: Report
+DOMAIN: EN
+USAGE: Required
+FREQUENCY: Monthly
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: landscape
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- EN-CM-001
+- CO-CP-001
+
+PURPOSE:
+Monthly status report tracking completion of every mandatory event on EN-FM-032 Calendar. Flags missed/late events and drives escalation to leadership and Governing Body.
+
+INSTRUCTIONS:
+Compliance Officer issues monthly. Any "Missed" or "Late" event triggers CAP (QA-FM-005). Reviewed at monthly leadership and quarterly Compliance Committee (CO-FM-024).
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Report Period (Month/Year) (type=text, required=true, col=2)
+- Report Owner (Compliance Officer) (type=text, required=true, col=2)
+- Report Date (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Status Summary
+layout: grid
+
+fields:
+- Total Events Due (this period) (type=text, col=2)
+- Completed On-Time (type=text, col=2)
+- Completed Late (type=text, col=2)
+- Missed (type=text, col=2)
+- Completion % (on-time) (type=text, col=2)
+- Trend vs Prior Period (type=text, col=2)
+
+SECTION 3: Section 3 — Missed / Late Detail
+layout: grid
+
+fields:
+- Event ID / Name (type=textarea, col=4)
+- Owner (type=textarea, col=2)
+- Reason for Missed / Late (type=textarea, col=4)
+- CAP Reference (QA-FM-005) (type=textarea, col=2)
+- New Target Date (type=textarea, col=2)
+- Escalated To (type=textarea, col=2)
+
+SECTION 4: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+- Administrator — Printed Name (type=text, col=2)
+- Administrator — Signature (type=signature, col=1)
+- Administrator — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form EN-FM-033 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: EN-CM-001, CO-CP-001

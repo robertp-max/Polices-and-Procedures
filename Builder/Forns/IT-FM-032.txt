@@ -1,0 +1,82 @@
+FORM ID: IT-FM-032
+TITLE: Post-Incident Corrective Action Plan (IT/Security)
+TYPE: Plan
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- IT-SP-005
+- CO-HP-004
+- CO-CP-001
+
+PURPOSE:
+Structured corrective-action plan following a security incident, near-miss, or breach (IT-FM-009). Documents root cause, short- and long-term remediations, owners, milestones, verification, and closure. Supports HIPAA § 164.308(a)(6) security incident procedures and § 164.530 administrative safeguards.
+
+INSTRUCTIONS:
+Security Officer initiates within 72 hours of incident containment. Approved by CIO + Compliance Officer. Progress reported to IT/Security Committee (IT-FM-031) and Compliance Committee (CO-FM-024) monthly until closed. Closure requires independent verification.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- CAP ID (type=text, required=true, col=2)
+- Incident ID (IT-FM-009) (type=text, required=true, col=2)
+- Initiator (Security Officer) (type=text, required=true, col=2)
+- Date Initiated (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Incident Summary
+layout: grid
+
+fields:
+- Incident Date (type=date, col=2)
+- Detection Date (type=date, col=2)
+- Containment Date (type=date, col=2)
+- Severity (type=select, col=2, options=[Low | Moderate | High | Critical])
+- Systems / Data Affected (incl. PHI/ePHI?) (type=textarea, col=4)
+- Root Cause (5-Why / RCA summary) (type=textarea, col=4)
+- Breach Determination (Y/N/Pending) (type=select, col=2, options=[Yes | No | Pending])
+
+SECTION 3: Section 3 — Corrective Actions
+layout: grid
+
+fields:
+- Short-Term Actions (≤ 30 days) — Description / Owner / Due (type=textarea, col=4)
+- Long-Term Actions (> 30 days) — Description / Owner / Due (type=textarea, col=4)
+- Control Changes (policy / procedure / technical) (type=textarea, col=4)
+- Training / Awareness Actions (type=textarea, col=4)
+- Third-Party / Vendor Actions (type=textarea, col=4)
+
+SECTION 4: Section 4 — Verification & Closure
+layout: grid
+
+fields:
+- Verification Method (re-test / audit / walkthrough / tabletop) (type=textarea, col=4)
+- Verifier (independent of Owner) (type=text, col=2)
+- Verification Date (type=date, col=2)
+- Residual Risk Acceptable? (Y/N) (type=select, col=2, options=[Yes | No])
+- Lessons Learned Captured in QAPI? (Y/N) (type=select, col=2, options=[Yes | No])
+- Closure Date (type=date, col=2)
+
+SECTION 5: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Security Officer — Printed Name (type=text, col=2)
+- Security Officer — Signature (type=signature, col=1)
+- Security Officer — Date (type=date, col=1)
+- CIO — Printed Name (type=text, col=2)
+- CIO — Signature (type=signature, col=1)
+- CIO — Date (type=date, col=1)
+- Compliance Officer — Printed Name (type=text, col=2)
+- Compliance Officer — Signature (type=signature, col=1)
+- Compliance Officer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-032 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: IT-SP-005, CO-HP-004, CO-CP-001

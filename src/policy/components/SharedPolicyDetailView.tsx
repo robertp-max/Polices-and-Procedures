@@ -1,13 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import {
   ChevronLeft, Printer, Download, Target, CheckCircle, BookOpen, List,
   Settings, FileText, CheckSquare, Archive, LayoutList, Bell,
   HelpCircle, Clock, Search, AlertTriangle, ChevronRight,
   GitBranch, ExternalLink, Landmark, Scale, FileCheck, Lock,
-  Shield, ShieldCheck, Gavel
+  Shield, ShieldCheck, Gavel, Calendar, Plus, Trash2, Save,
+  Building2, Briefcase, HeartPulse, User, FileLock2, Award,
 } from 'lucide-react';
 import ciLogoWhite from '@/assets/ci-logo-white.png';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useShellStore } from '@/policy/stores/uiStore';
+import { FormViewer } from '@/policy/components/FormViewer';
 
 // ══════════════════════════════════════════════════════════════
 // SHARED POLICY DETAIL VIEW
@@ -185,47 +188,47 @@ const GV_COMPLIANCE_83: string[][] = [
 ];
 
 const GV_FEDERAL_REFS: string[][] = [
-  ['42 CFR § 484.2', 'Definitions', "Defines 'governing body' and key terms for home health agencies."],
-  ['42 CFR § 484.105', 'CoP: Organization and Administration of Services', 'Primary regulatory basis for this policy. Requires a governing body with full legal authority for agency operation and management.'],
-  ['42 CFR § 484.105(a)', 'Standard: Governing body', 'Mandates governing body responsibility for agency operations, appointment of administrator, and oversight of services.'],
-  ['42 CFR § 484.105(b)', 'Standard: Administrator', 'Requires appointment of a qualified administrator responsible to the governing body.'],
-  ['42 CFR § 484.105(c)', 'Standard: Clinical manager', 'Requires designation of a qualified clinical manager for oversight of clinical services.'],
-  ['42 CFR § 484.60', 'CoP: Care planning, coordination, and quality of care', 'Governing body accountability for ensuring care planning and quality.'],
-  ['42 CFR § 484.65', 'CoP: Quality assessment and performance improvement (QAPI)', 'Governing body must ensure an effective QAPI program.'],
-  ['42 CFR § 484.70', 'CoP: Infection prevention and control', 'Governing body oversight of infection prevention.'],
-  ['42 CFR § 484.100', 'CoP: Compliance with Federal, State, and local laws', 'Governing body must ensure full legal compliance.'],
-  ['42 CFR § 484.102', 'CoP: Emergency preparedness', 'Governing body must approve emergency preparedness plan.'],
-  ['42 CFR § 484.110', 'CoP: Clinical records', 'Governing body oversight of clinical records policies.'],
+  ['42 CFR § 484.2', 'Definitions', "Defines 'governing body' and key terms for home health agencies.", 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-A/section-484.2'],
+  ['42 CFR § 484.105', 'CoP: Organization and Administration of Services', 'Primary regulatory basis for this policy. Requires a governing body with full legal authority for agency operation and management.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105'],
+  ['42 CFR § 484.105(a)', 'Standard: Governing body', 'Mandates governing body responsibility for agency operations, appointment of administrator, and oversight of services.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105#p-484.105(a)'],
+  ['42 CFR § 484.105(b)', 'Standard: Administrator', 'Requires appointment of a qualified administrator responsible to the governing body.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105#p-484.105(b)'],
+  ['42 CFR § 484.105(c)', 'Standard: Clinical manager', 'Requires designation of a qualified clinical manager for oversight of clinical services.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105#p-484.105(c)'],
+  ['42 CFR § 484.60', 'CoP: Care planning, coordination, and quality of care', 'Governing body accountability for ensuring care planning and quality.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-B/section-484.60'],
+  ['42 CFR § 484.65', 'CoP: Quality assessment and performance improvement (QAPI)', 'Governing body must ensure an effective QAPI program.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-B/section-484.65'],
+  ['42 CFR § 484.70', 'CoP: Infection prevention and control', 'Governing body oversight of infection prevention.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-B/section-484.70'],
+  ['42 CFR § 484.100', 'CoP: Compliance with Federal, State, and local laws', 'Governing body must ensure full legal compliance.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.100'],
+  ['42 CFR § 484.102', 'CoP: Emergency preparedness', 'Governing body must approve emergency preparedness plan.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.102'],
+  ['42 CFR § 484.110', 'CoP: Clinical records', 'Governing body oversight of clinical records policies.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.110'],
 ];
 
 const GV_CROSS_REFS: string[][] = [
-  ['GV-OG-001', 'Organizational Structure & Reporting', 'Governing Body approves organizational structure.'],
-  ['GV-OG-002', 'Administrator Qualifications & Responsibilities', 'Governing Body appoints and evaluates Administrator.'],
-  ['GV-OG-003', 'Scope of Services Definition', 'Governing Body approves scope of services.'],
-  ['GV-OG-004', 'Strategic Planning & Annual Goals', 'Governing Body approves strategic plan.'],
-  ['GV-OG-005', 'Delegation of Authority', 'Governs limits of Governing Body delegation.'],
-  ['GV-PM-001', 'Policy Development & Approval Process', 'Governing Body approves REQUIRED-tier policies.'],
-  ['GV-PM-002', 'Policy Review & Revision Cycle', 'Governing Body ensures policy review cycle.'],
-  ['GV-PM-003', 'Policy Acknowledgment & Staff Attestation', 'Staff acknowledgment of this and all policies.'],
-  ['GV-GB-002', 'Board Meeting & Minutes Requirements', 'Details meeting documentation standards.'],
-  ['GV-GB-003', 'Conflict of Interest Disclosure', 'Governs member conflict disclosures.'],
-  ['GV-GB-004', 'Succession Planning for Key Leadership', 'Governing Body reviews succession plan.'],
-  ['GV-GB-005', 'Annual Governance Self-Assessment', 'Governing Body self-assessment tool.'],
-  ['GV-EA-004', 'Agency Licensure & Certification Maintenance', 'Governing Body ensures licensure/certification currency.'],
-  ['GV-EA-005', 'Agency Closure or Change of Ownership', 'Governing Body directs CHOW process.'],
-  ['QA-PG-001', 'QAPI Program Establishment & Governance', 'Governing Body oversees QAPI program.'],
-  ['QA-PG-002', 'QAPI Plan Development & Annual Review', 'Governing Body approves QAPI plan.'],
-  ['QA-AE-003', 'Corrective Action Plan Development & Tracking', 'Escalation path for governance deficiencies.'],
-  ['QA-SM-004', 'Home Health Compare & Star Rating Monitoring', 'Data reported to Governing Body quarterly.'],
-  ['CO-CP-001', 'Corporate Compliance Program', 'Governing Body oversees compliance program.'],
-  ['CO-CP-002', 'Compliance Officer Designation & Authority', 'Governing Body appoints Compliance Officer.'],
-  ['CO-CP-005', 'Whistleblower Protection & Non-Retaliation', 'Governing Body ensures non-retaliation.'],
-  ['CO-CP-007', 'Compliance Investigation Process', 'Governing Body directs investigations.'],
-  ['CO-HP-007', 'Record Retention & Destruction', 'Retention standards for governance records.'],
-  ['FN-FP-005', 'Annual Budget & Financial Planning', 'Governing Body approves budget.'],
-  ['HR-TA-003', 'OIG/SAM Exclusion Screening', 'Screening of Governing Body members.'],
-  ['OP-FM-005', 'Emergency Operations & Business Continuity', 'Governing Body approves emergency plan.'],
-  ['EN-TG-001', 'Enterprise Policy Taxonomy & Classification Governance', 'Framework under which this policy is classified.'],
+  ['GV-OG-001', 'Organizational Structure & Reporting', 'Governing Body approves organizational structure.', 'https://example.com/policies/gv-og-001'],
+  ['GV-OG-002', 'Administrator Qualifications & Responsibilities', 'Governing Body appoints and evaluates Administrator.', 'https://example.com/policies/gv-og-002'],
+  ['GV-OG-003', 'Scope of Services Definition', 'Governing Body approves scope of services.', 'https://example.com/policies/gv-og-003'],
+  ['GV-OG-004', 'Strategic Planning & Annual Goals', 'Governing Body approves strategic plan.', 'https://example.com/policies/gv-og-004'],
+  ['GV-OG-005', 'Delegation of Authority', 'Governs limits of Governing Body delegation.', 'https://example.com/policies/gv-og-005'],
+  ['GV-PM-001', 'Policy Development & Approval Process', 'Governing Body approves REQUIRED-tier policies.', 'https://example.com/policies/gv-pm-001'],
+  ['GV-PM-002', 'Policy Review & Revision Cycle', 'Governing Body ensures policy review cycle.', 'https://example.com/policies/gv-pm-002'],
+  ['GV-PM-003', 'Policy Acknowledgment & Staff Attestation', 'Staff acknowledgment of this and all policies.', 'https://example.com/policies/gv-pm-003'],
+  ['GV-GB-002', 'Board Meeting & Minutes Requirements', 'Details meeting documentation standards.', 'https://example.com/policies/gv-gb-002'],
+  ['GV-GB-003', 'Conflict of Interest Disclosure', 'Governs member conflict disclosures.', 'https://example.com/policies/gv-gb-003'],
+  ['GV-GB-004', 'Succession Planning for Key Leadership', 'Governing Body reviews succession plan.', 'https://example.com/policies/gv-gb-004'],
+  ['GV-GB-005', 'Annual Governance Self-Assessment', 'Governing Body self-assessment tool.', 'https://example.com/policies/gv-gb-005'],
+  ['GV-EA-004', 'Agency Licensure & Certification Maintenance', 'Governing Body ensures licensure/certification currency.', 'https://example.com/policies/gv-ea-004'],
+  ['GV-EA-005', 'Agency Closure or Change of Ownership', 'Governing Body directs CHOW process.', 'https://example.com/policies/gv-ea-005'],
+  ['QA-PG-001', 'QAPI Program Establishment & Governance', 'Governing Body oversees QAPI program.', 'https://example.com/policies/qa-pg-001'],
+  ['QA-PG-002', 'QAPI Plan Development & Annual Review', 'Governing Body approves QAPI plan.', 'https://example.com/policies/qa-pg-002'],
+  ['QA-AE-003', 'Corrective Action Plan Development & Tracking', 'Escalation path for governance deficiencies.', 'https://example.com/policies/qa-ae-003'],
+  ['QA-SM-004', 'Home Health Compare & Star Rating Monitoring', 'Data reported to Governing Body quarterly.', 'https://example.com/policies/qa-sm-004'],
+  ['CO-CP-001', 'Corporate Compliance Program', 'Governing Body oversees compliance program.', 'https://example.com/policies/co-cp-001'],
+  ['CO-CP-002', 'Compliance Officer Designation & Authority', 'Governing Body appoints Compliance Officer.', 'https://example.com/policies/co-cp-002'],
+  ['CO-CP-005', 'Whistleblower Protection & Non-Retaliation', 'Governing Body ensures non-retaliation.', 'https://example.com/policies/co-cp-005'],
+  ['CO-CP-007', 'Compliance Investigation Process', 'Governing Body directs investigations.', 'https://example.com/policies/co-cp-007'],
+  ['CO-HP-007', 'Record Retention & Destruction', 'Retention standards for governance records.', 'https://example.com/policies/co-hp-007'],
+  ['FN-FP-005', 'Annual Budget & Financial Planning', 'Governing Body approves budget.', 'https://example.com/policies/fn-fp-005'],
+  ['HR-TA-003', 'OIG/SAM Exclusion Screening', 'Screening of Governing Body members.', 'https://example.com/policies/hr-ta-003'],
+  ['OP-FM-005', 'Emergency Operations & Business Continuity', 'Governing Body approves emergency plan.', 'https://example.com/policies/op-fm-005'],
+  ['EN-TG-001', 'Enterprise Policy Taxonomy & Classification Governance', 'Framework under which this policy is classified.', 'https://example.com/policies/en-tg-001'],
 ];
 
 /** Word counts for Sections 1–11 (policy body; excludes appendices) — reconciled to published GV-GB-001 artifact. */
@@ -311,75 +314,157 @@ export function SharedGlassTable({ headers, rows }: { headers: string[]; rows: s
   );
 }
 
-// ── TAB: OVERVIEW ─────────────────────────────────────────────
-function TabOverview({ policy }: { policy: SharedPolicy }) {
+// ── DESIGN SYSTEM HELPERS (matching PolicyViewerDesignLight.html) ─────────────
+
+function DSubTabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-5 py-3 font-montserrat font-semibold text-[13px] transition-all duration-200 whitespace-nowrap border-b-[3px] ${
+        active ? 'text-[#C74601] border-[#C74601]' : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function DSectionTitle({ icon: Icon, title, color = 'text-[#1F1C1B]' }: { icon?: React.ElementType; title: string; color?: string }) {
+  return (
+    <h2 className={`font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase mb-8 flex items-center gap-4 w-full ${color}`}>
+      {Icon && <Icon className="shrink-0 text-[#007970]" size={20} />}
+      <span className="shrink-0">{title}</span>
+      <span className="flex-grow h-px bg-[#007970]" />
+    </h2>
+  );
+}
+
+function DSimpleTable({ headers, rows }: { headers: string[]; rows: (string | React.ReactNode)[][] }) {
+  return (
+    <div className="w-full mb-10 border-y border-[#E5E4E3]">
+      <table className="w-full text-left border-collapse">
+        <thead>
+          <tr>
+            {headers.map((h, i) => (
+              <th key={i} className="py-4 px-3 font-montserrat font-semibold text-[11px] tracking-[0.12em] uppercase text-[#524048] border-b border-[#E5E4E3]">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[#E5E4E3]">
+          {rows.map((row, i) => (
+            <tr key={i} className="hover:bg-[#FAFBF8] transition-colors">
+              {row.map((cell, j) => (
+                <td key={j} className={`py-4 px-3 text-[#1F1C1B] font-roboto text-[14px] align-top leading-relaxed break-words whitespace-normal ${j === 0 ? 'font-medium' : ''}`}>
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ── SECTION CARD WRAPPER ──────────────────────────────────────
+// Fully transparent container — no background, no border.
+// Shown one at a time via sectionIdx-based rendering.
+function SCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="w-full max-w-[1000px]">
+      {children}
+    </div>
+  );
+}
+
+// ── TAB: OVERVIEW — one section at a time (sectionIdx 0-3) ────
+function TabOverview({ policy, sectionIdx = 0 }: { policy: SharedPolicy; sectionIdx?: number }) {
   const isGV = policy.policyId === 'GV-GB-001';
   const purposeText = isGV ? GV_PURPOSE : policy.purpose;
-  const scopeItems = isGV ? GV_SCOPE : policy.scope;
-  const defs = isGV ? GV_DEFINITIONS : GENERIC_DEFS;
+  const scopeItems  = isGV ? GV_SCOPE    : policy.scope;
+  const defs        = isGV ? GV_DEFINITIONS : GENERIC_DEFS;
+  // GV-GB-001 gets its full canonical tag set; other policies use what the library provides.
+  const displayTags = isGV
+    ? ['42cfr', 'title22', 'cms', 'hipaa', 'oig', 'fca']
+    : policy.regulatoryTags;
 
+  // ── SECTION 0: Policy header + metadata ──
+  if (sectionIdx === 0) return (
+    <SCard>
+      <h1 className="font-montserrat font-semibold text-[28px] md:text-[32px] leading-tight text-[#1F1C1B] mb-1">
+        {policy.title}
+      </h1>
+      <p className="font-montserrat font-medium text-[11px] text-[#007970] tracking-[0.22em] uppercase mb-8">
+        Policy ID: {policy.policyId}
+      </p>
+      <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-7">
+        {([
+          ['Domain',              policy.domain],
+          ['Subdomain',           policy.subdomain],
+          ['Classification Tier', policy.classificationTier],
+          ['Status',              policy.status.replace('_', ' ')],
+          ['Policy Owner',        policy.policyOwner],
+          ['Version',             `v${policy.version}`],
+          ['Effective Date',      policy.effectiveDate],
+          ['Approved By',         policy.approvedBy],
+          ['Last Reviewed',       policy.effectiveDate],
+          ['Next Review Date',    policy.nextReviewDate],
+        ] as [string, string][]).map(([k, v]) => (
+          <div key={k} className="flex flex-col">
+            <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">{k}</dt>
+            <dd className="font-roboto text-[14px] text-[#1F1C1B]">{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </SCard>
+  );
+
+  // ── SECTION 1: Purpose ──
+  if (sectionIdx === 1) return (
+    <SCard>
+      <DSectionTitle icon={Target} title="2. Purpose" />
+      <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px]">{purposeText}</p>
+    </SCard>
+  );
+
+  // ── SECTION 2: Scope ──
+  if (sectionIdx === 2) return (
+    <SCard>
+      <DSectionTitle icon={Search} title="3. Scope" />
+      <p className="text-[#1F1C1B] font-roboto font-bold mb-4 text-[15px]">This policy applies to:</p>
+      <ul className="space-y-4 mb-8">
+        {scopeItems.map((item, i) => (
+          <li key={i} className="flex items-start">
+            <CheckCircle className="text-[#007970] mr-3 mt-0.5 flex-shrink-0" size={18} />
+            <span className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed">{item}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="border-l-[3px] border-[#C74601] pl-5 py-2">
+        <p className="font-roboto text-[#C74601] text-[14px] font-medium leading-relaxed">
+          {isGV
+            ? 'This policy does not apply to day-to-day clinical or operational staff except to the extent that Governing Body decisions establish requirements, standards, or directives that govern their work.'
+            : 'This policy does not apply to day-to-day clinical or operational staff except to the extent that decisions establish requirements, standards, or directives that govern their work.'}
+        </p>
+      </div>
+    </SCard>
+  );
+
+  // ── SECTION 3: Definitions ──
   return (
-    <div className="demo-view-enter mt-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <div className="border-l-[3px] border-[#00e59b] pl-6">
-          <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center mb-4 tracking-widest uppercase">
-            <Target className="text-[#00e59b] mr-3" size={18} /> 2. Purpose
-          </h2>
-          <p className="text-white/70 text-sm leading-relaxed">{purposeText}</p>
-        </div>
-        <div className="border-l-[3px] border-[#e85200] pl-6">
-          <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center mb-4 tracking-widest uppercase">
-            <Search className="text-[#e85200] mr-3" size={18} /> 3. Scope
-          </h2>
-          <ul className="space-y-3">
-            {scopeItems.map((item, i) => (
-              <li key={i} className="flex items-start">
-                <CheckCircle className="text-[#e85200] mr-3 mt-0.5 flex-shrink-0" size={14} />
-                <span className="text-white/70 text-sm">{item}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-5 p-4 bg-[#e85200]/10 border border-[#e85200]/20 text-[#e85200] rounded-xl text-xs font-medium leading-relaxed">
-            {isGV
-              ? 'This policy does not apply to day-to-day clinical or operational staff except to the extent that Governing Body decisions establish requirements, standards, or directives that govern their work.'
-              : 'This policy does not apply to day-to-day clinical or operational staff except to the extent that decisions establish requirements, standards, or directives that govern their work.'}
+    <SCard>
+      <DSectionTitle icon={BookOpen} title="5. Definitions" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-10 pt-2">
+        {defs.map((def, i) => (
+          <div key={i} className="flex flex-col">
+            <h4 className="font-montserrat font-semibold text-[#1F1C1B] mb-3 text-[13px] tracking-[0.12em] uppercase">
+              {def.term}
+            </h4>
+            <p className="text-[#524048] font-roboto text-[14px] leading-relaxed">{def.definition}</p>
           </div>
-        </div>
+        ))}
       </div>
-      {/* Definitions */}
-      <div className="mt-12 border-l-[3px] border-blue-400 pl-6">
-        <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center mb-5 tracking-widest uppercase">
-          <BookOpen className="text-blue-400 mr-3" size={18} /> 5. Definitions
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-          {defs.map((def, i) => (
-            <div key={i} className="glass-card p-4 rounded-xl">
-              <h4 className="font-montserrat font-bold text-blue-400 text-[12px] mb-2">{def.term}</h4>
-              <p className="text-white/60 text-[11px] leading-relaxed">{def.definition}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-      {/* Regulatory Tags */}
-      {policy.regulatoryTags.length > 0 && (
-        <div className="mt-10 pt-8 border-t border-white/10">
-          <h3 className="font-montserrat text-[12px] font-bold text-white uppercase tracking-[0.2em] mb-4">Regulatory Cross-References</h3>
-          <div className="flex flex-wrap gap-2">
-            {policy.regulatoryTags.map(tag => {
-              const reg = SHARED_REG_ITEMS.find(r => r.id === tag);
-              if (!reg) return null;
-              const Icon = reg.icon;
-              return (
-                <span key={tag} className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[10px] font-bold tracking-widest uppercase"
-                  style={{ borderColor: `${reg.color}40`, background: `${reg.color}10`, color: reg.color }}>
-                  <Icon size={12} /> {reg.shortName}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
+    </SCard>
   );
 }
 
@@ -394,118 +479,97 @@ function TabStatements({ policy }: { policy: SharedPolicy }) {
     'Only the most current approved version of this policy shall be considered valid. Superseded versions must not be used for any operational or compliance purpose.',
   ];
   return (
-    <div className="demo-view-enter mt-8">
-      <div className="border-l-[3px] border-[#00e59b] pl-6 mb-6">
-        <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center tracking-widest uppercase">
-          <List className="text-[#00e59b] mr-3" size={18} /> 4. Policy Statement
-        </h2>
-      </div>
-      <div className="space-y-3 pl-6">
+    <SCard>
+      <DSectionTitle icon={List} title="4. Policy Statement" />
+      <div className="flex flex-col space-y-6">
         {stmts.map((stmt, i) => (
-          <div key={i} className="flex items-start glass-card p-4 rounded-xl">
-            <div className="text-[#00e59b] font-bold font-montserrat flex-shrink-0 mr-4 w-8 text-[12px]">4.{i + 1}</div>
-            <p className="text-white/70 text-sm leading-relaxed whitespace-pre-line">{stmt}</p>
+          <div key={i} className="flex items-start">
+            <div className="text-[#007970] font-semibold font-montserrat w-16 flex-shrink-0 text-[14px] pt-[2px]">4.{i + 1}</div>
+            <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px] whitespace-pre-line">{stmt}</p>
           </div>
         ))}
       </div>
-    </div>
+    </SCard>
   );
 }
 
-// ── TAB: PROCEDURES ───────────────────────────────────────────
-function TabProcedures({ policy }: { policy: SharedPolicy }) {
-  const [activeSub, setActiveSub] = useState('6.1');
+// ── TAB: PROCEDURES — one sub-section per card ────────────────
+// GV-GB-001: sIdx 0=6.1 · 1=6.2+6.2.1 · 2-6=6.2.2-6.2.6 · 7=6.3 · 8=6.4 · 9=6.5
+// Non-GV:    sIdx 0=6.1 only
+function TabProcedures({ policy, sectionIdx = 0 }: { policy: SharedPolicy; sectionIdx?: number }) {
   const isGV = policy.policyId === 'GV-GB-001';
-  const subTabs = [
-    { id: '6.1', label: '6.1 Establishment' },
-    { id: '6.2', label: '6.2 Core Responsibilities' },
-    { id: '6.3', label: '6.3 Meetings' },
-    { id: '6.4', label: '6.4 Conflict of Interest' },
-    { id: '6.5', label: '6.5 Escalation' },
-  ];
-  if (!isGV) {
-    return (
-      <div className="demo-view-enter mt-8">
-        <div className="border-l-[3px] border-[#00e59b] pl-6 mb-6">
-          <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center tracking-widest uppercase">
-            <Settings className="text-[#00e59b] mr-3" size={18} /> 6. Procedures
-          </h2>
-        </div>
-        <div className="pl-6">
-          <div className="bg-[#e85200]/10 border border-[#e85200]/20 text-[#e85200] p-4 rounded-xl text-sm flex items-start mb-6">
-            <AlertTriangle className="mr-3 flex-shrink-0 mt-0.5" size={16} />
-            <p>Responsible parties shall fulfill the following procedures directly and shall <strong className="text-orange-300">not delegate ultimate accountability</strong> for any of these functions.</p>
-          </div>
-          <SharedGlassTable
-            headers={['Step', 'Responsible Party', 'Action', 'Timeframe']}
-            rows={[
-              ['6.1.1', 'Policy Owner', `Maintain and review ${policy.policyId} per the established review cycle.`, 'As per review cycle.'],
-              ['6.1.2', 'Compliance Officer', 'Verify regulatory cross-references are current and accurate.', 'Within 30 days of regulatory change.'],
-              ['6.1.3', 'Administrator', 'Ensure all personnel within scope have acknowledged this policy and completed required training.', 'Within 14 calendar days of effective date.'],
-              ['6.1.4', 'QA Designee', 'Monitor compliance indicators and report deviations through the QAPI program.', 'Quarterly.'],
-              ['6.1.5', 'All Staff in Scope', 'Comply with all requirements of this policy.', 'Continuous.'],
-            ]}
-          />
-        </div>
+
+  // ── 6.1 Establishment and Composition ──
+  if (sectionIdx === 0) return (
+    <SCard>
+      <DSectionTitle icon={Settings} title="6.1 Establishment and Composition" />
+      <DSimpleTable
+        headers={['Step', 'Responsible Party', 'Action', 'Timeframe']}
+        rows={isGV ? GV_PROC_61 : [
+          ['6.1.1', 'Policy Owner', `Maintain and review ${policy.policyId} per the established review cycle.`, 'As per review cycle.'],
+          ['6.1.2', 'Compliance Officer', 'Verify regulatory cross-references are current and accurate.', 'Within 30 days of regulatory change.'],
+          ['6.1.3', 'Administrator', 'Ensure all personnel within scope have acknowledged this policy and completed required training.', 'Within 14 calendar days of effective date.'],
+          ['6.1.4', 'QA Designee', 'Monitor compliance indicators and report deviations through the QAPI program.', 'Quarterly.'],
+          ['6.1.5', 'All Staff in Scope', 'Comply with all requirements of this policy.', 'Continuous.'],
+        ]}
+      />
+    </SCard>
+  );
+
+  // ── 6.2 intro card — main header + callout + 6.2.1 first sub-section ──
+  if (sectionIdx === 1) return (
+    <SCard>
+      <DSectionTitle icon={Settings} title="6.2 Core Responsibilities" />
+      <div className="border-l-[3px] border-[#C74601] pl-5 py-2 mb-10">
+        <p className="font-roboto text-[#C74601] text-[14px] font-medium leading-relaxed">
+          The Governing Body of Care Indeed Home Health Care, Inc. shall fulfill the following responsibilities directly and shall <strong className="font-bold text-[#1F1C1B]">not delegate ultimate accountability</strong> for any of these functions.
+        </p>
       </div>
+      {isGV && GV_PROC_62[0] && (
+        <>
+          <h3 className="font-montserrat font-semibold text-[15px] text-[#1F1C1B] mb-6">{GV_PROC_62[0].title}</h3>
+          <DSimpleTable headers={['Step', 'Responsible Party', 'Action', 'Timeframe']} rows={GV_PROC_62[0].rows} />
+        </>
+      )}
+    </SCard>
+  );
+
+  // ── 6.2.2 – 6.2.6 individual sub-section cards (sIdx 2–6 → GV_PROC_62[1–5]) ──
+  if (sectionIdx >= 2 && sectionIdx <= 6) {
+    const sub = isGV ? GV_PROC_62[sectionIdx - 1] : null;
+    if (!sub) return null;
+    return (
+      <SCard>
+        <h3 className="font-montserrat font-semibold text-[15px] text-[#1F1C1B] mb-6">{sub.title}</h3>
+        <DSimpleTable headers={['Step', 'Responsible Party', 'Action', 'Timeframe']} rows={sub.rows} />
+      </SCard>
     );
   }
+
+  // ── 6.3 Governing Body Meetings ──
+  if (sectionIdx === 7) return (
+    <SCard>
+      <DSectionTitle icon={Settings} title="6.3 Governing Body Meetings" />
+      <DSimpleTable headers={['Step', 'Responsible Party', 'Action', 'Timeframe']} rows={isGV ? GV_PROC_63 : []} />
+    </SCard>
+  );
+
+  // ── 6.4 Conflict of Interest Management ──
+  if (sectionIdx === 8) return (
+    <SCard>
+      <DSectionTitle icon={Settings} title="6.4 Conflict of Interest Management" />
+      <DSimpleTable headers={['Step', 'Responsible Party', 'Action', 'Timeframe']} rows={isGV ? GV_PROC_64 : []} />
+    </SCard>
+  );
+
+  // ── 6.5 Escalation and Exception Handling ──
   return (
-    <div className="demo-view-enter mt-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 border-l-[3px] border-[#00e59b] pl-6">
-        <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center tracking-widest uppercase">
-          <Settings className="text-[#00e59b] mr-3" size={18} /> 6. Procedures
-        </h2>
-        <div className="flex gap-2 flex-wrap mt-3 md:mt-0">
-          {subTabs.map(tab => (
-            <button key={tab.id} onClick={() => setActiveSub(tab.id)}
-              className={`px-3 py-1.5 rounded-full font-montserrat font-bold text-[10px] uppercase tracking-wider transition-colors ${activeSub === tab.id ? 'bg-[#00e59b]/20 text-[#00e59b] border border-[#00e59b]/50' : 'text-white/50 border border-transparent hover:text-white'}`}>
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-      {activeSub === '6.1' && (
-        <div>
-          <h3 className="font-montserrat font-bold text-sm text-white mb-4 pl-6">6.1 Establishment and Composition</h3>
-          <SharedGlassTable headers={['Step', 'Responsible Party', 'Action', 'Timeframe']} rows={GV_PROC_61} />
-        </div>
-      )}
-      {activeSub === '6.2' && (
-        <div className="space-y-10">
-          <div className="bg-[#e85200]/10 border border-[#e85200]/20 text-[#e85200] p-4 rounded-xl text-sm flex items-start">
-            <AlertTriangle className="mr-3 flex-shrink-0 mt-0.5" size={16} />
-            <p>The Governing Body shall fulfill the following responsibilities directly and shall <strong className="text-orange-300">not delegate ultimate accountability</strong> for any of these functions.</p>
-          </div>
-          {GV_PROC_62.map((section, idx) => (
-            <div key={idx}>
-              <h3 className="font-montserrat font-bold text-sm text-[#00e59b] mb-3">{section.title}</h3>
-              <SharedGlassTable headers={['Step', 'Responsible Party', 'Action', 'Timeframe']} rows={section.rows} />
-            </div>
-          ))}
-        </div>
-      )}
-      {activeSub === '6.3' && (
-        <div>
-          <h3 className="font-montserrat font-bold text-sm text-white mb-4 pl-6">6.3 Governing Body Meetings</h3>
-          <SharedGlassTable headers={['Step', 'Responsible Party', 'Action', 'Timeframe']} rows={GV_PROC_63} />
-        </div>
-      )}
-      {activeSub === '6.4' && (
-        <div>
-          <h3 className="font-montserrat font-bold text-sm text-white mb-4 pl-6">6.4 Conflict of Interest Management</h3>
-          <SharedGlassTable headers={['Step', 'Responsible Party', 'Action', 'Timeframe']} rows={GV_PROC_64} />
-        </div>
-      )}
-      {activeSub === '6.5' && (
-        <div>
-          <h3 className="font-montserrat font-bold text-sm text-[#e85200] mb-4 pl-6 flex items-center">
-            <AlertTriangle className="mr-2" size={16} /> 6.5 Escalation and Exception Handling
-          </h3>
-          <SharedGlassTable headers={['Condition', 'Escalation Path', 'Corrective Action', 'Timeframe']} rows={GV_PROC_65} />
-        </div>
-      )}
-    </div>
+    <SCard>
+      <h3 className="font-montserrat font-semibold text-[15px] text-[#C74601] mb-6 flex items-center gap-3">
+        <AlertTriangle size={20} /> 6.5 Escalation and Exception Handling
+      </h3>
+      <DSimpleTable headers={['Condition', 'Escalation Path', 'Corrective Action', 'Timeframe']} rows={isGV ? GV_PROC_65 : []} />
+    </SCard>
   );
 }
 
@@ -513,13 +577,9 @@ function TabProcedures({ policy }: { policy: SharedPolicy }) {
 function TabDocumentation({ policy }: { policy: SharedPolicy }) {
   const isGV = policy.policyId === 'GV-GB-001';
   return (
-    <div className="demo-view-enter mt-8">
-      <div className="border-l-[3px] border-[#00e59b] pl-6 mb-6">
-        <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center tracking-widest uppercase">
-          <FileText className="text-[#00e59b] mr-3" size={18} /> 7. Documentation Requirements
-        </h2>
-      </div>
-      <SharedGlassTable
+    <SCard>
+      <DSectionTitle icon={FileText} title="7. Documentation Requirements" />
+      <DSimpleTable
         headers={['Requirement', 'Document / Record', 'Responsible Party', 'Location', 'Timeframe']}
         rows={isGV ? GV_DOCS_REQ : [
           ['Policy acknowledgment', 'Signed acknowledgment by all personnel within scope.', 'Administrator (collection)', 'Policy acknowledgment file', 'Within 14 calendar days of effective date.'],
@@ -529,22 +589,19 @@ function TabDocumentation({ policy }: { policy: SharedPolicy }) {
           ['Compliance audit results', 'Results of internal audits measuring compliance with this policy.', 'QA Designee', 'QAPI records', 'Quarterly; retained for minimum 7 years.'],
         ]}
       />
-    </div>
+    </SCard>
   );
 }
 
-// ── TAB: COMPLIANCE ───────────────────────────────────────────
-function TabCompliance({ policy }: { policy: SharedPolicy }) {
+// ── TAB: COMPLIANCE — one section at a time (sectionIdx 0-2) ──
+function TabCompliance({ policy, sectionIdx = 0 }: { policy: SharedPolicy; sectionIdx?: number }) {
   const isGV = policy.policyId === 'GV-GB-001';
-  return (
-    <div className="demo-view-enter mt-8">
-      <div className="border-l-[3px] border-[#00e59b] pl-6 mb-6">
-        <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center tracking-widest uppercase">
-          <CheckSquare className="text-[#00e59b] mr-3" size={18} /> 8. Compliance & Audit
-        </h2>
-      </div>
-      <h3 className="font-montserrat text-[12px] font-bold text-white mb-4 uppercase tracking-widest">8.1 How Compliance Is Measured</h3>
-      <SharedGlassTable
+
+  if (sectionIdx === 0) return (
+    <SCard>
+      <DSectionTitle icon={CheckSquare} title="8. Compliance & Audit" />
+      <h3 className="font-montserrat font-semibold text-[15px] text-[#1F1C1B] mb-6">8.1 How Compliance Is Measured</h3>
+      <DSimpleTable
         headers={['Compliance Indicator', 'Measurement Method', 'Acceptable Standard']}
         rows={isGV ? GV_COMPLIANCE_81 : [
           ['Policy is current and approved.', 'Review of version control record and approval documentation.', 'Current version on file at all times.'],
@@ -553,210 +610,173 @@ function TabCompliance({ policy }: { policy: SharedPolicy }) {
           ['Compliance monitoring active.', 'Review of QAPI reports and audit logs.', 'Quarterly monitoring with documented results.'],
         ]}
       />
-      {isGV && (
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <div>
-            <h3 className="font-montserrat text-[12px] font-bold text-white mb-4 uppercase tracking-widest flex items-center">
-              <Search className="text-white/50 mr-2" size={14} /> 8.2 Surveyor Expectations
-            </h3>
-            <p className="text-[11px] text-white/50 mb-4">CMS surveyors conducting a standard survey under SOM Appendix B will specifically verify:</p>
-            <ul className="space-y-3">
-              {GV_COMPLIANCE_82.map((item, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <ChevronRight className="text-[#00e59b] mt-0.5 shrink-0" size={14} />
-                  <span className="text-[12px] text-white/70 leading-relaxed">{item}</span>
-                </li>
-              ))}
-            </ul>
+    </SCard>
+  );
+
+  if (sectionIdx === 1) return (
+    <SCard>
+      <DSectionTitle icon={Search} title="8.2 Surveyor Expectations" />
+      <p className="text-[15px] text-[#1F1C1B] mb-8 font-roboto leading-relaxed">
+        CMS surveyors conducting a standard survey under SOM Appendix B will specifically verify:
+      </p>
+      <div className="flex flex-col space-y-6 pt-2">
+        {(isGV ? GV_COMPLIANCE_82 : [
+          'Policy is current and approved per the established review cycle.',
+          'All in-scope personnel have acknowledged the policy within required timeframes.',
+          'Regulatory cross-references are accurate and current.',
+          'Compliance monitoring is active and documented quarterly.',
+        ]).map((text, i) => (
+          <div key={i} className="flex items-start">
+            <div className="text-[#007970] font-semibold font-montserrat w-10 flex-shrink-0 text-[14px] pt-[2px]">{i + 1}.</div>
+            <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px]">{text}</p>
           </div>
-          <div>
-            <h3 className="font-montserrat text-[12px] font-bold text-[#e85200] mb-4 uppercase tracking-widest flex items-center">
-              <AlertTriangle className="mr-2" size={14} /> 8.3 Common Failure Points
-            </h3>
-            <div className="space-y-3">
-              {GV_COMPLIANCE_83.map((item, i) => (
-                <div key={i} className="border border-red-500/20 p-4 rounded-xl bg-red-500/5">
-                  <p className="font-bold text-red-400 text-[12px] mb-1">{item[0]}</p>
-                  <p className="text-[11px] text-red-300/80 mb-1"><strong>Risk:</strong> {item[1]}</p>
-                  <p className="text-[11px] text-white/70"><strong>Mitigation:</strong> {item[2]}</p>
-                </div>
-              ))}
-            </div>
+        ))}
+      </div>
+    </SCard>
+  );
+
+  return (
+    <SCard>
+      <DSectionTitle icon={AlertTriangle} title="8.3 Common Failure Points" color="text-[#C74601]" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {(isGV ? GV_COMPLIANCE_83 : [
+          ['Policy not reviewed within cycle.', 'Surveyor may cite outdated policy as non-compliance.', 'Set calendar reminders and track review dates in enterprise system.'],
+          ['Staff acknowledgments incomplete.', 'Surveyor will cite failure to ensure staff awareness.', 'Automated tracking with escalation for non-compliance within 7 days.'],
+          ['Regulatory cross-references outdated.', 'Policy may not reflect current requirements.', 'Compliance Officer monitors regulatory changes and updates mappings proactively.'],
+        ]).map((item, i) => (
+          <div key={i} className="border-l-[3px] border-[#C74601] pl-5 py-2">
+            <p className="font-semibold font-montserrat text-[#1F1C1B] text-[13px] uppercase tracking-[0.1em] mb-2">{item[0]}</p>
+            <p className="text-[14px] font-roboto text-[#524048] mb-2"><strong>Risk:</strong> {item[1]}</p>
+            <p className="text-[14px] font-roboto text-[#007970]"><strong>Mitigation:</strong> {item[2]}</p>
           </div>
-        </div>
-      )}
-      {!isGV && (
-        <>
-          <h3 className="font-montserrat text-[12px] font-bold text-[#e85200] mt-10 mb-4 uppercase tracking-widest flex items-center">
-            <AlertTriangle className="mr-2" size={16} /> 8.2 Common Failure Points
-          </h3>
-          <div className="space-y-3">
-            {[
-              { finding: 'Policy has not been reviewed within required cycle.', risk: 'Surveyor may cite outdated policy as non-compliance.', mitigation: 'Set calendar reminders and track review dates in enterprise system.' },
-              { finding: 'Staff acknowledgments are incomplete or missing.', risk: 'Surveyor will cite failure to ensure staff awareness.', mitigation: 'Automated tracking with escalation for non-compliance within 7 days of deadline.' },
-              { finding: 'Regulatory cross-references are outdated.', risk: 'Policy may not reflect current regulatory requirements.', mitigation: 'Compliance Officer monitors regulatory changes and updates mappings proactively.' },
-            ].map((item, i) => (
-              <div key={i} className="border border-red-500/20 p-4 rounded-xl bg-red-500/5">
-                <p className="font-bold text-red-400 text-[12px] mb-1">{item.finding}</p>
-                <p className="text-[11px] text-red-300/80 mb-1"><strong>Risk:</strong> {item.risk}</p>
-                <p className="text-[11px] text-white/70"><strong>Mitigation:</strong> {item.mitigation}</p>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
+        ))}
+      </div>
+    </SCard>
   );
 }
 
-// ── TAB: REFERENCES ───────────────────────────────────────────
-function TabReferences({ policy }: { policy: SharedPolicy }) {
+// ── TAB: REFERENCES — one section at a time (sectionIdx 0-3) ──
+function TabReferences({ policy, sectionIdx = 0 }: { policy: SharedPolicy; sectionIdx?: number }) {
   const isGV = policy.policyId === 'GV-GB-001';
-  return (
-    <div className="demo-view-enter mt-8">
-      <div className="border-l-[3px] border-[#00e59b] pl-6 mb-6">
-        <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center tracking-widest uppercase">
-          <Archive className="text-[#00e59b] mr-3" size={18} /> 9. References & Administration
-        </h2>
-      </div>
-      <div className="pl-6">
-        <h3 className="font-montserrat text-[12px] font-bold text-white/50 uppercase tracking-widest mb-3">9.1 Federal Regulatory References</h3>
-        <SharedGlassTable
-          headers={['Citation', 'Title', 'Applicability']}
-          rows={isGV ? GV_FEDERAL_REFS : [
-            ['42 CFR § 484.105', 'Organization and Administration of Services', 'Primary regulatory basis for governance policies.'],
-            ['42 CFR § 484.65', 'QAPI', 'Quality assessment and performance improvement requirements.'],
-            ['42 CFR § 484.100', 'Compliance with Laws', 'Federal, state, and local law compliance.'],
-            ['42 CFR § 484.102', 'Emergency Preparedness', 'Emergency plan approval and oversight.'],
-          ]}
-        />
-        {isGV && (
-          <>
-            <h3 className="font-montserrat text-[12px] font-bold text-white/50 mt-10 uppercase tracking-widest mb-3">Section Word Count Summary (Taxonomy Reconciliation)</h3>
-            <p className="text-[11px] text-white/50 mb-4 max-w-3xl">
-              Approximate word counts for each major section of the policy body (Sections 1–11). Appendix forms and templates are excluded. Totals align with the published GV-GB-001 Word artifact.
-            </p>
-            <SharedGlassTable headers={['Section', 'Approx. word count', 'Notes']} rows={GV_SECTION_WORD_COUNTS} />
-            <h3 className="font-montserrat text-[12px] font-bold text-white/50 mt-10 uppercase tracking-widest mb-3">9.2 CMS Guidance (Regulatory Boards)</h3>
-            <SharedGlassTable headers={['Document', 'Relevance']} rows={GV_CMS_GUIDANCE_ROWS} />
-            <h3 className="font-montserrat text-[12px] font-bold text-white/50 mt-10 uppercase tracking-widest mb-3">9.3 OIG Guidance</h3>
-            <SharedGlassTable headers={['Document', 'Relevance']} rows={GV_OIG_GUIDANCE_ROWS} />
-          </>
-        )}
-        {isGV && (
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="glass-card p-5 rounded-xl border border-white/10">
-              <h3 className="font-montserrat text-[11px] font-bold text-[#00e59b] uppercase tracking-widest mb-3">CMS Survey &amp; Certification Guidance</h3>
-              <ul className="space-y-2">
-                {['SOM Appendix B — Home Health Agency Survey Protocol', 'CMS Interpretive Guidelines for 42 CFR Part 484', 'State Operations Manual (SOM) Chapter 2 — The Certification Process', 'CMS Quality Assurance & Performance Improvement Framework', 'CMS CoP Interpretive Guidelines — Governing Body Requirements'].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <ChevronRight className="text-[#00e59b] mt-0.5 shrink-0" size={13} />
-                    <span className="text-[11px] text-white/70">{item}</span>
-                  </li>
-                ))}
-              </ul>
+
+  if (sectionIdx === 0) return (
+    <SCard>
+      <DSectionTitle icon={Archive} title="9. References & Administration" />
+      <h3 className="font-montserrat font-semibold text-[15px] text-[#1F1C1B] mb-6">9.1 Federal Regulations (42 CFR Part 484)</h3>
+      <DSimpleTable
+        headers={['Citation', 'Title', 'Relevance']}
+        rows={(isGV ? GV_FEDERAL_REFS : [
+          ['42 CFR § 484.105', 'Organization and Administration of Services', 'Primary regulatory basis for governance policies.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.105'],
+          ['42 CFR § 484.65', 'CoP: Quality assessment and performance improvement (QAPI)', 'Quality assessment and performance improvement requirements.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-B/section-484.65'],
+          ['42 CFR § 484.100', 'CoP: Compliance with Federal, State, and local laws', 'Federal, state, and local law compliance.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.100'],
+          ['42 CFR § 484.102', 'CoP: Emergency preparedness', 'Emergency plan approval and oversight.', 'https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-G/part-484/subpart-C/section-484.102'],
+        ]).map(row => [
+          <a href={row[3]} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[#007970] font-semibold font-montserrat hover:underline whitespace-nowrap">
+            {row[0]} <ExternalLink size={13} className="flex-shrink-0" />
+          </a>,
+          row[1],
+          row[2],
+        ])}
+      />
+    </SCard>
+  );
+
+  if (sectionIdx === 1) return (
+    <SCard>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+        <div>
+          <DSectionTitle icon={Archive} title="9.2 CMS Guidance" />
+          {GV_CMS_GUIDANCE_ROWS.map(([doc, relevance], i) => (
+            <div key={i} className="mb-8 last:mb-0">
+              <p className="font-semibold font-montserrat text-[13px] text-[#1F1C1B] uppercase tracking-[0.1em]">{doc}</p>
+              <p className="text-[14px] font-roboto text-[#524048] mt-2 leading-relaxed">{relevance}</p>
             </div>
-            <div className="glass-card p-5 rounded-xl border border-white/10">
-              <h3 className="font-montserrat text-[11px] font-bold text-[#00e59b] uppercase tracking-widest mb-3">OIG Compliance Guidance</h3>
-              <ul className="space-y-2">
-                {['OIG Compliance Program Guidance for Home Health Agencies (1998)', 'OIG Work Plan — Annual Home Health Agency Audit Items', 'False Claims Act (31 U.S.C. §§ 3729–3733)', 'Anti-Kickback Statute (42 U.S.C. § 1320a-7b(b))', 'HHS-OIG Advisory Opinion Framework for HHA Compliance'].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <ChevronRight className="text-[#00e59b] mt-0.5 shrink-0" size={13} />
-                    <span className="text-[11px] text-white/70">{item}</span>
-                  </li>
-                ))}
-              </ul>
+          ))}
+        </div>
+        <div>
+          <DSectionTitle icon={Archive} title="9.3 OIG Guidance" />
+          {GV_OIG_GUIDANCE_ROWS.map(([doc, relevance], i) => (
+            <div key={i} className="mb-8 last:mb-0">
+              <p className="font-semibold font-montserrat text-[13px] text-[#1F1C1B] uppercase tracking-[0.1em]">{doc}</p>
+              <p className="text-[14px] font-roboto text-[#524048] mt-2 leading-relaxed">{relevance}</p>
             </div>
-          </div>
-        )}
-        <h3 className="font-montserrat text-[12px] font-bold text-white/50 mt-10 uppercase tracking-widest mb-3">9.4 Cross-Referenced Agency Policies</h3>
-        {isGV ? (
-          <SharedGlassTable headers={['Policy ID', 'Policy Title', 'Cross-Reference Type']} rows={GV_CROSS_REFS} />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {[
-              { id: 'GV-PM-001', title: 'Policy Development & Approval Process' },
-              { id: 'GV-PM-002', title: 'Policy Review & Revision Cycle' },
-              { id: 'EN-TG-001', title: 'Enterprise Policy Taxonomy & Classification' },
-              { id: 'EN-LC-001', title: 'Policy Lifecycle Management & Version Control' },
-              { id: 'CO-CP-001', title: 'Corporate Compliance Program' },
-              { id: 'QA-PG-001', title: 'QAPI Program Establishment & Governance' },
-            ].map((ref, i) => (
-              <div key={i} className="glass-card p-3 rounded-xl flex items-center gap-3">
-                <span className="text-[#00e59b] font-mono font-bold text-[11px]">{ref.id}</span>
-                <span className="text-white/70 text-[11px]">{ref.title}</span>
-              </div>
-            ))}
-          </div>
-        )}
-        {isGV && (
-          <>
-            <div className="mt-12 border-l-[3px] border-[#00e59b] pl-6 mb-6">
-              <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center tracking-widest uppercase">
-                <BookOpen className="text-[#00e59b] mr-3" size={18} /> 10. Training & Education Requirements
-              </h2>
-            </div>
-            <div className="pl-6">
-              <SharedGlassTable
-                headers={['Role / Audience', 'Training Content', 'Frequency', 'Delivery Method']}
-                rows={[
-                  ['All Staff', 'Policy awareness: purpose, scope, and obligations', 'Upon hire; annually', 'LMS module + attestation'],
-                  ['Governing Body Members', 'Board governance obligations, CMS CoP oversight, liability exposure', 'Upon appointment; triennially', 'In-person session + written brief'],
-                  ['Administrators / Executives', 'Governing body structure, delegation of authority, compliance accountability', 'Annually', 'Leadership retreat + competency assessment'],
-                  ['Compliance Officer', 'Regulatory updates (42 CFR Part 484), survey preparation, OIG guidance', 'Quarterly (regulatory); annually (full review)', 'External seminars + internal review sessions'],
-                  ['Clinical Supervisors', 'Clinical governance, care standard oversight, policy enforcement obligations', 'Annually', 'Interdisciplinary training + competency check'],
-                  ['QA/PI Coordinator', 'QAPI governance integration, data reporting to governing body', 'Semi-annually', 'QAPI workshop + peer review'],
-                  ['Department Managers', 'Operational policy implementation, staff education responsibilities', 'Annually', 'Supervisory training program + attestation'],
-                ]}
-              />
-            </div>
-            <div className="mt-12 border-l-[3px] border-[#00e59b] pl-6 mb-6">
-              <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center tracking-widest uppercase">
-                <GitBranch className="text-[#00e59b] mr-3" size={18} /> 11. Version Control & Revision History
-              </h2>
-            </div>
-            <div className="pl-6">
-              <SharedGlassTable
-                headers={['Version', 'Effective Date', 'Approved By', 'Summary of Changes']}
-                rows={[
-                  ['6.0', '2025-07-10', 'Governing Body Chair', 'Major comprehensive revision — added §6.2.6, expanded §6.4, restructured all appendices. Aligned with OIG HHA Compliance Program Guidance (Nov 2023) and CMS SOM Appendix B 2024 update.'],
-                  ['5.1', '2024-11-15', 'Governing Body Chair', 'Minor update — clarified quorum requirements; added GV-GB-005 cross-reference.'],
-                  ['5.0', '2024-07-01', 'Administrator', 'Annual review — no substantive policy changes. Updated dates and regulatory citations.'],
-                  ['4.2', '2023-10-12', 'Compliance Officer', 'Emergency update — added monthly OIG/SAM exclusion screening requirement per updated OIG Compliance Program Guidance.'],
-                  ['4.0', '2023-01-01', 'Board of Directors', 'Full triennial review — incorporated OIG compliance guidance, expanded training section, added digital governance provisions.'],
-                  ['1.0', '2018-01-01', 'Board of Directors', 'Initial policy adoption — established governing body structure per 42 CFR § 484.105.'],
-                ]}
-              />
-            </div>
-          </>
-        )}
-        {/* Document Metadata */}
-        <div className="mt-10 pt-8 border-t border-white/10">
-          <h3 className="font-montserrat text-[12px] font-bold text-white uppercase tracking-[0.2em] mb-4">Document Metadata</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {[
-              ['Effective Date', policy.effectiveDate],
-              ['Next Review', policy.nextReviewDate],
-              ['Policy Owner', policy.policyOwner],
-              ['Subdomain', policy.subdomain],
-              ['Domain Code', policy.domainCode],
-              ['Status', policy.status],
-            ].map(([label, val]) => (
-              <div key={label} className="glass-card rounded-xl p-3">
-                <span className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-bold block mb-1">{label}</span>
-                <span className="text-[12px] text-white/80">{val}</span>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
-    </div>
+    </SCard>
+  );
+
+  if (sectionIdx === 2) return (
+    <SCard>
+      <DSectionTitle icon={Archive} title="9.4 Cross-Referenced Agency Policies" />
+      <DSimpleTable
+        headers={['Policy ID', 'Policy Title', 'Relationship']}
+        rows={(isGV ? GV_CROSS_REFS : [
+          ['GV-PM-001', 'Policy Development & Approval Process', 'Governing Body approves REQUIRED-tier policies.', 'https://example.com/policies/gv-pm-001'],
+          ['GV-PM-002', 'Policy Review & Revision Cycle', 'Governing Body ensures policy review cycle.', 'https://example.com/policies/gv-pm-002'],
+          ['EN-TG-001', 'Enterprise Policy Taxonomy & Classification', 'Framework under which this policy is classified.', 'https://example.com/policies/en-tg-001'],
+          ['EN-LC-001', 'Policy Lifecycle Management & Version Control', 'Policy lifecycle governance.', 'https://example.com/policies/en-lc-001'],
+          ['CO-CP-001', 'Corporate Compliance Program', 'Governing Body oversees compliance program.', 'https://example.com/policies/co-cp-001'],
+          ['QA-PG-001', 'QAPI Program Establishment & Governance', 'Governing Body oversees QAPI program.', 'https://example.com/policies/qa-pg-001'],
+        ]).map(row => [
+          <a href={row[3]} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[#007970] font-semibold font-montserrat hover:underline whitespace-nowrap">
+            {row[0]} <ExternalLink size={13} className="flex-shrink-0" />
+          </a>,
+          row[1],
+          row[2],
+        ])}
+      />
+    </SCard>
+  );
+
+  // sectionIdx === 3: Training + Version Control
+  return (
+    <SCard>
+      <div className="space-y-16">
+        <div>
+          <DSectionTitle icon={Award} title="10. Training Requirements" />
+        <div className="flex flex-col space-y-6 pt-2">
+          {[
+            'All Governing Body members of Care Indeed Home Health Care, Inc. shall receive orientation to this policy within 14 calendar days of appointment. Orientation shall be conducted by the Administrator or Compliance Officer and must cover: (a) the legal authority and responsibilities of the Governing Body; (b) meeting and quorum requirements; (c) conflict of interest obligations; (d) QAPI, compliance, and financial oversight expectations; (e) CMS survey process and surveyor expectations for governance documentation.',
+            'All Governing Body members and senior leadership personnel within scope of this policy (Section 3) shall sign the Policy Acknowledgment Form (Appendix C) within 14 calendar days of the policy effective date, any revision, or new appointment.',
+            'The Administrator shall maintain a tracking log of all policy acknowledgments and report any non-compliance to the Governing Body Chair within 7 calendar days of the acknowledgment deadline. Failure to acknowledge within the required timeframe shall result in written notification from the Governing Body Chair with a mandatory completion deadline of 7 additional calendar days.',
+            'Annual refresher training on governing body responsibilities shall be conducted at the first quarterly meeting of each calendar year. Attendance shall be documented in meeting minutes.',
+          ].map((text, i) => (
+            <div key={i} className="flex items-start">
+              <div className="text-[#007970] font-semibold font-montserrat w-12 flex-shrink-0 text-[14px] pt-[2px]">{i + 1}.</div>
+              <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px]">{text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 11. Version Control ── */}
+      <div>
+        <DSectionTitle icon={FileLock2} title="11. Version Control" />
+        <div className="flex flex-col space-y-6 pt-2">
+          {[
+            "This policy is maintained under the agency's enterprise policy lifecycle management system per policy EN-LC-001.",
+            'Only the most current approved version of this policy, as reflected in the policy header, is valid for any operational, compliance, or regulatory purpose. All superseded versions must be archived and clearly marked as "SUPERSEDED — NOT FOR USE."',
+            'Any substantive revision to this policy requires: (a) review and approval by the Governing Body, documented in meeting minutes; (b) re-acknowledgment by all personnel within scope, within 14 calendar days of the revised effective date; (c) update to the enterprise policy index per EN-TG-001.',
+            'Non-substantive revisions (formatting, typographical corrections, updated cross-references) may be approved by the Administrator with notification to the Governing Body at the next regular meeting. Non-substantive revisions do not require re-acknowledgment.',
+          ].map((text, i) => (
+            <div key={i} className="flex items-start">
+              <div className="text-[#007970] font-semibold font-montserrat w-12 flex-shrink-0 text-[14px] pt-[2px]">{i + 1}.</div>
+              <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px]">{text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      </div>
+    </SCard>
   );
 }
 
 // ── TAB: APPENDICES ───────────────────────────────────────────
 function TabAppendices({ policy }: { policy: SharedPolicy }) {
   const isGV = policy.policyId === 'GV-GB-001';
+  const theme = useShellStore(s => s.theme);
+  const isLight = theme === 'care-indeed-light';
   const [activeApp, setActiveApp] = useState('A');
   const apps = [
     { id: 'A', label: 'Appx A: Roster',      title: 'Governing Body Membership Roster' },
@@ -770,162 +790,72 @@ function TabAppendices({ policy }: { policy: SharedPolicy }) {
   if (!isGV) {
     return (
       <div className="demo-view-enter mt-8 flex flex-col items-center justify-center py-20">
-        <LayoutList className="text-white/20 mb-4" size={48} />
-        <p className="text-white/40 text-[13px] font-montserrat uppercase tracking-widest">Appendices Available for Specimen Policy</p>
-        <p className="text-white/30 text-[11px] mt-2">Select GV-GB-001 to view Forms &amp; Appendices</p>
+        <LayoutList className={`mb-4 ${isLight ? 'text-[#E5E4E3]' : 'text-white/20'}`} size={48} />
+        <p className={`text-[13px] font-montserrat uppercase tracking-widest ${isLight ? 'text-[#747470]' : 'text-white/40'}`}>Appendices Available for Specimen Policy</p>
+        <p className={`text-[11px] mt-2 ${isLight ? 'text-[#9E9D9A]' : 'text-white/30'}`}>Select GV-GB-001 to view Forms &amp; Appendices</p>
       </div>
     );
   }
-  const inputCls = 'border-b border-white/20 bg-transparent text-white text-xs focus:outline-none focus:border-[#00e59b] w-full pb-1';
-  const selectCls = 'border border-white/20 rounded p-1 w-full bg-transparent text-white text-xs focus:outline-none focus:border-[#00e59b]';
-  const dateCls = 'border border-white/10 rounded p-1 w-full bg-transparent text-white text-xs focus:outline-none focus:border-[#00e59b]';
-  const thCls = 'p-3 font-montserrat font-bold text-[10px] text-white/50 uppercase tracking-wider border-b border-white/10 text-left';
+  const APPENDIX_FORM_MAP: Record<string, string> = {
+    A: 'GV-FM-011', B: 'GV-FM-006', C: 'GV-FM-024',
+    D: 'GV-FM-005', E: 'GV-FM-008', F: 'GV-FM-004', G: 'GV-FM-003',
+  };
 
   return (
-    <div className="demo-view-enter mt-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 border-l-[3px] border-[#00e59b] pl-6">
-        <div>
-          <h2 className="font-montserrat text-[14px] font-bold text-white flex items-center tracking-widest uppercase">
-            <LayoutList className="text-[#00e59b] mr-3" size={18} /> Appendices (Forms &amp; Templates)
+    <section className="flex flex-col md:flex-row gap-12 animate-fadeIn relative pb-12 max-w-[1200px]">
+
+      {/* LEFT SIDEBAR MENU */}
+      <div className="w-full md:w-64 flex-shrink-0 no-print">
+        <div className="sticky top-6">
+          <h2 className="font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase text-[#1F1C1B] mb-6 flex items-center w-full">
+            <LayoutList className="mr-3 shrink-0 text-[#007970]" size={20} />
+            <span className="shrink-0">Appendices</span>
+            <span className="flex-grow h-px bg-[#007970] ml-4" />
           </h2>
-          <p className="text-[11px] text-white/50 mt-1">GV-GB-001 — Governing Body Authority &amp; Responsibilities · Version 6.0 · 2025-07-10</p>
-        </div>
-        <div className="flex gap-3 mt-4 md:mt-0">
-          <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-bold text-[11px] transition-colors border border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
-            <ExternalLink size={13} /> Sign on Dropbox
-          </button>
-          <button onClick={() => window.print()} className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-bold text-[11px] transition-colors border border-white/20 text-white hover:bg-white/10">
-            <Printer size={13} /> Print Form
-          </button>
-        </div>
-      </div>
-      {/* ── Appendix Cards — Care Indeed logo cards (large, survey-ready) ── */}
-      <div className="grid grid-cols-7 gap-3 mb-8 px-6">
-        {apps.map(app => {
-          const isActive = activeApp === app.id;
-          const subtitle = app.label.replace(/^Appx [A-G]:\s*/, '');
-          return (
+          <div className="flex flex-col">
+            {apps.map(app => (
+              <button
+                key={app.id}
+                onClick={() => setActiveApp(app.id)}
+                className={`text-left px-4 py-3 font-montserrat font-semibold text-[13px] transition-all duration-200 border-l-[3px] ${
+                  activeApp === app.id
+                    ? 'text-[#C74601] border-[#C74601] bg-white'
+                    : 'bg-white text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
+                }`}
+              >
+                {app.label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-col gap-2">
             <button
-              key={app.id}
-              onClick={() => setActiveApp(app.id)}
-              className={`group relative flex flex-col items-center justify-center rounded-xl px-3 py-4 transition-all duration-300 border ${
-                isActive
-                  ? 'bg-[#00e59b]/15 border-[#00e59b] shadow-[0_10px_30px_-10px_rgba(0,229,155,0.45)]'
-                  : 'bg-white/[0.02] border-white/10 hover:border-[#00e59b]/50 hover:bg-white/[0.05]'
-              }`}
-              style={{ minHeight: 108 }}
-              title={app.title}
+              onClick={() => window.open('https://sign.dropbox.com', '_blank', 'noopener,noreferrer')}
+              className="flex items-center gap-2 text-blue-600 font-montserrat font-semibold text-[12px] hover:underline transition-all"
             >
-              <img
-                src={ciLogoWhite}
-                alt="Care Indeed"
-                className={`w-auto object-contain transition-opacity ${isActive ? 'opacity-100' : 'opacity-70 group-hover:opacity-95'}`}
-                style={{ height: 26 }}
-              />
-              <span className={`mt-2 font-montserrat font-bold text-[10px] uppercase tracking-[0.18em] leading-tight text-center ${isActive ? 'text-[#00e59b]' : 'text-white/70 group-hover:text-white'}`}>
-                {subtitle}
-              </span>
-              <span className={`mt-1 text-[8px] font-bold tracking-[0.3em] ${isActive ? 'text-[#00e59b]/80' : 'text-white/30'}`}>
-                APPX · {app.id}
-              </span>
+              <ExternalLink size={14} /> Sign on Dropbox
             </button>
-          );
-        })}
-      </div>
-      <div className="pl-6">
-        <div className="text-center mb-8 pb-6 border-b border-white/10">
-          <h3 className="font-montserrat text-2xl font-extrabold text-white mb-2">Appendix {activeApp}</h3>
-          <p className="text-[#00e59b] font-montserrat uppercase tracking-widest text-[11px] font-bold">{apps.find(a => a.id === activeApp)!.title}</p>
+            <button onClick={() => window.print()} className="flex items-center gap-2 text-[#524048] font-montserrat font-semibold text-[12px] hover:text-[#1F1C1B] transition-colors">
+              <Printer size={14} /> Print Form
+            </button>
+          </div>
         </div>
-        {activeApp === 'A' && (
-          <div className="text-white/80">
-            <div className="text-[10px] text-white/30 mb-4 text-center italic tracking-wider">Care Indeed Home Health Care, Inc. · Policy GV-GB-001 · Version 6.0 · 2025-07-10</div>
-            <p className="text-[11px] text-white/60 mb-6 border-l-2 border-white/20 pl-4 py-1 leading-relaxed"><strong className="text-white">Instructions:</strong> The Governing Body Chair (or designee) shall update this roster within 7 calendar days of any membership change.</p>
-            <div className="overflow-x-auto border border-white/10 rounded-xl">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-white/5 border-b border-white/10">
-                  <tr>
-                    {['#','Full Legal Name','Title/Role','Voting Status','Appt Date','Term Exp','Competency Area','Email Address','OIG/SAM?'].map(h => <th key={h} className={thCls}>{h}</th>)}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {[1,2,3,4,5,6,7].map(i => (
-                    <tr key={i} className="hover:bg-white/[0.02]">
-                      <td className="p-3 text-white/30 text-center text-xs border-r border-white/10">{i}</td>
-                      <td className="p-2 border-r border-white/10"><input className={inputCls} placeholder="Type here..." /></td>
-                      <td className="p-2 border-r border-white/10"><input className={inputCls} /></td>
-                      <td className="p-2 border-r border-white/10"><select className={selectCls} style={{colorScheme:'dark'}}><option className="bg-[#111]">Voting</option><option className="bg-[#111]">Non-Voting</option><option className="bg-[#111]">Advisory</option></select></td>
-                      <td className="p-2 border-r border-white/10"><input type="date" className={dateCls} style={{colorScheme:'dark'}} /></td>
-                      <td className="p-2 border-r border-white/10"><input type="date" className={dateCls} style={{colorScheme:'dark'}} /></td>
-                      <td className="p-2 border-r border-white/10"><input className={inputCls} /></td>
-                      <td className="p-2 border-r border-white/10"><input type="email" className={inputCls} /></td>
-                      <td className="p-2 text-center"><input type="checkbox" className="w-4 h-4 accent-[#00e59b]" /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-        {activeApp === 'B' && (
-          <div className="max-w-4xl mx-auto text-white/80">
-            <p className="text-[11px] text-[#e85200] mb-8 border-l-2 border-[#e85200] pl-4 py-1 leading-relaxed"><strong>Instructions:</strong> Each Governing Body member shall complete this form at the time of initial appointment; annually; and within 7 calendar days of any change.</p>
-            <div className="space-y-6">
-              <section>
-                <h4 className="font-bold text-[11px] uppercase tracking-widest text-white/50 mb-4">Section 1 — Member Information</h4>
-                <div className="grid grid-cols-2 gap-6 border border-white/10 p-6 rounded-xl">
-                  {[['Full Legal Name','text'],['Title / Role on Governing Body','text'],['Date of Appointment','date']].map(([label, type]) => (
-                    <div key={label}>
-                      <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 block">{label}</label>
-                      <input type={type} className={inputCls} style={type === 'date' ? {colorScheme:'dark'} : {}} />
-                    </div>
-                  ))}
-                  <div className="col-span-2 flex items-center gap-6 mt-3 pt-3 border-t border-white/5 text-[12px]">
-                    <span className="font-bold text-white/70">Type of Disclosure:</span>
-                    {['Initial','Annual Renewal','Change in Circumstances'].map(t => (
-                      <label key={t} className="flex items-center gap-2 text-white/70"><input type="radio" name="discType" className="w-4 h-4 accent-[#e85200]" /> {t}</label>
-                    ))}
-                  </div>
-                </div>
-              </section>
-              <section>
-                <h4 className="font-bold text-[11px] uppercase tracking-widest text-[#00e59b] mb-4">Section 2 — Attestation</h4>
-                <p className="text-[11px] text-white/70 mb-8 leading-relaxed">I hereby certify that the information provided is true, complete, and accurate. I understand my ongoing obligation to disclose any new conflict and must recuse from voting on conflicted matters.</p>
-                <div className="grid grid-cols-2 gap-8">
-                  <div><label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block">Signature</label><div className="border-b border-dashed border-white/20 h-8 w-full"></div></div>
-                  <div><label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block">Date Signed</label><input type="date" className={inputCls} style={{colorScheme:'dark'}} /></div>
-                </div>
-              </section>
-            </div>
-          </div>
-        )}
-        {activeApp === 'C' && (
-          <div className="max-w-2xl mx-auto text-white/80">
-            <div className="border border-white/10 p-8 rounded-xl mb-8">
-              <p className="text-white font-bold mb-5 text-sm">I, the undersigned, acknowledge that:</p>
-              <ol className="list-decimal list-outside space-y-4 text-sm ml-5 text-white/70">
-                <li className="leading-relaxed pl-2">I have received and read Policy <strong className="text-white">GV-GB-001 — Governing Body Authority &amp; Responsibilities, Version 6.0</strong>, effective 2025-07-10.</li>
-                <li className="leading-relaxed pl-2">I understand the responsibilities, requirements, and expectations described in this policy as they apply to my role.</li>
-                <li className="leading-relaxed pl-2">I am accountable for complying with this policy and non-compliance may result in corrective action.</li>
-                <li className="leading-relaxed pl-2">I have had the opportunity to ask questions and receive clarification regarding any aspect of this policy.</li>
-              </ol>
-            </div>
-            <div className="grid grid-cols-2 gap-8 pt-8 border-t border-white/10">
-              <div><label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block">Full Name (Printed)</label><input className={inputCls} /></div>
-              <div><label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block">Title / Role</label><input className={inputCls} /></div>
-              <div className="col-span-2 mt-2"><label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block">Signature</label><div className="border-b border-dashed border-white/20 h-12 w-full"></div></div>
-              <div className="col-span-2 mt-2"><label className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block">Date Signed</label><input type="date" className={`${inputCls} w-1/2`} style={{colorScheme:'dark'}} /></div>
-            </div>
-          </div>
-        )}
-        {(activeApp === 'D' || activeApp === 'E' || activeApp === 'F' || activeApp === 'G') && (
-          <div className="flex flex-col items-center justify-center py-16">
-            <p className="text-white/40 text-[13px] font-montserrat uppercase tracking-widest">Appendix {activeApp}: {apps.find(a => a.id === activeApp)!.title}</p>
-            <p className="text-white/25 text-[11px] mt-3">Available in full Demo specimen view</p>
-          </div>
-        )}
       </div>
-    </div>
+
+      {/* RIGHT PANEL — FormViewer, no card border, scroll with fade */}
+      <div className="appendices-panel flex-1 relative min-h-[600px] max-h-[80vh] overflow-hidden rounded-[8px]">
+        {/* Fade in from top */}
+        <div className="pointer-events-none absolute top-0 inset-x-0 h-20 z-10 no-print"
+          style={{ background: 'linear-gradient(to bottom, white 0%, transparent 100%)' }} />
+        {/* Scrollable form content */}
+        <div className="appendices-scroll w-full h-full overflow-y-auto">
+          <FormViewer formId={APPENDIX_FORM_MAP[activeApp]} />
+        </div>
+        {/* Fade out at bottom */}
+        <div className="pointer-events-none absolute bottom-0 inset-x-0 h-20 z-10 no-print"
+          style={{ background: 'linear-gradient(to top, white 0%, transparent 100%)' }} />
+      </div>
+
+    </section>
   );
 }
 
@@ -1062,136 +992,529 @@ const SHARED_DOMAINS_COLOR_LIGHT: Record<string, string> = {
 };
 
 export function SharedPolicyDetailView({ policy, onBack }: { policy: SharedPolicy; onBack: () => void }) {
-  const [activeTab, setActiveTab] = useState('overview');
+  // ── CORE STATE ────────────────────────────────────────────────
   const isGV = policy.policyId === 'GV-GB-001';
   const theme = useShellStore(s => s.theme);
   const isLight = theme === 'care-indeed-light';
-  const domainColor = isLight
-    ? (SHARED_DOMAINS_COLOR_LIGHT[policy.domainCode] || '#007970')
-    : (SHARED_DOMAINS_COLOR[policy.domainCode] || '#00e59b');
-  const tabAccent = isLight ? '#007970' : '#00e59b';
   const setDetailMode = useShellStore(s => s.setDetailMode);
 
-  useEffect(() => {
-    const prev = document.title;
-    document.title = 'Care Indeed Home Health Care, Inc. - Policies and Procedures';
-    setDetailMode(true);
-    return () => {
-      document.title = prev;
-      setDetailMode(false);
-    };
-  }, [setDetailMode]);
-
-  const handlePrint = () => {
-    window.print();
-  };
-  const handleDownload = () => {
-    const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${policy.policyId}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
+  // ── NAV TABS ──────────────────────────────────────────────────
   const navTabs = [
-    { id: 'overview',      label: 'Overview & Definitions',  icon: Target },
-    { id: 'statements',    label: 'Policy Statements',       icon: List },
-    { id: 'procedures',    label: 'Procedures',              icon: Settings },
-    { id: 'documentation', label: 'Documentation',           icon: FileText },
-    { id: 'compliance',    label: 'Compliance & Audit',      icon: CheckSquare },
-    { id: 'references',    label: 'References & Admin',      icon: Archive },
-    { id: 'appendices',    label: 'Appendices (Forms)',      icon: LayoutList },
+    { id: 'overview',      label: 'Overview & Definitions', icon: Target },
+    { id: 'statements',    label: 'Policy Statements',      icon: List },
+    { id: 'procedures',    label: 'Procedures',             icon: Settings },
+    { id: 'documentation', label: 'Documentation',          icon: FileText },
+    { id: 'compliance',    label: 'Compliance & Audit',     icon: CheckSquare },
+    { id: 'references',    label: 'References & Admin',     icon: Archive },
+    { id: 'appendices',    label: 'Appendices (Forms)',     icon: LayoutList },
     ...(isGV ? [
-      { id: 'alerts',     label: 'Policy Alerts',  icon: Bell },
-      { id: 'faq',        label: 'FAQ',            icon: HelpCircle },
-      { id: 'amendments', label: 'Amendment Log',  icon: Clock },
+      { id: 'alerts',     label: 'Policy Alerts', icon: Bell },
+      { id: 'faq',        label: 'FAQ',           icon: HelpCircle },
+      { id: 'amendments', label: 'Amendment Log', icon: Clock },
     ] : []),
   ];
 
+  // ── FLAT SECTION LIST — drives all navigation ─────────────────
+  // Each entry: { tabId, sIdx (within-tab index), label }
+  // Sections navigate one-at-a-time; cross into next tab at boundary.
+  // Document order: 1-Header · 2-Purpose · 3-Scope · 4-PolicyStatement · 5-Definitions · 6+
+  // Procedures sIdx 1-4 (6.2–6.5) only exist for GV-GB-001; non-GV policies show 6.1 only.
+  const FULL_SECTIONS = [
+    { tabId: 'overview',      sIdx: 0, label: 'Overview' },
+    { tabId: 'overview',      sIdx: 1, label: '2. Purpose' },
+    { tabId: 'overview',      sIdx: 2, label: '3. Scope' },
+    { tabId: 'statements',    sIdx: 0, label: '4. Policy Statements' },
+    { tabId: 'overview',      sIdx: 3, label: '5. Definitions' },
+    { tabId: 'procedures',    sIdx: 0, label: '6.1 Establishment' },
+    ...(isGV ? [
+      { tabId: 'procedures',  sIdx: 1, label: '6.2 Core Responsibilities' },
+      { tabId: 'procedures',  sIdx: 2, label: '6.2.2 Key Personnel' },
+      { tabId: 'procedures',  sIdx: 3, label: '6.2.3 Policy & Compliance' },
+      { tabId: 'procedures',  sIdx: 4, label: '6.2.4 QAPI Oversight' },
+      { tabId: 'procedures',  sIdx: 5, label: '6.2.5 Financial Oversight' },
+      { tabId: 'procedures',  sIdx: 6, label: '6.2.6 Emergency Preparedness' },
+      { tabId: 'procedures',  sIdx: 7, label: '6.3 Meetings' },
+      { tabId: 'procedures',  sIdx: 8, label: '6.4 Conflict of Interest' },
+      { tabId: 'procedures',  sIdx: 9, label: '6.5 Escalation' },
+    ] : []),
+    { tabId: 'documentation', sIdx: 0, label: '7. Documentation' },
+    { tabId: 'compliance',    sIdx: 0, label: '8. Compliance & Audit' },
+    { tabId: 'compliance',    sIdx: 1, label: '8.2 Surveyor Expectations' },
+    { tabId: 'compliance',    sIdx: 2, label: '8.3 Common Failure Points' },
+    { tabId: 'references',    sIdx: 0, label: '9. References' },
+    { tabId: 'references',    sIdx: 1, label: '9.2/9.3 CMS & OIG Guidance' },
+    { tabId: 'references',    sIdx: 2, label: '9.4 Cross-References' },
+    { tabId: 'references',    sIdx: 3, label: '10. Training & Version Control' },
+    { tabId: 'appendices',    sIdx: 0, label: 'Appendices' },
+    ...(isGV ? [
+      { tabId: 'alerts',      sIdx: 0, label: 'Policy Alerts' },
+      { tabId: 'faq',         sIdx: 0, label: 'FAQ' },
+      { tabId: 'amendments',  sIdx: 0, label: 'Amendment Log' },
+    ] : []),
+  ];
+
+  // ── SECTION NAVIGATION STATE ──────────────────────────────────
+  // Single integer tracks position across ALL sections (global index).
+  const [activeSectionGlobalIdx, setActiveSectionGlobalIdx] = useState(0);
+  const activeSection    = FULL_SECTIONS[activeSectionGlobalIdx] ?? FULL_SECTIONS[0];
+  const activeTab        = activeSection.tabId;
+  const activeSectionInTab = activeSection.sIdx;
+
+  // ── ANIMATION STATE MACHINE ───────────────────────────────────
+  const [slidePhase, setSlidePhase] = useState<'idle' | 'exit' | 'enter'>('idle');
+  const [slideDir, setSlideDir] = useState<1 | -1>(1);
+  const pendingIdxRef  = useRef<number | null>(null);
+  const isAnimatingRef = useRef(false);
+
+  // ── HELP MODAL ────────────────────────────────────────────────
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [doNotShowAgain, setDoNotShowAgain] = useState(false);
+  const helpCloseRef = useRef<HTMLButtonElement>(null);
+
+  // ── TOUCH / SWIPE REFS ────────────────────────────────────────
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+
+  // ── HELP AUTO-SHOW ────────────────────────────────────────────
+  const HELP_DISMISSED_KEY = 'ci-pp-nav-help-dismissed';
+  const HELP_TS_KEY        = 'ci-pp-nav-help-ts';
+  const MAX_AUTO_SHOWS     = 2;
+  const WINDOW_MS          = 10 * 60 * 1000;
+
+  useLayoutEffect(() => {
+    const dismissed = localStorage.getItem(HELP_DISMISSED_KEY) === 'true';
+    if (dismissed) return;
+    const stored = localStorage.getItem(HELP_TS_KEY);
+    const timestamps: number[] = stored ? JSON.parse(stored) : [];
+    const now  = Date.now();
+    const recent = timestamps.filter(t => now - t < WINDOW_MS);
+    if (recent.length < MAX_AUTO_SHOWS) {
+      localStorage.setItem(HELP_TS_KEY, JSON.stringify([...recent, now]));
+      // Wait until the policy content is fully rendered before showing the modal
+      const t = setTimeout(() => setHelpOpen(true), 2500);
+      return () => clearTimeout(t);
+    }
+  }, []); // once on mount
+
+  // Focus the close button when the modal opens
+  useEffect(() => {
+    if (helpOpen) setTimeout(() => helpCloseRef.current?.focus(), 50);
+  }, [helpOpen]);
+
+  // ── DOCUMENT TITLE + DETAIL MODE ─────────────────────────────
+  useEffect(() => {
+    const prev = document.title;
+    document.title = 'Care Indeed Home Health Care, Inc. — Policies & Procedures';
+    setDetailMode(true);
+    return () => { document.title = prev; setDetailMode(false); };
+  }, [setDetailMode]);
+
+  // ── CORE NAVIGATE FUNCTION — operates on global section index ─
+  function navigateToSection(targetIdx: number, dir: 1 | -1) {
+    if (isAnimatingRef.current) return;
+    if (targetIdx < 0 || targetIdx >= FULL_SECTIONS.length) return;
+    if (targetIdx === activeSectionGlobalIdx) return;
+    isAnimatingRef.current = true;
+    pendingIdxRef.current  = targetIdx;
+    setSlideDir(dir);
+    setSlidePhase('exit');
+  }
+
+  // ── ANIMATION SEQUENCE ────────────────────────────────────────
+  useEffect(() => {
+    if (slidePhase === 'exit') {
+      const t = setTimeout(() => {
+        if (pendingIdxRef.current !== null) {
+          setActiveSectionGlobalIdx(pendingIdxRef.current);
+          pendingIdxRef.current = null;
+        }
+        setSlidePhase('enter');
+      }, 500);
+      return () => clearTimeout(t);
+    }
+    if (slidePhase === 'enter') {
+      const t = setTimeout(() => {
+        setSlidePhase('idle');
+        isAnimatingRef.current = false;
+      }, 500);
+      return () => clearTimeout(t);
+    }
+  }, [slidePhase]);
+
+  // ── NAVIGATION HELPERS ────────────────────────────────────────
+  function navigateForward() {
+    navigateToSection(activeSectionGlobalIdx + 1, 1);
+  }
+  function navigateBackward() {
+    navigateToSection(activeSectionGlobalIdx - 1, -1);
+  }
+  function handleTabClick(tabId: string) {
+    const targetFirstIdx = FULL_SECTIONS.findIndex(s => s.tabId === tabId);
+    if (targetFirstIdx < 0) return;
+    const dir: 1 | -1 = targetFirstIdx > activeSectionGlobalIdx ? 1 : -1;
+    navigateToSection(targetFirstIdx, dir);
+  }
+
+  // ── KEYBOARD NAVIGATION ───────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName) || t.isContentEditable) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); navigateForward(); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); navigateBackward(); }
+      if (e.key === 'Escape') setHelpOpen(false);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [activeSectionGlobalIdx]); // fresh closure on section change
+
+  // ── SWIPE + EDGE-TAP HANDLERS ────────────────────────────────
+  // touch-action: pan-y on the container lets the browser scroll
+  // vertically while we intercept clear horizontal swipes.
+  // Edge taps: tap within the left or right 18% of the viewport
+  // (excluding interactive elements) to step prev/next.
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    // EDGE TAP: virtually no movement, not on an interactive element
+    if (dist < 12) {
+      const target = e.target as HTMLElement;
+      if (!target.closest('button, a, input, select, textarea, [role="button"], [role="tab"]')) {
+        const tapX = e.changedTouches[0].clientX;
+        const w    = window.innerWidth;
+        if (tapX < w * 0.18) { navigateBackward(); return; }
+        if (tapX > w * 0.82) { navigateForward();  return; }
+      }
+      return;
+    }
+
+    // SWIPE: horizontal dominance + minimum 40px distance
+    if (Math.abs(dx) > Math.abs(dy) * 1.5 && Math.abs(dx) > 40) {
+      if (dx < 0) navigateForward();  // swipe left = next
+      else navigateBackward();        // swipe right = prev
+    }
+  };
+
+  // ── PRINT / DOWNLOAD ──────────────────────────────────────────
+  const handlePrint    = () => window.print();
+  const handleDownload = () => {
+    const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `${policy.policyId}.html`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ── CLOSE HELP MODAL ──────────────────────────────────────────
+  function closeHelp() {
+    if (doNotShowAgain) localStorage.setItem(HELP_DISMISSED_KEY, 'true');
+    setHelpOpen(false);
+    setDoNotShowAgain(false);
+  }
+
+  // ── DERIVED VALUES ────────────────────────────────────────────
+  const canGoBack        = activeSectionGlobalIdx > 0;
+  const canGoForward     = activeSectionGlobalIdx < FULL_SECTIONS.length - 1;
+  const currentSectionLabel = activeSection.label;
+  const slideClass       =
+    slidePhase === 'exit'  ? (slideDir === 1 ? 'policy-slide-exit-fwd'  : 'policy-slide-exit-bwd')
+    : slidePhase === 'enter' ? (slideDir === 1 ? 'policy-slide-enter-fwd' : 'policy-slide-enter-bwd')
+    : '';
+
+  const navBtnBase =
+    'flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-montserrat font-semibold text-[11px] uppercase tracking-wider transition-all duration-200 select-none';
+  const navBtnActive  = 'border-[#D8D4D0] text-[#524048] hover:border-[#007970] hover:text-[#007970] cursor-pointer';
+  const navBtnDisabled = 'border-[#EDECEB] text-[#C8C4C0] cursor-not-allowed pointer-events-none';
+
+  // Persistent regulatory tags — shown at bottom-right across all sections/tabs
+  const persistentTags: string[] = policy.policyId === 'GV-GB-001'
+    ? ['42cfr', 'title22', 'cms', 'hipaa', 'oig', 'fca']
+    : (policy.regulatoryTags ?? []);
+
   return (
-    <div className="demo-view-enter text-white flex flex-col h-full policy-page">
-      {/* Fixed header area */}
-      <div className="shrink-0 p-6 md:p-8 pb-0">
-        {/* Top nav — Return to Policy Library (left) · Print / Download (right) */}
-        <div className="no-print flex justify-between items-center mb-6">
-          <button onClick={onBack}
-            className="font-montserrat text-[11px] font-bold tracking-[0.2em] flex items-center gap-2 hover:opacity-80 uppercase transition-opacity"
-            style={{ color: domainColor }}>
-            <ChevronLeft size={16} /> RETURN TO POLICY LIBRARY
+    <div
+      className="demo-view-enter relative h-full w-full bg-white flex flex-col text-[#1F1C1B] overflow-hidden policy-page"
+      data-theme="light"
+    >
+
+      {/* ══ ACTION BAR ══════════════════════════════════════════ */}
+      <div className="no-print flex items-center justify-between px-5 py-3 bg-white border-b border-[#E5E4E3] shrink-0 z-20 gap-3">
+
+        {/* Left — back */}
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1.5 text-[#007970] font-montserrat font-semibold text-[12px] uppercase tracking-wider hover:underline transition-all shrink-0"
+        >
+          <ChevronLeft size={16} /> Return to Library
+        </button>
+
+        {/* Centre — Prev / current section label / Next */}
+        <div className="flex items-center gap-2 min-w-0 flex-1 justify-center">
+          <button
+            onClick={navigateBackward}
+            disabled={!canGoBack || slidePhase !== 'idle'}
+            aria-label="Previous section"
+            className={`${navBtnBase} ${canGoBack && slidePhase === 'idle' ? navBtnActive : navBtnDisabled}`}
+          >
+            <ChevronLeft size={13} /> Prev
           </button>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="border border-white/20 hover:bg-white/5 px-5 py-2.5 rounded-full font-bold text-[10px] tracking-[0.2em] transition-colors flex items-center gap-2 text-white uppercase font-montserrat"
-            >
-              <Printer size={14} /> PRINT
-            </button>
-            <button
-              type="button"
-              onClick={handleDownload}
-              className="border border-white/20 hover:bg-white/5 px-5 py-2.5 rounded-full font-bold text-[10px] tracking-[0.2em] transition-colors flex items-center gap-2 text-white uppercase font-montserrat"
-            >
-              <Download size={14} /> DOWNLOAD
-            </button>
-          </div>
+
+          <span
+            className="font-montserrat font-semibold text-[11px] tracking-[0.12em] uppercase text-[#524048] truncate max-w-[200px] hidden sm:block select-none"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {currentSectionLabel}
+          </span>
+
+          <button
+            onClick={navigateForward}
+            disabled={!canGoForward || slidePhase !== 'idle'}
+            aria-label="Next section"
+            className={`${navBtnBase} ${canGoForward && slidePhase === 'idle' ? navBtnActive : navBtnDisabled}`}
+          >
+            Next <ChevronRight size={13} />
+          </button>
         </div>
 
-        {/* Policy badges */}
-        <div className="flex gap-3 mb-5 flex-wrap">
-          <span className="border bg-transparent px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase font-montserrat"
-            style={{ borderColor: `${domainColor}60`, color: domainColor }}>{policy.policyId}</span>
-          <span className="px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase font-montserrat"
-            style={{ backgroundColor: `${domainColor}20`, color: domainColor }}>{policy.status.replace('_', ' ')}</span>
-          <span className="border border-white/10 bg-white/5 px-4 py-1.5 rounded-full text-[10px] font-bold text-white/80 tracking-widest uppercase font-montserrat">{policy.classificationTier}</span>
+        {/* Right — help + print + download */}
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={() => setHelpOpen(true)}
+            aria-label="How to navigate this document"
+            title="Navigation help"
+            className="w-8 h-8 rounded-full border-2 border-[#007970] flex items-center justify-center text-[#007970] hover:bg-[#007970] hover:text-white transition-all duration-200 shrink-0"
+          >
+            <HelpCircle size={15} strokeWidth={2.2} />
+          </button>
+          <button
+            type="button" onClick={handlePrint}
+            className="flex items-center gap-1.5 text-[#1F1C1B] font-montserrat font-semibold text-[11px] uppercase tracking-wider hover:opacity-70 transition-opacity no-print"
+          >
+            <Printer size={15} /> Print
+          </button>
+          <button
+            type="button" onClick={handleDownload}
+            className="flex items-center gap-1.5 text-[#007970] font-montserrat font-semibold text-[11px] uppercase tracking-wider hover:opacity-70 transition-opacity no-print"
+          >
+            <Download size={15} /> Download
+          </button>
         </div>
+      </div>
 
-        {/* Title */}
-        <h1 className="font-montserrat text-3xl md:text-[36px] leading-tight font-light text-white mb-8 tracking-wide">{policy.title}</h1>
-
-        {/* Metadata grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6 border-b border-white/10 pb-6">
-          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold font-montserrat block mb-1">Domain</span><span className="text-[12px] text-white/90 font-light">{policy.domain}</span></div>
-          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold font-montserrat block mb-1">Tier</span><span className="text-[12px] text-white/90 font-light">{policy.classificationTier}</span></div>
-          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold font-montserrat block mb-1">Approved By</span><span className="text-[12px] text-white/90 font-light">{policy.approvedBy}</span></div>
-          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold font-montserrat block mb-1">Version</span><span className="text-[12px] text-white/90 font-light">v{policy.version}</span></div>
-        </div>
-
-        {/* Tab bar */}
-        <div className="flex overflow-x-auto custom-scrollbar border-b border-white/10">
+      {/* ══ TAB BAR ════════════════════════════════════════════ */}
+      <nav
+        className="no-print bg-white border-b border-[#E5E4E3] shrink-0 overflow-x-auto custom-scrollbar"
+        role="tablist"
+        aria-label="Policy sections"
+      >
+        <div className="flex items-center px-5 min-w-max">
           {navTabs.map(tab => {
             const Icon = tab.icon;
+            const active = activeTab === tab.id;
             return (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`pb-3 px-4 font-montserrat text-[10px] font-bold tracking-[0.15em] uppercase whitespace-nowrap transition-colors flex items-center gap-2 border-b-2 ${
-                  activeTab === tab.id
-                    ? ''
-                    : 'text-white/40 hover:text-white/80 border-transparent'
+              <button
+                key={tab.id}
+                role="tab"
+                aria-selected={active}
+                onClick={() => handleTabClick(tab.id)}
+                className={`flex items-center gap-2 px-4 py-[14px] font-semibold group border-b-[3px] transition-all duration-200 ${
+                  active
+                    ? 'text-[#C74601] border-[#C74601]'
+                    : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
                 }`}
-                style={activeTab === tab.id ? { color: tabAccent, borderColor: tabAccent } : undefined}>
-                <Icon size={13} /> {tab.label}
+              >
+                <Icon
+                  size={17}
+                  className={active ? 'text-[#C74601]' : 'text-[#007970] opacity-70 group-hover:opacity-100'}
+                />
+                <span className="font-montserrat text-[11px] tracking-[0.1em] whitespace-nowrap uppercase">
+                  {tab.label}
+                </span>
               </button>
             );
           })}
         </div>
-      </div>
+      </nav>
 
-      {/* Scrollable content — data-shell-scroll is reset in print so this
-          flows naturally; policy-page supplies the white bg + padding. */}
-      <div className="policy-content flex-1 min-h-0 overflow-y-auto custom-scrollbar px-6 md:px-8 pb-8">
-        {activeTab === 'overview'      && <TabOverview policy={policy} />}
-        {activeTab === 'statements'    && <TabStatements policy={policy} />}
-        {activeTab === 'procedures'    && <TabProcedures policy={policy} />}
-        {activeTab === 'documentation' && <TabDocumentation policy={policy} />}
-        {activeTab === 'compliance'    && <TabCompliance policy={policy} />}
-        {activeTab === 'references'    && <TabReferences policy={policy} />}
-        {activeTab === 'appendices'    && <TabAppendices policy={policy} />}
-        {activeTab === 'alerts'        && <TabAlerts policy={policy} />}
-        {activeTab === 'faq'           && <TabFAQ policy={policy} />}
-        {activeTab === 'amendments'    && <TabAmendments policy={policy} />}
-      </div>
+      {/* ══ MAIN CONTENT — section-by-section carousel ══════════ */}
+      <main
+        className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar bg-white policy-content flex flex-col"
+        role="tabpanel"
+        style={{ touchAction: 'pan-y' }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Content starts near the top — pt-10 gives breathing room */}
+        <div className="flex flex-col">
+          <div
+            key={`section-${activeSectionGlobalIdx}-${slidePhase === 'enter' ? 'in' : 'out'}`}
+            className={`max-w-[1200px] w-full px-6 pt-10 pb-16 md:px-10 lg:px-12 ${slideClass}`}
+          >
+            {activeTab === 'overview'      && <TabOverview      policy={policy} sectionIdx={activeSectionInTab} />}
+            {activeTab === 'statements'    && <TabStatements    policy={policy} />}
+            {activeTab === 'procedures'    && <TabProcedures    policy={policy} sectionIdx={activeSectionInTab} />}
+            {activeTab === 'documentation' && <TabDocumentation policy={policy} />}
+            {activeTab === 'compliance'    && <TabCompliance    policy={policy} sectionIdx={activeSectionInTab} />}
+            {activeTab === 'references'    && <TabReferences    policy={policy} sectionIdx={activeSectionInTab} />}
+            {activeTab === 'appendices'    && <TabAppendices    policy={policy} />}
+            {activeTab === 'alerts'        && <TabAlerts        policy={policy} />}
+            {activeTab === 'faq'           && <TabFAQ           policy={policy} />}
+            {activeTab === 'amendments'    && <TabAmendments    policy={policy} />}
+          </div>
+        </div>
+      </main>
+
+      {/* ══ NAVIGATION HELP MODAL ══════════════════════════════ */}
+      {helpOpen && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="help-modal-title"
+          onClick={e => { if (e.target === e.currentTarget) closeHelp(); }}
+        >
+          {/* Scrim — subtle blur + 33% darken so content is still visible behind the modal */}
+          <div
+            className="absolute inset-0 bg-black/[0.33]"
+            style={{ backdropFilter: 'blur(7.7px)', WebkitBackdropFilter: 'blur(7.7px)' }}
+            aria-hidden="true"
+          />
+
+          {/* Panel */}
+          <div className="policy-help-modal-panel relative bg-white rounded-[18px] shadow-2xl border border-[#E5E4E3] max-w-[520px] w-full overflow-hidden">
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-7 py-5 border-b border-[#E5E4E3]">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-[#E5FEFF] flex items-center justify-center shrink-0">
+                  <HelpCircle size={19} className="text-[#007970]" />
+                </div>
+                <h2 id="help-modal-title" className="font-montserrat font-semibold text-[15px] text-[#1F1C1B]">
+                  How to Navigate This Document
+                </h2>
+              </div>
+              <button
+                ref={helpCloseRef}
+                onClick={closeHelp}
+                aria-label="Close navigation help"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[#747470] hover:bg-[#F2F2F0] hover:text-[#1F1C1B] transition-all focus-visible:ring-2 focus-visible:ring-[#007970]"
+              >
+                <span className="text-[22px] leading-none select-none" aria-hidden="true">×</span>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-7 py-6 space-y-5">
+              <p className="text-[14px] text-[#524048] font-roboto leading-relaxed">
+                This document is presented as a{' '}
+                <strong className="text-[#1F1C1B] font-semibold">guided carousel</strong> — each section
+                is shown one at a time for focused, uncluttered review. Navigate forward and backward
+                using any of the methods below.
+              </p>
+
+              <div className="space-y-4">
+                {([
+                  {
+                    symbol: '‹ ›',
+                    label:  'Prev / Next buttons',
+                    desc:   'Use the Prev and Next buttons in the top bar to step through each section in sequence.',
+                  },
+                  {
+                    symbol: '← →',
+                    label:  'Arrow keys',
+                    desc:   'Press the left or right arrow key on your keyboard. Navigation is disabled while typing in a field.',
+                  },
+                  {
+                    symbol: '👆',
+                    label:  'Swipe or tap edges',
+                    desc:   'On touch devices, swipe left/right to navigate. Or tap the left edge of the screen to go back, tap the right edge to go forward.',
+                  },
+                  {
+                    symbol: '⊞',
+                    label:  'Tab bar',
+                    desc:   'Click any tab in the navigation bar to jump directly to that section — the transition animation still plays.',
+                  },
+                  {
+                    symbol: '↪',
+                    label:  'Auto-progression',
+                    desc:   'Reaching the end of a section automatically advances to the next tab — the document reads as one continuous guided journey.',
+                  },
+                ] as const).map(item => (
+                  <div key={item.label} className="flex items-start gap-4">
+                    <div
+                      className="w-10 h-10 rounded-[10px] bg-[#F2F8F7] border border-[#E5FEFF] flex items-center justify-center shrink-0 font-montserrat font-bold text-[#007970] text-[14px] select-none"
+                      aria-hidden="true"
+                    >
+                      {item.symbol}
+                    </div>
+                    <div className="min-w-0 pt-1">
+                      <p className="font-montserrat font-semibold text-[13px] text-[#1F1C1B] mb-0.5 leading-snug">
+                        {item.label}
+                      </p>
+                      <p className="font-roboto text-[13px] text-[#524048] leading-relaxed">
+                        {item.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between px-7 py-4 border-t border-[#E5E4E3] bg-[#FAFBF8]">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={doNotShowAgain}
+                  onChange={e => setDoNotShowAgain(e.target.checked)}
+                  className="w-4 h-4 rounded border-[#D1D1D1] accent-[#007970] cursor-pointer"
+                />
+                <span className="text-[12px] text-[#747470] font-roboto">Do not show again</span>
+              </label>
+              <button
+                onClick={closeHelp}
+                className="px-5 py-2 bg-[#007970] text-white font-montserrat font-semibold text-[12px] uppercase tracking-wider rounded-full hover:bg-[#005E57] transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#007970]"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ PERSISTENT REGULATORY TAGS — bottom-right, outside carousel ══ */}
+      {persistentTags.length > 0 && (
+        <div className="no-print absolute bottom-6 right-6 flex flex-col items-end gap-2 pointer-events-none z-10">
+          <p className="font-montserrat font-semibold text-[9px] tracking-[0.18em] uppercase text-[#7A6A72]">
+            Regulatory References
+          </p>
+          <div className="flex flex-wrap gap-2 justify-end max-w-[420px]">
+            {persistentTags.map(tagId => {
+              const reg = SHARED_REG_ITEMS.find(r => r.id === tagId);
+              const Icon = reg?.icon;
+              const color = reg?.color ?? '#007970';
+              return (
+                <span
+                  key={tagId}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border font-montserrat font-semibold text-[11px] tracking-wide"
+                  style={{ borderColor: color, color, backgroundColor: `${color}18` }}
+                >
+                  {Icon && <Icon size={11} strokeWidth={2.2} />}
+                  {reg?.shortName ?? tagId}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

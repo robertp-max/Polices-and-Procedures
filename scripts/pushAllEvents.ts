@@ -23,6 +23,8 @@ import dotenv from 'dotenv';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { syncEvents } from '../server/sync/eventSync.js';
+import type { PlannerEventPayload } from '../server/mappers.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -1458,90 +1460,41 @@ async function getCalendar(): Promise<calendar_v3.Calendar> {
   return cal;
 }
 
-/* ─── Find existing event by appEventId ─────────────────────── */
-
-async function findByAppEventId(
-  cal: calendar_v3.Calendar,
-  appEventId: string,
-): Promise<calendar_v3.Schema$Event | null> {
-  const res = await cal.events.list({
-    calendarId: CALENDAR_ID,
-    privateExtendedProperty: [`appEventId=${appEventId}`],
-    singleEvents: true,
-    maxResults: 2,
-  });
-  return res.data.items?.[0] ?? null;
-}
-
-/* ─── Build Google Calendar event body ───────────────────────── */
-
-function buildGoogleEvent(e: EventEntry): calendar_v3.Schema$Event {
-  const tz = TIMEZONE;
-  const allDay = !!e.allDay || (!e.time && !e.timeEnd);
-
-  const descriptionParts = [e.summary];
-  const meta: string[] = [];
-  if (e.domain)       meta.push(`Domain: ${e.domain}`);
-  if (e.cadence)      meta.push(`Frequency: ${e.cadence}`);
-  if (e.mandateType)  meta.push(`Mandate: ${formatMandate(e.mandateType)}`);
-  if (e.policyRefs?.length) meta.push(`Policy: ${e.policyRefs.join(', ')}`);
-  if (e.owner)        meta.push(`Owner: ${e.owner} (${e.ownerRole})`);
-  if (e.regulatoryDriver) meta.push(`Regulatory basis: ${e.regulatoryDriver}`);
-  if (e.auditRisk)    meta.push(`Audit risk: ${e.auditRisk}`);
-  if (meta.length) descriptionParts.push('\n— Care Indeed Regulatory Planner —\n' + meta.join('\n'));
-  descriptionParts.push(`\n(app event: ${e.id})`);
-
-  const description = descriptionParts.filter(Boolean).join('\n\n');
-
-  const base: calendar_v3.Schema$Event = {
-    summary: e.title,
-    description,
-    location: e.location,
-    extendedProperties: {
-      private: {
-        appEventId: e.id,
-        domain: e.domain,
-        cadence: e.cadence,
-        mandateType: e.mandateType ?? '',
-        owner: e.owner,
-        ownerRole: e.ownerRole,
-        policyRefs: e.policyRefs.join(','),
-        auditRisk: e.auditRisk ?? '',
-        category: e.category ?? '',
-        source: 'ci-regulatory-planner',
-      },
-    },
-  };
-
-  if (allDay) {
-    const endDate = e.endDate ?? e.date;
-    base.start = { date: e.date };
-    base.end   = { date: addDay(endDate) };
-  } else {
-    const pad = (t?: string) => t ? `${e.date}T${t}:00` : `${e.date}T00:00:00`;
-    base.start = { dateTime: pad(e.time),    timeZone: tz };
-    base.end   = { dateTime: pad(e.timeEnd ?? e.time), timeZone: tz };
-  }
-  return base;
-}
-
-function addDay(dateISO: string): string {
-  const d = new Date(dateISO + 'T00:00:00Z');
-  d.setUTCDate(d.getUTCDate() + 1);
-  return d.toISOString().slice(0, 10);
-}
-
-function formatMandate(m?: string): string {
-  if (!m) return '';
-  return {
-    'federal-required':    'Federal Required',
-    'conditional-federal': 'Conditional Federal',
-    'policy-driven':       'Policy-Driven',
-    'state-required':      'State Required',
-  }[m] ?? m;
-}
-
 /* ─── Main push logic ────────────────────────────────────────── */
+
+/**
+ * Delegate to the deterministic sync engine. The engine guarantees:
+ *   - Strict event_id-only matching (never title/time/description)
+ *   - Hash-based skip when nothing changed
+ *   - google_event_id cached in the local store for O(1) future updates
+ *   - Audit log + Brad notifications on material changes
+ *   - 3x retry with exponential backoff on transient failures
+ */
+function toPayload(e: EventEntry): PlannerEventPayload {
+  return {
+    event_id: e.id,
+    appEventId: e.id,
+    title: e.title,
+    summary: e.summary,
+    date: e.date,
+    endDate: e.endDate,
+    time: e.time,
+    timeEnd: e.timeEnd,
+    allDay: e.allDay,
+    timezone: TIMEZONE,
+    domain: e.domain,
+    category: e.category,
+    cadence: e.cadence,
+    mandateType: e.mandateType,
+    policyRefs: e.policyRefs,
+    owner: e.owner,
+    ownerRole: e.ownerRole,
+    regulatoryDriver: e.regulatoryDriver,
+    auditRisk: e.auditRisk,
+    location: e.location,
+    env: 'PROD',
+  };
+}
 
 async function pushAllEvents() {
   console.log('\n══════════════════════════════════════════════════════');
@@ -1553,47 +1506,39 @@ async function pushAllEvents() {
   console.log(`  Creds    : ${CRED_PATH}`);
   console.log('──────────────────────────────────────────────────────\n');
 
-  const cal = await getCalendar();
+  // Pre-flight — verifies credentials + calendar reachability.
+  await getCalendar();
   console.log('✅  Authenticated to Google Calendar\n');
 
-  let created = 0;
-  let updated = 0;
-  let failed  = 0;
+  const payloads = EVENTS.map(toPayload);
+  const report = await syncEvents(payloads, {
+    trigger: 'script:pushAllEvents',
+    actor: 'cli',
+    env: 'PROD',
+  });
 
-  for (const ev of EVENTS) {
-    try {
-      const body = buildGoogleEvent(ev);
-      const existing = await findByAppEventId(cal, ev.id);
-
-      if (existing?.id) {
-        await cal.events.update({ calendarId: CALENDAR_ID, eventId: existing.id, requestBody: body });
-        console.log(`  ↻  UPDATED  ${ev.date}  ${ev.title}`);
-        updated++;
-      } else {
-        await cal.events.insert({ calendarId: CALENDAR_ID, requestBody: body });
-        console.log(`  +  CREATED  ${ev.date}  ${ev.title}`);
-        created++;
-      }
-      // Small delay to avoid quota errors
-      await sleep(120);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      console.error(`  ✗  FAILED   ${ev.date}  ${ev.title} — ${msg}`);
-      failed++;
+  for (const r of report.results) {
+    const ev = EVENTS.find(e => e.id === r.event_id);
+    const label = ev ? `${ev.date}  ${ev.title}` : r.event_id;
+    if (!r.ok) {
+      console.error(`  ✗  FAILED   ${label} — ${r.error}`);
+    } else if (r.action === 'created') {
+      console.log(`  +  CREATED  ${label}`);
+    } else if (r.action === 'updated') {
+      console.log(`  ↻  UPDATED  ${label}`);
+    } else {
+      console.log(`  =  SKIPPED  ${label} (${r.skipped_reason ?? 'unchanged'})`);
     }
   }
 
   console.log('\n──────────────────────────────────────────────────────');
-  console.log(`  ✅ Created : ${created}`);
-  console.log(`  ↻  Updated : ${updated}`);
-  console.log(`  ❌ Failed  : ${failed}`);
+  console.log(`  ✅ Created : ${report.created}`);
+  console.log(`  ↻  Updated : ${report.updated}`);
+  console.log(`  =  Skipped : ${report.skipped}`);
+  console.log(`  ❌ Failed  : ${report.failed}`);
   console.log('══════════════════════════════════════════════════════\n');
 
-  if (failed > 0) process.exit(1);
-}
-
-function sleep(ms: number) {
-  return new Promise<void>(r => setTimeout(r, ms));
+  if (report.failed > 0) process.exit(1);
 }
 
 pushAllEvents().catch(e => {

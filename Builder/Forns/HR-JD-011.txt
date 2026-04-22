@@ -1,0 +1,233 @@
+DOCUMENT ID: HR-JD-011
+TITLE: Speech-Language Pathologist (SLP)
+TYPE: Job Description
+DOMAIN: HR
+SUBDOMAIN: JD
+USAGE: Required
+FREQUENCY: Biennial Review
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2027-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: clinical, licensed_professional, skilled_care, therapy
+
+LINKED POLICIES:
+- HR-TA-006 (Job Description & Role Definition)
+- HR-TA-004 (Licensure & Certification Verification)
+- HR-TA-005 (Employee Orientation & Onboarding)
+
+POSITION SUMMARY:
+The Speech-Language Pathologist (SLP) provides skilled speech-language pathology services to home health patients when ordered by the attending physician and included in the plan of care. Speech-language pathology in Medicare home health is a skilled service that may independently establish Medicare eligibility. The SLP evaluates and treats disorders of communication (speech, language, voice, fluency, and cognitive-linguistic function) and swallowing (dysphagia), and develops individualized treatment programs to restore, maintain, or improve functional communication and safe oral intake. This role is governed by 42 CFR § 484.115 and the California Speech-Language Pathology and Audiology and Hearing Aid Dispensers Act (BPC § 2530 et seq.).
+
+---
+
+SECTION 1: Core Responsibilities
+layout: list
+
+responsibilities:
+- Conduct comprehensive speech-language pathology evaluations of communication disorders, voice disorders, fluency disorders, cognitive-linguistic deficits, and dysphagia/swallowing disorders.
+- Develop individualized SLP treatment plans with measurable functional goals, frequency, and duration in coordination with the physician.
+- Provide skilled SLP interventions: articulation and speech production therapy, language processing and expression therapy, voice therapy, fluency treatment, cognitive-linguistic rehabilitation, and dysphagia therapy (oral motor exercise, safe swallowing strategies, diet texture modification recommendations).
+- Assess swallowing safety and make clinical recommendations for diet modifications, feeding strategies, and physician referral for instrumental swallowing studies (MBSS, FEES) when indicated.
+- Provide Augmentative and Alternative Communication (AAC) assessment and training as appropriate.
+- Provide patient, family, and caregiver education on communication strategies, dysphagia management, and compensatory techniques.
+- Coordinate with dietitian, RN, physician, and OT on dysphagia management and nutritional safety.
+- Participate in interdisciplinary care coordination and team conferences.
+- Complete OASIS assessments at required time points when SLP is the primary qualifying skilled service.
+- Document all evaluations, treatment notes, and discharge summaries within agency-required timeframes.
+- Participate in QAPI activities.
+- Maintain compliance with HIPAA and all applicable licensure requirements.
+- Complete mandatory training per agency policy and schedule.
+
+SECTION 2: Minimum Qualifications
+layout: list
+
+qualifications:
+- Required: Current, unrestricted Speech-Language Pathologist (SLP/CCC-SLP) license in the state of California (CA SLP&A Board).
+- Required: Master's degree or higher in Speech-Language Pathology from an ASHA-accredited program.
+- Required: Certificate of Clinical Competence in Speech-Language Pathology (ASHA CCC-SLP) or enrolled in the Clinical Fellowship Year (CFY) per applicable law.
+- Required: Minimum one (1) year of SLP clinical experience; home health experience preferred.
+- Required: No current exclusion from federal or state healthcare programs (OIG/SAM).
+- Required: Current BLS/CPR certification.
+- Required: Valid California driver's license and personal vehicle with current insurance.
+- Required: Completion of agency new-hire orientation and competency validation prior to independent patient care.
+- Required: TB screening current per agency policy.
+- Preferred: Dysphagia specialty experience (BRS-S certification or equivalent).
+- Preferred: AAC experience and cognitive-linguistic rehabilitation competency.
+
+SECTION 3: Required Competencies
+layout: list
+
+competencies:
+- Speech-language pathology evaluation: standardized assessment tools for communication disorders, cognitive-linguistic function, and dysphagia.
+- Clinical dysphagia evaluation: oral mechanism examination, bedside swallowing assessment, aspiration risk recognition.
+- Diet texture and fluid consistency modification recommendations per IDDSI framework.
+- Language rehabilitation: aphasia, dysarthria, cognitive-linguistic deficits post-neurological event.
+- Voice and fluency therapy techniques.
+- AAC assessment and basic device training.
+- Medicare skilled SLP criteria: documenting medical necessity, skilled intervention need, and functional progress.
+- Patient/family education: safe swallowing strategies, communication aids, and compensatory techniques.
+- OASIS competency (items applicable to communication, cognition, and swallowing).
+- Clinical documentation: evaluation, progress notes, discharge summary, timeliness, authentication.
+- Infection prevention: Standard Precautions in home environments.
+- Interdisciplinary communication and care coordination.
+- EHR proficiency.
+
+SECTION 4: Regulatory Responsibilities
+layout: list
+
+regulations:
+- 42 CFR § 484.115 — Meets SLP personnel qualifications for home health.
+- 42 CFR § 484.55 — Authorized to complete OASIS assessments when the primary qualifying skilled service.
+- 42 CFR § 484.60 — Plan of care development and physician coordination.
+- 42 CFR § 484.110 — Clinical record documentation requirements.
+- 42 CFR § 484.70 — Infection prevention at point of care.
+- CA SLP&A Practice Act (BPC § 2530) — Practice within SLP scope; licensure compliance.
+- ASHA Code of Ethics — Professional standards and ethical practice.
+- HIPAA 45 CFR Parts 160 & 164 — PHI privacy and security.
+- Mandatory Reporter (CA Penal Code § 11166; CA W&I Code § 15630) — Elder/dependent adult and child abuse reporting.
+- 42 USC § 1320a-7 — OIG/SAM exclusion-free status.
+
+SECTION 5: Documentation Responsibilities
+layout: list
+
+documentation:
+- Complete initial SLP evaluation within required timeframe; document measurable functional goals and clinical findings.
+- Complete treatment notes for each visit within 24 hours (or agency-required timeframe).
+- Authenticate all documentation with SLP/CCC-SLP signature, license number, date, and time.
+- Document dysphagia findings, dietary recommendations, and physician notification.
+- Document patient/family education provided and response.
+- Complete discharge summary at episode end with measurable functional communication/swallowing outcomes.
+- Maintain own SLP license, ASHA CCC-SLP, BLS/CPR, OIG/SAM, and ASHA CEU records.
+
+SECTION 6: Supervision Responsibilities
+layout: list
+
+supervision:
+- May supervise Speech-Language Pathology Assistants (SLPAs) per California BPC requirements and ASHA guidelines, if utilized by agency.
+- Reports to: Director of Nursing / Clinical Manager (HR-JD-003).
+
+SECTION 7: Physical Requirements
+layout: list
+
+physical:
+- Light to medium work: home visits, patient positioning for dysphagia evaluations, and therapeutic activities.
+- Fine motor skills for clinical procedures and AAC device operation.
+- Valid California driver's license and reliable, insured personal vehicle.
+- Ability to navigate varied residential environments.
+
+SECTION 8: Working Conditions
+layout: list
+
+conditions:
+- Field-based: patient home visits throughout the service area.
+- Variable schedule; some evening or weekend availability may be required.
+- Exposure to infectious disease risk managed per Standard Precautions.
+- Exposure to situations involving patient communication impairment, cognitive decline, and end-of-life contexts.
+- Mileage reimbursed per agency policy.
+
+SECTION 9: Performance Expectations
+layout: list
+
+expectations:
+- SLP evaluation and visit notes completed within agency-required timeframes: ≥ 95% compliance.
+- Measurable functional communication/swallowing goals documented at SOC; progress documented each visit.
+- Clinical documentation audit scores meet or exceed agency threshold.
+- Dysphagia dietary recommendations documented and communicated to care team within 24 hours of assessment.
+- Mandatory training completion: 100% on schedule.
+- Licensure, CCC-SLP, BLS/CPR, OIG/SAM current without lapse.
+- No substantiated scope-of-practice or documentation integrity violations.
+
+SECTION 10: Policy Cross-References
+layout: list
+
+policies:
+- HR-TA-006 — Job Description & Role Definition (controls this document)
+- HR-TA-004 — Licensure & Certification Verification (own SLP license and ASHA CCC-SLP credentials)
+- HR-TA-005 — Employee Orientation & Onboarding (initial competency validation requirements)
+- CL-SD-004 — Speech-Language Pathology Services (skilled SLP service delivery standards)
+- CL-CA-001 — Patient Assessment — Comprehensive (OASIS completion when SLP is primary skilled service)
+- CL-OA-001 — OASIS Completion Timeliness & Accountability (submission deadlines when SLP is assessing clinician)
+- CL-CD-001 — Clinical Documentation Standards (evaluation, progress note, and discharge summary requirements)
+- CL-CD-003 — Clinical Record Authentication & Signature Requirements (SLP signature and SLPA co-signature standards)
+- CL-SD-016 — Infection Prevention & Control (Standard Precautions at point of care)
+- CL-PR-006 — Abuse, Neglect & Exploitation Reporting (mandatory reporter obligations)
+
+SECTION 11: Measurable Performance Standards
+layout: list
+
+standards:
+- SLP evaluation and visit note completion: ≥ 95% of notes completed within 24 hours of service — per CL-CD-001; no note > 5 business days past service date.
+- OASIS submission timeliness (when SLP is primary assessing clinician): ≥ 98% submitted within 5 calendar days — per CL-OA-001 and 42 CFR § 484.45.
+- Measurable functional goal documentation: 100% of SLP evaluations include at least 2 measurable, function-based goals (communication or swallowing) — per CL-SD-004 and Medicare skilled SLP criteria.
+- Dysphagia dietary recommendation communication: documented and communicated to care team (RN, physician, DON) within 24 hours of any dysphagia assessment — 100% compliance.
+- Clinical documentation audit compliance: pass rate ≥ agency threshold on monthly audits — per QA-PG-001.
+- SLP license and ASHA CCC-SLP: current without lapse — 0 expired credentials in active service — per HR-TA-004.
+- ASHA CEU requirements: completed per ASHA renewal cycle (30 CEUs per 3-year certification maintenance period) — 0 lapsed CCC-SLP status.
+- Mandatory training completion: 100% by due date — per HR-TA-005.
+- OIG/SAM screening (self): monthly; 0 lapses — per HR-TA-003.
+- Mandatory reporter obligations: abuse/neglect reports filed within 24 hours — 0 lapses — per CL-PR-006.
+
+SECTION 12: Documentation Ownership
+layout: list
+
+owned_records:
+- SLP Initial Evaluation: author and authenticated owner; includes communication/swallowing baseline, measurable goals, and plan; retained in patient record.
+- SLP Visit / Progress Notes: author and authenticated owner for each SLP-delivered visit; retained in patient record.
+- SLPA Co-Signature Records (if SLPA is employed): SLP is co-signatory per CA BPC and ASHA requirements; retained in patient record.
+- SLP Discharge Summary: author; documents functional communication and swallowing outcomes, goal attainment, and post-discharge recommendations; completed at episode end.
+- OASIS Assessments (when SLP is primary assessing clinician): author and authenticated owner; retained in patient EHR.
+- Dysphagia Evaluation Report: author; documents oral mechanism findings, swallowing assessment results, aspiration risk level, dietary modification recommendations, and physician notification; retained in patient record.
+- Own credential file entries: SLP license, ASHA CCC-SLP, BLS/CPR, OIG/SAM, TB screening, ASHA CEU records — maintained in personnel file.
+
+SECTION 13: Escalation Responsibilities
+layout: list
+
+escalation:
+- Acute aspiration event or respiratory distress during dysphagia evaluation or feeding session → Stop feeding immediately; call 911 if life-threatening; notify physician and DON within 1 hour; document all actions.
+- Patient identified at high aspiration risk with unsafe oral intake continued by family/caregiver against SLP recommendation → Notify physician and DON same visit; document clinical findings, recommendation, family response, and physician notification; activate patient education protocol.
+- Suspected patient abuse, neglect, or exploitation → Mandatory report to APS/law enforcement within 24 hours per CA Penal Code § 11166; notify DON same business day.
+- SLPA practicing outside SLP-authorized plan or refusing supervision → Notify DON immediately; do not co-sign unauthorized SLPA notes.
+- SLP license or ASHA CCC-SLP lapse (own) → Immediately cease patient care; notify DON same business day; do not return until reinstatement confirmed.
+- OASIS rejection or transmission failure (when SLP is assessing clinician) → Notify DON within 24 hours; correct and resubmit within 2 business days.
+- Patient refuses SLP services or declines recommended diet modification → Document refusal with date and content; notify DON and physician same business day; patient rights protocol per CL-PR-001 applies.
+
+SECTION 14: Required Forms
+layout: list
+
+forms:
+- SLP Initial Evaluation Form (agency EHR or agency-standard): completed at episode start; includes measurable functional goals.
+- SLP Visit / Progress Note (agency EHR format): completed at each visit within 24 hours.
+- SLP Discharge Summary (agency EHR or CL-FM series): completed at episode end.
+- CL-FM-002 — OASIS-E1 Assessment Form (completed when SLP is primary assessing clinician).
+- Dysphagia Evaluation Report (agency-standard): completed following any clinical swallowing evaluation; documents aspiration risk and dietary recommendations.
+- SLPA Co-Signature Form or EHR co-signature entry (if SLPA employed): completed for each SLPA session note within required timeframe.
+- HR-FM-031 — Job Description Acknowledgment Form (signed at hire and upon JD revision).
+
+SECTION 15: Onboarding & Competency Requirements
+layout: list
+
+This role is governed by the Role-Based Onboarding & Competency Journey.
+
+Required Training Path:
+- General Orientation (GAO Series)
+- Role-Specific LMS Track (SLP-000 Series)
+
+Competency Requirements:
+- Initial competency validation (HR-TD-003 Appendix A)
+- Supervised experience (if applicable)
+- Clearance required prior to independent duties
+
+Ongoing Compliance:
+- Annual training (HR-TD-001)
+- Annual competency evaluation
+- Monthly compliance screening (OIG/SAM)
+
+Refer to:
+Role-Based Onboarding & Competency Journey (Master Framework)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Document HR-JD-011 · Version 6.0 · Effective 2025-07-10 · Next Review 2027-07-10
+- Linked Policies: HR-TA-006, HR-TA-004, HR-TA-005
+- Regulatory Authority: 42 CFR § 484.115; § 484.55; CA BPC § 2530; ASHA Code of Ethics
+- Reports To: Director of Nursing / Clinical Manager (HR-JD-003)

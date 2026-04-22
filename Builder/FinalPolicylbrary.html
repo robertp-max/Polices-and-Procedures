@@ -3,7 +3,8 @@ import {
   Shield, Search, ChevronRight, X, CheckCircle,
   AlertTriangle, FileText, Building2, Users, Target,
   DollarSign, Monitor, BarChart3, Scale, Heart, Cpu, Briefcase, 
-  GitBranch, Landmark, ShieldCheck, Gavel, ChevronLeft, Printer, LayoutList, Lock, FileCheck, Layers
+  GitBranch, Landmark, ShieldCheck, Gavel, ChevronLeft, Printer, LayoutList, Lock, FileCheck, Layers,
+  Download
 } from 'lucide-react';
 
 // ══════════════════════════════════════════════════════════════
@@ -288,84 +289,161 @@ const TierBadge = ({tier, small}) => {
   );
 };
 
-// ── DETAIL VIEW COMPONENT ──
+// ── DETAIL VIEW COMPONENT — Light Mode ──
 const PolicyDetailView = ({ policy, onBack }) => {
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const navItems = [
+    { id: 'overview', label: 'Overview & Definitions' },
+    { id: 'policy', label: 'Policy Statements' },
+    { id: 'procedures', label: 'Procedures' },
+    { id: 'documentation', label: 'Documentation' },
+    { id: 'compliance', label: 'Compliance & Audit' },
+    { id: 'references', label: 'References & Admin' },
+    { id: 'appendices', label: 'Appendices (Forms)' },
+  ];
+
+  const statusColors = {
+    ACTIVE: { bg: '#E5FEFF', text: '#007970', dot: '#007970' },
+    DRAFT: { bg: '#FFF5E5', text: '#C74601', dot: '#C74601' },
+    UNDER_REVIEW: { bg: '#EEF2FF', text: '#4F46E5', dot: '#4F46E5' },
+  };
+  const sc = statusColors[policy.status] || statusColors.ACTIVE;
+
   return (
-    <div className="animate-fadeIn w-full flex flex-col h-full font-roboto text-white">
-      <div className="shrink-0 mb-8">
-        <div className="flex justify-between items-center mb-8">
-          <button onClick={onBack} className="text-[#00e59b] font-montserrat text-[11px] font-bold tracking-[0.2em] flex items-center gap-2 hover:opacity-80 uppercase transition-opacity">
-            <ChevronLeft size={16} /> POLICY TAXONOMY
+    <div className="animate-fadeIn absolute inset-0 z-50 bg-white flex flex-col font-roboto text-[#1F1C1B] overflow-hidden">
+
+      {/* ACTION BAR */}
+      <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-[#E5E4E3] z-20 flex-shrink-0">
+        <button onClick={onBack} className="flex items-center gap-2 text-[#007970] font-montserrat font-semibold text-[13px] uppercase tracking-wider hover:underline transition-all">
+          <ChevronLeft size={18} /> Return to Policy Library
+        </button>
+        <div className="flex items-center gap-4">
+          <button onClick={() => window.print()} className="flex items-center gap-2 text-[#1F1C1B] font-montserrat font-semibold text-[12px] uppercase tracking-wider hover:opacity-70 transition-opacity">
+            <Printer size={16} /> Print
           </button>
-          <button className="border border-white/20 hover:bg-white/5 px-5 py-2.5 rounded-full font-bold text-[10px] tracking-[0.2em] transition-colors flex items-center gap-2 text-white uppercase">
-            <Printer size={14} /> EXPORT
+          <button className="flex items-center gap-2 text-[#007970] font-montserrat font-semibold text-[12px] uppercase tracking-wider hover:opacity-70 transition-opacity">
+            <Download size={16} /> Download
           </button>
         </div>
+      </div>
 
-        <div className="flex gap-3 mb-6">
-          <span className="border border-white/20 bg-transparent px-4 py-1.5 rounded-full text-[10px] font-bold text-white tracking-widest uppercase">
-            {policy.policyId}
-          </span>
-          <span className="px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase"
-             style={{
-               backgroundColor: policy.status === 'ACTIVE' ? '#00e59b20' : policy.status === 'DRAFT' ? '#f9731620' : '#3b82f620',
-               color: policy.status === 'ACTIVE' ? '#00e59b' : policy.status === 'DRAFT' ? '#f97316' : '#3b82f6'
-             }}>
-             {policy.status.replace('_', ' ')}
-          </span>
-          <span className="border border-white/10 bg-white/5 px-4 py-1.5 rounded-full text-[10px] font-bold text-white/80 tracking-widest uppercase">
-            {policy.classificationTier}
-          </span>
-        </div>
-
-        <h1 className="font-montserrat text-4xl md:text-[44px] leading-tight font-light text-white mb-10 tracking-wide">
-          {policy.title}
-        </h1>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10 border-b border-white/10 pb-10">
-          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold block mb-1.5">Domain</span><span className="text-[13px] text-white/90 font-light">{policy.domain}</span></div>
-          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold block mb-1.5">Tier</span><span className="text-[13px] text-white/90 font-light">{policy.classificationTier}</span></div>
-          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold block mb-1.5">Approved By</span><span className="text-[13px] text-white/90 font-light">{policy.approvedBy}</span></div>
-          <div><span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-bold block mb-1.5">Version</span><span className="text-[13px] text-white/90 font-light">v{policy.version}</span></div>
-        </div>
-
-        <div className="flex overflow-x-auto no-scrollbar">
-          {['Overview & Definitions', 'Policy Statements', 'Procedures', 'Documentation', 'Compliance & Audit', 'References & Admin', 'Appendices (Forms)'].map((tab, idx) => (
-            <button key={idx} className={`pb-4 px-6 font-montserrat text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap transition-colors ${idx === 0 ? 'text-[#00e59b] border-b-2 border-[#00e59b]' : 'text-white/40 hover:text-white/80 border-b-2 border-transparent'}`}>
-              {tab}
+      {/* NAV TABS */}
+      <nav className="bg-white border-b border-[#E5E4E3] z-10 flex-shrink-0 overflow-x-auto">
+        <div className="flex items-center gap-0 px-6 min-w-max">
+          {navItems.map(item => (
+            <button key={item.id} onClick={() => setActiveTab(item.id)}
+              className={`px-5 py-4 font-montserrat font-semibold text-[12px] tracking-[0.08em] uppercase whitespace-nowrap border-b-[3px] transition-all duration-200 ${
+                activeTab === item.id
+                  ? 'text-[#C74601] border-[#C74601]'
+                  : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
+              }`}>
+              {item.label}
             </button>
           ))}
         </div>
-      </div>
+      </nav>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar pr-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mt-6">
-          <div className="border-l-[3px] border-[#00e59b] pl-6 h-max">
-            <h2 className="font-montserrat text-[15px] font-bold text-white flex items-center mb-5 tracking-widest uppercase">
-              <Target className="text-[#00e59b] mr-3" size={20} /> 2. Purpose
-            </h2>
-            <p className="text-white/70 font-roboto text-sm leading-relaxed">
-              {policy.purpose}
-            </p>
-          </div>
-          <div className="border-l-[3px] border-[#e85200] pl-6 h-max">
-            <h2 className="font-montserrat text-[15px] font-bold text-white flex items-center mb-5 tracking-widest uppercase">
-              <Search className="text-[#e85200] mr-3" size={20} /> 3. Scope
-            </h2>
-            <ul className="space-y-4">
-              {policy.scope.map((item, i) => (
-                <li key={i} className="flex items-start">
-                  <CheckCircle className="text-[#e85200] mr-3 mt-0.5 flex-shrink-0" size={16} />
-                  <span className="text-white/70 font-roboto text-sm">{item}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-6 p-4 bg-[#e85200]/10 border border-[#e85200]/20 text-[#e85200] rounded-lg text-xs font-medium leading-relaxed font-roboto">
-              This policy does not apply to day-to-day clinical or operational staff except to the extent that Governing Body decisions establish requirements, standards, or directives that govern their work.
+      {/* MAIN CONTENT */}
+      <main className="flex-1 overflow-y-auto px-8 py-10 bg-white light-scrollbar">
+        <div className="max-w-[1000px] mx-auto">
+
+          {/* POLICY HEADER */}
+          <div className="mb-12">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="font-montserrat font-bold text-[11px] tracking-[0.16em] uppercase px-3 py-1 rounded-[4px]"
+                style={{ background: sc.bg, color: sc.text }}>
+                <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle" style={{ background: sc.dot }}></span>
+                {policy.status.replace('_', ' ')}
+              </span>
+              <span className="font-montserrat font-semibold text-[11px] tracking-[0.14em] uppercase text-[#747470] border border-[#E5E4E3] px-3 py-1 rounded-[4px]">
+                {policy.classificationTier}
+              </span>
             </div>
+
+            <h1 className="font-montserrat font-semibold text-[28px] md:text-[32px] leading-tight text-[#1F1C1B] mb-1">
+              {policy.title}
+            </h1>
+            <p className="font-montserrat font-medium text-[11px] text-[#007970] tracking-[0.22em] uppercase mb-8">
+              Policy ID: {policy.policyId}
+            </p>
+
+            <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6">
+              {[
+                ['Domain', policy.domain],
+                ['Subdomain', policy.subdomain],
+                ['Version', `v${policy.version}`],
+                ['Effective Date', policy.effectiveDate],
+                ['Approved By', policy.approvedBy],
+                ['Policy Owner', policy.policyOwner],
+                ['Next Review', policy.nextReviewDate],
+                ['Review Cycle', 'Annual'],
+              ].map(([k, v]) => (
+                <div key={k} className="flex flex-col">
+                  <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">{k}</dt>
+                  <dd className="font-roboto text-[14px] text-[#1F1C1B]">{v}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
+
+          {/* TAB CONTENT */}
+          {activeTab === 'overview' && (
+            <div className="animate-fadeIn space-y-12">
+              <section>
+                <h2 className="font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase mb-6 flex items-center gap-4 text-[#1F1C1B]">
+                  <Shield className="shrink-0 text-[#007970]" size={20} />
+                  <span className="shrink-0">2. Purpose</span>
+                  <span className="flex-grow h-px bg-[#007970]"></span>
+                </h2>
+                <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px]">{policy.purpose}</p>
+              </section>
+
+              <section>
+                <h2 className="font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase mb-6 flex items-center gap-4 text-[#1F1C1B]">
+                  <Search className="shrink-0 text-[#007970]" size={20} />
+                  <span className="shrink-0">3. Scope</span>
+                  <span className="flex-grow h-px bg-[#007970]"></span>
+                </h2>
+                <ul className="space-y-4">
+                  {policy.scope.map((item, i) => (
+                    <li key={i} className="flex items-start">
+                      <CheckCircle className="text-[#007970] mr-3 mt-0.5 flex-shrink-0" size={18} />
+                      <span className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              {policy.linkedPolicies && policy.linkedPolicies.length > 0 && (
+                <section>
+                  <h2 className="font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase mb-4 flex items-center gap-4 text-[#1F1C1B]">
+                    <FileText className="shrink-0 text-[#007970]" size={20} />
+                    <span className="shrink-0">Linked Policies</span>
+                    <span className="flex-grow h-px bg-[#007970]"></span>
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {policy.linkedPolicies.map(lp => (
+                      <span key={lp} className="bg-[#E5FEFF] text-[#007970] font-roboto font-medium text-xs px-3 py-1.5 rounded-[4px]">{lp}</span>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
+
+          {activeTab !== 'overview' && (
+            <div className="animate-fadeIn">
+              <div className="border-l-[3px] border-[#E5E4E3] pl-6 py-4">
+                <p className="text-[#747470] font-roboto text-[14px] italic">
+                  Full content for this section is available in the detailed policy document for {policy.policyId}.
+                </p>
+              </div>
+            </div>
+          )}
+
         </div>
-      </div>
+      </main>
     </div>
   );
 };
@@ -498,6 +576,12 @@ export default function FrameworkCommandShell() {
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        .light-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .light-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .light-scrollbar::-webkit-scrollbar-thumb { background: #D9D6D5; border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+        .light-scrollbar::-webkit-scrollbar-thumb:hover { background: #9CA3AF; border: 2px solid transparent; background-clip: padding-box; }
+        @keyframes fadeInLight { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn-light { animation: fadeInLight 0.25s ease-out forwards; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         

@@ -1,0 +1,64 @@
+FORM ID: FN-FM-026
+TITLE: Bad Debt Review & Write-Off Form
+TYPE: Form
+DOMAIN: FN
+USAGE: Required
+FREQUENCY: Monthly
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- FN-BC-001
+
+PURPOSE:
+Documents the review, approval, and write-off of uncollectible accounts, including evidence of reasonable collection effort for Medicare bad-debt claim (CMS Pub. 15 Ch. 3), charity determination, and authorization.
+
+INSTRUCTIONS:
+AR Supervisor reviews monthly; CFO approves write-offs > $X (per FN-FP-005); write-off bundles ≥ $Y escalated to Finance Committee (FN-FM-014) and Governing Body (GV-FM-005). Retain 10 years.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Account / Patient # (type=text, required=true, col=2)
+- Payer (type=text, col=2)
+- Write-Off Amount (type=text, required=true, col=2)
+- Review Date (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Collection History
+layout: grid
+
+fields:
+- Date of First Bill (type=date, col=2)
+- Number of Statements Sent (type=text, col=2)
+- Collection Agency Engaged? (Y/N) (type=select, col=2, options=[Yes | No])
+- Payment Plan Offered? (Y/N) (type=select, col=2, options=[Yes | No])
+- Patient Financial Hardship Considered? (Y/N) (type=select, col=2, options=[Yes | No])
+- Charity Care Referral (FN-FM-027)? (Y/N) (type=select, col=2, options=[Yes | No])
+
+SECTION 3: Section 3 — Approval
+layout: grid
+
+fields:
+- Write-Off Category (Medicare bad debt / Medicaid crossover / Contractual / Charity / Small balance) (type=select, required=true, col=2, options=[Medicare Bad Debt | Medicaid Crossover | Contractual | Charity | Small Balance | Other])
+- Approval Level Required (Supervisor / CFO / Finance Committee / Board) (type=select, required=true, col=2, options=[Supervisor | CFO | Finance Committee | Board])
+- Finance Committee Reference (FN-FM-014) (type=text, col=2)
+- Governing Body Reference (GV-FM-005) (type=text, col=2)
+
+SECTION 4: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- AR Supervisor — Printed Name (type=text, col=2)
+- AR Supervisor — Signature (type=signature, col=1)
+- AR Supervisor — Date (type=date, col=1)
+- CFO — Printed Name (type=text, col=2)
+- CFO — Signature (type=signature, col=1)
+- CFO — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form FN-FM-026 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: FN-BC-001

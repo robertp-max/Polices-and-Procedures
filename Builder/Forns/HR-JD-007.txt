@@ -1,0 +1,221 @@
+DOCUMENT ID: HR-JD-007
+TITLE: Home Health Aide (HHA)
+TYPE: Job Description
+DOMAIN: HR
+SUBDOMAIN: JD
+USAGE: Required
+FREQUENCY: Biennial Review
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2027-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: clinical, paraprofessional, aide_services, regulatory_critical
+
+LINKED POLICIES:
+- HR-TA-006 (Job Description & Role Definition)
+- HR-TA-004 (Licensure & Certification Verification)
+- HR-TA-005 (Employee Orientation & Onboarding)
+
+POSITION SUMMARY:
+The Home Health Aide (HHA) is a paraprofessional who provides personal care, homemaker, and basic health maintenance services to home health patients under the direction and supervision of a Registered Nurse (RN), as authorized by the physician-ordered plan of care. The HHA role is one of the most heavily regulated positions in Medicare home health, governed by 42 CFR § 484.80 (HHA training and competency), § 484.75 (aide services and supervision), and CA Health & Safety Code § 1726.5. The HHA does not provide skilled nursing care and must operate strictly within the HHA-authorized scope as defined in the plan of care and per California law.
+
+---
+
+SECTION 1: Core Responsibilities
+layout: list
+
+responsibilities:
+- Provide personal care services as authorized in the physician-ordered plan of care: bathing, dressing, grooming, oral hygiene, toileting, and ambulation assistance.
+- Provide homemaker services as ordered: light housekeeping, meal preparation, and laundry directly related to the patient's care needs.
+- Perform basic health-related tasks as specifically trained, demonstrated competent, and authorized in the plan of care: simple range-of-motion exercises, vital signs (if trained and designated), medication reminders (not administration).
+- Observe and report changes in patient condition, behavior, or safety concerns promptly to the supervising RN.
+- Provide compassionate, culturally sensitive care that respects patient dignity, rights, and preferences.
+- Follow Standard Precautions and infection prevention protocols at every visit.
+- Accurately document all services provided on the HHA Activity Record within agency-required timeframes.
+- Participate in all required HHA training, in-service education, and competency evaluations per 42 CFR § 484.75.
+- Cooperate with RN supervisory visits; demonstrate aide skill competency and care adherence.
+- Report any safety concerns, abuse/neglect suspicions, or patient rights concerns to the supervising RN immediately.
+- Maintain compliance with all HIPAA requirements; protect patient privacy in all communications and documentation.
+- Maintain required certifications, health screenings, and OIG/SAM screening currency.
+
+SECTION 2: Minimum Qualifications
+layout: list
+
+qualifications:
+- Required: Successful completion of a state-approved Home Health Aide training program meeting minimum 75 hours (or equivalent state requirements), with a minimum 16 hours supervised practical/clinical training (42 CFR § 484.75(b)).
+- Required: Demonstration of competency in all 12 required HHA competency areas per 42 CFR § 484.75(d) prior to independent patient care.
+- Required: Active California HHA certification (CA CDPH HHA Registry) preferred; CNA license accepted as meeting HHA qualification requirements.
+- Required: No current exclusion from federal or state healthcare programs (OIG/SAM).
+- Required: TB screening current per agency policy and California requirements.
+- Required: Current CPR/First Aid certification.
+- Required: Valid California driver's license and reliable, insured transportation (if providing transport or if required by agency operations).
+- Required: Completion of agency new-hire orientation and skills competency validation prior to unsupervised patient visits.
+- Required: Annual competency evaluation of each required HHA service task (42 CFR § 484.75(d)).
+
+SECTION 3: Required Competencies
+layout: list
+
+competencies:
+- Personal care skills: bathing (full bed bath, tub, shower), dressing, grooming, oral hygiene, skin care, and toileting.
+- Ambulation and transfer assistance: gait belt technique, fall prevention, and mechanical lift operation (if required).
+- Basic health maintenance tasks as authorized in plan of care (range-of-motion, vital signs per training).
+- Meal preparation: adherence to dietary restrictions and therapeutic diets as prescribed.
+- Observation and reporting: identifying and reporting changes in patient condition, skin integrity, behavior, and safety.
+- Documentation: accurate, timely completion of HHA activity records and EVV compliance.
+- Infection prevention: hand hygiene, Standard Precautions, and PPE in the home setting.
+- Professionalism and patient rights: maintaining dignity, respecting boundaries, and upholding patient rights.
+- Basic emergency response: recognition of emergency symptoms and activation of 911; contacting RN supervisor.
+- Cultural competency: provision of person-centered care across diverse populations.
+
+SECTION 4: Regulatory Responsibilities
+layout: list
+
+regulations:
+- 42 CFR § 484.75 — HHA qualification, training, competency, and in-service education requirements.
+- 42 CFR § 484.80 — HHA services provision and RN supervisory visit requirements.
+- 42 CFR § 484.115 — Meets HHA personnel qualifications for Medicare home health.
+- 42 CFR § 484.70 — Infection prevention practices at point of care.
+- CA Health & Safety Code § 1726.5 — California HHA certification and qualification requirements.
+- Electronic Visit Verification (EVV): 21st Century Cures Act — compliance with EVV system requirements.
+- HIPAA 45 CFR Parts 160 & 164 — PHI privacy and security.
+- Mandatory Reporter (CA Penal Code § 11166 / CA W&I Code § 15630) — Elder/dependent adult and child abuse reporting.
+- 42 USC § 1320a-7 — OIG/SAM exclusion-free status.
+
+SECTION 5: Documentation Responsibilities
+layout: list
+
+documentation:
+- Complete HHA Activity Record / Visit Note documenting services rendered per plan of care at each visit, within agency-required timeframe.
+- Use EVV system per agency protocol for visit verification (start/end time, GPS, services rendered).
+- Document and report any patient condition changes, incidents, or safety concerns to supervising RN.
+- Maintain current certification (where required), CPR/First Aid, OIG/SAM screening, TB screening, and competency evaluation records in personnel file.
+- Sign annual in-service training attendance and competency evaluation records.
+
+SECTION 6: Supervision Responsibilities
+layout: list
+
+supervision:
+- Does not supervise other staff.
+- Supervised by: Registered Nurse (HR-JD-005) — supervisory visit every 14 days when patient receiving skilled nursing; biannually (every 6 months) for aide-only cases (42 CFR § 484.80).
+- Reports to: Director of Nursing / Clinical Manager (HR-JD-003); direct clinical oversight by supervising RN (HR-JD-005).
+
+SECTION 7: Physical Requirements
+layout: list
+
+physical:
+- Heavy work: standing, walking, bending, lifting, transferring patients (up to 50 lbs with mechanical assist); sustained physical activity throughout shift.
+- Manual dexterity for personal care procedures.
+- Sufficient physical strength and endurance to provide full personal care safely.
+- Valid California driver's license and reliable, insured vehicle if transportation is part of the role.
+- Ability to navigate stairs, tight spaces, and non-clinical residential environments.
+
+SECTION 8: Working Conditions
+layout: list
+
+conditions:
+- Field-based work: patient home environments throughout the service area.
+- Variable hours; may include evenings, weekends, and holidays per patient needs.
+- Exposure to infectious disease risk managed per agency Infection Prevention policy and Standard Precautions.
+- Potential exposure to environmental hazards in patient homes (pets, smoke, allergens, hoarding conditions).
+- Mileage/transportation reimbursement per agency policy (if applicable).
+
+SECTION 9: Performance Expectations
+layout: list
+
+expectations:
+- Annual competency evaluation completed for all required HHA service tasks (42 CFR § 484.75(d)) — zero overdue.
+- EVV compliance: 100% of visits verified per EVV protocol.
+- HHA Activity Records completed within agency-required timeframe: ≥ 95% compliance.
+- Cooperates with all RN supervisory visits — zero refusals or obstructions.
+- Annual in-service training (≥ 12 hours per year per 42 CFR § 484.75(e)) completed on schedule.
+- Zero substantiated patient rights violations, abuse/neglect findings, or scope-of-practice violations.
+- Current certifications, health screenings, and OIG/SAM screening — zero lapses.
+
+SECTION 10: Policy Cross-References
+layout: list
+
+policies:
+- HR-TA-006 — Job Description & Role Definition (controls this document)
+- HR-TA-004 — Licensure & Certification Verification (HHA certification/CNA license verification)
+- HR-TA-005 — Employee Orientation & Onboarding (pre-service competency validation; 75-hour training requirement)
+- CL-SD-006 — Home Health Aide Services & Supervision (scope of services; supervisory visit requirements)
+- CL-SD-007 — Home Health Aide Competency Evaluation (annual competency evaluation requirements)
+- CL-CD-001 — Clinical Documentation Standards (HHA Activity Record documentation standards)
+- CL-SD-016 — Infection Prevention & Control (Standard Precautions at every visit)
+- CL-PR-001 — Patient Rights & Responsibilities (patient dignity, rights, and privacy)
+- CL-PR-006 — Abuse, Neglect & Exploitation Reporting (mandatory reporter obligations)
+
+SECTION 11: Measurable Performance Standards
+layout: list
+
+standards:
+- EVV compliance: 100% of visits verified via EVV system (start/end time, GPS check-in, services recorded) — per 21st Century Cures Act EVV requirement; 0 unverified visits accepted.
+- HHA Activity Record completion: ≥ 95% completed within 24 hours of visit — per CL-CD-001; no record > 2 business days past service date.
+- Annual competency evaluation: 100% of required competency areas evaluated annually by hire anniversary — 0 overdue — per 42 CFR § 484.75(d).
+- Annual in-service training: ≥ 12 hours completed per calendar year — 0 HHAs active in patient care with fewer than 12 in-service hours — per 42 CFR § 484.75(e).
+- RN supervisory visit cooperation: 100% cooperation with scheduled supervisory visits — 0 refusals or deliberate avoidance.
+- Scope-of-practice compliance: 0 substantiated violations (performing skilled or non-authorized tasks); verified through supervisory visit and audit findings.
+- CPR/First Aid certification: current without lapse — 0 expired certifications in active service — per HR-TA-004.
+- OIG/SAM screening (self): monthly; 0 lapses — per HR-TA-003.
+- Mandatory reporter obligations: suspected abuse/neglect reported to RN within the same visit; RN-level report filed within 24 hours — per CL-PR-006.
+
+SECTION 12: Documentation Ownership
+layout: list
+
+owned_records:
+- HHA Activity Record / Visit Note: author and authenticated owner for each visit; documents services rendered per plan of care, observations, patient response; retained in patient record.
+- EVV Visit Record: author (check-in/check-out entry); retained in EVV system and linked to patient visit record.
+- Condition Change Report: documents observation, time reported to RN, and instructions received; retained in patient record or EHR.
+- Own credential file entries: HHA certification/CNA license, CPR/First Aid, OIG/SAM, TB screening, competency evaluation sign-offs — maintained in personnel file.
+- In-service training attendance records: signed by HHA at each in-service; retained in personnel training file.
+- Annual competency evaluation signatures: signed by HHA confirming competency demonstration; retained in personnel file.
+
+SECTION 13: Escalation Responsibilities
+layout: list
+
+escalation:
+- Patient emergency (unresponsiveness, suspected fall with injury, chest pain, difficulty breathing) → Call 911 immediately if life-threatening; call supervising RN within 5 minutes; remain with patient until emergency services or RN instruction to leave; document all actions.
+- Suspected patient abuse, neglect, exploitation, or unsafe home situation → Report to supervising RN immediately (same visit); do not confront the suspected abuser; do not remove patient from home without RN instruction.
+- Patient requests a service outside the plan of care → Do not perform; explain limitations; notify RN at conclusion of visit or sooner if urgent.
+- Observation of skin breakdown, wound, significant bruising, or acute change in patient appearance → Document observations; report to supervising RN before leaving patient home or within 1 hour.
+- Any task that the HHA has not been trained for or is uncomfortable performing → Do not perform; notify supervising RN immediately; never improvise outside training.
+- HHA certification or CPR/First Aid lapses → Immediately notify DON/HR; cease patient care until reinstatement is confirmed.
+
+SECTION 14: Required Forms
+layout: list
+
+forms:
+- HHA Activity Record / Visit Note (agency-approved form or EHR HHA entry): completed at each visit.
+- EVV System Entry (agency EVV platform): check-in and check-out at each visit — mandatory per 21st Century Cures Act.
+- Annual HHA Competency Evaluation Form (HR-FM series; per 42 CFR § 484.75(d)): signed by HHA annually.
+- HHA In-Service Training Attendance Record (HR-FM series): signed by HHA at each in-service event.
+- RN Supervisory Visit Cooperation Record (RN-completed form): HHA cooperates; reviewed at supervisory visit.
+- HR-FM-031 — Job Description Acknowledgment Form (signed at hire and upon JD revision).
+
+SECTION 15: Onboarding & Competency Requirements
+layout: list
+
+This role is governed by the Role-Based Onboarding & Competency Journey.
+
+Required Training Path:
+- General Orientation (GAO Series)
+- Role-Specific LMS Track (HHA-000 Series)
+
+Competency Requirements:
+- Initial competency validation (HR-TD-003 Appendix A)
+- Supervised experience (if applicable)
+- Clearance required prior to independent duties
+
+Ongoing Compliance:
+- Annual training (HR-TD-001)
+- Annual competency evaluation
+- Monthly compliance screening (OIG/SAM)
+
+Refer to:
+Role-Based Onboarding & Competency Journey (Master Framework)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Document HR-JD-007 · Version 6.0 · Effective 2025-07-10 · Next Review 2027-07-10
+- Linked Policies: HR-TA-006, HR-TA-004, HR-TA-005
+- Regulatory Authority: 42 CFR § 484.75; § 484.80; § 484.115; CA H&S Code § 1726.5
+- Reports To: Director of Nursing / Clinical Manager (HR-JD-003); supervised by RN (HR-JD-005)

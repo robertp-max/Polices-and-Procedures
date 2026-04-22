@@ -1,0 +1,67 @@
+FORM ID: IT-FM-047
+TITLE: Data Subject Request Intake (HIPAA / CMIA / CCPA / CPRA)
+TYPE: Form
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- CO-HP-001
+- CO-HP-002
+
+PURPOSE:
+Intake of individual-rights requests (access, amendment, accounting of disclosures, restriction, confidential communications, right-to-know, deletion, opt-out, correction) under HIPAA, CMIA, CCPA/CPRA, and other applicable privacy laws.
+
+INSTRUCTIONS:
+Privacy Officer receives; identity verified within 3 business days; routed to applicable legal framework; response per statutory deadlines.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Request ID (type=text, required=true, col=2)
+- Requestor Name (type=text, required=true, col=2)
+- Relationship (self / personal representative / legal guardian) (type=select, col=2, options=[Self | Personal Rep | Legal Guardian | Other])
+- Contact Info (type=text, col=2)
+- Date Received (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Request Detail
+layout: grid
+
+fields:
+- Request Type (access / amendment / accounting / restriction / confidential comms / right-to-know / deletion / opt-out / correction / other) (type=select, required=true, col=2, options=[Access | Amendment | Accounting of Disclosures | Restriction | Confidential Communications | Right-to-Know | Deletion | Opt-Out | Correction | Other])
+- Applicable Framework (HIPAA / CMIA / CCPA/CPRA / Other) (type=select, col=2, options=[HIPAA | CMIA | CCPA/CPRA | Other])
+- Data Scope (type=textarea, col=4)
+- Format Requested (paper / electronic / portable) (type=select, col=2, options=[Paper | Electronic | Portable])
+- Identity Verification Method (type=textarea, col=4)
+- Identity Verified? (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+- Statutory Response Due Date (type=date, col=2)
+
+SECTION 3: Section 3 — Routing & Fulfillment
+layout: grid
+
+fields:
+- Routed To (type=text, col=2)
+- Extract Request Ref (IT-FM-048) (type=text, col=2)
+- Response Issued (type=date, col=2)
+- Fulfillment Method (type=text, col=2)
+- Fees Charged (if applicable) (type=text, col=2)
+- Denial / Partial (rationale) (type=textarea, col=4)
+
+SECTION 4: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Privacy Officer — Printed Name (type=text, col=2)
+- Privacy Officer — Signature (type=signature, col=1)
+- Privacy Officer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-047 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- CONFIDENTIAL
+- Linked Policies: CO-HP-001, CO-HP-002

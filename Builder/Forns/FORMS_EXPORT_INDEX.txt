@@ -1,5 +1,6 @@
 FORMS EXPORT INDEX
-total_forms: 281
+total_forms: 361
+last_updated: 2026-04-21 (Full System Audit Expansion — added 68 forms across FN, HR, IT, RM, EN domains to resolve all workflow FORM REQUIRED flags)
 
 EN-FM-001 | Universal Policy Acknowledgment Form | EN-FM-001.txt
 EN-FM-002 | Master Policy Index / Taxonomy Register | EN-FM-002.txt
@@ -30,6 +31,14 @@ EN-FM-026 | Role-Based Applicability Matrix | EN-FM-026.txt
 EN-FM-027 | Annual Policy Acknowledgment Tracking Report | EN-FM-027.txt
 EN-FM-028 | Regulatory Mapping Accuracy Audit Worksheet | EN-FM-028.txt
 EN-FM-029 | Enterprise Taxonomy Version Release Notes | EN-FM-029.txt
+EN-FM-030 | Legal Hold Notice | EN-FM-030.txt
+EN-FM-031 | Records Destruction Authorization | EN-FM-031.txt
+EN-FM-032 | Enterprise Mandatory Events Calendar | EN-FM-032.txt
+EN-FM-033 | Mandatory Events Completion Report | EN-FM-033.txt
+EN-FM-034 | Enterprise KPI Dashboard | EN-FM-034.txt
+EN-FM-035 | Quarterly Management Review Minutes | EN-FM-035.txt
+EN-FM-036 | Annual Department Compliance Attestation | EN-FM-036.txt
+EN-FM-037 | Enterprise Management Certification (Administrator + CFO) | EN-FM-037.txt
 GV-FM-001 | Agency Closure / Change of Ownership Checklist | GV-FM-001.txt
 GV-FM-002 | Agency Credential & Licensure Register | GV-FM-002.txt
 GV-FM-003 | Official Agency Organizational Chart | GV-FM-003.txt
@@ -94,6 +103,42 @@ HR-FM-036 | Post-Incident Psychological Support Referral | HR-FM-036.txt
 HR-FM-037 | Confidentiality & Non-Disclosure Agreement | HR-FM-037.txt
 HR-FM-038 | Competency Remediation Plan | HR-FM-038.txt
 HR-FM-039 | Staff Recognition & Performance Excellence Log | HR-FM-039.txt
+HR-FM-040 | Leave of Absence Request (FMLA / CFRA / PDL / ADA) | HR-FM-040.txt
+HR-FM-041 | Return-to-Work Clearance | HR-FM-041.txt
+HR-FM-042 | Reasonable Accommodation Request (ADA / FEHA) | HR-FM-042.txt
+HR-FM-043 | ADA / FEHA Interactive Process Log | HR-FM-043.txt
+HR-FM-044 | Fitness-for-Duty / Functional Capacity Review | HR-FM-044.txt
+HR-FM-045 | Accommodation Determination | HR-FM-045.txt
+HR-FM-046 | HR Complaint Intake Form (Harassment / Discrimination / Retaliation) | HR-FM-046.txt
+HR-FM-047 | Interim Measures Notice | HR-FM-047.txt
+HR-FM-048 | HR Investigation Plan | HR-FM-048.txt
+HR-FM-049 | Witness Interview Notes Template | HR-FM-049.txt
+HR-FM-050 | HR Investigation Report | HR-FM-050.txt
+HR-FM-051 | Investigation Closure Letter (to Complainant & Respondent) | HR-FM-051.txt
+HR-FM-052 | Employee WC Claim Intake (DWC-1 Support) | HR-FM-052.txt
+HR-FM-053 | Employer's Report of Occupational Injury (Form 5020 / State) | HR-FM-053.txt
+HR-FM-054 | OSHA 300 / 300A Internal Tracker | HR-FM-054.txt
+HR-FM-055 | Separation Intake | HR-FM-055.txt
+HR-FM-056 | Asset Return Checklist (Separation) | HR-FM-056.txt
+HR-FM-057 | Benefits Exit Packet (COBRA / HIPP / Retirement) | HR-FM-057.txt
+HR-FM-058 | Exit Interview | HR-FM-058.txt
+HR-FM-059 | Worker Classification Determination (Employee vs 1099) | HR-FM-059.txt
+HR-FM-060 | Reclassification Action | HR-FM-060.txt
+HR-FM-061 | Meal Period Attestation (CA Non-Exempt) | HR-FM-061.txt
+HR-FM-062 | Overtime Authorization | HR-FM-062.txt
+HR-FM-063 | Wage Complaint Intake | HR-FM-063.txt
+HR-JD-000 | Job Description — Governing Body Structure & Responsibilities | HR-JD-000.txt
+HR-JD-001 | Job Description — Administrator | HR-JD-001.txt
+HR-JD-002 | Job Description — Administrator Designee | HR-JD-002.txt
+HR-JD-003 | Job Description — Director of Nursing / Clinical Manager | HR-JD-003.txt
+HR-JD-004 | Job Description — Clinical Designee | HR-JD-004.txt
+HR-JD-005 | Job Description — Registered Nurse (RN) | HR-JD-005.txt
+HR-JD-006 | Job Description — Licensed Vocational Nurse (LVN) | HR-JD-006.txt
+HR-JD-007 | Job Description — Home Health Aide (HHA) | HR-JD-007.txt
+HR-JD-008 | Job Description — Medical Social Worker (MSW) | HR-JD-008.txt
+HR-JD-009 | Job Description — Physical Therapist (PT) | HR-JD-009.txt
+HR-JD-010 | Job Description — Occupational Therapist (OT) | HR-JD-010.txt
+HR-JD-011 | Job Description — Speech-Language Pathologist (SLP) | HR-JD-011.txt
 CL-FM-001 | Start of Care (SOC) Comprehensive Assessment | CL-FM-001.txt
 CL-FM-002 | OASIS-E1 Assessment Form | CL-FM-002.txt
 CL-FM-003 | Recertification / ROC Assessment | CL-FM-003.txt
@@ -216,6 +261,21 @@ FN-FM-010 | PDGM LUPA Mitigation Tracker | FN-FM-010.txt
 FN-FM-011 | Revenue Cycle KPI Dashboard | FN-FM-011.txt
 FN-FM-012 | Supply & Equipment Purchase Request Log | FN-FM-012.txt
 FN-FM-013 | Charge Capture Audit & Fee Schedule Review | FN-FM-013.txt
+FN-FM-014 | Finance Committee Meeting Minutes | FN-FM-014.txt
+FN-FM-015 | Audit Committee Meeting Minutes | FN-FM-015.txt
+FN-FM-016 | ADR (Additional Documentation Request) Response Tracker | FN-FM-016.txt
+FN-FM-017 | ADR Review Checklist (Clinical Documentation QA) | FN-FM-017.txt
+FN-FM-018 | Quarterly Credit Balance Report (CMS-838) | FN-FM-018.txt
+FN-FM-019 | Refund Transmittal | FN-FM-019.txt
+FN-FM-020 | Overpayment Identification Worksheet (60-Day Rule) | FN-FM-020.txt
+FN-FM-021 | Statistical Extrapolation Worksheet | FN-FM-021.txt
+FN-FM-022 | Overpayment Quantification Summary | FN-FM-022.txt
+FN-FM-023 | Self-Disclosure Decision Memo | FN-FM-023.txt
+FN-FM-024 | Finance Corrective Action Plan (Post-Audit / Post-Overpayment) | FN-FM-024.txt
+FN-FM-025 | AR Aging Report | FN-FM-025.txt
+FN-FM-026 | Bad Debt Review & Write-Off Form | FN-FM-026.txt
+FN-FM-027 | Financial Assistance / Charity Care Application | FN-FM-027.txt
+FN-FM-028 | Charity Determination & Notification | FN-FM-028.txt
 IT-FM-001 | User Access Request & Authorization Form | IT-FM-001.txt
 IT-FM-002 | System Access Revocation Checklist | IT-FM-002.txt
 IT-FM-003 | IT Hardware Asset & Disposal Log | IT-FM-003.txt
@@ -246,6 +306,25 @@ IT-FM-027 | Security Awareness Training Completion Roster | IT-FM-027.txt
 IT-FM-028 | IT Vendor Due Diligence Checklist | IT-FM-028.txt
 IT-FM-029 | Penetration Testing & Vulnerability Report | IT-FM-029.txt
 IT-FM-030 | Cloud Data Sovereignty & Compliance Declaration | IT-FM-030.txt
+IT-FM-031 | IT / Security Committee Meeting Minutes | IT-FM-031.txt
+IT-FM-032 | Post-Incident Corrective Action Plan (IT/Security) | IT-FM-032.txt
+IT-FM-033 | Mobile Access Request & BYOD Agreement | IT-FM-033.txt
+IT-FM-034 | Removable Media Exception & Tracking | IT-FM-034.txt
+IT-FM-035 | Vulnerability Scan Report | IT-FM-035.txt
+IT-FM-036 | Device Sanitization & Patch Exception Record (NIST 800-88) | IT-FM-036.txt
+IT-FM-037 | Change Request Form | IT-FM-037.txt
+IT-FM-038 | Change Advisory Board (CAB) Meeting Minutes | IT-FM-038.txt
+IT-FM-039 | Post-Implementation Review (Change) | IT-FM-039.txt
+IT-FM-040 | Vendor Security Assessment Questionnaire | IT-FM-040.txt
+IT-FM-041 | Vendor Attestation Review (SOC 2 / HITRUST / ISO / Pen Test) | IT-FM-041.txt
+IT-FM-042 | Email Security Configuration Register (Anti-Phishing / DMARC / DLP / Encryption) | IT-FM-042.txt
+IT-FM-043 | Phishing Simulation Report | IT-FM-043.txt
+IT-FM-044 | Paper PHI Shredding Log | IT-FM-044.txt
+IT-FM-045 | Badge Assignment & Facility Access Log | IT-FM-045.txt
+IT-FM-046 | Visitor Log | IT-FM-046.txt
+IT-FM-047 | Data Subject Request Intake (HIPAA / CMIA / CCPA / CPRA) | IT-FM-047.txt
+IT-FM-048 | Data Extract Log | IT-FM-048.txt
+IT-FM-049 | CCPA / CPRA Response Letter | IT-FM-049.txt
 OP-FM-001 | Branch Registration Tracker | OP-FM-001.txt
 OP-FM-002 | Quarterly Facility Inspection Report | OP-FM-002.txt
 OP-FM-003 | Vendor Request Form | OP-FM-003.txt
@@ -282,3 +361,5 @@ RM-FM-013 | Cal/OSHA IIPP Hazard Identification Checklist | RM-FM-013.txt
 RM-FM-014 | Cal/OSHA Hazard Correction Record | RM-FM-014.txt
 RM-FM-015 | Litigation & Claims Register | RM-FM-015.txt
 RM-FM-016 | Annual Risk Reassessment Report | RM-FM-016.txt
+RM-FM-017 | Risk Committee Meeting Minutes | RM-FM-017.txt
+RM-FM-018 | Safety Committee Meeting Minutes (IIPP / SB 553) | RM-FM-018.txt

@@ -43,25 +43,18 @@ export function EventChip({ event, onClick, active, dense = false }: EventChipPr
     <button
       type="button"
       onClick={() => onClick?.(event)}
-      className={`group relative w-full text-left rounded-md overflow-hidden transition-all duration-200 ${
+      className={`group relative w-full text-left rounded-md overflow-hidden transition-colors duration-200 ${
         dense ? 'px-1.5 py-1' : 'px-2 py-1.5'
       }`}
       style={{
-        background: active
-          ? `linear-gradient(180deg, ${dom.color}26 0%, ${dom.color}10 100%)`
-          : `linear-gradient(180deg, ${dom.soft} 0%, ${dom.color}0A 100%)`,
+        background: active ? `${dom.color}1A` : dom.soft,
         border: `1px solid ${active ? dom.color : dom.border}`,
-        boxShadow: active
-          ? `0 6px 20px -8px ${dom.color}88, inset 0 1px 0 ${dom.color}33`
-          : '0 2px 8px -4px rgba(0,0,0,0.35)',
       }}
       onMouseEnter={e => {
         e.currentTarget.style.borderColor = dom.color;
-        e.currentTarget.style.transform = 'translateY(-1px)';
       }}
       onMouseLeave={e => {
         e.currentTarget.style.borderColor = active ? dom.color : dom.border;
-        e.currentTarget.style.transform = 'translateY(0)';
       }}
     >
       {/* Domain accent bar */}

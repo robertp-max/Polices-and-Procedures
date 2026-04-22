@@ -1,0 +1,56 @@
+FORM ID: IT-FM-035
+TITLE: Vulnerability Scan Report
+TYPE: Report
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Weekly
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: landscape
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- IT-SP-002
+
+PURPOSE:
+Periodic vulnerability scan report (external weekly, internal monthly) summarizing findings by severity (Critical / High / Medium / Low), affected assets, CVE references, and remediation SLAs aligned with IT-FM-029 Vulnerability Management & Patch Compliance Log.
+
+INSTRUCTIONS:
+Security Officer (or designee) produces; reviewed at IT/Security Committee (IT-FM-031); HIGH/CRITICAL escalated per SLA.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Scan ID (type=text, required=true, col=2)
+- Scan Tool / Vendor (type=text, col=2)
+- Scan Scope (external / internal / authenticated / targeted) (type=select, col=2, options=[External | Internal | Authenticated | Targeted])
+- Scan Date (type=date, required=true, col=2)
+- Report Owner (type=text, col=2)
+
+SECTION 2: Section 2 — Findings Summary
+layout: grid
+
+fields:
+- # Critical (type=text, col=2)
+- # High (type=text, col=2)
+- # Medium (type=text, col=2)
+- # Low (type=text, col=2)
+- New vs Recurring (type=textarea, col=4)
+- Top Affected Assets (type=textarea, col=4)
+- CVE Highlights (type=textarea, col=4)
+- Remediation SLAs Applied (type=textarea, col=4)
+- Exceptions Requested (IT-FM-036 Patch Exception) (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Security Officer — Printed Name (type=text, col=2)
+- Security Officer — Signature (type=signature, col=1)
+- Security Officer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-035 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: IT-SP-002

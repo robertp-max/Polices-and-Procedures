@@ -1,0 +1,53 @@
+FORM ID: IT-FM-046
+TITLE: Visitor Log
+TYPE: Log
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Continuous
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: landscape
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- IT-SP-001
+- CO-HP-004
+
+PURPOSE:
+Continuous log of visitors, contractors, surveyors, and vendors on-site. Required for HIPAA § 164.310 physical safeguards and survey preparedness. Captures sign-in, escort, purpose, and sign-out.
+
+INSTRUCTIONS:
+Reception maintains in paper or electronic log. Each entry escorted where PHI areas are involved. Retain 6 years.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Site / Location (type=text, required=true, col=2)
+- Log Period (type=text, required=true, col=2)
+
+SECTION 2: Section 2 — Entries
+layout: grid
+
+fields:
+- Date (type=date, col=2)
+- Arrival Time (type=text, col=2)
+- Visitor Name (type=text, col=2)
+- Company / Affiliation (type=text, col=2)
+- Purpose of Visit (type=textarea, col=4)
+- Host / Escort (type=text, col=2)
+- Badge # Issued (type=text, col=2)
+- Departure Time (type=text, col=2)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Reception / Custodian — Printed Name (type=text, col=2)
+- Custodian — Signature (type=signature, col=1)
+- Custodian — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-046 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: IT-SP-001, CO-HP-004

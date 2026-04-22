@@ -1,0 +1,216 @@
+DOCUMENT ID: HR-JD-000
+TITLE: Governing Body — Structure & Responsibilities
+TYPE: Job Description
+DOMAIN: HR
+SUBDOMAIN: JD
+USAGE: Required
+FREQUENCY: Biennial Review
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2027-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: governance, leadership, regulatory_critical
+
+LINKED POLICIES:
+- HR-TA-006 (Job Description & Role Definition)
+- GV-GB-001 (Governing Body Authority & Responsibilities)
+- GV-GB-002 (Board Meeting & Minutes Requirements)
+- GV-GB-003 (Conflict of Interest Disclosure)
+
+POSITION SUMMARY:
+The Governing Body constitutes the legal authority responsible for the overall operation and management of Care Indeed Home Health Care, Inc., as required under 42 CFR § 484.105(a). The Governing Body assumes full legal accountability for the agency's compliance with all applicable Medicare Conditions of Participation, state licensure requirements, and organizational policies. This document defines the collective structure, composition requirements, authority, and responsibilities of the Governing Body.
+
+---
+
+SECTION 1: Core Responsibilities
+layout: list
+
+responsibilities:
+- Assume full legal responsibility for the operation and management of the agency, including all patient care and organizational functions.
+- Appoint and oversee the Administrator, ensuring qualifications meet 42 CFR § 484.115 and state licensure requirements.
+- Appoint and oversee the Clinical Manager (Director of Nursing), ensuring qualifications meet 42 CFR § 484.115.
+- Review and approve the Annual Institutional Plan and Budget as required under 42 CFR § 484.105(h).
+- Review and approve the agency's Acceptance-to-Service policies and public information disclosures annually (42 CFR § 484.105(i)).
+- Receive and review Quarterly Compliance Reports, QAPI program reports, and quality outcome data.
+- Approve all major organizational policies and significant policy revisions.
+- Ensure the agency maintains all required Medicare and state certifications/licenses.
+- Convene at minimum quarterly meetings; conduct emergency sessions when required (Immediate Jeopardy, sentinel event, ownership change).
+- Ensure an effective QAPI program is implemented and maintained (42 CFR § 484.65).
+- Authorize conflict-of-interest disclosures and manage recusals (42 CFR § 484.105).
+- Approve any change of ownership, merger, acquisition, or agency closure.
+
+SECTION 2: Composition & Qualifications
+layout: list
+
+requirements:
+- Minimum of two (2) members constituting a legal entity under applicable state law (California).
+- Members may include owners, directors, officers, or designated representatives as authorized by organizational documents.
+- At least one member must be capable of executing legal documents on behalf of the agency.
+- All members subject to OIG/SAM exclusion screening at appointment and monthly thereafter.
+- Members must not appear on any state or federal healthcare exclusion lists.
+- Completion of Governing Body Orientation within 90 days of appointment.
+- Annual training on CMS CoP requirements, QAPI, and compliance obligations.
+- Disclosure of all potential conflicts of interest at appointment and annually.
+
+SECTION 3: Required Competencies
+layout: list
+
+competencies:
+- Understanding of 42 CFR Part 484 Medicare Home Health Conditions of Participation.
+- Understanding of fiduciary duty and legal accountability in healthcare governance.
+- Financial literacy sufficient to review and approve annual budgets and institutional plans.
+- Knowledge of QAPI program requirements and quality outcome interpretation.
+- Awareness of HIPAA, state licensing requirements, and applicable employment law.
+- Ability to review compliance reports and direct corrective action when warranted.
+
+SECTION 4: Regulatory Responsibilities
+layout: list
+
+regulations:
+- 42 CFR § 484.105(a) — Full legal accountability for agency operations and patient care.
+- 42 CFR § 484.105(b) — Appointment and oversight of Administrator.
+- 42 CFR § 484.105(c) — Appointment and oversight of Clinical Manager.
+- 42 CFR § 484.105(h) — Annual Institutional Plan & Budget approval.
+- 42 CFR § 484.105(i) — Acceptance-to-service and public information review.
+- 42 CFR § 484.65 — QAPI program governance and oversight.
+- 42 USC § 1320a-7 — OIG/SAM exclusion screening compliance for all members.
+- CA Health & Safety Code § 1726 et seq. — State home health agency licensure.
+
+SECTION 5: Documentation Responsibilities
+layout: list
+
+documentation:
+- Approve meeting minutes within 30 days of each Governing Body meeting.
+- Maintain signed conflict-of-interest disclosure forms for each member (GV-FM-009).
+- Document Administrator and Clinical Manager appointment actions with supporting credentials.
+- Retain signed institutional plan and budget approval records.
+- Maintain OIG/SAM exclusion screening records for all members (GV-FM-008).
+- Preserve all Governing Body meeting minutes, attendance rosters, and resolution records per Medicare retention requirements (5 years minimum).
+
+SECTION 6: Supervision Responsibilities
+layout: list
+
+supervision:
+- Directly oversees: Administrator (HR-JD-001)
+- Indirectly oversees (through Administrator): All agency personnel and clinical operations.
+- Authority to appoint, evaluate, and terminate the Administrator.
+- Authority to appoint and oversee the Clinical Manager (HR-JD-003) in coordination with Administrator.
+
+SECTION 7: Physical Requirements
+layout: list
+
+physical:
+- Primarily sedentary function; capacity to attend in-person, virtual, or hybrid meetings.
+- No clinical physical requirements.
+
+SECTION 8: Working Conditions
+layout: list
+
+conditions:
+- Meetings conducted quarterly minimum; additional sessions as required.
+- May include in-person, telephonic, or virtual participation as authorized by organizational documents.
+- Subject to survey observation by CMS and state surveyors.
+
+SECTION 9: Performance Expectations
+layout: list
+
+expectations:
+- 100% attendance at required quarterly meetings or documented proxy/written consent.
+- Timely review and approval of all submitted compliance, QAPI, and financial reports.
+- Zero outstanding unapproved conflict-of-interest disclosures.
+- Current OIG/SAM screening status for all members — no exclusions.
+- Timely approval of institutional plan and budget (prior to fiscal year start).
+- All Governing Body orientations and annual trainings completed and documented.
+
+SECTION 10: Policy Cross-References
+layout: list
+
+policies:
+- HR-TA-006 — Job Description & Role Definition (controls this document)
+- GV-GB-001 — Governing Body Authority & Responsibilities (primary operational policy)
+- GV-GB-002 — Board Meeting & Minutes Requirements (meeting cadence, quorum, minutes approval)
+- GV-GB-003 — Conflict of Interest Disclosure (annual COI obligations for all members)
+- GV-GB-004 — Succession Planning for Key Leadership (Administrator and Clinical Manager succession)
+- GV-GB-005 — Annual Governance Self-Assessment (annual review cycle)
+- CO-CP-001 — Corporate Compliance Program (quarterly Compliance Report recipient)
+- QA-PG-001 — QAPI Program Governance (quarterly QAPI Report recipient; approves QAPI program)
+- EN-PM-001 — Policy Management (approves major agency policy revisions)
+
+SECTION 11: Measurable Performance Standards
+layout: list
+
+standards:
+- Meeting frequency: ≥ 4 Governing Body meetings per calendar year; maximum interval 120 days between meetings — per GV-GB-002; 0 missed quarters without documented emergency cause.
+- Emergency session response: convened within 72 hours of Immediate Jeopardy citation, sentinel event, or material ownership change — per GV-GB-002; 100% compliance.
+- Conflict-of-interest disclosures: 100% of members with current signed disclosure on file at all times; 0 overdue disclosures at any point in the calendar year — per GV-GB-003.
+- Meeting minutes: approved at the immediate subsequent meeting — 100% completion rate; no more than one session lapsed unapproved — per GV-GB-002.
+- OIG/SAM screening: all Governing Body members screened monthly; 0 excluded members participating in governance activities — per 42 USC § 1320a-7.
+- Annual Institutional Plan & Budget: approved by Governing Body before the start of the fiscal year — 0 years where approval occurs after fiscal year start — per 42 CFR § 484.105(h).
+- Annual Governance Self-Assessment (GV-GB-005): completed and documented every 12 months — 0 missed cycles.
+- Member orientation: 100% of new members complete orientation within 90 days of appointment — per GV-GB-001.
+- Annual training: 100% of members complete required annual CMS CoP/QAPI/compliance training — documented in GV-FM-024.
+
+SECTION 12: Documentation Ownership
+layout: list
+
+owned_records:
+- GV-FM-005 — Governing Body Meeting Minutes: Chair approves; Secretary prepares; Administrator retains. Primary CoP survey artifact.
+- GV-FM-006 — Annual Governance Self-Assessment: Chair owns; completed annually; retained with GV-FM-005.
+- GV-FM-008 — OIG/SAM Exclusion Screening Log (Governing Body Members): Administrator maintains on behalf of Board; Chair accountable.
+- GV-FM-009 — Conflict of Interest Disclosure Forms: Chair owns collection and retention; one form per member per year.
+- GV-FM-021 — Board Member Appointment & Resignation Record: Chair authorizes; Administrator retains.
+- GV-FM-022 — Executive Session Minutes: Chair owns; restricted access; separate from regular meeting minutes.
+- GV-FM-024 — Governing Body Training & Education Log: Chair accountable; Administrator maintains.
+- Annual Institutional Plan & Budget approval record: Chair signs; co-signed by Administrator; retained in governance file.
+- Administrator and Clinical Manager appointment documentation (credentialing): Governing Body Chair authorizes; Administrator retains.
+
+SECTION 13: Escalation Responsibilities
+layout: list
+
+escalation:
+- Immediate Jeopardy (IJ) citation by CMS or state surveyor → Administrator notifies Governing Body Chair within 24 hours; emergency Board session convened within 72 hours; Legal Counsel engaged; corrective action authorized by Board.
+- Unplanned Administrator vacancy or incapacity → Governing Body Chair activates succession plan (GV-GB-004) within 24 hours; Administrator Designee (HR-JD-002) formally activated; Governing Body notified.
+- Unplanned Clinical Manager vacancy → Governing Body Chair + Administrator activate Clinical Designee (HR-JD-004); appointment process initiated within 30 days.
+- Sentinel event (patient death or serious injury attributable to agency error) → Administrator briefs Governing Body Chair within 24 hours; Board briefed at emergency session within 72 hours; all mandatory reporting completed.
+- Agency licensure or Medicare certification lapse, denial, or suspension → Administrator notifies Chair immediately; emergency Board authorization required for any regulatory response or operational change.
+- Federal exclusion finding for any Governing Body member → Chair immediately removes member from all governance activities; Administrator and Legal Counsel notified same business day.
+- Material financial variance (>10% budget deviation or financial fraud allegation) → Chair convenes emergency session; Compliance Officer and Legal Counsel engaged.
+
+SECTION 14: Required Forms
+layout: list
+
+forms:
+- GV-FM-005 — Governing Body Meeting Minutes (required at every regular and special meeting)
+- GV-FM-006 — Annual Governance Self-Assessment (annual; filed with meeting record)
+- GV-FM-008 — OIG/SAM Exclusion Screening Log — Governing Body Members (monthly)
+- GV-FM-009 — Conflict of Interest Disclosure Form (at appointment; annually thereafter)
+- GV-FM-021 — Board Member Appointment & Resignation Record (upon each appointment or resignation)
+- GV-FM-022 — Executive Session Minutes Template (when executive session is convened)
+- GV-FM-023 — Annual Compliance Report to Governing Body (received and approved annually)
+- GV-FM-024 — Governing Body Training & Education Log (ongoing; updated after each training event)
+
+SECTION 15: Onboarding & Competency Requirements
+layout: list
+
+This role is governed by the Role-Based Onboarding & Competency Journey.
+
+Required Training Path:
+- General Orientation (GAO Series)
+
+Competency Requirements:
+- Initial competency validation (HR-TD-003 Appendix A)
+- Supervised experience (if applicable)
+- Clearance required prior to independent duties
+
+Ongoing Compliance:
+- Annual training (HR-TD-001)
+- Annual competency evaluation
+- Monthly compliance screening (OIG/SAM)
+
+Refer to:
+Role-Based Onboarding & Competency Journey (Master Framework)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Document HR-JD-000 · Version 6.0 · Effective 2025-07-10 · Next Review 2027-07-10
+- Linked Policies: HR-TA-006, GV-GB-001, GV-GB-002, GV-GB-003
+- Regulatory Authority: 42 CFR § 484.105(a)-(i); 42 CFR § 484.65; 42 USC § 1320a-7

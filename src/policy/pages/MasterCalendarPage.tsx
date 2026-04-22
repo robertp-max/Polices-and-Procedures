@@ -512,7 +512,7 @@ function DomainLegend({
             className="flex items-center gap-1.5 transition-opacity"
             style={{ opacity: dim ? 0.35 : 1 }}
           >
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: p.color, boxShadow: `0 0 8px ${p.color}88` }} />
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: p.color }} />
             <span className="text-[10px] font-montserrat font-bold uppercase tracking-[0.14em]" style={{ color: active ? p.color : 'rgba(255,255,255,0.55)' }}>
               {p.label}
             </span>
@@ -545,7 +545,7 @@ function UpcomingRow({
     >
       <span
         className="shrink-0 w-1 h-full rounded-full min-h-[28px]"
-        style={{ background: dom.color, boxShadow: `0 0 10px ${dom.color}88` }}
+        style={{ background: dom.color }}
       />
       <div className="min-w-0">
         <p className="font-montserrat font-bold text-white text-[11.5px] leading-tight truncate">{event.title}</p>
@@ -666,7 +666,7 @@ function SwimlaneView({
         return (
           <div key={domain} className="grid grid-cols-[110px_1fr] gap-3 py-1.5 border-b border-white/5 last:border-b-0">
             <div className="flex items-center gap-1.5">
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: p.color, boxShadow: `0 0 8px ${p.color}88` }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: p.color }} />
               <span className="text-[10px] font-montserrat font-bold uppercase tracking-[0.14em]" style={{ color: p.color }}>
                 {p.label}
               </span>
@@ -679,7 +679,7 @@ function SwimlaneView({
                   <button
                     key={e.id}
                     onClick={() => onSelect(e.id)}
-                    className="text-left rounded-md border px-2 py-1 hover:translate-y-[-1px] transition-transform"
+                    className="text-left rounded-md border px-2 py-1 transition-colors"
                     style={{
                       background: p.soft,
                       borderColor: activeId === e.id ? p.color : p.border,

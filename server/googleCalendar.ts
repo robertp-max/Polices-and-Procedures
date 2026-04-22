@@ -3,7 +3,7 @@ import { env } from './env.js';
 import { log } from './logger.js';
 import { ApiError, fromGoogleError } from './errors.js';
 import {
-  fromGoogleEvent, toGoogleEvent,
+  fromGoogleEvent, toGoogleEvent, normalizeEventId, readEventId,
   type PlannerEventPayload, type PlannerEventResponse,
 } from './mappers.js';
 
@@ -82,57 +82,143 @@ export async function listEvents(opts: {
   }
 }
 
-export async function findByAppEventId(appEventId: string): Promise<PlannerEventResponse | null> {
+/**
+ * STRICT ID-only lookup. Searches Google Calendar for an event whose
+ * `extendedProperties.private.event_id` equals `eventId`. Title, time, and
+ * description are NEVER used for matching. Legacy `appEventId` is checked as
+ * a fallback solely to migrate events written by pre-rename builds.
+ */
+export async function findByEventId(eventId: string): Promise<PlannerEventResponse | null> {
   const c = await getClient();
   try {
-    const res = await c.events.list({
+    // Primary: new key.
+    let res = await c.events.list({
       calendarId: env.calendarId,
-      privateExtendedProperty: [`appEventId=${appEventId}`],
+      privateExtendedProperty: [`event_id=${eventId}`],
       singleEvents: true,
       maxResults: 2,
+      showDeleted: false,
     });
-    const item = res.data.items?.[0];
+    let item = res.data.items?.[0];
+
+    if (!item) {
+      // Legacy fallback — tolerated only until migration sweep completes.
+      res = await c.events.list({
+        calendarId: env.calendarId,
+        privateExtendedProperty: [`appEventId=${eventId}`],
+        singleEvents: true,
+        maxResults: 2,
+        showDeleted: false,
+      });
+      item = res.data.items?.[0];
+      if (item) {
+        log.info('google.calendar.find.legacy_hit', { eventId, googleEventId: item.id });
+      }
+    }
+
     return item ? fromGoogleEvent(item) : null;
   } catch (e) {
     throw fromGoogleError(e);
   }
 }
 
-export async function createEvent(payload: PlannerEventPayload): Promise<PlannerEventResponse> {
+/** @deprecated — use `findByEventId`. Kept for routes that still pass legacy names. */
+export async function findByAppEventId(eventId: string): Promise<PlannerEventResponse | null> {
+  return findByEventId(eventId);
+}
+
+/**
+ * Direct fetch by Google's own event id. Cheaper than a list() when the
+ * caller already has the google_event_id cached in the event store.
+ */
+export async function getEventByGoogleId(googleEventId: string): Promise<PlannerEventResponse | null> {
   const c = await getClient();
   try {
-    // Idempotency: if a Google event already exists for this appEventId, UPDATE it.
-    // The lookup uses extendedProperties.private.appEventId so a stale or missing
-    // client-side ID map can never cause a duplicate.
-    const existing = await findByAppEventId(payload.appEventId);
-    if (existing) {
-      log.info('google.calendar.create.idempotent_hit', { appEventId: payload.appEventId, googleEventId: existing.googleEventId });
-      return updateEvent(existing.googleEventId, payload);
-    }
-    const requestBody = toGoogleEvent(payload, env.timezone);
-    const res = await c.events.insert({
-      calendarId: env.calendarId,
-      requestBody,
-    });
-    log.info('google.calendar.create.ok', { appEventId: payload.appEventId, googleEventId: res.data.id });
-    return { ...fromGoogleEvent(res.data), action: 'created' };
+    const res = await c.events.get({ calendarId: env.calendarId, eventId: googleEventId });
+    return res.data ? fromGoogleEvent(res.data) : null;
   } catch (e) {
     const err = fromGoogleError(e);
-    log.warn('google.calendar.create.failed', { appEventId: payload.appEventId, code: err.code, message: err.message });
+    if (err.code === 'calendar_not_found') return null;
     throw err;
   }
 }
 
-export async function updateEvent(googleEventId: string, payload: PlannerEventPayload): Promise<PlannerEventResponse> {
+/** Raw list of events that carry a CI_ENGINE tag — used by cleanup. */
+export async function listCiEvents(): Promise<calendar_v3.Schema$Event[]> {
   const c = await getClient();
+  const out: calendar_v3.Schema$Event[] = [];
+  for (const key of ['source=CI_ENGINE', 'source=ci-regulatory-planner'] as const) {
+    let pageToken: string | undefined;
+    do {
+      const res = await c.events.list({
+        calendarId: env.calendarId,
+        privateExtendedProperty: [key],
+        singleEvents: true,
+        maxResults: 250,
+        showDeleted: false,
+        pageToken,
+      });
+      for (const ev of res.data.items ?? []) out.push(ev);
+      pageToken = res.data.nextPageToken ?? undefined;
+    } while (pageToken);
+  }
+  // Deduplicate by Google id — an event carrying both legacy + new source tags
+  // (only possible during migration) would otherwise appear twice.
+  const seen = new Set<string>();
+  return out.filter(e => {
+    if (!e.id) return false;
+    if (seen.has(e.id)) return false;
+    seen.add(e.id);
+    return true;
+  });
+}
+
+export async function createEvent(
+  payload: PlannerEventPayload,
+  extras: { hash?: string; version?: number } = {},
+): Promise<PlannerEventResponse> {
+  const c = await getClient();
+  const eventId = normalizeEventId(payload);
   try {
-    const requestBody = toGoogleEvent(payload, env.timezone);
+    // Idempotency floor — even if a caller bypasses the sync engine, we MUST
+    // never create a duplicate. We ALWAYS look up by event_id first.
+    const existing = await findByEventId(eventId);
+    if (existing) {
+      log.info('google.calendar.create.idempotent_hit', {
+        event_id: eventId,
+        googleEventId: existing.googleEventId,
+      });
+      return updateEvent(existing.googleEventId, payload, extras);
+    }
+    const requestBody = toGoogleEvent(payload, env.timezone, extras);
+    const res = await c.events.insert({
+      calendarId: env.calendarId,
+      requestBody,
+    });
+    log.info('google.calendar.create.ok', { event_id: eventId, googleEventId: res.data.id });
+    return { ...fromGoogleEvent(res.data), action: 'created' };
+  } catch (e) {
+    const err = fromGoogleError(e);
+    log.warn('google.calendar.create.failed', { event_id: eventId, code: err.code, message: err.message });
+    throw err;
+  }
+}
+
+export async function updateEvent(
+  googleEventId: string,
+  payload: PlannerEventPayload,
+  extras: { hash?: string; version?: number } = {},
+): Promise<PlannerEventResponse> {
+  const c = await getClient();
+  const eventId = normalizeEventId(payload);
+  try {
+    const requestBody = toGoogleEvent(payload, env.timezone, extras);
     const res = await c.events.update({
       calendarId: env.calendarId,
       eventId: googleEventId,
       requestBody,
     });
-    log.info('google.calendar.update.ok', { googleEventId, appEventId: payload.appEventId });
+    log.info('google.calendar.update.ok', { googleEventId, event_id: eventId });
     return { ...fromGoogleEvent(res.data), action: 'updated' };
   } catch (e) {
     const err = fromGoogleError(e);
@@ -141,13 +227,38 @@ export async function updateEvent(googleEventId: string, payload: PlannerEventPa
   }
 }
 
-export async function deleteEvent(googleEventId: string, opts: { cancelOnly?: boolean } = {}): Promise<void> {
+export interface DeleteOptions {
+  cancelOnly?: boolean;
+  /** Required for events tagged env=PROD in extendedProperties. */
+  adminOverride?: boolean;
+  /** Free-form reason; written to the audit record by the caller. */
+  reason?: string;
+}
+
+/**
+ * Delete (or cancel) a Google event. PROD events are deletion-protected —
+ * the caller MUST set `adminOverride` and the caller SHOULD persist an audit
+ * record. This is a hard guard, not advisory.
+ */
+export async function deleteEvent(googleEventId: string, opts: DeleteOptions = {}): Promise<void> {
   const c = await getClient();
   try {
+    // Load once up front so we can check env tagging and reuse the body for
+    // cancellation.
+    const snap = await c.events.get({ calendarId: env.calendarId, eventId: googleEventId });
+    const ev = snap.data;
+    const envTag = (ev.extendedProperties?.private?.env === 'SANDBOX') ? 'SANDBOX' : 'PROD';
+    if (envTag === 'PROD' && !opts.adminOverride && !opts.cancelOnly) {
+      throw new ApiError(
+        'permission_denied',
+        'PROD event deletion requires adminOverride=true and an audit entry. Use cancelOnly=true to soft-cancel instead.',
+        403,
+        { googleEventId, event_id: readEventId(ev), env: 'PROD' },
+      );
+    }
     if (opts.cancelOnly) {
-      // Mark as cancelled in extendedProperties rather than hard-delete.
-      const res = await c.events.get({ calendarId: env.calendarId, eventId: googleEventId });
-      const ev = res.data;
+      // Soft-cancel: mark cancelled in extendedProperties and prefix the title
+      // rather than hard-delete. Safe for PROD without admin override.
       const priv = ev.extendedProperties?.private ?? {};
       priv.completionState = 'cancelled';
       priv.status = 'cancelled';
@@ -160,11 +271,11 @@ export async function deleteEvent(googleEventId: string, opts: { cancelOnly?: bo
           extendedProperties: { ...ev.extendedProperties, private: priv },
         },
       });
-      log.info('google.calendar.cancel.ok', { googleEventId });
+      log.info('google.calendar.cancel.ok', { googleEventId, env: envTag });
       return;
     }
     await c.events.delete({ calendarId: env.calendarId, eventId: googleEventId });
-    log.info('google.calendar.delete.ok', { googleEventId });
+    log.info('google.calendar.delete.ok', { googleEventId, env: envTag, adminOverride: !!opts.adminOverride });
   } catch (e) {
     const err = fromGoogleError(e);
     log.warn('google.calendar.delete.failed', { googleEventId, code: err.code, message: err.message });

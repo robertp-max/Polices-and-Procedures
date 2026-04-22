@@ -1,0 +1,64 @@
+FORM ID: HR-FM-055
+TITLE: Separation Intake
+TYPE: Form
+DOMAIN: HR
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- HR-ER-002
+- HR-ER-006
+
+PURPOSE:
+Intake for employee separations (voluntary / involuntary / retirement / death / layoff). Triggers offboarding workflow: final pay, benefits, COBRA, equipment return, access termination, references policy.
+
+INSTRUCTIONS:
+HR initiates upon notice of separation. Final pay in CA due on last day (involuntary) or within 72 hours (voluntary without notice).
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Employee Name (type=text, required=true, col=2)
+- Employee ID (type=text, required=true, col=2)
+- Department / Supervisor (type=text, col=2)
+- Separation Date (type=date, required=true, col=2)
+- Separation Type (Voluntary / Involuntary / Retirement / Layoff / Death / Other) (type=select, required=true, col=2, options=[Voluntary | Involuntary | Retirement | Layoff | Death | Other])
+- Reason / Rehire Eligibility (type=textarea, col=4)
+
+SECTION 2: Section 2 — Process Checklist
+layout: grid
+
+fields:
+- IT Access Termination Ticket (IT-FM-002) (type=text, col=2)
+- Equipment Return Checklist (HR-FM-056) (type=text, col=2)
+- Final Pay Calculation Date (type=date, col=2)
+- PTO Payout Amount (type=text, col=2)
+- Benefits Exit Packet Issued (HR-FM-057) (type=text, col=2)
+- COBRA Notice Sent (HR-FM-057) (type=text, col=2)
+- Exit Interview Scheduled (HR-FM-058) (type=text, col=2)
+- References / Verification Process Reminder (type=textarea, col=4)
+- Unemployment Insurance (EDD) Notice (type=text, col=2)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Employee (if available) — Printed Name (type=text, col=2)
+- Employee — Signature (type=signature, col=1)
+- Employee — Date (type=date, col=1)
+- Supervisor — Printed Name (type=text, col=2)
+- Supervisor — Signature (type=signature, col=1)
+- Supervisor — Date (type=date, col=1)
+- HR — Printed Name (type=text, col=2)
+- HR — Signature (type=signature, col=1)
+- HR — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form HR-FM-055 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: HR-ER-002, HR-ER-006

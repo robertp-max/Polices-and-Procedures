@@ -59,7 +59,7 @@ const GAO: JourneyModule[] = [
 
 /* ───────────────────────────────────────────────────────────────
    PHASE 2 — ROLE-SPECIFIC ONBOARDING (Days 1-30)
-   Source: Section III of the master framework (JD-001..JD-011).
+   Source: Section III of the master framework (HR-JD-001..HR-JD-011).
    ───────────────────────────────────────────────────────────── */
 
 const ADM: JourneyModule[] = [

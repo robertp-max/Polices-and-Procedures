@@ -1,0 +1,61 @@
+FORM ID: FN-FM-017
+TITLE: ADR Review Checklist (Clinical Documentation QA)
+TYPE: Checklist
+DOMAIN: FN
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- FN-BC-001
+- CO-CP-001
+
+PURPOSE:
+Clinical QA review checklist applied to ADR response packages before submission, verifying completeness, legibility, physician signatures, OASIS alignment, face-to-face encounter, homebound justification, and medical necessity.
+
+INSTRUCTIONS:
+Clinical Manager completes before each ADR submission (see FN-FM-016 ADR Tracker). Any "No" answer blocks submission until remediated.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Reviewer (Clinical Manager) (type=text, required=true, col=2)
+- ADR ID (FN-FM-016) (type=text, required=true, col=2)
+- Patient / Claim # (type=text, col=2)
+- Review Date (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — QA Checklist
+layout: grid
+
+fields:
+- CMS-485 / plan of care present and signed? (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+- Face-to-face encounter documentation present? (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+- Homebound status justified in record? (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+- Medical necessity documented by physician? (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+- OASIS submission aligns with claim HIPPS? (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+- All visit notes signed & dated? (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+- Therapy reassessment timely (if applicable)? (Y/N) (type=select, col=2, options=[Yes | No | NA])
+- Legibility acceptable? (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+- Discharge summary (if applicable)? (Y/N) (type=select, col=2, options=[Yes | No | NA])
+- Issues / Remediation Required (type=textarea, col=4)
+- Cleared for Submission? (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Clinical Manager — Printed Name (type=text, col=2)
+- Clinical Manager — Signature (type=signature, col=1)
+- Clinical Manager — Date (type=date, col=1)
+- Revenue Cycle Manager — Printed Name (type=text, col=2)
+- Revenue Cycle Manager — Signature (type=signature, col=1)
+- Revenue Cycle Manager — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form FN-FM-017 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: FN-BC-001, CO-CP-001

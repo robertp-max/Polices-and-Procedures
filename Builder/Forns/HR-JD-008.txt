@@ -1,0 +1,222 @@
+DOCUMENT ID: HR-JD-008
+TITLE: Medical Social Worker (MSW)
+TYPE: Job Description
+DOMAIN: HR
+SUBDOMAIN: JD
+USAGE: Required
+FREQUENCY: Biennial Review
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2027-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: clinical, licensed_professional, skilled_care, ancillary
+
+LINKED POLICIES:
+- HR-TA-006 (Job Description & Role Definition)
+- HR-TA-004 (Licensure & Certification Verification)
+- HR-TA-005 (Employee Orientation & Onboarding)
+
+POSITION SUMMARY:
+The Medical Social Worker (MSW) provides skilled medical social work services to home health patients when ordered by the attending physician and included in the patient's plan of care. Medical social work in Medicare home health is a skilled service that requires clinical licensure and advanced training. The MSW assesses the social, emotional, psychological, and environmental factors affecting the patient's health outcomes, and intervenes to connect patients and families with appropriate community resources, financial assistance, mental health support, and care transition planning. This role is governed by 42 CFR § 484.115, the California LCSW/LMSW licensure requirements, and applicable Medicare skilled service criteria.
+
+---
+
+SECTION 1: Core Responsibilities
+layout: list
+
+responsibilities:
+- Conduct comprehensive psychosocial assessments identifying social, economic, and emotional factors affecting patient health outcomes and the ability to benefit from medical treatment.
+- Develop and implement the social work component of the patient's interdisciplinary plan of care.
+- Provide therapeutic counseling and supportive interventions to patients and families addressing adjustment to illness, caregiver burden, grief, and mental health concerns.
+- Identify and connect patients with community resources: financial assistance programs (Medicare/Medi-Cal, SSI, SNAP), housing support, transportation, caregiver respite, and community health services.
+- Facilitate and document care transitions, discharge planning, and post-discharge resource connections.
+- Participate in interdisciplinary care team conferences and contribute to care coordination.
+- Screen for and report elder abuse, domestic violence, neglect, and financial exploitation as a mandated reporter.
+- Provide advance directive counseling and facilitate documentation as requested.
+- Conduct crisis intervention for patients at risk of self-harm, substance use, or unsafe living situations.
+- Document all social work services provided within agency-required timeframes and per clinical documentation standards.
+- Participate in QAPI activities including outcome monitoring and performance improvement.
+- Maintain compliance with HIPAA, NASW Code of Ethics, and all applicable licensure requirements.
+- Complete mandatory training per agency policy and schedule.
+
+SECTION 2: Minimum Qualifications
+layout: list
+
+qualifications:
+- Required: Licensed Clinical Social Worker (LCSW) in the state of California (CA BBS); OR Licensed Master Social Worker (LMSW) with supervised clinical hours under an LCSW as permitted by California law.
+- Required: Master of Social Work (MSW) degree from an accredited program.
+- Required: Minimum one (1) year of social work experience; healthcare or home health experience preferred.
+- Required: No current exclusion from federal or state healthcare programs (OIG/SAM).
+- Required: Valid California driver's license and personal vehicle with current insurance.
+- Required: Completion of agency new-hire orientation prior to independent patient visits.
+- Required: TB screening current per agency policy.
+- Preferred: Home health or post-acute care social work experience.
+- Preferred: Experience with Medicare/Medi-Cal eligibility and community resource navigation.
+
+SECTION 3: Required Competencies
+layout: list
+
+competencies:
+- Psychosocial assessment: biopsychosocial-spiritual model applied to home health population.
+- Medicare skilled social work criteria: understanding of covered services and medical necessity documentation.
+- Community resource navigation: California benefits programs, community health, housing, and support services.
+- Crisis intervention: suicide risk assessment, domestic violence, elder abuse, and unsafe home situations.
+- Motivational interviewing and therapeutic communication techniques.
+- Cultural competency: knowledge of diverse populations, LGBTQ+ considerations, health disparities.
+- Advance directive and end-of-life planning support.
+- Care coordination documentation: SOAP/DAR formats, timeliness, and authentication.
+- Interdisciplinary team communication and collaboration.
+- Mandatory reporting obligations and documentation requirements.
+- EHR proficiency for clinical documentation.
+
+SECTION 4: Regulatory Responsibilities
+layout: list
+
+regulations:
+- 42 CFR § 484.115 — Meets medical social worker personnel qualifications.
+- 42 CFR § 484.60 — Plan of care social work component contributions.
+- 42 CFR § 484.110 — Clinical record documentation completeness.
+- CA BBS — Active LCSW/LMSW license; compliance with California Social Work Practice Act.
+- HIPAA 45 CFR Parts 160 & 164 — PHI privacy and security.
+- Mandatory Reporter (CA Penal Code § 11166; CA W&I Code § 15630) — Elder/dependent adult and child abuse reporting.
+- NASW Code of Ethics — Professional standards and ethical practice obligations.
+- 42 USC § 1320a-7 — OIG/SAM exclusion-free status.
+
+SECTION 5: Documentation Responsibilities
+layout: list
+
+documentation:
+- Complete social work visit notes within 24 hours of service (or agency-required timeframe).
+- Authenticate all entries with signature, credential (LCSW/LMSW), date, and time.
+- Document psychosocial assessment, interventions, resources provided, and patient/family response.
+- Document advance directive discussions, referrals made, and follow-up plans.
+- Document mandated report submissions (without identifying detail in the medical record where required by law).
+- Maintain own LCSW/LMSW license, OIG/SAM screening, and CEU documentation in personnel file.
+
+SECTION 6: Supervision Responsibilities
+layout: list
+
+supervision:
+- Does not supervise other clinical staff independently.
+- LMSW-level social workers work under LCSW supervision per California BBS requirements.
+- Reports to: Director of Nursing / Clinical Manager (HR-JD-003).
+
+SECTION 7: Physical Requirements
+layout: list
+
+physical:
+- Light to medium work: driving to home visits, prolonged sitting for documentation, home environment navigation.
+- Valid California driver's license and reliable, insured personal vehicle.
+- Ability to navigate varied residential environments.
+
+SECTION 8: Working Conditions
+layout: list
+
+conditions:
+- Field-based: community home visits throughout the service area.
+- Variable schedule; some evening or weekend availability may be required.
+- Potential exposure to emotionally difficult situations: crisis, grief, severe mental health presentations.
+- Managed occupational exposure risk per OSHA and agency safety policies.
+- Mileage reimbursed per agency policy.
+
+SECTION 9: Performance Expectations
+layout: list
+
+expectations:
+- Social work visit notes completed within agency-required timeframe: ≥ 95% compliance.
+- Mandatory reporting obligations fulfilled within legally required timeframes — zero lapses.
+- Clinical documentation audit scores meet or exceed agency threshold.
+- Community resource referrals documented for all applicable cases.
+- No substantiated HIPAA, scope-of-practice, or professional ethics violations.
+- Licensure, OIG/SAM screening, and CEU requirements current without lapse.
+- Mandatory training completion: 100% on schedule.
+
+SECTION 10: Policy Cross-References
+layout: list
+
+policies:
+- HR-TA-006 — Job Description & Role Definition (controls this document)
+- HR-TA-004 — Licensure & Certification Verification (own LCSW/LMSW credentials)
+- HR-TA-005 — Employee Orientation & Onboarding (initial competency validation requirements)
+- CL-SD-005 — Medical Social Work Services (skilled MSW service delivery standards)
+- CL-CD-001 — Clinical Documentation Standards (visit note requirements)
+- CL-CD-003 — Clinical Record Authentication & Signature Requirements (authentication standards)
+- CL-PR-006 — Abuse, Neglect & Exploitation Reporting (mandatory reporter obligations)
+- CL-PR-001 — Patient Rights & Responsibilities (patient dignity and rights in social work interactions)
+- CL-CP-006 — Discharge Planning & Criteria (MSW role in care transitions and resource planning)
+
+SECTION 11: Measurable Performance Standards
+layout: list
+
+standards:
+- Social work visit note completion: ≥ 95% completed within 24 hours of service — per CL-CD-001; no note > 5 business days past service date.
+- Mandatory reporting obligations: suspected abuse/neglect/exploitation reports filed within 24 hours of reasonable suspicion — 0 lapses — per CA Penal Code § 11166 and W&I Code § 15630.
+- Community resource referral documentation: 100% of cases requiring community resource intervention include documented referral and follow-up plan — per CL-SD-005.
+- Clinical documentation audit compliance: pass rate ≥ agency threshold on monthly audits — per QA-PG-001.
+- LCSW/LMSW license and CEU requirements: current without lapse at all times — 0 expired credentials in active service — per HR-TA-004 and CA BBS.
+- Mandatory training completion: 100% of required annual and compliance trainings completed by due date — per HR-TA-005.
+- OIG/SAM screening (self): monthly; 0 lapses — per HR-TA-003.
+- Crisis intervention response: documented crisis assessment and safety plan completed same visit for any patient identified at acute risk — per NASW Code of Ethics.
+
+SECTION 12: Documentation Ownership
+layout: list
+
+owned_records:
+- Psychosocial Assessment: author and authenticated owner; completed at SOC and updated as clinically indicated; retained in patient clinical record.
+- Social Work Visit Notes: author and authenticated owner for each MSW-delivered visit; retained in patient record.
+- Community Resource Referral Records: author; documents resource identified, referral made, contact information, and patient/family response.
+- Advance Directive Counseling Records: documents discussion content, patient/family decision, and next steps.
+- Mandated Report Submission Record: documents that report was made (date, agency contacted, reference number) without identifying detail in medical record where required by law.
+- Care Transition Plan / Discharge Resource Plan: author; documents post-discharge resources, referrals, and follow-up plan.
+- Own credential file entries: LCSW/LMSW license, OIG/SAM, TB screening, CEU documentation — maintained in personnel file.
+
+SECTION 13: Escalation Responsibilities
+layout: list
+
+escalation:
+- Patient expresses suicidal ideation, homicidal ideation, or intent to harm self or others → Activate crisis intervention protocol; contact physician and DON immediately; do not leave patient alone if safety risk; call 911 if imminent danger; document full safety assessment.
+- Suspected elder abuse, neglect, financial exploitation, or domestic violence → Mandatory report to APS/law enforcement within 24 hours per CA W&I Code § 15630; notify DON same business day; ensure patient's immediate safety is addressed.
+- Unsafe home environment (no food, no heat, active domestic violence, unsafe caregiver) → Notify DON and physician within same visit or within 2 hours; document findings; do not leave patient in immediately life-threatening environment without protective action.
+- LCSW license lapse or CA BBS action (own) → Immediately cease patient care; notify DON same business day; do not return until reinstatement confirmed.
+- Situation encountered beyond LCSW/LMSW scope or training → Notify DON; consult with supervisor before acting; document consultation.
+- Patient refuses MSW services → Document refusal; notify DON and physician; ensure plan of care is updated to reflect current status.
+
+SECTION 14: Required Forms
+layout: list
+
+forms:
+- Psychosocial Assessment Form (agency EHR or CL-FM series): completed at SOC and updated as indicated.
+- Social Work Visit Note (agency EHR format): completed at each visit within 24 hours.
+- Community Resource Referral Record (agency standard form): completed whenever referral is made.
+- Advance Directive Discussion Record (CL-FM series or agency standard): completed when advance directive counseling is provided.
+- Mandated Report Submission Log (agency standard; internal record only — not part of medical record): documents each report made.
+- Discharge / Care Transition Plan (CL-FM series): co-authored with interdisciplinary team; MSW owns social/community resource section.
+- HR-FM-031 — Job Description Acknowledgment Form (signed at hire and upon JD revision).
+
+SECTION 15: Onboarding & Competency Requirements
+layout: list
+
+This role is governed by the Role-Based Onboarding & Competency Journey.
+
+Required Training Path:
+- General Orientation (GAO Series)
+- Role-Specific LMS Track (MSW-000 Series)
+
+Competency Requirements:
+- Initial competency validation (HR-TD-003 Appendix A)
+- Supervised experience (if applicable)
+- Clearance required prior to independent duties
+
+Ongoing Compliance:
+- Annual training (HR-TD-001)
+- Annual competency evaluation
+- Monthly compliance screening (OIG/SAM)
+
+Refer to:
+Role-Based Onboarding & Competency Journey (Master Framework)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Document HR-JD-008 · Version 6.0 · Effective 2025-07-10 · Next Review 2027-07-10
+- Linked Policies: HR-TA-006, HR-TA-004, HR-TA-005
+- Regulatory Authority: 42 CFR § 484.115; CA BBS LCSW/LMSW Practice Act; NASW Code of Ethics
+- Reports To: Director of Nursing / Clinical Manager (HR-JD-003)

@@ -1,0 +1,55 @@
+FORM ID: IT-FM-039
+TITLE: Post-Implementation Review (Change)
+TYPE: Review
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- IT-CM-001
+
+PURPOSE:
+Captures the outcome of a deployed change within 5 business days: success / partial / rolled-back, incidents generated, user/clinical impact, KPI effect, and lessons learned.
+
+INSTRUCTIONS:
+Change owner files within 5 business days. Reviewed at CAB; recurring themes fed to QAPI.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Change # (CR) (type=text, required=true, col=2)
+- Change Owner (type=text, required=true, col=2)
+- Implementation Date (type=date, required=true, col=2)
+- PIR Date (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Outcome
+layout: grid
+
+fields:
+- Outcome (Success / Partial / Rolled Back) (type=select, required=true, col=2, options=[Success | Partial | Rolled Back])
+- Incidents Generated (# / IDs) (type=textarea, col=4)
+- User / Clinical Impact (type=textarea, col=4)
+- KPI Effect (type=textarea, col=4)
+- Lessons Learned (type=textarea, col=4)
+- Corrective Actions (if any) (type=textarea, col=4)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Change Owner — Printed Name (type=text, col=2)
+- Change Owner — Signature (type=signature, col=1)
+- Change Owner — Date (type=date, col=1)
+- CAB Chair — Printed Name (type=text, col=2)
+- CAB Chair — Signature (type=signature, col=1)
+- CAB Chair — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-039 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: IT-CM-001

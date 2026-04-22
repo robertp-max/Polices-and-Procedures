@@ -1,0 +1,67 @@
+FORM ID: FN-FM-027
+TITLE: Financial Assistance / Charity Care Application
+TYPE: Application
+DOMAIN: FN
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- FN-FP-003
+- CO-CP-001
+
+PURPOSE:
+Patient-facing application for financial assistance / charity care consistent with the agency's Financial Assistance Policy. Captures household income, assets, expenses, family size, and supporting documentation.
+
+INSTRUCTIONS:
+Financial Counselor / Social Worker provides to patient at signs of hardship; patient (or representative) returns within 30 days; determination within 14 days of complete application (FN-FM-028).
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Patient Name (type=text, required=true, col=2)
+- Patient ID / Account # (type=text, required=true, col=2)
+- Application Date (type=date, required=true, col=2)
+- Preparer / Assistor (type=text, col=2)
+
+SECTION 2: Section 2 — Household & Income
+layout: grid
+
+fields:
+- Household Size (type=text, required=true, col=2)
+- Annual Household Income (type=text, required=true, col=2)
+- Sources of Income (type=textarea, col=4)
+- Monthly Expenses (type=text, col=2)
+- Liquid Assets (type=text, col=2)
+- Medical Expenses (past 12 mo) (type=text, col=2)
+
+SECTION 3: Section 3 — Documentation
+layout: grid
+
+fields:
+- Tax Return Provided? (Y/N) (type=select, col=2, options=[Yes | No])
+- Pay Stubs / Unemployment Docs? (Y/N) (type=select, col=2, options=[Yes | No])
+- Bank Statements? (Y/N) (type=select, col=2, options=[Yes | No])
+- Government Assistance Benefits? (type=textarea, col=4)
+- Other Hardship Notes (type=textarea, col=4)
+
+SECTION 4: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Patient / Representative — Printed Name (type=text, col=2)
+- Patient — Signature (type=signature, col=1)
+- Patient — Date (type=date, col=1)
+- Preparer (if other than patient) — Printed Name (type=text, col=2)
+- Preparer — Signature (type=signature, col=1)
+- Preparer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form FN-FM-027 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- CONFIDENTIAL — handle per financial privacy controls
+- Linked Policies: FN-FP-003, CO-CP-001

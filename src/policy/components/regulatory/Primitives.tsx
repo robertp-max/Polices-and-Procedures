@@ -22,7 +22,6 @@ export function DomainDot({ domain, size = 8 }: { domain: RegulatoryDomain; size
         height: size,
         borderRadius: '50%',
         background: p.color,
-        boxShadow: `0 0 10px ${p.color}55`,
       }}
     />
   );
@@ -59,7 +58,7 @@ export function UrgencyChip({ urgency, compact = false }: { urgency: UrgencyLeve
         border: `1px solid ${u.color}55`,
       }}
     >
-      <span style={{ width: 5, height: 5, borderRadius: '50%', background: u.color, boxShadow: `0 0 8px ${u.color}99` }} />
+      <span style={{ width: 5, height: 5, borderRadius: '50%', background: u.color }} />
       {u.label}
     </span>
   );
@@ -89,7 +88,6 @@ export function EvidenceDot({ status }: { status: 'complete' | 'in-progress' | '
         height: 8,
         borderRadius: '50%',
         background: color,
-        boxShadow: `0 0 10px ${color}66`,
       }}
     />
   );
@@ -123,7 +121,6 @@ export function Panel({
           className={`flex items-center justify-between ${dense ? 'pt-1 pb-2.5 mb-2.5' : 'pt-1 pb-3 mb-3'}`}
           style={{
             borderBottom: '1px solid rgba(255,255,255,0.06)',
-            boxShadow: `inset 0 -1px 0 0 ${accent}22`,
           }}
         >
           <div className="flex items-center gap-2 group">

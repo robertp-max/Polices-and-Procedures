@@ -1,0 +1,66 @@
+FORM ID: IT-FM-034
+TITLE: Removable Media Exception & Tracking
+TYPE: Form
+DOMAIN: IT
+USAGE: Required
+FREQUENCY: Triggered
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical
+
+LINKED POLICIES:
+- IT-SP-003
+
+PURPOSE:
+Controls authorized use of removable media (USB, external drives, SD cards) where general policy prohibits. Tracks encryption, chain-of-custody, PHI content, and return/sanitization.
+
+INSTRUCTIONS:
+Security Officer reviews exception request; devices provisioned encrypted; post-use sanitization per IT-FM-036.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Requestor (type=text, required=true, col=2)
+- Role (type=text, col=2)
+- Exception Request ID (type=text, required=true, col=2)
+- Request Date (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Exception Detail
+layout: grid
+
+fields:
+- Business Justification (type=textarea, col=4)
+- Media Type / Serial # (type=text, col=2)
+- Encryption Method (FIPS 140-2) (type=text, col=2)
+- PHI/ePHI Included? (Y/N) (type=select, col=2, options=[Yes | No])
+- Destination / Recipient (type=text, col=2)
+- Use Start Date (type=date, col=2)
+- Use End Date (type=date, col=2)
+- Post-Use Plan (sanitize / destroy / return) (type=select, col=2, options=[Sanitize | Destroy | Return])
+
+SECTION 3: Section 3 — Approval & Closure
+layout: grid
+
+fields:
+- Security Officer Approval (Y/N) (type=select, required=true, col=2, options=[Yes | No])
+- CIO / Privacy Officer Approval (if PHI) (Y/N) (type=select, col=2, options=[Yes | No | NA])
+- Chain-of-Custody Log (type=textarea, col=4)
+- Post-Use Sanitization Record (IT-FM-036) (type=text, col=2)
+
+SECTION 4: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Requestor — Printed Name (type=text, col=2)
+- Requestor — Signature (type=signature, col=1)
+- Requestor — Date (type=date, col=1)
+- Security Officer — Printed Name (type=text, col=2)
+- Security Officer — Signature (type=signature, col=1)
+- Security Officer — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form IT-FM-034 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: IT-SP-003

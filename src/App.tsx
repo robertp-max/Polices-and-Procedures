@@ -25,6 +25,7 @@ const GVGBAppendixPrint = lazy(() => import('@/policy/pages/GVGBAppendixPrint').
 const FormViewer        = lazy(() => import('@/policy/components/FormViewer').then(m => ({ default: m.FormViewer })))
 const IAdministratorPage = lazy(() => import('@/policy/pages/iAdministrator').then(m => ({ default: m.IAdministratorPage })))
 const BradProposalPage  = lazy(() => import('@/policy/pages/BradProposal').then(m => ({ default: m.BradProposalPage })))
+const WorkflowLibraryApp = lazy(() => import('@/policy/workflows/WorkflowLibraryApp').then(m => ({ default: m.WorkflowLibraryApp })))
 
 // ── Onboarding & Competency Journey ─────────────────────────────
 const JourneyHomePage    = lazy(() => import('@/policy/journey/pages/JourneyHomePage').then(m => ({ default: m.JourneyHomePage })))
@@ -86,6 +87,7 @@ function App() {
                   <Route path="/demo" element={<DemoPage />} />
                   <Route path="/iadministrator" element={<IAdministratorPage />} />
                   <Route path="/gv-policy/:policyId" element={<GVPolicyDetailView />} />
+                  <Route path="/workflows/*" element={<WorkflowLibraryApp />} />
 
                   {/* Onboarding & Competency Journey */}
                   <Route path="/journey"                    element={<JourneyHomePage />} />

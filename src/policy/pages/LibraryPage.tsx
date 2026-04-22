@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShellStore } from '../stores/uiStore';
 import { remapForLight } from '../utils/lightColorRemap';
@@ -191,6 +191,8 @@ function matchesPattern(policyId: string, patterns: string[]): boolean {
 function getTagsForPolicy(id: string): string[] {
   const tags: string[] = [];
   const u = id.toUpperCase();
+  // GV-GB-001 canonical full tag set (cross-referenced with DemoPage specimen)
+  if (u === 'GV-GB-001') return ['42cfr', 'title22', 'cms', 'hipaa', 'oig', 'fca'];
   if (matchesPattern(u, ['GV-EA-004','GV-OG-002','GV-OG-003','HR-TA-001','HR-TA-004','HR-EH-101','RM-OS-101','RM-EP-001','RM-EP-002','FN-BC-001','FN-FP-005'])) tags.push('title22');
   if (matchesPattern(u, ['CO-HP-*','CO-BA-101','CO-IR-101','CO-DG-101','CO-DC-001'])) {
     if (!matchesPattern(u, ['CO-FW-101','CO-AI-101','HR-TR-101','HR-EH-101'])) tags.push('hipaa');
@@ -273,6 +275,13 @@ export function LibraryPage() {
   const isLight = theme === 'care-indeed-light';
   const mapColor = (c: string) => remapForLight(c, isLight);
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyRecord | null>(null);
+  const setDetailMode = useShellStore(s => s.setDetailMode);
+
+  // Hide the app chrome immediately (before paint) when a policy is selected
+  useLayoutEffect(() => {
+    setDetailMode(!!selectedPolicy);
+    return () => { setDetailMode(false); };
+  }, [selectedPolicy, setDetailMode]);
   const [selectedDomain, setSelectedDomain] = useState('ALL');
   const [selectedSubdomain, setSelectedSubdomain] = useState<string>('ALL');
   const [activeRegFilter, setActiveRegFilter] = useState('ALL');

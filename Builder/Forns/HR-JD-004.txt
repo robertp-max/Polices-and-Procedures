@@ -1,0 +1,197 @@
+DOCUMENT ID: HR-JD-004
+TITLE: Clinical Designee
+TYPE: Job Description
+DOMAIN: HR
+SUBDOMAIN: JD
+USAGE: Required
+FREQUENCY: Biennial Review
+VERSION: 6.0
+EFFECTIVE DATE: 2025-07-10
+NEXT REVIEW DATE: 2027-07-10
+ORIENTATION: portrait
+CLASSIFICATIONS: clinical_leadership, succession, licensed_professional
+
+LINKED POLICIES:
+- HR-TA-006 (Job Description & Role Definition)
+- HR-TA-004 (Licensure & Certification Verification)
+- GV-GB-004 (Succession Planning for Key Leadership)
+
+POSITION SUMMARY:
+The Clinical Designee is the individual formally designated by the Director of Nursing / Clinical Manager (HR-JD-003) to assume clinical management authority and responsibilities during any period of the Clinical Manager's absence. The Clinical Designee must hold an active, unrestricted Registered Nurse (RN) license and must meet the same qualifications required under 42 CFR § 484.115 for the Clinical Manager role. The designation must be documented in writing. This is not always a standalone hired position; the designee may hold a concurrent clinical role and is formally designated in writing by the Director of Nursing and Administrator.
+
+---
+
+SECTION 1: Core Responsibilities
+layout: list
+
+responsibilities:
+- Assume all clinical management authority and regulatory obligations of the Director of Nursing / Clinical Manager during absences.
+- Ensure continuous clinical operations compliance with 42 CFR Part 484 during Clinical Manager unavailability.
+- Authorize and oversee OASIS assessments requiring Clinical Manager authorization when activated.
+- Manage urgent clinical personnel and patient care decisions that cannot be deferred.
+- Serve as clinical regulatory contact for CMS, state agency, and accreditation communications when activated.
+- Notify the Administrator and relevant stakeholders when assuming Clinical Manager responsibilities for extended periods.
+- Document all periods of Clinical Designee activation with dates, scope, and significant actions taken.
+- Maintain currency in all clinical regulatory requirements to enable immediate assumption of Clinical Manager role.
+- Participate in cross-training and succession planning with the Director of Nursing.
+
+SECTION 2: Minimum Qualifications
+layout: list
+
+qualifications:
+- Required: Current, unrestricted Registered Nurse (RN) license in the state of California (CA BRN).
+- Required: Minimum one (1) year of supervisory or administrative experience in home health or a related healthcare setting (meets 42 CFR § 484.115 qualifications for Clinical Manager).
+- Required: No current exclusion from federal or state healthcare programs (OIG/SAM).
+- Required: Current BLS/CPR certification.
+- Required: Demonstrated competency in OASIS assessment and home health clinical operations.
+- Preferred: OASIS certification (COS-C).
+- Written designation by Director of Nursing and countersigned by Administrator on file.
+
+SECTION 3: Required Competencies
+layout: list
+
+competencies:
+- Working knowledge of 42 CFR Part 484 Medicare Home Health Conditions of Participation.
+- OASIS-E1 competency: data collection, accuracy, and submission requirements.
+- Home Health Aide supervisory visit requirements and scheduling.
+- Clinical documentation standards and medical necessity criteria.
+- Emergency and after-hours clinical escalation protocols.
+- Clinical staff oversight and supervision skills.
+- Survey readiness and CMS notification protocols.
+
+SECTION 4: Regulatory Responsibilities
+layout: list
+
+regulations:
+- 42 CFR § 484.105(c) — Assumes Clinical Manager obligations during the DON's absence.
+- 42 CFR § 484.115 — Meets RN licensure and supervisory experience qualifications.
+- 42 CFR § 484.55 — Comprehensive assessment oversight when activated.
+- 42 CFR § 484.80 — HHA supervision obligations when activated.
+- CA BRN — Active unrestricted RN license maintained.
+- 42 USC § 1320a-7 — OIG/SAM exclusion-free status.
+
+SECTION 5: Documentation Responsibilities
+layout: list
+
+documentation:
+- Maintain current written Clinical Designee Designation Form on file.
+- Document all activation periods with start date, end date, and significant decisions made.
+- Ensure own RN license, BLS/CPR, and OIG/SAM screening are current.
+- Counter-sign clinical records and authorizations requiring Clinical Manager signature when activated.
+
+SECTION 6: Supervision Responsibilities
+layout: list
+
+supervision:
+- When activated: assumes all supervisory authority of the Director of Nursing over clinical staff.
+- In primary role (if serving concurrently): supervision as defined in primary clinical job description.
+
+SECTION 7: Physical Requirements
+layout: list
+
+physical:
+- Light to medium work; office-based clinical management functions combined with potential field presence during activation.
+- Valid California driver's license and reliable transportation for field supervision if required.
+
+SECTION 8: Working Conditions
+layout: list
+
+conditions:
+- Designation concurrent with another clinical position at the agency.
+- Availability required to assume Clinical Manager role with minimal notice.
+- Subject to 24/7 clinical accountability during activation.
+
+SECTION 9: Performance Expectations
+layout: list
+
+expectations:
+- Written designation current; renewed at any role change or annually.
+- RN license, BLS/CPR, and OIG/SAM screening current without lapse.
+- Demonstrates readiness to assume Clinical Manager role within one business day of activation.
+- No clinical oversight coverage gaps during Director of Nursing absences.
+- All designation activation periods fully documented.
+
+SECTION 10: Policy Cross-References
+layout: list
+
+policies:
+- HR-TA-006 — Job Description & Role Definition (controls this document)
+- HR-TA-004 — Licensure & Certification Verification (own RN credentials)
+- GV-GB-004 — Succession Planning for Key Leadership (designation mechanism)
+- GV-GB-001 — Governing Body Authority & Responsibilities (authority basis for designation)
+- HR-TA-003 — OIG/SAM Exclusion Screening (self-screening compliance)
+- CL-CA-001 — Patient Assessment — Comprehensive (OASIS oversight when activated)
+- CL-SD-006 — Home Health Aide Services & Supervision (HHA supervisory obligations when activated)
+- CL-OA-001 — OASIS Completion Timeliness & Accountability (compliance accountability when activated)
+- All policies under HR-JD-003 activate in full upon assumption of Clinical Manager role.
+
+SECTION 11: Measurable Performance Standards
+layout: list
+
+standards:
+- Written designation form on file: 100% current at all times; renewed within 30 days of any role change or lapse — per GV-GB-004; 0 clinical coverage gaps.
+- RN license: active and unrestricted at all times; CA BRN renewal completed before expiration — 0 lapses — per HR-TA-004.
+- BLS/CPR certification: current at all times; renewed before expiration — 0 lapses.
+- OIG/SAM screening (self): monthly; 0 lapses in exclusion-free status — per HR-TA-003.
+- OASIS competency validation: current per agency competency program; re-validated annually — 0 expired.
+- Activation documentation: completed within 24 hours of each activation (start date, scope, key actions, end date) — 100% compliance.
+- Clinical coverage: 0 periods where Clinical Manager is absent without a documented designee in place — per GV-GB-004.
+- Readiness: able to assume full Clinical Manager authority within 1 business day of activation — verified through annual cross-training.
+
+SECTION 12: Documentation Ownership
+layout: list
+
+owned_records:
+- Clinical Designee Designation Form: co-signed by DON and Administrator; Designee retains personal copy; retained in governance and HR files.
+- Activation Log: records each activation period — start date, end date, scope of authority, OASIS authorizations, HHA supervisory decisions, and any escalation actions; retained in clinical management file.
+- Own RN license, BLS/CPR, and OIG/SAM screening records: retained in personal personnel file.
+- OASIS competency validation documentation: retained in personnel file.
+- During activation: owns all documentation responsibilities listed under HR-JD-003 for the duration of the activation period.
+
+SECTION 13: Escalation Responsibilities
+layout: list
+
+escalation:
+- Unplanned Clinical Manager absence without documented designee coverage → Immediately assume designation; notify Administrator and clinical staff.
+- Patient safety event (fall with injury, wrong medication, unexpected death) discovered during activation → Immediately notify Administrator; activate reportable event protocol per CO-CP-001; do not defer to return of DON.
+- Active license expiration for any clinical staff discovered during activation → Immediately remove staff from patient care; notify Administrator within 2 hours; document action.
+- Clinical or regulatory matter requiring DON-level authority or external regulatory response during activation → Notify Administrator immediately; consult before taking unilateral action on unprecedented decisions.
+- Return of Director of Nursing after absence → Provide formal transition summary; deactivate designation in writing; deliver Activation Log to DON.
+
+SECTION 14: Required Forms
+layout: list
+
+forms:
+- Clinical Designee Designation Form (GV-FM or HR-equivalent): maintains own copy; reviewed and renewed annually.
+- HR-FM-031 — Job Description Acknowledgment Form (signed at designation and upon any material change).
+- OIG/SAM Screening Log (self): monthly entry; retained in personnel file.
+- Activation Log (agency-standard format): completed for each activation event.
+- During activation: all forms required under HR-JD-003 become the Clinical Designee's responsibility for the duration.
+
+SECTION 15: Onboarding & Competency Requirements
+layout: list
+
+This role is governed by the Role-Based Onboarding & Competency Journey.
+
+Required Training Path:
+- General Orientation (GAO Series)
+- Role-Specific LMS Track (DON-000 Series)
+
+Competency Requirements:
+- Initial competency validation (HR-TD-003 Appendix A)
+- Supervised experience (if applicable)
+- Clearance required prior to independent duties
+
+Ongoing Compliance:
+- Annual training (HR-TD-001)
+- Annual competency evaluation
+- Monthly compliance screening (OIG/SAM)
+
+Refer to:
+Role-Based Onboarding & Competency Journey (Master Framework)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Document HR-JD-004 · Version 6.0 · Effective 2025-07-10 · Next Review 2027-07-10
+- Linked Policies: HR-TA-006, HR-TA-004, GV-GB-004
+- Regulatory Authority: 42 CFR § 484.105(c); § 484.115
+- Reports To: Director of Nursing / Clinical Manager (HR-JD-003)

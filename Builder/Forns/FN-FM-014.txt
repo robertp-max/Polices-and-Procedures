@@ -1,0 +1,72 @@
+FORM ID: FN-FM-014
+TITLE: Finance Committee Meeting Minutes
+TYPE: Template
+DOMAIN: FN
+USAGE: Required
+FREQUENCY: Quarterly
+VERSION: 1.0
+EFFECTIVE DATE: 2026-04-21
+NEXT REVIEW DATE: 2027-04-21
+ORIENTATION: portrait
+CLASSIFICATIONS: audit_critical, master_template
+
+LINKED POLICIES:
+- FN-FP-001
+- FN-FP-005
+- GV-GB-001
+
+PURPOSE:
+Quarterly (or more frequent) Finance Committee meeting minutes template capturing attendees, fiscal review, budget variance, revenue-cycle KPIs, material write-offs, treasury/investment decisions, and recommendations to the Governing Body.
+
+INSTRUCTIONS:
+Prepared by CFO/Finance Director (or designee) within 5 business days of meeting. Approved at next Finance Committee meeting. Supplies the Governing Body minutes (GV-FM-005) with underlying detail. Archived in Governance/Finance record minimum 7 years.
+
+SECTION 1: Section 1 — Identification
+layout: grid
+
+fields:
+- Form Completed By (Full Name) (type=text, required=true, col=2)
+- Title / Role (type=text, required=true, col=2)
+- Department / Branch (type=text, col=2)
+- Date Completed (type=date, required=true, col=2)
+
+SECTION 2: Section 2 — Content
+layout: grid
+
+fields:
+- Meeting Date (type=date, required=true, col=2)
+- Meeting Location / Platform (type=text, col=2)
+- Finance Committee Chair (type=text, col=2)
+- Members Present (type=textarea, col=4)
+- Members Absent (type=textarea, col=4)
+- Quorum Confirmed? (Y/N) (type=select, col=2, options=[Yes | No])
+- Approval of Prior Minutes (type=textarea, col=4)
+- Monthly/Quarterly Financial Report Review (type=textarea, col=4)
+- Budget-to-Actual Variance Review (>10% items) (type=textarea, col=4)
+- Revenue Cycle KPIs (denials, DSO, cash, AR aging) (type=textarea, col=4)
+- Material Write-Offs / Bad Debt Review (type=textarea, col=4)
+- Capital Expenditures / Investments (type=textarea, col=4)
+- Banking / Treasury Matters (type=textarea, col=4)
+- Motions / Votes (with dissents, recusals) (type=textarea, col=4)
+- Recommendations to Governing Body (type=textarea, col=4)
+- Action Items (Owner / Due) (type=textarea, col=4)
+- Adjournment Time (type=text, col=2)
+- Next Meeting Date (type=date, col=2)
+
+SECTION 3: Section — Signatures & Attestation
+layout: signature
+
+fields:
+- Finance Committee Chair — Printed Name (type=text, col=2)
+- Finance Committee Chair — Signature (type=signature, col=1)
+- Finance Committee Chair — Date (type=date, col=1)
+- CFO — Printed Name (type=text, col=2)
+- CFO — Signature (type=signature, col=1)
+- CFO — Date (type=date, col=1)
+- Recorder — Printed Name (type=text, col=2)
+- Recorder — Signature (type=signature, col=1)
+- Recorder — Date (type=date, col=1)
+
+FOOTER NOTES:
+- Care Indeed Home Health Care, Inc. · Form FN-FM-014 · Version 1.0 · Effective 2026-04-21 · Next Review 2027-04-21
+- Linked Policies: FN-FP-001, FN-FP-005, GV-GB-001
