@@ -67,4 +67,8 @@ export const env = {
   ollamaChatModel: process.env.OLLAMA_CHAT_MODEL ?? 'llama3.1:8b-instruct-q4_K_M',
   ollamaEmbedModel: process.env.OLLAMA_EMBED_MODEL ?? 'nomic-embed-text',
   ollamaTimeoutMs: Number(process.env.OLLAMA_TIMEOUT_MS ?? 60_000),
+
+  /** ───── Hubstaff Integration ──────────────────────────── */
+  hubstaffPat: process.env.HUBSTAFF_PAT ?? '',
+  hubstaffOrgId: process.env.HUBSTAFF_ORG_ID ?? '',
 };

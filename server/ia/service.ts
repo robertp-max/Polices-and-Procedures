@@ -22,6 +22,7 @@ import { retrieve } from './retrieval.js';
 import { generateStructuredResponse } from './responder.js';
 import { operationalService } from './operational/service.js';
 import { regulatoryMatcher } from './regulatory/matcher.js';
+import { classifyScenario, isHighStakesScenario } from './scenarioClassifier.js';
 import { sessionStore } from './session/store.js';
 import { processTurn, recordAssistantTurn, toSessionSummary } from './session/manager.js';
 import { buildContextEnvelope } from './session/envelope.js';
@@ -234,6 +235,12 @@ export class IaService {
       throw Object.assign(new Error('ia.index.not_ready'), { code: 'not_ready' });
     }
 
+    // ── Scenario Normalization (runs BEFORE retrieval) ───────────────
+    // Classify the input against the compliance scenario taxonomy so
+    // Brad always returns an actionable answer — even when the corpus
+    // has no literal match (murder, sentinel event, breach, etc.).
+    const scenario = classifyScenario(req.input);
+
     const { hits, query, directMatches } = await retrieve({
       input: req,
       chunks: this.state.chunks,
@@ -283,6 +290,9 @@ export class IaService {
       operationalGaps: opCtx.gaps,
       lifecycleAlerts: opCtx.lifecycleAlerts,
       regulatoryAlerts: regUpdates,
+      // Scenario playbook — suppresses "No Answer Found" for high-stakes inputs.
+      scenario,
+      forceScenarioAnswer: isHighStakesScenario(scenario),
     });
   }
 

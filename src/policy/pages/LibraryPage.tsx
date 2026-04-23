@@ -18,7 +18,7 @@ import { AlertTriangle } from 'lucide-react';
 import { SharedPolicyDetailView, type SharedPolicy } from '../components/SharedPolicyDetailView';
 
 // ══════════════════════════════════════════════════════════════
-// ENTERPRISE POLICY TAXONOMY – FULL 269-POLICY DATASET
+// ENTERPRISE POLICY TAXONOMY – FULL 278-POLICY DATASET
 // ══════════════════════════════════════════════════════════════
 
 const REGULATORY_ITEMS = [
@@ -76,6 +76,7 @@ const DOMAINS = [
     subdomains: [
       { code: 'CP', name: 'Compliance Program', icon: ShieldCheck },
       { code: 'HP', name: 'HIPAA & Privacy', icon: Lock },
+      { code: 'CA', name: 'California Privacy', icon: Landmark },
       { code: 'FA', name: 'Fraud & Abuse', icon: Search },
       { code: 'RA', name: 'Regulatory Affairs', icon: Scale },
       { code: 'DC', name: 'Doc Compliance', icon: FileCheck }
@@ -112,6 +113,7 @@ const DOMAINS = [
     subdomains: [
       { code: 'ER', name: 'Enterprise Risk', icon: BarChart2 },
       { code: 'SS', name: 'Staff Safety', icon: UserCheck },
+      { code: 'OS', name: 'Occupational Safety', icon: Shield },
       { code: 'PS', name: 'Patient Safety', icon: Home },
       { code: 'EP', name: 'Emergency Plan', icon: Siren }
     ]
@@ -150,6 +152,7 @@ const rawPolicies: Record<string, string[]> = {
   'CO-RA': ['001: Regulatory Change Monitoring & Implementation', '002: Internal Compliance Auditing Program', '003: External Audit & Survey Readiness', '004: Medicare Conditions of Participation Compliance', '005: State Licensure & Regulatory Compliance', '006: Accreditation Standards Compliance', '007: Sanctions & Enforcement Response'],
   'CO-FA': ['001: Anti-Kickback & Stark Law Compliance', '002: False Claims Act Awareness & Prevention', '003: Fraud, Waste & Abuse Prevention'],
   'CO-HP': ['001: HIPAA Privacy Program', '002: HIPAA Security Program', '003: HIPAA Breach Notification', '004: Minimum Necessary Standard', '005: Business Associate Agreement Management', '006: Patient Access to Records', '007: Record Retention & Destruction'],
+  'CO-CA': ['001: California Confidentiality of Medical Information Act (CMIA) Compliance'],
   'CO-DC': ['001: Assessment Audit Trail and Data Integrity', '002: Documentation Audit & Monitoring Program', '003: Late Entry, Correction & Amendment Standards', '004: Clinical, Documentation, and Billing Alignment Audit'],
   'FN-BC': ['001: Medicare Billing & Claims Submission', '002: Claims Denial Management & Appeals', '003: Patient Billing & Financial Responsibility', '004: Overpayment Identification & Refund', '005: Pre-Claim Review Compliance', '006: Request for Anticipated Payment (RAP) Management', '007: Payment & Reimbursement Reconciliation'],
   'FN-CM': ['001: PDGM Classification & Coding Accuracy', '002: ICD-10 Coding Standards & Accuracy', '003: Medical Necessity Documentation', '004: Episode Management & Authorization', '005: LUPA Prevention & Monitoring'],
@@ -165,10 +168,11 @@ const rawPolicies: Record<string, string[]> = {
   'RM-ER': ['001: Enterprise Risk Management Program', '002: Incident Reporting & Investigation', '003: Risk Assessment & Prioritization', '004: Liability & Insurance Management', '005: Risk Trending & Pattern Analysis', '006: Claims Management & Litigation Support'],
   'RM-SS': ['001: Staff Safety & Personal Security', '002: Workplace Violence Prevention', '003: Motor Vehicle Safety & Accident Reporting'],
   'RM-PS': ['001: Environmental Safety Assessment', '002: Hazardous Materials & Waste Management', '003: Product & Equipment Safety Recall Management', '004: Patient Elopement & Wandering Risk', '005: High-Risk Medication Safety'],
-  'RM-EP': ['001: Pandemic & Infectious Disease Response', '002: Emergency Preparedness Training & Testing Program', '003: Patient Emergency Communication Plan'],
+  'RM-OS': ['001: Cal/OSHA Injury & Illness Prevention Program (IIPP)', '002: Aerosol Transmissible Disease (ATD) Exposure Control Plan', '003: Bloodborne Pathogen (BBP) Exposure Control Plan', '004: Heat Illness Prevention Program'],
+  'RM-EP': ['001: Emergency Preparedness Program', '002: Emergency Preparedness Training & Testing Program', '003: Patient Emergency Communication Plan'],
   'EN-TG': ['001: Enterprise Policy Taxonomy & Classification Governance', '002: Regulatory Cross-Reference & Mapping'],
-  'EN-LC': ['001: Policy Lifecycle Management & Version Control', '002: Policy Exception & Waiver Management', '003: Policy Assignment and Role-Based Applicability Governance', '004: Policy Retirement and Obsolescence Management'],
-  'EN-CM': ['001: Policy Compliance Metrics & Dashboard Reporting', '002: Inter-Domain Policy Coordination & Conflict Resolution'],
+  'EN-LC': ['001: Policy Lifecycle Control & Version Management', '002: Policy Exception & Waiver Management', '003: Policy Assignment and Role-Based Applicability Governance', '004: Policy Retirement and Obsolescence Management'],
+  'EN-CM': ['001: Enterprise Compliance Metrics Program', '002: Inter-Domain Policy Coordination & Conflict Resolution'],
 };
 
 const newPoliciesData = [
@@ -363,14 +367,14 @@ export function LibraryPage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FFC107]/20 to-transparent -translate-x-full"
                   style={{animation:'shimmerLib 2.5s infinite'}}/>
                 <FileText size={12} className="text-[#FFC107] animate-pulse"/>
-                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-white">269 POLICIES</span>
+                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-white">278 POLICIES</span>
               </div>
               <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] border-[#a855f7]/40 flex items-center gap-2 relative overflow-hidden cursor-pointer"
                 onClick={() => navigate('/forms')}>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#a855f7]/20 to-transparent -translate-x-full"
                   style={{animation:'shimmerLib 3s infinite 0.5s'}}/>
                 <Layers size={12} className="text-[#a855f7] animate-pulse"/>
-                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-white">281 FORMS</span>
+                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-white">361 FORMS</span>
               </div>
             </div>
           </div>

@@ -81,6 +81,66 @@ export interface CompletionState {
   completedBy?: string;
 }
 
+/* ─── Notes ───────────────────────────────────────────────
+   Free-form, author-attributed notes attached to a workflow
+   instance. Used by operators to record context during execution
+   and by audit reviewers to explain deviations.
+   ──────────────────────────────────────────────────────── */
+export interface InstanceNote {
+  id: string;
+  eventId: string;
+  author: string;
+  authorRole?: string;
+  body: string;
+  createdAt: string;
+}
+
+/* ─── Certification Record ────────────────────────────────
+   Formal, immutable audit receipt produced when an operator
+   invokes CERTIFY EVENT COMPLETE. Captures a snapshot of the
+   runtime state that passed validation, so survey reviewers can
+   see exactly what was in evidence at the moment of closure.
+   ──────────────────────────────────────────────────────── */
+export interface CertificationSnapshot {
+  stepsComplete: number;
+  stepsTotal: number;
+  formsComplete: number;
+  formsTotal: number;
+  minutesRequired: boolean;
+  minutesFinalized: boolean;
+  approvalsRequired: number;
+  approvalsApproved: number;
+  evidenceCount: number;
+  notesCount: number;
+  slaDaysPastDue: number;
+}
+
+export type CertificationDisposition =
+  | 'standard'
+  | 'certified-with-exception';
+
+export interface CertificationRecord {
+  eventId: string;
+  certifiedAt: string;
+  certifiedBy: string;
+  certifierRole?: string;
+  certifierNote?: string;
+  snapshot: CertificationSnapshot;
+  auditPacketRef?: string;
+  /**
+   * How this certification was recorded:
+   *   'standard'                 — certified within SLA, no exceptions
+   *   'certified-with-exception' — certified past SLA within the grace window
+   */
+  disposition?: CertificationDisposition;
+  /**
+   * Reason the exception was granted (always set when
+   * disposition === 'certified-with-exception'). Surfaces in the
+   * audit export + governance review packet.
+   */
+  exceptionReason?: string;
+}
+
 export interface ValidationReport {
   canComplete: boolean;
   blockers: {
@@ -111,6 +171,8 @@ interface RegulatoryExecutionState {
   evidence:         Record<string, EvidenceDoc[]>;
   approvals:        ApprovalRequest[];
   completions:      Record<string, CompletionState>;
+  notes:            Record<string, InstanceNote[]>;
+  certifications:   Record<string, CertificationRecord>;
   activeWorkflowEventId: string | null;
 
   /* ── workflow drawer ── */
@@ -132,10 +194,16 @@ interface RegulatoryExecutionState {
   requestApproval: (eventId: string, targetKind: ApprovalTargetKind, targetLabel: string, targetId?: string, note?: string) => string;
   decideApproval:  (approvalId: string, decision: ApprovalStatus, decisionNote?: string, approver?: string) => void;
 
-  /* ── completion ── */
-  validateEvent:     (event: RegulatoryEvent) => ValidationReport;
-  markEventComplete: (event: RegulatoryEvent) => { ok: boolean; message: string };
-  reopenEvent:       (eventId: string) => void;
+  /* ── notes ── */
+  addNote:    (eventId: string, body: string, author?: string, authorRole?: string) => string;
+  removeNote: (eventId: string, noteId: string) => void;
+
+  /* ── completion + certification ── */
+  validateEvent:        (event: RegulatoryEvent) => ValidationReport;
+  markEventComplete:    (event: RegulatoryEvent) => { ok: boolean; message: string };
+  certifyEventComplete: (event: RegulatoryEvent, certifier?: string, certifierRole?: string, note?: string) => { ok: boolean; message: string; record?: CertificationRecord };
+  revokeCertification:  (eventId: string, reason: string, actor?: string) => { ok: boolean; message: string };
+  reopenEvent:          (eventId: string) => void;
 
   /* ── selectors (return effective status blending seed + store) ── */
   effectiveStepStatus:    (event: RegulatoryEvent, stepId: string) => StepStatus;
@@ -143,6 +211,8 @@ interface RegulatoryExecutionState {
   effectiveMinutesStatus: (event: RegulatoryEvent) => MinutesStatus | null;
   effectiveUrgency:       (event: RegulatoryEvent) => UrgencyLevel;
   isEventComplete:        (eventId: string) => boolean;
+  isCertified:            (eventId: string) => boolean;
+  getCertification:       (eventId: string) => CertificationRecord | undefined;
 
   resetAll: () => void;
 }
@@ -158,6 +228,8 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
       evidence:      {},
       approvals:     [],
       completions:   {},
+      notes:         {},
+      certifications:{},
       activeWorkflowEventId: null,
 
       /* ── workflow drawer ── */
@@ -339,6 +411,218 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         });
       },
 
+      /* ── notes ── */
+      addNote: (eventId, body, author = CURRENT_USER, authorRole) => {
+        const enf = useEnforcementStore.getState();
+        if (enf.isLocked(eventId)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'evidence', reason: 'addNote on a locked event' });
+          return '';
+        }
+        const trimmed = body.trim();
+        if (!trimmed) return '';
+        const id = `NT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+        const note: InstanceNote = {
+          id,
+          eventId,
+          author,
+          authorRole,
+          body: trimmed,
+          createdAt: nowISO(),
+        };
+        set(state => ({
+          notes: { ...state.notes, [eventId]: [note, ...(state.notes[eventId] || [])] },
+        }));
+        enf.log({ action: 'evidence.uploaded', eventId, targetKind: 'evidence', targetId: id, after: { kind: 'note', body: trimmed.slice(0, 80) } });
+        return id;
+      },
+
+      removeNote: (eventId, noteId) => {
+        const enf = useEnforcementStore.getState();
+        if (enf.isLocked(eventId)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'evidence', targetId: noteId, reason: 'removeNote on a locked event' });
+          return;
+        }
+        const prev = (get().notes[eventId] || []).find(n => n.id === noteId);
+        set(state => ({
+          notes: { ...state.notes, [eventId]: (state.notes[eventId] || []).filter(n => n.id !== noteId) },
+        }));
+        enf.log({ action: 'evidence.removed', eventId, targetKind: 'evidence', targetId: noteId, before: prev });
+      },
+
+      /* ── certification ──
+         Builds on markEventComplete but enforces the stricter
+         closure gate: every required approval must be recorded,
+         minutes (if required) must be finalized, and validation
+         must report zero blockers. Writes an immutable receipt
+         and hard-locks the instance. */
+      certifyEventComplete: (event, certifier = CURRENT_USER, certifierRole, note) => {
+        const enf = useEnforcementStore.getState();
+        const s = get();
+
+        if (s.certifications[event.id]) {
+          return { ok: false, message: 'Event is already certified. Revoke the prior certification to re-run.' };
+        }
+
+        const report = s.validateEvent(event);
+        if (!report.canComplete) {
+          enf.log({
+            action: 'mutation.blocked',
+            eventId: event.id,
+            reason: `Certification refused — ${report.blockers.length} blocker(s): ${report.blockers.slice(0, 3).map(b => `${b.kind}:${b.label}`).join(', ')}`,
+          });
+          return {
+            ok: false,
+            message: `Cannot certify: ${report.blockers.length} outstanding item${report.blockers.length === 1 ? '' : 's'}.`,
+          };
+        }
+
+        // Every required approval rule must be satisfied before certification.
+        const requiredRules = (event.approvals ?? []).filter(r => r.required);
+        const allRulesApproved = requiredRules.every(r =>
+          s.approvals.some(a =>
+            a.eventId === event.id &&
+            a.targetKind === r.targetKind &&
+            a.targetLabel === r.targetLabel &&
+            a.status === 'approved',
+          ),
+        );
+        if (!allRulesApproved) {
+          return {
+            ok: false,
+            message: 'Cannot certify: one or more required approvals are missing or not yet approved.',
+          };
+        }
+
+        // If not yet marked complete, mark complete first (uses the full enforcement gate).
+        if (!s.isEventComplete(event.id)) {
+          const markRes = s.markEventComplete(event);
+          if (!markRes.ok) return { ok: false, message: markRes.message };
+        }
+
+        // SLA grace gate: a validation-clean instance can certify up to
+        // `SLA_GRACE_DAYS` past due (recorded as an exception below). Beyond
+        // that window, certification is refused — the operator must either
+        // escalate/document the delay or revoke + recreate the workflow.
+        {
+          const eventDateMs = new Date(event.date).getTime();
+          const nowMs = Date.now();
+          const daysPast = Math.floor((nowMs - eventDateMs) / (24 * 60 * 60 * 1000));
+          const SLA_GRACE_DAYS = 3;
+          if (daysPast > SLA_GRACE_DAYS) {
+            enf.log({
+              action: 'mutation.blocked',
+              eventId: event.id,
+              reason: `Certification refused — ${daysPast} days past SLA, beyond ${SLA_GRACE_DAYS}-day grace window.`,
+            });
+            return {
+              ok: false,
+              message: `Cannot certify: ${daysPast} days past SLA (beyond the ${SLA_GRACE_DAYS}-day grace window). Revoke and reopen the workflow or escalate for an exception override.`,
+            };
+          }
+        }
+
+        // Build snapshot from the validation that just passed.
+        const evidenceCount = (get().evidence[event.id] || []).length;
+        const notesCount    = (get().notes[event.id] || []).length;
+        const approvalsForEvent = get().approvals.filter(a => a.eventId === event.id);
+        const approvalsApproved = approvalsForEvent.filter(a => a.status === 'approved').length;
+
+        const eventDate = new Date(event.date);
+        const today = new Date();
+        const slaDaysPastDue = Math.max(
+          0,
+          Math.floor((today.getTime() - eventDate.getTime()) / (24 * 60 * 60 * 1000)),
+        );
+
+        const snapshot: CertificationSnapshot = {
+          stepsComplete: report.progress.stepsComplete,
+          stepsTotal: report.progress.stepsTotal,
+          formsComplete: report.progress.formsComplete,
+          formsTotal: report.progress.formsTotal,
+          minutesRequired: report.progress.minutesRequired,
+          minutesFinalized: report.progress.minutesFinalized,
+          approvalsRequired: requiredRules.length,
+          approvalsApproved,
+          evidenceCount,
+          notesCount,
+          slaDaysPastDue,
+        };
+
+        // Certifying past SLA (but validation-clean) = grace-window exception.
+        // The gate still allowed certification, but we annotate the record so
+        // surveyors can see the exception when reviewing the audit export.
+        const SLA_GRACE_DAYS = 3; // kept local to avoid a cross-layer import
+        const disposition: CertificationDisposition =
+          slaDaysPastDue > 0 && slaDaysPastDue <= SLA_GRACE_DAYS
+            ? 'certified-with-exception'
+            : 'standard';
+        const exceptionReason = disposition === 'certified-with-exception'
+          ? `Certified ${slaDaysPastDue} day${slaDaysPastDue === 1 ? '' : 's'} past SLA within the ${SLA_GRACE_DAYS}-day grace window. All required checks passed.`
+          : undefined;
+
+        const record: CertificationRecord = {
+          eventId: event.id,
+          certifiedAt: nowISO(),
+          certifiedBy: certifier,
+          certifierRole,
+          certifierNote: note?.trim() || undefined,
+          snapshot,
+          auditPacketRef: `AP-${event.id}-${Date.now().toString(36)}`,
+          disposition,
+          exceptionReason,
+        };
+
+        set(state => ({
+          certifications: { ...state.certifications, [event.id]: record },
+        }));
+
+        // Hard-lock the instance. Role defaults to the event-level approver if defined.
+        const unlockRole = event.approvals?.find(a => a.targetKind === 'event')?.approverRole ?? certifierRole ?? 'Administrator';
+        if (!enf.isLocked(event.id)) {
+          enf.lock(event.id, `Certified complete by ${certifier}${certifierRole ? ` (${certifierRole})` : ''}.`, unlockRole);
+        }
+
+        enf.log({
+          action: 'event.completed',
+          eventId: event.id,
+          targetKind: 'event',
+          actorOverride: certifier,
+          reason: `Event certified complete and locked${certifierRole ? ` by ${certifierRole}` : ''}.`,
+          after: { certifiedAt: record.certifiedAt, auditPacketRef: record.auditPacketRef, snapshot },
+        });
+
+        return { ok: true, message: 'Event certified complete.', record };
+      },
+
+      revokeCertification: (eventId, reason, actor = CURRENT_USER) => {
+        const prev = get().certifications[eventId];
+        if (!prev) return { ok: false, message: 'No certification to revoke.' };
+        const enf = useEnforcementStore.getState();
+        if (enf.isLocked(eventId)) {
+          const unlock = enf.unlock(eventId, `Certification revoked: ${reason}`);
+          if (!unlock.ok) {
+            return { ok: false, message: unlock.message ?? 'Unable to unlock for revocation.' };
+          }
+        }
+        set(state => {
+          const next = { ...state.certifications };
+          delete next[eventId];
+          return { certifications: next };
+        });
+        enf.log({
+          action: 'event.reopened',
+          eventId,
+          targetKind: 'event',
+          actorOverride: actor,
+          reason: `Certification revoked: ${reason}`,
+          before: prev,
+        });
+        return { ok: true, message: 'Certification revoked. Instance is reopened.' };
+      },
+
+      isCertified: eventId => !!get().certifications[eventId],
+      getCertification: eventId => get().certifications[eventId],
+
       /* ── selectors ── */
       effectiveStepStatus: (event, stepId) => {
         const override = get().stepStates[sKey(event.id, stepId)];
@@ -480,11 +764,12 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
       resetAll: () => set({
         formStates: {}, stepStates: {}, minutesStates: {},
         evidence: {}, approvals: [], completions: {},
+        notes: {}, certifications: {},
         activeWorkflowEventId: null,
       }),
     }),
     {
-      name: 'reg-execution-v1',
+      name: 'reg-execution-v2',
       storage: createJSONStorage(() => localStorage),
       partialize: state => ({
         formStates: state.formStates,
@@ -493,6 +778,8 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         evidence: state.evidence,
         approvals: state.approvals,
         completions: state.completions,
+        notes: state.notes,
+        certifications: state.certifications,
       }),
     },
   ),
@@ -520,4 +807,21 @@ export function useEventApprovals(eventId: string): ApprovalRequest[] {
 export function useAllPendingApprovalsCount(): number {
   const all = useRegulatoryExecutionStore(state => state.approvals);
   return useMemo(() => all.filter(a => a.status === 'pending').length, [all]);
+}
+
+const EMPTY_NOTES: InstanceNote[] = [];
+
+export function useEventNotes(eventId: string): InstanceNote[] {
+  const byEvent = useRegulatoryExecutionStore(state => state.notes);
+  return useMemo(() => byEvent[eventId] || EMPTY_NOTES, [byEvent, eventId]);
+}
+
+export function useEventCertification(eventId: string): CertificationRecord | undefined {
+  const byEvent = useRegulatoryExecutionStore(state => state.certifications);
+  return useMemo(() => byEvent[eventId], [byEvent, eventId]);
+}
+
+export function useCertifiedCount(): number {
+  const certs = useRegulatoryExecutionStore(state => state.certifications);
+  return useMemo(() => Object.keys(certs).length, [certs]);
 }

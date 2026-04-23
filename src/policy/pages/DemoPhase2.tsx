@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Monitor, AlertTriangle, Layers, GitBranch,
-  Brain, Calendar, Settings, Sparkles, Shield, FileText, Users,
+  Brain, Calendar, Clock, Settings, Sparkles, Shield, FileText, Users,
   CheckCircle, Play, RefreshCw, BookOpen, Database, Bell,
   Activity, ShieldCheck, ExternalLink, ChevronRight, HelpCircle,
   Landmark, Scale, Gavel, Target, Lock, Columns3, LayoutList,

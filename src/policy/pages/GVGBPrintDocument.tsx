@@ -999,21 +999,38 @@ const AppG = () => {
 
 export function GVGBPrintDocument() {
   useEffect(() => {
-    // Auto-trigger the native device print dialog after content fully renders
+    const prev = document.title;
+    document.title = `${META.id} — ${META.title}`;
     const timer = setTimeout(() => window.print(), 1200);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      document.title = prev;
+    };
   }, []);
 
   return (
     <div style={{ fontFamily: "'Roboto', sans-serif", fontSize: 12, color: DARK, background: '#fff', minHeight: '100vh' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap');
-        @page { size: letter; margin: 0.6in 0.75in; }
+        @page { size: letter; margin: 0.5in; }
         @media print {
-          body { background: white !important; margin: 0; }
+          body { background: white !important; margin: 0; padding: 0; }
           .no-print { display: none !important; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           input, select, textarea { border-color: #999 !important; }
+          table {
+            table-layout: fixed !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          table th, table td {
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+            white-space: normal !important;
+          }
+          thead { display: table-header-group !important; }
+          tr { page-break-inside: avoid !important; break-inside: avoid !important; }
         }
         body { margin: 0; padding: 0; }
       `}</style>

@@ -4,6 +4,7 @@ import { env } from './env.js';
 import { log } from './logger.js';
 import { ApiError } from './errors.js';
 import { calendarRouter } from './routes/calendar.js';
+import { hubstaffRouter } from './routes/hubstaff.js';
 import { IaService } from './ia/service.js';
 import { createIaRouter } from './ia/routes.js';
 
@@ -37,6 +38,7 @@ app.use('/api', (req, _res, next) => {
 });
 
 app.use('/api/calendar', calendarRouter);
+app.use('/api/hubstaff', hubstaffRouter);
 
 // Compliance Intelligence (iAdministrator) — local RAG engine.
 const iaService = new IaService({

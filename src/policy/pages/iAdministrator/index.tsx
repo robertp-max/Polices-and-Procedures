@@ -11,6 +11,7 @@ import { AvailableActions } from './components/AvailableActions';
 import { StudioTabs, STUDIO_TABS, type StudioTabId } from './components/StudioTabs';
 import { RightPanelPreview } from './components/RightPanelPreview';
 import { NoAnswer } from './components/NoAnswer';
+import { ScenarioResponse } from './components/ScenarioResponse';
 import { HealthStrip } from './components/HealthStrip';
 import { OperationalGaps } from './components/OperationalGaps';
 import { RegulatoryAlerts } from './components/RegulatoryAlerts';
@@ -439,10 +440,19 @@ function ResponseStack({
   onOpenReference: (id: string) => void;
   onAction: (action: AvailableAction) => void;
 }) {
+  const hasScenario = Boolean(response.scenario && response.scenario.category !== 'GENERAL_QUERY');
+
   if (response.noAnswerFound) {
     return (
       <>
-        <NoAnswer reason={response.noAnswerReason} isLight={isLight} />
+        <NoAnswer
+          reason={response.noAnswerReason}
+          isLight={isLight}
+          hasScenarioMapping={hasScenario}
+        />
+        {hasScenario && response.scenario && (
+          <ScenarioResponse scenario={response.scenario} isFallback isLight={isLight} />
+        )}
         {response.linkedReferences.length > 0 && (
           <ReferenceCards
             references={response.linkedReferences}
@@ -472,6 +482,9 @@ function ResponseStack({
   }
   return (
     <>
+      {hasScenario && response.scenario && (
+        <ScenarioResponse scenario={response.scenario} isLight={isLight} />
+      )}
       <StructuredAnswer response={response} isLight={isLight} onOpenReference={onOpenReference} />
       {response.requirementsSnapshot.length > 0 && (
         <RequirementsSnapshot items={response.requirementsSnapshot} isLight={isLight} onOpenReference={onOpenReference} />

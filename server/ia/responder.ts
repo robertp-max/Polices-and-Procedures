@@ -11,6 +11,7 @@ import type {
   PhaseStatus,
   RegulatoryAlert,
   RequirementSnapshotItem,
+  ScenarioMapping,
   StructuredResponse,
   StudioOutputType,
 } from './types.js';
@@ -58,21 +59,42 @@ export interface RespondInput {
   lifecycleAlerts?: LifecycleAlert[];
   /** Structured regulatory alerts for deterministic response attachment. */
   regulatoryAlerts?: RegulatoryAlert[];
+  /** Scenario classification + playbook. Attached to the response and
+   *  used to synthesize a deterministic answer when retrieval is empty. */
+  scenario?: ScenarioMapping;
+  /** When true, responder MUST NOT return `noAnswerFound: true` — it
+   *  returns the scenario playbook as the answer instead. Set by the
+   *  service for high-stakes scenarios (sentinel events, breaches, etc). */
+  forceScenarioAnswer?: boolean;
 }
 
 export async function generateStructuredResponse(
   args: RespondInput,
 ): Promise<StructuredResponse> {
   const startedAt = Date.now();
-  const { input, intent, hits, docs, ollama, directMatchDocIds } = args;
+  const { input, intent, hits, docs, ollama, directMatchDocIds, scenario, forceScenarioAnswer } = args;
 
+  // ── Retrieval empty + high-stakes scenario → synthesize scenario answer
+  // instead of emitting "No Answer Found". This is the core fix: Brad must
+  // behave as a compliance intelligence system, not a search box.
   if (hits.length === 0 && directMatchDocIds.length === 0) {
+    if (forceScenarioAnswer && scenario) {
+      return scenarioOnlyResponse({
+        id: newId(),
+        input,
+        intent,
+        scenario,
+        model: 'scenario-normalization',
+        elapsedMs: Date.now() - startedAt,
+      });
+    }
     return emptyNoAnswer({
       id: newId(),
       input,
       intent,
       reason:
-        'No passages in the internal corpus matched this request. Rephrase, reference a specific policy or form ID, or broaden the query.',
+        'No exact policy match found in the internal corpus. Rephrase, reference a specific policy or form ID, or broaden the query.',
+      scenario,
       model: ollama ? 'ollama' : 'none',
       elapsedMs: Date.now() - startedAt,
     });
@@ -135,6 +157,7 @@ export async function generateStructuredResponse(
     hits,
     directMatchDocIds,
     studioOutputType,
+    scenario,
   });
 
   const retrievedChunkIds = hits.map(h => h.chunk.id);
@@ -142,7 +165,11 @@ export async function generateStructuredResponse(
   // Detect when the LLM hedged instead of declaring noAnswerFound properly.
   const hedgedAnswer = /not (explicitly|directly|specifically) (stated|addressed|covered|supported|mentioned)/i
     .test(llmJson.directAnswer ?? '');
-  const noAnswerFound = Boolean(llmJson.noAnswerFound) || hedgedAnswer;
+  // Force-override: high-stakes scenarios always return an answer.
+  const scenarioOverride = Boolean(forceScenarioAnswer && scenario);
+  const noAnswerFound = scenarioOverride
+    ? false
+    : Boolean(llmJson.noAnswerFound) || hedgedAnswer;
 
   // Auto-elevate riskLevel when retrieved chunks carry CoP/regulatory tags.
   const regulatoryTagsInHits = new Set(hits.flatMap(h => h.chunk.regulatoryTags ?? []));
@@ -168,6 +195,8 @@ export async function generateStructuredResponse(
     hasCoPTag,
   );
 
+  // Note: finalNoAnswerFound is computed after directAnswer below; use
+  // the pre-dump-check noAnswerFound here since score is only used for display.
   const systemConfidenceScore = computeConfidenceScore({
     hits,
     citations,
@@ -176,18 +205,55 @@ export async function generateStructuredResponse(
     embeddingsPresent: hits.some(h => Array.isArray(h.chunk.embedding)),
   });
 
+  // When a high-stakes scenario is in play, let its headline + actions
+  // take the lead regardless of what the LLM produced. The LLM answer
+  // still gets embedded as "operationalRequirement" so nothing is lost.
+  const rawDirectAnswer = scenarioOverride && scenario
+    ? sanitizeString(scenario.headline, 800)
+    : sanitizeString(llmJson.directAnswer ?? '', 800);
+
+  // ── Safeguard: reject raw corpus/knowledge dumps echoed by the model ──
+  // If the model ignored the JSON-mode instruction and echoed CORPUS block
+  // content into directAnswer (e.g. "### CL-WF-13", "[P1] ...", "CORPUS ("),
+  // suppress the answer and surface a retry message instead.
+  const RAW_DUMP_RE = /^###\s+[A-Z]{2}-|^\[P\d+\]|^CORPUS\s*\(/i;
+  const isRawDump = !scenarioOverride && RAW_DUMP_RE.test(rawDirectAnswer);
+  if (isRawDump) {
+    log.warn('responder.raw_dump_detected', { preview: rawDirectAnswer.slice(0, 80) });
+  }
+
+  const directAnswer = isRawDump ? '' : rawDirectAnswer;
+  const finalNoAnswerFound = noAnswerFound || isRawDump;
+
+  const operationalRequirement = scenarioOverride && scenario
+    ? sanitizeString(
+        [scenario.summary, llmJson.operationalRequirement ?? '']
+          .filter(Boolean)
+          .join(' '),
+        600,
+      )
+    : sanitizeString(llmJson.operationalRequirement ?? '', 600);
+
+  // Risk + enforcement floors for scenario-backed responses.
+  const finalRisk = scenarioOverride && scenario
+    ? elevateRiskToScenario(riskLevel, scenario.riskLevel)
+    : riskLevel;
+  const finalEnforcement = scenarioOverride && scenario && scenario.riskLevel === 'critical'
+    ? 'condition_level' as EnforcementLevel
+    : enforcementLevel;
+
   const response: StructuredResponse = {
     id: newId(),
     responseType: 'compliance_answer',
-    directAnswer: sanitizeString(llmJson.directAnswer ?? '', 800),
-    operationalRequirement: sanitizeString(llmJson.operationalRequirement ?? '', 600),
+    directAnswer,
+    operationalRequirement,
     requiredArtifacts: requiredArtifactIds,
     complianceRisk: sanitizeString(llmJson.complianceRisk ?? '', 500),
-    riskLevel,
+    riskLevel: finalRisk,
     confidence: coerceConfidence(llmJson.confidence, hits),
     systemConfidenceScore,
     governingPolicyId,
-    enforcementLevel,
+    enforcementLevel: finalEnforcement,
     complianceImpact: sanitizeString(llmJson.complianceImpact ?? '', 600),
     surveyFocus: sanitizeStringArray(llmJson.surveyFocus, 180, 5),
     commonFailurePoints: sanitizeStringArray(llmJson.commonFailurePoints, 180, 5),
@@ -196,24 +262,110 @@ export async function generateStructuredResponse(
     linkedReferences,
     availableActions,
     studioOutputType,
-    noAnswerFound,
-    noAnswerReason: noAnswerFound
-      ? sanitizeString(llmJson.noAnswerReason ?? (hedgedAnswer ? 'The corpus does not directly address this topic.' : 'No corpus support.'), 300)
+    noAnswerFound: finalNoAnswerFound,
+    noAnswerReason: finalNoAnswerFound
+      ? sanitizeString(
+          isRawDump
+            ? 'Unable to generate response. Please retry.'
+            : (llmJson.noAnswerReason ?? (hedgedAnswer ? 'No exact policy match found.' : 'No corpus support.')),
+          300,
+        )
       : '',
     // ── Operational intelligence (deterministic, not LLM-generated) ──
     operationalGaps: args.operationalGaps,
     lifecycleAlerts: args.lifecycleAlerts,
     regulatoryAlerts: args.regulatoryAlerts,
     phaseStatus: buildPhaseStatus(),
+    scenario: scenario && scenario.category !== 'GENERAL_QUERY'
+      ? {
+          ...scenario,
+          matchNote: scenarioOverride
+            ? 'No exact policy match found. Applying closest regulatory scenario mapping.'
+            : 'Matched to policy and workflow guidance.',
+        }
+      : undefined,
     meta: {
       intent,
       retrievedChunkIds,
       model: modelName,
       elapsedMs: Date.now() - startedAt,
+      scenarioCategory: scenario?.category,
     },
   };
 
   return response;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Scenario-only response — synthesized deterministically when
+   corpus retrieval produced zero hits but the input maps to a
+   high-stakes scenario. NO LLM call. NO hallucination.
+   ───────────────────────────────────────────────────────────── */
+function scenarioOnlyResponse(args: {
+  id: string;
+  input: string;
+  intent: IntentKind;
+  scenario: ScenarioMapping;
+  model: string;
+  elapsedMs: number;
+}): StructuredResponse {
+  const scenario: ScenarioMapping = {
+    ...args.scenario,
+    matchNote: 'No exact policy match found. Applying closest regulatory scenario mapping.',
+  };
+  const availableActions: AvailableAction[] = scenario.suggestedGenerators.map((g, i) => ({
+    id: `a-scn-${scenario.category}-${i}`,
+    type: g.type,
+    label: g.label,
+    targetId: '',
+    targetType: 'policy',
+    studioOutputType: g.studioOutputType,
+    priority: i === 0 ? 'primary' : 'secondary',
+  }));
+
+  return {
+    id: args.id,
+    responseType: 'compliance_answer',
+    directAnswer: scenario.headline,
+    operationalRequirement: scenario.summary,
+    requiredArtifacts: [],
+    complianceRisk: scenario.complianceNotes.join(' ') || '',
+    riskLevel: scenario.riskLevel,
+    confidence: scenario.confidence,
+    systemConfidenceScore: scenario.confidence === 'high' ? 70 : scenario.confidence === 'medium' ? 55 : 35,
+    governingPolicyId: null,
+    enforcementLevel: scenario.riskLevel === 'critical' ? 'condition_level' : scenario.riskLevel === 'high' ? 'standard_level' : 'none',
+    complianceImpact: scenario.complianceNotes[0] ?? '',
+    surveyFocus: [],
+    commonFailurePoints: [],
+    requirementsSnapshot: [],
+    citations: [],
+    linkedReferences: [],
+    availableActions,
+    studioOutputType: studioOutputForIntent(args.intent),
+    noAnswerFound: false,
+    noAnswerReason: '',
+    operationalGaps: [],
+    lifecycleAlerts: [],
+    regulatoryAlerts: [],
+    phaseStatus: buildPhaseStatus(),
+    scenario,
+    meta: {
+      intent: args.intent,
+      retrievedChunkIds: [],
+      model: args.model,
+      elapsedMs: args.elapsedMs,
+      scenarioCategory: scenario.category,
+    },
+  };
+}
+
+function elevateRiskToScenario(
+  llmRisk: StructuredResponse['riskLevel'],
+  scenarioRisk: StructuredResponse['riskLevel'],
+): StructuredResponse['riskLevel'] {
+  const order: StructuredResponse['riskLevel'][] = ['none', 'low', 'moderate', 'high', 'critical'];
+  return order.indexOf(scenarioRisk) > order.indexOf(llmRisk) ? scenarioRisk : llmRisk;
 }
 
 /** Phase availability flags — honest about data source. */
@@ -499,6 +651,7 @@ function buildAvailableActions(args: {
   hits: ScoredChunk[];
   directMatchDocIds: string[];
   studioOutputType: StudioOutputType | null;
+  scenario?: ScenarioMapping;
 }): AvailableAction[] {
   const out: AvailableAction[] = [];
 
@@ -529,6 +682,25 @@ function buildAvailableActions(args: {
     });
   }
 
+  // Scenario-driven generators take precedence when a high-stakes scenario
+  // is present — these are the ones an administrator would actually launch.
+  const scenarioGenIds = new Set<StudioOutputType>();
+  if (args.scenario && args.scenario.category !== 'GENERAL_QUERY') {
+    args.scenario.suggestedGenerators.forEach((g, i) => {
+      if (g.studioOutputType === args.studioOutputType) return;
+      if (g.studioOutputType) scenarioGenIds.add(g.studioOutputType);
+      out.push({
+        id: `a-scn-${g.studioOutputType ?? 'gen'}-${i}`,
+        type: g.type,
+        label: g.label,
+        targetId: primary?.id ?? '',
+        targetType: primary?.type ?? 'policy',
+        studioOutputType: g.studioOutputType,
+        priority: i === 0 && !primary ? 'primary' : 'secondary',
+      });
+    });
+  }
+
   // Studio generators — offered based on intent and available context.
   const generators: Array<{ type: AvailableAction['type']; so: StudioOutputType; label: string }> = [
     { type: 'generate_action_plan', so: 'action_plan', label: 'Generate action plan' },
@@ -541,6 +713,8 @@ function buildAvailableActions(args: {
   for (const g of generators) {
     // Skip the one that matches the current output to avoid "regenerate" suggestion.
     if (g.so === args.studioOutputType) continue;
+    // Avoid duplicating what the scenario already pushed.
+    if (scenarioGenIds.has(g.so)) continue;
     out.push({
       id: `a-${g.so}`,
       type: g.type,
@@ -663,9 +837,27 @@ function emptyNoAnswer(args: {
   input: string;
   intent: IntentKind;
   reason: string;
+  scenario?: ScenarioMapping;
   model: string;
   elapsedMs: number;
 }): StructuredResponse {
+  // Even when no scenario override applies, surface any non-general
+  // scenario mapping so the UI can show "closest regulatory mapping".
+  const scenario = args.scenario && args.scenario.category !== 'GENERAL_QUERY'
+    ? args.scenario
+    : undefined;
+  const availableActions: AvailableAction[] = scenario
+    ? scenario.suggestedGenerators.map((g, i) => ({
+        id: `a-scn-empty-${i}`,
+        type: g.type,
+        label: g.label,
+        targetId: '',
+        targetType: 'policy',
+        studioOutputType: g.studioOutputType,
+        priority: i === 0 ? 'primary' : 'secondary',
+      }))
+    : [];
+
   return {
     id: args.id,
     responseType: 'compliance_answer',
@@ -684,7 +876,7 @@ function emptyNoAnswer(args: {
     requirementsSnapshot: [],
     citations: [],
     linkedReferences: [],
-    availableActions: [],
+    availableActions,
     studioOutputType: studioOutputForIntent(args.intent),
     noAnswerFound: true,
     noAnswerReason: args.reason,
@@ -692,11 +884,13 @@ function emptyNoAnswer(args: {
     lifecycleAlerts: [],
     regulatoryAlerts: [],
     phaseStatus: buildPhaseStatus(),
+    scenario,
     meta: {
       intent: args.intent,
       retrievedChunkIds: [],
       model: args.model,
       elapsedMs: args.elapsedMs,
+      scenarioCategory: scenario?.category,
     },
   };
 }

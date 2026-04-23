@@ -9,9 +9,10 @@ import {
 } from 'lucide-react';
 import { useShellStore } from '../stores/uiStore';
 import { remapForLight } from '../utils/lightColorRemap';
+import { printForm } from '../utils/printForm';
 
 // ══════════════════════════════════════════════════════════════
-// ENTERPRISE FORMS LIBRARY – 281 ARTIFACTS ACROSS 10 DOMAINS
+// ENTERPRISE FORMS LIBRARY – 361 ARTIFACTS ACROSS 10 DOMAINS
 // ══════════════════════════════════════════════════════════════
 
 const DOMAINS = [
@@ -143,7 +144,7 @@ export function FormsPage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#a855f7]/20 to-transparent -translate-x-full"
                   style={{animation:'shimmerForms 3s infinite 0.5s'}}/>
                 <Layers size={12} className="text-[#a855f7] animate-pulse"/>
-                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-white">281 FORMS</span>
+                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-white">361 FORMS</span>
               </div>
             </div>
           </div>
@@ -289,7 +290,7 @@ export function FormsPage() {
                       <span className="flex items-center gap-1.5"><GitBranch size={10}/> Mapped Policies</span>
                       <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-10 right-0 border border-white/10 bg-black/60 backdrop-blur p-1 rounded-lg shadow-xl">
                         <button onClick={e => { e.stopPropagation(); navigate(`/forms/${form.id}`); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white" title="Preview / Open Form"><Eye size={14}/></button>
-                        <button onClick={e => { e.stopPropagation(); navigate(`/forms/${form.id}`); window.setTimeout(() => window.print(), 600); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white" title="Print Form"><Download size={14}/></button>
+                        <button onClick={e => { e.stopPropagation(); printForm(form.id); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white" title="Print Form"><Download size={14}/></button>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">

@@ -158,9 +158,16 @@ function BradCard({
         <div className="px-3 py-2.5">
           {resp ? (
             <>
-              <p className="text-[12px] leading-relaxed" style={{ color: textColor }}>
-                {resp.directAnswer}
-              </p>
+              {/* Safeguard: never render a raw corpus/knowledge dump as the answer */}
+              {resp.noAnswerFound || !resp.directAnswer ? (
+                <p className="text-[12px] leading-relaxed" style={{ color: subColor, fontStyle: 'italic' }}>
+                  {resp.noAnswerReason || 'Unable to generate response. Please retry.'}
+                </p>
+              ) : (
+                <p className="text-[12px] leading-relaxed" style={{ color: textColor }}>
+                  {resp.directAnswer}
+                </p>
+              )}
 
               {/* Quick actions snapshot */}
               {!expanded && resp.requirementsSnapshot?.length > 0 && (
@@ -239,7 +246,15 @@ function BradCard({
               )}
             </>
           ) : (
-            <p className="text-[12px]" style={{ color: textColor }}>{message.content}</p>
+            /* Fallback for messages without structuredResponse.
+               Suppress any raw markdown/knowledge dump that slipped through. */
+            /^###\s+[A-Z]{2}-|^\[P\d+\]|^CORPUS\s*\(/i.test(message.content) ? (
+              <p className="text-[12px]" style={{ color: subColor, fontStyle: 'italic' }}>
+                Unable to generate response. Please retry.
+              </p>
+            ) : (
+              <p className="text-[12px]" style={{ color: textColor }}>{message.content}</p>
+            )
           )}
         </div>
 

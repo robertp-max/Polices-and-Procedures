@@ -242,12 +242,19 @@ export interface StructuredResponse {
   /** Honest reporting of which phases are supplying live data. */
   phaseStatus?: PhaseStatus;
 
+  /** Scenario classification + playbook — present whenever the input
+   *  triggers a known compliance scenario (sentinel event, breach,
+   *  survey inquiry, etc.). Rendered by the UI ahead of corpus results
+   *  and used to suppress "No Answer Found" for high-stakes inputs. */
+  scenario?: ScenarioMapping;
+
   /** Debug / observability fields (never sensitive). */
   meta?: {
     intent: IntentKind;
     retrievedChunkIds: string[];
     model: string;
     elapsedMs: number;
+    scenarioCategory?: ScenarioCategory;
   };
 }
 
@@ -341,6 +348,82 @@ export interface PhaseStatus {
   phase1: { available: boolean; label: string; dataSource: string };
   phase2: { available: boolean; label: string; dataSource: string };
   phase3: { available: boolean; label: string; dataSource: string };
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Scenario Normalization Layer — compliance intent taxonomy.
+   When retrieval cannot find a literal corpus match, Brad still
+   responds with a deterministic playbook derived from the input's
+   scenario classification. See server/ia/scenarioClassifier.ts.
+   ───────────────────────────────────────────────────────────── */
+
+export type ScenarioCategory =
+  | 'SENTINEL_EVENT_CRITICAL'
+  | 'PATIENT_SAFETY_EMERGENCY'
+  | 'CLINICIAN_SAFETY'
+  | 'ADVERSE_EVENT'
+  | 'ABUSE_NEGLECT'
+  | 'PRIVACY_BREACH'
+  | 'CYBERSECURITY_INCIDENT'
+  | 'COMPLIANCE_VIOLATION'
+  | 'BILLING_RISK'
+  | 'REGULATORY_INQUIRY'
+  | 'EMERGENCY_OPERATIONAL'
+  | 'COMPLAINT'
+  | 'GENERAL_QUERY';
+
+export interface ScenarioPlaybookWorkflow {
+  id: string;
+  label: string;
+  regulatoryDriver?: string;
+}
+
+/**
+ * Explicit policy / control reference Brad surfaces in scenario
+ * responses. Prefer concrete IDs (e.g. "RM-INC-001") whenever the
+ * playbook can name them. When IDs are not yet wired, fall back to
+ * a domain reference (e.g. "Risk Management · Incident Reporting")
+ * and mark `isDomainFallback: true` so the UI / exporter can treat
+ * it differently.
+ */
+export interface ScenarioPolicyReference {
+  id: string;
+  name: string;
+  domain?: string;
+  isDomainFallback?: boolean;
+}
+
+export interface ScenarioMapping {
+  category: ScenarioCategory;
+  label: string;
+  severity: 'critical' | 'high' | 'moderate' | 'low';
+  riskLevel: RiskLevel;
+  lifeSafetyFlag: boolean;
+  confidence: 'high' | 'medium' | 'low';
+  matchedTriggers: string[];
+  relatedCategories: ScenarioCategory[];
+  summary: string;
+  headline: string;
+  /**
+   * Plain-English statement about whether this response is backed by
+   * an exact corpus match or a scenario mapping. Set by the responder
+   * right before emission (server side).
+   */
+  matchNote?: string;
+  immediateActions: string[];
+  requiredWorkflows: ScenarioPlaybookWorkflow[];
+  /** Policy / control references the administrator is expected to follow. */
+  relatedPolicies: ScenarioPolicyReference[];
+  /** Follow-up questions Brad still needs answered before proceeding. */
+  missingInformation: string[];
+  complianceNotes: string[];
+  domains: string[];
+  suggestedGenerators: Array<{
+    type: ActionType;
+    studioOutputType: StudioOutputType | null;
+    label: string;
+  }>;
+  suppressNoAnswer: boolean;
 }
 
 /* ─────────────────────────────────────────────────────────────

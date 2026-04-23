@@ -24,7 +24,7 @@ Please implement the following updates to finalize this application:
 */
 import React from 'react';
 import { 
-  Printer, AlertTriangle, CheckCircle, ChevronRight, Settings
+  Printer, AlertTriangle, CheckCircle, ChevronRight
 } from 'lucide-react';
 
 // ==========================================
@@ -259,6 +259,31 @@ const PrintTable = ({ headers, rows }) => (
   </div>
 );
 
+const PrintFormTable = ({ headers, rows }) => (
+  <div className="w-full mb-6 break-inside-avoid shadow-sm rounded-lg overflow-hidden border border-[#E5E4E3]">
+    <table className="w-full text-left border-collapse">
+      <thead>
+        <tr className="bg-[#FAFBF8] text-[#524048]">
+          {headers.map((h, i) => (
+            <th key={i} className="p-3 font-montserrat font-bold text-xs tracking-wider uppercase border-b border-[#E5E4E3]">{h}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-[#E5E4E3]">
+        {rows.map((row, i) => (
+          <tr key={i} className="bg-white break-inside-avoid">
+            {row.map((cell, j) => (
+              <td key={j} className={`px-3 py-5 text-[#1F1C1B] font-roboto text-sm align-top leading-relaxed ${j === 0 ? 'font-medium' : ''}`}>
+                {cell}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
 // ==========================================
 // BRAND LOCKUP — official gray PNG (Care Indeed light-mode brand kit)
 // Uses the full horizontal lockup which already includes the tagline, so
@@ -356,6 +381,8 @@ export default function App() {
             }
             thead { display: table-header-group; }
             tr, td, th { break-inside: avoid; page-break-inside: avoid; }
+            /* Ensure fill-in border lines print */
+            [data-print-line] { border-bottom: 1px solid #524048 !important; }
 
             /* Browser-side page margin on all 4 sides. Works in tandem with
                .print-document padding above so there is both a safe area
@@ -606,20 +633,491 @@ export default function App() {
             </div>
           </div>
 
-          {/* ========================================== */}
-          {/* APPENDICES PLACEHOLDER                     */}
-          {/* ========================================== */}
-          <div className="page-break mt-12 pt-8 border-t-4 border-[#007970]">
-            <div className="bg-[#FAFBF8] border-2 border-dashed border-[#007970]/30 rounded-2xl p-12 text-center break-inside-avoid">
-              <Settings className="mx-auto text-[#007970]/40 mb-4 animate-[spin_10s_linear_infinite]" size={48} />
-              <h3 className="font-montserrat text-2xl font-extrabold text-[#1F1C1B] mb-2">Appendices Placeholder</h3>
-              <p className="text-[#524048] font-roboto text-sm max-w-lg mx-auto">
-                The interactive and printable form components for Appendices A through G will be dynamically injected here during the final build process.
-              </p>
-              <div className="mt-6 inline-block bg-[#1F1C1B] text-[#E5FEFF] px-6 py-4 rounded-lg text-left text-xs font-mono shadow-inner border border-[#524048]">
-                <span className="text-[#C74601] font-bold">{'// Developer Note:'}</span><br/>
-                {'<AppendicesRenderer data={policyData} printMode={true} />'}
+          {/* ================================================================ */}
+          {/* APPENDICES A – G  (Print / PDF Form Pages)                     */}
+          {/* Each appendix begins on a new printed page via .page-break     */}
+          {/* ================================================================ */}
+
+          {/* ─── APPENDIX A ── Governing Body Membership Roster ─────────── */}
+          <div className="page-break pt-2">
+            <div className="border-b-2 border-[#007970] pb-5 mb-8 break-after-avoid">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="bg-[#007970] text-white font-montserrat font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">Appendix A</span>
+                <span className="font-montserrat text-[10px] uppercase tracking-wider text-[#524048]">Form GV-FM-001 · Policy GV-GB-001 · v6.0</span>
               </div>
+              <h2 className="font-montserrat font-bold text-xl text-[#1F1C1B] mt-1">Governing Body Membership Roster</h2>
+              <p className="text-xs font-roboto text-[#524048] mt-1 leading-relaxed">
+                Maintained by the Governing Body Chair. Updated within 7 calendar days of any membership change (§ 6.1.2). Each member verified against OIG/SAM exclusion database at appointment and monthly thereafter (§ 6.1.4).
+              </p>
+            </div>
+
+            <PrintFormTable
+              headers={["#", "Full Legal Name", "Title / Role", "Appointment Date", "Term Expiration", "Voting", "Email / Phone"]}
+              rows={Array.from({ length: 8 }, (_, i) => [String(i + 1), " ", " ", " ", " ", "☐ Yes   ☐ No", " "])}
+            />
+
+            <div className="mt-8 grid grid-cols-3 gap-8 break-inside-avoid">
+              {["Prepared By (Print Name)", "Signature", "Date Updated"].map((label, i) => (
+                <div key={i}>
+                  <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">{label}</p>
+                  <div className="border-b border-[#1F1C1B] h-7" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ─── APPENDIX B ── Conflict of Interest Disclosure Form ──────── */}
+          <div className="page-break pt-2">
+            <div className="border-b-2 border-[#007970] pb-5 mb-8 break-after-avoid">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="bg-[#007970] text-white font-montserrat font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">Appendix B</span>
+                <span className="font-montserrat text-[10px] uppercase tracking-wider text-[#524048]">Form GV-FM-002 · Policy GV-GB-001 · v6.0</span>
+              </div>
+              <h2 className="font-montserrat font-bold text-xl text-[#1F1C1B] mt-1">Conflict of Interest Disclosure Form</h2>
+              <p className="text-xs font-roboto text-[#524048] mt-1 leading-relaxed">
+                Required at appointment, annually, and within 7 calendar days of any new conflict arising. Reviewed by the Compliance Officer within 14 days of receipt (§ 6.4.1–6.4.3).
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 mb-8">
+              {["Full Legal Name", "Title / Role on Governing Body"].map((label, i) => (
+                <div key={i}>
+                  <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">{label} <span className="text-[#C74601]">*</span></p>
+                  <div className="border-b border-[#524048] h-7" />
+                </div>
+              ))}
+            </div>
+
+            <div className="mb-6">
+              <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-3">Disclosure Period</p>
+              <div className="flex gap-10">
+                {["☐  Initial (Appointment)", "☐  Annual Renewal", "☐  Interim (Change in Circumstances)"].map((opt, i) => (
+                  <p key={i} className="font-roboto text-sm text-[#1F1C1B]">{opt}</p>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-8 break-inside-avoid p-5 bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg">
+              <p className="font-roboto text-sm text-[#1F1C1B] mb-5 leading-relaxed font-medium">
+                Do you, or does any immediate family member, have any financial interest, arrangement, relationship, or other matter that could constitute a conflict of interest with Care Indeed Home Health Care, Inc.? <span className="text-[#C74601]">*</span>
+              </p>
+              <div className="flex gap-12 mb-6">
+                <p className="font-roboto text-sm text-[#1F1C1B]">☐  <strong>No</strong> — I have no conflict to disclose.</p>
+                <p className="font-roboto text-sm text-[#1F1C1B]">☐  <strong>Yes</strong> — I have a conflict to disclose (complete below).</p>
+              </div>
+              <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">If Yes — Describe the nature of the conflict in full:</p>
+              <div className="border border-[#E5E4E3] rounded-lg bg-white" style={{minHeight: "80px"}} />
+            </div>
+
+            <div className="mb-8 break-inside-avoid p-5 bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg">
+              <p className="font-roboto text-sm text-[#1F1C1B] mb-5 leading-relaxed">
+                <strong>Attestation:</strong> I certify the information provided is accurate and complete. I understand I must disclose any new conflicts within 7 calendar days of their arising and that failure to disclose may result in removal from the Governing Body.
+              </p>
+              <div className="grid grid-cols-2 gap-8 mt-4">
+                {["Electronic / Printed Signature", "Date"].map((label, i) => (
+                  <div key={i}>
+                    <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">{label} <span className="text-[#C74601]">*</span></p>
+                    <div className="border-b border-[#1F1C1B] h-7" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-4 border-t-2 border-[#007970] bg-[#E5FEFF] rounded-b-lg break-inside-avoid">
+              <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#007970] font-montserrat font-bold mb-3">For Compliance Officer Use Only</p>
+              <div className="grid grid-cols-2 gap-8">
+                {["Reviewed By (Compliance Officer)", "Date Reviewed", "Action Taken / Recommendation", "Governing Body Meeting Date Presented"].map((label, i) => (
+                  <div key={i}>
+                    <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">{label}</p>
+                    <div className="border-b border-[#007970]/50 h-7" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ─── APPENDIX C ── Policy Acknowledgment Form ────────────────── */}
+          <div className="page-break pt-2">
+            <div className="border-b-2 border-[#007970] pb-5 mb-8 break-after-avoid">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="bg-[#007970] text-white font-montserrat font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">Appendix C</span>
+                <span className="font-montserrat text-[10px] uppercase tracking-wider text-[#524048]">Form GV-FM-003 · Policy GV-GB-001 · v6.0</span>
+              </div>
+              <h2 className="font-montserrat font-bold text-xl text-[#1F1C1B] mt-1">Policy Acknowledgment Form</h2>
+              <p className="text-xs font-roboto text-[#524048] mt-1 leading-relaxed">
+                Required within 14 calendar days of the policy effective date, any revision, or new appointment. Collected by the Administrator and retained in the policy acknowledgment file (§ 10.2).
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 mb-8">
+              {["Full Legal Name", "Title / Role on Governing Body"].map((label, i) => (
+                <div key={i}>
+                  <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">{label} <span className="text-[#C74601]">*</span></p>
+                  <div className="border-b border-[#524048] h-7" />
+                </div>
+              ))}
+            </div>
+
+            <div className="mb-8">
+              <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-3">Acknowledgment Type</p>
+              <div className="flex gap-10">
+                {["☐  Initial (Effective Date)", "☐  Revised Version", "☐  New Appointment"].map((opt, i) => (
+                  <p key={i} className="font-roboto text-sm text-[#1F1C1B]">{opt}</p>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-4">Attestation Statements — Initial Each Box</p>
+            <div className="space-y-4 mb-10">
+              {[
+                "I have received, read, and understand the full text of Policy GV-GB-001 — Governing Body Authority & Responsibilities, Version 6.0, Effective 2025-07-10.",
+                "I understand my fiduciary duties and ultimate accountability for the agency's quality of care, patient safety, regulatory compliance, and fiscal operations as described in this policy.",
+                "I agree to comply with all requirements outlined in this policy, including but not limited to: meeting attendance, quorum obligations, conflict of interest disclosure, QAPI and compliance oversight, and confidentiality requirements."
+              ].map((stmt, i) => (
+                <div key={i} className="flex items-start gap-4 bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg p-4 break-inside-avoid">
+                  <div className="border-2 border-[#524048] rounded w-8 h-8 flex-shrink-0 flex items-center justify-center text-xs font-montserrat font-bold text-[#524048]">{i + 1}</div>
+                  <p className="font-roboto text-sm text-[#1F1C1B] leading-relaxed flex-1">{stmt}</p>
+                  <div className="flex-shrink-0 text-right">
+                    <p className="text-[9px] uppercase tracking-wider text-[#524048] font-montserrat mb-1">Initials</p>
+                    <div className="border-b border-[#1F1C1B] w-16 h-5" />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="break-inside-avoid p-5 bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg">
+              <p className="font-roboto text-sm text-[#1F1C1B] mb-5 leading-relaxed">
+                <strong>Signature Attestation:</strong> By signing below, I attest that I have read, understand, and agree to comply with all requirements of Policy GV-GB-001. I acknowledge that non-compliance may result in corrective action.
+              </p>
+              <div className="grid grid-cols-2 gap-8">
+                {["Signature (Print or Sign)", "Date"].map((label, i) => (
+                  <div key={i}>
+                    <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">{label} <span className="text-[#C74601]">*</span></p>
+                    <div className="border-b border-[#1F1C1B] h-7" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 p-4 border-t-2 border-[#007970] bg-[#E5FEFF] rounded-b-lg break-inside-avoid">
+              <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#007970] font-montserrat font-bold mb-3">For Administrator Use Only</p>
+              <div className="grid grid-cols-3 gap-8">
+                {["Received By", "Date Received", "Filed In"].map((label, i) => (
+                  <div key={i}>
+                    <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">{label}</p>
+                    <div className="border-b border-[#007970]/50 h-7" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ─── APPENDIX D ── Governing Body Meeting Minutes Template ───── */}
+          <div className="page-break pt-2">
+            <div className="border-b-2 border-[#007970] pb-5 mb-8 break-after-avoid">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="bg-[#007970] text-white font-montserrat font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">Appendix D</span>
+                <span className="font-montserrat text-[10px] uppercase tracking-wider text-[#524048]">Form GV-FM-004 · Policy GV-GB-001 · v6.0</span>
+              </div>
+              <h2 className="font-montserrat font-bold text-xl text-[#1F1C1B] mt-1">Governing Body Meeting Minutes</h2>
+              <p className="text-xs font-roboto text-[#524048] mt-1 leading-relaxed">
+                Draft minutes completed within 14 calendar days of the meeting. Approved at the next regular meeting. Retained for a minimum of 7 years (§ 6.3.4 and Policy GV-GB-002).
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-6 mb-6">
+              {["Meeting Date", "Start Time", "Location / Teleconference Link"].map((label, i) => (
+                <div key={i}>
+                  <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">{label} <span className="text-[#C74601]">*</span></p>
+                  <div className="border-b border-[#524048] h-7" />
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-3 gap-6 mb-6">
+              <div className="col-span-2">
+                <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">Members Present <span className="text-[#C74601]">*</span></p>
+                <div className="border border-[#E5E4E3] rounded-lg bg-white" style={{minHeight: "56px"}} />
+              </div>
+              <div>
+                <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">Absent</p>
+                <div className="border border-[#E5E4E3] rounded-lg bg-white" style={{minHeight: "56px"}} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6 mb-8">
+              <div>
+                <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">Quorum Achieved? <span className="text-[#C74601]">*</span></p>
+                <p className="font-roboto text-sm text-[#1F1C1B]">☐  Yes     ☐  No</p>
+              </div>
+              <div>
+                <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">Meeting Type</p>
+                <p className="font-roboto text-sm text-[#1F1C1B]">☐  Regular (Quarterly)     ☐  Special     ☐  Emergency</p>
+              </div>
+            </div>
+
+            <h3 className="font-montserrat font-bold text-sm text-[#524048] uppercase mb-3 break-after-avoid">Agenda Items &amp; Discussion</h3>
+            <PrintFormTable
+              headers={["#", "Topic / Report", "Summary of Discussion", "Directives / Actions (Party — Deadline)"]}
+              rows={[
+                ["1", "Approval of Prior Meeting Minutes", " ", " "],
+                ["2", "Administrator Report", " ", " "],
+                ["3", "Quarterly Compliance Report", " ", " "],
+                ["4", "Quarterly QAPI Report", " ", " "],
+                ["5", "Quarterly Financial Report", " ", " "],
+                ["6", "Old Business", " ", " "],
+                ["7", "New Business", " ", " "],
+              ]}
+            />
+
+            <div className="mt-8 break-inside-avoid">
+              <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-4">Minutes Certification</p>
+              <div className="grid grid-cols-2 gap-8">
+                <div>
+                  <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">Prepared By (Secretary / Administrator)</p>
+                  <div className="border-b border-[#1F1C1B] h-7 mb-4" />
+                  <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">Date Prepared</p>
+                  <div className="border-b border-[#1F1C1B] h-7" />
+                </div>
+                <div>
+                  <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">Approved By (Governing Body Chair)</p>
+                  <div className="border-b border-[#1F1C1B] h-7 mb-4" />
+                  <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">Date Approved</p>
+                  <div className="border-b border-[#1F1C1B] h-7" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ─── APPENDIX E ── Quarterly Oversight Checklist ─────────────── */}
+          <div className="page-break pt-2">
+            <div className="border-b-2 border-[#007970] pb-5 mb-8 break-after-avoid">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="bg-[#007970] text-white font-montserrat font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">Appendix E</span>
+                <span className="font-montserrat text-[10px] uppercase tracking-wider text-[#524048]">Form GV-FM-005 · Policy GV-GB-001 · v6.0</span>
+              </div>
+              <h2 className="font-montserrat font-bold text-xl text-[#1F1C1B] mt-1">Quarterly Governing Body Oversight Checklist</h2>
+              <p className="text-xs font-roboto text-[#524048] mt-1 leading-relaxed">
+                Completed at each quarterly meeting to confirm all 42 CFR § 484.105 oversight requirements were addressed. Attach to the corresponding meeting minutes.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6 mb-8">
+              {["Meeting Date   (Quarter: ☐ Q1  ☐ Q2  ☐ Q3  ☐ Q4)", "Fiscal Year"].map((label, i) => (
+                <div key={i}>
+                  <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">{label}</p>
+                  <div className="border-b border-[#524048] h-7" />
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-3 gap-6 mb-8">
+              {[
+                {
+                  title: "Quality & Clinical", color: "border-[#007970]",
+                  items: ["Annual QAPI Plan reviewed / approved (Q1)", "Quarterly QAPI performance report reviewed", "Adverse events summary reviewed", "Patient satisfaction data reviewed", "Home Health Compare / Star Ratings reviewed", "Clinical Manager provided oversight update"]
+                },
+                {
+                  title: "Compliance & Risk", color: "border-[#C74601]",
+                  items: ["Quarterly Compliance Report reviewed", "Active investigations / audit findings reviewed", "OIG/SAM exclusion screening logs verified", "Regulatory changes reviewed", "Training completion rates reviewed", "Conflict of Interest disclosures confirmed current"]
+                },
+                {
+                  title: "Financial & Administrative", color: "border-[#1F1C1B]",
+                  items: ["Annual budget approved (Q4)", "Quarterly financial report reviewed", "Revenue variance within 10% threshold", "Claims denial rate < 5%", "AR aging < 60 days confirmed", "Administrator evaluation completed (Q4)"]
+                }
+              ].map((section, si) => (
+                <div key={si} className={`border-t-4 ${section.color} pt-3 break-inside-avoid`}>
+                  <p className="font-montserrat font-bold text-xs uppercase tracking-wider text-[#1F1C1B] mb-4">{section.title}</p>
+                  <div className="space-y-3">
+                    {section.items.map((item, ii) => (
+                      <div key={ii} className="flex items-start gap-2">
+                        <span className="font-roboto text-sm text-[#1F1C1B] flex-shrink-0">☐</span>
+                        <span className="font-roboto text-xs text-[#1F1C1B] leading-relaxed">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg mb-6 break-inside-avoid">
+              <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">Additional Notes / Deficiencies Identified</p>
+              <div className="border border-[#E5E4E3] rounded bg-white" style={{minHeight: "64px"}} />
+            </div>
+
+            <div className="grid grid-cols-3 gap-8 break-inside-avoid">
+              {["Completed By (Print Name)", "Signature", "Date Completed"].map((label, i) => (
+                <div key={i}>
+                  <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">{label}</p>
+                  <div className="border-b border-[#1F1C1B] h-7" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ─── APPENDIX F ── Annual Governance Calendar ────────────────── */}
+          <div className="page-break pt-2">
+            <div className="border-b-2 border-[#007970] pb-5 mb-8 break-after-avoid">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="bg-[#007970] text-white font-montserrat font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">Appendix F</span>
+                <span className="font-montserrat text-[10px] uppercase tracking-wider text-[#524048]">Form GV-FM-006 · Policy GV-GB-001 · v6.0</span>
+              </div>
+              <h2 className="font-montserrat font-bold text-xl text-[#1F1C1B] mt-1">Annual Governance Calendar</h2>
+              <p className="text-xs font-roboto text-[#524048] mt-1 leading-relaxed">
+                Required cyclical governance tasks by quarter. Distributed to all Governing Body members by December 15 of the preceding year (§ 6.3.1). Reviewed at the Q1 meeting annually.
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">Fiscal Year</p>
+              <div className="border-b border-[#524048] h-7 w-48" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              {[
+                {
+                  q: "Q1", label: "First Quarter — January through March",
+                  color: "bg-[#007970]",
+                  items: ["Approve Annual QAPI Plan", "Annual Governance Self-Assessment reviewed", "Review and approve updated Scope of Services", "Standard quarterly reports (Compliance, Finance, QAPI)", "Annual refresher training for Governing Body", "Verify all Conflict of Interest disclosures are current"]
+                },
+                {
+                  q: "Q2", label: "Second Quarter — April through June",
+                  color: "bg-[#004142]",
+                  items: ["Review and approve Leadership Succession Plan", "Confirm / renew agency insurance policies", "Review mid-year budget adjustments if needed", "Standard quarterly reports", "OIG/SAM exclusion screening logs reviewed", "Policy acknowledgment compliance verified"]
+                },
+                {
+                  q: "Q3", label: "Third Quarter — July through September",
+                  color: "bg-[#C74601]",
+                  items: ["Approve Annual Emergency Preparedness Plan", "Review Emergency Preparedness drill results", "Review Agency Licensure / Certification renewals", "Review annual training completion rates", "Standard quarterly reports", "Review Star Rating / Home Health Compare data"]
+                },
+                {
+                  q: "Q4", label: "Fourth Quarter — October through December",
+                  color: "bg-[#1F1C1B]",
+                  items: ["Approve Annual Operating Budget (30 days before FY start)", "Administrator Annual Performance Evaluation", "Establish next year's meeting schedule (by Dec 15)", "Review and approve Policy Review Cycle", "Standard quarterly reports", "Prepare Annual Governance Self-Assessment"]
+                }
+              ].map((quarter, qi) => (
+                <div key={qi} className="break-inside-avoid border border-[#E5E4E3] rounded-lg overflow-hidden">
+                  <div className={`${quarter.color} text-white px-4 py-3 flex items-center gap-3`}>
+                    <span className="font-montserrat font-extrabold text-2xl opacity-25">{quarter.q}</span>
+                    <span className="font-montserrat font-bold text-xs uppercase tracking-wider">{quarter.label}</span>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    {quarter.items.map((item, ii) => (
+                      <div key={ii} className="flex items-start gap-2">
+                        <span className="font-roboto text-sm text-[#524048] flex-shrink-0">☐</span>
+                        <span className="font-roboto text-xs text-[#1F1C1B] leading-relaxed">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ─── APPENDIX G ── Agency Organizational Chart ───────────────── */}
+          <div className="page-break pt-2">
+            <div className="border-b-2 border-[#007970] pb-5 mb-8 break-after-avoid">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="bg-[#007970] text-white font-montserrat font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">Appendix G</span>
+                <span className="font-montserrat text-[10px] uppercase tracking-wider text-[#524048]">Form GV-FM-007 · Policy GV-GB-001 · v6.0</span>
+              </div>
+              <h2 className="font-montserrat font-bold text-xl text-[#1F1C1B] mt-1">Agency Organizational Chart</h2>
+              <p className="text-xs font-roboto text-[#524048] mt-1 leading-relaxed">
+                Official agency org chart establishing reporting relationships from the Governing Body through senior clinical and administrative leadership as required by 42 CFR § 484.105. Updated within 7 calendar days of any reorganization or leadership change.
+              </p>
+            </div>
+
+            {/* Visual org chart tree */}
+            <div className="flex flex-col items-center py-4 select-none">
+
+              {/* L1: Governing Body */}
+              <div className="bg-[#007970] text-white rounded-xl px-8 py-5 text-center break-inside-avoid" style={{width:'320px'}}>
+                <p className="font-montserrat font-bold text-sm tracking-widest uppercase mb-1">Governing Body</p>
+                <p className="text-[10px] font-roboto opacity-70 mb-3">Ultimate Legal Authority · 42 CFR § 484.105(a)</p>
+                <div className="border-t border-white/20 pt-3">
+                  <p className="text-[8px] font-montserrat uppercase tracking-wider opacity-60 mb-1">Name / Legal Entity</p>
+                  <div className="border-b border-white/40 h-4" />
+                </div>
+              </div>
+
+              {/* Fork connector: GB → Compliance + Administrator */}
+              <div className="relative flex justify-center" style={{width:'560px', height:'48px'}}>
+                <div className="absolute bg-[#E5E4E3]" style={{left:'50%', top:0, width:'2px', height:'50%'}} />
+                <div className="absolute bg-[#E5E4E3]" style={{left:'20%', right:'20%', top:'50%', height:'2px'}} />
+                <div className="absolute bg-[#E5E4E3]" style={{left:'20%', top:'50%', width:'2px', height:'50%'}} />
+                <div className="absolute bg-[#E5E4E3]" style={{right:'20%', top:'50%', width:'2px', height:'50%'}} />
+              </div>
+
+              {/* L2 row */}
+              <div className="flex gap-6 items-start" style={{width:'560px'}}>
+
+                {/* Compliance Officer */}
+                <div className="flex flex-col items-center flex-1">
+                  <div className="border-2 border-[#007970] bg-white rounded-xl px-4 py-4 w-full text-center break-inside-avoid">
+                    <p className="font-montserrat font-bold text-xs text-[#007970] tracking-widest uppercase mb-1">Compliance Officer</p>
+                    <p className="text-[9px] font-roboto text-[#524048] mb-3">Reports to: Governing Body · CO-CP-002</p>
+                    <div className="border-t border-[#E5E4E3] pt-2">
+                      <p className="text-[8px] font-montserrat uppercase tracking-wider text-[#524048] mb-1">Name</p>
+                      <div className="border-b border-[#524048]/40 h-4" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Administrator + subtree */}
+                <div className="flex flex-col items-center flex-1">
+                  <div className="bg-[#C74601] text-white rounded-xl px-4 py-4 w-full text-center break-inside-avoid">
+                    <p className="font-montserrat font-bold text-xs tracking-widest uppercase mb-1">Administrator</p>
+                    <p className="text-[9px] font-roboto opacity-70 mb-3">42 CFR § 484.105(b) · GV-OG-002</p>
+                    <div className="border-t border-white/20 pt-2">
+                      <p className="text-[8px] font-montserrat uppercase tracking-wider opacity-60 mb-1">Name</p>
+                      <div className="border-b border-white/40 h-4" />
+                    </div>
+                  </div>
+
+                  {/* Fork connector: Administrator → L3 nodes */}
+                  <div className="relative" style={{width:'100%', height:'40px'}}>
+                    <div className="absolute bg-[#E5E4E3]" style={{left:'50%', top:0, width:'2px', height:'50%'}} />
+                    <div className="absolute bg-[#E5E4E3]" style={{left:'10%', right:'10%', top:'50%', height:'2px'}} />
+                    <div className="absolute bg-[#E5E4E3]" style={{left:'10%', top:'50%', width:'2px', height:'50%'}} />
+                    <div className="absolute bg-[#E5E4E3]" style={{left:'50%', top:'50%', width:'2px', height:'50%'}} />
+                    <div className="absolute bg-[#E5E4E3]" style={{right:'10%', top:'50%', width:'2px', height:'50%'}} />
+                  </div>
+
+                  {/* L3 row */}
+                  <div className="flex gap-2 w-full">
+                    {[
+                      { title: "Clinical Manager", sub: "RN · PT · OT · ST\nMSW · CHHA", code: "42 CFR § 484.105(c)", border: "border-[#007970]", tc: "text-[#007970]" },
+                      { title: "Medical Director", sub: "Physician\nOversight", code: "Medical Advisory\nAgreement", border: "border-[#004142]", tc: "text-[#004142]" },
+                      { title: "Business Ops", sub: "HR · Finance\nIntake · Scheduling", code: "Agency Operations", border: "border-[#1F1C1B]", tc: "text-[#1F1C1B]" }
+                    ].map((node, ni) => (
+                      <div key={ni} className={`border-2 ${node.border} bg-white rounded-xl p-3 flex-1 text-center break-inside-avoid`}>
+                        <p className={`font-montserrat font-bold text-[9px] ${node.tc} tracking-wider uppercase mb-1`}>{node.title}</p>
+                        <p className="text-[8px] font-roboto text-[#524048] mb-1 whitespace-pre-line leading-tight">{node.sub}</p>
+                        <p className="text-[7px] font-roboto text-[#524048] mb-2 whitespace-pre-line leading-tight">{node.code}</p>
+                        <div className="border-t border-[#E5E4E3] pt-1">
+                          <p className="text-[7px] font-montserrat uppercase tracking-wider text-[#524048] mb-0.5">Name</p>
+                          <div className="border-b border-[#524048]/40 h-3" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div className="mt-10 p-4 bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg text-xs font-roboto text-[#524048] break-inside-avoid">
+              <strong className="font-montserrat text-[#007970] block mb-1">Instructions:</strong>
+              Enter current names for each position. Post in the Administrator's office and include in every surveyor packet. Updated within 7 calendar days of any leadership change or organizational restructuring.
+            </div>
+
+            <div className="mt-6 grid grid-cols-3 gap-8 break-inside-avoid">
+              {["Prepared By (Print Name)", "Signature", "Effective Date"].map((label, i) => (
+                <div key={i}>
+                  <p className="text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-2">{label}</p>
+                  <div className="border-b border-[#1F1C1B] h-7" />
+                </div>
+              ))}
             </div>
           </div>
 

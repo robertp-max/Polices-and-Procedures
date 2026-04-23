@@ -10,6 +10,7 @@ import {
   type FormField,
 } from '../data/formsLibraryContent';
 import { FORMS_DATASET } from '../data/formsLibraryDataset';
+import { printForm } from '../utils/printForm';
 
 // ─── Org Chart Components (GV-FM-003 Section 2) ───────────────────
 
@@ -22,15 +23,15 @@ function TreeRow({ children }: { children: React.ReactNode }) {
         const isLast = index === count - 1;
         const isOnly = count === 1;
         return (
-          <div className="relative flex flex-col items-center px-4 sm:px-8">
+          <div className="relative flex flex-col items-center px-1 sm:px-2">
             {!isOnly && (
               <>
-                <div className={`absolute top-0 h-8 w-1/2 left-0 ${!isFirst ? 'border-t-2 border-[#E5E4E3]' : ''}`} />
-                <div className={`absolute top-0 h-8 w-1/2 right-0 ${!isLast ? 'border-t-2 border-[#E5E4E3]' : ''}`} />
+                <div className={`absolute top-0 h-6 w-1/2 left-0 ${!isFirst ? 'border-t-2 border-[#E5E4E3]' : ''}`} />
+                <div className={`absolute top-0 h-6 w-1/2 right-0 ${!isLast ? 'border-t-2 border-[#E5E4E3]' : ''}`} />
               </>
             )}
-            <div className="absolute top-0 w-[2px] h-8 bg-[#E5E4E3]" />
-            <div className="mt-8 z-10 w-full flex justify-center">{child}</div>
+            <div className="absolute top-0 w-[2px] h-6 bg-[#E5E4E3]" />
+            <div className="mt-6 z-10 w-full flex justify-center">{child}</div>
           </div>
         );
       })}
@@ -44,7 +45,7 @@ function TreeNode({ card, children }: { card: React.ReactNode; children?: React.
       <div className="z-10">{card}</div>
       {children && (
         <>
-          <div className="w-[2px] h-8 bg-[#E5E4E3]" />
+          <div className="w-[2px] h-6 bg-[#E5E4E3]" />
           <TreeRow>{children}</TreeRow>
         </>
       )}
@@ -53,65 +54,65 @@ function TreeNode({ card, children }: { card: React.ReactNode; children?: React.
 }
 
 const GoverningBodyCard = () => (
-  <div className="bg-[#007970] rounded-[24px] p-8 w-80 text-center flex flex-col items-center justify-center relative overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-[#004142]/20 hover:-translate-y-1">
-    <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-    <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-black/10 rounded-full blur-2xl" />
-    <Building2 size={28} className="text-[#E5FEFF] mb-3 opacity-90" />
-    <h2 className="text-white font-montserrat font-bold text-xl tracking-[0.15em] mb-4">GOVERNING BODY</h2>
-    <div className="bg-[#E5FEFF] text-[#007970] rounded-full px-5 py-2 text-xs font-montserrat font-bold tracking-widest uppercase shadow-sm">
+  <div className="bg-[#007970] rounded-[16px] p-4 w-48 text-center flex flex-col items-center justify-center relative overflow-hidden shadow-lg border border-[#004142]/20">
+    <div className="absolute -top-10 -right-10 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+    <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-black/10 rounded-full blur-2xl" />
+    <Building2 size={22} className="text-[#E5FEFF] mb-2 opacity-90" />
+    <h2 className="text-white font-montserrat font-bold text-[13px] tracking-[0.12em] mb-3 leading-tight">GOVERNING BODY</h2>
+    <div className="bg-[#E5FEFF] text-[#007970] rounded-full px-3 py-1 text-[9px] font-montserrat font-bold tracking-wide uppercase shadow-sm leading-tight">
       Ultimate Legal Authority
     </div>
   </div>
 );
 
 const AdministratorCard = () => (
-  <div className="bg-[#C74601] rounded-[24px] p-6 w-72 text-center shadow-md relative overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-[#421700]/10">
-    <div className="absolute top-0 right-0 p-8 bg-white/5 rounded-bl-full" />
-    <div className="flex justify-center mb-3">
-      <div className="bg-white/20 p-2 rounded-full text-white"><User size={20} /></div>
+  <div className="bg-[#C74601] rounded-[16px] p-4 w-44 text-center shadow-md relative overflow-hidden border border-[#421700]/10">
+    <div className="absolute top-0 right-0 p-6 bg-white/5 rounded-bl-full" />
+    <div className="flex justify-center mb-2">
+      <div className="bg-white/20 p-1.5 rounded-full text-white"><User size={15} /></div>
     </div>
-    <h3 className="text-white font-montserrat font-bold text-lg tracking-widest mb-4">ADMINISTRATOR</h3>
-    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#FFD5BF]/50 pb-2 text-white focus:outline-none focus:border-white transition-colors bg-transparent placeholder-white/70 font-roboto font-medium" />
+    <h3 className="text-white font-montserrat font-bold text-[12px] tracking-widest mb-3 leading-tight">ADMINISTRATOR</h3>
+    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#FFD5BF]/50 pb-1 text-white focus:outline-none focus:border-white transition-colors bg-transparent placeholder-white/70 font-roboto font-medium text-[11px]" />
   </div>
 );
 
 const ComplianceOfficerCard = () => (
-  <div className="bg-white rounded-[24px] p-6 w-72 text-center shadow-sm border border-[#E5E4E3] flex flex-col hover:border-[#1F1C1B]/30 hover:shadow-md transition-all duration-300 group">
-    <div className="flex justify-center mb-3">
-      <div className="bg-[#FAFBF8] border border-[#E5E4E3] p-2 rounded-full text-[#524D4B] group-hover:text-[#1F1C1B] transition-colors"><Briefcase size={20} /></div>
+  <div className="bg-white rounded-[16px] p-4 w-44 text-center shadow-sm border border-[#E5E4E3] flex flex-col">
+    <div className="flex justify-center mb-2">
+      <div className="bg-[#FAFBF8] border border-[#E5E4E3] p-1.5 rounded-full text-[#524D4B]"><Briefcase size={15} /></div>
     </div>
-    <h3 className="font-montserrat font-bold text-[#1F1C1B] text-[15px] tracking-widest mb-4">COMPLIANCE OFFICER</h3>
-    <input type="text" placeholder="Enter Name..." className="mt-auto w-full text-center border-b-2 border-[#E5E4E3] pb-2 text-[#1F1C1B] focus:outline-none focus:border-[#C74601] transition-colors bg-transparent placeholder-[#747470] font-roboto" />
+    <h3 className="font-montserrat font-bold text-[#1F1C1B] text-[11px] tracking-widest mb-3 leading-tight">COMPLIANCE OFFICER</h3>
+    <input type="text" placeholder="Enter Name..." className="mt-auto w-full text-center border-b-2 border-[#E5E4E3] pb-1 text-[#1F1C1B] focus:outline-none focus:border-[#C74601] transition-colors bg-transparent placeholder-[#747470] font-roboto text-[11px]" />
   </div>
 );
 
 const ClinicalManagerCard = () => (
-  <div className="bg-white rounded-[16px] p-6 w-64 text-center border border-[#E5E4E3] flex flex-col group hover:border-[#007970]/50 hover:shadow-md transition-all duration-300">
-    <h4 className="font-montserrat font-bold text-[#007970] text-sm tracking-widest mb-5">CLINICAL MANAGER</h4>
-    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-2 text-[#1F1C1B] focus:outline-none focus:border-[#007970] transition-colors bg-transparent placeholder-[#747470] mb-5 font-roboto text-sm" />
-    <div className="mt-auto bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg py-2.5 px-3 text-[11px] font-medium tracking-wide text-[#524D4B] font-roboto group-hover:bg-[#E5FEFF]/30 transition-colors">
+  <div className="bg-white rounded-[12px] p-3 w-40 text-center border border-[#E5E4E3] flex flex-col">
+    <h4 className="font-montserrat font-bold text-[#007970] text-[11px] tracking-wide mb-3 leading-tight">CLINICAL MANAGER</h4>
+    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-1 text-[#1F1C1B] focus:outline-none focus:border-[#007970] transition-colors bg-transparent placeholder-[#747470] mb-3 font-roboto text-[11px]" />
+    <div className="mt-auto bg-[#FAFBF8] border border-[#E5E4E3] rounded-md py-1.5 px-2 text-[9px] font-medium tracking-wide text-[#524D4B] font-roboto leading-tight">
       RN, PT, OT, ST, MSW, CHHA
     </div>
   </div>
 );
 
 const MedicalDirectorCard = () => (
-  <div className="bg-white rounded-[16px] p-6 w-64 text-center border border-[#E5E4E3] flex flex-col group hover:border-[#004142]/50 hover:shadow-md transition-all duration-300">
-    <div className="bg-[#004142] text-white rounded-lg py-2 px-4 mb-5 mx-auto shadow-sm flex items-center gap-2">
-      <HeartPulse size={14} />
-      <h4 className="font-montserrat font-bold text-xs tracking-widest uppercase">MEDICAL DIRECTOR</h4>
+  <div className="bg-white rounded-[12px] p-3 w-40 text-center border border-[#E5E4E3] flex flex-col">
+    <div className="bg-[#004142] text-white rounded-md py-1.5 px-2 mb-3 mx-auto shadow-sm flex items-center gap-1.5">
+      <HeartPulse size={11} />
+      <h4 className="font-montserrat font-bold text-[9px] tracking-widest uppercase">MEDICAL DIRECTOR</h4>
     </div>
-    <input type="text" placeholder="Enter Name..." className="w-full mt-auto text-center border-b-2 border-[#E5E4E3] pb-2 text-[#1F1C1B] focus:outline-none focus:border-[#004142] transition-colors bg-transparent placeholder-[#747470] text-sm font-roboto" />
+    <input type="text" placeholder="Enter Name..." className="w-full mt-auto text-center border-b-2 border-[#E5E4E3] pb-1 text-[#1F1C1B] focus:outline-none focus:border-[#004142] transition-colors bg-transparent placeholder-[#747470] text-[11px] font-roboto" />
   </div>
 );
 
 const BusinessOpsCard = () => (
-  <div className="bg-white rounded-[16px] p-6 w-64 text-center border border-[#E5E4E3] flex flex-col group hover:border-[#1F1C1B]/40 hover:shadow-md transition-all duration-300">
-    <div className="bg-[#1F1C1B] text-white rounded-lg py-2 px-4 mb-5 mx-auto shadow-sm">
-      <h4 className="font-montserrat font-bold text-xs tracking-widest uppercase">BUSINESS OPS</h4>
+  <div className="bg-white rounded-[12px] p-3 w-40 text-center border border-[#E5E4E3] flex flex-col">
+    <div className="bg-[#1F1C1B] text-white rounded-md py-1.5 px-2 mb-3 mx-auto shadow-sm">
+      <h4 className="font-montserrat font-bold text-[9px] tracking-widest uppercase">BUSINESS OPS</h4>
     </div>
-    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-2 text-[#1F1C1B] focus:outline-none focus:border-[#1F1C1B] transition-colors bg-transparent placeholder-[#747470] mb-5 text-sm font-roboto" />
-    <div className="mt-auto bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg py-2.5 px-3 text-[11px] font-medium tracking-wide text-[#524D4B] font-roboto group-hover:bg-gray-50 transition-colors">
+    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-1 text-[#1F1C1B] focus:outline-none focus:border-[#1F1C1B] transition-colors bg-transparent placeholder-[#747470] mb-3 text-[11px] font-roboto" />
+    <div className="mt-auto bg-[#FAFBF8] border border-[#E5E4E3] rounded-md py-1.5 px-2 text-[9px] font-medium tracking-wide text-[#524D4B] font-roboto leading-tight">
       HR, Finance, Intake, Scheduling
     </div>
   </div>
@@ -136,9 +137,9 @@ function OrgChartSection({ sectionTitle }: { sectionTitle: string }) {
         </p>
       </div>
 
-      {/* Org chart tree */}
-      <div className="overflow-x-auto w-full pb-8">
-        <div className="min-w-[900px] flex justify-center pt-4 px-8">
+      {/* Org chart tree — responsive, fits within Letter portrait (6.5in) */}
+      <div className="w-full pb-6 avoid-break">
+        <div className="flex justify-center pt-4">
           <TreeNode card={<GoverningBodyCard />}>
             <TreeNode card={<ComplianceOfficerCard />} />
             <TreeNode card={<AdministratorCard />}>
@@ -468,7 +469,7 @@ function SectionRenderer({ s, idx }: { s: FormSection; idx: number }) {
 }
 
 // ─── Shared form body (used in both standalone + embedded modes) ──
-function FormBody({ content, isEmbedded = false }: { content: FormContent; isEmbedded?: boolean }) {
+export function FormBody({ content, isEmbedded = false }: { content: FormContent; isEmbedded?: boolean }) {
   return (
     <>
       {/* ── HEADER, RULE, TITLE, METADATA, PURPOSE, INSTRUCTIONS ──
@@ -699,7 +700,7 @@ export function FormViewer({ formId }: { formId?: string }) {
           <span className="font-roboto text-[11px] text-[#747470] font-mono">{content.id} · v{content.version}</span>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => printForm(content.id)}
             className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#007970] hover:bg-[#005751] text-white font-roboto text-[12px] font-semibold transition-colors"
           >
             <Printer size={14} /> Print

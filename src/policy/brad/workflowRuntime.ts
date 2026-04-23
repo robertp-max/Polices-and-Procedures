@@ -11,6 +11,9 @@
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import type { FormStatus } from '@/policy/stores/regulatoryExecutionStore';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
+import { REGULATORY_EVENTS, TODAY_ANCHOR, daysUntil } from '@/policy/data/regulatoryEvents';
+import { useAutogenStore } from '@/policy/stores/autogenStore';
+import { classifyAuditState, buildCompletionChecklist } from '@/policy/audit/auditState';
 import type { RuntimeState } from './workflowKnowledge';
 
 /**
@@ -53,11 +56,49 @@ export function buildWorkflowRuntimeState(
     .filter((r) => r.eventId === instanceId && r.status === 'pending')
     .map((r) => r.targetLabel);
 
+  // Resolve the live RegulatoryEvent for audit-state derivation.
+  const autogen = useAutogenStore.getState();
+  const allEvents = [
+    ...REGULATORY_EVENTS,
+    ...autogen.generatedEvents,
+    ...autogen.triggeredEvents,
+  ];
+  const ev = allEvents.find(e => e.id === instanceId);
+
+  let auditState: RuntimeState['auditState'];
+  let isCertified = false;
+  let missingEvidenceCount: number | undefined;
+  let slaDaysPastDue = 0;
+  let readyForCertification = false;
+  let certificationBlockers: string[] | undefined;
+  let overdue = false;
+
+  if (ev) {
+    auditState = classifyAuditState(ev, TODAY_ANCHOR, state);
+    isCertified = state.isCertified(ev.id);
+    const n = daysUntil(ev.date, TODAY_ANCHOR);
+    slaDaysPastDue = n < 0 ? Math.abs(n) : 0;
+    overdue = n < 0 && !state.isEventComplete(ev.id);
+
+    const checklist = buildCompletionChecklist(ev, TODAY_ANCHOR, state);
+    readyForCertification = checklist.allPassed;
+    certificationBlockers = checklist.items.filter(i => !i.passed).map(i => i.label);
+
+    const report = state.validateEvent(ev);
+    missingEvidenceCount = report.blockers.filter(b => b.kind === 'form' || b.kind === 'minutes').length;
+  }
+
   return {
     instanceId,
     currentStep,
     missingForms,
     pendingApprovals,
-    overdue: false, // caller should set based on event SLA if known
+    overdue,
+    auditState,
+    isCertified,
+    missingEvidenceCount,
+    slaDaysPastDue,
+    readyForCertification,
+    certificationBlockers,
   };
 }

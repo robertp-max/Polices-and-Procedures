@@ -570,9 +570,14 @@ export function GVGBAppendixPrint() {
   const isLandscape = appendixId === 'G';
 
   useEffect(() => {
+    const prev = document.title;
+    document.title = `GV-GB-001 — ${title}`;
     const t = setTimeout(() => window.print(), 1200);
-    return () => clearTimeout(t);
-  }, []);
+    return () => {
+      clearTimeout(t);
+      document.title = prev;
+    };
+  }, [title]);
 
   return (
     <div style={{ fontFamily: "'Roboto', sans-serif", fontSize: 12, color: DARK, background: '#fff', minHeight: '100vh' }}>
@@ -580,13 +585,12 @@ export function GVGBAppendixPrint() {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap');
         @page {
           size: ${isLandscape ? 'letter landscape' : 'letter'};
-          margin: 0.65in 0.75in;
+          margin: 0.5in;
         }
         @media print {
-          body { background: white !important; margin: 0; }
+          body { background: white !important; margin: 0; padding: 0; }
           .no-print { display: none !important; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          /* Ensure all typed input values are visible in print */
           input[type="text"],
           input[type="email"],
           input[type="date"],
@@ -598,6 +602,19 @@ export function GVGBAppendixPrint() {
           input::placeholder { color: transparent !important; opacity: 0 !important; }
           select { color: #1F1C1B !important; opacity: 1 !important; }
           textarea { color: #1F1C1B !important; opacity: 1 !important; }
+          table {
+            table-layout: fixed !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          table th, table td {
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+            white-space: normal !important;
+          }
+          thead { display: table-header-group !important; }
+          tr { page-break-inside: avoid !important; break-inside: avoid !important; }
         }
         body { margin: 0; padding: 0; }
       `}</style>

@@ -184,6 +184,62 @@ export interface PhaseStatus {
   phase3: { available: boolean; label: string; dataSource: string };
 }
 
+/* ── Scenario Normalization Layer ─────────────────────────────────── */
+
+export type ScenarioCategory =
+  | 'SENTINEL_EVENT_CRITICAL'
+  | 'PATIENT_SAFETY_EMERGENCY'
+  | 'CLINICIAN_SAFETY'
+  | 'ADVERSE_EVENT'
+  | 'ABUSE_NEGLECT'
+  | 'PRIVACY_BREACH'
+  | 'CYBERSECURITY_INCIDENT'
+  | 'COMPLIANCE_VIOLATION'
+  | 'BILLING_RISK'
+  | 'REGULATORY_INQUIRY'
+  | 'EMERGENCY_OPERATIONAL'
+  | 'COMPLAINT'
+  | 'GENERAL_QUERY';
+
+export interface ScenarioPlaybookWorkflow {
+  id: string;
+  label: string;
+  regulatoryDriver?: string;
+}
+
+export interface ScenarioPolicyReference {
+  id: string;
+  name: string;
+  domain?: string;
+  isDomainFallback?: boolean;
+}
+
+export interface ScenarioMapping {
+  category: ScenarioCategory;
+  label: string;
+  severity: 'critical' | 'high' | 'moderate' | 'low';
+  riskLevel: RiskLevel;
+  lifeSafetyFlag: boolean;
+  confidence: 'high' | 'medium' | 'low';
+  matchedTriggers: string[];
+  relatedCategories: ScenarioCategory[];
+  summary: string;
+  headline: string;
+  matchNote?: string;
+  immediateActions: string[];
+  requiredWorkflows: ScenarioPlaybookWorkflow[];
+  relatedPolicies: ScenarioPolicyReference[];
+  missingInformation: string[];
+  complianceNotes: string[];
+  domains: string[];
+  suggestedGenerators: Array<{
+    type: ActionType;
+    studioOutputType: StudioOutputType | null;
+    label: string;
+  }>;
+  suppressNoAnswer: boolean;
+}
+
 /* ── Structured response contract ────────────────────────────────── */
 
 export interface StructuredResponse {
@@ -212,11 +268,15 @@ export interface StructuredResponse {
   lifecycleAlerts?: LifecycleAlert[];
   regulatoryAlerts?: RegulatoryAlert[];
   phaseStatus?: PhaseStatus;
+  /** Scenario classification + playbook. Present when Brad mapped the
+   *  input to a high-stakes compliance scenario. */
+  scenario?: ScenarioMapping;
   meta?: {
     intent: IntentKind;
     retrievedChunkIds: string[];
     model: string;
     elapsedMs: number;
+    scenarioCategory?: ScenarioCategory;
   };
 }
 

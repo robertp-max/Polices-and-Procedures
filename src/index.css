@@ -400,102 +400,65 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   SCREEN DEFAULT — print-only elements hidden from viewport.
+   ══════════════════════════════════════════════════════════════ */
+.policy-print-only { display: none; }
+
+/* ══════════════════════════════════════════════════════════════
    PRINT RESET — forms & policies print as clean full-page paper.
 
-   Design anchor: Builder/Policies/FormsViewerLightDesign.html
+   FORM STRATEGY — dedicated /forms/:id/print route (FormPrintView):
+     Forms open in a new tab via a standalone route that has zero
+     app-shell wrappers.  The browser can paginate the content
+     naturally across as many Letter pages as needed.
+     The body:has(.form-page) fallback below handles any remaining
+     cases (e.g. Ctrl+P on /forms/:id directly) without the
+     position:fixed + zoom:0.6 approach that clipped long forms.
 
-   FORM STRATEGY — visibility technique (identical to ia-form-print-root):
-     body:has(.form-page) hides everything via visibility:hidden,
-     then .form-page + all its children are made visible:visible.
-     .form-page is pulled to position:fixed top:0 left:0 so it
-     lands at the very top of the print canvas regardless of where
-     it sits in the shell DOM (fixed/absolute shell layers, overflow
-     containers, nested flex wrappers — none of them can clip it).
-     zoom:0.6 scales the ENTIRE card (logo, header, teal rule,
-     title, callouts, fields, signatures, footer) proportionally so
-     the design looks exactly like the screen view, just smaller.
-     @page margin:0 suppresses browser URL/date/page-number chrome.
-
-   POLICY STRATEGY — shell reset technique:
-     Shell layers are freed from fixed/absolute so policy content
-     flows naturally across pages.
+   POLICY STRATEGY — dual-render technique:
+     .policy-carousel-screen  → shown on screen, hidden at print.
+     .policy-print-only       → hidden on screen, shown at print.
+     PolicyPrintDocument renders ALL sections sequentially so the
+     browser can paginate freely regardless of which section was
+     active in the carousel when Print was triggered.
    ══════════════════════════════════════════════════════════════ */
+/* ─────────────────────────────────────────────────────────────
+   @page — Letter portrait with margin zones for running
+   header (top 0.9in) and footer (bottom 0.85in).
+   Sides 0.75in per standard enterprise document spec.
+   ───────────────────────────────────────────────────────────── */
 @page {
-  size: Letter;
-  margin: 0;
+  size: Letter portrait;
+  margin: 0.5in;
 }
 
 @media print {
-  /* ── 0. Global colour preservation ── */
-  * {
+  /* ── 0. Colour preservation ── */
+  *, *::before, *::after {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* ── 1. Always-hidden browser/app chrome ── */
+  /* ── 1. Always-hidden app chrome ── */
   .no-print,
   .ia-no-print,
   [data-shell-bg] {
     display: none !important;
   }
 
-  /* ══════════════════════════════════════════════════════════
-     FORM PRINT  (visibility technique)
-     Works regardless of how many overflow/fixed/absolute shell
-     layers wrap the form-page in the production DOM.
-     ══════════════════════════════════════════════════════════ */
-
-  /* Step 1: make everything invisible */
-  body:has(.form-page) * {
-    visibility: hidden !important;
-  }
-
-  /* Step 2: make form-page and ALL its descendants visible */
-  body:has(.form-page) .form-page,
-  body:has(.form-page) .form-page * {
-    visibility: visible !important;
-  }
-
-  /* Step 3: anchor form-page to the top-left of the print canvas */
-  body:has(.form-page) .form-page {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    /* Fill the full paper width so layout matches screen */
-    width: 100vw !important;
-    max-width: 100vw !important;
-    /* Strip card chrome — no shadow/border/radius in print */
-    background: #ffffff !important;
-    border: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    /* Natural screen padding provides the physical paper margin */
-    overflow: visible !important;
-    /* Scale the entire form to fit one sheet.
-       zoom:0.6 → virtual canvas = 8.5/0.6 × 11/0.6 = 14.2in × 18.3in.
-       A form ≤1750px tall at screen scale fits on a single Letter page. */
-    zoom: 0.6;
-  }
-
-  /* Inputs: print-safe colours (zoom handles size/spacing) */
-  body:has(.form-page) .form-page input,
-  body:has(.form-page) .form-page textarea,
-  body:has(.form-page) .form-page select {
-    color: #1F1C1B !important;
-    border-color: #999 !important;
-    background: transparent !important;
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     POLICY PRINT  (shell-reset technique, multi-page flow)
-     ══════════════════════════════════════════════════════════ */
+  /* ── 2. Root reset — white page, natural flow ── */
   html, body, #root {
     background: #ffffff !important;
     margin: 0 !important;
     padding: 0 !important;
     height: auto !important;
     overflow: visible !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    color: #1F1C1B !important;
   }
+
+  /* ── 3. Shell layer reset ── */
   [data-shell-outer] {
     position: static !important;
     inset: auto !important;
@@ -547,7 +510,7 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
     color: #1F1C1B !important;
     border: none !important;
     margin: 0 !important;
-    padding: 0.5in !important;
+    padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     min-height: 0 !important;
@@ -564,16 +527,295 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
     flex: none !important;
     padding: 0 !important;
   }
-  .policy-page input,
-  .policy-page textarea,
-  .policy-page select {
+
+  /* ══════════════════════════════════════════════════════════
+     POLICY PRINT — carousel / print-doc toggle
+     ══════════════════════════════════════════════════════════ */
+
+  .policy-carousel-screen { display: none !important; }
+  .policy-print-only {
+    display: block !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* Edge-to-edge print canvas — @page margin already provides gutter. */
+  .print-document {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+  }
+  /* Wrapping containers around .print-document can also render a visible
+     rectangle; strip their chrome in print. */
+  .policy-print-only > div,
+  .policy-print-only .pt-24 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     POLICY PRINT — section page-break control
+     ══════════════════════════════════════════════════════════ */
+  .page-break,
+  .print-section-break {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+  .break-inside-avoid,
+  .print-no-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  .break-after-avoid {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  .appendix {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+  /* Prevent orphan section headers */
+  .policy-print-only h1,
+  .policy-print-only h2,
+  .policy-print-only h3,
+  .policy-print-only h4 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     POLICY PRINT — typography
+     ══════════════════════════════════════════════════════════ */
+  .policy-print-only {
+    font-size: 11pt;
+    line-height: 1.4;
+    color: #1F1C1B;
+    background: white;
+  }
+  /* Policy title (h1 equivalent) */
+  .policy-print-only .font-montserrat.text-\[28px\],
+  .policy-print-only .font-montserrat.text-\[32px\] {
+    font-size: 20pt !important;
+    line-height: 1.2 !important;
+  }
+  /* Section headings */
+  .policy-print-only .tracking-\[0\.22em\] {
+    font-size: 10pt !important;
+    letter-spacing: 0.15em !important;
+  }
+  /* Body text */
+  .policy-print-only .text-\[15px\],
+  .policy-print-only .text-\[14px\] {
+    font-size: 10.5pt !important;
+  }
+  .policy-print-only .text-\[13px\],
+  .policy-print-only .text-\[12px\] {
+    font-size: 9.5pt !important;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     POLICY PRINT — table rendering
+     page-break-inside:auto on table allows rows to split across
+     pages; page-break-inside:avoid on tr prevents mid-row splits.
+     thead { display:table-header-group } repeats headers per page.
+     ══════════════════════════════════════════════════════════ */
+  .policy-print-only table {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: fixed !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    font-size: 9.5pt !important;
+  }
+  /* Make sure table wrappers don't clip/scroll in print (printed pages can't scroll) */
+  .policy-print-only .overflow-hidden,
+  .policy-print-only .overflow-x-auto,
+  .policy-print-only .overflow-x-scroll {
+    overflow: visible !important;
+  }
+  .policy-print-only table th,
+  .policy-print-only table td {
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    white-space: normal !important;
+  }
+  .policy-print-only thead {
+    display: table-header-group !important;
+  }
+  .policy-print-only tfoot {
+    display: table-footer-group !important;
+  }
+  .policy-print-only tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  .policy-print-only th {
+    background: #f2f2f0 !important;
+    border: 1px solid #888 !important;
+    padding: 5px 8px !important;
+    font-weight: 700 !important;
+    font-size: 8.5pt !important;
+    color: #1F1C1B !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    vertical-align: bottom !important;
+  }
+  .policy-print-only td {
+    border: 1px solid #ccc !important;
+    padding: 5px 8px !important;
+    font-size: 9.5pt !important;
+    color: #1F1C1B !important;
+    background: transparent !important;
+    vertical-align: top !important;
+  }
+  /* First cell (step number) — slightly bolder; allow wrap to prevent clipping */
+  .policy-print-only td:first-child {
+    font-weight: 600 !important;
+    color: #007970 !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+  /* Remove table wrapper top/bottom borders (cell borders suffice) */
+  .policy-print-only .border-y {
+    border-top: none !important;
+    border-bottom: none !important;
+  }
+  /* Remove hover effects */
+  .policy-print-only .hover\:bg-\[\#FAFBF8\] {
+    background: transparent !important;
+  }
+  /* Zebra stripe on table rows */
+  .policy-print-only tbody tr:nth-child(even) td {
+    background: #fafaf9 !important;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     POLICY PRINT — section-title rule line (DSectionTitle)
+     ══════════════════════════════════════════════════════════ */
+  .policy-print-only .flex-grow.h-px {
+    background: #999 !important;
+    opacity: 1 !important;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     POLICY PRINT — callout / border-l blocks
+     ══════════════════════════════════════════════════════════ */
+  .policy-print-only .border-l-\[3px\] {
+    border-left-width: 3px !important;
+    border-left-style: solid !important;
+  }
+  .policy-print-only .border-\[\#C74601\] {
+    border-color: #C74601 !important;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     GLOBAL TABLE PRINT LOCK — enforced across ALL print contexts:
+     forms, appendices, GVGBPrintDocument, PrintPage, and any
+     future print route.  Scoped .policy-print-only rules above
+     retain higher specificity and are not overridden.
+     ══════════════════════════════════════════════════════════ */
+  table {
+    table-layout: fixed !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  table th,
+  table td {
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    white-space: normal !important;
+  }
+  thead { display: table-header-group !important; }
+  tfoot { display: table-footer-group !important; }
+  tr    { page-break-inside: avoid !important; break-inside: avoid !important; }
+
+  /* Strip any scroll/clip wrappers so tables never require horizontal scrolling */
+  .overflow-x-auto,
+  .overflow-x-scroll,
+  [class*="overflow-x"],
+  [style*="overflow-x: auto"],
+  [style*="overflow-x:auto"] {
+    overflow: visible !important;
+  }
+
+  /* Global container print reset — no outer boxes, borders, shadows, or radii */
+  .form-frame,
+  .print-document,
+  .screen-shell,
+  .policy-section-card {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    background: #ffffff !important;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     POLICY PRINT — definitions grid (collapse to 2-col on paper)
+     ══════════════════════════════════════════════════════════ */
+  .policy-print-only .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .policy-print-only .grid-cols-1.md\:grid-cols-2 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     FORM PRINT — fallback (covers Ctrl+P on /forms/:id)
+     Primary path: FormPrintView (/forms/:id/print)
+     ══════════════════════════════════════════════════════════ */
+  body:has(.form-page) * {
+    visibility: hidden !important;
+  }
+  body:has(.form-page) .form-page,
+  body:has(.form-page) .form-page * {
+    visibility: visible !important;
+  }
+  body:has(.form-page) [data-form-shell] {
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+    padding-top: 0 !important;
+  }
+  body:has(.form-page) .screen-shell {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  body:has(.form-page) .form-page {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+  body:has(.form-page) .form-page input,
+  body:has(.form-page) .form-page textarea,
+  body:has(.form-page) .form-page select {
     color: #1F1C1B !important;
     border-color: #999 !important;
     background: transparent !important;
   }
 
   /* ══════════════════════════════════════════════════════════
-     iAdministrator legacy print root (unchanged approach)
+     iAdministrator legacy print root (unchanged)
      ══════════════════════════════════════════════════════════ */
   body:has(.ia-form-print-root) * { visibility: hidden; }
   body:has(.ia-form-print-root) .ia-form-print-root,
@@ -618,6 +860,15 @@ html[data-theme="care-indeed-light"] .glass-interactive:hover {
     height: auto !important;
     max-height: none !important;
     overflow: visible !important;
+  }
+
+  /* ── Policy input/form fields ── */
+  .policy-page input,
+  .policy-page textarea,
+  .policy-page select {
+    color: #1F1C1B !important;
+    border-color: #999 !important;
+    background: transparent !important;
   }
 }
 

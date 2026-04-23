@@ -25,7 +25,10 @@ const GVGBAppendixPrint = lazy(() => import('@/policy/pages/GVGBAppendixPrint').
 const FormViewer        = lazy(() => import('@/policy/components/FormViewer').then(m => ({ default: m.FormViewer })))
 const IAdministratorPage = lazy(() => import('@/policy/pages/iAdministrator').then(m => ({ default: m.IAdministratorPage })))
 const BradProposalPage  = lazy(() => import('@/policy/pages/BradProposal').then(m => ({ default: m.BradProposalPage })))
-const WorkflowLibraryApp = lazy(() => import('@/policy/workflows/WorkflowLibraryApp').then(m => ({ default: m.WorkflowLibraryApp })))
+const WorkflowLibraryApp    = lazy(() => import('@/policy/workflows/WorkflowLibraryApp').then(m => ({ default: m.WorkflowLibraryApp })))
+const HubstaffStagingPage  = lazy(() => import('@/policy/pages/HubstaffStagingPage').then(m => ({ default: m.HubstaffStagingPage })))
+const FormPrintView        = lazy(() => import('@/policy/pages/FormPrintView').then(m => ({ default: m.FormPrintView })))
+const MasterControlInventoryPage = lazy(() => import('@/policy/pages/MasterControlInventoryPage').then(m => ({ default: m.MasterControlInventoryPage })))
 
 // ── Onboarding & Competency Journey ─────────────────────────────
 const JourneyHomePage    = lazy(() => import('@/policy/journey/pages/JourneyHomePage').then(m => ({ default: m.JourneyHomePage })))
@@ -59,6 +62,9 @@ function App() {
         {/* Generic print page */}
         <Route path="/print/:policyId" element={<PrintPage />} />
 
+        {/* Standalone form print — outside layout shell for clean pagination */}
+        <Route path="/forms/:formId/print" element={<FormPrintView />} />
+
         {/* Hidden executive proposal — accessed via Brad iAdministrator corner trigger */}
         <Route path="/brad-proposal" element={<BradProposalPage />} />
 
@@ -88,6 +94,8 @@ function App() {
                   <Route path="/iadministrator" element={<IAdministratorPage />} />
                   <Route path="/gv-policy/:policyId" element={<GVPolicyDetailView />} />
                   <Route path="/workflows/*" element={<WorkflowLibraryApp />} />
+                  <Route path="/compliance/master-controls" element={<MasterControlInventoryPage />} />
+                  <Route path="/hubstaff"   element={<HubstaffStagingPage />} />
 
                   {/* Onboarding & Competency Journey */}
                   <Route path="/journey"                    element={<JourneyHomePage />} />

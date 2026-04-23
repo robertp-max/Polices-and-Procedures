@@ -7,7 +7,7 @@ import {
   CheckSquare, Send, FileBarChart, PlayCircle,
   HelpCircle, Search, ChevronLeft, Menu,
   ShieldCheck, Zap, FingerprintPattern as Fingerprint,
-  GraduationCap,
+  GraduationCap, ArrowUpCircle,
 } from 'lucide-react';
 import TravelightBG from '@/components/TravelightBG';
 import { useShellStore } from '@/policy/stores/uiStore';
@@ -87,7 +87,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', to: '/dashboard', label: 'Command Center', subItems: [{ to: '/dashboard', label: 'Overview' }], icon: LayoutDashboard },
   { id: 'iadmin', to: '/iadministrator', label: 'Brad', icon: BradRobotIcon },
-  { id: 'compliance', to: '/workflows', label: 'Compliance', subItems: [{ to: '/workflows', label: 'Workflows' }, { to: '/calendar', label: 'Calendar' }, { to: '/calendar/minutes', label: 'Minutes' }, { to: '/audit', label: 'Audit Mode' }], icon: ClipboardCheck },
+  { id: 'compliance', to: '/workflows', label: 'Compliance', subItems: [{ to: '/workflows', label: 'Workflows' }, { to: '/compliance/master-controls', label: 'Master Controls' }, { to: '/calendar', label: 'Execution Timeline' }, { to: '/calendar/minutes', label: 'Minutes' }, { to: '/audit', label: 'Audit Mode' }], icon: ClipboardCheck },
   { id: 'taxonomy', to: '/framework', label: 'Taxonomy', subItems: [{ to: '/framework', label: 'Framework' }, { to: '/library', label: 'Policies' }, { to: '/forms', label: 'Forms' }], icon: Network },
   { id: 'drafts', to: '/drafts', label: 'Drafts', icon: FileEdit },
   { id: 'review', to: '/review', label: 'Review Queue', icon: CheckSquare },
@@ -104,6 +104,7 @@ const NAV_ITEMS: NavItem[] = [
     ],
     icon: GraduationCap,
   },
+  { id: 'hubstaff', to: '/hubstaff', label: 'Hubstaff', icon: ArrowUpCircle },
   { id: 'demo', to: '/demo', label: 'Demo', icon: PlayCircle },
 ];
 

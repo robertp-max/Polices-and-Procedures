@@ -57,6 +57,26 @@ export interface RuntimeState {
   pendingApprovals?: string[];
   /** True if the event is overdue. */
   overdue?: boolean;
+  /** One of the 8 audit states. Fed from classifyAuditState. */
+  auditState?:
+    | 'audit-ready'
+    | 'complete-missing-evidence'
+    | 'complete-pending-approval'
+    | 'in-progress'
+    | 'blocked'
+    | 'overdue'
+    | 'not-certifiable'
+    | 'certified-locked';
+  /** True when the instance has been formally certified and locked. */
+  isCertified?: boolean;
+  /** Count of missing/pending evidence items (forms + minutes). */
+  missingEvidenceCount?: number;
+  /** Days past due (0 if on time or future). */
+  slaDaysPastDue?: number;
+  /** True if the completion checklist currently passes. */
+  readyForCertification?: boolean;
+  /** Human-readable list of blockers preventing certification. */
+  certificationBlockers?: string[];
   /** Optional risk band override from the compliance engine. */
   risk?: 'low' | 'moderate' | 'high' | 'immediate_jeopardy';
 }
@@ -334,7 +354,27 @@ function renderRuntimeState(w: Workflow, runtime: RuntimeState): string {
   if (runtime.missingForms?.length) lines.push(`- **Missing forms:** ${runtime.missingForms.join(', ')}`);
   if (runtime.pendingApprovals?.length) lines.push(`- **Pending approvals:** ${runtime.pendingApprovals.join('; ')}`);
   if (runtime.overdue) lines.push('- **Status:** OVERDUE — escalation path applies (see §11).');
+  if (runtime.slaDaysPastDue && runtime.slaDaysPastDue > 0) lines.push(`- **SLA:** ${runtime.slaDaysPastDue} day(s) past due.`);
   if (runtime.risk) lines.push(`- **Risk:** ${runtime.risk}`);
+  if (runtime.auditState) {
+    const label: Record<NonNullable<RuntimeState['auditState']>, string> = {
+      'audit-ready':               'Audit Ready — eligible for certification.',
+      'complete-missing-evidence': 'Complete but missing evidence — cannot certify.',
+      'complete-pending-approval': 'Complete but pending approval — cannot certify.',
+      'in-progress':               'In progress — execution underway.',
+      'blocked':                   'Blocked — upstream dependency or hard blocker.',
+      'overdue':                   'Overdue — past due date, not yet complete.',
+      'not-certifiable':           'Not certifiable — validation regressed.',
+      'certified-locked':          'Certified & locked — immutable record.',
+    };
+    lines.push(`- **Audit state:** ${label[runtime.auditState]}`);
+  }
+  if (runtime.isCertified) lines.push('- **Certification:** Record sealed. Changes require administrative revoke.');
+  else if (runtime.readyForCertification) lines.push('- **Certification:** Ready — all checklist items pass.');
+  else if (runtime.certificationBlockers?.length) {
+    lines.push(`- **Cannot certify — blockers:**`);
+    for (const b of runtime.certificationBlockers) lines.push(`  - ${b}`);
+  }
   return lines.join('\n');
 }
 

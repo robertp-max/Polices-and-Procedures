@@ -5,6 +5,7 @@ import {
   type RuntimeState,
   type WorkflowAnswer,
 } from './workflowKnowledge';
+import { answerReadinessQuery, type ReadinessAnswer } from './workflowSchedule';
 
 /**
  * useBradWorkflow — subscribes a React component to the deterministic
@@ -24,12 +25,28 @@ import {
 export function useBradWorkflow(
   query: string,
   runtime?: RuntimeState,
-): { isWorkflow: boolean; answer: WorkflowAnswer | null } {
+): {
+  isWorkflow: boolean;
+  answer: WorkflowAnswer | null;
+  isReadiness: boolean;
+  readiness: ReadinessAnswer | null;
+} {
   return useMemo(() => {
-    if (!query.trim()) return { isWorkflow: false, answer: null };
-    if (!isWorkflowQuery(query)) return { isWorkflow: false, answer: null };
-    const answer = answerWorkflowQuery(query, runtime);
-    return { isWorkflow: answer !== null, answer };
+    if (!query.trim()) {
+      return { isWorkflow: false, answer: null, isReadiness: false, readiness: null };
+    }
+    // Workflow-specific queries take precedence (they cite authored spec).
+    if (isWorkflowQuery(query)) {
+      const answer = answerWorkflowQuery(query, runtime);
+      return { isWorkflow: answer !== null, answer, isReadiness: false, readiness: null };
+    }
+    // Readiness / schedule / audit-state questions — grounded in live stores.
+    const readiness = answerReadinessQuery(query);
+    if (readiness) {
+      return { isWorkflow: false, answer: null, isReadiness: true, readiness };
+    }
+    return { isWorkflow: false, answer: null, isReadiness: false, readiness: null };
   }, [query, runtime?.instanceId, runtime?.currentStep, runtime?.overdue, runtime?.risk,
+      runtime?.auditState, runtime?.isCertified, runtime?.readyForCertification,
       runtime?.missingForms?.join(','), runtime?.pendingApprovals?.join(',')]);
 }

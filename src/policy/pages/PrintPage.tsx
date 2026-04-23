@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Printer, AlertTriangle } from 'lucide-react';
 import { getPolicyContent } from '@/policy/data/policyContentMap';
@@ -105,6 +106,12 @@ export function PrintPage() {
     );
   }
 
+  useEffect(() => {
+    const prev = document.title;
+    document.title = `${policy.id} — ${policy.title}`;
+    return () => { document.title = prev; };
+  }, [policy.id, policy.title]);
+
   const isOfficialVersion =
     policy.lifecycleStatus === 'Approved' || policy.lifecycleStatus === 'Published';
   const isDraft = !isOfficialVersion;
@@ -120,13 +127,32 @@ export function PrintPage() {
   return (
     <div className="bg-[#E5E4E3] py-8 print:bg-white print:p-0">
       <style>{`
+        @page { size: letter; margin: 0.5in; }
         @media print {
-          @page { size: letter; margin: 0.6in 0.75in; }
           body { background: white !important; }
           .no-print { display: none !important; }
           .avoid-break { page-break-inside: avoid; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          .print-document { box-shadow: none !important; margin: 0 !important; max-width: none !important; }
+          .print-document {
+            box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: none !important;
+            width: 100% !important;
+          }
+          table {
+            table-layout: fixed !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          table th, table td {
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+            white-space: normal !important;
+          }
         }
       `}</style>
 

@@ -6,6 +6,7 @@ import { DraftsPage } from '@/policy/pages/DraftsPage';
 import { GovernancePage } from '@/policy/pages/GovernancePage';
 import { LibraryPage } from '@/policy/pages/LibraryPage';
 import { MasterCalendarPage } from '@/policy/pages/MasterCalendarPage';
+import { MasterControlInventoryPage } from '@/policy/pages/MasterControlInventoryPage';
 import { PolicyDetailPage } from '@/policy/pages/PolicyDetailPage';
 import { PrintPage } from '@/policy/pages/PrintPage';
 import { PublishPage } from '@/policy/pages/PublishPage';
@@ -19,6 +20,7 @@ export default function PolicyCommandCenterApp() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/calendar" element={<MasterCalendarPage />} />
+        <Route path="/compliance/master-controls" element={<MasterControlInventoryPage />} />
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/library/:policyId" element={<PolicyDetailPage />} />
         <Route path="/taxonomy" element={<TaxonomyPage />} />

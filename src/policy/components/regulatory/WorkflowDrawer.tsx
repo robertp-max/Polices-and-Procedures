@@ -58,7 +58,7 @@ export function WorkflowDrawer({ event }: WorkflowDrawerProps) {
 }
 
 /* ─── Body ────────────────────────────────────────────── */
-function WorkflowBody({ event }: { event: RegulatoryEvent }) {
+export function WorkflowBody({ event }: { event: RegulatoryEvent }) {
   const store = useRegulatoryExecutionStore();
   const validation = useMemo(() => store.validateEvent(event), [event, store]);
 

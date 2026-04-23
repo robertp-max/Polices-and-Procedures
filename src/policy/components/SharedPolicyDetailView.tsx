@@ -11,6 +11,7 @@ import ciLogoWhite from '@/assets/ci-logo-white.png';
 import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { FormViewer } from '@/policy/components/FormViewer';
+import { printForm } from '@/policy/utils/printForm';
 
 // ══════════════════════════════════════════════════════════════
 // SHARED POLICY DETAIL VIEW
@@ -341,7 +342,7 @@ function DSectionTitle({ icon: Icon, title, color = 'text-[#1F1C1B]' }: { icon?:
 
 function DSimpleTable({ headers, rows }: { headers: string[]; rows: (string | React.ReactNode)[][] }) {
   return (
-    <div className="w-full mb-10 border-y border-[#E5E4E3]">
+    <div className="w-full mb-6 break-inside-avoid shadow-sm rounded-lg overflow-hidden border border-[#E5E4E3]">
       <table className="w-full text-left border-collapse">
         <thead>
           <tr>
@@ -371,7 +372,7 @@ function DSimpleTable({ headers, rows }: { headers: string[]; rows: (string | Re
 // Shown one at a time via sectionIdx-based rendering.
 function SCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full max-w-[1000px]">
+    <div className="w-full max-w-[1000px] break-inside-avoid">
       {children}
     </div>
   );
@@ -834,7 +835,7 @@ function TabAppendices({ policy }: { policy: SharedPolicy }) {
             >
               <ExternalLink size={14} /> Sign on Dropbox
             </button>
-            <button onClick={() => window.print()} className="flex items-center gap-2 text-[#524048] font-montserrat font-semibold text-[12px] hover:text-[#1F1C1B] transition-colors">
+            <button onClick={() => printForm(APPENDIX_FORM_MAP[activeApp])} className="flex items-center gap-2 text-[#524048] font-montserrat font-semibold text-[12px] hover:text-[#1F1C1B] transition-colors">
               <Printer size={14} /> Print Form
             </button>
           </div>
@@ -964,6 +965,112 @@ function TabAmendments({ policy }: { policy: SharedPolicy }) {
                 {entry.sections && <p className="text-white/35 text-[10px]"><span className="text-white/50 font-bold">Sections: </span>{entry.sections}</p>}
               </div>
             </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PrintMeta({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <span className="block text-[9.5px] uppercase tracking-[0.14em] text-[#524048] font-montserrat font-bold mb-0.5">{label}</span>
+      <strong className="text-[13px] font-roboto font-medium text-[#1F1C1B]">{value}</strong>
+    </div>
+  );
+}
+
+function PolicyPrintDocument({ policy, isGV }: { policy: SharedPolicy; isGV: boolean }) {
+  const procedureSections = isGV ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] : [0];
+  const appendixForms = isGV
+    ? [
+        { id: 'A', title: 'Appendix A — Governing Body Membership Roster', formId: 'GV-FM-011' },
+        { id: 'B', title: 'Appendix B — Conflict of Interest Form', formId: 'GV-FM-006' },
+        { id: 'C', title: 'Appendix C — Policy Acknowledgment Form', formId: 'GV-FM-024' },
+        { id: 'D', title: 'Appendix D — Meeting Minutes Template', formId: 'GV-FM-005' },
+        { id: 'E', title: 'Appendix E — Quarterly Oversight Checklist', formId: 'GV-FM-008' },
+        { id: 'F', title: 'Appendix F — Annual Calendar', formId: 'GV-FM-004' },
+        { id: 'G', title: 'Appendix G — Agency Organizational Chart', formId: 'GV-FM-003' },
+      ]
+    : [];
+
+  return (
+    <div className="policy-print-only">
+      <div className="pt-24 pb-12 flex justify-center w-full print:pt-0 print:pb-0">
+        <div className="print-document bg-white w-full max-w-[850px] shadow-lg px-12 py-16 text-[#1F1C1B]">
+          <div className="border-b-2 border-[#007970] pb-8 mb-10 break-after-avoid">
+            <div className="flex items-start justify-between mb-6">
+              <img
+                src={ciLogoGray}
+                alt="Care Indeed — The Heart of Home Health"
+                className="h-10 w-auto select-none"
+                draggable={false}
+              />
+              <div className="text-right">
+                <p className="font-montserrat font-bold text-[10px] uppercase tracking-[0.18em] text-[#524048] mb-1">Corporate Policy Document</p>
+                <p className="font-montserrat text-[11px] text-[#524048]">Care Indeed Home Health Care, Inc.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <span className="text-[#007970] border border-[#007970]/30 bg-[#E5FEFF] px-2.5 py-0.5 rounded-full text-[10px] font-montserrat font-bold uppercase tracking-[0.12em]">{policy.policyId}</span>
+              <span className="text-white bg-[#007970] px-2.5 py-0.5 rounded-full text-[10px] font-montserrat font-bold uppercase tracking-[0.12em]">{policy.status.replace('_', ' ')}</span>
+              <span className="text-[#524048] border border-[#E5E4E3] bg-white px-2.5 py-0.5 rounded-full text-[10px] font-montserrat font-bold uppercase tracking-[0.12em]">{policy.classificationTier}</span>
+            </div>
+
+            <h1 className="font-montserrat font-light text-[32px] leading-tight text-[#1F1C1B] mb-6 tracking-tight">{policy.title}</h1>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 border-t border-[#E5E4E3] pt-5">
+              <PrintMeta label="Version" value={`v${policy.version}`} />
+              <PrintMeta label="Effective" value={policy.effectiveDate} />
+              <PrintMeta label="Last Reviewed" value={policy.effectiveDate} />
+              <PrintMeta label="Next Review" value={policy.nextReviewDate} />
+              <PrintMeta label="Policy Owner" value={policy.policyOwner} />
+              <PrintMeta label="Subdomain" value={policy.subdomain} />
+              <div className="col-span-2"><PrintMeta label="Domain" value={policy.domain} /></div>
+              <div className="col-span-2"><PrintMeta label="Approved By" value={policy.approvedBy} /></div>
+            </div>
+          </div>
+
+          <div className="mb-8 break-inside-avoid"><TabOverview policy={policy} sectionIdx={1} /></div>
+          <div className="mb-8 break-inside-avoid"><TabOverview policy={policy} sectionIdx={2} /></div>
+          <div className="mb-8"><TabStatements policy={policy} /></div>
+          <div className="mb-8"><TabOverview policy={policy} sectionIdx={3} /></div>
+          <div className="mb-8"><TabProcedures policy={policy} sectionIdx={procedureSections[0]} /></div>
+          {procedureSections.slice(1).map((idx) => (
+            <div key={idx} className="mb-8"><TabProcedures policy={policy} sectionIdx={idx} /></div>
+          ))}
+          <div className="mb-8"><TabDocumentation policy={policy} /></div>
+
+          <div className="mb-8 page-break">
+            {[0, 1, 2].map((idx) => (
+              <div key={idx} className="mb-8"><TabCompliance policy={policy} sectionIdx={idx} /></div>
+            ))}
+          </div>
+
+          <div className="mb-8 page-break">
+            {[0, 1, 2, 3].map((idx) => (
+              <div key={idx} className="mb-8"><TabReferences policy={policy} sectionIdx={idx} /></div>
+            ))}
+          </div>
+
+          <div className="mb-8 page-break">
+            <DSectionTitle icon={LayoutList} title="Appendices" />
+            {!isGV && (
+              <p className="text-sm font-roboto text-[#524048]">
+                No appendices are mapped to this policy.
+              </p>
+            )}
+          </div>
+
+          {appendixForms.map((appx) => (
+            <section key={appx.id} className="appendix">
+              <h3 className="font-montserrat font-bold text-sm text-[#524048] uppercase mb-4 break-after-avoid">{appx.title}</h3>
+              <div className="break-inside-avoid border border-[#E5E4E3] rounded-lg p-5">
+                <FormViewer formId={appx.formId} />
+              </div>
+            </section>
           ))}
         </div>
       </div>
@@ -1104,10 +1211,10 @@ export function SharedPolicyDetailView({ policy, onBack }: { policy: SharedPolic
   // ── DOCUMENT TITLE + DETAIL MODE ─────────────────────────────
   useEffect(() => {
     const prev = document.title;
-    document.title = 'Care Indeed Home Health Care, Inc. — Policies & Procedures';
+    document.title = `${policy.policyId} — ${policy.title}`;
     setDetailMode(true);
     return () => { document.title = prev; setDetailMode(false); };
-  }, [setDetailMode]);
+  }, [policy.policyId, policy.title, setDetailMode]);
 
   // ── CORE NAVIGATE FUNCTION — operates on global section index ─
   function navigateToSection(targetIdx: number, dir: 1 | -1) {
@@ -1239,9 +1346,10 @@ export function SharedPolicyDetailView({ policy, onBack }: { policy: SharedPolic
 
   return (
     <div
-      className="demo-view-enter relative h-full w-full bg-white flex flex-col text-[#1F1C1B] overflow-hidden policy-page"
+      className="demo-view-enter relative h-full w-full bg-white text-[#1F1C1B] policy-page"
       data-theme="light"
     >
+      <div className="policy-carousel-screen relative h-full w-full bg-white flex flex-col overflow-hidden">
 
       {/* ══ ACTION BAR ══════════════════════════════════════════ */}
       <div className="no-print flex items-center justify-between px-5 py-3 bg-white border-b border-[#E5E4E3] shrink-0 z-20 gap-3">
@@ -1514,6 +1622,9 @@ export function SharedPolicyDetailView({ policy, onBack }: { policy: SharedPolic
           </div>
         </div>
       )}
+
+      </div>
+      <PolicyPrintDocument policy={policy} isGV={isGV} />
 
     </div>
   );

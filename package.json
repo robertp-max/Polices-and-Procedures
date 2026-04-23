@@ -16,7 +16,9 @@
     "push-events": "tsx scripts/pushAllEvents.ts",
     "cleanup-duplicates": "tsx scripts/cleanupDuplicates.ts",
     "cleanup-duplicates:apply": "tsx scripts/cleanupDuplicates.ts --apply",
-    "compile:workflows": "tsx scripts/compileWorkflows.ts"
+    "compile:workflows": "tsx scripts/compileWorkflows.ts",
+    "push-hubstaff": "tsx scripts/pushToHubstaff.ts",
+    "forms:build": "tsx scripts/formsSystemBuild.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
