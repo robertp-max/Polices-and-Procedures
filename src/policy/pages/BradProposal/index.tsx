@@ -4,7 +4,6 @@ import {
   X, ArrowLeft, Cpu, DollarSign, Map as MapIcon, Gavel, FileSearch,
   ChevronRight, Radio, Lock, Eye, EyeOff, Skull, Building2,
   Crosshair, AlertOctagon, ChevronDown, Layers, Activity, Server, ShieldCheck,
-  TrendingDown, TrendingUp, CheckCircle2, AlertCircle, Clock, Zap,
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -368,19 +367,6 @@ function Tag({ children, color = C.teal, filled }: { children: ReactNode; color?
   );
 }
 
-/** KPI number — large animated counter */
-function KpiStat({ value, label, color = C.t0, delay = 0 }: { value: number; label: string; color?: string; delay?: number }) {
-  const count = useCountUp(value, delay + 200);
-  return (
-    <div style={{ ...rise(delay), textAlign: 'center' }}>
-      <div style={{ fontFamily: C.H, fontSize: 36, fontWeight: 700, color, letterSpacing: '-0.01em', lineHeight: 1 }}>
-        {count}
-      </div>
-      <Label color={C.t2} style={{ marginTop: 6, letterSpacing: '0.16em' }}>{label}</Label>
-    </div>
-  );
-}
-
 /** KPI badge — compact, used in arch detail header */
 function KpiBadge({ label, value, color = C.teal, delay = 0 }: { label: string; value: string; color?: string; delay?: number }) {
   return (
@@ -391,21 +377,6 @@ function KpiBadge({ label, value, color = C.teal, delay = 0 }: { label: string; 
     }}>
       <Label color={color} style={{ letterSpacing: '0.16em', marginBottom: 4 }}>{label}</Label>
       <div style={{ fontFamily: C.H, fontWeight: 700, fontSize: 15, color: C.t0, marginTop: 4 }}>{value}</div>
-    </div>
-  );
-}
-
-/** Animated horizontal bar — grows from left on mount */
-function Bar({ value, total = 100, color = C.teal, height = 6, delay = 0 }: {
-  value: number; total?: number; color?: string; height?: number; delay?: number;
-}) {
-  const pct = Math.min((value / total) * 100, 100);
-  return (
-    <div style={{ height, background: C.s1, borderRadius: height / 2, overflow: 'hidden', border: `1px solid ${C.b0}` }}>
-      <div style={{
-        height: '100%', width: `${pct}%`, background: color, borderRadius: height / 2,
-        ...barAnim(delay),
-      }} />
     </div>
   );
 }

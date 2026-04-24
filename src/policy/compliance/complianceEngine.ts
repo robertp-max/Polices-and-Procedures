@@ -405,7 +405,7 @@ function deriveImpact(
 
 function computeSurveyReadiness(
   event: RegulatoryEvent,
-  missingItems: MissingItem[],
+  _missingItems: MissingItem[],
   isOverdue: boolean,
   isComplete: boolean,
   input: ComplianceInput,
@@ -466,7 +466,7 @@ export function computeComplianceBatch(
   for (const obj of objects) byId[obj.id] = obj;
 
   const overdue = objects.filter(o => o.isOverdue).length;
-  const dueThisWeek = objects.filter(o => !o.isComplete && o.daysUntilDue >= 0 && o.daysUntilDue <= 7).length;
+  const dueThisWeek = objects.filter(o => o.completionStatus !== 'complete' && o.daysUntilDue >= 0 && o.daysUntilDue <= 7).length;
   const blocked = objects.filter(o => o.completionStatus === 'blocked').length;
   const missingEvidence = objects.filter(o =>
     o.missingItems.some(m => m.kind === 'form' || m.kind === 'evidence'),

@@ -62,6 +62,7 @@ export interface RuntimeState {
     | 'audit-ready'
     | 'complete-missing-evidence'
     | 'complete-pending-approval'
+    | 'at-risk'
     | 'in-progress'
     | 'blocked'
     | 'overdue'

@@ -3,11 +3,9 @@ import {
   ChevronLeft, Printer, Download, Target, CheckCircle, BookOpen, List,
   Settings, FileText, CheckSquare, Archive, LayoutList, Bell,
   HelpCircle, Clock, Search, AlertTriangle, ChevronRight,
-  GitBranch, ExternalLink, Landmark, Scale, FileCheck, Lock,
-  Shield, ShieldCheck, Gavel, Calendar, Plus, Trash2, Save,
-  Building2, Briefcase, HeartPulse, User, FileLock2, Award,
+  ExternalLink, Landmark, Scale, FileCheck, Lock,
+  Shield, ShieldCheck, Gavel, FileLock2, Award,
 } from 'lucide-react';
-import ciLogoWhite from '@/assets/ci-logo-white.png';
 import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { FormViewer } from '@/policy/components/FormViewer';
@@ -232,21 +230,6 @@ const GV_CROSS_REFS: string[][] = [
   ['EN-TG-001', 'Enterprise Policy Taxonomy & Classification Governance', 'Framework under which this policy is classified.', 'https://example.com/policies/en-tg-001'],
 ];
 
-/** Word counts for Sections 1–11 (policy body; excludes appendices) — reconciled to published GV-GB-001 artifact. */
-const GV_SECTION_WORD_COUNTS: string[][] = [
-  ['1 — Policy Header', '77', 'Metadata and control fields.'],
-  ['2 — Purpose', '94', 'Regulatory basis statement.'],
-  ['3 — Scope', '93', 'Applicability and exclusion note.'],
-  ['4 — Policy Statement', '369', 'Numbered policy statements.'],
-  ['5 — Definitions', '202', 'Defined terms.'],
-  ['6 — Procedures', '1,931', 'Subsections 6.1–6.5.'],
-  ['7 — Documentation Requirements', '552', 'Records and retention.'],
-  ['8 — Compliance & Audit', '630', 'Measurement, surveyor expectations, failure points.'],
-  ['9 — References', '711', 'Federal, CMS, OIG, and policy cross-walk.'],
-  ['10 — Training & Acknowledgment', '204', 'Orientation and attestation.'],
-  ['11 — Version Control', '147', 'Lifecycle and revision rules.'],
-  ['Total (Sections 1–11)', '5,010', 'Excludes appendices and form templates.'],
-];
 
 const GV_CMS_GUIDANCE_ROWS: string[][] = [
   ['CMS State Operations Manual, Appendix B — Guidance to Surveyors: Home Health Agencies', 'Provides interpretive guidelines for survey of 42 CFR § 484.105 compliance; defines surveyor expectations for governing body evidence.'],
@@ -317,19 +300,6 @@ export function SharedGlassTable({ headers, rows }: { headers: string[]; rows: s
 
 // ── DESIGN SYSTEM HELPERS (matching PolicyViewerDesignLight.html) ─────────────
 
-function DSubTabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-5 py-3 font-montserrat font-semibold text-[13px] transition-all duration-200 whitespace-nowrap border-b-[3px] ${
-        active ? 'text-[#C74601] border-[#C74601]' : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
 function DSectionTitle({ icon: Icon, title, color = 'text-[#1F1C1B]' }: { icon?: React.ElementType; title: string; color?: string }) {
   return (
     <h2 className={`font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase mb-8 flex items-center gap-4 w-full ${color}`}>
@@ -384,11 +354,6 @@ function TabOverview({ policy, sectionIdx = 0 }: { policy: SharedPolicy; section
   const purposeText = isGV ? GV_PURPOSE : policy.purpose;
   const scopeItems  = isGV ? GV_SCOPE    : policy.scope;
   const defs        = isGV ? GV_DEFINITIONS : GENERIC_DEFS;
-  // GV-GB-001 gets its full canonical tag set; other policies use what the library provides.
-  const displayTags = isGV
-    ? ['42cfr', 'title22', 'cms', 'hipaa', 'oig', 'fca']
-    : policy.regulatoryTags;
-
   // ── SECTION 0: Policy header + metadata ──
   if (sectionIdx === 0) return (
     <SCard>
@@ -1082,27 +1047,10 @@ function PolicyPrintDocument({ policy, isGV }: { policy: SharedPolicy; isGV: boo
 // MAIN EXPORT — SharedPolicyDetailView
 // ══════════════════════════════════════════════════════════════
 
-// CI-ION dark mode domain accents (bright for black glass).
-const SHARED_DOMAINS_COLOR: Record<string, string> = {
-  GV: '#FFC107', CL: '#ef4444', QA: '#06b6d4', HR: '#8b5cf6',
-  CO: '#3b82f6', FN: '#10b981', OP: '#f97316', IT: '#6366f1',
-  RM: '#eab308', EN: '#ec4899',
-};
-// Care Indeed brand kit — light mode:
-//   • GV (flagship governance domain)   ─▶ TEAL #007970 (primary brand highlight)
-//   • Other domains ─▶ darker hue variants that each clear WCAG AA
-//     (≥4.5:1) on the translucent white glass.
-const SHARED_DOMAINS_COLOR_LIGHT: Record<string, string> = {
-  GV: '#007970', CL: '#b91c1c', QA: '#0e7490', HR: '#6d28d9',
-  CO: '#1d4ed8', FN: '#047857', OP: '#C74600', IT: '#4338ca',
-  RM: '#854d0e', EN: '#be185d',
-};
-
 export function SharedPolicyDetailView({ policy, onBack }: { policy: SharedPolicy; onBack: () => void }) {
   // ── CORE STATE ────────────────────────────────────────────────
   const isGV = policy.policyId === 'GV-GB-001';
-  const theme = useShellStore(s => s.theme);
-  const isLight = theme === 'care-indeed-light';
+  useShellStore(s => s.theme);
   const setDetailMode = useShellStore(s => s.setDetailMode);
 
   // ── NAV TABS ──────────────────────────────────────────────────

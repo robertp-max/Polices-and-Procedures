@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Monitor, AlertTriangle, Layers, GitBranch,
   Brain, Calendar, Clock, Settings, Sparkles, Shield, FileText, Users,
-  CheckCircle, Play, RefreshCw, BookOpen, Database, Bell,
+  Play, RefreshCw, BookOpen,
   Activity, ShieldCheck, ExternalLink, ChevronRight, HelpCircle,
   Landmark, Scale, Gavel, Target, Lock, Columns3, LayoutList,
   ClipboardList, UploadCloud, FilePlus2, Workflow, BadgeCheck,
   FileWarning, Stethoscope, Flame, Ban, Download, Printer,
-  GraduationCap, UserCheck, AlertCircle, BarChart3, Zap, Cpu,
+  GraduationCap, UserCheck, BarChart3, Zap, Cpu,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -19,7 +19,6 @@ import { useMemo } from 'react';
 import { REGULATORY_EVENTS, TODAY_ANCHOR } from '@/policy/data/regulatoryEvents';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import {
-  computeCompliance,
   computeComplianceBatch,
   type ComplianceObject,
   type ComplianceBatch,

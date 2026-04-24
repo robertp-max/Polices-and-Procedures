@@ -163,7 +163,6 @@ function OrgChartSection({ sectionTitle }: { sectionTitle: string }) {
 const CI_TEAL   = '#007970';
 const CI_ORANGE = '#C74601';
 const CI_INK    = '#1F1C1B';
-const CI_MID    = '#52404B';
 const CI_MUTED  = '#747470';
 
 // ─── Shared CSS class tokens ──────────────────────────────────────

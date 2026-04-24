@@ -66,7 +66,7 @@ function CaseContextBar({
 
 /* ── User message bubble ──────────────────────────────────────────── */
 
-function UserBubble({ message, isLight }: { message: ChatMessage; isLight: boolean }) {
+function UserBubble({ message, isLight: _isLight }: { message: ChatMessage; isLight: boolean }) {
   return (
     <div className="flex justify-end mb-3">
       <div
@@ -85,7 +85,7 @@ function UserBubble({ message, isLight }: { message: ChatMessage; isLight: boole
 /* ── Brad response card ───────────────────────────────────────────── */
 
 function BradCard({
-  message, isLight, onOpenReference, onAction, urgency, mode,
+  message, isLight, onOpenReference, onAction: _onAction, urgency, mode,
 }: {
   message: ChatMessage;
   isLight: boolean;
@@ -482,7 +482,7 @@ export function ChatThread({
         )}
 
         {/* Messages */}
-        {messages.map((msg, i) => (
+        {messages.map((msg, _i) => (
           msg.role === 'user' ? (
             <UserBubble key={msg.id} message={msg} isLight={isLight} />
           ) : (

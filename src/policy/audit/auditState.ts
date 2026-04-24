@@ -194,8 +194,8 @@ export function evaluateAudit(
   }
 
   // Domain/severity flags — cheap to compute, expensive to miss.
-  if (event.domain === 'Billing')         flags.push('billing-critical');
-  if (event.domain === 'Governing Body')  flags.push('governing-body');
+  if ((event.domain as string) === 'Billing')         flags.push('billing-critical');
+  if ((event.domain as string) === 'Governing Body')  flags.push('governing-body');
   if (event.complianceFlags?.auditRisk === 'critical' || event.complianceFlags?.auditRisk === 'high') {
     flags.push('survey-critical');
   }

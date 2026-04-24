@@ -9,12 +9,12 @@ import {
 } from 'lucide-react';
 import {
   REGULATORY_EVENTS, DOMAIN_PALETTE, formatEventDate, TODAY_ANCHOR, daysUntil,
-  type RegulatoryEvent, type RegulatoryDomain,
+  type RegulatoryEvent,
 } from '@/policy/data/regulatoryEvents';
 import { useAutogenStore } from '@/policy/stores/autogenStore';
 import {
   useRegulatoryExecutionStore,
-  useEventEvidence, useEventNotes, useEventCertification,
+  useEventEvidence, useEventCertification,
 } from '@/policy/stores/regulatoryExecutionStore';
 import { useEnforcementStore } from '@/policy/stores/enforcementStore';
 import { useEnforcementBatch } from '@/policy/enforcement/useEnforcement';
@@ -1004,7 +1004,7 @@ function AuditDetailPanel({
    TAB: Summary — pass/fail checklist with exact spec labels
    ═══════════════════════════════════════════════════════════════ */
 function SummaryTab({
-  event, today, instance, checklist, cert,
+  event, today: _today, instance, checklist, cert,
 }: {
   event: RegulatoryEvent;
   today: Date;
@@ -1914,7 +1914,7 @@ function quickFilterCount(
   qf: QuickFilter,
   healthCounts: AuditStateCounts,
   allEvents: RegulatoryEvent[],
-  auditByEvent: Record<string, AuditState>,
+  _auditByEvent: Record<string, AuditState>,
 ): number {
   switch (qf) {
     case 'not-certifiable':  return healthCounts['not-certifiable'];
