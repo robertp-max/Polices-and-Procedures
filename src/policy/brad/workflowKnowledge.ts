@@ -362,6 +362,7 @@ function renderRuntimeState(w: Workflow, runtime: RuntimeState): string {
       'audit-ready':               'Audit Ready — eligible for certification.',
       'complete-missing-evidence': 'Complete but missing evidence — cannot certify.',
       'complete-pending-approval': 'Complete but pending approval — cannot certify.',
+      'at-risk':                   'At Risk — active but signalled to fail without intervention.',
       'in-progress':               'In progress — execution underway.',
       'blocked':                   'Blocked — upstream dependency or hard blocker.',
       'overdue':                   'Overdue — past due date, not yet complete.',
