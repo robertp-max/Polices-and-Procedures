@@ -146,3 +146,97 @@
 2. Whether MCI source JSON path is guaranteed in all deployment targets.
 3. Whether session/audit storage must move from local/in-memory to shared persistence for production.
 
+---
+
+## 10) Onboarding System Maintenance (Existing Module)
+
+Onboarding is implemented under `src/policy/journey/*`. Maintain it as an active subsystem.
+
+### Safe change sequence for onboarding
+
+1. Update module definitions in `src/policy/journey/data/modules.ts` (role, phase, policy refs, methods, prerequisites).
+2. Validate gate logic compatibility in `src/policy/journey/utils/gating.ts`.
+3. Verify journey page impacts:
+   - `JourneyHomePage.tsx`
+   - `AppendixFPage.tsx`
+   - `ModulePlayerPage.tsx`
+   - `SupervisorPage.tsx`
+   - `AdminPage.tsx`
+   - `UserGuidePage.tsx`
+4. Confirm store compatibility in `src/policy/journey/stores/journeyStore.ts` (persist key/version and migration behavior).
+5. Re-check role-specific paths using seeded users in `src/policy/journey/data/employees.ts`.
+
+### Onboarding-specific regression checklist
+
+- Appendix F hard-stop still blocks progression before sign-off.
+- Learner can only open modules allowed by role and prerequisite status.
+- Supervisor can log supervised visits with expected visit types.
+- DON/supervisor clearance gating still requires prerequisite completion.
+- Escalations are generated and can be acknowledged/resolved in admin.
+- Annual training and drill modules remain visible in expected phase/group slices.
+- Policy references remain visible to learners where applicable.
+
+---
+
+## 11) AWS Phase 1 Migration Checklist (Onboarding Impact)
+
+This checklist tracks backend gap closure for onboarding without overstating current implementation.
+
+### Required Phase 1 backend work
+
+1. Identity and role claims
+   - Introduce authenticated identity source and role claim mapping for onboarding actions.
+2. User profile records
+   - Add durable user/profile objects that map to onboarding employee entities.
+3. Onboarding state persistence
+   - Replace browser-only persistence with API-backed writes/reads.
+4. Supervisor sign-off records
+   - Persist sign-offs as immutable records with signer identity and timestamp.
+5. Evidence storage and retrieval
+   - Introduce presigned upload/download path and metadata index records.
+6. Audit logging
+   - Record onboarding mutations into append-only backend audit stream.
+7. Data model alignment
+   - Finalize DynamoDB/object-store indexing model and reconcile with existing R2 architecture notes.
+
+### Keep out of scope for Phase 1
+
+- Advanced predictive analytics and broad optimization layers.
+- Full cross-domain event orchestration if core identity/persistence/audit foundations are incomplete.
+
+---
+
+## 12) Universal Navigation Controls — Maintenance Guide (Added 2026-04-23)
+
+### Adding a new excluded route
+
+Edit `src/policy/utils/navExclusions.ts` and add a new `RegExp` to the `EXCLUDED_PATTERNS` array:
+
+```typescript
+/^\/your-new-detail-route\/.+/,
+```
+
+Rules for exclusion candidates:
+- Any route where the user may be filling in a form or typing.
+- Any route that renders outside the shell chrome (detailMode pages, standalone print views).
+- Any route where `←` / `→` keys have a native meaning (PDF viewers, sliders, carousels).
+
+### Modifying the nav stack behavior
+
+All state is in `src/policy/stores/navStore.ts`. The `_skipNext` flag prevents double-counting programmatic navigations — do not remove it.
+
+If you add a new navigate call anywhere in the app (e.g., a "deep-link open" from a dashboard card), ensure it does **not** need to suppress `push()`. Most normal link/navigate calls do not need to touch `_skipNext`.
+
+### Regression checklist for nav controls
+
+1. Load app → navigate Dashboard → Workflows → Calendar → click Back ×2 → should return through Workflows to Dashboard.
+2. Open policy detail (`/library/:policyId`) → arrow keys should NOT navigate; Back button should be hidden (chrome hidden).
+3. Open form viewer (`/forms/:formId`) → arrow keys should NOT navigate.
+4. Focus the global search input → arrow keys should NOT navigate.
+5. Open hamburger menu → arrow keys should NOT navigate.
+6. Swipe right on Dashboard → should go back one route.
+7. Open a print page (`/print/*`) → no nav controls visible; keyboard arrows do not navigate.
+
+### AWS Phase 1 impact
+
+Navigation state is **intentionally client-only**. No AWS backend changes are required to support the nav control system in Phase 1.

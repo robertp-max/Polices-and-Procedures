@@ -370,3 +370,58 @@ Used by:
 4. `TaxonomyPage.old.tsx` appears legacy and not routed.
 5. Runtime fetch from `/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json` depends on static serving behavior; confirm deployment path guarantees.
 
+---
+
+## M) Onboarding System (Formal Existing-State Registry)
+
+The onboarding system is already implemented as the Journey subsystem. It is not a missing module.
+
+| Component Name | File Path | Type | Purpose | Used By | Depends On | Data Sources | Key Props / Inputs | Outputs / Effects | Notes |
+|---|---|---|---|---|---|---|---|---|---|
+| `JourneyHomePage` | `src/policy/journey/pages/JourneyHomePage.tsx` | Page | Main onboarding menu and competency snapshot | `/journey` route | journey store + gating/escalation utils | `employees`, `modules`, attempts, visits, escalations | selected employee | phase status, gate banners, journey navigation | Includes Appendix F hard-stop messaging and clearance readiness indicators |
+| `AppendixFPage` | `src/policy/journey/pages/AppendixFPage.tsx` | Page | Pre-Day-1 Appendix F hard-stop workflow | `/journey/appendix-f` route | `SignaturePad`, journey store | `appendices.ts`, employee appendix state | checklist line statuses, HR Director signature | `signAppendixF` mutation, `appendixFCleared` progression | Enforces PASS/NA-only sign gate before work is allowed |
+| `ModulePlayerPage` | `src/policy/journey/pages/ModulePlayerPage.tsx` | Page | Learner module playback and completion | `/journey/module/:moduleId` route | `ScormPlayer`, `EvidenceCapture`, gating utils | module catalog + attempts/evidence | `moduleId`, current employee | module attempts, evidence records, acknowledgements | Respects role and prerequisite gate checks |
+| `SupervisorPage` | `src/policy/journey/pages/SupervisorPage.tsx` | Page | Supervisor/DON command view for visits and release | `/journey/supervisor` route | journey store + escalation utils | visits, attempts, escalations, employee roster | selected employee, DON signature | supervised visit logs, clearance signature, escalation review | Handles clearance for independent practice |
+| `AdminPage` | `src/policy/journey/pages/AdminPage.tsx` | Page | HR/Admin onboarding command center | `/journey/admin` route | journey store, escalation helpers | cross-employee progress/escalation state | selected filters and actions | escalation acknowledgement/resolution and KPI oversight | Agency-wide governance panel |
+| `UserGuidePage` | `src/policy/journey/pages/UserGuidePage.tsx` | Page | End-user operating guide for onboarding roles | `/journey/guide` route | static sections | guidance text + procedure map | none | documentation UX | Includes annual cycle and drill expectations |
+| `ScormPlayer` | `src/policy/journey/components/ScormPlayer.tsx` | Component | SCORM + quiz + policy-attestation runner | `ModulePlayerPage` | `ScormRuntime`, journey store | module metadata + quiz items | module, attempt | SCORM commit updates and attempt completion | Shows policy references in UI |
+| `EvidenceCapture` | `src/policy/journey/components/EvidenceCapture.tsx` | Component | Captures non-SCORM evidence and signatures | `ModulePlayerPage` | journey store, `SignaturePad` | module requirements | employee/supervisor signatures, evidence metadata | appends `JourneyEvidence` + manual assessment entries | Supports supervised visit and tabletop style evidence methods |
+| `journeyStore` | `src/policy/journey/stores/journeyStore.ts` | Store | Canonical onboarding runtime state | Journey pages/components | Zustand persist middleware | seed employees/modules + user mutations | actions (`signAppendixF`, `addSupervisedVisit`, `clearForIndependentWork`, etc.) | local persistence (`ci-journey-v1`) and audit-like state trail | Production note in code indicates secure API replacement target |
+| `modules` catalog | `src/policy/journey/data/modules.ts` | Data | Role-based onboarding/annual/drill module matrix | journey pages/store | journey types | static authored module records | role, phase, prerequisites | module sequencing and requirement interpretation | Contains role stages, annual training, and drill modules |
+
+---
+
+## N) AWS Phase 1 Planning-Relevant Registry (Onboarding)
+
+| Component/Module | Current State | AWS Phase 1 Impact | Notes |
+|---|---|---|---|
+| `journeyStore` local persistence | Implemented in browser localStorage | Replace with API + durable persistence model | Candidate object families: `USER#`, `ONBOARDING#`, `SIGNOFF#`, `EVIDENCE#` |
+| `SignatureRecord` usage | Implemented client-side for HR/DON/supervisor signatures | Persist immutable sign-off metadata and signer identity claim | Must map signature actor to authenticated identity |
+| `JourneyEvidence` metadata | Implemented client-side metadata | Persist evidence metadata + blob location + integrity hash | Presigned upload/download path required |
+| Role gating in `gating.ts` + `modules.ts` | Implemented client-side | Back-end enforceable role assignment needed | IdP group/claim mapping required |
+| Escalation state in journey store | Implemented client-side | Server audit log and escalation workflow persistence needed | Current state is single-browser scope |
+
+---
+
+## O) Universal Navigation Controls (Implemented 2026-04-23)
+
+| Component Name | File Path | Type | Purpose | Used By | Depends On | Data Sources | Key Props / Inputs | Outputs / Effects | Notes |
+|---|---|---|---|---|---|---|---|---|---|
+| `useNavStore` | `src/policy/stores/navStore.ts` | Store | Centralized internal back/forward navigation stack | `CommandCenterLayout`, `UniversalNavControls` | Zustand (no persist) | Route location changes | `push(path)`, `initiateBack()`, `initiateForward()` | Updates `backStack` / `forwardStack` | `_skipNext` flag prevents double-push on programmatic nav |
+| `navExclusions` | `src/policy/utils/navExclusions.ts` | Utility | Route exclusion and active-input guard | `CommandCenterLayout` keyboard+swipe handlers | None | Hardcoded pattern list | `pathname: string` | `boolean` | Excludes policy/form/print detail routes; also guards active input focus |
+| `UniversalNavControls` | `src/policy/components/UniversalNavControls.tsx` | Component | Back/Forward chevron buttons in shell header | `CommandCenterLayout` header | `useNavStore`, `useShellStore`, `useNavigate` | Nav store stacks | None | `initiateBack()`/`initiateForward()` then `navigate(target)` | Disabled visually and functionally when stack is empty |
+
+### Navigation behavior summary
+
+- Back (‹) / Forward (›) buttons appear in the top-left header, right of the hamburger menu.
+- `ArrowLeft` / `ArrowRight` keyboard shortcuts navigate back/forward when eligible.
+- Swipe right = Back; swipe left = Forward (≥60px horizontal delta; vertical-dominant gestures ignored).
+- All three input modes (button, keyboard, swipe) are **disabled** on:
+  - `/library/:policyId`, `/gv-policy/:policyId` — policy detail/viewer
+  - `/forms/:formId`, `/forms/:formId/print` — form viewer and print
+  - `/print/*` — standalone print routes outside shell
+  - `/drafts/:policyId` — draft policy editor
+  - `/brad-proposal` — external executive proposal
+  - Any active `input` / `textarea` / `select` / `contenteditable` focus
+  - While hamburger menu is open
+- AWS Phase 1 impact: **None.** Navigation stack is intentionally client-only and has no server persistence requirement.

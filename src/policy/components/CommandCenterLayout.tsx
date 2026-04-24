@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, type PropsWithChildren } from 'react';
+﻿import { useState, useEffect, useRef, type PropsWithChildren } from 'react';
 import ciIonLogo from '@/assets/ci-ion-logo.png';
 import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -11,6 +11,9 @@ import {
 } from 'lucide-react';
 import TravelightBG from '@/components/TravelightBG';
 import { useShellStore } from '@/policy/stores/uiStore';
+import { useNavStore } from '@/policy/stores/navStore';
+import { UniversalNavControls } from '@/policy/components/UniversalNavControls';
+import { isNavExcludedRoute, hasActiveInputFocus } from '@/policy/utils/navExclusions';
 
 function BradRobotIcon({ size = 24, strokeWidth = 1.5, className }: { size?: number; strokeWidth?: number; className?: string }) {
   const sw = strokeWidth ?? 1.5;
@@ -171,6 +174,85 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
+
+  // ── Stable refs so event-handler closures always see current values ──────
+  const locationRef  = useRef(location.pathname);
+  const isMenuOpenRef = useRef(isMenuOpen);
+  useEffect(() => { locationRef.current  = location.pathname; }, [location.pathname]);
+  useEffect(() => { isMenuOpenRef.current = isMenuOpen; },      [isMenuOpen]);
+
+  // ── Route tracker — feed every pathname change into the nav store ─────────
+  const prevPathRef = useRef<string | null>(null);
+  useEffect(() => {
+    const path = location.pathname;
+    if (path !== prevPathRef.current) {
+      prevPathRef.current = path;
+      useNavStore.getState().push(path);
+    }
+  }, [location.pathname]);
+
+  // ── Keyboard: Left arrow = Back, Right arrow = Forward ────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore when menu is open, route is excluded, or user is typing
+      if (isMenuOpenRef.current)                       return;
+      if (isNavExcludedRoute(locationRef.current))     return;
+      if (hasActiveInputFocus())                       return;
+      // Ignore modifier combos (browser shortcuts, text editing)
+      if (e.metaKey || e.altKey || e.ctrlKey)          return;
+
+      if (e.key === 'ArrowLeft') {
+        const target = useNavStore.getState().initiateBack();
+        if (target) { e.preventDefault(); navigate(target); }
+      } else if (e.key === 'ArrowRight') {
+        const target = useNavStore.getState().initiateForward();
+        if (target) { e.preventDefault(); navigate(target); }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
+
+  // ── Swipe: right = Back, left = Forward ───────────────────────────────────
+  useEffect(() => {
+    let startX = 0;
+    let startY = 0;
+
+    const onTouchStart = (e: TouchEvent) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (isMenuOpenRef.current)                   return;
+      if (isNavExcludedRoute(locationRef.current)) return;
+      if (hasActiveInputFocus())                   return;
+
+      const deltaX = e.changedTouches[0].clientX - startX;
+      const deltaY = e.changedTouches[0].clientY - startY;
+
+      // Must be primarily horizontal and exceed minimum distance
+      if (Math.abs(deltaX) <= Math.abs(deltaY)) return;
+      if (Math.abs(deltaX) < 60)                return;
+
+      if (deltaX > 0) {
+        // Swipe right → go back
+        const target = useNavStore.getState().initiateBack();
+        if (target) navigate(target);
+      } else {
+        // Swipe left → go forward
+        const target = useNavStore.getState().initiateForward();
+        if (target) navigate(target);
+      }
+    };
+
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchend',   onTouchEnd,   { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchend',   onTouchEnd);
+    };
+  }, [navigate]);
 
   const handleEnter = () => {
     setLaunching(true);
@@ -575,7 +657,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         </button>
                       )}
 
-                      <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-3">
                         <button
                           onClick={() => {
                             setIsMenuOpen(!isMenuOpen);
@@ -585,6 +667,10 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         >
                           <Menu size={24} />
                         </button>
+
+                        {/* Universal Back / Forward controls */}
+                        <UniversalNavControls />
+
                         {isMobile ? (
                           <button
                             type="button"

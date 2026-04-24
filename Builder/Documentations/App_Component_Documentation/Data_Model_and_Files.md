@@ -194,3 +194,89 @@ Loader:
 2. `workflowTemplates.generated.ts` appears underused in current frontend path.
 3. Runtime accessibility of `/Builder/Documentations/*` in production hosting must be confirmed.
 
+---
+
+## 6) Onboarding Data Model (Existing Runtime)
+
+### Core onboarding types (`src/policy/journey/types/journey.ts`)
+
+- `JourneyEmployee` (role, supervisor linkage, clearance flags)
+- `JourneyModule` (phase/group/role targeting, prerequisites, policy refs, assessment method)
+- `ModuleAttempt` (status, score, timing, scorm progress fields)
+- `JourneyEvidence` (module/event-linked evidence metadata)
+- `JourneyEscalation` (severity, state, assignment metadata)
+- `SupervisedVisit` (visit type/date/rating/comments/signatures)
+- `SignatureRecord` (role, signer identity label, signature image metadata, timestamp)
+
+### Store and persistence (`src/policy/journey/stores/journeyStore.ts`)
+
+- Persisted key: `ci-journey-v1` (localStorage via Zustand persist).
+- Tracks:
+  - employee progression
+  - attempts and completions
+  - Appendix F records and signatures
+  - supervised visits
+  - escalations
+  - clearance state and related evidence
+- Important note in code: local persistence is explicitly marked as a prototype pattern intended for secure API replacement in production.
+
+### Evidence/sign-off structures now vs target
+
+- **Implemented now**
+  - Evidence and signature records are kept in browser-persisted state.
+  - Sign-off gates are enforced in client business logic.
+- **Backend/AWS Phase 1 target gap**
+  - No durable server persistence for onboarding evidence and signatures.
+  - No immutable object storage linkage (object key/hash/retention metadata) in onboarding runtime records.
+
+---
+
+## 7) AWS Phase 1 Data Mapping Considerations (Onboarding)
+
+Planning references:
+- `Builder/Documentations/AWS_Phase1_Foundation_Build_Plan.md`
+- `Builder/Documentations/R2_STORAGE_ARCHITECTURE.md`
+
+### Candidate object families for DynamoDB modeling
+
+- `USER#{user_id}` -> profile/role baseline
+- `ONBOARDING#{employee_id}` -> phase and gate progression
+- `SIGNOFF#{employee_id}` -> Appendix F and clearance signatures
+- `VISIT#{employee_id}` -> supervised visit records
+- `EVIDENCE#{evidence_id}` -> metadata mapped to object-store location
+- `AUDIT#{employee_id}` -> append-only onboarding action trail
+
+### Required metadata parity for compliance traceability
+
+- `policy_id`
+- `workflow_id`
+- `event_id`
+- `created_at` / `created_by`
+- `integrity_sha256` (for immutable evidence)
+- object store locator (bucket/prefix/key equivalent)
+
+### Needs confirmation
+
+1. AWS Phase 1 doc uses S3 + DynamoDB while R2 architecture doc uses R2 + SQL-style indexing model; canonical Phase 1 storage stack selection must be finalized.
+2. Whether onboarding sign-offs are modeled as dedicated records or as a specialized evidence subtype.
+
+---
+
+## 8) AWS Phase 1 — Current vs Target State per Data Domain
+
+### Status legend: NOT STARTED | IN PROGRESS | IMPLEMENTED
+
+| Data Domain | Current State | Target (AWS Phase 1) | Status |
+|---|---|---|---|
+| Regulatory execution state | Zustand localStorage `reg-execution-v2` | DynamoDB items keyed per event/user; Lambda `workflow-runner` writes state updates | NOT STARTED |
+| Regulatory event catalog | Static TS bundles (`regulatoryEvents.ts`) | DynamoDB `WORKFLOW#` / `EVENT#` items seeded by `mandated-event-generator` Lambda | NOT STARTED |
+| Policy lifecycle state | Zustand in-memory (`policyStore`) | DynamoDB `POLICY#META` items; published artifacts in S3 `prod/evidence/{policy_id}/` | NOT STARTED |
+| Forms catalog + content | Static TS datasets | DynamoDB form metadata items; filled PDFs in S3 `hh-prd-forms` bucket | NOT STARTED |
+| Evidence metadata | Client-side `EvidenceDoc` (metadata only) | DynamoDB `FILE#` items with `integrity_sha256`, S3 object key, and retention metadata | NOT STARTED |
+| Evidence blobs | Not stored anywhere | S3 sandbox bucket → validate/promote → S3 prod evidence bucket | NOT STARTED |
+| Master Control Inventory | Static JSON fetch from `/Builder/` path | DynamoDB `MCI#{control_id}` items; served by `metadata-api` Lambda | NOT STARTED |
+| Onboarding / journey progression | Zustand localStorage `ci-journey-v1` | DynamoDB `USER#` / `ONBOARDING#` / `SIGNOFF#` / `VISIT#` items | NOT STARTED |
+| Audit log | localStorage (enforcement) + filesystem JSONL (calendar) | DynamoDB `AUDIT#{event_id}` append-only items; calendar audit to S3 `prod/audit/` prefix | NOT STARTED |
+| IA / Brad index | File-based `.cache/ia-index` | S3 index bucket; session metadata in DynamoDB | NOT STARTED |
+| Navigation state | Client-only Zustand (no persist) | No AWS target; intentionally client-only in Phase 1 and beyond | N/A |
+| Shell theme state | `localStorage` key `ci-shell-theme` | No AWS target; user preference, remains client-only | N/A |

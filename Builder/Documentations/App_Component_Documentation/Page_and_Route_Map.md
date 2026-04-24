@@ -131,8 +131,69 @@ Runtime mount file: `server/index.ts`
 
 ---
 
+## Onboarding Route Family (Existing System)
+
+The onboarding subsystem is implemented under `/journey/*` and exposed in the shell navigation.
+
+### Main onboarding menu and route intent
+
+| Route | Primary Role | Purpose |
+|---|---|---|
+| `/journey` | Learner + supervisor/admin visibility | Main onboarding menu, phase rail, competency snapshot, gate status |
+| `/journey/appendix-f` | HR Director / onboarding admin | Appendix F hard-stop checklist and signature flow |
+| `/journey/module/:moduleId` | Learner and validating supervisor | Module consumption, SCORM/assessment, evidence capture |
+| `/journey/supervisor` | DON / Supervisor | Supervised visit logging, escalation view, independent-practice clearance |
+| `/journey/admin` | HR/Admin leadership | Agency-wide onboarding command center and escalation governance |
+| `/journey/guide` | All user roles | Operating guide, role flow, annual/drill cycle guidance |
+
+### Role-based onboarding navigation sequence
+
+1. Learner enters `/journey`.
+2. If Appendix F is incomplete, hard-stop route transition pushes to `/journey/appendix-f`.
+3. After Appendix F clearance, learner uses `/journey/module/:moduleId` according to role and prerequisite gates.
+4. Supervisor records supervised visits and signs release in `/journey/supervisor`.
+5. Admin/HR monitors escalations and overall status in `/journey/admin`.
+6. `/journey/guide` provides process-level references and evidence expectations.
+
+### Notes for route governance
+
+- This onboarding system is active and implemented.
+- It is not classified as a missing module.
+- Remaining work for onboarding is primarily backend persistence/integration, not frontend route coverage.
+
+---
+
 ## Needs Confirmation
 
 1. Whether `src/policy/PolicyCommandCenterApp.tsx` should be kept as an alternate runtime app or retired.
 2. Whether all legacy/deprecated pages should remain in route-adjacent directories (`TaxonomyPage.old.tsx`).
+3. Whether onboarding routes require server-side auth guards before AWS identity rollout.
 
+---
+
+## Universal Navigation — Route Exclusion Map (Added 2026-04-23)
+
+The following routes are excluded from keyboard arrow, swipe, and (where chrome is hidden) button-based back/forward navigation:
+
+| Route Pattern | Exclusion Reason | Shell Chrome | Back/Forward buttons | Keyboard arrows | Swipe gestures |
+|---|---|---|---|---|---|
+| `/library/:policyId` | Policy detail viewer; left-arrow used by PDF/text selection; `detailMode` hides chrome | Hidden | Hidden | Disabled | Disabled |
+| `/gv-policy/:policyId` | Governance policy detail view; same reasons as above | Hidden | Hidden | Disabled | Disabled |
+| `/forms/:formId` | Form viewer; user may be filling fields; arrow keys navigate inputs | Hidden | Hidden | Disabled | Disabled |
+| `/forms/:formId/print` | Form print layout outside shell; print environment | Hidden | Hidden | Disabled | Disabled |
+| `/print/*` | Standalone print routes rendered outside shell chrome | Hidden | Hidden | Disabled | Disabled |
+| `/drafts/:policyId` | Draft policy editor; active text editing environment | Normal | Visible (route-level guard) | Disabled | Disabled |
+| `/brad-proposal` | Executive proposal rendered outside shell | Hidden | Hidden | Disabled | Disabled |
+
+Additionally, keyboard and swipe are disabled globally (regardless of route) when:
+- A native `input`, `textarea`, `select`, or `contenteditable` element has focus.
+- The hamburger menu overlay is open.
+
+All other routes are eligible for back/forward navigation.
+
+### Implementation files
+
+- `src/policy/utils/navExclusions.ts` — route patterns + input focus guard
+- `src/policy/stores/navStore.ts` — back/forward stacks
+- `src/policy/components/UniversalNavControls.tsx` — header buttons
+- `src/policy/components/CommandCenterLayout.tsx` — keyboard + swipe listeners, route tracker
