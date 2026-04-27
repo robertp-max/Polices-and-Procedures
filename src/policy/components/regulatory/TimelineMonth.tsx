@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Lock } from 'lucide-react';
 import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
+import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import {
   classifyInstance, STATE_COLOR, STATE_SOFT,
@@ -174,6 +175,8 @@ function DayCell({
   );
 }
 
+
+
 /* ─── Timeline chip (state-colored only) ────────────────── */
 function TimelineChip({
   event, active, today, store, onClick,
@@ -186,6 +189,8 @@ function TimelineChip({
 }) {
   const state: InstanceState = classifyInstance(event, today, store);
   const certified = store.isCertified(event.id);
+  const { canonicalPolicyRefs } = getEventDisplayModel(event);
+  const subtitle = canonicalPolicyRefs.length > 0 ? canonicalPolicyRefs.slice(0, 2).join(' / ') : null;
   // Certified instances are visually distinct from active execution —
   // violet rail, lock glyph, and a subtle tinted background so the
   // eye immediately registers "locked record" from across the grid.
@@ -216,12 +221,11 @@ function TimelineChip({
           >
             {event.title}
           </p>
-          <p
-            className="font-roboto truncate leading-snug text-white/55"
-            style={{ fontSize: 9 }}
-          >
-            {event.id.replace(/^EVT-/, '')}
-          </p>
+          {subtitle && (
+            <p className="font-roboto truncate leading-snug text-white/55" style={{ fontSize: 9 }}>
+              {subtitle}
+            </p>
+          )}
         </div>
       </div>
       {certified && (

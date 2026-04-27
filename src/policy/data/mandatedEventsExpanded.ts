@@ -25,7 +25,8 @@ import { MULTI_YEAR_EVENTS } from './multiYearEvents';
    ══════════════════════════════════════════════════════════════ */
 
 export const QAPI_Q2: RegulatoryEvent = {
-  id: 'EVT-QAPI-2026-Q2',
+  id: 'qapi_meeting-20260507-08',
+  eventSubType: 'qapi_meeting',
   title: 'Q2 QAPI Review',
   domain: 'QAPI',
   date: '2026-05-07',
@@ -320,7 +321,7 @@ export const QAPI_Q2: RegulatoryEvent = {
     { id: 'q2-fu-actions', label: 'Weekly action item follow-through until Q3 meeting',      ownerRole: 'QAPI Lead',       dueOffsetDays: 14, closureCriteria: 'Each open action has an updated status note within 7 days.', escalationDays: 14, escalateToRole: 'Administrator' },
     { id: 'q2-fu-gb',      label: 'Submit Q2 QAPI report to Governing Body (T+7)',           ownerRole: 'QAPI Lead',       dueOffsetDays: 7,  closureCriteria: 'QA-FM-023 submitted to GB with receipt confirmation.', escalationDays: 3, escalateToRole: 'Administrator' },
   ],
-  dependencies: { feeds: ['EVT-GV-Q2-2026'], dependsOn: ['EVT-QAPI-2026-0205-QGOV'] },
+  dependencies: { feeds: ['EVT-GV-Q2-2026'], dependsOn: ['qapi_meeting-20260205-04'] },
   sourceOfTruth: 'app',
   timezone: 'America/Los_Angeles',
   helpArticle: {
@@ -331,7 +332,8 @@ export const QAPI_Q2: RegulatoryEvent = {
 
 /* ── Q3 QAPI Review ─────────────────────────────────────────── */
 export const QAPI_Q3: RegulatoryEvent = {
-  id: 'EVT-QAPI-2026-Q3',
+  id: 'qapi_meeting-20260806-12',
+  eventSubType: 'qapi_meeting',
   title: 'Q3 QAPI Review',
   domain: 'QAPI',
   date: '2026-08-06',
@@ -403,13 +405,14 @@ export const QAPI_Q3: RegulatoryEvent = {
     { id: 'q3-fu-pip',  label: 'PIP sustainment monitoring — Q4 data prep',    ownerRole: 'QAPI Lead', dueOffsetDays: 60, closureCriteria: 'Q4 data collected and QA-FM-021 updated for Q4 close.', escalationDays: 14, escalateToRole: 'Administrator' },
     { id: 'q3-fu-gb',   label: 'Submit Q3 QAPI report to Governing Body',       ownerRole: 'QAPI Lead', dueOffsetDays: 7,  closureCriteria: 'QA-FM-023 delivered to GB with receipt.', escalationDays: 3, escalateToRole: 'Administrator' },
   ],
-  dependencies: { feeds: ['EVT-GV-Q3-2026'], dependsOn: ['EVT-QAPI-2026-Q2'] },
+  dependencies: { feeds: ['EVT-GV-Q3-2026'], dependsOn: ['qapi_meeting-20260507-08'] },
   sourceOfTruth: 'app', timezone: 'America/Los_Angeles',
 };
 
 /* ── Q4 QAPI Review + Annual PIP Close ─────────────────────── */
 export const QAPI_Q4: RegulatoryEvent = {
-  id: 'EVT-QAPI-2026-Q4',
+  id: 'qapi_meeting-20261105-16',
+  eventSubType: 'qapi_meeting',
   title: 'Q4 QAPI Review + Annual PIP Close',
   domain: 'QAPI',
   date: '2026-11-05',
@@ -477,7 +480,7 @@ export const QAPI_Q4: RegulatoryEvent = {
     { id: 'q4-fu-pip-sustain', label: 'File annual PIP closure packet with GB acknowledgment', ownerRole: 'QAPI Lead', dueOffsetDays: 21, closureCriteria: 'QA-FM-021 closed with sustainment plan or FY27 continuation plan; GB signature obtained.', escalationDays: 7, escalateToRole: 'Administrator' },
     { id: 'q4-fu-annrpt', label: 'Submit Annual QAPI Report to Governing Body', ownerRole: 'QAPI Lead', dueOffsetDays: 14, closureCriteria: 'QA-FM-029 submitted with GB receipt confirmation.', escalationDays: 3, escalateToRole: 'Administrator' },
   ],
-  dependencies: { feeds: ['EVT-GV-Q4-2026'], dependsOn: ['EVT-QAPI-2026-Q3'] },
+  dependencies: { feeds: ['EVT-GV-Q4-2026'], dependsOn: ['qapi_meeting-20260806-12'] },
   sourceOfTruth: 'app', timezone: 'America/Los_Angeles',
 };
 
@@ -492,7 +495,7 @@ function makeICReview(
 ): RegulatoryEvent {
   const q = quarter;
   return {
-    id, title, domain: 'Clinical', date, time: '10:00', timeEnd: '11:30',
+    id, title, eventSubType: 'infection_control_review_quarterly', domain: 'Clinical', date, time: '10:00', timeEnd: '11:30',
     cadence: 'Quarterly', mandateType: 'federal-required',
     urgency, policyRefs: ['CL-IC-001', 'QA-PG-001'],
     owner: 'Clinical Manager', ownerRole: 'Infection Control Nurse',
@@ -545,17 +548,18 @@ function makeICReview(
   };
 }
 
-export const IC_Q1 = makeICReview('EVT-CL-2026-IC-Q1', 'Q1 Infection Control Review', '2026-03-25', 'Q1', 'scheduled');
-export const IC_Q2 = makeICReview('EVT-CL-2026-IC-Q2', 'Q2 Infection Control Review', '2026-06-24', 'Q2', 'scheduled');
-export const IC_Q3 = makeICReview('EVT-CL-2026-IC-Q3', 'Q3 Infection Control Review', '2026-09-24', 'Q3', 'scheduled');
-export const IC_Q4 = makeICReview('EVT-CL-2026-IC-Q4', 'Q4 Infection Control Review', '2026-12-17', 'Q4', 'scheduled');
+export const IC_Q1 = makeICReview('infection_control_review_quarterly-20260325-01', 'Q1 Infection Control Review', '2026-03-25', 'Q1', 'scheduled');
+export const IC_Q2 = makeICReview('infection_control_review_quarterly-20260624-02', 'Q2 Infection Control Review', '2026-06-24', 'Q2', 'scheduled');
+export const IC_Q3 = makeICReview('infection_control_review_quarterly-20260924-03', 'Q3 Infection Control Review', '2026-09-24', 'Q3', 'scheduled');
+export const IC_Q4 = makeICReview('infection_control_review_quarterly-20261217-04', 'Q4 Infection Control Review', '2026-12-17', 'Q4', 'scheduled');
 
 /* ══════════════════════════════════════════════════════════════
    ANNUAL EVALUATIONS
    ══════════════════════════════════════════════════════════════ */
 
 export const QAPI_ANNUAL_EVAL: RegulatoryEvent = {
-  id: 'EVT-QAPI-2026-ANNUAL-EVAL',
+  id: 'qapi_annual_eval-20261210-01',
+  eventSubType: 'qapi_annual_eval',
   title: 'Annual QAPI Program Evaluation',
   domain: 'QAPI',
   date: '2026-12-10',
@@ -609,13 +613,14 @@ export const QAPI_ANNUAL_EVAL: RegulatoryEvent = {
     { id: 'ae-fu1', label: 'File all CY2026 QAPI records in annual audit archive', ownerRole: 'QAPI Lead', dueOffsetDays: 30, closureCriteria: 'All four quarterly packages + annual evaluation + PIP record filed in audit-ready location with index.', escalationDays: 14, escalateToRole: 'Administrator' },
     { id: 'ae-fu2', label: 'Initiate FY27 PIP charter', ownerRole: 'QAPI Lead', dueOffsetDays: 45, closureCriteria: 'FY27 PIP charter (QA-FM-021) started with baseline data and target defined.', escalationDays: 14, escalateToRole: 'Administrator' },
   ],
-  dependencies: { dependsOn: ['EVT-QAPI-2026-Q4'] },
+  dependencies: { dependsOn: ['qapi_meeting-20261105-16'] },
   sourceOfTruth: 'app', timezone: 'America/Los_Angeles',
 };
 
 /* ── Annual Compliance Program Effectiveness Review ─────────── */
 export const COMPLIANCE_ANNUAL_REVIEW: RegulatoryEvent = {
-  id: 'EVT-CO-2026-ANNUAL-EFFECTIVENESS',
+  id: 'compliance_effectiveness_review-20261119-02',
+  eventSubType: 'compliance_effectiveness_review',
   title: 'Annual Compliance Program Effectiveness Review',
   domain: 'Compliance',
   date: '2026-11-19',
@@ -658,7 +663,8 @@ export const COMPLIANCE_ANNUAL_REVIEW: RegulatoryEvent = {
 
 /* ── Annual P&P Full Enterprise Review ───────────────────────── */
 export const PP_ANNUAL_REVIEW: RegulatoryEvent = {
-  id: 'EVT-CO-2026-PP-ANNUAL',
+  id: 'policy_review_annual-20261015-02',
+  eventSubType: 'policy_review_annual',
   title: 'Annual Policy & Procedure Enterprise Review',
   domain: 'Compliance',
   date: '2026-10-15',
@@ -703,7 +709,8 @@ export const PP_ANNUAL_REVIEW: RegulatoryEvent = {
 
 /* ── Annual Staff Training (HIPAA, OSHA, Abuse, etc.) ────────── */
 export const ANNUAL_STAFF_TRAINING: RegulatoryEvent = {
-  id: 'EVT-HR-2026-ANNUAL-TRAINING',
+  id: 'employee_compliance_training-20260901-01',
+  eventSubType: 'employee_compliance_training',
   title: 'Annual Employee Compliance Training (HIPAA, OSHA, Abuse Prevention)',
   domain: 'Compliance',
   date: '2026-09-01', endDate: '2026-09-30',
@@ -746,7 +753,8 @@ export const ANNUAL_STAFF_TRAINING: RegulatoryEvent = {
    ══════════════════════════════════════════════════════════════ */
 
 export const INCIDENT_ADVERSE_EVENT_REVIEW: RegulatoryEvent = {
-  id: 'EVT-TRIGGER-INCIDENT-TEMPLATE',
+  id: 'incident_report-20260101-01',
+  eventSubType: 'incident_report',
   title: 'Incident / Adverse Event Review',
   domain: 'QAPI',
   date: '2026-01-01',
@@ -792,7 +800,8 @@ export const INCIDENT_ADVERSE_EVENT_REVIEW: RegulatoryEvent = {
 };
 
 export const COMPLAINT_INVESTIGATION: RegulatoryEvent = {
-  id: 'EVT-TRIGGER-COMPLAINT-TEMPLATE',
+  id: 'complaint_investigation-20260101-01',
+  eventSubType: 'complaint_investigation',
   title: 'Complaint / Grievance Investigation',
   domain: 'Compliance',
   date: '2026-01-01',
@@ -834,7 +843,8 @@ export const COMPLAINT_INVESTIGATION: RegulatoryEvent = {
 };
 
 export const SURVEY_READINESS_ACTIVATION: RegulatoryEvent = {
-  id: 'EVT-TRIGGER-SURVEY-ACTIVATION',
+  id: 'survey_activation-20260713-01',
+  eventSubType: 'survey_activation',
   title: 'Survey Readiness Activation',
   domain: 'Compliance',
   date: '2026-07-13',

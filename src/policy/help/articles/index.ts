@@ -5,6 +5,7 @@ import { COMPLIANCE_AUDIT } from './compliance-audit';
 import { WORKFLOWS_EVENTS } from './workflows-events';
 import { FORMS_TEMPLATES } from './forms-templates';
 import { DEVELOPER_ECIGN } from './developer-ecign';
+import { POLICY_LIFECYCLE } from './policy-lifecycle';
 
 export interface HelpArticle {
   slug:        string;
@@ -27,6 +28,7 @@ export interface HelpArticle {
 
 export const CATEGORIES: Array<{ id: string; label: string; subcategories?: string[] }> = [
   { id: 'getting-started',    label: 'Getting Started' },
+  { id: 'policy-lifecycle',   label: 'Policy Lifecycle', subcategories: ['Developer'] },
   { id: 'signing-documents',  label: 'Signing Documents' },
   { id: 'compliance-audit',   label: 'Compliance & Audit' },
   { id: 'workflows-events',   label: 'Workflows & Events' },
@@ -36,6 +38,7 @@ export const CATEGORIES: Array<{ id: string; label: string; subcategories?: stri
 
 export const ARTICLES: HelpArticle[] = [
   ...GETTING_STARTED,
+  ...POLICY_LIFECYCLE,
   ...SIGNING_DOCUMENTS,
   ...COMPLIANCE_AUDIT,
   ...WORKFLOWS_EVENTS,

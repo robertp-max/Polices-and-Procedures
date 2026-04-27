@@ -12,6 +12,7 @@ import {
   daysUntil, TODAY_ANCHOR, type RegulatoryEvent,
   DOMAIN_PALETTE,
 } from '@/policy/data/regulatoryEvents';
+import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
 import {
   useRegulatoryExecutionStore,
   useEventEvidence, useEventNotes, useEventCertification,
@@ -170,9 +171,6 @@ function ActivePanel({
           >
             {event.title}
           </h2>
-          <span className="text-[10px] font-mono-jb text-white/45 whitespace-nowrap">
-            {event.id}
-          </span>
         </div>
         <div className="grid grid-cols-3 items-end gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em]">
           <ProjectionCell label="Step" value={stepsTotal > 0 ? `${currentStepIndex}/${stepsTotal}` : '—'} />
@@ -534,7 +532,10 @@ function AuditViewPanel({ event, today }: { event: RegulatoryEvent; today: Date 
         return {
           id: `form-${f.id}`,
           label: `Form: ${f.label}`,
-          passed: complete && (f.formRef ? docCount > 0 : true),
+          // Use backend evidence (uploaded docs) if available; fall back to the
+          // local status flag. Both signals mean the same thing — the form is
+          // satisfied. They must agree with what FormExecutionRow shows.
+          passed: complete || docCount > 0,
           detail: formEvidenceDetail(f),
           meta: f.formRef,
         };
@@ -1204,8 +1205,10 @@ function CalendarEventView({
   void today;
   const store = useRegulatoryExecutionStore();
   const [sideTab, setSideTab] = useState<CalendarSideTab>('guests');
+  const [techOpen, setTechOpen] = useState(false);
   const effectiveUrgency = store.effectiveUrgency(event);
   const validation = store.validateEvent(event);
+  const { canonicalPolicyRefs, technicalDetails } = getEventDisplayModel(event);
 
   const currentStep = event.processFlow.find(
     s => store.effectiveStepStatus(event, s.id) !== 'complete',
@@ -1334,11 +1337,13 @@ function CalendarEventView({
                   value={sla.label}
                   color={slaColor}
                 />
-                <CalendarSummaryMetric
-                  icon={<FileText size={12} />}
-                  label="Policies"
-                  value={event.policyRefs.join(', ')}
-                />
+                {canonicalPolicyRefs.length > 0 && (
+                  <CalendarSummaryMetric
+                    icon={<FileText size={12} />}
+                    label="Policies"
+                    value={canonicalPolicyRefs.join(', ')}
+                  />
+                )}
                 <CalendarSummaryMetric
                   icon={<FolderOpen size={12} />}
                   label="Type"
@@ -1536,10 +1541,25 @@ function CalendarEventView({
             <h4 className="text-[11px] font-semibold text-gray-900">Event details</h4>
             <div className="mt-3 space-y-3">
               <CalendarDetailRow icon={<FolderOpen size={12} />} value="Regulatory Event" />
-              <CalendarDetailRow icon={<FileText size={12} />} value={event.id} />
               <CalendarDetailRow icon={<Workflow size={12} />} value={domPalette.label} />
               <CalendarDetailRow icon={<AlertTriangle size={12} />} value={`${riskLabel} Priority`} tone={riskColor} />
               <CalendarDetailRow icon={<Clock size={12} />} value={sla.label} tone={slaColor} />
+            </div>
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={() => setTechOpen(v => !v)}
+                className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-600 font-medium"
+              >
+                <ArrowRight size={9} className={`transition-transform ${techOpen ? 'rotate-90' : ''}`} />
+                Technical details
+              </button>
+              {techOpen && (
+                <div className="mt-2 rounded border border-gray-100 bg-gray-50 px-2.5 py-2 space-y-1.5">
+                  <TechDetailRow label="Instance ID" value={technicalDetails.event_instance_id} />
+                  <TechDetailRow label="Source" value={technicalDetails.sourceOfTruth} />
+                </div>
+              )}
             </div>
             <div className="mt-4">
               <PushToGoogleCalendarButton event={event} />
@@ -1627,6 +1647,15 @@ function CalendarDetailRow({
     <div className="flex items-center gap-2 text-[11px] text-gray-700">
       <span className="shrink-0 text-gray-400">{icon}</span>
       <span style={{ color: tone || '#374151' }}>{value}</span>
+    </div>
+  );
+}
+
+function TechDetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-2 text-[10px]">
+      <span className="shrink-0 font-medium text-gray-500 w-16">{label}</span>
+      <span className="font-mono text-gray-700 break-all">{value}</span>
     </div>
   );
 }

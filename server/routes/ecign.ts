@@ -14,6 +14,10 @@ import { canonicalBytes } from '../ecign/integrity.js';
 import { evaluateOnLock } from '../ecign/compliance.js';
 import { buildSignedDocumentBundle } from '../ecign/pdf.js';
 import { CURRENT_DISCLOSURE_VERSION, DISCLOSURE_TEXT, DISCLOSURE_TEXT_HASH } from '../ecign/disclosures.js';
+import {
+  resolveNetworkLocationMetadata,
+  resolveRequestNetworkContext,
+} from '../ecign/networkMetadata.js';
 
 export const ecignRouter: Router = Router();
 
@@ -50,11 +54,37 @@ function asyncH(fn: (req: Request, res: Response, next: NextFunction) => Promise
 }
 
 function networkOf(req: Request) {
+  return resolveRequestNetworkContext(req);
+}
+
+function toNetworkInfoResponse(networkLocation: {
+  ip_address: string;
+  city: string;
+  state_region: string;
+  country: string;
+  postal: string;
+  org_isp: string;
+  source: string;
+  captured_at: string;
+  user_agent: string;
+  lookup_status: string;
+  failure_reason?: string;
+}) {
   return {
-    ip: (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '',
-    user_agent: req.header('user-agent') ?? '',
+    ip: networkLocation.ip_address,
+    city: networkLocation.city,
+    region: networkLocation.state_region,
+    country: networkLocation.country,
+    postal: networkLocation.postal,
+    org: networkLocation.org_isp,
+    source: networkLocation.source,
+    capturedAt: networkLocation.captured_at,
+    userAgent: networkLocation.user_agent,
+    lookupStatus: networkLocation.lookup_status,
+    failureReason: networkLocation.failure_reason || undefined,
   };
 }
+
 function actorOf(req: Request, method: 'session'|'otp'|'sso' = 'session') {
   const u = req.user!;
   return { user_id: u.user_id, name: u.name, role: u.role, email: u.email,
@@ -97,6 +127,36 @@ ecignRouter.post('/identity/step-up', asyncH(async (req, res) => {
 }));
 
 ecignRouter.get('/identity/me', (req, res) => res.json(req.user));
+
+ecignRouter.get('/network-info', async (req, res) => {
+  const context = resolveRequestNetworkContext(req);
+  try {
+    const networkLocation = await resolveNetworkLocationMetadata(req);
+    return res.json(toNetworkInfoResponse(networkLocation));
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.warn('[ecign.network] endpoint_fallback', {
+        ip: context.ip || 'Unavailable',
+        source: context.source,
+        failure_reason: error instanceof Error ? error.message : 'network_info_endpoint_error',
+      });
+    }
+    return res.json({
+      ip: context.ip || 'Unavailable',
+      city: 'Unavailable',
+      region: 'Unavailable',
+      country: 'Unavailable',
+      postal: 'Unavailable',
+      org: 'Unavailable',
+      source: context.source || 'request_context',
+      capturedAt: new Date().toISOString(),
+      userAgent: context.user_agent || 'Unavailable',
+      lookupStatus: 'lookup_failed',
+      failureReason: 'network_info_endpoint_error',
+    });
+  }
+});
 
 // ── Form instances ─────────────────────────────────────────────────────────
 ecignRouter.post('/instances', asyncH(async (req, res) => {
@@ -200,7 +260,13 @@ ecignRouter.post('/instances/:id/signatures', asyncH(async (req, res) => {
     'INVALID_STATE_TRANSITION',
     `Cannot sign in state ${cur.state}. Must be reviewed/attested.`, 409);
 
-  const { field_id, signature_png_b64, attestation_text_hash } = req.body ?? {};
+  const {
+    field_id,
+    signature_png_b64,
+    attestation_text_hash,
+    geo,
+    device,
+  } = req.body ?? {};
   assert(field_id && signature_png_b64 && attestation_text_hash,
     'VALIDATION', 'field_id, signature_png_b64, attestation_text_hash required', 400);
 
@@ -217,12 +283,45 @@ ecignRouter.post('/instances/:id/signatures', asyncH(async (req, res) => {
     signature_hash: sha256(Buffer.from(signature_png_b64.split(',').pop() ?? '', 'base64')),
     attestation_text_hash,
   };
+  const networkLocation = await resolveNetworkLocationMetadata(req);
+  sig.network_location = networkLocation;
   await store.insertSignature(sig); // G5: duplicate enforced inside
-  await appendAudit({ actor: actorOf(req), network: networkOf(req),
+  const baseNetwork = networkOf(req);
+  const enrichedNetwork = {
+    ...baseNetwork,
+    network_location: networkLocation,
+    ...(geo && typeof geo === 'object' ? { geo } : {}),
+    ...(device && typeof device === 'object' ? { device } : {}),
+  };
+  await appendAudit({
+    actor: actorOf(req),
+    network: enrichedNetwork,
+    subject: {
+      kind: 'form_instance',
+      id: cur.instance_id,
+      document_version_id: cur.document_version_id,
+    },
+    action: 'NETWORK_METADATA_CAPTURED',
+    payload: {
+      network_location: networkLocation,
+      ip: networkLocation.ip_address,
+      source: networkLocation.source,
+      lookup_status: networkLocation.lookup_status,
+      failure_reason: networkLocation.failure_reason,
+    },
+  });
+  await appendAudit({ actor: actorOf(req), network: enrichedNetwork,
     subject: { kind: 'form_instance', id: cur.instance_id,
       document_version_id: cur.document_version_id },
     action: 'signature.applied',
-    payload: { signature_id: sig.signature_id, field_id, signature_hash: sig.signature_hash } });
+    payload: {
+      signature_id: sig.signature_id,
+      field_id,
+      signature_hash: sig.signature_hash,
+      network_location: networkLocation,
+      geo,
+      device,
+    } });
   if (cur.state === 'reviewed') await store.updateInstance(cur.instance_id, { state: 'attested',
     attestation_confirmed_at: new Date().toISOString() });
   res.json(sig);

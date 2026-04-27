@@ -18,6 +18,63 @@ function esc(s: unknown): string {
     .replace(/"/g, '&quot;');
 }
 
+interface NetworkLocationView {
+  ip_address: string;
+  city: string;
+  state_region: string;
+  country: string;
+  postal: string;
+  org_isp: string;
+  source: string;
+  captured_at: string;
+  user_agent: string;
+  lookup_status: string;
+  failure_reason: string;
+}
+
+function isObject(v: unknown): v is Record<string, unknown> {
+  return Boolean(v && typeof v === 'object');
+}
+
+function networkLocationFromAudit(event?: AuditRow): NetworkLocationView {
+  const raw = (isObject(event?.payload?.network_location)
+    ? event?.payload?.network_location
+    : (isObject(event?.network?.network_location) ? event?.network?.network_location : undefined)) as Record<string, unknown> | undefined;
+
+  if (raw) {
+    return {
+      ip_address: String(raw.ip_address ?? event?.network?.ip ?? 'Unavailable'),
+      city: String(raw.city ?? 'Unavailable'),
+      state_region: String(raw.state_region ?? 'Unavailable'),
+      country: String(raw.country ?? 'Unavailable'),
+      postal: String(raw.postal ?? 'Unavailable'),
+      org_isp: String(raw.org_isp ?? 'Unavailable'),
+      source: String(raw.source ?? event?.network?.source ?? 'stored_network_metadata'),
+      captured_at: String(raw.captured_at ?? event?.occurred_at_utc ?? 'Unavailable'),
+      user_agent: String(raw.user_agent ?? event?.network?.user_agent ?? 'Unavailable'),
+      lookup_status: String(raw.lookup_status ?? 'lookup_failed'),
+      failure_reason: String(raw.failure_reason ?? ''),
+    };
+  }
+
+  const geo = isObject(event?.network?.geo) ? event?.network?.geo : {};
+  const ip = String(event?.network?.ip ?? 'Unavailable');
+  const isLocal = ip === '127.0.0.1' || ip === '::1' || ip.startsWith('::ffff:127.');
+  return {
+    ip_address: ip,
+    city: String(geo.city ?? 'Unavailable'),
+    state_region: String(geo.region ?? 'Unavailable'),
+    country: String(geo.country ?? 'Unavailable'),
+    postal: String(geo.postal ?? 'Unavailable'),
+    org_isp: String(geo.org ?? 'Unavailable'),
+    source: String(event?.network?.source ?? 'legacy_network_geo'),
+    captured_at: String(event?.occurred_at_utc ?? 'Unavailable'),
+    user_agent: String(event?.network?.user_agent ?? 'Unavailable'),
+    lookup_status: isLocal ? 'private_or_local_ip' : 'lookup_failed',
+    failure_reason: isLocal ? 'private_or_local_ip' : 'legacy_network_metadata_missing',
+  };
+}
+
 /** Build watermark stamp (kept in sync with FormSigningWorkspace.buildAuditStampHtml). */
 export function watermarkHtml(certId: string, signer: string, signedAt: string, hashShort: string): string {
   return `<div class="ecign-watermark"
@@ -47,6 +104,11 @@ export function appendedPagesHtml(a: AppendedPagesArgs): string {
   const { instance, signatures, audit, certId } = a;
   const docHash = instance.document_hash ?? '';
   const chainHead = audit.length ? audit[audit.length - 1].hash : 'GENESIS';
+  const latestSigAudit = [...audit].reverse().find((e) => e.action === 'signature.applied');
+  const networkLocation = networkLocationFromAudit(latestSigAudit);
+  const device = latestSigAudit && typeof latestSigAudit.network?.device === 'object' && latestSigAudit.network?.device
+    ? latestSigAudit.network.device as Record<string, unknown>
+    : {};
   const certBytes = Buffer.from(JSON.stringify({ instance, signatures }), 'utf8');
   const certHash = sha256(certBytes);
   const manifestHash = sha256(`${docHash}|${chainHead}|${certHash}`);
@@ -94,6 +156,19 @@ ${pageBreak}
           <tr><td style="color:${MUTED};width:28%">User ID</td><td>${esc(s.signer_user_id)}</td></tr>
           <tr><td style="color:${MUTED}">Email</td><td>${esc(s.signer_email)}</td></tr>
           <tr><td style="color:${MUTED}">Signed at (UTC)</td><td>${esc(s.signed_at_utc)}</td></tr>
+          <tr><td style="color:${MUTED}">IP Address</td><td>${esc(networkLocation.ip_address)}</td></tr>
+          <tr><td style="color:${MUTED}">City</td><td>${esc(networkLocation.city)}</td></tr>
+          <tr><td style="color:${MUTED}">Region</td><td>${esc(networkLocation.state_region)}</td></tr>
+          <tr><td style="color:${MUTED}">Country</td><td>${esc(networkLocation.country)}</td></tr>
+          <tr><td style="color:${MUTED}">Postal</td><td>${esc(networkLocation.postal)}</td></tr>
+          <tr><td style="color:${MUTED}">Org / ISP</td><td>${esc(networkLocation.org_isp)}</td></tr>
+          <tr><td style="color:${MUTED}">Source</td><td>${esc(networkLocation.source)}</td></tr>
+          <tr><td style="color:${MUTED}">Captured At</td><td>${esc(networkLocation.captured_at)}</td></tr>
+          <tr><td style="color:${MUTED}">Lookup Status</td><td>${esc(networkLocation.lookup_status)}</td></tr>
+          <tr><td style="color:${MUTED}">Failure Reason</td><td>${esc(networkLocation.failure_reason || '—')}</td></tr>
+          <tr><td style="color:${MUTED}">User Agent</td><td>${esc(networkLocation.user_agent)}</td></tr>
+          <tr><td style="color:${MUTED}">Device Model</td><td>${esc(device.model ?? '')}</td></tr>
+          <tr><td style="color:${MUTED}">Platform</td><td>${esc(device.platform ?? '')}</td></tr>
         </tbody>
       </table>
     </div>`).join('')}

@@ -7,10 +7,6 @@ import { initializeApp } from '@/policy/utils/appInitializer'
 const DashboardPage     = lazy(() => import('@/policy/pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
 const LibraryPage       = lazy(() => import('@/policy/pages/LibraryPage').then(m => ({ default: m.LibraryPage })))
 const PolicyDetailPage  = lazy(() => import('@/policy/pages/PolicyDetailPage').then(m => ({ default: m.PolicyDetailPage })))
-const DraftsPage        = lazy(() => import('@/policy/pages/DraftsPage').then(m => ({ default: m.DraftsPage })))
-const DraftPolicyPage   = lazy(() => import('@/policy/pages/DraftPolicyPage').then(m => ({ default: m.DraftPolicyPage })))
-const ReviewPage        = lazy(() => import('@/policy/pages/ReviewPage').then(m => ({ default: m.ReviewPage })))
-const PublishPage       = lazy(() => import('@/policy/pages/PublishPage').then(m => ({ default: m.PublishPage })))
 const TaxonomyPage      = lazy(() => import('@/policy/pages/TaxonomyPage').then(m => ({ default: m.TaxonomyPage })))
 const GovernancePage    = lazy(() => import('@/policy/pages/GovernancePage').then(m => ({ default: m.GovernancePage })))
 const MasterCalendarPage = lazy(() => import('@/policy/pages/MasterCalendarPage').then(m => ({ default: m.MasterCalendarPage })))
@@ -28,6 +24,7 @@ const IAdministratorPage = lazy(() => import('@/policy/pages/iAdministrator').th
 const BradProposalPage  = lazy(() => import('@/policy/pages/BradProposal').then(m => ({ default: m.BradProposalPage })))
 const WorkflowLibraryApp    = lazy(() => import('@/policy/workflows/WorkflowLibraryApp').then(m => ({ default: m.WorkflowLibraryApp })))
 const HubstaffStagingPage  = lazy(() => import('@/policy/pages/HubstaffStagingPage').then(m => ({ default: m.HubstaffStagingPage })))
+const PolicyLifecyclePage  = lazy(() => import('@/policy/pages/PolicyLifecyclePage').then(m => ({ default: m.PolicyLifecyclePage })))
 const FormPrintView        = lazy(() => import('@/policy/pages/FormPrintView').then(m => ({ default: m.FormPrintView })))
 const MasterControlInventoryPage = lazy(() => import('@/policy/pages/MasterControlInventoryPage').then(m => ({ default: m.MasterControlInventoryPage })))
 
@@ -93,10 +90,14 @@ function App() {
                   <Route path="/evidence" element={<EvidenceCenterPage />} />
                   <Route path="/library" element={<LibraryPage />} />
                   <Route path="/library/:policyId" element={<PolicyDetailPage />} />
-                  <Route path="/drafts" element={<DraftsPage />} />
-                  <Route path="/drafts/:policyId" element={<DraftPolicyPage />} />
-                  <Route path="/review" element={<ReviewPage />} />
-                  <Route path="/publish" element={<PublishPage />} />
+                  {/* Unified Policy Lifecycle Workspace (replaces /drafts /review /publish) */}
+                  <Route path="/policy-lifecycle" element={<PolicyLifecyclePage />} />
+                  <Route path="/policy-lifecycle/:policyId" element={<PolicyLifecyclePage />} />
+                  {/* Old route redirects (one release cycle) */}
+                  <Route path="/drafts"  element={<Navigate to="/policy-lifecycle?stage=DRAFT" replace />} />
+                  <Route path="/drafts/:policyId" element={<Navigate to="/policy-lifecycle" replace />} />
+                  <Route path="/review"  element={<Navigate to="/policy-lifecycle?stage=REVIEW" replace />} />
+                  <Route path="/publish" element={<Navigate to="/policy-lifecycle?stage=APPROVED" replace />} />
                   <Route path="/taxonomy" element={<TaxonomyPage />} />
                   <Route path="/framework" element={<FrameworkPage />} />
                   <Route path="/forms" element={<FormsPage />} />

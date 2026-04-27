@@ -49,8 +49,40 @@ async function call<T>(path: string, init?: RequestInit, mfaToken?: string): Pro
 
 /* ── Disclosure & consent ──────────────────────────────────────── */
 export interface DisclosureCurrent { disclosure_version: string; text: string; text_hash: string; }
+export interface NetworkInfoResponse {
+  ip: string;
+  city: string;
+  region: string;
+  country: string;
+  postal: string;
+  org: string;
+  source: string;
+  capturedAt: string;
+  userAgent: string;
+  lookupStatus: 'resolved' | 'lookup_failed' | 'private_or_local_ip' | string;
+  failureReason?: string;
+}
+export interface NetworkGeoEvidence {
+  city?: string;
+  region?: string;
+  country?: string;
+  postal?: string;
+  org?: string;
+}
+
+export interface DeviceEvidence {
+  name?: string;
+  manufacturer?: string;
+  model?: string;
+  processor?: string;
+  os?: string;
+  os_version?: string;
+  platform?: string;
+}
+
 export const ecignApi = {
   getCurrentDisclosure: () => call<DisclosureCurrent>('/ecign/disclosures/current'),
+  getNetworkInfo: () => call<NetworkInfoResponse>('/ecign/network-info'),
 
   recordConsent: (disclosure_version: string) =>
     call<{ consent_id: string }>('/ecign/consents', {
@@ -96,6 +128,8 @@ export const ecignApi = {
     field_id: string;
     signature_png_b64: string;
     attestation_text_hash: string;
+    geo?: NetworkGeoEvidence;
+    device?: DeviceEvidence;
   }, mfaToken?: string) =>
     call<{ signature_id: string; state: string }>(`/ecign/instances/${id}/signatures`, {
       method: 'POST',
@@ -121,7 +155,7 @@ export const ecignApi = {
 
   /* ── Audit & compliance ──────────────────────────────────────── */
   getAuditEvents: (subject_id?: string) =>
-    call<{ events: Array<Record<string, unknown>> }>(
+    call<Array<Record<string, unknown>>>(
       `/audit/events${subject_id ? `?subject_id=${encodeURIComponent(subject_id)}` : ''}`,
     ),
 

@@ -36,7 +36,7 @@ import {
   UI_STEPS,
   type BackendState,
 } from '@/policy/ecign/useEcignInstance';
-import { ecignApi } from '@/policy/ecign/api';
+import { ecignApi, ATTESTATION_TEXT } from '@/policy/ecign/api';
 import {
   recordEsignEvidence,
   queryEvidenceByContext,
@@ -94,24 +94,300 @@ interface CertParams {
   documentHash?:    string | null;
   signatureHash?:   string | null;
   attestationText?: string;
+  signerIp?:        string;
+  signerLocation?:  string;
+  signerCity?:      string;
+  signerState?:     string;
+  signerCountry?:   string;
+  signerPostal?:    string;
+  signerOrgIsp?:    string;
+  signerSource?:    string;
+  signerCapturedAt?: string;
+  signerUserAgent?: string;
+  signerLookupStatus?: string;
+  signerFailureReason?: string;
+  // Identity attribution (formerly in standalone Identity Evidence page)
+  signerEmail?:        string;
+  signerUserId?:       string;
+  authMethod?:         string;
+  mfaVerifiedAt?:      string;
+  // Device evidence (formerly in standalone Identity Evidence page)
+  devicePlatform?:     string;
+  deviceName?:         string;
+  deviceManufacturer?: string;
+  deviceModel?:        string;
+  deviceProcessor?:    string;
+  deviceOs?:           string;
+  deviceOsVersion?:    string;
+}
+
+interface NetworkLocationShape {
+  ip_address?: string;
+  city?: string;
+  state_region?: string;
+  country?: string;
+  postal?: string;
+  org_isp?: string;
+  source?: string;
+  captured_at?: string;
+  user_agent?: string;
+  lookup_status?: string;
+  failure_reason?: string;
+}
+
+interface AuditEventShape {
+  event_id?: string;
+  occurred_at_utc?: string;
+  action?: string;
+  actor?: {
+    user_id?: string;
+    name?: string;
+    role?: string;
+    email?: string;
+    auth_method?: string;
+    mfa_verified_at?: string;
+  };
+  network?: {
+    ip?: string;
+    user_agent?: string;
+    source?: string;
+    network_location?: NetworkLocationShape;
+    geo?: {
+      city?: string;
+      region?: string;
+      country?: string;
+      postal?: string;
+      org?: string;
+    };
+    device?: {
+      name?: string;
+      manufacturer?: string;
+      model?: string;
+      processor?: string;
+      os?: string;
+      os_version?: string;
+      platform?: string;
+    };
+  };
+  subject?: {
+    id?: string;
+    document_hash?: string;
+  };
+  hash?: string;
+  payload?: Record<string, unknown> & {
+    network_location?: NetworkLocationShape;
+  };
+}
+
+function asAuditEventShape(v: Record<string, unknown>): AuditEventShape {
+  return v as AuditEventShape;
+}
+
+function buildFourColumnKvTable(rows: Array<[string, string]>): string {
+  const htmlRows: string[] = [];
+  for (let i = 0; i < rows.length; i += 2) {
+    const [k1, v1] = rows[i];
+    const pair2 = rows[i + 1];
+    if (pair2) {
+      const [k2, v2] = pair2;
+      htmlRows.push(`<tr><th>${escHtml(k1)}</th><td>${escHtml(v1)}</td><th>${escHtml(k2)}</th><td>${escHtml(v2)}</td></tr>`);
+    } else {
+      htmlRows.push(`<tr><th>${escHtml(k1)}</th><td>${escHtml(v1)}</td><th></th><td></td></tr>`);
+    }
+  }
+  return `<table class="tbl tbl-quad"><tbody>${htmlRows.join('')}</tbody></table>`;
+}
+
+function isLocalOrPrivateIp(ip: string): boolean {
+  const v = (ip || '').trim().toLowerCase();
+  if (!v) return false;
+  if (v === '::1' || v === '127.0.0.1' || v.startsWith('::ffff:127.')) return true;
+  if (v.startsWith('10.') || v.startsWith('192.168.') || /^172\.(1[6-9]|2\d|3[0-1])\./.test(v)) return true;
+  if (v.startsWith('fc') || v.startsWith('fd') || v.startsWith('fe80:')) return true;
+  return false;
+}
+
+function normalizeIp(ip: string): string {
+  const v = (ip || '').trim();
+  if (!v) return '';
+  if (v === '::1' || v.startsWith('::ffff:127.')) return '127.0.0.1';
+  return v;
+}
+
+function formatDisplayIp(ip: string): string {
+  const normalized = normalizeIp(ip);
+  if (!normalized) return 'Unavailable';
+  return isLocalOrPrivateIp(ip) ? `${normalized} (Local/Private)` : normalized;
+}
+
+function isNetworkLocationShape(value: unknown): value is NetworkLocationShape {
+  return Boolean(value && typeof value === 'object');
+}
+
+function resolveNetworkLocationFromEvent(signatureEvt?: AuditEventShape): Required<NetworkLocationShape> {
+  const fromPayload = signatureEvt?.payload?.network_location;
+  const fromNetwork = signatureEvt?.network?.network_location;
+  const raw = isNetworkLocationShape(fromPayload)
+    ? fromPayload
+    : (isNetworkLocationShape(fromNetwork) ? fromNetwork : undefined);
+
+  if (raw) {
+    const ipAddress = raw.ip_address || signatureEvt?.network?.ip || '';
+    return {
+      ip_address: ipAddress || 'Unavailable',
+      city: raw.city || 'Unavailable',
+      state_region: raw.state_region || 'Unavailable',
+      country: raw.country || 'Unavailable',
+      postal: raw.postal || 'Unavailable',
+      org_isp: raw.org_isp || 'Unavailable',
+      source: raw.source || signatureEvt?.network?.source || 'stored_network_metadata',
+      captured_at: raw.captured_at || signatureEvt?.occurred_at_utc || 'Unavailable',
+      user_agent: raw.user_agent || signatureEvt?.network?.user_agent || 'Unavailable',
+      lookup_status: raw.lookup_status || 'lookup_failed',
+      failure_reason: raw.failure_reason || '',
+    };
+  }
+
+  // Backward compatibility for legacy audits that only stored `network.geo`.
+  const legacyIp = signatureEvt?.network?.ip || '';
+  const isLocal = isLocalOrPrivateIp(legacyIp);
+  const legacyGeo = signatureEvt?.network?.geo;
+  const hasLegacyGeo = Boolean(legacyGeo?.city || legacyGeo?.region || legacyGeo?.country || legacyGeo?.postal || legacyGeo?.org);
+  return {
+    ip_address: legacyIp || 'Unavailable',
+    city: legacyGeo?.city || 'Unavailable',
+    state_region: legacyGeo?.region || 'Unavailable',
+    country: legacyGeo?.country || 'Unavailable',
+    postal: legacyGeo?.postal || 'Unavailable',
+    org_isp: legacyGeo?.org || 'Unavailable',
+    source: signatureEvt?.network?.source || 'legacy_network_geo',
+    captured_at: signatureEvt?.occurred_at_utc || 'Unavailable',
+    user_agent: signatureEvt?.network?.user_agent || 'Unavailable',
+    lookup_status: isLocal
+      ? 'private_or_local_ip'
+      : (hasLegacyGeo ? 'resolved' : 'lookup_failed'),
+    failure_reason: isLocal
+      ? 'private_or_local_ip'
+      : (hasLegacyGeo ? '' : 'legacy_network_metadata_missing'),
+  };
+}
+
+function buildAuditTrailHtml(events: AuditEventShape[]): string {
+  const rows = events
+    .slice()
+    .sort((a, b) => (a.occurred_at_utc || '').localeCompare(b.occurred_at_utc || ''));
+
+  const chainHead = rows.length ? (rows[rows.length - 1].hash || 'GENESIS') : 'GENESIS';
+
+  return `
+<section class="ecign-page ecign-cert-section">
+  <div class="header">
+    <img class="logo" src="${eCIgnLogo}" alt="eCIgn"/>
+    <div>
+      <div class="badge">Audit Trail</div>
+      <h1>Audit Trail Timeline</h1>
+      <p class="intro">Append-only event chain for signer intent, identity, review, signature, and lock actions.</p>
+    </div>
+  </div>
+  <div class="section">
+    <table class="tbl" style="font-size:10px"><thead>
+      <tr><th>#</th><th>UTC</th><th>Action</th><th>Actor / Network</th></tr>
+    </thead><tbody>
+      ${rows.map((e, i) => `<tr>
+        <td>${i + 1}</td>
+        <td>${escHtml(e.occurred_at_utc || '—')}</td>
+        <td>${escHtml(e.action || '—')}<div class="meta mono">${escHtml((e.hash || '—').slice(0, 20))}</div></td>
+        <td>${escHtml(e.actor?.name || e.actor?.user_id || '—')}<div class="meta">${escHtml(e.network?.ip || '—')}</div></td>
+      </tr>`).join('')}
+    </tbody></table>
+    <p class="intro" style="margin-top:10px">Hash chain head: <span class="val mono">${escHtml(chainHead)}</span></p>
+  </div>
+</section>`;
+}
+
+function buildIntegrityManifestHtml(args: {
+  documentHash?: string | null;
+  signatureHash?: string | null;
+  certId: string;
+  auditEvents: AuditEventShape[];
+}): string {
+  const chainHead = args.auditEvents.length
+    ? (args.auditEvents[args.auditEvents.length - 1].hash || 'GENESIS')
+    : 'GENESIS';
+  return `
+<section class="ecign-page ecign-cert-section">
+  <div class="header">
+    <img class="logo" src="${eCIgnLogo}" alt="eCIgn"/>
+    <div>
+      <div class="badge">Integrity</div>
+      <h1>Document Integrity Manifest</h1>
+      <p class="intro">External verification map for document hash, audit chain, and certificate identity.</p>
+    </div>
+  </div>
+  <div class="section">
+    <table class="tbl"><tbody>
+      <tr><th>Certificate ID</th><td>${escHtml(args.certId)}</td></tr>
+      <tr><th>Document Hash (SHA-256)</th><td class="val mono">${escHtml(args.documentHash || '—')}</td></tr>
+      <tr><th>Signature Hash</th><td class="val mono">${escHtml(args.signatureHash || '—')}</td></tr>
+      <tr><th>Audit Chain Head</th><td class="val mono">${escHtml(chainHead)}</td></tr>
+      <tr><th>Verification</th><td>Recompute SHA-256 over canonical document bytes and compare values. Verify audit chain integrity via API verify-chain.</td></tr>
+    </tbody></table>
+  </div>
+</section>`;
 }
 
 function buildCertHtml(p: CertParams, logoSrc: string): string {
   const policyId = p.linkedPolicyIds[0] || p.linkedPolicyMeta[0]?.id || '—';
-  const attestationText = p.attestationText || 'I attest that I have read, understood, and signed this document.';
-  const fields: Array<[string, string]> = [
+  const attestationText = p.attestationText || ATTESTATION_TEXT;
+
+  const recordRows: Array<[string, string]> = [
     ['Certificate ID', p.certId],
     ['Evidence ID', p.evidenceId || 'Pending evidence sync'],
     ['Form ID', p.formId],
     ['Policy ID', policyId],
     ['Workflow ID', p.workflowId || '—'],
     ['Event ID', p.eventId || `EVT-FORM-${p.formInstanceId}`],
-    ['Signer Name', p.record.signerName],
-    ['Signer Role', p.record.signerRole || '—'],
-    ['Signed Timestamp', fmtSignTs(p.record.signedAt)],
     ['Signature Status', p.signatureStatus || 'SIGNED'],
     ['Status', p.evidenceStatus || 'APPROVED_EVIDENCE'],
-    ['Document Hash', p.documentHash || '—'],
+  ];
+
+  const identityRows: Array<[string, string]> = [
+    ['Signer Name', p.record.signerName],
+    ['Signer Role', p.record.signerRole || '—'],
+    ['Signer Email', p.signerEmail || p.record.signerEmail || '—'],
+    ['User ID', p.signerUserId || '—'],
+    ['Authentication Method', p.authMethod || 'session'],
+    ['MFA Verified At (UTC)', p.mfaVerifiedAt || '—'],
+    ['Signed Timestamp (UTC)', fmtSignTs(p.record.signedAt)],
+  ];
+
+  const networkRows: Array<[string, string]> = [
+    ['Signer IP', p.signerIp || '—'],
+    ['Signer City', p.signerCity || '—'],
+    ['Signer State / Region', p.signerState || '—'],
+    ['Signer Country', p.signerCountry || '—'],
+    ['Signer Postal', p.signerPostal || '—'],
+    ['Signer Org / ISP', p.signerOrgIsp || '—'],
+    ['Signer Location', p.signerLocation || '—'],
+    ['Location Source', p.signerSource || '—'],
+    ['Location Captured At (UTC)', p.signerCapturedAt || '—'],
+    ['Lookup Status', p.signerLookupStatus || '—'],
+    ['Lookup Failure Reason', p.signerFailureReason || '—'],
+  ];
+
+  const deviceRows: Array<[string, string]> = [
+    ['User Agent', p.signerUserAgent || '—'],
+    ['Platform', p.devicePlatform || '—'],
+    ['Device Name', p.deviceName || '—'],
+    ['Manufacturer', p.deviceManufacturer || 'Not Reported'],
+    ['Model', p.deviceModel || 'Not Reported'],
+    ['Processor', p.deviceProcessor || 'Not Reported'],
+    ['OS', p.deviceOs || 'Not Reported'],
+    ['OS Version', p.deviceOsVersion || 'Not Reported'],
+  ];
+
+  const integrityRows: Array<[string, string]> = [
+    ['Document Hash (SHA-256)', p.documentHash || '—'],
     ['Signature Hash', p.signatureHash || '—'],
     ['S3 Key', p.s3Key || '—'],
   ];
@@ -121,10 +397,13 @@ function buildCertHtml(p: CertParams, logoSrc: string): string {
   <div class="header">
     <img class="logo" src="${logoSrc}" alt="eCIgn"/>
     <div>
-      <div class="badge">eCIgn Certificate</div>
-      <h1>eCIgn Signature Certificate</h1>
-      <p class="intro">This certificate is appended to the printed packet and captures immutable eSign evidence metadata.</p>
+      <h1>Electronic Signature Attestation Certificate</h1>
+      <p class="legal-line">Executed in accordance with the Electronic Signatures in Global and National Commerce Act (ESIGN), 15 U.S.C. §§ 7001–7031, the Uniform Electronic Transactions Act (UETA), and applicable HIPAA regulations (45 CFR §§ 160–164). Signer identity, network location, and device evidence captured at signature time for ESIGN/UETA defensibility.</p>
     </div>
+  </div>
+  <div class="attestation-block">
+    <div class="lbl">Attestation</div>
+    <p class="attestation">“I agree to use an electronic signature, I have reviewed this document in full, and I intend to sign it. I understand this electronic signature is legally binding and equivalent to a handwritten signature.”</p>
   </div>
   <div class="section">
     <h2>Document Context</h2>
@@ -136,10 +415,24 @@ function buildCertHtml(p: CertParams, logoSrc: string): string {
     </div>
   </div>
   <div class="section">
-    <h2>Evidence Metadata</h2>
-    <table class="tbl">
-      <tbody>${fields.map(([k, v]) => `<tr><th>${escHtml(k)}</th><td>${escHtml(v)}</td></tr>`).join('')}</tbody>
-    </table>
+    <h2>Evidence Metadata · Record</h2>
+    ${buildFourColumnKvTable(recordRows)}
+  </div>
+  <div class="section">
+    <h2>Evidence Metadata · Signer Identity</h2>
+    ${buildFourColumnKvTable(identityRows)}
+  </div>
+  <div class="section">
+    <h2>Evidence Metadata · Network Location</h2>
+    ${buildFourColumnKvTable(networkRows)}
+  </div>
+  <div class="section">
+    <h2>Evidence Metadata · Device</h2>
+    ${buildFourColumnKvTable(deviceRows)}
+  </div>
+  <div class="section">
+    <h2>Evidence Metadata · Document Integrity</h2>
+    ${buildFourColumnKvTable(integrityRows)}
   </div>
   <div class="section">
     <h2>Attestation Text</h2>
@@ -169,7 +462,7 @@ function buildCertHtml(p: CertParams, logoSrc: string): string {
 function buildPrintablePacketHtml(args: {
   formTitle: string;
   formHtml: string;
-  certHtml: string;
+  appendedHtml: string;
   certId: string;
   signerName: string;
   signedAt: string;
@@ -192,7 +485,9 @@ ${args.styleAssets}
     body:has(.form-page) .ecign-cert-section *,
     body:has(.form-page) .ecign-footer,
     body:has(.form-page) .ecign-footer *{visibility:visible !important}
-    .ecign-cert-section{page-break-before:always;break-before:page}
+    .ecign-cert-section{page-break-before:auto;break-before:auto}
+    .ecign-page{page-break-before:auto;break-before:auto}
+    .ecign-print-root .ecign-page:first-of-type{page-break-before:always;break-before:page}
     .ecign-print-root,.ecign-print-root .form-page{height:auto !important;min-height:0 !important;overflow:visible !important}
     /* Hide the on-screen action bar / close affordances if cloned */
     .no-print,.print\\:hidden{display:none !important}
@@ -201,16 +496,16 @@ ${args.styleAssets}
   .ecign-print-root{position:relative;background:white;min-height:100vh}
   /* ── Certificate section (appended after original form pages) ── */
   .ecign-cert-section{
-    max-width:760px;margin:0 auto;padding:40px 24px 80px;
+    max-width:none;width:100%;margin:0;padding:12px 10px 34px;
     font-family:'Segoe UI',Arial,sans-serif;color:${INK};
   }
-  .ecign-cert-section .header{display:flex;align-items:center;gap:16px;padding-bottom:20px;border-bottom:3px solid ${ORANGE};margin-bottom:24px}
+  .ecign-cert-section .header{display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:2px solid ${ORANGE};margin-bottom:10px}
   .ecign-cert-section .logo{height:40px;object-fit:contain}
   .ecign-cert-section h1{font-size:22px;font-weight:700;margin:0 0 8px;color:${NAVY}}
-  .ecign-cert-section h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:${NAVY};margin:0 0 16px}
+  .ecign-cert-section h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:${NAVY};margin:0 0 16px;break-after:avoid-page;page-break-after:avoid}
   .ecign-cert-section .badge{display:inline-block;padding:3px 10px;background:${ORANGE_SOFT};color:${ORANGE};border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;border:1px solid ${ORANGE}40}
   .ecign-cert-section .intro{color:${MUTED};font-size:13px;margin-top:8px;line-height:1.6}
-  .ecign-cert-section .section{padding:20px 0;border-bottom:1px solid ${BORDER}}
+  .ecign-cert-section .section{padding:10px 0;border-bottom:1px solid ${BORDER};break-inside:avoid-page;page-break-inside:avoid}
   .ecign-cert-section .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px}
   .ecign-cert-section .f{display:flex;flex-direction:column}
   .ecign-cert-section .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:${MUTED};font-weight:700;margin-bottom:3px}
@@ -219,9 +514,28 @@ ${args.styleAssets}
   .ecign-cert-section .attestation{font-size:13px;line-height:1.55;color:${INK}}
   .ecign-cert-section .sig-box{border:1px solid ${BORDER};border-radius:8px;padding:12px;background:${PAPER};display:inline-block;margin-top:12px}
   .ecign-cert-section .sig-img{height:60px;max-width:220px;object-fit:contain;display:block}
-  .ecign-cert-section .tbl{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
+  .ecign-cert-section .tbl{width:100%;border-collapse:collapse;font-size:10px;margin-top:4px;break-inside:avoid-page;page-break-inside:avoid}
   .ecign-cert-section .tbl th{width:190px;background:${PAPER};border-bottom:1px solid ${BORDER};padding:6px 8px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:${MUTED};vertical-align:top}
-  .ecign-cert-section .tbl td{padding:6px 8px;border-bottom:1px solid #F0F0EE;overflow-wrap:anywhere;word-break:break-word}
+  .ecign-cert-section .tbl td{padding:6px 8px;border-bottom:1px solid #F0F0EE;overflow-wrap:break-word;word-break:normal}
+    .ecign-cert-section .tbl .meta{font-size:9px;line-height:1.25;color:${MUTED};margin-top:2px}
+    .ecign-cert-section .tbl .meta.mono{font-family:monospace}
+    .ecign-cert-section .tbl-quad th{width:15%;padding:4px 6px;white-space:nowrap}
+    .ecign-cert-section .tbl-quad td{width:35%;padding:4px 6px;vertical-align:top}
+  /* Certificate-only tightening to keep legal header/attestation compact. */
+  .ecign-cert-page .header{gap:12px;padding-bottom:8px;margin-bottom:8px;border-bottom:2px solid ${ORANGE}}
+  .ecign-cert-page .logo{height:28px}
+  .ecign-cert-page h1{font-size:18px;line-height:1.18;margin:0 0 3px;color:${NAVY}}
+  .ecign-cert-page .legal-line{font-size:9.5px;line-height:1.35;margin:0;color:${MUTED}}
+  .ecign-cert-page .attestation-block{padding:6px 0 8px;margin-bottom:2px}
+  .ecign-cert-page .attestation{font-size:11.5px;line-height:1.4;margin:2px 0 0;color:${INK}}
+  .ecign-cert-page .section{padding:10px 0}
+  .ecign-cert-page h2{margin:0 0 8px}
+  .ecign-cert-page .grid2{gap:8px 16px}
+  .ecign-cert-page .tbl{font-size:10px;margin-top:4px}
+  .ecign-cert-page .tbl th{padding:3px 5px}
+  .ecign-cert-page .tbl td{padding:3px 5px}
+  .ecign-cert-page .sig-box{padding:8px;margin-top:8px}
+  .ecign-cert-page .sig-img{height:48px;max-width:200px}
   /* ── Single watermark footer — once per page via position:fixed ── */
   .ecign-footer{
     position:fixed;bottom:0;left:0;right:0;height:22px;
@@ -236,7 +550,7 @@ ${args.styleAssets}
 </head><body>
   <div class="ecign-print-root">
     ${args.formHtml}
-    <div class="ecign-cert-section">${args.certHtml}</div>
+    ${args.appendedHtml}
     <div class="ecign-footer">
       <img class="ecign-footer-logo" src="${args.logoSrc}" alt="eCIgn"/>
       <span class="ecign-footer-dot">·</span>
@@ -405,7 +719,7 @@ export function eCIgnWorkspace({
   formTitle,
   formVersion,
   formInstanceId,
-  geoInfo: _geoInfo,
+  geoInfo,
   fieldEdits,
   signatures,
   secondSigTask: initialSecondSigTask,
@@ -470,9 +784,17 @@ export function eCIgnWorkspace({
     // so that evidence is not indexed under the transient form_instance_id.
     const resolvedEventId    = hhcEventId    || `EVT-FORM-${formInstanceId}`;
     const resolvedWorkflowId = hhcWorkflowId || undefined;
-    const attestationText = 'I attest that I have read, understood, and signed this document.';
+    const attestationText = ATTESTATION_TEXT;
     void (async () => {
       try {
+        const evidenceAuditRows = await ecignApi.getAuditEvents(instance.instance_id);
+        const evidenceAuditEvents = Array.isArray(evidenceAuditRows)
+          ? evidenceAuditRows.map((r) => asAuditEventShape(r))
+          : [];
+        const evidenceSignatureEvent = [...evidenceAuditEvents].reverse()
+          .find((e) => e.action === 'signature.applied');
+        const evidenceNetworkLocation = resolveNetworkLocationFromEvent(evidenceSignatureEvent);
+
         const r = await recordEsignEvidence({
           policy_id:        linkedPolicyIds[0] || policies[0],
           workflow_id:      resolvedWorkflowId,
@@ -488,7 +810,21 @@ export function eCIgnWorkspace({
           signer_role:      DEMO_SESSION.role,
           signer_email:     DEMO_SESSION.email,
           signed_at:        instance.locked_at_utc || new Date().toISOString(),
+          network_location: {
+            ip_address: evidenceNetworkLocation.ip_address,
+            city: evidenceNetworkLocation.city,
+            state_region: evidenceNetworkLocation.state_region,
+            country: evidenceNetworkLocation.country,
+            postal: evidenceNetworkLocation.postal,
+            org_isp: evidenceNetworkLocation.org_isp,
+            source: evidenceNetworkLocation.source,
+            captured_at: evidenceNetworkLocation.captured_at,
+            user_agent: evidenceNetworkLocation.user_agent,
+            lookup_status: evidenceNetworkLocation.lookup_status,
+            failure_reason: evidenceNetworkLocation.failure_reason || undefined,
+          },
         });
+        setAuditEvents(evidenceAuditEvents);
         // Immediately refresh evidence from backend using all available context keys.
         const evidenceRefresh = await queryEvidenceByContext({
           event_id: r.event_id,
@@ -514,12 +850,33 @@ export function eCIgnWorkspace({
           searched_events: evidenceRefresh.searched_events,
           refreshed_count: evidenceRefresh.matches.length,
         });
-        console.info('[hhc.esign.evidence]', r);
+        if (import.meta.env.DEV) {
+          console.info('[hhc.esign.evidence]', r);
+        }
       } catch (e) {
-        console.warn('[hhc.esign.evidence] failed', e);
+        if (import.meta.env.DEV) {
+          console.warn('[hhc.esign.evidence] failed', e);
+        }
       }
     })();
   }, [backendState, instance, linkedPolicyIds, policies, formInstanceId, formId, hhcEventId, hhcWorkflowId]);
+
+  const [auditEvents, setAuditEvents] = useState<AuditEventShape[]>([]);
+  useEffect(() => {
+    if (backendState !== 'signed_locked') return;
+    if (!instance?.instance_id) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const rows = await ecignApi.getAuditEvents(instance.instance_id);
+        if (cancelled) return;
+        setAuditEvents(Array.isArray(rows) ? rows.map((r) => asAuditEventShape(r)) : []);
+      } catch {
+        if (!cancelled) setAuditEvents([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [backendState, instance?.instance_id]);
 
   /* ── Local-only UI state (presentational, never gates progression) ── */
   const [localRecord,    setLocalRecord]    = useState<SignatureRecord | null>(null);
@@ -658,9 +1015,21 @@ export function eCIgnWorkspace({
       signatureDataUrl: dataUrl,
     };
     setLocalRecord(rec);
-    await applyServerSignature(dataUrl);
+    await applyServerSignature(dataUrl, {
+      geo: {
+        city: geoInfo.city,
+        region: geoInfo.region,
+        country: geoInfo.country,
+        postal: geoInfo.postal,
+        org: geoInfo.org,
+      },
+      device: {
+        os: navigator.userAgent,
+        platform: navigator.platform,
+      },
+    });
     onConfirm(rec);
-  }, [empty, fieldId, onConfirm, applyServerSignature]);
+  }, [empty, fieldId, onConfirm, applyServerSignature, geoInfo]);
 
   /* ── Second signer (LOCKED screen action) ────────────────────────── */
   const handleSelectApprover = useCallback(async (user: DemoUser) => {
@@ -707,6 +1076,38 @@ export function eCIgnWorkspace({
     const signatureHash = (instance?.manifest_hash || instance?.document_hash || '').toString() ||
       hhcEvidenceResult?.signature_hash ||
       '';
+    const signatureEvent = [...auditEvents].reverse().find((e) => e.action === 'signature.applied');
+    const networkLocation = resolveNetworkLocationFromEvent(signatureEvent);
+    const signerIp = formatDisplayIp(networkLocation.ip_address);
+    const signerCity = networkLocation.city;
+    const signerState = networkLocation.state_region;
+    const signerCountry = networkLocation.country;
+    const signerPostal = networkLocation.postal;
+    const signerOrgIsp = networkLocation.org_isp;
+    const signerSource = networkLocation.source;
+    const signerCapturedAt = networkLocation.captured_at;
+    const signerUserAgent = networkLocation.user_agent;
+    const signerLookupStatus = networkLocation.lookup_status;
+    const signerFailureReason = networkLocation.failure_reason;
+    const signerLocation = [
+      signerCity,
+      signerState,
+      signerCountry,
+    ].filter(Boolean).join(', ');
+
+    const actor = signatureEvent?.actor;
+    const device = signatureEvent?.network?.device;
+    const signerEmail = actor?.email || record.signerEmail;
+    const signerUserId = actor?.user_id || '—';
+    const authMethod = actor?.auth_method || 'session';
+    const mfaVerifiedAt = actor?.mfa_verified_at || '—';
+    const devicePlatform = device?.platform || (typeof navigator !== 'undefined' ? navigator.platform : '') || '—';
+    const deviceName = device?.name || devicePlatform || 'Client Device';
+    const deviceManufacturer = device?.manufacturer || 'Not Reported';
+    const deviceModel = device?.model || devicePlatform || 'Not Reported';
+    const deviceProcessor = device?.processor || 'Not Reported';
+    const deviceOs = device?.os || (typeof navigator !== 'undefined' ? navigator.userAgent : '') || 'Not Reported';
+    const deviceOsVersion = device?.os_version || 'Not Reported';
 
     const certHtml = buildCertHtml({
       certId, certAt, formId, formTitle, formVersion, formInstanceId,
@@ -720,12 +1121,50 @@ export function eCIgnWorkspace({
       s3Key: hhcEvidenceResult?.s3_key,
       documentHash: hhcEvidenceResult?.document_hash || instance?.document_hash || null,
       signatureHash,
-      attestationText: hhcEvidenceResult?.attestation_text,
+      attestationText: hhcEvidenceResult?.attestation_text || ATTESTATION_TEXT,
+      signerIp,
+      signerCity,
+      signerState,
+      signerCountry,
+      signerPostal,
+      signerOrgIsp,
+      signerSource,
+      signerCapturedAt,
+      signerUserAgent,
+      signerLookupStatus,
+      signerFailureReason,
+      signerLocation,
+      signerEmail,
+      signerUserId,
+      authMethod,
+      mfaVerifiedAt,
+      devicePlatform,
+      deviceName,
+      deviceManufacturer,
+      deviceModel,
+      deviceProcessor,
+      deviceOs,
+      deviceOsVersion,
     }, eCIgnLogo);
+
+    const auditTrailHtml = buildAuditTrailHtml(auditEvents);
+    const manifestHtml = buildIntegrityManifestHtml({
+      certId,
+      auditEvents,
+      documentHash: hhcEvidenceResult?.document_hash || instance?.document_hash || null,
+      signatureHash,
+    });
+
+    const appendedHtml = `
+      <section class="ecign-page ecign-cert-section">${certHtml}</section>
+      ${auditTrailHtml}
+      ${manifestHtml}
+    `;
+
     const html = buildPrintablePacketHtml({
       formTitle,
       formHtml:   getPrintableFormHtml(),
-      certHtml,
+      appendedHtml,
       certId,
       signerName: record.signerName,
       signedAt:   record.signedAt,
@@ -747,6 +1186,8 @@ export function eCIgnWorkspace({
     hhcEvidenceResult,
     hhcEventId,
     hhcWorkflowId,
+    geoInfo,
+    auditEvents,
     getPrintableFormHtml,
   ]);
 

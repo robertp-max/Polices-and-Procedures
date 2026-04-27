@@ -423,7 +423,7 @@ export function FrameworkPage() {
                     { label: 'DRAFT', color: '#f97316', dotClass: 'bg-[#f97316]', desc: 'Policy initial creation and stakeholder development.', hover: 'Initial policy authoring, stakeholder review, and cross-functional alignment phase.' },
                     { label: 'ACTIVE', color: '#00e59b', dotClass: 'bg-[#00e59b]', desc: 'Policy is published, in force, and operationally enforced.', hover: 'Policy is formally approved, integrated into operations, and actively audited for compliance.' },
                     { label: 'UNDER REVIEW', color: '#3b82f6', dotClass: 'bg-[#3b82f6]', desc: 'Active policy currently under scheduled or triggered revision.', hover: 'Subjected to annual/biennial evaluation or triggered directly by a regulatory framework update.' },
-                    { label: 'DEPRECATED', color: '#9ca3af', dotClass: 'bg-[#6b7280]', desc: 'Policy has been retired or superseded by new taxonomy.', hover: 'Archived policy removed from active circulation, retained solely for historical or legal reference.' },
+                    { label: 'ARCHIVED', color: '#9ca3af', dotClass: 'bg-[#6b7280]', desc: 'Policy has been formally retired with documented justification.', hover: 'Terminal state. Used only when a policy is being legally retired with documented rationale and audit trail.' },
                   ].map((item, i) => (
                     <div key={i} className="relative pl-12 flex flex-col justify-center fw-group cursor-default self-start">
                       <div className="absolute left-0 top-1.5 w-[20px] h-[20px] rounded-full flex items-center justify-center bg-[#0a0a0a] border-4 border-[#141414] shadow-sm z-10">

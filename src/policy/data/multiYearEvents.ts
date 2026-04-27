@@ -48,7 +48,8 @@ function nextOccurrenceDate(start: string, cadence: Cadence): string {
    ════════════════════════════════════════════════════════════════ */
 
 export const ENTERPRISE_RISK_BIENNIAL_2026: RegulatoryEvent = {
-  id: 'EVT-RM-2026-ENTRISK-BIENNIAL',
+  id: 'enterprise_risk_assessment-20260708-01',
+  eventSubType: 'enterprise_risk_assessment',
   title: 'Enterprise Risk Assessment (Biennial Deep Reassessment)',
   domain: 'Risk',
   date: '2026-07-08',
@@ -161,7 +162,7 @@ export const ENTERPRISE_RISK_BIENNIAL_2028: RegulatoryEvent = {
   title: 'Enterprise Risk Assessment (Biennial Deep Reassessment) — 2028',
   date: nextOccurrenceDate(ENTERPRISE_RISK_BIENNIAL_2026.date, 'biennial'),
   urgency: 'scheduled',
-  dependencies: { dependsOn: ['EVT-RM-2026-ENTRISK-BIENNIAL'] },
+  dependencies: { dependsOn: ['enterprise_risk_assessment-20260708-01'] },
 };
 
 /* ════════════════════════════════════════════════════════════════
@@ -171,7 +172,8 @@ export const ENTERPRISE_RISK_BIENNIAL_2028: RegulatoryEvent = {
    ════════════════════════════════════════════════════════════════ */
 
 export const POLICY_FRAMEWORK_BIENNIAL_2026: RegulatoryEvent = {
-  id: 'EVT-EN-2026-PFRAMEWORK-BIENNIAL',
+  id: 'policy_framework_review-20260715-01',
+  eventSubType: 'policy_framework_review',
   title: 'Full Policy Framework Review (Biennial Re-Baseline)',
   domain: 'Compliance',
   date: '2026-07-15',
@@ -279,7 +281,7 @@ export const POLICY_FRAMEWORK_BIENNIAL_2028: RegulatoryEvent = {
   title: 'Full Policy Framework Review (Biennial Re-Baseline) — 2028',
   date: nextOccurrenceDate(POLICY_FRAMEWORK_BIENNIAL_2026.date, 'biennial'),
   urgency: 'scheduled',
-  dependencies: { dependsOn: ['EVT-EN-2026-PFRAMEWORK-BIENNIAL'] },
+  dependencies: { dependsOn: ['policy_framework_review-20260715-01'] },
 };
 
 /* ════════════════════════════════════════════════════════════════
@@ -288,7 +290,8 @@ export const POLICY_FRAMEWORK_BIENNIAL_2028: RegulatoryEvent = {
    ════════════════════════════════════════════════════════════════ */
 
 export const WORKFORCE_COMPETENCY_BIENNIAL_2026: RegulatoryEvent = {
-  id: 'EVT-HR-2026-COMPETENCY-BIENNIAL',
+  id: 'competency_validation_biennial-20260722-01',
+  eventSubType: 'competency_validation_biennial',
   title: 'Workforce Competency Validation (Biennial Enterprise Cycle)',
   domain: 'Operations',
   date: '2026-07-22',
@@ -396,7 +399,7 @@ export const WORKFORCE_COMPETENCY_BIENNIAL_2028: RegulatoryEvent = {
   title: 'Workforce Competency Validation (Biennial Enterprise Cycle) — 2028',
   date: nextOccurrenceDate(WORKFORCE_COMPETENCY_BIENNIAL_2026.date, 'biennial'),
   urgency: 'scheduled',
-  dependencies: { dependsOn: ['EVT-HR-2026-COMPETENCY-BIENNIAL'] },
+  dependencies: { dependsOn: ['competency_validation_biennial-20260722-01'] },
 };
 
 /* ════════════════════════════════════════════════════════════════
@@ -406,7 +409,8 @@ export const WORKFORCE_COMPETENCY_BIENNIAL_2028: RegulatoryEvent = {
    ════════════════════════════════════════════════════════════════ */
 
 export const COMPLIANCE_EFFECTIVENESS_BIENNIAL_2026: RegulatoryEvent = {
-  id: 'EVT-CO-2026-EFFECTIVENESS-BIENNIAL',
+  id: 'compliance_effectiveness_biennial-20260729-01',
+  eventSubType: 'compliance_effectiveness_biennial',
   title: 'Compliance Program Effectiveness Review (Biennial Deep Audit)',
   domain: 'Compliance',
   date: '2026-07-29',
@@ -513,7 +517,7 @@ export const COMPLIANCE_EFFECTIVENESS_BIENNIAL_2028: RegulatoryEvent = {
   title: 'Compliance Program Effectiveness Review (Biennial Deep Audit) — 2028',
   date: nextOccurrenceDate(COMPLIANCE_EFFECTIVENESS_BIENNIAL_2026.date, 'biennial'),
   urgency: 'scheduled',
-  dependencies: { dependsOn: ['EVT-CO-2026-EFFECTIVENESS-BIENNIAL'] },
+  dependencies: { dependsOn: ['compliance_effectiveness_biennial-20260729-01'] },
 };
 
 /* ════════════════════════════════════════════════════════════════
@@ -523,7 +527,8 @@ export const COMPLIANCE_EFFECTIVENESS_BIENNIAL_2028: RegulatoryEvent = {
    ════════════════════════════════════════════════════════════════ */
 
 export const OIG_WORK_PLAN_REVIEW_2026: RegulatoryEvent = {
-  id: 'EVT-CO-2026-OIG-WORKPLAN',
+  id: 'oig_workplan_review-20260730-01',
+  eventSubType: 'oig_workplan_review',
   title: 'Annual OIG Work Plan Review',
   domain: 'Compliance',
   date: '2026-07-30',
@@ -626,7 +631,8 @@ export const OIG_WORK_PLAN_REVIEW_2026: RegulatoryEvent = {
    ════════════════════════════════════════════════════════════════ */
 
 export const COMPREHENSIVE_COMPLIANCE_TRIENNIAL_2026: RegulatoryEvent = {
-  id: 'EVT-CO-2026-COMPREHENSIVE-TRIENNIAL',
+  id: 'compliance_comprehensive_review-20260730-01',
+  eventSubType: 'compliance_comprehensive_review',
   title: 'Comprehensive Compliance Program Evaluation (Triennial)',
   domain: 'Compliance',
   date: '2026-07-30',
@@ -732,7 +738,7 @@ export const COMPREHENSIVE_COMPLIANCE_TRIENNIAL_2029: RegulatoryEvent = {
   title: 'Comprehensive Compliance Program Evaluation (Triennial) — 2029',
   date: nextOccurrenceDate(COMPREHENSIVE_COMPLIANCE_TRIENNIAL_2026.date, 'triennial'),
   urgency: 'scheduled',
-  dependencies: { dependsOn: ['EVT-CO-2026-COMPREHENSIVE-TRIENNIAL'] },
+  dependencies: { dependsOn: ['compliance_comprehensive_review-20260730-01'] },
 };
 
 /* ════════════════════════════════════════════════════════════════
@@ -742,7 +748,8 @@ export const COMPREHENSIVE_COMPLIANCE_TRIENNIAL_2029: RegulatoryEvent = {
    ════════════════════════════════════════════════════════════════ */
 
 export const EXTERNAL_COMPLIANCE_REVIEW_TRIENNIAL_2026: RegulatoryEvent = {
-  id: 'EVT-CO-2026-EXTREVIEW-TRIENNIAL',
+  id: 'external_compliance_review-20260731-01',
+  eventSubType: 'external_compliance_review',
   title: 'External / Independent Compliance Review (Triennial)',
   domain: 'Compliance',
   date: '2026-07-31',
@@ -847,7 +854,7 @@ export const EXTERNAL_COMPLIANCE_REVIEW_TRIENNIAL_2029: RegulatoryEvent = {
   title: 'External / Independent Compliance Review (Triennial) — 2029',
   date: nextOccurrenceDate(EXTERNAL_COMPLIANCE_REVIEW_TRIENNIAL_2026.date, 'triennial'),
   urgency: 'scheduled',
-  dependencies: { dependsOn: ['EVT-CO-2026-EXTREVIEW-TRIENNIAL'] },
+  dependencies: { dependsOn: ['external_compliance_review-20260731-01'] },
 };
 
 /* ════════════════════════════════════════════════════════════════
@@ -856,7 +863,8 @@ export const EXTERNAL_COMPLIANCE_REVIEW_TRIENNIAL_2029: RegulatoryEvent = {
    ════════════════════════════════════════════════════════════════ */
 
 export const STRATEGIC_EFFECTIVENESS_TRIENNIAL_2026: RegulatoryEvent = {
-  id: 'EVT-GV-2026-STRATEGIC-TRIENNIAL',
+  id: 'strategic_assessment-20260731-01',
+  eventSubType: 'strategic_assessment',
   title: 'Strategic Program Effectiveness Assessment (Triennial)',
   domain: 'Governance',
   date: '2026-07-31',
@@ -961,7 +969,7 @@ export const STRATEGIC_EFFECTIVENESS_TRIENNIAL_2029: RegulatoryEvent = {
   title: 'Strategic Program Effectiveness Assessment (Triennial) — 2029',
   date: nextOccurrenceDate(STRATEGIC_EFFECTIVENESS_TRIENNIAL_2026.date, 'triennial'),
   urgency: 'scheduled',
-  dependencies: { dependsOn: ['EVT-GV-2026-STRATEGIC-TRIENNIAL'] },
+  dependencies: { dependsOn: ['strategic_assessment-20260731-01'] },
 };
 
 /* ════════════════════════════════════════════════════════════════

@@ -66,8 +66,12 @@ CREATE TABLE IF NOT EXISTS ecign.signatures (
   signature_png    TEXT        NOT NULL,
   signature_hash   TEXT        NOT NULL,
   attestation_text_hash TEXT   NOT NULL,
+  network_location JSONB,
   UNIQUE (instance_id, signer_user_id, field_id)
 );
+
+ALTER TABLE ecign.signatures
+  ADD COLUMN IF NOT EXISTS network_location JSONB;
 
 -- ── audit_events  (APPEND-ONLY, hash-chained) ───────────────────────────────
 CREATE TABLE IF NOT EXISTS ecign.audit_events (

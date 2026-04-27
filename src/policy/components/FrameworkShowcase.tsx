@@ -56,10 +56,10 @@ function getTagsForPolicy(id: string): string[] {
   if (matchesPat(u, ['GV-*','CL-*','QA-*','OP-*'])) tags.push('42cfr');
   return [...new Set(tags)];
 }
-function toDisplayStatus(s: string): 'ACTIVE' | 'DRAFT' | 'UNDER_REVIEW' | 'DEPRECATED' {
+function toDisplayStatus(s: string): 'ACTIVE' | 'DRAFT' | 'UNDER_REVIEW' | 'ARCHIVED' {
   if (s === 'Draft' || s === 'Revision Requested') return 'DRAFT';
   if (s === 'Under Review') return 'UNDER_REVIEW';
-  if (s === 'Archived') return 'DEPRECATED';
+  if (s === 'Archived') return 'ARCHIVED';
   return 'ACTIVE';
 }
 

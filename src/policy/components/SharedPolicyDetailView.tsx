@@ -267,7 +267,7 @@ const GV_AMENDMENTS: Array<{ version: string; date: string; author: string; summ
 const GENERIC_DEFS = [
   { term: 'Classification Tier', definition: 'The policy priority level within the enterprise taxonomy: REQUIRED, ESSENTIAL, OPERATIONAL, or REFERENCE.' },
   { term: 'Policy Owner', definition: 'The designated individual or role responsible for maintaining, reviewing, and approving this policy artifact.' },
-  { term: 'Lifecycle Status', definition: 'The current state of the policy in the governance lifecycle: DRAFT, ACTIVE, UNDER REVIEW, or DEPRECATED.' },
+  { term: 'Lifecycle Status', definition: 'The current state of the policy in the governance lifecycle: DRAFT, REVIEW, APPROVED, PUBLISHED, or ARCHIVED.' },
   { term: 'Review Cycle', definition: 'The scheduled frequency (annual or biennial) at which this policy must be formally reviewed for continued relevance and compliance.' },
   { term: 'Access Tier', definition: 'The visibility classification (Tiers 1–4) that determines which roles can view or edit this policy.' },
   { term: 'Regulatory Cross-Reference', definition: 'The specific federal, state, or accreditation standards to which this policy maps for compliance traceability.' },
@@ -1044,7 +1044,7 @@ function PolicyPrintDocument({ policy, isGV }: { policy: SharedPolicy; isGV: boo
 // MAIN EXPORT — SharedPolicyDetailView
 // ══════════════════════════════════════════════════════════════
 
-export function SharedPolicyDetailView({ policy, onBack }: { policy: SharedPolicy; onBack: () => void }) {
+export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { policy: SharedPolicy; onBack?: () => void; embedded?: boolean }) {
   // ── CORE STATE ────────────────────────────────────────────────
   const isGV = policy.policyId === 'GV-GB-001';
   useShellStore(s => s.theme);
@@ -1299,13 +1299,17 @@ export function SharedPolicyDetailView({ policy, onBack }: { policy: SharedPolic
       {/* ══ ACTION BAR ══════════════════════════════════════════ */}
       <div className="no-print flex items-center justify-between px-5 py-3 bg-white border-b border-[#E5E4E3] shrink-0 z-20 gap-3">
 
-        {/* Left — back */}
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 text-[#007970] font-montserrat font-semibold text-[12px] uppercase tracking-wider hover:underline transition-all shrink-0"
-        >
-          <ChevronLeft size={16} /> Return to Library
-        </button>
+        {/* Left — back (hidden when embedded inside another shell) */}
+        {!embedded && onBack ? (
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-[#007970] font-montserrat font-semibold text-[12px] uppercase tracking-wider hover:underline transition-all shrink-0"
+          >
+            <ChevronLeft size={16} /> Return to Library
+          </button>
+        ) : (
+          <span className="shrink-0" />
+        )}
 
         {/* Centre — Prev / current section label / Next */}
         <div className="flex items-center gap-2 min-w-0 flex-1 justify-center">

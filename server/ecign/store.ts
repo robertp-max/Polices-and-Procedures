@@ -150,13 +150,36 @@ export interface SignatureRow {
   signer_email: string; signed_at_utc: string;
   signature_png: string; signature_hash: string;
   attestation_text_hash: string;
+  network_location?: NetworkLocationMetadata;
 }
+
+export interface NetworkLocationMetadata {
+  ip_address: string;
+  city: string;
+  state_region: string;
+  country: string;
+  postal: string;
+  org_isp: string;
+  source: string;
+  captured_at: string;
+  user_agent: string;
+  lookup_status: 'resolved' | 'lookup_failed' | 'private_or_local_ip';
+  failure_reason?: string;
+}
+
 export interface AuditRow {
   event_id: string; prev_hash: string; hash: string;
   occurred_at_utc: string;
   actor: { user_id: string; name: string; role: string; email: string;
     auth_method: 'session'|'otp'|'sso'|'system'; mfa_verified_at?: string };
-  network: { ip: string; user_agent: string; geo?: unknown; device?: unknown };
+  network: {
+    ip: string;
+    user_agent: string;
+    source?: string;
+    geo?: unknown;
+    device?: unknown;
+    network_location?: NetworkLocationMetadata;
+  };
   subject: { kind: string; id: string; document_version_id?: string; document_hash?: string };
   action: string;
   payload: Record<string, unknown>;

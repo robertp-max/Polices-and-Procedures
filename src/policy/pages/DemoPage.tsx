@@ -545,7 +545,7 @@ function TaxonomyCoverView({ onViewPolicies }: { onViewPolicies: () => void }) {
                   { state: 'DRAFT', desc: 'Policy initial creation and stakeholder development.', color: '#f97316', bg: 'rgba(249,115,22,0.12)', border: 'rgba(249,115,22,0.3)' },
                   { state: 'ACTIVE', desc: 'Policy is published, in force, and operationally enforced.', color: '#00e59b', bg: 'rgba(0,229,155,0.12)', border: 'rgba(0,229,155,0.3)' },
                   { state: 'UNDER REVIEW', desc: 'Active policy currently under scheduled or triggered revision.', color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.3)' },
-                  { state: 'DEPRECATED', desc: 'Policy has been retired or superseded by new taxonomy.', color: '#9ca3af', bg: 'rgba(107,114,128,0.12)', border: 'rgba(107,114,128,0.3)' },
+                  { state: 'ARCHIVED', desc: 'Policy has been formally retired with documented justification.', color: '#9ca3af', bg: 'rgba(107,114,128,0.12)', border: 'rgba(107,114,128,0.3)' },
                 ].map((item, idx) => (
                   <div key={idx} className="relative pl-14">
                     <div className="absolute left-[-2px] w-7 h-7 rounded-full border-[6px] border-black/60 shadow-sm top-0 z-10" style={{ backgroundColor: item.color }} />
@@ -726,7 +726,7 @@ function TabOverview({ policy }: { policy: DemoPolicy }) {
   const defs = isSpecimen ? GV_DEFINITIONS : [
     { term: 'Classification Tier', definition: 'The policy priority level within the enterprise taxonomy: REQUIRED, ESSENTIAL, OPERATIONAL, or REFERENCE.' },
     { term: 'Policy Owner', definition: 'The designated individual or role responsible for maintaining, reviewing, and approving this policy artifact.' },
-    { term: 'Lifecycle Status', definition: 'The current state of the policy in the governance lifecycle: DRAFT, ACTIVE, UNDER REVIEW, or DEPRECATED.' },
+    { term: 'Lifecycle Status', definition: 'The current state of the policy in the governance lifecycle: DRAFT, REVIEW, APPROVED, PUBLISHED, or ARCHIVED.' },
     { term: 'Review Cycle', definition: 'The scheduled frequency (annual or biennial) at which this policy must be formally reviewed for continued relevance and compliance.' },
     { term: 'Access Tier', definition: 'The visibility classification (Tiers 1–4) that determines which roles can view or edit this policy.' },
     { term: 'Regulatory Cross-Reference', definition: 'The specific federal, state, or accreditation standards to which this policy maps for compliance traceability.' },

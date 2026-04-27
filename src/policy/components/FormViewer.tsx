@@ -34,6 +34,7 @@ import {
   resolvePolicyMetaList,
   validateAcknowledgmentLinks,
 } from '@/policy/services/policyLinkService';
+import { ecignApi } from '@/policy/ecign/api';
 
 // ─── FormCertificatePage ───────────────────────────────────────────
 // CI-App Internal Attestation Certificate.
@@ -1018,18 +1019,56 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
     ip: '', city: '', region: '', country: '', postal: '', loading: true,
   });
   useEffect(() => {
-    fetch('https://ipapi.co/json/')
-      .then(r => r.json())
-      .then((d: Record<string, string>) => setGeoInfo({
-        ip:      d.ip      ?? '',
-        city:    d.city    ?? '',
-        region:  d.region  ?? '',
-        country: d.country_name ?? '',
-        postal:  d.postal  ?? '',
-        org:     d.org     ?? '',
-        loading: false,
-      }))
-      .catch(() => setGeoInfo(prev => ({ ...prev, loading: false, error: 'Location unavailable' })));
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const networkInfo = await ecignApi.getNetworkInfo();
+
+        if (cancelled) return;
+        if (import.meta.env.DEV) {
+          console.info('[ecign.network] network_info_received', {
+            ip: networkInfo.ip,
+            lookupStatus: networkInfo.lookupStatus,
+            city: networkInfo.city,
+            region: networkInfo.region,
+            country: networkInfo.country,
+            postal: networkInfo.postal,
+            org: networkInfo.org,
+            reason: networkInfo.failureReason,
+          });
+        }
+        setGeoInfo({
+          ip: networkInfo.ip || 'Unavailable',
+          city: networkInfo.city || 'Unavailable',
+          region: networkInfo.region || 'Unavailable',
+          country: networkInfo.country || 'Unavailable',
+          postal: networkInfo.postal || 'Unavailable',
+          org: networkInfo.org || 'Unavailable',
+          loading: false,
+        });
+      } catch (error) {
+        if (cancelled) return;
+        if (import.meta.env.DEV) {
+          console.warn('[ecign.network] network_info_request_failed', error);
+        }
+        setGeoInfo({
+          ip: 'Unavailable',
+          city: 'Unavailable',
+          region: 'Unavailable',
+          country: 'Unavailable',
+          postal: 'Unavailable',
+          org: 'Unavailable',
+          loading: false,
+          error: 'network_info_unavailable',
+        });
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // ── Document edit tracking ────────────────────────────────────────

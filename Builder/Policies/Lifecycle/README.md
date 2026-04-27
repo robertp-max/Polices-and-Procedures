@@ -13,7 +13,13 @@ This folder is the **single, authoritative design package** for the unified Poli
 7. [07 — System Integration](07-System-Integration.md) — CES, Calendar, Audit Mode, eCIgn, Forms, Help Center
 8. [08 — Policy Lifecycle Data Model](08-Policy-Lifecycle-Data-Model.md) — entities, fields, relationships, indexes
 9. [09 — Implementation Roadmap](09-Implementation-Roadmap.md) — phased delivery plan
-10. [End-User Manual](POLICY_LIFECYCLE_USER_MANUAL.md) — practical guide for every role
+10. [10 — Developer Documentation](10-Developer-Documentation.md) — **shipped v1** module reference
+11. [11 — End-User Manual v1](11-End-User-Manual-v1.md) — **shipped v1** practical guide
+12. [End-User Manual (target architecture)](POLICY_LIFECYCLE_USER_MANUAL.md) — long-form future-state guide
+
+## Status
+
+**Implementation v1 is shipped.** The unified workspace lives at `/policy-lifecycle` with the canonical 5-state machine (DRAFT · REVIEW · APPROVED · PUBLISHED · ARCHIVED). All seeded policies are in DRAFT, created by TJ Padilla (`robertp@careindeed.com`, AI Researcher). Legacy `/drafts`, `/review`, `/publish` routes redirect here.
 
 ## Non-negotiables
 

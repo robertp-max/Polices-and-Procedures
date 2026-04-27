@@ -221,7 +221,13 @@ export function useEcignInstance(args: UseInstanceArgs) {
     finally { setBusy(null); }
   }, [instance, refresh, captureError]);
 
-  const applySignature = useCallback(async (signaturePngDataUrl: string) => {
+  const applySignature = useCallback(async (
+    signaturePngDataUrl: string,
+    evidence?: {
+      geo?: { city?: string; region?: string; country?: string; postal?: string; org?: string };
+      device?: { name?: string; manufacturer?: string; model?: string; processor?: string; os?: string; os_version?: string; platform?: string };
+    },
+  ) => {
     if (!instance) return;
     setBusy('sign');
     try {
@@ -230,6 +236,8 @@ export function useEcignInstance(args: UseInstanceArgs) {
         field_id:              args.fieldId,
         signature_png_b64:     signaturePngDataUrl,
         attestation_text_hash,
+        geo: evidence?.geo,
+        device: evidence?.device,
       }, mfaToken ?? undefined);
       await refresh(instance.instance_id);
     } catch (e) { captureError(e); }
@@ -249,6 +257,8 @@ export function useEcignInstance(args: UseInstanceArgs) {
   return {
     instance, loading, error, busy,
     acceptConsent, verifyIdentity, acknowledgeReview,
-    applySignature, lockDocument, refresh,
+    applySignature,
+    lockDocument,
+    refresh,
   };
 }

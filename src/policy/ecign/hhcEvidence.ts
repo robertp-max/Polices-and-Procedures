@@ -32,6 +32,19 @@ export interface RecordEsignArgs {
   signer_role?:       string;
   signer_email?:      string;
   signed_at?:         string;       // ISO; defaults to now()
+  network_location?: {
+    ip_address: string;
+    city: string;
+    state_region: string;
+    country: string;
+    postal: string;
+    org_isp: string;
+    source: string;
+    captured_at: string;
+    user_agent: string;
+    lookup_status: string;
+    failure_reason?: string;
+  };
 }
 
 export interface EsignEvidenceResponse {
@@ -110,6 +123,7 @@ export async function recordEsignEvidence(args: RecordEsignArgs): Promise<EsignE
       signer_role:      args.signer_role       || undefined,
       signer_email:     args.signer_email      || undefined,
       signed_at:        args.signed_at         || new Date().toISOString(),
+      network_location: args.network_location  || undefined,
     }),
   });
   const text = await res.text();

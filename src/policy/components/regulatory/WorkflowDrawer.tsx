@@ -7,9 +7,10 @@ import {
 import {
   DOMAIN_PALETTE, formatEventDate, type RegulatoryEvent, type EventProcessStep,
 } from '@/policy/data/regulatoryEvents';
+import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
 import { getFormMeta } from '@/policy/data/formsCatalog';
 import {
-  useRegulatoryExecutionStore, type FormStatus, type StepStatus,
+  useRegulatoryExecutionStore, useEventEvidence, type FormStatus, type StepStatus,
 } from '@/policy/stores/regulatoryExecutionStore';
 import { useToastStore } from './Toast';
 import { DrawerShell } from './ModalShell';
@@ -144,7 +145,6 @@ export function WorkflowBody({ event }: { event: RegulatoryEvent }) {
     </div>
   );
 }
-
 /* ─── Headline ────────────────────────────────────────── */
 function EventHeadline({ event }: { event: RegulatoryEvent }) {
   const dom = DOMAIN_PALETTE[event.domain];
@@ -153,7 +153,7 @@ function EventHeadline({ event }: { event: RegulatoryEvent }) {
       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
         <DomainBadge domain={event.domain} />
         <UrgencyChip urgency={event.urgency} compact />
-        {event.policyRefs.slice(0, 2).map(p => <PolicyRef key={p} id={p} />)}
+        {getEventDisplayModel(event).canonicalPolicyRefs.slice(0, 2).map(p => <PolicyRef key={p} id={p} />)}
       </div>
       <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
         <div className="min-w-0">
@@ -356,6 +356,8 @@ export function FormExecutionRow({
   const locked = store.isEventComplete(event.id);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const allEvidence = useEventEvidence(event.id);
+  const linkedDocs = allEvidence.filter(d => d.linkedFormId === formId);
 
   const set = (s: FormStatus, toast?: string) => {
     if (locked) return;
@@ -379,48 +381,59 @@ export function FormExecutionRow({
 
   return (
     <li
-      className="flex items-center gap-2 p-2 rounded-md border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
+      className="rounded-md border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
     >
-      <EvidenceDot status={status === 'complete' ? 'complete' : status === 'in-progress' ? 'in-progress' : status === 'missing' ? 'missing' : 'pending'} />
-      <div className="flex-1 min-w-0">
-        <p className="font-montserrat font-bold text-white text-[11.5px] truncate">{label}</p>
-        <p className="font-mono-jb text-white/45 text-[9.5px] flex items-center gap-2">
-          {showRefId && (formRefId || '—')}
-          {stored?.completedAt && (
-            <span className="text-white/35 font-roboto">
-              · by {stored.completedBy || 'User'} · {new Date(stored.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </span>
-          )}
-        </p>
-      </div>
-      <span
-        className="shrink-0 rounded-full px-2 py-0.5 font-montserrat font-bold uppercase tracking-[0.14em]"
-        style={{ fontSize: 9, background: `${palette.color}1f`, color: palette.color, border: `1px solid ${palette.color}55` }}
-      >
-        {palette.label}
-      </span>
-
-      {!locked && (
-        <div className="relative shrink-0">
-          <button
-            onClick={() => setMenuOpen(v => !v)}
-            className="rounded-md border border-white/10 px-2 py-1 text-[10px] font-montserrat font-bold text-white/70 hover:text-white hover:bg-white/[0.05] uppercase tracking-[0.12em] flex items-center gap-1"
-          >
-            Actions <ChevronRight size={10} className={menuOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
-          </button>
-          {menuOpen && (
-            <div
-              className="absolute right-0 top-full mt-1 z-10 rounded-md overflow-hidden min-w-[180px] bg-white border border-[#E5E4E3]"
-              style={{ boxShadow: '0 18px 40px -16px rgba(31,28,27,0.28), 0 2px 6px rgba(31,28,27,0.08)' }}
-            >
-              <FormMenuItem icon={<FileCheck2 size={11} />} label="Open Form" onClick={() => set('in-progress', 'Form opened')} />
-              <FormMenuItem icon={<Upload size={11} />}     label="Upload Existing" onClick={uploadAction} />
-              <FormMenuItem icon={<CheckCircle2 size={11} />} label="Mark Complete" onClick={() => set('complete', 'Form marked complete')} />
-              <FormMenuItem icon={<ShieldCheck size={11} />} label="Send for Review" onClick={() => set('requires-review', 'Sent for review')} />
-              <FormMenuItem icon={<FileWarning size={11} />} label="Flag as Missing" onClick={() => set('missing', 'Form flagged as missing')} danger />
-            </div>
-          )}
+      <div className="flex items-center gap-2 p-2">
+        <EvidenceDot status={status === 'complete' ? 'complete' : status === 'in-progress' ? 'in-progress' : status === 'missing' ? 'missing' : 'pending'} />
+        <div className="flex-1 min-w-0">
+          <p className="font-montserrat font-bold text-white text-[11.5px] truncate">{label}</p>
+          <p className="font-mono-jb text-white/45 text-[9.5px] flex items-center gap-2">
+            {showRefId && (formRefId || '—')}
+            {stored?.completedAt && (
+              <span className="text-white/35 font-roboto">
+                · by {stored.completedBy || 'User'} · {new Date(stored.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+            )}
+          </p>
         </div>
+        <span
+          className="shrink-0 rounded-full px-2 py-0.5 font-montserrat font-bold uppercase tracking-[0.14em]"
+          style={{ fontSize: 9, background: `${palette.color}1f`, color: palette.color, border: `1px solid ${palette.color}55` }}
+        >
+          {palette.label}
+        </span>
+        {!locked && (
+          <div className="relative shrink-0">
+            <button
+              onClick={() => setMenuOpen(v => !v)}
+              className="rounded-md border border-white/10 px-2 py-1 text-[10px] font-montserrat font-bold text-white/70 hover:text-white hover:bg-white/[0.05] uppercase tracking-[0.12em] flex items-center gap-1"
+            >
+              Actions <ChevronRight size={10} className={menuOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
+            </button>
+            {menuOpen && (
+              <div
+                className="absolute right-0 top-full mt-1 z-10 rounded-md overflow-hidden min-w-[180px] bg-white border border-[#E5E4E3]"
+                style={{ boxShadow: '0 18px 40px -16px rgba(31,28,27,0.28), 0 2px 6px rgba(31,28,27,0.08)' }}
+              >
+                <FormMenuItem icon={<FileCheck2 size={11} />} label="Open Form" onClick={() => set('in-progress', 'Form opened')} />
+                <FormMenuItem icon={<Upload size={11} />}     label="Upload Existing" onClick={uploadAction} />
+                <FormMenuItem icon={<CheckCircle2 size={11} />} label="Mark Complete" onClick={() => set('complete', 'Form marked complete')} />
+                <FormMenuItem icon={<ShieldCheck size={11} />} label="Send for Review" onClick={() => set('requires-review', 'Sent for review')} />
+                <FormMenuItem icon={<FileWarning size={11} />} label="Flag as Missing" onClick={() => set('missing', 'Form flagged as missing')} danger />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      {linkedDocs.length > 0 && (
+        <ul className="pb-1.5 px-2 ml-[22px] space-y-0.5 border-t border-white/[0.05] pt-1">
+          {linkedDocs.map(d => (
+            <li key={d.id} className="flex items-center gap-1.5 text-[9.5px] font-roboto text-white/50">
+              <ArrowRight size={8} className="shrink-0 text-white/30" />
+              <span className="truncate">{d.name}</span>
+            </li>
+          ))}
+        </ul>
       )}
     </li>
   );

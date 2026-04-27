@@ -4,7 +4,7 @@ import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardCheck, Network, FileEdit,
-  CheckSquare, Send, FileBarChart, PlayCircle,
+  FileBarChart, PlayCircle,
   HelpCircle, Search, ChevronLeft, Menu,
   ShieldCheck, Zap, FingerprintPattern as Fingerprint,
   ArrowUpCircle, FolderOpen,
@@ -105,9 +105,7 @@ const NAV_ITEMS: NavItem[] = [
     icon: ClipboardCheck,
   },
   { id: 'taxonomy', to: '/framework', label: 'Taxonomy', subItems: [{ to: '/framework', label: 'Framework' }, { to: '/library', label: 'Policies' }, { to: '/forms', label: 'Forms' }], icon: Network },
-  { id: 'drafts', to: '/drafts', label: 'Drafts', icon: FileEdit },
-  { id: 'review', to: '/review', label: 'Review Queue', icon: CheckSquare },
-  { id: 'publish', to: '/publish', label: 'Publishing', icon: Send },
+  { id: 'lifecycle', to: '/policy-lifecycle', label: 'Policy Lifecycle', icon: FileEdit },
   { id: 'reports', to: '/governance', label: 'Master Report', icon: FileBarChart },
   { id: 'evidence', to: '/evidence', label: 'Evidence', icon: FolderOpen },
   { id: 'hubstaff', to: '/hubstaff', label: 'Hubstaff', icon: ArrowUpCircle },
