@@ -723,36 +723,10 @@ export function eCIgnWorkspace({
     win.document.write(html);
     win.document.title = `${formId} - eCIgn Signature Packet`;
     win.document.close();
-
-    let printed = false;
-    const printWhenReady = () => {
-      if (printed) return;
-      const ready = async () => {
-        const images = Array.from(win.document.images || []);
-        await Promise.all(images.map((img) => (
-          img.complete
-            ? Promise.resolve()
-            : new Promise<void>((resolve) => {
-              img.addEventListener('load', () => resolve(), { once: true });
-              img.addEventListener('error', () => resolve(), { once: true });
-            })
-        )));
-        const fonts = (win.document as Document & { fonts?: FontFaceSet }).fonts;
-        if (fonts?.ready) {
-          await fonts.ready;
-        }
-      };
-
-      void ready().finally(() => {
-        if (printed) return;
-        printed = true;
-        win.focus();
-        win.print();
-      });
-    };
-
-    win.addEventListener('load', printWhenReady, { once: true });
-    setTimeout(printWhenReady, 900);
+    setTimeout(() => {
+      win.focus();
+      win.print();
+    }, 450);
   }, [
     localRecord,
     certId,
