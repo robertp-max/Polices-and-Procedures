@@ -61,6 +61,9 @@ const PAPER      = '#FAFBF8';
 const BORDER     = '#E5E4E3';
 const BORDER_SOFT = '#F0F2F5';
 const CANVAS_BG  = '#FCFDFF';
+const SIGNATURE_PLACEHOLDER_DATA_URL = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160"><rect width="100%" height="100%" fill="white"/><text x="16" y="98" fill="#1A3778" font-size="28" font-family="Segoe UI, Arial, sans-serif">Signature on file</text></svg>'
+)}`;
 
 /* ═══ escHtml util ══════════════════════════════════════════════════ */
 function escHtml(s: string): string {
@@ -402,7 +405,7 @@ export function eCIgnWorkspace({
   formTitle,
   formVersion,
   formInstanceId,
-  geoInfo,
+  geoInfo: _geoInfo,
   fieldEdits,
   signatures,
   secondSigTask: initialSecondSigTask,
@@ -524,6 +527,19 @@ export function eCIgnWorkspace({
   const [consentChecked, setConsentChecked] = useState(false);
   const [localTask,      setLocalTask]      = useState<SecondSigTask | null>(initialSecondSigTask);
   const certAt = useState(() => new Date().toISOString())[0];
+  const effectiveRecord = useMemo<SignatureRecord>(() => {
+    if (localRecord) return localRecord;
+    const firstKnown = signatures.values().next().value as SignatureRecord | undefined;
+    if (firstKnown) return firstKnown;
+    return {
+      fieldId,
+      signerName: DEMO_SESSION.name,
+      signerRole: DEMO_SESSION.role,
+      signerEmail: DEMO_SESSION.email,
+      signedAt: instance?.locked_at_utc || certAt,
+      signatureDataUrl: SIGNATURE_PLACEHOLDER_DATA_URL,
+    };
+  }, [localRecord, signatures, fieldId, instance, certAt]);
 
   /* ── Signature canvas — only mounted on the SIGNED screen ───────── */
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -671,9 +687,7 @@ export function eCIgnWorkspace({
     setShowSecondSig(false);
   }, [instance, formInstanceId, onRequestSecond, linkedPolicyIds, formSource, parentTaskId]);
 
-  /* ── Print packet (FINALIZE action) ─────────────────────────────── */
-  const handlePrint = useCallback(() => {
-    if (!localRecord) return;
+  const buildPacketHtml = useCallback((record: SignatureRecord) => {
     /* ── Style harvest ──────────────────────────────────────────────
      * Vite dev injects every stylesheet as an inline <style> block; in
      * production they ship as <link rel="stylesheet">. Collect BOTH so
@@ -697,7 +711,7 @@ export function eCIgnWorkspace({
     const certHtml = buildCertHtml({
       certId, certAt, formId, formTitle, formVersion, formInstanceId,
       linkedPolicyIds, linkedPolicyMeta,
-      record: localRecord,
+      record,
       eventId: hhcEvidenceResult?.event_id || hhcEventId || `EVT-FORM-${formInstanceId}`,
       workflowId: hhcEvidenceResult?.workflow_id || hhcWorkflowId,
       evidenceId: hhcEvidenceResult?.evidence_id,
@@ -713,22 +727,14 @@ export function eCIgnWorkspace({
       formHtml:   getPrintableFormHtml(),
       certHtml,
       certId,
-      signerName: localRecord.signerName,
-      signedAt:   localRecord.signedAt,
+      signerName: record.signerName,
+      signedAt:   record.signedAt,
       logoSrc:    eCIgnLogo,
       styleAssets,
     });
-    const win = window.open('', '_blank', 'width=840,height=980');
-    if (!win) return;
-    win.document.write(html);
-    win.document.title = `${formId} - eCIgn Signature Packet`;
-    win.document.close();
-    setTimeout(() => {
-      win.focus();
-      win.print();
-    }, 450);
+
+    return html;
   }, [
-    localRecord,
     certId,
     certAt,
     formId,
@@ -742,6 +748,51 @@ export function eCIgnWorkspace({
     hhcEventId,
     hhcWorkflowId,
     getPrintableFormHtml,
+  ]);
+
+  const openPacketWindow = useCallback((opts?: { fallbackDownload?: boolean }) => {
+    const html = buildPacketHtml(effectiveRecord);
+    const win = window.open('', '_blank', 'width=840,height=980');
+    if (!win) {
+      if (opts?.fallbackDownload) {
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${formId}-eCIgn-signature-packet.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      return;
+    }
+
+    win.document.write(html);
+    win.document.title = `${formId} - eCIgn Signature Packet`;
+    win.document.close();
+
+    const triggerPrint = () => {
+      win.focus();
+      win.print();
+    };
+    triggerPrint();
+    win.addEventListener('load', triggerPrint, { once: true });
+    setTimeout(() => {
+      triggerPrint();
+    }, 450);
+  }, [buildPacketHtml, effectiveRecord, formId]);
+
+  /* ── Print packet (FINALIZE action) ─────────────────────────────── */
+  const handlePrint = useCallback(() => {
+    openPacketWindow();
+  }, [openPacketWindow]);
+
+  /* ── Download packet (FINALIZE action) ──────────────────────────── */
+  const handleDownload = useCallback(() => {
+    // Save-as-PDF still uses browser print; if popup is blocked, fall back
+    // to downloading the packet HTML so users can still open/print locally.
+    openPacketWindow({ fallbackDownload: true });
+  }, [
+    openPacketWindow,
   ]);
 
   const today = new Date().toLocaleDateString('en-US', {
@@ -1206,9 +1257,9 @@ export function eCIgnWorkspace({
                   </div>
 
                   <SectionCard title="Signature" icon={<FileSignature size={13} />}>
-                    {localRecord ? (
+                    {effectiveRecord ? (
                       <div className="rounded-xl p-4" style={{ background: PAPER, border: `1px dashed ${BORDER}` }}>
-                        <img src={localRecord.signatureDataUrl} alt="Signature" className="h-16 w-full object-contain object-left" />
+                        <img src={effectiveRecord.signatureDataUrl} alt="Signature" className="h-16 w-full object-contain object-left" />
                       </div>
                     ) : (
                       <p className="font-roboto text-[12.5px]" style={{ color: MUTED }}>Signature applied on the server.</p>
@@ -1315,7 +1366,7 @@ export function eCIgnWorkspace({
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
                     <button
                       type="button"
-                      onClick={handlePrint}
+                      onClick={handleDownload}
                       className="group relative text-left rounded-2xl bg-white p-6 transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(0,0,0,0.06)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
                       style={{ border: '1px solid #BFDBFE' }}
                     >

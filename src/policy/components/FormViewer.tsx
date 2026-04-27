@@ -1160,15 +1160,6 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
     const root = formPaperRef.current;
     if (!root) return '';
     const clone = root.cloneNode(true) as HTMLDivElement;
-    const hadFormPageClass = clone.classList.contains('form-page');
-
-    // Embedded-mode shell classes can clip print output to viewport height.
-    clone.classList.remove('h-full', 'overflow-y-auto', 'overflow-auto', 'overflow-hidden');
-    if (!hadFormPageClass) clone.classList.add('form-page');
-    clone.style.height = 'auto';
-    clone.style.minHeight = '0';
-    clone.style.maxWidth = '100%';
-    clone.style.overflow = 'visible';
 
     const liveInputs = Array.from(root.querySelectorAll('input, textarea, select'));
     const clonedInputs = Array.from(clone.querySelectorAll('input, textarea, select'));
