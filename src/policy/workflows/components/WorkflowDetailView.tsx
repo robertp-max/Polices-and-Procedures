@@ -1,10 +1,16 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FormViewer } from '@/policy/components/FormViewer';
 import { CI, DOMAIN_META, RISK_META, CADENCE_LABEL } from '../brand';
 import { getWorkflow } from '@/policy/data/workflows.generated';
 import { formTitle } from '@/policy/data/formTitles.generated';
 import type { Workflow } from '@/policy/types/workflow';
+import {
+  fetchWorkflowCompletionStatus,
+  completeWorkflow,
+  type CompletionStatus,
+  type CompletionResult,
+} from '@/policy/services/hhcWorkflowCompletion';
 
 /* ══════════════════════════════════════════════════════════════════
    WorkflowDetailView — single-card tabbed workflow.
@@ -16,7 +22,7 @@ import type { Workflow } from '@/policy/types/workflow';
      "Steps" tab uses a virtualized list.
    ══════════════════════════════════════════════════════════════════ */
 
-type TabId = 'process' | 'steps' | 'forms' | 'approvals' | 'escalation' | 'audit';
+type TabId = 'process' | 'steps' | 'forms' | 'approvals' | 'escalation' | 'audit' | 'compliance';
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: 'process',    label: 'Process' },
@@ -25,6 +31,7 @@ const TABS: Array<{ id: TabId; label: string }> = [
   { id: 'approvals',  label: 'Approvals' },
   { id: 'escalation', label: 'Escalation' },
   { id: 'audit',      label: 'Audit' },
+  { id: 'compliance', label: 'Compliance' },
 ];
 
 export function WorkflowDetailView() {
@@ -150,6 +157,7 @@ export function WorkflowDetailView() {
         {tab === 'approvals'  && <ApprovalsTab wf={wf} />}
         {tab === 'escalation' && <EscalationTab wf={wf} />}
         {tab === 'audit'      && <AuditTab wf={wf} />}
+        {tab === 'compliance' && <ComplianceTab wf={wf} />}
       </div>
     </div>
   );
@@ -613,6 +621,203 @@ function AuditTab({ wf }: { wf: Workflow }) {
           {wf.policyReferences.map((p, i) => <li key={i}>{p}</li>)}
         </ul>
       </Section>
+    </div>
+  );
+}
+
+/* ── HHC Phase-1 Compliance tab ───────────────────────────────────── */
+function ComplianceTab({ wf }: { wf: Workflow }) {
+  // Demo defaults: synthesize one event_id per workflow + treat its forms as
+  // required. In a wired-in production system these would come from the live
+  // workflow execution context.
+  const defaultEventIds = useMemo(() => {
+    const seed = `EVT-${wf.id}`;
+    return [seed];
+  }, [wf.id]);
+  const requiredForms = useMemo(() => {
+    const ids = new Set<string>();
+    for (const s of wf.steps || []) for (const f of s.formIds || []) ids.add(f);
+    return Array.from(ids).slice(0, 8);
+  }, [wf.steps]);
+
+  const [eventIdsText, setEventIdsText] = useState<string>(defaultEventIds.join(','));
+  const [requiredFormsText, setRequiredFormsText] = useState<string>(requiredForms.join(','));
+  const [requiredKindsText, setRequiredKindsText] = useState<string>('form_submission');
+  const [status, setStatus] = useState<CompletionStatus | null>(null);
+  const [statusErr, setStatusErr] = useState<string | null>(null);
+  const [statusBusy, setStatusBusy] = useState(false);
+  const [completeResult, setCompleteResult] = useState<CompletionResult | null>(null);
+  const [completeErr, setCompleteErr] = useState<string | null>(null);
+  const [completeBusy, setCompleteBusy] = useState(false);
+
+  const parseList = (s: string) =>
+    s.split(',').map((x) => x.trim()).filter(Boolean);
+
+  const refresh = useCallback(async () => {
+    setStatusErr(null);
+    setStatusBusy(true);
+    try {
+      const r = await fetchWorkflowCompletionStatus(wf.id, {
+        event_ids:               parseList(eventIdsText),
+        required_forms:          parseList(requiredFormsText),
+        required_evidence_kinds: parseList(requiredKindsText),
+      });
+      setStatus(r);
+    } catch (e) {
+      setStatusErr((e as Error).message);
+    } finally {
+      setStatusBusy(false);
+    }
+  }, [wf.id, eventIdsText, requiredFormsText, requiredKindsText]);
+
+  useEffect(() => {
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wf.id]);
+
+  const onComplete = async () => {
+    setCompleteErr(null);
+    setCompleteResult(null);
+    setCompleteBusy(true);
+    try {
+      const r = await completeWorkflow(wf.id, {
+        event_ids:               parseList(eventIdsText),
+        required_forms:          parseList(requiredFormsText),
+        required_evidence_kinds: parseList(requiredKindsText),
+      });
+      setCompleteResult(r);
+      // Refresh status snapshot after attempt.
+      refresh();
+    } catch (e) {
+      setCompleteErr((e as Error).message);
+    } finally {
+      setCompleteBusy(false);
+    }
+  };
+
+  const inputStyle: React.CSSProperties = {
+    fontFamily: 'Roboto, sans-serif', fontSize: 12, color: CI.ink,
+    border: `1px solid ${CI.line}`, borderRadius: 6,
+    padding: '6px 10px', width: '100%', background: CI.paper,
+  };
+  const btnPrimary: React.CSSProperties = {
+    fontFamily: 'Montserrat, sans-serif', fontSize: 12, fontWeight: 600,
+    padding: '8px 16px', borderRadius: 6,
+    background: CI.teal, color: '#fff', border: 'none', cursor: 'pointer',
+  };
+  const btnSecondary: React.CSSProperties = {
+    ...btnPrimary, background: CI.paper, color: CI.ink,
+    border: `1px solid ${CI.line}`,
+  };
+
+  const canComplete = status?.canComplete === true;
+
+  return (
+    <div className="grid grid-cols-12 gap-6">
+      <div className="col-span-7">
+        <Section title="Compliance gate inputs">
+          <div className="grid grid-cols-1 gap-3">
+            <label style={{ display: 'block' }}>
+              <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: 11, color: CI.muted, marginBottom: 4 }}>
+                event_ids (comma-separated)
+              </div>
+              <input
+                style={inputStyle}
+                value={eventIdsText}
+                onChange={(e) => setEventIdsText(e.target.value)}
+                placeholder="EVT-..."
+                aria-label="event_ids"
+              />
+            </label>
+            <label style={{ display: 'block' }}>
+              <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: 11, color: CI.muted, marginBottom: 4 }}>
+                required_forms (comma-separated form IDs)
+              </div>
+              <input
+                style={inputStyle}
+                value={requiredFormsText}
+                onChange={(e) => setRequiredFormsText(e.target.value)}
+                placeholder="EN-FM-001,..."
+                aria-label="required_forms"
+              />
+            </label>
+            <label style={{ display: 'block' }}>
+              <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: 11, color: CI.muted, marginBottom: 4 }}>
+                required_evidence_kinds (comma-separated)
+              </div>
+              <input
+                style={inputStyle}
+                value={requiredKindsText}
+                onChange={(e) => setRequiredKindsText(e.target.value)}
+                placeholder="upload,form_submission,esign"
+                aria-label="required_evidence_kinds"
+              />
+            </label>
+            <div className="flex items-center gap-3" style={{ marginTop: 4 }}>
+              <button onClick={refresh} disabled={statusBusy} style={btnSecondary}>
+                {statusBusy ? 'Checking…' : 'Refresh status'}
+              </button>
+              <button onClick={onComplete} disabled={completeBusy || !canComplete} style={{ ...btnPrimary, opacity: canComplete ? 1 : 0.5, cursor: canComplete ? 'pointer' : 'not-allowed' }}>
+                {completeBusy ? 'Submitting…' : 'Mark workflow complete'}
+              </button>
+            </div>
+            {statusErr && (
+              <div style={{ ...bodyStyle, color: '#9F1239' }}>Status error: {statusErr}</div>
+            )}
+            {completeErr && (
+              <div style={{ ...bodyStyle, color: '#9F1239' }}>Complete error: {completeErr}</div>
+            )}
+            {completeResult && completeResult.completed && (
+              <div style={{ ...bodyStyle, color: '#047857' }}>
+                ✓ WORKFLOW_COMPLETED · by {completeResult.completed_by} at{' '}
+                {new Date(completeResult.completed_at).toLocaleString()} ·{' '}
+                {completeResult.approved_count} approved evidence rows
+              </div>
+            )}
+            {completeResult && !completeResult.completed && (
+              <div style={{ ...bodyStyle, color: '#9F1239' }}>
+                ✗ COMPLETION_BLOCKED · audit row written. See Status panel for missing items.
+              </div>
+            )}
+          </div>
+        </Section>
+      </div>
+      <div className="col-span-5">
+        <Section title="Live status">
+          {status ? (
+            <div className="flex flex-col gap-3">
+              <div style={{
+                ...bodyStyle,
+                color: status.canComplete ? '#047857' : '#9F1239',
+                fontWeight: 600,
+              }}>
+                {status.canComplete ? 'READY TO COMPLETE' : 'BLOCKED'}
+              </div>
+              <KeyValue label="Approved evidence rows" value={String(status.approved_count)} />
+              <KeyValue label="Missing forms" value={status.missing_forms.join(', ') || '—'} />
+              <KeyValue label="Missing evidence kinds" value={status.missing_evidence_kinds.join(', ') || '—'} />
+              <KeyValue label="Events with no evidence" value={status.incomplete_events.join(', ') || '—'} />
+              <Section title={`Pending approvals (${status.pending_approvals.length})`} compact>
+                {status.pending_approvals.length === 0 ? (
+                  <div style={{ ...bodyStyle, color: CI.muted }}>None.</div>
+                ) : (
+                  <ul style={listStyle}>
+                    {status.pending_approvals.map((p) => (
+                      <li key={p.evidence_id}>
+                        {p.event_id} · {p.form_id ?? '—'} · {p.status}/{p.signature_status} · {p.evidence_id}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Section>
+            </div>
+          ) : (
+            <div style={{ ...bodyStyle, color: CI.muted }}>
+              {statusBusy ? 'Loading…' : 'No status yet.'}
+            </div>
+          )}
+        </Section>
+      </div>
     </div>
   );
 }

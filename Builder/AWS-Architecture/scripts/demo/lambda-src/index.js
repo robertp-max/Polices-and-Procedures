@@ -46,6 +46,8 @@ exports.handler = async (event) => {
     if (route === 'POST /uploads/{upload_id}/promote')       return await uploadPromote(event);
     if (route === 'POST /esign/complete')                    return await esignComplete(event);
     if (route === 'POST /forms/submit')                      return await formSubmit(event);
+    if (route === 'GET /workflows/{workflow_id}/completion-status') return await workflowCompletionStatus(event);
+    if (route === 'POST /workflows/{workflow_id}/complete')  return await workflowComplete(event);
     if (route === 'GET /events/{event_id}/files')            return await listFiles(event);
     if (route === 'GET /files/{evidence_id}/download')       return await downloadFile(event);
     if (route === 'GET /healthz')                            return ok({ ok: true, ts: now() });
@@ -635,5 +637,147 @@ async function formSubmit(event) {
     s3_bucket: PROD_BUCKET, s3_key, sha256,
     policy_id, workflow_id, event_id, form_id,
     requires_signature: requiresSig,
+  });
+}
+
+
+// -- Slice D: Workflow completion enforcement ---------------------
+//
+// Pattern: client passes the list of event_ids that compose this workflow
+// (plus optional `required_forms` / `required_evidence_kinds`). The Lambda
+// gathers EVIDENCE rows under EVENT#<id> partitions, computes:
+//   * missing_forms      — required form_ids with no APPROVED_EVIDENCE row
+//   * missing_evidence   — required evidence_kinds not yet APPROVED_EVIDENCE
+//   * pending_approvals  — any rows still PENDING_APPROVAL / signature PENDING
+//   * incomplete_events  — event_ids with zero evidence at all
+// canComplete=true only when all four arrays are empty.
+
+async function gatherEventEvidence(event_ids) {
+  const map = {};
+  for (const eid of event_ids) {
+    const r = await ddb.send(new QueryCommand({
+      TableName: TABLE,
+      KeyConditionExpression: 'pk = :pk AND begins_with(sk, :p)',
+      ExpressionAttributeValues: { ':pk': `EVENT#${eid}`, ':p': 'EVIDENCE#' },
+    }));
+    map[eid] = r.Items || [];
+  }
+  return map;
+}
+
+function computeCompletion({ event_ids, evidenceByEvent, required_forms, required_evidence_kinds }) {
+  const allItems = Object.values(evidenceByEvent).flat();
+
+  const approved = allItems.filter((it) => it.status === 'APPROVED_EVIDENCE');
+  const pending  = allItems.filter((it) => it.status === 'PENDING_APPROVAL' || it.signature_status === 'PENDING');
+
+  const approvedFormIds = new Set(approved.map((it) => it.form_id).filter(Boolean));
+  const approvedKinds   = new Set(approved.map((it) => it.evidence_kind).filter(Boolean));
+
+  const missing_forms          = (required_forms || []).filter((f) => !approvedFormIds.has(f));
+  const missing_evidence_kinds = (required_evidence_kinds || []).filter((k) => !approvedKinds.has(k));
+  const incomplete_events      = event_ids.filter((eid) => (evidenceByEvent[eid] || []).length === 0);
+  const pending_approvals      = pending.map((it) => ({
+    evidence_id: it.evidence_id,
+    event_id:    it.event_id,
+    form_id:     it.form_id || null,
+    status:      it.status,
+    signature_status: it.signature_status,
+  }));
+
+  const canComplete = missing_forms.length === 0
+                   && missing_evidence_kinds.length === 0
+                   && incomplete_events.length === 0
+                   && pending_approvals.length === 0;
+
+  return { canComplete, missing_forms, missing_evidence_kinds, incomplete_events, pending_approvals, approved_count: approved.length };
+}
+
+// GET /workflows/{workflow_id}/completion-status?event_ids=a,b&required_forms=X,Y&required_evidence_kinds=upload,form_submission
+async function workflowCompletionStatus(event) {
+  const workflow_id = event.pathParameters?.workflow_id;
+  if (!workflow_id) return fail('missing:workflow_id', 422);
+
+  const qs = event.queryStringParameters || {};
+  const event_ids = String(qs.event_ids || '').split(',').map((s) => s.trim()).filter(Boolean);
+  if (event_ids.length === 0) return fail('missing:event_ids', 422);
+
+  const required_forms          = String(qs.required_forms          || '').split(',').map((s) => s.trim()).filter(Boolean);
+  const required_evidence_kinds = String(qs.required_evidence_kinds || '').split(',').map((s) => s.trim()).filter(Boolean);
+
+  const evidenceByEvent = await gatherEventEvidence(event_ids);
+  const result = computeCompletion({ event_ids, evidenceByEvent, required_forms, required_evidence_kinds });
+
+  return ok({ workflow_id, ...result });
+}
+
+// POST /workflows/{workflow_id}/complete
+// Body: { event_ids: string[], required_forms?: string[], required_evidence_kinds?: string[], primary_event_id?: string }
+// Writes either WORKFLOW_COMPLETED (success) or COMPLETION_BLOCKED (failure) audit
+// to the primary_event_id (default: first event_id).
+async function workflowComplete(event) {
+  const workflow_id = event.pathParameters?.workflow_id;
+  if (!workflow_id) return fail('missing:workflow_id', 422);
+  const body = parseBody(event);
+  const actor = actorFrom(event);
+
+  const event_ids = Array.isArray(body.event_ids) ? body.event_ids.filter(Boolean) : [];
+  if (event_ids.length === 0) return fail('missing:event_ids', 422);
+  const primary_event_id = body.primary_event_id || event_ids[0];
+
+  const evidenceByEvent = await gatherEventEvidence(event_ids);
+  const result = computeCompletion({
+    event_ids,
+    evidenceByEvent,
+    required_forms:          body.required_forms || [],
+    required_evidence_kinds: body.required_evidence_kinds || [],
+  });
+
+  if (!result.canComplete) {
+    await writeAudit({
+      event_id: primary_event_id,
+      action: 'COMPLETION_BLOCKED',
+      actor,
+      workflow_id,
+      after_status: 'BLOCKED',
+      source_system: body.source_system || 'hhc',
+    });
+    return ok({ workflow_id, completed: false, ...result }, 409);
+  }
+
+  // Persist a workflow completion marker (one row per workflow under a synthetic pk).
+  const ts = now();
+  await ddb.send(new PutCommand({
+    TableName: TABLE,
+    Item: {
+      pk: `WORKFLOW#${workflow_id}`,
+      sk: `COMPLETION#${ts}`,
+      type: 'WORKFLOW_COMPLETION',
+      workflow_id,
+      event_ids,
+      completed_by: actor.actor_id,
+      completed_role: actor.actor_role,
+      completed_at: ts,
+      approved_count: result.approved_count,
+      source_system: body.source_system || 'hhc',
+    },
+  }));
+
+  await writeAudit({
+    event_id: primary_event_id,
+    action: 'WORKFLOW_COMPLETED',
+    actor,
+    workflow_id,
+    after_status: 'COMPLETED',
+    source_system: body.source_system || 'hhc',
+  });
+
+  return ok({
+    workflow_id,
+    completed: true,
+    completed_at: ts,
+    completed_by: actor.actor_id,
+    approved_count: result.approved_count,
+    event_ids,
   });
 }
