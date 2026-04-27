@@ -12,6 +12,7 @@ import {
   ChevronRight, ArrowLeft, Paperclip,
 } from 'lucide-react';
 import { useShellStore } from '@/policy/stores/uiStore';
+import { PolicyAppendicesPanel } from '@/policy/components/PolicyAppendicesPanel';
 
 // ─── ALL 70 CL POLICY IDS ─────────────────────────────────────────────────────
 export const CL_POLICY_IDS: string[] = [
@@ -1253,21 +1254,7 @@ function ViewReferences({ pc }: { pc: PolicyContent }) {
 }
 
 function ViewAppendices({ pc }: { pc: PolicyContent }) {
-  return (
-    <div className="pb-12">
-      <Card>
-        <SectionTitle icon={Paperclip} title="Appendices & Forms" />
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-          <Paperclip className="mx-auto mb-4 text-gray-300" size={48} />
-          <p className="text-lg font-montserrat font-bold text-gray-500 mb-2">Clinical Forms Library</p>
-          <p className="text-sm text-gray-400 max-w-md mx-auto">
-            Standardized clinical forms and appendices for {pc.id} are provided as separate controlled documents
-            within the clinical records management system. Contact the Director of Nursing for access.
-          </p>
-        </div>
-      </Card>
-    </div>
-  );
+  return <PolicyAppendicesPanel policyId={pc.id} />;
 }
 
 // ─── MAIN EXPORT ──────────────────────────────────────────────────────────────
@@ -1363,7 +1350,7 @@ export function CLPolicyDetailView() {
       </div>
 
       {/* TAB BAR */}
-      <div className="border-b border-gray-200 bg-white px-6 overflow-x-auto">
+      <div className="border-b border-gray-200 bg-gray-50 px-6 overflow-x-auto">
         <nav className="flex gap-1 -mb-px min-w-max">
           {NAV_TABS.map(({ id, label, Icon }) => (
             <button
@@ -1372,7 +1359,7 @@ export function CLPolicyDetailView() {
               className={`flex items-center gap-2 px-4 py-4 text-sm font-montserrat font-bold whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === id
                   ? 'border-[#D4AF37] text-[#D4AF37]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
               }`}
             >
               <Icon size={15} />
@@ -1383,7 +1370,7 @@ export function CLPolicyDetailView() {
       </div>
 
       {/* CONTENT */}
-      <div className="bg-[#F0F4F8] p-6 min-h-[400px]">
+      <div className="bg-[#FAFBF8] p-6 min-h-[400px]">
         {renderContent()}
       </div>
 

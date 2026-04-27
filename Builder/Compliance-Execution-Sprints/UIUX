@@ -1,0 +1,137 @@
+# Compliance Execution Sprint System (CES) - UI/UX Specification
+
+This specification outlines the enterprise-grade UI/UX architecture for the Compliance Execution Sprint System (CES). It is strictly compliance-driven, operationally explicit, and designed for audit-defensibility.
+
+## 1. UI Architecture
+
+The application structure follows a strict compliance execution hierarchy:
+*   **Global Navigation:** Side navigation with core modules: Dashboard, Sprint Execution Board, Compliance Calendar, Workload Distribution, Executive Reports.
+*   **Context Bar:** Top bar displaying the Active Sprint (e.g., "Sprint 14: Apr 15 – Apr 28"), Global Compliance Search, User Profile, and Urgent Escalations.
+*   **Main Content Area:** Max-width constrained (`max-w-[1440px]`), clean white workspace, strong whitespace (`p-8`), professional rounded containers, no clutter.
+*   **Right-Side Panel (Workflow Detail Drawer):** Slide-out pane for deep-dive Execution Unit actions, evidence upload, and signature capture—keeping the user anchored in the board context.
+
+## 2. Screen-by-Screen Layout
+
+### Screen A: CES Dashboard (Executive & Overview)
+*   **Compliance Risk Heatmap:** High-level domain risk (Clinical, Compliance, HR, Governance) colored Green (stable), Yellow (attention), or Red (risk).
+*   **Hero Section Metrics:** Compliance Completion Rate, Audit Readiness Score (out of 100), Active Blockers (detailed), Signature SLAs Missed.
+*   **Upcoming Deadlines:** Execution Units reaching critical thresholds in the next 48 hours.
+*   **Sprint Progress:** Sequential flow chart tracking volume across phases: Preparation → Documentation → Review → Signature → Audit.
+
+### Screen B: Sprint Execution Board
+*   **Layout:** Six fixed states: Upcoming, Ready, In Progress, Awaiting Signature, Blocked, Completed.
+*   **Grouping (Swimlanes):** Grouped by triggering Event → Workflow. Row headers indicate the parent event.
+*   **Execution Unit Visibility:** Every unit on the board displays:
+    *   Workflow Phase: `[ PREPARATION | DOCUMENTATION | REVIEW | SIGNATURE | AUDIT ]`
+    *   Compliance State: `[ Pending | In Progress | Awaiting Signature | Blocked | Completed ]`
+    *   Audit Readiness: `[ Not Ready | Partial | Ready ]`
+*   **Signature Enforcement (Awaiting Signature column):**
+    *   Displays all required signers (avatars/initials).
+    *   Per-signer status badge: `✅ Signed` / `⏳ Pending` / `⚠️ Overdue`.
+    *   Escalation Timer prominently displayed (e.g., `Escalates in 2 Days` or `Overdue by 1 Day`).
+*   **Blocked State Clarity:** Units in the "Blocked" column must visibly state the explicit reason: `Missing Signature (Administrator)`, `Missing Form (QA-FM-024)`, `Dependency Incomplete`, or `Awaiting External Input`. Color alone is not sufficient.
+
+### Screen C: Sprint Compliance Calendar
+*   **Layout:** 14-day temporal distribution of the sprint cycle.
+*   **Real System Anchors:**
+    *   **Event-Level Markers:** Top-level anchors triggering workflows.
+    *   **Phase Distribution:** Visual indicators of when Preparation vs. Signature phases are scheduled.
+    *   **Signature Windows:** Highlighted background periods indicating when executive signatures must clear.
+    *   **Recurring Units:** Distinct branded icons for repeating compliance events.
+    *   **Monthly Retrospective:** Specific shaded marker block spanning the designated retrospective day.
+
+### Screen D: Workflow Detail View (Slide-out Drawer)
+*   **Layout:** Vertical timeline showing the non-skippable path (Preparation → Documentation → Review → Signature → Audit).
+*   **Evidence Status Panel (CRITICAL):**
+    *   **Required Forms:** `[ 2 / 3 Complete ]`
+    *   **Missing Forms:** Bulleted actionable list (e.g., *Requires QA-FM-024*).
+    *   **Signatures:** `[ 1 / 2 Complete ]`
+    *   **Audit Index:** `[ ✔ Created | ❌ Not Created ]`
+*   **Action Area:** Contextual buttons based on state. Enforced compliance: Actions that lack prerequisites are disabled with hover tooltip reasoning (e.g., "Cannot complete: Missing forms").
+
+### Screen E: Workload & Assignment Distribution
+*   **Layout:** Grid reporting owner capacity and role coverage.
+*   **Columns:** Owner Name, Role, Allocated Execution Units, Overdue Units, Pending Signatures, Capacity Risk Indicator.
+*   **Purpose:** Identify bottleneck risks (e.g., Administrator owes 15 signatures).
+
+### Screen F: Metrics & Executive Reporting
+*   **Layout:** Clean, enterprise-grade charts.
+*   **Sections:** Completion & On-time tracking, Blocked Resolution Time, Audit Readiness, Signature SLA Trends, Carry-over Aging.
+
+## 3. Component List
+
+*   **Global Layout:** `SidebarNavigation`, `TopContextBar`, `SprintSelector`.
+*   **Core Execution:** `ExecutionUnit`, `BoardColumn`, `EventSwimlane`, `WorkflowDrawer`.
+*   **Indicators & Badges:** `ComplianceStateBadge`, `PhaseIndicator`, `AuditReadinessTag`, `BlockedReasonLabel`, `SignatureEscalationTimer`.
+*   **Dashboard Visuals:** `DomainRiskHeatmap`, `SprintProgressFlow`, `AuditScoreRing`.
+*   **Drawer Elements:** `EvidenceStatusPanel`, `NonSkippableTimeline`, `ComplianceActionPanel`.
+*   **Calendar:** `ComplianceGrid`, `EventAnchorMarker`, `SignatureWindowBlock`.
+
+## 4. Enhanced Data Model per Component
+
+*   **`ExecutionUnit` (Board Item):**
+    *   Workflow Title (e.g., "QAPI Monthly Review")
+    *   Parent Event Tag
+    *   Workflow Phase (`Documentation`, `Signature`, etc.)
+    *   Compliance State
+    *   Audit Readiness (`Not Ready`, `Partial`, `Ready`)
+    *   Blocked Reason (if applicable)
+    *   Signatures block: Signer list, Status per signer, Escalation Timer
+*   **`EvidenceStatusPanel`:**
+    *   Required Forms count vs fulfilled
+    *   Array of missing dependencies
+    *   Signature fulfillment ratio
+    *   Audit index status boolean
+*   **`DomainRiskHeatmap`:**
+    *   Domain strings (`Clinical`, `Compliance`, `HR`, `Governance`) mapped to risk thresholds (`Green`, `Yellow`, `Red`).
+
+## 5. Interaction Behavior & Enforcement
+
+*   **Strict Enforcement:** UI interactions physically prevent compliance violations.
+    *   Missing evidence disables phase advancement. Hovering over the disabled button reveals text: `"Upload QA-FM-024 to advance"`
+    *   Dragging an `ExecutionUnit` to "Completed" before receiving all signatures results in a physical snap-back to the previous column, accompanied by a bold inline warning: `"Signatures required before completion."`
+    *   You cannot skip phases. Interacting with the phase timeline strictly restricts progression to the next adjacent sequential step.
+*   **Action Clarity:** Blocked items cannot be cleared without satisfying the specific dependency listed in the `BlockedReasonLabel`.
+
+## 6. Visual Design System
+
+*   **Brand & Tone:** Enterprise-grade, expensive, trustworthy, explicit. No playful elements, no abstract glassmorphism, no generic kanban cues.
+*   **Palette:**
+    *   **Workspace:** White/Canvas (`#FFFFFF` to `#F9FAFB`).
+    *   **Primary Accent:** Navy (`#1A3778`) for high-level hierarchy, active selections, and navigation.
+    *   **Action Accent:** Orange (`#F04B22`) strictly reserved for urgent escalation, required signatures, and focus calls.
+    *   **Heatmap / Status:** Semantic Muted variants (Forest Green, Amber/Mustard, Crimson).
+*   **Typography:** highly legible, professional sans-serif. Strong weight contrast (bold data, medium headers, normal metadata). Minimum font size `12px` to prevent low-visibility compliance failure.
+*   **Structure:** Defined by ample whitespace, crisp subtle drop-shadows to indicate elevation (drawers above board), and distinct rounded corners (`rounded-lg` containers).
+
+## 7. Recommended React/Tailwind Component Structure
+
+\`\`\`text
+src/
+  features/
+    ces/
+      components/
+        board/
+          SprintExecutionBoard.tsx       # Manages columns and enforced DND context
+          ComplianceColumn.tsx           # Fixed states (Upcoming, Blocked, etc.)
+          ExecutionUnit.tsx              # Granular compliance object instance
+          EventSwimlane.tsx              # Rows grouping Workflows by triggering Event
+        dashboard/
+          CesExecutiveDashboard.tsx      # Main executive viewport
+          DomainRiskHeatmap.tsx          # 4-quadrant domain compliance status
+          ComplianceProgressFlow.tsx     # Funnel visualization of sprint volume
+        calendar/
+          ComplianceCalendar.tsx         # 14-day temporal distribution
+          EventAnchorMarker.tsx          # Top-level event identifiers
+          SignatureWindowBlock.tsx       # SLA highlight periods
+        details/
+          WorkflowDrawer.tsx             # Focused slide-out panel
+          EvidenceStatusPanel.tsx        # form tracking, missing items, audit index
+          NonSkippableTimeline.tsx       # Visual tracker for Prep -> Audit
+          ComplianceActionPanel.tsx      # Buttons governed by prerequisite logic
+      layouts/
+        CesLayout.tsx                    # Surrounding sidebar + application state context
+      hooks/
+        useExecutionEnforcement.ts       # Rules engine rejecting invalid state transitions
+        useEvidenceTracker.ts            # Hook correlating requirements vs filled forms
+\`\`\`

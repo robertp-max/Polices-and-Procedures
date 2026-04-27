@@ -5,6 +5,1969 @@
 import type { Workflow, WorkflowCardProjection } from '@/policy/types/workflow';
 
 export const WORKFLOWS: Record<string, Workflow> = {
+  "CL-WF-26": {
+    "id": "CL-WF-26",
+    "domain": "CL",
+    "title": "PLAN OF CARE AUDIT",
+    "sourceMarkdown": "## CL-WF-26 — PLAN OF CARE AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-005 Plan of Care; CL-PA-007 Care Coordination; 42 CFR § 484.60; 42 CFR § 484.55\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly stratified-sample audit of active Plans of Care to verify physician signature timeliness, goal/intervention alignment, individualization, update cadence, and discipline coverage. Consumes evidence produced by CL-WF-04 (SOC), CL-WF-06 (POC establishment), CL-WF-07 (orders), and CL-WF-18 (recert/ROC). Findings feed QA-WF-03 and CO-WF-04.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Calendar monthly (first business week)\r\n- Conditional: spike in claim denials referencing POC defects → audit triggered immediately\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** QA Reviewer (RN)\r\n- **Supporting:** Clinical Manager, Medical Records\r\n- **Approval:** Clinical Manager (audit report); Compliance Officer (CAP if systemic)\r\n\r\n### 5. INPUTS\r\n- Active POC roster from EMR (population frame)\r\n- Sample size: 10% of active episodes, minimum 10, oversample any episode flagged by CL-WF-04 or CL-WF-18\r\n- Source workflows: CL-WF-04, CL-WF-06, CL-WF-07, CL-WF-18\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull active episode list and apply stratified sampling (cert/recert/ROC strata) | QA Reviewer | CO-FM-022 | Day 1 |\r\n| 2 | Score each POC against checklist (signature ≤30 days, goals SMART, interventions discipline-specific) | QA Reviewer | CO-FM-021 | Day 1–3 |\r\n| 3 | Verify physician signature timestamps from CL-WF-06 evidence packet | QA Reviewer | CL-FM-005 | Day 3 |\r\n| 4 | Compute domain pass/fail rates and itemize defects | QA Reviewer | CO-FM-024 | Day 4 |\r\n| 5 | Issue Corrective Action for any episode-level failure | Clinical Mgr | QA-FM-005 | Day 5 |\r\n| 6 | File audit report; queue findings for QA-WF-03 packet | QA Reviewer | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, CL-FM-005, QA-FM-005, QA-FM-025\r\n\r\n### 8. APPROVALS\r\nClinical Manager signs audit report. Compliance Officer co-signs if defect rate >10% (systemic).\r\n\r\n### 9. OUTPUTS\r\nSigned Plan of Care Audit Report (CO-FM-024) with defect rate, episode-level findings, CAPs issued, and trend chart vs. prior 3 audits. Filed to /audit/<YYYY>/CL/CL-WF-26/.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly cycle completes within 7 business days of trigger. Findings must reach QA-WF-03 packet ≥5 business days before quarterly meeting.\r\n\r\n### 11. ESCALATION LOGIC\r\nDefect rate >10% or any unsigned POC > 30 days → immediate escalation to Compliance Officer; CAP routed via CO-WF-04. Repeat failure of same clinician across 2 consecutive cycles → HR-WF-09 disciplinary path. Findings always feed QA-WF-03 and CO-WF-22.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed monthly cycle → blocks QA-WF-03 closure (audit-readiness gate). Sample size below threshold → audit invalid; re-run required. Failure to escalate >10% defect rate → False Claims Act exposure via CL-WF-04/CL-WF-06.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nAppend-only audit log per cycle: sampling frame size, sample IDs, scoring sheets, defect register, CAP register, sign-off. Sample evidence retained ≥6 years. Cross-referenced to CL-WF-06, CL-WF-18, CO-WF-04, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-005 Plan of Care; CL-PA-007 Care Coordination; 42 CFR § 484.60; 42 CFR § 484.55"
+    ],
+    "policyRefs": [
+      "CL-PA-005",
+      "CL-PA-007"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.60",
+      "42 CFR § 484.55"
+    ],
+    "processOverview": "Monthly stratified-sample audit of active Plans of Care to verify physician signature timeliness, goal/intervention alignment, individualization, update cadence, and discipline coverage. Consumes evidence produced by CL-WF-04 (SOC), CL-WF-06 (POC establishment), CL-WF-07 (orders), and CL-WF-18 (recert/ROC). Findings feed QA-WF-03 and CO-WF-04.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Calendar monthly (first business week)"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: spike in claim denials referencing POC defects → audit triggered immediately"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "QA Reviewer (RN)"
+      ],
+      "supporting": [
+        "Clinical Manager",
+        "Medical Records"
+      ],
+      "approval": [
+        "Clinical Manager (audit report)",
+        "Compliance Officer (CAP if systemic)"
+      ]
+    },
+    "inputs": [
+      "Active POC roster from EMR (population frame)",
+      "Sample size: 10% of active episodes, minimum 10, oversample any episode flagged by CL-WF-04 or CL-WF-18",
+      "Source workflows: CL-WF-04, CL-WF-06, CL-WF-07, CL-WF-18"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull active episode list and apply stratified sampling (cert/recert/ROC strata)",
+        "role": "QA Reviewer",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Score each POC against checklist (signature ≤30 days, goals SMART, interventions discipline-specific)",
+        "role": "QA Reviewer",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 1–3"
+      },
+      {
+        "order": 3,
+        "action": "Verify physician signature timestamps from CL-WF-06 evidence packet",
+        "role": "QA Reviewer",
+        "formRaw": "CL-FM-005",
+        "formIds": [
+          "CL-FM-005"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Compute domain pass/fail rates and itemize defects",
+        "role": "QA Reviewer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Issue Corrective Action for any episode-level failure",
+        "role": "Clinical Mgr",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 6,
+        "action": "File audit report; queue findings for QA-WF-03 packet",
+        "role": "QA Reviewer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-005",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005",
+      "QA-FM-025"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, CL-FM-005, QA-FM-005, QA-FM-025",
+    "approvals": [
+      {
+        "description": "Clinical Manager signs audit report. Compliance Officer co-signs if defect rate >10% (systemic).",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager signs audit report. Compliance Officer co-signs if defect rate >10% (systemic).",
+    "outputs": "Signed Plan of Care Audit Report (CO-FM-024) with defect rate, episode-level findings, CAPs issued, and trend chart vs. prior 3 audits. Filed to /audit/<YYYY>/CL/CL-WF-26/.",
+    "sla": "Monthly cycle completes within 7 business days of trigger. Findings must reach QA-WF-03 packet ≥5 business days before quarterly meeting.",
+    "escalationLogic": "Defect rate >10% or any unsigned POC > 30 days → immediate escalation to Compliance Officer; CAP routed via CO-WF-04. Repeat failure of same clinician across 2 consecutive cycles → HR-WF-09 disciplinary path. Findings always feed QA-WF-03 and CO-WF-22.",
+    "failureConditions": "Missed monthly cycle → blocks QA-WF-03 closure (audit-readiness gate). Sample size below threshold → audit invalid; re-run required. Failure to escalate >10% defect rate → False Claims Act exposure via CL-WF-04/CL-WF-06.",
+    "auditRequirements": "Append-only audit log per cycle: sampling frame size, sample IDs, scoring sheets, defect register, CAP register, sign-off. Sample evidence retained ≥6 years. Cross-referenced to CL-WF-06, CL-WF-18, CO-WF-04, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-06",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-07",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-18",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-22",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 6,
+      "policyCount": 2,
+      "declaredRisk": "immediate_jeopardy",
+      "requiresGoverningBody": false
+    }
+  },
+  "CL-WF-27": {
+    "id": "CL-WF-27",
+    "domain": "CL",
+    "title": "OASIS ACCURACY AUDIT",
+    "sourceMarkdown": "## CL-WF-27 — OASIS ACCURACY AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-003 OASIS; 42 CFR § 484.45; 42 CFR § 484.55\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly stratified audit of OASIS submissions for accuracy (M-item logic, ICD-10 alignment, response consistency, transmission timeliness). Audits work product of CL-WF-05 (OASIS completion/transmission). Findings feed CL-WF-25 (clinician competency), QA-WF-03, and FN-WF-15 (RCM revenue integrity).\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly, anchored to OASIS submission cutoff\r\n- Conditional: HHRG/HIPPS revenue variance >5% vs. prior month → audit triggered\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** OASIS QA Specialist\r\n- **Supporting:** Clinical Manager, Coder\r\n- **Approval:** Clinical Manager; Compliance Officer for systemic\r\n\r\n### 5. INPUTS\r\n- All OASIS-D assessments transmitted that month (population frame)\r\n- Sample: 10% per clinician, minimum 5 per clinician, all clinicians whose error rate in prior month was >5%\r\n- Source workflow: CL-WF-05\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull transmitted OASIS dataset; apply stratified sampling (per-clinician strata) | OASIS QA | CO-FM-022 | Day 1 |\r\n| 2 | Re-score each sampled OASIS against source documentation | OASIS QA | CL-FM-002 | Day 1–4 |\r\n| 3 | Validate M0090 transmission timing and accepted/rejected status | OASIS QA | CL-FM-031 | Day 3 |\r\n| 4 | Reconcile HHRG/HIPPS impact for any item changes | Coder | FN-FM-006 | Day 4 |\r\n| 5 | Issue clinician-level remediation requirement → CL-WF-25 | Clinical Mgr | HR-FM-016 | Day 5 |\r\n| 6 | Compile audit report with per-clinician scorecard and aggregate defect rate | OASIS QA | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, CL-FM-002, CL-FM-031, HR-FM-016, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nClinical Manager signs report; OASIS QA attests scoring; Compliance Officer reviews if defect rate >7% or revenue impact material.\r\n\r\n### 9. OUTPUTS\r\nPer-clinician OASIS Accuracy Scorecard, aggregate defect register, HHRG impact analysis, remediation queue for CL-WF-25.\r\n\r\n### 10. SLA / DEADLINES\r\nCycle completes within 7 business days. Corrected OASIS resubmissions filed within 30 days of detection per CMS.\r\n\r\n### 11. ESCALATION LOGIC\r\nPer-clinician error rate >7% → mandatory CL-WF-25 competency revalidation. Any pattern of upcoding → CO-WF-08 (FWA) investigation. Material HHRG impact → FN-WF-15 RCM self-audit.\r\n\r\n### 12. FAILURE CONDITIONS\r\nSkipped audit cycle blocks QA-WF-03 quarterly closure. Failure to file corrected OASIS within 30 days → CMS payment integrity exposure. Failure to remediate clinician >7% error → CL-WF-05 quality regression.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: sampling frame size, sample IDs, per-clinician scoring, defect register, HHRG impact, CAP register. Cross-referenced to CL-WF-05, CL-WF-25, FN-WF-15, QA-WF-03. Retention ≥6 years.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-003 OASIS; 42 CFR § 484.45; 42 CFR § 484.55"
+    ],
+    "policyRefs": [
+      "CL-PA-003"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.45",
+      "42 CFR § 484.55"
+    ],
+    "processOverview": "Monthly stratified audit of OASIS submissions for accuracy (M-item logic, ICD-10 alignment, response consistency, transmission timeliness). Audits work product of CL-WF-05 (OASIS completion/transmission). Findings feed CL-WF-25 (clinician competency), QA-WF-03, and FN-WF-15 (RCM revenue integrity).",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly, anchored to OASIS submission cutoff"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: HHRG/HIPPS revenue variance >5% vs. prior month → audit triggered"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "OASIS QA Specialist"
+      ],
+      "supporting": [
+        "Clinical Manager",
+        "Coder"
+      ],
+      "approval": [
+        "Clinical Manager",
+        "Compliance Officer for systemic"
+      ]
+    },
+    "inputs": [
+      "All OASIS-D assessments transmitted that month (population frame)",
+      "Sample: 10% per clinician, minimum 5 per clinician, all clinicians whose error rate in prior month was >5%",
+      "Source workflow: CL-WF-05"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull transmitted OASIS dataset; apply stratified sampling (per-clinician strata)",
+        "role": "OASIS QA",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Re-score each sampled OASIS against source documentation",
+        "role": "OASIS QA",
+        "formRaw": "CL-FM-002",
+        "formIds": [
+          "CL-FM-002"
+        ],
+        "deadline": "Day 1–4"
+      },
+      {
+        "order": 3,
+        "action": "Validate M0090 transmission timing and accepted/rejected status",
+        "role": "OASIS QA",
+        "formRaw": "CL-FM-031",
+        "formIds": [
+          "CL-FM-031"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Reconcile HHRG/HIPPS impact for any item changes",
+        "role": "Coder",
+        "formRaw": "FN-FM-006",
+        "formIds": [
+          "FN-FM-006"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Issue clinician-level remediation requirement → CL-WF-25",
+        "role": "Clinical Mgr",
+        "formRaw": "HR-FM-016",
+        "formIds": [
+          "HR-FM-016"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 6,
+        "action": "Compile audit report with per-clinician scorecard and aggregate defect rate",
+        "role": "OASIS QA",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-002",
+      "CL-FM-031",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006",
+      "HR-FM-016",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, CL-FM-002, CL-FM-031, HR-FM-016, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Clinical Manager signs report; OASIS QA attests scoring; Compliance Officer reviews if defect rate >7% or revenue impact material.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager signs report; OASIS QA attests scoring; Compliance Officer reviews if defect rate >7% or revenue impact material.",
+    "outputs": "Per-clinician OASIS Accuracy Scorecard, aggregate defect register, HHRG impact analysis, remediation queue for CL-WF-25.",
+    "sla": "Cycle completes within 7 business days. Corrected OASIS resubmissions filed within 30 days of detection per CMS.",
+    "escalationLogic": "Per-clinician error rate >7% → mandatory CL-WF-25 competency revalidation. Any pattern of upcoding → CO-WF-08 (FWA) investigation. Material HHRG impact → FN-WF-15 RCM self-audit.",
+    "failureConditions": "Skipped audit cycle blocks QA-WF-03 quarterly closure. Failure to file corrected OASIS within 30 days → CMS payment integrity exposure. Failure to remediate clinician >7% error → CL-WF-05 quality regression.",
+    "auditRequirements": "Per-cycle log: sampling frame size, sample IDs, per-clinician scoring, defect register, HHRG impact, CAP register. Cross-referenced to CL-WF-05, CL-WF-25, FN-WF-15, QA-WF-03. Retention ≥6 years.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-25",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-08",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 8,
+      "policyCount": 1,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "CL-WF-28": {
+    "id": "CL-WF-28",
+    "domain": "CL",
+    "title": "VISIT DOCUMENTATION AUDIT",
+    "sourceMarkdown": "## CL-WF-28 — VISIT DOCUMENTATION AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-008 Documentation; 42 CFR § 484.110; 42 CFR § 484.60(b)\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly audit of skilled visit notes for timeliness (≤24h), POC alignment, skilled-need narrative, and supervisor-signature presence. Covers all visit disciplines documented through CL-WF-09. Feeds QA-WF-03 and CO-WF-14 (Documentation Alignment Audit).\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: claim denial rate referencing missing notes >2% → immediate audit\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** QA Reviewer\r\n- **Supporting:** Clinical Manager\r\n- **Approval:** Clinical Manager\r\n\r\n### 5. INPUTS\r\n- All visit notes filed in audit window (population frame)\r\n- Sample: 10% per discipline, minimum 5 per discipline, oversample any visit flagged by CL-WF-20 (missed visits) or CL-WF-21 (record completion)\r\n- Source workflows: CL-WF-09, CL-WF-20, CL-WF-21\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull visit population; stratify by discipline | QA Reviewer | CO-FM-022 | Day 1 |\r\n| 2 | Score each note: filed ≤24h, signed, POC-aligned, skilled-need narrative | QA Reviewer | CO-FM-021 | Day 2–4 |\r\n| 3 | Cross-check supervisor counter-signature for HHA per CL-WF-10 | QA Reviewer | CL-FM-015 | Day 3 |\r\n| 4 | Compile per-clinician scorecard | QA Reviewer | CO-FM-024 | Day 5 |\r\n| 5 | Issue CAPs; route systemic findings to CO-WF-14 | Clinical Mgr | QA-FM-005 | Day 6 |\r\n| 6 | File report; feed packet to QA-WF-03 | QA Reviewer | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, CL-FM-015, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nClinical Manager signs audit report. Compliance Officer co-signs if late-filing rate >5%.\r\n\r\n### 9. OUTPUTS\r\nVisit Documentation Audit Report with timeliness/skilled-need/alignment scores, per-clinician scorecard, CAP register.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly cycle completes within 7 business days. CAPs assigned within 5 business days of finding.\r\n\r\n### 11. ESCALATION LOGIC\r\nLate-filing rate >5% → systemic CAP via CO-WF-14. Repeat clinician failure → HR-WF-09 + CL-WF-25. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03 closure. Late-filed notes pattern → claim denial / CMS PEPPER outlier risk. Unsigned HHA notes → 42 CFR § 484.80 deficiency.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: sampling frame, per-discipline scoring, CAP register. Retention ≥6 years. Cross-referenced to CL-WF-09, CL-WF-10, CL-WF-21, CO-WF-14, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-008 Documentation; 42 CFR § 484.110; 42 CFR § 484.60(b)"
+    ],
+    "policyRefs": [
+      "CL-PA-008"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.110",
+      "42 CFR § 484.60(b)"
+    ],
+    "processOverview": "Monthly audit of skilled visit notes for timeliness (≤24h), POC alignment, skilled-need narrative, and supervisor-signature presence. Covers all visit disciplines documented through CL-WF-09. Feeds QA-WF-03 and CO-WF-14 (Documentation Alignment Audit).",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: claim denial rate referencing missing notes >2% → immediate audit"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "QA Reviewer"
+      ],
+      "supporting": [
+        "Clinical Manager"
+      ],
+      "approval": [
+        "Clinical Manager"
+      ]
+    },
+    "inputs": [
+      "All visit notes filed in audit window (population frame)",
+      "Sample: 10% per discipline, minimum 5 per discipline, oversample any visit flagged by CL-WF-20 (missed visits) or CL-WF-21 (record completion)",
+      "Source workflows: CL-WF-09, CL-WF-20, CL-WF-21"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull visit population; stratify by discipline",
+        "role": "QA Reviewer",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Score each note: filed ≤24h, signed, POC-aligned, skilled-need narrative",
+        "role": "QA Reviewer",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 2–4"
+      },
+      {
+        "order": 3,
+        "action": "Cross-check supervisor counter-signature for HHA per CL-WF-10",
+        "role": "QA Reviewer",
+        "formRaw": "CL-FM-015",
+        "formIds": [
+          "CL-FM-015"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Compile per-clinician scorecard",
+        "role": "QA Reviewer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 5,
+        "action": "Issue CAPs; route systemic findings to CO-WF-14",
+        "role": "Clinical Mgr",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 6"
+      },
+      {
+        "order": 6,
+        "action": "File report; feed packet to QA-WF-03",
+        "role": "QA Reviewer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-015",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, CL-FM-015, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Clinical Manager signs audit report. Compliance Officer co-signs if late-filing rate >5%.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager signs audit report. Compliance Officer co-signs if late-filing rate >5%.",
+    "outputs": "Visit Documentation Audit Report with timeliness/skilled-need/alignment scores, per-clinician scorecard, CAP register.",
+    "sla": "Monthly cycle completes within 7 business days. CAPs assigned within 5 business days of finding.",
+    "escalationLogic": "Late-filing rate >5% → systemic CAP via CO-WF-14. Repeat clinician failure → HR-WF-09 + CL-WF-25. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03 closure. Late-filed notes pattern → claim denial / CMS PEPPER outlier risk. Unsigned HHA notes → 42 CFR § 484.80 deficiency.",
+    "auditRequirements": "Per-cycle log: sampling frame, per-discipline scoring, CAP register. Retention ≥6 years. Cross-referenced to CL-WF-09, CL-WF-10, CL-WF-21, CO-WF-14, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-14",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-25",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-10",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-21",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 5,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "CL-WF-29": {
+    "id": "CL-WF-29",
+    "domain": "CL",
+    "title": "CLINICAL RECORD COMPLETENESS AUDIT",
+    "sourceMarkdown": "## CL-WF-29 — CLINICAL RECORD COMPLETENESS AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-010 Clinical Record; 42 CFR § 484.110; 42 CFR § 484.60\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly audit of closed and active clinical records for completeness against the 22-element record checklist (consent, advance directive, POC, orders, OASIS, visit notes, discharge summary, etc.). Aggregates findings across CL-WF-01 (intake), CL-WF-04 (SOC), CL-WF-19 (DC), CL-WF-21 (record completion). Feeds QA-WF-03 and CO-WF-14.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly\r\n- Conditional: ADR (FN-WF-06) requesting missing record element\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Medical Records Auditor\r\n- **Supporting:** QA Reviewer, Clinical Manager\r\n- **Approval:** Clinical Manager; Compliance Officer for systemic\r\n\r\n### 5. INPUTS\r\n- All discharged records in quarter + 5% of active records (sample)\r\n- Sample size: 10% of discharges minimum 15\r\n- Source workflows: CL-WF-01, CL-WF-04, CL-WF-19, CL-WF-21, CL-WF-16\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Build sampling frame from EMR; apply discharge stratification | MR Auditor | CO-FM-022 | Day 1 |\r\n| 2 | Score each record against 22-element completeness checklist | MR Auditor | CO-FM-021 | Day 2–6 |\r\n| 3 | Verify advance directive captured per CL-WF-16 | MR Auditor | CL-FM-029 | Day 3 |\r\n| 4 | Confirm DC summary filed per CL-WF-19 | MR Auditor | CL-FM-036 | Day 4 |\r\n| 5 | Issue CAPs; route systemic findings to CO-WF-14 | Clinical Mgr | QA-FM-005 | Day 8 |\r\n| 6 | Compile report; feed packet to QA-WF-03 | MR Auditor | CO-FM-024 | Day 10 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, CL-FM-029, CL-FM-036, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nClinical Manager signs; Compliance Officer co-signs if any record fails >3 elements.\r\n\r\n### 9. OUTPUTS\r\nQuarterly Record Completeness Report; per-record defect register; CAP register; trend vs prior quarter.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly cycle completes within 10 business days; before QA-WF-03 packet deadline.\r\n\r\n### 11. ESCALATION LOGIC\r\nDefect rate >5% → CO-WF-14 systemic CAP. Missing record elements that block billing → FN-WF-15. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Missing 22-element items → 42 CFR § 484.110 citation risk. Systemic missing DC summaries → readmission rate inflation.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: frame, sample IDs, scoring, CAP register. Retention ≥6 years. Cross-referenced to CL-WF-01, CL-WF-04, CL-WF-19, CL-WF-21, CO-WF-14, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-010 Clinical Record; 42 CFR § 484.110; 42 CFR § 484.60"
+    ],
+    "policyRefs": [
+      "CL-PA-010"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.110",
+      "42 CFR § 484.60"
+    ],
+    "processOverview": "Quarterly audit of closed and active clinical records for completeness against the 22-element record checklist (consent, advance directive, POC, orders, OASIS, visit notes, discharge summary, etc.). Aggregates findings across CL-WF-01 (intake), CL-WF-04 (SOC), CL-WF-19 (DC), CL-WF-21 (record completion). Feeds QA-WF-03 and CO-WF-14.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: ADR (FN-WF-06) requesting missing record element"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Medical Records Auditor"
+      ],
+      "supporting": [
+        "QA Reviewer",
+        "Clinical Manager"
+      ],
+      "approval": [
+        "Clinical Manager",
+        "Compliance Officer for systemic"
+      ]
+    },
+    "inputs": [
+      "All discharged records in quarter + 5% of active records (sample)",
+      "Sample size: 10% of discharges minimum 15",
+      "Source workflows: CL-WF-01, CL-WF-04, CL-WF-19, CL-WF-21, CL-WF-16"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Build sampling frame from EMR; apply discharge stratification",
+        "role": "MR Auditor",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Score each record against 22-element completeness checklist",
+        "role": "MR Auditor",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 2–6"
+      },
+      {
+        "order": 3,
+        "action": "Verify advance directive captured per CL-WF-16",
+        "role": "MR Auditor",
+        "formRaw": "CL-FM-029",
+        "formIds": [
+          "CL-FM-029"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Confirm DC summary filed per CL-WF-19",
+        "role": "MR Auditor",
+        "formRaw": "CL-FM-036",
+        "formIds": [
+          "CL-FM-036"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Issue CAPs; route systemic findings to CO-WF-14",
+        "role": "Clinical Mgr",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 8"
+      },
+      {
+        "order": 6,
+        "action": "Compile report; feed packet to QA-WF-03",
+        "role": "MR Auditor",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 10"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-029",
+      "CL-FM-036",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, CL-FM-029, CL-FM-036, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Clinical Manager signs; Compliance Officer co-signs if any record fails >3 elements.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager signs; Compliance Officer co-signs if any record fails >3 elements.",
+    "outputs": "Quarterly Record Completeness Report; per-record defect register; CAP register; trend vs prior quarter.",
+    "sla": "Quarterly cycle completes within 10 business days; before QA-WF-03 packet deadline.",
+    "escalationLogic": "Defect rate >5% → CO-WF-14 systemic CAP. Missing record elements that block billing → FN-WF-15. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Missing 22-element items → 42 CFR § 484.110 citation risk. Systemic missing DC summaries → readmission rate inflation.",
+    "auditRequirements": "Per-cycle log: frame, sample IDs, scoring, CAP register. Retention ≥6 years. Cross-referenced to CL-WF-01, CL-WF-04, CL-WF-19, CL-WF-21, CO-WF-14, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-19",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-21",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-14",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-16",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 6,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "CL-WF-30": {
+    "id": "CL-WF-30",
+    "domain": "CL",
+    "title": "SKILLED NEED / MEDICAL NECESSITY REVIEW",
+    "sourceMarkdown": "## CL-WF-30 — SKILLED NEED / MEDICAL NECESSITY REVIEW\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-002 Homebound; CL-PA-005 Plan of Care; 42 CFR § 409.42; 42 CFR § 409.44\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly audit verifying that every active episode has documented skilled need, homebound justification, and medical necessity narrative supporting current visit frequency. Consumes evidence from CL-WF-02 (homebound), CL-WF-04 (SOC assessment), CL-WF-09 (visit notes). Feeds FN-WF-04 (claim submission) and FN-WF-15 (RCM self-audit).\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: ADR receipt (FN-WF-06); visit frequency increase >25%\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Clinical Manager\r\n- **Supporting:** UR Nurse, Coder\r\n- **Approval:** Clinical Manager; Compliance Officer for billing-impactful patterns\r\n\r\n### 5. INPUTS\r\n- Active episode list with current visit frequency\r\n- Sample: 15% of active episodes, all episodes with frequency change in window\r\n- Source workflows: CL-WF-02, CL-WF-04, CL-WF-09\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull active episode list with frequencies | Clinical Mgr | CO-FM-022 | Day 1 |\r\n| 2 | Verify homebound documentation per CL-WF-02 | UR Nurse | CL-FM-009 | Day 2 |\r\n| 3 | Verify skilled-need narrative in chart | UR Nurse | CO-FM-021 | Day 3 |\r\n| 4 | Validate visit frequency vs. POC and acuity | UR Nurse | CL-FM-005 | Day 4 |\r\n| 5 | Issue holds on any episode lacking justification | Clinical Mgr | CO-FM-021 | Day 5 |\r\n| 6 | Compile report; feed billing exception list to FN-WF-15 | Clinical Mgr | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, CL-FM-005, CL-FM-009\r\n\r\n### 8. APPROVALS\r\nClinical Manager signs report. Compliance Officer co-signs any pattern affecting >5% of episodes.\r\n\r\n### 9. OUTPUTS\r\nSkilled Need Audit Report; episode-level disposition (justified / hold / discharge); billing exception queue.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. Holds applied within 24h of detection.\r\n\r\n### 11. ESCALATION LOGIC\r\nPattern of insufficient skilled-need documentation → CO-WF-08 FWA review. Material findings → FN-WF-15. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissing skilled-need documentation → claim denial, False Claims Act exposure. Skipped cycle blocks QA-WF-03 closure.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: frame, sample IDs, dispositions, hold/discharge log. Retention ≥6 years. Cross-referenced to CL-WF-02, CL-WF-09, FN-WF-04, FN-WF-15, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-002 Homebound; CL-PA-005 Plan of Care; 42 CFR § 409.42; 42 CFR § 409.44"
+    ],
+    "policyRefs": [
+      "CL-PA-002",
+      "CL-PA-005"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 409.42",
+      "42 CFR § 409.44"
+    ],
+    "processOverview": "Monthly audit verifying that every active episode has documented skilled need, homebound justification, and medical necessity narrative supporting current visit frequency. Consumes evidence from CL-WF-02 (homebound), CL-WF-04 (SOC assessment), CL-WF-09 (visit notes). Feeds FN-WF-04 (claim submission) and FN-WF-15 (RCM self-audit).",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: ADR receipt (FN-WF-06); visit frequency increase >25%"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Clinical Manager"
+      ],
+      "supporting": [
+        "UR Nurse",
+        "Coder"
+      ],
+      "approval": [
+        "Clinical Manager",
+        "Compliance Officer for billing-impactful patterns"
+      ]
+    },
+    "inputs": [
+      "Active episode list with current visit frequency",
+      "Sample: 15% of active episodes, all episodes with frequency change in window",
+      "Source workflows: CL-WF-02, CL-WF-04, CL-WF-09"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull active episode list with frequencies",
+        "role": "Clinical Mgr",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Verify homebound documentation per CL-WF-02",
+        "role": "UR Nurse",
+        "formRaw": "CL-FM-009",
+        "formIds": [
+          "CL-FM-009"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Verify skilled-need narrative in chart",
+        "role": "UR Nurse",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Validate visit frequency vs. POC and acuity",
+        "role": "UR Nurse",
+        "formRaw": "CL-FM-005",
+        "formIds": [
+          "CL-FM-005"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Issue holds on any episode lacking justification",
+        "role": "Clinical Mgr",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 6,
+        "action": "Compile report; feed billing exception list to FN-WF-15",
+        "role": "Clinical Mgr",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-005",
+      "CL-FM-009",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, CL-FM-005, CL-FM-009",
+    "approvals": [
+      {
+        "description": "Clinical Manager signs report. Compliance Officer co-signs any pattern affecting >5% of episodes.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager signs report. Compliance Officer co-signs any pattern affecting >5% of episodes.",
+    "outputs": "Skilled Need Audit Report; episode-level disposition (justified / hold / discharge); billing exception queue.",
+    "sla": "Monthly. Holds applied within 24h of detection.",
+    "escalationLogic": "Pattern of insufficient skilled-need documentation → CO-WF-08 FWA review. Material findings → FN-WF-15. Findings feed QA-WF-03.",
+    "failureConditions": "Missing skilled-need documentation → claim denial, False Claims Act exposure. Skipped cycle blocks QA-WF-03 closure.",
+    "auditRequirements": "Per-cycle log: frame, sample IDs, dispositions, hold/discharge log. Retention ≥6 years. Cross-referenced to CL-WF-02, CL-WF-09, FN-WF-04, FN-WF-15, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-02",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 5,
+      "policyCount": 2,
+      "declaredRisk": "immediate_jeopardy",
+      "requiresGoverningBody": false
+    }
+  },
+  "CL-WF-31": {
+    "id": "CL-WF-31",
+    "domain": "CL",
+    "title": "MEDICATION MANAGEMENT AUDIT",
+    "sourceMarkdown": "## CL-WF-31 — MEDICATION MANAGEMENT AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-012 Medication Management; 42 CFR § 484.60(b)\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly audit of medication reconciliation, high-risk medication double-checks, and patient-education documentation. Aggregates evidence from CL-WF-12 (med management) and RM-WF-13 (high-risk med double-check). Feeds QA-WF-03 and QA-WF-05 (RCA when error pattern).\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: any medication-error incident report → immediate targeted audit\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Pharmacist Reviewer / RN auditor\r\n- **Supporting:** Clinical Manager\r\n- **Approval:** Clinical Manager; Medical Director for systemic\r\n\r\n### 5. INPUTS\r\n- Active episodes with medication regimens\r\n- Sample: 10% of active episodes, all episodes with high-risk meds\r\n- Source workflows: CL-WF-12, RM-WF-13, CL-WF-04\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull med-regimen sample frame | Pharm Reviewer | CO-FM-022 | Day 1 |\r\n| 2 | Audit reconciliation completeness at SOC and recert | Pharm Reviewer | CL-FM-018 | Day 2–3 |\r\n| 3 | Verify high-risk med double-check evidence per RM-WF-13 | Pharm Reviewer | RM-FM-012 | Day 3 |\r\n| 4 | Audit patient education documentation | Pharm Reviewer | CL-FM-022 | Day 4 |\r\n| 5 | Compile defect register; route any error to QA-WF-05 | Clinical Mgr | QA-FM-005 | Day 5 |\r\n| 6 | File report; feed packet to QA-WF-03 | Pharm Reviewer | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, CL-FM-018, CL-FM-022, RM-FM-012, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nClinical Manager signs. Medical Director signs if pattern of error.\r\n\r\n### 9. OUTPUTS\r\nMedication Management Audit Report; reconciliation/double-check/education scorecards; CAP register; RCA queue.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. RCA initiated within 24h of detected medication error.\r\n\r\n### 11. ESCALATION LOGIC\r\nAny medication error → QA-WF-05 RCA. Pattern → policy update via EN-WF-01. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03 closure. Undetected reconciliation gaps → adverse drug events; potential survey deficiency.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: frame, sample IDs, reconciliation/double-check status, error log, RCA links. Retention ≥6 years. Cross-referenced to CL-WF-12, RM-WF-13, QA-WF-05, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-012 Medication Management; 42 CFR § 484.60(b)"
+    ],
+    "policyRefs": [
+      "CL-PA-012"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.60(b)"
+    ],
+    "processOverview": "Monthly audit of medication reconciliation, high-risk medication double-checks, and patient-education documentation. Aggregates evidence from CL-WF-12 (med management) and RM-WF-13 (high-risk med double-check). Feeds QA-WF-03 and QA-WF-05 (RCA when error pattern).",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any medication-error incident report → immediate targeted audit"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Pharmacist Reviewer / RN auditor"
+      ],
+      "supporting": [
+        "Clinical Manager"
+      ],
+      "approval": [
+        "Clinical Manager",
+        "Medical Director for systemic"
+      ]
+    },
+    "inputs": [
+      "Active episodes with medication regimens",
+      "Sample: 10% of active episodes, all episodes with high-risk meds",
+      "Source workflows: CL-WF-12, RM-WF-13, CL-WF-04"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull med-regimen sample frame",
+        "role": "Pharm Reviewer",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Audit reconciliation completeness at SOC and recert",
+        "role": "Pharm Reviewer",
+        "formRaw": "CL-FM-018",
+        "formIds": [
+          "CL-FM-018"
+        ],
+        "deadline": "Day 2–3"
+      },
+      {
+        "order": 3,
+        "action": "Verify high-risk med double-check evidence per RM-WF-13",
+        "role": "Pharm Reviewer",
+        "formRaw": "RM-FM-012",
+        "formIds": [
+          "RM-FM-012"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Audit patient education documentation",
+        "role": "Pharm Reviewer",
+        "formRaw": "CL-FM-022",
+        "formIds": [
+          "CL-FM-022"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Compile defect register; route any error to QA-WF-05",
+        "role": "Clinical Mgr",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 6,
+        "action": "File report; feed packet to QA-WF-03",
+        "role": "Pharm Reviewer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-018",
+      "CL-FM-022",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005",
+      "RM-FM-012"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, CL-FM-018, CL-FM-022, RM-FM-012, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Clinical Manager signs. Medical Director signs if pattern of error.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager signs. Medical Director signs if pattern of error.",
+    "outputs": "Medication Management Audit Report; reconciliation/double-check/education scorecards; CAP register; RCA queue.",
+    "sla": "Monthly. RCA initiated within 24h of detected medication error.",
+    "escalationLogic": "Any medication error → QA-WF-05 RCA. Pattern → policy update via EN-WF-01. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03 closure. Undetected reconciliation gaps → adverse drug events; potential survey deficiency.",
+    "auditRequirements": "Per-cycle log: frame, sample IDs, reconciliation/double-check status, error log, RCA links. Retention ≥6 years. Cross-referenced to CL-WF-12, RM-WF-13, QA-WF-05, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-12",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-13",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-01",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 7,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "CL-WF-32": {
+    "id": "CL-WF-32",
+    "domain": "CL",
+    "title": "INFECTION CONTROL COMPLIANCE AUDIT",
+    "sourceMarkdown": "## CL-WF-32 — INFECTION CONTROL COMPLIANCE AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-014 Infection Control; 42 CFR § 484.70\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly audit of point-of-care infection-control practices: PPE compliance (observation), bag technique, hand hygiene, exposure response, surveillance log completeness. Aggregates evidence from CL-WF-14 (point-of-care IC) and QA-WF-06 (IC surveillance). Feeds QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: HAI cluster, exposure incident, regulatory IC alert\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Infection Preventionist\r\n- **Supporting:** Clinical Manager\r\n- **Approval:** Clinical Manager; Medical Director for cluster events\r\n\r\n### 5. INPUTS\r\n- IC surveillance log (QA-WF-06 output)\r\n- Visit observation records\r\n- Sample: 20 random visit observations + full surveillance log\r\n- Source workflows: CL-WF-14, QA-WF-06\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Schedule and execute 20 visit observations | IP | CL-FM-021 | Day 1–4 |\r\n| 2 | Score PPE / hand hygiene / bag technique compliance | IP | CO-FM-021 | Day 4 |\r\n| 3 | Reconcile surveillance log completeness with QA-WF-06 | IP | QA-FM-027 | Day 5 |\r\n| 4 | Audit exposure response evidence (HR-FM-014) | IP | HR-FM-014 | Day 5 |\r\n| 5 | Issue CAPs; cluster events → QA-WF-05 RCA | Clinical Mgr | QA-FM-005 | Day 6 |\r\n| 6 | Compile report; feed packet to QA-WF-03 | IP | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-024, CL-FM-021, QA-FM-027, HR-FM-014, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nClinical Manager + Infection Preventionist sign. Medical Director signs cluster-event reports.\r\n\r\n### 9. OUTPUTS\r\nIC Compliance Audit Report; observation scorecard; surveillance reconciliation; cluster log.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. Cluster RCA initiated within 24h.\r\n\r\n### 11. ESCALATION LOGIC\r\nHAI cluster → QA-WF-05 + RM-WF-06 surge readiness check. PPE compliance <95% → systemic CAP via HR-WF-07 retraining. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unaddressed cluster → outbreak; survey deficiency; reportable to public health.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: observation roster, scoring, surveillance reconciliation, cluster log, CAPs. Retention ≥6 years. Cross-referenced to CL-WF-14, QA-WF-06, QA-WF-05, RM-WF-06, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-014 Infection Control; 42 CFR § 484.70"
+    ],
+    "policyRefs": [
+      "CL-PA-014"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.70"
+    ],
+    "processOverview": "Monthly audit of point-of-care infection-control practices: PPE compliance (observation), bag technique, hand hygiene, exposure response, surveillance log completeness. Aggregates evidence from CL-WF-14 (point-of-care IC) and QA-WF-06 (IC surveillance). Feeds QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: HAI cluster, exposure incident, regulatory IC alert"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Infection Preventionist"
+      ],
+      "supporting": [
+        "Clinical Manager"
+      ],
+      "approval": [
+        "Clinical Manager",
+        "Medical Director for cluster events"
+      ]
+    },
+    "inputs": [
+      "IC surveillance log (QA-WF-06 output)",
+      "Visit observation records",
+      "Sample: 20 random visit observations + full surveillance log",
+      "Source workflows: CL-WF-14, QA-WF-06"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Schedule and execute 20 visit observations",
+        "role": "IP",
+        "formRaw": "CL-FM-021",
+        "formIds": [
+          "CL-FM-021"
+        ],
+        "deadline": "Day 1–4"
+      },
+      {
+        "order": 2,
+        "action": "Score PPE / hand hygiene / bag technique compliance",
+        "role": "IP",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 3,
+        "action": "Reconcile surveillance log completeness with QA-WF-06",
+        "role": "IP",
+        "formRaw": "QA-FM-027",
+        "formIds": [
+          "QA-FM-027"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 4,
+        "action": "Audit exposure response evidence (HR-FM-014)",
+        "role": "IP",
+        "formRaw": "HR-FM-014",
+        "formIds": [
+          "HR-FM-014"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 5,
+        "action": "Issue CAPs; cluster events → QA-WF-05 RCA",
+        "role": "Clinical Mgr",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 6"
+      },
+      {
+        "order": 6,
+        "action": "Compile report; feed packet to QA-WF-03",
+        "role": "IP",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-021",
+      "CO-FM-021",
+      "CO-FM-024",
+      "HR-FM-014",
+      "QA-FM-005",
+      "QA-FM-027"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-024, CL-FM-021, QA-FM-027, HR-FM-014, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Clinical Manager + Infection Preventionist sign. Medical Director signs cluster-event reports.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager + Infection Preventionist sign. Medical Director signs cluster-event reports.",
+    "outputs": "IC Compliance Audit Report; observation scorecard; surveillance reconciliation; cluster log.",
+    "sla": "Monthly. Cluster RCA initiated within 24h.",
+    "escalationLogic": "HAI cluster → QA-WF-05 + RM-WF-06 surge readiness check. PPE compliance <95% → systemic CAP via HR-WF-07 retraining. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unaddressed cluster → outbreak; survey deficiency; reportable to public health.",
+    "auditRequirements": "Per-cycle log: observation roster, scoring, surveillance reconciliation, cluster log, CAPs. Retention ≥6 years. Cross-referenced to CL-WF-14, QA-WF-06, QA-WF-05, RM-WF-06, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-14",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-06",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-06",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-07",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 6,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "CL-WF-33": {
+    "id": "CL-WF-33",
+    "domain": "CL",
+    "title": "CARE COORDINATION AUDIT",
+    "sourceMarkdown": "## CL-WF-33 — CARE COORDINATION AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-007 Care Coordination; 42 CFR § 484.60(d)\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly audit of multidisciplinary case-conference documentation, physician communication logs, and inter-discipline care-plan alignment. Aggregates evidence from CL-WF-08 (coordination of care) and CL-WF-09 (visit notes). Feeds QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly\r\n- Conditional: complex case (>3 disciplines) → targeted episode audit\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Clinical Manager\r\n- **Supporting:** QA Reviewer\r\n- **Approval:** Clinical Manager\r\n\r\n### 5. INPUTS\r\n- Active multi-discipline episodes\r\n- Sample: 15% of multi-discipline episodes\r\n- Source workflows: CL-WF-08, CL-WF-09\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Identify multi-discipline episode population | Clinical Mgr | CO-FM-022 | Day 1 |\r\n| 2 | Audit case-conference documentation cadence | Clinical Mgr | CL-FM-053 | Day 2–4 |\r\n| 3 | Audit physician communication log evidence | Clinical Mgr | CL-FM-054 | Day 4 |\r\n| 4 | Verify cross-discipline goal alignment in POC | QA Reviewer | CL-FM-005 | Day 5 |\r\n| 5 | Issue CAPs; report to QA-WF-03 | Clinical Mgr | QA-FM-005 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, CL-FM-005, CL-FM-053, CL-FM-054, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nClinical Manager signs.\r\n\r\n### 9. OUTPUTS\r\nQuarterly Care Coordination Audit Report; episode-level scorecard; CAP register.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly cycle ≤7 business days; before QA-WF-03 packet deadline.\r\n\r\n### 11. ESCALATION LOGIC\r\nCoordination gap pattern → policy update via EN-WF-01. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Coordination gaps → re-hospitalization risk, survey deficiency.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: frame, sample IDs, scorecards, CAPs. Retention ≥6 years. Cross-referenced to CL-WF-08, CL-WF-22, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-007 Care Coordination; 42 CFR § 484.60(d)"
+    ],
+    "policyRefs": [
+      "CL-PA-007"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.60(d)"
+    ],
+    "processOverview": "Quarterly audit of multidisciplinary case-conference documentation, physician communication logs, and inter-discipline care-plan alignment. Aggregates evidence from CL-WF-08 (coordination of care) and CL-WF-09 (visit notes). Feeds QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: complex case (>3 disciplines) → targeted episode audit"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Clinical Manager"
+      ],
+      "supporting": [
+        "QA Reviewer"
+      ],
+      "approval": [
+        "Clinical Manager"
+      ]
+    },
+    "inputs": [
+      "Active multi-discipline episodes",
+      "Sample: 15% of multi-discipline episodes",
+      "Source workflows: CL-WF-08, CL-WF-09"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Identify multi-discipline episode population",
+        "role": "Clinical Mgr",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Audit case-conference documentation cadence",
+        "role": "Clinical Mgr",
+        "formRaw": "CL-FM-053",
+        "formIds": [
+          "CL-FM-053"
+        ],
+        "deadline": "Day 2–4"
+      },
+      {
+        "order": 3,
+        "action": "Audit physician communication log evidence",
+        "role": "Clinical Mgr",
+        "formRaw": "CL-FM-054",
+        "formIds": [
+          "CL-FM-054"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 4,
+        "action": "Verify cross-discipline goal alignment in POC",
+        "role": "QA Reviewer",
+        "formRaw": "CL-FM-005",
+        "formIds": [
+          "CL-FM-005"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 5,
+        "action": "Issue CAPs; report to QA-WF-03",
+        "role": "Clinical Mgr",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-005",
+      "CL-FM-053",
+      "CL-FM-054",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, CL-FM-005, CL-FM-053, CL-FM-054, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Clinical Manager signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager signs.",
+    "outputs": "Quarterly Care Coordination Audit Report; episode-level scorecard; CAP register.",
+    "sla": "Quarterly cycle ≤7 business days; before QA-WF-03 packet deadline.",
+    "escalationLogic": "Coordination gap pattern → policy update via EN-WF-01. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Coordination gaps → re-hospitalization risk, survey deficiency.",
+    "auditRequirements": "Per-cycle log: frame, sample IDs, scorecards, CAPs. Retention ≥6 years. Cross-referenced to CL-WF-08, CL-WF-22, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-22",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 7,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "CL-WF-34": {
+    "id": "CL-WF-34",
+    "domain": "CL",
+    "title": "REHOSPITALIZATION REVIEW",
+    "sourceMarkdown": "## CL-WF-34 — REHOSPITALIZATION REVIEW\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-007 Care Coordination; 42 CFR § 484.65 (QAPI outcome)\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly review of all unplanned acute-care hospitalizations (ACH) and emergency-department use during home-health episodes. Performs root-cause analysis pattern detection across CL-WF-09 (visit care), CL-WF-12 (med mgmt), CL-WF-08 (coordination). Feeds QA-WF-03 and QA-WF-04 (PIP lifecycle).\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: any ACH event → individual review within 5 business days\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Clinical Manager\r\n- **Supporting:** QA Reviewer\r\n- **Approval:** Clinical Manager; Medical Director if pattern\r\n\r\n### 5. INPUTS\r\n- All ACH/ED events for the month (from EMR / discharge notifications)\r\n- Source workflows: CL-WF-09, CL-WF-12, CL-WF-08, CL-WF-19\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull ACH/ED event list | Clinical Mgr | CO-FM-022 | Day 1 |\r\n| 2 | Per-event root-cause review (preventability assessment) | Clinical Mgr | QA-FM-026 | Day 2–4 |\r\n| 3 | Compile rate per 100 episodes; trend analysis | QA Reviewer | EN-FM-034 | Day 5 |\r\n| 4 | Identify systemic patterns; route to QA-WF-04 PIP if rate >threshold | Clinical Mgr | QA-FM-021 | Day 6 |\r\n| 5 | Compile report; feed to QA-WF-03 | Clinical Mgr | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, QA-FM-026, QA-FM-021, EN-FM-034\r\n\r\n### 8. APPROVALS\r\nClinical Manager signs. Medical Director signs if pattern PIP triggered.\r\n\r\n### 9. OUTPUTS\r\nMonthly Rehospitalization Review Report; per-event preventability disposition; rate trend chart; PIP trigger memo.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. Per-event review ≤5 business days of event notification.\r\n\r\n### 11. ESCALATION LOGIC\r\nRate above CMS Star Rating benchmark → mandatory PIP via QA-WF-04. Preventable pattern → policy update via EN-WF-01. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unreviewed preventable ACH → Star Rating decline; QAPI deficiency citation.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: event roster, preventability dispositions, rate calc, PIP triggers. Retention ≥6 years. Cross-referenced to CL-WF-19, QA-WF-04, QA-WF-08, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-007 Care Coordination; 42 CFR § 484.65 (QAPI outcome)"
+    ],
+    "policyRefs": [
+      "CL-PA-007"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65"
+    ],
+    "processOverview": "Monthly review of all unplanned acute-care hospitalizations (ACH) and emergency-department use during home-health episodes. Performs root-cause analysis pattern detection across CL-WF-09 (visit care), CL-WF-12 (med mgmt), CL-WF-08 (coordination). Feeds QA-WF-03 and QA-WF-04 (PIP lifecycle).",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any ACH event → individual review within 5 business days"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Clinical Manager"
+      ],
+      "supporting": [
+        "QA Reviewer"
+      ],
+      "approval": [
+        "Clinical Manager",
+        "Medical Director if pattern"
+      ]
+    },
+    "inputs": [
+      "All ACH/ED events for the month (from EMR / discharge notifications)",
+      "Source workflows: CL-WF-09, CL-WF-12, CL-WF-08, CL-WF-19"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull ACH/ED event list",
+        "role": "Clinical Mgr",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Per-event root-cause review (preventability assessment)",
+        "role": "Clinical Mgr",
+        "formRaw": "QA-FM-026",
+        "formIds": [
+          "QA-FM-026"
+        ],
+        "deadline": "Day 2–4"
+      },
+      {
+        "order": 3,
+        "action": "Compile rate per 100 episodes; trend analysis",
+        "role": "QA Reviewer",
+        "formRaw": "EN-FM-034",
+        "formIds": [
+          "EN-FM-034"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 4,
+        "action": "Identify systemic patterns; route to QA-WF-04 PIP if rate >threshold",
+        "role": "Clinical Mgr",
+        "formRaw": "QA-FM-021",
+        "formIds": [
+          "QA-FM-021"
+        ],
+        "deadline": "Day 6"
+      },
+      {
+        "order": 5,
+        "action": "Compile report; feed to QA-WF-03",
+        "role": "Clinical Mgr",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "EN-FM-034",
+      "QA-FM-021",
+      "QA-FM-026"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, QA-FM-026, QA-FM-021, EN-FM-034",
+    "approvals": [
+      {
+        "description": "Clinical Manager signs. Medical Director signs if pattern PIP triggered.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager signs. Medical Director signs if pattern PIP triggered.",
+    "outputs": "Monthly Rehospitalization Review Report; per-event preventability disposition; rate trend chart; PIP trigger memo.",
+    "sla": "Monthly. Per-event review ≤5 business days of event notification.",
+    "escalationLogic": "Rate above CMS Star Rating benchmark → mandatory PIP via QA-WF-04. Preventable pattern → policy update via EN-WF-01. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unreviewed preventable ACH → Star Rating decline; QAPI deficiency citation.",
+    "auditRequirements": "Per-cycle log: event roster, preventability dispositions, rate calc, PIP triggers. Retention ≥6 years. Cross-referenced to CL-WF-19, QA-WF-04, QA-WF-08, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-12",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-19",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-08",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 6,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "CL-WF-35": {
+    "id": "CL-WF-35",
+    "domain": "CL",
+    "title": "PATIENT OUTCOME MONITORING",
+    "sourceMarkdown": "## CL-WF-35 — PATIENT OUTCOME MONITORING\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-005 Plan of Care; 42 CFR § 484.65 QAPI outcomes\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly aggregation of OASIS-derived outcome measures (improvement in ambulation, bed transfer, bathing, pain interfering with activity, dyspnea; discharge to community; ED use without hospitalization). Validates outcome calculations against CL-WF-05 source data. Feeds QA-WF-02 (dashboard), QA-WF-03, QA-WF-04 (PIP lifecycle), and QA-WF-09 (Star Rating monitoring).\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: any outcome regression >5% MoM\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** QA Analyst\r\n- **Supporting:** Clinical Manager\r\n- **Approval:** Clinical Manager; QAPI Lead\r\n\r\n### 5. INPUTS\r\n- OASIS dataset transmitted in window\r\n- iQIES / CASPER reports\r\n- Source workflows: CL-WF-05, CL-WF-27 (OASIS audit), QA-WF-02\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull OASIS outcome dataset | QA Analyst | CO-FM-022 | Day 1 |\r\n| 2 | Reconcile with CASPER/iQIES outcome reports | QA Analyst | EN-FM-034 | Day 2 |\r\n| 3 | Compute trend vs. prior 3 months and benchmark | QA Analyst | QA-FM-020 | Day 3 |\r\n| 4 | Identify regressions; flag PIP candidates per QA-WF-04 | QA Analyst | QA-FM-021 | Day 4 |\r\n| 5 | Compile dashboard; feed to QA-WF-02 and QA-WF-03 | QA Analyst | QA-FM-020 | Day 5 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nQA-FM-020, QA-FM-021, EN-FM-034, CO-FM-024\r\n\r\n### 8. APPROVALS\r\nClinical Manager + QAPI Lead sign.\r\n\r\n### 9. OUTPUTS\r\nMonthly Outcome Dashboard; trend charts; PIP candidate list.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly, by 10th business day; feeds QA-WF-02 publication.\r\n\r\n### 11. ESCALATION LOGIC\r\nOutcome regression >5% MoM → mandatory PIP via QA-WF-04. Star-Rating impacting trend → QA-WF-09. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03 closure and Star Rating monitoring. Unvalidated OASIS feed → invalid public outcome reporting.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: dataset hash, reconciliation evidence, trend charts, PIP triggers. Retention ≥6 years. Cross-referenced to CL-WF-05, CL-WF-27, QA-WF-02, QA-WF-04, QA-WF-09, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-005 Plan of Care; 42 CFR § 484.65 QAPI outcomes"
+    ],
+    "policyRefs": [
+      "CL-PA-005"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65"
+    ],
+    "processOverview": "Monthly aggregation of OASIS-derived outcome measures (improvement in ambulation, bed transfer, bathing, pain interfering with activity, dyspnea; discharge to community; ED use without hospitalization). Validates outcome calculations against CL-WF-05 source data. Feeds QA-WF-02 (dashboard), QA-WF-03, QA-WF-04 (PIP lifecycle), and QA-WF-09 (Star Rating monitoring).",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any outcome regression >5% MoM"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "QA Analyst"
+      ],
+      "supporting": [
+        "Clinical Manager"
+      ],
+      "approval": [
+        "Clinical Manager",
+        "QAPI Lead"
+      ]
+    },
+    "inputs": [
+      "OASIS dataset transmitted in window",
+      "iQIES / CASPER reports",
+      "Source workflows: CL-WF-05, CL-WF-27 (OASIS audit), QA-WF-02"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull OASIS outcome dataset",
+        "role": "QA Analyst",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Reconcile with CASPER/iQIES outcome reports",
+        "role": "QA Analyst",
+        "formRaw": "EN-FM-034",
+        "formIds": [
+          "EN-FM-034"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Compute trend vs. prior 3 months and benchmark",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-020",
+        "formIds": [
+          "QA-FM-020"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Identify regressions; flag PIP candidates per QA-WF-04",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-021",
+        "formIds": [
+          "QA-FM-021"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Compile dashboard; feed to QA-WF-02 and QA-WF-03",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-020",
+        "formIds": [
+          "QA-FM-020"
+        ],
+        "deadline": "Day 5"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "EN-FM-034",
+      "QA-FM-020",
+      "QA-FM-021"
+    ],
+    "requiredFormsRaw": "QA-FM-020, QA-FM-021, EN-FM-034, CO-FM-024",
+    "approvals": [
+      {
+        "description": "Clinical Manager + QAPI Lead sign.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager + QAPI Lead sign.",
+    "outputs": "Monthly Outcome Dashboard; trend charts; PIP candidate list.",
+    "sla": "Monthly, by 10th business day; feeds QA-WF-02 publication.",
+    "escalationLogic": "Outcome regression >5% MoM → mandatory PIP via QA-WF-04. Star-Rating impacting trend → QA-WF-09. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03 closure and Star Rating monitoring. Unvalidated OASIS feed → invalid public outcome reporting.",
+    "auditRequirements": "Per-cycle log: dataset hash, reconciliation evidence, trend charts, PIP triggers. Retention ≥6 years. Cross-referenced to CL-WF-05, CL-WF-27, QA-WF-02, QA-WF-04, QA-WF-09, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-02",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-27",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 5,
+      "policyCount": 1,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "CL-WF-36": {
+    "id": "CL-WF-36",
+    "domain": "CL",
+    "title": "MISSED VISIT / UTILIZATION AUDIT",
+    "sourceMarkdown": "## CL-WF-36 — MISSED VISIT / UTILIZATION AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-009 Missed Visits; 42 CFR § 484.60(c); LUPA rules\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly audit of missed-visit documentation, makeup-visit completion, LUPA exposure, and utilization deviation from POC. Aggregates evidence from CL-WF-20 (missed visit management) and QA-WF-07 (LUPA prevention). Feeds QA-WF-03 and FN-WF-15.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: LUPA rate >threshold; visit-frequency deviation >20%\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Clinical Manager\r\n- **Supporting:** Scheduler, QA Reviewer\r\n- **Approval:** Clinical Manager\r\n\r\n### 5. INPUTS\r\n- Missed-visit log; visit completion data; episode visit-frequency targets\r\n- Source workflows: CL-WF-20, QA-WF-07, OP-WF-12\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull missed-visit log + episode utilization | Clinical Mgr | CO-FM-022 | Day 1 |\r\n| 2 | Verify per-incident documentation per CL-WF-20 | Clinical Mgr | CL-FM-048 | Day 2 |\r\n| 3 | Confirm makeup visits scheduled / executed | Scheduler | CL-FM-053 | Day 3 |\r\n| 4 | Compute LUPA risk and utilization deviation | QA Reviewer | EN-FM-034 | Day 4 |\r\n| 5 | Issue CAPs; route LUPA risk to FN-WF-15 | Clinical Mgr | QA-FM-005 | Day 5 |\r\n| 6 | File report; feed to QA-WF-03 | Clinical Mgr | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-022, CO-FM-024, CL-FM-048, CL-FM-053, EN-FM-034, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nClinical Manager signs.\r\n\r\n### 9. OUTPUTS\r\nMissed Visit / Utilization Audit Report; LUPA risk register; utilization deviation list; CAPs.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. CAPs ≤5 business days.\r\n\r\n### 11. ESCALATION LOGIC\r\nLUPA rate >threshold → FN-WF-15 + QA-WF-07. Frequent missed visits same clinician → HR-WF-09. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unaddressed LUPA pattern → revenue loss; payment-integrity risk.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: missed-visit roster, makeup status, LUPA register, CAPs. Retention ≥6 years. Cross-referenced to CL-WF-20, QA-WF-07, FN-WF-15, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-009 Missed Visits; 42 CFR § 484.60(c); LUPA rules"
+    ],
+    "policyRefs": [
+      "CL-PA-009"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.60(c)"
+    ],
+    "processOverview": "Monthly audit of missed-visit documentation, makeup-visit completion, LUPA exposure, and utilization deviation from POC. Aggregates evidence from CL-WF-20 (missed visit management) and QA-WF-07 (LUPA prevention). Feeds QA-WF-03 and FN-WF-15.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: LUPA rate >threshold; visit-frequency deviation >20%"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Clinical Manager"
+      ],
+      "supporting": [
+        "Scheduler",
+        "QA Reviewer"
+      ],
+      "approval": [
+        "Clinical Manager"
+      ]
+    },
+    "inputs": [
+      "Missed-visit log; visit completion data; episode visit-frequency targets",
+      "Source workflows: CL-WF-20, QA-WF-07, OP-WF-12"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull missed-visit log + episode utilization",
+        "role": "Clinical Mgr",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Verify per-incident documentation per CL-WF-20",
+        "role": "Clinical Mgr",
+        "formRaw": "CL-FM-048",
+        "formIds": [
+          "CL-FM-048"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Confirm makeup visits scheduled / executed",
+        "role": "Scheduler",
+        "formRaw": "CL-FM-053",
+        "formIds": [
+          "CL-FM-053"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Compute LUPA risk and utilization deviation",
+        "role": "QA Reviewer",
+        "formRaw": "EN-FM-034",
+        "formIds": [
+          "EN-FM-034"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Issue CAPs; route LUPA risk to FN-WF-15",
+        "role": "Clinical Mgr",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 6,
+        "action": "File report; feed to QA-WF-03",
+        "role": "Clinical Mgr",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-048",
+      "CL-FM-053",
+      "CO-FM-022",
+      "CO-FM-024",
+      "EN-FM-034",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "CO-FM-022, CO-FM-024, CL-FM-048, CL-FM-053, EN-FM-034, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Clinical Manager signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager signs.",
+    "outputs": "Missed Visit / Utilization Audit Report; LUPA risk register; utilization deviation list; CAPs.",
+    "sla": "Monthly. CAPs ≤5 business days.",
+    "escalationLogic": "LUPA rate >threshold → FN-WF-15 + QA-WF-07. Frequent missed visits same clinician → HR-WF-09. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unaddressed LUPA pattern → revenue loss; payment-integrity risk.",
+    "auditRequirements": "Per-cycle log: missed-visit roster, makeup status, LUPA register, CAPs. Retention ≥6 years. Cross-referenced to CL-WF-20, QA-WF-07, FN-WF-15, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-20",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-07",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-09",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 6,
+      "policyCount": 1,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "CL-WF-37": {
+    "id": "CL-WF-37",
+    "domain": "CL",
+    "title": "ORDERS & CARE PLAN ALIGNMENT AUDIT",
+    "sourceMarkdown": "## CL-WF-37 — ORDERS & CARE PLAN ALIGNMENT AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- CL-PA-005 Plan of Care; 42 CFR § 484.60(b); 42 CFR § 409.43\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly audit verifying that every order (including verbal orders) is reflected in the POC and executed in visits. Reconciles outputs of CL-WF-07 (orders) against CL-WF-06 (POC) and CL-WF-09 (visit notes). Feeds CO-WF-14 and QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: verbal-order signature backlog >7 days\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** QA Reviewer\r\n- **Supporting:** Clinical Manager, Medical Records\r\n- **Approval:** Clinical Manager\r\n\r\n### 5. INPUTS\r\n- Orders register; POC; visit-note dataset\r\n- Source workflows: CL-WF-06, CL-WF-07, CL-WF-09\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull orders register + POC + visits for sampled episodes | QA Reviewer | CO-FM-022 | Day 1 |\r\n| 2 | Verify each order reflected in POC update | QA Reviewer | CL-FM-006 | Day 2–3 |\r\n| 3 | Verify execution evidence in visit notes | QA Reviewer | CO-FM-021 | Day 3 |\r\n| 4 | Audit verbal-order signature timeliness per CL-WF-07 | QA Reviewer | CL-FM-007 | Day 4 |\r\n| 5 | Issue CAPs; pattern → CO-WF-14 | Clinical Mgr | QA-FM-005 | Day 5 |\r\n| 6 | File report; feed to QA-WF-03 | QA Reviewer | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, CL-FM-006, CL-FM-007, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nClinical Manager signs.\r\n\r\n### 9. OUTPUTS\r\nOrders/POC Alignment Audit Report; defect register; CAP queue.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. Verbal-order signature backlog cleared within audit cycle.\r\n\r\n### 11. ESCALATION LOGIC\r\nVerbal-order backlog >14 days → physician escalation, billing hold via FN-WF-15. Findings feed QA-WF-03 and CO-WF-14.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unsigned verbal orders → claim denial; CMS PEPPER outlier.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: sampled episodes, defect register, verbal-order backlog, CAPs. Retention ≥6 years. Cross-referenced to CL-WF-06, CL-WF-07, CO-WF-14, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CL-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CL-PA-005 Plan of Care; 42 CFR § 484.60(b); 42 CFR § 409.43"
+    ],
+    "policyRefs": [
+      "CL-PA-005"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.60(b)",
+      "42 CFR § 409.43"
+    ],
+    "processOverview": "Monthly audit verifying that every order (including verbal orders) is reflected in the POC and executed in visits. Reconciles outputs of CL-WF-07 (orders) against CL-WF-06 (POC) and CL-WF-09 (visit notes). Feeds CO-WF-14 and QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: verbal-order signature backlog >7 days"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "QA Reviewer"
+      ],
+      "supporting": [
+        "Clinical Manager",
+        "Medical Records"
+      ],
+      "approval": [
+        "Clinical Manager"
+      ]
+    },
+    "inputs": [
+      "Orders register; POC; visit-note dataset",
+      "Source workflows: CL-WF-06, CL-WF-07, CL-WF-09"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull orders register + POC + visits for sampled episodes",
+        "role": "QA Reviewer",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Verify each order reflected in POC update",
+        "role": "QA Reviewer",
+        "formRaw": "CL-FM-006",
+        "formIds": [
+          "CL-FM-006"
+        ],
+        "deadline": "Day 2–3"
+      },
+      {
+        "order": 3,
+        "action": "Verify execution evidence in visit notes",
+        "role": "QA Reviewer",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Audit verbal-order signature timeliness per CL-WF-07",
+        "role": "QA Reviewer",
+        "formRaw": "CL-FM-007",
+        "formIds": [
+          "CL-FM-007"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Issue CAPs; pattern → CO-WF-14",
+        "role": "Clinical Mgr",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 6,
+        "action": "File report; feed to QA-WF-03",
+        "role": "QA Reviewer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-006",
+      "CL-FM-007",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, CL-FM-006, CL-FM-007, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Clinical Manager signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager signs.",
+    "outputs": "Orders/POC Alignment Audit Report; defect register; CAP queue.",
+    "sla": "Monthly. Verbal-order signature backlog cleared within audit cycle.",
+    "escalationLogic": "Verbal-order backlog >14 days → physician escalation, billing hold via FN-WF-15. Findings feed QA-WF-03 and CO-WF-14.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unsigned verbal orders → claim denial; CMS PEPPER outlier.",
+    "auditRequirements": "Per-cycle log: sampled episodes, defect register, verbal-order backlog, CAPs. Retention ≥6 years. Cross-referenced to CL-WF-06, CL-WF-07, CO-WF-14, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-07",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-06",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-14",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-15",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 6,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
   "CL-WF-01": {
     "id": "CL-WF-01",
     "domain": "CL",
@@ -3673,6 +5636,1390 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "formCount": 7,
       "policyCount": 2,
       "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "CO-WF-23": {
+    "id": "CO-WF-23",
+    "domain": "CO",
+    "title": "PRE-BILL CLAIMS AUDIT",
+    "sourceMarkdown": "## CO-WF-23 — PRE-BILL CLAIMS AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- CO-CB-001 Pre-Bill Claims; FN-RC-002 Claim Submission; 42 CFR § 484.205; SSA § 1862(a)(1)(A)\r\n\r\n### 2. PROCESS OVERVIEW\r\nDaily/weekly pre-bill claims audit verifying that every claim queued for submission has: physician orders, signed POC, F2F evidence, OASIS-derived HHRG/HIPPS, skilled-need narrative, and visit-note documentation. Aggregates evidence from CL-WF-06, CL-WF-07, CL-WF-03, CL-WF-05, CL-WF-09. Blocks FN-WF-04 (claim submission) on any defect.\r\n\r\n### 3. TRIGGER(S)\r\n- **Continuous:** Pre-bill queue evaluated daily\r\n- **Time-based:** Weekly aggregate report\r\n- Conditional: claim hold rate >5% → immediate root-cause sweep\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Billing Auditor\r\n- **Supporting:** Coder, Clinical Manager\r\n- **Approval:** Compliance Officer; Administrator for systemic holds\r\n\r\n### 5. INPUTS\r\n- Pre-bill claim queue (NOA, RAP, final claims)\r\n- Sample: 100% pre-submission review for first-claim of episode; 25% sample for subsequent\r\n- Source workflows: CL-WF-03, CL-WF-05, CL-WF-06, CL-WF-07, CL-WF-09, FN-WF-04\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull pre-bill queue from billing system | Billing Auditor | CO-FM-022 | Daily |\r\n| 2 | Verify F2F encounter present per CL-WF-03 | Billing Auditor | CL-FM-010 | Daily |\r\n| 3 | Verify signed POC + orders per CL-WF-06/07 | Billing Auditor | CL-FM-005 | Daily |\r\n| 4 | Verify HHRG/HIPPS reconciled with OASIS per CL-WF-05 | Coder | CL-FM-002 | Daily |\r\n| 5 | Verify visit notes support visit count and skilled need | Billing Auditor | CO-FM-021 | Daily |\r\n| 6 | Apply hold or release per defect; log disposition | Billing Auditor | CO-FM-024 | Daily |\r\n| 7 | Compile weekly audit report; feed to FN-WF-15 and QA-WF-03 | Billing Auditor | CO-FM-024 | Weekly |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, CL-FM-002, CL-FM-005, CL-FM-010, FN-FM-006\r\n\r\n### 8. APPROVALS\r\nCompliance Officer signs weekly report. Administrator co-signs systemic-hold determinations.\r\n\r\n### 9. OUTPUTS\r\nDaily pre-bill disposition log; weekly Pre-Bill Claims Audit Report; per-defect category trend; hold register.\r\n\r\n### 10. SLA / DEADLINES\r\nDaily evaluation. Weekly report by Tuesday for prior week. No claim released to FN-WF-04 without disposition.\r\n\r\n### 11. ESCALATION LOGIC\r\nHold rate >5% → systemic CAP via CO-WF-04. Repeat clinician/coder defects → HR-WF-09 + CL-WF-25. Patterns suggesting upcoding → CO-WF-08 FWA. Findings feed QA-WF-03 and FN-WF-15.\r\n\r\n### 12. FAILURE CONDITIONS\r\nSkipped daily evaluation → False Claims Act exposure for any released defective claim. Bypass of hold gate is a structural compliance failure citable under 42 CFR § 484.205.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nDaily disposition log retained ≥10 years (FCA SOL). Weekly report linked to FN-WF-04, FN-WF-15, CO-WF-08. Sample-frame size, defect register, hold disposition, sign-off captured per cycle.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CO-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CO-CB-001 Pre-Bill Claims; FN-RC-002 Claim Submission; 42 CFR § 484.205; SSA § 1862(a)(1)(A)"
+    ],
+    "policyRefs": [
+      "CO-CB-001",
+      "FN-RC-002"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.205",
+      "SSA § 1862(a)(1)("
+    ],
+    "processOverview": "Daily/weekly pre-bill claims audit verifying that every claim queued for submission has: physician orders, signed POC, F2F evidence, OASIS-derived HHRG/HIPPS, skilled-need narrative, and visit-note documentation. Aggregates evidence from CL-WF-06, CL-WF-07, CL-WF-03, CL-WF-05, CL-WF-09. Blocks FN-WF-04 (claim submission) on any defect.",
+    "triggers": [
+      {
+        "kind": "continuous",
+        "description": "Pre-bill queue evaluated daily"
+      },
+      {
+        "kind": "time_based",
+        "description": "Weekly aggregate report"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: claim hold rate >5% → immediate root-cause sweep"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Billing Auditor"
+      ],
+      "supporting": [
+        "Coder",
+        "Clinical Manager"
+      ],
+      "approval": [
+        "Compliance Officer",
+        "Administrator for systemic holds"
+      ]
+    },
+    "inputs": [
+      "Pre-bill claim queue (NOA, RAP, final claims)",
+      "Sample: 100% pre-submission review for first-claim of episode; 25% sample for subsequent",
+      "Source workflows: CL-WF-03, CL-WF-05, CL-WF-06, CL-WF-07, CL-WF-09, FN-WF-04"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull pre-bill queue from billing system",
+        "role": "Billing Auditor",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Daily"
+      },
+      {
+        "order": 2,
+        "action": "Verify F2F encounter present per CL-WF-03",
+        "role": "Billing Auditor",
+        "formRaw": "CL-FM-010",
+        "formIds": [
+          "CL-FM-010"
+        ],
+        "deadline": "Daily"
+      },
+      {
+        "order": 3,
+        "action": "Verify signed POC + orders per CL-WF-06/07",
+        "role": "Billing Auditor",
+        "formRaw": "CL-FM-005",
+        "formIds": [
+          "CL-FM-005"
+        ],
+        "deadline": "Daily"
+      },
+      {
+        "order": 4,
+        "action": "Verify HHRG/HIPPS reconciled with OASIS per CL-WF-05",
+        "role": "Coder",
+        "formRaw": "CL-FM-002",
+        "formIds": [
+          "CL-FM-002"
+        ],
+        "deadline": "Daily"
+      },
+      {
+        "order": 5,
+        "action": "Verify visit notes support visit count and skilled need",
+        "role": "Billing Auditor",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Daily"
+      },
+      {
+        "order": 6,
+        "action": "Apply hold or release per defect; log disposition",
+        "role": "Billing Auditor",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Daily"
+      },
+      {
+        "order": 7,
+        "action": "Compile weekly audit report; feed to FN-WF-15 and QA-WF-03",
+        "role": "Billing Auditor",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Weekly"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-002",
+      "CL-FM-005",
+      "CL-FM-010",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, CL-FM-002, CL-FM-005, CL-FM-010, FN-FM-006",
+    "approvals": [
+      {
+        "description": "Compliance Officer signs weekly report. Administrator co-signs systemic-hold determinations.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Compliance Officer signs weekly report. Administrator co-signs systemic-hold determinations.",
+    "outputs": "Daily pre-bill disposition log; weekly Pre-Bill Claims Audit Report; per-defect category trend; hold register.",
+    "sla": "Daily evaluation. Weekly report by Tuesday for prior week. No claim released to FN-WF-04 without disposition.",
+    "escalationLogic": "Hold rate >5% → systemic CAP via CO-WF-04. Repeat clinician/coder defects → HR-WF-09 + CL-WF-25. Patterns suggesting upcoding → CO-WF-08 FWA. Findings feed QA-WF-03 and FN-WF-15.",
+    "failureConditions": "Skipped daily evaluation → False Claims Act exposure for any released defective claim. Bypass of hold gate is a structural compliance failure citable under 42 CFR § 484.205.",
+    "auditRequirements": "Daily disposition log retained ≥10 years (FCA SOL). Weekly report linked to FN-WF-04, FN-WF-15, CO-WF-08. Sample-frame size, defect register, hold disposition, sign-off captured per cycle.",
+    "cadence": {
+      "kind": "continuous",
+      "interval": "daily"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-06",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-07",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-25",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-15",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 7,
+      "formCount": 7,
+      "policyCount": 2,
+      "declaredRisk": "immediate_jeopardy",
+      "requiresGoverningBody": false
+    }
+  },
+  "CO-WF-24": {
+    "id": "CO-WF-24",
+    "domain": "CO",
+    "title": "POST-BILL CLAIMS AUDIT",
+    "sourceMarkdown": "## CO-WF-24 — POST-BILL CLAIMS AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- CO-CB-002 Post-Bill Audit; 42 CFR § 484.205; OIG Compliance Program Guidance\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly statistical sample audit of submitted/paid claims to validate documentation supports billed services. Detects overpayment exposure that triggers FN-WF-08 (60-Day Overpayment Return). Aggregates evidence from FN-WF-04 (claim submission) and CL-WF-09 (visits). Feeds CO-WF-16 (OIG Self-Disclosure) when material.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly\r\n- Conditional: any external audit signal (TPE, RAC, UPIC, ZPIC); CO-WF-23 hold rate >5%\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Compliance Auditor\r\n- **Supporting:** Coder, Clinical Manager\r\n- **Approval:** Compliance Officer; Governing Body informed for material findings\r\n\r\n### 5. INPUTS\r\n- Submitted/paid claims dataset for quarter\r\n- Sample: probe sample minimum 30 claims per CMS guidance; expand to statistically valid sample if error rate >5%\r\n- Source workflows: FN-WF-04, CL-WF-09, CO-WF-23\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Build sampling frame from submitted claims | Compliance Auditor | CO-FM-022 | Day 1 |\r\n| 2 | Pull source documentation for each sampled claim | Compliance Auditor | CO-FM-021 | Day 2–4 |\r\n| 3 | Re-score claim against documentation; calculate paid vs. supported | Compliance Auditor | FN-FM-006 | Day 4–6 |\r\n| 4 | Quantify overpayment exposure; route material to FN-WF-08 | Compliance Auditor | FN-FM-006 | Day 7 |\r\n| 5 | Issue CAPs; expand sample if >5% error | Compliance Officer | QA-FM-005 | Day 8 |\r\n| 6 | File audit report; route to QA-WF-03 + Governing Body via GV-WF-01 if material | Compliance Officer | CO-FM-024 | Day 10 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, CL-FM-002, FN-FM-006, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nCompliance Officer signs report. Governing Body acknowledges material findings via GV-WF-01.\r\n\r\n### 9. OUTPUTS\r\nQuarterly Post-Bill Audit Report; sample disposition; overpayment register; OIG self-disclosure trigger memo (if applicable).\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly. Overpayment refund initiated within 60 days of identification per FN-WF-08.\r\n\r\n### 11. ESCALATION LOGIC\r\nError rate >5% → expanded sample; systemic CAP via CO-WF-04. Material overpayment → FN-WF-08 + CO-WF-16 (OIG self-disclosure). Pattern of upcoding → CO-WF-08. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03 closure. Unidentified overpayment past 60 days → False Claims Act liability. Failure to expand sample on >5% error → audit invalid.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: frame, sample IDs, scoring sheets, overpayment register, refund evidence, sign-offs. Retention ≥10 years. Cross-referenced to FN-WF-04, FN-WF-08, CO-WF-16, CO-WF-23, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CO-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CO-CB-002 Post-Bill Audit; 42 CFR § 484.205; OIG Compliance Program Guidance"
+    ],
+    "policyRefs": [
+      "CO-CB-002"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.205"
+    ],
+    "processOverview": "Quarterly statistical sample audit of submitted/paid claims to validate documentation supports billed services. Detects overpayment exposure that triggers FN-WF-08 (60-Day Overpayment Return). Aggregates evidence from FN-WF-04 (claim submission) and CL-WF-09 (visits). Feeds CO-WF-16 (OIG Self-Disclosure) when material.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any external audit signal (TPE, RAC, UPIC, ZPIC); CO-WF-23 hold rate >5%"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Compliance Auditor"
+      ],
+      "supporting": [
+        "Coder",
+        "Clinical Manager"
+      ],
+      "approval": [
+        "Compliance Officer",
+        "Governing Body informed for material findings"
+      ]
+    },
+    "inputs": [
+      "Submitted/paid claims dataset for quarter",
+      "Sample: probe sample minimum 30 claims per CMS guidance; expand to statistically valid sample if error rate >5%",
+      "Source workflows: FN-WF-04, CL-WF-09, CO-WF-23"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Build sampling frame from submitted claims",
+        "role": "Compliance Auditor",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Pull source documentation for each sampled claim",
+        "role": "Compliance Auditor",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 2–4"
+      },
+      {
+        "order": 3,
+        "action": "Re-score claim against documentation; calculate paid vs. supported",
+        "role": "Compliance Auditor",
+        "formRaw": "FN-FM-006",
+        "formIds": [
+          "FN-FM-006"
+        ],
+        "deadline": "Day 4–6"
+      },
+      {
+        "order": 4,
+        "action": "Quantify overpayment exposure; route material to FN-WF-08",
+        "role": "Compliance Auditor",
+        "formRaw": "FN-FM-006",
+        "formIds": [
+          "FN-FM-006"
+        ],
+        "deadline": "Day 7"
+      },
+      {
+        "order": 5,
+        "action": "Issue CAPs; expand sample if >5% error",
+        "role": "Compliance Officer",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 8"
+      },
+      {
+        "order": 6,
+        "action": "File audit report; route to QA-WF-03 + Governing Body via GV-WF-01 if material",
+        "role": "Compliance Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 10"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-002",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, CL-FM-002, FN-FM-006, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Compliance Officer signs report. Governing Body acknowledges material findings via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "approvalsRaw": "Compliance Officer signs report. Governing Body acknowledges material findings via GV-WF-01.",
+    "outputs": "Quarterly Post-Bill Audit Report; sample disposition; overpayment register; OIG self-disclosure trigger memo (if applicable).",
+    "sla": "Quarterly. Overpayment refund initiated within 60 days of identification per FN-WF-08.",
+    "escalationLogic": "Error rate >5% → expanded sample; systemic CAP via CO-WF-04. Material overpayment → FN-WF-08 + CO-WF-16 (OIG self-disclosure). Pattern of upcoding → CO-WF-08. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03 closure. Unidentified overpayment past 60 days → False Claims Act liability. Failure to expand sample on >5% error → audit invalid.",
+    "auditRequirements": "Per-cycle log: frame, sample IDs, scoring sheets, overpayment register, refund evidence, sign-offs. Retention ≥10 years. Cross-referenced to FN-WF-04, FN-WF-08, CO-WF-16, CO-WF-23, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "FN-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-16",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-23",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "GV-WF-01",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 6,
+      "policyCount": 1,
+      "declaredRisk": "immediate_jeopardy",
+      "requiresGoverningBody": true
+    }
+  },
+  "CO-WF-25": {
+    "id": "CO-WF-25",
+    "domain": "CO",
+    "title": "DOCUMENTATION VS BILLING RECONCILIATION",
+    "sourceMarkdown": "## CO-WF-25 — DOCUMENTATION VS BILLING RECONCILIATION\r\n\r\n### 1. POLICY REFERENCES\r\n- CO-CB-003 Documentation/Billing Alignment; 42 CFR § 484.110; OIG HHA Compliance Guidance\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly reconciliation of billed visit codes/HCPCS against documented visits and discipline. Cross-checks units billed against visit notes. Aggregates evidence from FN-WF-04, CL-WF-09, CL-WF-21. Findings feed CO-WF-14 and QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: variance >2% between billed and documented units\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Billing Auditor\r\n- **Supporting:** Coder, Clinical Manager\r\n- **Approval:** Compliance Officer\r\n\r\n### 5. INPUTS\r\n- Monthly billed visit dataset\r\n- Visit-note dataset\r\n- Source workflows: FN-WF-04, CL-WF-09, CL-WF-21\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull billed visit dataset and visit-note dataset | Billing Auditor | CO-FM-022 | Day 1 |\r\n| 2 | Reconcile per episode: discipline, unit count, code | Billing Auditor | FN-FM-006 | Day 2–4 |\r\n| 3 | Investigate variances; classify root cause | Billing Auditor | CO-FM-021 | Day 5 |\r\n| 4 | Issue CAPs; refund any overbilled units via FN-WF-08 | Compliance Officer | QA-FM-005 | Day 6 |\r\n| 5 | File report; feed to QA-WF-03 and CO-WF-14 | Billing Auditor | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, FN-FM-006, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nCompliance Officer signs.\r\n\r\n### 9. OUTPUTS\r\nMonthly Reconciliation Report; variance register; refund queue.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. Refund initiated within 60 days per FN-WF-08.\r\n\r\n### 11. ESCALATION LOGIC\r\nVariance >2% → systemic CAP via CO-WF-04. Pattern → CO-WF-08 FWA review. Findings feed QA-WF-03 and CO-WF-14.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unreconciled overbilled units past 60 days → FCA exposure.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: dataset hashes, variance register, refund evidence. Retention ≥10 years. Cross-referenced to FN-WF-04, FN-WF-08, CO-WF-14, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CO-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CO-CB-003 Documentation/Billing Alignment; 42 CFR § 484.110; OIG HHA Compliance Guidance"
+    ],
+    "policyRefs": [
+      "CO-CB-003"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.110"
+    ],
+    "processOverview": "Monthly reconciliation of billed visit codes/HCPCS against documented visits and discipline. Cross-checks units billed against visit notes. Aggregates evidence from FN-WF-04, CL-WF-09, CL-WF-21. Findings feed CO-WF-14 and QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: variance >2% between billed and documented units"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Billing Auditor"
+      ],
+      "supporting": [
+        "Coder",
+        "Clinical Manager"
+      ],
+      "approval": [
+        "Compliance Officer"
+      ]
+    },
+    "inputs": [
+      "Monthly billed visit dataset",
+      "Visit-note dataset",
+      "Source workflows: FN-WF-04, CL-WF-09, CL-WF-21"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull billed visit dataset and visit-note dataset",
+        "role": "Billing Auditor",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Reconcile per episode: discipline, unit count, code",
+        "role": "Billing Auditor",
+        "formRaw": "FN-FM-006",
+        "formIds": [
+          "FN-FM-006"
+        ],
+        "deadline": "Day 2–4"
+      },
+      {
+        "order": 3,
+        "action": "Investigate variances; classify root cause",
+        "role": "Billing Auditor",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 4,
+        "action": "Issue CAPs; refund any overbilled units via FN-WF-08",
+        "role": "Compliance Officer",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 6"
+      },
+      {
+        "order": 5,
+        "action": "File report; feed to QA-WF-03 and CO-WF-14",
+        "role": "Billing Auditor",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, FN-FM-006, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Compliance Officer signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Compliance Officer signs.",
+    "outputs": "Monthly Reconciliation Report; variance register; refund queue.",
+    "sla": "Monthly. Refund initiated within 60 days per FN-WF-08.",
+    "escalationLogic": "Variance >2% → systemic CAP via CO-WF-04. Pattern → CO-WF-08 FWA review. Findings feed QA-WF-03 and CO-WF-14.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unreconciled overbilled units past 60 days → FCA exposure.",
+    "auditRequirements": "Per-cycle log: dataset hashes, variance register, refund evidence. Retention ≥10 years. Cross-referenced to FN-WF-04, FN-WF-08, CO-WF-14, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "FN-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-21",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-14",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-08",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 5,
+      "policyCount": 1,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "CO-WF-26": {
+    "id": "CO-WF-26",
+    "domain": "CO",
+    "title": "CODING ACCURACY REVIEW",
+    "sourceMarkdown": "## CO-WF-26 — CODING ACCURACY REVIEW\r\n\r\n### 1. POLICY REFERENCES\r\n- CO-CB-004 Coding Accuracy; ICD-10-CM Official Guidelines; 42 CFR § 484.65\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly coder accuracy review on principal/secondary diagnoses, sequencing, OASIS-coding alignment, and HHRG/HIPPS impact. Aggregates evidence from CL-WF-05 and CO-WF-23. Feeds clinician/coder retraining via HR-WF-07 and findings to QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: HIPPS revenue variance >5%\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Coder Auditor (HCS-D / BCHH-C)\r\n- **Supporting:** Clinical Manager\r\n- **Approval:** Compliance Officer for systemic\r\n\r\n### 5. INPUTS\r\n- Coded episodes for the month\r\n- Sample: 10% per coder, minimum 5 per coder\r\n- Source workflows: CL-WF-05, CO-WF-23\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull coded episode sample | Coder Auditor | CO-FM-022 | Day 1 |\r\n| 2 | Re-code each from source documentation | Coder Auditor | FN-FM-006 | Day 2–4 |\r\n| 3 | Score primary/secondary/sequencing accuracy and HIPPS impact | Coder Auditor | CO-FM-021 | Day 5 |\r\n| 4 | Issue per-coder remediation; route to HR-WF-07 | Compliance Officer | HR-FM-016 | Day 6 |\r\n| 5 | File report; feed to QA-WF-03 and FN-WF-15 | Coder Auditor | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, FN-FM-006, HR-FM-016, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nCompliance Officer signs systemic findings.\r\n\r\n### 9. OUTPUTS\r\nPer-Coder Accuracy Scorecard; aggregate defect register; remediation queue.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. Per-coder remediation initiated within 5 business days.\r\n\r\n### 11. ESCALATION LOGIC\r\nPer-coder accuracy <90% → mandatory retraining via HR-WF-07. Material HIPPS impact → FN-WF-15. Pattern of upcoding → CO-WF-08 FWA. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03 closure. Sustained low coder accuracy → systemic upcoding/downcoding exposure.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: sample IDs, per-coder scores, HIPPS impact, retraining evidence. Retention ≥10 years. Cross-referenced to CL-WF-05, CO-WF-23, FN-WF-15, HR-WF-07, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CO-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CO-CB-004 Coding Accuracy; ICD-10-CM Official Guidelines; 42 CFR § 484.65"
+    ],
+    "policyRefs": [
+      "CO-CB-004"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65"
+    ],
+    "processOverview": "Monthly coder accuracy review on principal/secondary diagnoses, sequencing, OASIS-coding alignment, and HHRG/HIPPS impact. Aggregates evidence from CL-WF-05 and CO-WF-23. Feeds clinician/coder retraining via HR-WF-07 and findings to QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: HIPPS revenue variance >5%"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Coder Auditor (HCS-D / BCHH-C)"
+      ],
+      "supporting": [
+        "Clinical Manager"
+      ],
+      "approval": [
+        "Compliance Officer for systemic"
+      ]
+    },
+    "inputs": [
+      "Coded episodes for the month",
+      "Sample: 10% per coder, minimum 5 per coder",
+      "Source workflows: CL-WF-05, CO-WF-23"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull coded episode sample",
+        "role": "Coder Auditor",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Re-code each from source documentation",
+        "role": "Coder Auditor",
+        "formRaw": "FN-FM-006",
+        "formIds": [
+          "FN-FM-006"
+        ],
+        "deadline": "Day 2–4"
+      },
+      {
+        "order": 3,
+        "action": "Score primary/secondary/sequencing accuracy and HIPPS impact",
+        "role": "Coder Auditor",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 4,
+        "action": "Issue per-coder remediation; route to HR-WF-07",
+        "role": "Compliance Officer",
+        "formRaw": "HR-FM-016",
+        "formIds": [
+          "HR-FM-016"
+        ],
+        "deadline": "Day 6"
+      },
+      {
+        "order": 5,
+        "action": "File report; feed to QA-WF-03 and FN-WF-15",
+        "role": "Coder Auditor",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006",
+      "HR-FM-016",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, FN-FM-006, HR-FM-016, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Compliance Officer signs systemic findings.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Compliance Officer signs systemic findings.",
+    "outputs": "Per-Coder Accuracy Scorecard; aggregate defect register; remediation queue.",
+    "sla": "Monthly. Per-coder remediation initiated within 5 business days.",
+    "escalationLogic": "Per-coder accuracy <90% → mandatory retraining via HR-WF-07. Material HIPPS impact → FN-WF-15. Pattern of upcoding → CO-WF-08 FWA. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03 closure. Sustained low coder accuracy → systemic upcoding/downcoding exposure.",
+    "auditRequirements": "Per-cycle log: sample IDs, per-coder scores, HIPPS impact, retraining evidence. Retention ≥10 years. Cross-referenced to CL-WF-05, CO-WF-23, FN-WF-15, HR-WF-07, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-23",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-07",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-08",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 6,
+      "policyCount": 1,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "CO-WF-27": {
+    "id": "CO-WF-27",
+    "domain": "CO",
+    "title": "FWA MONITORING",
+    "sourceMarkdown": "## CO-WF-27 — FWA MONITORING\r\n\r\n### 1. POLICY REFERENCES\r\n- CO-CP-005 FWA Program; 42 CFR § 422.503(b)(4)(vi); SSA § 1128, § 1128A; 31 USC § 3729 (FCA)\r\n\r\n### 2. PROCESS OVERVIEW\r\nContinuous FWA monitoring program: hotline triage (CO-WF-03), data-analytic risk indicators (upcoding, unbundling, billing for non-rendered services, kickback patterns), exclusion screening (CO-WF-15, HR-WF-15), and OIG/CMS alert ingestion. Hardens and aggregates CO-WF-08 (FWA training/monitoring). Feeds CO-WF-16 (OIG self-disclosure) and QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Continuous:** Risk indicator dashboard refreshed weekly\r\n- **Time-based:** Quarterly aggregate review\r\n- Conditional: hotline tip; OIG/CMS alert; external audit signal\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Compliance Officer\r\n- **Supporting:** Compliance Auditor, Legal\r\n- **Approval:** Governing Body for material; Compliance Officer for routine\r\n\r\n### 5. INPUTS\r\n- Risk indicator dataset (visit/billing patterns)\r\n- Hotline log (CO-WF-03)\r\n- Exclusion screening results (CO-WF-15, HR-WF-15)\r\n- Source workflows: CO-WF-03, CO-WF-08, CO-WF-15, HR-WF-15, CO-WF-23, CO-WF-24\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Refresh risk indicator dashboard | Compliance Auditor | EN-FM-034 | Weekly |\r\n| 2 | Triage hotline tips per CO-WF-03 | Compliance Officer | CO-FM-003 | Continuous |\r\n| 3 | Investigate any indicator above threshold | Compliance Officer | CO-FM-004 | Per case |\r\n| 4 | Verify monthly exclusion screening completion via CO-WF-15 / HR-WF-15 | Compliance Officer | HR-FM-005 | Monthly |\r\n| 5 | Compile quarterly FWA report; route material findings to CO-WF-16 | Compliance Officer | CO-FM-024 | Quarterly |\r\n| 6 | Brief Governing Body via GV-WF-01 | Compliance Officer | GV-FM-023 | Quarterly |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-003, CO-FM-004, CO-FM-024, HR-FM-005, EN-FM-034, GV-FM-023, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nCompliance Officer signs quarterly. Governing Body accepts via formal vote for material matters.\r\n\r\n### 9. OUTPUTS\r\nWeekly risk indicator dashboard; quarterly FWA monitoring report; investigation register; OIG self-disclosure triggers.\r\n\r\n### 10. SLA / DEADLINES\r\nContinuous. Quarterly report ≥7 days before quarterly Governing Body meeting (GV-WF-01).\r\n\r\n### 11. ESCALATION LOGIC\r\nMaterial finding → CO-WF-16 OIG self-disclosure within 60 days of identification. Excluded individual found → HR-WF-09 + immediate removal. Findings feed QA-WF-03, CO-WF-22, GV-WF-01.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed quarterly review or skipped exclusion screening → FCA, AKS, exclusion-list violation exposure. Failure to self-disclose past 60 days → loss of OIG self-disclosure protection.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nContinuous log: risk indicators, investigations, dispositions, self-disclosures, exclusion screening evidence. Retention ≥10 years. Cross-referenced to CO-WF-03, CO-WF-08, CO-WF-15, CO-WF-16, HR-WF-15, GV-WF-01, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CO-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CO-CP-005 FWA Program; 42 CFR § 422.503(b)(4)(vi); SSA § 1128, § 1128A; 31 USC § 3729 (FCA)"
+    ],
+    "policyRefs": [
+      "CO-CP-005"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 422.503(b)(4)(vi)",
+      "SSA § 1128"
+    ],
+    "processOverview": "Continuous FWA monitoring program: hotline triage (CO-WF-03), data-analytic risk indicators (upcoding, unbundling, billing for non-rendered services, kickback patterns), exclusion screening (CO-WF-15, HR-WF-15), and OIG/CMS alert ingestion. Hardens and aggregates CO-WF-08 (FWA training/monitoring). Feeds CO-WF-16 (OIG self-disclosure) and QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "continuous",
+        "description": "Risk indicator dashboard refreshed weekly"
+      },
+      {
+        "kind": "time_based",
+        "description": "Quarterly aggregate review"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: hotline tip; OIG/CMS alert; external audit signal"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Compliance Officer"
+      ],
+      "supporting": [
+        "Compliance Auditor",
+        "Legal"
+      ],
+      "approval": [
+        "Governing Body for material",
+        "Compliance Officer for routine"
+      ]
+    },
+    "inputs": [
+      "Risk indicator dataset (visit/billing patterns)",
+      "Hotline log (CO-WF-03)",
+      "Exclusion screening results (CO-WF-15, HR-WF-15)",
+      "Source workflows: CO-WF-03, CO-WF-08, CO-WF-15, HR-WF-15, CO-WF-23, CO-WF-24"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Refresh risk indicator dashboard",
+        "role": "Compliance Auditor",
+        "formRaw": "EN-FM-034",
+        "formIds": [
+          "EN-FM-034"
+        ],
+        "deadline": "Weekly"
+      },
+      {
+        "order": 2,
+        "action": "Triage hotline tips per CO-WF-03",
+        "role": "Compliance Officer",
+        "formRaw": "CO-FM-003",
+        "formIds": [
+          "CO-FM-003"
+        ],
+        "deadline": "Continuous"
+      },
+      {
+        "order": 3,
+        "action": "Investigate any indicator above threshold",
+        "role": "Compliance Officer",
+        "formRaw": "CO-FM-004",
+        "formIds": [
+          "CO-FM-004"
+        ],
+        "deadline": "Per case"
+      },
+      {
+        "order": 4,
+        "action": "Verify monthly exclusion screening completion via CO-WF-15 / HR-WF-15",
+        "role": "Compliance Officer",
+        "formRaw": "HR-FM-005",
+        "formIds": [
+          "HR-FM-005"
+        ],
+        "deadline": "Monthly"
+      },
+      {
+        "order": 5,
+        "action": "Compile quarterly FWA report; route material findings to CO-WF-16",
+        "role": "Compliance Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Quarterly"
+      },
+      {
+        "order": 6,
+        "action": "Brief Governing Body via GV-WF-01",
+        "role": "Compliance Officer",
+        "formRaw": "GV-FM-023",
+        "formIds": [
+          "GV-FM-023"
+        ],
+        "deadline": "Quarterly"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-003",
+      "CO-FM-004",
+      "CO-FM-024",
+      "EN-FM-034",
+      "GV-FM-023",
+      "HR-FM-005",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "CO-FM-003, CO-FM-004, CO-FM-024, HR-FM-005, EN-FM-034, GV-FM-023, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Compliance Officer signs quarterly. Governing Body accepts via formal vote for material matters.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "approvalsRaw": "Compliance Officer signs quarterly. Governing Body accepts via formal vote for material matters.",
+    "outputs": "Weekly risk indicator dashboard; quarterly FWA monitoring report; investigation register; OIG self-disclosure triggers.",
+    "sla": "Continuous. Quarterly report ≥7 days before quarterly Governing Body meeting (GV-WF-01).",
+    "escalationLogic": "Material finding → CO-WF-16 OIG self-disclosure within 60 days of identification. Excluded individual found → HR-WF-09 + immediate removal. Findings feed QA-WF-03, CO-WF-22, GV-WF-01.",
+    "failureConditions": "Missed quarterly review or skipped exclusion screening → FCA, AKS, exclusion-list violation exposure. Failure to self-disclose past 60 days → loss of OIG self-disclosure protection.",
+    "auditRequirements": "Continuous log: risk indicators, investigations, dispositions, self-disclosures, exclusion screening evidence. Retention ≥10 years. Cross-referenced to CO-WF-03, CO-WF-08, CO-WF-15, CO-WF-16, HR-WF-15, GV-WF-01, QA-WF-03.",
+    "cadence": {
+      "kind": "continuous",
+      "interval": "weekly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CO-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-16",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-22",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "GV-WF-01",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 7,
+      "policyCount": 1,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": true
+    }
+  },
+  "CO-WF-28": {
+    "id": "CO-WF-28",
+    "domain": "CO",
+    "title": "AUTHORIZATION / ELIGIBILITY AUDIT",
+    "sourceMarkdown": "## CO-WF-28 — AUTHORIZATION / ELIGIBILITY AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- FN-RC-001 Insurance Verification; 42 CFR § 424.22; CMIA / California Welfare Code\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly audit verifying that every active episode has current insurance verification, prior authorization (where required), eligibility on date of service, and benefits documentation. Aggregates evidence from CL-WF-01 (intake), FN-WF-04 (claims). Feeds FN-WF-15 and QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: claim denial due to authorization/eligibility >2%\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Insurance Verifier / Billing Auditor\r\n- **Supporting:** Intake Coord\r\n- **Approval:** Compliance Officer\r\n\r\n### 5. INPUTS\r\n- Active episode roster with payer + auth status\r\n- Sample: 100% high-risk payers; 15% Medicare/MA\r\n- Source workflows: CL-WF-01, FN-WF-04\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull active-episode auth/eligibility status | Verifier | CO-FM-022 | Day 1 |\r\n| 2 | Verify auth coverage span vs. current visit dates | Verifier | OP-FM-014 | Day 2 |\r\n| 3 | Re-verify eligibility for any approaching expiration | Verifier | OP-FM-014 | Day 3 |\r\n| 4 | Apply hold on episodes lacking active auth | Verifier | CO-FM-021 | Day 4 |\r\n| 5 | Compile report; feed denial trends to FN-WF-15 | Compliance Officer | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, OP-FM-014\r\n\r\n### 8. APPROVALS\r\nCompliance Officer signs.\r\n\r\n### 9. OUTPUTS\r\nMonthly Authorization/Eligibility Audit Report; hold register; denial trend.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. Holds applied within 24h of detection.\r\n\r\n### 11. ESCALATION LOGIC\r\nDenial rate >2% → CAP; pattern → FN-WF-15. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Services rendered without active auth → uncollectable revenue and potential CMIA disclosure issues.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: roster, hold register, denial trend, sign-off. Retention ≥10 years. Cross-referenced to CL-WF-01, FN-WF-04, FN-WF-15, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CO-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "FN-RC-001 Insurance Verification; 42 CFR § 424.22; CMIA / California Welfare Code"
+    ],
+    "policyRefs": [
+      "FN-RC-001"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 424.22"
+    ],
+    "processOverview": "Monthly audit verifying that every active episode has current insurance verification, prior authorization (where required), eligibility on date of service, and benefits documentation. Aggregates evidence from CL-WF-01 (intake), FN-WF-04 (claims). Feeds FN-WF-15 and QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: claim denial due to authorization/eligibility >2%"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Insurance Verifier / Billing Auditor"
+      ],
+      "supporting": [
+        "Intake Coord"
+      ],
+      "approval": [
+        "Compliance Officer"
+      ]
+    },
+    "inputs": [
+      "Active episode roster with payer + auth status",
+      "Sample: 100% high-risk payers; 15% Medicare/MA",
+      "Source workflows: CL-WF-01, FN-WF-04"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull active-episode auth/eligibility status",
+        "role": "Verifier",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Verify auth coverage span vs. current visit dates",
+        "role": "Verifier",
+        "formRaw": "OP-FM-014",
+        "formIds": [
+          "OP-FM-014"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Re-verify eligibility for any approaching expiration",
+        "role": "Verifier",
+        "formRaw": "OP-FM-014",
+        "formIds": [
+          "OP-FM-014"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Apply hold on episodes lacking active auth",
+        "role": "Verifier",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Compile report; feed denial trends to FN-WF-15",
+        "role": "Compliance Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "OP-FM-014"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, OP-FM-014",
+    "approvals": [
+      {
+        "description": "Compliance Officer signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Compliance Officer signs.",
+    "outputs": "Monthly Authorization/Eligibility Audit Report; hold register; denial trend.",
+    "sla": "Monthly. Holds applied within 24h of detection.",
+    "escalationLogic": "Denial rate >2% → CAP; pattern → FN-WF-15. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Services rendered without active auth → uncollectable revenue and potential CMIA disclosure issues.",
+    "auditRequirements": "Per-cycle log: roster, hold register, denial trend, sign-off. Retention ≥10 years. Cross-referenced to CL-WF-01, FN-WF-04, FN-WF-15, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 4,
+      "policyCount": 1,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "CO-WF-29": {
+    "id": "CO-WF-29",
+    "domain": "CO",
+    "title": "REVENUE CYCLE EXCEPTION REVIEW",
+    "sourceMarkdown": "## CO-WF-29 — REVENUE CYCLE EXCEPTION REVIEW\r\n\r\n### 1. POLICY REFERENCES\r\n- FN-RC-005 Revenue Cycle Integrity; 42 CFR § 484.205\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly review of revenue-cycle exceptions: denied claims, ADRs, RAC/UPIC requests, credit balances, write-offs, contractual variances. Hardens FN-WF-15 (RCM Self-Audit). Aggregates outputs of FN-WF-05 (denial mgmt), FN-WF-06 (ADR), FN-WF-07 (credit balance), FN-WF-08 (overpayment). Feeds QA-WF-03 and CO-WF-22.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: any RAC/UPIC/TPE letter; A/R aging breach\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Revenue Integrity Lead\r\n- **Supporting:** Billing Auditor, CFO/Controller\r\n- **Approval:** Compliance Officer\r\n\r\n### 5. INPUTS\r\n- Denial register; ADR log; credit-balance report; A/R aging\r\n- Source workflows: FN-WF-05, FN-WF-06, FN-WF-07, FN-WF-08, FN-WF-15\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull all exception datasets | Rev Integrity Lead | CO-FM-022 | Day 1 |\r\n| 2 | Reconcile denials by reason; trend MoM | Rev Integrity Lead | FN-FM-006 | Day 2–3 |\r\n| 3 | Verify ADR responses on time per FN-WF-06 | Rev Integrity Lead | FN-FM-006 | Day 4 |\r\n| 4 | Verify credit balances reported per FN-WF-07 | Rev Integrity Lead | FN-FM-006 | Day 5 |\r\n| 5 | Verify overpayment refunds within 60 days per FN-WF-08 | Compliance Officer | FN-FM-006 | Day 5 |\r\n| 6 | File report; feed to QA-WF-03 and CO-WF-22 | Rev Integrity Lead | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-022, CO-FM-024, FN-FM-006, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nCompliance Officer signs. Administrator co-signs material variance.\r\n\r\n### 9. OUTPUTS\r\nMonthly RCM Exception Report; denial trend; ADR/credit balance/refund register.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. ADR responses within CMS deadline; refunds within 60 days.\r\n\r\n### 11. ESCALATION LOGIC\r\nMissed ADR deadline → automatic claim denial; CAP via FN-WF-06. Refund delay > 60 days → CO-WF-16. Findings feed QA-WF-03 and CO-WF-22.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unmonitored exceptions → audit findings, FCA exposure.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: exception register, dispositions, evidence of ADR/refund/credit-balance closure. Retention ≥10 years. Cross-referenced to FN-WF-05, FN-WF-06, FN-WF-07, FN-WF-08, FN-WF-15, CO-WF-16, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CO-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "FN-RC-005 Revenue Cycle Integrity; 42 CFR § 484.205"
+    ],
+    "policyRefs": [
+      "FN-RC-005"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.205"
+    ],
+    "processOverview": "Monthly review of revenue-cycle exceptions: denied claims, ADRs, RAC/UPIC requests, credit balances, write-offs, contractual variances. Hardens FN-WF-15 (RCM Self-Audit). Aggregates outputs of FN-WF-05 (denial mgmt), FN-WF-06 (ADR), FN-WF-07 (credit balance), FN-WF-08 (overpayment). Feeds QA-WF-03 and CO-WF-22.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any RAC/UPIC/TPE letter; A/R aging breach"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Revenue Integrity Lead"
+      ],
+      "supporting": [
+        "Billing Auditor",
+        "CFO/Controller"
+      ],
+      "approval": [
+        "Compliance Officer"
+      ]
+    },
+    "inputs": [
+      "Denial register; ADR log; credit-balance report; A/R aging",
+      "Source workflows: FN-WF-05, FN-WF-06, FN-WF-07, FN-WF-08, FN-WF-15"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull all exception datasets",
+        "role": "Rev Integrity Lead",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Reconcile denials by reason; trend MoM",
+        "role": "Rev Integrity Lead",
+        "formRaw": "FN-FM-006",
+        "formIds": [
+          "FN-FM-006"
+        ],
+        "deadline": "Day 2–3"
+      },
+      {
+        "order": 3,
+        "action": "Verify ADR responses on time per FN-WF-06",
+        "role": "Rev Integrity Lead",
+        "formRaw": "FN-FM-006",
+        "formIds": [
+          "FN-FM-006"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 4,
+        "action": "Verify credit balances reported per FN-WF-07",
+        "role": "Rev Integrity Lead",
+        "formRaw": "FN-FM-006",
+        "formIds": [
+          "FN-FM-006"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 5,
+        "action": "Verify overpayment refunds within 60 days per FN-WF-08",
+        "role": "Compliance Officer",
+        "formRaw": "FN-FM-006",
+        "formIds": [
+          "FN-FM-006"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 6,
+        "action": "File report; feed to QA-WF-03 and CO-WF-22",
+        "role": "Rev Integrity Lead",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-022, CO-FM-024, FN-FM-006, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Compliance Officer signs. Administrator co-signs material variance.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Compliance Officer signs. Administrator co-signs material variance.",
+    "outputs": "Monthly RCM Exception Report; denial trend; ADR/credit balance/refund register.",
+    "sla": "Monthly. ADR responses within CMS deadline; refunds within 60 days.",
+    "escalationLogic": "Missed ADR deadline → automatic claim denial; CAP via FN-WF-06. Refund delay > 60 days → CO-WF-16. Findings feed QA-WF-03 and CO-WF-22.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unmonitored exceptions → audit findings, FCA exposure.",
+    "auditRequirements": "Per-cycle log: exception register, dispositions, evidence of ADR/refund/credit-balance closure. Retention ≥10 years. Cross-referenced to FN-WF-05, FN-WF-06, FN-WF-07, FN-WF-08, FN-WF-15, CO-WF-16, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "FN-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-06",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-07",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "FN-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-22",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-16",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 5,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "CO-WF-30": {
+    "id": "CO-WF-30",
+    "domain": "CO",
+    "title": "CORRECTIVE ACTION TRACKING",
+    "sourceMarkdown": "## CO-WF-30 — CORRECTIVE ACTION TRACKING\r\n\r\n### 1. POLICY REFERENCES\r\n- CO-CP-002 CAP Lifecycle; 42 CFR § 484.65 (QAPI corrective action requirement)\r\n\r\n### 2. PROCESS OVERVIEW\r\nContinuous tracking workflow for ALL Corrective Action Plans (CAPs) opened by any audit workflow. Maintains a single CAP register with owner, due date, success criteria, evidence, and closure attestation. Hardens and aggregates the CAP outputs of every CL-WF-26..37, CO-WF-23..29, QA-WF-13..18, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25, plus CO-WF-04 and CO-WF-05. Feeds QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Continuous:** CAP opened by any audit workflow\r\n- **Time-based:** Weekly status review; monthly report\r\n- Conditional: CAP overdue >30 days → executive escalation\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Compliance Officer\r\n- **Supporting:** Domain Owners (CAP owners)\r\n- **Approval:** Compliance Officer (closure attestation); Administrator for >30-day overdue\r\n\r\n### 5. INPUTS\r\n- CAP register entries from every audit workflow\r\n- Evidence attachments for closure\r\n- Source workflows: ALL audit workflows\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Receive CAP intake from upstream audit | Compliance Officer | QA-FM-022 | On open |\r\n| 2 | Assign owner, due date, success criteria, evidence requirement | Compliance Officer | QA-FM-005 | Day 1 |\r\n| 3 | Track weekly via dashboard | Compliance Officer | QA-FM-022 | Weekly |\r\n| 4 | Validate evidence on submitted closure | Compliance Officer | QA-FM-005 | Per case |\r\n| 5 | Escalate overdue >30 days to Administrator | Compliance Officer | EN-FM-019 | Per case |\r\n| 6 | Compile monthly CAP report; feed to QA-WF-03 | Compliance Officer | CO-FM-024 | Monthly |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nQA-FM-005, QA-FM-022, EN-FM-019, CO-FM-024\r\n\r\n### 8. APPROVALS\r\nCompliance Officer attests every closure. Administrator signs >30-day escalations.\r\n\r\n### 9. OUTPUTS\r\nCAP register (live); weekly status; monthly CAP report; overdue escalations.\r\n\r\n### 10. SLA / DEADLINES\r\nContinuous. Monthly report by 5th business day. Overdue escalations within 24h of breach.\r\n\r\n### 11. ESCALATION LOGIC\r\nOverdue >30 days → Administrator + Governing Body via GV-WF-01. Repeat overdue same owner → HR-WF-09. Findings feed QA-WF-03 and CO-WF-22.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed monthly report blocks QA-WF-03. Unclosed CAPs → QAPI deficiency citation; survey risk.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nAppend-only CAP register. Retention ≥10 years. Cross-referenced to every audit workflow plus CO-WF-04, CO-WF-22, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/CO-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "CO-CP-002 CAP Lifecycle; 42 CFR § 484.65 (QAPI corrective action requirement)"
+    ],
+    "policyRefs": [
+      "CO-CP-002"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65"
+    ],
+    "processOverview": "Continuous tracking workflow for ALL Corrective Action Plans (CAPs) opened by any audit workflow. Maintains a single CAP register with owner, due date, success criteria, evidence, and closure attestation. Hardens and aggregates the CAP outputs of every CL-WF-26..37, CO-WF-23..29, QA-WF-13..18, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25, plus CO-WF-04 and CO-WF-05. Feeds QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "continuous",
+        "description": "CAP opened by any audit workflow"
+      },
+      {
+        "kind": "time_based",
+        "description": "Weekly status review; monthly report"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: CAP overdue >30 days → executive escalation"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Compliance Officer"
+      ],
+      "supporting": [
+        "Domain Owners (CAP owners)"
+      ],
+      "approval": [
+        "Compliance Officer (closure attestation)",
+        "Administrator for >30-day overdue"
+      ]
+    },
+    "inputs": [
+      "CAP register entries from every audit workflow",
+      "Evidence attachments for closure",
+      "Source workflows: ALL audit workflows"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Receive CAP intake from upstream audit",
+        "role": "Compliance Officer",
+        "formRaw": "QA-FM-022",
+        "formIds": [
+          "QA-FM-022"
+        ],
+        "deadline": "On open"
+      },
+      {
+        "order": 2,
+        "action": "Assign owner, due date, success criteria, evidence requirement",
+        "role": "Compliance Officer",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 3,
+        "action": "Track weekly via dashboard",
+        "role": "Compliance Officer",
+        "formRaw": "QA-FM-022",
+        "formIds": [
+          "QA-FM-022"
+        ],
+        "deadline": "Weekly"
+      },
+      {
+        "order": 4,
+        "action": "Validate evidence on submitted closure",
+        "role": "Compliance Officer",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Per case"
+      },
+      {
+        "order": 5,
+        "action": "Escalate overdue >30 days to Administrator",
+        "role": "Compliance Officer",
+        "formRaw": "EN-FM-019",
+        "formIds": [
+          "EN-FM-019"
+        ],
+        "deadline": "Per case"
+      },
+      {
+        "order": 6,
+        "action": "Compile monthly CAP report; feed to QA-WF-03",
+        "role": "Compliance Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Monthly"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "EN-FM-019",
+      "QA-FM-005",
+      "QA-FM-022"
+    ],
+    "requiredFormsRaw": "QA-FM-005, QA-FM-022, EN-FM-019, CO-FM-024",
+    "approvals": [
+      {
+        "description": "Compliance Officer attests every closure. Administrator signs >30-day escalations.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Compliance Officer attests every closure. Administrator signs >30-day escalations.",
+    "outputs": "CAP register (live); weekly status; monthly CAP report; overdue escalations.",
+    "sla": "Continuous. Monthly report by 5th business day. Overdue escalations within 24h of breach.",
+    "escalationLogic": "Overdue >30 days → Administrator + Governing Body via GV-WF-01. Repeat overdue same owner → HR-WF-09. Findings feed QA-WF-03 and CO-WF-22.",
+    "failureConditions": "Missed monthly report blocks QA-WF-03. Unclosed CAPs → QAPI deficiency citation; survey risk.",
+    "auditRequirements": "Append-only CAP register. Retention ≥10 years. Cross-referenced to every audit workflow plus CO-WF-04, CO-WF-22, QA-WF-03.",
+    "cadence": {
+      "kind": "continuous",
+      "interval": "weekly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-26",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-23",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-13",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-18",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-16",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-21",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "GV-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-22",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 4,
+      "policyCount": 1,
+      "declaredRisk": "high",
       "requiresGoverningBody": false
     }
   },
@@ -13491,6 +16838,673 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "requiresGoverningBody": false
     }
   },
+  "HR-WF-18": {
+    "id": "HR-WF-18",
+    "domain": "HR",
+    "title": "TRAINING COMPLIANCE MONITORING",
+    "sourceMarkdown": "## HR-WF-18 — TRAINING COMPLIANCE MONITORING\r\n\r\n### 1. POLICY REFERENCES\r\n- HR-TR-001 Training Program; HR-TR-101 Annual Mandatory Training; 42 CFR § 484.80; 42 CFR § 484.115\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly monitoring workflow that validates every employee has completed all required training assignments by the assigned due date. Aggregates evidence from HR-WF-03 (orientation), HR-WF-05 (HHA training), HR-WF-07 (annual mandatory), CL-WF-11 (HHA in-service ≥12 hours), CO-WF-08 (FWA training), CO-WF-09 (HIPAA training). Feeds HR-WF-19 (competency validation), QA-WF-03, and CO-WF-22.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: any new compliance training mandate; new-hire entry\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Training Coordinator\r\n- **Supporting:** HR Manager, Department Heads\r\n- **Approval:** HR Manager; Compliance Officer for systemic\r\n\r\n### 5. INPUTS\r\n- Active employee roster\r\n- Training assignment matrix per role\r\n- LMS completion data\r\n- Source workflows: HR-WF-03, HR-WF-05, HR-WF-07, CL-WF-11, CO-WF-08, CO-WF-09\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull active roster + training assignments from LMS | Training Coord | HR-FM-017 | Day 1 |\r\n| 2 | Compute per-employee compliance % and overdue list | Training Coord | HR-FM-017 | Day 2 |\r\n| 3 | Validate HHA in-service ≥12 h per CL-WF-11 | Training Coord | HR-FM-017 | Day 3 |\r\n| 4 | Validate FWA training per CO-WF-08 and HIPAA per CO-WF-09 | Training Coord | HR-FM-017 | Day 3 |\r\n| 5 | Issue notice & escalate >30 days overdue per HR-WF-09 | HR Manager | HR-FM-009 | Day 4 |\r\n| 6 | Compile compliance scorecard; feed QA-WF-03 | Training Coord | EN-FM-022 | Day 5 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nHR-FM-017, HR-FM-009, EN-FM-022, CO-FM-024\r\n\r\n### 8. APPROVALS\r\nHR Manager signs. Compliance Officer co-signs systemic <95% compliance.\r\n\r\n### 9. OUTPUTS\r\nMonthly Training Compliance Scorecard; per-employee status; overdue register; escalation queue.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. Overdue >30 days → discipline path within 5 business days.\r\n\r\n### 11. ESCALATION LOGIC\r\nPer-employee overdue >30 days → HR-WF-09. Systemic <95% compliance → CAP via CO-WF-04. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03 closure. Untrained staff providing care → 42 CFR § 484.80/.115 deficiency citation.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: roster, assignments, completion data, overdue list, escalations, sign-off. Retention ≥6 years. Cross-referenced to HR-WF-03, HR-WF-05, HR-WF-07, CL-WF-11, CO-WF-08, CO-WF-09, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/HR-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "HR-TR-001 Training Program; HR-TR-101 Annual Mandatory Training; 42 CFR § 484.80; 42 CFR § 484.115"
+    ],
+    "policyRefs": [
+      "HR-TR-001",
+      "HR-TR-101"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.80",
+      "42 CFR § 484.115"
+    ],
+    "processOverview": "Monthly monitoring workflow that validates every employee has completed all required training assignments by the assigned due date. Aggregates evidence from HR-WF-03 (orientation), HR-WF-05 (HHA training), HR-WF-07 (annual mandatory), CL-WF-11 (HHA in-service ≥12 hours), CO-WF-08 (FWA training), CO-WF-09 (HIPAA training). Feeds HR-WF-19 (competency validation), QA-WF-03, and CO-WF-22.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any new compliance training mandate; new-hire entry"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Training Coordinator"
+      ],
+      "supporting": [
+        "HR Manager",
+        "Department Heads"
+      ],
+      "approval": [
+        "HR Manager",
+        "Compliance Officer for systemic"
+      ]
+    },
+    "inputs": [
+      "Active employee roster",
+      "Training assignment matrix per role",
+      "LMS completion data",
+      "Source workflows: HR-WF-03, HR-WF-05, HR-WF-07, CL-WF-11, CO-WF-08, CO-WF-09"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull active roster + training assignments from LMS",
+        "role": "Training Coord",
+        "formRaw": "HR-FM-017",
+        "formIds": [
+          "HR-FM-017"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Compute per-employee compliance % and overdue list",
+        "role": "Training Coord",
+        "formRaw": "HR-FM-017",
+        "formIds": [
+          "HR-FM-017"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Validate HHA in-service ≥12 h per CL-WF-11",
+        "role": "Training Coord",
+        "formRaw": "HR-FM-017",
+        "formIds": [
+          "HR-FM-017"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Validate FWA training per CO-WF-08 and HIPAA per CO-WF-09",
+        "role": "Training Coord",
+        "formRaw": "HR-FM-017",
+        "formIds": [
+          "HR-FM-017"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 5,
+        "action": "Issue notice & escalate >30 days overdue per HR-WF-09",
+        "role": "HR Manager",
+        "formRaw": "HR-FM-009",
+        "formIds": [
+          "HR-FM-009"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 6,
+        "action": "Compile compliance scorecard; feed QA-WF-03",
+        "role": "Training Coord",
+        "formRaw": "EN-FM-022",
+        "formIds": [
+          "EN-FM-022"
+        ],
+        "deadline": "Day 5"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "EN-FM-022",
+      "HR-FM-009",
+      "HR-FM-017"
+    ],
+    "requiredFormsRaw": "HR-FM-017, HR-FM-009, EN-FM-022, CO-FM-024",
+    "approvals": [
+      {
+        "description": "HR Manager signs. Compliance Officer co-signs systemic <95% compliance.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "HR Manager signs. Compliance Officer co-signs systemic <95% compliance.",
+    "outputs": "Monthly Training Compliance Scorecard; per-employee status; overdue register; escalation queue.",
+    "sla": "Monthly. Overdue >30 days → discipline path within 5 business days.",
+    "escalationLogic": "Per-employee overdue >30 days → HR-WF-09. Systemic <95% compliance → CAP via CO-WF-04. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03 closure. Untrained staff providing care → 42 CFR § 484.80/.115 deficiency citation.",
+    "auditRequirements": "Per-cycle log: roster, assignments, completion data, overdue list, escalations, sign-off. Retention ≥6 years. Cross-referenced to HR-WF-03, HR-WF-05, HR-WF-07, CL-WF-11, CO-WF-08, CO-WF-09, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "HR-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-07",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-11",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-19",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-22",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-04",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 4,
+      "policyCount": 2,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "HR-WF-19": {
+    "id": "HR-WF-19",
+    "domain": "HR",
+    "title": "COMPETENCY VALIDATION & ANNUAL SKILLS REVALIDATION",
+    "sourceMarkdown": "## HR-WF-19 — COMPETENCY VALIDATION & ANNUAL SKILLS REVALIDATION\r\n\r\n### 1. POLICY REFERENCES\r\n- HR-TD-003 Competency; CL-SD-007 Skilled Competency; 42 CFR § 484.80(d); 42 CFR § 484.115\r\n\r\n### 2. PROCESS OVERVIEW\r\nAnnual (with quarterly verification cycle) audit confirming each clinical employee has documented competency validation appropriate to their role and any specialty assignments. Aggregates and hardens evidence from CL-WF-25 (clinician competency), HR-WF-05 (HHA competency), HR-WF-06 (skilled professional competency). Triggers retraining via HR-WF-07. Feeds QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Annual revalidation cycle + quarterly verification audit\r\n- Conditional: any clinician error pattern from CL-WF-26..32 or CL-WF-37; new specialty assignment\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Clinical Manager\r\n- **Supporting:** Staff Development RN, HR\r\n- **Approval:** Clinical Manager; Director of Nursing for specialty competencies\r\n\r\n### 5. INPUTS\r\n- Clinical employee roster\r\n- Competency matrices per role/specialty\r\n- Annual skills lab attendance\r\n- Source workflows: CL-WF-25, HR-WF-05, HR-WF-06, HR-WF-07\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull roster + competency status | Clinical Mgr | HR-FM-016 | Day 1 |\r\n| 2 | Verify annual skills lab attendance & passing score | Staff Dev RN | HR-FM-016 | Day 2 |\r\n| 3 | Verify role/specialty competencies per CL-WF-25 | Clinical Mgr | CL-FM-051 | Day 3 |\r\n| 4 | Issue retraining requirement for any gap → HR-WF-07 | Clinical Mgr | HR-FM-016 | Day 4 |\r\n| 5 | Compile competency scorecard; feed QA-WF-03 | Clinical Mgr | EN-FM-022 | Day 5 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nHR-FM-016, CL-FM-051, EN-FM-022, CO-FM-024\r\n\r\n### 8. APPROVALS\r\nClinical Manager signs. DON signs specialty.\r\n\r\n### 9. OUTPUTS\r\nAnnual Competency Scorecard; gap register; retraining queue.\r\n\r\n### 10. SLA / DEADLINES\r\nAnnual full revalidation; quarterly verification by 5th business day of new quarter.\r\n\r\n### 11. ESCALATION LOGIC\r\nFailed competency → mandatory retraining (HR-WF-07) and removal from independent practice until revalidated. Repeat failure → HR-WF-09. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03 closure. Uncompetent clinician providing care → patient safety risk; survey deficiency.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: roster, competency evidence per employee, retraining queue, sign-off. Retention ≥6 years. Cross-referenced to CL-WF-25, HR-WF-05, HR-WF-06, HR-WF-07, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/HR-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "HR-TD-003 Competency; CL-SD-007 Skilled Competency; 42 CFR § 484.80(d); 42 CFR § 484.115"
+    ],
+    "policyRefs": [
+      "HR-TD-003",
+      "CL-SD-007"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.80(d)",
+      "42 CFR § 484.115"
+    ],
+    "processOverview": "Annual (with quarterly verification cycle) audit confirming each clinical employee has documented competency validation appropriate to their role and any specialty assignments. Aggregates and hardens evidence from CL-WF-25 (clinician competency), HR-WF-05 (HHA competency), HR-WF-06 (skilled professional competency). Triggers retraining via HR-WF-07. Feeds QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Annual revalidation cycle + quarterly verification audit"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any clinician error pattern from CL-WF-26..32 or CL-WF-37; new specialty assignment"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Clinical Manager"
+      ],
+      "supporting": [
+        "Staff Development RN",
+        "HR"
+      ],
+      "approval": [
+        "Clinical Manager",
+        "Director of Nursing for specialty competencies"
+      ]
+    },
+    "inputs": [
+      "Clinical employee roster",
+      "Competency matrices per role/specialty",
+      "Annual skills lab attendance",
+      "Source workflows: CL-WF-25, HR-WF-05, HR-WF-06, HR-WF-07"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull roster + competency status",
+        "role": "Clinical Mgr",
+        "formRaw": "HR-FM-016",
+        "formIds": [
+          "HR-FM-016"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Verify annual skills lab attendance & passing score",
+        "role": "Staff Dev RN",
+        "formRaw": "HR-FM-016",
+        "formIds": [
+          "HR-FM-016"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Verify role/specialty competencies per CL-WF-25",
+        "role": "Clinical Mgr",
+        "formRaw": "CL-FM-051",
+        "formIds": [
+          "CL-FM-051"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Issue retraining requirement for any gap → HR-WF-07",
+        "role": "Clinical Mgr",
+        "formRaw": "HR-FM-016",
+        "formIds": [
+          "HR-FM-016"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Compile competency scorecard; feed QA-WF-03",
+        "role": "Clinical Mgr",
+        "formRaw": "EN-FM-022",
+        "formIds": [
+          "EN-FM-022"
+        ],
+        "deadline": "Day 5"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-051",
+      "CO-FM-024",
+      "EN-FM-022",
+      "HR-FM-016"
+    ],
+    "requiredFormsRaw": "HR-FM-016, CL-FM-051, EN-FM-022, CO-FM-024",
+    "approvals": [
+      {
+        "description": "Clinical Manager signs. DON signs specialty.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Clinical Manager signs. DON signs specialty.",
+    "outputs": "Annual Competency Scorecard; gap register; retraining queue.",
+    "sla": "Annual full revalidation; quarterly verification by 5th business day of new quarter.",
+    "escalationLogic": "Failed competency → mandatory retraining (HR-WF-07) and removal from independent practice until revalidated. Repeat failure → HR-WF-09. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03 closure. Uncompetent clinician providing care → patient safety risk; survey deficiency.",
+    "auditRequirements": "Per-cycle log: roster, competency evidence per employee, retraining queue, sign-off. Retention ≥6 years. Cross-referenced to CL-WF-25, HR-WF-05, HR-WF-06, HR-WF-07, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-25",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-06",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-07",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-09",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 4,
+      "policyCount": 2,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "HR-WF-20": {
+    "id": "HR-WF-20",
+    "domain": "HR",
+    "title": "LICENSE & EXCLUSION MONITORING (DEEP AUDIT)",
+    "sourceMarkdown": "## HR-WF-20 — LICENSE & EXCLUSION MONITORING (DEEP AUDIT)\r\n\r\n### 1. POLICY REFERENCES\r\n- HR-TA-003 OIG/SAM Screening; HR-TA-004 Primary Source Verification; 42 USC § 1320a-7; SAM.gov requirement\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly deep-audit workflow validating: (a) every clinician license is current and primary-source verified, (b) every employee/contractor was screened against OIG LEIE and SAM exclusion lists. Hardens HR-WF-04 (license tracking) and HR-WF-15 (monthly OIG/SAM rescreen). Captures hits, dispositions, and removal evidence. Feeds CO-WF-27 FWA monitoring and QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly (matches HR-WF-15 cadence)\r\n- Conditional: new hire; license expiration approaching <60 days; OIG/SAM release of new exclusions\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** HR Compliance Specialist\r\n- **Supporting:** Compliance Officer\r\n- **Approval:** Compliance Officer; Administrator for any hit\r\n\r\n### 5. INPUTS\r\n- Active workforce roster (employees + contractors + vendors with PHI access)\r\n- License registry\r\n- OIG LEIE + SAM exclusion list extracts\r\n- Source workflows: HR-WF-04, HR-WF-15, HR-WF-02\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull current workforce roster | HR Comp Spec | HR-FM-005 | Day 1 |\r\n| 2 | Run roster against OIG LEIE + SAM | HR Comp Spec | HR-FM-005 | Day 1 |\r\n| 3 | Validate per-clinician license currency via primary source | HR Comp Spec | HR-FM-006 | Day 2–3 |\r\n| 4 | On any hit: immediate suspension; investigation per HR-WF-09 + CO-WF-27 | Compliance Officer | HR-FM-009 | Same day |\r\n| 5 | File monthly evidence pack; feed QA-WF-03 | HR Comp Spec | CO-FM-024 | Day 5 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nHR-FM-005, HR-FM-006, HR-FM-009, CO-FM-024\r\n\r\n### 8. APPROVALS\r\nCompliance Officer signs monthly. Administrator signs any hit disposition.\r\n\r\n### 9. OUTPUTS\r\nMonthly screening evidence pack; license-currency register; hit log with dispositions.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly screening; same-day suspension on any hit; license renewal action 60 days before expiry.\r\n\r\n### 11. ESCALATION LOGIC\r\nAny exclusion hit → immediate removal + CO-WF-27 + CO-WF-16 self-disclosure if claims billed during exclusion. License lapse → HR-WF-09 + practice removal. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed monthly screening → claims paid for excluded provider = FCA + CMP exposure. Lapsed license practitioner → state board + survey citation.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nAppend-only screening evidence retained ≥10 years (FCA SOL). Per-cycle log: roster hash, screening source, hits, dispositions, sign-off. Cross-referenced to HR-WF-02, HR-WF-04, HR-WF-15, CO-WF-15, CO-WF-16, CO-WF-27, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/HR-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "HR-TA-003 OIG/SAM Screening; HR-TA-004 Primary Source Verification; 42 USC § 1320a-7; SAM.gov requirement"
+    ],
+    "policyRefs": [
+      "HR-TA-003",
+      "HR-TA-004"
+    ],
+    "regulatoryAnchors": [],
+    "processOverview": "Monthly deep-audit workflow validating: (a) every clinician license is current and primary-source verified, (b) every employee/contractor was screened against OIG LEIE and SAM exclusion lists. Hardens HR-WF-04 (license tracking) and HR-WF-15 (monthly OIG/SAM rescreen). Captures hits, dispositions, and removal evidence. Feeds CO-WF-27 FWA monitoring and QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly (matches HR-WF-15 cadence)"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: new hire; license expiration approaching <60 days; OIG/SAM release of new exclusions"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "HR Compliance Specialist"
+      ],
+      "supporting": [
+        "Compliance Officer"
+      ],
+      "approval": [
+        "Compliance Officer",
+        "Administrator for any hit"
+      ]
+    },
+    "inputs": [
+      "Active workforce roster (employees + contractors + vendors with PHI access)",
+      "License registry",
+      "OIG LEIE + SAM exclusion list extracts",
+      "Source workflows: HR-WF-04, HR-WF-15, HR-WF-02"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull current workforce roster",
+        "role": "HR Comp Spec",
+        "formRaw": "HR-FM-005",
+        "formIds": [
+          "HR-FM-005"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Run roster against OIG LEIE + SAM",
+        "role": "HR Comp Spec",
+        "formRaw": "HR-FM-005",
+        "formIds": [
+          "HR-FM-005"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 3,
+        "action": "Validate per-clinician license currency via primary source",
+        "role": "HR Comp Spec",
+        "formRaw": "HR-FM-006",
+        "formIds": [
+          "HR-FM-006"
+        ],
+        "deadline": "Day 2–3"
+      },
+      {
+        "order": 4,
+        "action": "On any hit: immediate suspension; investigation per HR-WF-09 + CO-WF-27",
+        "role": "Compliance Officer",
+        "formRaw": "HR-FM-009",
+        "formIds": [
+          "HR-FM-009"
+        ],
+        "deadline": "Same day"
+      },
+      {
+        "order": 5,
+        "action": "File monthly evidence pack; feed QA-WF-03",
+        "role": "HR Comp Spec",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 5"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "HR-FM-005",
+      "HR-FM-006",
+      "HR-FM-009"
+    ],
+    "requiredFormsRaw": "HR-FM-005, HR-FM-006, HR-FM-009, CO-FM-024",
+    "approvals": [
+      {
+        "description": "Compliance Officer signs monthly. Administrator signs any hit disposition.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Compliance Officer signs monthly. Administrator signs any hit disposition.",
+    "outputs": "Monthly screening evidence pack; license-currency register; hit log with dispositions.",
+    "sla": "Monthly screening; same-day suspension on any hit; license renewal action 60 days before expiry.",
+    "escalationLogic": "Any exclusion hit → immediate removal + CO-WF-27 + CO-WF-16 self-disclosure if claims billed during exclusion. License lapse → HR-WF-09 + practice removal. Findings feed QA-WF-03.",
+    "failureConditions": "Missed monthly screening → claims paid for excluded provider = FCA + CMP exposure. Lapsed license practitioner → state board + survey citation.",
+    "auditRequirements": "Append-only screening evidence retained ≥10 years (FCA SOL). Per-cycle log: roster hash, screening source, hits, dispositions, sign-off. Cross-referenced to HR-WF-02, HR-WF-04, HR-WF-15, CO-WF-15, CO-WF-16, CO-WF-27, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "HR-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-27",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-16",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-02",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-15",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 4,
+      "policyCount": 2,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "HR-WF-21": {
+    "id": "HR-WF-21",
+    "domain": "HR",
+    "title": "STAFF FILE AUDIT",
+    "sourceMarkdown": "## HR-WF-21 — STAFF FILE AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- HR-WM-007 Personnel File Management; 42 CFR § 484.115\r\n\r\n### 2. PROCESS OVERVIEW\r\nAnnual (with quarterly sample) audit verifying every active personnel file contains the complete required content set: application, background check, license/certs, training records, competency evidence, evaluations, health (TB/Hep B), I-9. Hardens HR-WF-04 and validates outputs of HR-WF-02, HR-WF-03, HR-WF-08. Feeds QA-WF-03 and CO-WF-04.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Annual full audit + quarterly 10% sample\r\n- Conditional: HR audit signal from licensing/state survey\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** HR Compliance Specialist\r\n- **Supporting:** HR Manager\r\n- **Approval:** HR Manager; Compliance Officer for systemic gaps\r\n\r\n### 5. INPUTS\r\n- Active personnel roster\r\n- File-content checklist (HR-FM-015)\r\n- Source workflows: HR-WF-02, HR-WF-03, HR-WF-04, HR-WF-08\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Apply quarterly 10% sample / annual 100% pull | HR Comp Spec | CO-FM-022 | Day 1 |\r\n| 2 | Score each file against 22-element personnel checklist | HR Comp Spec | HR-FM-015 | Day 2–4 |\r\n| 3 | Verify TB / Hep B per HR-WM-003 | HR Comp Spec | HR-FM-012 | Day 3 |\r\n| 4 | Issue gap remediation per file | HR Manager | QA-FM-005 | Day 5 |\r\n| 5 | Compile staff-file audit report; feed QA-WF-03 | HR Comp Spec | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nHR-FM-012, HR-FM-015, CO-FM-022, CO-FM-024, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nHR Manager signs. Compliance Officer co-signs systemic.\r\n\r\n### 9. OUTPUTS\r\nQuarterly/Annual Staff File Audit Report; per-file gap register; remediation queue.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly sample within 7 business days; annual full audit within 30 calendar days.\r\n\r\n### 11. ESCALATION LOGIC\r\nPer-file material gap → remediation within 14 days. Systemic >5% gap → CAP via CO-WF-04. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Incomplete personnel files → 42 CFR § 484.115 citation; survey deficiency.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: roster, sample IDs, scoring, gap register, remediation, sign-off. Retention ≥6 years. Cross-referenced to HR-WF-02, HR-WF-03, HR-WF-04, HR-WF-08, HR-WF-18, HR-WF-19, HR-WF-20, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/HR-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "HR-WM-007 Personnel File Management; 42 CFR § 484.115"
+    ],
+    "policyRefs": [
+      "HR-WM-007"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.115"
+    ],
+    "processOverview": "Annual (with quarterly sample) audit verifying every active personnel file contains the complete required content set: application, background check, license/certs, training records, competency evidence, evaluations, health (TB/Hep B), I-9. Hardens HR-WF-04 and validates outputs of HR-WF-02, HR-WF-03, HR-WF-08. Feeds QA-WF-03 and CO-WF-04.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Annual full audit + quarterly 10% sample"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: HR audit signal from licensing/state survey"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "HR Compliance Specialist"
+      ],
+      "supporting": [
+        "HR Manager"
+      ],
+      "approval": [
+        "HR Manager",
+        "Compliance Officer for systemic gaps"
+      ]
+    },
+    "inputs": [
+      "Active personnel roster",
+      "File-content checklist (HR-FM-015)",
+      "Source workflows: HR-WF-02, HR-WF-03, HR-WF-04, HR-WF-08"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Apply quarterly 10% sample / annual 100% pull",
+        "role": "HR Comp Spec",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Score each file against 22-element personnel checklist",
+        "role": "HR Comp Spec",
+        "formRaw": "HR-FM-015",
+        "formIds": [
+          "HR-FM-015"
+        ],
+        "deadline": "Day 2–4"
+      },
+      {
+        "order": 3,
+        "action": "Verify TB / Hep B per HR-WM-003",
+        "role": "HR Comp Spec",
+        "formRaw": "HR-FM-012",
+        "formIds": [
+          "HR-FM-012"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Issue gap remediation per file",
+        "role": "HR Manager",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 5,
+        "action": "Compile staff-file audit report; feed QA-WF-03",
+        "role": "HR Comp Spec",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "HR-FM-012",
+      "HR-FM-015",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "HR-FM-012, HR-FM-015, CO-FM-022, CO-FM-024, QA-FM-005",
+    "approvals": [
+      {
+        "description": "HR Manager signs. Compliance Officer co-signs systemic.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "HR Manager signs. Compliance Officer co-signs systemic.",
+    "outputs": "Quarterly/Annual Staff File Audit Report; per-file gap register; remediation queue.",
+    "sla": "Quarterly sample within 7 business days; annual full audit within 30 calendar days.",
+    "escalationLogic": "Per-file material gap → remediation within 14 days. Systemic >5% gap → CAP via CO-WF-04. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Incomplete personnel files → 42 CFR § 484.115 citation; survey deficiency.",
+    "auditRequirements": "Per-cycle log: roster, sample IDs, scoring, gap register, remediation, sign-off. Retention ≥6 years. Cross-referenced to HR-WF-02, HR-WF-03, HR-WF-04, HR-WF-08, HR-WF-18, HR-WF-19, HR-WF-20, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "HR-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-02",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-18",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-19",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-20",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 5,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
   "HR-WF-01": {
     "id": "HR-WF-01",
     "domain": "HR",
@@ -15966,6 +19980,857 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "stepCount": 6,
       "formCount": 7,
       "policyCount": 1,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "IT-WF-21": {
+    "id": "IT-WF-21",
+    "domain": "IT",
+    "title": "USER ACCESS REVIEW AUDIT",
+    "sourceMarkdown": "## IT-WF-21 — USER ACCESS REVIEW AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- IT-AC-001 Access Control; IT-AC-002 Identity Lifecycle; HIPAA § 164.308(a)(4); 45 CFR § 164.312(a)(1)\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly deep-audit workflow validating that every active user account corresponds to a current authorized employee/contractor with role-appropriate access. Hardens IT-WF-04 (quarterly access review) by sampling proof-of-evidence per system. Aggregates and validates evidence from HR-WF-08 (termination), HR-WF-15 (OIG/SAM), IT-WF-02 (provisioning), IT-WF-03 (deprovisioning), IT-WF-04 (access review). Feeds QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly\r\n- Conditional: any termination not deprovisioned within SLA; HIPAA risk-analysis update\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** IT Security Officer\r\n- **Supporting:** HR, Application Owners\r\n- **Approval:** Compliance Officer / Privacy Officer\r\n\r\n### 5. INPUTS\r\n- Active user list per system (EMR, billing, LMS, file shares, email)\r\n- HR active roster\r\n- Termination log\r\n- Source workflows: IT-WF-02, IT-WF-03, IT-WF-04, HR-WF-08, HR-WF-15\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull active user list per system | IT Sec Officer | IT-FM-009 | Day 1 |\r\n| 2 | Reconcile against HR active roster + terminations | IT Sec Officer | IT-FM-009 | Day 2 |\r\n| 3 | Sample 10% of accounts; verify role appropriateness with manager attestation | IT Sec Officer | IT-FM-009 | Day 3–5 |\r\n| 4 | Disable orphan / over-privileged accounts immediately | IT Sec Officer | IT-FM-009 | Same day |\r\n| 5 | Compile access review report; feed QA-WF-03 | IT Sec Officer | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nIT-FM-009, CO-FM-024, CO-FM-022\r\n\r\n### 8. APPROVALS\r\nPrivacy Officer signs. Compliance Officer co-signs material gaps.\r\n\r\n### 9. OUTPUTS\r\nQuarterly Access Review Report; orphan-account log with disable evidence; manager attestation pack.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly. Orphan disable: same day. Termination deprovision: ≤24h.\r\n\r\n### 11. ESCALATION LOGIC\r\nTermination not deprovisioned in 24h → CAP via CO-WF-04 + HR-WF-08 escalation. Repeat findings → IT-WF-22 HIPAA monitoring escalation. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Orphan / over-privileged accounts → HIPAA Security Rule violation; OCR penalties; data-breach exposure.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: user lists, reconciliation evidence, attestations, disable evidence, sign-off. Retention ≥6 years (HIPAA). Cross-referenced to IT-WF-02, IT-WF-03, IT-WF-04, HR-WF-08, HR-WF-15, IT-WF-22, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/IT-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "IT-AC-001 Access Control; IT-AC-002 Identity Lifecycle; HIPAA § 164.308(a)(4); 45 CFR § 164.312(a)(1)"
+    ],
+    "policyRefs": [
+      "IT-AC-001",
+      "IT-AC-002"
+    ],
+    "regulatoryAnchors": [
+      "HIPAA § 164.308",
+      "45 CFR § 164.312"
+    ],
+    "processOverview": "Quarterly deep-audit workflow validating that every active user account corresponds to a current authorized employee/contractor with role-appropriate access. Hardens IT-WF-04 (quarterly access review) by sampling proof-of-evidence per system. Aggregates and validates evidence from HR-WF-08 (termination), HR-WF-15 (OIG/SAM), IT-WF-02 (provisioning), IT-WF-03 (deprovisioning), IT-WF-04 (access review). Feeds QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any termination not deprovisioned within SLA; HIPAA risk-analysis update"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "IT Security Officer"
+      ],
+      "supporting": [
+        "HR",
+        "Application Owners"
+      ],
+      "approval": [
+        "Compliance Officer / Privacy Officer"
+      ]
+    },
+    "inputs": [
+      "Active user list per system (EMR, billing, LMS, file shares, email)",
+      "HR active roster",
+      "Termination log",
+      "Source workflows: IT-WF-02, IT-WF-03, IT-WF-04, HR-WF-08, HR-WF-15"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull active user list per system",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Reconcile against HR active roster + terminations",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Sample 10% of accounts; verify role appropriateness with manager attestation",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 3–5"
+      },
+      {
+        "order": 4,
+        "action": "Disable orphan / over-privileged accounts immediately",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Same day"
+      },
+      {
+        "order": 5,
+        "action": "Compile access review report; feed QA-WF-03",
+        "role": "IT Sec Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "IT-FM-009"
+    ],
+    "requiredFormsRaw": "IT-FM-009, CO-FM-024, CO-FM-022",
+    "approvals": [
+      {
+        "description": "Privacy Officer signs. Compliance Officer co-signs material gaps.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Privacy Officer signs. Compliance Officer co-signs material gaps.",
+    "outputs": "Quarterly Access Review Report; orphan-account log with disable evidence; manager attestation pack.",
+    "sla": "Quarterly. Orphan disable: same day. Termination deprovision: ≤24h.",
+    "escalationLogic": "Termination not deprovisioned in 24h → CAP via CO-WF-04 + HR-WF-08 escalation. Repeat findings → IT-WF-22 HIPAA monitoring escalation. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Orphan / over-privileged accounts → HIPAA Security Rule violation; OCR penalties; data-breach exposure.",
+    "auditRequirements": "Per-cycle log: user lists, reconciliation evidence, attestations, disable evidence, sign-off. Retention ≥6 years (HIPAA). Cross-referenced to IT-WF-02, IT-WF-03, IT-WF-04, HR-WF-08, HR-WF-15, IT-WF-22, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "IT-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-02",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-22",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 3,
+      "policyCount": 2,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "IT-WF-22": {
+    "id": "IT-WF-22",
+    "domain": "IT",
+    "title": "HIPAA SECURITY MONITORING AUDIT",
+    "sourceMarkdown": "## IT-WF-22 — HIPAA SECURITY MONITORING AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- IT-IS-001 Information Security Program; HIPAA Security Rule (45 CFR § 164.308–.316)\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly audit verifying ongoing HIPAA Security Rule technical, physical, and administrative safeguards remain operational. Hardens IT-WF-01 (Security Risk Analysis), IT-WF-05 (encryption), IT-WF-07 (BAA inventory), IT-WF-08 (vulnerability mgmt). Validates evidence and tests controls. Feeds QA-WF-03 and EN-WF-12.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly\r\n- Conditional: change to ePHI environment; OCR alert; new tech control\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** IT Security Officer\r\n- **Supporting:** Privacy Officer, Compliance Officer\r\n- **Approval:** Privacy Officer; Administrator for material findings\r\n\r\n### 5. INPUTS\r\n- Security risk analysis (IT-WF-01)\r\n- Vulnerability scan results (IT-WF-08)\r\n- Encryption inventory (IT-WF-05)\r\n- BAA register (IT-WF-07)\r\n- Source workflows: IT-WF-01, IT-WF-05, IT-WF-07, IT-WF-08, CO-WF-09\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Verify SRA currency and gap remediation per IT-WF-01 | IT Sec Officer | IT-FM-009 | Day 1 |\r\n| 2 | Test sample technical safeguards (encryption at-rest, in-transit, MFA, automatic logoff) | IT Sec Officer | IT-FM-009 | Day 2–3 |\r\n| 3 | Verify vulnerability remediation SLA per IT-WF-08 | IT Sec Officer | IT-FM-009 | Day 4 |\r\n| 4 | Reconcile BAA register vs. actual vendors with PHI access | Privacy Officer | IT-FM-009 | Day 5 |\r\n| 5 | Compile HIPAA security monitoring report; feed QA-WF-03 | IT Sec Officer | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nIT-FM-009, CO-FM-024, CO-FM-022\r\n\r\n### 8. APPROVALS\r\nPrivacy Officer signs. Administrator co-signs material gaps.\r\n\r\n### 9. OUTPUTS\r\nQuarterly HIPAA Security Monitoring Report; control-test evidence; remediation queue.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly. Control failure remediation per HIPAA risk tier.\r\n\r\n### 11. ESCALATION LOGIC\r\nControl failure → IT-WF-09 incident if exploited; CO-WF-10 breach assessment. Material gap → EN-WF-12 enterprise risk + Governing Body via GV-WF-01. Findings feed QA-WF-03 and CO-WF-22.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Untested safeguards → OCR penalty; potential corrective-action plan + multi-million-dollar settlement.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: SRA snapshot, control-test evidence, remediation status, sign-off. Retention ≥6 years (HIPAA). Cross-referenced to IT-WF-01, IT-WF-05, IT-WF-07, IT-WF-08, IT-WF-09, CO-WF-09, CO-WF-10, EN-WF-12, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/IT-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "IT-IS-001 Information Security Program; HIPAA Security Rule (45 CFR § 164.308–.316)"
+    ],
+    "policyRefs": [
+      "IT-IS-001"
+    ],
+    "regulatoryAnchors": [
+      "45 CFR § 164.308"
+    ],
+    "processOverview": "Quarterly audit verifying ongoing HIPAA Security Rule technical, physical, and administrative safeguards remain operational. Hardens IT-WF-01 (Security Risk Analysis), IT-WF-05 (encryption), IT-WF-07 (BAA inventory), IT-WF-08 (vulnerability mgmt). Validates evidence and tests controls. Feeds QA-WF-03 and EN-WF-12.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: change to ePHI environment; OCR alert; new tech control"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "IT Security Officer"
+      ],
+      "supporting": [
+        "Privacy Officer",
+        "Compliance Officer"
+      ],
+      "approval": [
+        "Privacy Officer",
+        "Administrator for material findings"
+      ]
+    },
+    "inputs": [
+      "Security risk analysis (IT-WF-01)",
+      "Vulnerability scan results (IT-WF-08)",
+      "Encryption inventory (IT-WF-05)",
+      "BAA register (IT-WF-07)",
+      "Source workflows: IT-WF-01, IT-WF-05, IT-WF-07, IT-WF-08, CO-WF-09"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Verify SRA currency and gap remediation per IT-WF-01",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Test sample technical safeguards (encryption at-rest, in-transit, MFA, automatic logoff)",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 2–3"
+      },
+      {
+        "order": 3,
+        "action": "Verify vulnerability remediation SLA per IT-WF-08",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 4,
+        "action": "Reconcile BAA register vs. actual vendors with PHI access",
+        "role": "Privacy Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 5,
+        "action": "Compile HIPAA security monitoring report; feed QA-WF-03",
+        "role": "IT Sec Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "IT-FM-009"
+    ],
+    "requiredFormsRaw": "IT-FM-009, CO-FM-024, CO-FM-022",
+    "approvals": [
+      {
+        "description": "Privacy Officer signs. Administrator co-signs material gaps.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Privacy Officer signs. Administrator co-signs material gaps.",
+    "outputs": "Quarterly HIPAA Security Monitoring Report; control-test evidence; remediation queue.",
+    "sla": "Quarterly. Control failure remediation per HIPAA risk tier.",
+    "escalationLogic": "Control failure → IT-WF-09 incident if exploited; CO-WF-10 breach assessment. Material gap → EN-WF-12 enterprise risk + Governing Body via GV-WF-01. Findings feed QA-WF-03 and CO-WF-22.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Untested safeguards → OCR penalty; potential corrective-action plan + multi-million-dollar settlement.",
+    "auditRequirements": "Per-cycle log: SRA snapshot, control-test evidence, remediation status, sign-off. Retention ≥6 years (HIPAA). Cross-referenced to IT-WF-01, IT-WF-05, IT-WF-07, IT-WF-08, IT-WF-09, CO-WF-09, CO-WF-10, EN-WF-12, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "IT-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-07",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-12",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-10",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "GV-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-22",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-09",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 3,
+      "policyCount": 1,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "IT-WF-23": {
+    "id": "IT-WF-23",
+    "domain": "IT",
+    "title": "PHI ACCESS MONITORING AUDIT",
+    "sourceMarkdown": "## IT-WF-23 — PHI ACCESS MONITORING AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- IT-AU-001 Audit Controls; HIPAA § 164.312(b); 45 CFR § 164.530(c)\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly audit of PHI access patterns to detect unauthorized or inappropriate access (snooping, bulk export, after-hours, terminated user). Hardens IT-WF-06 (audit log mgmt). Generates per-user and per-record access reports; investigates anomalies. Feeds CO-WF-10 (breach), CO-WF-22, QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: access anomaly alert; patient request for accounting of disclosures\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Privacy Officer\r\n- **Supporting:** IT Security Officer, Compliance Officer\r\n- **Approval:** Privacy Officer; Compliance Officer for breach determination\r\n\r\n### 5. INPUTS\r\n- EMR audit-log extract\r\n- Anomaly-detection alerts\r\n- Termination log (HR-WF-08)\r\n- Source workflows: IT-WF-06, HR-WF-08, IT-WF-21\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull monthly PHI access logs | IT Sec Officer | IT-FM-009 | Day 1 |\r\n| 2 | Run anomaly rules (after-hours, bulk, no-relationship, terminated user) | IT Sec Officer | IT-FM-009 | Day 2 |\r\n| 3 | Triage flagged events with manager attestation | Privacy Officer | IT-FM-009 | Day 3–4 |\r\n| 4 | If unauthorized → CO-WF-10 breach assessment; HR-WF-09 discipline | Privacy Officer | HR-FM-009 | Same day |\r\n| 5 | Compile PHI access report; feed QA-WF-03 | Privacy Officer | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nIT-FM-009, HR-FM-009, CO-FM-024\r\n\r\n### 8. APPROVALS\r\nPrivacy Officer signs. Compliance Officer signs breach determinations.\r\n\r\n### 9. OUTPUTS\r\nMonthly PHI Access Report; anomaly triage register; breach decisions; discipline actions.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. Anomaly triage ≤5 business days. Breach assessment per CO-WF-10 SLA.\r\n\r\n### 11. ESCALATION LOGIC\r\nConfirmed unauthorized access → CO-WF-10 breach + HR-WF-09 + HHS reporting per § 164.408. Pattern → IT-WF-22 + EN-WF-12. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Undetected unauthorized access → unreported breach; HHS / OCR enforcement; willful-neglect tier penalties.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nAppend-only access logs retained ≥6 years (HIPAA). Per-cycle: log hash, anomaly list, triage evidence, breach decisions, sign-off. Cross-referenced to IT-WF-06, IT-WF-21, IT-WF-22, CO-WF-10, HR-WF-08, HR-WF-09, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/IT-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "IT-AU-001 Audit Controls; HIPAA § 164.312(b); 45 CFR § 164.530(c)"
+    ],
+    "policyRefs": [
+      "IT-AU-001"
+    ],
+    "regulatoryAnchors": [
+      "HIPAA § 164.312",
+      "45 CFR § 164.530"
+    ],
+    "processOverview": "Monthly audit of PHI access patterns to detect unauthorized or inappropriate access (snooping, bulk export, after-hours, terminated user). Hardens IT-WF-06 (audit log mgmt). Generates per-user and per-record access reports; investigates anomalies. Feeds CO-WF-10 (breach), CO-WF-22, QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: access anomaly alert; patient request for accounting of disclosures"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Privacy Officer"
+      ],
+      "supporting": [
+        "IT Security Officer",
+        "Compliance Officer"
+      ],
+      "approval": [
+        "Privacy Officer",
+        "Compliance Officer for breach determination"
+      ]
+    },
+    "inputs": [
+      "EMR audit-log extract",
+      "Anomaly-detection alerts",
+      "Termination log (HR-WF-08)",
+      "Source workflows: IT-WF-06, HR-WF-08, IT-WF-21"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull monthly PHI access logs",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Run anomaly rules (after-hours, bulk, no-relationship, terminated user)",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Triage flagged events with manager attestation",
+        "role": "Privacy Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 3–4"
+      },
+      {
+        "order": 4,
+        "action": "If unauthorized → CO-WF-10 breach assessment; HR-WF-09 discipline",
+        "role": "Privacy Officer",
+        "formRaw": "HR-FM-009",
+        "formIds": [
+          "HR-FM-009"
+        ],
+        "deadline": "Same day"
+      },
+      {
+        "order": 5,
+        "action": "Compile PHI access report; feed QA-WF-03",
+        "role": "Privacy Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "HR-FM-009",
+      "IT-FM-009"
+    ],
+    "requiredFormsRaw": "IT-FM-009, HR-FM-009, CO-FM-024",
+    "approvals": [
+      {
+        "description": "Privacy Officer signs. Compliance Officer signs breach determinations.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Privacy Officer signs. Compliance Officer signs breach determinations.",
+    "outputs": "Monthly PHI Access Report; anomaly triage register; breach decisions; discipline actions.",
+    "sla": "Monthly. Anomaly triage ≤5 business days. Breach assessment per CO-WF-10 SLA.",
+    "escalationLogic": "Confirmed unauthorized access → CO-WF-10 breach + HR-WF-09 + HHS reporting per § 164.408. Pattern → IT-WF-22 + EN-WF-12. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Undetected unauthorized access → unreported breach; HHS / OCR enforcement; willful-neglect tier penalties.",
+    "auditRequirements": "Append-only access logs retained ≥6 years (HIPAA). Per-cycle: log hash, anomaly list, triage evidence, breach decisions, sign-off. Cross-referenced to IT-WF-06, IT-WF-21, IT-WF-22, CO-WF-10, HR-WF-08, HR-WF-09, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "IT-WF-06",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-10",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-22",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-22",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-12",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-21",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-08",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 3,
+      "policyCount": 1,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "IT-WF-24": {
+    "id": "IT-WF-24",
+    "domain": "IT",
+    "title": "AUDIT LOG REVIEW AUDIT",
+    "sourceMarkdown": "## IT-WF-24 — AUDIT LOG REVIEW AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- IT-AU-001 Audit Controls; HIPAA § 164.312(b)\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly audit verifying that audit logging is enabled, complete, integrity-protected, and reviewed for every system handling ePHI. Hardens IT-WF-06 (audit log management). Validates that no system has logging disabled, that retention meets 6-year HIPAA requirement, and that integrity controls (append-only, hash chain, off-system shipment) are operational. Feeds QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: any system change; logging-platform change\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** IT Security Officer\r\n- **Supporting:** Privacy Officer, Application Owners\r\n- **Approval:** Privacy Officer\r\n\r\n### 5. INPUTS\r\n- System inventory of ePHI systems\r\n- Log-management configuration\r\n- Source workflows: IT-WF-01, IT-WF-06, IT-WF-23\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull ePHI system inventory; verify logging on each | IT Sec Officer | IT-FM-009 | Day 1 |\r\n| 2 | Verify retention configuration meets 6-year minimum | IT Sec Officer | IT-FM-009 | Day 2 |\r\n| 3 | Verify integrity controls (hash, append-only, off-host shipment) | IT Sec Officer | IT-FM-009 | Day 3 |\r\n| 4 | Spot-restore prior-month logs from archive | IT Sec Officer | IT-FM-009 | Day 4 |\r\n| 5 | Issue CAP for any gap → CO-WF-04 | IT Sec Officer | QA-FM-005 | Day 5 |\r\n| 6 | Compile audit-log review report; feed QA-WF-03 | IT Sec Officer | CO-FM-024 | Day 6 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nIT-FM-009, CO-FM-024, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nPrivacy Officer signs.\r\n\r\n### 9. OUTPUTS\r\nMonthly Audit Log Review Report; per-system status; restore-test evidence; CAP register.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. CAPs within 5 business days; logging-disabled gap = same-day fix.\r\n\r\n### 11. ESCALATION LOGIC\r\nLogging disabled → IT-WF-09 incident (control failure) + IT-WF-22 risk update. Repeat → EN-WF-12 + Governing Body via GV-WF-01. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Disabled or non-retained logs → HIPAA Security Rule citation; cannot substantiate accounting of disclosures.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: inventory, configuration evidence, restore tests, CAPs, sign-off. Retention ≥6 years. Cross-referenced to IT-WF-01, IT-WF-06, IT-WF-09, IT-WF-22, IT-WF-23, EN-WF-12, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/IT-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "IT-AU-001 Audit Controls; HIPAA § 164.312(b)"
+    ],
+    "policyRefs": [
+      "IT-AU-001"
+    ],
+    "regulatoryAnchors": [
+      "HIPAA § 164.312"
+    ],
+    "processOverview": "Monthly audit verifying that audit logging is enabled, complete, integrity-protected, and reviewed for every system handling ePHI. Hardens IT-WF-06 (audit log management). Validates that no system has logging disabled, that retention meets 6-year HIPAA requirement, and that integrity controls (append-only, hash chain, off-system shipment) are operational. Feeds QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any system change; logging-platform change"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "IT Security Officer"
+      ],
+      "supporting": [
+        "Privacy Officer",
+        "Application Owners"
+      ],
+      "approval": [
+        "Privacy Officer"
+      ]
+    },
+    "inputs": [
+      "System inventory of ePHI systems",
+      "Log-management configuration",
+      "Source workflows: IT-WF-01, IT-WF-06, IT-WF-23"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull ePHI system inventory; verify logging on each",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Verify retention configuration meets 6-year minimum",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Verify integrity controls (hash, append-only, off-host shipment)",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Spot-restore prior-month logs from archive",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Issue CAP for any gap → CO-WF-04",
+        "role": "IT Sec Officer",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 6,
+        "action": "Compile audit-log review report; feed QA-WF-03",
+        "role": "IT Sec Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 6"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "IT-FM-009",
+      "QA-FM-005"
+    ],
+    "requiredFormsRaw": "IT-FM-009, CO-FM-024, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Privacy Officer signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Privacy Officer signs.",
+    "outputs": "Monthly Audit Log Review Report; per-system status; restore-test evidence; CAP register.",
+    "sla": "Monthly. CAPs within 5 business days; logging-disabled gap = same-day fix.",
+    "escalationLogic": "Logging disabled → IT-WF-09 incident (control failure) + IT-WF-22 risk update. Repeat → EN-WF-12 + Governing Body via GV-WF-01. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Disabled or non-retained logs → HIPAA Security Rule citation; cannot substantiate accounting of disclosures.",
+    "auditRequirements": "Per-cycle log: inventory, configuration evidence, restore tests, CAPs, sign-off. Retention ≥6 years. Cross-referenced to IT-WF-01, IT-WF-06, IT-WF-09, IT-WF-22, IT-WF-23, EN-WF-12, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "IT-WF-06",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-22",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-12",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "GV-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-23",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-04",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 3,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "IT-WF-25": {
+    "id": "IT-WF-25",
+    "domain": "IT",
+    "title": "SYSTEM SECURITY AUDIT",
+    "sourceMarkdown": "## IT-WF-25 — SYSTEM SECURITY AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- IT-IS-001 Information Security Program; IT-VM-001 Vulnerability Management; HIPAA § 164.308(a)(1)\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly comprehensive system-security audit covering vulnerability management posture, patch compliance, endpoint protection, backup integrity, and security incident handling. Hardens IT-WF-08 (vulnerability), IT-WF-09 (security incident response), IT-WF-10 (backup), IT-WF-11 (DRP). Aggregates and tests controls. Feeds QA-WF-03 and EN-WF-12.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly\r\n- Conditional: significant security incident; new threat advisory (CISA, HHS-405d)\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** IT Security Officer\r\n- **Supporting:** IT Operations, Privacy Officer\r\n- **Approval:** IT Director; Administrator for material findings\r\n\r\n### 5. INPUTS\r\n- Vulnerability scan results\r\n- Patch compliance reports\r\n- Endpoint EDR posture\r\n- Backup test results\r\n- Source workflows: IT-WF-08, IT-WF-09, IT-WF-10, IT-WF-11\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull vulnerability scan & remediation evidence | IT Sec Officer | IT-FM-009 | Day 1 |\r\n| 2 | Verify patch compliance % (target ≥95% within SLA) | IT Sec Officer | IT-FM-009 | Day 2 |\r\n| 3 | Verify endpoint protection coverage 100% | IT Sec Officer | IT-FM-009 | Day 3 |\r\n| 4 | Test backup restore (sample); verify offsite + immutable | IT Sec Officer | IT-FM-009 | Day 4 |\r\n| 5 | Audit security incident handling time-to-detect/contain/remediate | IT Sec Officer | IT-FM-009 | Day 5 |\r\n| 6 | Compile system security audit; feed QA-WF-03 + EN-WF-12 | IT Sec Officer | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nIT-FM-009, CO-FM-024\r\n\r\n### 8. APPROVALS\r\nIT Director signs. Administrator co-signs material findings.\r\n\r\n### 9. OUTPUTS\r\nQuarterly System Security Audit Report; control posture scorecard; restore-test evidence; remediation queue.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly. Critical vulnerability SLA per IT-WF-08; backup test fail = same-day escalation.\r\n\r\n### 11. ESCALATION LOGIC\r\nMaterial gap → IT-WF-22 + EN-WF-12 + Governing Body via GV-WF-01. Active threat → IT-WF-09 incident response. Findings feed QA-WF-03 and CO-WF-22.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unpatched vulnerability or failed backup → ransomware / data loss; reportable HIPAA breach; business interruption.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: scan data, patch evidence, restore evidence, incident scoring, sign-off. Retention ≥6 years. Cross-referenced to IT-WF-08, IT-WF-09, IT-WF-10, IT-WF-11, IT-WF-22, EN-WF-12, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/IT-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "IT-IS-001 Information Security Program; IT-VM-001 Vulnerability Management; HIPAA § 164.308(a)(1)"
+    ],
+    "policyRefs": [
+      "IT-IS-001",
+      "IT-VM-001"
+    ],
+    "regulatoryAnchors": [
+      "HIPAA § 164.308"
+    ],
+    "processOverview": "Quarterly comprehensive system-security audit covering vulnerability management posture, patch compliance, endpoint protection, backup integrity, and security incident handling. Hardens IT-WF-08 (vulnerability), IT-WF-09 (security incident response), IT-WF-10 (backup), IT-WF-11 (DRP). Aggregates and tests controls. Feeds QA-WF-03 and EN-WF-12.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: significant security incident; new threat advisory (CISA, HHS-405d)"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "IT Security Officer"
+      ],
+      "supporting": [
+        "IT Operations",
+        "Privacy Officer"
+      ],
+      "approval": [
+        "IT Director",
+        "Administrator for material findings"
+      ]
+    },
+    "inputs": [
+      "Vulnerability scan results",
+      "Patch compliance reports",
+      "Endpoint EDR posture",
+      "Backup test results",
+      "Source workflows: IT-WF-08, IT-WF-09, IT-WF-10, IT-WF-11"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull vulnerability scan & remediation evidence",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Verify patch compliance % (target ≥95% within SLA)",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Verify endpoint protection coverage 100%",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Test backup restore (sample); verify offsite + immutable",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Audit security incident handling time-to-detect/contain/remediate",
+        "role": "IT Sec Officer",
+        "formRaw": "IT-FM-009",
+        "formIds": [
+          "IT-FM-009"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 6,
+        "action": "Compile system security audit; feed QA-WF-03 + EN-WF-12",
+        "role": "IT Sec Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "IT-FM-009"
+    ],
+    "requiredFormsRaw": "IT-FM-009, CO-FM-024",
+    "approvals": [
+      {
+        "description": "IT Director signs. Administrator co-signs material findings.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "IT Director signs. Administrator co-signs material findings.",
+    "outputs": "Quarterly System Security Audit Report; control posture scorecard; restore-test evidence; remediation queue.",
+    "sla": "Quarterly. Critical vulnerability SLA per IT-WF-08; backup test fail = same-day escalation.",
+    "escalationLogic": "Material gap → IT-WF-22 + EN-WF-12 + Governing Body via GV-WF-01. Active threat → IT-WF-09 incident response. Findings feed QA-WF-03 and CO-WF-22.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unpatched vulnerability or failed backup → ransomware / data loss; reportable HIPAA breach; business interruption.",
+    "auditRequirements": "Per-cycle log: scan data, patch evidence, restore evidence, incident scoring, sign-off. Retention ≥6 years. Cross-referenced to IT-WF-08, IT-WF-09, IT-WF-10, IT-WF-11, IT-WF-22, EN-WF-12, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "IT-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-10",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-11",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-12",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-22",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "GV-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-22",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 2,
+      "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
     }
@@ -20351,6 +25216,944 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "requiresGoverningBody": false
     }
   },
+  "QA-WF-13": {
+    "id": "QA-WF-13",
+    "domain": "QA",
+    "title": "KPI DATA AGGREGATION",
+    "sourceMarkdown": "## QA-WF-13 — KPI DATA AGGREGATION\r\n\r\n### 1. POLICY REFERENCES\r\n- QA-PG-001 QAPI Program; EN-CM-001 Enterprise KPIs; 42 CFR § 484.65(b)\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly aggregation workflow that collects every quality, financial, HR, IT, and risk KPI from source systems and produces the canonical Enterprise KPI Dataset that feeds QA-WF-02 (Monthly Quality Indicator Dashboard) and QA-WF-03. Source workflows: CL-WF-35 (outcome monitoring), CL-WF-34 (rehospitalization), CO-WF-29 (RCM exceptions), HR-WF-19 (training compliance), IT-WF-23 (PHI access), RM-WF-17 (incident trend).\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly, by 5th business day\r\n- Conditional: any KPI source-system schema change → re-run\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** QA Analyst\r\n- **Supporting:** IT Data Owner, Domain KPI Owners\r\n- **Approval:** QAPI Lead\r\n\r\n### 5. INPUTS\r\n- Source system extracts (EMR, billing, HR, IT, RM)\r\n- Source workflows: CL-WF-34, CL-WF-35, CO-WF-29, HR-WF-19, IT-WF-23, RM-WF-17\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull source-system extracts | QA Analyst | EN-FM-034 | Day 1 |\r\n| 2 | Validate schema and completeness; reconcile counts | QA Analyst | QA-FM-020 | Day 2 |\r\n| 3 | Compute KPIs against canonical definitions | QA Analyst | QA-FM-020 | Day 3 |\r\n| 4 | Produce Enterprise KPI Dataset (signed) | QA Analyst | EN-FM-034 | Day 4 |\r\n| 5 | Feed dataset to QA-WF-02 dashboard production | QA Analyst | QA-FM-020 | Day 5 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nQA-FM-020, EN-FM-034, EN-FM-022\r\n\r\n### 8. APPROVALS\r\nQAPI Lead attests dataset.\r\n\r\n### 9. OUTPUTS\r\nEnterprise KPI Dataset (immutable snapshot); reconciliation evidence; lineage manifest.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly by 5th business day; QA-WF-02 publication depends on it.\r\n\r\n### 11. ESCALATION LOGIC\r\nSource-system gap → IT-WF-14 change-mgmt request. Reconciliation failure → QA-WF-16 (data validation) hold. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed monthly run blocks QA-WF-02 and therefore QA-WF-03 closure. Unreconciled data → invalid QAPI conclusions; survey deficiency.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: extract hashes, reconciliation evidence, dataset hash, sign-off. Retention ≥6 years. Cross-referenced to QA-WF-02, QA-WF-03, QA-WF-16.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/QA-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "QA-PG-001 QAPI Program; EN-CM-001 Enterprise KPIs; 42 CFR § 484.65(b)"
+    ],
+    "policyRefs": [
+      "QA-PG-001",
+      "EN-CM-001"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
+    ],
+    "processOverview": "Monthly aggregation workflow that collects every quality, financial, HR, IT, and risk KPI from source systems and produces the canonical Enterprise KPI Dataset that feeds QA-WF-02 (Monthly Quality Indicator Dashboard) and QA-WF-03. Source workflows: CL-WF-35 (outcome monitoring), CL-WF-34 (rehospitalization), CO-WF-29 (RCM exceptions), HR-WF-19 (training compliance), IT-WF-23 (PHI access), RM-WF-17 (incident trend).",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly, by 5th business day"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any KPI source-system schema change → re-run"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "QA Analyst"
+      ],
+      "supporting": [
+        "IT Data Owner",
+        "Domain KPI Owners"
+      ],
+      "approval": [
+        "QAPI Lead"
+      ]
+    },
+    "inputs": [
+      "Source system extracts (EMR, billing, HR, IT, RM)",
+      "Source workflows: CL-WF-34, CL-WF-35, CO-WF-29, HR-WF-19, IT-WF-23, RM-WF-17"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull source-system extracts",
+        "role": "QA Analyst",
+        "formRaw": "EN-FM-034",
+        "formIds": [
+          "EN-FM-034"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Validate schema and completeness; reconcile counts",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-020",
+        "formIds": [
+          "QA-FM-020"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Compute KPIs against canonical definitions",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-020",
+        "formIds": [
+          "QA-FM-020"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Produce Enterprise KPI Dataset (signed)",
+        "role": "QA Analyst",
+        "formRaw": "EN-FM-034",
+        "formIds": [
+          "EN-FM-034"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Feed dataset to QA-WF-02 dashboard production",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-020",
+        "formIds": [
+          "QA-FM-020"
+        ],
+        "deadline": "Day 5"
+      }
+    ],
+    "requiredForms": [
+      "EN-FM-022",
+      "EN-FM-034",
+      "QA-FM-020"
+    ],
+    "requiredFormsRaw": "QA-FM-020, EN-FM-034, EN-FM-022",
+    "approvals": [
+      {
+        "description": "QAPI Lead attests dataset.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "QAPI Lead attests dataset.",
+    "outputs": "Enterprise KPI Dataset (immutable snapshot); reconciliation evidence; lineage manifest.",
+    "sla": "Monthly by 5th business day; QA-WF-02 publication depends on it.",
+    "escalationLogic": "Source-system gap → IT-WF-14 change-mgmt request. Reconciliation failure → QA-WF-16 (data validation) hold. Findings feed QA-WF-03.",
+    "failureConditions": "Missed monthly run blocks QA-WF-02 and therefore QA-WF-03 closure. Unreconciled data → invalid QAPI conclusions; survey deficiency.",
+    "auditRequirements": "Per-cycle log: extract hashes, reconciliation evidence, dataset hash, sign-off. Retention ≥6 years. Cross-referenced to QA-WF-02, QA-WF-03, QA-WF-16.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "QA-WF-02",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-35",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-34",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-29",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-19",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-23",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-17",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-14",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-16",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 3,
+      "policyCount": 2,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "QA-WF-14": {
+    "id": "QA-WF-14",
+    "domain": "QA",
+    "title": "PERFORMANCE INDICATOR TRACKING",
+    "sourceMarkdown": "## QA-WF-14 — PERFORMANCE INDICATOR TRACKING\r\n\r\n### 1. POLICY REFERENCES\r\n- QA-PG-001; QA-PI-001; 42 CFR § 484.65(b)\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly tracking workflow that monitors each declared QAPI Performance Indicator against threshold and target. Operates on the Enterprise KPI Dataset produced by QA-WF-13. Triggers QA-WF-04 (PIP) when an indicator regresses materially. Hardens QA-WF-02. Feeds QA-WF-03 and QA-WF-09 (Star Rating monitoring).\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: any indicator regression > control threshold\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** QAPI Lead\r\n- **Supporting:** QA Analyst, Clinical Manager\r\n- **Approval:** Administrator\r\n\r\n### 5. INPUTS\r\n- Enterprise KPI Dataset (QA-WF-13 output)\r\n- Indicator thresholds; benchmark targets\r\n- Source workflows: QA-WF-13, CL-WF-35, CL-WF-34\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Score each indicator vs. threshold and target | QAPI Lead | QA-FM-020 | Day 6 |\r\n| 2 | Generate trend chart per indicator | QA Analyst | QA-FM-020 | Day 7 |\r\n| 3 | Flag PIP candidates per QA-WF-04 | QAPI Lead | QA-FM-021 | Day 8 |\r\n| 4 | Compile indicator scorecard; feed QA-WF-02 and QA-WF-03 | QAPI Lead | EN-FM-022 | Day 9 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nQA-FM-020, QA-FM-021, EN-FM-022, EN-FM-034\r\n\r\n### 8. APPROVALS\r\nQAPI Lead signs scorecard. Administrator attests PIP triggers.\r\n\r\n### 9. OUTPUTS\r\nIndicator scorecard; trend charts; PIP candidate memo.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly by 9th business day.\r\n\r\n### 11. ESCALATION LOGIC\r\nMaterial regression → QA-WF-04 PIP. Star-rating impact → QA-WF-09. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03 closure. Unflagged regression → QAPI program deficiency, Star rating decline.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: scorecard, trend charts, PIP triggers, sign-offs. Retention ≥6 years. Cross-referenced to QA-WF-13, QA-WF-04, QA-WF-09, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/QA-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "QA-PG-001; QA-PI-001; 42 CFR § 484.65(b)"
+    ],
+    "policyRefs": [
+      "QA-PG-001",
+      "QA-PI-001"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
+    ],
+    "processOverview": "Monthly tracking workflow that monitors each declared QAPI Performance Indicator against threshold and target. Operates on the Enterprise KPI Dataset produced by QA-WF-13. Triggers QA-WF-04 (PIP) when an indicator regresses materially. Hardens QA-WF-02. Feeds QA-WF-03 and QA-WF-09 (Star Rating monitoring).",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any indicator regression > control threshold"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "QAPI Lead"
+      ],
+      "supporting": [
+        "QA Analyst",
+        "Clinical Manager"
+      ],
+      "approval": [
+        "Administrator"
+      ]
+    },
+    "inputs": [
+      "Enterprise KPI Dataset (QA-WF-13 output)",
+      "Indicator thresholds; benchmark targets",
+      "Source workflows: QA-WF-13, CL-WF-35, CL-WF-34"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Score each indicator vs. threshold and target",
+        "role": "QAPI Lead",
+        "formRaw": "QA-FM-020",
+        "formIds": [
+          "QA-FM-020"
+        ],
+        "deadline": "Day 6"
+      },
+      {
+        "order": 2,
+        "action": "Generate trend chart per indicator",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-020",
+        "formIds": [
+          "QA-FM-020"
+        ],
+        "deadline": "Day 7"
+      },
+      {
+        "order": 3,
+        "action": "Flag PIP candidates per QA-WF-04",
+        "role": "QAPI Lead",
+        "formRaw": "QA-FM-021",
+        "formIds": [
+          "QA-FM-021"
+        ],
+        "deadline": "Day 8"
+      },
+      {
+        "order": 4,
+        "action": "Compile indicator scorecard; feed QA-WF-02 and QA-WF-03",
+        "role": "QAPI Lead",
+        "formRaw": "EN-FM-022",
+        "formIds": [
+          "EN-FM-022"
+        ],
+        "deadline": "Day 9"
+      }
+    ],
+    "requiredForms": [
+      "EN-FM-022",
+      "EN-FM-034",
+      "QA-FM-020",
+      "QA-FM-021"
+    ],
+    "requiredFormsRaw": "QA-FM-020, QA-FM-021, EN-FM-022, EN-FM-034",
+    "approvals": [
+      {
+        "description": "QAPI Lead signs scorecard. Administrator attests PIP triggers.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "QAPI Lead signs scorecard. Administrator attests PIP triggers.",
+    "outputs": "Indicator scorecard; trend charts; PIP candidate memo.",
+    "sla": "Monthly by 9th business day.",
+    "escalationLogic": "Material regression → QA-WF-04 PIP. Star-rating impact → QA-WF-09. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03 closure. Unflagged regression → QAPI program deficiency, Star rating decline.",
+    "auditRequirements": "Per-cycle log: scorecard, trend charts, PIP triggers, sign-offs. Retention ≥6 years. Cross-referenced to QA-WF-13, QA-WF-04, QA-WF-09, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "QA-WF-13",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-02",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-09",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 4,
+      "formCount": 4,
+      "policyCount": 2,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "QA-WF-15": {
+    "id": "QA-WF-15",
+    "domain": "QA",
+    "title": "TREND ANALYSIS",
+    "sourceMarkdown": "## QA-WF-15 — TREND ANALYSIS\r\n\r\n### 1. POLICY REFERENCES\r\n- QA-PG-001; 42 CFR § 484.65(b)\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly trend-analysis workflow producing structured pattern detection across clinical, financial, HR, IT, and risk indicators. Uses control-chart logic (XmR / EWMA) on the Enterprise KPI Dataset to identify special-cause variation. Aggregates QA-WF-13 + QA-WF-14 outputs. Feeds QA-WF-03 and QA-WF-04.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly (pre-QA-WF-03 packet)\r\n- Conditional: any indicator with 3 consecutive months of regression\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** QA Analyst\r\n- **Supporting:** QAPI Lead\r\n- **Approval:** QAPI Committee Chair\r\n\r\n### 5. INPUTS\r\n- Last 12 months of Enterprise KPI Datasets (QA-WF-13)\r\n- Indicator scorecards (QA-WF-14)\r\n- Source workflows: QA-WF-13, QA-WF-14\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Build 12-month indicator panel | QA Analyst | QA-FM-020 | Day 1 |\r\n| 2 | Apply XmR/EWMA control chart per indicator | QA Analyst | QA-FM-020 | Day 2–3 |\r\n| 3 | Identify special-cause vs. common-cause variation | QA Analyst | QA-FM-020 | Day 4 |\r\n| 4 | Document pattern hypotheses and likely root causes | QA Analyst | QA-FM-021 | Day 5 |\r\n| 5 | Compile Trend Analysis Memo for QA-WF-03 packet | QAPI Lead | EN-FM-022 | Day 6 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nQA-FM-020, QA-FM-021, EN-FM-022, EN-FM-034\r\n\r\n### 8. APPROVALS\r\nQAPI Committee Chair signs.\r\n\r\n### 9. OUTPUTS\r\nQuarterly Trend Analysis Memo; control charts; pattern register.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly, ≥5 business days before QA-WF-03 meeting.\r\n\r\n### 11. ESCALATION LOGIC\r\nSpecial-cause regression → QA-WF-04 PIP candidate. Cross-domain pattern → EN-WF-12 enterprise risk. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unidentified special-cause variation → undetected program deterioration.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: panel hash, charts, pattern register, sign-off. Retention ≥6 years. Cross-referenced to QA-WF-13, QA-WF-14, QA-WF-04, QA-WF-03, EN-WF-12.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/QA-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "QA-PG-001; 42 CFR § 484.65(b)"
+    ],
+    "policyRefs": [
+      "QA-PG-001"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
+    ],
+    "processOverview": "Quarterly trend-analysis workflow producing structured pattern detection across clinical, financial, HR, IT, and risk indicators. Uses control-chart logic (XmR / EWMA) on the Enterprise KPI Dataset to identify special-cause variation. Aggregates QA-WF-13 + QA-WF-14 outputs. Feeds QA-WF-03 and QA-WF-04.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly (pre-QA-WF-03 packet)"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any indicator with 3 consecutive months of regression"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "QA Analyst"
+      ],
+      "supporting": [
+        "QAPI Lead"
+      ],
+      "approval": [
+        "QAPI Committee Chair"
+      ]
+    },
+    "inputs": [
+      "Last 12 months of Enterprise KPI Datasets (QA-WF-13)",
+      "Indicator scorecards (QA-WF-14)",
+      "Source workflows: QA-WF-13, QA-WF-14"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Build 12-month indicator panel",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-020",
+        "formIds": [
+          "QA-FM-020"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Apply XmR/EWMA control chart per indicator",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-020",
+        "formIds": [
+          "QA-FM-020"
+        ],
+        "deadline": "Day 2–3"
+      },
+      {
+        "order": 3,
+        "action": "Identify special-cause vs. common-cause variation",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-020",
+        "formIds": [
+          "QA-FM-020"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 4,
+        "action": "Document pattern hypotheses and likely root causes",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-021",
+        "formIds": [
+          "QA-FM-021"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 5,
+        "action": "Compile Trend Analysis Memo for QA-WF-03 packet",
+        "role": "QAPI Lead",
+        "formRaw": "EN-FM-022",
+        "formIds": [
+          "EN-FM-022"
+        ],
+        "deadline": "Day 6"
+      }
+    ],
+    "requiredForms": [
+      "EN-FM-022",
+      "EN-FM-034",
+      "QA-FM-020",
+      "QA-FM-021"
+    ],
+    "requiredFormsRaw": "QA-FM-020, QA-FM-021, EN-FM-022, EN-FM-034",
+    "approvals": [
+      {
+        "description": "QAPI Committee Chair signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "QAPI Committee Chair signs.",
+    "outputs": "Quarterly Trend Analysis Memo; control charts; pattern register.",
+    "sla": "Quarterly, ≥5 business days before QA-WF-03 meeting.",
+    "escalationLogic": "Special-cause regression → QA-WF-04 PIP candidate. Cross-domain pattern → EN-WF-12 enterprise risk. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unidentified special-cause variation → undetected program deterioration.",
+    "auditRequirements": "Per-cycle log: panel hash, charts, pattern register, sign-off. Retention ≥6 years. Cross-referenced to QA-WF-13, QA-WF-14, QA-WF-04, QA-WF-03, EN-WF-12.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "QA-WF-13",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-14",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-12",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 4,
+      "policyCount": 1,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": false
+    }
+  },
+  "QA-WF-16": {
+    "id": "QA-WF-16",
+    "domain": "QA",
+    "title": "QAPI DATA VALIDATION",
+    "sourceMarkdown": "## QA-WF-16 — QAPI DATA VALIDATION\r\n\r\n### 1. POLICY REFERENCES\r\n- QA-PG-001; 42 CFR § 484.65(b); CMS data integrity guidance\r\n\r\n### 2. PROCESS OVERVIEW\r\nContinuous data-quality validation workflow ensuring that data feeding QAPI is complete, consistent, and lineage-traceable. Validates QA-WF-13 outputs against source-system source-of-truth. Hard gates QA-WF-02 publication and QA-WF-03 closure. Aggregates evidence from CL-WF-27 (OASIS audit), CO-WF-23 (pre-bill), CO-WF-25 (recon).\r\n\r\n### 3. TRIGGER(S)\r\n- **Continuous:** Each KPI dataset publication\r\n- **Time-based:** Quarterly aggregate validation report\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Data Steward (IT)\r\n- **Supporting:** QA Analyst, Domain Owners\r\n- **Approval:** QAPI Lead; IT Director for material data issues\r\n\r\n### 5. INPUTS\r\n- KPI dataset (QA-WF-13)\r\n- Source-system samples for verification\r\n- Source workflows: QA-WF-13, CL-WF-27, CO-WF-23, CO-WF-25\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Verify schema, row counts, distribution sanity | Data Steward | EN-FM-034 | Per dataset |\r\n| 2 | Sample 1% of records; trace to source | Data Steward | CO-FM-021 | Per dataset |\r\n| 3 | Reconcile against external benchmarks (CASPER/iQIES) | Data Steward | EN-FM-034 | Quarterly |\r\n| 4 | Issue validation hold if any defect | Data Steward | CO-FM-021 | Per case |\r\n| 5 | Compile quarterly validation report; feed QA-WF-03 | QAPI Lead | CO-FM-024 | Quarterly |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-021, CO-FM-024, EN-FM-034\r\n\r\n### 8. APPROVALS\r\nQAPI Lead attests; IT Director signs material defects.\r\n\r\n### 9. OUTPUTS\r\nPer-dataset validation log; quarterly QAPI Data Validation Report; defect register.\r\n\r\n### 10. SLA / DEADLINES\r\nContinuous; quarterly report ≥5 business days before QA-WF-03 meeting.\r\n\r\n### 11. ESCALATION LOGIC\r\nValidation hold blocks QA-WF-02 publication and QA-WF-03 closure until resolved. Source-system defect → IT-WF-14 change request. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nBypassing validation hold → invalid QAPI conclusions; survey citation. Missed quarterly report blocks QA-WF-03.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-dataset log: schema check, sample trace evidence, reconciliation evidence, holds, sign-off. Retention ≥6 years. Cross-referenced to QA-WF-13, QA-WF-02, QA-WF-03, IT-WF-14.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/QA-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "QA-PG-001; 42 CFR § 484.65(b); CMS data integrity guidance"
+    ],
+    "policyRefs": [
+      "QA-PG-001"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
+    ],
+    "processOverview": "Continuous data-quality validation workflow ensuring that data feeding QAPI is complete, consistent, and lineage-traceable. Validates QA-WF-13 outputs against source-system source-of-truth. Hard gates QA-WF-02 publication and QA-WF-03 closure. Aggregates evidence from CL-WF-27 (OASIS audit), CO-WF-23 (pre-bill), CO-WF-25 (recon).",
+    "triggers": [
+      {
+        "kind": "continuous",
+        "description": "Each KPI dataset publication"
+      },
+      {
+        "kind": "time_based",
+        "description": "Quarterly aggregate validation report"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Data Steward (IT)"
+      ],
+      "supporting": [
+        "QA Analyst",
+        "Domain Owners"
+      ],
+      "approval": [
+        "QAPI Lead",
+        "IT Director for material data issues"
+      ]
+    },
+    "inputs": [
+      "KPI dataset (QA-WF-13)",
+      "Source-system samples for verification",
+      "Source workflows: QA-WF-13, CL-WF-27, CO-WF-23, CO-WF-25"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Verify schema, row counts, distribution sanity",
+        "role": "Data Steward",
+        "formRaw": "EN-FM-034",
+        "formIds": [
+          "EN-FM-034"
+        ],
+        "deadline": "Per dataset"
+      },
+      {
+        "order": 2,
+        "action": "Sample 1% of records; trace to source",
+        "role": "Data Steward",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Per dataset"
+      },
+      {
+        "order": 3,
+        "action": "Reconcile against external benchmarks (CASPER/iQIES)",
+        "role": "Data Steward",
+        "formRaw": "EN-FM-034",
+        "formIds": [
+          "EN-FM-034"
+        ],
+        "deadline": "Quarterly"
+      },
+      {
+        "order": 4,
+        "action": "Issue validation hold if any defect",
+        "role": "Data Steward",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Per case"
+      },
+      {
+        "order": 5,
+        "action": "Compile quarterly validation report; feed QA-WF-03",
+        "role": "QAPI Lead",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Quarterly"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-024",
+      "EN-FM-034"
+    ],
+    "requiredFormsRaw": "CO-FM-021, CO-FM-024, EN-FM-034",
+    "approvals": [
+      {
+        "description": "QAPI Lead attests; IT Director signs material defects.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "QAPI Lead attests; IT Director signs material defects.",
+    "outputs": "Per-dataset validation log; quarterly QAPI Data Validation Report; defect register.",
+    "sla": "Continuous; quarterly report ≥5 business days before QA-WF-03 meeting.",
+    "escalationLogic": "Validation hold blocks QA-WF-02 publication and QA-WF-03 closure until resolved. Source-system defect → IT-WF-14 change request. Findings feed QA-WF-03.",
+    "failureConditions": "Bypassing validation hold → invalid QAPI conclusions; survey citation. Missed quarterly report blocks QA-WF-03.",
+    "auditRequirements": "Per-dataset log: schema check, sample trace evidence, reconciliation evidence, holds, sign-off. Retention ≥6 years. Cross-referenced to QA-WF-13, QA-WF-02, QA-WF-03, IT-WF-14.",
+    "cadence": {
+      "kind": "continuous",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "QA-WF-13",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-02",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-27",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-23",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-25",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-14",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 3,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "QA-WF-17": {
+    "id": "QA-WF-17",
+    "domain": "QA",
+    "title": "PERFORMANCE IMPROVEMENT PLAN MONITORING",
+    "sourceMarkdown": "## QA-WF-17 — PERFORMANCE IMPROVEMENT PLAN MONITORING\r\n\r\n### 1. POLICY REFERENCES\r\n- QA-PIP-001 PIP Lifecycle; 42 CFR § 484.65(c)\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly monitoring workflow that tracks every active PIP from QA-WF-04 through baseline → intervention → remeasurement → sustainment. Hardens QA-WF-04 monitoring. Validates statistical significance and intervention fidelity. Feeds QA-WF-03 and GV-WF-01.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly\r\n- Conditional: PIP remeasurement failure\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** QAPI Lead\r\n- **Supporting:** PIP Owner, QA Analyst\r\n- **Approval:** QAPI Committee Chair; Governing Body for material PIPs\r\n\r\n### 5. INPUTS\r\n- Active PIP register (QA-WF-04)\r\n- Remeasurement data (QA-WF-13)\r\n- Source workflows: QA-WF-04, QA-WF-13, QA-WF-15\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull active PIP register and remeasurement data | QAPI Lead | QA-FM-021 | Day 1 |\r\n| 2 | Score each PIP against intervention plan and remeasurement target | QAPI Lead | QA-FM-021 | Day 2 |\r\n| 3 | Validate statistical significance of improvement | QA Analyst | QA-FM-020 | Day 3 |\r\n| 4 | Audit intervention fidelity (was the planned intervention actually executed?) | QAPI Lead | CO-FM-021 | Day 4 |\r\n| 5 | Decide: continue / revise / new PIP / sustain / close | QAPI Committee | QA-FM-021 | Day 5 |\r\n| 6 | Compile PIP Monitoring Report; feed QA-WF-03 + GV-WF-01 | QAPI Lead | CO-FM-024 | Day 6 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nQA-FM-020, QA-FM-021, CO-FM-021, CO-FM-024, GV-FM-023\r\n\r\n### 8. APPROVALS\r\nQAPI Committee Chair signs. Governing Body acknowledges material PIPs via GV-WF-01.\r\n\r\n### 9. OUTPUTS\r\nQuarterly PIP Monitoring Report; per-PIP scorecard; decision register.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly, before QA-WF-03 meeting.\r\n\r\n### 11. ESCALATION LOGIC\r\nPIP remeasurement failure → revise intervention or escalate to mandatory new PIP. Sustained PIP failure → Governing Body escalation via GV-WF-01. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unmonitored PIP → CMS QAPI deficiency citation.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: PIP register, scorecards, decisions, remeasurement evidence, sign-off. Retention ≥6 years. Cross-referenced to QA-WF-04, QA-WF-13, QA-WF-15, GV-WF-01, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/QA-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "QA-PIP-001 PIP Lifecycle; 42 CFR § 484.65(c)"
+    ],
+    "policyRefs": [
+      "QA-PIP-001"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(c)"
+    ],
+    "processOverview": "Quarterly monitoring workflow that tracks every active PIP from QA-WF-04 through baseline → intervention → remeasurement → sustainment. Hardens QA-WF-04 monitoring. Validates statistical significance and intervention fidelity. Feeds QA-WF-03 and GV-WF-01.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: PIP remeasurement failure"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "QAPI Lead"
+      ],
+      "supporting": [
+        "PIP Owner",
+        "QA Analyst"
+      ],
+      "approval": [
+        "QAPI Committee Chair",
+        "Governing Body for material PIPs"
+      ]
+    },
+    "inputs": [
+      "Active PIP register (QA-WF-04)",
+      "Remeasurement data (QA-WF-13)",
+      "Source workflows: QA-WF-04, QA-WF-13, QA-WF-15"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull active PIP register and remeasurement data",
+        "role": "QAPI Lead",
+        "formRaw": "QA-FM-021",
+        "formIds": [
+          "QA-FM-021"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Score each PIP against intervention plan and remeasurement target",
+        "role": "QAPI Lead",
+        "formRaw": "QA-FM-021",
+        "formIds": [
+          "QA-FM-021"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Validate statistical significance of improvement",
+        "role": "QA Analyst",
+        "formRaw": "QA-FM-020",
+        "formIds": [
+          "QA-FM-020"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Audit intervention fidelity (was the planned intervention actually executed?)",
+        "role": "QAPI Lead",
+        "formRaw": "CO-FM-021",
+        "formIds": [
+          "CO-FM-021"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Decide: continue / revise / new PIP / sustain / close",
+        "role": "QAPI Committee",
+        "formRaw": "QA-FM-021",
+        "formIds": [
+          "QA-FM-021"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 6,
+        "action": "Compile PIP Monitoring Report; feed QA-WF-03 + GV-WF-01",
+        "role": "QAPI Lead",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 6"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-024",
+      "GV-FM-023",
+      "QA-FM-020",
+      "QA-FM-021"
+    ],
+    "requiredFormsRaw": "QA-FM-020, QA-FM-021, CO-FM-021, CO-FM-024, GV-FM-023",
+    "approvals": [
+      {
+        "description": "QAPI Committee Chair signs. Governing Body acknowledges material PIPs via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "approvalsRaw": "QAPI Committee Chair signs. Governing Body acknowledges material PIPs via GV-WF-01.",
+    "outputs": "Quarterly PIP Monitoring Report; per-PIP scorecard; decision register.",
+    "sla": "Quarterly, before QA-WF-03 meeting.",
+    "escalationLogic": "PIP remeasurement failure → revise intervention or escalate to mandatory new PIP. Sustained PIP failure → Governing Body escalation via GV-WF-01. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unmonitored PIP → CMS QAPI deficiency citation.",
+    "auditRequirements": "Per-cycle log: PIP register, scorecards, decisions, remeasurement evidence, sign-off. Retention ≥6 years. Cross-referenced to QA-WF-04, QA-WF-13, QA-WF-15, GV-WF-01, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "QA-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "GV-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-13",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-15",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 5,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": true
+    }
+  },
+  "QA-WF-18": {
+    "id": "QA-WF-18",
+    "domain": "QA",
+    "title": "POLICY EFFECTIVENESS MONITORING",
+    "sourceMarkdown": "## QA-WF-18 — POLICY EFFECTIVENESS MONITORING\r\n\r\n### 1. POLICY REFERENCES\r\n- QA-PG-001; EN-CM-001; 42 CFR § 484.65\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly evaluation of whether the agency's policies (270 active) are producing the compliance outcomes they specify. Aggregates audit findings across all CL-WF-26..37, CO-WF-23..30, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25 and maps deficiency patterns to the policies that govern them. Hardens QA-WF-11. Triggers EN-WF-01 (policy lifecycle update) when policy is the root cause. Feeds QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly\r\n- Conditional: same defect pattern detected in 3 consecutive audits\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Compliance Officer\r\n- **Supporting:** Domain Policy Owners\r\n- **Approval:** QAPI Committee; Governing Body for material policy revisions\r\n\r\n### 5. INPUTS\r\n- All audit reports for the quarter\r\n- Active policy index (270 policies)\r\n- Source workflows: ALL audit workflows; EN-WF-01\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Aggregate defect register across every audit cycle | Compliance Officer | CO-FM-024 | Day 1 |\r\n| 2 | Map each defect to governing policy ID | Compliance Officer | EN-FM-022 | Day 2 |\r\n| 3 | Identify policies with sustained ineffectiveness | Compliance Officer | EN-FM-019 | Day 3 |\r\n| 4 | Issue policy revision tickets via EN-WF-01 | Compliance Officer | EN-FM-007 | Day 4 |\r\n| 5 | Compile Policy Effectiveness Report; feed QA-WF-03 | Compliance Officer | CO-FM-024 | Day 6 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-024, EN-FM-007, EN-FM-019, EN-FM-022\r\n\r\n### 8. APPROVALS\r\nQAPI Committee + Compliance Officer sign. Governing Body acknowledges material policy revisions via GV-WF-01.\r\n\r\n### 9. OUTPUTS\r\nQuarterly Policy Effectiveness Report; policy-level defect map; revision queue.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly, before QA-WF-03 meeting.\r\n\r\n### 11. ESCALATION LOGIC\r\nSustained policy ineffectiveness → mandatory revision via EN-WF-01. Cross-domain policy gap → EN-WF-12 enterprise risk register. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unrevised ineffective policy → systemic non-compliance, survey citation.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: defect aggregate, policy map, revision tickets, sign-offs. Retention ≥6 years. Cross-referenced to ALL audit workflows, EN-WF-01, GV-WF-01, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/QA-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "QA-PG-001; EN-CM-001; 42 CFR § 484.65"
+    ],
+    "policyRefs": [
+      "QA-PG-001",
+      "EN-CM-001"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65"
+    ],
+    "processOverview": "Quarterly evaluation of whether the agency's policies (270 active) are producing the compliance outcomes they specify. Aggregates audit findings across all CL-WF-26..37, CO-WF-23..30, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25 and maps deficiency patterns to the policies that govern them. Hardens QA-WF-11. Triggers EN-WF-01 (policy lifecycle update) when policy is the root cause. Feeds QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: same defect pattern detected in 3 consecutive audits"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Compliance Officer"
+      ],
+      "supporting": [
+        "Domain Policy Owners"
+      ],
+      "approval": [
+        "QAPI Committee",
+        "Governing Body for material policy revisions"
+      ]
+    },
+    "inputs": [
+      "All audit reports for the quarter",
+      "Active policy index (270 policies)",
+      "Source workflows: ALL audit workflows; EN-WF-01"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Aggregate defect register across every audit cycle",
+        "role": "Compliance Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Map each defect to governing policy ID",
+        "role": "Compliance Officer",
+        "formRaw": "EN-FM-022",
+        "formIds": [
+          "EN-FM-022"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Identify policies with sustained ineffectiveness",
+        "role": "Compliance Officer",
+        "formRaw": "EN-FM-019",
+        "formIds": [
+          "EN-FM-019"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Issue policy revision tickets via EN-WF-01",
+        "role": "Compliance Officer",
+        "formRaw": "EN-FM-007",
+        "formIds": [
+          "EN-FM-007"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Compile Policy Effectiveness Report; feed QA-WF-03",
+        "role": "Compliance Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 6"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "EN-FM-007",
+      "EN-FM-019",
+      "EN-FM-022"
+    ],
+    "requiredFormsRaw": "CO-FM-024, EN-FM-007, EN-FM-019, EN-FM-022",
+    "approvals": [
+      {
+        "description": "QAPI Committee + Compliance Officer sign. Governing Body acknowledges material policy revisions via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "approvalsRaw": "QAPI Committee + Compliance Officer sign. Governing Body acknowledges material policy revisions via GV-WF-01.",
+    "outputs": "Quarterly Policy Effectiveness Report; policy-level defect map; revision queue.",
+    "sla": "Quarterly, before QA-WF-03 meeting.",
+    "escalationLogic": "Sustained policy ineffectiveness → mandatory revision via EN-WF-01. Cross-domain policy gap → EN-WF-12 enterprise risk register. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unrevised ineffective policy → systemic non-compliance, survey citation.",
+    "auditRequirements": "Per-cycle log: defect aggregate, policy map, revision tickets, sign-offs. Retention ≥6 years. Cross-referenced to ALL audit workflows, EN-WF-01, GV-WF-01, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "CL-WF-26",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-23",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-18",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-16",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-21",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-11",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-12",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "GV-WF-01",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 4,
+      "policyCount": 2,
+      "declaredRisk": "high",
+      "requiresGoverningBody": true
+    }
+  },
   "QA-WF-01": {
     "id": "QA-WF-01",
     "domain": "QA",
@@ -20647,7 +26450,7 @@ export const WORKFLOWS: Record<string, Workflow> = {
     "id": "QA-WF-03",
     "domain": "QA",
     "title": "QUARTERLY QAPI COMMITTEE REVIEW",
-    "sourceMarkdown": "## QA-WF-03 — QUARTERLY QAPI COMMITTEE REVIEW\r\n\r\n### 1. POLICY REFERENCES\r\n- QA-PG-001; QA-PG-002; GV-GB-001\r\n- 42 CFR § 484.65(b)(3), (e)\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly committee review of dashboard trends, adverse events, PIP status, infection surveillance, and coordination with Governing Body quarterly meeting.\r\n\r\n### 3. TRIGGER(S)\r\n- Quarterly schedule (aligned with Governing Body cadence)\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** QAPI Lead (Chair)\r\n- **Supporting:** Clinical Manager, Compliance Officer, Infection Preventionist, HR, Administrator\r\n- **Approval:** Committee; reported to Governing Body\r\n\r\n### 5. INPUTS\r\n- 3 months of dashboards\r\n- Adverse event RCAs\r\n- Active PIPs status\r\n- Infection line list\r\n- Patient complaints summary\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Distribute agenda & pre-read | QAPI Lead | Packet | ≥ 3 business days pre-meeting |\r\n| 2 | Review aggregate quality trends | QAPI Lead | QA-FM-003 | At meeting |\r\n| 3 | Review adverse events & RCAs | QAPI Lead | QA-FM-004 | At meeting |\r\n| 4 | Review PIP status | PIP Owners | QA-FM-002 PIP Charter; QA-FM-005 CAP Tracking Tool | At meeting |\r\n| 5 | Review infection surveillance | Infection Preventionist | QA-FM-006 | At meeting |\r\n| 6 | Decide on priority actions | Committee | Minutes | At meeting |\r\n| 7 | Document minutes | Scribe | QA-FM-001 | ≤ 14 days |\r\n| 8 | Package report for Governing Body | QAPI Lead | GV-FM-023 (QAPI section) | ≥ 7 days pre-Governing Body meeting |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nQA-FM-001, QA-FM-002, QA-FM-003, QA-FM-004, QA-FM-005, QA-FM-006, GV-FM-023.\r\n\r\n### 8. APPROVALS\r\nCommittee majority; Governing Body reviews at next quarterly meeting (GV-WF-01).\r\n\r\n### 9. OUTPUTS\r\nMinutes, action log, quarterly report for Governing Body.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly (every 90 days max); minutes ≤14 days.\r\n\r\n### 11. ESCALATION LOGIC\r\nSentinel event or Immediate Jeopardy signal → emergency Committee + Administrator + Governing Body Chair within 24–72 hours.\r\n\r\n### 12. FAILURE CONDITIONS\r\nNo evidence of Governing-Body-reviewed QAPI activity = CoP deficiency.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\n4 quarters of minutes; Board-review evidence; action closure traceable.\r\n\r\n---",
+    "sourceMarkdown": "## QA-WF-03 — QUARTERLY QAPI COMMITTEE REVIEW\r\n\r\n### 1. POLICY REFERENCES\r\n- QA-PG-001; QA-PG-002; GV-GB-001\r\n- 42 CFR § 484.65(b)(3), (e)\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly committee review of dashboard trends, adverse events, PIP status, infection surveillance, and coordination with Governing Body quarterly meeting.\r\n\r\n### 3. TRIGGER(S)\r\n- Quarterly schedule (aligned with Governing Body cadence)\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** QAPI Lead (Chair)\r\n- **Supporting:** Clinical Manager, Compliance Officer, Infection Preventionist, HR, Administrator\r\n- **Approval:** Committee; reported to Governing Body\r\n\r\n### 5. INPUTS\r\nQAPI is a STRICT ORCHESTRATION workflow. The committee MAY NOT convene unless ALL of the following upstream audit workflows have produced their cycle-period evidence pack and signed report. Pre-input completion is verified by the QAPI Lead against the workflow inventory.\r\n\r\n- **Clinical Quality audit layer (12 audits):** CL-WF-26, CL-WF-27, CL-WF-28, CL-WF-29, CL-WF-30, CL-WF-31, CL-WF-32, CL-WF-33, CL-WF-34, CL-WF-35, CL-WF-36, CL-WF-37\r\n- **Compliance & Billing audit layer (8 audits):** CO-WF-23, CO-WF-24, CO-WF-25, CO-WF-26, CO-WF-27, CO-WF-28, CO-WF-29, CO-WF-30\r\n- **QAPI Support audit layer (6 audits):** QA-WF-13, QA-WF-14, QA-WF-15, QA-WF-16, QA-WF-17, QA-WF-18\r\n- **HR & Training audit layer (4 audits):** HR-WF-18, HR-WF-19, HR-WF-20, HR-WF-21\r\n- **Risk & Safety audit layer (5 audits):** RM-WF-16, RM-WF-17, RM-WF-18, RM-WF-19, RM-WF-20\r\n- **IT & Security audit layer (5 audits):** IT-WF-21, IT-WF-22, IT-WF-23, IT-WF-24, IT-WF-25\r\n- 3 months of dashboards (QA-WF-02 supported by QA-WF-13)\r\n- Adverse event RCAs (QA-WF-05)\r\n- Active PIPs status (QA-WF-04 supported by QA-WF-17)\r\n- Infection line list (CL-WF-15)\r\n- Patient complaints summary (CL-WF-23)\r\n- Board readiness packet (GV-WF-01 inputs)\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Verify pre-input completeness across all 40 audit workflows; log any gap | QAPI Lead | QA-FM-021 | ≥ 5 business days pre-meeting |\r\n| 2 | Distribute agenda & pre-read packet | QAPI Lead | Packet | ≥ 3 business days pre-meeting |\r\n| 3 | Review aggregate quality trends from CL-WF-26..37 | QAPI Lead | QA-FM-003 | At meeting |\r\n| 4 | Review compliance/billing audit results from CO-WF-23..30 | Compliance Officer | CO-FM-024 | At meeting |\r\n| 5 | Review HR audit results from HR-WF-18..21 | HR Manager | EN-FM-022 | At meeting |\r\n| 6 | Review risk/safety audit results from RM-WF-16..20 | Risk Manager | CO-FM-024 | At meeting |\r\n| 7 | Review IT/security audit results from IT-WF-21..25 | IT Security Officer | CO-FM-024 | At meeting |\r\n| 8 | Review QAPI-layer results: KPI (QA-WF-13), indicators (QA-WF-14), trends (QA-WF-15), validation (QA-WF-16), PIPs (QA-WF-17), policy effectiveness (QA-WF-18) | QAPI Lead | QA-FM-021 | At meeting |\r\n| 9 | Review adverse events & RCAs | QAPI Lead | QA-FM-004 | At meeting |\r\n| 10 | Review PIP status (QA-WF-04 + QA-WF-17 monitoring) | PIP Owners | QA-FM-002; QA-FM-005 | At meeting |\r\n| 11 | Review infection surveillance | Infection Preventionist | QA-FM-006 | At meeting |\r\n| 12 | Decide on priority actions / new PIPs / CAPs | Committee | Minutes | At meeting |\r\n| 13 | Document minutes | Scribe | QA-FM-001 | ≤ 14 days |\r\n| 14 | Package report for Governing Body (GV-WF-01) | QAPI Lead | GV-FM-023 | ≥ 7 days pre-Governing Body meeting |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nQA-FM-001, QA-FM-002, QA-FM-003, QA-FM-004, QA-FM-005, QA-FM-006, GV-FM-023.\r\n\r\n### 8. APPROVALS\r\nCommittee majority; Governing Body reviews at next quarterly meeting (GV-WF-01).\r\n\r\n### 9. OUTPUTS\r\nMinutes, action log, quarterly report for Governing Body.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly (every 90 days max); minutes ≤14 days.\r\n\r\n### 11. ESCALATION LOGIC\r\nSentinel event or Immediate Jeopardy signal → emergency Committee + Administrator + Governing Body Chair within 24–72 hours. Any pre-input audit not complete → meeting deferred or partial-scope meeting with documented gap and CAP. Material findings escalate to GV-WF-01 and EN-WF-12. Cross-domain pattern triggers QA-WF-04 PIP via QA-WF-17 monitoring. Aggregated audit results: CL-WF-26..37, CO-WF-23..30, QA-WF-13..18, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25.\r\n\r\n### 12. FAILURE CONDITIONS\r\nNo evidence of Governing-Body-reviewed QAPI activity = CoP deficiency. Convening QAPI without complete pre-input audit evidence (CL-WF-26..37, CO-WF-23..30, QA-WF-13..18, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25) = invalid QAPI cycle and survey-citable. Skipping any audit-layer workflow blocks QA-WF-03 closure for the cycle.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\n4 quarters of minutes; Board-review evidence; action closure traceable. Each cycle packet must include the pre-input completeness log proving every required audit (CL-WF-26..37, CO-WF-23..30, QA-WF-13..18, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25) was complete and signed before the meeting. Cross-referenced to GV-WF-01, EN-WF-12, QA-WF-04, QA-WF-17.\r\n\r\n---",
     "sourcePath": "Builder/Policies/Workflows/QA-WORKFLOWS.md",
     "policyReferences": [
       "QA-PG-001; QA-PG-002; GV-GB-001",
@@ -20685,24 +26488,41 @@ export const WORKFLOWS: Record<string, Workflow> = {
       ]
     },
     "inputs": [
-      "3 months of dashboards",
-      "Adverse event RCAs",
-      "Active PIPs status",
-      "Infection line list",
-      "Patient complaints summary"
+      "**Clinical Quality audit layer (12 audits):** CL-WF-26, CL-WF-27, CL-WF-28, CL-WF-29, CL-WF-30, CL-WF-31, CL-WF-32, CL-WF-33, CL-WF-34, CL-WF-35, CL-WF-36, CL-WF-37",
+      "**Compliance & Billing audit layer (8 audits):** CO-WF-23, CO-WF-24, CO-WF-25, CO-WF-26, CO-WF-27, CO-WF-28, CO-WF-29, CO-WF-30",
+      "**QAPI Support audit layer (6 audits):** QA-WF-13, QA-WF-14, QA-WF-15, QA-WF-16, QA-WF-17, QA-WF-18",
+      "**HR & Training audit layer (4 audits):** HR-WF-18, HR-WF-19, HR-WF-20, HR-WF-21",
+      "**Risk & Safety audit layer (5 audits):** RM-WF-16, RM-WF-17, RM-WF-18, RM-WF-19, RM-WF-20",
+      "**IT & Security audit layer (5 audits):** IT-WF-21, IT-WF-22, IT-WF-23, IT-WF-24, IT-WF-25",
+      "3 months of dashboards (QA-WF-02 supported by QA-WF-13)",
+      "Adverse event RCAs (QA-WF-05)",
+      "Active PIPs status (QA-WF-04 supported by QA-WF-17)",
+      "Infection line list (CL-WF-15)",
+      "Patient complaints summary (CL-WF-23)",
+      "Board readiness packet (GV-WF-01 inputs)"
     ],
     "steps": [
       {
         "order": 1,
-        "action": "Distribute agenda & pre-read",
+        "action": "Verify pre-input completeness across all 40 audit workflows; log any gap",
+        "role": "QAPI Lead",
+        "formRaw": "QA-FM-021",
+        "formIds": [
+          "QA-FM-021"
+        ],
+        "deadline": "≥ 5 business days pre-meeting"
+      },
+      {
+        "order": 2,
+        "action": "Distribute agenda & pre-read packet",
         "role": "QAPI Lead",
         "formRaw": "Packet",
         "formIds": [],
         "deadline": "≥ 3 business days pre-meeting"
       },
       {
-        "order": 2,
-        "action": "Review aggregate quality trends",
+        "order": 3,
+        "action": "Review aggregate quality trends from CL-WF-26..37",
         "role": "QAPI Lead",
         "formRaw": "QA-FM-003",
         "formIds": [
@@ -20711,7 +26531,57 @@ export const WORKFLOWS: Record<string, Workflow> = {
         "deadline": "At meeting"
       },
       {
-        "order": 3,
+        "order": 4,
+        "action": "Review compliance/billing audit results from CO-WF-23..30",
+        "role": "Compliance Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "At meeting"
+      },
+      {
+        "order": 5,
+        "action": "Review HR audit results from HR-WF-18..21",
+        "role": "HR Manager",
+        "formRaw": "EN-FM-022",
+        "formIds": [
+          "EN-FM-022"
+        ],
+        "deadline": "At meeting"
+      },
+      {
+        "order": 6,
+        "action": "Review risk/safety audit results from RM-WF-16..20",
+        "role": "Risk Manager",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "At meeting"
+      },
+      {
+        "order": 7,
+        "action": "Review IT/security audit results from IT-WF-21..25",
+        "role": "IT Security Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "At meeting"
+      },
+      {
+        "order": 8,
+        "action": "Review QAPI-layer results: KPI (QA-WF-13), indicators (QA-WF-14), trends (QA-WF-15), validation (QA-WF-16), PIPs (QA-WF-17), policy effectiveness (QA-WF-18)",
+        "role": "QAPI Lead",
+        "formRaw": "QA-FM-021",
+        "formIds": [
+          "QA-FM-021"
+        ],
+        "deadline": "At meeting"
+      },
+      {
+        "order": 9,
         "action": "Review adverse events & RCAs",
         "role": "QAPI Lead",
         "formRaw": "QA-FM-004",
@@ -20721,10 +26591,10 @@ export const WORKFLOWS: Record<string, Workflow> = {
         "deadline": "At meeting"
       },
       {
-        "order": 4,
-        "action": "Review PIP status",
+        "order": 10,
+        "action": "Review PIP status (QA-WF-04 + QA-WF-17 monitoring)",
         "role": "PIP Owners",
-        "formRaw": "QA-FM-002 PIP Charter; QA-FM-005 CAP Tracking Tool",
+        "formRaw": "QA-FM-002; QA-FM-005",
         "formIds": [
           "QA-FM-002",
           "QA-FM-005"
@@ -20732,7 +26602,7 @@ export const WORKFLOWS: Record<string, Workflow> = {
         "deadline": "At meeting"
       },
       {
-        "order": 5,
+        "order": 11,
         "action": "Review infection surveillance",
         "role": "Infection Preventionist",
         "formRaw": "QA-FM-006",
@@ -20742,15 +26612,15 @@ export const WORKFLOWS: Record<string, Workflow> = {
         "deadline": "At meeting"
       },
       {
-        "order": 6,
-        "action": "Decide on priority actions",
+        "order": 12,
+        "action": "Decide on priority actions / new PIPs / CAPs",
         "role": "Committee",
         "formRaw": "Minutes",
         "formIds": [],
         "deadline": "At meeting"
       },
       {
-        "order": 7,
+        "order": 13,
         "action": "Document minutes",
         "role": "Scribe",
         "formRaw": "QA-FM-001",
@@ -20760,10 +26630,10 @@ export const WORKFLOWS: Record<string, Workflow> = {
         "deadline": "≤ 14 days"
       },
       {
-        "order": 8,
-        "action": "Package report for Governing Body",
+        "order": 14,
+        "action": "Package report for Governing Body (GV-WF-01)",
         "role": "QAPI Lead",
-        "formRaw": "GV-FM-023 (QAPI section)",
+        "formRaw": "GV-FM-023",
         "formIds": [
           "GV-FM-023"
         ],
@@ -20771,13 +26641,16 @@ export const WORKFLOWS: Record<string, Workflow> = {
       }
     ],
     "requiredForms": [
+      "CO-FM-024",
+      "EN-FM-022",
       "GV-FM-023",
       "QA-FM-001",
       "QA-FM-002",
       "QA-FM-003",
       "QA-FM-004",
       "QA-FM-005",
-      "QA-FM-006"
+      "QA-FM-006",
+      "QA-FM-021"
     ],
     "requiredFormsRaw": "QA-FM-001, QA-FM-002, QA-FM-003, QA-FM-004, QA-FM-005, QA-FM-006, GV-FM-023.",
     "approvals": [
@@ -20789,17 +26662,74 @@ export const WORKFLOWS: Record<string, Workflow> = {
     "approvalsRaw": "Committee majority; Governing Body reviews at next quarterly meeting (GV-WF-01).",
     "outputs": "Minutes, action log, quarterly report for Governing Body.",
     "sla": "Quarterly (every 90 days max); minutes ≤14 days.",
-    "escalationLogic": "Sentinel event or Immediate Jeopardy signal → emergency Committee + Administrator + Governing Body Chair within 24–72 hours.",
-    "failureConditions": "No evidence of Governing-Body-reviewed QAPI activity = CoP deficiency.",
-    "auditRequirements": "4 quarters of minutes; Board-review evidence; action closure traceable.",
+    "escalationLogic": "Sentinel event or Immediate Jeopardy signal → emergency Committee + Administrator + Governing Body Chair within 24–72 hours. Any pre-input audit not complete → meeting deferred or partial-scope meeting with documented gap and CAP. Material findings escalate to GV-WF-01 and EN-WF-12. Cross-domain pattern triggers QA-WF-04 PIP via QA-WF-17 monitoring. Aggregated audit results: CL-WF-26..37, CO-WF-23..30, QA-WF-13..18, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25.",
+    "failureConditions": "No evidence of Governing-Body-reviewed QAPI activity = CoP deficiency. Convening QAPI without complete pre-input audit evidence (CL-WF-26..37, CO-WF-23..30, QA-WF-13..18, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25) = invalid QAPI cycle and survey-citable. Skipping any audit-layer workflow blocks QA-WF-03 closure for the cycle.",
+    "auditRequirements": "4 quarters of minutes; Board-review evidence; action closure traceable. Each cycle packet must include the pre-input completeness log proving every required audit (CL-WF-26..37, CO-WF-23..30, QA-WF-13..18, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25) was complete and signed before the meeting. Cross-referenced to GV-WF-01, EN-WF-12, QA-WF-04, QA-WF-17.",
     "cadence": {
       "kind": "time_based",
       "interval": "quarterly"
     },
-    "dependencies": [],
+    "dependencies": [
+      {
+        "upstreamId": "GV-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-12",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-17",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-26",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-23",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-13",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-18",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-16",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-21",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-14",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-15",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-16",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-18",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
     "metrics": {
-      "stepCount": 8,
-      "formCount": 7,
+      "stepCount": 14,
+      "formCount": 10,
       "policyCount": 3,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
@@ -22182,6 +28112,853 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
+    }
+  },
+  "RM-WF-16": {
+    "id": "RM-WF-16",
+    "domain": "RM",
+    "title": "INCIDENT TREND ANALYSIS",
+    "sourceMarkdown": "## RM-WF-16 — INCIDENT TREND ANALYSIS\r\n\r\n### 1. POLICY REFERENCES\r\n- RM-RM-001 Risk Management; QA-AE-001 Adverse Event; 42 CFR § 484.65(b)\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly aggregation and trend analysis of all incidents (clinical adverse events, falls, medication errors, complaints, near misses, workplace injuries, exposures, security events). Hardens QA-WF-05 (Adverse Event Reporting/RCA). Aggregates evidence from QA-WF-05, RM-WF-10 (workplace injury), HR-WF-13 (workers comp), CO-WF-03 (hotline), IT-WF-25 (security incident audit). Feeds QA-WF-03 and EN-WF-12.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: any sentinel event; cluster (≥3 same-type within 30 days)\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Risk Manager\r\n- **Supporting:** QAPI Lead, IP, HR, Compliance Officer\r\n- **Approval:** Administrator; Governing Body for sentinel patterns\r\n\r\n### 5. INPUTS\r\n- Incident management log\r\n- Workers comp register\r\n- Hotline log\r\n- Source workflows: QA-WF-05, RM-WF-10, HR-WF-13, CO-WF-03, IT-WF-25\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull incident dataset across all source systems | Risk Manager | QA-FM-026 | Day 1 |\r\n| 2 | Categorize by type / severity / location / role | Risk Manager | QA-FM-026 | Day 2 |\r\n| 3 | Compute rate per 100 patient/employee episodes | Risk Manager | EN-FM-034 | Day 3 |\r\n| 4 | Identify clusters and patterns; trigger RCA via QA-WF-05 | Risk Manager | QA-FM-005 | Day 4 |\r\n| 5 | Compile Incident Trend Report; feed QA-WF-03, EN-WF-12 | Risk Manager | CO-FM-024 | Day 6 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nQA-FM-005, QA-FM-026, EN-FM-034, CO-FM-024\r\n\r\n### 8. APPROVALS\r\nAdministrator signs. Governing Body acknowledges sentinel patterns via GV-WF-01.\r\n\r\n### 9. OUTPUTS\r\nMonthly Incident Trend Report; cluster register; rate trend; RCA queue.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. Sentinel event RCA initiated within 24h.\r\n\r\n### 11. ESCALATION LOGIC\r\nSentinel / cluster → QA-WF-05 RCA + EN-WF-12 enterprise risk register update. Repeat cluster → QA-WF-04 PIP. Findings feed QA-WF-03 and CO-WF-22.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unanalyzed sentinel pattern → preventable harm; survey citation; potential CMS termination risk.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nAppend-only incident log retained ≥6 years. Per-cycle: dataset hash, categorization, rate calc, RCA queue, sign-off. Cross-referenced to QA-WF-05, RM-WF-10, HR-WF-13, CO-WF-03, IT-WF-25, EN-WF-12, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/RM-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "RM-RM-001 Risk Management; QA-AE-001 Adverse Event; 42 CFR § 484.65(b)"
+    ],
+    "policyRefs": [
+      "RM-RM-001",
+      "QA-AE-001"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
+    ],
+    "processOverview": "Monthly aggregation and trend analysis of all incidents (clinical adverse events, falls, medication errors, complaints, near misses, workplace injuries, exposures, security events). Hardens QA-WF-05 (Adverse Event Reporting/RCA). Aggregates evidence from QA-WF-05, RM-WF-10 (workplace injury), HR-WF-13 (workers comp), CO-WF-03 (hotline), IT-WF-25 (security incident audit). Feeds QA-WF-03 and EN-WF-12.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any sentinel event; cluster (≥3 same-type within 30 days)"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Risk Manager"
+      ],
+      "supporting": [
+        "QAPI Lead",
+        "IP",
+        "HR",
+        "Compliance Officer"
+      ],
+      "approval": [
+        "Administrator",
+        "Governing Body for sentinel patterns"
+      ]
+    },
+    "inputs": [
+      "Incident management log",
+      "Workers comp register",
+      "Hotline log",
+      "Source workflows: QA-WF-05, RM-WF-10, HR-WF-13, CO-WF-03, IT-WF-25"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull incident dataset across all source systems",
+        "role": "Risk Manager",
+        "formRaw": "QA-FM-026",
+        "formIds": [
+          "QA-FM-026"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Categorize by type / severity / location / role",
+        "role": "Risk Manager",
+        "formRaw": "QA-FM-026",
+        "formIds": [
+          "QA-FM-026"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Compute rate per 100 patient/employee episodes",
+        "role": "Risk Manager",
+        "formRaw": "EN-FM-034",
+        "formIds": [
+          "EN-FM-034"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 4,
+        "action": "Identify clusters and patterns; trigger RCA via QA-WF-05",
+        "role": "Risk Manager",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Compile Incident Trend Report; feed QA-WF-03, EN-WF-12",
+        "role": "Risk Manager",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 6"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "EN-FM-034",
+      "QA-FM-005",
+      "QA-FM-026"
+    ],
+    "requiredFormsRaw": "QA-FM-005, QA-FM-026, EN-FM-034, CO-FM-024",
+    "approvals": [
+      {
+        "description": "Administrator signs. Governing Body acknowledges sentinel patterns via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "approvalsRaw": "Administrator signs. Governing Body acknowledges sentinel patterns via GV-WF-01.",
+    "outputs": "Monthly Incident Trend Report; cluster register; rate trend; RCA queue.",
+    "sla": "Monthly. Sentinel event RCA initiated within 24h.",
+    "escalationLogic": "Sentinel / cluster → QA-WF-05 RCA + EN-WF-12 enterprise risk register update. Repeat cluster → QA-WF-04 PIP. Findings feed QA-WF-03 and CO-WF-22.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unanalyzed sentinel pattern → preventable harm; survey citation; potential CMS termination risk.",
+    "auditRequirements": "Append-only incident log retained ≥6 years. Per-cycle: dataset hash, categorization, rate calc, RCA queue, sign-off. Cross-referenced to QA-WF-05, RM-WF-10, HR-WF-13, CO-WF-03, IT-WF-25, EN-WF-12, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "QA-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-10",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-13",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-25",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-12",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-22",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 4,
+      "policyCount": 2,
+      "declaredRisk": "high",
+      "requiresGoverningBody": true
+    }
+  },
+  "RM-WF-17": {
+    "id": "RM-WF-17",
+    "domain": "RM",
+    "title": "SAFETY MONITORING",
+    "sourceMarkdown": "## RM-WF-17 — SAFETY MONITORING\r\n\r\n### 1. POLICY REFERENCES\r\n- RM-OS-001 Occupational Safety; HR-WM-004 Employee Health; Cal/OSHA IIPP; 29 CFR § 1910\r\n\r\n### 2. PROCESS OVERVIEW\r\nMonthly safety monitoring workflow that audits PPE availability and use, sharps disposal, vehicle safety, lone-worker check-in, and ergonomic compliance. Aggregates evidence from RM-WF-08 (Cal/OSHA IIPP), RM-WF-09 (workplace violence prevention), CL-WF-14 (point-of-care IC), and OP-WF-09 (vehicle management). Feeds QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Monthly\r\n- Conditional: any safety incident; OSHA inspection signal\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Safety Officer\r\n- **Supporting:** Risk Manager, IP, Operations Manager\r\n- **Approval:** Administrator\r\n\r\n### 5. INPUTS\r\n- Safety inspection results\r\n- PPE issuance/use observations\r\n- Vehicle inspection logs\r\n- Source workflows: RM-WF-08, RM-WF-09, CL-WF-14, OP-WF-09, OP-WF-02\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull safety inspection + observation data | Safety Officer | CO-FM-022 | Day 1 |\r\n| 2 | Audit PPE availability/use (≥20 observations) | Safety Officer | CL-FM-021 | Day 2–3 |\r\n| 3 | Verify vehicle inspection compliance per OP-WF-09 | Safety Officer | OP-FM-018 | Day 4 |\r\n| 4 | Verify lone-worker check-in compliance | Safety Officer | RM-FM-012 | Day 4 |\r\n| 5 | Issue CAPs; cluster events → RM-WF-16 trend analysis | Safety Officer | QA-FM-005 | Day 5 |\r\n| 6 | Compile report; feed QA-WF-03 | Safety Officer | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCL-FM-021, OP-FM-018, RM-FM-012, CO-FM-022, CO-FM-024, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nAdministrator signs.\r\n\r\n### 9. OUTPUTS\r\nMonthly Safety Audit Report; observation scorecard; CAP register.\r\n\r\n### 10. SLA / DEADLINES\r\nMonthly. CAPs ≤5 business days.\r\n\r\n### 11. ESCALATION LOGIC\r\nCluster events → RM-WF-16. Cal/OSHA exposure → RM-WF-08 update. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unaddressed safety risk → Cal/OSHA citation, employee injury, workers comp exposure.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: inspection data, observation scoring, CAPs, sign-off. Retention ≥5 years (Cal/OSHA). Cross-referenced to RM-WF-08, RM-WF-09, CL-WF-14, OP-WF-09, RM-WF-16, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/RM-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "RM-OS-001 Occupational Safety; HR-WM-004 Employee Health; Cal/OSHA IIPP; 29 CFR § 1910"
+    ],
+    "policyRefs": [
+      "RM-OS-001",
+      "HR-WM-004"
+    ],
+    "regulatoryAnchors": [],
+    "processOverview": "Monthly safety monitoring workflow that audits PPE availability and use, sharps disposal, vehicle safety, lone-worker check-in, and ergonomic compliance. Aggregates evidence from RM-WF-08 (Cal/OSHA IIPP), RM-WF-09 (workplace violence prevention), CL-WF-14 (point-of-care IC), and OP-WF-09 (vehicle management). Feeds QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Monthly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: any safety incident; OSHA inspection signal"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Safety Officer"
+      ],
+      "supporting": [
+        "Risk Manager",
+        "IP",
+        "Operations Manager"
+      ],
+      "approval": [
+        "Administrator"
+      ]
+    },
+    "inputs": [
+      "Safety inspection results",
+      "PPE issuance/use observations",
+      "Vehicle inspection logs",
+      "Source workflows: RM-WF-08, RM-WF-09, CL-WF-14, OP-WF-09, OP-WF-02"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull safety inspection + observation data",
+        "role": "Safety Officer",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Audit PPE availability/use (≥20 observations)",
+        "role": "Safety Officer",
+        "formRaw": "CL-FM-021",
+        "formIds": [
+          "CL-FM-021"
+        ],
+        "deadline": "Day 2–3"
+      },
+      {
+        "order": 3,
+        "action": "Verify vehicle inspection compliance per OP-WF-09",
+        "role": "Safety Officer",
+        "formRaw": "OP-FM-018",
+        "formIds": [
+          "OP-FM-018"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 4,
+        "action": "Verify lone-worker check-in compliance",
+        "role": "Safety Officer",
+        "formRaw": "RM-FM-012",
+        "formIds": [
+          "RM-FM-012"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 5,
+        "action": "Issue CAPs; cluster events → RM-WF-16 trend analysis",
+        "role": "Safety Officer",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 6,
+        "action": "Compile report; feed QA-WF-03",
+        "role": "Safety Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "OP-FM-018",
+      "QA-FM-005",
+      "RM-FM-012"
+    ],
+    "requiredFormsRaw": "CL-FM-021, OP-FM-018, RM-FM-012, CO-FM-022, CO-FM-024, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Administrator signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Administrator signs.",
+    "outputs": "Monthly Safety Audit Report; observation scorecard; CAP register.",
+    "sla": "Monthly. CAPs ≤5 business days.",
+    "escalationLogic": "Cluster events → RM-WF-16. Cal/OSHA exposure → RM-WF-08 update. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unaddressed safety risk → Cal/OSHA citation, employee injury, workers comp exposure.",
+    "auditRequirements": "Per-cycle log: inspection data, observation scoring, CAPs, sign-off. Retention ≥5 years (Cal/OSHA). Cross-referenced to RM-WF-08, RM-WF-09, CL-WF-14, OP-WF-09, RM-WF-16, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "RM-WF-08",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-14",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "OP-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-16",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 6,
+      "formCount": 6,
+      "policyCount": 2,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "RM-WF-18": {
+    "id": "RM-WF-18",
+    "domain": "RM",
+    "title": "ENVIRONMENTAL RISK REVIEW",
+    "sourceMarkdown": "## RM-WF-18 — ENVIRONMENTAL RISK REVIEW\r\n\r\n### 1. POLICY REFERENCES\r\n- RM-EP-001 Emergency Preparedness; RM-RM-001 Risk Management; 42 CFR § 484.102\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly environmental and operational risk review covering office facility, branch sites, hazardous-material handling, equipment, and patient-environment risks. Hardens RM-WF-02 (Annual HVA) and aggregates branch-inspection findings from OP-WF-02. Feeds RM-WF-01 (enterprise risk register) and QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly\r\n- Conditional: hazard event; equipment recall (RM-WF-12); branch lease change\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Risk Manager\r\n- **Supporting:** Safety Officer, Operations Manager\r\n- **Approval:** Administrator\r\n\r\n### 5. INPUTS\r\n- Branch inspection results (OP-WF-02)\r\n- Hazmat register (RM-WF-11)\r\n- Equipment recall log (RM-WF-12)\r\n- Source workflows: OP-WF-02, RM-WF-02, RM-WF-11, RM-WF-12\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull branch inspection + hazmat + recall datasets | Risk Manager | CO-FM-022 | Day 1 |\r\n| 2 | Reassess each environmental risk vs. HVA baseline | Risk Manager | RM-FM-012 | Day 2–3 |\r\n| 3 | Update enterprise risk register per RM-WF-01 | Risk Manager | RM-FM-012 | Day 4 |\r\n| 4 | Issue mitigation CAPs | Risk Manager | QA-FM-005 | Day 5 |\r\n| 5 | Compile review; feed QA-WF-03 + EN-WF-12 | Risk Manager | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nRM-FM-012, CO-FM-022, CO-FM-024, QA-FM-005\r\n\r\n### 8. APPROVALS\r\nAdministrator signs.\r\n\r\n### 9. OUTPUTS\r\nQuarterly Environmental Risk Review; updated risk register entries; mitigation CAPs.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly. Mitigations within risk-tier SLA.\r\n\r\n### 11. ESCALATION LOGIC\r\nHigh-tier risk → RM-WF-01 + EN-WF-12 enterprise risk consolidation; Governing Body via GV-WF-01. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unmanaged environmental risk → injury, regulatory citation, business interruption.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: dataset hashes, risk reassessment, CAPs, sign-off. Retention ≥6 years. Cross-referenced to RM-WF-01, RM-WF-02, OP-WF-02, EN-WF-12, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/RM-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "RM-EP-001 Emergency Preparedness; RM-RM-001 Risk Management; 42 CFR § 484.102"
+    ],
+    "policyRefs": [
+      "RM-EP-001",
+      "RM-RM-001"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.102"
+    ],
+    "processOverview": "Quarterly environmental and operational risk review covering office facility, branch sites, hazardous-material handling, equipment, and patient-environment risks. Hardens RM-WF-02 (Annual HVA) and aggregates branch-inspection findings from OP-WF-02. Feeds RM-WF-01 (enterprise risk register) and QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: hazard event; equipment recall (RM-WF-12); branch lease change"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Risk Manager"
+      ],
+      "supporting": [
+        "Safety Officer",
+        "Operations Manager"
+      ],
+      "approval": [
+        "Administrator"
+      ]
+    },
+    "inputs": [
+      "Branch inspection results (OP-WF-02)",
+      "Hazmat register (RM-WF-11)",
+      "Equipment recall log (RM-WF-12)",
+      "Source workflows: OP-WF-02, RM-WF-02, RM-WF-11, RM-WF-12"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull branch inspection + hazmat + recall datasets",
+        "role": "Risk Manager",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Reassess each environmental risk vs. HVA baseline",
+        "role": "Risk Manager",
+        "formRaw": "RM-FM-012",
+        "formIds": [
+          "RM-FM-012"
+        ],
+        "deadline": "Day 2–3"
+      },
+      {
+        "order": 3,
+        "action": "Update enterprise risk register per RM-WF-01",
+        "role": "Risk Manager",
+        "formRaw": "RM-FM-012",
+        "formIds": [
+          "RM-FM-012"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 4,
+        "action": "Issue mitigation CAPs",
+        "role": "Risk Manager",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 5,
+        "action": "Compile review; feed QA-WF-03 + EN-WF-12",
+        "role": "Risk Manager",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005",
+      "RM-FM-012"
+    ],
+    "requiredFormsRaw": "RM-FM-012, CO-FM-022, CO-FM-024, QA-FM-005",
+    "approvals": [
+      {
+        "description": "Administrator signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "approvalsRaw": "Administrator signs.",
+    "outputs": "Quarterly Environmental Risk Review; updated risk register entries; mitigation CAPs.",
+    "sla": "Quarterly. Mitigations within risk-tier SLA.",
+    "escalationLogic": "High-tier risk → RM-WF-01 + EN-WF-12 enterprise risk consolidation; Governing Body via GV-WF-01. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unmanaged environmental risk → injury, regulatory citation, business interruption.",
+    "auditRequirements": "Per-cycle log: dataset hashes, risk reassessment, CAPs, sign-off. Retention ≥6 years. Cross-referenced to RM-WF-01, RM-WF-02, OP-WF-02, EN-WF-12, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "RM-WF-02",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "OP-WF-02",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-01",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-12",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "GV-WF-01",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 4,
+      "policyCount": 2,
+      "declaredRisk": "high",
+      "requiresGoverningBody": false
+    }
+  },
+  "RM-WF-19": {
+    "id": "RM-WF-19",
+    "domain": "RM",
+    "title": "EMERGENCY PREPAREDNESS READINESS AUDIT",
+    "sourceMarkdown": "## RM-WF-19 — EMERGENCY PREPAREDNESS READINESS AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- RM-EP-001 Emergency Preparedness; 42 CFR § 484.102\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly readiness audit confirming the agency can execute its emergency-preparedness program at any time. Hardens RM-WF-03 (biennial program review), RM-WF-04 (biennial training), RM-WF-05 (annual exercise). Validates patient priority classification (RM-WF-07), staff readiness, communication-tree currency, supply caches, and surge plan (RM-WF-06). Feeds QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly\r\n- Conditional: actual emergency activation; CMS EP rule update; HVA refresh\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Emergency Preparedness Coordinator\r\n- **Supporting:** Clinical Manager, Safety Officer, Risk Manager\r\n- **Approval:** Administrator; Governing Body informed via GV-WF-01\r\n\r\n### 5. INPUTS\r\n- EP program documentation\r\n- Patient priority registry (RM-WF-07)\r\n- Communication tree\r\n- Source workflows: RM-WF-03, RM-WF-04, RM-WF-05, RM-WF-06, RM-WF-07\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Verify EP plan currency per RM-WF-03 | EP Coord | RM-FM-012 | Day 1 |\r\n| 2 | Verify staff training currency per RM-WF-04 | EP Coord | HR-FM-017 | Day 2 |\r\n| 3 | Verify last annual exercise occurred per RM-WF-05 | EP Coord | RM-FM-012 | Day 2 |\r\n| 4 | Spot-test patient priority registry per RM-WF-07 | EP Coord | RM-FM-012 | Day 3 |\r\n| 5 | Spot-test communication tree (live drill) | EP Coord | RM-FM-012 | Day 3 |\r\n| 6 | Audit supply cache | EP Coord | RM-FM-012 | Day 4 |\r\n| 7 | Compile readiness report; feed QA-WF-03 + GV-WF-01 | EP Coord | CO-FM-024 | Day 5 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nRM-FM-012, HR-FM-017, CO-FM-024, GV-FM-023\r\n\r\n### 8. APPROVALS\r\nAdministrator signs. Governing Body acknowledges via GV-WF-01.\r\n\r\n### 9. OUTPUTS\r\nQuarterly EP Readiness Report; gap register; readiness scorecard; drill evidence.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly. Gap closure within next quarter or sooner if material.\r\n\r\n### 11. ESCALATION LOGIC\r\nReadiness gap → CAP and EN-WF-12 update. Material gap → Governing Body via GV-WF-01. Findings feed QA-WF-03.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Unprepared agency at activation → patient harm, EP CoP citation (42 CFR § 484.102), reportable.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: verification evidence, drill results, gap register, sign-off. Retention ≥6 years. Cross-referenced to RM-WF-03, RM-WF-04, RM-WF-05, RM-WF-06, RM-WF-07, EN-WF-12, GV-WF-01, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/RM-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "RM-EP-001 Emergency Preparedness; 42 CFR § 484.102"
+    ],
+    "policyRefs": [
+      "RM-EP-001"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.102"
+    ],
+    "processOverview": "Quarterly readiness audit confirming the agency can execute its emergency-preparedness program at any time. Hardens RM-WF-03 (biennial program review), RM-WF-04 (biennial training), RM-WF-05 (annual exercise). Validates patient priority classification (RM-WF-07), staff readiness, communication-tree currency, supply caches, and surge plan (RM-WF-06). Feeds QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: actual emergency activation; CMS EP rule update; HVA refresh"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Emergency Preparedness Coordinator"
+      ],
+      "supporting": [
+        "Clinical Manager",
+        "Safety Officer",
+        "Risk Manager"
+      ],
+      "approval": [
+        "Administrator",
+        "Governing Body informed via GV-WF-01"
+      ]
+    },
+    "inputs": [
+      "EP program documentation",
+      "Patient priority registry (RM-WF-07)",
+      "Communication tree",
+      "Source workflows: RM-WF-03, RM-WF-04, RM-WF-05, RM-WF-06, RM-WF-07"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Verify EP plan currency per RM-WF-03",
+        "role": "EP Coord",
+        "formRaw": "RM-FM-012",
+        "formIds": [
+          "RM-FM-012"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Verify staff training currency per RM-WF-04",
+        "role": "EP Coord",
+        "formRaw": "HR-FM-017",
+        "formIds": [
+          "HR-FM-017"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 3,
+        "action": "Verify last annual exercise occurred per RM-WF-05",
+        "role": "EP Coord",
+        "formRaw": "RM-FM-012",
+        "formIds": [
+          "RM-FM-012"
+        ],
+        "deadline": "Day 2"
+      },
+      {
+        "order": 4,
+        "action": "Spot-test patient priority registry per RM-WF-07",
+        "role": "EP Coord",
+        "formRaw": "RM-FM-012",
+        "formIds": [
+          "RM-FM-012"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 5,
+        "action": "Spot-test communication tree (live drill)",
+        "role": "EP Coord",
+        "formRaw": "RM-FM-012",
+        "formIds": [
+          "RM-FM-012"
+        ],
+        "deadline": "Day 3"
+      },
+      {
+        "order": 6,
+        "action": "Audit supply cache",
+        "role": "EP Coord",
+        "formRaw": "RM-FM-012",
+        "formIds": [
+          "RM-FM-012"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 7,
+        "action": "Compile readiness report; feed QA-WF-03 + GV-WF-01",
+        "role": "EP Coord",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 5"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "GV-FM-023",
+      "HR-FM-017",
+      "RM-FM-012"
+    ],
+    "requiredFormsRaw": "RM-FM-012, HR-FM-017, CO-FM-024, GV-FM-023",
+    "approvals": [
+      {
+        "description": "Administrator signs. Governing Body acknowledges via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "approvalsRaw": "Administrator signs. Governing Body acknowledges via GV-WF-01.",
+    "outputs": "Quarterly EP Readiness Report; gap register; readiness scorecard; drill evidence.",
+    "sla": "Quarterly. Gap closure within next quarter or sooner if material.",
+    "escalationLogic": "Readiness gap → CAP and EN-WF-12 update. Material gap → Governing Body via GV-WF-01. Findings feed QA-WF-03.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Unprepared agency at activation → patient harm, EP CoP citation (42 CFR § 484.102), reportable.",
+    "auditRequirements": "Per-cycle log: verification evidence, drill results, gap register, sign-off. Retention ≥6 years. Cross-referenced to RM-WF-03, RM-WF-04, RM-WF-05, RM-WF-06, RM-WF-07, EN-WF-12, GV-WF-01, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "RM-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-07",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "RM-WF-06",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "EN-WF-12",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "GV-WF-01",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 7,
+      "formCount": 4,
+      "policyCount": 1,
+      "declaredRisk": "high",
+      "requiresGoverningBody": true
+    }
+  },
+  "RM-WF-20": {
+    "id": "RM-WF-20",
+    "domain": "RM",
+    "title": "INCIDENT RESPONSE COMPLIANCE AUDIT",
+    "sourceMarkdown": "## RM-WF-20 — INCIDENT RESPONSE COMPLIANCE AUDIT\r\n\r\n### 1. POLICY REFERENCES\r\n- QA-AE-001 Adverse Event; RM-RM-002 Incident Response; 42 CFR § 484.65(b); CMIA reporting\r\n\r\n### 2. PROCESS OVERVIEW\r\nQuarterly audit of incident-response process compliance: time-to-report, time-to-RCA, CAP closure rates, mandatory external reporting completion (state DHCS, CDPH, OSHA, OCR-HIPAA). Aggregates evidence from QA-WF-05 (RCA), CL-WF-22 (abuse/neglect), CL-WF-23 (complaints), CO-WF-10 (HIPAA breach), HR-WF-13 (workers comp), IT-WF-09 (IT security incident). Feeds QA-WF-03.\r\n\r\n### 3. TRIGGER(S)\r\n- **Time-based:** Quarterly\r\n- Conditional: external regulator inquiry on incident handling\r\n\r\n### 4. RESPONSIBLE ROLES\r\n- **Primary:** Risk Manager\r\n- **Supporting:** Compliance Officer, Clinical Manager, IT Security Officer\r\n- **Approval:** Compliance Officer; Governing Body for material gaps\r\n\r\n### 5. INPUTS\r\n- Incident register\r\n- RCA register (QA-WF-05)\r\n- Mandatory-report log\r\n- Source workflows: QA-WF-05, CL-WF-22, CL-WF-23, CO-WF-10, HR-WF-13, IT-WF-09\r\n\r\n### 6. STEP-BY-STEP EXECUTION\r\n\r\n| # | Action | Role | Form | Deadline |\r\n|---|--------|------|------|----------|\r\n| 1 | Pull incident register + RCA + report log | Risk Manager | CO-FM-022 | Day 1 |\r\n| 2 | Score time-to-report, time-to-RCA, CAP closure | Risk Manager | QA-FM-026 | Day 2–3 |\r\n| 3 | Verify mandatory external reports filed (DHCS, CDPH, OSHA, OCR) | Compliance Officer | CO-FM-024 | Day 4 |\r\n| 4 | Issue CAPs for any miss → CO-WF-30 | Compliance Officer | QA-FM-005 | Day 5 |\r\n| 5 | Compile audit report; feed QA-WF-03 | Risk Manager | CO-FM-024 | Day 7 |\r\n\r\n### 7. REQUIRED FORMS & DOCUMENTS\r\nCO-FM-022, CO-FM-024, QA-FM-005, QA-FM-026\r\n\r\n### 8. APPROVALS\r\nCompliance Officer signs. Governing Body acknowledges material misses via GV-WF-01.\r\n\r\n### 9. OUTPUTS\r\nQuarterly Incident Response Audit Report; per-incident scorecard; mandatory-report compliance register; CAP queue.\r\n\r\n### 10. SLA / DEADLINES\r\nQuarterly. Missed external report → escalate same day; remediate within 5 business days.\r\n\r\n### 11. ESCALATION LOGIC\r\nMissed mandatory report → immediate filing + CO-WF-16 self-disclosure consideration. Pattern → CAP via CO-WF-04. Findings feed QA-WF-03 and CO-WF-22.\r\n\r\n### 12. FAILURE CONDITIONS\r\nMissed cycle blocks QA-WF-03. Missed mandatory external reports → CMP, licensure action, OCR penalties.\r\n\r\n### 13. AUDIT REQUIREMENTS\r\nPer-cycle log: incident roster, scoring, mandatory-report evidence, CAPs, sign-off. Retention ≥10 years. Cross-referenced to QA-WF-05, CL-WF-22, CL-WF-23, CO-WF-10, HR-WF-13, IT-WF-09, CO-WF-16, CO-WF-30, QA-WF-03.\r\n\r\n---",
+    "sourcePath": "Builder/Policies/Workflows/RM-WORKFLOWS-AUDIT.md",
+    "policyReferences": [
+      "QA-AE-001 Adverse Event; RM-RM-002 Incident Response; 42 CFR § 484.65(b); CMIA reporting"
+    ],
+    "policyRefs": [
+      "QA-AE-001",
+      "RM-RM-002"
+    ],
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
+    ],
+    "processOverview": "Quarterly audit of incident-response process compliance: time-to-report, time-to-RCA, CAP closure rates, mandatory external reporting completion (state DHCS, CDPH, OSHA, OCR-HIPAA). Aggregates evidence from QA-WF-05 (RCA), CL-WF-22 (abuse/neglect), CL-WF-23 (complaints), CO-WF-10 (HIPAA breach), HR-WF-13 (workers comp), IT-WF-09 (IT security incident). Feeds QA-WF-03.",
+    "triggers": [
+      {
+        "kind": "time_based",
+        "description": "Quarterly"
+      },
+      {
+        "kind": "event_based",
+        "description": "Conditional: external regulator inquiry on incident handling"
+      }
+    ],
+    "roles": {
+      "primary": [
+        "Risk Manager"
+      ],
+      "supporting": [
+        "Compliance Officer",
+        "Clinical Manager",
+        "IT Security Officer"
+      ],
+      "approval": [
+        "Compliance Officer",
+        "Governing Body for material gaps"
+      ]
+    },
+    "inputs": [
+      "Incident register",
+      "RCA register (QA-WF-05)",
+      "Mandatory-report log",
+      "Source workflows: QA-WF-05, CL-WF-22, CL-WF-23, CO-WF-10, HR-WF-13, IT-WF-09"
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "action": "Pull incident register + RCA + report log",
+        "role": "Risk Manager",
+        "formRaw": "CO-FM-022",
+        "formIds": [
+          "CO-FM-022"
+        ],
+        "deadline": "Day 1"
+      },
+      {
+        "order": 2,
+        "action": "Score time-to-report, time-to-RCA, CAP closure",
+        "role": "Risk Manager",
+        "formRaw": "QA-FM-026",
+        "formIds": [
+          "QA-FM-026"
+        ],
+        "deadline": "Day 2–3"
+      },
+      {
+        "order": 3,
+        "action": "Verify mandatory external reports filed (DHCS, CDPH, OSHA, OCR)",
+        "role": "Compliance Officer",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 4"
+      },
+      {
+        "order": 4,
+        "action": "Issue CAPs for any miss → CO-WF-30",
+        "role": "Compliance Officer",
+        "formRaw": "QA-FM-005",
+        "formIds": [
+          "QA-FM-005"
+        ],
+        "deadline": "Day 5"
+      },
+      {
+        "order": 5,
+        "action": "Compile audit report; feed QA-WF-03",
+        "role": "Risk Manager",
+        "formRaw": "CO-FM-024",
+        "formIds": [
+          "CO-FM-024"
+        ],
+        "deadline": "Day 7"
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005",
+      "QA-FM-026"
+    ],
+    "requiredFormsRaw": "CO-FM-022, CO-FM-024, QA-FM-005, QA-FM-026",
+    "approvals": [
+      {
+        "description": "Compliance Officer signs. Governing Body acknowledges material misses via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "approvalsRaw": "Compliance Officer signs. Governing Body acknowledges material misses via GV-WF-01.",
+    "outputs": "Quarterly Incident Response Audit Report; per-incident scorecard; mandatory-report compliance register; CAP queue.",
+    "sla": "Quarterly. Missed external report → escalate same day; remediate within 5 business days.",
+    "escalationLogic": "Missed mandatory report → immediate filing + CO-WF-16 self-disclosure consideration. Pattern → CAP via CO-WF-04. Findings feed QA-WF-03 and CO-WF-22.",
+    "failureConditions": "Missed cycle blocks QA-WF-03. Missed mandatory external reports → CMP, licensure action, OCR penalties.",
+    "auditRequirements": "Per-cycle log: incident roster, scoring, mandatory-report evidence, CAPs, sign-off. Retention ≥10 years. Cross-referenced to QA-WF-05, CL-WF-22, CL-WF-23, CO-WF-10, HR-WF-13, IT-WF-09, CO-WF-16, CO-WF-30, QA-WF-03.",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "dependencies": [
+      {
+        "upstreamId": "QA-WF-05",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-22",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CL-WF-23",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-10",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "HR-WF-13",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "IT-WF-09",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "QA-WF-03",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-16",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-04",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-22",
+        "reason": "Referenced by authored workflow content."
+      },
+      {
+        "upstreamId": "CO-WF-30",
+        "reason": "Referenced by authored workflow content."
+      }
+    ],
+    "metrics": {
+      "stepCount": 5,
+      "formCount": 4,
+      "policyCount": 2,
+      "declaredRisk": "moderate",
+      "requiresGoverningBody": true
     }
   },
   "RM-WF-01": {

@@ -13,6 +13,7 @@ import {
   ClipboardList, Clock,
 } from 'lucide-react';
 import { useShellStore } from '@/policy/stores/uiStore';
+import { PolicyAppendicesPanel, type ExtraAppendix } from '@/policy/components/PolicyAppendicesPanel';
 
 function useDetailShell() {
   const setDetailMode = useShellStore(s => s.setDetailMode);
@@ -30,10 +31,10 @@ function useDetailShell() {
 // ─── SHARED HELPERS ───────────────────────────────────────────────────────────
 
 const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`bg-white/5 border border-white/10 rounded-xl p-6 mb-6 ${className}`}>{children}</div>
+  <div className={`bg-white shadow-sm rounded-xl p-6 mb-6 ${className}`}>{children}</div>
 );
 
-const SectionTitle = ({ icon: Icon, title, color = 'text-white' }: { icon?: React.ElementType; title: string; color?: string }) => (
+const SectionTitle = ({ icon: Icon, title, color = 'text-[#D4AF37]' }: { icon?: React.ElementType; title: string; color?: string }) => (
   <h2 className={`font-montserrat text-2xl font-bold flex items-center mb-6 ${color}`}>
     {Icon && <Icon className="mr-3" size={28} />}
     {title}
@@ -41,20 +42,20 @@ const SectionTitle = ({ icon: Icon, title, color = 'text-white' }: { icon?: Reac
 );
 
 const SimpleTable = ({ headers, rows }: { headers: string[]; rows: (string | React.ReactNode)[][] }) => (
-  <div className="overflow-hidden rounded-xl border border-white/10 mb-6">
+  <div className="overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm mb-6">
     <table className="w-full table-fixed text-left border-collapse">
       <thead>
-        <tr className="bg-white/10">
+        <tr className="bg-[#D4AF37] text-white">
           {headers.map((h, i) => (
-            <th key={i} className="p-4 font-montserrat font-bold text-[11px] text-white/50 tracking-widest uppercase border-b border-white/10">{h}</th>
+            <th key={i} className="p-4 font-montserrat font-bold text-[11px] tracking-widest uppercase border-b border-[#006059]">{h}</th>
           ))}
         </tr>
       </thead>
-      <tbody className="divide-y divide-white/5">
+      <tbody className="divide-y divide-gray-200">
         {rows.map((row, i) => (
-          <tr key={i} className="hover:bg-white/[0.02] transition-colors even:bg-white/[0.02]">
+          <tr key={i} className="hover:bg-gray-50 transition-colors even:bg-gray-50/30">
             {row.map((cell, j) => (
-              <td key={j} className="p-4 text-white/70 text-sm align-top leading-relaxed whitespace-pre-line">{cell}</td>
+              <td key={j} className="p-4 text-[#1F1C1B] text-sm align-top leading-relaxed whitespace-pre-line">{cell}</td>
             ))}
           </tr>
         ))}
@@ -70,54 +71,54 @@ const LOGO = 'https://cdn.jsdelivr.net/gh/robertp-max/CSM-485-Form@main/src/asse
 // ─── APPENDIX HELPERS ────────────────────────────────────────────────────────
 function AppxHeader({ policyId, version, title }: { policyId: string; version: string; title: string }) {
   return (
-    <div className="text-center mb-8 pb-6 border-b-2 border-white/10">
+    <div className="text-center mb-8 pb-6 border-b-2 border-[#E5E4E3]">
       <img src={LOGO} alt="Care Indeed" className="h-14 mx-auto mb-4 opacity-40" />
-      <h3 className="font-montserrat text-2xl font-extrabold text-white mb-1">{title}</h3>
-      <p className="text-xs text-white/30 italic">Care Indeed Home Health Care, Inc. · Policy {policyId} · Version {version} · 2025-07-10</p>
+      <h3 className="font-montserrat text-2xl font-extrabold text-[#1F1C1B] mb-1">{title}</h3>
+      <p className="text-xs text-[#747470] italic">Care Indeed Home Health Care, Inc. · Policy {policyId} · Version {version} · 2025-07-10</p>
     </div>
   );
 }
 function FormField({ label, lines = 1 }: { label: string; lines?: number }) {
   return (
     <div className="mb-4">
-      <label className="block text-xs font-montserrat font-bold text-white/40 uppercase tracking-widest mb-1">{label}</label>
+      <label className="block text-xs font-montserrat font-bold text-[#747470] uppercase tracking-widest mb-1">{label}</label>
       {lines === 1
-        ? <div className="border-b border-white/20 h-8 rounded-sm" />
-        : <div className="border border-white/10 rounded" style={{ height: lines * 30 }} />}
+        ? <div className="border-b border-[#E5E4E3] h-8 rounded-sm" />
+        : <div className="border border-[#E5E4E3] rounded" style={{ height: lines * 30 }} />}
     </div>
   );
 }
 function AppxSecHead({ title }: { title: string }) {
-  return <div className="bg-[#00e59b]/20 text-[#00e59b] border border-[#00e59b]/30 px-4 py-2 rounded-t text-xs font-montserrat font-bold uppercase tracking-widest mt-6 mb-0">{title}</div>;
+  return <div className="bg-[#E5FEFF] text-[#007970] border border-[#BFE7E5] px-4 py-2 rounded-t text-xs font-montserrat font-bold uppercase tracking-widest mt-6 mb-0">{title}</div>;
 }
 function ChkRow({ label }: { label: string }) {
   return (
-    <div className="flex items-start py-2 border-b border-white/10 last:border-0">
-      <span className="text-white/30 mr-3 mt-0.5 text-sm shrink-0">☐</span>
-      <span className="text-sm text-white/70 font-roboto">{label}</span>
+    <div className="flex items-start py-2 border-b border-[#E5E4E3] last:border-0">
+      <span className="text-[#747470] mr-3 mt-0.5 text-sm shrink-0">☐</span>
+      <span className="text-sm text-[#524048] font-roboto">{label}</span>
     </div>
   );
 }
 function SigBlock({ left, right }: { left: string; right: string }) {
   return (
-    <div className="grid grid-cols-2 gap-6 mt-4 pt-4 border-t border-white/10">
-      <div><div className="border-b border-dashed border-white/20 h-8 mb-1" /><p className="text-xs text-white/40">{left}</p></div>
-      <div><div className="border-b border-dashed border-white/20 h-8 mb-1" /><p className="text-xs text-white/40">{right}</p></div>
+    <div className="grid grid-cols-2 gap-6 mt-4 pt-4 border-t border-[#E5E4E3]">
+      <div><div className="border-b border-dashed border-[#C8C6C5] h-8 mb-1" /><p className="text-xs text-[#747470]">{left}</p></div>
+      <div><div className="border-b border-dashed border-[#C8C6C5] h-8 mb-1" /><p className="text-xs text-[#747470]">{right}</p></div>
     </div>
   );
 }
 function TblHead({ cols }: { cols: string[] }) {
   return (
-    <thead className="bg-white/5">
-      <tr>{cols.map(c => <th key={c} className="p-2 text-left text-xs font-montserrat font-bold text-white/50 uppercase border-b border-white/10 whitespace-nowrap tracking-wider">{c}</th>)}</tr>
+    <thead className="bg-[#FAFBF8]">
+      <tr>{cols.map(c => <th key={c} className="p-2 text-left text-xs font-montserrat font-bold text-[#747470] uppercase border-b border-[#E5E4E3] whitespace-nowrap tracking-wider">{c}</th>)}</tr>
     </thead>
   );
 }
 function EmptyRows({ count, cols }: { count: number; cols: number }) {
   return (
     <tbody>{Array.from({ length: count }, (_, i) => (
-      <tr key={i} className="border-b border-white/10">
-        {Array.from({ length: cols }, (_, j) => <td key={j} className="p-2 h-9 border-l first:border-l-0 border-white/10" />)}
+      <tr key={i} className="border-b border-[#E5E4E3]">
+        {Array.from({ length: cols }, (_, j) => <td key={j} className="p-2 h-9 border-l first:border-l-0 border-[#E5E4E3]" />)}
       </tr>
     ))}</tbody>
   );
@@ -915,16 +916,16 @@ function ViewOverview({ pc }: { pc: PolicyContent }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <SectionTitle icon={Shield} title="2. Purpose" />
-          <p className="text-white/70 leading-relaxed text-[15px]">{pc.purpose}</p>
+          <p className="text-[#524048] leading-relaxed text-[15px]">{pc.purpose}</p>
         </Card>
         <Card>
           <SectionTitle icon={Search} title="3. Scope" />
-          <p className="text-white/70 mb-4 font-bold">This policy applies to:</p>
+          <p className="text-[#524048] mb-4 font-bold">This policy applies to:</p>
           <ul className="space-y-3">
             {pc.scopeItems.map((item, i) => (
               <li key={i} className="flex items-start">
-                <CheckCircle className="text-[#00e59b] mr-3 mt-0.5 flex-shrink-0" size={18} />
-                <span className="text-white/70 text-[15px]">{item}</span>
+                <CheckCircle className="text-[#007970] mr-3 mt-0.5 flex-shrink-0" size={18} />
+                <span className="text-[#524048] text-[15px]">{item}</span>
               </li>
             ))}
           </ul>
@@ -934,9 +935,9 @@ function ViewOverview({ pc }: { pc: PolicyContent }) {
         <SectionTitle icon={BookOpen} title="5. Definitions" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {pc.definitions.map((def, i) => (
-            <div key={i} className="bg-white/5 border border-white/10 p-5 rounded-xl">
-              <h4 className="font-montserrat font-extrabold text-[#00e59b] mb-2">{def.term}</h4>
-              <p className="text-white/60 text-sm leading-relaxed">{def.definition}</p>
+            <div key={i} className="bg-white border border-[#E5E4E3] p-5 rounded-xl">
+              <h4 className="font-montserrat font-extrabold text-[#007970] mb-2">{def.term}</h4>
+              <p className="text-[#747470] text-sm leading-relaxed">{def.definition}</p>
             </div>
           ))}
         </div>
@@ -952,11 +953,11 @@ function ViewPolicy({ pc }: { pc: PolicyContent }) {
         <SectionTitle icon={List} title="4. Policy Statement" />
         <div className="space-y-4">
           {pc.statements.map((stmt, i) => (
-            <div key={i} className="flex items-start bg-white/5 border border-white/10 p-5 rounded-xl">
-              <div className="bg-[#00e59b]/20 text-[#00e59b] border border-[#00e59b]/30 rounded-full w-10 h-10 flex items-center justify-center font-bold font-montserrat flex-shrink-0 mr-5 text-sm">
+            <div key={i} className="flex items-start bg-white border border-[#E5E4E3] p-5 rounded-xl">
+              <div className="bg-[#007970]/20 text-[#007970] border border-[#007970]/30 rounded-full w-10 h-10 flex items-center justify-center font-bold font-montserrat flex-shrink-0 mr-5 text-sm">
                 4.{i + 1}
               </div>
-              <p className="text-white/80 leading-relaxed pt-2 text-[15px]">{stmt.substring(4)}</p>
+              <p className="text-[#1F1C1B] leading-relaxed pt-2 text-[15px]">{stmt.substring(4)}</p>
             </div>
           ))}
         </div>
@@ -1008,8 +1009,8 @@ function ViewCompliance({ pc }: { pc: PolicyContent }) {
           <SectionTitle icon={Search} title="8.2 Surveyor Expectations" />
           <ul className="space-y-4">
             {pc.surveyorItems.map((item, i) => (
-              <li key={i} className="text-[15px] text-white/80 font-roboto flex items-start">
-                <ChevronRight className="text-[#00e59b] mt-0.5 mr-2 flex-shrink-0" />
+              <li key={i} className="text-[15px] text-[#1F1C1B] font-roboto flex items-start">
+                <ChevronRight className="text-[#007970] mt-0.5 mr-2 flex-shrink-0" />
                 {i + 1}. {item}
               </li>
             ))}
@@ -1022,7 +1023,7 @@ function ViewCompliance({ pc }: { pc: PolicyContent }) {
               <div key={i} className="bg-red-500/5 border border-red-500/20 p-4 rounded-xl">
                 <p className="font-bold text-red-400 text-[15px] mb-2">{item[0]}</p>
                 <p className="text-sm text-red-300/80 mb-2"><strong>Risk:</strong> {item[1]}</p>
-                <p className="text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-red-500/10"><strong>Mitigation:</strong> {item[2]}</p>
+                <p className="text-sm text-[#747470] bg-white p-2 rounded-lg border border-red-500/10"><strong>Mitigation:</strong> {item[2]}</p>
               </div>
             ))}
           </div>
@@ -1053,9 +1054,9 @@ function ViewReferences({ pc }: { pc: PolicyContent }) {
         <SectionTitle icon={CheckSquare} title="11. Training & Version Control" />
         <ul className="space-y-4 mb-6">
           {pc.trainingItems.map((item, i) => (
-            <li key={i} className="flex items-start bg-white/5 border border-white/10 p-4 rounded-xl">
-              <span className="text-[#00e59b] font-bold mr-3 text-sm">10.{i + 1}</span>
-              <p className="text-[15px] text-white/70 leading-relaxed">{item}</p>
+            <li key={i} className="flex items-start bg-white border border-[#E5E4E3] p-4 rounded-xl">
+              <span className="text-[#007970] font-bold mr-3 text-sm">10.{i + 1}</span>
+              <p className="text-[15px] text-[#524048] leading-relaxed">{item}</p>
             </li>
           ))}
         </ul>
@@ -1077,7 +1078,7 @@ function ViewAlerts({ pc }: { pc: PolicyContent }) {
     <div className="space-y-5 pb-12">
       <Card>
         <SectionTitle icon={Bell} title="Active Policy Alerts & Notices" />
-        <p className="text-white/50 text-sm -mt-3 mb-2">Regulatory updates, advisories, and operational notices tied to this policy. Alerts are cleared when resolved or superseded.</p>
+        <p className="text-[#747470] text-sm -mt-3 mb-2">Regulatory updates, advisories, and operational notices tied to this policy. Alerts are cleared when resolved or superseded.</p>
       </Card>
       {pc.alerts.map((a, i) => {
         const c = cfg[a.level];
@@ -1087,12 +1088,12 @@ function ViewAlerts({ pc }: { pc: PolicyContent }) {
               <div className="flex items-center gap-3 flex-wrap">
                 <span className={`w-2 h-2 rounded-full flex-shrink-0 ${c.dot}`} />
                 <span className={`text-[9px] font-bold font-montserrat uppercase tracking-widest px-2.5 py-1 rounded-full border ${c.badge}`}>{c.label}</span>
-                <h3 className="font-montserrat font-bold text-white text-[14px]">{a.title}</h3>
+                <h3 className="font-montserrat font-bold text-[#1F1C1B] text-[14px]">{a.title}</h3>
               </div>
-              <span className="text-white/30 text-xs shrink-0">{a.date}</span>
+              <span className="text-[#9E9D9A] text-xs shrink-0">{a.date}</span>
             </div>
-            <p className="text-white/70 text-sm leading-relaxed pl-5">{a.body}</p>
-            {a.source && <p className="text-white/40 text-xs mt-3 pl-5 italic">Source: {a.source}</p>}
+            <p className="text-[#524048] text-sm leading-relaxed pl-5">{a.body}</p>
+            {a.source && <p className="text-[#9E9D9A] text-xs mt-3 pl-5 italic">Source: {a.source}</p>}
           </div>
         );
       })}
@@ -1107,24 +1108,24 @@ function ViewFAQ({ pc }: { pc: PolicyContent }) {
     <div className="space-y-6 pb-12">
       <Card>
         <SectionTitle icon={HelpCircle} title="Frequently Asked Questions" />
-        <p className="text-white/50 text-sm -mt-3">Common questions and authoritative answers for this policy. Contact the Compliance Officer for situations not addressed here.</p>
+        <p className="text-[#747470] text-sm -mt-3">Common questions and authoritative answers for this policy. Contact the Compliance Officer for situations not addressed here.</p>
       </Card>
       <div className="space-y-3">
         {pc.faq.map((item, i) => (
-          <div key={i} className="border border-white/10 rounded-xl overflow-hidden">
+          <div key={i} className="border border-[#E5E4E3] rounded-xl overflow-hidden">
             <button onClick={() => setOpen(open === i ? null : i)}
-              className="w-full flex items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors group">
+              className="w-full flex items-center justify-between p-5 text-left hover:bg-[#FAFBF8] transition-colors group">
               <div className="flex items-center gap-4">
-                <span className="text-[#00e59b] font-montserrat font-extrabold text-xs uppercase tracking-widest shrink-0 w-8">Q{i + 1}</span>
-                <p className="font-montserrat font-bold text-white text-[14px] group-hover:text-white/90">{item.q}</p>
+                <span className="text-[#007970] font-montserrat font-extrabold text-xs uppercase tracking-widest shrink-0 w-8">Q{i + 1}</span>
+                <p className="font-montserrat font-bold text-[#1F1C1B] text-[14px] group-hover:text-[#1F1C1B]">{item.q}</p>
               </div>
-              <ChevronRight size={16} className={`text-white/30 shrink-0 transition-transform duration-200 ${open === i ? 'rotate-90' : ''}`} />
+              <ChevronRight size={16} className={`text-[#9E9D9A] shrink-0 transition-transform duration-200 ${open === i ? 'rotate-90' : ''}`} />
             </button>
             {open === i && (
-              <div className="border-t border-white/10 bg-white/[0.02] px-5 pb-5 pt-4">
+              <div className="border-t border-[#E5E4E3] bg-[#FAFBF8] px-5 pb-5 pt-4">
                 <div className="flex gap-4">
                   <span className="text-[#e85200] font-montserrat font-extrabold text-xs uppercase tracking-widest shrink-0 w-8 pt-0.5">A</span>
-                  <p className="text-white/70 text-sm leading-relaxed">{item.a}</p>
+                  <p className="text-[#524048] text-sm leading-relaxed">{item.a}</p>
                 </div>
               </div>
             )}
@@ -1138,7 +1139,7 @@ function ViewFAQ({ pc }: { pc: PolicyContent }) {
 function ViewExceptions({ pc }: { pc: PolicyContent }) {
   if (!pc.exceptions?.length) return null;
   const statusBadge: Record<string, string> = {
-    'Approved':     'bg-[#00e59b]/10 border-[#00e59b]/30 text-[#00e59b]',
+    'Approved':     'bg-[#007970]/10 border-[#007970]/30 text-[#007970]',
     'Denied':       'bg-red-500/10 border-red-500/30 text-red-400',
     'Under Review': 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300',
   };
@@ -1146,28 +1147,28 @@ function ViewExceptions({ pc }: { pc: PolicyContent }) {
     <div className="space-y-6 pb-12">
       <Card>
         <SectionTitle icon={ClipboardList} title="Exception Log" />
-        <p className="text-white/50 text-sm -mt-3">Approved, denied, and pending exceptions to this policy. All exceptions require Compliance Officer submission and Administrator approval.</p>
+        <p className="text-[#747470] text-sm -mt-3">Approved, denied, and pending exceptions to this policy. All exceptions require Compliance Officer submission and Administrator approval.</p>
       </Card>
-      <div className="overflow-hidden rounded-xl border border-white/10">
+      <div className="overflow-hidden rounded-xl border border-[#E5E4E3]">
         <table className="w-full text-xs text-left">
-          <thead className="bg-white/5 border-b border-white/10">
+          <thead className="bg-white border-b border-[#E5E4E3]">
             <tr>
               {['Date', 'Requested By', 'Description', 'Status', 'Approved By', 'Expires'].map(h => (
-                <th key={h} className="p-3 font-montserrat font-bold text-[10px] text-white/50 uppercase tracking-wider">{h}</th>
+                <th key={h} className="p-3 font-montserrat font-bold text-[10px] text-[#747470] uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-[#E5E4E3]">
             {pc.exceptions.map((ex, i) => (
-              <tr key={i} className="hover:bg-white/[0.02]">
-                <td className="p-3 text-white/60 whitespace-nowrap">{ex.date}</td>
-                <td className="p-3 text-white/70 font-medium">{ex.requestedBy}</td>
-                <td className="p-3 text-white/70 leading-relaxed max-w-xs">{ex.description}</td>
+              <tr key={i} className="hover:bg-[#FAFBF8]">
+                <td className="p-3 text-[#747470] whitespace-nowrap">{ex.date}</td>
+                <td className="p-3 text-[#524048] font-medium">{ex.requestedBy}</td>
+                <td className="p-3 text-[#524048] leading-relaxed max-w-xs">{ex.description}</td>
                 <td className="p-3">
                   <span className={`text-[9px] font-bold font-montserrat uppercase tracking-widest px-2.5 py-1 rounded-full border ${statusBadge[ex.status] ?? ''}`}>{ex.status}</span>
                 </td>
-                <td className="p-3 text-white/60">{ex.approvedBy}</td>
-                <td className="p-3 text-white/50">{ex.expiresOn ?? '—'}</td>
+                <td className="p-3 text-[#747470]">{ex.approvedBy}</td>
+                <td className="p-3 text-[#747470]">{ex.expiresOn ?? '—'}</td>
               </tr>
             ))}
           </tbody>
@@ -1183,25 +1184,25 @@ function ViewAmendments({ pc }: { pc: PolicyContent }) {
     <div className="space-y-6 pb-12">
       <Card>
         <SectionTitle icon={Clock} title="Amendment History" />
-        <p className="text-white/50 text-sm -mt-3">Version change log for this policy — what changed, when, and by whom. Current version is always listed first.</p>
+        <p className="text-[#747470] text-sm -mt-3">Version change log for this policy — what changed, when, and by whom. Current version is always listed first.</p>
       </Card>
-      <div className="relative pl-6 border-l border-white/10">
+      <div className="relative pl-6 border-l border-[#E5E4E3]">
         {pc.amendments.map((a, i) => (
           <div key={i} className={`relative mb-8 ${i > 0 ? 'opacity-70' : ''}`}>
-            <div className={`absolute -left-[25px] w-4 h-4 rounded-full border-2 flex items-center justify-center ${i === 0 ? 'bg-[#00e59b] border-[#00e59b]' : 'bg-transparent border-white/20'}`}>
+            <div className={`absolute -left-[25px] w-4 h-4 rounded-full border-2 flex items-center justify-center ${i === 0 ? 'bg-[#007970] border-[#007970]' : 'bg-transparent border-[#E5E4E3]'}`}>
               {i === 0 && <div className="w-1.5 h-1.5 rounded-full bg-[#001a14]" />}
             </div>
-            <div className={`bg-white/5 border rounded-xl p-5 ${i === 0 ? 'border-[#00e59b]/30' : 'border-white/10'}`}>
+            <div className={`bg-white border rounded-xl p-5 ${i === 0 ? 'border-[#007970]/30' : 'border-[#E5E4E3]'}`}>
               <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <span className={`font-montserrat font-extrabold text-sm ${i === 0 ? 'text-[#00e59b]' : 'text-white/70'}`}>v{a.version}</span>
-                  {i === 0 && <span className="text-[9px] font-bold font-montserrat uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#00e59b]/20 text-[#00e59b] border border-[#00e59b]/30">CURRENT</span>}
+                  <span className={`font-montserrat font-extrabold text-sm ${i === 0 ? 'text-[#007970]' : 'text-[#524048]'}`}>v{a.version}</span>
+                  {i === 0 && <span className="text-[9px] font-bold font-montserrat uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#007970]/20 text-[#007970] border border-[#007970]/30">CURRENT</span>}
                 </div>
-                <span className="text-white/40 text-xs">{a.date}</span>
+                <span className="text-[#9E9D9A] text-xs">{a.date}</span>
               </div>
-              <p className="text-white/80 text-sm leading-relaxed mb-2">{a.summary}</p>
-              {a.sections && <p className="text-white/40 text-[11px] mb-1">Sections affected: <span className="text-white/60">{a.sections}</span></p>}
-              <p className="text-white/40 text-[11px]">Author: <span className="text-white/60">{a.author}</span></p>
+              <p className="text-[#1F1C1B] text-sm leading-relaxed mb-2">{a.summary}</p>
+              {a.sections && <p className="text-[#9E9D9A] text-[11px] mb-1">Sections affected: <span className="text-[#747470]">{a.sections}</span></p>}
+              <p className="text-[#9E9D9A] text-[11px]">Author: <span className="text-[#747470]">{a.author}</span></p>
             </div>
           </div>
         ))}
@@ -1222,7 +1223,7 @@ function GB002_AppxA({ policyId, version }: { policyId: string; version: string 
         <FormField label="Presiding Chair" /><FormField label="Designated Secretary" />
       </div>
       <AppxSecHead title="Standing Agenda Items" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         {['1.  Call to Order & Roll Call',
           '2.  Quorum Verification — Members Present: ___  Required: ___  Met: ☐ Yes  ☐ No',
           '3.  Approval of Prior Minutes — Meeting Date of Prior Minutes: ___________________',
@@ -1233,20 +1234,20 @@ function GB002_AppxA({ policyId, version }: { policyId: string; version: string 
           '8.  Old Business: _____________________________________________________________',
           '9.  New Business: _____________________________________________________________',
           '10. Adjournment'].map(item => (
-          <div key={item} className="py-2 border-b border-white/10 last:border-0 text-sm text-white/70 font-roboto">{item}</div>
+          <div key={item} className="py-2 border-b border-[#E5E4E3] last:border-0 text-sm text-[#524048] font-roboto">{item}</div>
         ))}
       </div>
       <AppxSecHead title="Supporting Materials / Attachments Distributed" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4 min-h-[70px]">
-        <div className="text-xs text-white/40 italic">List all documents included with this agenda</div>
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4 min-h-[70px]">
+        <div className="text-xs text-[#9E9D9A] italic">List all documents included with this agenda</div>
       </div>
       <AppxSecHead title="Certification" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Prepared By (Administrator / Secretary)" />
           <FormField label="Date Distributed" />
         </div>
-        <p className="text-xs text-white/40 italic mt-1">Agenda must be distributed to all Governing Body members no fewer than 7 calendar days before the meeting per GV-GB-002 §6.1.2.</p>
+        <p className="text-xs text-[#9E9D9A] italic mt-1">Agenda must be distributed to all Governing Body members no fewer than 7 calendar days before the meeting per GV-GB-002 §6.1.2.</p>
       </div>
     </div>
   );
@@ -1263,23 +1264,23 @@ function GB002_AppxB({ policyId, version }: { policyId: string; version: string 
         <FormField label="Presiding Chair" />
       </div>
       <AppxSecHead title="Members Present" />
-      <table className="w-full text-sm border border-t-0 border-white/10">
+      <table className="w-full text-sm border border-t-0 border-[#E5E4E3]">
         <TblHead cols={['Name', 'Role / Title', 'Method (In-Person / Teleconference)']} />
         <EmptyRows count={8} cols={3} />
       </table>
       <AppxSecHead title="Members Absent" />
-      <table className="w-full text-sm border border-t-0 border-white/10">
+      <table className="w-full text-sm border border-t-0 border-[#E5E4E3]">
         <TblHead cols={['Name', 'Role / Title']} />
         <EmptyRows count={3} cols={2} />
       </table>
       <AppxSecHead title="Quorum Verification" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         <div className="grid grid-cols-3 gap-4">
           <FormField label="Members Present (Count)" /><FormField label="Quorum Required" /><FormField label="Quorum Met?  (Yes / No)" />
         </div>
       </div>
       <AppxSecHead title="Approval of Prior Minutes" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Meeting Date of Prior Minutes" />
           <FormField label="Result  (Approved / Approved with Corrections / Deferred)" />
@@ -1287,39 +1288,39 @@ function GB002_AppxB({ policyId, version }: { policyId: string; version: string 
         <FormField label="Corrections Noted (if any)" lines={2} />
       </div>
       <AppxSecHead title="Reports Received & Discussion" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         {['Administrator Report', 'Compliance Officer Report', 'QAPI Report', 'Financial Report'].map(r => (
           <div key={r} className="mb-3">
-            <label className="text-xs font-montserrat font-bold text-white/60 uppercase tracking-wide">{r}</label>
-            <div className="border border-white/10 rounded bg-transparent mt-1 p-1 min-h-[40px]" />
+            <label className="text-xs font-montserrat font-bold text-[#747470] uppercase tracking-wide">{r}</label>
+            <div className="border border-[#E5E4E3] rounded bg-transparent mt-1 p-1 min-h-[40px]" />
           </div>
         ))}
       </div>
       <AppxSecHead title="Motions & Votes" />
-      <table className="w-full text-sm border border-t-0 border-white/10">
+      <table className="w-full text-sm border border-t-0 border-[#E5E4E3]">
         <TblHead cols={['Motion', 'Moved By', 'Seconded By', 'Yes', 'No', 'Abstain', 'Result']} />
         <EmptyRows count={5} cols={7} />
       </table>
       <AppxSecHead title="Directives Issued" />
-      <table className="w-full text-sm border border-t-0 border-white/10">
+      <table className="w-full text-sm border border-t-0 border-[#E5E4E3]">
         <TblHead cols={['#', 'Directive Description', 'Assigned To', 'Due Date']} />
         <tbody>
           {Array.from({ length: 4 }, (_, i) => (
-            <tr key={i} className="border-b border-white/10">
-              <td className="p-2 h-9 border-white/10 bg-white/[0.02] text-xs text-white/40 w-8">{i + 1}</td>
-              <td className="p-2 h-9 border-l border-white/10 bg-white/[0.02]" />
-              <td className="p-2 h-9 border-l border-white/10 bg-white/[0.02]" />
-              <td className="p-2 h-9 border-l border-white/10 bg-white/[0.02]" />
+            <tr key={i} className="border-b border-[#E5E4E3]">
+              <td className="p-2 h-9 border-[#E5E4E3] bg-[#FAFBF8] text-xs text-[#9E9D9A] w-8">{i + 1}</td>
+              <td className="p-2 h-9 border-l border-[#E5E4E3] bg-[#FAFBF8]" />
+              <td className="p-2 h-9 border-l border-[#E5E4E3] bg-[#FAFBF8]" />
+              <td className="p-2 h-9 border-l border-[#E5E4E3] bg-[#FAFBF8]" />
             </tr>
           ))}
         </tbody>
       </table>
       <AppxSecHead title="Adjournment & Certification" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         <div className="grid grid-cols-3 gap-4 mb-2">
           <FormField label="Time of Adjournment" /><FormField label="Next Meeting Date" /><FormField label="Draft Minutes Completed By (Date)" />
         </div>
-        <p className="text-xs text-white/40 italic mb-3">Draft minutes must be completed within 14 calendar days of the meeting per GV-GB-002 §6.1.4. Minutes approved at the next regular meeting.</p>
+        <p className="text-xs text-[#9E9D9A] italic mb-3">Draft minutes must be completed within 14 calendar days of the meeting per GV-GB-002 §6.1.4. Minutes approved at the next regular meeting.</p>
         <SigBlock left="Designated Secretary — Signature" right="Governing Body Chair — Signature (upon approval)" />
       </div>
     </div>
@@ -1334,22 +1335,22 @@ function GB002_AppxC({ policyId, version }: { policyId: string; version: string 
         <FormField label="Meeting Date" /><FormField label="Start Time" /><FormField label="Meeting Type" />
       </div>
       <AppxSecHead title="Attendance Register" />
-      <table className="w-full text-sm border border-t-0 border-white/10">
+      <table className="w-full text-sm border border-t-0 border-[#E5E4E3]">
         <TblHead cols={['Member Name', 'Role / Title', 'In-Person', 'Teleconference', 'Signature / Initials']} />
         <tbody>
           {Array.from({ length: 10 }, (_, i) => (
-            <tr key={i} className="border-b border-white/10">
-              <td className="p-2 h-9 bg-white/[0.02]" />
-              <td className="p-2 h-9 border-l border-white/10 bg-white/[0.02]" />
-              <td className="p-2 h-9 border-l border-white/10 bg-white/[0.02] text-center text-white/30 text-sm">☐</td>
-              <td className="p-2 h-9 border-l border-white/10 bg-white/[0.02] text-center text-white/30 text-sm">☐</td>
-              <td className="p-2 h-9 border-l border-white/10 bg-white/[0.02]" />
+            <tr key={i} className="border-b border-[#E5E4E3]">
+              <td className="p-2 h-9 bg-[#FAFBF8]" />
+              <td className="p-2 h-9 border-l border-[#E5E4E3] bg-[#FAFBF8]" />
+              <td className="p-2 h-9 border-l border-[#E5E4E3] bg-[#FAFBF8] text-center text-[#9E9D9A] text-sm">☐</td>
+              <td className="p-2 h-9 border-l border-[#E5E4E3] bg-[#FAFBF8] text-center text-[#9E9D9A] text-sm">☐</td>
+              <td className="p-2 h-9 border-l border-[#E5E4E3] bg-[#FAFBF8]" />
             </tr>
           ))}
         </tbody>
       </table>
       <AppxSecHead title="Quorum Determination" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         <div className="grid grid-cols-4 gap-4">
           <FormField label="Total Members" /><FormField label="Quorum Required" />
           <FormField label="Members Present" /><FormField label="Quorum Met?  (Yes / No)" />
@@ -1367,17 +1368,17 @@ function GB002_AppxD({ policyId, version }: { policyId: string; version: string 
       <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 font-roboto">
         <strong>Instructions:</strong> Record each directive issued by the Governing Body. Review and update status at each subsequent meeting. Present this log as a standing agenda item per GV-GB-002 §6.2.2.
       </div>
-      <table className="w-full text-sm border border-white/10">
-        <thead className="bg-[#00e59b]/20 text-white">
+      <table className="w-full text-sm border border-[#E5E4E3]">
+        <thead className="bg-[#E5FEFF] text-[#1F1C1B]">
           <tr>{['#', 'Date Issued', 'Meeting Ref', 'Directive Description', 'Assigned To', 'Due Date', 'Status', 'Date Completed'].map(h => (
             <th key={h} className="p-2 text-left text-xs font-montserrat font-bold uppercase">{h}</th>
           ))}</tr>
         </thead>
         <tbody>
           {Array.from({ length: 12 }, (_, i) => (
-            <tr key={i} className={`border-b border-white/10 ${i % 2 === 0 ? 'bg-white/5' : 'bg-white/[0.02]'}`}>
-              <td className="p-2 h-9 text-xs text-white/40 border-r border-white/10">{i + 1}</td>
-              {Array.from({ length: 7 }, (_, j) => <td key={j} className="p-2 h-9 border-r border-white/10" />)}
+            <tr key={i} className={`border-b border-[#E5E4E3] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FAFBF8]'}`}>
+              <td className="p-2 h-9 text-xs text-[#9E9D9A] border-r border-[#E5E4E3]">{i + 1}</td>
+              {Array.from({ length: 7 }, (_, j) => <td key={j} className="p-2 h-9 border-r border-[#E5E4E3]" />)}
             </tr>
           ))}
         </tbody>
@@ -1401,23 +1402,23 @@ function GB003_AppxA({ policyId, version }: { policyId: string; version: string 
         <FormField label="Charter Approved By" />
       </div>
       <AppxSecHead title="1. Purpose & Mission" />
-      <div className="border border-t-0 border-white/10 rounded-b p-3 min-h-[70px]" />
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-3 min-h-[70px]" />
       <AppxSecHead title="2. Scope of Authority" />
-      <div className="border border-t-0 border-white/10 rounded-b p-3 min-h-[70px]">
-        <div className="text-xs text-white/40 italic">Define matters within and outside this committee's authority. Note: committees may not make final governance decisions unless explicitly delegated by Governing Body resolution.</div>
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-3 min-h-[70px]">
+        <div className="text-xs text-[#9E9D9A] italic">Define matters within and outside this committee's authority. Note: committees may not make final governance decisions unless explicitly delegated by Governing Body resolution.</div>
       </div>
       <AppxSecHead title="3. Composition" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         <div className="grid grid-cols-3 gap-4 mb-3">
           <FormField label="Minimum Members" /><FormField label="Maximum Members" /><FormField label="Quorum Required" />
         </div>
-        <table className="w-full text-sm border border-white/10">
+        <table className="w-full text-sm border border-[#E5E4E3]">
           <TblHead cols={['Position / Role', 'Required / Optional', 'Required Qualifications']} />
           <EmptyRows count={5} cols={3} />
         </table>
       </div>
       <AppxSecHead title="4. Meeting Frequency & Reporting" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Meeting Frequency" />
           <FormField label="Reports to Governing Body at (Frequency)" />
@@ -1426,9 +1427,9 @@ function GB003_AppxA({ policyId, version }: { policyId: string; version: string 
         </div>
       </div>
       <AppxSecHead title="5. Governing Body Approval" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         <SigBlock left="Governing Body Chair — Signature" right="Date Charter Approved" />
-        <div className="mt-3 text-xs text-white/40 italic">Charter must be reviewed and reaffirmed annually at the first quarterly Governing Body meeting per GV-GB-003 §6.3.1.</div>
+        <div className="mt-3 text-xs text-[#9E9D9A] italic">Charter must be reviewed and reaffirmed annually at the first quarterly Governing Body meeting per GV-GB-003 §6.3.1.</div>
       </div>
     </div>
   );
@@ -1443,43 +1444,43 @@ function GB003_AppxB({ policyId, version }: { policyId: string; version: string 
         <FormField label="Location / Platform" /><FormField label="Committee Chair / Presiding" />
       </div>
       <AppxSecHead title="Attendance" />
-      <table className="w-full text-sm border border-t-0 border-white/10">
+      <table className="w-full text-sm border border-t-0 border-[#E5E4E3]">
         <TblHead cols={['Member Name', 'Role', 'Present', 'Absent']} />
         <tbody>
           {Array.from({ length: 7 }, (_, i) => (
-            <tr key={i} className="border-b border-white/10">
-              <td className="p-2 h-8 bg-white/[0.02]" />
-              <td className="p-2 h-8 border-l border-white/10 bg-white/[0.02]" />
-              <td className="p-2 h-8 border-l border-white/10 bg-white/[0.02] text-center text-white/30 text-sm">☐</td>
-              <td className="p-2 h-8 border-l border-white/10 bg-white/[0.02] text-center text-white/30 text-sm">☐</td>
+            <tr key={i} className="border-b border-[#E5E4E3]">
+              <td className="p-2 h-8 bg-[#FAFBF8]" />
+              <td className="p-2 h-8 border-l border-[#E5E4E3] bg-[#FAFBF8]" />
+              <td className="p-2 h-8 border-l border-[#E5E4E3] bg-[#FAFBF8] text-center text-[#9E9D9A] text-sm">☐</td>
+              <td className="p-2 h-8 border-l border-[#E5E4E3] bg-[#FAFBF8] text-center text-[#9E9D9A] text-sm">☐</td>
             </tr>
           ))}
         </tbody>
       </table>
       <AppxSecHead title="Actions & Recommendations for Governing Body" />
-      <table className="w-full text-sm border border-t-0 border-white/10">
+      <table className="w-full text-sm border border-t-0 border-[#E5E4E3]">
         <TblHead cols={['#', 'Action / Recommendation', 'Assigned To', 'Due Date', 'Requires GB Vote?']} />
         <tbody>
           {Array.from({ length: 5 }, (_, i) => (
-            <tr key={i} className="border-b border-white/10">
-              <td className="p-2 h-9 bg-white/[0.02] text-xs text-white/40 w-8">{i + 1}</td>
-              <td className="p-2 h-9 border-l border-white/10 bg-white/[0.02]" />
-              <td className="p-2 h-9 border-l border-white/10 bg-white/[0.02]" />
-              <td className="p-2 h-9 border-l border-white/10 bg-white/[0.02]" />
-              <td className="p-2 h-9 border-l border-white/10 bg-white/[0.02] text-center text-xs text-white/40">☐ Yes  ☐ No</td>
+            <tr key={i} className="border-b border-[#E5E4E3]">
+              <td className="p-2 h-9 bg-[#FAFBF8] text-xs text-[#9E9D9A] w-8">{i + 1}</td>
+              <td className="p-2 h-9 border-l border-[#E5E4E3] bg-[#FAFBF8]" />
+              <td className="p-2 h-9 border-l border-[#E5E4E3] bg-[#FAFBF8]" />
+              <td className="p-2 h-9 border-l border-[#E5E4E3] bg-[#FAFBF8]" />
+              <td className="p-2 h-9 border-l border-[#E5E4E3] bg-[#FAFBF8] text-center text-xs text-[#9E9D9A]">☐ Yes  ☐ No</td>
             </tr>
           ))}
         </tbody>
       </table>
       <AppxSecHead title="Next Meeting & Submission" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Next Committee Meeting Date" />
           <FormField label="GB Report Presentation Date" />
         </div>
         <FormField label="Open Items Carried Forward" lines={2} />
         <SigBlock left="Committee Chair — Signature" right="Date of Summary" />
-        <p className="text-xs text-white/40 italic mt-2">Summary must be completed within 14 days of the meeting per GV-GB-003 §6.2.1 and presented to the full Governing Body at the next quarterly meeting.</p>
+        <p className="text-xs text-[#9E9D9A] italic mt-2">Summary must be completed within 14 days of the meeting per GV-GB-003 §6.2.1 and presented to the full Governing Body at the next quarterly meeting.</p>
       </div>
     </div>
   );
@@ -1496,7 +1497,7 @@ function GB004_AppxA({ policyId, version }: { policyId: string; version: string 
         <FormField label="Orientation Delivered By  (Administrator / Compliance Officer)" />
       </div>
       <AppxSecHead title="Governing Documents Received" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         {['Agency Bylaws / Operating Agreement',
           'Conflict of Interest Policy (GV-GB-005) with Disclosure Form',
           'Current Policy Manual Index',
@@ -1508,7 +1509,7 @@ function GB004_AppxA({ policyId, version }: { policyId: string; version: string 
         ].map(item => <ChkRow key={item} label={item} />)}
       </div>
       <AppxSecHead title="Orientation Topics Covered" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
         {['Legal authority and non-delegable responsibilities of the Governing Body (GV-GB-001)',
           'CMS Conditions of Participation — 42 CFR §484.105 requirements',
           'Meeting format, quorum rules, Robert\'s Rules basics (GV-GB-002)',
@@ -1522,18 +1523,18 @@ function GB004_AppxA({ policyId, version }: { policyId: string; version: string 
         ].map(item => <ChkRow key={item} label={item} />)}
       </div>
       <AppxSecHead title="Member Acknowledgment & Certification" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
-        <p className="text-sm text-white/60 mb-4 font-roboto leading-relaxed">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
+        <p className="text-sm text-[#747470] mb-4 font-roboto leading-relaxed">
           I certify that I have received all governing documents listed above and that all orientation topics listed above were covered
           during my orientation. I understand my responsibilities as a member of the Governing Body of Care Indeed Home Health Care, Inc.
           and my obligations under 42 CFR §484.105 and applicable agency policy. I have not yet participated in any vote or official business
           prior to completing this orientation.
         </p>
         <div className="grid grid-cols-2 gap-6">
-          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-white/50">Governing Body Member — Signature</p></div>
-          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-white/50">Date</p></div>
-          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-white/50">Administrator — Signature</p></div>
-          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-white/50">Date</p></div>
+          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-[#747470]">Governing Body Member — Signature</p></div>
+          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-[#747470]">Date</p></div>
+          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-[#747470]">Administrator — Signature</p></div>
+          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-[#747470]">Date</p></div>
         </div>
       </div>
     </div>
@@ -1548,16 +1549,16 @@ function GB004_AppxB({ policyId, version }: { policyId: string; version: string 
         <strong>Instructions:</strong> Record all orientation and annual continuing education completions for every Governing Body member.
         This log must be available within 24 hours of a CMS surveyor request per GV-GB-004 §6.2.2.
       </div>
-      <table className="w-full text-sm border border-white/10">
-        <thead className="bg-[#00e59b]/20 text-white">
+      <table className="w-full text-sm border border-[#E5E4E3]">
+        <thead className="bg-[#E5FEFF] text-[#1F1C1B]">
           <tr>{['Member Name', 'Appointment Date', 'Orientation Date', 'Annual Training\n(Year 1)', 'Annual Training\n(Year 2)', 'Annual Training\n(Year 3)', 'Trainer', 'Status'].map(h => (
             <th key={h} className="p-2 text-left text-xs font-montserrat font-bold uppercase whitespace-pre-line leading-tight">{h}</th>
           ))}</tr>
         </thead>
         <tbody>
           {Array.from({ length: 12 }, (_, i) => (
-            <tr key={i} className={`border-b border-white/10 ${i % 2 === 0 ? 'bg-white/5' : 'bg-white/[0.02]'}`}>
-              {Array.from({ length: 8 }, (_, j) => <td key={j} className="p-2 h-9 border-r border-white/10 last:border-r-0" />)}
+            <tr key={i} className={`border-b border-[#E5E4E3] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FAFBF8]'}`}>
+              {Array.from({ length: 8 }, (_, j) => <td key={j} className="p-2 h-9 border-r border-[#E5E4E3] last:border-r-0" />)}
             </tr>
           ))}
         </tbody>
@@ -1590,11 +1591,11 @@ function GB005_AppxA({ policyId, version }: { policyId: string; version: string 
       ].map(sec => (
         <div key={sec.id}>
           <AppxSecHead title={`Section ${sec.id} — ${sec.title}`} />
-          <div className="border border-t-0 border-white/10 rounded-b p-4">
-            <p className="text-sm text-white/60 mb-3 font-roboto leading-relaxed">{sec.prompt}</p>
+          <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
+            <p className="text-sm text-[#747470] mb-3 font-roboto leading-relaxed">{sec.prompt}</p>
             <div className="flex gap-8 mb-3">
-              <label className="flex items-center gap-2 text-sm text-white/70 font-roboto"><span className="text-white/40 text-base">☐</span> Yes (describe below)</label>
-              <label className="flex items-center gap-2 text-sm text-white/70 font-roboto"><span className="text-white/40 text-base">☐</span> No</label>
+              <label className="flex items-center gap-2 text-sm text-[#524048] font-roboto"><span className="text-[#9E9D9A] text-base">☐</span> Yes (describe below)</label>
+              <label className="flex items-center gap-2 text-sm text-[#524048] font-roboto"><span className="text-[#9E9D9A] text-base">☐</span> No</label>
             </div>
             <FormField label="If Yes — Describe the nature, parties, and financial terms of the relationship" lines={3} />
           </div>
@@ -1602,28 +1603,28 @@ function GB005_AppxA({ policyId, version }: { policyId: string; version: string 
       ))}
 
       <AppxSecHead title="Section 5 — Recusal History (Prior 12 Months)" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
-        <p className="text-sm text-white/60 mb-3 font-roboto">Were there any matters during the prior 12 months from which you recused yourself due to a conflict of interest?</p>
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
+        <p className="text-sm text-[#747470] mb-3 font-roboto">Were there any matters during the prior 12 months from which you recused yourself due to a conflict of interest?</p>
         <div className="flex gap-8 mb-3">
-          <label className="flex items-center gap-2 text-sm text-white/70 font-roboto"><span className="text-white/40 text-base">☐</span> Yes (describe below)</label>
-          <label className="flex items-center gap-2 text-sm text-white/70 font-roboto"><span className="text-white/40 text-base">☐</span> No</label>
+          <label className="flex items-center gap-2 text-sm text-[#524048] font-roboto"><span className="text-[#9E9D9A] text-base">☐</span> Yes (describe below)</label>
+          <label className="flex items-center gap-2 text-sm text-[#524048] font-roboto"><span className="text-[#9E9D9A] text-base">☐</span> No</label>
         </div>
         <FormField label="Matter(s) from which recused — include meeting date and agenda item reference" lines={2} />
       </div>
 
       <AppxSecHead title="Certification & Signature" />
-      <div className="border border-t-0 border-white/10 rounded-b p-4">
-        <p className="text-sm text-white/60 mb-4 font-roboto leading-relaxed">
+      <div className="border border-t-0 border-[#E5E4E3] rounded-b p-4">
+        <p className="text-sm text-[#747470] mb-4 font-roboto leading-relaxed">
           I certify that the information provided in this form is true and complete to the best of my knowledge and belief.
           I understand my ongoing obligation to disclose actual and potential conflicts promptly and to recuse from any matter
           in which I have a conflict of interest. I acknowledge that concealment of a material conflict constitutes a governance
           integrity violation subject to disciplinary action under GV-GB-005.
         </p>
         <div className="grid grid-cols-2 gap-6">
-          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-white/50">Governing Body Member — Signature</p></div>
-          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-white/50">Date</p></div>
-          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-white/50">Received By — Compliance Officer Signature</p></div>
-          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-white/50">Date Received</p></div>
+          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-[#747470]">Governing Body Member — Signature</p></div>
+          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-[#747470]">Date</p></div>
+          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-[#747470]">Received By — Compliance Officer Signature</p></div>
+          <div><div className="border-b border-gray-400 h-8 mb-1" /><p className="text-xs text-[#747470]">Date Received</p></div>
         </div>
       </div>
     </div>
@@ -1659,46 +1660,15 @@ const APPENDIX_DEFS_BY_POLICY: Record<string, AppxDef[]> = {
 
 // ─── APPENDICES VIEW ─────────────────────────────────────────────────────────
 function ViewAppendices({ pc }: { pc: PolicyContent }) {
-  const [activeAppx, setActiveAppx] = useState(0);
   const defs: AppxDef[] = APPENDIX_DEFS_BY_POLICY[pc.id] ?? [];
+  const extraAppendices: ExtraAppendix[] = defs.map((def, idx) => ({
+    id: `${pc.id}-${idx}`,
+    title: def.title,
+    label: def.label,
+    render: <def.Component policyId={pc.id} version={pc.version} />,
+  }));
 
-  if (defs.length === 0) {
-    return (
-      <div className="pb-12">
-        <Card>
-          <SectionTitle icon={Paperclip} title="Appendices & Forms" />
-          <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
-            <Paperclip className="mx-auto mb-4 text-white/30" size={48} />
-            <p className="text-lg font-montserrat font-bold text-white/50 mb-2">No standalone appendix forms for {pc.id}</p>
-            <p className="text-sm text-white/40">Forms and appendices for this policy area are contained in the parent GB policy series (GV-GB-001 through GV-GB-005).</p>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  const active = defs[Math.min(activeAppx, defs.length - 1)];
-
-  return (
-    <div className="pb-12">
-      {/* Appendix tab selector */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {defs.map((d, i) => (
-          <button key={i} onClick={() => setActiveAppx(i)}
-            className={`px-4 py-2 rounded-lg text-sm font-montserrat font-bold transition-all border shadow-sm ${
-              i === activeAppx
-                ? 'bg-[#00e59b]/20 text-white border-[#D4AF37] shadow-md'
-                : 'bg-white text-white/60 border-white/10 hover:border-[#D4AF37] hover:text-[#00e59b]'
-            }`}>
-            {d.label}
-          </button>
-        ))}
-      </div>
-      <Card>
-        <active.Component policyId={pc.id} version={pc.version} />
-      </Card>
-    </div>
-  );
+  return <PolicyAppendicesPanel policyId={pc.id} extraAppendices={extraAppendices} />;
 }
 
 // ─── MAIN EXPORT ──────────────────────────────────────────────────────────────
@@ -1745,13 +1715,13 @@ export function GVPolicyDetailView() {
     }
   };
 
-  const tierColor = pc.tier === 'REQUIRED' ? 'bg-red-800' : pc.tier === 'ESSENTIAL' ? 'bg-[#C74600]' : 'bg-[#00e59b]/20';
+  const tierColor = pc.tier === 'REQUIRED' ? 'bg-[#C74600]' : pc.tier === 'ESSENTIAL' ? 'bg-[#C74600]' : 'bg-[#D4AF37]';
 
   return (
-    <div className="space-y-0 overflow-hidden rounded-xl border border-white/10 bg-white/5">
+    <div className="space-y-0 overflow-hidden rounded-xl border border-[#E5E4E3] bg-white shadow-sm">
 
       {/* HEADER */}
-      <div className="bg-[#00e59b]/20 text-white relative p-8">
+      <div className="bg-[#D4AF37] text-white relative p-8">
         <div className="flex items-start justify-between mb-4">
           <button
             onClick={() => navigate(-1)}
@@ -1798,7 +1768,7 @@ export function GVPolicyDetailView() {
       </div>
 
       {/* TAB BAR */}
-      <div className="border-b border-white/10 bg-white/5 overflow-x-auto">
+      <div className="border-b border-[#E5E4E3] bg-gray-50 overflow-x-auto">
         <div className="flex min-w-max">
           {visibleTabs.map(({ id, label, Icon, optional }) => (
             <button
@@ -1806,8 +1776,8 @@ export function GVPolicyDetailView() {
               onClick={() => setActiveTab(id)}
               className={`flex items-center gap-1.5 px-5 py-3.5 text-xs font-montserrat font-bold whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === id
-                  ? 'border-[#00e59b] text-[#00e59b] bg-white/5'
-                  : 'border-transparent text-white/40 hover:text-white hover:bg-white/5'
+                  ? 'border-[#D4AF37] text-[#D4AF37] bg-white'
+                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-white'
               }`}
             >
               <Icon size={12} /> {label}
@@ -1818,7 +1788,7 @@ export function GVPolicyDetailView() {
       </div>
 
       {/* CONTENT */}
-      <div className="p-6 lg:p-8">
+      <div className="p-6 lg:p-8 bg-[#FAFBF8]">
         {renderContent()}
       </div>
     </div>
@@ -1826,3 +1796,5 @@ export function GVPolicyDetailView() {
 }
 
 export const GV_POLICY_IDS = Object.keys(POLICY_MAP);
+
+

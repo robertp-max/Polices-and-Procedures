@@ -18,6 +18,7 @@ import {
 } from '@/policy/stores/regulatoryExecutionStore';
 import { useEnforcementStore } from '@/policy/stores/enforcementStore';
 import { useEnforcementBatch } from '@/policy/enforcement/useEnforcement';
+import { HelpContextLink } from '@/policy/help/HelpContextLink';
 import { computeRiskScore, summarizeAgencyRisk, type RiskScore } from '@/policy/audit/riskScoring';
 import { buildAuditBundle, bundleToMarkdown, downloadBlob } from '@/policy/audit/exportReport';
 import {
@@ -38,6 +39,9 @@ import {
 import {
   buildWorkflowInstance, useWorkflowInstance,
 } from '@/policy/audit/workflowInstance';
+import {
+  useComplianceExecution, selectAuditReadinessRollup, selectCriticalUnits,
+} from '@/policy/compliance-execution';
 
 /* ═══════════════════════════════════════════════════════════════
    AUDIT — Compliance Validation + Survey Readiness
@@ -313,6 +317,11 @@ export function AuditModePage() {
             <h1 className="font-outfit font-light text-white leading-tight" style={{ fontSize: 22, letterSpacing: '-0.01em' }}>
               Compliance validation and survey readiness
             </h1>
+            <div className="mt-1.5 flex items-center gap-3">
+              <HelpContextLink slug="audit-trail"  label="Audit trail"   variant="pill" />
+              <HelpContextLink slug="verify-chain" label="Verify chain"  variant="pill" />
+              <HelpContextLink slug="survey-packet" label="Survey packet" variant="pill" />
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <CommandSearch value={searchTerm} onChange={setSearchTerm} />
@@ -384,6 +393,12 @@ export function AuditModePage() {
           </div>
         </div>
       </header>
+
+      {/* ─────────────────────────────────────────────────────────
+          CES Sprint Audit Snapshot — bridges the merged execution
+          layer into Audit Mode (read-only).
+          ───────────────────────────────────────────────────────── */}
+      <CesSprintAuditStrip onOpenSprint={() => navigate('/calendar?view=sprint')} />
 
       {/* ─────────────────────────────────────────────────────────
           REGION 2 — Audit health strip (6 tiles)
@@ -1930,4 +1945,39 @@ function quickFilterCount(
       e.complianceFlags?.auditRisk === 'critical' || e.complianceFlags?.auditRisk === 'high').length;
     default: return 0;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CesSprintAuditStrip — bridge surface in Audit Mode
+   --------------------------------------------------------------
+   Reads CES audit-readiness rollup and critical units from the
+   shared compliance-execution layer. Click jumps to the sprint
+   view of the unified calendar.
+   ═══════════════════════════════════════════════════════════════ */
+function CesSprintAuditStrip({ onOpenSprint }: { onOpenSprint: () => void }) {
+  const snap     = useComplianceExecution();
+  const rollup   = useMemo(() => selectAuditReadinessRollup(snap), [snap]);
+  const critical = useMemo(() => selectCriticalUnits(snap),         [snap]);
+  return (
+    <div
+      className="px-6 md:px-10 py-2 flex items-center gap-5 border-b text-[11px] font-roboto"
+      style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.015)' }}
+    >
+      <span className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.2em]" style={{ color: TEAL_PRIMARY }}>
+        Sprint {snap.activeSprint.label} · CES Audit
+      </span>
+      <span className="text-white/70">Not Ready: <strong className="text-white">{rollup.notReady}</strong></span>
+      <span className="text-white/70">Partial: <strong className="text-white">{rollup.partial}</strong></span>
+      <span className="text-white/70">Ready: <strong className="text-white">{rollup.ready}</strong></span>
+      <span className="text-white/70">Certified: <strong className="text-white">{rollup.certified}</strong></span>
+      <span className="text-white/70">Critical Units: <strong style={{ color: '#EF4444' }}>{critical.length}</strong></span>
+      <button
+        type="button"
+        onClick={onOpenSprint}
+        className="ml-auto px-2.5 py-1 rounded-md border border-white/10 hover:bg-white/[0.05] text-white/75 hover:text-white"
+      >
+        Open Sprint View →
+      </button>
+    </div>
+  );
 }

@@ -4,10 +4,13 @@ import {
   FolderOpen, ShieldCheck, MessageSquare, FileText,
   Upload, History, ListChecks, Lock, Unlock, Check,
   UserCheck, Stamp, FileCheck, Users, AlertCircle,
-  GitBranch, Download,
+  GitBranch, Download, RotateCcw, MapPin, ArrowRight,
+  Activity, ExternalLink, User, Calendar as CalIcon,
+  Send, Loader2,
 } from 'lucide-react';
 import {
-  daysUntil, TODAY_ANCHOR, formatEventDate, type RegulatoryEvent,
+  daysUntil, TODAY_ANCHOR, type RegulatoryEvent,
+  DOMAIN_PALETTE,
 } from '@/policy/data/regulatoryEvents';
 import {
   useRegulatoryExecutionStore,
@@ -33,15 +36,17 @@ import {
   buildSurveyPacket, packetToSurveyMarkdown, packetToSurveyHtml,
 } from '@/policy/audit/surveyPacket';
 import { downloadBlob } from '@/policy/audit/exportReport';
+import { CalendarApi, toPlannerPayload } from '@/policy/services/calendarApi';
 
 /* ═══════════════════════════════════════════════════════════════
    WorkflowExecutionPanel
    --------------------------------------------------------------
    Inline, persistent right-rail execution surface for the
    Execution Timeline. A workflow instance is a storage container
-   — this panel exposes that container through three tabs:
+   — this panel exposes that container through four tabs:
 
-     WORKFLOW       ← execute the steps, forms, minutes (default)
+     EVENT          ← calendar-first event details (default)
+     WORKFLOW       ← execute the steps, forms, minutes
      EVENT RECORD   ← files, notes, audit trail (the folder)
      AUDIT VIEW     ← completion checklist + certify gate
 
@@ -56,7 +61,21 @@ export interface WorkflowExecutionPanelProps {
   today?: Date;
 }
 
-type PanelTab = 'workflow' | 'record' | 'audit';
+type PanelTab = 'event' | 'workflow' | 'record' | 'audit';
+type CalendarSideTab = 'guests' | 'resources';
+
+interface CalendarGuest {
+  id: string;
+  name: string;
+  detail: string;
+  response: 'Organizer' | 'Yes' | 'Maybe';
+}
+
+interface CalendarResource {
+  id: string;
+  label: string;
+  detail: string;
+}
 
 export function WorkflowExecutionPanel({
   event,
@@ -81,7 +100,7 @@ function ActivePanel({
   today: Date;
   store: ReturnType<typeof useRegulatoryExecutionStore.getState>;
 }) {
-  const [tab, setTab] = useState<PanelTab>('workflow');
+  const [tab, setTab] = useState<PanelTab>('event');
 
   const state: InstanceState = classifyInstance(event, today, store);
   const auditState = classifyAuditState(event, today, store);
@@ -155,7 +174,7 @@ function ActivePanel({
             {event.id}
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em]">
+        <div className="grid grid-cols-3 items-end gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em]">
           <ProjectionCell label="Step" value={stepsTotal > 0 ? `${currentStepIndex}/${stepsTotal}` : '—'} />
           <ProjectionCell
             label="SLA"
@@ -173,9 +192,16 @@ function ActivePanel({
 
       {/* ── Tab bar ── */}
       <nav
-        className="flex items-stretch border-b"
-        style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+        className="grid grid-cols-4 items-stretch border-b"
+        style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(248,250,252,0.9)' }}
       >
+        <TabButton
+          active={tab === 'event'}
+          onClick={() => setTab('event')}
+          icon={<CalIcon size={11} />}
+          label="Event"
+          accent={TEAL_PRIMARY}
+        />
         <TabButton
           active={tab === 'workflow'}
           onClick={() => setTab('workflow')}
@@ -202,6 +228,7 @@ function ActivePanel({
 
       {/* ── Body ── */}
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+        {tab === 'event' && <CalendarEventView event={event} today={today} state={state} sla={sla} />}
         {tab === 'workflow' && <WorkflowBody event={event} />}
         {tab === 'record' && <EventRecordPanel event={event} />}
         {tab === 'audit' && <AuditViewPanel event={event} today={today} />}
@@ -242,10 +269,11 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] transition"
+      className="flex min-w-0 items-center justify-center gap-1 px-1.5 py-2 text-[9px] sm:text-[10px] font-montserrat font-bold uppercase tracking-[0.1em] transition border-r last:border-r-0"
       style={{
-        color: active ? accent : 'rgba(255,255,255,0.55)',
-        background: active ? `${accent}14` : 'transparent',
+        borderRightColor: 'rgba(148,163,184,0.30)',
+        color: active ? accent : '#475569',
+        background: active ? `${accent}1a` : 'rgba(248,250,252,0.75)',
         borderBottom: active ? `2px solid ${accent}` : '2px solid transparent',
       }}
     >
@@ -255,8 +283,8 @@ function TabButton({
         <span
           className="ml-0.5 rounded-full px-1.5 py-[1px] text-[9px]"
           style={{
-            background: active ? `${accent}22` : 'rgba(255,255,255,0.08)',
-            color: active ? accent : 'rgba(255,255,255,0.6)',
+            background: active ? `${accent}22` : 'rgba(148,163,184,0.20)',
+            color: active ? accent : '#475569',
           }}
         >
           {count}
@@ -1155,6 +1183,531 @@ function EmptyPanel() {
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   CALENDAR EVENT VIEW
+   --------------------------------------------------------------
+   Event-first calendar detail surface. Mirrors the scheduling UI:
+   event summary on the left, guest/resource rail on the right,
+   with workflow access as a secondary action.
+   ═══════════════════════════════════════════════════════════════ */
+function CalendarEventView({
+  event,
+  today,
+  state,
+  sla,
+}: {
+  event: RegulatoryEvent;
+  today: Date;
+  state: InstanceState;
+  sla: { label: string; tone: 'red' | 'amber' | 'teal' };
+}) {
+  void today;
+  const store = useRegulatoryExecutionStore();
+  const [sideTab, setSideTab] = useState<CalendarSideTab>('guests');
+  const effectiveUrgency = store.effectiveUrgency(event);
+  const validation = store.validateEvent(event);
+
+  const currentStep = event.processFlow.find(
+    s => store.effectiveStepStatus(event, s.id) !== 'complete',
+  );
+  const currentStepIdx = currentStep
+    ? event.processFlow.findIndex(s => s.id === currentStep.id) + 1
+    : event.processFlow.length;
+  const progressPct = Math.round(
+    (validation.progress.stepsComplete / Math.max(1, validation.progress.stepsTotal)) * 100,
+  );
+
+  const domPalette = DOMAIN_PALETTE[event.domain] ?? DOMAIN_PALETTE['Compliance'];
+  const guests = useMemo(() => buildCalendarGuests(event), [event]);
+  const resources = useMemo(() => buildCalendarResources(event), [event]);
+
+  const slaColor = sla.tone === 'red' ? '#DC2626' : sla.tone === 'amber' ? '#D97706' : '#059669';
+  const stateColor = STATE_COLOR[state];
+  const riskLabel = (() => {
+    const risk = event.complianceFlags?.auditRisk;
+    if (risk === 'critical') return 'Critical';
+    if (risk === 'high') return 'High';
+    if (risk === 'medium') return 'Medium';
+    return 'Low';
+  })();
+  const riskColor =
+    riskLabel === 'Critical' || riskLabel === 'High' ? '#DC2626'
+    : riskLabel === 'Medium' ? '#D97706'
+    : '#059669';
+  const guestCounts = guests.reduce((acc, guest) => {
+    if (guest.response === 'Yes' || guest.response === 'Organizer') acc.yes += 1;
+    if (guest.response === 'Maybe') acc.maybe += 1;
+    return acc;
+  }, { yes: 0, maybe: 0 });
+
+  const dateStr = (() => {
+    const d = new Date(event.date + 'T00:00:00');
+    const base = d.toLocaleDateString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+    });
+    if (event.allDay || !event.time) return base;
+    const time = event.timeEnd ? `${event.time} – ${event.timeEnd}` : event.time;
+    return `${base} · ${time}`;
+  })();
+
+  const instructionLines = (currentStep?.instructions ?? '')
+    .split('\n')
+    .map((l: string) => l.trim())
+    .filter(Boolean) as string[];
+  const requiredFormIds = currentStep?.requiredFormIds ?? [];
+  const expectedOutput = currentStep?.expectedOutput;
+  const onCompleteText = currentStep?.onCompleteText;
+  const currentStepDue = currentStep ? formatOffsetDate(event.date, currentStep.dueOffsetDays) : null;
+  const createdBy = event.sourceOfTruth === 'google'
+    ? 'Google Calendar'
+    : event.sourceOfTruth === 'both'
+      ? 'CareIndeed + Google Calendar'
+      : 'System Automation';
+  const lastUpdated = event.updatedAt
+    ? new Date(event.updatedAt).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
+      })
+    : new Date(event.date + 'T09:00:00').toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
+      });
+
+  return (
+    <div className="min-h-full bg-white text-gray-900">
+      <div className="border-b border-gray-200 px-5 py-4">
+        <div className="flex items-start gap-3">
+          <span
+            className="mt-1 h-3.5 w-3.5 shrink-0 rounded-[4px]"
+            style={{ background: domPalette.color }}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-[16px] font-semibold leading-tight text-gray-900">{event.title}</h2>
+              <CalendarBadge color={stateColor} label={STATE_LABEL[state]} />
+              <CalendarBadge color={riskColor} label={`${riskLabel} Risk`} />
+              {(sla.tone !== 'teal' || effectiveUrgency === 'overdue') && (
+                <CalendarBadge color={slaColor} label={sla.label} />
+              )}
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-gray-600">
+              <span className="inline-flex items-center gap-1.5">
+                <CalIcon size={12} className="text-gray-400" />
+                {dateStr}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <RotateCcw size={12} className="text-gray-400" />
+                {event.cadence}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin size={12} className="text-gray-400" />
+                {event.location || 'CareIndeed - Regulatory Events'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid min-h-[520px] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="border-b border-gray-200 px-5 py-4 lg:border-b-0 lg:border-r">
+          <div className="space-y-4">
+            <section className="rounded-xl border border-gray-200 bg-white">
+              <div className="grid gap-0 border-b border-gray-200 md:grid-cols-3">
+                <CalendarSummaryMetric
+                  icon={<AlertTriangle size={12} />}
+                  label="Status"
+                  value={STATE_LABEL[state]}
+                  color={stateColor}
+                />
+                <CalendarSummaryMetric
+                  icon={<AlertCircle size={12} />}
+                  label="Priority"
+                  value={riskLabel}
+                  color={riskColor}
+                />
+                <CalendarSummaryMetric
+                  icon={<User size={12} />}
+                  label="Owner"
+                  value={`${event.owner} / ${event.ownerRole}`}
+                />
+                <CalendarSummaryMetric
+                  icon={<Clock size={12} />}
+                  label="SLA"
+                  value={sla.label}
+                  color={slaColor}
+                />
+                <CalendarSummaryMetric
+                  icon={<FileText size={12} />}
+                  label="Policies"
+                  value={event.policyRefs.join(', ')}
+                />
+                <CalendarSummaryMetric
+                  icon={<FolderOpen size={12} />}
+                  label="Type"
+                  value={event.category ? prettifyCalendarLabel(event.category) : 'Regulatory Event'}
+                />
+              </div>
+
+              <div className="grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_210px]">
+                <div>
+                  <CalEvtSectionHeading icon={<ArrowRight size={11} />} label="Current Step" />
+                  {currentStep ? (
+                    <div className="mt-1.5">
+                      <p className="text-[12px] font-semibold text-gray-900">
+                        {currentStepIdx}. {currentStep.label}
+                      </p>
+                      <p className="mt-0.5 text-[10.5px] text-gray-500">
+                        Due {currentStepDue}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-1.5 text-[11px] text-gray-500">
+                      All {event.processFlow.length} workflow steps are complete.
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <CalEvtSectionHeading icon={<Activity size={11} />} label="Workflow Progress" />
+                    <span className="text-[10.5px] font-semibold text-gray-700">{progressPct}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-gray-200">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${progressPct}%`,
+                        background: progressPct === 100 ? '#059669' : '#0D9488',
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {event.summary && (
+              <section>
+                <CalEvtSectionHeading icon={<FileText size={11} />} label="Event Summary" />
+                <p className="mt-1.5 text-[11.5px] leading-relaxed text-gray-700">{event.summary}</p>
+              </section>
+            )}
+
+            {instructionLines.length > 0 && (
+              <section>
+                <CalEvtSectionHeading icon={<ListChecks size={11} />} label="What To Do" />
+                <ol className="mt-2 space-y-1.5">
+                  {instructionLines.slice(0, 7).map((line, i) => (
+                    <li key={i} className="flex items-start gap-2 text-[11px] text-gray-700">
+                      <span
+                        className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[8.5px] font-bold"
+                        style={{ background: '#CCFBF1', color: '#0F766E', borderColor: '#99F6E4' }}
+                      >
+                        {i + 1}
+                      </span>
+                      <span className="leading-snug">{line.replace(/^\d+\.\s*/, '')}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
+
+            {requiredFormIds.length > 0 && (
+              <section>
+                <CalEvtSectionHeading icon={<FileCheck size={11} />} label="Required Form" />
+                <div className="mt-2 space-y-1.5">
+                  {requiredFormIds.map(formId => {
+                    const evForm = event.requiredForms.find(
+                      f => f.formId === formId || f.id === formId,
+                    );
+                    return (
+                      <div
+                        key={formId}
+                        className="flex items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2"
+                      >
+                        <FileText size={11} className="shrink-0 text-teal-700" />
+                        <div className="min-w-0 flex-1">
+                          <span className="font-mono text-[10px] font-bold text-teal-800">{formId}</span>
+                          {evForm && (
+                            <span className="ml-1.5 text-[10.5px] text-teal-700">
+                              {evForm.label}
+                            </span>
+                          )}
+                        </div>
+                        <ExternalLink size={9} className="text-teal-500" />
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {expectedOutput && (
+              <section>
+                <CalEvtSectionHeading icon={<CheckCircle2 size={11} />} label="Expected Output" />
+                <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[11.5px] leading-relaxed text-gray-700">
+                  {expectedOutput}
+                </div>
+              </section>
+            )}
+
+            {onCompleteText && (
+              <section>
+                <CalEvtSectionHeading icon={<Stamp size={11} />} label="On Complete" />
+                <p className="mt-1.5 text-[11px] italic leading-snug text-gray-600">
+                  {onCompleteText}
+                </p>
+              </section>
+            )}
+
+            {event.regulatoryDriver && (
+              <section className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
+                <div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-amber-700">
+                  Regulatory Driver
+                </div>
+                <p className="mt-0.5 text-[10.5px] leading-snug text-amber-900">
+                  {event.regulatoryDriver}
+                </p>
+              </section>
+            )}
+          </div>
+        </div>
+
+        <aside className="bg-gray-50/80 px-4 py-4">
+          <div className="border-b border-gray-200">
+            <div className="flex items-center gap-4">
+              <CalendarSideTabButton
+                active={sideTab === 'guests'}
+                label="Guests"
+                onClick={() => setSideTab('guests')}
+              />
+              <CalendarSideTabButton
+                active={sideTab === 'resources'}
+                label="Resources"
+                onClick={() => setSideTab('resources')}
+              />
+            </div>
+          </div>
+
+          {sideTab === 'guests' ? (
+            <div className="pt-3">
+              <div className="rounded-md border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-400">
+                Add guests
+              </div>
+              <div className="mt-3 flex items-start justify-between gap-2 text-[11px]">
+                <div>
+                  <p className="font-medium text-gray-900">{guests.length} guests</p>
+                  <p className="text-gray-500">{guestCounts.yes} yes, {guestCounts.maybe} maybe</p>
+                </div>
+                <Users size={14} className="mt-1 text-gray-500" />
+              </div>
+              <ul className="mt-3 space-y-3">
+                {guests.map(guest => (
+                  <li key={guest.id} className="flex items-start gap-2">
+                    <span
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                      style={{ background: guest.response === 'Maybe' ? '#D97706' : '#0D9488' }}
+                    >
+                      {guestInitials(guest.name)}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-medium leading-tight text-gray-900">{guest.name}</p>
+                      <p className="mt-0.5 text-[10px] text-gray-500">{guest.detail}</p>
+                      <p className="mt-0.5 text-[10px] text-gray-600">{guest.response}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div className="pt-3">
+              <div className="rounded-md border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-500">
+                {resources.length} linked resource{resources.length === 1 ? '' : 's'}
+              </div>
+              <ul className="mt-3 space-y-2.5">
+                {resources.map(resource => (
+                  <li key={resource.id} className="rounded-lg border border-gray-200 bg-white px-3 py-2.5">
+                    <p className="text-[11px] font-medium leading-tight text-gray-900">{resource.label}</p>
+                    <p className="mt-1 text-[10px] leading-snug text-gray-500">{resource.detail}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="mt-5 border-t border-gray-200 pt-4">
+            <h4 className="text-[11px] font-semibold text-gray-900">Event details</h4>
+            <div className="mt-3 space-y-3">
+              <CalendarDetailRow icon={<FolderOpen size={12} />} value="Regulatory Event" />
+              <CalendarDetailRow icon={<FileText size={12} />} value={event.id} />
+              <CalendarDetailRow icon={<Workflow size={12} />} value={domPalette.label} />
+              <CalendarDetailRow icon={<AlertTriangle size={12} />} value={`${riskLabel} Priority`} tone={riskColor} />
+              <CalendarDetailRow icon={<Clock size={12} />} value={sla.label} tone={slaColor} />
+            </div>
+            <div className="mt-4">
+              <PushToGoogleCalendarButton event={event} />
+            </div>
+            <div className="mt-4 space-y-1 text-[10px] text-gray-500">
+              <p>Created by: {createdBy}</p>
+              <p>Last updated: {lastUpdated}</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+function CalendarBadge({ color, label }: { color: string; label: string }) {
+  return (
+    <span
+      className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold"
+      style={{ color, background: `${color}12`, borderColor: `${color}30` }}
+    >
+      {label.toUpperCase()}
+    </span>
+  );
+}
+
+function CalendarSummaryMetric({
+  icon,
+  label,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  color?: string;
+}) {
+  return (
+    <div className="border-b border-gray-200 px-4 py-3 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0">
+      <div className="flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-gray-500">
+        <span className="text-gray-400">{icon}</span>
+        {label}
+      </div>
+      <p className="mt-1 text-[11px] font-medium leading-snug" style={{ color: color || '#111827' }}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function CalendarSideTabButton({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="border-b-2 px-1 pb-2 text-[11px] font-medium transition-colors"
+      style={{
+        borderBottomColor: active ? '#0D9488' : 'transparent',
+        color: active ? '#0F766E' : '#6B7280',
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+function CalendarDetailRow({
+  icon,
+  value,
+  tone,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  tone?: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-[11px] text-gray-700">
+      <span className="shrink-0 text-gray-400">{icon}</span>
+      <span style={{ color: tone || '#374151' }}>{value}</span>
+    </div>
+  );
+}
+
+function buildCalendarGuests(event: RegulatoryEvent): CalendarGuest[] {
+  const guests: CalendarGuest[] = [{
+    id: 'owner',
+    name: event.owner,
+    detail: `${event.ownerRole}`,
+    response: 'Organizer',
+  }];
+
+  const seen = new Set([event.owner.toLowerCase(), event.ownerRole.toLowerCase()]);
+  const addGuest = (name: string | undefined, detail: string, response: 'Yes' | 'Maybe') => {
+    if (!name) return;
+    const key = name.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    guests.push({
+      id: `${detail}-${name}`,
+      name,
+      detail,
+      response,
+    });
+  };
+
+  (event.minutes?.signOffRoles ?? []).forEach(role => addGuest(role, 'Required signer', 'Yes'));
+  (event.approvals ?? []).forEach(approval => addGuest(approval.approverRole, 'Approval required', 'Maybe'));
+  (event.agenda?.standingTopics ?? []).forEach(topic => addGuest(topic.owner, 'Agenda owner', 'Maybe'));
+
+  return guests.slice(0, 5);
+}
+
+function buildCalendarResources(event: RegulatoryEvent): CalendarResource[] {
+  const agendaInputs = (event.agenda?.dataInputs ?? []).map((input, index) => ({
+    id: `agenda-${index}-${input.formId ?? input.label}`,
+    label: input.label,
+    detail: [input.formId, input.owner].filter(Boolean).join(' · ') || 'Agenda input',
+  }));
+
+  if (agendaInputs.length > 0) return agendaInputs.slice(0, 6);
+
+  const formResources = event.requiredForms.map(form => ({
+    id: form.id,
+    label: form.label,
+    detail: [form.formId, form.status.replace(/-/g, ' ')].filter(Boolean).join(' · '),
+  }));
+
+  return formResources.slice(0, 6);
+}
+
+function guestInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase() ?? '')
+    .join('') || 'EV';
+}
+
+function formatOffsetDate(baseDate: string, offsetDays: number): string {
+  const d = new Date(`${baseDate}T00:00:00`);
+  d.setDate(d.getDate() + offsetDays);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function prettifyCalendarLabel(label: string): string {
+  return label
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function CalEvtSectionHeading({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="shrink-0" style={{ color: '#0D9488' }}>{icon}</span>
+      <span className="text-[9.5px] font-semibold uppercase tracking-[0.16em] text-gray-500">{label}</span>
+    </div>
+  );
+}
+
 /* ─── SLA computation ────────────────────────────────── */
 function computeSla(
   event: RegulatoryEvent,
@@ -1167,5 +1720,62 @@ function computeSla(
   return { label: `${n}d left`, tone: 'teal' };
 }
 
-/* Re-export formatter helper so callers don't have to duplicate the import. */
-export { formatEventDate };
+/* ─── Push to Google Calendar ────────────────────────── */
+/**
+ * Pushes the current event (full metadata) to the integrated Google
+ * Calendar via /api/calendar/sync. Idempotent — the backend matches
+ * by appEventId and updates instead of duplicating.
+ */
+function PushToGoogleCalendarButton({ event }: { event: RegulatoryEvent }) {
+  const push = useToastStore(s => s.push);
+  const [state, setState] = useState<'idle' | 'pushing' | 'pushed' | 'error'>('idle');
+
+  const onPush = async () => {
+    setState('pushing');
+    try {
+      const payload = toPlannerPayload(event);
+      const res = await CalendarApi.sync([payload]);
+      if (res.failedCount > 0) {
+        setState('error');
+        push('error', 'Google Calendar push failed', res.results[0]?.error ?? 'Unknown error');
+        return;
+      }
+      setState('pushed');
+      const action = res.createdCount > 0 ? 'Created' : 'Updated';
+      push('success', `${action} on Google Calendar`, event.title);
+    } catch (e) {
+      setState('error');
+      const msg = (e as { message?: string })?.message ?? 'Network error';
+      push('error', 'Google Calendar push failed', msg);
+    }
+  };
+
+  const label =
+    state === 'pushing' ? 'Pushing…'
+    : state === 'pushed' ? 'Synced to Google Calendar'
+    : state === 'error'  ? 'Retry push to Google Calendar'
+    : 'Push to Google Calendar';
+
+  const Icon =
+    state === 'pushing' ? Loader2
+    : state === 'pushed' ? Check
+    : Send;
+
+  return (
+    <button
+      type="button"
+      onClick={onPush}
+      disabled={state === 'pushing'}
+      className="w-full flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-[11px] font-semibold transition-colors disabled:opacity-60"
+      style={{
+        background: state === 'pushed' ? '#ECFDF5' : '#F0FDFA',
+        color:      state === 'pushed' ? '#047857' : '#0F766E',
+        borderColor: state === 'pushed' ? '#A7F3D0' : '#99F6E4',
+      }}
+    >
+      <Icon size={13} className={state === 'pushing' ? 'animate-spin' : ''} />
+      {label}
+    </button>
+  );
+}
+

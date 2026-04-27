@@ -1,0 +1,53 @@
+import type { HelpArticle } from './index';
+
+export const FORMS_TEMPLATES: HelpArticle[] = [
+  {
+    slug: 'template-preservation',
+    title: 'Template Preservation Contract',
+    category: 'forms-templates',
+    purpose: 'Templates rendered at /forms/:formId/print are byte-identical between the unsigned and signed PDFs. eCIgn never alters template geometry.',
+    whenToUse: 'Reference any time you propose a change to a published form. Changes require a new version, never an in-place edit.',
+    systemBehavior: 'A pre-print integrity gate (assertTemplateIntegrity) compares the rendered DOM snapshot against the version\'s `template_snapshot` field. Mismatch aborts with TEMPLATE_DRIFT and emits an integrity.mismatch audit event.',
+    complianceImpact: 'CMS surveyors expect the printed template to match the published form-of-record. ESIGN record retention requires re-renderable history.',
+    evidence: 'document_versions.jsonl row + template_snapshot hash; integrity.mismatch event on any drift.',
+    related: { components: ['FormPrintView', 'FormViewer'] },
+  },
+  {
+    slug: 'watermark-spec',
+    title: 'Footer Watermark on Signed Templates',
+    category: 'forms-templates',
+    purpose: 'Inject signature evidence into the existing footer band without displacing any template field.',
+    whenToUse: 'Automatically applied to every page of a signed form\'s printed PDF.',
+    systemBehavior: 'watermarkHtml() in server/ecign/pdf.ts produces a 14px-tall ribbon with `eCIgn · cert_id · signer · signed_at · hash_short`. It is overlay-positioned inside the existing footer area; brand mark is `@/assets/eCIgn.png`.',
+    complianceImpact: 'Provides at-a-glance attribution on every printed page without modifying the template, preserving CMS surveyor expectations.',
+    evidence: 'The watermark renders deterministically from the SignatureRecord and instance.document_hash; reproducible across re-prints.',
+    related: { components: ['FormSigningWorkspace.buildAuditStampHtml'] },
+  },
+  {
+    slug: 'appended-pages',
+    title: 'Appended Pages on Signed Documents',
+    category: 'forms-templates',
+    purpose: 'Add Certificate, Identity & Device Evidence, Audit Trail, and Hash Manifest pages after the last template page.',
+    whenToUse: 'Generated automatically by /api/ecign/instances/:id/bundle for any locked instance.',
+    systemBehavior: 'appendedPagesHtml() emits four sections separated by CSS page-break-before: always. The combined PDF is delivered as the signed document; the original template region remains untouched.',
+    complianceImpact: 'Delivers the full evidence package required by ESIGN/UETA (intent + attribution + integrity) and CMS survey reconstruction in a single artifact.',
+    evidence: '`export.generated` audit event with kind=`signed_bundle` and cert_id.',
+    related: { endpoints: ['GET /api/ecign/instances/:id/bundle'] },
+  },
+  {
+    slug: 'form-versioning',
+    title: 'Form Versioning Rules',
+    category: 'forms-templates',
+    purpose: 'Every change to a form template produces a new immutable version.',
+    whenToUse: 'When updating any published form (label, field, layout, governing policy).',
+    steps: [
+      'Bump the semver in formsLibraryDataset.ts.',
+      'Re-capture template_snapshot and hash.',
+      'POST /api/ecign/versions to register; previous version remains intact.',
+    ],
+    systemBehavior: 'document_versions is append-only. Existing form_instances retain their original document_version_id, ensuring historical re-renders match the bytes that were signed.',
+    complianceImpact: 'ESIGN record reproduction requirement — historical signed PDFs must continue to render exactly as signed.',
+    evidence: 'document_versions.jsonl rows; instance.document_version_id permanently bound at creation.',
+    related: { endpoints: ['POST /api/ecign/versions'] },
+  },
+];

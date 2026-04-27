@@ -232,3 +232,55 @@ This file documents major components/modules by UI responsibility, business logi
 - **Known limitations**
   - multiple duplicated report files exist across folders (`Needs confirmation`: source-of-truth location).
 
+---
+
+## Onboarding System (`src/policy/journey/*`)
+
+### Existing implemented functionality
+
+- **Purpose**
+  - Employee onboarding and competency lifecycle with hard-stop preconditions, role-based progression, supervised validation, and release-to-independent-practice controls.
+- **UI responsibility**
+  - Main onboarding menu (`JourneyHomePage`) with phase rail and competency snapshot.
+  - Appendix F hard stop (`AppendixFPage`) before any work/orientation path advances.
+  - Learner module playback (`ModulePlayerPage`) with SCORM/non-SCORM assessment paths.
+  - Supervisor/DON operations (`SupervisorPage`) for supervised visit logging and clearance signature.
+  - Admin/HR command center (`AdminPage`) for escalation and KPI oversight.
+  - User procedures (`UserGuidePage`) for operational guidance.
+- **Business logic responsibility**
+  - Gating (`gating.ts`) enforces prerequisite sequence: Appendix F -> GAO -> role modules -> supervised visits -> clearance.
+  - Escalation utility (`escalation.ts`) translates progression deficits into actionable escalation state.
+  - Role model (`JourneyRole`) and module role assignment (`modules.ts`) drive per-role onboarding tracks.
+  - Evidence and sign-off recording is handled by journey store actions (including Appendix F signature and clearance sign-off).
+- **Data flow**
+  - Inputs: `modules.ts`, `employees.ts`, `appendices.ts`, plus journey store state.
+  - Outputs: attempts, signatures, supervised visit records, escalation status, clearance state.
+- **Key states**
+  - `appendixFCleared`, `gaoExamPassed`, role completion percentage, supervised visit counters, escalations, `clearedForIndependentWork`.
+- **Key interactions**
+  - Policy references displayed in module context (`policyRefs` in module catalog and module player UI).
+  - Competency snapshot and gate banners surfaced in journey home.
+  - Dual-signature evidence capture for manual assessment paths.
+- **Edge cases handled**
+  - Appendix F cannot be signed until all checklist lines are PASS/NA and proper role signature is provided.
+  - Module launch is blocked with explicit reason when prerequisites are unmet.
+  - Clearance signature is blocked until supervised and role requirements are satisfied.
+
+### Documentation gaps (not implementation gaps)
+
+- System-level traceability between onboarding evidence objects and enterprise audit/reporting documents should be made more explicit in narrative docs.
+- Cross-reference mapping from onboarding policies to workflow/event/audit packages needs a single consolidated matrix.
+
+### Backend/AWS Phase 1 gaps
+
+- Onboarding state is localStorage-backed (`journeyStore`) and not centrally persisted.
+- Signature and evidence records are client-state metadata and not yet bound to immutable backend storage.
+- Role assignment is client-evaluated and not yet tied to identity-provider claims.
+- Audit logging for onboarding actions is not unified with a server-grade append-only compliance log.
+
+### Future Phase 2 enhancements
+
+- Multi-operator conflict handling for supervisor/admin updates.
+- Organization-wide analytics over onboarding completion cohorts and exception trends.
+- Unified evidence retrieval and report packet assembly across onboarding + workflow + audit domains.
+

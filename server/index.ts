@@ -5,8 +5,15 @@ import { log } from './logger.js';
 import { ApiError } from './errors.js';
 import { calendarRouter } from './routes/calendar.js';
 import { hubstaffRouter } from './routes/hubstaff.js';
+import { ecignRouter } from './routes/ecign.js';
+import { auditRouter } from './routes/audit.js';
+import { complianceRouter } from './routes/compliance.js';
 import { IaService } from './ia/service.js';
 import { createIaRouter } from './ia/routes.js';
+import { identityMiddleware } from './identity/middleware.js';
+import { auditV2Router } from './audit/routes.js';
+import { ceuRouter } from './ceu/routes.js';
+import { startAnomalyScheduler } from './audit/anomaly.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Care Indeed — Backend API (Express)
@@ -21,7 +28,11 @@ const app = express();
 
 app.disable('x-powered-by');
 app.use(cors({ origin: env.allowedOrigin, credentials: false }));
-app.use(express.json({ limit: '512kb' }));
+app.use(express.json({ limit: '4mb' })); // signature PNG payloads
+
+// Identity / session must run BEFORE the PEP, the bearer gate, and any
+// route handler so every request has `req.session` and `req.actor`.
+app.use('/api', identityMiddleware);
 
 // Optional shared-secret gate. In local dev we leave it disabled.
 app.use('/api', (req, _res, next) => {
@@ -39,6 +50,11 @@ app.use('/api', (req, _res, next) => {
 
 app.use('/api/calendar', calendarRouter);
 app.use('/api/hubstaff', hubstaffRouter);
+app.use('/api/ecign', ecignRouter);
+app.use('/api/audit', auditRouter);
+app.use('/api/audit/v2', auditV2Router);
+app.use('/api/ceu', ceuRouter);
+app.use('/api/compliance', complianceRouter);
 
 // Compliance Intelligence (iAdministrator) — local RAG engine.
 const iaService = new IaService({
@@ -85,6 +101,8 @@ const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
 app.use(errorHandler);
 
 const server = app.listen(env.port, () => {
+  // Start background anomaly scanner (no-op until events accumulate).
+  startAnomalyScheduler(60_000);
   log.info('server.started', {
     port: env.port,
     calendarId: env.calendarId,

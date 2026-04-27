@@ -1,0 +1,751 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  Check, 
+  PenTool, 
+  Camera, 
+  FileCheck, 
+  Download, 
+  Printer, 
+  Save, 
+  User, 
+  MapPin, 
+  ShieldCheck, 
+  X, 
+  RotateCcw,
+  Fingerprint,
+  Clock,
+  Globe,
+  Share2,
+  Keyboard,
+  UploadCloud,
+  Laptop
+} from 'lucide-react';
+
+// --- MOCK DATA ---
+const SIGNER_INFO = {
+  name: 'JD Vance',
+  role: 'Administrator Designee',
+  email: 'jvance@careindeed.com',
+  date: 'Apr 24, 2026',
+  time: '5:05 PM',
+  ip: '2601:647:6400:a360:3199:6322:8b81:b901',
+  city: 'Sunnyvale',
+  state: 'California',
+  country: 'United States',
+  latitude: '37.3688',
+  longitude: '-122.0363',
+  network: 'Comcast Cable Communications, LLC',
+  deviceName: 'BLOKEY',
+  platformRole: 'Mobile',
+  os: 'Microsoft Windows 11 Pro',
+  osVersion: '10.0.26200 Build 26200',
+  systemManufacturer: 'LENOVO',
+  systemModel: '83EY',
+  processor: 'Intel(R) Core(TM) Ultra 9 275HX',
+  formId: 'EN-FM-003',
+  certId: 'CERT-EN-FM-003-A4DfwtSJ'
+};
+
+// --- COMPONENTS ---
+
+// 1. Stepper Component
+const Stepper = ({ currentStep }) => {
+  const steps = [
+    { num: 1, label: 'Sign', icon: PenTool },
+    { num: 2, label: 'Verify', icon: Camera },
+    { num: 3, label: 'Review', icon: FileCheck },
+    { num: 4, label: 'Options', icon: Download }
+  ];
+
+  return (
+    <div className="flex items-center justify-center w-full max-w-3xl mx-auto mb-12">
+      {steps.map((step, index) => (
+        <React.Fragment key={step.num}>
+          <div className="flex flex-col items-center relative z-10">
+            <div 
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 border-2 ${
+                currentStep > step.num 
+                  ? 'bg-indigo-600 border-indigo-600 text-white' 
+                  : currentStep === step.num 
+                    ? 'bg-white border-indigo-600 text-indigo-600 shadow-[0_0_15px_rgba(79,70,229,0.3)]' 
+                    : 'bg-white border-slate-200 text-slate-400'
+              }`}
+            >
+              {currentStep > step.num ? (
+                <Check className="w-6 h-6" />
+              ) : (
+                <step.icon className="w-5 h-5" strokeWidth={currentStep === step.num ? 2.5 : 2} />
+              )}
+            </div>
+            <span className={`absolute -bottom-7 text-sm font-medium whitespace-nowrap transition-colors duration-300 ${
+              currentStep >= step.num ? 'text-slate-800' : 'text-slate-400'
+            }`}>
+              {step.label}
+            </span>
+          </div>
+          {index < steps.length - 1 && (
+            <div className="flex-1 h-0.5 mx-4 -mt-6 z-0">
+              <div className="w-full h-full bg-slate-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-indigo-600 transition-all duration-500 ease-in-out"
+                  style={{ width: currentStep > step.num ? '100%' : '0%' }}
+                />
+              </div>
+            </div>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
+
+// 2. Step 1: Signature Canvas
+const SignatureStep = ({ onNext, signatureData, setSignatureData }) => {
+  const canvasRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [hasDrawn, setHasDrawn] = useState(!!signatureData);
+  const [mode, setMode] = useState('draw'); // 'draw', 'type', 'upload'
+  const [typedText, setTypedText] = useState(SIGNER_INFO.name);
+  const [isCanvasInitialized, setIsCanvasInitialized] = useState(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas && mode === 'draw' && !isCanvasInitialized) {
+      // Slight timeout allows CSS layout to calculate dimensions when un-hiding the canvas
+      setTimeout(() => {
+        canvas.width = canvas.offsetWidth || 500;
+        canvas.height = canvas.offsetHeight || 300;
+        const ctx = canvas.getContext('2d');
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#0f172a'; // slate-900
+
+        // Restore signature if exists
+        if (signatureData) {
+          const img = new Image();
+          img.src = signatureData;
+          img.onload = () => ctx.drawImage(img, 0, 0);
+        }
+        setIsCanvasInitialized(true);
+      }, 50);
+    }
+  }, [mode, isCanvasInitialized, signatureData]);
+
+  const handleModeChange = (newMode) => {
+    if (mode === newMode) return;
+    setMode(newMode);
+    setSignatureData(null);
+    setHasDrawn(false);
+    if (newMode === 'type') {
+      setTypedText(SIGNER_INFO.name);
+    }
+    if (newMode === 'draw') {
+      setIsCanvasInitialized(false);
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setSignatureData(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (mode === 'type' && typedText.trim()) {
+      // Generate an image from the typed text so the rest of the app receives a unified base64 PNG
+      const canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      ctx.font = 'italic 56px "Brush Script MT", "Caveat", "Segoe Print", cursive';
+      ctx.fillStyle = '#0f172a';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
+      ctx.fillText(typedText, canvas.width / 2, canvas.height / 2);
+      setSignatureData(canvas.toDataURL('image/png'));
+    }
+    onNext();
+  };
+
+  const startDrawing = (e) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+    ctx.beginPath();
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    setIsDrawing(true);
+    setHasDrawn(true);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    if (isDrawing) {
+      setIsDrawing(false);
+      const canvas = canvasRef.current;
+      setSignatureData(canvas.toDataURL('image/png'));
+    }
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setHasDrawn(false);
+    setSignatureData(null);
+  };
+
+  const canConfirm = 
+    (mode === 'draw' && hasDrawn) || 
+    (mode === 'type' && typedText.trim().length > 0) || 
+    (mode === 'upload' && signatureData !== null);
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Left Column: Context */}
+      <div className="w-full lg:w-1/3 space-y-6">
+        <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-2xl p-6 text-white shadow-lg">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+              <ShieldCheck className="w-6 h-6 text-indigo-300" />
+            </div>
+            <h3 className="font-semibold text-lg">Secure Signing</h3>
+          </div>
+          <p className="text-slate-300 text-sm leading-relaxed">
+            Your identity, location, and document edits are captured automatically and packaged into the attestation certificate.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-6">
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+            <User className="w-4 h-4" /> Signer Identity
+          </h4>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-medium text-slate-900">{SIGNER_INFO.name}</p>
+              <p className="text-xs text-slate-500">{SIGNER_INFO.role}</p>
+            </div>
+            <div>
+              <p className="text-sm text-slate-700">{SIGNER_INFO.email}</p>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-slate-500">
+              <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {SIGNER_INFO.date}</span>
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-slate-100">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-4">
+              <Globe className="w-4 h-4" /> Location & Network
+            </h4>
+            <div className="grid grid-cols-1 gap-y-4 gap-x-4 text-xs text-slate-600">
+              <div>
+                <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">IP Address</p>
+                <p className="font-mono truncate" title={SIGNER_INFO.ip}>{SIGNER_INFO.ip}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">City</p>
+                  <p>{SIGNER_INFO.city}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">State / Region</p>
+                  <p>{SIGNER_INFO.state}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Country</p>
+                  <p>{SIGNER_INFO.country}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Coordinates</p>
+                  <p>{SIGNER_INFO.latitude}, {SIGNER_INFO.longitude}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Network Org</p>
+                <p className="truncate">{SIGNER_INFO.network}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-slate-100">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-4">
+              <Laptop className="w-4 h-4" /> Device & System
+            </h4>
+            <div className="grid grid-cols-1 gap-y-4 gap-x-4 text-xs text-slate-600">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Device Name</p>
+                  <p className="font-medium text-slate-800">{SIGNER_INFO.deviceName}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Platform Role</p>
+                  <p className="font-medium text-slate-800">{SIGNER_INFO.platformRole}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Operating System</p>
+                <p className="truncate font-medium text-slate-800" title={SIGNER_INFO.os}>{SIGNER_INFO.os}</p>
+                <p className="text-slate-400 truncate text-[10px] mt-0.5" title={SIGNER_INFO.osVersion}>{SIGNER_INFO.osVersion}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Manufacturer</p>
+                  <p className="font-medium text-slate-800">{SIGNER_INFO.systemManufacturer}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Model</p>
+                  <p className="font-medium text-slate-800">{SIGNER_INFO.systemModel}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Processor</p>
+                <p className="truncate font-medium text-slate-800" title={SIGNER_INFO.processor}>{SIGNER_INFO.processor}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Column: Canvas/Input */}
+      <div className="w-full lg:w-2/3 flex flex-col">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">Provide your signature</h2>
+            <p className="text-slate-500 mt-1 text-sm">Choose how you'd like to sign this document.</p>
+          </div>
+          
+          {/* Mode Selector Tabs */}
+          <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto min-w-[280px]">
+            <button 
+              onClick={() => handleModeChange('draw')} 
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${mode === 'draw' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              <PenTool className="w-4 h-4" /> Draw
+            </button>
+            <button 
+              onClick={() => handleModeChange('type')} 
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${mode === 'type' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              <Keyboard className="w-4 h-4" /> Type
+            </button>
+            <button 
+              onClick={() => handleModeChange('upload')} 
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${mode === 'upload' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              <UploadCloud className="w-4 h-4" /> Upload
+            </button>
+          </div>
+        </div>
+        
+        {/* DRAW MODE */}
+        <div className={`flex-1 bg-white border-2 border-dashed border-slate-200 rounded-2xl relative overflow-hidden flex-col shadow-inner min-h-[300px] ${mode === 'draw' ? 'flex' : 'hidden'}`}>
+          {!hasDrawn && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-300 pointer-events-none">
+              <PenTool className="w-12 h-12 mb-2 opacity-50" />
+              <span className="text-lg font-medium">Sign Here</span>
+            </div>
+          )}
+          
+          <canvas
+            ref={canvasRef}
+            className="flex-1 w-full h-full cursor-crosshair touch-none"
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
+            onTouchStart={startDrawing}
+            onTouchMove={draw}
+            onTouchEnd={stopDrawing}
+          />
+
+          <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center px-4 py-3 bg-white/80 backdrop-blur-md rounded-xl border border-slate-100 shadow-sm pointer-events-none">
+             <span className="text-xs text-slate-400 font-medium tracking-widest uppercase pointer-events-auto">Signature Line</span>
+             <button 
+                onClick={clearCanvas}
+                className="text-sm font-medium text-slate-500 hover:text-red-500 flex items-center gap-1 transition-colors pointer-events-auto"
+             >
+                <RotateCcw className="w-4 h-4" /> Clear
+             </button>
+          </div>
+        </div>
+
+        {/* TYPE MODE */}
+        <div className={`flex-1 bg-white border-2 border-slate-200 rounded-2xl p-6 flex-col min-h-[300px] shadow-sm ${mode === 'type' ? 'flex' : 'hidden'}`}>
+          <label className="text-sm font-bold text-slate-700 mb-2 block uppercase tracking-wider">Type your full name</label>
+          <input 
+            type="text" 
+            value={typedText}
+            onChange={(e) => setTypedText(e.target.value)}
+            className="w-full p-4 border border-slate-300 rounded-xl mb-6 text-lg focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all shadow-sm"
+            placeholder="e.g. JD Vance"
+          />
+          <div className="flex-1 flex flex-col relative">
+            <span className="text-xs text-slate-400 font-medium tracking-widest uppercase mb-2 absolute top-4 left-6 z-10">Preview</span>
+            <div className="flex-1 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center overflow-hidden min-h-[150px]">
+               <span 
+                 className={`text-slate-900 transition-all ${!typedText ? 'opacity-30' : ''}`}
+                 style={{ fontFamily: '"Brush Script MT", "Caveat", "Segoe Print", cursive', fontSize: '4rem' }}
+               >
+                 {typedText || 'Signature'}
+               </span>
+            </div>
+          </div>
+        </div>
+
+        {/* UPLOAD MODE */}
+        <div className={`flex-1 bg-white border-2 border-dashed border-slate-200 rounded-2xl flex-col items-center justify-center min-h-[300px] relative transition-colors hover:bg-slate-50 overflow-hidden ${mode === 'upload' ? 'flex' : 'hidden'}`}>
+           <input 
+              type="file" 
+              accept="image/png, image/jpeg"
+              onChange={handleFileUpload}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+            />
+            {signatureData && mode === 'upload' ? (
+              <div className="relative w-full h-full flex flex-col items-center justify-center bg-slate-50">
+                 <img src={signatureData} alt="Uploaded signature" className="max-h-[200px] object-contain p-4 mix-blend-multiply z-10" />
+                 <div className="absolute bottom-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-sm border border-slate-200 z-10 pointer-events-none">
+                    <p className="text-xs font-medium text-slate-600 flex items-center gap-2"><UploadCloud className="w-3 h-3"/> Click or drag to replace</p>
+                 </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center pointer-events-none z-10">
+                <div className="bg-indigo-50 p-4 rounded-full mb-4 shadow-sm">
+                  <UploadCloud className="w-8 h-8 text-indigo-600" />
+                </div>
+                <p className="font-semibold text-slate-900 text-lg">Upload Signature Image</p>
+                <p className="text-sm text-slate-500 mt-1">Click or drag a file here</p>
+                <p className="text-xs text-slate-400 mt-4">Supports PNG, JPG</p>
+              </div>
+            )}
+        </div>
+
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-500 flex-1">
+            By signing, you confirm you are <strong className="text-slate-700">{SIGNER_INFO.name}</strong> and agree to attach this signature to <strong className="text-slate-700">{SIGNER_INFO.formId} v6.0</strong>.
+          </p>
+          <button 
+            onClick={handleConfirm}
+            disabled={!canConfirm}
+            className={`px-8 py-3.5 rounded-xl font-semibold transition-all shadow-sm flex items-center justify-center gap-2 ${
+              canConfirm 
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md active:transform active:scale-95' 
+                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+            }`}
+          >
+            Confirm Signature
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 3. Step 2: Verification
+const VerifyStep = ({ onNext, onSkip }) => {
+  return (
+    <div className="max-w-2xl mx-auto flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-6">
+        <Camera className="w-8 h-8" />
+      </div>
+      <h2 className="text-3xl font-bold text-slate-900 mb-2">Photo verification <span className="text-slate-400 font-normal text-lg ml-2">(Optional)</span></h2>
+      <p className="text-slate-500 text-center mb-8">Snap a quick photo of yourself to include in the attestation certificate, or skip to continue.</p>
+
+      <div className="w-full bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden shadow-inner aspect-video flex flex-col items-center justify-center relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-100 to-transparent pointer-events-none"></div>
+        <div className="bg-white p-4 rounded-2xl shadow-sm mb-4">
+          <Camera className="w-8 h-8 text-slate-300" />
+        </div>
+        <p className="text-slate-500 font-medium">Camera access denied or unavailable</p>
+        <button className="mt-4 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors shadow-sm">
+          Try Again
+        </button>
+      </div>
+
+      <div className="mt-10 flex flex-col-reverse sm:flex-row items-center w-full gap-4 justify-between">
+        <button 
+          onClick={onSkip}
+          className="text-slate-500 hover:text-slate-800 font-medium px-6 py-3 transition-colors"
+        >
+          Skip for now
+        </button>
+        <button 
+          onClick={onNext}
+          className="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 shadow-sm transition-colors active:transform active:scale-95"
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// 4. Step 3: Review
+const ReviewStep = ({ onNext, signatureData }) => {
+  return (
+    <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      
+      {/* Success Banner */}
+      <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="bg-emerald-500 text-white p-3 rounded-xl shadow-emerald-500/20 shadow-lg">
+            <Check className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-emerald-900">Document Signed & Sealed</h2>
+            <p className="text-emerald-700 mt-1 text-sm">Your signature is attached to <strong>{SIGNER_INFO.formId}</strong> and is ready for final processing.</p>
+          </div>
+        </div>
+        <div className="mt-4 sm:mt-0 flex gap-2">
+           <span className="bg-white text-xs font-mono px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-800">
+             {SIGNER_INFO.certId}
+           </span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        {/* Signature Box */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <PenTool className="w-4 h-4" /> Captured Signature
+          </h3>
+          <div className="bg-slate-50 rounded-xl h-40 flex items-center justify-center border border-slate-100 overflow-hidden mb-6">
+            {signatureData ? (
+              <img src={signatureData} alt="Signature" className="max-h-full object-contain p-4 mix-blend-multiply" />
+            ) : (
+              <span className="text-slate-300">No signature</span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-y-4 text-sm">
+            <div>
+              <p className="text-xs text-slate-400 mb-1">Name</p>
+              <p className="font-medium text-slate-900">{SIGNER_INFO.name}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 mb-1">Role</p>
+              <p className="font-medium text-slate-900">{SIGNER_INFO.role}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 mb-1">Timestamp</p>
+              <p className="font-medium text-slate-900">{SIGNER_INFO.time}, {SIGNER_INFO.date}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Certificate Details */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+           <div>
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6 flex items-center gap-2">
+              <Fingerprint className="w-4 h-4" /> Certificate Details
+            </h3>
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs text-slate-400 mb-1">Certificate ID</p>
+                <p className="font-mono text-sm text-slate-800 bg-slate-50 px-2 py-1 rounded inline-block border border-slate-100">{SIGNER_INFO.certId}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Form ID</p>
+                  <p className="font-medium text-slate-900">{SIGNER_INFO.formId}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Version</p>
+                  <p className="font-medium text-slate-900">v6.0</p>
+                </div>
+              </div>
+               <div>
+                  <p className="text-xs text-slate-400 mb-1">System Instance</p>
+                  <p className="font-medium text-slate-900">CI-App / eSign <span className="text-slate-400 font-mono text-xs ml-2">#E_4P5fDWv3uTj2</span></p>
+                </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button 
+          onClick={onNext}
+          className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 shadow-md shadow-indigo-600/20 transition-all flex items-center gap-2 text-lg w-full sm:w-auto justify-center active:transform active:scale-95"
+        >
+          Continue to Final Options
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// 5. Step 4: Final Actions (The new page requested)
+const FinalActionsStep = () => {
+  const actions = [
+    {
+      title: 'Download PDF',
+      description: 'Save a local copy of the signed document and certificate.',
+      icon: Download,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200',
+      hoverColor: 'hover:border-blue-400 hover:shadow-blue-100'
+    },
+    {
+      title: 'Print Document',
+      description: 'Send the signed document directly to your printer.',
+      icon: Printer,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      borderColor: 'border-purple-200',
+      hoverColor: 'hover:border-purple-400 hover:shadow-purple-100'
+    },
+    {
+      title: 'Save to Drafts',
+      description: 'Keep this in your workspace to finalize sending later.',
+      icon: Save,
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-50',
+      borderColor: 'border-amber-200',
+      hoverColor: 'hover:border-amber-400 hover:shadow-amber-100'
+    },
+     {
+      title: 'Send for 2nd Signature',
+      description: 'Forward this document to another party for countersigning.',
+      icon: Share2,
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-50',
+      borderColor: 'border-emerald-200',
+      hoverColor: 'hover:border-emerald-400 hover:shadow-emerald-100'
+    }
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto flex flex-col items-center animate-in fade-in zoom-in-95 duration-500">
+      
+      <div className="text-center mb-12">
+        <h2 className="text-3xl font-extrabold text-slate-900 mb-4 tracking-tight">What would you like to do next?</h2>
+        <p className="text-slate-500 text-lg">Your attestation is complete. Choose how you want to handle the finalized document.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+        {actions.map((action, idx) => (
+          <button 
+            key={idx}
+            className={`group relative flex flex-col items-start p-8 bg-white rounded-2xl border-2 ${action.borderColor} shadow-sm ${action.hoverColor} transition-all duration-300 text-left hover:-translate-y-1`}
+          >
+            <div className={`p-4 rounded-xl ${action.bgColor} ${action.color} mb-6 transition-transform group-hover:scale-110 duration-300`}>
+              <action.icon className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">{action.title}</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">{action.description}</p>
+            
+            {/* Minimalist arrow indicator on hover */}
+            <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-300 text-slate-400">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </div>
+          </button>
+        ))}
+      </div>
+      
+      {/* Note: The user explicitly requested to "remove done", so we don't have a terminal close button here. 
+          The actions above serve as the conclusion of the workflow. */}
+      <div className="mt-12 text-sm text-slate-400 flex items-center gap-2">
+        <ShieldCheck className="w-4 h-4" /> Securely processed by eSign Workspace
+      </div>
+    </div>
+  );
+};
+
+
+// --- MAIN APP ---
+export default function App() {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [signatureData, setSignatureData] = useState(null);
+
+  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 4));
+  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+
+  return (
+    <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900 flex flex-col">
+      
+      {/* Global Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            {/* Brand / Logo Area */}
+            <div className="flex items-center">
+              <img 
+                src="http://localhost:5173/src/assets/eCIgn.png" 
+                alt="eCIgn Logo" 
+                className="h-8 object-contain"
+              />
+            </div>
+            
+            {/* Divider */}
+            <div className="hidden md:block h-6 w-px bg-slate-200"></div>
+            
+            {/* Context */}
+            <div className="hidden md:block">
+              <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-0.5">Policy Classification</p>
+              <p className="text-sm font-medium text-slate-700">Tier Matrix Agreement</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-mono text-slate-500">
+               <span>ID:</span>
+               <span className="text-slate-700">{SIGNER_INFO.formId}</span>
+             </div>
+            <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex flex-col">
+        
+        {/* Stepper (Hidden on Final Step for cleaner UI) */}
+        {currentStep < 4 && <Stepper currentStep={currentStep} />}
+
+        {/* Step Content Container */}
+        <div className="flex-1">
+          {currentStep === 1 && (
+            <SignatureStep 
+              onNext={nextStep} 
+              signatureData={signatureData} 
+              setSignatureData={setSignatureData} 
+            />
+          )}
+          {currentStep === 2 && (
+            <VerifyStep onNext={nextStep} onSkip={nextStep} />
+          )}
+          {currentStep === 3 && (
+            <ReviewStep onNext={nextStep} signatureData={signatureData} />
+          )}
+          {currentStep === 4 && (
+            <FinalActionsStep />
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}

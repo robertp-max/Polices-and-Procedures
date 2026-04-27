@@ -7,7 +7,7 @@ import {
   CheckSquare, Send, FileBarChart, PlayCircle,
   HelpCircle, Search, ChevronLeft, Menu,
   ShieldCheck, Zap, FingerprintPattern as Fingerprint,
-  GraduationCap, ArrowUpCircle,
+  ArrowUpCircle, FolderOpen,
 } from 'lucide-react';
 import TravelightBG from '@/components/TravelightBG';
 import { useShellStore } from '@/policy/stores/uiStore';
@@ -90,24 +90,28 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', to: '/dashboard', label: 'Command Center', subItems: [{ to: '/dashboard', label: 'Overview' }], icon: LayoutDashboard },
   { id: 'iadmin', to: '/iadministrator', label: 'Brad', icon: BradRobotIcon },
-  { id: 'compliance', to: '/workflows', label: 'Compliance', subItems: [{ to: '/workflows', label: 'Workflows' }, { to: '/compliance/master-controls', label: 'Master Controls' }, { to: '/calendar', label: 'Execution Timeline' }, { to: '/calendar/minutes', label: 'Minutes' }, { to: '/audit', label: 'Audit Mode' }], icon: ClipboardCheck },
+  {
+    id: 'ces', to: '/ces/dashboard', label: 'Compliance Execution (CES)',
+    subItems: [
+      { to: '/ces/dashboard',         label: 'Dashboard' },
+      { to: '/calendar?view=sprint',  label: 'Calendar (Calendar/Sprint)' },
+      { to: '/ces/board',             label: 'Sprint Board' },
+      { to: '/workflows',             label: 'Workflows' },
+      { to: '/compliance/master-controls', label: 'Master Controls' },
+      { to: '/audit',                 label: 'Audit Mode' },
+      { to: '/evidence',              label: 'Evidence Center' },
+      { to: '/ces/reports',           label: 'Reports' },
+    ],
+    icon: ClipboardCheck,
+  },
   { id: 'taxonomy', to: '/framework', label: 'Taxonomy', subItems: [{ to: '/framework', label: 'Framework' }, { to: '/library', label: 'Policies' }, { to: '/forms', label: 'Forms' }], icon: Network },
   { id: 'drafts', to: '/drafts', label: 'Drafts', icon: FileEdit },
   { id: 'review', to: '/review', label: 'Review Queue', icon: CheckSquare },
   { id: 'publish', to: '/publish', label: 'Publishing', icon: Send },
   { id: 'reports', to: '/governance', label: 'Master Report', icon: FileBarChart },
-  {
-    id: 'journey', to: '/journey', label: 'Onboarding',
-    subItems: [
-      { to: '/journey',            label: 'Journey' },
-      { to: '/journey/appendix-f', label: 'Appendix F' },
-      { to: '/journey/supervisor', label: 'Supervisor' },
-      { to: '/journey/admin',      label: 'Admin / HR' },
-      { to: '/journey/guide',      label: 'User Guide' },
-    ],
-    icon: GraduationCap,
-  },
+  { id: 'evidence', to: '/evidence', label: 'Evidence', icon: FolderOpen },
   { id: 'hubstaff', to: '/hubstaff', label: 'Hubstaff', icon: ArrowUpCircle },
+  { id: 'help', to: '/help', label: 'Help Center', icon: HelpCircle },
   { id: 'demo', to: '/demo', label: 'Demo', icon: PlayCircle },
 ];
 

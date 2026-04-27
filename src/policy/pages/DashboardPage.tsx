@@ -12,6 +12,7 @@ import {
 import { useAutogenStore } from '@/policy/stores/autogenStore';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import { ToastHost } from '@/policy/components/regulatory/Toast';
+import { HelpContextLink } from '@/policy/help/HelpContextLink';
 import {
   STATE_COLOR, TEAL_PRIMARY, ACTION_COLOR,
 } from '@/policy/components/regulatory/timelineState';
@@ -20,6 +21,10 @@ import {
   AUDIT_STATE_COLOR, AUDIT_STATE_LABEL, type AuditState,
   type AuditEvaluation,
 } from '@/policy/audit/auditState';
+import {
+  useComplianceExecution, selectAuditReadinessRollup,
+  selectCriticalUnits, selectAwaitingSignatureUnits,
+} from '@/policy/compliance-execution';
 
 /* ═══════════════════════════════════════════════════════════════
    COMMAND CENTER — Dashboard
@@ -205,6 +210,8 @@ export function DashboardPage() {
 
       <CommandHeader today={today} />
 
+      <SprintSnapshotStrip onOpen={() => navigate('/calendar?view=sprint')} />
+
       <AgencyReadinessBanner
         ready={readiness.agencyReady}
         reasons={readiness.reasons}
@@ -221,6 +228,7 @@ export function DashboardPage() {
           title="Critical Actions"
           hint="What demands action first"
           icon={<AlertTriangle size={12} />}
+          headerExtra={<HelpContextLink slug="overview" label="How this works" />}
         >
           <div className="grid grid-cols-3 gap-4 min-h-0">
             <CriticalColumn
@@ -478,13 +486,14 @@ function CommandHeader({ today }: { today: Date }) {
 
 /* ─── Section shell ─────────────────────────────────── */
 function SectionShell({
-  title, hint, icon, children, dense,
+  title, hint, icon, children, dense, headerExtra,
 }: {
   title: string;
   hint?: string;
   icon?: React.ReactNode;
   children: React.ReactNode;
   dense?: boolean;
+  headerExtra?: React.ReactNode;
 }) {
   return (
     <section className={`flex flex-col min-h-0 ${dense ? '' : 'flex-1'} gap-2`}>
@@ -500,6 +509,7 @@ function SectionShell({
             </span>
           )}
         </div>
+        {headerExtra}
       </header>
       <div className={`${dense ? '' : 'flex-1'} min-h-0`}>{children}</div>
     </section>
@@ -740,3 +750,59 @@ function ReadinessTile({
    keeps working if the legacy export-from-dashboard pattern was used
    elsewhere. */
 export { AUDIT_STATE_LABEL };
+
+/* ═══════════════════════════════════════════════════════════════
+   SprintSnapshotStrip — Command Center ↔ CES bridge
+   --------------------------------------------------------------
+   Reads sprint-level metrics from the shared compliance-execution
+   layer so the Command Center dashboard stays a single pane of
+   glass without duplicating the CES dashboard.
+   ═══════════════════════════════════════════════════════════════ */
+function SprintSnapshotStrip({ onOpen }: { onOpen: () => void }) {
+  const snap     = useComplianceExecution();
+  const rollup   = useMemo(() => selectAuditReadinessRollup(snap), [snap]);
+  const critical = useMemo(() => selectCriticalUnits(snap),        [snap]);
+  const sigQueue = useMemo(() => selectAwaitingSignatureUnits(snap), [snap]);
+  const m = snap.sprintMetrics;
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="w-full text-left rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-colors px-4 py-3 flex items-center gap-5"
+      title="Open Compliance Calendar (Sprint view)"
+    >
+      <div className="flex items-center gap-2">
+        <span
+          className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.2em]"
+          style={{ color: TEAL_PRIMARY }}
+        >
+          Active Sprint · {snap.activeSprint.label}
+        </span>
+      </div>
+      <SnapStat label="Completion"        value={`${m.completionRatePct}%`}            color={ACTION_COLOR} />
+      <SnapStat label="Audit Ready"       value={`${m.auditReadinessScore} / 100`}     color={TEAL_PRIMARY} />
+      <SnapStat label="Active Blockers"   value={`${m.activeBlockerCount}`}            color={STATE_COLOR.blocked} />
+      <SnapStat label="Sig SLAs Missed"   value={`${m.signatureSlasMissed}`}           color={STATE_COLOR.blocked} />
+      <SnapStat label="Awaiting Sig"      value={`${sigQueue.length}`}                 color={'#F97316'} />
+      <SnapStat label="Critical Units"    value={`${critical.length}`}                 color={STATE_COLOR.blocked} />
+      <SnapStat label="Audit Open"        value={`${rollup.notReady + rollup.partial}`} color={'#F59E0B'} />
+      <div className="ml-auto flex items-center gap-1 text-[11px] text-white/65">
+        Open Sprint <ChevronRight size={12} />
+      </div>
+    </button>
+  );
+}
+
+function SnapStat({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div className="flex flex-col leading-tight">
+      <span
+        className="text-[9px] font-montserrat font-bold uppercase tracking-[0.16em] text-white/55"
+      >
+        {label}
+      </span>
+      <span className="text-[14px] font-outfit font-light" style={{ color }}>{value}</span>
+    </div>
+  );
+}

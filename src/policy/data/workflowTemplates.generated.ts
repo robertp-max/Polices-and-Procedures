@@ -3,6 +3,337 @@ import type { WorkflowTemplate } from '@/policy/types/workflow';
 
 export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
   {
+    "workflowId": "CL-WF-26",
+    "templateKey": "CL-WF-26::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager signs audit report. Compliance Officer co-signs if defect rate >10% (systemic).",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-005",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005",
+      "QA-FM-025"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "immediate_jeopardy",
+    "regulatoryAnchors": [
+      "42 CFR § 484.60",
+      "42 CFR § 484.55"
+    ]
+  },
+  {
+    "workflowId": "CL-WF-27",
+    "templateKey": "CL-WF-27::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager signs report; OASIS QA attests scoring; Compliance Officer reviews if defect rate >7% or revenue impact material.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-002",
+      "CL-FM-031",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006",
+      "HR-FM-016",
+      "QA-FM-005"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "42 CFR § 484.45",
+      "42 CFR § 484.55"
+    ]
+  },
+  {
+    "workflowId": "CL-WF-28",
+    "templateKey": "CL-WF-28::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager signs audit report. Compliance Officer co-signs if late-filing rate >5%.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-015",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.110",
+      "42 CFR § 484.60(b)"
+    ]
+  },
+  {
+    "workflowId": "CL-WF-29",
+    "templateKey": "CL-WF-29::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager signs; Compliance Officer co-signs if any record fails >3 elements.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-029",
+      "CL-FM-036",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.110",
+      "42 CFR § 484.60"
+    ]
+  },
+  {
+    "workflowId": "CL-WF-30",
+    "templateKey": "CL-WF-30::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager signs report. Compliance Officer co-signs any pattern affecting >5% of episodes.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-005",
+      "CL-FM-009",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "immediate_jeopardy",
+    "regulatoryAnchors": [
+      "42 CFR § 409.42",
+      "42 CFR § 409.44"
+    ]
+  },
+  {
+    "workflowId": "CL-WF-31",
+    "templateKey": "CL-WF-31::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager signs. Medical Director signs if pattern of error.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-018",
+      "CL-FM-022",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005",
+      "RM-FM-012"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.60(b)"
+    ]
+  },
+  {
+    "workflowId": "CL-WF-32",
+    "templateKey": "CL-WF-32::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager + Infection Preventionist sign. Medical Director signs cluster-event reports.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-021",
+      "CO-FM-021",
+      "CO-FM-024",
+      "HR-FM-014",
+      "QA-FM-005",
+      "QA-FM-027"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.70"
+    ]
+  },
+  {
+    "workflowId": "CL-WF-33",
+    "templateKey": "CL-WF-33::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-005",
+      "CL-FM-053",
+      "CL-FM-054",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.60(d)"
+    ]
+  },
+  {
+    "workflowId": "CL-WF-34",
+    "templateKey": "CL-WF-34::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager signs. Medical Director signs if pattern PIP triggered.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "EN-FM-034",
+      "QA-FM-021",
+      "QA-FM-026"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65"
+    ]
+  },
+  {
+    "workflowId": "CL-WF-35",
+    "templateKey": "CL-WF-35::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager + QAPI Lead sign.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "EN-FM-034",
+      "QA-FM-020",
+      "QA-FM-021"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65"
+    ]
+  },
+  {
+    "workflowId": "CL-WF-36",
+    "templateKey": "CL-WF-36::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-048",
+      "CL-FM-053",
+      "CO-FM-022",
+      "CO-FM-024",
+      "EN-FM-034",
+      "QA-FM-005"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "42 CFR § 484.60(c)"
+    ]
+  },
+  {
+    "workflowId": "CL-WF-37",
+    "templateKey": "CL-WF-37::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-006",
+      "CL-FM-007",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.60(b)",
+      "42 CFR § 409.43"
+    ]
+  },
+  {
     "workflowId": "CL-WF-01",
     "templateKey": "CL-WF-01::per_event",
     "cadence": {
@@ -670,6 +1001,220 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     "declaredRisk": "moderate",
     "regulatoryAnchors": [
       "42 CFR § 484.115"
+    ]
+  },
+  {
+    "workflowId": "CO-WF-23",
+    "templateKey": "CO-WF-23::daily",
+    "cadence": {
+      "kind": "continuous",
+      "interval": "daily"
+    },
+    "approvals": [
+      {
+        "description": "Compliance Officer signs weekly report. Administrator co-signs systemic-hold determinations.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-002",
+      "CL-FM-005",
+      "CL-FM-010",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006"
+    ],
+    "stepCount": 7,
+    "declaredRisk": "immediate_jeopardy",
+    "regulatoryAnchors": [
+      "42 CFR § 484.205",
+      "SSA § 1862(a)(1)("
+    ]
+  },
+  {
+    "workflowId": "CO-WF-24",
+    "templateKey": "CO-WF-24::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "Compliance Officer signs report. Governing Body acknowledges material findings via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-002",
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006",
+      "QA-FM-005"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "immediate_jeopardy",
+    "regulatoryAnchors": [
+      "42 CFR § 484.205"
+    ]
+  },
+  {
+    "workflowId": "CO-WF-25",
+    "templateKey": "CO-WF-25::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Compliance Officer signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006",
+      "QA-FM-005"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "42 CFR § 484.110"
+    ]
+  },
+  {
+    "workflowId": "CO-WF-26",
+    "templateKey": "CO-WF-26::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Compliance Officer signs systemic findings.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006",
+      "HR-FM-016",
+      "QA-FM-005"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65"
+    ]
+  },
+  {
+    "workflowId": "CO-WF-27",
+    "templateKey": "CO-WF-27::weekly",
+    "cadence": {
+      "kind": "continuous",
+      "interval": "weekly"
+    },
+    "approvals": [
+      {
+        "description": "Compliance Officer signs quarterly. Governing Body accepts via formal vote for material matters.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-003",
+      "CO-FM-004",
+      "CO-FM-024",
+      "EN-FM-034",
+      "GV-FM-023",
+      "HR-FM-005",
+      "QA-FM-005"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "42 CFR § 422.503(b)(4)(vi)",
+      "SSA § 1128"
+    ]
+  },
+  {
+    "workflowId": "CO-WF-28",
+    "templateKey": "CO-WF-28::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Compliance Officer signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "OP-FM-014"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "42 CFR § 424.22"
+    ]
+  },
+  {
+    "workflowId": "CO-WF-29",
+    "templateKey": "CO-WF-29::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Compliance Officer signs. Administrator co-signs material variance.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "FN-FM-006",
+      "QA-FM-005"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.205"
+    ]
+  },
+  {
+    "workflowId": "CO-WF-30",
+    "templateKey": "CO-WF-30::weekly",
+    "cadence": {
+      "kind": "continuous",
+      "interval": "weekly"
+    },
+    "approvals": [
+      {
+        "description": "Compliance Officer attests every closure. Administrator signs >30-day escalations.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "EN-FM-019",
+      "QA-FM-005",
+      "QA-FM-022"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65"
     ]
   },
   {
@@ -2345,6 +2890,107 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     "regulatoryAnchors": []
   },
   {
+    "workflowId": "HR-WF-18",
+    "templateKey": "HR-WF-18::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "HR Manager signs. Compliance Officer co-signs systemic <95% compliance.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "EN-FM-022",
+      "HR-FM-009",
+      "HR-FM-017"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.80",
+      "42 CFR § 484.115"
+    ]
+  },
+  {
+    "workflowId": "HR-WF-19",
+    "templateKey": "HR-WF-19::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "Clinical Manager signs. DON signs specialty.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-051",
+      "CO-FM-024",
+      "EN-FM-022",
+      "HR-FM-016"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.80(d)",
+      "42 CFR § 484.115"
+    ]
+  },
+  {
+    "workflowId": "HR-WF-20",
+    "templateKey": "HR-WF-20::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Compliance Officer signs monthly. Administrator signs any hit disposition.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "HR-FM-005",
+      "HR-FM-006",
+      "HR-FM-009"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "high",
+    "regulatoryAnchors": []
+  },
+  {
+    "workflowId": "HR-WF-21",
+    "templateKey": "HR-WF-21::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "HR Manager signs. Compliance Officer co-signs systemic.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "HR-FM-012",
+      "HR-FM-015",
+      "QA-FM-005"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.115"
+    ]
+  },
+  {
     "workflowId": "HR-WF-01",
     "templateKey": "HR-WF-01::per_event",
     "cadence": {
@@ -2776,6 +3422,127 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     "stepCount": 6,
     "declaredRisk": "moderate",
     "regulatoryAnchors": []
+  },
+  {
+    "workflowId": "IT-WF-21",
+    "templateKey": "IT-WF-21::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "Privacy Officer signs. Compliance Officer co-signs material gaps.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "IT-FM-009"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "HIPAA § 164.308",
+      "45 CFR § 164.312"
+    ]
+  },
+  {
+    "workflowId": "IT-WF-22",
+    "templateKey": "IT-WF-22::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "Privacy Officer signs. Administrator co-signs material gaps.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "IT-FM-009"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "45 CFR § 164.308"
+    ]
+  },
+  {
+    "workflowId": "IT-WF-23",
+    "templateKey": "IT-WF-23::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Privacy Officer signs. Compliance Officer signs breach determinations.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "HR-FM-009",
+      "IT-FM-009"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "HIPAA § 164.312",
+      "45 CFR § 164.530"
+    ]
+  },
+  {
+    "workflowId": "IT-WF-24",
+    "templateKey": "IT-WF-24::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Privacy Officer signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "IT-FM-009",
+      "QA-FM-005"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "HIPAA § 164.312"
+    ]
+  },
+  {
+    "workflowId": "IT-WF-25",
+    "templateKey": "IT-WF-25::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "IT Director signs. Administrator co-signs material findings.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "IT-FM-009"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "HIPAA § 164.308"
+    ]
   },
   {
     "workflowId": "IT-WF-01",
@@ -3599,6 +4366,155 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     ]
   },
   {
+    "workflowId": "QA-WF-13",
+    "templateKey": "QA-WF-13::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "QAPI Lead attests dataset.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "EN-FM-022",
+      "EN-FM-034",
+      "QA-FM-020"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
+    ]
+  },
+  {
+    "workflowId": "QA-WF-14",
+    "templateKey": "QA-WF-14::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "QAPI Lead signs scorecard. Administrator attests PIP triggers.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "EN-FM-022",
+      "EN-FM-034",
+      "QA-FM-020",
+      "QA-FM-021"
+    ],
+    "stepCount": 4,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
+    ]
+  },
+  {
+    "workflowId": "QA-WF-15",
+    "templateKey": "QA-WF-15::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "QAPI Committee Chair signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "EN-FM-022",
+      "EN-FM-034",
+      "QA-FM-020",
+      "QA-FM-021"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
+    ]
+  },
+  {
+    "workflowId": "QA-WF-16",
+    "templateKey": "QA-WF-16::quarterly",
+    "cadence": {
+      "kind": "continuous",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "QAPI Lead attests; IT Director signs material defects.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-024",
+      "EN-FM-034"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
+    ]
+  },
+  {
+    "workflowId": "QA-WF-17",
+    "templateKey": "QA-WF-17::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "QAPI Committee Chair signs. Governing Body acknowledges material PIPs via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-021",
+      "CO-FM-024",
+      "GV-FM-023",
+      "QA-FM-020",
+      "QA-FM-021"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(c)"
+    ]
+  },
+  {
+    "workflowId": "QA-WF-18",
+    "templateKey": "QA-WF-18::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "QAPI Committee + Compliance Officer sign. Governing Body acknowledges material policy revisions via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "EN-FM-007",
+      "EN-FM-019",
+      "EN-FM-022"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65"
+    ]
+  },
+  {
     "workflowId": "QA-WF-01",
     "templateKey": "QA-WF-01::annual",
     "cadence": {
@@ -3665,15 +4581,18 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
       }
     ],
     "requiredForms": [
+      "CO-FM-024",
+      "EN-FM-022",
       "GV-FM-023",
       "QA-FM-001",
       "QA-FM-002",
       "QA-FM-003",
       "QA-FM-004",
       "QA-FM-005",
-      "QA-FM-006"
+      "QA-FM-006",
+      "QA-FM-021"
     ],
-    "stepCount": 8,
+    "stepCount": 14,
     "declaredRisk": "immediate_jeopardy",
     "regulatoryAnchors": [
       "42 CFR § 484.65(b)(3)"
@@ -3915,6 +4834,131 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     "declaredRisk": "moderate",
     "regulatoryAnchors": [
       "42 CFR § 484.50"
+    ]
+  },
+  {
+    "workflowId": "RM-WF-16",
+    "templateKey": "RM-WF-16::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Administrator signs. Governing Body acknowledges sentinel patterns via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "EN-FM-034",
+      "QA-FM-005",
+      "QA-FM-026"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
+    ]
+  },
+  {
+    "workflowId": "RM-WF-17",
+    "templateKey": "RM-WF-17::monthly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "monthly"
+    },
+    "approvals": [
+      {
+        "description": "Administrator signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CL-FM-021",
+      "CO-FM-022",
+      "CO-FM-024",
+      "OP-FM-018",
+      "QA-FM-005",
+      "RM-FM-012"
+    ],
+    "stepCount": 6,
+    "declaredRisk": "high",
+    "regulatoryAnchors": []
+  },
+  {
+    "workflowId": "RM-WF-18",
+    "templateKey": "RM-WF-18::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "Administrator signs.",
+        "requiresGoverningBody": false
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005",
+      "RM-FM-012"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.102"
+    ]
+  },
+  {
+    "workflowId": "RM-WF-19",
+    "templateKey": "RM-WF-19::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "Administrator signs. Governing Body acknowledges via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-024",
+      "GV-FM-023",
+      "HR-FM-017",
+      "RM-FM-012"
+    ],
+    "stepCount": 7,
+    "declaredRisk": "high",
+    "regulatoryAnchors": [
+      "42 CFR § 484.102"
+    ]
+  },
+  {
+    "workflowId": "RM-WF-20",
+    "templateKey": "RM-WF-20::quarterly",
+    "cadence": {
+      "kind": "time_based",
+      "interval": "quarterly"
+    },
+    "approvals": [
+      {
+        "description": "Compliance Officer signs. Governing Body acknowledges material misses via GV-WF-01.",
+        "requiresGoverningBody": true
+      }
+    ],
+    "requiredForms": [
+      "CO-FM-022",
+      "CO-FM-024",
+      "QA-FM-005",
+      "QA-FM-026"
+    ],
+    "stepCount": 5,
+    "declaredRisk": "moderate",
+    "regulatoryAnchors": [
+      "42 CFR § 484.65(b)"
     ]
   },
   {

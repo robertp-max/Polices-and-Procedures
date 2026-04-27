@@ -3,6 +3,18 @@ import type { WorkflowGraph } from '@/policy/types/workflow';
 
 export const WORKFLOW_GRAPH: WorkflowGraph = {
   "workflowIds": [
+    "CL-WF-26",
+    "CL-WF-27",
+    "CL-WF-28",
+    "CL-WF-29",
+    "CL-WF-30",
+    "CL-WF-31",
+    "CL-WF-32",
+    "CL-WF-33",
+    "CL-WF-34",
+    "CL-WF-35",
+    "CL-WF-36",
+    "CL-WF-37",
     "CL-WF-01",
     "CL-WF-02",
     "CL-WF-03",
@@ -28,6 +40,14 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "CL-WF-23",
     "CL-WF-24",
     "CL-WF-25",
+    "CO-WF-23",
+    "CO-WF-24",
+    "CO-WF-25",
+    "CO-WF-26",
+    "CO-WF-27",
+    "CO-WF-28",
+    "CO-WF-29",
+    "CO-WF-30",
     "CO-WF-01",
     "CO-WF-02",
     "CO-WF-03",
@@ -92,6 +112,10 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "GV-WF-12",
     "GV-WF-13",
     "GV-WF-14",
+    "HR-WF-18",
+    "HR-WF-19",
+    "HR-WF-20",
+    "HR-WF-21",
     "HR-WF-01",
     "HR-WF-02",
     "HR-WF-03",
@@ -109,6 +133,11 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "HR-WF-15",
     "HR-WF-16",
     "HR-WF-17",
+    "IT-WF-21",
+    "IT-WF-22",
+    "IT-WF-23",
+    "IT-WF-24",
+    "IT-WF-25",
     "IT-WF-01",
     "IT-WF-02",
     "IT-WF-03",
@@ -142,6 +171,12 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "OP-WF-11",
     "OP-WF-12",
     "OP-WF-13",
+    "QA-WF-13",
+    "QA-WF-14",
+    "QA-WF-15",
+    "QA-WF-16",
+    "QA-WF-17",
+    "QA-WF-18",
     "QA-WF-01",
     "QA-WF-02",
     "QA-WF-03",
@@ -154,6 +189,11 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "QA-WF-10",
     "QA-WF-11",
     "QA-WF-12",
+    "RM-WF-16",
+    "RM-WF-17",
+    "RM-WF-18",
+    "RM-WF-19",
+    "RM-WF-20",
     "RM-WF-01",
     "RM-WF-02",
     "RM-WF-03",
@@ -171,16 +211,324 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "RM-WF-15"
   ],
   "byForm": {
+    "CL-FM-005": [
+      "CL-WF-26",
+      "CL-WF-30",
+      "CL-WF-33",
+      "CL-WF-04",
+      "CL-WF-06",
+      "CL-WF-15",
+      "CL-WF-18",
+      "CL-WF-24",
+      "CO-WF-23"
+    ],
+    "CO-FM-021": [
+      "CL-WF-26",
+      "CL-WF-27",
+      "CL-WF-28",
+      "CL-WF-29",
+      "CL-WF-30",
+      "CL-WF-31",
+      "CL-WF-32",
+      "CL-WF-33",
+      "CL-WF-34",
+      "CL-WF-37",
+      "CL-WF-02",
+      "CL-WF-03",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-26",
+      "CO-WF-28",
+      "CO-WF-29",
+      "CO-WF-14",
+      "QA-WF-16",
+      "QA-WF-17"
+    ],
+    "CO-FM-022": [
+      "CL-WF-26",
+      "CL-WF-27",
+      "CL-WF-28",
+      "CL-WF-29",
+      "CL-WF-30",
+      "CL-WF-31",
+      "CL-WF-33",
+      "CL-WF-34",
+      "CL-WF-35",
+      "CL-WF-36",
+      "CL-WF-37",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-26",
+      "CO-WF-28",
+      "CO-WF-29",
+      "CO-WF-04",
+      "EN-WF-12",
+      "FN-WF-08",
+      "FN-WF-15",
+      "HR-WF-21",
+      "HR-WF-15",
+      "IT-WF-21",
+      "IT-WF-22",
+      "RM-WF-17",
+      "RM-WF-18",
+      "RM-WF-20"
+    ],
+    "CO-FM-024": [
+      "CL-WF-26",
+      "CL-WF-27",
+      "CL-WF-28",
+      "CL-WF-29",
+      "CL-WF-30",
+      "CL-WF-31",
+      "CL-WF-32",
+      "CL-WF-33",
+      "CL-WF-34",
+      "CL-WF-35",
+      "CL-WF-36",
+      "CL-WF-37",
+      "CL-WF-23",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-26",
+      "CO-WF-27",
+      "CO-WF-28",
+      "CO-WF-29",
+      "CO-WF-30",
+      "CO-WF-01",
+      "CO-WF-02",
+      "CO-WF-03",
+      "CO-WF-04",
+      "CO-WF-06",
+      "CO-WF-08",
+      "CO-WF-09",
+      "CO-WF-10",
+      "CO-WF-14",
+      "CO-WF-18",
+      "CO-WF-20",
+      "EN-WF-01",
+      "EN-WF-08",
+      "EN-WF-12",
+      "FN-WF-08",
+      "FN-WF-15",
+      "GV-WF-01",
+      "HR-WF-18",
+      "HR-WF-19",
+      "HR-WF-20",
+      "HR-WF-21",
+      "HR-WF-07",
+      "HR-WF-15",
+      "IT-WF-21",
+      "IT-WF-22",
+      "IT-WF-23",
+      "IT-WF-24",
+      "IT-WF-25",
+      "IT-WF-09",
+      "QA-WF-16",
+      "QA-WF-17",
+      "QA-WF-18",
+      "QA-WF-03",
+      "RM-WF-16",
+      "RM-WF-17",
+      "RM-WF-18",
+      "RM-WF-19",
+      "RM-WF-20"
+    ],
+    "QA-FM-005": [
+      "CL-WF-26",
+      "CL-WF-27",
+      "CL-WF-28",
+      "CL-WF-29",
+      "CL-WF-31",
+      "CL-WF-32",
+      "CL-WF-33",
+      "CL-WF-36",
+      "CL-WF-37",
+      "CL-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-26",
+      "CO-WF-27",
+      "CO-WF-29",
+      "CO-WF-30",
+      "CO-WF-03",
+      "CO-WF-04",
+      "CO-WF-05",
+      "CO-WF-20",
+      "FN-WF-08",
+      "FN-WF-13",
+      "HR-WF-21",
+      "IT-WF-24",
+      "QA-WF-03",
+      "QA-WF-04",
+      "QA-WF-05",
+      "QA-WF-11",
+      "RM-WF-16",
+      "RM-WF-17",
+      "RM-WF-18",
+      "RM-WF-20",
+      "RM-WF-05"
+    ],
+    "QA-FM-025": [
+      "CL-WF-26"
+    ],
+    "CL-FM-002": [
+      "CL-WF-27",
+      "CL-WF-04",
+      "CL-WF-05",
+      "CL-WF-18",
+      "CL-WF-19",
+      "CO-WF-23",
+      "CO-WF-24"
+    ],
+    "CL-FM-031": [
+      "CL-WF-27",
+      "CL-WF-04",
+      "CL-WF-05"
+    ],
+    "FN-FM-006": [
+      "CL-WF-27",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-26",
+      "CO-WF-29",
+      "CO-WF-04",
+      "CO-WF-14",
+      "CO-WF-15",
+      "CO-WF-16",
+      "FN-WF-03"
+    ],
+    "HR-FM-016": [
+      "CL-WF-27",
+      "CL-WF-25",
+      "CO-WF-26",
+      "HR-WF-19",
+      "HR-WF-04",
+      "HR-WF-15"
+    ],
+    "CL-FM-015": [
+      "CL-WF-28",
+      "CL-WF-10"
+    ],
+    "CL-FM-029": [
+      "CL-WF-29",
+      "CL-WF-01",
+      "CL-WF-04",
+      "CL-WF-13",
+      "CL-WF-16",
+      "OP-WF-07"
+    ],
+    "CL-FM-036": [
+      "CL-WF-29",
+      "CL-WF-19",
+      "GV-WF-10"
+    ],
+    "CL-FM-009": [
+      "CL-WF-30",
+      "CL-WF-01",
+      "CL-WF-02",
+      "CL-WF-04"
+    ],
+    "CL-FM-018": [
+      "CL-WF-31",
+      "CL-WF-12",
+      "RM-WF-13"
+    ],
+    "CL-FM-022": [
+      "CL-WF-31",
+      "CL-WF-12",
+      "CL-WF-17"
+    ],
+    "RM-FM-012": [
+      "CL-WF-31",
+      "CL-WF-12",
+      "RM-WF-17",
+      "RM-WF-18",
+      "RM-WF-19",
+      "RM-WF-13"
+    ],
+    "CL-FM-021": [
+      "CL-WF-32",
+      "CL-WF-14",
+      "QA-WF-06",
+      "RM-WF-17"
+    ],
+    "HR-FM-014": [
+      "CL-WF-32",
+      "CL-WF-14",
+      "HR-WF-03",
+      "RM-WF-08",
+      "RM-WF-10"
+    ],
+    "QA-FM-027": [
+      "CL-WF-32"
+    ],
+    "CL-FM-053": [
+      "CL-WF-33",
+      "CL-WF-36",
+      "CL-WF-08",
+      "CL-WF-20",
+      "CL-WF-22",
+      "CL-WF-24",
+      "QA-WF-12"
+    ],
+    "CL-FM-054": [
+      "CL-WF-33",
+      "CL-WF-08",
+      "CL-WF-24"
+    ],
+    "EN-FM-034": [
+      "CL-WF-34",
+      "CL-WF-35",
+      "CL-WF-36",
+      "CO-WF-27",
+      "EN-WF-10",
+      "QA-WF-13",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-16",
+      "RM-WF-16"
+    ],
+    "QA-FM-021": [
+      "CL-WF-34",
+      "CL-WF-35",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-17",
+      "QA-WF-03"
+    ],
+    "QA-FM-026": [
+      "CL-WF-34",
+      "RM-WF-16",
+      "RM-WF-20"
+    ],
+    "QA-FM-020": [
+      "CL-WF-35",
+      "QA-WF-13",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-17"
+    ],
+    "CL-FM-048": [
+      "CL-WF-36",
+      "CL-WF-20",
+      "IT-WF-20",
+      "RM-WF-07"
+    ],
     "CL-FM-006": [
+      "CL-WF-37",
       "CL-WF-01",
       "CL-WF-07",
       "CL-WF-12",
       "CL-WF-15"
     ],
-    "CL-FM-009": [
-      "CL-WF-01",
-      "CL-WF-02",
-      "CL-WF-04"
+    "CL-FM-007": [
+      "CL-WF-37",
+      "CL-WF-07",
+      "CL-WF-12"
     ],
     "CL-FM-025": [
       "CL-WF-01",
@@ -189,13 +537,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "CL-FM-027": [
       "CL-WF-01",
       "CL-WF-04",
-      "CL-WF-16",
-      "OP-WF-07"
-    ],
-    "CL-FM-029": [
-      "CL-WF-01",
-      "CL-WF-04",
-      "CL-WF-13",
       "CL-WF-16",
       "OP-WF-07"
     ],
@@ -212,6 +553,7 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "OP-FM-014": [
       "CL-WF-01",
+      "CO-WF-28",
       "OP-WF-07",
       "OP-WF-11"
     ],
@@ -224,32 +566,16 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CL-WF-01",
       "CL-WF-17",
       "OP-WF-07",
-      "OP-WF-11"
-    ],
-    "CO-FM-021": [
-      "CL-WF-02",
-      "CL-WF-03",
-      "CO-WF-14"
+      "OP-WF-11",
+      "RM-WF-17"
     ],
     "CL-FM-010": [
-      "CL-WF-03"
+      "CL-WF-03",
+      "CO-WF-23"
     ],
     "CL-FM-001": [
       "CL-WF-04",
       "RM-WF-07"
-    ],
-    "CL-FM-002": [
-      "CL-WF-04",
-      "CL-WF-05",
-      "CL-WF-18",
-      "CL-WF-19"
-    ],
-    "CL-FM-005": [
-      "CL-WF-04",
-      "CL-WF-06",
-      "CL-WF-15",
-      "CL-WF-18",
-      "CL-WF-24"
     ],
     "CL-FM-019": [
       "CL-WF-04",
@@ -263,10 +589,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CL-WF-04",
       "CL-WF-09",
       "CL-WF-13"
-    ],
-    "CL-FM-031": [
-      "CL-WF-04",
-      "CL-WF-05"
     ],
     "CL-FM-038": [
       "CL-WF-04"
@@ -296,7 +618,8 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "CL-FM-051": [
       "CL-WF-05",
-      "CL-WF-25"
+      "CL-WF-25",
+      "HR-WF-19"
     ],
     "CL-FM-008": [
       "CL-WF-06",
@@ -313,21 +636,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "CL-FM-057": [
       "CL-WF-06",
       "CL-WF-18"
-    ],
-    "CL-FM-007": [
-      "CL-WF-07",
-      "CL-WF-12"
-    ],
-    "CL-FM-053": [
-      "CL-WF-08",
-      "CL-WF-20",
-      "CL-WF-22",
-      "CL-WF-24",
-      "QA-WF-12"
-    ],
-    "CL-FM-054": [
-      "CL-WF-08",
-      "CL-WF-24"
     ],
     "CL-FM-013": [
       "CL-WF-09",
@@ -365,9 +673,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CL-WF-09",
       "CL-WF-13"
     ],
-    "CL-FM-015": [
-      "CL-WF-10"
-    ],
     "CL-FM-016": [
       "CL-WF-10",
       "CL-WF-11",
@@ -383,9 +688,11 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CO-WF-06",
       "CO-WF-14",
       "GV-WF-06",
+      "HR-WF-18",
       "HR-WF-05",
       "HR-WF-07",
       "QA-WF-01",
+      "RM-WF-19",
       "RM-WF-04",
       "RM-WF-08",
       "RM-WF-09",
@@ -406,31 +713,9 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "FN-WF-12",
       "HR-WF-17"
     ],
-    "CL-FM-018": [
-      "CL-WF-12",
-      "RM-WF-13"
-    ],
-    "CL-FM-022": [
-      "CL-WF-12",
-      "CL-WF-17"
-    ],
-    "RM-FM-012": [
-      "CL-WF-12",
-      "RM-WF-13"
-    ],
     "CL-FM-037": [
       "CL-WF-13",
       "CL-WF-24"
-    ],
-    "CL-FM-021": [
-      "CL-WF-14",
-      "QA-WF-06"
-    ],
-    "HR-FM-014": [
-      "CL-WF-14",
-      "HR-WF-03",
-      "RM-WF-08",
-      "RM-WF-10"
     ],
     "HR-FM-021": [
       "CL-WF-14",
@@ -492,18 +777,9 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "CL-FM-004": [
       "CL-WF-19"
     ],
-    "CL-FM-036": [
-      "CL-WF-19",
-      "GV-WF-10"
-    ],
     "CL-FM-012": [
       "CL-WF-20",
       "QA-WF-07"
-    ],
-    "CL-FM-048": [
-      "CL-WF-20",
-      "IT-WF-20",
-      "RM-WF-07"
     ],
     "CO-FM-038": [
       "CL-WF-21",
@@ -531,29 +807,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CL-WF-23",
       "QA-WF-05",
       "QA-WF-12"
-    ],
-    "CO-FM-024": [
-      "CL-WF-23",
-      "CO-WF-01",
-      "CO-WF-02",
-      "CO-WF-03",
-      "CO-WF-04",
-      "CO-WF-06",
-      "CO-WF-08",
-      "CO-WF-09",
-      "CO-WF-10",
-      "CO-WF-14",
-      "CO-WF-18",
-      "CO-WF-20",
-      "EN-WF-01",
-      "EN-WF-08",
-      "EN-WF-12",
-      "FN-WF-08",
-      "FN-WF-15",
-      "GV-WF-01",
-      "HR-WF-07",
-      "HR-WF-15",
-      "IT-WF-09"
     ],
     "GV-FM-005": [
       "CL-WF-23",
@@ -611,6 +864,7 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "GV-FM-023": [
       "CL-WF-23",
+      "CO-WF-27",
       "CO-WF-01",
       "CO-WF-04",
       "CO-WF-05",
@@ -640,11 +894,13 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "IT-WF-09",
       "IT-WF-13",
       "OP-WF-01",
+      "QA-WF-17",
       "QA-WF-03",
       "QA-WF-04",
       "QA-WF-06",
       "QA-WF-09",
       "QA-WF-10",
+      "RM-WF-19",
       "RM-WF-01",
       "RM-WF-02",
       "RM-WF-04",
@@ -677,20 +933,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "QA-WF-07",
       "QA-WF-08"
     ],
-    "QA-FM-005": [
-      "CL-WF-23",
-      "CO-WF-03",
-      "CO-WF-04",
-      "CO-WF-05",
-      "CO-WF-20",
-      "FN-WF-08",
-      "FN-WF-13",
-      "QA-WF-03",
-      "QA-WF-04",
-      "QA-WF-05",
-      "QA-WF-11",
-      "RM-WF-05"
-    ],
     "CL-FM-055": [
       "CL-WF-24",
       "OP-WF-07"
@@ -706,10 +948,48 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "GV-WF-04",
       "HR-WF-02"
     ],
-    "HR-FM-016": [
-      "CL-WF-25",
-      "HR-WF-04",
-      "HR-WF-15"
+    "CO-FM-003": [
+      "CO-WF-27",
+      "CO-WF-03"
+    ],
+    "CO-FM-004": [
+      "CO-WF-27",
+      "CO-WF-03",
+      "CO-WF-08",
+      "CO-WF-10",
+      "CO-WF-21",
+      "QA-WF-07"
+    ],
+    "HR-FM-005": [
+      "CO-WF-27",
+      "CO-WF-15",
+      "FN-WF-11",
+      "GV-WF-03",
+      "GV-WF-04",
+      "GV-WF-11",
+      "HR-WF-20",
+      "HR-WF-02",
+      "HR-WF-15",
+      "OP-WF-03",
+      "OP-WF-04",
+      "OP-WF-05"
+    ],
+    "EN-FM-019": [
+      "CO-WF-30",
+      "CO-WF-03",
+      "CO-WF-04",
+      "CO-WF-05",
+      "CO-WF-10",
+      "CO-WF-16",
+      "CO-WF-17",
+      "CO-WF-19",
+      "EN-WF-07",
+      "QA-WF-18",
+      "RM-WF-09",
+      "RM-WF-10"
+    ],
+    "QA-FM-022": [
+      "CO-WF-30"
     ],
     "CO-FM-001": [
       "CO-WF-01",
@@ -729,7 +1009,14 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CO-WF-20",
       "CO-WF-22",
       "EN-WF-08",
-      "OP-WF-01"
+      "HR-WF-18",
+      "HR-WF-19",
+      "OP-WF-01",
+      "QA-WF-13",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-18",
+      "QA-WF-03"
     ],
     "CO-FM-002": [
       "CO-WF-02"
@@ -749,47 +1036,14 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "HR-FM-009": [
       "CO-WF-02",
       "CO-WF-03",
-      "HR-WF-02"
-    ],
-    "CO-FM-003": [
-      "CO-WF-03"
-    ],
-    "CO-FM-004": [
-      "CO-WF-03",
-      "CO-WF-08",
-      "CO-WF-10",
-      "CO-WF-21",
-      "QA-WF-07"
-    ],
-    "EN-FM-019": [
-      "CO-WF-03",
-      "CO-WF-04",
-      "CO-WF-05",
-      "CO-WF-10",
-      "CO-WF-16",
-      "CO-WF-17",
-      "CO-WF-19",
-      "EN-WF-07",
-      "RM-WF-09",
-      "RM-WF-10"
+      "HR-WF-18",
+      "HR-WF-20",
+      "HR-WF-02",
+      "IT-WF-23"
     ],
     "HR-FM-010": [
       "CO-WF-03",
       "HR-WF-03"
-    ],
-    "CO-FM-022": [
-      "CO-WF-04",
-      "EN-WF-12",
-      "FN-WF-08",
-      "FN-WF-15",
-      "HR-WF-15"
-    ],
-    "FN-FM-006": [
-      "CO-WF-04",
-      "CO-WF-14",
-      "CO-WF-15",
-      "CO-WF-16",
-      "FN-WF-03"
     ],
     "CO-FM-006": [
       "CO-WF-05"
@@ -827,6 +1081,7 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "EN-FM-007": [
       "CO-WF-06",
       "EN-WF-01",
+      "QA-WF-18",
       "QA-WF-01",
       "QA-WF-10",
       "RM-WF-03",
@@ -900,6 +1155,11 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "IT-FM-009": [
       "CO-WF-10",
+      "IT-WF-21",
+      "IT-WF-22",
+      "IT-WF-23",
+      "IT-WF-24",
+      "IT-WF-25",
       "IT-WF-02",
       "IT-WF-05",
       "IT-WF-18"
@@ -970,18 +1230,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CO-WF-15",
       "CO-WF-16",
       "FN-WF-08"
-    ],
-    "HR-FM-005": [
-      "CO-WF-15",
-      "FN-WF-11",
-      "GV-WF-03",
-      "GV-WF-04",
-      "GV-WF-11",
-      "HR-WF-02",
-      "HR-WF-15",
-      "OP-WF-03",
-      "OP-WF-04",
-      "OP-WF-05"
     ],
     "CO-FM-033": [
       "CO-WF-16",
@@ -1084,9 +1332,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "EN-FM-033": [
       "EN-WF-09"
-    ],
-    "EN-FM-034": [
-      "EN-WF-10"
     ],
     "EN-FM-028": [
       "EN-WF-11"
@@ -1286,6 +1531,7 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "HR-FM-006": [
       "GV-WF-03",
       "GV-WF-04",
+      "HR-WF-20",
       "HR-WF-02",
       "HR-WF-04",
       "HR-WF-05",
@@ -1367,6 +1613,15 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "GV-FM-025": [
       "GV-WF-12"
     ],
+    "HR-FM-012": [
+      "HR-WF-21",
+      "HR-WF-03"
+    ],
+    "HR-FM-015": [
+      "HR-WF-21",
+      "HR-WF-04",
+      "HR-WF-15"
+    ],
     "HR-FM-001": [
       "HR-WF-01"
     ],
@@ -1379,9 +1634,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "HR-FM-011": [
       "HR-WF-03"
     ],
-    "HR-FM-012": [
-      "HR-WF-03"
-    ],
     "HR-FM-013": [
       "HR-WF-03",
       "RM-WF-10"
@@ -1391,10 +1643,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "IT-WF-01",
       "IT-WF-10",
       "IT-WF-17"
-    ],
-    "HR-FM-015": [
-      "HR-WF-04",
-      "HR-WF-15"
     ],
     "HR-FM-020": [
       "HR-WF-06"
@@ -1758,6 +2006,42 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ]
   },
   "byPolicy": {
+    "CL-PA-005": [
+      "CL-WF-26",
+      "CL-WF-30",
+      "CL-WF-35",
+      "CL-WF-37",
+      "CL-WF-03"
+    ],
+    "CL-PA-007": [
+      "CL-WF-26",
+      "CL-WF-33",
+      "CL-WF-34",
+      "CL-WF-24"
+    ],
+    "CL-PA-003": [
+      "CL-WF-27",
+      "RM-WF-07"
+    ],
+    "CL-PA-008": [
+      "CL-WF-28"
+    ],
+    "CL-PA-010": [
+      "CL-WF-29"
+    ],
+    "CL-PA-002": [
+      "CL-WF-30",
+      "CL-WF-02"
+    ],
+    "CL-PA-012": [
+      "CL-WF-31"
+    ],
+    "CL-PA-014": [
+      "CL-WF-32"
+    ],
+    "CL-PA-009": [
+      "CL-WF-36"
+    ],
     "CL-PA-001": [
       "CL-WF-01",
       "CL-WF-04",
@@ -1801,12 +2085,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "RM-WF-01",
       "RM-WF-15"
     ],
-    "CL-PA-002": [
-      "CL-WF-02"
-    ],
-    "CL-PA-005": [
-      "CL-WF-03"
-    ],
     "CL-OA-001": [
       "CL-WF-04",
       "CL-WF-05",
@@ -1848,6 +2126,7 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "CL-SD-007": [
       "CL-WF-12",
+      "HR-WF-19",
       "RM-WF-13"
     ],
     "CL-SD-004": [
@@ -1892,14 +2171,47 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "HR-FM-033": [
       "CL-WF-22"
     ],
-    "CL-PA-007": [
-      "CL-WF-24"
-    ],
     "HR-TA-001": [
       "CL-WF-25",
       "GV-WF-03",
       "GV-WF-04",
       "HR-WF-01"
+    ],
+    "CO-CB-001": [
+      "CO-WF-23"
+    ],
+    "FN-RC-002": [
+      "CO-WF-23"
+    ],
+    "CO-CB-002": [
+      "CO-WF-24"
+    ],
+    "CO-CB-003": [
+      "CO-WF-25"
+    ],
+    "CO-CB-004": [
+      "CO-WF-26"
+    ],
+    "CO-CP-005": [
+      "CO-WF-27",
+      "CO-WF-07",
+      "CO-WF-15",
+      "GV-WF-08",
+      "OP-WF-04"
+    ],
+    "FN-RC-001": [
+      "CO-WF-28"
+    ],
+    "FN-RC-005": [
+      "CO-WF-29"
+    ],
+    "CO-CP-002": [
+      "CO-WF-30",
+      "CO-WF-01",
+      "CO-WF-02",
+      "EN-WF-03",
+      "GV-WF-08",
+      "HR-WF-07"
     ],
     "CO-CP-001": [
       "CO-WF-01",
@@ -1915,13 +2227,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "GV-WF-11",
       "QA-WF-01",
       "QA-WF-10"
-    ],
-    "CO-CP-002": [
-      "CO-WF-01",
-      "CO-WF-02",
-      "EN-WF-03",
-      "GV-WF-08",
-      "HR-WF-07"
     ],
     "CO-CP-003": [
       "CO-WF-03",
@@ -1967,12 +2272,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "CO-FA-002": [
       "CO-WF-07"
-    ],
-    "CO-CP-005": [
-      "CO-WF-07",
-      "CO-WF-15",
-      "GV-WF-08",
-      "OP-WF-04"
     ],
     "CO-CP-004": [
       "CO-WF-08"
@@ -2044,7 +2343,9 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "HR-WF-03"
     ],
     "EN-CM-001": [
-      "EN-WF-05"
+      "EN-WF-05",
+      "QA-WF-13",
+      "QA-WF-18"
     ],
     "EN-CM-002": [
       "EN-WF-06"
@@ -2127,6 +2428,7 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "HR-TA-004": [
       "FN-WF-12",
+      "HR-WF-20",
       "HR-WF-03",
       "HR-WF-17"
     ],
@@ -2151,6 +2453,11 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "QA-PG-001": [
       "GV-WF-01",
+      "QA-WF-13",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-16",
+      "QA-WF-18",
       "QA-WF-01",
       "QA-WF-02",
       "QA-WF-03",
@@ -2185,21 +2492,32 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "GV-EA-002": [
       "GV-WF-12"
     ],
-    "HR-TA-002": [
-      "HR-WF-01"
+    "HR-TR-001": [
+      "HR-WF-18",
+      "HR-WF-05"
+    ],
+    "HR-TR-101": [
+      "HR-WF-18"
+    ],
+    "HR-TD-003": [
+      "HR-WF-19"
     ],
     "HR-TA-003": [
+      "HR-WF-20",
       "HR-WF-02",
       "HR-WF-15"
+    ],
+    "HR-WM-007": [
+      "HR-WF-21"
+    ],
+    "HR-TA-002": [
+      "HR-WF-01"
     ],
     "CO-TR-001": [
       "HR-WF-03"
     ],
     "HR-TA-005": [
       "HR-WF-04"
-    ],
-    "HR-TR-001": [
-      "HR-WF-05"
     ],
     "HR-TR-002": [
       "HR-WF-06"
@@ -2243,10 +2561,23 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "HR-WF-16"
     ],
     "IT-AC-001": [
+      "IT-WF-21",
       "IT-WF-02"
     ],
     "IT-AC-002": [
+      "IT-WF-21",
       "IT-WF-03"
+    ],
+    "IT-IS-001": [
+      "IT-WF-22",
+      "IT-WF-25"
+    ],
+    "IT-AU-001": [
+      "IT-WF-23",
+      "IT-WF-24"
+    ],
+    "IT-VM-001": [
+      "IT-WF-25"
     ],
     "IT-AC-003": [
       "IT-WF-04"
@@ -2311,6 +2642,8 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "RM-EP-001": [
       "OP-WF-05",
+      "RM-WF-18",
+      "RM-WF-19",
       "RM-WF-02",
       "RM-WF-03",
       "RM-WF-04",
@@ -2333,6 +2666,13 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "CL-SD-010": [
       "OP-WF-13"
     ],
+    "QA-PI-001": [
+      "QA-WF-14",
+      "QA-WF-04"
+    ],
+    "QA-PIP-001": [
+      "QA-WF-17"
+    ],
     "QA-PG-002": [
       "QA-WF-01",
       "QA-WF-03"
@@ -2340,12 +2680,11 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "QA-SM-001": [
       "QA-WF-02"
     ],
-    "QA-PI-001": [
-      "QA-WF-04"
-    ],
     "QA-AE-001": [
       "QA-WF-05",
       "QA-WF-12",
+      "RM-WF-16",
+      "RM-WF-20",
       "RM-WF-13"
     ],
     "QA-AE-003": [
@@ -2360,15 +2699,25 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "QA-SM-004": [
       "QA-WF-09"
     ],
+    "RM-RM-001": [
+      "RM-WF-16",
+      "RM-WF-18"
+    ],
+    "RM-OS-001": [
+      "RM-WF-17"
+    ],
+    "HR-WM-004": [
+      "RM-WF-17"
+    ],
+    "RM-RM-002": [
+      "RM-WF-20"
+    ],
     "RM-RA-001": [
       "RM-WF-01",
       "RM-WF-15"
     ],
     "RM-EP-002": [
       "RM-WF-06"
-    ],
-    "CL-PA-003": [
-      "RM-WF-07"
     ],
     "HR-EH-101": [
       "RM-WF-08"
@@ -2390,11 +2739,73 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ]
   },
   "byRegulation": {
-    "42 CFR § 484.60(a)": [
-      "CL-WF-01"
+    "42 CFR § 484.60": [
+      "CL-WF-26",
+      "CL-WF-29",
+      "CL-WF-06",
+      "CL-WF-13",
+      "CL-WF-20",
+      "RM-WF-13"
+    ],
+    "42 CFR § 484.55": [
+      "CL-WF-26",
+      "CL-WF-27",
+      "CL-WF-04",
+      "CL-WF-18"
+    ],
+    "42 CFR § 484.45": [
+      "CL-WF-27",
+      "CL-WF-05"
+    ],
+    "42 CFR § 484.110": [
+      "CL-WF-28",
+      "CL-WF-29",
+      "CL-WF-21",
+      "CO-WF-25",
+      "CO-WF-13",
+      "EN-WF-08",
+      "GV-WF-12"
+    ],
+    "42 CFR § 484.60(b)": [
+      "CL-WF-28",
+      "CL-WF-31",
+      "CL-WF-37",
+      "CL-WF-07",
+      "CL-WF-09",
+      "CL-WF-12"
     ],
     "42 CFR § 409.42": [
+      "CL-WF-30",
       "CL-WF-02"
+    ],
+    "42 CFR § 409.44": [
+      "CL-WF-30"
+    ],
+    "42 CFR § 484.70": [
+      "CL-WF-32",
+      "CL-WF-14",
+      "QA-WF-06"
+    ],
+    "42 CFR § 484.60(d)": [
+      "CL-WF-33",
+      "CL-WF-08"
+    ],
+    "42 CFR § 484.65": [
+      "CL-WF-34",
+      "CL-WF-35",
+      "CO-WF-26",
+      "CO-WF-30",
+      "QA-WF-18"
+    ],
+    "42 CFR § 484.60(c)": [
+      "CL-WF-36",
+      "CL-WF-17"
+    ],
+    "42 CFR § 409.43": [
+      "CL-WF-37"
+    ],
+    "42 CFR § 484.60(a)": [
+      "CL-WF-01"
     ],
     "SSA § 1835(a)(2)(": [
       "CL-WF-02"
@@ -2405,43 +2816,20 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "SSA § 1814(a)(2)(": [
       "CL-WF-03"
     ],
-    "42 CFR § 484.55": [
-      "CL-WF-04",
-      "CL-WF-18"
-    ],
-    "42 CFR § 484.45": [
-      "CL-WF-05"
-    ],
-    "42 CFR § 484.60": [
-      "CL-WF-06",
-      "CL-WF-13",
-      "CL-WF-20",
-      "RM-WF-13"
-    ],
-    "42 CFR § 484.60(b)": [
-      "CL-WF-07",
-      "CL-WF-09",
-      "CL-WF-12"
-    ],
-    "42 CFR § 484.60(d)": [
-      "CL-WF-08"
-    ],
     "42 CFR § 484.75": [
       "CL-WF-10",
       "HR-WF-06"
     ],
     "42 CFR § 484.80(d)": [
-      "CL-WF-11"
-    ],
-    "42 CFR § 484.70": [
-      "CL-WF-14",
-      "QA-WF-06"
+      "CL-WF-11",
+      "HR-WF-19"
     ],
     "42 CFR § 409.46": [
       "CL-WF-15"
     ],
     "45 CFR § 164.312": [
       "CL-WF-15",
+      "IT-WF-21",
       "IT-WF-06",
       "IT-WF-16",
       "IT-WF-18"
@@ -2450,17 +2838,8 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CL-WF-16",
       "QA-WF-12"
     ],
-    "42 CFR § 484.60(c)": [
-      "CL-WF-17"
-    ],
     "42 CFR § 484.50(d)": [
       "CL-WF-19"
-    ],
-    "42 CFR § 484.110": [
-      "CL-WF-21",
-      "CO-WF-13",
-      "EN-WF-08",
-      "GV-WF-12"
     ],
     "42 CFR § 484.50(e)": [
       "CL-WF-22",
@@ -2468,7 +2847,29 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "42 CFR § 484.115": [
       "CL-WF-25",
+      "HR-WF-18",
+      "HR-WF-19",
+      "HR-WF-21",
       "HR-WF-04"
+    ],
+    "42 CFR § 484.205": [
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-29",
+      "FN-WF-04"
+    ],
+    "SSA § 1862(a)(1)(": [
+      "CO-WF-23"
+    ],
+    "42 CFR § 422.503(b)(4)(vi)": [
+      "CO-WF-27",
+      "CO-WF-08"
+    ],
+    "SSA § 1128": [
+      "CO-WF-27"
+    ],
+    "42 CFR § 424.22": [
+      "CO-WF-28"
     ],
     "42 CFR § 484.100": [
       "CO-WF-01"
@@ -2479,16 +2880,15 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "42 CFR § 411": [
       "CO-WF-07"
     ],
-    "42 CFR § 422.503(b)(4)(vi)": [
-      "CO-WF-08"
-    ],
     "45 CFR § 164.530": [
       "CO-WF-09",
+      "IT-WF-23",
       "OP-WF-06"
     ],
     "45 CFR § 164.308": [
       "CO-WF-11",
       "CO-WF-17",
+      "IT-WF-22",
       "IT-WF-01",
       "IT-WF-02",
       "IT-WF-03",
@@ -2531,9 +2931,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "42 CFR § 413.20": [
       "FN-WF-03"
     ],
-    "42 CFR § 484.205": [
-      "FN-WF-04"
-    ],
     "42 CFR § 405.940": [
       "FN-WF-05"
     ],
@@ -2571,10 +2968,21 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "GV-WF-13"
     ],
     "42 CFR § 484.80": [
+      "HR-WF-18",
       "HR-WF-05"
+    ],
+    "HIPAA § 164.308": [
+      "IT-WF-21",
+      "IT-WF-25"
+    ],
+    "HIPAA § 164.312": [
+      "IT-WF-23",
+      "IT-WF-24"
     ],
     "42 CFR § 484.102": [
       "IT-WF-08",
+      "RM-WF-18",
+      "RM-WF-19",
       "RM-WF-06"
     ],
     "45 CFR § 164.310": [
@@ -2589,11 +2997,20 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "42 CFR § 484.50(a)": [
       "OP-WF-11"
     ],
+    "42 CFR § 484.65(b)": [
+      "QA-WF-13",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-16",
+      "QA-WF-02",
+      "RM-WF-16",
+      "RM-WF-20"
+    ],
+    "42 CFR § 484.65(c)": [
+      "QA-WF-17"
+    ],
     "42 CFR § 484.65(a)": [
       "QA-WF-01"
-    ],
-    "42 CFR § 484.65(b)": [
-      "QA-WF-02"
     ],
     "42 CFR § 484.65(b)(3)": [
       "QA-WF-03"
@@ -2634,10 +3051,33 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ]
   },
   "byRole": {
-    "Intake Coordinator / Admissions Nurse": [
-      "CL-WF-01"
+    "QA Reviewer (RN)": [
+      "CL-WF-26"
     ],
     "Clinical Manager": [
+      "CL-WF-26",
+      "CL-WF-27",
+      "CL-WF-27",
+      "CL-WF-28",
+      "CL-WF-28",
+      "CL-WF-29",
+      "CL-WF-29",
+      "CL-WF-30",
+      "CL-WF-30",
+      "CL-WF-31",
+      "CL-WF-31",
+      "CL-WF-32",
+      "CL-WF-32",
+      "CL-WF-33",
+      "CL-WF-33",
+      "CL-WF-34",
+      "CL-WF-34",
+      "CL-WF-35",
+      "CL-WF-35",
+      "CL-WF-36",
+      "CL-WF-36",
+      "CL-WF-37",
+      "CL-WF-37",
       "CL-WF-01",
       "CL-WF-04",
       "CL-WF-05",
@@ -2651,6 +3091,10 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CL-WF-21",
       "CL-WF-24",
       "CL-WF-25",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-26",
       "CO-WF-04",
       "CO-WF-05",
       "CO-WF-06",
@@ -2665,6 +3109,8 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "GV-WF-07",
       "GV-WF-10",
       "GV-WF-13",
+      "HR-WF-19",
+      "HR-WF-19",
       "HR-WF-05",
       "IT-WF-08",
       "OP-WF-01",
@@ -2673,17 +3119,123 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "OP-WF-10",
       "OP-WF-10",
       "OP-WF-12",
+      "QA-WF-14",
       "QA-WF-02",
       "QA-WF-03",
       "QA-WF-05",
       "QA-WF-09",
       "QA-WF-10",
+      "RM-WF-19",
+      "RM-WF-20",
       "RM-WF-04",
       "RM-WF-05",
       "RM-WF-07",
       "RM-WF-07",
       "RM-WF-13",
       "RM-WF-13"
+    ],
+    "Medical Records": [
+      "CL-WF-26",
+      "CL-WF-37",
+      "CO-WF-12",
+      "FN-WF-06"
+    ],
+    "Clinical Manager (audit report)": [
+      "CL-WF-26"
+    ],
+    "Compliance Officer (CAP if systemic)": [
+      "CL-WF-26"
+    ],
+    "OASIS QA Specialist": [
+      "CL-WF-27"
+    ],
+    "Coder": [
+      "CL-WF-27",
+      "CL-WF-30",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-14",
+      "FN-WF-04",
+      "FN-WF-06"
+    ],
+    "Compliance Officer for systemic": [
+      "CL-WF-27",
+      "CL-WF-29",
+      "CO-WF-26",
+      "HR-WF-18"
+    ],
+    "QA Reviewer": [
+      "CL-WF-28",
+      "CL-WF-29",
+      "CL-WF-33",
+      "CL-WF-34",
+      "CL-WF-36",
+      "CL-WF-37"
+    ],
+    "Medical Records Auditor": [
+      "CL-WF-29"
+    ],
+    "UR Nurse": [
+      "CL-WF-30"
+    ],
+    "Compliance Officer for billing-impactful patterns": [
+      "CL-WF-30"
+    ],
+    "Pharmacist Reviewer / RN auditor": [
+      "CL-WF-31"
+    ],
+    "Medical Director for systemic": [
+      "CL-WF-31"
+    ],
+    "Infection Preventionist": [
+      "CL-WF-32",
+      "CL-WF-14",
+      "QA-WF-01",
+      "QA-WF-03",
+      "RM-WF-06"
+    ],
+    "Medical Director for cluster events": [
+      "CL-WF-32"
+    ],
+    "Medical Director if pattern": [
+      "CL-WF-34"
+    ],
+    "QA Analyst": [
+      "CL-WF-35",
+      "QA-WF-13",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-16",
+      "QA-WF-17"
+    ],
+    "QAPI Lead": [
+      "CL-WF-35",
+      "CO-WF-05",
+      "CO-WF-19",
+      "GV-WF-01",
+      "QA-WF-13",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-16",
+      "QA-WF-17",
+      "QA-WF-02",
+      "QA-WF-04",
+      "QA-WF-05",
+      "QA-WF-06",
+      "QA-WF-08",
+      "QA-WF-09",
+      "QA-WF-10",
+      "QA-WF-11",
+      "RM-WF-16"
+    ],
+    "Scheduler": [
+      "CL-WF-36",
+      "CL-WF-20",
+      "OP-WF-12"
+    ],
+    "Intake Coordinator / Admissions Nurse": [
+      "CL-WF-01"
     ],
     "Insurance Verifier": [
       "CL-WF-01",
@@ -2817,7 +3369,8 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CL-WF-10"
     ],
     "Staff Development RN": [
-      "CL-WF-11"
+      "CL-WF-11",
+      "HR-WF-19"
     ],
     "HR": [
       "CL-WF-11",
@@ -2830,15 +3383,18 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CO-WF-21",
       "EN-WF-08",
       "GV-WF-10",
+      "HR-WF-19",
       "HR-WF-08",
       "HR-WF-11",
       "HR-WF-13",
       "HR-WF-14",
       "HR-WF-17",
+      "IT-WF-21",
       "IT-WF-03",
       "QA-WF-03",
       "QA-WF-04",
       "QA-WF-06",
+      "RM-WF-16",
       "RM-WF-03",
       "RM-WF-04",
       "RM-WF-05",
@@ -2867,12 +3423,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "Clinical Manager / Wound Expert": [
       "CL-WF-13"
-    ],
-    "Infection Preventionist": [
-      "CL-WF-14",
-      "QA-WF-01",
-      "QA-WF-03",
-      "RM-WF-06"
     ],
     "Clinician": [
       "CL-WF-15"
@@ -2939,10 +3489,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "Physician (new orders)": [
       "CL-WF-18"
     ],
-    "Scheduler": [
-      "CL-WF-20",
-      "OP-WF-12"
-    ],
     "Clinician (author)": [
       "CL-WF-21"
     ],
@@ -2967,6 +3513,7 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "Legal": [
       "CL-WF-22",
+      "CO-WF-27",
       "CO-WF-01",
       "CO-WF-03",
       "CO-WF-05",
@@ -2998,6 +3545,13 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "Compliance Officer": [
       "CL-WF-23",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-27",
+      "CO-WF-28",
+      "CO-WF-29",
+      "CO-WF-30",
       "CO-WF-01",
       "CO-WF-02",
       "CO-WF-02",
@@ -3038,13 +3592,21 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "GV-WF-10",
       "GV-WF-12",
       "GV-WF-13",
+      "HR-WF-20",
+      "HR-WF-20",
       "HR-WF-03",
       "HR-WF-04",
+      "IT-WF-22",
+      "IT-WF-23",
       "OP-WF-01",
+      "QA-WF-18",
       "QA-WF-01",
       "QA-WF-03",
       "QA-WF-08",
       "QA-WF-10",
+      "RM-WF-16",
+      "RM-WF-20",
+      "RM-WF-20",
       "RM-WF-01",
       "RM-WF-02",
       "RM-WF-10",
@@ -3062,6 +3624,52 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "discipline leaders": [
       "CL-WF-25"
+    ],
+    "Billing Auditor": [
+      "CO-WF-23",
+      "CO-WF-25",
+      "CO-WF-29"
+    ],
+    "Administrator for systemic holds": [
+      "CO-WF-23"
+    ],
+    "Compliance Auditor": [
+      "CO-WF-24",
+      "CO-WF-27"
+    ],
+    "Governing Body informed for material findings": [
+      "CO-WF-24"
+    ],
+    "Coder Auditor (HCS-D / BCHH-C)": [
+      "CO-WF-26"
+    ],
+    "Governing Body for material": [
+      "CO-WF-27"
+    ],
+    "Compliance Officer for routine": [
+      "CO-WF-27"
+    ],
+    "Insurance Verifier / Billing Auditor": [
+      "CO-WF-28"
+    ],
+    "Intake Coord": [
+      "CO-WF-28",
+      "OP-WF-11"
+    ],
+    "Revenue Integrity Lead": [
+      "CO-WF-29"
+    ],
+    "CFO/Controller": [
+      "CO-WF-29"
+    ],
+    "Domain Owners (CAP owners)": [
+      "CO-WF-30"
+    ],
+    "Compliance Officer (closure attestation)": [
+      "CO-WF-30"
+    ],
+    "Administrator for >30-day overdue": [
+      "CO-WF-30"
     ],
     "Administrator": [
       "CO-WF-01",
@@ -3113,6 +3721,7 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "OP-WF-05",
       "OP-WF-09",
       "OP-WF-11",
+      "QA-WF-14",
       "QA-WF-01",
       "QA-WF-03",
       "QA-WF-08",
@@ -3120,6 +3729,10 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "QA-WF-10",
       "QA-WF-12",
       "QA-WF-12",
+      "RM-WF-16",
+      "RM-WF-17",
+      "RM-WF-18",
+      "RM-WF-19",
       "RM-WF-01",
       "RM-WF-02",
       "RM-WF-03",
@@ -3217,19 +3830,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "Governing Body (annual plan)": [
       "CO-WF-04"
     ],
-    "QAPI Lead": [
-      "CO-WF-05",
-      "CO-WF-19",
-      "GV-WF-01",
-      "QA-WF-02",
-      "QA-WF-04",
-      "QA-WF-05",
-      "QA-WF-06",
-      "QA-WF-08",
-      "QA-WF-09",
-      "QA-WF-10",
-      "QA-WF-11"
-    ],
     "all department heads": [
       "CO-WF-05"
     ],
@@ -3273,17 +3873,14 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CO-WF-11"
     ],
     "Compliance Officer / Privacy Officer": [
-      "CO-WF-12"
+      "CO-WF-12",
+      "IT-WF-21"
     ],
     "Clinical Records Clerk": [
       "CO-WF-12"
     ],
     "Clinical/Intake Staff": [
       "CO-WF-12"
-    ],
-    "Medical Records": [
-      "CO-WF-12",
-      "FN-WF-06"
     ],
     "IT (for EHR access reports)": [
       "CO-WF-12"
@@ -3302,11 +3899,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "department owners": [
       "CO-WF-13"
-    ],
-    "Coder": [
-      "CO-WF-14",
-      "FN-WF-04",
-      "FN-WF-06"
     ],
     "HR (maintains roster)": [
       "CO-WF-15"
@@ -3678,6 +4270,32 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "Compliance Officer (as invited)": [
       "GV-WF-14"
     ],
+    "Training Coordinator": [
+      "HR-WF-18"
+    ],
+    "HR Manager": [
+      "HR-WF-18",
+      "HR-WF-18",
+      "HR-WF-21",
+      "HR-WF-21"
+    ],
+    "Department Heads": [
+      "HR-WF-18",
+      "QA-WF-11"
+    ],
+    "Director of Nursing for specialty competencies": [
+      "HR-WF-19"
+    ],
+    "HR Compliance Specialist": [
+      "HR-WF-20",
+      "HR-WF-21"
+    ],
+    "Administrator for any hit": [
+      "HR-WF-20"
+    ],
+    "Compliance Officer for systemic gaps": [
+      "HR-WF-21"
+    ],
     "HR Director / Recruiter": [
       "HR-WF-01"
     ],
@@ -3731,6 +4349,11 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "OP-WF-09",
       "QA-WF-05",
       "QA-WF-12",
+      "RM-WF-16",
+      "RM-WF-17",
+      "RM-WF-18",
+      "RM-WF-19",
+      "RM-WF-20",
       "RM-WF-01",
       "RM-WF-11",
       "RM-WF-14",
@@ -3787,6 +4410,42 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "Payroll + Supervisors": [
       "HR-WF-17"
+    ],
+    "IT Security Officer": [
+      "IT-WF-21",
+      "IT-WF-22",
+      "IT-WF-23",
+      "IT-WF-24",
+      "IT-WF-25",
+      "RM-WF-20"
+    ],
+    "Application Owners": [
+      "IT-WF-21",
+      "IT-WF-24"
+    ],
+    "Privacy Officer": [
+      "IT-WF-22",
+      "IT-WF-22",
+      "IT-WF-23",
+      "IT-WF-23",
+      "IT-WF-24",
+      "IT-WF-24",
+      "IT-WF-25",
+      "IT-WF-09",
+      "IT-WF-20"
+    ],
+    "Administrator for material findings": [
+      "IT-WF-22",
+      "IT-WF-25"
+    ],
+    "Compliance Officer for breach determination": [
+      "IT-WF-23"
+    ],
+    "IT Operations": [
+      "IT-WF-25"
+    ],
+    "IT Director": [
+      "IT-WF-25"
     ],
     "Security Officer (may coincide with Privacy Officer)": [
       "IT-WF-01"
@@ -3871,10 +4530,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "IT SecOps": [
       "IT-WF-09",
       "IT-WF-16"
-    ],
-    "Privacy Officer": [
-      "IT-WF-09",
-      "IT-WF-20"
     ],
     "External DFIR": [
       "IT-WF-09"
@@ -3982,9 +4637,6 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "Clinician in custody": [
       "OP-WF-10"
     ],
-    "Intake Coord": [
-      "OP-WF-11"
-    ],
     "Contracted interpreter vendor": [
       "OP-WF-11"
     ],
@@ -3999,6 +4651,47 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ],
     "Clinical Manager (next-day review)": [
       "OP-WF-13"
+    ],
+    "IT Data Owner": [
+      "QA-WF-13"
+    ],
+    "Domain KPI Owners": [
+      "QA-WF-13"
+    ],
+    "QAPI Committee Chair": [
+      "QA-WF-15",
+      "QA-WF-17"
+    ],
+    "Data Steward (IT)": [
+      "QA-WF-16"
+    ],
+    "Domain Owners": [
+      "QA-WF-16"
+    ],
+    "IT Director for material data issues": [
+      "QA-WF-16"
+    ],
+    "PIP Owner": [
+      "QA-WF-17",
+      "QA-WF-04"
+    ],
+    "Governing Body for material PIPs": [
+      "QA-WF-17"
+    ],
+    "Domain Policy Owners": [
+      "QA-WF-18"
+    ],
+    "QAPI Committee": [
+      "QA-WF-18",
+      "QA-WF-04",
+      "QA-WF-05",
+      "QA-WF-06",
+      "QA-WF-09",
+      "QA-WF-10",
+      "QA-WF-11"
+    ],
+    "Governing Body for material policy revisions": [
+      "QA-WF-18"
     ],
     "QAPI Lead / Clinical Manager": [
       "QA-WF-01"
@@ -4020,19 +4713,8 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "reported to Governing Body": [
       "QA-WF-03"
     ],
-    "PIP Owner": [
-      "QA-WF-04"
-    ],
     "Operations": [
       "QA-WF-04"
-    ],
-    "QAPI Committee": [
-      "QA-WF-04",
-      "QA-WF-05",
-      "QA-WF-06",
-      "QA-WF-09",
-      "QA-WF-10",
-      "QA-WF-11"
     ],
     "discipline-specific clinicians": [
       "QA-WF-05"
@@ -4062,17 +4744,37 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "HHCAHPS Coord": [
       "QA-WF-09"
     ],
-    "Department Heads": [
-      "QA-WF-11"
-    ],
     "Legal concurrence": [
       "QA-WF-12"
     ],
-    "Governing Body quarterly": [
-      "RM-WF-01"
+    "IP": [
+      "RM-WF-16",
+      "RM-WF-17"
+    ],
+    "Governing Body for sentinel patterns": [
+      "RM-WF-16"
+    ],
+    "Safety Officer": [
+      "RM-WF-17",
+      "RM-WF-18",
+      "RM-WF-19"
+    ],
+    "Operations Manager": [
+      "RM-WF-17",
+      "RM-WF-18"
     ],
     "Emergency Preparedness Coordinator": [
+      "RM-WF-19",
       "RM-WF-02"
+    ],
+    "Governing Body informed via GV-WF-01": [
+      "RM-WF-19"
+    ],
+    "Governing Body for material gaps": [
+      "RM-WF-20"
+    ],
+    "Governing Body quarterly": [
+      "RM-WF-01"
     ],
     "Risk Mgr": [
       "RM-WF-02"
@@ -4124,6 +4826,18 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
   },
   "byDomain": {
     "CL": [
+      "CL-WF-26",
+      "CL-WF-27",
+      "CL-WF-28",
+      "CL-WF-29",
+      "CL-WF-30",
+      "CL-WF-31",
+      "CL-WF-32",
+      "CL-WF-33",
+      "CL-WF-34",
+      "CL-WF-35",
+      "CL-WF-36",
+      "CL-WF-37",
       "CL-WF-01",
       "CL-WF-02",
       "CL-WF-03",
@@ -4151,6 +4865,14 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CL-WF-25"
     ],
     "CO": [
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-26",
+      "CO-WF-27",
+      "CO-WF-28",
+      "CO-WF-29",
+      "CO-WF-30",
       "CO-WF-01",
       "CO-WF-02",
       "CO-WF-03",
@@ -4223,6 +4945,10 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "GV-WF-14"
     ],
     "HR": [
+      "HR-WF-18",
+      "HR-WF-19",
+      "HR-WF-20",
+      "HR-WF-21",
       "HR-WF-01",
       "HR-WF-02",
       "HR-WF-03",
@@ -4242,6 +4968,11 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "HR-WF-17"
     ],
     "IT": [
+      "IT-WF-21",
+      "IT-WF-22",
+      "IT-WF-23",
+      "IT-WF-24",
+      "IT-WF-25",
       "IT-WF-01",
       "IT-WF-02",
       "IT-WF-03",
@@ -4279,6 +5010,12 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "OP-WF-13"
     ],
     "QA": [
+      "QA-WF-13",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-16",
+      "QA-WF-17",
+      "QA-WF-18",
       "QA-WF-01",
       "QA-WF-02",
       "QA-WF-03",
@@ -4293,6 +5030,11 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "QA-WF-12"
     ],
     "RM": [
+      "RM-WF-16",
+      "RM-WF-17",
+      "RM-WF-18",
+      "RM-WF-19",
+      "RM-WF-20",
       "RM-WF-01",
       "RM-WF-02",
       "RM-WF-03",
@@ -4311,41 +5053,279 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     ]
   },
   "downstream": {
-    "CL-WF-02": [
-      "CL-WF-04"
-    ],
-    "CL-WF-12": [
-      "CL-WF-04"
-    ],
-    "CL-WF-16": [
-      "CL-WF-04"
+    "CL-WF-04": [
+      "CL-WF-26",
+      "CL-WF-29",
+      "CL-WF-30"
     ],
     "CL-WF-06": [
-      "CL-WF-04"
+      "CL-WF-26",
+      "CL-WF-37",
+      "CL-WF-04",
+      "CO-WF-23"
+    ],
+    "CL-WF-07": [
+      "CL-WF-26",
+      "CL-WF-37",
+      "CO-WF-23"
+    ],
+    "CL-WF-18": [
+      "CL-WF-26"
+    ],
+    "QA-WF-03": [
+      "CL-WF-26",
+      "CL-WF-27",
+      "CL-WF-28",
+      "CL-WF-29",
+      "CL-WF-30",
+      "CL-WF-31",
+      "CL-WF-32",
+      "CL-WF-33",
+      "CL-WF-34",
+      "CL-WF-35",
+      "CL-WF-36",
+      "CL-WF-37",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-26",
+      "CO-WF-27",
+      "CO-WF-28",
+      "CO-WF-29",
+      "CO-WF-30",
+      "HR-WF-18",
+      "HR-WF-19",
+      "HR-WF-20",
+      "HR-WF-21",
+      "IT-WF-21",
+      "IT-WF-22",
+      "IT-WF-23",
+      "IT-WF-24",
+      "IT-WF-25",
+      "QA-WF-13",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-16",
+      "QA-WF-17",
+      "QA-WF-18",
+      "RM-WF-16",
+      "RM-WF-17",
+      "RM-WF-18",
+      "RM-WF-19",
+      "RM-WF-20"
+    ],
+    "CO-WF-04": [
+      "CL-WF-26",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-30",
+      "HR-WF-18",
+      "HR-WF-21",
+      "IT-WF-21",
+      "IT-WF-24",
+      "RM-WF-20"
+    ],
+    "HR-WF-09": [
+      "CL-WF-26",
+      "CL-WF-28",
+      "CL-WF-36",
+      "CO-WF-23",
+      "CO-WF-27",
+      "CO-WF-30",
+      "HR-WF-18",
+      "HR-WF-19",
+      "HR-WF-20",
+      "HR-WF-08",
+      "IT-WF-23"
+    ],
+    "CO-WF-22": [
+      "CL-WF-26",
+      "CO-WF-27",
+      "CO-WF-29",
+      "CO-WF-30",
+      "HR-WF-18",
+      "IT-WF-22",
+      "IT-WF-23",
+      "IT-WF-25",
+      "RM-WF-16",
+      "RM-WF-20"
     ],
     "CL-WF-05": [
+      "CL-WF-27",
+      "CL-WF-35",
       "CL-WF-04",
-      "CL-WF-18"
+      "CL-WF-18",
+      "CO-WF-23",
+      "CO-WF-26"
     ],
-    "CL-WF-11": [
-      "CL-WF-10"
+    "CL-WF-25": [
+      "CL-WF-27",
+      "CL-WF-28",
+      "CO-WF-23",
+      "HR-WF-19"
     ],
-    "QA-WF-05": [
-      "CL-WF-12",
-      "CL-WF-13",
-      "RM-WF-13"
+    "FN-WF-15": [
+      "CL-WF-27",
+      "CL-WF-29",
+      "CL-WF-30",
+      "CL-WF-36",
+      "CL-WF-37",
+      "CO-WF-23",
+      "CO-WF-26",
+      "CO-WF-28",
+      "CO-WF-29"
+    ],
+    "CO-WF-08": [
+      "CL-WF-27",
+      "CL-WF-30",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-26",
+      "CO-WF-27",
+      "EN-WF-13",
+      "HR-WF-18"
+    ],
+    "CL-WF-09": [
+      "CL-WF-28",
+      "CL-WF-30",
+      "CL-WF-33",
+      "CL-WF-34",
+      "CL-WF-37",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25"
+    ],
+    "CO-WF-14": [
+      "CL-WF-28",
+      "CL-WF-29",
+      "CL-WF-37",
+      "CO-WF-25"
+    ],
+    "CL-WF-10": [
+      "CL-WF-28"
+    ],
+    "CL-WF-21": [
+      "CL-WF-28",
+      "CL-WF-29",
+      "CO-WF-25",
+      "FN-WF-10"
+    ],
+    "CL-WF-01": [
+      "CL-WF-29",
+      "CO-WF-28",
+      "OP-WF-07"
+    ],
+    "CL-WF-19": [
+      "CL-WF-29",
+      "CL-WF-34"
+    ],
+    "CL-WF-16": [
+      "CL-WF-29",
+      "CL-WF-04"
+    ],
+    "CL-WF-02": [
+      "CL-WF-30",
+      "CL-WF-04"
+    ],
+    "FN-WF-04": [
+      "CL-WF-30",
+      "CO-WF-23",
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-28"
+    ],
+    "CL-WF-12": [
+      "CL-WF-31",
+      "CL-WF-34",
+      "CL-WF-04"
     ],
     "RM-WF-13": [
+      "CL-WF-31",
       "CL-WF-12"
     ],
+    "QA-WF-05": [
+      "CL-WF-31",
+      "CL-WF-32",
+      "CL-WF-12",
+      "CL-WF-13",
+      "RM-WF-16",
+      "RM-WF-20",
+      "RM-WF-13"
+    ],
+    "EN-WF-01": [
+      "CL-WF-31",
+      "CL-WF-33",
+      "CL-WF-34",
+      "QA-WF-18"
+    ],
+    "CL-WF-14": [
+      "CL-WF-32",
+      "RM-WF-17"
+    ],
+    "QA-WF-06": [
+      "CL-WF-32"
+    ],
     "RM-WF-06": [
-      "CL-WF-14"
+      "CL-WF-32",
+      "CL-WF-14",
+      "RM-WF-19"
+    ],
+    "HR-WF-07": [
+      "CL-WF-32",
+      "CO-WF-26",
+      "HR-WF-18",
+      "HR-WF-19"
+    ],
+    "CL-WF-08": [
+      "CL-WF-33",
+      "CL-WF-34"
+    ],
+    "CL-WF-22": [
+      "CL-WF-33",
+      "CL-WF-23",
+      "RM-WF-20"
+    ],
+    "QA-WF-04": [
+      "CL-WF-34",
+      "CL-WF-35",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-17",
+      "QA-WF-03",
+      "RM-WF-16"
+    ],
+    "QA-WF-08": [
+      "CL-WF-34"
+    ],
+    "QA-WF-02": [
+      "CL-WF-35",
+      "QA-WF-13",
+      "QA-WF-14",
+      "QA-WF-16"
+    ],
+    "QA-WF-09": [
+      "CL-WF-35",
+      "QA-WF-14"
+    ],
+    "CL-WF-27": [
+      "CL-WF-35",
+      "QA-WF-16"
+    ],
+    "CL-WF-20": [
+      "CL-WF-36",
+      "OP-WF-12"
+    ],
+    "QA-WF-07": [
+      "CL-WF-36"
+    ],
+    "CL-WF-11": [
+      "CL-WF-10",
+      "HR-WF-18"
     ],
     "CO-WF-12": [
       "CL-WF-16"
-    ],
-    "CL-WF-22": [
-      "CL-WF-23"
     ],
     "CO-WF-10": [
       "CL-WF-23",
@@ -4353,48 +5333,136 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "CO-WF-12",
       "CO-WF-13",
       "CO-WF-21",
+      "IT-WF-22",
+      "IT-WF-23",
       "IT-WF-09",
       "IT-WF-10",
       "IT-WF-15",
       "IT-WF-16",
       "IT-WF-17",
-      "OP-WF-06"
+      "OP-WF-06",
+      "RM-WF-20"
     ],
     "CO-WF-05": [
       "CL-WF-23",
+      "CO-WF-30",
       "EN-WF-08"
     ],
-    "CO-WF-16": [
-      "CO-WF-04",
-      "CO-WF-07",
-      "CO-WF-15"
-    ],
-    "CO-WF-03": [
-      "CO-WF-07",
-      "CO-WF-08",
-      "QA-WF-07"
-    ],
-    "EN-WF-03": [
-      "EN-WF-01"
-    ],
-    "IT-WF-04": [
-      "EN-WF-03"
-    ],
-    "IT-WF-17": [
-      "EN-WF-08",
-      "IT-WF-10"
+    "CL-WF-03": [
+      "CO-WF-23"
     ],
     "FN-WF-08": [
+      "CO-WF-24",
+      "CO-WF-25",
+      "CO-WF-29",
       "EN-WF-13",
       "FN-WF-07",
       "FN-WF-15",
       "HR-WF-02",
       "HR-WF-15"
     ],
-    "EN-WF-05": [
-      "EN-WF-13"
+    "CO-WF-16": [
+      "CO-WF-24",
+      "CO-WF-27",
+      "CO-WF-29",
+      "CO-WF-04",
+      "CO-WF-07",
+      "CO-WF-15",
+      "HR-WF-20",
+      "RM-WF-20"
     ],
-    "CO-WF-08": [
+    "CO-WF-23": [
+      "CO-WF-24",
+      "CO-WF-26",
+      "CO-WF-30",
+      "QA-WF-16",
+      "QA-WF-18",
+      "QA-WF-03"
+    ],
+    "GV-WF-01": [
+      "CO-WF-24",
+      "CO-WF-27",
+      "CO-WF-30",
+      "GV-WF-05",
+      "IT-WF-22",
+      "IT-WF-24",
+      "IT-WF-25",
+      "QA-WF-17",
+      "QA-WF-18",
+      "QA-WF-03",
+      "RM-WF-18",
+      "RM-WF-19"
+    ],
+    "CO-WF-03": [
+      "CO-WF-27",
+      "CO-WF-07",
+      "CO-WF-08",
+      "QA-WF-07",
+      "RM-WF-16"
+    ],
+    "CO-WF-15": [
+      "CO-WF-27",
+      "HR-WF-20"
+    ],
+    "HR-WF-15": [
+      "CO-WF-27",
+      "HR-WF-20",
+      "IT-WF-21"
+    ],
+    "FN-WF-05": [
+      "CO-WF-29",
+      "FN-WF-15"
+    ],
+    "FN-WF-06": [
+      "CO-WF-29"
+    ],
+    "FN-WF-07": [
+      "CO-WF-29",
+      "FN-WF-11"
+    ],
+    "CL-WF-26": [
+      "CO-WF-30",
+      "QA-WF-18",
+      "QA-WF-03"
+    ],
+    "QA-WF-13": [
+      "CO-WF-30",
+      "QA-WF-14",
+      "QA-WF-15",
+      "QA-WF-16",
+      "QA-WF-17",
+      "QA-WF-03"
+    ],
+    "HR-WF-18": [
+      "CO-WF-30",
+      "HR-WF-21",
+      "QA-WF-18",
+      "QA-WF-03"
+    ],
+    "RM-WF-16": [
+      "CO-WF-30",
+      "QA-WF-18",
+      "QA-WF-03",
+      "RM-WF-17"
+    ],
+    "IT-WF-21": [
+      "CO-WF-30",
+      "IT-WF-23",
+      "QA-WF-18",
+      "QA-WF-03"
+    ],
+    "EN-WF-03": [
+      "EN-WF-01"
+    ],
+    "IT-WF-04": [
+      "EN-WF-03",
+      "IT-WF-21"
+    ],
+    "IT-WF-17": [
+      "EN-WF-08",
+      "IT-WF-10"
+    ],
+    "EN-WF-05": [
       "EN-WF-13"
     ],
     "GV-WF-06": [
@@ -4404,35 +5472,61 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "QA-WF-01": [
       "FN-WF-05"
     ],
-    "CL-WF-21": [
-      "FN-WF-10"
-    ],
-    "FN-WF-07": [
-      "FN-WF-11"
-    ],
-    "FN-WF-05": [
-      "FN-WF-15"
-    ],
-    "GV-WF-01": [
-      "GV-WF-05"
-    ],
     "GV-WF-07": [
       "GV-WF-06"
     ],
     "GV-WF-02": [
       "GV-WF-13"
     ],
+    "HR-WF-03": [
+      "HR-WF-18",
+      "HR-WF-21"
+    ],
+    "HR-WF-05": [
+      "HR-WF-18",
+      "HR-WF-19"
+    ],
+    "CO-WF-09": [
+      "HR-WF-18",
+      "IT-WF-22",
+      "IT-WF-15"
+    ],
+    "HR-WF-19": [
+      "HR-WF-18",
+      "HR-WF-21",
+      "QA-WF-13"
+    ],
+    "HR-WF-06": [
+      "HR-WF-19"
+    ],
+    "HR-WF-04": [
+      "HR-WF-20",
+      "HR-WF-21"
+    ],
+    "CO-WF-27": [
+      "HR-WF-20"
+    ],
+    "HR-WF-02": [
+      "HR-WF-20",
+      "HR-WF-21"
+    ],
+    "HR-WF-08": [
+      "HR-WF-21",
+      "IT-WF-21",
+      "IT-WF-23"
+    ],
+    "HR-WF-20": [
+      "HR-WF-21"
+    ],
     "CO-WF-06": [
       "HR-WF-02"
     ],
     "IT-WF-02": [
-      "HR-WF-03"
+      "HR-WF-03",
+      "IT-WF-21"
     ],
     "HR-WF-14": [
       "HR-WF-03"
-    ],
-    "HR-WF-09": [
-      "HR-WF-08"
     ],
     "CO-WF-07": [
       "HR-WF-09",
@@ -4442,7 +5536,45 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "HR-WF-09",
       "HR-WF-17"
     ],
+    "IT-WF-03": [
+      "IT-WF-21"
+    ],
+    "IT-WF-22": [
+      "IT-WF-21",
+      "IT-WF-23",
+      "IT-WF-24",
+      "IT-WF-25"
+    ],
+    "IT-WF-01": [
+      "IT-WF-22",
+      "IT-WF-24"
+    ],
+    "IT-WF-05": [
+      "IT-WF-22"
+    ],
+    "IT-WF-07": [
+      "IT-WF-22"
+    ],
+    "IT-WF-08": [
+      "IT-WF-22",
+      "IT-WF-25"
+    ],
+    "EN-WF-12": [
+      "IT-WF-22",
+      "IT-WF-23",
+      "IT-WF-24",
+      "IT-WF-25",
+      "QA-WF-15",
+      "QA-WF-18",
+      "QA-WF-03",
+      "RM-WF-16",
+      "RM-WF-18",
+      "RM-WF-19"
+    ],
     "IT-WF-09": [
+      "IT-WF-22",
+      "IT-WF-24",
+      "IT-WF-25",
       "IT-WF-03",
       "IT-WF-06",
       "IT-WF-08",
@@ -4450,14 +5582,27 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
       "IT-WF-16",
       "IT-WF-17",
       "IT-WF-18",
-      "IT-WF-19"
+      "IT-WF-19",
+      "RM-WF-20"
+    ],
+    "IT-WF-06": [
+      "IT-WF-23",
+      "IT-WF-24"
+    ],
+    "IT-WF-23": [
+      "IT-WF-24",
+      "QA-WF-13"
+    ],
+    "IT-WF-10": [
+      "IT-WF-25"
+    ],
+    "IT-WF-11": [
+      "IT-WF-25"
     ],
     "RM-WF-02": [
       "IT-WF-08",
+      "RM-WF-18",
       "RM-WF-03"
-    ],
-    "CO-WF-09": [
-      "IT-WF-15"
     ],
     "GV-WF-11": [
       "IT-WF-15",
@@ -4469,45 +5614,117 @@ export const WORKFLOW_GRAPH: WorkflowGraph = {
     "OP-WF-04": [
       "OP-WF-03"
     ],
-    "CL-WF-01": [
-      "OP-WF-07"
-    ],
     "RM-WF-10": [
-      "OP-WF-09"
+      "OP-WF-09",
+      "RM-WF-16"
     ],
     "RM-WF-14": [
       "OP-WF-10"
     ],
-    "CL-WF-20": [
-      "OP-WF-12"
+    "CL-WF-35": [
+      "QA-WF-13"
+    ],
+    "CL-WF-34": [
+      "QA-WF-13"
+    ],
+    "CO-WF-29": [
+      "QA-WF-13"
+    ],
+    "RM-WF-17": [
+      "QA-WF-13"
+    ],
+    "IT-WF-14": [
+      "QA-WF-13",
+      "QA-WF-16"
+    ],
+    "QA-WF-16": [
+      "QA-WF-13",
+      "QA-WF-03"
+    ],
+    "QA-WF-14": [
+      "QA-WF-15",
+      "QA-WF-03"
+    ],
+    "CO-WF-25": [
+      "QA-WF-16"
+    ],
+    "QA-WF-15": [
+      "QA-WF-17",
+      "QA-WF-03"
+    ],
+    "QA-WF-11": [
+      "QA-WF-18"
+    ],
+    "QA-WF-17": [
+      "QA-WF-03"
+    ],
+    "QA-WF-18": [
+      "QA-WF-03"
+    ],
+    "HR-WF-13": [
+      "RM-WF-16",
+      "RM-WF-20"
+    ],
+    "IT-WF-25": [
+      "RM-WF-16"
+    ],
+    "RM-WF-08": [
+      "RM-WF-17"
+    ],
+    "RM-WF-09": [
+      "RM-WF-17"
+    ],
+    "OP-WF-09": [
+      "RM-WF-17"
+    ],
+    "OP-WF-02": [
+      "RM-WF-18"
+    ],
+    "RM-WF-01": [
+      "RM-WF-18"
     ],
     "RM-WF-03": [
+      "RM-WF-19",
       "RM-WF-02"
     ],
     "RM-WF-04": [
+      "RM-WF-19",
       "RM-WF-03"
+    ],
+    "RM-WF-05": [
+      "RM-WF-19"
+    ],
+    "RM-WF-07": [
+      "RM-WF-19"
+    ],
+    "CL-WF-23": [
+      "RM-WF-20"
+    ],
+    "CO-WF-30": [
+      "RM-WF-20"
     ]
   },
   "kpis": {
-    "total": 166,
+    "total": 206,
     "byDomain": {
-      "CL": 25,
-      "CO": 22,
+      "CL": 37,
+      "CO": 30,
       "EN": 13,
       "FN": 15,
       "GV": 14,
-      "HR": 17,
-      "IT": 20,
+      "HR": 21,
+      "IT": 25,
       "OP": 13,
-      "QA": 12,
-      "RM": 15
+      "QA": 18,
+      "RM": 20
     },
     "byCadence": {
+      "time_based": 112,
       "event_based": 90,
-      "time_based": 76
+      "continuous": 4
     },
-    "requiresGoverningBody": 55,
-    "highRisk": 37
+    "requiresGoverningBody": 62,
+    "highRisk": 63
   }
 } as unknown as WorkflowGraph;
 

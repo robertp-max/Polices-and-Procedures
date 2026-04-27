@@ -174,24 +174,39 @@ Quarterly committee review of dashboard trends, adverse events, PIP status, infe
 - **Approval:** Committee; reported to Governing Body
 
 ### 5. INPUTS
-- 3 months of dashboards
-- Adverse event RCAs
-- Active PIPs status
-- Infection line list
-- Patient complaints summary
+QAPI is a STRICT ORCHESTRATION workflow. The committee MAY NOT convene unless ALL of the following upstream audit workflows have produced their cycle-period evidence pack and signed report. Pre-input completion is verified by the QAPI Lead against the workflow inventory.
+
+- **Clinical Quality audit layer (12 audits):** CL-WF-26, CL-WF-27, CL-WF-28, CL-WF-29, CL-WF-30, CL-WF-31, CL-WF-32, CL-WF-33, CL-WF-34, CL-WF-35, CL-WF-36, CL-WF-37
+- **Compliance & Billing audit layer (8 audits):** CO-WF-23, CO-WF-24, CO-WF-25, CO-WF-26, CO-WF-27, CO-WF-28, CO-WF-29, CO-WF-30
+- **QAPI Support audit layer (6 audits):** QA-WF-13, QA-WF-14, QA-WF-15, QA-WF-16, QA-WF-17, QA-WF-18
+- **HR & Training audit layer (4 audits):** HR-WF-18, HR-WF-19, HR-WF-20, HR-WF-21
+- **Risk & Safety audit layer (5 audits):** RM-WF-16, RM-WF-17, RM-WF-18, RM-WF-19, RM-WF-20
+- **IT & Security audit layer (5 audits):** IT-WF-21, IT-WF-22, IT-WF-23, IT-WF-24, IT-WF-25
+- 3 months of dashboards (QA-WF-02 supported by QA-WF-13)
+- Adverse event RCAs (QA-WF-05)
+- Active PIPs status (QA-WF-04 supported by QA-WF-17)
+- Infection line list (CL-WF-15)
+- Patient complaints summary (CL-WF-23)
+- Board readiness packet (GV-WF-01 inputs)
 
 ### 6. STEP-BY-STEP EXECUTION
 
 | # | Action | Role | Form | Deadline |
 |---|--------|------|------|----------|
-| 1 | Distribute agenda & pre-read | QAPI Lead | Packet | ≥ 3 business days pre-meeting |
-| 2 | Review aggregate quality trends | QAPI Lead | QA-FM-003 | At meeting |
-| 3 | Review adverse events & RCAs | QAPI Lead | QA-FM-004 | At meeting |
-| 4 | Review PIP status | PIP Owners | QA-FM-002 PIP Charter; QA-FM-005 CAP Tracking Tool | At meeting |
-| 5 | Review infection surveillance | Infection Preventionist | QA-FM-006 | At meeting |
-| 6 | Decide on priority actions | Committee | Minutes | At meeting |
-| 7 | Document minutes | Scribe | QA-FM-001 | ≤ 14 days |
-| 8 | Package report for Governing Body | QAPI Lead | GV-FM-023 (QAPI section) | ≥ 7 days pre-Governing Body meeting |
+| 1 | Verify pre-input completeness across all 40 audit workflows; log any gap | QAPI Lead | QA-FM-021 | ≥ 5 business days pre-meeting |
+| 2 | Distribute agenda & pre-read packet | QAPI Lead | Packet | ≥ 3 business days pre-meeting |
+| 3 | Review aggregate quality trends from CL-WF-26..37 | QAPI Lead | QA-FM-003 | At meeting |
+| 4 | Review compliance/billing audit results from CO-WF-23..30 | Compliance Officer | CO-FM-024 | At meeting |
+| 5 | Review HR audit results from HR-WF-18..21 | HR Manager | EN-FM-022 | At meeting |
+| 6 | Review risk/safety audit results from RM-WF-16..20 | Risk Manager | CO-FM-024 | At meeting |
+| 7 | Review IT/security audit results from IT-WF-21..25 | IT Security Officer | CO-FM-024 | At meeting |
+| 8 | Review QAPI-layer results: KPI (QA-WF-13), indicators (QA-WF-14), trends (QA-WF-15), validation (QA-WF-16), PIPs (QA-WF-17), policy effectiveness (QA-WF-18) | QAPI Lead | QA-FM-021 | At meeting |
+| 9 | Review adverse events & RCAs | QAPI Lead | QA-FM-004 | At meeting |
+| 10 | Review PIP status (QA-WF-04 + QA-WF-17 monitoring) | PIP Owners | QA-FM-002; QA-FM-005 | At meeting |
+| 11 | Review infection surveillance | Infection Preventionist | QA-FM-006 | At meeting |
+| 12 | Decide on priority actions / new PIPs / CAPs | Committee | Minutes | At meeting |
+| 13 | Document minutes | Scribe | QA-FM-001 | ≤ 14 days |
+| 14 | Package report for Governing Body (GV-WF-01) | QAPI Lead | GV-FM-023 | ≥ 7 days pre-Governing Body meeting |
 
 ### 7. REQUIRED FORMS & DOCUMENTS
 QA-FM-001, QA-FM-002, QA-FM-003, QA-FM-004, QA-FM-005, QA-FM-006, GV-FM-023.
@@ -206,13 +221,13 @@ Minutes, action log, quarterly report for Governing Body.
 Quarterly (every 90 days max); minutes ≤14 days.
 
 ### 11. ESCALATION LOGIC
-Sentinel event or Immediate Jeopardy signal → emergency Committee + Administrator + Governing Body Chair within 24–72 hours.
+Sentinel event or Immediate Jeopardy signal → emergency Committee + Administrator + Governing Body Chair within 24–72 hours. Any pre-input audit not complete → meeting deferred or partial-scope meeting with documented gap and CAP. Material findings escalate to GV-WF-01 and EN-WF-12. Cross-domain pattern triggers QA-WF-04 PIP via QA-WF-17 monitoring. Aggregated audit results: CL-WF-26..37, CO-WF-23..30, QA-WF-13..18, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25.
 
 ### 12. FAILURE CONDITIONS
-No evidence of Governing-Body-reviewed QAPI activity = CoP deficiency.
+No evidence of Governing-Body-reviewed QAPI activity = CoP deficiency. Convening QAPI without complete pre-input audit evidence (CL-WF-26..37, CO-WF-23..30, QA-WF-13..18, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25) = invalid QAPI cycle and survey-citable. Skipping any audit-layer workflow blocks QA-WF-03 closure for the cycle.
 
 ### 13. AUDIT REQUIREMENTS
-4 quarters of minutes; Board-review evidence; action closure traceable.
+4 quarters of minutes; Board-review evidence; action closure traceable. Each cycle packet must include the pre-input completeness log proving every required audit (CL-WF-26..37, CO-WF-23..30, QA-WF-13..18, HR-WF-18..21, RM-WF-16..20, IT-WF-21..25) was complete and signed before the meeting. Cross-referenced to GV-WF-01, EN-WF-12, QA-WF-04, QA-WF-17.
 
 ---
 

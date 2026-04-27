@@ -9,6 +9,7 @@ import {
 import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { FormViewer } from '@/policy/components/FormViewer';
+import { PolicyAppendicesPanel } from '@/policy/components/PolicyAppendicesPanel';
 import { printForm } from '@/policy/utils/printForm';
 
 // ══════════════════════════════════════════════════════════════
@@ -741,8 +742,6 @@ function TabReferences({ policy, sectionIdx = 0 }: { policy: SharedPolicy; secti
 // ── TAB: APPENDICES ───────────────────────────────────────────
 function TabAppendices({ policy }: { policy: SharedPolicy }) {
   const isGV = policy.policyId === 'GV-GB-001';
-  const theme = useShellStore(s => s.theme);
-  const isLight = theme === 'care-indeed-light';
   const [activeApp, setActiveApp] = useState('A');
   const apps = [
     { id: 'A', label: 'Appx A: Roster',      title: 'Governing Body Membership Roster' },
@@ -755,10 +754,8 @@ function TabAppendices({ policy }: { policy: SharedPolicy }) {
   ];
   if (!isGV) {
     return (
-      <div className="demo-view-enter mt-8 flex flex-col items-center justify-center py-20">
-        <LayoutList className={`mb-4 ${isLight ? 'text-[#E5E4E3]' : 'text-white/20'}`} size={48} />
-        <p className={`text-[13px] font-montserrat uppercase tracking-widest ${isLight ? 'text-[#747470]' : 'text-white/40'}`}>Appendices Available for Specimen Policy</p>
-        <p className={`text-[11px] mt-2 ${isLight ? 'text-[#9E9D9A]' : 'text-white/30'}`}>Select GV-GB-001 to view Forms &amp; Appendices</p>
+      <div className="demo-view-enter mt-8">
+        <PolicyAppendicesPanel policyId={policy.policyId} />
       </div>
     );
   }
@@ -814,7 +811,7 @@ function TabAppendices({ policy }: { policy: SharedPolicy }) {
           style={{ background: 'linear-gradient(to bottom, white 0%, transparent 100%)' }} />
         {/* Scrollable form content */}
         <div className="appendices-scroll w-full h-full overflow-y-auto">
-          <FormViewer formId={APPENDIX_FORM_MAP[activeApp]} />
+          <FormViewer formId={APPENDIX_FORM_MAP[activeApp]} enableEmbeddedSigning />
         </div>
         {/* Fade out at bottom */}
         <div className="pointer-events-none absolute bottom-0 inset-x-0 h-20 z-10 no-print"

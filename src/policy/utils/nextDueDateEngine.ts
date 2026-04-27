@@ -44,6 +44,7 @@ const CADENCE_OFFSET: Record<EventCadence, Offset> = {
   Annual:          { years: 1 },
   Semiannual:      { months: 6 },
   Biennial:        { years: 2 },
+  Triennial:       { years: 3 },
   Weekly:          { days: 7 },
   Biweekly:        { days: 14 },
   'Ad-hoc':        null,

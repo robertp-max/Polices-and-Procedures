@@ -30,6 +30,7 @@ export type EventCadence =
   | 'Annual'
   | 'Semiannual'
   | 'Biennial'
+  | 'Triennial'
   | 'Weekly'
   | 'Biweekly'
   | 'Ad-hoc'

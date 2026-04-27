@@ -21,6 +21,9 @@ import type {
   MasterControlCategory,
   MasterControlItem,
 } from '@/policy/types/masterControlInventory';
+import {
+  useComplianceExecution, selectBlockedUnits, selectAllExecutionUnits,
+} from '@/policy/compliance-execution';
 
 type RiskFilter = 'ALL' | ControlRisk;
 type StatusFilter = 'ALL' | ControlStatus;
@@ -211,6 +214,18 @@ export function MasterControlInventory() {
     };
   }, [filteredSortedControls]);
 
+  /* ── CES bridge: linked execution units across all controls ── */
+  const cesSnap     = useComplianceExecution();
+  const cesLinkage  = useMemo(() => {
+    const allUnits     = selectAllExecutionUnits(cesSnap);
+    const blockedUnits = selectBlockedUnits(cesSnap);
+    const openUnits    = allUnits.filter(u => u.complianceState !== 'completed');
+    return {
+      linkedActive:   openUnits.length,
+      blockedByControls: blockedUnits.length,
+    };
+  }, [cesSnap]);
+
   const toggleExpand = (id: number) => {
     setExpandedRows(prev => {
       const next = new Set(prev);
@@ -259,7 +274,7 @@ export function MasterControlInventory() {
           </div>
         </header>
 
-        <section className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2.5">
+        <section className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-9 gap-2.5">
           <StatCard label="Total Controls" value={summary.total} color="#007970" isLight={isLight} />
           <StatCard label="High Risk" value={summary.high} color="#EF4444" isLight={isLight} />
           <StatCard label="Material Risk" value={summary.material} color="#F59E0B" isLight={isLight} />
@@ -267,6 +282,8 @@ export function MasterControlInventory() {
           <StatCard label="Active" value={summary.active} color="#10B981" isLight={isLight} />
           <StatCard label="Deficient" value={summary.deficient} color="#EF4444" isLight={isLight} />
           <StatCard label="Unknown" value={summary.unknown} color="#F59E0B" isLight={isLight} />
+          <StatCard label="Linked Exec Units" value={cesLinkage.linkedActive} color="#1A3778" isLight={isLight} />
+          <StatCard label="Blocked by Controls" value={cesLinkage.blockedByControls} color="#B0271F" isLight={isLight} />
         </section>
 
         <section

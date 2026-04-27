@@ -138,7 +138,81 @@ Integration pattern:
 
 ---
 
-## 7) Known Constraints and Limitations
+## 7) Right-Panel View Toggle — Workflow ↔ Calendar Event
+
+### Overview
+
+The right-side event panel in `MasterCalendarPage` supports two view modes, selectable via a compact pill toggle that lives in the `STEP | SLA | RISK` projection row of the panel header.
+
+```
+[ STEP ]   [ SLA ]   [ RISK ]        [ WF | EVT ]
+```
+
+### Toggle behavior
+
+| Mode | Label | Default | Description |
+|------|-------|---------|-------------|
+| `workflow` | `WF` | ✅ Yes | Full workflow execution panel — tabs (Workflow, Event Record, Audit View), step checklist, form completion, certify gate. Unchanged. |
+| `event` | `EVT` | No | Google Calendar-style event preview (light mode, read-only summary). |
+
+- The toggle is a **view-mode switch only** — it does NOT navigate, does NOT reload, and does NOT modify execution state.
+- State is local (`useState`) scoped to the `ActivePanel` component. Switching events resets to `workflow`.
+- Both views draw from the **same `RegulatoryEvent` object** and `regulatoryExecutionStore`. No duplicate state.
+
+### Component location
+
+- Component: `src/policy/components/regulatory/WorkflowExecutionPanel.tsx`
+- Toggle: `ViewToggle` (private function in the same file)
+- Event view: `CalendarEventView` (private function in the same file)
+- Helper sub-components: `CalEvtMetaRow`, `CalEvtSectionHeading`
+
+### Calendar Event View — content structure
+
+The Event view renders a light-mode, Google Calendar-style summary with the following sections:
+
+| Section | Data Source |
+|---------|-------------|
+| Google Calendar sync notice | Static label |
+| Status chips (urgency, SLA, mandate type) | `store.effectiveUrgency()`, `computeSla()`, `event.mandateType` |
+| Domain + policy refs | `DOMAIN_PALETTE[event.domain]`, `event.policyRefs` |
+| Event title + owner | `event.title`, `event.owner`, `event.ownerRole`, `event.id` |
+| Date / Recurrence / Location | `event.date`, `event.cadence`, `event.location` |
+| Regulatory driver | `event.regulatoryDriver` |
+| Event Summary | `event.summary` |
+| Current Step | First incomplete step from `event.processFlow` via `store.effectiveStepStatus()` |
+| Workflow Progress | `store.validateEvent()` — `stepsComplete / stepsTotal`, `formsComplete / formsTotal` |
+| What To Do | `currentStep.instructions` (newline-delimited, rendered as numbered list) |
+| Required Form | `currentStep.requiredFormIds[]` mapped to `event.requiredForms` labels |
+| Expected Output | `currentStep.expectedOutput` |
+| On Complete | `currentStep.onCompleteText` |
+
+### View Workflow CTA (footer — Event mode)
+
+When in `event` mode, the panel footer replaces the Certify action bar with:
+
+- Left: `"Calendar preview · syncs to Google Calendar"` (muted label)
+- Right: **`View Workflow →`** button (teal, enterprise pill style)
+  - Clicking sets `viewMode` back to `'workflow'`
+  - Does NOT navigate, does NOT open a new route
+
+### Google Calendar sync mapping (future)
+
+The Calendar Event View is intentionally structured to map to a future Google Calendar event description + deep link:
+
+| Calendar Event Field | Source |
+|---------------------|--------|
+| Event title | `event.title` |
+| Event description (HTML) | Rendered from `event.summary`, current step, what-to-do list, required form, expected output, on-complete, deep link |
+| Date / Time | `event.date` + `event.time` / `event.timeEnd` |
+| Recurrence | `event.cadence` mapped to RRULE |
+| Location | `event.location` |
+| Status / urgency | Computed from `regulatoryExecutionStore` |
+
+**No live Google Calendar API sync is implemented in this pass.** The Calendar Event View is a preview only; sync will be added as a future integration milestone. Implementation target: EventBridge → Lambda calendar-sync handler → Google Calendar API (see Section 10, AWS Phase 1).
+
+---
+
+## 8) Known Constraints and Limitations  <!-- was §7 -->
 
 1. Execution state is primarily local persisted state (single-client perspective).
 2. Some generated artifacts (e.g., `workflowTemplates.generated.ts`) appear underutilized in active UI flow.

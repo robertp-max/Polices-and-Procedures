@@ -1074,7 +1074,7 @@ const ViewAppendices = () => {
 
       {/* Active appendix form — Brad's FormViewer inside the green box */}
       <div className="flex-1 bg-white rounded-xl shadow-sm border-2 border-[#007970] overflow-y-auto">
-        <FormViewer formId={activeAppDef.formId} />
+        <FormViewer formId={activeAppDef.formId} enableEmbeddedSigning />
       </div>
     </div>
   );

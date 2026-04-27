@@ -564,7 +564,7 @@ export function formTitle(id: string): string { return FORM_TITLES[id] ?? id; }
 function main() {
   const { ids: knownForms, titles: formTitles } = loadKnownFormIds();
   const files = readdirSync(WORKFLOW_DIR)
-    .filter((f) => /^[A-Z]{2}-WORKFLOWS\.md$/.test(f))
+    .filter((f) => /^[A-Z]{2}-WORKFLOWS(?:-[A-Z]+)?\.md$/.test(f))
     .map((f) => join(WORKFLOW_DIR, f));
 
   const allWorkflows: Workflow[] = [];

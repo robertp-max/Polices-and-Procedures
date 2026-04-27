@@ -15,6 +15,7 @@ const TaxonomyPage      = lazy(() => import('@/policy/pages/TaxonomyPage').then(
 const GovernancePage    = lazy(() => import('@/policy/pages/GovernancePage').then(m => ({ default: m.GovernancePage })))
 const MasterCalendarPage = lazy(() => import('@/policy/pages/MasterCalendarPage').then(m => ({ default: m.MasterCalendarPage })))
 const AuditModePage      = lazy(() => import('@/policy/pages/AuditModePage').then(m => ({ default: m.AuditModePage })))
+const EvidenceCenterPage = lazy(() => import('@/policy/pages/EvidenceCenterPage').then(m => ({ default: m.EvidenceCenterPage })))
 const DemoPage          = lazy(() => import('@/policy/pages/DemoPage').then(m => ({ default: m.DemoPage })))
 const FrameworkPage     = lazy(() => import('@/policy/pages/FrameworkPage').then(m => ({ default: m.FrameworkPage })))
 const FormsPage         = lazy(() => import('@/policy/pages/FormsPage').then(m => ({ default: m.FormsPage })))
@@ -37,6 +38,16 @@ const ModulePlayerPage   = lazy(() => import('@/policy/journey/pages/ModulePlaye
 const SupervisorPage     = lazy(() => import('@/policy/journey/pages/SupervisorPage').then(m => ({ default: m.SupervisorPage })))
 const AdminPage          = lazy(() => import('@/policy/journey/pages/AdminPage').then(m => ({ default: m.AdminPage })))
 const UserGuidePage      = lazy(() => import('@/policy/journey/pages/UserGuidePage').then(m => ({ default: m.UserGuidePage })))
+
+// ── Help Center (eCIgn knowledge base) ───────────────────────────
+const HelpCenterPage     = lazy(() => import('@/policy/help/HelpCenterPage').then(m => ({ default: m.HelpCenterPage })))
+
+// ── CES (Compliance Execution Sprint System) ─────────────────────
+const CesDashboardPage = lazy(() => import('@/policy/ces/pages/CesDashboardPage').then(m => ({ default: m.CesDashboardPage })))
+const CesBoardPage     = lazy(() => import('@/policy/ces/pages/CesBoardPage').then(m => ({ default: m.CesBoardPage })))
+const CesWorkloadsPage = lazy(() => import('@/policy/ces/pages/CesWorkloadsPage').then(m => ({ default: m.CesWorkloadsPage })))
+const CesReportsPage   = lazy(() => import('@/policy/ces/pages/CesReportsPage').then(m => ({ default: m.CesReportsPage })))
+const MyTasksPage      = lazy(() => import('@/policy/ces/pages/MyTasksPage').then(m => ({ default: m.MyTasksPage })))
 
 // Minimal route-level loading fallback (transparent, no flash)
 const PageLoader = () => (
@@ -79,6 +90,7 @@ function App() {
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/calendar" element={<MasterCalendarPage />} />
                   <Route path="/audit" element={<AuditModePage />} />
+                  <Route path="/evidence" element={<EvidenceCenterPage />} />
                   <Route path="/library" element={<LibraryPage />} />
                   <Route path="/library/:policyId" element={<PolicyDetailPage />} />
                   <Route path="/drafts" element={<DraftsPage />} />
@@ -104,6 +116,20 @@ function App() {
                   <Route path="/journey/supervisor"         element={<SupervisorPage />} />
                   <Route path="/journey/admin"              element={<AdminPage />} />
                   <Route path="/journey/guide"              element={<UserGuidePage />} />
+                  {/* Help Center (knowledge base) */}
+                  <Route path="/help/*" element={<HelpCenterPage />} />
+
+                  {/* Compliance Execution Sprint System */}
+                  <Route path="/ces"           element={<Navigate to="/ces/dashboard" replace />} />
+                  <Route path="/ces/dashboard" element={<CesDashboardPage />} />
+                  <Route path="/ces/board"     element={<CesBoardPage />} />
+                  {/* Sprint calendar is merged into the unified Master Calendar (toggle: view=sprint). */}
+                  <Route path="/ces/calendar"  element={<Navigate to="/calendar?view=sprint" replace />} />
+                  <Route path="/ces/workloads" element={<CesWorkloadsPage />} />
+                  <Route path="/ces/reports"   element={<CesReportsPage />} />
+                  {/* My Tasks — execution-layer view of TASK obligations for current user. */}
+                  <Route path="/my-tasks"      element={<MyTasksPage />} />
+                  <Route path="/ces/my-tasks"  element={<Navigate to="/my-tasks" replace />} />
 
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>

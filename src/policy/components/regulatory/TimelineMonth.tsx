@@ -197,26 +197,32 @@ function TimelineChip({
       type="button"
       onClick={onClick}
       title={certified ? `${event.title} — Certified & Locked` : event.title}
-      className="group relative w-full text-left rounded-md overflow-hidden transition-colors duration-150 px-1.5 py-1"
+      className="group relative w-full text-left rounded-md transition-colors duration-150 px-1.5 py-1"
       style={{
-        background: active ? `${color}24` : bg,
-        border: `1px solid ${active ? color : `${color}66`}`,
+        background: active ? `${color}18` : bg,
+        border: `1px solid ${active ? color : `${color}55`}`,
       }}
     >
-      <span aria-hidden className="absolute inset-y-0 left-0 w-[2px]" style={{ background: color }} />
-      <div className="pl-1 pr-4">
-        <p
-          className="font-montserrat font-bold text-white leading-tight truncate"
-          style={{ fontSize: 10 }}
-        >
-          {event.title}
-        </p>
-        <p
-          className="font-roboto truncate leading-snug"
-          style={{ fontSize: 9, color }}
-        >
-          {event.id.replace(/^EVT-/, '')}
-        </p>
+      <div className="flex items-start gap-1.5 pr-4">
+        <span
+          aria-hidden
+          className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full"
+          style={{ background: color }}
+        />
+        <div className="min-w-0">
+          <p
+            className="font-montserrat font-bold text-white leading-tight truncate"
+            style={{ fontSize: 10 }}
+          >
+            {event.title}
+          </p>
+          <p
+            className="font-roboto truncate leading-snug text-white/55"
+            style={{ fontSize: 9 }}
+          >
+            {event.id.replace(/^EVT-/, '')}
+          </p>
+        </div>
       </div>
       {certified && (
         <span

@@ -15,6 +15,8 @@ import { WorkflowExecutionPanel } from '@/policy/components/regulatory/WorkflowE
 import {
   TEAL_PRIMARY, ACTION_COLOR, STATE_COLOR, classifyInstance,
 } from '@/policy/components/regulatory/timelineState';
+import { SprintTaskPanel } from '@/policy/ces/components/details/SprintTaskPanel';
+import { useComplianceExecution } from '@/policy/compliance-execution';
 
 /* ═══════════════════════════════════════════════════════════════
    EXECUTION TIMELINE
@@ -71,7 +73,6 @@ export function MasterCalendarPage() {
     }
     // Prefer an instance in the visible month; otherwise first overall.
     return monthInstances[0] ?? allInstances[0] ?? null;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeId, allInstances, monthInstances]);
 
   /* ── React to URL (Dashboard → Timeline deep link) ── */
@@ -136,6 +137,42 @@ export function MasterCalendarPage() {
     [monthInstances, today, store.completions, store.stepStates],
   );
 
+  /* ── View toggle: 'calendar' (default) | 'sprint' (CES 14-day) ── */
+  const view = (searchParams.get('view') === 'sprint') ? 'sprint' : 'calendar';
+  const setView = (next: 'calendar' | 'sprint') => {
+    const p = new URLSearchParams(searchParams);
+    if (next === 'sprint') p.set('view', 'sprint'); else p.delete('view');
+    setSearchParams(p, { replace: true });
+  };
+
+  /* ── Sprint window scoping (Mon week 1 → Fri week 2) ──
+     In sprint mode the calendar shell is the SAME as Events mode, but
+     the dataset is filtered to the active sprint window and limited to
+     mandated/recurring obligations (no per-clinician onboarding). */
+  const ces = useComplianceExecution();
+  const sprintInstances = useMemo(() => {
+    if (view !== 'sprint') return [];
+    const startMs = new Date(ces.activeSprint.startDate + 'T00:00:00').getTime();
+    const endMs   = new Date(ces.activeSprint.endDate   + 'T23:59:59').getTime();
+    return allInstances.filter(e => {
+      const t = new Date(e.date + 'T00:00:00').getTime();
+      if (t < startMs || t > endMs) return false;
+      // Strip per-employee onboarding tasks; keep mandated/recurring/etc.
+      const cad = (e.cadence ?? '').toString().toLowerCase();
+      if (cad === 'onboarding' || cad === 'personal') return false;
+      return true;
+    });
+  }, [view, allInstances, ces.activeSprint.startDate, ces.activeSprint.endDate]);
+
+  // In sprint mode, jump the visible month to the sprint's anchor month
+  // so the calendar shell shows the sprint days first.
+  useEffect(() => {
+    if (view !== 'sprint') return;
+    const d = new Date(ces.activeSprint.startDate + 'T00:00:00');
+    setYear(d.getFullYear());
+    setMonth(d.getMonth());
+  }, [view, ces.activeSprint.startDate]);
+
   return (
     <div className="h-full w-full flex flex-col font-sans animate-in fade-in duration-500 px-6 md:px-10 py-5 gap-4 overflow-hidden relative z-10">
 
@@ -146,30 +183,61 @@ export function MasterCalendarPage() {
         onNext={() => shiftMonth(+1)}
         onToday={goToday}
         rollup={rollup}
+        view={view}
+        onViewChange={setView}
       />
 
-      <JulyReadinessBanner today={today} />
+      {view === 'calendar' && <JulyReadinessBanner today={today} />}
 
-      {/* ── 70 / 30 split ── */}
-      <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
-        <div className="col-span-7 flex flex-col min-h-0">
-          <TimelineMonth
-            year={year}
-            month={month}
-            events={monthInstances}
-            activeId={activeInstance?.id ?? null}
-            onSelect={selectInstance}
-            today={today}
-          />
+      {view === 'calendar' ? (
+        /* ── 70 / 30 split (Events View — image 1 layout) ── */
+        <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
+          <div className="col-span-7 flex flex-col min-h-0">
+            <TimelineMonth
+              year={year}
+              month={month}
+              events={monthInstances}
+              activeId={activeInstance?.id ?? null}
+              onSelect={selectInstance}
+              today={today}
+            />
+          </div>
+          <div className="col-span-3 flex flex-col min-h-0">
+            <WorkflowExecutionPanel
+              event={activeInstance}
+              onClear={activeInstance ? clearSelection : undefined}
+              today={today}
+            />
+          </div>
         </div>
-        <div className="col-span-3 flex flex-col min-h-0">
-          <WorkflowExecutionPanel
-            event={activeInstance}
-            onClear={activeInstance ? clearSelection : undefined}
-            today={today}
-          />
+      ) : (
+        /* ── Sprint View — same calendar shell, sprint-scoped data, sprint task panel ── */
+        <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
+          <div className="col-span-7 flex flex-col min-h-0">
+            <TimelineMonth
+              year={year}
+              month={month}
+              events={sprintInstances}
+              activeId={activeInstance?.id ?? null}
+              onSelect={selectInstance}
+              today={today}
+            />
+          </div>
+          <div className="col-span-3 flex flex-col min-h-0">
+            <SprintTaskPanel
+              event={
+                // Prefer an event that is actually in this sprint window;
+                // otherwise show empty state.
+                activeInstance && sprintInstances.some(e => e.id === activeInstance.id)
+                  ? activeInstance
+                  : sprintInstances[0] ?? null
+              }
+              onClear={activeInstance ? clearSelection : undefined}
+              today={today}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <ToastHost />
     </div>
@@ -178,7 +246,7 @@ export function MasterCalendarPage() {
 
 /* ─── Header (month nav + state roll-up) ─────────────── */
 function TimelineHeader({
-  monthLabel, today, onPrev, onNext, onToday, rollup,
+  monthLabel, today, onPrev, onNext, onToday, rollup, view, onViewChange,
 }: {
   monthLabel: string;
   today: Date;
@@ -186,6 +254,8 @@ function TimelineHeader({
   onNext: () => void;
   onToday: () => void;
   rollup: { overdue: number; blocked: number; dueSoon: number; onTrack: number; complete: number };
+  view: 'calendar' | 'sprint';
+  onViewChange: (v: 'calendar' | 'sprint') => void;
 }) {
   return (
     <div className="flex items-end justify-between gap-4 flex-wrap">
@@ -196,19 +266,51 @@ function TimelineHeader({
             className="text-[10px] font-montserrat font-bold uppercase tracking-[0.28em]"
             style={{ color: TEAL_PRIMARY }}
           >
-            Execution Timeline
+            {view === 'sprint' ? 'CES Sprint Window' : 'Event Calendar'}
           </span>
         </div>
         <h1
           className="font-outfit font-light text-white leading-tight"
           style={{ fontSize: 24, letterSpacing: '-0.01em' }}
         >
-          Workflow instances · {monthLabel}
+          {view === 'sprint'
+            ? 'Sprint execution · Mon–Fri 2-week window'
+            : `Regulatory events · ${monthLabel}`}
         </h1>
       </div>
 
       <div className="flex items-center gap-3">
-        <StateLegend rollup={rollup} />
+        {view === 'calendar' && <StateLegend rollup={rollup} />}
+
+        {/* View toggle: Calendar ↔ Sprint */}
+        <div className="flex items-center gap-1 rounded-lg border border-white/10 p-0.5" role="tablist" aria-label="Calendar view">
+          <button
+            role="tab"
+            aria-selected={view === 'calendar' ? 'true' : 'false'}
+            onClick={() => onViewChange('calendar')}
+            className="text-[11px] font-outfit px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors"
+            style={{
+              background: view === 'calendar' ? 'rgba(255,255,255,0.08)' : 'transparent',
+              color:      view === 'calendar' ? '#fff' : 'rgba(255,255,255,0.65)',
+            }}
+          >
+            <CalendarDays size={11} />
+            Calendar
+          </button>
+          <button
+            role="tab"
+            aria-selected={view === 'sprint' ? 'true' : 'false'}
+            onClick={() => onViewChange('sprint')}
+            className="text-[11px] font-outfit px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors"
+            style={{
+              background: view === 'sprint' ? 'rgba(255,255,255,0.08)' : 'transparent',
+              color:      view === 'sprint' ? '#fff' : 'rgba(255,255,255,0.65)',
+            }}
+          >
+            <CalendarRange size={11} />
+            Sprint
+          </button>
+        </div>
 
         <div className="flex items-center gap-1 rounded-lg border border-white/10 p-0.5">
           <NavBtn onClick={onPrev} ariaLabel="Previous month"><ChevronLeft size={14} /></NavBtn>
