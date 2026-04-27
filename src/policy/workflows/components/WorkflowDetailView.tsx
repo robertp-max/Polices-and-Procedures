@@ -533,7 +533,13 @@ function FormsTab({ wf }: { wf: Workflow }) {
 
           {/* Embedded form */}
           <div className="flex-1 min-h-0 overflow-auto">
-            <FormViewer formId={openFormId} formSource="workflow" enableEmbeddedSigning />
+            <FormViewer
+              formId={openFormId}
+              formSource="workflow"
+              enableEmbeddedSigning
+              hhcEventId={`EVT-${wf.id}`}
+              hhcWorkflowId={wf.id}
+            />
           </div>
         </div>
       )}

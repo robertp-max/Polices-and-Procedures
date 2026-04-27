@@ -611,6 +611,12 @@ export interface eCIgnWorkspaceProps {
   formSource?:          PolicyLinkSource;
   /** Phase 11 — Parent task ID, when opened from a Task/Obligation. */
   parentTaskId?:        string;
+  /** HHC Phase 1 — The regulatory/calendar event_id this signing belongs to.
+   *  When provided, eSign evidence is indexed under this ID in the Evidence Center.
+   *  Falls back to "EVT-FORM-{formInstanceId}" if omitted. */
+  hhcEventId?:          string;
+  /** HHC Phase 1 — The workflow_id context for this signing (e.g. WF-GV-FM-017). */
+  hhcWorkflowId?:       string;
   getPrintableFormHtml: () => string;
   onConfirm:            (record: SignatureRecord) => void;
   onClose:              () => void;
@@ -633,6 +639,8 @@ export function eCIgnWorkspace({
   policies,
   formSource = 'forms_library',
   parentTaskId,
+  hhcEventId,
+  hhcWorkflowId,
   getPrintableFormHtml,
   onConfirm,
   onClose,
@@ -663,6 +671,9 @@ export function eCIgnWorkspace({
      post a DOCUMENT_SIGNED evidence record + audit row to the Phase-1 backend.
      Fires exactly once per (instance_id, lock event) via a ref guard.        */
   const hhcMirroredRef = useRef<string | null>(null);
+  const [hhcEvidenceResult, setHhcEvidenceResult] = useState<{
+    evidence_id: string; event_id: string; workflow_id: string;
+  } | null>(null);
   useEffect(() => {
     if (backendState !== 'signed_locked') return;
     if (!instance) return;
@@ -671,31 +682,40 @@ export function eCIgnWorkspace({
     hhcMirroredRef.current = key;
     const sigHash = (instance.manifest_hash || instance.document_hash || '').toString();
     if (!sigHash) return;            // nothing to attest yet
+    // Use the regulatory event_id if provided; fall back to a stable derived key
+    // so that evidence is not indexed under the transient form_instance_id.
+    const resolvedEventId    = hhcEventId    || `EVT-FORM-${formInstanceId}`;
+    const resolvedWorkflowId = hhcWorkflowId || undefined;
     void (async () => {
       try {
         const r = await recordEsignEvidence({
-          policy_id:     linkedPolicyIds[0] || policies[0],
-          workflow_id:   undefined,    // backend will derive WF-FORM-{form_id}
-          event_id:      formInstanceId,
-          form_id:       formId,
-          instance_id:   instance.instance_id,
-          document_id:   String(instance.document_version_id || formId),
-          document_hash: instance.document_hash || null,
-          signature_hash: sigHash,
+          policy_id:        linkedPolicyIds[0] || policies[0],
+          workflow_id:      resolvedWorkflowId,
+          event_id:         resolvedEventId,
+          form_id:          formId,
+          form_instance_id: formInstanceId,   // stored separately — NOT used as event key
+          document_id:      String(instance.document_version_id || formId),
+          document_hash:    instance.document_hash || null,
+          signature_hash:   sigHash,
           attestation_text: 'I attest that I have read, understood, and signed this document.',
-          signer_id:     DEMO_SESSION.id,
-          signer_name:   DEMO_SESSION.name,
-          signer_role:   DEMO_SESSION.role,
-          signer_email:  DEMO_SESSION.email,
-          signed_at:     instance.locked_at_utc || new Date().toISOString(),
+          signer_id:        DEMO_SESSION.id,
+          signer_name:      DEMO_SESSION.name,
+          signer_role:      DEMO_SESSION.role,
+          signer_email:     DEMO_SESSION.email,
+          signed_at:        instance.locked_at_utc || new Date().toISOString(),
         });
-        // Surface to console for demo verification (audit row in CloudWatch + DDB).
+        // Surface confirmation UI + console log for demo verification.
+        setHhcEvidenceResult({
+          evidence_id: r.evidence_id,
+          event_id:    r.event_id,
+          workflow_id: r.workflow_id,
+        });
         console.info('[hhc.esign.evidence]', r);
       } catch (e) {
         console.warn('[hhc.esign.evidence] failed', e);
       }
     })();
-  }, [backendState, instance, linkedPolicyIds, policies, formInstanceId, formId]);
+  }, [backendState, instance, linkedPolicyIds, policies, formInstanceId, formId, hhcEventId, hhcWorkflowId]);
 
   /* ── Local-only UI state (presentational, never gates progression) ── */
   const [localRecord,    setLocalRecord]    = useState<SignatureRecord | null>(null);
@@ -1414,6 +1434,23 @@ export function eCIgnWorkspace({
                       <p className="font-mono text-[10.5px] mt-3" style={{ color: MUTED }}>
                         doc_hash {String(instance.document_hash).slice(0, 16)}… · manifest {String(instance.manifest_hash ?? '').slice(0, 16)}…
                       </p>
+                    )}
+                    {/* HHC Phase 1 — compliance evidence confirmation banner */}
+                    {hhcEvidenceResult && (
+                      <div
+                        className="mt-4 inline-flex items-start gap-2 px-4 py-2.5 rounded-xl text-left"
+                        style={{ background: '#ECFDF5', border: '1px solid #A7F3D0' }}
+                      >
+                        <CheckCircle2 size={14} style={{ color: '#059669', marginTop: 2, flexShrink: 0 }} />
+                        <div>
+                          <span className="font-montserrat font-bold text-[9px] uppercase tracking-[0.14em] block" style={{ color: '#065F46' }}>
+                            Compliance Evidence Saved
+                          </span>
+                          <span className="font-mono text-[10.5px]" style={{ color: '#065F46' }}>
+                            event_id: {hhcEvidenceResult.event_id} · evidence_id: {hhcEvidenceResult.evidence_id}
+                          </span>
+                        </div>
+                      </div>
                     )}
                   </div>
 

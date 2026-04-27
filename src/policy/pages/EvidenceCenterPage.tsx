@@ -153,6 +153,9 @@ export function EvidenceCenterPage() {
   const [eventId,    setEventId]    = useState(DEFAULT_EVENT);
   const [eventInput, setEventInput] = useState(DEFAULT_EVENT);
   const [search,     setSearch]     = useState('');
+  const [filterFormId,     setFilterFormId]     = useState('');
+  const [filterPolicyId,   setFilterPolicyId]   = useState('');
+  const [filterEvidenceId, setFilterEvidenceId] = useState('');
   const [files,   setFiles] = useState<EvidenceFile[]>([]);
   const [audit,   setAudit] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -183,13 +186,22 @@ export function EvidenceCenterPage() {
   useEffect(() => { load(eventId); }, [eventId, load]);
 
   const filtered = useMemo(() => {
+    let result = files;
     const q = search.trim().toLowerCase();
-    if (!q) return files;
-    return files.filter((f) =>
-      [f.filename, f.policy_id, f.workflow_id, f.event_id, f.form_id || '', f.status, f.source_system || '']
-        .join(' ').toLowerCase().includes(q)
-    );
-  }, [files, search]);
+    if (q) {
+      result = result.filter((f) =>
+        [f.filename, f.policy_id, f.workflow_id, f.event_id, f.form_id || '', f.status, f.source_system || '', f.evidence_id]
+          .join(' ').toLowerCase().includes(q)
+      );
+    }
+    const fid = filterFormId.trim().toLowerCase();
+    if (fid) result = result.filter((f) => (f.form_id || '').toLowerCase().includes(fid));
+    const pid = filterPolicyId.trim().toLowerCase();
+    if (pid) result = result.filter((f) => f.policy_id.toLowerCase().includes(pid));
+    const eid = filterEvidenceId.trim().toLowerCase();
+    if (eid) result = result.filter((f) => f.evidence_id.toLowerCase().includes(eid));
+    return result;
+  }, [files, search, filterFormId, filterPolicyId, filterEvidenceId]);
 
   const onSelectEvent = () => {
     const v = eventInput.trim();
@@ -322,6 +334,50 @@ export function EvidenceCenterPage() {
                 Load
               </button>
             </div>
+
+            {/* Narrow client-side filters — applied to the already-loaded files */}
+            <div className="flex items-center gap-2">
+              <label className="text-xs uppercase tracking-wider text-slate-500">Form</label>
+              <input
+                title="Filter by Form ID"
+                aria-label="Filter by Form ID"
+                value={filterFormId}
+                onChange={(e) => setFilterFormId(e.target.value)}
+                placeholder="GV-FM-017…"
+                className="bg-[#0f141c] border border-white/10 rounded px-2 py-1 text-sm w-32 focus:outline-none focus:border-[#FFC107]/60"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs uppercase tracking-wider text-slate-500">Policy</label>
+              <input
+                title="Filter by Policy ID"
+                aria-label="Filter by Policy ID"
+                value={filterPolicyId}
+                onChange={(e) => setFilterPolicyId(e.target.value)}
+                placeholder="GV-OG-005…"
+                className="bg-[#0f141c] border border-white/10 rounded px-2 py-1 text-sm w-32 focus:outline-none focus:border-[#FFC107]/60"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs uppercase tracking-wider text-slate-500">Evidence ID</label>
+              <input
+                title="Filter by Evidence ID"
+                aria-label="Filter by Evidence ID"
+                value={filterEvidenceId}
+                onChange={(e) => setFilterEvidenceId(e.target.value)}
+                placeholder="EVD-…"
+                className="bg-[#0f141c] border border-white/10 rounded px-2 py-1 text-sm w-36 focus:outline-none focus:border-[#FFC107]/60"
+              />
+            </div>
+            {(filterFormId || filterPolicyId || filterEvidenceId) && (
+              <button
+                onClick={() => { setFilterFormId(''); setFilterPolicyId(''); setFilterEvidenceId(''); }}
+                className="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400"
+                title="Clear filters"
+              >
+                ✕ Clear filters
+              </button>
+            )}
 
             <div className="flex items-center gap-2 ml-auto">
               <div className="relative">

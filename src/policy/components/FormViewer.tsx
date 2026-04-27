@@ -947,9 +947,13 @@ export interface FormViewerProps {
   formSource?:           'policy_viewer' | 'task' | 'forms_library' | 'workflow';
   /** Phase 11 — parent task ID, when opened from a Task/Obligation. */
   parentTaskId?:         string;
+  /** HHC Phase 1 — regulatory/calendar event_id to bind eSign evidence to. */
+  hhcEventId?:           string;
+  /** HHC Phase 1 — workflow_id context for eSign evidence. */
+  hhcWorkflowId?:        string;
 }
 
-export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, parentTaskId }: FormViewerProps) {
+export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, parentTaskId, hhcEventId, hhcWorkflowId }: FormViewerProps) {
   const { formId: routeId } = useParams();
   const navigate = useNavigate();
   // If formId prop is supplied → embedded inside a parent panel (no shell)
@@ -1251,6 +1255,8 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
             policies={content.policies}
             formSource={effectiveSource}
             parentTaskId={parentTaskId}
+            hhcEventId={hhcEventId}
+            hhcWorkflowId={hhcWorkflowId}
             getPrintableFormHtml={getPrintableFormHtml}
             onConfirm={handleConfirmSign}
             onClose={handleCancelSign}
@@ -1464,6 +1470,8 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
           policies={content.policies}
           formSource={effectiveSource}
           parentTaskId={parentTaskId}
+          hhcEventId={hhcEventId}
+          hhcWorkflowId={hhcWorkflowId}
           getPrintableFormHtml={getPrintableFormHtml}
           onConfirm={handleConfirmSign}
           onClose={handleCancelSign}

@@ -15,20 +15,23 @@ const API_BASE: string =
   'https://rtllnugat0.execute-api.us-west-1.amazonaws.com';
 
 export interface RecordEsignArgs {
-  policy_id?:        string;       // e.g. "EN-FM-001"; falls back to "POL-UNLINKED"
-  workflow_id?:      string;       // falls back to "WF-FORM-{form_id}"
-  event_id?:         string;       // falls back to instance_id then "EVT-ESIGN-{ulid}"
-  form_id:           string;
-  instance_id?:      string;
-  document_id?:      string;
-  document_hash?:    string | null;
-  signature_hash:    string;
-  attestation_text?: string;
-  signer_id:         string;
-  signer_name:       string;
-  signer_role?:      string;
-  signer_email?:     string;
-  signed_at?:        string;       // ISO; defaults to now()
+  policy_id?:         string;       // e.g. "GV-OG-005"; falls back to "POL-UNLINKED"
+  workflow_id?:       string;       // e.g. "WF-GV-FM-017"; falls back to "WF-FORM-{form_id}"
+  /** The regulatory / calendar event ID this signing belongs to.
+   *  Distinct from form_instance_id. Falls back to "EVT-FORM-{form_instance_id}". */
+  event_id?:          string;
+  form_id:            string;
+  /** The eCIgn form instance ID (FI-…). Stored separately from event_id. */
+  form_instance_id?:  string;
+  document_id?:       string;
+  document_hash?:     string | null;
+  signature_hash:     string;
+  attestation_text?:  string;
+  signer_id:          string;
+  signer_name:        string;
+  signer_role?:       string;
+  signer_email?:      string;
+  signed_at?:         string;       // ISO; defaults to now()
 }
 
 export interface EsignEvidenceResponse {
@@ -59,20 +62,20 @@ export async function recordEsignEvidence(args: RecordEsignArgs): Promise<EsignE
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...actorHeaders() },
     body: JSON.stringify({
-      policy_id:        args.policy_id   || undefined,
-      workflow_id:      args.workflow_id || undefined,
-      event_id:         args.event_id    || undefined,
+      policy_id:        args.policy_id        || undefined,
+      workflow_id:      args.workflow_id       || undefined,
+      event_id:         args.event_id          || undefined,
       form_id:          args.form_id,
-      instance_id:      args.instance_id || undefined,
-      document_id:      args.document_id || args.form_id,
-      document_hash:    args.document_hash ?? undefined,
+      form_instance_id: args.form_instance_id  || undefined,
+      document_id:      args.document_id       || args.form_id,
+      document_hash:    args.document_hash     ?? undefined,
       signature_hash:   args.signature_hash,
-      attestation_text: args.attestation_text ?? undefined,
+      attestation_text: args.attestation_text  ?? undefined,
       signer_id:        args.signer_id,
       signer_name:      args.signer_name,
-      signer_role:      args.signer_role  || undefined,
-      signer_email:     args.signer_email || undefined,
-      signed_at:        args.signed_at    || new Date().toISOString(),
+      signer_role:      args.signer_role       || undefined,
+      signer_email:     args.signer_email      || undefined,
+      signed_at:        args.signed_at         || new Date().toISOString(),
     }),
   });
   const text = await res.text();
