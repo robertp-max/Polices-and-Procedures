@@ -11,6 +11,7 @@ import { useShellStore } from '@/policy/stores/uiStore';
 import { FormViewer } from '@/policy/components/FormViewer';
 import { PolicyAppendicesPanel } from '@/policy/components/PolicyAppendicesPanel';
 import { printForm } from '@/policy/utils/printForm';
+import type { PolicyContentSection } from '@/policy/types';
 
 // ══════════════════════════════════════════════════════════════
 // SHARED POLICY DETAIL VIEW
@@ -26,6 +27,11 @@ export interface SharedPolicy {
   version: string; effectiveDate: string; nextReviewDate: string;
   policyOwner: string; approvedBy: string;
   purpose: string; scope: string[]; regulatoryTags: string[];
+  /** Full markdown body sections from allPoliciesContent.generated.ts.
+   *  When present (and policyId !== 'GV-GB-001'), the detail view
+   *  routes the content area through the generic generated-content
+   *  renderer instead of the GV-GB-001 specimen fallbacks. */
+  generatedSections?: PolicyContentSection[];
 }
 
 // ── SHARED REGULATORY ITEMS (colour lookups) ──────────────────
@@ -335,6 +341,103 @@ function DSimpleTable({ headers, rows }: { headers: string[]; rows: (string | Re
         </tbody>
       </table>
     </div>
+  );
+}
+
+// ── GENERIC GENERATED-CONTENT RENDERING ───────────────────────
+// For non-GV-GB-001 policies, content is sourced from the
+// extracted_full markdown corpus (allPoliciesContent.generated.ts).
+// These helpers render markdown-bodied sections using the same
+// brand-aligned chrome as the GV-GB-001 specimen tabs.
+
+/** Map a raw section.order (from the generated content) to one of the
+ *  seven shell tabs. Mirrors the mapping used in PolicyDetailPage. */
+function mapOrderToTab(order: number): string {
+  if (order === 1) return '__skip__';
+  if (order >= 2 && order <= 6) return 'overview';
+  if (order >= 7 && order <= 18) return 'procedures';
+  if (order === 19) return 'documentation';
+  if (order >= 20 && order <= 23) return 'compliance';
+  if (order >= 24 && order <= 28) return 'references';
+  if (order >= 29 && order <= 30) return 'references';
+  return 'appendices';
+}
+
+function cleanGenericTitle(raw: string): string {
+  return raw.replace(/\\\./g, '.').replace(/\\/g, '').trim();
+}
+
+function GenericGfmTable({ text }: { text: string }) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines[0]?.startsWith('|')) return null;
+  const parseRow = (line: string) =>
+    line.split('|').map(c => c.trim().replace(/\\_/g, '_')).filter((_, i, a) => i > 0 && i < a.length - 1);
+  const headers = parseRow(lines[0]);
+  const dataLines = lines.slice(2);
+  return (
+    <div className="w-full mb-6 break-inside-avoid shadow-sm rounded-lg overflow-hidden border border-[#E5E4E3] bg-white">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr>
+              {headers.map((h, i) => (
+                <th key={i} className="py-4 px-3 font-montserrat font-semibold text-[11px] tracking-[0.12em] uppercase text-[#524048] border-b border-[#E5E4E3] bg-[#FAFBF8]">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#E5E4E3]">
+            {dataLines.map((row, i) => (
+              <tr key={i} className="hover:bg-[#FAFBF8] transition-colors">
+                {parseRow(row).map((cell, j) => (
+                  <td key={j} className={`py-4 px-3 text-[#1F1C1B] font-roboto text-[14px] align-top leading-relaxed break-words whitespace-normal ${j === 0 ? 'font-medium' : ''}`}>{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function GenericMarkdownBody({ text }: { text: string }) {
+  if (!text || text.trim() === '---') return null;
+  return (
+    <div className="space-y-3">
+      {text.split(/\n\n+/).map((block, i) => {
+        const trimmed = block.trim();
+        if (!trimmed || trimmed === '---') return null;
+        if (trimmed.startsWith('|') && trimmed.includes('\n')) return <GenericGfmTable key={i} text={trimmed} />;
+        if (/^#{3,6}\s/.test(trimmed)) {
+          const heading = trimmed.replace(/^#+\s+/, '').replace(/\\\./g, '.').replace(/\\/g, '');
+          return <h4 key={i} className="font-montserrat font-semibold text-[14px] text-[#1F1C1B] mt-6 mb-3">{heading}</h4>;
+        }
+        if (/^[*\-] /m.test(trimmed)) {
+          const items = trimmed.split('\n').map(l => l.replace(/^[*\-]\s+/, '').trim()).filter(Boolean);
+          return (
+            <ul key={i} className="list-disc pl-6 space-y-2">
+              {items.map((item, j) => <li key={j} className="font-roboto text-[15px] text-[#1F1C1B] leading-relaxed">{item}</li>)}
+            </ul>
+          );
+        }
+        return <p key={i} className="font-roboto text-[15px] leading-relaxed text-[#1F1C1B]">{trimmed}</p>;
+      })}
+    </div>
+  );
+}
+
+/** Renders a single generated-content section inside the carousel. */
+function GenericSectionPanel({ section }: { section: import('@/policy/types').PolicyContentSection }) {
+  const cleanTitle = cleanGenericTitle(section.title);
+  const isEmpty = !section.body || section.body.trim() === '' || section.body.trim() === '---';
+
+  return (
+    <section className="break-inside-avoid bg-white rounded-2xl border border-[#E5E4E3] shadow-sm p-6 md:p-8">
+      <DSectionTitle title={cleanTitle} />
+      {isEmpty
+        ? <p className="font-roboto text-[13px] italic text-[#9E9D9A]">No additional detail in this section.</p>
+        : <GenericMarkdownBody text={section.body} />}
+    </section>
   );
 }
 
@@ -1051,7 +1154,7 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
   const setDetailMode = useShellStore(s => s.setDetailMode);
 
   // ── NAV TABS ──────────────────────────────────────────────────
-  const navTabs = [
+  let navTabs = [
     { id: 'overview',      label: 'Overview & Definitions', icon: Target },
     { id: 'statements',    label: 'Policy Statements',      icon: List },
     { id: 'procedures',    label: 'Procedures',             icon: Settings },
@@ -1071,7 +1174,7 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
   // Sections navigate one-at-a-time; cross into next tab at boundary.
   // Document order: 1-Header · 2-Purpose · 3-Scope · 4-PolicyStatement · 5-Definitions · 6+
   // Procedures sIdx 1-4 (6.2–6.5) only exist for GV-GB-001; non-GV policies show 6.1 only.
-  const FULL_SECTIONS = [
+  let FULL_SECTIONS = [
     { tabId: 'overview',      sIdx: 0, label: 'Overview' },
     { tabId: 'overview',      sIdx: 1, label: '2. Purpose' },
     { tabId: 'overview',      sIdx: 2, label: '3. Scope' },
@@ -1104,6 +1207,64 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
       { tabId: 'amendments',  sIdx: 0, label: 'Amendment Log' },
     ] : []),
   ];
+
+  // ── GENERIC CONTENT MODE ──────────────────────────────────────
+  // For non-GV-GB-001 policies, replace the GV-specific section list
+  // with one entry per real generated section (grouped by tab via
+  // mapOrderToTab). This drives the carousel through the actual
+  // policy content from extracted_full markdown.
+  const useGenericContent = !isGV && Array.isArray(policy.generatedSections) && policy.generatedSections.length > 0;
+  const genericSectionsByTab: Record<string, import('@/policy/types').PolicyContentSection[]> = {};
+  if (useGenericContent) {
+    // Helper: a section is "empty" if its body is whitespace-only or just markdown rule "---".
+    const isEmptyBody = (b: string) => {
+      const t = (b ?? '').trim();
+      return t === '' || t === '---';
+    };
+    // Pre-pass: drop synthetic parent headings that have no body but are
+    // immediately followed by deeper-level subsections (e.g. "6. Procedures"
+    // with empty body followed by 6.1, 6.2, …). The subsections carry the
+    // real content so the empty parent just creates a blank carousel page.
+    const all = policy.generatedSections!;
+    const keep = new Set<number>();
+    for (let i = 0; i < all.length; i++) {
+      const s = all[i];
+      if (mapOrderToTab(s.order) === '__skip__') continue;
+      if (isEmptyBody(s.body)) {
+        // Look ahead for a subsection with deeper level inside same tab.
+        const next = all[i + 1];
+        const sameTabDeeper = next
+          && mapOrderToTab(next.order) === mapOrderToTab(s.order)
+          && next.level > s.level;
+        if (sameTabDeeper) continue; // drop empty parent
+      }
+      keep.add(i);
+    }
+    for (let i = 0; i < all.length; i++) {
+      if (!keep.has(i)) continue;
+      const s = all[i];
+      const tabId = mapOrderToTab(s.order);
+      (genericSectionsByTab[tabId] ||= []).push(s);
+    }
+    // Build flat carousel list — each generated section becomes one carousel page.
+    // Preserve nav tab order so prev/next moves logically through the document.
+    const tabOrder = ['overview', 'statements', 'procedures', 'documentation', 'compliance', 'references', 'appendices'];
+    const flat: { tabId: string; sIdx: number; label: string }[] = [];
+    for (const tabId of tabOrder) {
+      const list = genericSectionsByTab[tabId] ?? [];
+      list.forEach((s, idx) => {
+        flat.push({ tabId, sIdx: idx, label: cleanGenericTitle(s.title) });
+      });
+    }
+    // If no overview sections exist, still show a synthetic header card so the
+    // carousel never starts empty (rare; almost all policies have a Policy Header section).
+    if (flat.length === 0) {
+      flat.push({ tabId: 'overview', sIdx: 0, label: 'Overview' });
+    }
+    FULL_SECTIONS = flat;
+    // Hide tabs with no content (always keep Appendices since forms render separately).
+    navTabs = navTabs.filter(t => t.id === 'appendices' || (genericSectionsByTab[t.id]?.length ?? 0) > 0);
+  }
 
   // ── SECTION NAVIGATION STATE ──────────────────────────────────
   // Single integer tracks position across ALL sections (global index).
@@ -1414,16 +1575,35 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
             key={`section-${activeSectionGlobalIdx}-${slidePhase === 'enter' ? 'in' : 'out'}`}
             className={`max-w-[1200px] w-full px-6 pt-10 pb-16 md:px-10 lg:px-12 ${slideClass}`}
           >
-            {activeTab === 'overview'      && <TabOverview      policy={policy} sectionIdx={activeSectionInTab} />}
-            {activeTab === 'statements'    && <TabStatements    policy={policy} />}
-            {activeTab === 'procedures'    && <TabProcedures    policy={policy} sectionIdx={activeSectionInTab} />}
-            {activeTab === 'documentation' && <TabDocumentation policy={policy} />}
-            {activeTab === 'compliance'    && <TabCompliance    policy={policy} sectionIdx={activeSectionInTab} />}
-            {activeTab === 'references'    && <TabReferences    policy={policy} sectionIdx={activeSectionInTab} />}
-            {activeTab === 'appendices'    && <TabAppendices    policy={policy} />}
-            {activeTab === 'alerts'        && <TabAlerts        policy={policy} />}
-            {activeTab === 'faq'           && <TabFAQ           policy={policy} />}
-            {activeTab === 'amendments'    && <TabAmendments    policy={policy} />}
+            {useGenericContent ? (
+              activeTab === 'appendices'
+                ? <TabAppendices policy={policy} />
+                : (() => {
+                    const list = genericSectionsByTab[activeTab] ?? [];
+                    const sec = list[activeSectionInTab];
+                    if (!sec) {
+                      return (
+                        <p className="font-roboto text-[14px] italic text-[#9E9D9A]">
+                          No content available for this section.
+                        </p>
+                      );
+                    }
+                    return <GenericSectionPanel section={sec} />;
+                  })()
+            ) : (
+              <>
+                {activeTab === 'overview'      && <TabOverview      policy={policy} sectionIdx={activeSectionInTab} />}
+                {activeTab === 'statements'    && <TabStatements    policy={policy} />}
+                {activeTab === 'procedures'    && <TabProcedures    policy={policy} sectionIdx={activeSectionInTab} />}
+                {activeTab === 'documentation' && <TabDocumentation policy={policy} />}
+                {activeTab === 'compliance'    && <TabCompliance    policy={policy} sectionIdx={activeSectionInTab} />}
+                {activeTab === 'references'    && <TabReferences    policy={policy} sectionIdx={activeSectionInTab} />}
+                {activeTab === 'appendices'    && <TabAppendices    policy={policy} />}
+                {activeTab === 'alerts'        && <TabAlerts        policy={policy} />}
+                {activeTab === 'faq'           && <TabFAQ           policy={policy} />}
+                {activeTab === 'amendments'    && <TabAmendments    policy={policy} />}
+              </>
+            )}
           </div>
         </div>
       </main>

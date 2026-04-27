@@ -6,6 +6,14 @@
 
 This is the single most important rule of the CES system. Regulatory deadlines exist independently of agency capacity. The CES system exists to **fit** the agency around immutable dates — not to negotiate them.
 
+> **Weekend rule (enforced):** every recurring/mandated event must
+> anchor on a Mon–Fri date. Sat/Sun anchors are auto-shifted forward
+> to the next business day by `enforceBusinessDay()` in
+> `src/policy/data/regulatoryEvents.ts`. The only escape hatch is
+> `event.isWeekendAllowed === true` for true 24/7 obligations
+> (on-call drills, holiday-period surveys). See
+> [12-Alignment-and-Verification.md](./12-Alignment-and-Verification.md).
+
 ---
 
 ## 2. Authoritative Calendar Sources

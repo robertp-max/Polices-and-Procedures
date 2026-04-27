@@ -14,6 +14,7 @@
 
 import { SharedPolicyDetailView, type SharedPolicy } from '@/policy/components/SharedPolicyDetailView';
 import { getCorpusPolicy } from '@/policy/data/policyCorpus';
+import { getPolicyContent } from '@/policy/data/policyContentMap';
 
 // ── Domain → human-readable label (mirrors LibraryPage DOMAINS table) ──────
 const DOMAIN_FULLNAME: Record<string, string> = {
@@ -75,6 +76,7 @@ export function buildSharedPolicy(policyId: string): SharedPolicy | null {
     purpose: `This policy establishes standards for ${p.title} to ensure compliance with enterprise and regulatory requirements.`,
     scope: ['All applicable personnel', 'Management'],
     regulatoryTags: getTagsForPolicy(p.id),
+    generatedSections: getPolicyContent(p.id)?.sections,
   };
 }
 

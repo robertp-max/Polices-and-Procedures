@@ -11,8 +11,6 @@ import { usePolicyStore } from '@/policy/stores/policyStore';
 import { useShellStore } from '@/policy/stores/uiStore';
 import type { PolicyContentSection } from '@/policy/types';
 import { GVGBDetailView } from '@/policy/pages/GVGBDetailView';
-import { GVPolicyDetailView, GV_POLICY_IDS } from '@/policy/pages/GVPolicyDetailView';
-import { CLPolicyDetailView, CL_POLICY_IDS } from '@/policy/pages/CLPolicyDetailView';
 
 // ─── TAB DEFINITIONS (same mapping as PolicyDetailModal) ────────────────────
 const TABS = [
@@ -36,7 +34,7 @@ function getTabId(order: number): string {
   return 'appendices';
 }
 
-// ─── MARKDOWN RENDERER ──────────────────────────────────────────────────────
+// ─── MARKDOWN RENDERER (brand-aligned, matches SharedPolicyDetailView) ──────
 function GfmTable({ text }: { text: string }) {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   if (!lines[0]?.startsWith('|')) return null;
@@ -45,25 +43,27 @@ function GfmTable({ text }: { text: string }) {
   const headers = parseRow(lines[0]);
   const dataLines = lines.slice(2);
   return (
-    <div className="overflow-x-auto mb-5 rounded-lg border border-gray-200 shadow-sm">
-      <table className="w-full text-left border-collapse text-xs">
-        <thead>
-          <tr className="bg-[#D4AF37] text-white">
-            {headers.map((h, i) => (
-              <th key={i} className="px-3 py-2.5 font-montserrat font-bold border-r border-[#006059] last:border-r-0 whitespace-nowrap">{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200 font-roboto">
-          {dataLines.map((row, i) => (
-            <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFBF8]'}>
-              {parseRow(row).map((cell, j) => (
-                <td key={j} className="px-3 py-2 text-[#1F1C1B] border-r border-gray-200 last:border-r-0 align-top leading-snug">{cell}</td>
+    <div className="w-full mb-6 break-inside-avoid shadow-sm rounded-lg overflow-hidden border border-[#E5E4E3] bg-white">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr>
+              {headers.map((h, i) => (
+                <th key={i} className="py-4 px-3 font-montserrat font-semibold text-[11px] tracking-[0.12em] uppercase text-[#524048] border-b border-[#E5E4E3] bg-[#FAFBF8]">{h}</th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-[#E5E4E3]">
+            {dataLines.map((row, i) => (
+              <tr key={i} className="hover:bg-[#FAFBF8] transition-colors">
+                {parseRow(row).map((cell, j) => (
+                  <td key={j} className={`py-4 px-3 text-[#1F1C1B] font-roboto text-[14px] align-top leading-relaxed break-words whitespace-normal ${j === 0 ? 'font-medium' : ''}`}>{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -71,39 +71,78 @@ function GfmTable({ text }: { text: string }) {
 function MarkdownBody({ text }: { text: string }) {
   if (!text || text.trim() === '---') return null;
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {text.split(/\n\n+/).map((block, i) => {
         const trimmed = block.trim();
         if (!trimmed || trimmed === '---') return null;
         if (trimmed.startsWith('|') && trimmed.includes('\n')) return <GfmTable key={i} text={trimmed} />;
+        // Sub-heading inside a body block (e.g., "#### 6.4.1 — Quorum Verification")
+        if (/^#{3,6}\s/.test(trimmed)) {
+          const heading = trimmed.replace(/^#+\s+/, '').replace(/\\\./g, '.').replace(/\\/g, '');
+          return (
+            <h4 key={i} className="font-montserrat font-semibold text-[14px] text-[#1F1C1B] mt-6 mb-3">{heading}</h4>
+          );
+        }
         if (/^[*\-] /m.test(trimmed)) {
           const items = trimmed.split('\n').map(l => l.replace(/^[*\-]\s+/, '').trim()).filter(Boolean);
           return (
-            <ul key={i} className="list-disc pl-5 mb-3 space-y-1.5">
-              {items.map((item, j) => <li key={j} className="font-roboto text-sm text-[#1F1C1B] leading-relaxed">{item}</li>)}
+            <ul key={i} className="list-disc pl-6 space-y-2">
+              {items.map((item, j) => <li key={j} className="font-roboto text-[15px] text-[#1F1C1B] leading-relaxed">{item}</li>)}
             </ul>
           );
         }
-        return <p key={i} className="font-roboto text-sm leading-relaxed text-[#1F1C1B] mb-2">{trimmed}</p>;
+        return <p key={i} className="font-roboto text-[15px] leading-relaxed text-[#1F1C1B]">{trimmed}</p>;
       })}
     </div>
   );
 }
 
+function cleanSectionTitle(raw: string): string {
+  return raw.replace(/\\\./g, '.').replace(/\\/g, '').trim();
+}
+
+/** Each section / subsection rendered as its own brand card. */
 function SectionPanel({ section }: { section: PolicyContentSection }) {
-  const cleanTitle = section.title.replace(/\\\./g, '.').replace(/\\/g, '');
+  const cleanTitle = cleanSectionTitle(section.title);
   const isEmpty = !section.body || section.body.trim() === '' || section.body.trim() === '---';
+
+  // Title styling varies by level (matches DSectionTitle pattern in SharedPolicyDetailView)
+  const titleNode = (() => {
+    if (section.level <= 2) {
+      return (
+        <h2 className="font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase mb-8 flex items-center gap-4 w-full text-[#1F1C1B]">
+          <span className="shrink-0">{cleanTitle}</span>
+          <span className="flex-grow h-px bg-[#007970]" />
+        </h2>
+      );
+    }
+    if (section.level === 3) {
+      return (
+        <h3 className="font-montserrat font-semibold text-[15px] text-[#1F1C1B] mb-6 flex items-center gap-3">
+          <span className="inline-block w-1 h-5 bg-[#007970] rounded-sm" />
+          {cleanTitle}
+        </h3>
+      );
+    }
+    return (
+      <h4 className="font-montserrat font-semibold text-[12px] tracking-[0.12em] uppercase text-[#524048] mb-4">
+        {cleanTitle}
+      </h4>
+    );
+  })();
+
+  // Indent depth visually for deep subsections, but keep the card chrome consistent.
+  const indentClass = section.level >= 4 ? 'ml-6' : '';
+
   return (
-    <div className={`mb-6 ${section.level >= 3 ? 'pl-4 border-l-2 border-[#E5E4E3]' : ''}`}>
-      {section.level > 1 && (
-        <h3 className={`font-montserrat font-bold mb-3 ${
-          section.level === 2 ? 'text-base text-[#1F1C1B] border-b border-[#E5E4E3] pb-2 mt-2'
-          : section.level === 3 ? 'text-sm text-[#007970]'
-          : 'text-xs font-bold uppercase tracking-wide text-[#747470]'
-        }`}>{cleanTitle}</h3>
-      )}
-      {!isEmpty && <MarkdownBody text={section.body} />}
-    </div>
+    <section
+      className={`break-inside-avoid bg-white rounded-2xl border border-[#E5E4E3] shadow-sm p-6 md:p-8 ${indentClass}`}
+    >
+      {titleNode}
+      {isEmpty
+        ? <p className="font-roboto text-[13px] italic text-[#9E9D9A]">No additional detail in this section.</p>
+        : <MarkdownBody text={section.body} />}
+    </section>
   );
 }
 
@@ -140,15 +179,9 @@ export function PolicyDetailPage() {
     return <GVGBDetailView />;
   }
 
-  // ── Specialized views for remaining GV domain policies ──────────────────
-  if (GV_POLICY_IDS.includes(policy.id)) {
-    return <GVPolicyDetailView />;
-  }
-
-  // ── Specialized views for CL domain policies ────────────────────────────
-  if (CL_POLICY_IDS.includes(policy.id)) {
-    return <CLPolicyDetailView />;
-  }
+  // ── All other policies: use generated content from extracted_full sources ─
+  // GVPolicyDetailView and CLPolicyDetailView both used stubs/limited data;
+  // generated content from real docx extractions is now the canonical source.
 
   const content = getPolicyContent(policy.id);
   const isOfficialVersion =
@@ -291,7 +324,7 @@ export function PolicyDetailPage() {
         ) : activeSections.length === 0 ? (
           <p className="font-roboto text-sm text-[#747470] py-4">No content for this section.</p>
         ) : (
-          <div>
+          <div className="space-y-6 max-w-[1100px] mx-auto">
             {activeSections.map(section => (
               <SectionPanel key={section.id} section={section} />
             ))}

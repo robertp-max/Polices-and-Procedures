@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link, useParams, useNavigate, Routes, Route } from 'react-router-dom';
-import { Search, BookOpen, ShieldCheck, FileText, Workflow, Code2, Sparkles, ChevronRight } from 'lucide-react';
+import { Search, BookOpen, ShieldCheck, FileText, Workflow, Code2, Sparkles, ChevronRight, UserCheck } from 'lucide-react';
 import { ARTICLES, CATEGORIES, articlesByCategory, findArticle, searchArticles, type HelpArticle } from './articles';
 
 const CATEGORY_ICONS: Record<string, typeof BookOpen> = {
@@ -10,6 +10,7 @@ const CATEGORY_ICONS: Record<string, typeof BookOpen> = {
   'workflows-events':  Workflow,
   'forms-templates':   BookOpen,
   'developer':         Code2,
+  'onboarding-v2':     UserCheck,
 };
 
 /* ── Sidebar ───────────────────────────────────────────────────────── */

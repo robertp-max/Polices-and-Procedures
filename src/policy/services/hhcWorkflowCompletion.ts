@@ -12,6 +12,9 @@ const API_BASE: string =
   (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_HHC_API_BASE ||
   'https://rtllnugat0.execute-api.us-west-1.amazonaws.com';
 
+/** Set true to stub all Lambda/API-Gateway calls (no network traffic). */
+const LAMBDA_DISABLED = true;
+
 export interface PendingApproval {
   evidence_id:        string;
   event_id:           string;
@@ -67,6 +70,17 @@ export async function fetchWorkflowCompletionStatus(
   workflow_id: string,
   args: { event_ids: string[]; required_forms?: string[]; required_evidence_kinds?: string[] }
 ): Promise<CompletionStatus> {
+  if (LAMBDA_DISABLED) {
+    return {
+      workflow_id,
+      canComplete:             true,
+      missing_forms:           [],
+      missing_evidence_kinds:  [],
+      incomplete_events:       [],
+      pending_approvals:       [],
+      approved_count:          0,
+    };
+  }
   const qs = new URLSearchParams();
   qs.set('event_ids', args.event_ids.join(','));
   if (args.required_forms?.length)          qs.set('required_forms',          args.required_forms.join(','));
@@ -88,6 +102,16 @@ export async function completeWorkflow(
   workflow_id: string,
   body: CompletionRequest
 ): Promise<CompletionResult> {
+  if (LAMBDA_DISABLED) {
+    return {
+      workflow_id,
+      completed:      true,
+      completed_at:   new Date().toISOString(),
+      completed_by:   'stub',
+      approved_count: 0,
+      event_ids:      body.event_ids,
+    };
+  }
   const res = await fetch(
     `${API_BASE}/workflows/${encodeURIComponent(workflow_id)}/complete`,
     {

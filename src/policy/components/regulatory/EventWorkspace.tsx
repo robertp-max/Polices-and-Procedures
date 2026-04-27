@@ -28,6 +28,7 @@ import { BlockerPanel } from './BlockerPanel';
 import { LockBadge } from './LockBadge';
 import { useEnforcementReport } from '@/policy/enforcement/useEnforcement';
 import { EventSyncBadge, EventSyncControl, MandateBadge } from './EventSyncControl';
+import { getDistinctDisplayText, toReadableStepText } from './displayText';
 
 /* ═══════════════════════════════════════════════════════════════
    EventWorkspace — rich event detail surface (EXTENDED).
@@ -498,6 +499,8 @@ function ProcessFlowView({ event }: { event: RegulatoryEvent }) {
       <ol className="space-y-2">
         {event.processFlow.map((step, idx) => {
           const status = store.effectiveStepStatus(event, step.id);
+          const stepTitle = toReadableStepText(step.label || step.description || step.instructions || `Step ${idx + 1}`);
+          const stepDescription = getDistinctDisplayText(step.description, stepTitle, step.instructions);
           const dueDate = new Date(new Date(event.date + 'T00:00:00').getTime() + step.dueOffsetDays * 86_400_000);
           const dueLabel = step.dueOffsetDays === 0 ? `Due: ${formatEventDate(event.date)}` : `Due: ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
           const chip =
@@ -512,7 +515,7 @@ function ProcessFlowView({ event }: { event: RegulatoryEvent }) {
                   if (locked) return;
                   const next = status === 'complete' ? 'in-progress' : status === 'in-progress' ? 'complete' : 'in-progress';
                   store.setStepStatus(event.id, step.id, next);
-                  push('success', next === 'complete' ? 'Step completed' : next === 'in-progress' ? 'Step started' : 'Step reopened', step.label);
+                  push('success', next === 'complete' ? 'Step completed' : next === 'in-progress' ? 'Step started' : 'Step reopened', stepTitle);
                 }}
                 aria-label={status === 'complete' ? 'Reopen step' : 'Complete step'}
                 className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center font-montserrat font-bold transition-transform hover:scale-105"
@@ -528,8 +531,8 @@ function ProcessFlowView({ event }: { event: RegulatoryEvent }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="font-montserrat font-bold text-white text-[12px] leading-tight mb-0.5">{step.label}</p>
-                    <p className="font-roboto text-white/55 text-[10.5px] leading-snug">{step.description}</p>
+                    <p className="font-montserrat font-bold text-white text-[12px] leading-tight mb-0.5">{stepTitle}</p>
+                    {stepDescription && <p className="font-roboto text-white/55 text-[10.5px] leading-snug">{stepDescription}</p>}
                   </div>
                   <span className="shrink-0 text-[10px] font-roboto text-white/45 whitespace-nowrap">{dueLabel}</span>
                 </div>
@@ -560,7 +563,7 @@ function FormsView({ event }: { event: RegulatoryEvent }) {
   return (
     <div>
       <p className="text-[10.5px] font-roboto text-white/55 leading-snug mb-2">
-        Open, upload, or finalize each required form. Each row links to the form's purpose and completion status.
+        Open each required form from its execution unit. Completion is driven through the eSign approval flow and reflected in validation.
       </p>
       <ul className="space-y-1.5">
         {event.requiredForms.map(f => <FormExecutionRow key={f.id} event={event} formId={f.id} label={f.label} formRefId={f.formId} />)}

@@ -38,6 +38,7 @@ import {
 } from '@/policy/audit/surveyPacket';
 import { downloadBlob } from '@/policy/audit/exportReport';
 import { CalendarApi, toPlannerPayload } from '@/policy/services/calendarApi';
+import { EventTaskList } from '@/policy/components/pm/EventTaskList';
 
 /* ═══════════════════════════════════════════════════════════════
    WorkflowExecutionPanel
@@ -227,7 +228,14 @@ function ActivePanel({
       {/* ── Body ── */}
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
         {tab === 'event' && <CalendarEventView event={event} today={today} state={state} sla={sla} />}
-        {tab === 'workflow' && <WorkflowBody event={event} />}
+        {tab === 'workflow' && (
+          <div className="flex flex-col gap-3">
+            <div className="px-3 pt-3">
+              <EventTaskList eventId={event.id} />
+            </div>
+            <WorkflowBody event={event} />
+          </div>
+        )}
         {tab === 'record' && <EventRecordPanel event={event} />}
         {tab === 'audit' && <AuditViewPanel event={event} today={today} />}
       </div>

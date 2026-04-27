@@ -66,6 +66,7 @@ CES is the **execution surface** that ties these together. There is no standalon
 | 09 | `09-Calendar-Integration.md` | Calendar primacy and sprint adaptation. |
 | 10 | `10-Enforcement-and-Rules.md` | Automation, blocking, late-flag, closure gates. |
 | 11 | `11-Metrics-and-Reporting.md` | Compliance, on-time, blocked, audit-readiness metrics. |
+| 12 | `12-Alignment-and-Verification.md` | Policy → workflow → event → evidence guarantees + weekend guard + `verify:alignment`. |
 
 ---
 

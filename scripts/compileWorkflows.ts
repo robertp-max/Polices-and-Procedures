@@ -63,6 +63,7 @@ interface Workflow {
   cadence: WorkflowCadence;
   dependencies: Array<{ upstreamId: string; reason: string }>;
   metrics: WorkflowMetrics;
+  workflowType?: 'audit' | 'operational' | 'enforcement' | 'intake' | 'aggregate';
 }
 
 // ── Paths ──────────────────────────────────────────────────────────
@@ -355,6 +356,13 @@ function compileWorkflow(
 
   const requiresGoverningBody = approvals.some((a) => a.requiresGoverningBody);
 
+  // Infer workflow execution type from filename + title heuristics.
+  // Source filenames follow `<DOMAIN>-WORKFLOWS-<TYPE>.md` (e.g.
+  // `CL-WORKFLOWS-AUDIT.md`). When no explicit suffix exists we fall
+  // back to title keywords; unmatched workflows are left undefined and
+  // surfaced by `scripts/verifyAlignment.ts`.
+  const workflowType = inferWorkflowType(sourcePath, title);
+
   return {
     id, domain, title,
     sourceMarkdown: body.trim(),
@@ -380,7 +388,34 @@ function compileWorkflow(
       declaredRisk,
       requiresGoverningBody,
     },
+    workflowType,
   };
+}
+
+function inferWorkflowType(
+  sourcePath: string,
+  title: string,
+): Workflow['workflowType'] {
+  const path = sourcePath.toUpperCase();
+  if (path.includes('-AUDIT.MD'))       return 'audit';
+  if (path.includes('-ENFORCEMENT.MD')) return 'enforcement';
+  if (path.includes('-INTAKE.MD'))      return 'intake';
+  if (path.includes('-AGGREGATE.MD'))   return 'aggregate';
+  if (path.includes('-OPERATIONAL.MD')) return 'operational';
+
+  const t = title.toUpperCase();
+  if (/\bAUDIT\b|\bREVIEW\b/.test(t))                          return 'audit';
+  if (/\bESCALATION\b|\bDISCIPLIN|CORRECTIVE ACTION\b/.test(t))return 'enforcement';
+  if (/\bQAPI\b|\bGOVERNING BODY\b/.test(t))                   return 'aggregate';
+  if (/\bINTAKE\b|\bGRIEVANCE\b|\bCOMPLAINT\b/.test(t))        return 'intake';
+
+  // Default for plain `*-WORKFLOWS.md` source files: these are the
+  // canonical operational workflows that produce evidence consumed by
+  // audits. Files that need a different classification should be
+  // renamed with a `-AUDIT|-ENFORCEMENT|-INTAKE|-AGGREGATE` suffix.
+  if (path.endsWith('-WORKFLOWS.MD')) return 'operational';
+
+  return undefined;
 }
 
 // ── Dependency inference ───────────────────────────────────────────

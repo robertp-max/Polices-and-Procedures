@@ -14,6 +14,9 @@ const API_BASE: string =
   (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_HHC_API_BASE ||
   'https://rtllnugat0.execute-api.us-west-1.amazonaws.com';
 
+/** Set true to stub all Lambda/API-Gateway calls (no network traffic). */
+const LAMBDA_DISABLED = true;
+
 export interface RecordFormSubmissionArgs {
   policy_id?:          string;
   workflow_id?:        string;
@@ -75,6 +78,21 @@ export function harvestFormFields(root: HTMLElement): Record<string, unknown> {
 export async function recordFormSubmission(
   args: RecordFormSubmissionArgs
 ): Promise<FormSubmissionResponse> {
+  if (LAMBDA_DISABLED) {
+    return {
+      evidence_id:        `STUB-FORM-${Date.now()}`,
+      status:             'APPROVED_EVIDENCE',
+      signature_status:   args.requires_signature ? 'PENDING' : 'NOT_REQUIRED',
+      s3_bucket:          'stub',
+      s3_key:             `stub/forms/${args.form_id}`,
+      sha256:             'stub',
+      policy_id:          args.policy_id  || 'POL-UNLINKED',
+      workflow_id:        args.workflow_id || 'WF-STUB',
+      event_id:           args.event_id   || 'EVT-STUB',
+      form_id:            args.form_id,
+      requires_signature: args.requires_signature === true,
+    };
+  }
   const res = await fetch(`${API_BASE}/forms/submit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...actorHeaders() },

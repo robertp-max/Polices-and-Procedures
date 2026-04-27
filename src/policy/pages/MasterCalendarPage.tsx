@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, CalendarDays, CalendarRange, Zap, Sparkles,
+  Columns3, GitBranch,
 } from 'lucide-react';
 import {
   REGULATORY_EVENTS, TODAY_ANCHOR, type RegulatoryEvent,
@@ -17,6 +18,11 @@ import {
 } from '@/policy/components/regulatory/timelineState';
 import { SprintTaskPanel } from '@/policy/ces/components/details/SprintTaskPanel';
 import { useComplianceExecution } from '@/policy/compliance-execution';
+import { KanbanView, GanttView, SprintBoardView } from '@/policy/components/pm/PmViews';
+import { TaskDetailRightPanel } from '@/policy/components/pm/TaskDetailRightPanel';
+import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
+
+export type PmView = 'calendar' | 'sprint' | 'kanban' | 'gantt';
 
 /* ═══════════════════════════════════════════════════════════════
    EXECUTION TIMELINE
@@ -137,13 +143,26 @@ export function MasterCalendarPage() {
     [monthInstances, today, store.completions, store.stepStates],
   );
 
-  /* ── View toggle: 'calendar' (default) | 'sprint' (CES 14-day) ── */
-  const view = (searchParams.get('view') === 'sprint') ? 'sprint' : 'calendar';
-  const setView = (next: 'calendar' | 'sprint') => {
+  /* ── View toggle: 4-option PM switcher ── */
+  const rawView = searchParams.get('view');
+  const view: PmView =
+    rawView === 'sprint' || rawView === 'kanban' || rawView === 'gantt'
+      ? rawView
+      : 'calendar';
+  const setView = (next: PmView) => {
     const p = new URLSearchParams(searchParams);
-    if (next === 'sprint') p.set('view', 'sprint'); else p.delete('view');
+    if (next === 'calendar') p.delete('view');
+    else p.set('view', next);
     setSearchParams(p, { replace: true });
   };
+
+  /* ── Active PM task (drives shared TaskDetailRightPanel) ──
+     Sourced from the global selectedTaskStore so opening a task from
+     ANY view (Calendar/Gantt/Kanban/Sprint/MyTasks) shows it everywhere. */
+  const activeTaskId = useSelectedTaskStore(s => s.taskId);
+  const openTask = useSelectedTaskStore(s => s.openTask);
+  const closeTask = useSelectedTaskStore(s => s.closeTask);
+  const setActiveTaskId = (id: string | null) => (id ? openTask(id, view as 'calendar' | 'gantt' | 'kanban' | 'sprint') : closeTask());
 
   /* ── Sprint window scoping (Mon week 1 → Fri week 2) ──
      In sprint mode the calendar shell is the SAME as Events mode, but
@@ -210,37 +229,115 @@ export function MasterCalendarPage() {
             />
           </div>
         </div>
-      ) : (
-        /* ── Sprint View — same calendar shell, sprint-scoped data, sprint task panel ── */
+      ) : view === 'sprint' ? (
+        /* ── Sprint Board view — canonical projected tasks scoped to active sprint ── */
         <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
           <div className="col-span-7 flex flex-col min-h-0">
-            <TimelineMonth
-              year={year}
-              month={month}
-              events={sprintInstances}
-              activeId={activeInstance?.id ?? null}
-              onSelect={selectInstance}
-              today={today}
-            />
+            <SprintBoardView onSelect={setActiveTaskId} />
           </div>
           <div className="col-span-3 flex flex-col min-h-0">
-            <SprintTaskPanel
-              event={
-                // Prefer an event that is actually in this sprint window;
-                // otherwise show empty state.
-                activeInstance && sprintInstances.some(e => e.id === activeInstance.id)
-                  ? activeInstance
-                  : sprintInstances[0] ?? null
-              }
-              onClear={activeInstance ? clearSelection : undefined}
-              today={today}
-            />
+            {activeTaskId ? (
+              <TaskDetailRightPanel
+                taskId={activeTaskId}
+                onClose={() => setActiveTaskId(null)}
+              />
+            ) : (
+              <SprintTaskPanel
+                event={
+                  activeInstance && sprintInstances.some(e => e.id === activeInstance.id)
+                    ? activeInstance
+                    : sprintInstances[0] ?? null
+                }
+                onClear={activeInstance ? clearSelection : undefined}
+                today={today}
+              />
+            )}
+          </div>
+        </div>
+      ) : view === 'kanban' ? (
+        /* ── Kanban view — PM status columns over canonical projection ── */
+        <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
+          <div className="col-span-7 flex flex-col min-h-0">
+            <KanbanView onSelect={setActiveTaskId} />
+          </div>
+          <div className="col-span-3 flex flex-col min-h-0">
+            {activeTaskId ? (
+              <TaskDetailRightPanel
+                taskId={activeTaskId}
+                onClose={() => setActiveTaskId(null)}
+              />
+            ) : (
+              <EmptyRightPanel label="Select a task to see details." />
+            )}
+          </div>
+        </div>
+      ) : (
+        /* ── Gantt view — date-axis bars over canonical projection ── */
+        <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
+          <div className="col-span-7 flex flex-col min-h-0">
+            <GanttView onSelect={setActiveTaskId} />
+          </div>
+          <div className="col-span-3 flex flex-col min-h-0">
+            {activeTaskId ? (
+              <TaskDetailRightPanel
+                taskId={activeTaskId}
+                onClose={() => setActiveTaskId(null)}
+              />
+            ) : (
+              <EmptyRightPanel label="Select a task to see details." />
+            )}
           </div>
         </div>
       )}
 
       <ToastHost />
     </div>
+  );
+}
+
+function EmptyRightPanel({ label }: { label: string }) {
+  return (
+    <div className="flex-1 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-center text-[12px] font-outfit text-white/55 p-6 text-center">
+      {label}
+    </div>
+  );
+}
+
+/* ─── Reusable view-switcher tab ─────────────── */
+function PmTab({
+  active, onClick, children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      role="tab"
+      aria-selected={active ? 'true' : 'false'}
+      onClick={onClick}
+      className="text-[11px] font-outfit font-medium px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors border focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
+      style={{
+        background:  active ? 'rgba(45,212,191,0.18)'  : 'rgba(255,255,255,0.03)',
+        color:       active ? '#5eead4'                : 'rgba(255,255,255,0.78)',
+        borderColor: active ? 'rgba(45,212,191,0.55)'  : 'rgba(255,255,255,0.10)',
+        boxShadow:   active ? '0 0 0 1px rgba(45,212,191,0.25)' : undefined,
+      }}
+      onMouseEnter={(e) => {
+        if (!active) {
+          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.07)';
+          (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.03)';
+          (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.78)';
+        }
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -254,8 +351,8 @@ function TimelineHeader({
   onNext: () => void;
   onToday: () => void;
   rollup: { overdue: number; blocked: number; dueSoon: number; onTrack: number; complete: number };
-  view: 'calendar' | 'sprint';
-  onViewChange: (v: 'calendar' | 'sprint') => void;
+  view: PmView;
+  onViewChange: (v: PmView) => void;
 }) {
   return (
     <div className="flex items-end justify-between gap-4 flex-wrap">
@@ -266,7 +363,13 @@ function TimelineHeader({
             className="text-[10px] font-montserrat font-bold uppercase tracking-[0.28em]"
             style={{ color: TEAL_PRIMARY }}
           >
-            {view === 'sprint' ? 'CES Sprint Window' : 'Event Calendar'}
+            {view === 'sprint'
+              ? 'CES Sprint Window'
+              : view === 'kanban'
+                ? 'PM Kanban'
+                : view === 'gantt'
+                  ? 'PM Gantt'
+                  : 'Event Calendar'}
           </span>
         </div>
         <h1
@@ -275,41 +378,39 @@ function TimelineHeader({
         >
           {view === 'sprint'
             ? 'Sprint execution · Mon–Fri 2-week window'
-            : `Regulatory events · ${monthLabel}`}
+            : view === 'kanban'
+              ? 'Project Kanban · CES projected tasks'
+              : view === 'gantt'
+                ? 'Project Gantt · CES projected tasks'
+                : `Regulatory events · ${monthLabel}`}
         </h1>
       </div>
 
       <div className="flex items-center gap-3">
         {view === 'calendar' && <StateLegend rollup={rollup} />}
 
-        {/* View toggle: Calendar ↔ Sprint */}
-        <div className="flex items-center gap-1 rounded-lg border border-white/10 p-0.5" role="tablist" aria-label="Calendar view">
-          <button
-            role="tab"
-            aria-selected={view === 'calendar' ? 'true' : 'false'}
-            onClick={() => onViewChange('calendar')}
-            className="text-[11px] font-outfit px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors"
-            style={{
-              background: view === 'calendar' ? 'rgba(255,255,255,0.08)' : 'transparent',
-              color:      view === 'calendar' ? '#fff' : 'rgba(255,255,255,0.65)',
-            }}
-          >
+        {/* View switcher: Calendar | Sprint | Kanban | Gantt */}
+        <div
+          className="flex items-center gap-1 rounded-lg border border-white/15 bg-white/[0.04] p-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)]"
+          role="tablist"
+          aria-label="PM view"
+        >
+          <PmTab active={view === 'calendar'} onClick={() => onViewChange('calendar')}>
             <CalendarDays size={11} />
             Calendar
-          </button>
-          <button
-            role="tab"
-            aria-selected={view === 'sprint' ? 'true' : 'false'}
-            onClick={() => onViewChange('sprint')}
-            className="text-[11px] font-outfit px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors"
-            style={{
-              background: view === 'sprint' ? 'rgba(255,255,255,0.08)' : 'transparent',
-              color:      view === 'sprint' ? '#fff' : 'rgba(255,255,255,0.65)',
-            }}
-          >
+          </PmTab>
+          <PmTab active={view === 'sprint'} onClick={() => onViewChange('sprint')}>
             <CalendarRange size={11} />
-            Sprint
-          </button>
+            Sprint Board
+          </PmTab>
+          <PmTab active={view === 'kanban'} onClick={() => onViewChange('kanban')}>
+            <Columns3 size={11} />
+            Kanban
+          </PmTab>
+          <PmTab active={view === 'gantt'} onClick={() => onViewChange('gantt')}>
+            <GitBranch size={11} />
+            Gantt
+          </PmTab>
         </div>
 
         <div className="flex items-center gap-1 rounded-lg border border-white/10 p-0.5">

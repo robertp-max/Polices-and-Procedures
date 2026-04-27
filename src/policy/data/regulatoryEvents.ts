@@ -70,6 +70,16 @@ export interface EventProcessStep {
   onCompleteText?: string;
   status: 'complete' | 'in-progress' | 'pending';
   dueOffsetDays: number;             // e.g. -7 = due 7 days before event
+  /**
+   * Effort estimate (Fibonacci-like). Used by CES sprint board for
+   * load balancing. Always one of {1, 2, 3, 5, 8}; signature-only
+   * steps default to 1, audits/reviews/coordination to 5+, the rest
+   * to 2–3. Derived automatically when the event is generated from
+   * a workflow (see `buildWorkflowAlignedExecution`).
+   */
+  storyPoints?: 1 | 2 | 3 | 5 | 8;
+  /** Step provenance marker used by alignment verifier and UI telemetry. */
+  sourceType?: 'workflow_derived' | 'event_authored_exception';
 }
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -237,6 +247,33 @@ export interface RegulatoryEvent {
    * Examples: 'qapi_meeting', 'ep_exercise', 'security_risk_analysis'.
    */
   eventSubType?: string;
+  /**
+   * Weekend scheduling override. When `true`, the event is permitted to
+   * fall on Saturday or Sunday (e.g. 24/7 on-call drills, holiday-period
+   * surveys). When `false` or omitted, the scheduler treats Sat/Sun as
+   * non-working days and shifts the event forward to the next business
+   * day. See `shiftToBusinessDay()` in this file.
+   */
+  isWeekendAllowed?: boolean;
+  /**
+   * Source workflow ID (e.g. `QA-WF-03`). When set, the event's
+   * `processFlow` and `requiredForms` are derived 1:1 from
+   * `WORKFLOWS[workflowId].steps[]` via
+   * `buildWorkflowAlignedExecution()`. Workflows are the single
+   * source of executable steps; the event layer must not invent or
+   * reword steps.
+   */
+  workflowId?: string;
+  /** Explicitly allows non-workflow execution for documented edge cases. */
+  alignmentException?: boolean;
+  /** Human-readable rationale for alignmentException. */
+  alignmentExceptionReason?: string;
+  /** Classification from alignment audit policy. */
+  alignmentClassification?:
+    | 'legitimate_event_level_execution'
+    | 'missing_workflow_link'
+    | 'context_marker_only'
+    | 'needs_manual_review';
 }
 
 /* â”€â”€â”€ Domain visual palette (maroon-safe â€” NO blue) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -298,10 +335,77 @@ export function formatEventDate(dateISO: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+/* ─── Weekend / business-day scheduling guard ─────────────────────────
+   Hard rule (per CES scheduling constraints):
+     • Saturday + Sunday = NON-WORKING DAYS
+     • QAPI / audits / policy reviews / compliance validations: weekdays only
+     • Override only when event.isWeekendAllowed === true
+     • Falls forward (never backwards) so compliance deadlines are preserved.
+   ──────────────────────────────────────────────────────────────────── */
+
+/** Returns true when the YYYY-MM-DD ISO date lands on Sat or Sun. */
+export function isWeekend(dateISO: string): boolean {
+  const day = new Date(dateISO + 'T00:00:00').getDay();
+  return day === 0 || day === 6;
+}
+
+/**
+ * Shift a YYYY-MM-DD date forward to the next Mon–Fri. Returns the
+ * input date unchanged if it is already a weekday. Never moves backwards.
+ */
+export function shiftToBusinessDay(dateISO: string): string {
+  let d = new Date(dateISO + 'T00:00:00');
+  while (d.getDay() === 0 || d.getDay() === 6) {
+    d = new Date(d.getTime() + 86_400_000);
+  }
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/**
+ * Apply the weekend-blocking rule to a `RegulatoryEvent`.
+ * - Returns the event unchanged when `isWeekendAllowed === true` or the
+ *   date is already a weekday.
+ * - Otherwise returns a new event with `date` (and `endDate` if present)
+ *   shifted forward, and the canonical event ID re-stamped if the ID
+ *   embeds the YYYYMMDD date segment.
+ */
+export function enforceBusinessDay(event: RegulatoryEvent): RegulatoryEvent {
+  if (event.isWeekendAllowed) return event;
+  if (!isWeekend(event.date)) return event;
+
+  const shifted = shiftToBusinessDay(event.date);
+  const next: RegulatoryEvent = { ...event, date: shifted };
+
+  if (event.endDate && isWeekend(event.endDate)) {
+    next.endDate = shiftToBusinessDay(event.endDate);
+  }
+
+  // If the ID encodes the original date segment, restamp it.
+  if (event.eventSubType) {
+    const oldYmd = event.date.replace(/-/g, '');
+    const newYmd = shifted.replace(/-/g, '');
+    if (event.id.includes(oldYmd)) {
+      next.id = event.id.replace(oldYmd, newYmd);
+    }
+  }
+  return next;
+}
+
 import { MANDATED_EVENTS_EXPANDED } from './mandatedEventsExpanded';
+import { applyWorkflowAlignment } from './eventWorkflowAlignment';
+import { applyEventAlignmentPolicy } from './eventAlignmentPolicy';
 
 /* â”€â”€â”€ Event dataset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-export const REGULATORY_EVENTS: RegulatoryEvent[] = [
+/**
+ * Internal raw dataset. The exported `REGULATORY_EVENTS` is produced by
+ * mapping every entry through `enforceBusinessDay()` so that no recurring
+ * mandated event ever lands on Sat/Sun unless it explicitly opts in via
+ * `isWeekendAllowed: true`. This is the single source-of-truth guard.
+ */
+const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
   ...MANDATED_EVENTS_EXPANDED,
   /* â•â•â•â•â•â•â•â•â•â• MAY 2026 â€” the "now" window â•â•â•â•â•â•â•â•â•â• */
 
@@ -2205,6 +2309,23 @@ export const REGULATORY_EVENTS: RegulatoryEvent[] = [
     sourceOfTruth: 'app', timezone: 'America/Los_Angeles',
   },
 ];
+
+/**
+ * Canonical regulatory event dataset.
+ *
+ * Every entry from `REGULATORY_EVENTS_RAW` passes through
+ * `enforceBusinessDay()` so any recurring/mandated event whose anchor
+ * date falls on Saturday or Sunday is shifted forward to the next
+ * Monday. The only escape hatch is `event.isWeekendAllowed === true`,
+ * reserved for true 24/7 obligations (on-call drills, holiday-period
+ * surveys, etc.). This guarantees CES will never schedule a recurring
+ * mandated event on a weekend.
+ */
+export const REGULATORY_EVENTS: RegulatoryEvent[] =
+  REGULATORY_EVENTS_RAW
+    .map((event) => enforceBusinessDay(event))
+    .map((event) => applyEventAlignmentPolicy(event))
+    .map((event) => applyWorkflowAlignment(event));
 
 /* â”€â”€â”€ Derived KPIs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export interface DashboardKpis {

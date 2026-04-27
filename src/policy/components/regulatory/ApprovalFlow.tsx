@@ -7,6 +7,7 @@ import {
   useRegulatoryExecutionStore, useEventApprovals,
   type ApprovalRequest, type ApprovalTargetKind,
 } from '@/policy/stores/regulatoryExecutionStore';
+import { buildFormDisplayText } from './displayText';
 import { useToastStore } from './Toast';
 import { ModalShell } from './ModalShell';
 
@@ -205,15 +206,16 @@ function RequestApprovalModal({
 
         {kind === 'form' && event.requiredForms.length > 0 && (
           <div>
-            <label className="block text-[10px] font-montserrat font-bold text-white/55 uppercase tracking-[0.14em] mb-1">Form</label>
+            <label htmlFor="approval-form-select" className="block text-[10px] font-montserrat font-bold text-white/55 uppercase tracking-[0.14em] mb-1">Form</label>
             <select
+              id="approval-form-select"
               value={formId}
               onChange={e => setFormId(e.target.value)}
               className="w-full bg-black/30 border border-white/10 rounded-md px-2.5 py-1.5 text-[12px] font-roboto text-white outline-none focus:border-[#FFC107]/60"
             >
               <option value="">— select form —</option>
               {event.requiredForms.map(f => (
-                <option key={f.id} value={f.id}>{f.label} ({f.formId})</option>
+                <option key={f.id} value={f.id}>{buildFormDisplayText(f.formId, f.label, f.id)}</option>
               ))}
             </select>
           </div>

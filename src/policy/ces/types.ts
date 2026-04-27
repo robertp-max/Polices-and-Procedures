@@ -152,6 +152,13 @@ export interface Workflow {
   title:     string;
   /** Forms required to satisfy this workflow. */
   requiredFormIds: string[];
+  /**
+   * Execution classification (mirror of
+   * `src/policy/types/workflow.ts#Workflow.workflowType`). Optional
+   * because legacy CES projections may not carry it; the alignment
+   * verifier flags missing values.
+   */
+  workflowType?: 'audit' | 'operational' | 'enforcement' | 'intake' | 'aggregate';
 }
 
 /* ─── Obligation discriminator (canonical CES model) ─────────

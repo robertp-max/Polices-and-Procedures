@@ -36,6 +36,15 @@ const SupervisorPage     = lazy(() => import('@/policy/journey/pages/SupervisorP
 const AdminPage          = lazy(() => import('@/policy/journey/pages/AdminPage').then(m => ({ default: m.AdminPage })))
 const UserGuidePage      = lazy(() => import('@/policy/journey/pages/UserGuidePage').then(m => ({ default: m.UserGuidePage })))
 
+// ── Onboarding V2 (audit-grade activation engine) ───────────────
+const OnboardingV2Layout      = lazy(() => import('@/policy/onboarding-v2/pages/OnboardingV2Layout').then(m => ({ default: m.OnboardingV2Layout })))
+const OnboardingV2Dashboard   = lazy(() => import('@/policy/onboarding-v2/pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
+const OnboardingV2Activation  = lazy(() => import('@/policy/onboarding-v2/pages/ActivationPage').then(m => ({ default: m.ActivationPage })))
+const OnboardingV2BatchList   = lazy(() => import('@/policy/onboarding-v2/pages/BatchListPage').then(m => ({ default: m.BatchListPage })))
+const OnboardingV2BatchView   = lazy(() => import('@/policy/onboarding-v2/pages/BatchViewPage').then(m => ({ default: m.BatchViewPage })))
+const OnboardingV2Audit       = lazy(() => import('@/policy/onboarding-v2/pages/AuditReadinessPage').then(m => ({ default: m.AuditReadinessPage })))
+const OnboardingV2Governance  = lazy(() => import('@/policy/onboarding-v2/pages/GovernancePage').then(m => ({ default: m.GovernancePage })))
+
 // ── Help Center (eCIgn knowledge base) ───────────────────────────
 const HelpCenterPage     = lazy(() => import('@/policy/help/HelpCenterPage').then(m => ({ default: m.HelpCenterPage })))
 
@@ -45,6 +54,11 @@ const CesBoardPage     = lazy(() => import('@/policy/ces/pages/CesBoardPage').th
 const CesWorkloadsPage = lazy(() => import('@/policy/ces/pages/CesWorkloadsPage').then(m => ({ default: m.CesWorkloadsPage })))
 const CesReportsPage   = lazy(() => import('@/policy/ces/pages/CesReportsPage').then(m => ({ default: m.CesReportsPage })))
 const MyTasksPage      = lazy(() => import('@/policy/ces/pages/MyTasksPage').then(m => ({ default: m.MyTasksPage })))
+const MyTasksPmPage    = lazy(() => import('@/policy/components/pm/MyTasksPmPage').then(m => ({ default: m.MyTasksPmPage })))
+const SprintPlanPage   = lazy(() => import('@/policy/components/pm/SprintPlanPage').then(m => ({ default: m.SprintPlanPage })))
+const SprintReviewPage = lazy(() => import('@/policy/components/pm/SprintReviewPage').then(m => ({ default: m.SprintReviewPage })))
+const ApprovalsQueuePage = lazy(() => import('@/policy/components/pm/ApprovalsQueuePage').then(m => ({ default: m.ApprovalsQueuePage })))
+const PmDashboardPage  = lazy(() => import('@/policy/components/pm/PmDashboardPage').then(m => ({ default: m.PmDashboardPage })))
 
 // Minimal route-level loading fallback (transparent, no flash)
 const PageLoader = () => (
@@ -117,6 +131,17 @@ function App() {
                   <Route path="/journey/supervisor"         element={<SupervisorPage />} />
                   <Route path="/journey/admin"              element={<AdminPage />} />
                   <Route path="/journey/guide"              element={<UserGuidePage />} />
+
+                  {/* Onboarding V2 — audit-grade activation engine */}
+                  <Route path="/onboarding-v2" element={<OnboardingV2Layout />}>
+                    <Route index                       element={<Navigate to="/onboarding-v2/dashboard" replace />} />
+                    <Route path="dashboard"            element={<OnboardingV2Dashboard />} />
+                    <Route path="activate"             element={<OnboardingV2Activation />} />
+                    <Route path="batches"              element={<OnboardingV2BatchList />} />
+                    <Route path="batches/:batchId"     element={<OnboardingV2BatchView />} />
+                    <Route path="audit"                element={<OnboardingV2Audit />} />
+                    <Route path="governance"           element={<OnboardingV2Governance />} />
+                  </Route>
                   {/* Help Center (knowledge base) */}
                   <Route path="/help/*" element={<HelpCenterPage />} />
 
@@ -131,6 +156,14 @@ function App() {
                   {/* My Tasks — execution-layer view of TASK obligations for current user. */}
                   <Route path="/my-tasks"      element={<MyTasksPage />} />
                   <Route path="/ces/my-tasks"  element={<Navigate to="/my-tasks" replace />} />
+
+                  {/* PM Layer (overlay over CES + eCIgn) */}
+                  <Route path="/pm"            element={<Navigate to="/pm/my-tasks" replace />} />
+                  <Route path="/pm/my-tasks"   element={<MyTasksPmPage />} />
+                  <Route path="/pm/sprint-plan"   element={<SprintPlanPage />} />
+                  <Route path="/pm/sprint-review" element={<SprintReviewPage />} />
+                  <Route path="/pm/approvals"     element={<ApprovalsQueuePage />} />
+                  <Route path="/pm/dashboard"     element={<PmDashboardPage />} />
 
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>

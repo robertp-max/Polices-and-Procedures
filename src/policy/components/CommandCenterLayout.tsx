@@ -7,13 +7,14 @@ import {
   FileBarChart, PlayCircle,
   HelpCircle, Search, ChevronLeft, Menu,
   ShieldCheck, Zap, FingerprintPattern as Fingerprint,
-  ArrowUpCircle, FolderOpen,
+  ArrowUpCircle, FolderOpen, UserCheck, Sparkles,
 } from 'lucide-react';
 import TravelightBG from '@/components/TravelightBG';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { useNavStore } from '@/policy/stores/navStore';
 import { UniversalNavControls } from '@/policy/components/UniversalNavControls';
 import { isNavExcludedRoute, hasActiveInputFocus } from '@/policy/utils/navExclusions';
+import { GlobalTaskDrawer } from '@/policy/components/pm/GlobalTaskDrawer';
 
 function BradRobotIcon({ size = 24, strokeWidth = 1.5, className }: { size?: number; strokeWidth?: number; className?: string }) {
   const sw = strokeWidth ?? 1.5;
@@ -105,6 +106,28 @@ const NAV_ITEMS: NavItem[] = [
     icon: ClipboardCheck,
   },
   { id: 'taxonomy', to: '/framework', label: 'Taxonomy', subItems: [{ to: '/framework', label: 'Framework' }, { to: '/library', label: 'Policies' }, { to: '/forms', label: 'Forms' }], icon: Network },
+  {
+    id: 'onboarding', to: '/journey', label: 'Onboarding',
+    subItems: [
+      { to: '/journey',             label: 'Overview' },
+      { to: '/journey/appendix-f',  label: 'Appendix F' },
+      { to: '/journey/supervisor',  label: 'Supervisor View' },
+      { to: '/journey/admin',       label: 'Admin' },
+      { to: '/journey/guide',       label: 'User Guide' },
+    ],
+    icon: UserCheck,
+  },
+  {
+    id: 'onboarding-v2', to: '/onboarding-v2/dashboard', label: 'Onboarding v2',
+    subItems: [
+      { to: '/onboarding-v2/dashboard',  label: 'Dashboard' },
+      { to: '/onboarding-v2/activate',   label: 'Activate Subject' },
+      { to: '/onboarding-v2/batches',    label: 'Batches' },
+      { to: '/onboarding-v2/audit',      label: 'Audit Readiness' },
+      { to: '/onboarding-v2/governance', label: 'Governance' },
+    ],
+    icon: Sparkles,
+  },
   { id: 'lifecycle', to: '/policy-lifecycle', label: 'Policy Lifecycle', icon: FileEdit },
   { id: 'reports', to: '/governance', label: 'Master Report', icon: FileBarChart },
   { id: 'evidence', to: '/evidence', label: 'Evidence', icon: FolderOpen },
@@ -753,6 +776,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     <div data-shell-scroll="" className="absolute inset-0 overflow-y-auto custom-scrollbar">
                       {children}
                     </div>
+                    <GlobalTaskDrawer />
                   </main>
                 </div>
               </>

@@ -17,7 +17,10 @@
  */
 
 import type { RegulatoryEvent } from './regulatoryEvents';
+import { enforceBusinessDay } from './regulatoryEvents';
+import { applyEventAlignmentPolicy } from './eventAlignmentPolicy';
 import { MULTI_YEAR_EVENTS } from './multiYearEvents';
+import { AUDIT_REGULATORY_EVENTS } from './auditRegulatoryEvents';
 
 /* ══════════════════════════════════════════════════════════════
    QUARTERLY QAPI REVIEWS — Q2, Q3, Q4 2026
@@ -26,6 +29,7 @@ import { MULTI_YEAR_EVENTS } from './multiYearEvents';
 
 export const QAPI_Q2: RegulatoryEvent = {
   id: 'qapi_meeting-20260507-08',
+  workflowId: 'QA-WF-03',
   eventSubType: 'qapi_meeting',
   title: 'Q2 QAPI Review',
   domain: 'QAPI',
@@ -333,6 +337,7 @@ export const QAPI_Q2: RegulatoryEvent = {
 /* ── Q3 QAPI Review ─────────────────────────────────────────── */
 export const QAPI_Q3: RegulatoryEvent = {
   id: 'qapi_meeting-20260806-12',
+  workflowId: 'QA-WF-03',
   eventSubType: 'qapi_meeting',
   title: 'Q3 QAPI Review',
   domain: 'QAPI',
@@ -412,6 +417,7 @@ export const QAPI_Q3: RegulatoryEvent = {
 /* ── Q4 QAPI Review + Annual PIP Close ─────────────────────── */
 export const QAPI_Q4: RegulatoryEvent = {
   id: 'qapi_meeting-20261105-16',
+  workflowId: 'QA-WF-03',
   eventSubType: 'qapi_meeting',
   title: 'Q4 QAPI Review + Annual PIP Close',
   domain: 'QAPI',
@@ -906,7 +912,11 @@ export const MANDATED_EVENTS_EXPANDED: RegulatoryEvent[] = [
   SURVEY_READINESS_ACTIVATION,
   // Biennial / Triennial / Annual OIG Work Plan Review
   ...MULTI_YEAR_EVENTS,
-];
+  // Canonical 2026 audit calendar (RegulatoryEvent[] — single source of truth).
+  ...AUDIT_REGULATORY_EVENTS,
+]
+  .map((event) => enforceBusinessDay(event))
+  .map((event) => applyEventAlignmentPolicy(event));
 
 /* Re-export multi-year events for direct consumers (sprints, dashboards). */
 export {

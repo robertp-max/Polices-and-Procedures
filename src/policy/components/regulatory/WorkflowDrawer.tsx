@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import {
   Workflow, CheckCircle2, Circle, Play, ChevronRight, ChevronDown,
-  ShieldCheck, AlertTriangle, FileCheck2, FileWarning, User,
-  Clock, Upload, ArrowRight, Unlock, FileOutput, BookOpen, ListChecks,
+  ShieldCheck, AlertTriangle, User,
+  Clock, ArrowRight, Unlock, FileOutput, BookOpen, ListChecks,
 } from 'lucide-react';
 import {
   DOMAIN_PALETTE, formatEventDate, type RegulatoryEvent, type EventProcessStep,
@@ -12,6 +12,12 @@ import { getFormMeta } from '@/policy/data/formsCatalog';
 import {
   useRegulatoryExecutionStore, useEventEvidence, type FormStatus, type StepStatus,
 } from '@/policy/stores/regulatoryExecutionStore';
+import {
+  buildFormDisplayText,
+  getDistinctDisplayText,
+  normalizeComparable,
+  toReadableStepText,
+} from './displayText';
 import { useToastStore } from './Toast';
 import { DrawerShell } from './ModalShell';
 import { DomainBadge, PolicyRef, UrgencyChip, EvidenceDot } from './Primitives';
@@ -66,6 +72,9 @@ export function WorkflowBody({ event }: { event: RegulatoryEvent }) {
   const currentStep = event.processFlow.find(
     s => store.effectiveStepStatus(event, s.id) !== 'complete',
   );
+  const currentStepLabel = toReadableStepText(
+    currentStep?.label || currentStep?.description || currentStep?.instructions || 'Current step',
+  );
 
   return (
     <div className="p-5 flex flex-col gap-4">
@@ -87,7 +96,7 @@ export function WorkflowBody({ event }: { event: RegulatoryEvent }) {
           </h4>
           {currentStep && (
             <span className="text-[10px] font-montserrat font-bold text-[#FFC107] uppercase tracking-[0.14em]">
-              Current · {currentStep.label}
+              Current · {currentStepLabel}
             </span>
           )}
         </div>
@@ -123,7 +132,7 @@ export function WorkflowBody({ event }: { event: RegulatoryEvent }) {
           </span>
         </div>
         <p className="text-[10.5px] font-roboto text-white/55 leading-snug mb-2">
-          Open, upload, or finalize each required artifact. Every form shown here is audit evidence — missing items block event closure.
+          Open each required form from its execution unit and complete it through the eSign approval path. Missing items block event closure.
         </p>
         <ul className="space-y-1.5">
           {event.requiredForms.map(f => (
@@ -187,6 +196,9 @@ function StepRow({
   const store = useRegulatoryExecutionStore();
   const push = useToastStore(s => s.push);
   const status = store.effectiveStepStatus(event, step.id);
+  const stepTitle = toReadableStepText(step.label || step.description || step.instructions || `Step ${idx}`);
+  const stepDescription = getDistinctDisplayText(step.description, stepTitle, step.instructions);
+  const stepHowTo = getDistinctDisplayText(step.instructions, stepTitle, stepDescription);
 
   const palette = stepPalette(status);
   const dueDate = new Date(new Date(event.date + 'T00:00:00').getTime() + step.dueOffsetDays * 86_400_000);
@@ -198,7 +210,7 @@ function StepRow({
   const defaultExpanded = !!isCurrent || status === 'in-progress';
   const [expanded, setExpanded] = useState(defaultExpanded);
 
-  const hasGuidance = !!(step.instructions || step.expectedOutput || (step.requiredFormIds && step.requiredFormIds.length) || step.onCompleteText);
+  const hasGuidance = !!(stepHowTo || step.expectedOutput || (step.requiredFormIds && step.requiredFormIds.length) || step.onCompleteText);
   const locked = store.isEventComplete(event.id);
 
   const cycle = () => {
@@ -208,7 +220,7 @@ function StepRow({
       status === 'in-progress' ? 'complete' :
       'in-progress';
     store.setStepStatus(event.id, step.id, next);
-    push('success', next === 'complete' ? 'Step completed' : next === 'in-progress' ? 'Step started' : 'Step reopened', step.label);
+    push('success', next === 'complete' ? 'Step completed' : next === 'in-progress' ? 'Step started' : 'Step reopened', stepTitle);
   };
 
   return (
@@ -235,15 +247,21 @@ function StepRow({
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="font-montserrat font-bold text-white text-[12px] leading-tight mb-0.5">{step.label}</p>
-            <p className="font-roboto text-white/65 text-[10.5px] leading-snug">{step.description}</p>
+            <p className="font-montserrat font-bold text-white text-[12px] leading-tight mb-0.5">{stepTitle}</p>
+            {stepDescription && <p className="font-roboto text-white/65 text-[10.5px] leading-snug">{stepDescription}</p>}
           </div>
           <span className="text-[9.5px] font-roboto text-white/45 whitespace-nowrap">{dueLabel}</span>
         </div>
 
         {/* Rich guidance (instructions, forms, expected output, on-complete) */}
         {hasGuidance && expanded && (
-          <StepGuidance step={step} event={event} />
+          <StepGuidance
+            step={step}
+            event={event}
+            stepTitle={stepTitle}
+            stepDescription={stepDescription}
+            stepHowTo={stepHowTo}
+          />
         )}
 
         <div className="flex items-center justify-between mt-1.5">
@@ -262,7 +280,7 @@ function StepRow({
           </div>
           {status !== 'complete' && !locked && (
             <button
-              onClick={() => { store.setStepStatus(event.id, step.id, 'complete'); push('success', 'Step completed', step.label); }}
+              onClick={() => { store.setStepStatus(event.id, step.id, 'complete'); push('success', 'Step completed', stepTitle); }}
               className="text-[9.5px] font-montserrat font-bold text-[#FFC107] hover:text-white uppercase tracking-[0.14em] flex items-center gap-1"
             >
               Mark complete <ArrowRight size={10} />
@@ -275,7 +293,19 @@ function StepRow({
 }
 
 /* ─── Step guidance panel (instructions, linked forms, output) ── */
-function StepGuidance({ step, event }: { step: EventProcessStep; event: RegulatoryEvent }) {
+function StepGuidance({
+  step,
+  event,
+  stepTitle,
+  stepDescription,
+  stepHowTo,
+}: {
+  step: EventProcessStep;
+  event: RegulatoryEvent;
+  stepTitle: string;
+  stepDescription?: string;
+  stepHowTo?: string;
+}) {
   const stepForms = (step.requiredFormIds || [])
     .map(refId => {
       const eventForm = event.requiredForms.find(f => f.formId === refId || f.id === refId);
@@ -284,12 +314,14 @@ function StepGuidance({ step, event }: { step: EventProcessStep; event: Regulato
     })
     .filter(x => x.eventForm || x.meta);
 
+  const howToText = stepHowTo || getDistinctDisplayText(step.instructions, stepTitle, stepDescription);
+
   return (
     <div className="mt-2 rounded-md border border-white/10 bg-white/[0.025] p-2.5 space-y-2">
-      {step.instructions && (
+      {howToText && (
         <div>
-          <GuidanceHeading icon={<BookOpen size={9} />} label="What to do" />
-          <p className="text-[10.5px] font-roboto text-white/75 leading-snug whitespace-pre-line">{step.instructions}</p>
+          <GuidanceHeading icon={<BookOpen size={9} />} label="How to do this" />
+          <p className="text-[10.5px] font-roboto text-white/75 leading-snug whitespace-pre-line">{howToText}</p>
         </div>
       )}
 
@@ -297,15 +329,18 @@ function StepGuidance({ step, event }: { step: EventProcessStep; event: Regulato
         <div>
           <GuidanceHeading icon={<ListChecks size={9} />} label="Forms / documents for this step" />
           <ul className="space-y-1 mt-0.5">
-            {stepForms.map(({ refId, eventForm, meta }) => (
-              <li key={refId} className="flex items-start gap-1.5 text-[10.5px] font-roboto text-white/75">
-                <span className="font-mono-jb text-[#FFC107]/85 text-[9.5px] shrink-0 mt-0.5">{refId}</span>
-                <span className="min-w-0">
-                  <span className="font-montserrat font-bold text-white/90">{eventForm?.label || meta?.title}</span>
-                  {meta?.purpose && <span className="text-white/55"> — {meta.purpose}</span>}
-                </span>
-              </li>
-            ))}
+            {stepForms.map(({ refId, eventForm, meta }) => {
+              const formDisplay = buildFormDisplayText(refId, eventForm?.label || meta?.title, refId);
+              const formPurpose = getDistinctDisplayText(meta?.purpose, eventForm?.label, meta?.title, refId);
+              return (
+                <li key={refId} className="flex items-start gap-1.5 text-[10.5px] font-roboto text-white/75">
+                  <span className="min-w-0">
+                    <span className="font-montserrat font-bold text-white/90">{formDisplay}</span>
+                    {formPurpose && <span className="text-white/55"> — {formPurpose}</span>}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
@@ -354,29 +389,74 @@ export function FormExecutionRow({
   const stored = store.formStates[`${event.id}::${formId}`];
   const palette = formPalette(status);
   const locked = store.isEventComplete(event.id);
-
-  const [menuOpen, setMenuOpen] = useState(false);
   const allEvidence = useEventEvidence(event.id);
   const linkedDocs = allEvidence.filter(d => d.linkedFormId === formId);
+  const formDisplay = buildFormDisplayText(showRefId ? formRefId : undefined, label, formId);
+  const executionUnitId = event.processFlow.find(st => {
+    const refs = st.requiredFormIds || [];
+    return refs.includes(formRefId || formId) || refs.includes(formId);
+  })?.id || `${event.id}::${formId}`;
 
-  const set = (s: FormStatus, toast?: string) => {
-    if (locked) return;
-    store.setFormStatus(event.id, formId, s);
-    push('success', toast || 'Form updated', label);
-    setMenuOpen(false);
-  };
+  const existingInstance = allEvidence.find(d =>
+    d.kind === 'form' &&
+    typeof d.note === 'string' &&
+    d.note.includes(`event_id=${event.id};`) &&
+    d.note.includes(`form_id=${formId};`),
+  );
 
-  const uploadAction = () => {
+  const openForm = () => {
     if (locked) return;
-    const mockName = `${(formRefId || formId)}_${Date.now()}.pdf`;
-    store.uploadEvidence(event.id, {
-      name: mockName,
-      kind: 'form',
-      sizeLabel: '312 KB',
-      linkedFormId: formId,
-    });
-    push('success', 'Document uploaded', `${label} — linked to form ${formRefId || formId}`);
-    setMenuOpen(false);
+
+    const timestamp = new Date().toISOString();
+    const workflowId = event.workflowId || 'event-authored';
+    const formCode = formRefId || formId;
+    const formInstanceId = existingInstance?.id || `FI-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+
+    if (!existingInstance) {
+      store.uploadEvidence(event.id, {
+        name: `${formCode}_${formInstanceId}.json`,
+        kind: 'form',
+        sizeLabel: 'instance',
+        note: `form_instance_id=${formInstanceId}; event_id=${event.id}; execution_unit_id=${executionUnitId}; workflow_id=${workflowId}; form_id=${formId}; user_id=Current User; timestamp=${timestamp}`,
+      });
+    }
+
+    if (status !== 'complete') {
+      store.setFormStatus(event.id, formId, 'in-progress');
+    }
+
+    const hasApprovedSignature = store.approvals.some(a =>
+      a.eventId === event.id &&
+      a.targetKind === 'form' &&
+      a.targetId === formId &&
+      a.status === 'approved',
+    );
+    const hasSignatureRequest = store.approvals.some(a =>
+      a.eventId === event.id &&
+      a.targetKind === 'form' &&
+      a.targetId === formId &&
+      (a.status === 'pending' || a.status === 'approved'),
+    );
+
+    if (!hasSignatureRequest) {
+      store.requestApproval(
+        event.id,
+        'form',
+        `Form eSign — ${formDisplay}`,
+        formId,
+        `event_id=${event.id}; execution_unit_id=${executionUnitId}; workflow_id=${workflowId}; form_instance_id=${formInstanceId}; user_id=Current User; timestamp=${timestamp}`,
+      );
+    }
+
+    push(
+      'success',
+      'Form opened',
+      hasApprovedSignature
+        ? `${formDisplay} · eSign already completed`
+        : hasSignatureRequest
+          ? `${formDisplay} · awaiting eSign`
+          : `${formDisplay} · eSign requested`,
+    );
   };
 
   return (
@@ -386,9 +466,8 @@ export function FormExecutionRow({
       <div className="flex items-center gap-2 p-2">
         <EvidenceDot status={status === 'complete' ? 'complete' : status === 'in-progress' ? 'in-progress' : status === 'missing' ? 'missing' : 'pending'} />
         <div className="flex-1 min-w-0">
-          <p className="font-montserrat font-bold text-white text-[11.5px] truncate">{label}</p>
+          <p className="font-montserrat font-bold text-white text-[11.5px] truncate">{formDisplay}</p>
           <p className="font-mono-jb text-white/45 text-[9.5px] flex items-center gap-2">
-            {showRefId && (formRefId || '—')}
             {stored?.completedAt && (
               <span className="text-white/35 font-roboto">
                 · by {stored.completedBy || 'User'} · {new Date(stored.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -403,26 +482,12 @@ export function FormExecutionRow({
           {palette.label}
         </span>
         {!locked && (
-          <div className="relative shrink-0">
-            <button
-              onClick={() => setMenuOpen(v => !v)}
-              className="rounded-md border border-white/10 px-2 py-1 text-[10px] font-montserrat font-bold text-white/70 hover:text-white hover:bg-white/[0.05] uppercase tracking-[0.12em] flex items-center gap-1"
-            >
-              Actions <ChevronRight size={10} className={menuOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
-            </button>
-            {menuOpen && (
-              <div
-                className="absolute right-0 top-full mt-1 z-10 rounded-md overflow-hidden min-w-[180px] bg-white border border-[#E5E4E3]"
-                style={{ boxShadow: '0 18px 40px -16px rgba(31,28,27,0.28), 0 2px 6px rgba(31,28,27,0.08)' }}
-              >
-                <FormMenuItem icon={<FileCheck2 size={11} />} label="Open Form" onClick={() => set('in-progress', 'Form opened')} />
-                <FormMenuItem icon={<Upload size={11} />}     label="Upload Existing" onClick={uploadAction} />
-                <FormMenuItem icon={<CheckCircle2 size={11} />} label="Mark Complete" onClick={() => set('complete', 'Form marked complete')} />
-                <FormMenuItem icon={<ShieldCheck size={11} />} label="Send for Review" onClick={() => set('requires-review', 'Sent for review')} />
-                <FormMenuItem icon={<FileWarning size={11} />} label="Flag as Missing" onClick={() => set('missing', 'Form flagged as missing')} danger />
-              </div>
-            )}
-          </div>
+          <button
+            onClick={openForm}
+            className="shrink-0 rounded-md border border-[#FFC107]/40 bg-[#FFC107]/10 px-2.5 py-1 text-[10px] font-montserrat font-bold text-[#FFC107] hover:bg-[#FFC107]/16 uppercase tracking-[0.12em] flex items-center gap-1"
+          >
+            Open Form <ArrowRight size={10} />
+          </button>
         )}
       </div>
       {linkedDocs.length > 0 && (
@@ -436,21 +501,6 @@ export function FormExecutionRow({
         </ul>
       )}
     </li>
-  );
-}
-
-function FormMenuItem({ icon, label, onClick, danger }: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-2 w-full px-3 py-2 text-left text-[10.5px] font-montserrat font-bold uppercase tracking-[0.12em] border-b border-[#E5E4E3] last:border-b-0 transition-colors ${
-        danger
-          ? 'text-[#B42318] hover:bg-[#FEE4E2]'
-          : 'text-[#1F1C1B] hover:bg-[#FAFBF8]'
-      }`}
-    >
-      <span className={danger ? 'text-[#B42318]' : 'text-[#524048]'}>{icon}</span>{label}
-    </button>
   );
 }
 
@@ -524,6 +574,7 @@ function ValidationPanel({ event }: { event: RegulatoryEvent }) {
   const report = store.validateEvent(event);
   const complete = store.isEventComplete(event.id);
   const push = useToastStore(s => s.push);
+  const blockerGroups = groupValidationBlockers(event, report.blockers);
 
   return (
     <section
@@ -551,23 +602,31 @@ function ValidationPanel({ event }: { event: RegulatoryEvent }) {
           <div className="flex items-center gap-1.5 mb-1 text-[#EF4444]">
             <AlertTriangle size={11} />
             <span className="text-[10px] font-montserrat font-bold uppercase tracking-[0.14em]">
-              {summarizeBlockers(report.blockers)}
+              {summarizeBlockers(blockerGroups)}
             </span>
           </div>
-          <ul className="space-y-0.5">
-            {report.blockers.slice(0, 5).map((b, i) => (
-              <li key={i} className="text-[10.5px] font-roboto text-white/70 flex items-start gap-1.5">
-                <Circle size={8} className="text-[#EF4444] shrink-0 mt-1" />
-                <span>
-                  <span className="text-[#FFC107] uppercase tracking-[0.12em] font-montserrat font-bold text-[9px] mr-1">{b.kind}</span>
-                  {b.label}
-                </span>
-              </li>
+          <div className="space-y-2">
+            {blockerGroups.map(group => (
+              <div key={group.key}>
+                <p className="text-[9px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#FFC107]/90 mb-0.5">
+                  {group.label} ({group.items.length})
+                </p>
+                <ul className="space-y-0.5">
+                  {group.items.slice(0, 3).map(item => (
+                    <li key={`${group.key}-${item}`} className="text-[10.5px] font-roboto text-white/70 flex items-start gap-1.5">
+                      <Circle size={8} className="text-[#EF4444] shrink-0 mt-1" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                {group.items.length > 3 && (
+                  <p className="text-[10px] font-roboto text-white/45 ml-[14px]">
+                    + {group.items.length - 3} more in {group.label.toLowerCase()}…
+                  </p>
+                )}
+              </div>
             ))}
-            {report.blockers.length > 5 && (
-              <li className="text-[10px] font-roboto text-white/45">+ {report.blockers.length - 5} more items to resolve…</li>
-            )}
-          </ul>
+          </div>
         </div>
       )}
 
@@ -606,18 +665,80 @@ function ValidationPanel({ event }: { event: RegulatoryEvent }) {
   );
 }
 
-function summarizeBlockers(blockers: { kind: string; label: string }[]): string {
-  const counts = blockers.reduce((acc, b) => {
-    acc[b.kind] = (acc[b.kind] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  const parts: string[] = [];
-  if (counts.form)     parts.push(`${counts.form} form${counts.form > 1 ? 's' : ''} outstanding`);
-  if (counts.step)     parts.push(`${counts.step} step${counts.step > 1 ? 's' : ''} open`);
-  if (counts.minutes)  parts.push('minutes missing');
-  if (counts.approval) parts.push(`${counts.approval} approval${counts.approval > 1 ? 's' : ''} pending`);
-  if (counts.evidence) parts.push('evidence missing');
-  return parts.length ? `Cannot close yet — ${parts.join(' · ')}` : `${blockers.length} blocker${blockers.length > 1 ? 's' : ''} remaining`;
+type ValidationBlockerGroup = {
+  key: 'step' | 'form' | 'minutes' | 'approval' | 'evidence';
+  label: string;
+  items: string[];
+};
+
+function summarizeBlockers(groups: ValidationBlockerGroup[]): string {
+  const total = groups.reduce((sum, group) => sum + group.items.length, 0);
+  const labels = groups.map(group => `${group.items.length} ${group.label.toLowerCase()}`);
+  return total > 0 ? `Cannot close yet — ${labels.join(' · ')}` : 'No blockers remaining';
+}
+
+function groupValidationBlockers(
+  event: RegulatoryEvent,
+  blockers: Array<{ kind: 'step' | 'form' | 'minutes' | 'approval'; label: string; targetId?: string }>,
+): ValidationBlockerGroup[] {
+  const groups: Record<ValidationBlockerGroup['key'], ValidationBlockerGroup> = {
+    step: { key: 'step', label: 'Execution Steps', items: [] },
+    form: { key: 'form', label: 'Required Forms', items: [] },
+    minutes: { key: 'minutes', label: 'Meeting Minutes', items: [] },
+    approval: { key: 'approval', label: 'Approvals', items: [] },
+    evidence: { key: 'evidence', label: 'Evidence/Audit Index', items: [] },
+  };
+
+  blockers.forEach(blocker => {
+    const key = blocker.kind === 'step' || blocker.kind === 'form' || blocker.kind === 'minutes' || blocker.kind === 'approval'
+      ? blocker.kind
+      : 'evidence';
+    groups[key].items.push(formatValidationBlockerLabel(event, blocker));
+  });
+
+  return Object.values(groups).filter(group => group.items.length > 0);
+}
+
+function formatValidationBlockerLabel(
+  event: RegulatoryEvent,
+  blocker: { kind: 'step' | 'form' | 'minutes' | 'approval'; label: string; targetId?: string },
+): string {
+  if (blocker.kind === 'step') {
+    const matchedIndex = event.processFlow.findIndex(step =>
+      step.id === blocker.targetId ||
+      normalizeComparable(step.label) === normalizeComparable(blocker.label) ||
+      normalizeComparable(step.description) === normalizeComparable(blocker.label),
+    );
+    const matchedStep = matchedIndex >= 0 ? event.processFlow[matchedIndex] : undefined;
+    const stepText = toReadableStepText(
+      matchedStep?.label || matchedStep?.description || blocker.label || blocker.targetId || 'Execution step',
+    );
+    return matchedIndex >= 0 ? `Step ${matchedIndex + 1}: ${stepText}` : stepText;
+  }
+
+  if (blocker.kind === 'form') {
+    const matchedForm = event.requiredForms.find(form =>
+      form.id === blocker.targetId ||
+      form.formId === blocker.targetId ||
+      normalizeComparable(form.label) === normalizeComparable(blocker.label),
+    );
+    return buildFormDisplayText(
+      matchedForm?.formId || blocker.targetId,
+      matchedForm?.label || blocker.label,
+      matchedForm?.id || blocker.targetId,
+    );
+  }
+
+  if (blocker.kind === 'minutes') {
+    return 'Meeting minutes are not finalized';
+  }
+
+  if (blocker.kind === 'approval') {
+    const cleaned = (blocker.label || 'Required approval pending').replace(/^pending approval[:\-]?\s*/i, '').trim();
+    return cleaned || 'Required approval pending';
+  }
+
+  return blocker.label || 'Missing audit evidence';
 }
 
 function CheckRow({ ok, label }: { ok: boolean; label: string }) {

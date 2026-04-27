@@ -178,7 +178,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-27": {
     "id": "CL-WF-27",
@@ -342,7 +343,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-28": {
     "id": "CL-WF-28",
@@ -509,7 +511,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-29": {
     "id": "CL-WF-29",
@@ -683,7 +686,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-30": {
     "id": "CL-WF-30",
@@ -853,7 +857,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-31": {
     "id": "CL-WF-31",
@@ -1014,7 +1019,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-32": {
     "id": "CL-WF-32",
@@ -1179,7 +1185,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-33": {
     "id": "CL-WF-33",
@@ -1329,7 +1336,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-34": {
     "id": "CL-WF-34",
@@ -1490,7 +1498,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-35": {
     "id": "CL-WF-35",
@@ -1643,7 +1652,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-36": {
     "id": "CL-WF-36",
@@ -1802,7 +1812,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-37": {
     "id": "CL-WF-37",
@@ -1966,7 +1977,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CL-WF-01": {
     "id": "CL-WF-01",
@@ -2135,7 +2147,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "intake"
   },
   "CL-WF-02": {
     "id": "CL-WF-02",
@@ -2264,7 +2277,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-03": {
     "id": "CL-WF-03",
@@ -2387,7 +2401,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-04": {
     "id": "CL-WF-04",
@@ -2572,7 +2587,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-05": {
     "id": "CL-WF-05",
@@ -2736,7 +2752,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-06": {
     "id": "CL-WF-06",
@@ -2885,7 +2902,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-07": {
     "id": "CL-WF-07",
@@ -3023,7 +3041,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-08": {
     "id": "CL-WF-08",
@@ -3150,7 +3169,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-09": {
     "id": "CL-WF-09",
@@ -3294,7 +3314,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-10": {
     "id": "CL-WF-10",
@@ -3467,7 +3488,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-11": {
     "id": "CL-WF-11",
@@ -3602,7 +3624,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-12": {
     "id": "CL-WF-12",
@@ -3753,7 +3776,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-13": {
     "id": "CL-WF-13",
@@ -3925,7 +3949,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-14": {
     "id": "CL-WF-14",
@@ -4069,7 +4094,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-15": {
     "id": "CL-WF-15",
@@ -4200,7 +4226,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-16": {
     "id": "CL-WF-16",
@@ -4348,7 +4375,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-17": {
     "id": "CL-WF-17",
@@ -4484,7 +4512,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-18": {
     "id": "CL-WF-18",
@@ -4629,7 +4658,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-19": {
     "id": "CL-WF-19",
@@ -4786,7 +4816,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-20": {
     "id": "CL-WF-20",
@@ -4914,7 +4945,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-21": {
     "id": "CL-WF-21",
@@ -5052,7 +5084,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-22": {
     "id": "CL-WF-22",
@@ -5203,7 +5236,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-23": {
     "id": "CL-WF-23",
@@ -5356,7 +5390,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "intake"
   },
   "CL-WF-24": {
     "id": "CL-WF-24",
@@ -5495,7 +5530,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CL-WF-25": {
     "id": "CL-WF-25",
@@ -5637,7 +5673,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-23": {
     "id": "CO-WF-23",
@@ -5843,7 +5880,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CO-WF-24": {
     "id": "CO-WF-24",
@@ -6020,7 +6058,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "CO-WF-25": {
     "id": "CO-WF-25",
@@ -6181,7 +6220,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CO-WF-26": {
     "id": "CO-WF-26",
@@ -6334,7 +6374,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CO-WF-27": {
     "id": "CO-WF-27",
@@ -6518,7 +6559,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "CO-WF-28": {
     "id": "CO-WF-28",
@@ -6661,7 +6703,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CO-WF-29": {
     "id": "CO-WF-29",
@@ -6831,7 +6874,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CO-WF-30": {
     "id": "CO-WF-30",
@@ -7021,7 +7065,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CO-WF-01": {
     "id": "CO-WF-01",
@@ -7176,7 +7221,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-02": {
     "id": "CO-WF-02",
@@ -7316,7 +7362,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-03": {
     "id": "CO-WF-03",
@@ -7504,7 +7551,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "intake"
   },
   "CO-WF-04": {
     "id": "CO-WF-04",
@@ -7695,7 +7743,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "CO-WF-05": {
     "id": "CO-WF-05",
@@ -7914,7 +7963,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-06": {
     "id": "CO-WF-06",
@@ -8102,7 +8152,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-07": {
     "id": "CO-WF-07",
@@ -8291,7 +8342,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "CO-WF-08": {
     "id": "CO-WF-08",
@@ -8443,7 +8495,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-09": {
     "id": "CO-WF-09",
@@ -8597,7 +8650,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-10": {
     "id": "CO-WF-10",
@@ -8826,7 +8880,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-11": {
     "id": "CO-WF-11",
@@ -9001,7 +9056,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-12": {
     "id": "CO-WF-12",
@@ -9191,7 +9247,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-13": {
     "id": "CO-WF-13",
@@ -9342,7 +9399,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-14": {
     "id": "CO-WF-14",
@@ -9506,7 +9564,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "CO-WF-15": {
     "id": "CO-WF-15",
@@ -9679,7 +9738,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-16": {
     "id": "CO-WF-16",
@@ -9841,7 +9901,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-17": {
     "id": "CO-WF-17",
@@ -9999,7 +10060,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-18": {
     "id": "CO-WF-18",
@@ -10162,7 +10224,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-19": {
     "id": "CO-WF-19",
@@ -10286,7 +10349,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-20": {
     "id": "CO-WF-20",
@@ -10440,7 +10504,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-21": {
     "id": "CO-WF-21",
@@ -10595,7 +10660,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "CO-WF-22": {
     "id": "CO-WF-22",
@@ -10705,7 +10771,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "aggregate"
   },
   "EN-WF-01": {
     "id": "EN-WF-01",
@@ -10904,7 +10971,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "EN-WF-02": {
     "id": "EN-WF-02",
@@ -11031,7 +11099,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "EN-WF-03": {
     "id": "EN-WF-03",
@@ -11167,7 +11236,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "EN-WF-04": {
     "id": "EN-WF-04",
@@ -11278,7 +11348,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "EN-WF-05": {
     "id": "EN-WF-05",
@@ -11408,7 +11479,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "EN-WF-06": {
     "id": "EN-WF-06",
@@ -11520,7 +11592,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "EN-WF-07": {
     "id": "EN-WF-07",
@@ -11654,7 +11727,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "EN-WF-08": {
     "id": "EN-WF-08",
@@ -11809,7 +11883,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "EN-WF-09": {
     "id": "EN-WF-09",
@@ -11943,7 +12018,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 4,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "EN-WF-10": {
     "id": "EN-WF-10",
@@ -12062,7 +12138,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "EN-WF-11": {
     "id": "EN-WF-11",
@@ -12192,7 +12269,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "EN-WF-12": {
     "id": "EN-WF-12",
@@ -12325,7 +12403,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "EN-WF-13": {
     "id": "EN-WF-13",
@@ -12456,7 +12535,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-01": {
     "id": "FN-WF-01",
@@ -12597,7 +12677,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-02": {
     "id": "FN-WF-02",
@@ -12717,7 +12798,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-03": {
     "id": "FN-WF-03",
@@ -12850,7 +12932,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-04": {
     "id": "FN-WF-04",
@@ -12985,7 +13068,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-05": {
     "id": "FN-WF-05",
@@ -13125,7 +13209,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-06": {
     "id": "FN-WF-06",
@@ -13241,7 +13326,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-07": {
     "id": "FN-WF-07",
@@ -13359,7 +13445,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-08": {
     "id": "FN-WF-08",
@@ -13527,7 +13614,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-09": {
     "id": "FN-WF-09",
@@ -13666,7 +13754,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-10": {
     "id": "FN-WF-10",
@@ -13802,7 +13891,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-11": {
     "id": "FN-WF-11",
@@ -13929,7 +14019,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-12": {
     "id": "FN-WF-12",
@@ -14051,7 +14142,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "FN-WF-13": {
     "id": "FN-WF-13",
@@ -14178,7 +14270,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "FN-WF-14": {
     "id": "FN-WF-14",
@@ -14283,7 +14376,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "FN-WF-15": {
     "id": "FN-WF-15",
@@ -14434,7 +14528,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "GV-WF-01": {
     "id": "GV-WF-01",
@@ -14697,7 +14792,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 5,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "aggregate"
   },
   "GV-WF-02": {
     "id": "GV-WF-02",
@@ -14881,7 +14977,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "aggregate"
   },
   "GV-WF-03": {
     "id": "GV-WF-03",
@@ -15108,7 +15205,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 5,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "GV-WF-04": {
     "id": "GV-WF-04",
@@ -15294,7 +15392,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 4,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "GV-WF-05": {
     "id": "GV-WF-05",
@@ -15471,7 +15570,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "GV-WF-06": {
     "id": "GV-WF-06",
@@ -15622,7 +15722,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "GV-WF-07": {
     "id": "GV-WF-07",
@@ -15751,7 +15852,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "GV-WF-08": {
     "id": "GV-WF-08",
@@ -15887,7 +15989,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "GV-WF-09": {
     "id": "GV-WF-09",
@@ -16045,7 +16148,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "GV-WF-10": {
     "id": "GV-WF-10",
@@ -16221,7 +16325,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "GV-WF-11": {
     "id": "GV-WF-11",
@@ -16437,7 +16542,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 4,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "GV-WF-12": {
     "id": "GV-WF-12",
@@ -16581,7 +16687,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 4,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "GV-WF-13": {
     "id": "GV-WF-13",
@@ -16718,7 +16825,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "aggregate"
   },
   "GV-WF-14": {
     "id": "GV-WF-14",
@@ -16836,7 +16944,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-18": {
     "id": "HR-WF-18",
@@ -17022,7 +17131,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "HR-WF-19": {
     "id": "HR-WF-19",
@@ -17178,7 +17288,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "HR-WF-20": {
     "id": "HR-WF-20",
@@ -17338,7 +17449,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "HR-WF-21": {
     "id": "HR-WF-21",
@@ -17503,7 +17615,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "HR-WF-01": {
     "id": "HR-WF-01",
@@ -17637,7 +17750,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-02": {
     "id": "HR-WF-02",
@@ -17795,7 +17909,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-03": {
     "id": "HR-WF-03",
@@ -17980,7 +18095,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-04": {
     "id": "HR-WF-04",
@@ -18123,7 +18239,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-05": {
     "id": "HR-WF-05",
@@ -18279,7 +18396,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-06": {
     "id": "HR-WF-06",
@@ -18409,7 +18527,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-07": {
     "id": "HR-WF-07",
@@ -18557,7 +18676,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 4,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-08": {
     "id": "HR-WF-08",
@@ -18684,7 +18804,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-09": {
     "id": "HR-WF-09",
@@ -18831,7 +18952,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "enforcement"
   },
   "HR-WF-10": {
     "id": "HR-WF-10",
@@ -18982,7 +19104,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-11": {
     "id": "HR-WF-11",
@@ -19103,7 +19226,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-12": {
     "id": "HR-WF-12",
@@ -19261,7 +19385,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "intake"
   },
   "HR-WF-13": {
     "id": "HR-WF-13",
@@ -19419,7 +19544,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-14": {
     "id": "HR-WF-14",
@@ -19581,7 +19707,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-15": {
     "id": "HR-WF-15",
@@ -19720,7 +19847,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-16": {
     "id": "HR-WF-16",
@@ -19843,7 +19971,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "HR-WF-17": {
     "id": "HR-WF-17",
@@ -19982,7 +20111,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-21": {
     "id": "IT-WF-21",
@@ -20144,7 +20274,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "IT-WF-22": {
     "id": "IT-WF-22",
@@ -20318,7 +20449,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "IT-WF-23": {
     "id": "IT-WF-23",
@@ -20484,7 +20616,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "IT-WF-24": {
     "id": "IT-WF-24",
@@ -20657,7 +20790,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "IT-WF-25": {
     "id": "IT-WF-25",
@@ -20833,7 +20967,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "IT-WF-01": {
     "id": "IT-WF-01",
@@ -20976,7 +21111,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-02": {
     "id": "IT-WF-02",
@@ -21118,7 +21254,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-03": {
     "id": "IT-WF-03",
@@ -21269,7 +21406,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-04": {
     "id": "IT-WF-04",
@@ -21387,7 +21525,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "IT-WF-05": {
     "id": "IT-WF-05",
@@ -21501,7 +21640,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-06": {
     "id": "IT-WF-06",
@@ -21637,7 +21777,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "IT-WF-07": {
     "id": "IT-WF-07",
@@ -21755,7 +21896,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-08": {
     "id": "IT-WF-08",
@@ -21888,7 +22030,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-09": {
     "id": "IT-WF-09",
@@ -22076,7 +22219,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-10": {
     "id": "IT-WF-10",
@@ -22210,7 +22354,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-11": {
     "id": "IT-WF-11",
@@ -22335,7 +22480,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-12": {
     "id": "IT-WF-12",
@@ -22446,7 +22592,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-13": {
     "id": "IT-WF-13",
@@ -22571,7 +22718,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-14": {
     "id": "IT-WF-14",
@@ -22702,7 +22850,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-15": {
     "id": "IT-WF-15",
@@ -22854,7 +23003,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "IT-WF-16": {
     "id": "IT-WF-16",
@@ -23003,7 +23153,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-17": {
     "id": "IT-WF-17",
@@ -23138,7 +23289,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-18": {
     "id": "IT-WF-18",
@@ -23259,7 +23411,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-19": {
     "id": "IT-WF-19",
@@ -23399,7 +23552,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "IT-WF-20": {
     "id": "IT-WF-20",
@@ -23526,7 +23680,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "OP-WF-01": {
     "id": "OP-WF-01",
@@ -23665,7 +23820,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "OP-WF-02": {
     "id": "OP-WF-02",
@@ -23798,7 +23954,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "OP-WF-03": {
     "id": "OP-WF-03",
@@ -23997,7 +24154,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "OP-WF-04": {
     "id": "OP-WF-04",
@@ -24108,7 +24266,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "OP-WF-05": {
     "id": "OP-WF-05",
@@ -24234,7 +24393,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "OP-WF-06": {
     "id": "OP-WF-06",
@@ -24374,7 +24534,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "OP-WF-07": {
     "id": "OP-WF-07",
@@ -24504,7 +24665,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "intake"
   },
   "OP-WF-08": {
     "id": "OP-WF-08",
@@ -24612,7 +24774,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "OP-WF-09": {
     "id": "OP-WF-09",
@@ -24745,7 +24908,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "OP-WF-10": {
     "id": "OP-WF-10",
@@ -24854,7 +25018,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "OP-WF-11": {
     "id": "OP-WF-11",
@@ -24963,7 +25128,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "OP-WF-12": {
     "id": "OP-WF-12",
@@ -25091,7 +25257,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "OP-WF-13": {
     "id": "OP-WF-13",
@@ -25214,7 +25381,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "QA-WF-13": {
     "id": "QA-WF-13",
@@ -25381,7 +25549,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "QA-WF-14": {
     "id": "QA-WF-14",
@@ -25520,7 +25689,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "QA-WF-15": {
     "id": "QA-WF-15",
@@ -25667,7 +25837,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "QA-WF-16": {
     "id": "QA-WF-16",
@@ -25823,7 +25994,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "QA-WF-17": {
     "id": "QA-WF-17",
@@ -25983,7 +26155,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "QA-WF-18": {
     "id": "QA-WF-18",
@@ -26152,7 +26325,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "QA-WF-01": {
     "id": "QA-WF-01",
@@ -26300,7 +26474,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 4,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "QA-WF-02": {
     "id": "QA-WF-02",
@@ -26444,7 +26619,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "QA-WF-03": {
     "id": "QA-WF-03",
@@ -26733,7 +26909,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "QA-WF-04": {
     "id": "QA-WF-04",
@@ -26935,7 +27112,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "QA-WF-05": {
     "id": "QA-WF-05",
@@ -27122,7 +27300,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "enforcement"
   },
   "QA-WF-06": {
     "id": "QA-WF-06",
@@ -27287,7 +27466,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "aggregate"
   },
   "QA-WF-07": {
     "id": "QA-WF-07",
@@ -27444,7 +27624,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 3,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "QA-WF-08": {
     "id": "QA-WF-08",
@@ -27598,7 +27779,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "QA-WF-09": {
     "id": "QA-WF-09",
@@ -27737,7 +27919,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "QA-WF-10": {
     "id": "QA-WF-10",
@@ -27862,7 +28045,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "aggregate"
   },
   "QA-WF-11": {
     "id": "QA-WF-11",
@@ -27987,7 +28171,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "QA-WF-12": {
     "id": "QA-WF-12",
@@ -28112,7 +28297,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-16": {
     "id": "RM-WF-16",
@@ -28281,7 +28467,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "RM-WF-17": {
     "id": "RM-WF-17",
@@ -28446,7 +28633,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "RM-WF-18": {
     "id": "RM-WF-18",
@@ -28600,7 +28788,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "audit"
   },
   "RM-WF-19": {
     "id": "RM-WF-19",
@@ -28783,7 +28972,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "RM-WF-20": {
     "id": "RM-WF-20",
@@ -28959,7 +29149,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "RM-WF-01": {
     "id": "RM-WF-01",
@@ -29105,7 +29296,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "RM-WF-02": {
     "id": "RM-WF-02",
@@ -29253,7 +29445,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-03": {
     "id": "RM-WF-03",
@@ -29420,7 +29613,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "audit"
   },
   "RM-WF-04": {
     "id": "RM-WF-04",
@@ -29553,7 +29747,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-05": {
     "id": "RM-WF-05",
@@ -29726,7 +29921,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "immediate_jeopardy",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-06": {
     "id": "RM-WF-06",
@@ -29849,7 +30045,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-07": {
     "id": "RM-WF-07",
@@ -29988,7 +30185,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-08": {
     "id": "RM-WF-08",
@@ -30149,7 +30347,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "high",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-09": {
     "id": "RM-WF-09",
@@ -30310,7 +30509,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-10": {
     "id": "RM-WF-10",
@@ -30462,7 +30662,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-11": {
     "id": "RM-WF-11",
@@ -30584,7 +30785,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "high",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-12": {
     "id": "RM-WF-12",
@@ -30711,7 +30913,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 1,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-13": {
     "id": "RM-WF-13",
@@ -30834,7 +31037,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": false
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-14": {
     "id": "RM-WF-14",
@@ -30983,7 +31187,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   },
   "RM-WF-15": {
     "id": "RM-WF-15",
@@ -31101,7 +31306,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       "policyCount": 2,
       "declaredRisk": "moderate",
       "requiresGoverningBody": true
-    }
+    },
+    "workflowType": "operational"
   }
 };
 

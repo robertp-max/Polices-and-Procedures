@@ -23,6 +23,9 @@ const API_BASE: string =
   (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_HHC_API_BASE ||
   'https://rtllnugat0.execute-api.us-west-1.amazonaws.com';
 
+/** Set true to stub all Lambda/API-Gateway calls (no network traffic). */
+const LAMBDA_DISABLED = true;
+
 const DEFAULT_EVENT  = 'EVT-DEMO-001';
 const DEFAULT_POLICY = 'POL-DEMO-001';
 const DEFAULT_WF     = 'WF-DEMO-001';
@@ -175,6 +178,11 @@ export function EvidenceCenterPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const load = useCallback(async (id: string) => {
+    if (LAMBDA_DISABLED) {
+      setFiles([]);
+      setAudit([]);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -243,6 +251,7 @@ export function EvidenceCenterPage() {
   };
 
   const onDownload = async (f: EvidenceFile) => {
+    if (LAMBDA_DISABLED) { setError('Evidence download is disabled (Lambda off).'); return; }
     try {
       const data = await jsonOrThrow<DownloadResponse>(
         await fetch(
@@ -261,6 +270,7 @@ export function EvidenceCenterPage() {
   const onFileChosen = async (ev: React.ChangeEvent<HTMLInputElement>) => {
     const file = ev.target.files?.[0];
     if (!file) return;
+    if (LAMBDA_DISABLED) { setError('Evidence upload is disabled (Lambda off).'); if (fileInputRef.current) fileInputRef.current.value = ''; return; }
     setUploading(true);
     setUploadMsg(null);
     setError(null);

@@ -6,6 +6,7 @@ import { WORKFLOWS_EVENTS } from './workflows-events';
 import { FORMS_TEMPLATES } from './forms-templates';
 import { DEVELOPER_ECIGN } from './developer-ecign';
 import { POLICY_LIFECYCLE } from './policy-lifecycle';
+import { ONBOARDING_V2 } from './onboarding-v2';
 
 export interface HelpArticle {
   slug:        string;
@@ -34,6 +35,7 @@ export const CATEGORIES: Array<{ id: string; label: string; subcategories?: stri
   { id: 'workflows-events',   label: 'Workflows & Events' },
   { id: 'forms-templates',    label: 'Forms & Templates' },
   { id: 'developer',          label: 'Developer', subcategories: ['eCIgn'] },
+  { id: 'onboarding-v2',      label: 'Onboarding v2', subcategories: ['Getting Started','Role-Based Onboarding','CES Integration','Evidence & Forms','Competency Validation','Policy Acknowledgments','eCIgn Signatures','Audit Readiness','Recurring Revalidation','Vendor & Governance','Compliance Enforcement & Overrides','Troubleshooting','Surveyor Quick Answers'] },
 ];
 
 export const ARTICLES: HelpArticle[] = [
@@ -44,6 +46,7 @@ export const ARTICLES: HelpArticle[] = [
   ...WORKFLOWS_EVENTS,
   ...FORMS_TEMPLATES,
   ...DEVELOPER_ECIGN,
+  ...ONBOARDING_V2,
 ];
 
 export function findArticle(slug: string): HelpArticle | undefined {

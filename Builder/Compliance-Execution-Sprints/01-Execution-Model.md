@@ -7,6 +7,8 @@ The Compliance Execution Sprint System operates a **Calendar-Driven + Sequential
 > **Calendar-Driven** — work cannot enter a sprint unless it is anchored to a scheduled compliance event in the regulatory calendar (`MANDATED_EVENTS_EXPANDED`, `MULTI_YEAR_EVENTS`, `REGULATORY_EVENTS`).
 >
 > **Sequential** — within each workflow, steps must be completed in the prescribed order: Preparation → Documentation → Review → Signature → Audit. Skipping or reordering is an enforcement violation.
+>
+> **Aligned** — every event resolves to `policy_id → workflow_id → event_id → artifact_ids[]` and every recurring event lands on a weekday. Enforced by `npm run verify:alignment`. See [12-Alignment-and-Verification.md](./12-Alignment-and-Verification.md).
 
 This model is explicitly **not**:
 

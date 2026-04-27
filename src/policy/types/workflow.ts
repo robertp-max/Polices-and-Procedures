@@ -189,6 +189,22 @@ export interface Workflow {
   cadence: WorkflowCadence;
   dependencies: WorkflowDependency[];
   metrics: WorkflowMetrics;
+
+  /**
+   * Execution classification — the operating layer this workflow
+   * occupies inside CES. Determines whether it feeds QAPI, generates
+   * evidence, or only reacts to failures. When omitted, callers should
+   * treat it as `'operational'` (the safest default), but the
+   * `verifyAlignment` script flags any workflow lacking an explicit
+   * value so the gap is filled in source.
+   *
+   *   • audit       — evaluates compliance, produces findings, feeds QAPI.
+   *   • operational — performs the work; produces evidence used by audits.
+   *   • enforcement — reacts to failure (CAP, escalation, discipline).
+   *   • intake      — captures incoming reports/requests (incident, FWA).
+   *   • aggregate   — consumes audit outputs (QAPI, governing body review).
+   */
+  workflowType?: 'audit' | 'operational' | 'enforcement' | 'intake' | 'aggregate';
 }
 
 /** Compact card-shape used by the library grid. */

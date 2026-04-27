@@ -6,6 +6,13 @@ Every sprint contains a **fixed set of recurring execution units** that are auto
 
 These units do **not** require an event in the calendar — they are themselves a standing event class anchored to the sprint cadence.
 
+> **Weekend rule:** every recurring unit (and every recurring/mandated
+> event consumed by these units) is anchored Mon–Fri. The weekend
+> guard in `enforceBusinessDay()` shifts any Sat/Sun anchor forward
+> automatically. Override only via `event.isWeekendAllowed === true`.
+> Verified by `npm run verify:alignment` — see
+> [12-Alignment-and-Verification.md](./12-Alignment-and-Verification.md).
+
 ---
 
 ## 2. Mandatory Recurring Units (Per Sprint)

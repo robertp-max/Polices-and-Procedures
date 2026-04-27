@@ -6,6 +6,13 @@ The CES system enforces compliance discipline **automatically**. Discretion exis
 
 The default behavior of the system is to **block, not warn**. Warnings without blocks have already been tried in regulated environments — they fail.
 
+> **Structural enforcement (build-time):** the
+> `npm run verify:alignment` script blocks the build on any of:
+> recurring event on a weekend, event with no `policyRefs[]`, workflow
+> missing `workflowType`, workflow missing policy reference, or
+> non-aggregate workflow missing required forms. See
+> [12-Alignment-and-Verification.md](./12-Alignment-and-Verification.md).
+
 ---
 
 ## 2. Hard Enforcement Rules (System-Enforced)

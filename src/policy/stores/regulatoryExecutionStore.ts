@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { RegulatoryEvent, UrgencyLevel } from '@/policy/data/regulatoryEvents';
+import { REGULATORY_EVENTS, type RegulatoryEvent, type UrgencyLevel } from '@/policy/data/regulatoryEvents';
 import { useEnforcementStore } from '@/policy/stores/enforcementStore';
 import { computeEnforcement } from '@/policy/enforcement/enforcementEngine';
 
@@ -219,6 +219,13 @@ interface RegulatoryExecutionState {
 
 const nowISO = () => new Date().toISOString();
 
+const readApprovalNoteValue = (note: string | undefined, key: string): string | undefined => {
+  if (!note) return undefined;
+  const pattern = new RegExp(`${key}=([^;]+)`, 'i');
+  const match = note.match(pattern);
+  return match?.[1]?.trim();
+};
+
 export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
   persist(
     (set, get) => ({
@@ -409,6 +416,52 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           before: { status: prev.status },
           after: { status: decision, approver, decisionNote },
         });
+
+        // eSign completion path for forms:
+        // once approved, create a receipt and mark the linked step complete
+        // when all forms for that step are complete.
+        if (decision === 'approved' && prev.targetKind === 'form' && prev.targetId) {
+          get().uploadEvidence(prev.eventId, {
+            name: `${prev.targetId}_eSign_${approvalId}.json`,
+            kind: 'form',
+            sizeLabel: 'eSign',
+            linkedFormId: prev.targetId,
+            note: `approval_id=${approvalId}; target_id=${prev.targetId}; approver=${approver}; decided_at=${nowISO()}; source=eSign`,
+          }, approver);
+
+          const eventDef = REGULATORY_EVENTS.find(e => e.id === prev.eventId);
+          const mappedStepIds = new Set<string>();
+
+          if (eventDef) {
+            const approvedFormId = prev.targetId;
+            const approvedFormRef = eventDef.requiredForms.find(f => f.id === approvedFormId)?.formId;
+
+            eventDef.processFlow.forEach(step => {
+              const refs = step.requiredFormIds || [];
+              if (refs.includes(approvedFormId) || (approvedFormRef ? refs.includes(approvedFormRef) : false)) {
+                mappedStepIds.add(step.id);
+              }
+            });
+
+            mappedStepIds.forEach(stepId => {
+              const step = eventDef.processFlow.find(s => s.id === stepId);
+              if (!step) return;
+              const allFormsComplete = (step.requiredFormIds || []).every(ref => {
+                const mappedForm = eventDef.requiredForms.find(f => f.formId === ref || f.id === ref);
+                const checkFormId = mappedForm?.id || ref;
+                return get().effectiveFormStatus(eventDef, checkFormId) === 'complete';
+              });
+              if (allFormsComplete) {
+                get().setStepStatus(prev.eventId, stepId, 'complete', approver);
+              }
+            });
+          }
+
+          const executionUnitId = readApprovalNoteValue(prev.note, 'execution_unit_id');
+          if (executionUnitId && eventDef?.processFlow.some(step => step.id === executionUnitId)) {
+            get().setStepStatus(prev.eventId, executionUnitId, 'complete', approver);
+          }
+        }
       },
 
       /* ── notes ── */
@@ -632,8 +685,26 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
       },
 
       effectiveFormStatus: (event, formId) => {
+        const approvals = get().approvals;
+        const approvedViaESign = approvals.some(a =>
+          a.eventId === event.id &&
+          a.targetKind === 'form' &&
+          a.targetId === formId &&
+          a.status === 'approved',
+        );
+        if (approvedViaESign) return 'complete';
+
         const override = get().formStates[fKey(event.id, formId)];
         if (override) return override.status;
+
+        const pendingESign = approvals.some(a =>
+          a.eventId === event.id &&
+          a.targetKind === 'form' &&
+          a.targetId === formId &&
+          a.status === 'pending',
+        );
+        if (pendingESign) return 'in-progress';
+
         const seed = event.requiredForms.find(f => f.id === formId);
         return (seed?.status as FormStatus) || 'pending';
       },

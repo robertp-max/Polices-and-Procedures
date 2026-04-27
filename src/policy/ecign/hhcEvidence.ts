@@ -14,6 +14,9 @@ const API_BASE: string =
   (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_HHC_API_BASE ||
   'https://rtllnugat0.execute-api.us-west-1.amazonaws.com';
 
+/** Set true to stub all Lambda/API-Gateway calls (no network traffic). */
+const LAMBDA_DISABLED = true;
+
 export interface RecordEsignArgs {
   policy_id?:         string;       // e.g. "GV-OG-005"; falls back to "POL-UNLINKED"
   workflow_id?:       string;       // e.g. "WF-GV-FM-017"; falls back to "WF-FORM-{form_id}"
@@ -105,6 +108,20 @@ function actorHeaders(): Record<string, string> {
 }
 
 export async function recordEsignEvidence(args: RecordEsignArgs): Promise<EsignEvidenceResponse> {
+  if (LAMBDA_DISABLED) {
+    return {
+      evidence_id:      `STUB-ESIGN-${Date.now()}`,
+      status:           'APPROVED_EVIDENCE',
+      signature_status: 'SIGNED',
+      s3_bucket:        'stub',
+      s3_key:           `stub/esign/${args.form_id}`,
+      sha256:           args.signature_hash,
+      policy_id:        args.policy_id  || 'POL-UNLINKED',
+      workflow_id:      args.workflow_id || 'WF-STUB',
+      event_id:         args.event_id   || 'EVT-STUB',
+      form_id:          args.form_id,
+    };
+  }
   const res = await fetch(`${API_BASE}/esign/complete`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...actorHeaders() },
@@ -137,6 +154,7 @@ export async function recordEsignEvidence(args: RecordEsignArgs): Promise<EsignE
 }
 
 async function listEventEvidence(eventId: string): Promise<EvidenceFileSummary[]> {
+  if (LAMBDA_DISABLED) return [];
   const res = await fetch(`${API_BASE}/events/${encodeURIComponent(eventId)}/files`, {
     headers: actorHeaders(),
   });

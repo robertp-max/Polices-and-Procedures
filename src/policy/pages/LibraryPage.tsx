@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { AlertTriangle } from 'lucide-react';
 import { SharedPolicyDetailView, type SharedPolicy } from '../components/SharedPolicyDetailView';
+import { getPolicyContent } from '../data/policyContentMap';
 
 // ══════════════════════════════════════════════════════════════
 // ENTERPRISE POLICY TAXONOMY – FULL 278-POLICY DATASET
@@ -261,6 +262,7 @@ newPoliciesData.forEach(p => {
 
 // ── ADAPTER: map PolicyRecord → SharedPolicy ──────────────────
 function toSharedPolicy(p: PolicyRecord): SharedPolicy {
+  const content = getPolicyContent(p.policyId);
   return {
     id: p.id, policyId: p.policyId, title: p.title,
     domain: p.domain, domainCode: p.domainCode,
@@ -270,6 +272,7 @@ function toSharedPolicy(p: PolicyRecord): SharedPolicy {
     nextReviewDate: p.nextReviewDate, policyOwner: p.policyOwner,
     approvedBy: p.approvedBy, purpose: p.purpose, scope: p.scope,
     regulatoryTags: p.regulatoryTags,
+    generatedSections: content?.sections,
   };
 }
 

@@ -28,6 +28,7 @@
  */
 
 import type { RegulatoryEvent } from './regulatoryEvents';
+import { applyEventAlignmentPolicy } from './eventAlignmentPolicy';
 
 /* ════════════════════════════════════════════════════════════════
    Internal helper — produce paired 2026 + 2028 occurrences for a
@@ -996,4 +997,4 @@ export const MULTI_YEAR_EVENTS: RegulatoryEvent[] = [
   EXTERNAL_COMPLIANCE_REVIEW_TRIENNIAL_2029,
   STRATEGIC_EFFECTIVENESS_TRIENNIAL_2026,
   STRATEGIC_EFFECTIVENESS_TRIENNIAL_2029,
-];
+].map((event) => applyEventAlignmentPolicy(event));
