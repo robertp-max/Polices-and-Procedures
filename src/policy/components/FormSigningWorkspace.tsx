@@ -156,7 +156,7 @@ function buildCertHtml(p: CertParams, logoSrc: string): string {
  *
  *   pages 1..N       byte-faithful template (args.formHtml)
  *                    + repeating eCIgn watermark stamp in footer band
- *   pages N+1..N+4   appended cert packet (args.certHtml)
+ *   page  N+1        appended cert packet (args.certHtml)
  *
  * `styleAssets` MUST include BOTH the document's <link rel="stylesheet">
  * tags AND its inline <style> blocks. In Vite dev mode all CSS is
@@ -182,12 +182,20 @@ ${args.styleAssets}
   /* ── Packet overrides (do NOT touch form layout) ── */
   @page{margin:0.5in 0.75in 0.55in 0.75in}
   @media print{
-    html,body{background:white !important}
+    html,body{background:white !important;margin:0 !important;padding:0 !important}
+    /* Global print CSS can hide popup nodes via body:has(...) guards. */
+    .ecign-print-root,.ecign-print-root *{visibility:visible !important}
+    body:has(.form-page) .ecign-cert-section,
+    body:has(.form-page) .ecign-cert-section *,
+    body:has(.form-page) .ecign-footer,
+    body:has(.form-page) .ecign-footer *{visibility:visible !important}
     .ecign-cert-section{page-break-before:always;break-before:page}
+    .ecign-print-root,.ecign-print-root .form-page{height:auto !important;min-height:0 !important;overflow:visible !important}
     /* Hide the on-screen action bar / close affordances if cloned */
     .no-print,.print\\:hidden{display:none !important}
   }
   html,body{margin:0;padding:0;background:white}
+  .ecign-print-root{position:relative;background:white;min-height:100vh}
   /* ── Certificate section (appended after original form pages) ── */
   .ecign-cert-section{
     max-width:760px;margin:0 auto;padding:40px 24px 80px;
@@ -223,18 +231,20 @@ ${args.styleAssets}
   .ecign-footer-mono{font-family:monospace;font-size:8px}
 </style>
 </head><body>
-  ${args.formHtml}
-  <div class="ecign-cert-section">${args.certHtml}</div>
-  <div class="ecign-footer">
-    <img class="ecign-footer-logo" src="${args.logoSrc}" alt="eCIgn"/>
-    <span class="ecign-footer-dot">·</span>
-    <span class="ecign-footer-mono">${escHtml(args.certId)}</span>
-    <span class="ecign-footer-dot">·</span>
-    <span>${escHtml(args.signerName)}</span>
-    <span class="ecign-footer-dot">·</span>
-    <span>${fmtSignTs(args.signedAt)}</span>
-    <span class="ecign-footer-dot">·</span>
-    <span style="font-weight:700">SIGNED</span>
+  <div class="ecign-print-root">
+    ${args.formHtml}
+    <div class="ecign-cert-section">${args.certHtml}</div>
+    <div class="ecign-footer">
+      <img class="ecign-footer-logo" src="${args.logoSrc}" alt="eCIgn"/>
+      <span class="ecign-footer-dot">·</span>
+      <span class="ecign-footer-mono">${escHtml(args.certId)}</span>
+      <span class="ecign-footer-dot">·</span>
+      <span>${escHtml(args.signerName)}</span>
+      <span class="ecign-footer-dot">·</span>
+      <span>${fmtSignTs(args.signedAt)}</span>
+      <span class="ecign-footer-dot">·</span>
+      <span style="font-weight:700">SIGNED</span>
+    </div>
   </div>
 </body></html>`;
 }
@@ -713,7 +723,36 @@ export function eCIgnWorkspace({
     win.document.write(html);
     win.document.title = `${formId} - eCIgn Signature Packet`;
     win.document.close();
-    setTimeout(() => win.print(), 450);
+
+    let printed = false;
+    const printWhenReady = () => {
+      if (printed) return;
+      const ready = async () => {
+        const images = Array.from(win.document.images || []);
+        await Promise.all(images.map((img) => (
+          img.complete
+            ? Promise.resolve()
+            : new Promise<void>((resolve) => {
+              img.addEventListener('load', () => resolve(), { once: true });
+              img.addEventListener('error', () => resolve(), { once: true });
+            })
+        )));
+        const fonts = (win.document as Document & { fonts?: FontFaceSet }).fonts;
+        if (fonts?.ready) {
+          await fonts.ready;
+        }
+      };
+
+      void ready().finally(() => {
+        if (printed) return;
+        printed = true;
+        win.focus();
+        win.print();
+      });
+    };
+
+    win.addEventListener('load', printWhenReady, { once: true });
+    setTimeout(printWhenReady, 900);
   }, [
     localRecord,
     certId,
