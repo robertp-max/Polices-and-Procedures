@@ -28,33 +28,55 @@ const ID_RE = /^[A-Z]{2,4}-[A-Z0-9-]{2,}$/;
 const ULID = () => crypto.randomUUID().replace(/-/g, '').slice(0, 20).toUpperCase();
 const now  = () => new Date().toISOString();
 
-const ok   = (b, code = 200) => ({ statusCode: code, headers: cors(), body: JSON.stringify(b) });
-const fail = (msg, code = 400) => ({ statusCode: code, headers: cors(), body: JSON.stringify({ error: msg }) });
-const cors = () => ({
+const ALLOWED_ORIGINS = new Set([
+  'http://localhost:5173',
+  'http://localhost:4173',
+  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()) : []),
+]);
+const CORS_HEADERS = 'Content-Type,x-hhc-actor-id,x-hhc-actor-role,Idempotency-Key,Authorization,x-api-key';
+const CORS_METHODS = 'OPTIONS,GET,POST,PUT';
+
+const ok   = (b, code = 200, origin = null) => ({ statusCode: code, headers: cors(origin), body: JSON.stringify(b) });
+const fail = (msg, code = 400, origin = null) => ({ statusCode: code, headers: cors(origin), body: JSON.stringify({ error: msg }) });
+const cors = (origin = null) => ({
   'content-type': 'application/json',
-  'access-control-allow-origin': '*',
-  'access-control-allow-headers': 'content-type,authorization,idempotency-key',
-  'access-control-allow-methods': 'GET,POST,OPTIONS',
+  'access-control-allow-origin':  origin || 'http://localhost:5173',
+  'access-control-allow-headers': CORS_HEADERS,
+  'access-control-allow-methods': CORS_METHODS,
+  'access-control-max-age':       '86400',
+  'vary': 'Origin',
 });
 
+// Resolve the allowed origin from the incoming request. Falls back to localhost.
+function resolveOrigin(event) {
+  const h = event.headers || {};
+  const lower = {};
+  for (const k of Object.keys(h)) lower[k.toLowerCase()] = h[k];
+  const req = lower['origin'] || '';
+  return ALLOWED_ORIGINS.has(req) ? req : 'http://localhost:5173';
+}
+
 exports.handler = async (event) => {
+  const origin = resolveOrigin(event);
+  const okR   = (b, code = 200) => ok(b, code, origin);
+  const failR = (msg, code = 400) => fail(msg, code, origin);
   try {
     const route = event.routeKey || `${event.requestContext?.http?.method} ${event.rawPath}`;
-    if (event.requestContext?.http?.method === 'OPTIONS') return ok({});
-    if (route === 'POST /uploads/init')                      return await uploadInit(event);
-    if (route === 'POST /uploads/{upload_id}/validate')      return await uploadValidate(event);
-    if (route === 'POST /uploads/{upload_id}/promote')       return await uploadPromote(event);
-    if (route === 'POST /esign/complete')                    return await esignComplete(event);
-    if (route === 'POST /forms/submit')                      return await formSubmit(event);
-    if (route === 'GET /workflows/{workflow_id}/completion-status') return await workflowCompletionStatus(event);
-    if (route === 'POST /workflows/{workflow_id}/complete')  return await workflowComplete(event);
-    if (route === 'GET /events/{event_id}/files')            return await listFiles(event);
-    if (route === 'GET /files/{evidence_id}/download')       return await downloadFile(event);
-    if (route === 'GET /healthz')                            return ok({ ok: true, ts: now() });
-    return fail(`Unknown route: ${route}`, 404);
+    if (event.requestContext?.http?.method === 'OPTIONS') return okR({});
+    if (route === 'POST /uploads/init')                      return await uploadInit(event, okR, failR);
+    if (route === 'POST /uploads/{upload_id}/validate')      return await uploadValidate(event, okR, failR);
+    if (route === 'POST /uploads/{upload_id}/promote')       return await uploadPromote(event, okR, failR);
+    if (route === 'POST /esign/complete')                    return await esignComplete(event, okR, failR);
+    if (route === 'POST /forms/submit')                      return await formSubmit(event, okR, failR);
+    if (route === 'GET /workflows/{workflow_id}/completion-status') return await workflowCompletionStatus(event, okR, failR);
+    if (route === 'POST /workflows/{workflow_id}/complete')  return await workflowComplete(event, okR, failR);
+    if (route === 'GET /events/{event_id}/files')            return await listFiles(event, okR, failR);
+    if (route === 'GET /files/{evidence_id}/download')       return await downloadFile(event, okR, failR);
+    if (route === 'GET /healthz')                            return okR({ ok: true, ts: now() });
+    return failR(`Unknown route: ${route}`, 404);
   } catch (e) {
     console.error('Unhandled:', e);
-    return fail(e.message || 'internal_error', 500);
+    return fail(e.message || 'internal_error', 500, origin);
   }
 };
 
@@ -101,7 +123,7 @@ async function writeAudit({ event_id, action, actor, before_status, after_status
   return audit_id;
 }
 
-async function uploadInit(event) {
+async function uploadInit(event, ok, fail) {
   const body = parseBody(event);
   const actor = actorFrom(event);
   const { policy_id, workflow_id, event_id, form_id, filename, mime_type, size_bytes, source_system } = body || {};
@@ -194,7 +216,7 @@ async function uploadInit(event) {
   });
 }
 
-async function listFiles(event) {
+async function listFiles(event, ok, fail) {
   const event_id = event.pathParameters?.event_id;
   if (!event_id) return fail('missing:event_id', 422);
 
@@ -243,7 +265,7 @@ async function listFiles(event) {
   });
 }
 
-async function downloadFile(event) {
+async function downloadFile(event, ok, fail) {
   const evidence_id = event.pathParameters?.evidence_id;
   const event_id    = event.queryStringParameters?.event_id;
   if (!evidence_id) return fail('missing:evidence_id', 422);
@@ -283,7 +305,7 @@ async function downloadFile(event) {
 // ── POST /uploads/{upload_id}/validate ───────────────────────────
 // HEADs the raw object, enforces size+MIME, streams it to compute SHA-256,
 // then server-side copies it to the validated/ prefix.
-async function uploadValidate(event) {
+async function uploadValidate(event, ok, fail) {
   const upload_id = event.pathParameters?.upload_id;
   if (!upload_id) return fail('missing:upload_id', 422);
   const actor = actorFrom(event);
@@ -359,7 +381,7 @@ async function uploadValidate(event) {
 // ── POST /uploads/{upload_id}/promote ────────────────────────────
 // Server-side copies validated → prod bucket, marks evidence APPROVED_EVIDENCE,
 // emits EVIDENCE_PROMOTED audit. Idempotent on upload_id.
-async function uploadPromote(event) {
+async function uploadPromote(event, ok, fail) {
   const upload_id = event.pathParameters?.upload_id;
   if (!upload_id) return fail('missing:upload_id', 422);
   const actor = actorFrom(event);
@@ -456,7 +478,7 @@ function coerceId(prefix, raw) {
 //   1. JSON evidence artifact written to PROD bucket
 //   2. EVIDENCE row in DDB (signature_status=SIGNED, status=APPROVED_EVIDENCE)
 //   3. Append-only DOCUMENT_SIGNED audit row
-async function esignComplete(event) {
+async function esignComplete(event, ok, fail) {
   const body = parseBody(event);
   const actor = actorFrom(event);
 
@@ -562,7 +584,7 @@ async function esignComplete(event) {
 //   3. FORM_SUBMITTED audit row
 // If `requires_signature` or `requires_approval` is true, the row is left at
 // status=PENDING_APPROVAL and signature_status=PENDING.
-async function formSubmit(event) {
+async function formSubmit(event, ok, fail) {
   const body = parseBody(event);
   const actor = actorFrom(event);
 
@@ -646,10 +668,10 @@ async function formSubmit(event) {
 // Pattern: client passes the list of event_ids that compose this workflow
 // (plus optional `required_forms` / `required_evidence_kinds`). The Lambda
 // gathers EVIDENCE rows under EVENT#<id> partitions, computes:
-//   * missing_forms      � required form_ids with no APPROVED_EVIDENCE row
-//   * missing_evidence   � required evidence_kinds not yet APPROVED_EVIDENCE
-//   * pending_approvals  � any rows still PENDING_APPROVAL / signature PENDING
-//   * incomplete_events  � event_ids with zero evidence at all
+//   * missing_forms      � required form_ids with no APPROVED_EVIDENCE row
+//   * missing_evidence   � required evidence_kinds not yet APPROVED_EVIDENCE
+//   * pending_approvals  � any rows still PENDING_APPROVAL / signature PENDING
+//   * incomplete_events  � event_ids with zero evidence at all
 // canComplete=true only when all four arrays are empty.
 
 async function gatherEventEvidence(event_ids) {
@@ -694,7 +716,7 @@ function computeCompletion({ event_ids, evidenceByEvent, required_forms, require
 }
 
 // GET /workflows/{workflow_id}/completion-status?event_ids=a,b&required_forms=X,Y&required_evidence_kinds=upload,form_submission
-async function workflowCompletionStatus(event) {
+async function workflowCompletionStatus(event, ok, fail) {
   const workflow_id = event.pathParameters?.workflow_id;
   if (!workflow_id) return fail('missing:workflow_id', 422);
 
@@ -715,7 +737,7 @@ async function workflowCompletionStatus(event) {
 // Body: { event_ids: string[], required_forms?: string[], required_evidence_kinds?: string[], primary_event_id?: string }
 // Writes either WORKFLOW_COMPLETED (success) or COMPLETION_BLOCKED (failure) audit
 // to the primary_event_id (default: first event_id).
-async function workflowComplete(event) {
+async function workflowComplete(event, ok, fail) {
   const workflow_id = event.pathParameters?.workflow_id;
   if (!workflow_id) return fail('missing:workflow_id', 422);
   const body = parseBody(event);
