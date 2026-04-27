@@ -44,6 +44,8 @@ exports.handler = async (event) => {
     if (route === 'POST /uploads/init')                      return await uploadInit(event);
     if (route === 'POST /uploads/{upload_id}/validate')      return await uploadValidate(event);
     if (route === 'POST /uploads/{upload_id}/promote')       return await uploadPromote(event);
+    if (route === 'POST /esign/complete')                    return await esignComplete(event);
+    if (route === 'POST /forms/submit')                      return await formSubmit(event);
     if (route === 'GET /events/{event_id}/files')            return await listFiles(event);
     if (route === 'GET /files/{evidence_id}/download')       return await downloadFile(event);
     if (route === 'GET /healthz')                            return ok({ ok: true, ts: now() });
@@ -434,4 +436,204 @@ function parseBody(event) {
   } catch {
     return {};
   }
+}
+
+// ── ID normalisation ─────────────────────────────────────────
+// Triplet IDs must match `^[A-Z]{2,4}-[A-Z0-9-]{2,}$`. Front-end may produce
+// IDs with lowercase / underscores / dots (e.g. instance ids). Coerce to a
+// safe form so the eSign / form-submit endpoints don't reject legitimate calls.
+function coerceId(prefix, raw) {
+  const s = String(raw || '').toUpperCase().replace(/[^A-Z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  if (ID_RE.test(s)) return s;
+  const fixed = `${prefix}-${s || ULID()}`.replace(/-+/g, '-').slice(0, 60);
+  return ID_RE.test(fixed) ? fixed : `${prefix}-${ULID()}`;
+}
+
+// ── POST /esign/complete ──────────────────────────────────
+// Records a completed e-signature as compliance evidence:
+//   1. JSON evidence artifact written to PROD bucket
+//   2. EVIDENCE row in DDB (signature_status=SIGNED, status=APPROVED_EVIDENCE)
+//   3. Append-only DOCUMENT_SIGNED audit row
+async function esignComplete(event) {
+  const body = parseBody(event);
+  const actor = actorFrom(event);
+
+  const policy_id   = coerceId('POL', body.policy_id   || 'UNLINKED');
+  const workflow_id = coerceId('WF',  body.workflow_id || `FORM-${body.form_id || 'NA'}`);
+  const event_id    = coerceId('EVT', body.event_id    || body.instance_id || `ESIGN-${ULID()}`);
+  const form_id     = String(body.form_id || 'UNKNOWN').toUpperCase().replace(/[^A-Z0-9-]/g, '-').slice(0, 40) || 'UNKNOWN';
+
+  if (!body.signer_id   || typeof body.signer_id   !== 'string') return fail('missing_or_invalid:signer_id', 422);
+  if (!body.signer_name || typeof body.signer_name !== 'string') return fail('missing_or_invalid:signer_name', 422);
+  if (!body.signature_hash || typeof body.signature_hash !== 'string') return fail('missing_or_invalid:signature_hash', 422);
+
+  const evidence_id = `EVD-${ULID()}`;
+  const ts = now();
+  const filename = `esign-${form_id}.json`;
+  const s3_key = `evidence/${policy_id}/${workflow_id}/${event_id}/${evidence_id}/${filename}`;
+
+  const artifact = {
+    evidence_type:    'esignature',
+    evidence_id,
+    schema_version:   '1.0',
+    policy_id, workflow_id, event_id, form_id,
+    instance_id:      body.instance_id     || null,
+    document_id:      body.document_id     || form_id,
+    document_hash:    body.document_hash   || null,
+    signature_hash:   body.signature_hash,
+    attestation_text: body.attestation_text || null,
+    signer: {
+      id:    body.signer_id,
+      name:  body.signer_name,
+      role:  body.signer_role  || actor.actor_role || null,
+      email: body.signer_email || null,
+    },
+    signed_at: body.signed_at || ts,
+    capture: {
+      source_ip:  actor.source_ip,
+      user_agent: actor.user_agent,
+      request_id: actor.request_id,
+    },
+    recorded_at: ts,
+    recorded_by: actor.actor_id,
+  };
+  const bodyBytes = Buffer.from(JSON.stringify(artifact, null, 2), 'utf8');
+  const sha256 = crypto.createHash('sha256').update(bodyBytes).digest('hex');
+
+  // 1. PUT JSON artifact directly to prod bucket
+  await s3.send(new PutObjectCommand({
+    Bucket: PROD_BUCKET,
+    Key: s3_key,
+    Body: bodyBytes,
+    ContentType: 'application/json',
+    ServerSideEncryption: 'AES256',
+    Metadata: {
+      policy_id, workflow_id, event_id, evidence_id,
+      form_id, signer_id: body.signer_id, sha256,
+    },
+  }));
+
+  // 2. EVIDENCE row
+  await ddb.send(new PutCommand({
+    TableName: TABLE,
+    Item: {
+      pk: `EVENT#${event_id}`, sk: `EVIDENCE#${evidence_id}`,
+      type: 'EVIDENCE', status: 'APPROVED_EVIDENCE',
+      evidence_kind: 'esignature',
+      policy_id, workflow_id, event_id, form_id,
+      evidence_id, filename,
+      mime_type: 'application/json', size_bytes: bodyBytes.length,
+      source_system: 'ecign',
+      signature_status: 'SIGNED',
+      sha256, signature_hash: body.signature_hash,
+      document_hash: body.document_hash || null,
+      signer_id: body.signer_id, signer_name: body.signer_name,
+      signer_role: body.signer_role || actor.actor_role || null,
+      signer_email: body.signer_email || null,
+      signed_at: body.signed_at || ts,
+      instance_id: body.instance_id || null,
+      s3_bucket: PROD_BUCKET, s3_key,
+      created_by: actor.actor_id,
+      created_at: ts, updated_at: ts,
+    },
+  }));
+
+  // 3. Audit
+  await writeAudit({
+    event_id, action: 'DOCUMENT_SIGNED', actor,
+    after_status: 'SIGNED', after_hash: body.signature_hash,
+    evidence_id, policy_id, workflow_id,
+    source_system: 'ecign',
+  });
+
+  return ok({
+    evidence_id, status: 'APPROVED_EVIDENCE', signature_status: 'SIGNED',
+    s3_bucket: PROD_BUCKET, s3_key, sha256,
+    policy_id, workflow_id, event_id, form_id,
+  });
+}
+
+// ── POST /forms/submit ─────────────────────────────────────
+// Persists a completed form submission as compliance evidence:
+//   1. JSON snapshot of the form fields written to PROD bucket
+//   2. EVIDENCE row (signature_status reflects whether approval is still needed)
+//   3. FORM_SUBMITTED audit row
+// If `requires_signature` or `requires_approval` is true, the row is left at
+// status=PENDING_APPROVAL and signature_status=PENDING.
+async function formSubmit(event) {
+  const body = parseBody(event);
+  const actor = actorFrom(event);
+
+  const policy_id   = coerceId('POL', body.policy_id   || 'UNLINKED');
+  const workflow_id = coerceId('WF',  body.workflow_id || `FORM-${body.form_id || 'NA'}`);
+  const event_id    = coerceId('EVT', body.event_id    || body.form_instance_id || `FORM-${ULID()}`);
+  const form_id     = String(body.form_id || 'UNKNOWN').toUpperCase().replace(/[^A-Z0-9-]/g, '-').slice(0, 40) || 'UNKNOWN';
+
+  if (!body.fields || typeof body.fields !== 'object') return fail('missing_or_invalid:fields', 422);
+
+  const evidence_id = `EVD-${ULID()}`;
+  const ts = now();
+  const filename = `form-${form_id}.json`;
+  const s3_key = `evidence/${policy_id}/${workflow_id}/${event_id}/${evidence_id}/${filename}`;
+  const requiresSig = body.requires_signature === true || body.requires_approval === true;
+
+  const artifact = {
+    evidence_type: 'form_submission',
+    evidence_id, schema_version: '1.0',
+    policy_id, workflow_id, event_id, form_id,
+    form_instance_id: body.form_instance_id || null,
+    submitted_by: { id: actor.actor_id, role: actor.actor_role },
+    submitted_at: body.submitted_at || ts,
+    requires_signature: requiresSig,
+    fields: body.fields,
+    capture: { source_ip: actor.source_ip, user_agent: actor.user_agent, request_id: actor.request_id },
+    recorded_at: ts,
+  };
+  const bodyBytes = Buffer.from(JSON.stringify(artifact, null, 2), 'utf8');
+  const sha256 = crypto.createHash('sha256').update(bodyBytes).digest('hex');
+
+  await s3.send(new PutObjectCommand({
+    Bucket: PROD_BUCKET,
+    Key: s3_key,
+    Body: bodyBytes,
+    ContentType: 'application/json',
+    ServerSideEncryption: 'AES256',
+    Metadata: { policy_id, workflow_id, event_id, evidence_id, form_id, sha256 },
+  }));
+
+  const status = requiresSig ? 'PENDING_APPROVAL' : 'APPROVED_EVIDENCE';
+  const sigStatus = requiresSig ? 'PENDING' : 'NONE';
+
+  await ddb.send(new PutCommand({
+    TableName: TABLE,
+    Item: {
+      pk: `EVENT#${event_id}`, sk: `EVIDENCE#${evidence_id}`,
+      type: 'EVIDENCE', status,
+      evidence_kind: 'form_submission',
+      policy_id, workflow_id, event_id, form_id,
+      evidence_id, filename,
+      mime_type: 'application/json', size_bytes: bodyBytes.length,
+      source_system: body.source_system || 'hhc',
+      signature_status: sigStatus,
+      sha256,
+      form_instance_id: body.form_instance_id || null,
+      s3_bucket: PROD_BUCKET, s3_key,
+      created_by: actor.actor_id,
+      created_at: ts, updated_at: ts,
+    },
+  }));
+
+  await writeAudit({
+    event_id, action: 'FORM_SUBMITTED', actor,
+    after_status: status, after_hash: sha256,
+    evidence_id, policy_id, workflow_id,
+    source_system: body.source_system || 'hhc',
+  });
+
+  return ok({
+    evidence_id, status, signature_status: sigStatus,
+    s3_bucket: PROD_BUCKET, s3_key, sha256,
+    policy_id, workflow_id, event_id, form_id,
+    requires_signature: requiresSig,
+  });
 }
