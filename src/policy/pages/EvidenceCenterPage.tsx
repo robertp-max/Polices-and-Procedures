@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   FolderOpen, Download, Upload, RefreshCw, FileText, ShieldCheck,
   Search, AlertCircle, CheckCircle2, Clock, ExternalLink, Info, X, History,
@@ -150,12 +151,20 @@ async function jsonOrThrow<T>(res: Response): Promise<T> {
 
 // ── Component ──────────────────────────────────────────────────
 export function EvidenceCenterPage() {
-  const [eventId,    setEventId]    = useState(DEFAULT_EVENT);
-  const [eventInput, setEventInput] = useState(DEFAULT_EVENT);
+  const location = useLocation();
+  const query = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const qEventId = (query.get('event_id') || '').trim();
+  const qEvidenceId = (query.get('evidence_id') || '').trim();
+  const qFormId = (query.get('form_id') || '').trim();
+  const qPolicyId = (query.get('policy_id') || '').trim();
+
+  const [eventId,    setEventId]    = useState(qEventId || DEFAULT_EVENT);
+  const [eventInput, setEventInput] = useState(qEventId || DEFAULT_EVENT);
   const [search,     setSearch]     = useState('');
-  const [filterFormId,     setFilterFormId]     = useState('');
-  const [filterPolicyId,   setFilterPolicyId]   = useState('');
-  const [filterEvidenceId, setFilterEvidenceId] = useState('');
+  const [filterEventId,    setFilterEventId]    = useState(qEventId);
+  const [filterFormId,     setFilterFormId]     = useState(qFormId);
+  const [filterPolicyId,   setFilterPolicyId]   = useState(qPolicyId);
+  const [filterEvidenceId, setFilterEvidenceId] = useState(qEvidenceId);
   const [files,   setFiles] = useState<EvidenceFile[]>([]);
   const [audit,   setAudit] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -185,6 +194,21 @@ export function EvidenceCenterPage() {
 
   useEffect(() => { load(eventId); }, [eventId, load]);
 
+  useEffect(() => {
+    const nextEvent = (query.get('event_id') || '').trim();
+    const nextEvidence = (query.get('evidence_id') || '').trim();
+    const nextForm = (query.get('form_id') || '').trim();
+    const nextPolicy = (query.get('policy_id') || '').trim();
+    if (nextEvent) {
+      setEventId(nextEvent);
+      setEventInput(nextEvent);
+      setFilterEventId(nextEvent);
+    }
+    if (nextEvidence) setFilterEvidenceId(nextEvidence);
+    if (nextForm) setFilterFormId(nextForm);
+    if (nextPolicy) setFilterPolicyId(nextPolicy);
+  }, [query]);
+
   const filtered = useMemo(() => {
     let result = files;
     const q = search.trim().toLowerCase();
@@ -196,12 +220,21 @@ export function EvidenceCenterPage() {
     }
     const fid = filterFormId.trim().toLowerCase();
     if (fid) result = result.filter((f) => (f.form_id || '').toLowerCase().includes(fid));
+    const evid = filterEventId.trim().toLowerCase();
+    if (evid) result = result.filter((f) => f.event_id.toLowerCase().includes(evid));
     const pid = filterPolicyId.trim().toLowerCase();
     if (pid) result = result.filter((f) => f.policy_id.toLowerCase().includes(pid));
     const eid = filterEvidenceId.trim().toLowerCase();
     if (eid) result = result.filter((f) => f.evidence_id.toLowerCase().includes(eid));
     return result;
-  }, [files, search, filterFormId, filterPolicyId, filterEvidenceId]);
+  }, [files, search, filterEventId, filterFormId, filterPolicyId, filterEvidenceId]);
+
+  useEffect(() => {
+    const eid = filterEvidenceId.trim();
+    if (!eid) return;
+    const hit = filtered.find((f) => f.evidence_id.toLowerCase() === eid.toLowerCase());
+    if (hit) setSelected(hit);
+  }, [filterEvidenceId, filtered]);
 
   const onSelectEvent = () => {
     const v = eventInput.trim();
@@ -333,9 +366,23 @@ export function EvidenceCenterPage() {
               >
                 Load
               </button>
+              <span className="text-[10px] text-slate-500">
+                Accepts regulatory IDs and form-generated IDs (EVT-FORM-FI...)
+              </span>
             </div>
 
             {/* Narrow client-side filters — applied to the already-loaded files */}
+            <div className="flex items-center gap-2">
+              <label className="text-xs uppercase tracking-wider text-slate-500">Event</label>
+              <input
+                title="Filter by Event ID"
+                aria-label="Filter by Event ID"
+                value={filterEventId}
+                onChange={(e) => setFilterEventId(e.target.value)}
+                placeholder="EVT-... / EVT-FORM-FI..."
+                className="bg-[#0f141c] border border-white/10 rounded px-2 py-1 text-sm w-44 focus:outline-none focus:border-[#FFC107]/60"
+              />
+            </div>
             <div className="flex items-center gap-2">
               <label className="text-xs uppercase tracking-wider text-slate-500">Form</label>
               <input
@@ -369,9 +416,14 @@ export function EvidenceCenterPage() {
                 className="bg-[#0f141c] border border-white/10 rounded px-2 py-1 text-sm w-36 focus:outline-none focus:border-[#FFC107]/60"
               />
             </div>
-            {(filterFormId || filterPolicyId || filterEvidenceId) && (
+            {(filterEventId || filterFormId || filterPolicyId || filterEvidenceId) && (
               <button
-                onClick={() => { setFilterFormId(''); setFilterPolicyId(''); setFilterEvidenceId(''); }}
+                onClick={() => {
+                  setFilterEventId('');
+                  setFilterFormId('');
+                  setFilterPolicyId('');
+                  setFilterEvidenceId('');
+                }}
                 className="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400"
                 title="Clear filters"
               >

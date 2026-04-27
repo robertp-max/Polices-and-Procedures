@@ -37,7 +37,11 @@ import {
   type BackendState,
 } from '@/policy/ecign/useEcignInstance';
 import { ecignApi } from '@/policy/ecign/api';
-import { recordEsignEvidence } from '@/policy/ecign/hhcEvidence';
+import {
+  recordEsignEvidence,
+  queryEvidenceByContext,
+  type EsignEvidenceResponse,
+} from '@/policy/ecign/hhcEvidence';
 import { HelpContextLink } from '@/policy/help/HelpContextLink';
 import {
   type PolicyLinkMeta,
@@ -67,316 +71,81 @@ function escHtml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-/* ═══ Audit stamp HTML (shared by print output) ═════════════════════ */
-function buildAuditStampHtml(
-  certId: string,
-  signerName: string,
-  signedAt: string,
-  logoSrc: string,
-) {
-  return `
-  <div class="ecign-stamp">
-    <img class="ecign-stamp-logo" src="${logoSrc}" alt="eCIgn"/>
-    <span class="ecign-stamp-dot">·</span>
-    <span class="ecign-stamp-mono">${escHtml(certId)}</span>
-    <span class="ecign-stamp-dot">·</span>
-    <span>${escHtml(signerName)}</span>
-    <span class="ecign-stamp-dot">·</span>
-    <span>${fmtSignTs(signedAt)}</span>
-  </div>`;
-}
-
-/* ═══ Certificate HTML builder ══════════════════════════════════════
- *
- * Emits the **appended attestation packet** (template-preservation
- * contract — see Builder/eCIgn/06-Outputs-Templates-Watermarks.md).
- *
- * Pages are emitted in this fixed order, each separated by a CSS
- * `page-break-before: always` so they print as discrete sheets behind
- * the byte-faithful template:
- *
- *   N+1  Attestation Certificate
- *   N+2  Signer Identity & Device Evidence
- *   N+3  Audit Trail (consent, review, sign, lock, second-sig)
- *   N+4  Signers Roster (multi-signature ledger)
- *
- * Returns a full standalone HTML doc *plus* the body-only fragment
- * is consumed by `buildPrintablePacketHtml` (which strips the wrapper
- * and concatenates into the packet).
- * ═══════════════════════════════════════════════════════════════════ */
+/* ═══ Certificate HTML builder ══════════════════════════════════════ */
 interface CertParams {
-  certId:         string;
-  certAt:         string;
-  formId:         string;
-  formTitle:      string;
-  formVersion:    string;
-  formInstanceId: string;
-  /** Phase 11 — explicit, user-selected linked policies (≥ 1 enforced upstream). */
+  certId:           string;
+  certAt:           string;
+  formId:           string;
+  formTitle:        string;
+  formVersion:      string;
+  formInstanceId:   string;
   linkedPolicyIds:  string[];
   linkedPolicyMeta: PolicyLinkMeta[];
-  record:         SignatureRecord;
-  signerPhoto?:   string | null;
-  geoInfo:        GeoInfo;
-  fieldEdits:     FieldEdit[];
-  secondSigTask:  SecondSigTask | null;
-  /** Roster of every signature applied to the instance (single-sig = 1 entry). */
-  allSignatures?: SignatureRecord[];
+  record:           SignatureRecord;
+  eventId?:         string;
+  workflowId?:      string;
+  evidenceId?:      string;
+  evidenceStatus?:  string;
+  signatureStatus?: string;
+  s3Key?:           string;
+  documentHash?:    string | null;
+  signatureHash?:   string | null;
+  attestationText?: string;
 }
 
 function buildCertHtml(p: CertParams, logoSrc: string): string {
-  const geoBlock = (!p.geoInfo.loading && !p.geoInfo.error && p.geoInfo.ip) ? `
-  <div class="section">
-    <h2>Location &amp; Network</h2>
-    <div class="grid4">
-      <div class="f"><div class="lbl">IP Address</div><div class="val mono">${escHtml(p.geoInfo.ip)}</div></div>
-      <div class="f"><div class="lbl">City</div><div class="val">${escHtml(p.geoInfo.city) || '—'}</div></div>
-      <div class="f"><div class="lbl">State / Region</div><div class="val">${escHtml(p.geoInfo.region) || '—'}</div></div>
-      <div class="f"><div class="lbl">Country</div><div class="val">${escHtml(p.geoInfo.country) || '—'}</div></div>
-      <div class="f"><div class="lbl">ZIP / Postal</div><div class="val mono">${escHtml(p.geoInfo.postal) || '—'}</div></div>
-      ${p.geoInfo.org ? `<div class="f"><div class="lbl">Network Org</div><div class="val">${escHtml(p.geoInfo.org)}</div></div>` : ''}
-    </div>
-  </div>` : '';
+  const policyId = p.linkedPolicyIds[0] || p.linkedPolicyMeta[0]?.id || '—';
+  const attestationText = p.attestationText || 'I attest that I have read, understood, and signed this document.';
+  const fields: Array<[string, string]> = [
+    ['Certificate ID', p.certId],
+    ['Evidence ID', p.evidenceId || 'Pending evidence sync'],
+    ['Form ID', p.formId],
+    ['Policy ID', policyId],
+    ['Workflow ID', p.workflowId || '—'],
+    ['Event ID', p.eventId || `EVT-FORM-${p.formInstanceId}`],
+    ['Signer Name', p.record.signerName],
+    ['Signer Role', p.record.signerRole || '—'],
+    ['Signed Timestamp', fmtSignTs(p.record.signedAt)],
+    ['Signature Status', p.signatureStatus || 'SIGNED'],
+    ['Status', p.evidenceStatus || 'APPROVED_EVIDENCE'],
+    ['Document Hash', p.documentHash || '—'],
+    ['Signature Hash', p.signatureHash || '—'],
+    ['S3 Key', p.s3Key || '—'],
+  ];
 
-  const editsBlock = p.fieldEdits.length > 0 ? `
-  <div class="section">
-    <h2>Document Edit Trail (${p.fieldEdits.length} change${p.fieldEdits.length !== 1 ? 's' : ''})</h2>
-    <table class="tbl">
-      <thead><tr><th>#</th><th>Field</th><th>Previous</th><th>New Value</th><th>Changed At</th><th>Changed By</th></tr></thead>
-      <tbody>${p.fieldEdits.map(e => `<tr>
-        <td>${e.seq}</td><td>${escHtml(e.fieldLabel)}</td>
-        <td>${escHtml(e.oldValue) || '—'}</td><td>${escHtml(e.newValue) || '—'}</td>
-        <td>${fmtSignTs(e.changedAt)}</td><td>${escHtml(e.changedBy)}</td>
-      </tr>`).join('')}</tbody>
-    </table>
-  </div>` : '';
-
-  const taskBlock = p.secondSigTask ? `
-  <div class="section">
-    <h2>Second Signature Request</h2>
-    <div class="grid4">
-      <div class="f"><div class="lbl">Task ID</div><div class="val mono">${escHtml(p.secondSigTask.taskId)}</div></div>
-      <div class="f"><div class="lbl">Assigned To</div><div class="val">${escHtml(DEMO_STAFF.find(u => u.id === p.secondSigTask!.assignedTo)?.name ?? p.secondSigTask.assignedTo)}</div></div>
-      <div class="f"><div class="lbl">Assigned By</div><div class="val">${escHtml(DEMO_STAFF.find(u => u.id === p.secondSigTask!.assignedBy)?.name ?? p.secondSigTask.assignedBy)}</div></div>
-      <div class="f"><div class="lbl">Status</div><div class="val">${escHtml(p.secondSigTask.status)}</div></div>
-      <div class="f"><div class="lbl">Created At</div><div class="val">${fmtSignTs(p.secondSigTask.createdAt)}</div></div>
-    </div>
-  </div>` : '';
-
-  const photoBlock = p.signerPhoto ? `
-  <div class="section">
-    <h2>Signer Photo Verification</h2>
-    <img src="${p.signerPhoto}" alt="Signer photo" style="max-width:200px;max-height:200px;border-radius:8px;border:1px solid ${BORDER};"/>
-  </div>` : '';
-
-  const stampHtml = buildAuditStampHtml(p.certId, p.record.signerName, p.record.signedAt, logoSrc);
-
-  return `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/>
-<title>${escHtml(p.formId)} — eCIgn Certificate</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',Arial,sans-serif;color:${INK};max-width:760px;margin:40px auto;padding:0 24px 80px}
-  h1{font-size:22px;font-weight:700;margin-bottom:8px;color:${NAVY}}
-  h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:${NAVY};margin-bottom:16px}
-  .header{display:flex;align-items:center;gap:16px;padding-bottom:20px;border-bottom:3px solid ${ORANGE};margin-bottom:24px}
-  .logo{height:40px;object-fit:contain}
-  .badge{display:inline-block;padding:3px 10px;background:${ORANGE_SOFT};color:${ORANGE};border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;border:1px solid ${ORANGE}40}
-  .intro{color:${MUTED};font-size:13px;margin-top:8px;line-height:1.6}
-  .section{padding:20px 0;border-bottom:1px solid ${BORDER}}
-  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 24px}
-  .f{display:flex;flex-direction:column}
-  .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:${MUTED};font-weight:700;margin-bottom:3px}
-  .val{font-size:13px;color:${INK};overflow-wrap:anywhere;word-break:break-word}
-  .val.mono{font-family:monospace;font-size:11px;overflow-wrap:anywhere;word-break:break-all}
-  .span2{grid-column:span 2}
-  .sig-box{border:1px solid ${BORDER};border-radius:8px;padding:12px;background:${PAPER};display:inline-block;margin-top:12px}
-  .sig-img{height:60px;max-width:220px;object-fit:contain;display:block}
-  .tbl{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
-  .tbl th{background:${PAPER};border-bottom:1px solid ${BORDER};padding:6px 8px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:${MUTED}}
-  .tbl td{padding:6px 8px;border-bottom:1px solid #F0F0EE;overflow-wrap:anywhere;word-break:break-word}
-  .ecign-stamp{
-    position:fixed;bottom:0;left:0;right:0;height:36px;
-    background:white;border-top:2px solid ${ORANGE};
-    display:flex;align-items:center;gap:12px;padding:0 20px;
-    font-size:9px;color:${NAVY}
-  }
-  .ecign-stamp-logo{height:18px;object-fit:contain}
-  .ecign-stamp-dot{color:${ORANGE}}
-  .ecign-stamp-mono{font-family:monospace;font-size:9px}
-  .pg-break{page-break-before:always;break-before:page;height:0}
-  .page{padding-top:8px}
-  .page-caption{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:${ORANGE};font-weight:700;margin-bottom:4px}
-  .timeline{margin-top:10px;border-left:2px solid ${ORANGE}40;padding-left:14px}
-  .timeline .ev{position:relative;padding:6px 0 10px}
-  .timeline .ev::before{content:'';position:absolute;left:-19px;top:11px;width:8px;height:8px;border-radius:50%;background:${ORANGE}}
-  .timeline .ev-when{font-family:monospace;font-size:10px;color:${MUTED}}
-  .timeline .ev-what{font-size:12px;color:${INK};font-weight:600;margin-top:2px}
-  .timeline .ev-meta{font-size:11px;color:${MUTED};margin-top:1px}
-  .roster{display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px}
-  .roster .row{display:grid;grid-template-columns:1fr 200px;gap:14px;border:1px solid ${BORDER};border-radius:8px;padding:12px;background:${PAPER}}
-  .roster .row .who{display:flex;flex-direction:column;gap:3px}
-  .roster .row .who .nm{font-size:13px;font-weight:600;color:${INK}}
-  .roster .row .who .rl{font-size:11px;color:${MUTED}}
-  .roster .row .who .ts{font-family:monospace;font-size:10px;color:${MUTED};margin-top:4px}
-  .roster .row .img{display:flex;align-items:center;justify-content:center;background:white;border:1px solid ${BORDER};border-radius:6px;padding:4px}
-  .roster .row .img img{max-height:54px;max-width:190px;object-fit:contain}
-  .legal{margin-top:16px;padding:12px 14px;background:${NAVY_SOFT};border-left:3px solid ${NAVY};border-radius:0 6px 6px 0;font-size:11px;color:${INK};line-height:1.55}
-  .legal strong{color:${NAVY}}
-  .hash-line{font-family:monospace;font-size:10px;color:${MUTED};word-break:break-all}
-  @page{margin-bottom:50px}
-  @media print{body{margin:16px 16px 50px}}
-</style></head><body>
-
-<!-- ═══ PAGE N+1 · Attestation Certificate ══════════════════════════ -->
-<section class="page">
+  return `
+<section class="ecign-cert-page">
   <div class="header">
     <img class="logo" src="${logoSrc}" alt="eCIgn"/>
     <div>
-      <div class="badge">eCIgn · Attestation Certificate · Page 1 of 4</div>
-      <h1>Electronic Signature Attestation Certificate</h1>
-      <p class="intro">This certificate accompanies the byte-faithful template above and records the identity, intent, timestamp, and integrity evidence captured by the CI-App eCIgn workflow under ESIGN Act 15 U.S.C. §§ 7001-7031, the California UETA, and HIPAA 45 CFR §§ 160-164.</p>
+      <div class="badge">eCIgn Certificate</div>
+      <h1>eCIgn Signature Certificate</h1>
+      <p class="intro">This certificate is appended to the printed packet and captures immutable eSign evidence metadata.</p>
     </div>
   </div>
-
   <div class="section">
-    <h2>Document &amp; Certificate</h2>
-    <div class="grid4">
-      <div class="f"><div class="lbl">Certificate ID</div><div class="val mono">${escHtml(p.certId)}</div></div>
-      <div class="f"><div class="lbl">Form ID</div><div class="val mono">${escHtml(p.formId)}</div></div>
+    <h2>Document Context</h2>
+    <div class="grid2">
+      <div class="f"><div class="lbl">Form Title</div><div class="val">${escHtml(p.formTitle)}</div></div>
       <div class="f"><div class="lbl">Form Version</div><div class="val">v${escHtml(p.formVersion)}</div></div>
       <div class="f"><div class="lbl">Form Instance ID</div><div class="val mono">${escHtml(p.formInstanceId)}</div></div>
-      <div class="f span2"><div class="lbl">Form Title</div><div class="val">${escHtml(p.formTitle)}</div></div>
-      <div class="f"><div class="lbl">System of Record</div><div class="val">CI-App / eCIgn</div></div>
       <div class="f"><div class="lbl">Certified At</div><div class="val">${fmtSignTs(p.certAt)}</div></div>
     </div>
   </div>
-
   <div class="section">
-    <h2>Linked Policies / Procedures (${p.linkedPolicyMeta.length})</h2>
+    <h2>Evidence Metadata</h2>
     <table class="tbl">
-      <thead><tr><th>Policy ID</th><th>Title</th><th>Version</th><th>Effective Date</th></tr></thead>
-      <tbody>${p.linkedPolicyMeta.map(m => `<tr>
-        <td class="mono">${escHtml(m.id)}</td>
-        <td>${escHtml(m.title)}</td>
-        <td>${escHtml(m.version)}</td>
-        <td>${escHtml(m.effectiveDate) || '—'}</td>
-      </tr>`).join('')}</tbody>
+      <tbody>${fields.map(([k, v]) => `<tr><th>${escHtml(k)}</th><td>${escHtml(v)}</td></tr>`).join('')}</tbody>
     </table>
   </div>
-
   <div class="section">
-    <h2>Primary Signer Attestation</h2>
-    <div class="grid4">
-      <div class="f"><div class="lbl">Signer Name</div><div class="val">${escHtml(p.record.signerName)}</div></div>
-      <div class="f"><div class="lbl">Role / Title</div><div class="val">${escHtml(p.record.signerRole)}</div></div>
-      <div class="f"><div class="lbl">Email</div><div class="val">${escHtml(p.record.signerEmail)}</div></div>
-      <div class="f"><div class="lbl">Signed At (local)</div><div class="val">${fmtSignTs(p.record.signedAt)}</div></div>
-    </div>
+    <h2>Attestation Text</h2>
+    <p class="attestation">${escHtml(attestationText)}</p>
     <div class="sig-box">
       <img class="sig-img" src="${p.record.signatureDataUrl}" alt="Signature of ${escHtml(p.record.signerName)}"/>
     </div>
-    <div class="legal">
-      <strong>Attestation.</strong> The signer affirmed: <em>"I agree to use an electronic signature, I have reviewed this document in full, and I intend to sign it."</em> Consent and review acknowledgment were captured prior to signature application; the document was sealed against template mutation immediately after.
-    </div>
   </div>
-</section>
-
-<!-- ═══ PAGE N+2 · Identity & Device Evidence ══════════════════════ -->
-<div class="pg-break"></div>
-<section class="page">
-  <div class="page-caption">eCIgn · Page 2 of 4</div>
-  <h1>Signer Identity &amp; Device Evidence</h1>
-  ${photoBlock}
-  ${geoBlock}
-  <div class="section">
-    <h2>Session &amp; Authentication</h2>
-    <div class="grid4">
-      <div class="f"><div class="lbl">User ID</div><div class="val mono">${escHtml(DEMO_SESSION.id)}</div></div>
-      <div class="f"><div class="lbl">Tier</div><div class="val">${escHtml(String(DEMO_SESSION.tier))}</div></div>
-      <div class="f"><div class="lbl">Auth Method</div><div class="val">SSO + step-up MFA</div></div>
-      <div class="f"><div class="lbl">MFA Verified At</div><div class="val">${fmtSignTs(p.record.signedAt)}</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ PAGE N+3 · Audit Trail ═════════════════════════════════════ -->
-<div class="pg-break"></div>
-<section class="page">
-  <div class="page-caption">eCIgn · Page 3 of 4</div>
-  <h1>Audit Trail</h1>
-  <p class="intro">Append-only, hash-chained event ledger. Events are persisted in <code>ecign.audit_events</code> with <code>hash = sha256(prev_hash ‖ payload)</code>; any tamper severs the chain.</p>
-  <div class="timeline">
-    <div class="ev">
-      <div class="ev-when">${fmtSignTs(p.record.signedAt)}</div>
-      <div class="ev-what">Disclosure &amp; consent accepted</div>
-      <div class="ev-meta">ESIGN/UETA disclosure v1 · IP ${escHtml(p.geoInfo.ip || '—')}</div>
-    </div>
-    <div class="ev">
-      <div class="ev-when">${fmtSignTs(p.record.signedAt)}</div>
-      <div class="ev-what">Identity verified</div>
-      <div class="ev-meta">SSO + step-up MFA · device fingerprint captured</div>
-    </div>
-    <div class="ev">
-      <div class="ev-when">${fmtSignTs(p.record.signedAt)}</div>
-      <div class="ev-what">Document review acknowledged</div>
-      <div class="ev-meta">All template pages rendered to signer · ${p.fieldEdits.length} field edit(s) recorded</div>
-    </div>
-    <div class="ev">
-      <div class="ev-when">${fmtSignTs(p.record.signedAt)}</div>
-      <div class="ev-what">Signature applied by ${escHtml(p.record.signerName)}</div>
-      <div class="ev-meta">PNG hashed · stored append-only in <code>ecign.signatures</code></div>
-    </div>
-    ${p.secondSigTask ? `
-    <div class="ev">
-      <div class="ev-when">${fmtSignTs(p.secondSigTask.createdAt)}</div>
-      <div class="ev-what">Second-signature requested</div>
-      <div class="ev-meta">Task ${escHtml(p.secondSigTask.taskId)} · assigned to ${escHtml(DEMO_STAFF.find(u => u.id === p.secondSigTask!.assignedTo)?.name ?? p.secondSigTask.assignedTo)} · status ${escHtml(p.secondSigTask.status)}</div>
-    </div>` : ''}
-    <div class="ev">
-      <div class="ev-when">${fmtSignTs(p.certAt)}</div>
-      <div class="ev-what">Document locked &amp; certificate issued</div>
-      <div class="ev-meta">State → <code>signed_locked</code> · template frozen · cert ${escHtml(p.certId)}</div>
-    </div>
-  </div>
-  ${editsBlock}
-  ${taskBlock}
-</section>
-
-<!-- ═══ PAGE N+4 · Signers Roster (multi-sig ledger) ═══════════════ -->
-<div class="pg-break"></div>
-<section class="page">
-  <div class="page-caption">eCIgn · Page 4 of 4</div>
-  <h1>Signers Roster</h1>
-  <p class="intro">Complete ledger of every signature applied to this form instance, in the order in which it was captured. For forms requiring multiple approvers (e.g. EN-FM-011 Policy Exception, GV-FM-003 Org Chart), each signer's block is reproduced below.</p>
-  <div class="roster">
-    ${(p.allSignatures && p.allSignatures.length > 0 ? p.allSignatures : [p.record]).map((s, i) => `
-      <div class="row">
-        <div class="who">
-          <span class="nm">${i + 1}. ${escHtml(s.signerName)}</span>
-          <span class="rl">${escHtml(s.signerRole)} · ${escHtml(s.signerEmail)}</span>
-          <span class="ts">Signed ${fmtSignTs(s.signedAt)}</span>
-          <span class="ts">Field ${escHtml(s.fieldId)}</span>
-        </div>
-        <div class="img"><img src="${s.signatureDataUrl}" alt="Signature of ${escHtml(s.signerName)}"/></div>
-      </div>`).join('')}
-    ${p.secondSigTask && (!p.allSignatures || p.allSignatures.every(s => s.signerName !== (DEMO_STAFF.find(u => u.id === p.secondSigTask!.assignedTo)?.name))) ? `
-      <div class="row" style="border-style:dashed;background:${ORANGE_SOFT}">
-        <div class="who">
-          <span class="nm">${(p.allSignatures?.length ?? 1) + 1}. ${escHtml(DEMO_STAFF.find(u => u.id === p.secondSigTask!.assignedTo)?.name ?? p.secondSigTask.assignedTo)} <span style="color:${ORANGE};font-weight:700;font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-left:6px">Pending</span></span>
-          <span class="rl">${escHtml(DEMO_STAFF.find(u => u.id === p.secondSigTask!.assignedTo)?.role ?? '')}</span>
-          <span class="ts">Requested ${fmtSignTs(p.secondSigTask.createdAt)} · Task ${escHtml(p.secondSigTask.taskId)}</span>
-        </div>
-        <div class="img" style="color:${ORANGE};font-size:11px;font-weight:600;border-style:dashed">Awaiting signature</div>
-      </div>` : ''}
-  </div>
-  <div class="legal">
-    <strong>Document integrity.</strong> The form template above this packet is byte-identical to the unsigned template at <code>/forms/${escHtml(p.formId)}/print</code> for version v${escHtml(p.formVersion)}. Field values are user data and are recorded in the cert hash, not in the template snapshot. <span class="hash-line">cert-id ${escHtml(p.certId)}</span>
-  </div>
-</section>
-
-${stampHtml}
-
-</body></html>`;
+</section>`;
 }
 
 /* ═══ Packet (form + cert) HTML builder ════════════════════════════
@@ -405,13 +174,6 @@ function buildPrintablePacketHtml(args: {
   /** Combined <link> + <style> tags, in head-source order. */
   styleAssets: string;
 }) {
-  // Extract cert body (drop wrapper <html>/<head>/<body>) and remove the
-  // embedded fixed stamp so we don't render two watermarks per page.
-  const certBodyHtml = args.certHtml
-    .replace(/^[\s\S]*<body[^>]*>/i, '')
-    .replace(/<\/body>[\s\S]*$/i, '')
-    .replace(/<div class="ecign-stamp">[\s\S]*?<\/div>/g, '');
-
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/>
 <title>${escHtml(args.formTitle)} — eCIgn Packet</title>
@@ -421,14 +183,13 @@ ${args.styleAssets}
   @page{margin:0.5in 0.75in 0.55in 0.75in}
   @media print{
     html,body{background:white !important}
-    .ecign-cert-section{page-break-before:always}
+    .ecign-cert-section{page-break-before:always;break-before:page}
     /* Hide the on-screen action bar / close affordances if cloned */
     .no-print,.print\\:hidden{display:none !important}
   }
   html,body{margin:0;padding:0;background:white}
   /* ── Certificate section (appended after original form pages) ── */
   .ecign-cert-section{
-    break-before:page;page-break-before:always;
     max-width:760px;margin:0 auto;padding:40px 24px 80px;
     font-family:'Segoe UI',Arial,sans-serif;color:${INK};
   }
@@ -439,16 +200,16 @@ ${args.styleAssets}
   .ecign-cert-section .badge{display:inline-block;padding:3px 10px;background:${ORANGE_SOFT};color:${ORANGE};border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;border:1px solid ${ORANGE}40}
   .ecign-cert-section .intro{color:${MUTED};font-size:13px;margin-top:8px;line-height:1.6}
   .ecign-cert-section .section{padding:20px 0;border-bottom:1px solid ${BORDER}}
-  .ecign-cert-section .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 24px}
+  .ecign-cert-section .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px}
   .ecign-cert-section .f{display:flex;flex-direction:column}
   .ecign-cert-section .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:${MUTED};font-weight:700;margin-bottom:3px}
   .ecign-cert-section .val{font-size:13px;color:${INK};overflow-wrap:anywhere;word-break:break-word}
   .ecign-cert-section .val.mono{font-family:monospace;font-size:11px;overflow-wrap:anywhere;word-break:break-all}
-  .ecign-cert-section .span2{grid-column:span 2}
+  .ecign-cert-section .attestation{font-size:13px;line-height:1.55;color:${INK}}
   .ecign-cert-section .sig-box{border:1px solid ${BORDER};border-radius:8px;padding:12px;background:${PAPER};display:inline-block;margin-top:12px}
   .ecign-cert-section .sig-img{height:60px;max-width:220px;object-fit:contain;display:block}
   .ecign-cert-section .tbl{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
-  .ecign-cert-section .tbl th{background:${PAPER};border-bottom:1px solid ${BORDER};padding:6px 8px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:${MUTED}}
+  .ecign-cert-section .tbl th{width:190px;background:${PAPER};border-bottom:1px solid ${BORDER};padding:6px 8px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:${MUTED};vertical-align:top}
   .ecign-cert-section .tbl td{padding:6px 8px;border-bottom:1px solid #F0F0EE;overflow-wrap:anywhere;word-break:break-word}
   /* ── Single watermark footer — once per page via position:fixed ── */
   .ecign-footer{
@@ -463,7 +224,7 @@ ${args.styleAssets}
 </style>
 </head><body>
   ${args.formHtml}
-  <div class="ecign-cert-section">${certBodyHtml}</div>
+  <div class="ecign-cert-section">${args.certHtml}</div>
   <div class="ecign-footer">
     <img class="ecign-footer-logo" src="${args.logoSrc}" alt="eCIgn"/>
     <span class="ecign-footer-dot">·</span>
@@ -671,9 +432,19 @@ export function eCIgnWorkspace({
      post a DOCUMENT_SIGNED evidence record + audit row to the Phase-1 backend.
      Fires exactly once per (instance_id, lock event) via a ref guard.        */
   const hhcMirroredRef = useRef<string | null>(null);
-  const [hhcEvidenceResult, setHhcEvidenceResult] = useState<{
-    evidence_id: string; event_id: string; workflow_id: string;
-  } | null>(null);
+  const [hhcEvidenceResult, setHhcEvidenceResult] = useState<
+    (EsignEvidenceResponse & {
+      form_instance_id: string;
+      signature_hash:   string;
+      document_hash:    string | null;
+      attestation_text: string;
+      signer_name:      string;
+      signer_role:      string;
+      signed_at:        string;
+      searched_events:  string[];
+      refreshed_count:  number;
+    }) | null
+  >(null);
   useEffect(() => {
     if (backendState !== 'signed_locked') return;
     if (!instance) return;
@@ -686,6 +457,7 @@ export function eCIgnWorkspace({
     // so that evidence is not indexed under the transient form_instance_id.
     const resolvedEventId    = hhcEventId    || `EVT-FORM-${formInstanceId}`;
     const resolvedWorkflowId = hhcWorkflowId || undefined;
+    const attestationText = 'I attest that I have read, understood, and signed this document.';
     void (async () => {
       try {
         const r = await recordEsignEvidence({
@@ -697,18 +469,37 @@ export function eCIgnWorkspace({
           document_id:      String(instance.document_version_id || formId),
           document_hash:    instance.document_hash || null,
           signature_hash:   sigHash,
-          attestation_text: 'I attest that I have read, understood, and signed this document.',
+          attestation_text: attestationText,
           signer_id:        DEMO_SESSION.id,
           signer_name:      DEMO_SESSION.name,
           signer_role:      DEMO_SESSION.role,
           signer_email:     DEMO_SESSION.email,
           signed_at:        instance.locked_at_utc || new Date().toISOString(),
         });
-        // Surface confirmation UI + console log for demo verification.
-        setHhcEvidenceResult({
+        // Immediately refresh evidence from backend using all available context keys.
+        const evidenceRefresh = await queryEvidenceByContext({
+          event_id: r.event_id,
+          event_candidates: [
+            resolvedEventId,
+            `EVT-FORM-${formInstanceId}`,
+            formInstanceId, // fallback legacy key probe
+          ],
           evidence_id: r.evidence_id,
-          event_id:    r.event_id,
-          workflow_id: r.workflow_id,
+          form_id: r.form_id,
+          policy_id: r.policy_id,
+        });
+
+        setHhcEvidenceResult({
+          ...r,
+          form_instance_id: formInstanceId,
+          signature_hash: sigHash,
+          document_hash: instance.document_hash || null,
+          attestation_text: attestationText,
+          signer_name: DEMO_SESSION.name,
+          signer_role: DEMO_SESSION.role,
+          signed_at: instance.locked_at_utc || new Date().toISOString(),
+          searched_events: evidenceRefresh.searched_events,
+          refreshed_count: evidenceRefresh.matches.length,
         });
         console.info('[hhc.esign.evidence]', r);
       } catch (e) {
@@ -889,19 +680,23 @@ export function eCIgnWorkspace({
       })
       .join('\n');
 
-    /* Roster of every signature applied to this instance, in capture
-     * order — drives the multi-signer ledger on packet page N+4. */
-    const allSignatures = Array.from(signatures.values())
-      .sort((a, b) => a.signedAt.localeCompare(b.signedAt));
-    if (!allSignatures.find(s => s.signedAt === localRecord.signedAt && s.signerName === localRecord.signerName)) {
-      allSignatures.push(localRecord);
-    }
+    const signatureHash = (instance?.manifest_hash || instance?.document_hash || '').toString() ||
+      hhcEvidenceResult?.signature_hash ||
+      '';
 
     const certHtml = buildCertHtml({
       certId, certAt, formId, formTitle, formVersion, formInstanceId,
       linkedPolicyIds, linkedPolicyMeta,
-      record: localRecord, signerPhoto, geoInfo, fieldEdits,
-      secondSigTask: localTask, allSignatures,
+      record: localRecord,
+      eventId: hhcEvidenceResult?.event_id || hhcEventId || `EVT-FORM-${formInstanceId}`,
+      workflowId: hhcEvidenceResult?.workflow_id || hhcWorkflowId,
+      evidenceId: hhcEvidenceResult?.evidence_id,
+      evidenceStatus: hhcEvidenceResult?.status,
+      signatureStatus: hhcEvidenceResult?.signature_status || 'SIGNED',
+      s3Key: hhcEvidenceResult?.s3_key,
+      documentHash: hhcEvidenceResult?.document_hash || instance?.document_hash || null,
+      signatureHash,
+      attestationText: hhcEvidenceResult?.attestation_text,
     }, eCIgnLogo);
     const html = buildPrintablePacketHtml({
       formTitle,
@@ -916,9 +711,25 @@ export function eCIgnWorkspace({
     const win = window.open('', '_blank', 'width=840,height=980');
     if (!win) return;
     win.document.write(html);
+    win.document.title = `${formId} - eCIgn Signature Packet`;
     win.document.close();
     setTimeout(() => win.print(), 450);
-  }, [localRecord, certId, certAt, formId, formTitle, formVersion, formInstanceId, linkedPolicyIds, linkedPolicyMeta, signerPhoto, geoInfo, fieldEdits, localTask, signatures, getPrintableFormHtml]);
+  }, [
+    localRecord,
+    certId,
+    certAt,
+    formId,
+    formTitle,
+    formVersion,
+    formInstanceId,
+    linkedPolicyIds,
+    linkedPolicyMeta,
+    instance,
+    hhcEvidenceResult,
+    hhcEventId,
+    hhcWorkflowId,
+    getPrintableFormHtml,
+  ]);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
@@ -1435,20 +1246,54 @@ export function eCIgnWorkspace({
                         doc_hash {String(instance.document_hash).slice(0, 16)}… · manifest {String(instance.manifest_hash ?? '').slice(0, 16)}…
                       </p>
                     )}
-                    {/* HHC Phase 1 — compliance evidence confirmation banner */}
                     {hhcEvidenceResult && (
-                      <div
-                        className="mt-4 inline-flex items-start gap-2 px-4 py-2.5 rounded-xl text-left"
-                        style={{ background: '#ECFDF5', border: '1px solid #A7F3D0' }}
-                      >
-                        <CheckCircle2 size={14} style={{ color: '#059669', marginTop: 2, flexShrink: 0 }} />
-                        <div>
-                          <span className="font-montserrat font-bold text-[9px] uppercase tracking-[0.14em] block" style={{ color: '#065F46' }}>
-                            Compliance Evidence Saved
-                          </span>
-                          <span className="font-mono text-[10.5px]" style={{ color: '#065F46' }}>
-                            event_id: {hhcEvidenceResult.event_id} · evidence_id: {hhcEvidenceResult.evidence_id}
-                          </span>
+                      <div className="mt-5 text-left rounded-2xl p-4 md:p-5" style={{ background: '#ECFDF5', border: '1px solid #A7F3D0' }}>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 size={15} style={{ color: '#059669', marginTop: 2, flexShrink: 0 }} />
+                          <div className="min-w-0">
+                            <div className="font-montserrat font-bold text-[10px] uppercase tracking-[0.14em]" style={{ color: '#065F46' }}>
+                              Saved Evidence Confirmation
+                            </div>
+                            <div className="font-roboto text-[12px] mt-1" style={{ color: '#065F46' }}>
+                              Evidence saved and refreshed from backend ({hhcEvidenceResult.refreshed_count} match{hhcEvidenceResult.refreshed_count === 1 ? '' : 'es'}).
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 font-mono text-[10.5px]" style={{ color: '#065F46' }}>
+                          <div><span className="font-montserrat">Evidence ID:</span> {hhcEvidenceResult.evidence_id}</div>
+                          <div>
+                            <span className="font-montserrat">Event ID:</span> {hhcEvidenceResult.event_id}
+                            {hhcEvidenceResult.event_id.startsWith('EVT-FORM-FI') && (
+                              <span className="ml-2 px-1.5 py-0.5 rounded text-[9px]" style={{ background: '#D1FAE5', border: '1px solid #6EE7B7' }}>
+                                Form-generated event
+                              </span>
+                            )}
+                          </div>
+                          <div><span className="font-montserrat">Form ID:</span> {hhcEvidenceResult.form_id}</div>
+                          <div><span className="font-montserrat">Policy ID:</span> {hhcEvidenceResult.policy_id}</div>
+                          <div><span className="font-montserrat">Workflow ID:</span> {hhcEvidenceResult.workflow_id}</div>
+                          <div><span className="font-montserrat">Status:</span> {hhcEvidenceResult.status} / {hhcEvidenceResult.signature_status}</div>
+                          <div className="md:col-span-2 break-all"><span className="font-montserrat">S3 key:</span> {hhcEvidenceResult.s3_key}</div>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const q = new URLSearchParams({
+                                event_id: hhcEvidenceResult.event_id,
+                                evidence_id: hhcEvidenceResult.evidence_id,
+                                form_id: hhcEvidenceResult.form_id,
+                                policy_id: hhcEvidenceResult.policy_id,
+                              });
+                              window.open(`/evidence?${q.toString()}`, '_blank', 'noopener');
+                            }}
+                            className="px-3 py-1.5 rounded-lg border text-[11px] font-montserrat font-semibold"
+                            style={{ borderColor: '#6EE7B7', color: '#065F46', background: 'white' }}
+                          >
+                            View in Evidence Center
+                          </button>
                         </div>
                       </div>
                     )}

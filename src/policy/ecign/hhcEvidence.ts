@@ -47,6 +47,40 @@ export interface EsignEvidenceResponse {
   form_id:          string;
 }
 
+export interface EvidenceFileSummary {
+  evidence_id:      string;
+  filename:         string;
+  policy_id:        string;
+  workflow_id:      string;
+  event_id:         string;
+  form_id:          string | null;
+  status:           string;
+  signature_status: string | null;
+  source_system:    string | null;
+  mime_type:        string | null;
+  size_bytes:       number | null;
+  created_at:       string;
+  updated_at:       string;
+}
+
+interface EventFilesResponse {
+  event_id: string;
+  files:    EvidenceFileSummary[];
+}
+
+export interface QueryEvidenceContextArgs {
+  event_id?:         string;
+  event_candidates?: string[];
+  form_id?:          string;
+  policy_id?:        string;
+  evidence_id?:      string;
+}
+
+export interface QueryEvidenceContextResult {
+  searched_events: string[];
+  matches:         EvidenceFileSummary[];
+}
+
 function actorHeaders(): Record<string, string> {
   try {
     const id   = localStorage.getItem('hhc_actor_id')   || 'demo-user';
@@ -86,4 +120,59 @@ export async function recordEsignEvidence(args: RecordEsignArgs): Promise<EsignE
     throw new Error(`hhc.esign.complete: ${msg}`);
   }
   return data as EsignEvidenceResponse;
+}
+
+async function listEventEvidence(eventId: string): Promise<EvidenceFileSummary[]> {
+  const res = await fetch(`${API_BASE}/events/${encodeURIComponent(eventId)}/files`, {
+    headers: actorHeaders(),
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    return [];
+  }
+  try {
+    const data = (text ? JSON.parse(text) : null) as EventFilesResponse | null;
+    return Array.isArray(data?.files) ? data.files : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function queryEvidenceByContext(args: QueryEvidenceContextArgs): Promise<QueryEvidenceContextResult> {
+  const candidates = [
+    args.event_id,
+    ...(args.event_candidates || []),
+  ]
+    .map((v) => (v || '').trim())
+    .filter(Boolean)
+    .filter((v, i, arr) => arr.indexOf(v) === i);
+
+  // If no event hint exists, backend cannot list evidence without an event partition key.
+  if (candidates.length === 0) {
+    return { searched_events: [], matches: [] };
+  }
+
+  const allRows: EvidenceFileSummary[] = [];
+  for (const eventId of candidates) {
+    const rows = await listEventEvidence(eventId);
+    allRows.push(...rows);
+  }
+
+  const byEvidence = new Map<string, EvidenceFileSummary>();
+  for (const row of allRows) {
+    byEvidence.set(row.evidence_id, row);
+  }
+
+  const filtered = Array.from(byEvidence.values()).filter((row) => {
+    if (args.evidence_id && row.evidence_id !== args.evidence_id) return false;
+    if (args.form_id && (row.form_id || '') !== args.form_id) return false;
+    if (args.policy_id && row.policy_id !== args.policy_id) return false;
+    if (args.event_id && row.event_id !== args.event_id) return false;
+    return true;
+  });
+
+  return {
+    searched_events: candidates,
+    matches: filtered,
+  };
 }
