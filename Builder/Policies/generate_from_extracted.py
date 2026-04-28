@@ -417,6 +417,9 @@ def main():
         'CO-CP-001 — Corporate Compliance Program.md',
         'DOMAIN_ CL — Clinical Operations (6).md',
         'CL-OA-006 — Documentation Hierarchy and Evidence Source Prioritization (1).md',
+        'FN-FP-002 — Charge Capture & Fee Schedule Management.md',
+        'FN-FP-004 — Bad Debt & Charity Care.md',
+        'FN-FP-006 — Supply & Equipment Cost Management.md',
     ]
 
     # Approved individual .md files (highest priority — override anything)
