@@ -286,7 +286,6 @@ function BradCard({
                   <StructuredAnswer
                     response={resp}
                     isLight={isLight}
-                    onOpenReference={onOpenReference}
                   />
                   {resp.requirementsSnapshot?.length > 0 && (
                     <RequirementsSnapshot
@@ -466,12 +465,15 @@ export function ChatThread({
                 <button
                   key={s}
                   type="button"
-                  onClick={() => { setInput(s); inputRef.current?.focus(); }}
-                  className="block w-full text-left text-[10px] px-2.5 py-1.5 rounded-lg hover:opacity-80 transition-opacity"
+                  disabled
+                  aria-disabled="true"
+                  className="block w-full text-left text-[10px] px-2.5 py-1.5 rounded-lg"
                   style={{
                     color: subColor,
                     background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.05)',
                     border: `1px solid ${border}`,
+                    cursor: 'not-allowed',
+                    opacity: 0.6,
                   }}
                 >
                   {s}
@@ -520,46 +522,47 @@ export function ChatThread({
       >
         <div
           className="flex items-end gap-2 rounded-xl px-3 py-2"
-          style={{ background: surface, border: `1px solid ${border}` }}
+          style={{
+            background: surface,
+            border: `1px solid ${border}`,
+            opacity: 0.55,
+            cursor: 'not-allowed',
+          }}
         >
           <textarea
             ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
+            value=""
+            onChange={() => { /* locked */ }}
+            onKeyDown={() => { /* locked */ }}
             rows={1}
-            placeholder={
-              session?.mode === 'emergency_response'
-                ? 'Report next step… (e.g. "EMS has been called")'
-                : session?.mode !== 'general'
-                  ? 'Continue the case… (e.g. "who do I notify?")'
-                  : 'Ask Brad a compliance question…'
-            }
+            placeholder="Chat input under construction — use guided prompts for demo"
             className="flex-1 resize-none bg-transparent outline-none text-[12px] leading-relaxed"
             style={{
-              color: textColor,
+              color: subColor,
               maxHeight: '100px',
               fontFamily: 'inherit',
+              cursor: 'not-allowed',
             }}
-            disabled={loading}
+            disabled
+            readOnly
           />
           <button
             type="button"
-            onClick={handleSubmit}
-            disabled={!input.trim() || loading}
-            className="flex-shrink-0 p-1.5 rounded-lg transition-opacity"
+            disabled
+            aria-disabled="true"
+            className="flex-shrink-0 p-1.5 rounded-lg"
             style={{
-              background: input.trim() && !loading ? ACCENT : 'transparent',
-              border: `1px solid ${input.trim() && !loading ? ACCENT : border}`,
-              opacity: !input.trim() || loading ? 0.4 : 1,
+              background: 'transparent',
+              border: `1px solid ${border}`,
+              opacity: 0.35,
+              cursor: 'not-allowed',
             }}
           >
-            <Send size={13} strokeWidth={2} style={{ color: input.trim() ? '#1F1C1B' : subColor }} />
+            <Send size={13} strokeWidth={2} style={{ color: subColor }} />
           </button>
         </div>
         <p className="text-[9px] mt-1 text-center" style={{ color: subColor, fontFamily: mono }}>
-          Press Enter to send · Shift+Enter for new line
-          {session?.mode !== 'general' && ` · Case: ${session?.mode.replace(/_/g, ' ')}`}
+          Brad Chat is currently in demo mode. Use suggested prompts above.
         </p>
       </div>
     </div>

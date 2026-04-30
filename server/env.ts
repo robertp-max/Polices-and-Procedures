@@ -71,4 +71,14 @@ export const env = {
   /** ───── Hubstaff Integration ──────────────────────────── */
   hubstaffPat: process.env.HUBSTAFF_PAT ?? '',
   hubstaffOrgId: process.env.HUBSTAFF_ORG_ID ?? '',
+
+  /** ───── Demo Auth (Cognito/SES/DynamoDB) ───────────────── */
+  awsRegion: process.env.AWS_REGION ?? process.env.AWS_DEFAULT_REGION ?? '',
+  appBaseUrl: process.env.APP_BASE_URL ?? 'http://localhost:5173',
+  cognitoUserPoolId: process.env.COGNITO_USER_POOL_ID ?? '',
+  cognitoClientId: process.env.COGNITO_CLIENT_ID ?? '',
+  fromEmail: process.env.FROM_EMAIL ?? '',
+  registrationTableName: process.env.REGISTRATION_TABLE_NAME ?? '',
+  setupTokenTtlMinutes: Number(process.env.SETUP_TOKEN_TTL_MINUTES ?? 60),
+  autoApprovedDomain: (process.env.AUTO_APPROVED_DOMAIN ?? 'careindeed.com').toLowerCase(),
 };

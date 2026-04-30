@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { X, FileText, ClipboardList, Boxes, Workflow, ExternalLink, Printer, Loader2 } from 'lucide-react';
+import { FileText, Printer, Loader2 } from 'lucide-react';
 import type { ReferencePreview } from '../lib/responseTypes';
 import { FormRenderer } from './FormRenderer';
+import { RightDrawer, UtilityButton } from '@/policy/components/ui';
+import { ReferenceLink } from './ReferenceLink';
+import { ReferenceText } from './ReferenceText';
 
 /* ═══════════════════════════════════════════════════════════════
    RightPanelPreview — compliance execution workspace.
@@ -31,7 +34,7 @@ export function RightPanelPreview({
   error,
   isLight,
   onClose,
-  onOpenLinked,
+  onOpenLinked: _onOpenLinked,
 }: RightPanelPreviewProps) {
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
   const surface = isLight ? '#FFFFFF' : 'rgba(255,255,255,0.025)';
@@ -46,46 +49,23 @@ export function RightPanelPreview({
   }, [reference?.id]);
 
   return (
-    <aside
-      className="h-full flex flex-col rounded-2xl overflow-hidden"
-      style={{
-        background: surface,
-        border: `1px solid ${border}`,
-      }}
+    <RightDrawer
+      inline
+      open
+      onClose={onClose}
+      eyebrow="Brad Workspace"
+      title={reference ? `${reference.id} · ${reference.title}` : 'No reference loaded'}
+      headerActions={
+        <UtilityButton
+          ariaLabel={reference?.type === 'form' ? 'Print form' : 'Print (forms only)'}
+          onClick={() => window.print()}
+          disabled={reference?.type !== 'form'}
+        >
+          <Printer size={14} strokeWidth={1.75} />
+        </UtilityButton>
+      }
     >
-      <header
-        className="flex items-center justify-between gap-3 px-4 py-3 shrink-0"
-        style={{ borderBottom: `1px solid ${border}` }}
-      >
-        <div className="flex items-center gap-2 min-w-0">
-          {reference && <TypeBadge type={reference.type} isLight={isLight} />}
-            <div className="min-w-0">
-            <div
-              className="text-[10px] font-bold uppercase tracking-[0.24em]"
-              style={{ color: accent, fontFamily: "'JetBrains Mono', monospace" }}
-            >
-              Brad Workspace
-            </div>
-            <div className="text-sm font-semibold truncate" style={{ color: text }}>
-              {reference ? `${reference.id} · ${reference.title}` : 'No reference loaded'}
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <IconButton
-            label={reference?.type === 'form' ? 'Print form' : 'Print (forms only)'}
-            onClick={() => window.print()}
-            disabled={reference?.type !== 'form'}
-            isLight={isLight}
-          >
-            <Printer size={14} strokeWidth={1.75} />
-          </IconButton>
-          <IconButton label="Close preview" onClick={onClose} isLight={isLight}>
-            <X size={14} strokeWidth={1.75} />
-          </IconButton>
-        </div>
-      </header>
-
+      <div className="h-full flex flex-col rounded-2xl overflow-hidden ci-glass-panel" style={{ background: surface, border: `1px solid ${border}` }}>
       <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar">
         {loading && <LoaderBlock isLight={isLight} />}
         {error && !loading && (
@@ -129,7 +109,7 @@ export function RightPanelPreview({
                       className="text-[13.5px] leading-relaxed whitespace-pre-wrap"
                       style={{ color: text }}
                     >
-                      {compactBody(s.body)}
+                      <ReferenceText text={compactBody(s.body)} isLight={isLight} />
                     </div>
                     {i < reference.sections.length - 1 && (
                       <div className="mt-5 h-px" style={{ background: border }} />
@@ -149,29 +129,21 @@ export function RightPanelPreview({
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
                   {reference.linkedIds.map(id => (
-                    <button
+                    <ReferenceLink
                       key={id}
-                      type="button"
-                      onClick={() => onOpenLinked(id)}
+                      id={id}
+                      isLight={isLight}
                       className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md transition-colors"
                       style={{
                         color: isLight ? '#52404B' : 'rgba(255,255,255,0.75)',
                         background: isLight ? '#F7F6F5' : 'rgba(255,255,255,0.04)',
                         border: `1px solid ${border}`,
                         fontFamily: "'JetBrains Mono', monospace",
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.color = accent;
-                        e.currentTarget.style.borderColor = accent;
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.color = isLight ? '#52404B' : 'rgba(255,255,255,0.75)';
-                        e.currentTarget.style.borderColor = border;
+                        textDecoration: 'none',
                       }}
                     >
                       {id}
-                      <ExternalLink size={10} strokeWidth={2} />
-                    </button>
+                    </ReferenceLink>
                   ))}
                 </div>
               </section>
@@ -179,24 +151,8 @@ export function RightPanelPreview({
           </div>
         )}
       </div>
-    </aside>
-  );
-}
-
-function TypeBadge({ type, isLight }: { type: ReferencePreview['type']; isLight: boolean }) {
-  const Icon = type === 'form' ? ClipboardList : type === 'appendix' ? Boxes : type === 'workflow' ? Workflow : FileText;
-  return (
-    <div
-      className="flex items-center justify-center rounded-lg"
-      style={{
-        width: 32,
-        height: 32,
-        background: isLight ? '#FFEEE5' : 'rgba(255,193,7,0.08)',
-        color: isLight ? '#C74601' : '#FFC107',
-      }}
-    >
-      <Icon size={14} strokeWidth={1.75} />
-    </div>
+      </div>
+    </RightDrawer>
   );
 }
 
@@ -299,51 +255,7 @@ function EmptyState({ isLight }: { isLight: boolean }) {
   );
 }
 
-function IconButton({
-  children,
-  label,
-  onClick,
-  disabled,
-  isLight,
-}: {
-  children: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-  isLight: boolean;
-}) {
-  const muted = isLight ? '#52404B' : 'rgba(255,255,255,0.7)';
-  const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
-  const accent = isLight ? '#C74601' : '#FFC107';
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      title={label}
-      className="flex items-center justify-center rounded-lg transition-colors"
-      style={{
-        width: 32,
-        height: 32,
-        background: 'transparent',
-        color: muted,
-        border: `1px solid ${border}`,
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 0.5 : 1,
-      }}
-      onMouseEnter={e => {
-        if (!disabled) { e.currentTarget.style.color = accent; e.currentTarget.style.borderColor = accent; }
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.color = muted;
-        e.currentTarget.style.borderColor = border;
-      }}
-    >
-      {children}
-    </button>
-  );
-}
+ 
 
 /** Trim runs of blank lines produced by docx extraction. */
 function compactBody(body: string): string {

@@ -6,10 +6,11 @@ import {
   DollarSign, Monitor, BarChart3, Scale, Heart, Cpu, Briefcase,
   GitBranch, Landmark, ShieldCheck, Gavel, ChevronLeft, Printer, LayoutList, Lock, FileCheck, Layers,
   Settings, RefreshCw, CheckCircle2, Play, BookOpen, List, CheckSquare, Archive, ExternalLink,
-  Bell, HelpCircle, Clock, Sparkles
+  Bell, HelpCircle, Clock, Sparkles, Cloud
 } from 'lucide-react';
 import ciLogoWhite from '@/assets/ci-logo-white.png';
 import { ExecutivePresentation } from './DemoPhase2';
+import { InfrastructurePresentation } from './DemoPhase3';
 
 // ══════════════════════════════════════════════════════════════
 // SHARED DATA
@@ -1980,7 +1981,7 @@ function DemoLibraryView({ onBack, onSelectPolicy }: { onBack: () => void; onSel
 // ══════════════════════════════════════════════════════════════
 
 type DemoView = 'cover' | 'library' | 'detail';
-type DemoPhase = '1' | '2';
+type DemoPhase = '1' | '2' | '3';
 
 export function DemoPage() {
   const [phase, setPhase] = useState<DemoPhase>('1');
@@ -1994,6 +1995,7 @@ export function DemoPage() {
 
   const switchToPhase1 = useCallback(() => setPhase('1'), []);
   const switchToPhase2 = useCallback(() => setPhase('2'), []);
+  const switchToPhase3 = useCallback(() => setPhase('3'), []);
 
   return (
     <div className="h-full overflow-hidden flex flex-col">
@@ -2030,6 +2032,21 @@ export function DemoPage() {
           <Sparkles size={11} />
           Phase 2 — Executive Presentation
         </button>
+
+        <div className="w-px h-4 mx-1" style={{ background: 'var(--ci-hairline)' }} />
+
+        <button
+          onClick={switchToPhase3}
+          className="flex items-center gap-2 px-4 py-1.5 rounded-lg font-montserrat text-[10px] font-bold tracking-[0.18em] uppercase transition-all"
+          style={{
+            background: phase === '3' ? 'rgba(29,78,216,0.07)' : 'transparent',
+            color: phase === '3' ? '#1d4ed8' : 'var(--ci-text-muted)',
+            border: phase === '3' ? '1px solid rgba(29,78,216,0.22)' : '1px solid transparent',
+          }}
+        >
+          <Cloud size={11} />
+          Phase 3 — Infrastructure &amp; AWS
+        </button>
       </div>
 
       {/* ── Phase 1: Live System Demo ── */}
@@ -2053,6 +2070,13 @@ export function DemoPage() {
       {phase === '2' && (
         <div className="flex-1 min-h-0 overflow-hidden">
           <ExecutivePresentation onBack={switchToPhase1} />
+        </div>
+      )}
+
+      {/* ── Phase 3: Infrastructure & AWS ── */}
+      {phase === '3' && (
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <InfrastructurePresentation onBack={switchToPhase1} />
         </div>
       )}
 

@@ -11,7 +11,19 @@
  *   - Builder/Compliance-Execution-Sprints/PM-Panel-Synchronization.md
  */
 
-export type TaskSource = 'ces' | 'personal';
+export type TaskSource = 'CES' | 'manual' | 'personal' | 'ces';
+
+export type PmTaskType =
+  | 'workflow_step'
+  | 'form_completion'
+  | 'form_review'
+  | 'evidence'
+  | 'approval'
+  | 'certification'
+  | 'personal';
+
+export type PmTaskPriority = 'low' | 'medium' | 'high' | 'critical';
+export type PmTaskRisk = 'low' | 'medium' | 'high' | 'critical';
 
 /** eCIgn internal state machine values (mirrors server/ecign/stateMachine.ts). */
 export type EcignInternal =
@@ -124,10 +136,21 @@ export interface PacketSnapshot {
 /** A canonical task projected by the PM projector. */
 export interface EcignSubmissionTask {
   task_id: string;             // "{event.id}-{NN}" — STABLE
-  source: 'ces';
+  source: 'CES' | 'ces';
+  task_type: Exclude<PmTaskType, 'personal'>;
   event_id: string;
+  event_title: string;
   workflow_id: string;
+  workflow_title: string;
   policy_id?: string;
+  policy_refs: string[];
+  form_refs: string[];
+  generated_form_instance_ids: string[];
+  source_form_id?: string;
+  priority: PmTaskPriority;
+  risk: PmTaskRisk;
+  blockers: string[];
+  policyRefs?: string[];
   /** Originating processFlow step.id (e.g. "s2", "qapi-gov-minutes") when
    *  this task projects from an execution step. Absent only for orphan
    *  form tasks (a requiredForm not consumed by any step). */
@@ -145,12 +168,16 @@ export interface EcignSubmissionTask {
   description?: string;
   status: PmTaskStatus;
   packet_status: EcignPacketStatus;
+  start_date: string;
   assigned_user_id?: string;
+  assignee?: string;
+  owner?: string;
   required_signers: EcignPacketSigner[];
   approvers: { user_id: string; display_name: string }[];
-  due_date?: string;
-  sprint_id?: string;
+  due_date: string;
+  sprint_id: string;
   story_points?: number;
+  depends_on: string[];
   dependencies: string[];
   evidence_id?: string;
   audit_log_refs: string[];
@@ -165,18 +192,33 @@ export interface EcignSubmissionTask {
 
 export interface NonFormCesTask {
   task_id: string;             // "{event.id}-{NN}"
-  source: 'ces';
+  source: 'CES' | 'ces';
+  task_type: Exclude<PmTaskType, 'personal'>;
   event_id: string;
+  event_title: string;
   workflow_id: string;
+  workflow_title: string;
   policy_id?: string;
+  policy_refs: string[];
+  form_refs: string[];
+  generated_form_instance_ids: string[];
+  source_form_id?: string;
+  priority: PmTaskPriority;
+  risk: PmTaskRisk;
+  blockers: string[];
+  policyRefs?: string[];
   step_id: string;             // step-only task, no form
   title: string;
   description?: string;
   status: PmTaskStatus;
+  start_date: string;
   assigned_user_id?: string;
-  due_date?: string;
-  sprint_id?: string;
+  assignee?: string;
+  owner?: string;
+  due_date: string;
+  sprint_id: string;
   story_points?: number;
+  depends_on: string[];
   dependencies: string[];
   weekend_override?: boolean;
 }
@@ -184,13 +226,33 @@ export interface NonFormCesTask {
 export interface PersonalTask {
   task_id: string;             // "personal:{uuid}"
   source: 'personal';
+  task_type: 'personal';
+  event_id?: string;
+  event_title?: string;
+  workflow_id?: string;
+  workflow_title?: string;
+  policy_id?: string;
+  policy_refs: string[];
+  form_refs: string[];
+  generated_form_instance_ids: string[];
+  source_form_id?: string;
+  priority: PmTaskPriority;
+  risk: PmTaskRisk;
+  blockers: string[];
+  policyRefs?: string[];
+  form_id?: string;
+  form_ids?: string[];
   owner_user_id: string;
+  owner?: string;
+  assignee?: string;
   title: string;
   description?: string;
   status: PmTaskStatus;
-  due_date?: string;
-  sprint_id?: string;
+  start_date: string;
+  due_date: string;
+  sprint_id: string;
   story_points?: number;
+  depends_on: string[];
   dependencies: string[];
   is_weekend_ok?: boolean;
   linked_event_id?: string;
@@ -199,9 +261,9 @@ export interface PersonalTask {
 export type Task = EcignSubmissionTask | NonFormCesTask | PersonalTask;
 
 export const isEcignSubmissionTask = (t: Task): t is EcignSubmissionTask =>
-  t.source === 'ces' && 'form_id' in t && Boolean((t as EcignSubmissionTask).form_id);
+  (t.source === 'CES' || t.source === 'ces') && 'form_id' in t && Boolean((t as EcignSubmissionTask).form_id);
 
 export const isPersonalTask = (t: Task): t is PersonalTask => t.source === 'personal';
 
 export const isCesTask = (t: Task): t is EcignSubmissionTask | NonFormCesTask =>
-  t.source === 'ces';
+  t.source === 'CES' || t.source === 'ces';

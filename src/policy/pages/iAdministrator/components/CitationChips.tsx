@@ -1,13 +1,15 @@
 import { Quote } from 'lucide-react';
 import type { Citation } from '../lib/responseTypes';
+import { ReferenceLink } from './ReferenceLink';
+import { ReferenceText } from './ReferenceText';
 
 export interface CitationChipsProps {
   citations: Citation[];
   isLight: boolean;
-  onOpenReference: (policyId: string) => void;
+  onOpenReference: (_policyId: string) => void;
 }
 
-export function CitationChips({ citations, isLight, onOpenReference }: CitationChipsProps) {
+export function CitationChips({ citations, isLight, onOpenReference: _onOpenReference }: CitationChipsProps) {
   if (citations.length === 0) return null;
 
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
@@ -27,7 +29,7 @@ export function CitationChips({ citations, isLight, onOpenReference }: CitationC
           className="text-[10px] font-bold uppercase tracking-[0.3em]"
           style={{ color: accent, fontFamily: "'JetBrains Mono', monospace" }}
         >
-          Citations
+          Reference Material
         </span>
         <span
           className="text-[10px] font-semibold uppercase tracking-[0.2em]"
@@ -41,23 +43,12 @@ export function CitationChips({ citations, isLight, onOpenReference }: CitationC
         {citations.map(c => {
           const isPrimary = c.relevance === 'primary';
           return (
-            <button
+            <div
               key={c.id}
-              type="button"
-              onClick={() => onOpenReference(c.policyId)}
               className="group text-left flex items-start gap-3 rounded-xl p-3 transition-colors"
               style={{
                 background: isLight ? '#FAFAFA' : 'rgba(255,255,255,0.02)',
                 border: `1px solid ${isPrimary ? (isLight ? '#FFD5BF' : 'rgba(255,193,7,0.28)') : border}`,
-                cursor: 'pointer',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = accent;
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = isPrimary
-                  ? (isLight ? '#FFD5BF' : 'rgba(255,193,7,0.28)')
-                  : border;
               }}
             >
               <div
@@ -82,7 +73,13 @@ export function CitationChips({ citations, isLight, onOpenReference }: CitationC
                     fontFamily: "'JetBrains Mono', monospace",
                   }}
                 >
-                  {c.policyId} · {c.title}
+                  <ReferenceLink id={c.policyId} isLight={isLight}>
+                    {c.policyId}
+                  </ReferenceLink>
+                  {' '}
+                  ·
+                  {' '}
+                  {c.title}
                 </div>
                 <div
                   className="text-[11px] mb-1.5"
@@ -94,10 +91,10 @@ export function CitationChips({ citations, isLight, onOpenReference }: CitationC
                   className="text-[13px] leading-relaxed italic"
                   style={{ color: text }}
                 >
-                  “{c.excerpt}”
+                  “<ReferenceText text={c.excerpt} isLight={isLight} />”
                 </div>
               </div>
-            </button>
+            </div>
           );
         })}
       </div>

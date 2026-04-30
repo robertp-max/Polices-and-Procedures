@@ -11,6 +11,8 @@ import {
   type CompletionStatus,
   type CompletionResult,
 } from '@/policy/services/hhcWorkflowCompletion';
+import { useAuth } from '@/auth/AuthProvider';
+import { authorizeForAuthUser } from '@/policy/security/identity';
 
 /* ══════════════════════════════════════════════════════════════════
    WorkflowDetailView — single-card tabbed workflow.
@@ -37,6 +39,7 @@ const TABS: Array<{ id: TabId; label: string }> = [
 export function WorkflowDetailView() {
   const { workflowId } = useParams<{ workflowId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const wf = useMemo(() => (workflowId ? getWorkflow(workflowId) : null), [workflowId]);
   const [tab, setTab] = useState<TabId>('process');
 
@@ -157,7 +160,7 @@ export function WorkflowDetailView() {
         {tab === 'approvals'  && <ApprovalsTab wf={wf} />}
         {tab === 'escalation' && <EscalationTab wf={wf} />}
         {tab === 'audit'      && <AuditTab wf={wf} />}
-        {tab === 'compliance' && <ComplianceTab wf={wf} />}
+        {tab === 'compliance' && <ComplianceTab wf={wf} user={user} />}
       </div>
     </div>
   );
@@ -632,7 +635,7 @@ function AuditTab({ wf }: { wf: Workflow }) {
 }
 
 /* ── HHC Phase-1 Compliance tab ───────────────────────────────────── */
-function ComplianceTab({ wf }: { wf: Workflow }) {
+function ComplianceTab({ wf, user }: { wf: Workflow; user: ReturnType<typeof useAuth>['user'] }) {
   // Demo defaults: synthesize one event_id per workflow + treat its forms as
   // required. In a wired-in production system these would come from the live
   // workflow execution context.
@@ -717,6 +720,16 @@ function ComplianceTab({ wf }: { wf: Workflow }) {
   };
 
   const canComplete = status?.canComplete === true;
+  const completeDecision = authorizeForAuthUser(user, 'ceu.complete', {
+    kind: 'ceu',
+    id: `WF-${wf.id}`,
+    scope: { organizationId: 'careindeed-demo' },
+    meta: {
+      requiresReviewer: false,
+      executedByUserId: 'usr-admin',
+    },
+  });
+  const completeBlockedByAccess = !completeDecision.allow;
 
   return (
     <div className="grid grid-cols-12 gap-6">
@@ -763,10 +776,24 @@ function ComplianceTab({ wf }: { wf: Workflow }) {
               <button onClick={refresh} disabled={statusBusy} style={btnSecondary}>
                 {statusBusy ? 'Checking…' : 'Refresh status'}
               </button>
-              <button onClick={onComplete} disabled={completeBusy || !canComplete} style={{ ...btnPrimary, opacity: canComplete ? 1 : 0.5, cursor: canComplete ? 'pointer' : 'not-allowed' }}>
+              <button
+                onClick={onComplete}
+                disabled={completeBusy || !canComplete || completeBlockedByAccess}
+                style={{
+                  ...btnPrimary,
+                  opacity: canComplete && !completeBlockedByAccess ? 1 : 0.5,
+                  cursor: canComplete && !completeBlockedByAccess ? 'pointer' : 'not-allowed',
+                }}
+                title={completeBlockedByAccess ? completeDecision.reason : undefined}
+              >
                 {completeBusy ? 'Submitting…' : 'Mark workflow complete'}
               </button>
             </div>
+            {completeBlockedByAccess && (
+              <div style={{ ...bodyStyle, color: '#9F1239' }}>
+                Access denied: {completeDecision.reason}
+              </div>
+            )}
             {statusErr && (
               <div style={{ ...bodyStyle, color: '#9F1239' }}>Status error: {statusErr}</div>
             )}

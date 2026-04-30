@@ -1,5 +1,6 @@
 import { FileText, ClipboardList, Boxes, Workflow } from 'lucide-react';
 import type { LinkedReference, ReferenceIntent } from '../lib/responseTypes';
+import { ReferenceLink } from './ReferenceLink';
 
 /* ═══════════════════════════════════════════════════════════════
    ReferenceCards — renders `linkedReferences` as action-ready cards
@@ -14,7 +15,7 @@ export interface ReferenceCardsProps {
   onOpenReference: (id: string) => void;
 }
 
-export function ReferenceCards({ references, isLight, activeId, onOpenReference }: ReferenceCardsProps) {
+export function ReferenceCards({ references, isLight, activeId, onOpenReference: _onOpenReference }: ReferenceCardsProps) {
   if (references.length === 0) return null;
 
   const critical = references.filter(r => isCriticalIntent(r.intent) || r.required);
@@ -51,7 +52,6 @@ export function ReferenceCards({ references, isLight, activeId, onOpenReference 
           items={critical}
           isLight={isLight}
           activeId={activeId}
-          onOpen={onOpenReference}
           primary
         />
       )}
@@ -61,7 +61,6 @@ export function ReferenceCards({ references, isLight, activeId, onOpenReference 
           items={supporting}
           isLight={isLight}
           activeId={activeId}
-          onOpen={onOpenReference}
         />
       )}
     </section>
@@ -73,14 +72,12 @@ function Group({
   items,
   isLight,
   activeId,
-  onOpen,
   primary = false,
 }: {
   label: string;
   items: LinkedReference[];
   isLight: boolean;
   activeId?: string | null;
-  onOpen: (id: string) => void;
   primary?: boolean;
 }) {
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
@@ -102,7 +99,6 @@ function Group({
             isLight={isLight}
             selected={r.id === activeId}
             primary={primary}
-            onClick={() => onOpen(r.id)}
           />
         ))}
       </div>
@@ -116,13 +112,11 @@ function ReferenceCard({
   isLight,
   selected,
   primary,
-  onClick,
 }: {
   reference: LinkedReference;
   isLight: boolean;
   selected: boolean;
   primary: boolean;
-  onClick: () => void;
 }) {
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
   const accent = isLight ? '#C74601' : '#FFC107';
@@ -131,22 +125,13 @@ function ReferenceCard({
   const Icon = iconFor(reference.type);
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <div
       className="text-left flex items-start gap-3 rounded-xl p-3 transition-colors"
       style={{
         background: isLight
           ? (selected ? '#FFFAF7' : '#FAFAFA')
           : (selected ? 'rgba(255,193,7,0.055)' : 'rgba(255,255,255,0.02)'),
         border: `1px solid ${selected ? accent : (primary ? (isLight ? '#FFD5BF' : 'rgba(255,193,7,0.2)') : border)}`,
-        cursor: 'pointer',
-      }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = accent; }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = selected
-          ? accent
-          : (primary ? (isLight ? '#FFD5BF' : 'rgba(255,193,7,0.2)') : border);
       }}
     >
       <div
@@ -164,15 +149,18 @@ function ReferenceCard({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span
+          <ReferenceLink
+            id={reference.id}
+            isLight={isLight}
             className="text-[11px] font-bold"
             style={{
               color: primary ? accent : text,
               fontFamily: "'JetBrains Mono', monospace",
+              textDecoration: 'none',
             }}
           >
             {reference.id}
-          </span>
+          </ReferenceLink>
           <TypeChip type={reference.type} isLight={isLight} />
           <IntentChip intent={reference.intent} isLight={isLight} />
         </div>
@@ -196,7 +184,7 @@ function ReferenceCard({
           {reference.accessTier && ` · ${compactTier(reference.accessTier)}`}
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 

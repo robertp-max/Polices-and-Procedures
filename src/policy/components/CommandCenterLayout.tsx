@@ -1,20 +1,26 @@
-﻿import { useState, useEffect, useRef, type PropsWithChildren } from 'react';
+﻿import { useState, useEffect, useRef, useMemo, type PropsWithChildren } from 'react';
 import ciIonLogo from '@/assets/ci-ion-logo.png';
 import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardCheck, Network, FileEdit,
-  FileBarChart, PlayCircle,
+  PlayCircle,
   HelpCircle, Search, ChevronLeft, Menu,
-  ShieldCheck, Zap, FingerprintPattern as Fingerprint,
+  ShieldCheck, Zap,
   ArrowUpCircle, FolderOpen, UserCheck, Sparkles,
+  ListChecks, LogOut, Compass,
 } from 'lucide-react';
 import TravelightBG from '@/components/TravelightBG';
 import { useShellStore } from '@/policy/stores/uiStore';
+import { useCiModeStore } from '@/policy/stores/ciModeStore';
+import { useAuth } from '@/auth/AuthProvider';
+import { evaluateAdminAccess } from '@/policy/security/identity';
+import { ThemeModeToggle } from '@/policy/components/ui/ThemeModeToggle';
+import { ContextualKnowledgeBulb } from '@/policy/components/help/ContextualKnowledgeBulb';
 import { useNavStore } from '@/policy/stores/navStore';
-import { UniversalNavControls } from '@/policy/components/UniversalNavControls';
 import { isNavExcludedRoute, hasActiveInputFocus } from '@/policy/utils/navExclusions';
 import { GlobalTaskDrawer } from '@/policy/components/pm/GlobalTaskDrawer';
+import { GuidedTourGate, restartGuidedTour } from '@/policy/components/onboarding/GuidedTourGate';
 
 function BradRobotIcon({ size = 24, strokeWidth = 1.5, className }: { size?: number; strokeWidth?: number; className?: string }) {
   const sw = strokeWidth ?? 1.5;
@@ -110,6 +116,7 @@ const NAV_ITEMS: NavItem[] = [
     id: 'onboarding', to: '/journey', label: 'Onboarding',
     subItems: [
       { to: '/journey',             label: 'Overview' },
+      { to: '/journey/v1-journey',  label: 'Journey v1' },
       { to: '/journey/appendix-f',  label: 'Appendix F' },
       { to: '/journey/supervisor',  label: 'Supervisor View' },
       { to: '/journey/admin',       label: 'Admin' },
@@ -129,25 +136,32 @@ const NAV_ITEMS: NavItem[] = [
     icon: Sparkles,
   },
   { id: 'lifecycle', to: '/policy-lifecycle', label: 'Policy Lifecycle', icon: FileEdit },
-  { id: 'reports', to: '/governance', label: 'Master Report', icon: FileBarChart },
   { id: 'evidence', to: '/evidence', label: 'Evidence', icon: FolderOpen },
   { id: 'hubstaff', to: '/hubstaff', label: 'Hubstaff', icon: ArrowUpCircle },
+  {
+    id: 'system-documentation',
+    to: '/system-documentation',
+    label: 'System Documentation',
+    subItems: [
+      { to: '/system-documentation/executive-overview', label: 'Executive Overview' },
+      { to: '/system-documentation/system-architecture', label: 'System Architecture' },
+      { to: '/system-documentation/identity-access', label: 'Identity & Access' },
+      { to: '/system-documentation/workflow-enforcement', label: 'Workflow & Enforcement' },
+      { to: '/system-documentation/training-system', label: 'Training System' },
+      { to: '/system-documentation/audit-evidence', label: 'Audit & Evidence' },
+      { to: '/system-documentation/aws-infrastructure', label: 'AWS Infrastructure' },
+      { to: '/system-documentation/hipaa-gap-analysis', label: 'HIPAA Gap Analysis' },
+      { to: '/system-documentation/production-roadmap', label: 'Production Roadmap' },
+    ],
+    icon: FolderOpen,
+  },
   { id: 'help', to: '/help', label: 'Help Center', icon: HelpCircle },
   { id: 'demo', to: '/demo', label: 'Demo', icon: PlayCircle },
 ];
 
-function enterFullscreen() {
-  const el = document.documentElement as HTMLElement & {
-    webkitRequestFullscreen?: () => Promise<void>;
-    msRequestFullscreen?: () => Promise<void>;
-  };
-  if (el.requestFullscreen) el.requestFullscreen();
-  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-  else if (el.msRequestFullscreen) el.msRequestFullscreen();
-}
-
 // ── Viewport detection (mobile vs. desktop) ──────────────
 const MOBILE_BP = 1024;
+const LOCAL_DEMO_AUTH_BYPASS = import.meta.env.VITE_LOCAL_DEMO_AUTH_BYPASS === 'true';
 
 function useIsMobile(): boolean {
   const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < MOBILE_BP);
@@ -159,33 +173,109 @@ function useIsMobile(): boolean {
   return mobile;
 }
 
-function resolveActiveNav(pathname: string): NavItem {
-  for (const item of NAV_ITEMS) {
+function resolveActiveNav(pathname: string, navItems: NavItem[]): NavItem {
+  for (const item of navItems) {
     if (item.subItems) {
       for (const sub of item.subItems) {
-        if (pathname === sub.to || pathname.startsWith(sub.to + '/')) return item;
+        const subPath = sub.to.split('?')[0].split('#')[0];
+        if (pathname === subPath || pathname.startsWith(subPath + '/')) return item;
       }
     }
-    if (pathname === item.to || pathname.startsWith(item.to + '/')) return item;
+     const itemPath = item.to.split('?')[0].split('#')[0];
+     if (pathname === itemPath || pathname.startsWith(itemPath + '/')) return item;
   }
-  return NAV_ITEMS[0];
+  return navItems[0];
 }
 
 export function CommandCenterLayout({ children }: PropsWithChildren) {
-  const [showSplash, setShowSplash] = useState(true);
-  const [launching, setLaunching] = useState(false);
-  const [splashExit, setSplashExit] = useState(false);
+  const [launching] = useState(false);
+  const [splashExit] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [activeSubMenu, setActiveSubMenu] = useState<NavItem | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user, isAuthenticated, logout } = useAuth();
+  const showSplash = !LOCAL_DEMO_AUTH_BYPASS && !isAuthenticated && location.pathname === '/';
+
+  const adminAccess = useMemo(() => evaluateAdminAccess(user), [user]);
+  const adminNavItem: NavItem | null = adminAccess.allowed
+    ? {
+        id: 'admin',
+        to: '/admin/user-groups',
+        label: 'Admin',
+        subItems: [
+          { to: '/admin/user-groups', label: 'User Groups' },
+          { to: '/admin/roles', label: 'Roles' },
+          { to: '/admin/permissions', label: 'Permissions' },
+          { to: '/admin/users', label: 'User Assignments' },
+        ],
+        icon: ShieldCheck,
+      }
+    : null;
+  const allNavItems = adminNavItem ? [...NAV_ITEMS, adminNavItem] : NAV_ITEMS;
 
   const detailMode = useShellStore(s => s.detailMode);
   const theme = useShellStore(s => s.theme);
   const toggleTheme = useShellStore(s => s.toggleTheme);
-  const isLight = theme === 'care-indeed-light';
-  const logo = isLight ? ciLogoGray : ciIonLogo;
+  const isCareIndeed = theme === 'care-indeed-light';
+  const isLight = isCareIndeed;
+  const ciMode = useCiModeStore(s => s.mode);
+  // When brand is Care Indeed, ALWAYS render the flat light backdrop —
+  // never the maroon TravelightBG. The orthogonal `ciMode` only affects
+  // typography/glass tinting, never the global page background. This
+  // prevents the white→maroon→white flash during login/route transitions
+  // when a stale `ci-care-indeed-mode=dark` is in localStorage.
+  const isCareIndeedDark = isCareIndeed && ciMode === 'dark';
+  const isVisualLight = isCareIndeed;
+  const logo = isCareIndeed ? ciLogoGray : ciIonLogo;
+  const accountDisplayName = useMemo(() => {
+    const firstName = user?.firstName?.trim();
+    const lastName = user?.lastName?.trim();
+    if (firstName || lastName) {
+      return [firstName, lastName].filter(Boolean).join(' ');
+    }
+
+    const fullName = user?.name?.trim();
+    if (fullName) {
+      return fullName;
+    }
+
+    // Derive display name from email when no name attributes are set
+    // e.g. dee.bustos@careindeed.com → 'Dee Bustos'
+    const emailLocal = user?.email?.split('@')[0];
+    if (emailLocal) {
+      const parts = emailLocal.split(/[._-]+/).filter(Boolean);
+      if (parts.length >= 2) {
+        return parts.slice(0, 2).map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
+      }
+      if (parts.length === 1 && parts[0].length > 0) {
+        return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+      }
+    }
+
+    return 'Account';
+  }, [user?.firstName, user?.lastName, user?.name, user?.email]);
+  const accountInitials = useMemo(() => {
+    const nameParts = accountDisplayName
+      .split(/\s+/)
+      .map(part => part.trim())
+      .filter(Boolean);
+    const initials = nameParts.slice(0, 2).map(part => part[0]?.toUpperCase() ?? '').join('');
+
+    return initials || 'AC';
+  }, [accountDisplayName]);
+  const accountRole = useMemo(() => {
+    const raw = user?.role?.trim();
+    if (!raw) return 'User';
+
+    return raw
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, c => c.toUpperCase());
+  }, [user?.role]);
 
   // Route-based detail detection (for detail pages opened via URL).
   const pathIsDetail =
@@ -193,18 +283,73 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
     /^\/gv-policy\/.+/.test(location.pathname) ||
     /^\/forms\/.+/.test(location.pathname);
   const hideChrome = detailMode || pathIsDetail;
+  const hideGlobalSearch = /^\/(library|help|iadministrator)(?:\/|$)/.test(location.pathname);
 
-  const currentNav = resolveActiveNav(location.pathname);
+  const currentNav = resolveActiveNav(location.pathname, allNavItems);
+
+  // ── Nav icons click-to-expand sub-navigation ───────────────────────────────
+  const [expandedNavId, setExpandedNavId] = useState<string | null>(null);
+
+  const VISIBLE_NAV = allNavItems.filter(item => item.id !== 'onboarding-v2' && item.id !== 'dashboard');
+  const activeDropdownNavId = useMemo(() => {
+    if (!expandedNavId) return null;
+    const expandedItem = VISIBLE_NAV.find(item => item.id === expandedNavId);
+    return expandedItem?.subItems?.length ? expandedItem.id : null;
+  }, [expandedNavId, VISIBLE_NAV]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
+  // ── Care Indeed Light/Dark mode (orthogonal to brand toggle) ──────────────
+  useEffect(() => {
+    document.documentElement.dataset.ciMode = ciMode;
+  }, [ciMode]);
+
   // ── Stable refs so event-handler closures always see current values ──────
   const locationRef  = useRef(location.pathname);
   const isMenuOpenRef = useRef(isMenuOpen);
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => { locationRef.current  = location.pathname; }, [location.pathname]);
   useEffect(() => { isMenuOpenRef.current = isMenuOpen; },      [isMenuOpen]);
+
+  useEffect(() => {
+    setIsAccountMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isAccountMenuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!accountMenuRef.current?.contains(event.target as Node)) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isAccountMenuOpen]);
+
+  const handleMyTasksClick = () => {
+    setIsAccountMenuOpen(false);
+    navigate('/my-tasks');
+  };
+
+  const handleLogoutClick = async () => {
+    setIsAccountMenuOpen(false);
+    await logout();
+    navigate('/login');
+  };
 
   // ── Route tracker — feed every pathname change into the nav store ─────────
   const prevPathRef = useRef<string | null>(null);
@@ -279,22 +424,13 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
     };
   }, [navigate]);
 
-  const handleEnter = () => {
-    setLaunching(true);
-    setSplashExit(true);
-    window.setTimeout(() => {
-      enterFullscreen();
-      setShowSplash(false);
-    }, 1100);
-  };
-
   return (
     <>
       {/* ── 1. Premium background (TravelightBG) — fills viewport ── */}
-      <TravelightBG isLight={isLight} />
+      <TravelightBG isLight={isVisualLight} />
 
       {/* ── 2. Single premium glass canvas — near-fullscreen ── */}
-      <div data-shell-outer="" className={`fixed inset-0 ${isLight ? 'text-slate-800' : 'text-[#E0E0E0]'}`} style={{ zIndex: 1 }}>
+      <div data-shell-outer="" className={`fixed inset-0 ${isVisualLight ? 'text-slate-800' : 'text-[#E0E0E0]'}`} style={{ zIndex: 1 }}>
         <div
           data-shell-card=""
           className={`absolute overflow-hidden ${isMobile ? 'inset-0 rounded-none' : 'rounded-3xl md:rounded-[2rem]'}`}
@@ -316,7 +452,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         detail views.
                Dark   : CI-ION maroon glass at 30.44% (7.77% reduction
                         from 33%); full opacity in detail mode. */
-            ...(isLight
+            ...(isVisualLight
               ? {
                   // Care Indeed light mode — one-card canvas matching
                   // the Workflow Library aesthetic. Solid white surface,
@@ -326,6 +462,14 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                   border: '1px solid #E5E4E3',
                   boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                 }
+              : isCareIndeedDark
+                ? {
+                    background: 'linear-gradient(160deg, rgba(27,49,51,0.78) 0%, rgba(14,27,28,0.78) 100%)',
+                    backdropFilter: 'blur(20px) saturate(120%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(120%)',
+                    border: '1px solid rgba(122,222,223,0.18)',
+                    boxShadow: '0 22px 48px -16px rgba(0,0,0,0.65), inset 0 1px 0 rgba(122,222,223,0.06)',
+                  }
               : {
                   background: hideChrome
                     ? 'linear-gradient(160deg, rgba(66,8,8,1) 0%, rgba(10,2,2,1) 100%)'
@@ -352,9 +496,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                   transition: 'opacity 700ms cubic-bezier(.22,1,.36,1)',
                   opacity: splashExit ? 0 : 1,
                   pointerEvents: splashExit ? ('none' as const) : ('auto' as const),
-                  background: isLight
-                    ? 'rgba(255,255,255,0.777)'
-                    : 'linear-gradient(160deg, rgba(66,8,8,0.777) 0%, rgba(10,2,2,0.777) 100%)',
+                  background: '#FFFFFF',
                 }}
               >
                 {/* Splash inner card — brand-aligned enterprise panel.
@@ -369,10 +511,8 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     minHeight: 580,
                     padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem)',
                     borderRadius: '24px',
-                    background: isLight ? '#FFFFFF' : 'transparent',
-                    border: isLight
-                      ? '1px solid #E5E4E3'
-                      : '1px solid rgba(255,255,255,0.0777)',
+                    background: '#FFFFFF',
+                    border: '1px solid #E5E4E3',
                   }}
                 >
                   <div className="w-full flex flex-col items-center gap-8 relative z-10">
@@ -380,15 +520,15 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     <button
                       type="button"
                       onClick={toggleTheme}
-                      aria-label={`Switch to ${isLight ? 'CI-ION dark' : 'Care Indeed light'} theme`}
-                      title={`Switch to ${isLight ? 'CI-ION dark' : 'Care Indeed light'} theme`}
+                      aria-label={`Switch to ${isCareIndeed ? 'CI-ION dark' : 'Care Indeed light'} theme`}
+                      title={`Switch to ${isCareIndeed ? 'CI-ION dark' : 'Care Indeed light'} theme`}
                       className="group rounded-xl p-1 hover:scale-[1.03] transition-transform cursor-pointer focus-visible:outline-offset-4"
                     >
                       <img
                         src={logo}
-                        alt={`Care Indeed — click to switch to ${isLight ? 'CI-ION dark' : 'Care Indeed light'} theme`}
-                        className={`h-14 w-auto object-contain ${isLight ? '' : 'drop-shadow-2xl'}`}
-                        style={isLight ? { opacity: 1 } : { filter: 'brightness(0) invert(1)', opacity: 0.95 }}
+                        alt={`Care Indeed — click to switch to ${isCareIndeed ? 'CI-ION dark' : 'Care Indeed light'} theme`}
+                        className={`h-14 w-auto object-contain ${isCareIndeed ? '' : 'drop-shadow-2xl'}`}
+                        style={isCareIndeed ? { opacity: 1 } : { opacity: 0.95 }}
                       />
                     </button>
 
@@ -405,15 +545,15 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         letterSpacing: '.25em',
                         border: `1px solid ${
                           launching
-                            ? (isLight ? '#C74601' : 'rgba(255,255,255,.3)')
-                            : (isLight ? '#D1D1D1' : 'rgba(255,255,255,.1)')
+                            ? '#C74601'
+                            : '#D1D1D1'
                         }`,
                         background: launching
-                          ? (isLight ? '#FFEEE5' : 'rgba(255,255,255,.2)')
-                          : (isLight ? '#FFFFFF' : 'rgba(255,255,255,.05)'),
+                          ? '#FFEEE5'
+                          : '#FFFFFF',
                         color: launching
-                          ? (isLight ? '#C74601' : '#fff')
-                          : (isLight ? '#52404B' : 'rgba(255,255,255,.75)'),
+                          ? '#C74601'
+                          : '#52404B',
                         transition: 'all .3s ease',
                       }}
                     >
@@ -426,7 +566,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                             width: '100%',
                             borderRadius: '50%',
                             opacity: 0.75,
-                            background: launching ? (isLight ? '#C74601' : '#fff') : (isLight ? '#007970' : '#FFC107'),
+                            background: launching ? '#C74601' : '#007970',
                             animation: 'splashPing 1s cubic-bezier(0,0,.2,1) infinite',
                           }}
                         />
@@ -437,7 +577,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                             borderRadius: '50%',
                             height: 6,
                             width: 6,
-                            background: launching ? (isLight ? '#C74601' : '#fff') : (isLight ? '#007970' : '#FFC107'),
+                            background: launching ? '#C74601' : '#007970',
                           }}
                         />
                       </span>
@@ -454,12 +594,12 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                           fontWeight: 500,
                           lineHeight: 1.15,
                           letterSpacing: '-0.01em',
-                          color: isLight ? '#1F1C1B' : '#ffffff',
+                          color: '#1F1C1B',
                         }}
                       >
                         Enterprise Policy
                         <br />
-                        <span style={{ fontWeight: 600, color: isLight ? '#C74601' : '#FFC107' }}>
+                        <span style={{ fontWeight: 600, color: '#C74601' }}>
                           Architecture
                         </span>
                       </h1>
@@ -469,10 +609,10 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                           fontSize: 10,
                           letterSpacing: '.35em',
                           fontWeight: 500,
-                          color: isLight ? '#747474' : 'rgba(255,255,255,0.40)',
+                          color: '#747474',
                         }}
                       >
-                        Enterprise Taxonomy v6.0
+                        Policy Command Workspace
                       </p>
                     </div>
                   </div>
@@ -484,21 +624,19 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         fontSize: 13,
                         lineHeight: 1.55,
                         fontWeight: 400,
-                        color: isLight ? '#52404B' : 'rgba(255,255,255,0.50)',
+                        color: '#52404B',
                       }}
                     >
-                      Regulatory compliance foundation &amp; clinical governance framework for Home Health Operations.
+                      Launch the Care Indeed policy environment and access your compliance workspace.
                     </p>
 
-                    {/* Primary CTA — brand primary-500 → primary-600 on
-                        hover. Solid color (no gradient), no shadow,
-                        rounded-lg=12px per CI brand kit. */}
-                    <div className="w-full px-2 flex flex-col gap-3">
+                    {/* Auth CTAs on the classic splash layout. */}
+                    <div className="w-full px-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <button
-                        onClick={handleEnter}
+                        onClick={() => navigate('/login')}
                         disabled={launching}
                         type="button"
-                        aria-label="Enter Care Indeed policy environment"
+                        aria-label="Login to Care Indeed policy environment"
                         className="relative w-full font-heading"
                         style={{
                           padding: '1rem 1.5rem',
@@ -507,29 +645,44 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                           textTransform: 'uppercase',
                           letterSpacing: '.18em',
                           fontSize: '.82rem',
-                          color: isLight ? '#FFFFFF' : '#0A0202',
+                          color: '#FFFFFF',
                           cursor: launching ? 'wait' : 'pointer',
-                          background: isLight
-                            ? (launching ? '#421700' : '#C74601')
-                            : 'linear-gradient(to bottom,#FFC107,#D9A406)',
+                          background: launching ? '#421700' : '#C74601',
                           border: 'none',
                           outline: 'none',
                           overflow: 'hidden',
                           transition: 'background-color .2s ease',
                         }}
                         onMouseEnter={e => {
-                          if (!launching && isLight) e.currentTarget.style.background = '#421700';
+                          if (!launching) e.currentTarget.style.background = '#421700';
                         }}
                         onMouseLeave={e => {
-                          if (!launching && isLight) e.currentTarget.style.background = '#C74601';
+                          if (!launching) e.currentTarget.style.background = '#C74601';
                         }}
                       >
-                        {launching ? (
-                          <div className="flex items-center justify-center gap-3">
-                            <Fingerprint size={18} className="animate-pulse" />
-                            <span style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: '.1em', fontSize: '.82rem' }}>ENCRYPTING</span>
-                          </div>
-                        ) : 'Enter Environment'}
+                        Login
+                      </button>
+
+                      <button
+                        onClick={() => navigate('/register')}
+                        type="button"
+                        aria-label="Register for Care Indeed policy environment"
+                        className="relative w-full font-heading"
+                        style={{
+                          padding: '1rem 1.5rem',
+                          borderRadius: '12px',
+                          fontWeight: 600,
+                          textTransform: 'uppercase',
+                          letterSpacing: '.18em',
+                          fontSize: '.82rem',
+                          color: '#C74601',
+                          cursor: 'pointer',
+                          background: 'transparent',
+                          border: '1px solid rgba(199,70,1,0.45)',
+                          outline: 'none',
+                        }}
+                      >
+                        Register
                       </button>
                     </div>
 
@@ -542,7 +695,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         <div
                           key={label}
                           className="flex flex-col items-center gap-1.5 font-heading"
-                          style={{ color: isLight ? '#52404B' : 'rgba(255,255,255,0.35)' }}
+                          style={{ color: '#52404B' }}
                         >
                           <Icon size={14} strokeWidth={1.75} aria-hidden="true" />
                           <span className="font-semibold uppercase" style={{ fontSize: 9, letterSpacing: '.18em' }}>{label}</span>
@@ -556,7 +709,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         fontSize: 10,
                         letterSpacing: '.1em',
                         fontWeight: 400,
-                        color: isLight ? '#747474' : 'rgba(255,255,255,0.35)',
+                        color: isVisualLight ? '#747474' : 'rgba(255,255,255,0.55)',
                       }}
                     >
                       © 2026 CareIndeed · Policy Command Center
@@ -574,22 +727,22 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     <div
                       className="absolute inset-0 cursor-pointer"
                       style={{
-                        background: isLight
+                        background: isVisualLight
                           ? '#FFFFFF'
                           : 'rgba(10,2,2,0.65)',
-                        backdropFilter: isLight ? 'none' : 'blur(20px) saturate(130%)',
-                        WebkitBackdropFilter: isLight ? 'none' : 'blur(20px) saturate(130%)',
+                        backdropFilter: isVisualLight ? 'none' : 'blur(20px) saturate(130%)',
+                        WebkitBackdropFilter: isVisualLight ? 'none' : 'blur(20px) saturate(130%)',
                       }}
                       onClick={() => {
                         setIsMenuOpen(false);
                         setActiveSubMenu(null);
                       }}
                     />
-                    <div className="relative z-10 w-full max-w-5xl px-8 flex justify-center items-center pointer-events-none">
-                      <div className="pointer-events-auto w-full">
+                    <div className="relative z-10 w-full max-w-5xl px-4 sm:px-8 flex justify-center items-center pointer-events-none">
+                      <div className="pointer-events-auto w-full max-h-[90vh] overflow-y-auto custom-scrollbar">
                         {!activeSubMenu ? (
-                          <div className="grid grid-cols-3 gap-x-12 gap-y-16 md:gap-y-20 animate-in zoom-in-95 duration-500">
-                            {NAV_ITEMS.map((item) => {
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 sm:gap-x-12 gap-y-10 sm:gap-y-16 md:gap-y-20 animate-in zoom-in-95 duration-500">
+                            {VISIBLE_NAV.map((item) => {
                               const isActive = currentNav.id === item.id;
                               return (
                                 <button
@@ -602,18 +755,18 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                                       setIsMenuOpen(false);
                                     }
                                   }}
-                                  className="flex flex-col items-center justify-center gap-6 group outline-none"
+                                  className="flex flex-col items-center justify-center gap-3 sm:gap-6 group outline-none min-h-[44px]"
                                 >
-                                  <span style={isActive ? { color: isLight ? '#007970' : '#FFC107' } : undefined}>
+                                  <span style={isActive ? { color: isCareIndeed ? '#007970' : '#FFC107' } : undefined}>
                                     <item.icon
-                                      size={48}
+                                      size={36}
                                       strokeWidth={1}
-                                      className={`icon-interactive group-hover:scale-110 ${isActive ? '!opacity-100' : isLight ? 'text-slate-700' : 'text-white'}`}
+                                      className={`icon-interactive group-hover:scale-110 sm:[&]:!w-12 sm:[&]:!h-12 ${isActive ? '!opacity-100' : isVisualLight ? 'text-slate-700' : 'text-white'}`}
                                     />
                                   </span>
                                   <span
-                                    className={`icon-interactive text-lg font-light uppercase tracking-[0.2em] ${isActive ? '!opacity-100' : isLight ? 'text-slate-700' : 'text-white'}`}
-                                    style={isActive ? { color: isLight ? '#007970' : '#FFC107' } : undefined}
+                                    className={`icon-interactive text-xs sm:text-lg font-light uppercase tracking-[0.18em] sm:tracking-[0.2em] text-center ${isActive ? '!opacity-100' : isVisualLight ? 'text-slate-700' : 'text-white'}`}
+                                    style={isActive ? { color: isCareIndeed ? '#007970' : '#FFC107' } : undefined}
                                   >
                                     {item.label}
                                   </span>
@@ -625,12 +778,12 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                           <div className="flex flex-col items-center animate-in slide-in-from-right-8 fade-in duration-500">
                             <button
                               onClick={() => setActiveSubMenu(null)}
-                              className={`mb-16 flex items-center gap-3 ${isLight ? 'hover:text-slate-900' : 'hover:text-white'} transition-colors uppercase tracking-[0.2em] font-bold text-sm`}
-                              style={{ color: isLight ? '#007970' : '#FFC107' }}
+                              className={`mb-16 flex items-center gap-3 ${isVisualLight ? 'hover:text-slate-900' : 'hover:text-white'} transition-colors uppercase tracking-[0.2em] font-bold text-sm`}
+                              style={{ color: isCareIndeed ? '#007970' : '#FFC107' }}
                             >
                               <ChevronLeft size={18} /> Back to Main Menu
                             </button>
-                            <h3 className={`text-2xl font-light ${isLight ? 'text-slate-700' : 'text-white/40'} uppercase tracking-[0.3em] mb-12 flex items-center gap-4`}>
+                            <h3 className={`text-2xl font-light ${isVisualLight ? 'text-slate-700' : 'text-white/40'} uppercase tracking-[0.3em] mb-12 flex items-center gap-4`}>
                               <activeSubMenu.icon size={28} strokeWidth={1} />
                               {activeSubMenu.label}
                             </h3>
@@ -645,7 +798,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                                   }}
                                   className="group text-5xl md:text-6xl font-light outline-none"
                                 >
-                                  <span className={`icon-interactive uppercase tracking-[0.1em] ${isLight ? 'text-slate-900' : 'text-white'} block group-hover:scale-105`}>
+                                  <span className={`icon-interactive uppercase tracking-[0.1em] ${isVisualLight ? 'text-slate-900' : 'text-white'} block group-hover:scale-105`}>
                                     {sub.label}
                                   </span>
                                 </button>
@@ -664,111 +817,259 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                 <div className={`flex-1 flex flex-col relative z-10 w-full overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isMenuOpen ? 'blur-[12px] opacity-30 scale-[0.98]' : ''}`}>
 
                   {!hideChrome && (
-                    <header className="w-full px-6 md:px-10 pt-8 md:pt-10 pb-4 flex items-start justify-between shrink-0 relative z-20">
-                      {!isMobile && (
-                        <button
-                          type="button"
-                          onClick={toggleTheme}
-                          aria-label={`Switch to ${isLight ? 'CI-ION Dark' : 'Care Indeed Light'} theme`}
-                          title={`Switch to ${isLight ? 'CI-ION Dark' : 'Care Indeed Light'} theme`}
-                          className="absolute left-1/2 top-8 md:top-10 -translate-x-1/2 flex items-center justify-center h-12 cursor-pointer hover:scale-105 transition-transform"
-                        >
-                          <img
-                            src={logo}
-                            alt="Care Indeed — theme toggle"
-                            className={`h-6 md:h-8 w-auto object-contain ${isLight ? '' : 'drop-shadow-md'}`}
-                            style={isLight ? undefined : { filter: 'brightness(0) invert(1)', opacity: 0.95 }}
-                          />
-                        </button>
-                      )}
-
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => {
-                            setIsMenuOpen(!isMenuOpen);
-                            setActiveSubMenu(null);
-                          }}
-                          className={`glass-interactive flex items-center justify-center w-12 h-12 rounded-full ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'} border border-transparent shadow-sm`}
-                        >
-                          <Menu size={24} />
-                        </button>
-
-                        {/* Universal Back / Forward controls */}
-                        <UniversalNavControls />
-
-                        {isMobile ? (
+                    <header className="w-full px-3 sm:px-6 md:px-10 pt-3 sm:pt-6 md:pt-8 pb-0 shrink-0 relative z-20">
+                      {/* ── Main nav row: Logo · Nav icons · Right controls ── */}
+                      <div className="flex items-center justify-between gap-4">
+                        {/* Left: Logo + horizontal nav icons */}
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* Logo — theme toggle, +33% larger */}
                           <button
                             type="button"
                             onClick={toggleTheme}
-                            aria-label="Toggle theme"
-                            className="cursor-pointer"
+                            aria-label={`Switch to ${isCareIndeed ? 'CI-ION Dark' : 'Care Indeed Light'} theme`}
+                            className="cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
                           >
                             <img
                               src={logo}
-                              alt="Care Indeed"
-                              className={`h-7 w-auto object-contain ${isLight ? '' : 'drop-shadow-md'}`}
-                              style={isLight ? undefined : { filter: 'brightness(0) invert(1)', opacity: 0.95 }}
+                              alt="Care Indeed — theme toggle"
+                              className={`h-8 md:h-11 w-auto object-contain ${isCareIndeed ? '' : 'drop-shadow-md'}`}
+                              style={isCareIndeed ? undefined : { filter: 'brightness(0) invert(1)', opacity: 0.95 }}
                             />
                           </button>
-                        ) : (
-                          <div className="flex flex-col gap-1.5">
-                            <h1
-                              className="text-[10px] md:text-[11px] font-bold tracking-[0.25em] uppercase"
-                              style={{ color: isLight ? '#007970' : '#FFC107' }}
+
+                          {/* Horizontal nav icons — desktop (item-20 gradient pill expand) */}
+                          {!isMobile && (
+                            <nav className="flex items-center gap-1 ml-2" aria-label="Main navigation">
+                              {VISIBLE_NAV.map(item => {
+                                const isActive = currentNav.id === item.id;
+                                const isExpanded = expandedNavId === item.id;
+                                return (
+                                  <div
+                                    key={item.id}
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setExpandedNavId(item.subItems?.length ? item.id : null);
+                                        navigate(item.to);
+                                      }}
+                                      aria-label={item.label}
+                                      title={item.label}
+                                      aria-current={isActive ? 'page' : undefined}
+                                      className="flex items-center justify-center"
+                                      style={{
+                                        width: 38,
+                                        height: 38,
+                                        padding: 0,
+                                        borderRadius: 19,
+                                        transition: 'background-color 0.08s ease, color 0.08s ease, box-shadow 0.08s ease',
+                                        background: isExpanded || isActive
+                                          ? isVisualLight
+                                            ? 'linear-gradient(135deg,#007970,#00b4aa)'
+                                            : 'linear-gradient(135deg,#b8860b,#FFC107)'
+                                          : 'transparent',
+                                        border: isActive
+                                          ? `1px solid ${isCareIndeed ? 'rgba(0,121,112,0.35)' : 'rgba(255,193,7,0.3)'}`
+                                          : '1px solid transparent',
+                                        color: isExpanded || isActive
+                                          ? isVisualLight ? '#fff' : '#0a0202'
+                                          : isVisualLight ? '#374151' : 'rgba(255,255,255,0.65)',
+                                        boxShadow: isExpanded
+                                          ? isCareIndeed
+                                            ? '0 4px 14px rgba(0,121,112,0.3)'
+                                            : '0 4px 14px rgba(255,193,7,0.22)'
+                                          : 'none',
+                                      }}
+                                    >
+                                      <item.icon size={17} strokeWidth={1.5} />
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </nav>
+                          )}
+
+                          {/* Hamburger — mobile only */}
+                          {isMobile && (
+                            <button
+                              onClick={() => { setIsMenuOpen(!isMenuOpen); setActiveSubMenu(null); }}
+                              aria-label="Open navigation menu"
+                              className={`glass-interactive flex items-center justify-center w-11 h-11 rounded-full ${isVisualLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'} border border-transparent`}
                             >
-                              Policy Taxonomy
-                            </h1>
-                            <p className={`${isLight ? 'text-slate-500' : 'text-white/40'} text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase`}>Context: {currentNav.label}</p>
+                              <Menu size={22} />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Right: Search + Help + Account */}
+                        <div className="flex items-center gap-2 sm:gap-4 md:gap-6 flex-shrink-0">
+                          {!hideGlobalSearch && (
+                            <div
+                              className={`hidden sm:flex items-center bg-transparent border rounded-full px-5 py-2.5 w-48 md:w-64 transition-all ${
+                                isVisualLight
+                                  ? 'border-slate-300 focus-within:border-[#007970]/60'
+                                  : 'border-white/10 focus-within:border-[#FFC107]/50'
+                              }`}
+                            >
+                              <Search size={14} className={`${isVisualLight ? 'text-slate-400' : 'text-white/30'} mr-3 shrink-0`} aria-hidden="true" />
+                              <label htmlFor="ci-global-search" className="sr-only">
+                                Search policies
+                              </label>
+                              <input
+                                id="ci-global-search"
+                                type="text"
+                                placeholder="Search policies..."
+                                className={`bg-transparent border-none outline-none ${isVisualLight ? 'text-slate-900 placeholder-slate-500' : 'text-white placeholder-white/40'} text-xs w-full font-light`}
+                              />
+                            </div>
+                          )}
+                          {/* Care Indeed Light/Dark mode toggle.
+                              SEPARATE from the logo brand toggle.
+                              Only renders when brand = Care Indeed. */}
+                          {isLight && <ThemeModeToggle />}
+                            <ContextualKnowledgeBulb />
+                          <div className="relative shrink-0" ref={accountMenuRef}>
+                            <button
+                              type="button"
+                              aria-label={`Account: ${accountDisplayName}`}
+                              aria-haspopup="menu"
+                              onClick={() => setIsAccountMenuOpen(v => !v)}
+                              className="glass-interactive flex items-center justify-center w-11 h-11 sm:w-10 sm:h-10 rounded-full text-white font-bold text-sm cursor-pointer relative border border-transparent"
+                              style={{
+                                background: isVisualLight
+                                  ? '#007970'
+                                  : isCareIndeedDark
+                                    ? '#1B4549'
+                                  : 'linear-gradient(135deg, rgba(93,14,14,0.9), rgba(49,7,7,0.9))',
+                              }}
+                            >
+                              {accountInitials}
+                              <span
+                                aria-hidden="true"
+                                className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full"
+                                style={{
+                                  background: isCareIndeed ? '#C74600' : '#FFC107',
+                                }}
+                              />
+                            </button>
+
+                            {isAccountMenuOpen && (
+                              <div
+                                role="menu"
+                                aria-label="Account menu"
+                                className="absolute right-0 mt-2 w-[220px] rounded-xl overflow-hidden"
+                                style={{
+                                  background: isVisualLight ? '#FFFFFF' : 'rgba(23,19,19,0.96)',
+                                  border: isVisualLight ? '1px solid #E5E4E3' : '1px solid rgba(255,255,255,0.12)',
+                                  boxShadow: isVisualLight
+                                    ? '0 12px 28px rgba(0,0,0,0.12)'
+                                    : '0 16px 36px rgba(0,0,0,0.45)',
+                                }}
+                              >
+                                <div
+                                  className="px-3.5 py-3 border-b"
+                                  style={{ borderColor: isVisualLight ? '#E5E4E3' : 'rgba(255,255,255,0.11)' }}
+                                >
+                                  <p className={`text-[13px] font-semibold ${isVisualLight ? 'text-slate-900' : 'text-white'}`}>
+                                    {accountDisplayName}
+                                  </p>
+                                  <p className={`text-[11px] mt-0.5 ${isVisualLight ? 'text-slate-500' : 'text-white/65'}`}>
+                                    {accountRole}
+                                  </p>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  role="menuitem"
+                                  onClick={handleMyTasksClick}
+                                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
+                                    isVisualLight
+                                      ? 'text-slate-700 hover:bg-slate-100'
+                                      : 'text-white/85 hover:bg-white/10'
+                                  }`}
+                                >
+                                  <ListChecks size={16} />
+                                  My Tasks
+                                </button>
+
+                                <button
+                                  type="button"
+                                  role="menuitem"
+                                  onClick={() => { setIsAccountMenuOpen(false); restartGuidedTour(); }}
+                                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
+                                    isVisualLight
+                                      ? 'text-slate-700 hover:bg-slate-100'
+                                      : 'text-white/85 hover:bg-white/10'
+                                  }`}
+                                >
+                                  <Compass size={16} />
+                                  Restart Guided Tour
+                                </button>
+
+                                <button
+                                  type="button"
+                                  role="menuitem"
+                                  onClick={() => { void handleLogoutClick(); }}
+                                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
+                                    isVisualLight
+                                      ? 'text-[#C74600] hover:bg-orange-50'
+                                      : 'text-[#FFC107] hover:bg-white/10'
+                                  }`}
+                                >
+                                  <LogOut size={16} />
+                                  Logout
+                                </button>
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-4 md:gap-6">
-                        <div
-                          className={`hidden sm:flex items-center bg-transparent border rounded-full px-5 py-2.5 w-48 md:w-64 transition-all ${
-                            isLight
-                              ? 'border-slate-300 focus-within:border-[#007970]/60'
-                              : 'border-white/10 focus-within:border-[#FFC107]/50'
-                          }`}
-                        >
-                          <Search size={14} className={`${isLight ? 'text-slate-400' : 'text-white/30'} mr-3 shrink-0`} aria-hidden="true" />
-                          <label htmlFor="ci-global-search" className="sr-only">
-                            Search policies
-                          </label>
-                          <input
-                            id="ci-global-search"
-                            type="text"
-                            placeholder="Search policies..."
-                            className={`bg-transparent border-none outline-none ${isLight ? 'text-slate-900 placeholder-slate-500' : 'text-white placeholder-white/40'} text-xs w-full font-light`}
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          aria-label="Help"
-                          className={`glass-interactive flex items-center justify-center w-10 h-10 rounded-full ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/50 hover:text-white'} transition-colors border border-transparent`}
-                        >
-                          <HelpCircle size={20} aria-hidden="true" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="Account: Jane Doe"
-                          className="glass-interactive flex items-center justify-center w-10 h-10 rounded-full text-white font-bold text-sm cursor-pointer relative border border-transparent"
-                          style={{
-                            background: isLight
-                              ? '#007970'
-                              : 'linear-gradient(135deg, rgba(93,14,14,0.9), rgba(49,7,7,0.9))',
-                          }}
-                        >
-                          JD
-                          <span
-                            aria-hidden="true"
-                            className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full"
-                            style={{
-                              background: isLight ? '#C74600' : '#FFC107',
-                            }}
-                          />
-                        </button>
-                      </div>
+                      {/* Dropdown sub-items — one horizontal row below the clicked nav icon */}
+                      {!isMobile && activeDropdownNavId && (() => {
+                        const hi = VISIBLE_NAV.find(i => i.id === activeDropdownNavId);
+                        if (!hi?.subItems?.length) return null;
+                        return (
+                          <nav
+                            aria-label={`${hi.label} sub-navigation`}
+                            className="flex items-center gap-1.5 flex-nowrap overflow-x-auto custom-scrollbar-x pt-2 pb-1 justify-start"
+                          >
+                            {hi.subItems.map(sub => {
+                              const subPath = sub.to.split('?')[0];
+                              const isSubActive = location.pathname === subPath || location.pathname.startsWith(subPath + '/');
+                              return (
+                                <button
+                                  key={sub.to}
+                                  type="button"
+                                  onClick={() => navigate(sub.to)}
+                                  className="font-heading"
+                                  style={{
+                                    fontSize: 9,
+                                    fontWeight: 700,
+                                    letterSpacing: '0.2em',
+                                    textTransform: 'uppercase',
+                                    padding: '4px 10px',
+                                    borderRadius: 10,
+                                    whiteSpace: 'nowrap',
+                                    background: isSubActive
+                                      ? (isCareIndeed ? 'rgba(0,121,112,0.13)' : 'rgba(255,193,7,0.14)')
+                                      : (isVisualLight ? 'rgba(0,0,0,0.035)' : 'rgba(255,255,255,0.055)'),
+                                    color: isSubActive
+                                      ? (isCareIndeed ? '#007970' : '#FFC107')
+                                      : (isVisualLight ? '#52404B' : 'rgba(255,255,255,0.6)'),
+                                    border: `1px solid ${isSubActive
+                                      ? (isCareIndeed ? 'rgba(0,121,112,0.28)' : 'rgba(255,193,7,0.28)')
+                                      : 'transparent'}`,
+                                    transition: 'all 0.15s ease',
+                                  }}
+                                >
+                                  {sub.label}
+                                </button>
+                              );
+                            })}
+                          </nav>
+                        );
+                      })()}
                     </header>
                   )}
 
@@ -785,6 +1086,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
           </div>
         </div>
       </div>
+      <GuidedTourGate />
     </>
   );
 }

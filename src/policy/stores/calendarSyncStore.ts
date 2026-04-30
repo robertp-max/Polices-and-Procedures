@@ -70,6 +70,7 @@ export type ComplianceCategory =
 export interface EventSyncMeta {
   appEventId: string;
   syncStatus: EventSyncStatus;
+  googleCalendarEventId: string | null;
   googleEventId: string | null;
   lastSyncedAt: number | null;
   lastSyncError: string | null;
@@ -95,8 +96,8 @@ export interface SyncOutcome {
 export interface BulkSyncResultItem {
   appEventId: string;
   ok: boolean;
-  googleEventId?: string;
-  action?: 'created' | 'updated';
+  googleCalendarEventId?: string | null;
+  action?: 'created' | 'updated' | 'skipped' | 'failed';
   error?: string;
 }
 
@@ -106,7 +107,9 @@ export interface BulkSyncSummary {
   total: number;
   created: number;
   updated: number;
+  skipped: number;
   failed: number;
+  failedEventIds: string[];
   /** Required events whose push failed; surfaced loudly in the UI. */
   failedRequired: string[];
   results: BulkSyncResultItem[];
@@ -151,6 +154,7 @@ function defaultMeta(ev: RegulatoryEvent): EventSyncMeta {
   return {
     appEventId: ev.id,
     syncStatus: 'NOT_SYNCED',
+    googleCalendarEventId: null,
     googleEventId: null,
     lastSyncedAt: null,
     lastSyncError: null,
@@ -173,6 +177,7 @@ export const useCalendarSyncStore = create<CalendarSyncState>()(
             get().eventMeta[arg] ?? {
               appEventId: arg,
               syncStatus: 'NOT_SYNCED',
+              googleCalendarEventId: get().idMap[arg] ?? null,
               googleEventId: get().idMap[arg] ?? null,
               lastSyncedAt: null,
               lastSyncError: null,
@@ -184,7 +189,8 @@ export const useCalendarSyncStore = create<CalendarSyncState>()(
         }
         const existing = get().eventMeta[arg.id];
         if (existing) return existing;
-        return { ...defaultMeta(arg), googleEventId: get().idMap[arg.id] ?? null };
+        const id = get().idMap[arg.id] ?? null;
+        return { ...defaultMeta(arg), googleCalendarEventId: id, googleEventId: id };
       },
 
       checkHealth: async () => {
@@ -222,15 +228,22 @@ export const useCalendarSyncStore = create<CalendarSyncState>()(
           },
         }));
 
-        const existingGoogleId = get().eventMeta[ev.id]?.googleEventId ?? get().idMap[ev.id];
+        const existingGoogleId =
+          get().eventMeta[ev.id]?.googleCalendarEventId
+          ?? get().eventMeta[ev.id]?.googleEventId
+          ?? get().idMap[ev.id];
         const payload = toPlannerPayload(ev, enforcementContextFor(ev));
 
         try {
           const saved: PlannerEventResponse = existingGoogleId
-            ? await CalendarApi.update(existingGoogleId, payload)
+            ? await CalendarApi.update(ev.id, payload)
             : await CalendarApi.create(payload);
 
-          const action: 'created' | 'updated' = saved.action ?? (existingGoogleId ? 'updated' : 'created');
+          const rawAction = saved.action;
+          const action: 'created' | 'updated' =
+            rawAction === 'created' || rawAction === 'updated'
+              ? rawAction
+              : (existingGoogleId ? 'updated' : 'created');
           const now = Date.now();
 
           set((s) => ({
@@ -242,6 +255,7 @@ export const useCalendarSyncStore = create<CalendarSyncState>()(
               [ev.id]: {
                 ...(s.eventMeta[ev.id] ?? defaultMeta(ev)),
                 syncStatus: 'SYNCED',
+                googleCalendarEventId: saved.googleEventId,
                 googleEventId: saved.googleEventId,
                 lastSyncedAt: now,
                 lastSyncError: null,
@@ -293,7 +307,7 @@ export const useCalendarSyncStore = create<CalendarSyncState>()(
 
           const now = Date.now();
           const resultMap = new Map<string, (typeof res.results)[number]>();
-          for (const r of res.results) resultMap.set(r.appEventId, r);
+          for (const r of res.results) resultMap.set(r.event_id, r);
 
           set((s) => {
             const nextMeta = { ...s.eventMeta };
@@ -302,14 +316,15 @@ export const useCalendarSyncStore = create<CalendarSyncState>()(
               const r = resultMap.get(ev.id);
               const current = nextMeta[ev.id] ?? defaultMeta(ev);
               if (r?.ok) {
-                if (r.googleEventId) nextIdMap[ev.id] = r.googleEventId;
+                if (r.google_event_id) nextIdMap[ev.id] = r.google_event_id;
                 nextMeta[ev.id] = {
                   ...current,
                   syncStatus: 'SYNCED',
-                  googleEventId: r.googleEventId ?? current.googleEventId,
+                  googleCalendarEventId: r.google_event_id ?? current.googleCalendarEventId,
+                  googleEventId: r.google_event_id ?? current.googleEventId,
                   lastSyncedAt: now,
                   lastSyncError: null,
-                  lastAction: r.action ?? current.lastAction ?? 'created',
+                  lastAction: r.action === 'created' || r.action === 'updated' ? r.action : (current.lastAction ?? 'updated'),
                 };
               } else {
                 nextMeta[ev.id] = {
@@ -322,6 +337,10 @@ export const useCalendarSyncStore = create<CalendarSyncState>()(
             return { eventMeta: nextMeta, idMap: nextIdMap };
           });
 
+          const failedEventIds = res.results
+            .filter((r) => !r.ok)
+            .map((r) => r.event_id);
+
           const failedRequired = real
             .filter((e) => {
               const r = resultMap.get(e.id);
@@ -332,18 +351,26 @@ export const useCalendarSyncStore = create<CalendarSyncState>()(
           const summary: BulkSyncSummary = {
             at: now,
             total: res.count,
-            created: res.createdCount,
-            updated: res.updatedCount,
-            failed: res.failedCount,
+            created: res.created,
+            updated: res.updated,
+            skipped: res.skipped,
+            failed: res.failed,
+            failedEventIds,
             failedRequired,
-            results: res.results,
+            results: res.results.map((r) => ({
+              appEventId: r.event_id,
+              ok: r.ok,
+              googleCalendarEventId: r.google_event_id,
+              action: r.action,
+              error: r.error,
+            })),
           };
 
           set({
-            status: res.failedCount === 0 ? 'ok' : 'error',
-            lastError: res.failedCount === 0
+            status: res.failed === 0 ? 'ok' : 'error',
+            lastError: res.failed === 0
               ? undefined
-              : { code: 'partial_failure', message: `${res.failedCount} event(s) failed to sync.` },
+              : { code: 'partial_failure', message: `${res.failed} event(s) failed to sync.` },
             lastSync: summary,
           });
           return summary;
@@ -367,18 +394,23 @@ export const useCalendarSyncStore = create<CalendarSyncState>()(
             total: real.length,
             created: 0,
             updated: 0,
+            skipped: 0,
             failed: real.length,
+            failedEventIds: real.map((e) => e.id),
             failedRequired: real.filter(isComplianceRequired).map((e) => e.id),
-            results: real.map((e) => ({ appEventId: e.id, ok: false, error: message })),
+            results: real.map((e) => ({ appEventId: e.id, ok: false, error: message, action: 'failed' })),
           };
         }
       },
 
       deleteEvent: async (appEventId, opts) => {
-        const googleId = get().eventMeta[appEventId]?.googleEventId ?? get().idMap[appEventId];
+        const googleId =
+          get().eventMeta[appEventId]?.googleCalendarEventId
+          ?? get().eventMeta[appEventId]?.googleEventId
+          ?? get().idMap[appEventId];
         if (!googleId) return true;
         try {
-          await CalendarApi.remove(googleId, opts);
+          await CalendarApi.remove(appEventId, opts);
           set((s) => {
             const nextMap = { ...s.idMap };
             const nextMeta = { ...s.eventMeta };
@@ -388,6 +420,8 @@ export const useCalendarSyncStore = create<CalendarSyncState>()(
             } else if (nextMeta[appEventId]) {
               nextMeta[appEventId] = {
                 ...nextMeta[appEventId],
+                googleCalendarEventId: googleId,
+                googleEventId: googleId,
                 syncStatus: 'SYNCED',
                 lastSyncedAt: Date.now(),
               };

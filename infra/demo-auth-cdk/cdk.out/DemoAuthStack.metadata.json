@@ -1,0 +1,1271 @@
+{
+  "/DemoAuthStack": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthRegistrationsTable": [
+    {
+      "type": "aws:cdk:hasPhysicalName",
+      "data": {
+        "Ref": "DemoAuthRegistrationsTable8576514C"
+      }
+    }
+  ],
+  "/DemoAuthStack/SeedSuperAdminUser": [
+    {
+      "type": "aws:cdk:warning",
+      "data": "installLatestAwsSdk was not specified, and defaults to true. You probably do not want this. Set the global context flag '@aws-cdk/customresources:installLatestAwsSdkDefault' to false to switch this behavior off project-wide, or set the property explicitly to true if you know you need to call APIs that are not in Lambda's built-in SDK version. [ack: @aws-cdk/custom-resources:installLatestAwsSdkNotSpecified]",
+      "trace": [
+        "Annotations.addMessage (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:2399)",
+        "Annotations.addWarningV2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:1087)",
+        "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\custom-resources\\lib\\aws-custom-resource\\aws-custom-resource.js:1:8694)",
+        "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\prop-injectable.js:1:855)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:170:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6:1",
+        "ModuleJob.run (node:internal/modules/esm/module_job:413:25)",
+        "processTicksAndRejections (node:internal/process/task_queues:103:5)",
+        "onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)",
+        "asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)"
+      ]
+    }
+  ],
+  "/DemoAuthStack/AWS679f53fac002430cb0da5b7982bd2287": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-singleton",
+      "data": true
+    },
+    {
+      "type": "aws:cdk:is-custom-resource-handler-runtime-family",
+      "data": 0
+    },
+    {
+      "type": "aws:cdk:is-custom-resource-handler-singleton",
+      "data": true
+    },
+    {
+      "type": "aws:cdk:is-custom-resource-handler-runtime-family",
+      "data": 0
+    },
+    {
+      "type": "aws:cdk:is-custom-resource-handler-singleton",
+      "data": true
+    },
+    {
+      "type": "aws:cdk:is-custom-resource-handler-runtime-family",
+      "data": 0
+    }
+  ],
+  "/DemoAuthStack/SeedSuperAdminPassword": [
+    {
+      "type": "aws:cdk:warning",
+      "data": "installLatestAwsSdk was not specified, and defaults to true. You probably do not want this. Set the global context flag '@aws-cdk/customresources:installLatestAwsSdkDefault' to false to switch this behavior off project-wide, or set the property explicitly to true if you know you need to call APIs that are not in Lambda's built-in SDK version. [ack: @aws-cdk/custom-resources:installLatestAwsSdkNotSpecified]",
+      "trace": [
+        "Annotations.addMessage (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:2399)",
+        "Annotations.addWarningV2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:1087)",
+        "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\custom-resources\\lib\\aws-custom-resource\\aws-custom-resource.js:1:8694)",
+        "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\prop-injectable.js:1:855)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:195:33)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6:1",
+        "ModuleJob.run (node:internal/modules/esm/module_job:413:25)",
+        "processTicksAndRejections (node:internal/process/task_queues:103:5)",
+        "onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)",
+        "asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)"
+      ]
+    }
+  ],
+  "/DemoAuthStack/SeedSuperAdminRegistration": [
+    {
+      "type": "aws:cdk:warning",
+      "data": "installLatestAwsSdk was not specified, and defaults to true. You probably do not want this. Set the global context flag '@aws-cdk/customresources:installLatestAwsSdkDefault' to false to switch this behavior off project-wide, or set the property explicitly to true if you know you need to call APIs that are not in Lambda's built-in SDK version. [ack: @aws-cdk/custom-resources:installLatestAwsSdkNotSpecified]",
+      "trace": [
+        "Annotations.addMessage (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:2399)",
+        "Annotations.addWarningV2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:1087)",
+        "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\custom-resources\\lib\\aws-custom-resource\\aws-custom-resource.js:1:8694)",
+        "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\prop-injectable.js:1:855)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:215:27)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6:1",
+        "ModuleJob.run (node:internal/modules/esm/module_job:413:25)",
+        "processTicksAndRejections (node:internal/process/task_queues:103:5)",
+        "onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)",
+        "asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)"
+      ]
+    }
+  ],
+  "/DemoAuthStack/ApiBaseUrl": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiBaseUrl"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:245:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/CognitoUserPoolId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CognitoUserPoolId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:249:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/CognitoClientId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CognitoClientId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:252:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/Region": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Region"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:255:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/DemoAuthStack/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthRegistrationsTable/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthRegistrationsTable8576514C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Table2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:32:35)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthUserPool/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthUserPool99CF0E47"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new UserPool2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:40:26)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/RegisterRequestHandler/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "RegisterRequestHandler4C637738"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:79:33)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/SetupAccountHandler/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SetupAccountHandler7AE5D3B0"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:80:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/ResendSetupLinkHandler/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ResendSetupLinkHandler553D9015"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:81:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/LoginHandler/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "LoginHandler5CDFBDA2"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:82:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/RefreshHandler/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "RefreshHandler86C1FA7F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:83:32)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/MeHandler/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "MeHandler2BD2DA15"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:84:27)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/LogoutHandler/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "LogoutHandler7CDB801A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:85:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/ForgotPasswordHandler/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ForgotPasswordHandlerEEC117A1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:86:39)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/ResetPasswordHandler/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ResetPasswordHandler8865147F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:87:38)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApi8010725D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new HttpApi2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:111:25)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/AWS679f53fac002430cb0da5b7982bd2287/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AWS679f53fac002430cb0da5b7982bd22872D164C4C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new AwsCustomResource2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:170:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthUserPool/DemoAuthAppClient/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addClient in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:60:41)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/RegisterRequestHandler/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "RegisterRequestHandlerServiceRoleC55B142A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:79:33)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/SetupAccountHandler/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SetupAccountHandlerServiceRoleBD04A1BD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:80:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/ResendSetupLinkHandler/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ResendSetupLinkHandlerServiceRole2D9D72CC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:81:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/LoginHandler/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "LoginHandlerServiceRoleEAE1964E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:82:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/RefreshHandler/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "RefreshHandlerServiceRoleB4D5E8DF"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:83:32)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/MeHandler/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "MeHandlerServiceRoleF7142344"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:84:27)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/LogoutHandler/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "LogoutHandlerServiceRole73C7D9F5"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:85:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/ForgotPasswordHandler/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ForgotPasswordHandlerServiceRoleA12AC606"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:86:39)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/ResetPasswordHandler/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ResetPasswordHandlerServiceRole7492974E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:87:38)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/DefaultStage/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiDefaultStage46E0C691"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new HttpApi2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:111:25)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--register-request/RegisterIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthregisterrequestRegisterIntegrationPermissionF7105D58"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:125:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--register-request/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthregisterrequestCD235905"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:125:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--setup-account/SetupIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthsetupaccountSetupIntegrationPermissionE6992E52"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:130:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--setup-account/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthsetupaccount9A153BA9"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:130:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--resend-setup-link/ResendIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthresendsetuplinkResendIntegrationPermission6C818AE2"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:135:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--resend-setup-link/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthresendsetuplink79FB71D1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:135:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--login/LoginIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthloginLoginIntegrationPermissionB95CAC1E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:140:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--login/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthlogin9C39AA85"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:140:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--refresh/RefreshIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthrefreshRefreshIntegrationPermissionD8C8B3EB"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:145:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--refresh/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthrefreshB3490159"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:145:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--logout/LogoutIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthlogoutLogoutIntegrationPermission2182A26E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:150:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--logout/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthlogout1B4DA96C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:150:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/GET--auth--me/MeIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiGETauthmeMeIntegrationPermission1657DD6C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:155:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/GET--auth--me/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiGETauthmeF2230F64"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:155:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--forgot-password/ForgotPasswordIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthforgotpasswordForgotPasswordIntegrationPermissionFBF38AEA"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:160:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--forgot-password/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthforgotpasswordCD175993"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:160:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--reset-password/ResetPasswordIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthresetpasswordResetPasswordIntegrationPermission5422F1EF"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:165:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--reset-password/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthresetpasswordAFDDF591"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:165:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/SeedSuperAdminUser/Resource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SeedSuperAdminUser5F567A1C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new AwsCustomResource2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:170:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/SeedSuperAdminUser/CustomResourcePolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SeedSuperAdminUserCustomResourcePolicyC8229AEF"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new AwsCustomResource2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:170:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/AWS679f53fac002430cb0da5b7982bd2287/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new AwsCustomResource2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:170:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/SeedSuperAdminPassword/Resource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SeedSuperAdminPassword129599B7"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new AwsCustomResource2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:195:33)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/SeedSuperAdminPassword/CustomResourcePolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SeedSuperAdminPasswordCustomResourcePolicyD431B76A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new AwsCustomResource2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:195:33)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/SeedSuperAdminRegistration/Resource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SeedSuperAdminRegistration3FE0E832"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new AwsCustomResource2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:215:27)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/SeedSuperAdminRegistration/CustomResourcePolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SeedSuperAdminRegistrationCustomResourcePolicy94AEF2B3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new AwsCustomResource2 in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:215:27)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/RegisterRequestHandler/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "RegisterRequestHandlerServiceRoleDefaultPolicy8352DAB1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/SetupAccountHandler/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SetupAccountHandlerServiceRoleDefaultPolicy12F69FD5"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/ResendSetupLinkHandler/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ResendSetupLinkHandlerServiceRoleDefaultPolicy2DFFA6A0"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/LoginHandler/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "LoginHandlerServiceRoleDefaultPolicyAE89344B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/RefreshHandler/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "RefreshHandlerServiceRoleDefaultPolicy032EE1C9"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/MeHandler/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "MeHandlerServiceRoleDefaultPolicyF9087C3B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/LogoutHandler/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "LogoutHandlerServiceRoleDefaultPolicyCF9436AC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/ForgotPasswordHandler/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ForgotPasswordHandlerServiceRoleDefaultPolicyEDF0ACD4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/ResetPasswordHandler/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ResetPasswordHandlerServiceRoleDefaultPolicyA403E730"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--register-request/RegisterIntegration/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthregisterrequestRegisterIntegrationDC5C13AF"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:125:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--setup-account/SetupIntegration/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthsetupaccountSetupIntegration151A6C12"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:130:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--resend-setup-link/ResendIntegration/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthresendsetuplinkResendIntegrationCBC547E6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:135:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--login/LoginIntegration/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthloginLoginIntegrationF058F45F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:140:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--refresh/RefreshIntegration/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthrefreshRefreshIntegration857DF522"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:145:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--logout/LogoutIntegration/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthlogoutLogoutIntegration6F947B78"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:150:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/GET--auth--me/MeIntegration/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiGETauthmeMeIntegration0D061779"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:155:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--forgot-password/ForgotPasswordIntegration/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthforgotpasswordForgotPasswordIntegration5581D05C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:160:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/DemoAuthStack/DemoAuthHttpApi/POST--auth--reset-password/ResetPasswordIntegration/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DemoAuthHttpApiPOSTauthresetpasswordResetPasswordIntegration5FC804DF"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:165:17)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
+        "...node internals..."
+      ]
+    }
+  ]
+}

@@ -31,6 +31,8 @@ import {
 } from '@/policy/data/policyCorpus';
 import { PolicyLibraryDocumentView } from '@/policy/components/PolicyLibraryDocumentView';
 import { useAuditorModeStore } from '@/policy/stores/auditorModeStore';
+import { useAuth } from '@/auth/AuthProvider';
+import { authorizeForAuthUser, type PermissionId } from '@/policy/security/identity';
 import {
   usePolicyLifecycleStore,
   TJ_PADILLA,
@@ -87,6 +89,7 @@ export function PolicyLifecyclePage() {
   const navigate = useNavigate();
   const params = useParams<{ policyId?: string }>();
   const [search, setSearch] = useSearchParams();
+  const { user } = useAuth();
 
   const auditorMode = useAuditorModeStore(s => s.enabled);
   // ── Stable selectors only. Returning a NEW object/array from a Zustand
@@ -189,8 +192,46 @@ export function PolicyLifecyclePage() {
 
   function runIntent(intent: LifecycleIntent) {
     if (!envelope) return;
-    // Self-approval guard: APPROVE must be performed by reviewer, not creator.
-    const actor = intent === 'approve' ? DEMO_REVIEWER : TJ_PADILLA;
+    const intentToPermission: Partial<Record<LifecycleIntent, PermissionId>> = {
+      submitForReview: 'policy.draft',
+      requestRevision: 'policy.draft',
+      approve: 'policy.approve',
+      reject: 'policy.approve',
+      publish: 'policy.publish',
+      archive: 'policy.publish',
+      reopenForRevision: 'policy.draft',
+    };
+
+    const mappedPermission = intentToPermission[intent];
+    if (mappedPermission) {
+      const decision = authorizeForAuthUser(user, mappedPermission, {
+        kind: 'policy',
+        id: envelope.policyId,
+        scope: { organizationId: 'careindeed-demo' },
+        meta: {
+          draftAuthorUserId: envelope.createdBy.userId,
+          isApprovedVersion: envelope.state === 'APPROVED',
+        },
+      });
+
+      if (!decision.allow) {
+        setActionMsg({
+          ok: false,
+          text: `ACCESS_DENIED (${decision.reasonCode}) — ${decision.reason}`,
+        });
+        return;
+      }
+    }
+
+    const actor = user
+      ? {
+          userId: user.id ?? TJ_PADILLA.userId,
+          name: user.name ?? TJ_PADILLA.name,
+          email: user.email,
+          role: user.role ?? TJ_PADILLA.role,
+        }
+      : (intent === 'approve' ? DEMO_REVIEWER : TJ_PADILLA);
+
     const result = apply(envelope.policyId, intent, actor, rationale);
     if (!result.ok) {
       setActionMsg({ ok: false, text: `${result.code} — ${result.message}` });

@@ -319,7 +319,7 @@ function DSectionTitle({ icon: Icon, title, color = 'text-[#1F1C1B]' }: { icon?:
 
 function DSimpleTable({ headers, rows }: { headers: string[]; rows: (string | React.ReactNode)[][] }) {
   return (
-    <div className="w-full mb-6 break-inside-avoid shadow-sm rounded-lg overflow-hidden border border-[#E5E4E3]">
+    <div className="w-full mb-6 break-inside-avoid overflow-hidden">
       <table className="w-full text-left border-collapse">
         <thead>
           <tr>
@@ -354,6 +354,9 @@ function DSimpleTable({ headers, rows }: { headers: string[]; rows: (string | Re
  *  seven shell tabs. Mirrors the mapping used in PolicyDetailPage. */
 function mapOrderToTab(order: number): string {
   if (order === 1) return '__skip__';
+  // Order 5 is the canonical "4. Policy Statement" section in extracted_full markdown.
+  // Route it to its own tab so it gets the numbered 4.x rendering treatment.
+  if (order === 5) return 'statements';
   if (order >= 2 && order <= 6) return 'overview';
   if (order >= 7 && order <= 18) return 'procedures';
   if (order === 19) return 'documentation';
@@ -375,7 +378,7 @@ function GenericGfmTable({ text }: { text: string }) {
   const headers = parseRow(lines[0]);
   const dataLines = lines.slice(2);
   return (
-    <div className="w-full mb-6 break-inside-avoid shadow-sm rounded-lg overflow-hidden border border-[#E5E4E3] bg-white">
+    <div className="w-full mb-6 break-inside-avoid overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -426,17 +429,58 @@ function GenericMarkdownBody({ text }: { text: string }) {
   );
 }
 
-/** Renders a single generated-content section inside the carousel. */
+/** Splits a Policy Statement body into discrete numbered statements.
+ *  Recognises explicit "4.1", "4.2", "1.", numbered prefixes and falls
+ *  back to one paragraph per blank-line block. Bullet/asterisk lines are
+ *  promoted to top-level statements so they render as 4.x items. */
+function splitPolicyStatements(body: string): string[] {
+  const cleaned = body.replace(/^---\s*$/gm, '').trim();
+  if (!cleaned) return [];
+  const explicit = cleaned.split(/\n(?=\s*(?:4\.\d+|\d+\.)\s+)/).map(s => s.trim()).filter(Boolean);
+  if (explicit.length > 1) {
+    return explicit.map(s => s.replace(/^\s*(?:4\.\d+|\d+\.)\s+/, '').trim());
+  }
+  const blocks: string[] = [];
+  for (const block of cleaned.split(/\n\n+/)) {
+    const trimmed = block.trim();
+    if (!trimmed) continue;
+    if (/^[*\-]\s/m.test(trimmed)) {
+      for (const line of trimmed.split('\n')) {
+        const item = line.replace(/^\s*[*\-]\s+/, '').trim();
+        if (item) blocks.push(item);
+      }
+    } else {
+      blocks.push(trimmed);
+    }
+  }
+  return blocks;
+}
+
+/** Renders a single generated-content section inside the carousel.
+ *  Container is fully transparent (no border, no background) per
+ *  the GV-GB-001 gold-standard layout — only tables retain visible chrome. */
 function GenericSectionPanel({ section }: { section: import('@/policy/types').PolicyContentSection }) {
   const cleanTitle = cleanGenericTitle(section.title);
   const isEmpty = !section.body || section.body.trim() === '' || section.body.trim() === '---';
+  const isPolicyStatement = section.order === 5;
 
   return (
-    <section className="break-inside-avoid bg-white rounded-2xl border border-[#E5E4E3] shadow-sm p-6 md:p-8">
+    <section className="break-inside-avoid p-0">
       <DSectionTitle title={cleanTitle} />
-      {isEmpty
-        ? <p className="font-roboto text-[13px] italic text-[#9E9D9A]">No additional detail in this section.</p>
-        : <GenericMarkdownBody text={section.body} />}
+      {isEmpty ? (
+        <p className="font-roboto text-[13px] italic text-[#9E9D9A]">No additional detail in this section.</p>
+      ) : isPolicyStatement ? (
+        <div className="flex flex-col space-y-6">
+          {splitPolicyStatements(section.body).map((stmt, i) => (
+            <div key={i} className="flex items-start">
+              <div className="text-[#007970] font-semibold font-montserrat w-16 flex-shrink-0 text-[14px] pt-[2px]">4.{i + 1}</div>
+              <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px] whitespace-pre-line">{stmt}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <GenericMarkdownBody text={section.body} />
+      )}
     </section>
   );
 }
@@ -1123,9 +1167,9 @@ function PolicyPrintDocument({ policy, isGV }: { policy: SharedPolicy; isGV: boo
           <div className="mb-8 page-break">
             <DSectionTitle icon={LayoutList} title="Appendices" />
             {!isGV && (
-              <p className="text-sm font-roboto text-[#524048]">
-                No appendices are mapped to this policy.
-              </p>
+              <div className="mt-4">
+                <PolicyAppendicesPanel policyId={policy.policyId} />
+              </div>
             )}
           </div>
 
@@ -1261,9 +1305,14 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
     if (flat.length === 0) {
       flat.push({ tabId: 'overview', sIdx: 0, label: 'Overview' });
     }
+    // Inject a synthetic GV-GB-001-style overview header as the very first slide.
+    // sIdx: -1 is the sentinel — rendered as TabOverview sectionIdx={0} (big heading + metadata grid).
+    // This gives every generic policy the same header design as GV-GB-001.
+    flat.unshift({ tabId: 'overview', sIdx: -1, label: 'Overview' });
     FULL_SECTIONS = flat;
     // Hide tabs with no content (always keep Appendices since forms render separately).
-    navTabs = navTabs.filter(t => t.id === 'appendices' || (genericSectionsByTab[t.id]?.length ?? 0) > 0);
+    // Overview is guaranteed visible because we just injected the synthetic header.
+    navTabs = navTabs.filter(t => t.id === 'appendices' || t.id === 'overview' || (genericSectionsByTab[t.id]?.length ?? 0) > 0);
   }
 
   // ── SECTION NAVIGATION STATE ──────────────────────────────────
@@ -1578,17 +1627,20 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
             {useGenericContent ? (
               activeTab === 'appendices'
                 ? <TabAppendices policy={policy} />
-                : (() => {
-                    const list = genericSectionsByTab[activeTab] ?? [];
-                    const sec = list[activeSectionInTab];
-                    if (!sec) {
-                      return (
-                        <p className="font-roboto text-[14px] italic text-[#9E9D9A]">
-                          No content available for this section.
-                        </p>
-                      );
-                    }
-                    return <GenericSectionPanel section={sec} />;
+                : activeSectionInTab === -1
+                  // Synthetic GV-GB-001-style overview header (big title + metadata grid)
+                  ? <TabOverview policy={policy} sectionIdx={0} />
+                  : (() => {
+                      const list = genericSectionsByTab[activeTab] ?? [];
+                      const sec = list[activeSectionInTab];
+                      if (!sec) {
+                        return (
+                          <p className="font-roboto text-[14px] italic text-[#9E9D9A]">
+                            No content available for this section.
+                          </p>
+                        );
+                      }
+                      return <GenericSectionPanel section={sec} />;
                   })()
             ) : (
               <>

@@ -11,6 +11,7 @@ export type ApiErrorCode =
   | 'event_not_found'
   | 'duplicate'
   | 'rate_limited'
+  | 'throttled'
   | 'network_error'
   | 'upstream_error'
   | 'internal_error';

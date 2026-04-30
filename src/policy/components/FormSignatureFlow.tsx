@@ -8,10 +8,12 @@ import {
   type SecondSigTask,
   type SignFlowState,
   type DemoUser,
-  DEMO_SESSION,
   DEMO_STAFF,
   signerNanoid,
 } from './FormSignatureContext';
+import { useAuth } from '@/auth/AuthProvider';
+import { authorizeForAuthUser } from '@/policy/security/identity';
+import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
 
 /* ═══════════════════════════════════════════════════════════════════
    FormSignatureFlow — CI-App Internal Signature Flow
@@ -38,10 +40,11 @@ interface SecondSigModalProps {
 
 function SecondSignatureModal({ formInstanceId, onConfirm, onClose }: SecondSigModalProps) {
   const [selected, setSelected] = useState<DemoUser | null>(null);
+  const signer = useEcignSignerIdentity();
 
   // Only users exactly one tier above current session user are valid approvers
-  const isApprover = (u: DemoUser) => u.tier === DEMO_SESSION.tier - 1;
-  const isSelf     = (u: DemoUser) => u.id === DEMO_SESSION.id;
+  const isApprover = (u: DemoUser) => u.tier === signer.tier - 1;
+  const isSelf     = (u: DemoUser) => u.id === signer.id;
 
   const handleConfirm = useCallback(() => {
     if (!selected) return;
@@ -50,7 +53,7 @@ function SecondSignatureModal({ formInstanceId, onConfirm, onClose }: SecondSigM
       type:           'signature_request',
       formInstanceId,
       assignedTo:     selected.id,
-      assignedBy:     DEMO_SESSION.id,
+      assignedBy:     signer.id,
       status:         'pending',
       createdAt:      new Date().toISOString(),
       // Phase 11 — task-created flow does not have direct policy context here;
@@ -60,7 +63,7 @@ function SecondSignatureModal({ formInstanceId, onConfirm, onClose }: SecondSigM
       // sound when the modal is opened outside that flow.
       linkedPolicyIds: [],
     });
-  }, [selected, formInstanceId, onConfirm]);
+  }, [formInstanceId, onConfirm, selected, signer.id]);
 
   return (
     <div
@@ -96,8 +99,8 @@ function SecondSignatureModal({ formInstanceId, onConfirm, onClose }: SecondSigM
         <div className="px-6 py-2.5 bg-[#F8FAF9] border-b border-[#E5E4E3]">
           <p className="font-roboto text-[11px] text-[#747470]">
             Signed as&nbsp;
-            <strong className="font-semibold text-[#1F1C1B]">{DEMO_SESSION.name}</strong>
-            &nbsp;·&nbsp;{DEMO_SESSION.role}. Only one-tier-above approvers are selectable.
+            <strong className="font-semibold text-[#1F1C1B]">{signer.name}</strong>
+            &nbsp;·&nbsp;{signer.role}. Only one-tier-above approvers are selectable.
           </p>
         </div>
 
@@ -220,6 +223,8 @@ export function FormSignatureFlow({
   onRequestSecond,
   onPrint,
 }: FormSignatureFlowProps) {
+  const { user } = useAuth();
+  const signer = useEcignSignerIdentity();
   const [showSecondSig, setShowSecondSig] = useState(false);
   const [savedDraft,    setSavedDraft]    = useState(false);
 
@@ -235,6 +240,15 @@ export function FormSignatureFlow({
 
   const isPending  = flowState === 'pending_second';
   const isComplete = flowState === 'completed';
+  const signDecision = authorizeForAuthUser(user, 'form.sign', {
+    kind: 'form',
+    id: formInstanceId,
+    scope: { organizationId: 'careindeed-demo' },
+    meta: {
+      assignedByUserId: signer.id,
+      selfAttestationAllowed: false,
+    },
+  });
 
   return (
     <>
@@ -276,12 +290,19 @@ export function FormSignatureFlow({
               {flowState === 'signed' && (
                 <button
                   type="button"
+                  disabled={!signDecision.allow}
                   onClick={() => setShowSecondSig(true)}
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-[7px] text-white font-roboto text-[12px] font-semibold hover:opacity-90 transition-opacity"
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-[7px] text-white font-roboto text-[12px] font-semibold hover:opacity-90 transition-opacity disabled:opacity-45 disabled:cursor-not-allowed"
                   style={{ background: CI_TEAL }}
+                  title={!signDecision.allow ? signDecision.reason : undefined}
                 >
                   <Send size={13} /> Send for Second Signature
                 </button>
+              )}
+              {flowState === 'signed' && !signDecision.allow && (
+                <span className="font-roboto text-[10px] text-[#b91c1c]">
+                  {signDecision.reason}
+                </span>
               )}
 
               {/* Pending task summary */}

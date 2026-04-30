@@ -5,7 +5,7 @@
 
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { ChevronRight, AlertOctagon } from 'lucide-react';
-import { CES_TOKENS } from '../../theme';
+import { useCesTokens } from '../../theme';
 import {
   type ExecutionUnit, type ComplianceState,
   COMPLIANCE_STATE_ORDER, COMPLIANCE_STATE_LABEL, COMPLIANCE_DOMAIN_LABEL,
@@ -14,15 +14,6 @@ import { useComplianceExecution } from '@/policy/compliance-execution';
 import { useExecutionEnforcement } from '../../hooks/useExecutionEnforcement';
 import { ExecutionUnitCard } from './ExecutionUnitCard';
 import { WorkflowDrawer } from '../details/WorkflowDrawer';
-
-const COLUMN_TINT: Record<ComplianceState, { hd: string; hdfg: string; bg: string; bd: string }> = {
-  upcoming:           { hd: CES_TOKENS.canvas,    hdfg: CES_TOKENS.muted,  bg: CES_TOKENS.canvas,    bd: CES_TOKENS.border },
-  ready:              { hd: CES_TOKENS.navySoft,  hdfg: CES_TOKENS.navy,   bg: CES_TOKENS.canvas,    bd: CES_TOKENS.border },
-  in_progress:        { hd: CES_TOKENS.navySoft,  hdfg: CES_TOKENS.navy,   bg: CES_TOKENS.canvas,    bd: CES_TOKENS.border },
-  awaiting_signature: { hd: CES_TOKENS.orangeSoft,hdfg: CES_TOKENS.orange, bg: '#FFFAF7',           bd: CES_TOKENS.orange + '40' },
-  blocked:            { hd: CES_TOKENS.redSoft,   hdfg: CES_TOKENS.red,    bg: '#FCF5F4',           bd: CES_TOKENS.red + '40' },
-  completed:          { hd: CES_TOKENS.greenSoft, hdfg: CES_TOKENS.green,  bg: CES_TOKENS.canvas,    bd: CES_TOKENS.border },
-};
 
 interface DragState {
   unit: ExecutionUnit;
@@ -34,6 +25,7 @@ interface FlashWarning {
 }
 
 export function SprintExecutionBoard() {
+  const t = useCesTokens();
   const snap = useComplianceExecution();
   const EVENTS          = snap.events;
   const EXECUTION_UNITS = snap.executionUnits;
@@ -56,6 +48,15 @@ export function SprintExecutionBoard() {
       return { event: ev, units: evUnits };
     }).filter(g => g.units.length > 0);
   }, [units, EVENTS]);
+
+  const columnTint: Record<ComplianceState, { hd: string; hdfg: string; bg: string; bd: string }> = useMemo(() => ({
+    upcoming:           { hd: t.canvas,     hdfg: t.muted,  bg: t.canvas,     bd: t.border },
+    ready:              { hd: t.navySoft,   hdfg: t.navy,   bg: t.canvas,     bd: t.border },
+    in_progress:        { hd: t.navySoft,   hdfg: t.navy,   bg: t.canvas,     bd: t.border },
+    awaiting_signature: { hd: t.orangeSoft, hdfg: t.orange, bg: t.orangeSoft, bd: t.orange + '55' },
+    blocked:            { hd: t.redSoft,    hdfg: t.red,    bg: t.redSoft,    bd: t.red + '55' },
+    completed:          { hd: t.greenSoft,  hdfg: t.green,  bg: t.canvas,     bd: t.border },
+  }), [t]);
 
   const flashWarn = useCallback((text: string) => {
     setFlash({ id: Date.now(), text });
@@ -99,16 +100,16 @@ export function SprintExecutionBoard() {
       {/* ── Header ─────────────────────────────────────── */}
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-[22px] font-bold" style={{ color: CES_TOKENS.navy }}>
+          <h1 className="text-[22px] font-bold" style={{ color: t.navy }}>
             Sprint Execution Board
           </h1>
-          <p className="text-[13px] mt-1" style={{ color: CES_TOKENS.muted }}>
+          <p className="text-[13px] mt-1" style={{ color: t.muted }}>
             Event → Workflow → Execution Unit. Drag enforces state-machine rules; invalid moves snap back.
           </p>
         </div>
         <div
           className="text-[11px] font-semibold uppercase tracking-[0.14em] px-3 py-1.5 rounded-md"
-          style={{ background: CES_TOKENS.navySoft, color: CES_TOKENS.navy, border: `1px solid ${CES_TOKENS.navy}22` }}
+          style={{ background: t.navySoft, color: t.navy, border: `1px solid ${t.navy}33` }}
         >
           {units.filter(u => u.complianceState !== 'completed').length} open · {units.filter(u => u.complianceState === 'completed').length} closed
         </div>
@@ -118,10 +119,10 @@ export function SprintExecutionBoard() {
       {flash && (
         <div
           className="flex items-center gap-3 px-4 py-3 rounded-lg"
-          style={{ background: CES_TOKENS.redSoft, border: `1px solid ${CES_TOKENS.red}55` }}
+          style={{ background: t.redSoft, border: `1px solid ${t.red}55` }}
         >
-          <AlertOctagon size={16} style={{ color: CES_TOKENS.red }} />
-          <div className="text-[12.5px] font-semibold" style={{ color: CES_TOKENS.red }}>
+          <AlertOctagon size={16} style={{ color: t.red }} />
+          <div className="text-[12.5px] font-semibold" style={{ color: t.red }}>
             Enforcement: {flash.text}
           </div>
         </div>
@@ -131,7 +132,7 @@ export function SprintExecutionBoard() {
       <div className="overflow-x-auto pb-3">
         <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(6, minmax(280px, 1fr))', minWidth: 1700 }}>
           {COMPLIANCE_STATE_ORDER.map(state => {
-            const tint = COLUMN_TINT[state];
+            const tint = columnTint[state];
             const isOver = overCol === state;
             const colUnits = units.filter(u => u.complianceState === state);
             return (
@@ -141,8 +142,8 @@ export function SprintExecutionBoard() {
                 onDrop={() => handleDrop(state)}
                 className="rounded-xl flex flex-col"
                 style={{
-                  background: isOver ? CES_TOKENS.navySoft : tint.bg,
-                  border:    `1px solid ${isOver ? CES_TOKENS.navy : tint.bd}`,
+                  background: isOver ? t.navySoft : tint.bg,
+                  border:    `1px solid ${isOver ? t.navy : tint.bd}`,
                   minHeight: 600,
                 }}
               >
@@ -156,7 +157,7 @@ export function SprintExecutionBoard() {
                   </span>
                   <span
                     className="text-[10.5px] font-semibold rounded-full px-2 py-0.5"
-                    style={{ background: 'white', color: tint.hdfg, border: `1px solid ${tint.bd}` }}
+                    style={{ background: t.white, color: tint.hdfg, border: `1px solid ${tint.bd}` }}
                   >
                     {colUnits.length}
                   </span>
@@ -188,7 +189,7 @@ export function SprintExecutionBoard() {
                   {colUnits.length === 0 && (
                     <div
                       className="text-[11px] text-center py-8 italic"
-                      style={{ color: CES_TOKENS.muted }}
+                      style={{ color: t.muted }}
                     >
                       No execution units in {COMPLIANCE_STATE_LABEL[state]}
                     </div>
@@ -218,16 +219,17 @@ export function SprintExecutionBoard() {
 
 /* ── SwimlaneHeader ─────────────────────────────────────── */
 function SwimlaneHeader({ title, domain }: { title: string; domain: string }) {
+  const t = useCesTokens();
   return (
     <div
       className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] px-1"
-      style={{ color: CES_TOKENS.muted }}
+      style={{ color: t.muted }}
     >
       <ChevronRight size={10} />
       <span className="truncate">{title}</span>
       <span
         className="ml-auto text-[9px] font-semibold px-1.5 rounded"
-        style={{ background: CES_TOKENS.navySoft, color: CES_TOKENS.navy }}
+        style={{ background: t.navySoft, color: t.navy }}
       >
         {domain}
       </span>

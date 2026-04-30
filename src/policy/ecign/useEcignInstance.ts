@@ -14,7 +14,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   ecignApi, EcignApiError, ATTESTATION_TEXT, sha256Hex, HIGH_IMPACT_FORMS,
 } from './api';
-import { DEMO_SESSION } from '@/policy/components/FormSignatureContext';
+import { buildEcignAuthHeaders, useEcignSignerIdentity } from './signerIdentity';
 
 export type BackendState =
   | 'created' | 'disclosed' | 'verified' | 'reviewed'
@@ -56,8 +56,8 @@ export interface InstanceShape {
   [k: string]: unknown;
 }
 
-const LS_KEY = (formId: string, fieldId: string) =>
-  `ecign:instance:${formId}:${fieldId}`;
+const LS_KEY = (formId: string, fieldId: string, signerId: string) =>
+  `ecign:instance:${formId}:${fieldId}:${signerId}`;
 
 export interface UseInstanceArgs {
   formId:              string;
@@ -70,6 +70,7 @@ export interface UseInstanceArgs {
 export interface InstanceError { code: string; message: string }
 
 export function useEcignInstance(args: UseInstanceArgs) {
+  const signer = useEcignSignerIdentity();
   const [instance, setInstance] = useState<InstanceShape | null>(null);
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState<InstanceError | null>(null);
@@ -99,7 +100,7 @@ export function useEcignInstance(args: UseInstanceArgs) {
       setLoading(true);
       setError(null);
       try {
-        const lsKey = LS_KEY(args.formId, args.fieldId);
+        const lsKey = LS_KEY(args.formId, args.fieldId, signer.id);
         const existingId = typeof window !== 'undefined'
           ? window.localStorage.getItem(lsKey) : null;
 
@@ -118,14 +119,7 @@ export function useEcignInstance(args: UseInstanceArgs) {
         try {
           await fetch('/api/ecign/versions', {
             method: 'POST',
-            headers: {
-              'Content-Type':  'application/json',
-              'X-User-Id':     DEMO_SESSION.id,
-              'X-User-Name':   DEMO_SESSION.name,
-              'X-User-Role':   DEMO_SESSION.role,
-              'X-User-Email':  DEMO_SESSION.email,
-              'X-User-Tier':   String(DEMO_SESSION.tier),
-            },
+            headers: buildEcignAuthHeaders(),
             body: JSON.stringify({
               version_id:        documentVersionId,
               form_id:           args.formId,
@@ -140,9 +134,9 @@ export function useEcignInstance(args: UseInstanceArgs) {
           form_id:             args.formId,
           document_version_id: documentVersionId,
           required_signers: [{
-            role:     DEMO_SESSION.role,
-            tier:     DEMO_SESSION.tier,
-            user_id:  DEMO_SESSION.id,
+            role:     signer.role,
+            tier:     signer.tier,
+            user_id:  signer.id,
             field_id: args.fieldId,
           }],
           workflow_instance_id: args.workflowInstanceId,
@@ -161,7 +155,7 @@ export function useEcignInstance(args: UseInstanceArgs) {
     return () => { cancelled = true; };
   // bootstrap once for these props
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [args.formId, args.formVersion, args.fieldId]);
+  }, [args.eventId, args.fieldId, args.formId, args.formVersion, args.workflowInstanceId, signer.id, signer.role, signer.tier]);
 
   /* ── State-machine actions: each calls backend, then refreshes ── */
 
@@ -190,15 +184,7 @@ export function useEcignInstance(args: UseInstanceArgs) {
       // Verify must carry the X-MFA-Token header when produced
       const res = await fetch(`/api/ecign/instances/${instance.instance_id}/verify`, {
         method: 'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          'X-User-Id':     DEMO_SESSION.id,
-          'X-User-Name':   DEMO_SESSION.name,
-          'X-User-Role':   DEMO_SESSION.role,
-          'X-User-Email':  DEMO_SESSION.email,
-          'X-User-Tier':   String(DEMO_SESSION.tier),
-          ...(token ? { 'X-MFA-Token': token } : {}),
-        },
+        headers: buildEcignAuthHeaders(token ? { 'X-MFA-Token': token } : undefined),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => null) as { error?: { code?: string; message?: string } } | null;

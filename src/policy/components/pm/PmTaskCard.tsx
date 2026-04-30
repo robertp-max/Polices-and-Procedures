@@ -18,6 +18,7 @@ import {
   type PmTaskStatus,
   type Task,
 } from '@/policy/pm/types';
+import { EntityLink } from './EntityLink';
 
 const STATUS_COLOR: Record<PmTaskStatus, string> = {
   todo: 'rgba(148,163,184,0.85)',
@@ -26,16 +27,6 @@ const STATUS_COLOR: Record<PmTaskStatus, string> = {
   blocked: 'rgba(244,114,182,0.9)',
   done: 'rgba(45,212,191,0.9)',
 };
-
-/** Shorten an event id like "qapi_meeting-20260507-08" → "QAPI · 05/07". */
-function shortEventLabel(eventId?: string): string | null {
-  if (!eventId) return null;
-  const m = eventId.match(/^([a-z_]+)-(\d{4})(\d{2})(\d{2})/);
-  if (!m) return eventId.slice(0, 24);
-  const [, kind, , mm, dd] = m;
-  const tag = kind.split('_').map(p => p[0]?.toUpperCase() ?? '').join('');
-  return `${tag} · ${mm}/${dd}`;
-}
 
 function dueChip(due?: string): { label: string; color: string } | null {
   if (!due) return null;
@@ -72,23 +63,32 @@ export function PmTaskCard({
 }: PmTaskCardProps): ReactElement {
   const dot = STATUS_COLOR[task.status];
   const chip = dueChip(task.due_date);
-  const depCount = task.dependencies?.length ?? 0;
-  const formCount = isEcignSubmissionTask(task)
-    ? (task.form_ids?.length ?? (task.form_id ? 1 : 0))
-    : 0;
-  const eventShort = !isPersonalTask(task) ? shortEventLabel(task.event_id) : null;
+  const depCount = (task.depends_on ?? task.dependencies ?? []).length;
 
   const sourceLabel = isPersonalTask(task) ? 'Personal' : 'CES';
   const sourceColor = isPersonalTask(task)
     ? 'rgba(167,139,250,0.85)'
     : 'rgba(56,189,248,0.75)';
+  const workflowLabel = task.workflow_title ?? task.workflow_id ?? 'Unlinked workflow';
+  const eventLabel = task.event_title ?? task.event_id ?? 'No linked event';
+  const taskWithForms = task as { form_refs?: string[]; form_ids?: string[] };
+  const formRefs = taskWithForms.form_refs ?? taskWithForms.form_ids ?? (isEcignSubmissionTask(task) && task.form_id ? [task.form_id] : []);
+  const policyRefs = task.policy_refs ?? task.policyRefs ?? (task.policy_id ? [task.policy_id] : []);
 
   return (
-    <button
-      type="button"
+    <div
       onClick={() => onSelect(task.task_id)}
-      className="w-full text-left rounded-md border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] transition-colors px-3 py-2"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(task.task_id);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      className="w-full text-left rounded-md border transition-colors px-3 py-2 ci-border"
       style={{
+        background: 'var(--ci-surface-muted)',
         borderColor: accent ?? undefined,
         boxShadow: accent ? `0 0 0 1px ${accent}` : undefined,
       }}
@@ -103,41 +103,58 @@ export function PmTaskCard({
         />
         <div className="flex-1 min-w-0">
           <div
-            className={`font-outfit text-white truncate ${
+            className={`font-outfit ci-text truncate ${
               compact ? 'text-[11px]' : 'text-[12px]'
             }`}
           >
             {task.title}
           </div>
-          <div className="text-[10px] font-mono text-white/45 truncate">
-            {task.task_id}
+          <div className="text-[10px] font-mono ci-text-subtle truncate flex items-center gap-1.5">
+            <span className="ci-text-subtle">Task</span>
+            <EntityLink kind="task" id={task.task_id} onSelectTask={onSelect} />
           </div>
 
+          <div className="mt-1 text-[10px] ci-text-muted truncate">
+            {task.workflow_id ? <EntityLink kind="workflow" id={task.workflow_id} label={workflowLabel} /> : workflowLabel}
+          </div>
+          <div className="text-[10px] ci-text-subtle truncate">
+            {task.event_id ? <EntityLink kind="event" id={task.event_id} label={eventLabel} /> : eventLabel}
+          </div>
+
+          {formRefs.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {formRefs.slice(0, compact ? 2 : 3).map(fid => (
+                <EntityLink
+                  key={fid}
+                  kind="form"
+                  id={fid}
+                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm"
+                />
+              ))}
+            </div>
+          )}
+
+          {policyRefs.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {policyRefs.slice(0, compact ? 2 : 3).map(pid => (
+                <EntityLink
+                  key={pid}
+                  kind="policy"
+                  id={pid}
+                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm"
+                />
+              ))}
+            </div>
+          )}
+
           {!compact && isEcignSubmissionTask(task) && (
-            <div className="mt-1 text-[9px] uppercase tracking-wider text-white/55">
+            <div className="mt-1 text-[9px] uppercase tracking-wider ci-text-subtle">
               {ECIGN_PACKET_STATUS_LABEL[task.packet_status]}
             </div>
           )}
 
-          {(chip || depCount > 0 || task.story_points || eventShort || formCount > 0) && (
+          {(chip || depCount > 0 || task.story_points) && (
             <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {eventShort && (
-                <span
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm bg-white/[0.06] text-white/70"
-                  title={(task as { event_id?: string }).event_id}
-                >
-                  {eventShort}
-                </span>
-              )}
-              {formCount > 0 && (
-                <span
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm"
-                  style={{ background: 'rgba(56,189,248,0.15)', color: '#7dd3fc' }}
-                  title={`${formCount} attached form(s)`}
-                >
-                  ⎙ {formCount}
-                </span>
-              )}
               {chip && (
                 <span
                   className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm"
@@ -148,14 +165,15 @@ export function PmTaskCard({
               )}
               {depCount > 0 && (
                 <span
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm bg-white/5 text-white/55"
+                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm"
+                  style={{ background: 'var(--ci-surface-2)', color: 'var(--ci-text-subtle)' }}
                   title={`${depCount} dependency(ies)`}
                 >
                   ⇆ {depCount}
                 </span>
               )}
               {task.story_points && (
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm bg-white/5 text-white/55">
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm" style={{ background: 'var(--ci-surface-2)', color: 'var(--ci-text-subtle)' }}>
                   {task.story_points} pt
                 </span>
               )}
@@ -171,6 +189,6 @@ export function PmTaskCard({
           )}
         </div>
       </div>
-    </button>
+    </div>
   );
 }

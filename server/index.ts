@@ -14,6 +14,8 @@ import { identityMiddleware } from './identity/middleware.js';
 import { auditV2Router } from './audit/routes.js';
 import { ceuRouter } from './ceu/routes.js';
 import { startAnomalyScheduler } from './audit/anomaly.js';
+import { authRouter } from './routes/auth.js';
+import { pmRouter } from './routes/pm.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Care Indeed — Backend API (Express)
@@ -55,6 +57,8 @@ app.use('/api/audit', auditRouter);
 app.use('/api/audit/v2', auditV2Router);
 app.use('/api/ceu', ceuRouter);
 app.use('/api/compliance', complianceRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/pm', pmRouter);
 
 // Compliance Intelligence (iAdministrator) — local RAG engine.
 const iaService = new IaService({

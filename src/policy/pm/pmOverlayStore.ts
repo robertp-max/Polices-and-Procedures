@@ -52,6 +52,9 @@ interface PmOverlayState {
     reason?: string,
     actor?: string,
   ) => void;
+  watchTask: (task_id: string, user_id: string, actor?: string) => void;
+  unwatchTask: (task_id: string, user_id: string, actor?: string) => void;
+  isWatching: (task_id: string, user_id: string) => boolean;
 
   clearOverlay: (task_id: string, actor?: string) => void;
   resetAll: () => void;
@@ -68,6 +71,7 @@ const baseOverlay = (task_id: string): PmOverlay => ({
   task_id,
   labels: [],
   dependencies: [],
+  watcher_user_ids: [],
 });
 
 export const usePmOverlayStore = create<PmOverlayState>()(
@@ -229,6 +233,28 @@ export const usePmOverlayStore = create<PmOverlayState>()(
           );
         },
 
+        watchTask: (task_id, user_id, actor) => {
+          const overlay = get().overlays[task_id] ?? baseOverlay(task_id);
+          const ids = new Set(overlay.watcher_user_ids ?? []);
+          if (ids.has(user_id)) return;
+          ids.add(user_id);
+          upsert(task_id, { watcher_user_ids: [...ids] }, 'watchTask', actor ?? user_id);
+          mirror(pmApi.addWatcher(task_id, user_id));
+        },
+
+        unwatchTask: (task_id, user_id, actor) => {
+          const overlay = get().overlays[task_id];
+          if (!overlay) return;
+          const ids = (overlay.watcher_user_ids ?? []).filter(id => id !== user_id);
+          upsert(task_id, { watcher_user_ids: ids }, 'unwatchTask', actor ?? user_id);
+          mirror(pmApi.removeWatcher(task_id, user_id));
+        },
+
+        isWatching: (task_id, user_id) => {
+          const overlay = get().overlays[task_id];
+          return (overlay?.watcher_user_ids ?? []).includes(user_id);
+        },
+
         clearOverlay: (task_id, actor) => {
           const before = get().overlays[task_id];
           if (!before) return;
@@ -261,12 +287,15 @@ export const usePmOverlayStore = create<PmOverlayState>()(
               next[apiOverlay.task_id] = {
                 task_id: apiOverlay.task_id,
                 assigned_user_id: apiOverlay.assigned_user_id ?? undefined,
+                created_by_user_id: (apiOverlay as unknown as { created_by_user_id?: string }).created_by_user_id ?? undefined,
                 sprint_id:        apiOverlay.sprint_id        ?? undefined,
                 story_points:     apiOverlay.story_points     ?? undefined,
                 labels:           apiOverlay.labels           ?? [],
                 due_date:         apiOverlay.due_date         ?? undefined,
+                start_date:       apiOverlay.start_date       ?? undefined,
                 weekend_override: apiOverlay.weekend_override ?? undefined,
                 weekend_override_reason: apiOverlay.weekend_override_reason ?? undefined,
+                watcher_user_ids: (apiOverlay as unknown as { watcher_user_ids?: string[] }).watcher_user_ids ?? [],
                 dependencies:    depMap[apiOverlay.task_id] ?? [],
                 updated_at:       apiOverlay.updated_at,
               };

@@ -28,7 +28,7 @@ export interface HealthStripProps {
 const BACKEND_MODE_MESSAGES: Record<BackendMode, string | null> = {
   available: null,
   index_not_built: null,
-  static_deploy: 'Local runtime only — API backend not available in this deployment. Run `npm run dev` on your local machine.',
+  static_deploy: 'Local preview guidance is active for Brad while the live backend is unavailable on this host.',
   not_found: 'API backend not found (404) — the server is not deployed on this host.',
   method_mismatch: 'API route rejected the request method (405) — likely a server-side routing issue.',
   unreachable: 'Cannot reach local server — make sure `npm run dev` is running on port 8787.',
@@ -60,7 +60,7 @@ export function HealthStrip({
   if (isOffline) {
     const Icon = backendMode === 'static_deploy' ? Server : WifiOff;
     const modeLabel: Record<BackendMode, string> = {
-      static_deploy: 'Local Runtime Only',
+      static_deploy: 'Brad Preview Guidance Active',
       not_found: 'Backend Not Deployed',
       method_mismatch: 'API Route Error (405)',
       unreachable: 'Local Server Unreachable',
@@ -73,14 +73,14 @@ export function HealthStrip({
         className="w-full flex flex-wrap items-center gap-3 px-3 py-2 rounded-xl"
         style={{
           background: isLight ? '#FAFAFA' : 'rgba(255,255,255,0.02)',
-          border: `1px solid ${isLight ? '#FCD34D44' : '#FCD34D33'}`,
+          border: `1px solid ${isLight ? '#D9F99D66' : '#86EFAC44'}`,
           color: text,
         }}
       >
-        <span className="inline-flex items-center gap-1.5 text-[11px]" style={{ color: warn, fontFamily: mono }}>
+        <span className="inline-flex items-center gap-1.5 text-[11px]" style={{ color: backendMode === 'static_deploy' ? ok : warn, fontFamily: mono }}>
           <Icon size={12} strokeWidth={2} />
           <span className="uppercase tracking-[0.18em]">Brad Intelligence Engine</span>
-          <AlertCircle size={12} strokeWidth={2} style={{ color: warn }} />
+          <AlertCircle size={12} strokeWidth={2} style={{ color: backendMode === 'static_deploy' ? ok : warn }} />
           <span className="font-semibold">{modeLabel[backendMode] ?? 'Unavailable'}</span>
         </span>
         {statusMsg && (

@@ -11,6 +11,7 @@ import { usePolicyStore } from '@/policy/stores/policyStore';
 import { useShellStore } from '@/policy/stores/uiStore';
 import type { PolicyContentSection } from '@/policy/types';
 import { GVGBDetailView } from '@/policy/pages/GVGBDetailView';
+import { CiStatusBadge, EmptyState, PageHeader, SurfaceCard, Tabs } from '@/policy/components/ui';
 
 // ─── TAB DEFINITIONS (same mapping as PolicyDetailModal) ────────────────────
 const TABS = [
@@ -43,21 +44,21 @@ function GfmTable({ text }: { text: string }) {
   const headers = parseRow(lines[0]);
   const dataLines = lines.slice(2);
   return (
-    <div className="w-full mb-6 break-inside-avoid shadow-sm rounded-lg overflow-hidden border border-[#E5E4E3] bg-white">
+    <div className="w-full mb-6 break-inside-avoid shadow-sm rounded-lg overflow-hidden border border-ci-border bg-ci-surface">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr>
               {headers.map((h, i) => (
-                <th key={i} className="py-4 px-3 font-montserrat font-semibold text-[11px] tracking-[0.12em] uppercase text-[#524048] border-b border-[#E5E4E3] bg-[#FAFBF8]">{h}</th>
+                <th key={i} className="py-4 px-3 font-montserrat font-semibold text-[11px] tracking-[0.12em] uppercase text-ci-text-subtle border-b border-ci-border bg-ci-surface-muted">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#E5E4E3]">
+          <tbody className="divide-y divide-ci-border">
             {dataLines.map((row, i) => (
-              <tr key={i} className="hover:bg-[#FAFBF8] transition-colors">
+              <tr key={i} className="hover:bg-ci-surface-muted transition-colors">
                 {parseRow(row).map((cell, j) => (
-                  <td key={j} className={`py-4 px-3 text-[#1F1C1B] font-roboto text-[14px] align-top leading-relaxed break-words whitespace-normal ${j === 0 ? 'font-medium' : ''}`}>{cell}</td>
+                  <td key={j} className={`py-4 px-3 text-ci-text-primary font-roboto text-[14px] align-top leading-relaxed break-words whitespace-normal ${j === 0 ? 'font-medium' : ''}`}>{cell}</td>
                 ))}
               </tr>
             ))}
@@ -80,18 +81,18 @@ function MarkdownBody({ text }: { text: string }) {
         if (/^#{3,6}\s/.test(trimmed)) {
           const heading = trimmed.replace(/^#+\s+/, '').replace(/\\\./g, '.').replace(/\\/g, '');
           return (
-            <h4 key={i} className="font-montserrat font-semibold text-[14px] text-[#1F1C1B] mt-6 mb-3">{heading}</h4>
+            <h4 key={i} className="font-montserrat font-semibold text-[14px] text-ci-text-primary mt-6 mb-3">{heading}</h4>
           );
         }
         if (/^[*\-] /m.test(trimmed)) {
           const items = trimmed.split('\n').map(l => l.replace(/^[*\-]\s+/, '').trim()).filter(Boolean);
           return (
             <ul key={i} className="list-disc pl-6 space-y-2">
-              {items.map((item, j) => <li key={j} className="font-roboto text-[15px] text-[#1F1C1B] leading-relaxed">{item}</li>)}
+              {items.map((item, j) => <li key={j} className="font-roboto text-[15px] text-ci-text-primary leading-relaxed">{item}</li>)}
             </ul>
           );
         }
-        return <p key={i} className="font-roboto text-[15px] leading-relaxed text-[#1F1C1B]">{trimmed}</p>;
+        return <p key={i} className="font-roboto text-[15px] leading-relaxed text-ci-text-primary">{trimmed}</p>;
       })}
     </div>
   );
@@ -110,22 +111,22 @@ function SectionPanel({ section }: { section: PolicyContentSection }) {
   const titleNode = (() => {
     if (section.level <= 2) {
       return (
-        <h2 className="font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase mb-8 flex items-center gap-4 w-full text-[#1F1C1B]">
+        <h2 className="font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase mb-8 flex items-center gap-4 w-full text-ci-text-primary">
           <span className="shrink-0">{cleanTitle}</span>
-          <span className="flex-grow h-px bg-[#007970]" />
+          <span className="flex-grow h-px bg-ci-accent" />
         </h2>
       );
     }
     if (section.level === 3) {
       return (
-        <h3 className="font-montserrat font-semibold text-[15px] text-[#1F1C1B] mb-6 flex items-center gap-3">
-          <span className="inline-block w-1 h-5 bg-[#007970] rounded-sm" />
+        <h3 className="font-montserrat font-semibold text-[15px] text-ci-text-primary mb-6 flex items-center gap-3">
+          <span className="inline-block w-1 h-5 bg-ci-accent rounded-sm" />
           {cleanTitle}
         </h3>
       );
     }
     return (
-      <h4 className="font-montserrat font-semibold text-[12px] tracking-[0.12em] uppercase text-[#524048] mb-4">
+      <h4 className="font-montserrat font-semibold text-[12px] tracking-[0.12em] uppercase text-ci-text-subtle mb-4">
         {cleanTitle}
       </h4>
     );
@@ -136,11 +137,11 @@ function SectionPanel({ section }: { section: PolicyContentSection }) {
 
   return (
     <section
-      className={`break-inside-avoid bg-white rounded-2xl border border-[#E5E4E3] shadow-sm p-6 md:p-8 ${indentClass}`}
+      className={`break-inside-avoid bg-ci-surface rounded-2xl border border-ci-border shadow-sm p-6 md:p-8 ${indentClass}`}
     >
       {titleNode}
       {isEmpty
-        ? <p className="font-roboto text-[13px] italic text-[#9E9D9A]">No additional detail in this section.</p>
+        ? <p className="font-roboto text-[13px] italic text-ci-text-subtle">No additional detail in this section.</p>
         : <MarkdownBody text={section.body} />}
     </section>
   );
@@ -168,7 +169,7 @@ export function PolicyDetailPage() {
 
   if (!policy) {
     return (
-      <div className="rounded-xl border border-[#D70101]/30 bg-[#D70101]/5 p-6 text-sm text-[#D70101] font-roboto">
+      <div className="rounded-xl border border-rose-400/40 bg-rose-50 p-6 text-sm text-rose-700 font-roboto">
         Policy not found.
       </div>
     );
@@ -209,56 +210,47 @@ export function PolicyDetailPage() {
 
   const activeSections = tabSections[activeTab] ?? [];
 
-  const statusStyles: Record<string, string> = {
-    Draft: 'bg-[#C74600] text-white border-[#C74600]',
-    'Under Review': 'bg-white/20 text-white border-white/40',
-    'Revision Requested': 'bg-[#C74600]/80 text-white border-[#C74600]',
-    Approved: 'bg-[#0F766E] text-white border-[#0F766E]',
-    Rejected: 'bg-[#D70101] text-white border-[#D70101]',
-    Published: 'bg-[#007970] text-white border-[#007970]',
-    Archived: 'bg-white/15 text-white border-white/30',
-  };
+  const statusTone =
+    policy.lifecycleStatus === 'Approved' || policy.lifecycleStatus === 'Published'
+      ? 'success'
+      : policy.lifecycleStatus === 'Draft' || policy.lifecycleStatus === 'Under Review'
+        ? 'warning'
+        : policy.lifecycleStatus === 'Rejected'
+          ? 'danger'
+          : 'neutral';
 
   return (
-    <div className="space-y-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <SurfaceCard className="space-y-0 overflow-hidden" padding="none">
 
       {/* COVER BLOCK */}
-      <div className="bg-[#D4AF37] text-white relative p-8">
+      <div className="ci-glass-panel relative p-8">
         <div className="flex items-start justify-between gap-4 mb-4">
           <Link
             to="/library"
-            className="flex items-center gap-1.5 text-xs font-montserrat font-bold text-white/70 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-xs font-montserrat font-bold text-ci-link hover:text-ci-link-hover transition-colors"
           >
             <ArrowLeft size={13} /> Return to Policy Library
           </Link>
           {isOfficialVersion && (
-            <Link
-              to={`/print/${policy.id}`}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-white/20"
-            >
+            <Link to={`/print/${policy.id}`} className="ci-btn ci-btn--secondary ci-btn--sm flex items-center gap-2">
               <Printer size={16} /> Print / Export PDF
             </Link>
           )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2 mb-3">
-          <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-montserrat font-bold">{policy.id}</span>
-          <span className={`rounded-md px-2.5 py-1 text-[10px] font-montserrat font-bold uppercase tracking-wider border ${statusStyles[policy.lifecycleStatus] ?? 'bg-white/10 text-white border-white/30'}`}>
-            {policy.lifecycleStatus}
-          </span>
-          <span className="rounded-md bg-white/10 border border-white/30 px-2.5 py-1 text-[10px] font-montserrat font-bold uppercase tracking-wider">
-            {policy.tier}
-          </span>
+          <CiStatusBadge>{policy.id}</CiStatusBadge>
+          <CiStatusBadge tone={statusTone as any}>{policy.lifecycleStatus}</CiStatusBadge>
+          <CiStatusBadge>{policy.tier}</CiStatusBadge>
         </div>
 
-        <h2 className="font-montserrat text-3xl font-extrabold leading-tight tracking-tight mb-3">
-          {policy.title}
-        </h2>
-        {policy.description && (
-          <p className="font-roboto text-sm leading-relaxed text-white/80 mb-4">{policy.description}</p>
-        )}
+        <PageHeader
+          title={policy.title}
+          description={policy.description ?? undefined}
+          className="pb-4"
+        />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-sm mt-4 border-t border-white/20 pt-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-sm mt-2 border-t border-ci-border pt-4">
           {[
             ['Domain', policy.domainCode],
             ['Subdomain', policy.subdomainCode],
@@ -270,8 +262,8 @@ export function PolicyDetailPage() {
             ['Review Cycle', policy.reviewCycle],
           ].map(([label, value]) => (
             <div key={label}>
-              <span className="text-white/70 block text-xs uppercase tracking-wider font-bold">{label}</span>
-              <strong className="text-white text-sm">{value}</strong>
+              <span className="text-ci-text-subtle block text-xs uppercase tracking-wider font-bold">{label}</span>
+              <strong className="text-ci-text-primary text-sm">{value}</strong>
             </div>
           ))}
         </div>
@@ -286,22 +278,20 @@ export function PolicyDetailPage() {
 
       {/* TAB BAR */}
       {content ? (
-        <div className="border-b border-gray-200 bg-gray-50 overflow-x-auto">
-          <div className="flex min-w-max">
-            {availableTabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-5 py-3.5 text-xs font-montserrat font-bold whitespace-nowrap border-b-2 transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-[#D4AF37] text-[#D4AF37] bg-white'
-                    : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-white'
-                }`}
-              >
-                <tab.Icon size={12} /> {tab.label}
-              </button>
-            ))}
-          </div>
+        <div className="border-b border-ci-border bg-ci-surface overflow-x-auto px-6">
+          <Tabs
+            ariaLabel="Policy sections"
+            value={activeTab}
+            onChange={setActiveTab}
+            items={availableTabs.map(tab => ({
+              id: tab.id,
+              label: (
+                <span className="flex items-center gap-1.5 text-xs font-montserrat font-bold whitespace-nowrap">
+                  <tab.Icon size={12} /> {tab.label}
+                </span>
+              ),
+            }))}
+          />
         </div>
       ) : (
         <div className="border-b border-ci-border bg-ci-surface px-6 py-3">
@@ -310,19 +300,17 @@ export function PolicyDetailPage() {
       )}
 
       {/* CONTENT AREA */}
-      <div className="p-6 lg:p-8 bg-[#FAFBF8]">
+      <div className="p-6 lg:p-8 bg-ci-bg">
         {activeTab === 'appendices' ? (
           <PolicyAppendicesPanel policyId={policy.id} />
         ) : !content ? (
-          <div className="rounded-xl border border-dashed border-[#E5E4E3] bg-white p-10 text-center">
-            <AlertTriangle size={28} className="mx-auto mb-3 text-[#E5E4E3]" />
-            <p className="font-montserrat font-bold text-[#747470] mb-1">Content Pending</p>
-            <p className="font-roboto text-sm text-[#747470] max-w-sm mx-auto">
-              Canonical metadata is loaded. Full document content has not yet been provisioned for this policy.
-            </p>
-          </div>
+          <EmptyState
+            icon={<AlertTriangle size={28} />}
+            title="Content Pending"
+            description="Canonical metadata is loaded. Full document content has not yet been provisioned for this policy."
+          />
         ) : activeSections.length === 0 ? (
-          <p className="font-roboto text-sm text-[#747470] py-4">No content for this section.</p>
+          <p className="font-roboto text-sm text-ci-text-subtle py-4">No content for this section.</p>
         ) : (
           <div className="space-y-6 max-w-[1100px] mx-auto">
             {activeSections.map(section => (
@@ -332,7 +320,7 @@ export function PolicyDetailPage() {
         )}
       </div>
 
-    </div>
+    </SurfaceCard>
   );
 }
 

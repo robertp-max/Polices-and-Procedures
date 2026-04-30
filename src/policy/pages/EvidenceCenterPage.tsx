@@ -30,6 +30,7 @@ const DEFAULT_EVENT  = 'EVT-DEMO-001';
 const DEFAULT_POLICY = 'POL-DEMO-001';
 const DEFAULT_WF     = 'WF-DEMO-001';
 const DEFAULT_FORM   = 'FRM-DEMO-001';
+const DEMO_STORE_KEY = 'evidence-center-demo-store-v1';
 
 // Phase-1 actor stub (replace with Cognito JWT later). Read from localStorage so a user
 // can self-identify in the demo without an auth flow. Defaults to a Compliance Officer.
@@ -116,16 +117,44 @@ interface PromoteResponse {
   idempotent?: boolean;
 }
 
+interface DemoStore {
+  filesByEvent: Record<string, EvidenceFile[]>;
+  auditByEvent: Record<string, AuditEntry[]>;
+}
+
 // ── Helpers ────────────────────────────────────────────────────
 const STATUS_COLOR: Record<string, string> = {
   PENDING_UPLOAD: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
   UPLOADED:       'bg-sky-500/15 text-sky-300 border-sky-500/30',
   VALIDATED:      'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
+  EVIDENCE_LOCKED:'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
   PROMOTED:          'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
   APPROVED_EVIDENCE: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
   SIGNED:            'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
   FAILED:         'bg-rose-500/15 text-rose-300 border-rose-500/30',
 };
+
+function readDemoStore(): DemoStore {
+  try {
+    const raw = localStorage.getItem(DEMO_STORE_KEY);
+    if (!raw) return { filesByEvent: {}, auditByEvent: {} };
+    const parsed = JSON.parse(raw) as DemoStore;
+    return {
+      filesByEvent: parsed.filesByEvent || {},
+      auditByEvent: parsed.auditByEvent || {},
+    };
+  } catch {
+    return { filesByEvent: {}, auditByEvent: {} };
+  }
+}
+
+function writeDemoStore(store: DemoStore): void {
+  try {
+    localStorage.setItem(DEMO_STORE_KEY, JSON.stringify(store));
+  } catch {
+    // Best-effort demo persistence only.
+  }
+}
 
 function formatBytes(n: number | null | undefined): string {
   if (n == null) return '—';
@@ -160,6 +189,7 @@ export function EvidenceCenterPage() {
   const qEvidenceId = (query.get('evidence_id') || '').trim();
   const qFormId = (query.get('form_id') || '').trim();
   const qPolicyId = (query.get('policy_id') || '').trim();
+  const qWorkflowId = (query.get('workflow_id') || '').trim();
 
   const [eventId,    setEventId]    = useState(qEventId || DEFAULT_EVENT);
   const [eventInput, setEventInput] = useState(qEventId || DEFAULT_EVENT);
@@ -179,8 +209,9 @@ export function EvidenceCenterPage() {
 
   const load = useCallback(async (id: string) => {
     if (LAMBDA_DISABLED) {
-      setFiles([]);
-      setAudit([]);
+      const store = readDemoStore();
+      setFiles(store.filesByEvent[id] || []);
+      setAudit(store.auditByEvent[id] || []);
       return;
     }
     setLoading(true);
@@ -251,7 +282,10 @@ export function EvidenceCenterPage() {
   };
 
   const onDownload = async (f: EvidenceFile) => {
-    if (LAMBDA_DISABLED) { setError('Evidence download is disabled (Lambda off).'); return; }
+    if (LAMBDA_DISABLED) {
+      setError('Demo Mode: local metadata only. File download is not available in this mock flow.');
+      return;
+    }
     try {
       const data = await jsonOrThrow<DownloadResponse>(
         await fetch(
@@ -270,7 +304,74 @@ export function EvidenceCenterPage() {
   const onFileChosen = async (ev: React.ChangeEvent<HTMLInputElement>) => {
     const file = ev.target.files?.[0];
     if (!file) return;
-    if (LAMBDA_DISABLED) { setError('Evidence upload is disabled (Lambda off).'); if (fileInputRef.current) fileInputRef.current.value = ''; return; }
+
+    const uploadPolicyId = qPolicyId || filterPolicyId || DEFAULT_POLICY;
+    const uploadWorkflowId = qWorkflowId || DEFAULT_WF;
+    const uploadFormId = qFormId || filterFormId || DEFAULT_FORM;
+
+    if (LAMBDA_DISABLED) {
+      setUploading(true);
+      setUploadMsg(null);
+      setError(null);
+      try {
+        const nowIso = new Date().toISOString();
+        const evidenceId = `EVD-${Date.now()}`;
+
+        setUploadMsg(`Simulating upload for ${file.name}…`);
+        await new Promise((resolve) => window.setTimeout(resolve, 350));
+
+        const mockFile: EvidenceFile = {
+          evidence_id: evidenceId,
+          filename: file.name,
+          policy_id: uploadPolicyId,
+          workflow_id: uploadWorkflowId,
+          event_id: eventId,
+          form_id: uploadFormId,
+          status: 'EVIDENCE_LOCKED',
+          signature_status: 'LOCKED',
+          source_system: 'demo-local',
+          mime_type: file.type || 'application/octet-stream',
+          size_bytes: file.size,
+          created_at: nowIso,
+          updated_at: nowIso,
+        };
+
+        const actor = (() => {
+          const headers = actorHeaders();
+          const id = headers['x-hhc-actor-id'];
+          const role = headers['x-hhc-actor-role'];
+          return role ? `${id} (${role})` : id;
+        })();
+
+        const mockAudit: AuditEntry = {
+          ts: nowIso,
+          action: 'Evidence uploaded (demo mode)',
+          actor,
+          source_system: 'demo-local',
+          evidence_id: evidenceId,
+          upload_id: null,
+          before_status: null,
+          after_status: 'EVIDENCE_LOCKED',
+        };
+
+        const store = readDemoStore();
+        const eventFiles = store.filesByEvent[eventId] || [];
+        const eventAudit = store.auditByEvent[eventId] || [];
+        store.filesByEvent[eventId] = [mockFile, ...eventFiles];
+        store.auditByEvent[eventId] = [mockAudit, ...eventAudit];
+        writeDemoStore(store);
+
+        setFiles(store.filesByEvent[eventId]);
+        setAudit(store.auditByEvent[eventId]);
+        setSelected(mockFile);
+        setUploadMsg(`✓ ${file.name} → EVIDENCE_LOCKED (evidence_id=${evidenceId})`);
+      } finally {
+        setUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+      return;
+    }
+
     setUploading(true);
     setUploadMsg(null);
     setError(null);
@@ -337,20 +438,26 @@ export function EvidenceCenterPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0e14] text-slate-200">
+    <div className="flex flex-col h-full bg-[var(--ci-bg,#070d18)] text-[var(--ci-text-primary,#e2e8f0)]">
       {/* ── Header ─────────────────────────────────────────────── */}
-      <div className="px-6 pt-5 pb-4 border-b border-white/5">
+      <div className="px-6 pt-5 pb-4 border-b border-[var(--ci-border,rgba(103,232,249,0.2))] bg-[var(--ci-surface-muted,rgba(15,23,42,0.35))] backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <FolderOpen size={22} className="text-[#FFC107]" />
-          <h1 className="text-xl font-semibold tracking-tight">Evidence Center</h1>
-          <span className="ml-2 text-xs text-slate-400">
+          <FolderOpen size={22} className="text-cyan-300" />
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--ci-text-primary,#f8fafc)]">Evidence Center</h1>
+          <span className="ml-2 text-xs text-[var(--ci-text-muted,#cbd5e1)]">
             Phase 1 demo backend · us-west-1
           </span>
         </div>
-        <p className="mt-1 text-sm text-slate-400 max-w-3xl">
-          Every file is bound to a <span className="text-slate-200 font-medium">policy / workflow / event</span> triplet
+        <p className="mt-1 text-sm text-[var(--ci-text-muted,#cbd5e1)] max-w-3xl">
+          Every file is bound to a <span className="text-[var(--ci-text-primary,#f8fafc)] font-semibold">policy / workflow / event</span> triplet
           and read through the API — never directly from S3.
         </p>
+        {LAMBDA_DISABLED && (
+          <div className="mt-3 flex items-start gap-2 rounded border border-cyan-400/35 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-100">
+            <Info size={16} className="mt-0.5 flex-shrink-0" />
+            <span>Demo Mode: Evidence stored locally</span>
+          </div>
+        )}
       </div>
 
       {/* ── Main grid: left = browser+table+audit, right = guidance ── */}
@@ -358,9 +465,9 @@ export function EvidenceCenterPage() {
         {/* Left column */}
         <div className="col-span-12 xl:col-span-9 flex flex-col overflow-hidden">
           {/* Filter bar */}
-          <div className="px-6 py-3 flex flex-wrap items-center gap-3 border-b border-white/5">
+          <div className="px-6 py-3 flex flex-wrap items-center gap-3 border-b border-cyan-300/15 bg-slate-950/30">
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-500">Event ID</label>
+              <label className="text-xs uppercase tracking-wider text-slate-300">Event ID</label>
               <input
                 title="Event ID filter"
                 aria-label="Event ID"
@@ -368,62 +475,62 @@ export function EvidenceCenterPage() {
                 onChange={(e) => setEventInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && onSelectEvent()}
                 placeholder="EVT-..."
-                className="bg-[#0f141c] border border-white/10 rounded px-2 py-1 text-sm w-48 focus:outline-none focus:border-[#FFC107]/60"
+                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-48 text-slate-100 focus:outline-none focus:border-cyan-300/75"
               />
               <button
                 onClick={onSelectEvent}
-                className="px-3 py-1 text-sm rounded bg-white/5 hover:bg-white/10 border border-white/10"
+                className="px-3 py-1 text-sm rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100"
               >
                 Load
               </button>
-              <span className="text-[10px] text-slate-500">
+              <span className="text-[10px] text-slate-400">
                 Accepts regulatory IDs and form-generated IDs (EVT-FORM-FI...)
               </span>
             </div>
 
             {/* Narrow client-side filters — applied to the already-loaded files */}
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-500">Event</label>
+              <label className="text-xs uppercase tracking-wider text-slate-300">Event</label>
               <input
                 title="Filter by Event ID"
                 aria-label="Filter by Event ID"
                 value={filterEventId}
                 onChange={(e) => setFilterEventId(e.target.value)}
                 placeholder="EVT-... / EVT-FORM-FI..."
-                className="bg-[#0f141c] border border-white/10 rounded px-2 py-1 text-sm w-44 focus:outline-none focus:border-[#FFC107]/60"
+                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-44 text-slate-100 focus:outline-none focus:border-cyan-300/75"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-500">Form</label>
+              <label className="text-xs uppercase tracking-wider text-slate-300">Form</label>
               <input
                 title="Filter by Form ID"
                 aria-label="Filter by Form ID"
                 value={filterFormId}
                 onChange={(e) => setFilterFormId(e.target.value)}
                 placeholder="GV-FM-017…"
-                className="bg-[#0f141c] border border-white/10 rounded px-2 py-1 text-sm w-32 focus:outline-none focus:border-[#FFC107]/60"
+                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-32 text-slate-100 focus:outline-none focus:border-cyan-300/75"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-500">Policy</label>
+              <label className="text-xs uppercase tracking-wider text-slate-300">Policy</label>
               <input
                 title="Filter by Policy ID"
                 aria-label="Filter by Policy ID"
                 value={filterPolicyId}
                 onChange={(e) => setFilterPolicyId(e.target.value)}
                 placeholder="GV-OG-005…"
-                className="bg-[#0f141c] border border-white/10 rounded px-2 py-1 text-sm w-32 focus:outline-none focus:border-[#FFC107]/60"
+                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-32 text-slate-100 focus:outline-none focus:border-cyan-300/75"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-500">Evidence ID</label>
+              <label className="text-xs uppercase tracking-wider text-slate-300">Evidence ID</label>
               <input
                 title="Filter by Evidence ID"
                 aria-label="Filter by Evidence ID"
                 value={filterEvidenceId}
                 onChange={(e) => setFilterEvidenceId(e.target.value)}
                 placeholder="EVD-…"
-                className="bg-[#0f141c] border border-white/10 rounded px-2 py-1 text-sm w-36 focus:outline-none focus:border-[#FFC107]/60"
+                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-36 text-slate-100 focus:outline-none focus:border-cyan-300/75"
               />
             </div>
             {(filterEventId || filterFormId || filterPolicyId || filterEvidenceId) && (
@@ -434,7 +541,7 @@ export function EvidenceCenterPage() {
                   setFilterPolicyId('');
                   setFilterEvidenceId('');
                 }}
-                className="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400"
+                className="text-xs px-2 py-1 rounded bg-slate-800/70 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-200"
                 title="Clear filters"
               >
                 ✕ Clear filters
@@ -443,25 +550,25 @@ export function EvidenceCenterPage() {
 
             <div className="flex items-center gap-2 ml-auto">
               <div className="relative">
-                <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cyan-200/70" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Filter files…"
-                  className="bg-[#0f141c] border border-white/10 rounded pl-7 pr-2 py-1 text-sm w-56 focus:outline-none focus:border-[#FFC107]/60"
+                  className="bg-slate-900/85 border border-cyan-300/25 rounded pl-7 pr-2 py-1 text-sm w-56 text-slate-100 focus:outline-none focus:border-cyan-300/75"
                 />
               </div>
               <button
                 onClick={() => load(eventId)}
                 disabled={loading}
-                className="px-2 py-1 text-sm rounded bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-50 inline-flex items-center gap-1"
+                className="px-2 py-1 text-sm rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 disabled:opacity-50 inline-flex items-center gap-1"
               >
                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
               </button>
               <button
                 onClick={onUploadClick}
                 disabled={uploading}
-                className="px-3 py-1 text-sm rounded bg-[#FFC107]/15 hover:bg-[#FFC107]/25 border border-[#FFC107]/40 text-[#FFC107] disabled:opacity-50 inline-flex items-center gap-1"
+                className="px-3 py-1 text-sm rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 disabled:opacity-50 inline-flex items-center gap-1"
               >
                 <Upload size={14} /> {uploading ? 'Uploading…' : 'Upload evidence'}
               </button>
@@ -499,12 +606,12 @@ export function EvidenceCenterPage() {
           {/* Table */}
           <div className="flex-1 overflow-auto px-6 pt-4">
             {loading && files.length === 0 ? (
-              <div className="text-sm text-slate-500 py-12 text-center">Loading evidence…</div>
+              <div className="text-sm text-slate-300 py-12 text-center">Loading evidence…</div>
             ) : filtered.length === 0 ? (
               <EmptyState eventId={eventId} onUpload={onUploadClick} />
             ) : (
               <table className="w-full text-sm border-separate border-spacing-y-1">
-                <thead className="text-xs uppercase tracking-wider text-slate-500">
+                <thead className="text-xs uppercase tracking-wider text-slate-300">
                   <tr>
                     <th className="text-left px-3 py-2">Filename</th>
                     <th className="text-left px-3 py-2">Policy / Workflow / Event</th>
@@ -520,21 +627,21 @@ export function EvidenceCenterPage() {
                   {filtered.map((f) => (
                     <tr
                       key={f.evidence_id}
-                      className="bg-[#0f141c] hover:bg-[#141b25] cursor-pointer border border-white/5"
+                      className="bg-slate-900/75 hover:bg-slate-800/90 cursor-pointer border border-cyan-300/15"
                       onClick={() => setSelected(f)}
                     >
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <FileText size={14} className="text-slate-400" />
-                          <span className="text-slate-100">{f.filename}</span>
+                          <FileText size={14} className="text-cyan-200/80" />
+                          <span className="text-slate-50">{f.filename}</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-xs text-slate-400">
+                      <td className="px-3 py-2 text-xs text-slate-300">
                         <div>{f.policy_id}</div>
                         <div>{f.workflow_id}</div>
-                        <div className="text-slate-300">{f.event_id}</div>
+                        <div className="text-slate-100">{f.event_id}</div>
                       </td>
-                      <td className="px-3 py-2 text-xs text-slate-400">{f.form_id || '—'}</td>
+                      <td className="px-3 py-2 text-xs text-slate-300">{f.form_id || '—'}</td>
                       <td className="px-3 py-2">
                         <span className={`text-xs px-2 py-0.5 rounded border ${STATUS_COLOR[f.status] || 'bg-slate-500/15 text-slate-300 border-slate-500/30'}`}>
                           {f.status}
@@ -545,13 +652,13 @@ export function EvidenceCenterPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-xs text-slate-400">{f.source_system || '—'}</td>
-                      <td className="px-3 py-2 text-xs text-slate-400">{formatTs(f.created_at)}</td>
-                      <td className="px-3 py-2 text-xs text-slate-400 text-right">{formatBytes(f.size_bytes)}</td>
+                      <td className="px-3 py-2 text-xs text-slate-300">{f.source_system || '—'}</td>
+                      <td className="px-3 py-2 text-xs text-slate-300">{formatTs(f.created_at)}</td>
+                      <td className="px-3 py-2 text-xs text-slate-300 text-right">{formatBytes(f.size_bytes)}</td>
                       <td className="px-3 py-2 text-right">
                         <button
                           onClick={(e) => { e.stopPropagation(); onDownload(f); }}
-                          className="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 border border-white/10 inline-flex items-center gap-1"
+                          className="text-xs px-2 py-1 rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 inline-flex items-center gap-1"
                           title="Get presigned download URL"
                         >
                           <Download size={12} /> Download
@@ -565,29 +672,29 @@ export function EvidenceCenterPage() {
           </div>
 
           {/* Audit panel */}
-          <div className="border-t border-white/5 px-6 py-4 max-h-72 overflow-auto">
+          <div className="border-t border-cyan-300/15 px-6 py-4 max-h-72 overflow-auto bg-slate-950/25">
             <div className="flex items-center gap-2 mb-2">
-              <History size={16} className="text-slate-400" />
-              <h2 className="text-sm font-semibold tracking-tight">Audit log — event {eventId}</h2>
-              <span className="text-xs text-slate-500">({audit.length} entries)</span>
+              <History size={16} className="text-cyan-200/80" />
+              <h2 className="text-sm font-semibold tracking-tight text-slate-100">Audit log — event {eventId}</h2>
+              <span className="text-xs text-slate-400">({audit.length} entries)</span>
             </div>
             {audit.length === 0 ? (
-              <div className="text-xs text-slate-500">No audit entries yet for this event.</div>
+              <div className="text-xs text-slate-400">No audit entries yet for this event.</div>
             ) : (
               <ul className="space-y-1.5">
                 {audit.map((a, i) => (
-                  <li key={`${a.ts}-${i}`} className="text-xs flex flex-wrap items-center gap-2 bg-[#0f141c] border border-white/5 rounded px-2 py-1.5">
-                    <Clock size={11} className="text-slate-500 flex-shrink-0" />
-                    <span className="text-slate-400">{formatTs(a.ts)}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-[#FFC107] bg-[#FFC107]/10 border border-[#FFC107]/30 rounded px-1.5 py-0.5">
+                  <li key={`${a.ts}-${i}`} className="text-xs flex flex-wrap items-center gap-2 bg-slate-900/70 border border-cyan-300/15 rounded px-2 py-1.5">
+                    <Clock size={11} className="text-slate-400 flex-shrink-0" />
+                    <span className="text-slate-300">{formatTs(a.ts)}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-cyan-200 bg-cyan-300/10 border border-cyan-300/35 rounded px-1.5 py-0.5">
                       {a.action}
                     </span>
-                    <span className="text-slate-300">{a.actor || 'system'}</span>
-                    {a.source_system && <span className="text-slate-500">· {a.source_system}</span>}
-                    {a.evidence_id && <span className="text-slate-500">· {a.evidence_id}</span>}
+                    <span className="text-slate-100">{a.actor || 'system'}</span>
+                    {a.source_system && <span className="text-slate-400">· {a.source_system}</span>}
+                    {a.evidence_id && <span className="text-slate-400">· {a.evidence_id}</span>}
                     {(a.before_status || a.after_status) && (
-                      <span className="text-slate-500">
-                        {a.before_status || '·'} → <span className="text-slate-300">{a.after_status || '·'}</span>
+                      <span className="text-slate-400">
+                        {a.before_status || '·'} → <span className="text-slate-100">{a.after_status || '·'}</span>
                       </span>
                     )}
                   </li>
@@ -598,14 +705,14 @@ export function EvidenceCenterPage() {
         </div>
 
         {/* Right contextual guidance */}
-        <aside className="hidden xl:flex xl:col-span-3 flex-col border-l border-white/5 bg-[#0c1118] overflow-auto">
+        <aside className="hidden xl:flex xl:col-span-3 flex-col border-l border-cyan-300/15 bg-slate-950/45 overflow-auto">
           <div className="p-5 space-y-5">
             <div>
               <div className="flex items-center gap-2">
-                <Info size={16} className="text-[#FFC107]" />
-                <h3 className="text-sm font-semibold tracking-tight">What is "evidence"?</h3>
+                <Info size={16} className="text-cyan-300" />
+                <h3 className="text-sm font-semibold tracking-tight text-slate-100">What is "evidence"?</h3>
               </div>
-              <p className="mt-1.5 text-xs text-slate-400 leading-relaxed">
+              <p className="mt-1.5 text-xs text-slate-300 leading-relaxed">
                 Any file that proves a regulated activity happened — QAPI minutes, signed forms,
                 competency checklists, training rosters, OASIS lock confirmations.
               </p>
@@ -613,23 +720,23 @@ export function EvidenceCenterPage() {
 
             <div>
               <div className="flex items-center gap-2">
-                <ShieldCheck size={16} className="text-[#FFC107]" />
-                <h3 className="text-sm font-semibold tracking-tight">Why the triplet?</h3>
+                <ShieldCheck size={16} className="text-cyan-300" />
+                <h3 className="text-sm font-semibold tracking-tight text-slate-100">Why the triplet?</h3>
               </div>
-              <p className="mt-1.5 text-xs text-slate-400 leading-relaxed">
-                Every artifact is bound to a <code className="text-slate-200">policy_id</code>,
-                {' '}<code className="text-slate-200">workflow_id</code>, and
-                {' '}<code className="text-slate-200">event_id</code>. A surveyor can pull a single
+              <p className="mt-1.5 text-xs text-slate-300 leading-relaxed">
+                Every artifact is bound to a <code className="text-slate-100">policy_id</code>,
+                {' '}<code className="text-slate-100">workflow_id</code>, and
+                {' '}<code className="text-slate-100">event_id</code>. A surveyor can pull a single
                 event packet and reconstruct the entire chain of custody.
               </p>
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <History size={16} className="text-[#FFC107]" />
-                <h3 className="text-sm font-semibold tracking-tight">Audit log</h3>
+                <History size={16} className="text-cyan-300" />
+                <h3 className="text-sm font-semibold tracking-tight text-slate-100">Audit log</h3>
               </div>
-              <p className="mt-1.5 text-xs text-slate-400 leading-relaxed">
+              <p className="mt-1.5 text-xs text-slate-300 leading-relaxed">
                 Append-only entries record who initiated each upload, every status transition, and
                 every download URL we mint. Nothing in this view is editable.
               </p>
@@ -637,19 +744,19 @@ export function EvidenceCenterPage() {
 
             <div>
               <div className="flex items-center gap-2">
-                <Upload size={16} className="text-[#FFC107]" />
-                <h3 className="text-sm font-semibold tracking-tight">What to do next</h3>
+                <Upload size={16} className="text-cyan-300" />
+                <h3 className="text-sm font-semibold tracking-tight text-slate-100">What to do next</h3>
               </div>
-              <ol className="mt-1.5 text-xs text-slate-400 leading-relaxed list-decimal pl-4 space-y-1">
+              <ol className="mt-1.5 text-xs text-slate-300 leading-relaxed list-decimal pl-4 space-y-1">
                 <li>Pick the event you're documenting (top-left).</li>
-                <li>Click <span className="text-[#FFC107]">Upload evidence</span> and choose a file.</li>
-                <li>Verify the new row appears with status <code>PENDING_UPLOAD</code> → <code>UPLOADED</code>.</li>
-                <li>Use <span className="text-slate-200">Download</span> to obtain a short-lived presigned URL.</li>
+                <li>Click <span className="text-cyan-200">Upload evidence</span> and choose a file.</li>
+                <li>Verify the new row appears with status <code>EVIDENCE_LOCKED</code>.</li>
+                <li>Use <span className="text-slate-100">Download</span> to obtain a short-lived presigned URL.</li>
               </ol>
             </div>
 
-            <div className="text-[10px] text-slate-600 leading-relaxed border-t border-white/5 pt-3">
-              API: <code className="break-all">{API_BASE}</code>
+            <div className="text-[10px] text-slate-400 leading-relaxed border-t border-cyan-300/15 pt-3">
+              API: <code className="break-all text-slate-200">{API_BASE}</code>
             </div>
           </div>
         </aside>
@@ -665,15 +772,15 @@ export function EvidenceCenterPage() {
 function EmptyState({ eventId, onUpload }: { eventId: string; onUpload: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-16 px-6">
-      <FolderOpen size={42} className="text-slate-600 mb-3" />
-      <h3 className="text-base font-semibold text-slate-200">No evidence uploaded for this event yet.</h3>
-      <p className="text-sm text-slate-500 mt-1 max-w-md">
-        Event <code className="text-slate-300">{eventId}</code> has no files in the
+      <FolderOpen size={42} className="text-cyan-300/75 mb-3" />
+      <h3 className="text-base font-semibold text-slate-100">No evidence uploaded for this event yet.</h3>
+      <p className="text-sm text-slate-300 mt-1 max-w-md">
+        Event <code className="text-slate-100">{eventId}</code> has no files in the
         compliance store. Upload the first artifact to start the audit chain.
       </p>
       <button
         onClick={onUpload}
-        className="mt-4 px-4 py-2 text-sm rounded bg-[#FFC107]/15 hover:bg-[#FFC107]/25 border border-[#FFC107]/40 text-[#FFC107] inline-flex items-center gap-2"
+        className="mt-4 px-4 py-2 text-sm rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 inline-flex items-center gap-2"
       >
         <Upload size={14} /> Upload evidence
       </button>
@@ -693,18 +800,18 @@ function DetailDrawer({
     <div className="fixed inset-0 z-50 flex" onClick={onClose}>
       <div className="flex-1 bg-black/40" />
       <div
-        className="w-[420px] max-w-full bg-[#0c1118] border-l border-white/10 h-full overflow-auto p-5"
+        className="w-[420px] max-w-full bg-slate-950 border-l border-cyan-300/20 h-full overflow-auto p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <FileText size={16} className="text-[#FFC107]" />
-              <h3 className="text-sm font-semibold">File metadata</h3>
+              <FileText size={16} className="text-cyan-300" />
+              <h3 className="text-sm font-semibold text-slate-100">File metadata</h3>
             </div>
-            <p className="mt-1 text-base text-slate-100 break-all">{file.filename}</p>
+            <p className="mt-1 text-base text-slate-50 break-all">{file.filename}</p>
           </div>
-          <button title="Close" aria-label="Close panel" onClick={onClose} className="text-slate-500 hover:text-slate-200"><X size={16} /></button>
+          <button title="Close" aria-label="Close panel" onClick={onClose} className="text-slate-400 hover:text-slate-100"><X size={16} /></button>
         </div>
 
         <dl className="mt-5 space-y-2 text-xs">
@@ -724,7 +831,7 @@ function DetailDrawer({
 
         <button
           onClick={() => onDownload(file)}
-          className="mt-5 w-full px-3 py-2 text-sm rounded bg-[#FFC107]/15 hover:bg-[#FFC107]/25 border border-[#FFC107]/40 text-[#FFC107] inline-flex items-center justify-center gap-2"
+          className="mt-5 w-full px-3 py-2 text-sm rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 inline-flex items-center justify-center gap-2"
         >
           <ExternalLink size={14} /> Open presigned download
         </button>
@@ -736,8 +843,8 @@ function DetailDrawer({
 function Field({ k, v }: { k: string; v: string }) {
   return (
     <>
-      <dt className="text-slate-500 inline-block w-2/5">{k}</dt>
-      <dd className="text-slate-200 inline-block w-3/5 text-right break-all border-b border-white/5 pb-1.5">{v}</dd>
+      <dt className="text-slate-400 inline-block w-2/5">{k}</dt>
+      <dd className="text-slate-100 inline-block w-3/5 text-right break-all border-b border-cyan-300/15 pb-1.5">{v}</dd>
     </>
   );
 }

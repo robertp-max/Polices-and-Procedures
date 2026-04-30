@@ -58,20 +58,63 @@
   html, body, #root {
     margin: 0;
     padding: 0;
-    background: var(--ci-maroon-deep);
+    min-height: 100vh;
+    background-color: #f8fafc;
+    /* Responsive guard — never allow the document to push horizontal
+       overflow on phones / tablets. Prevents the classic "swipe right
+       reveals empty page edge" bug from a single rogue fixed-width
+       child (eg. legacy w-[1120px] grids). */
+    max-width: 100vw;
+    overflow-x: hidden;
   }
+  html { background-color: #f8fafc; }
   body {
     font-family: 'Outfit', 'Roboto', sans-serif;
     color: var(--ci-text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    background-color: #f8fafc;
+  }
+  body.light,
+  #root {
+    background-color: #f8fafc;
   }
   h1, h2, h3, h4 {
     font-family: 'Outfit', 'Montserrat', sans-serif;
     letter-spacing: 0.015em;
   }
+  /* iOS Safari auto-zooms form inputs whose computed font-size is
+     <16px when focused. Force a 16px minimum on phones only — desktop
+     keeps its compact 12-13px UI tokens unchanged. */
+  @media (max-width: 640px) {
+    input:not([type='checkbox']):not([type='radio']),
+    select,
+    textarea {
+      font-size: 16px;
+    }
+    /* Larger default tap targets on coarse pointers — keeps icon
+       buttons clickable without redesign. */
+    button, [role='button'], a.button, .glass-interactive {
+      min-height: 36px;
+    }
+  }
+  /* Long words / URLs in policy bodies should wrap on narrow screens
+     instead of forcing the parent flex/grid track wider than the
+     viewport. */
+  p, li, dd, td, th { overflow-wrap: anywhere; }
 }
+
+/* Prevent any flex / grid child from refusing to shrink below its
+   intrinsic content width — the #1 cause of mobile horizontal scroll
+   in legacy Tailwind layouts. Scoped to common containers so it does
+   not weaken images / SVG / canvases that legitimately need a min. */
+[data-shell-scroll] { min-width: 0; }
+[data-shell-scroll] section,
+[data-shell-scroll] header,
+[data-shell-scroll] main,
+[data-shell-scroll] aside,
+[data-shell-scroll] article { min-width: 0; }
 
 .font-montserrat { font-family: 'Montserrat', sans-serif; }
 .font-roboto     { font-family: 'Roboto', sans-serif; }
@@ -101,36 +144,36 @@
 /* Legacy alias: keep .vibrant-bg as a transparent no-op */
 .vibrant-bg { background: transparent; }
 
-/* 3300ms Glass Interactive Hover Logic (warm gold tint) */
+/* Snappy interactive hover timing */
 .glass-interactive {
   background-color: rgba(255,193,7,0);
   transition:
-    background-color 5864ms linear,
-    border-color 300ms ease,
-    color 300ms ease,
-    transform 300ms ease,
-    opacity 300ms ease,
-    box-shadow 300ms ease !important;
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease,
+    opacity 140ms ease,
+    box-shadow 180ms ease !important;
 }
 .glass-interactive:hover {
   background-color: rgba(255,193,7,0.14) !important;
   transition:
-    background-color 3300ms linear,
-    border-color 300ms ease,
-    color 300ms ease,
-    transform 300ms ease,
-    opacity 300ms ease,
-    box-shadow 300ms ease !important;
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease,
+    opacity 140ms ease,
+    box-shadow 180ms ease !important;
 }
 
-/* Icon Interactive Timing */
+/* Icon interactive timing */
 .icon-interactive {
   opacity: 0.4;
-  transition: opacity 2541ms linear, color 2541ms linear, transform 500ms ease !important;
+  transition: opacity 140ms ease, color 140ms ease, transform 220ms ease !important;
 }
 .group:hover .icon-interactive {
   opacity: 1 !important;
-  transition: opacity 330ms linear, color 330ms linear, transform 500ms ease !important;
+  transition: opacity 140ms ease, color 140ms ease, transform 220ms ease !important;
 }
 
 /* Fade-in / Animate-in */
@@ -397,6 +440,412 @@ html[data-theme="care-indeed-light"] .glass-interactive {
 }
 html[data-theme="care-indeed-light"] .glass-interactive:hover {
   background-color: rgba(0,121,112,0.10) !important;
+}
+
+/* ── Light mode: reset hardcoded dark backgrounds & text ─────── */
+/* Force page-level dark backgrounds to the light surface */
+html[data-theme="care-indeed-light"] [data-shell-scroll] > * {
+  background: var(--ci-bg) !important;
+}
+/* Override white-on-dark text utilities so text reads on the light surface */
+html[data-theme="care-indeed-light"] [data-shell-main] .text-white,
+html[data-theme="care-indeed-light"] [data-shell-main] [class*="text-white/"] {
+  color: var(--ci-text-primary) !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-main] .text-slate-100,
+html[data-theme="care-indeed-light"] [data-shell-main] .text-slate-200,
+html[data-theme="care-indeed-light"] [data-shell-main] .text-slate-300 {
+  color: var(--ci-text-primary) !important;
+}
+/* Near-invisible glass borders → visible light-mode borders */
+html[data-theme="care-indeed-light"] [data-shell-main] [class*="border-white/"] {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-main] [class*="divide-white/"] > * + * {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+/* Near-transparent glass surface Tailwind classes → light surface */
+html[data-theme="care-indeed-light"] [data-shell-main] [class*="bg-white/[0.0"] {
+  background-color: var(--ci-surface-muted) !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-main] [class*="bg-white/[0.1"] {
+  background-color: var(--ci-surface-2) !important;
+}
+/* Dark slate backgrounds (dark-mode-only components) → light surface */
+html[data-theme="care-indeed-light"] [data-shell-main] [class*="bg-slate-8"],
+html[data-theme="care-indeed-light"] [data-shell-main] [class*="bg-slate-9"] {
+  background: var(--ci-surface-muted) !important;
+}
+/* Form controls: always use light surfaces in light mode */
+html[data-theme="care-indeed-light"] [data-shell-main] input:not([type="range"]),
+html[data-theme="care-indeed-light"] [data-shell-main] select,
+html[data-theme="care-indeed-light"] [data-shell-main] textarea {
+  background: var(--ci-surface) !important;
+  color: var(--ci-text-primary) !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+/* Tab-group wrapper borders (border-white/10, border-white/20) → visible light border */
+html[data-theme="care-indeed-light"] [data-shell-main] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-main] .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+/* h1 / headings that use text-white inline class */
+html[data-theme="care-indeed-light"] [data-shell-main] h1.text-white,
+html[data-theme="care-indeed-light"] [data-shell-main] h2.text-white {
+  color: var(--ci-text-primary) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CARE INDEED — UNIFIED DESIGN SYSTEM TOKENS
+   See: Builder/CareIndeed-Design/CARE-INDEED-UI-ARCHITECTURE.md
+
+   Two orthogonal axes:
+     • brand → data-theme (ci-ion-dark | care-indeed-light)
+     • mode  → data-ci-mode (light | dark)  — CARE INDEED ONLY
+   data-ci-mode is IGNORED when brand = ci-ion-dark.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Shared scales (apply to all themes) ───────────────────── */
+:root {
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Sentiment (light defaults — overridden in CI dark below) */
+  --ci-success-bg:   #E5F4EE;
+  --ci-success-fg:   #008540;
+  --ci-success-bdr:  #85D4B2;
+  --ci-warning-bg:   #FFF0E5;
+  --ci-warning-fg:   #8C6B0A;
+  --ci-warning-bdr:  #FFC700;
+  --ci-danger-bg:    #FBE6E6;
+  --ci-danger-fg:    #D70101;
+  --ci-danger-bdr:   #F49E9E;
+  --ci-info-bg:      #E5FEFF;
+  --ci-info-fg:      #007970;
+  --ci-info-bdr:     #7ADEDF;
+}
+
+/* ── Semantic tokens — CI-ION dark (legacy default) ────────── */
+:root {
+  --ci-bg:            var(--ci-maroon-deep);
+  --ci-surface:       transparent;          /* one-glass canvas */
+  --ci-surface-2:     rgba(255,255,255,0.02);
+  --ci-surface-muted: rgba(255,255,255,0.04);
+  --ci-text-primary:  var(--ci-text);
+  --ci-text-muted-2:  rgba(255,255,255,0.65);
+  --ci-text-subtle:   rgba(255,255,255,0.40);
+  --ci-link:          var(--ci-gold);
+  --ci-link-hover:    var(--ci-gold-dark);
+  --ci-accent:        var(--ci-gold);
+  --ci-cta:           var(--ci-gold);
+  --ci-cta-text:      var(--ci-maroon-deep);
+  --ci-focus-ring:    rgba(255,193,7,0.35);
+  --ci-glass-bg:      var(--glass-main);
+  --ci-glass-border:  var(--ci-border);
+  --ci-shadow-sm:     0 1px 2px rgba(0,0,0,0.45);
+  --ci-shadow-md:     0 8px 22px rgba(0,0,0,0.45);
+  --ci-shadow-lg:     var(--shadow-glass);
+}
+
+/* ── Semantic tokens — Care Indeed LIGHT ───────────────────── */
+html[data-theme="care-indeed-light"] {
+  --ci-bg:            #FAFBF8;
+  --ci-surface:       #FFFFFF;
+  --ci-surface-2:     #FAFBF8;
+  --ci-surface-muted: #F4F4F2;
+  --ci-text-primary:  #1F1C1B;
+  --ci-text-muted-2:  #52404B;
+  --ci-text-subtle:   #747474;
+  --ci-link:          #007970;
+  --ci-link-hover:    #004142;
+  --ci-accent:        #007970;
+  --ci-cta:           #C74601;
+  --ci-cta-text:      #FFFFFF;
+  --ci-focus-ring:    rgba(199,70,1,0.30);
+  --ci-glass-bg:      #FFFFFF;
+  --ci-glass-border:  #E5E4E3;
+  --ci-shadow-sm:     0 1px 2px rgba(31,28,27,0.06);
+  --ci-shadow-md:     0 4px 12px rgba(31,28,27,0.08);
+  --ci-shadow-lg:     0 12px 32px rgba(31,28,27,0.10);
+}
+
+/* ── Semantic tokens — Care Indeed DARK (NEW) ──────────────── */
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] {
+  /* Brand-kit refresh in a deep teal-charcoal context */
+  --ci-primary-100:   #2A1810;
+  --ci-primary-200:   #3A1F12;
+  --ci-primary-300:   #5C2A14;
+  --ci-primary-400:   #E56E2E;
+  --ci-primary-500:   #E56E2E;       /* primary-400 promoted: AAA on dark */
+  --ci-primary-600:   #C74601;
+  --ci-secondary-100: #0E1F22;
+  --ci-secondary-200: #143034;
+  --ci-secondary-300: #1B4549;
+  --ci-secondary-400: #7ADEDF;
+  --ci-secondary-500: #7ADEDF;       /* secondary-400 promoted */
+  --ci-secondary-600: #C4F4F5;
+  --ci-neutral-100:   #0E1B1C;
+  --ci-neutral-200:   rgba(122,222,223,0.16);
+  --ci-neutral-300:   rgba(122,222,223,0.28);
+  --ci-neutral-400:   #7FA09D;
+  --ci-neutral-500:   #B7C7C5;
+  --ci-neutral-600:   #F1F5F4;
+
+  --ci-success-bg:   rgba(0,133,64,0.18);
+  --ci-success-fg:   #7AE2A8;
+  --ci-success-bdr:  rgba(0,133,64,0.45);
+  --ci-warning-bg:   rgba(255,199,0,0.18);
+  --ci-warning-fg:   #FFD64D;
+  --ci-warning-bdr:  rgba(255,199,0,0.45);
+  --ci-danger-bg:    rgba(215,1,1,0.20);
+  --ci-danger-fg:    #FF7A7A;
+  --ci-danger-bdr:   rgba(215,1,1,0.50);
+  --ci-info-bg:      rgba(0,121,112,0.20);
+  --ci-info-fg:      #7ADEDF;
+  --ci-info-bdr:     rgba(0,121,112,0.50);
+
+  /* Legacy CI token remaps so existing call-sites auto-shift */
+  --ci-gold:          #7ADEDF;
+  --ci-gold-dark:     #E56E2E;
+  --ci-gold-deep:     #C4F4F5;
+  --ci-accent-rgb:    122, 222, 223;
+  --ci-accent-rgb-2:  196, 244, 245;
+  --ci-cell-out:      #0E1B1C;
+  --ci-cell-today:    linear-gradient(180deg, rgba(122,222,223,0.12) 0%, rgba(14,27,28,0.85) 100%);
+  --ci-cell-day:      #15282A;
+
+  --ci-text:          #F1F5F4;
+  --ci-text-muted:    #B7C7C5;
+  --ci-border:        rgba(122,222,223,0.16);
+  --ci-border-strong: rgba(122,222,223,0.28);
+  --ci-hairline:      rgba(122,222,223,0.10);
+
+  --glass-main:       linear-gradient(160deg,rgba(27,49,51,0.78),rgba(14,27,28,0.78));
+  --glass-panel:      var(--glass-main);
+  --shadow-glass:     0 22px 48px -16px rgba(0,0,0,0.65), inset 0 1px 0 rgba(122,222,223,0.06);
+
+  /* Semantic */
+  --ci-bg:            #0E1B1C;
+  --ci-surface:       #15282A;
+  --ci-surface-2:     #1B3133;
+  --ci-surface-muted: #11242A;
+  --ci-text-primary:  #F1F5F4;
+  --ci-text-muted-2:  #B7C7C5;
+  --ci-text-subtle:   #7FA09D;
+  --ci-link:          #7ADEDF;
+  --ci-link-hover:    #C4F4F5;
+  --ci-accent:        #7ADEDF;
+  --ci-cta:           #E56E2E;
+  --ci-cta-text:      #1F1C1B;
+  --ci-focus-ring:    rgba(122,222,223,0.45);
+  --ci-glass-bg:      linear-gradient(160deg,rgba(27,49,51,0.78),rgba(14,27,28,0.78));
+  --ci-glass-border:  rgba(122,222,223,0.18);
+  --ci-shadow-sm:     0 1px 2px rgba(0,0,0,0.45);
+  --ci-shadow-md:     0 8px 22px rgba(0,0,0,0.45);
+  --ci-shadow-lg:     0 22px 48px -16px rgba(0,0,0,0.65);
+}
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] body {
+  background: var(--ci-bg);
+  color: var(--ci-text-primary);
+  font-family: 'Roboto', 'Outfit', sans-serif;
+}
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] h1,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] h2,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] h3,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] h4,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] h5,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] h6 {
+  color: var(--ci-text-primary);
+}
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] *:focus-visible {
+  outline: 2px solid var(--ci-accent);
+  outline-offset: 2px;
+}
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .glass-interactive {
+  background-color: rgba(122,222,223,0);
+}
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .glass-interactive:hover {
+  background-color: rgba(122,222,223,0.10) !important;
+}
+
+/* ── Care Indeed DARK: blanket overrides for legacy hardcoded
+   Tailwind light surfaces / text used throughout pages that have
+   not yet been migrated to semantic tokens. Scoped under the dark
+   mode selector so light mode is unaffected. ───────────────── */
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .bg-white,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .bg-\[\#FFFFFF\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .bg-\[\#FFF\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .bg-slate-50,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .bg-gray-50,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .bg-\[\#F8FAFC\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .bg-\[\#FAFBF8\] {
+  background-color: var(--ci-surface) !important;
+  color: var(--ci-text-primary);
+}
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .bg-slate-100,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .bg-gray-100,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .bg-\[\#F1F5F9\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .bg-\[\#F3F4F6\] {
+  background-color: var(--ci-surface-2) !important;
+}
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-slate-900,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-gray-900,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-\[\#0F172A\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-\[\#1F2937\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-black {
+  color: var(--ci-text-primary) !important;
+}
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-slate-700,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-slate-800,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-gray-700,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-gray-800,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-\[\#334155\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-\[\#475569\] {
+  color: var(--ci-text-muted-2) !important;
+}
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-slate-500,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-slate-600,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-gray-500,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-gray-600,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-\[\#64748B\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .text-\[\#52404B\] {
+  color: var(--ci-text-subtle) !important;
+}
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .border-slate-200,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .border-slate-300,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .border-gray-200,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .border-gray-300,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .border-\[\#E2E8F0\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .border-\[\#E5E4E3\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] [data-shell-card] .border-\[\#CBD5E1\] {
+  border-color: var(--ci-border) !important;
+}
+
+/* ── Token-driven utility classes (theme-safe) ─────────────── */
+.ci-surface       { background: var(--ci-surface); color: var(--ci-text-primary); }
+.ci-surface-muted { background: var(--ci-surface-muted); color: var(--ci-text-primary); }
+.ci-text          { color: var(--ci-text-primary); }
+.ci-text-muted    { color: var(--ci-text-muted-2); }
+.ci-text-subtle   { color: var(--ci-text-subtle); }
+.ci-border        { border-color: var(--ci-border); }
+.ci-link {
+  color: var(--ci-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 120ms ease;
+}
+.ci-link:hover { color: var(--ci-link-hover); }
+.ci-card {
+  background: var(--ci-surface);
+  color: var(--ci-text-primary);
+  border: 1px solid var(--ci-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--ci-shadow-sm);
+}
+.ci-glass-panel {
+  background: var(--ci-glass-bg);
+  color: var(--ci-text-primary);
+  border: 1px solid var(--ci-glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--ci-shadow-md);
+}
+html[data-theme="ci-ion-dark"] .ci-glass-panel,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-glass-panel {
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  backdrop-filter: blur(14px) saturate(120%);
+}
+
+/* Sentiment badge utilities */
+.ci-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font: 600 11px/16px 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid transparent;
+}
+.ci-badge--neutral { background: var(--ci-surface-muted); color: var(--ci-text-muted-2); border-color: var(--ci-border); }
+.ci-badge--info    { background: var(--ci-info-bg);    color: var(--ci-info-fg);    border-color: var(--ci-info-bdr); }
+.ci-badge--success { background: var(--ci-success-bg); color: var(--ci-success-fg); border-color: var(--ci-success-bdr); }
+.ci-badge--warning { background: var(--ci-warning-bg); color: var(--ci-warning-fg); border-color: var(--ci-warning-bdr); }
+.ci-badge--danger  { background: var(--ci-danger-bg);  color: var(--ci-danger-fg);  border-color: var(--ci-danger-bdr); }
+
+/* CTA / secondary buttons */
+.ci-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 36px; padding: 0 16px; border-radius: var(--radius-md);
+  font: 600 14px/20px 'Roboto', sans-serif;
+  border: 1px solid transparent;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  cursor: pointer;
+}
+.ci-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.ci-btn--cta       { background: var(--ci-cta); color: var(--ci-cta-text); }
+.ci-btn--cta:hover { background: var(--ci-primary-600, #421700); }
+.ci-btn--secondary {
+  background: transparent;
+  color: var(--ci-accent);
+  border-color: var(--ci-accent);
+}
+.ci-btn--secondary:hover { background: var(--ci-info-bg); }
+.ci-btn--ghost {
+  background: transparent;
+  color: var(--ci-text-muted-2);
+}
+.ci-btn--ghost:hover { background: var(--ci-surface-muted); color: var(--ci-text-primary); }
+.ci-btn--sm { height: 28px; padding: 0 12px; font-size: 12px; }
+.ci-btn--lg { height: 44px; padding: 0 20px; font-size: 15px; }
+
+/* Utility (square icon) button */
+.ci-util-btn {
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ci-text-muted-2);
+  border: 1px solid transparent;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  cursor: pointer;
+}
+.ci-util-btn:hover {
+  background: var(--ci-surface-muted);
+  color: var(--ci-text-primary);
+  border-color: var(--ci-border);
+}
+
+/* Field */
+.ci-field {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--ci-border-strong);
+  background: var(--ci-surface);
+  color: var(--ci-text-primary);
+  font: 400 14px/20px 'Roboto', sans-serif;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.ci-field::placeholder { color: var(--ci-text-subtle); }
+.ci-field:focus {
+  outline: none;
+  border-color: var(--ci-accent);
+  box-shadow: 0 0 0 3px var(--ci-focus-ring);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1494,3 +1943,90 @@ html.ci-theme-transitioning *::after {
   to   { opacity: 1; transform: scale(1)    translateY(0);    }
 }
 .policy-help-modal-panel { animation: help-modal-in 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+/* ══════════════════════════════════════════════════════════════
+   CARE INDEED DARK MODE — utility reset
+   Reverts the broad Care Indeed light utility remaps above so
+   dashboard/timeline surfaces keep high-contrast dark rendering.
+   ══════════════════════════════════════════════════════════════ */
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/95,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/90,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/85,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/80 { color: #F1F5F4 !important; }
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/75,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/70,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/65,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/60,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/55,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/50 { color: #B7C7C5 !important; }
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/45,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/40,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/35,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/30,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/25,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/20,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/15,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/10,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-white\/5 { color: #7FA09D !important; }
+
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .border-white,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .border-white\/50,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .border-white\/40,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .border-white\/30,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .border-white\/20,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .border-white\/15,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .border-white\/12,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .border-white\/10,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .border-white\/5 { border-color: rgba(122,222,223,0.24) !important; }
+
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/60,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/50,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/40,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/30,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/20,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/15,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/12,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/10,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/8,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/5,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/\[0\.12\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/\[0\.10\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/\[0\.08\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/\[0\.05\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/\[0\.04\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/\[0\.03\],
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .bg-white\/\[0\.02\] {
+  background-color: rgba(255,255,255,0.06) !important;
+  color: #F1F5F4 !important;
+}
+
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .divide-white\/5 > :not([hidden]) ~ :not([hidden]),
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .divide-white\/10 > :not([hidden]) ~ :not([hidden]),
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .divide-white\/12 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(122,222,223,0.22) !important;
+}
+
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .placeholder-white\/30::placeholder,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .placeholder-white\/40::placeholder,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .placeholder-white\/50::placeholder,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .placeholder-white\/60::placeholder,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] *::placeholder {
+  color: #7FA09D !important;
+}
+
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-slate-100,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-slate-200,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-slate-300,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-zinc-100,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-zinc-200,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-zinc-300,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-gray-100,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-gray-200,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-gray-300,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-neutral-100,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-neutral-200,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-neutral-300,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-stone-100,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-stone-200,
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-stone-300 { color: #B7C7C5 !important; }

@@ -12,14 +12,30 @@ import { StudioTabs, STUDIO_TABS, type StudioTabId } from './components/StudioTa
 import { RightPanelPreview } from './components/RightPanelPreview';
 import { NoAnswer } from './components/NoAnswer';
 import { ScenarioResponse } from './components/ScenarioResponse';
+import { ScenarioActionSections } from './components/ScenarioActionSections';
 import { HealthStrip } from './components/HealthStrip';
 import { OperationalGaps } from './components/OperationalGaps';
 import { RegulatoryAlerts } from './components/RegulatoryAlerts';
 import { BradHelpCenter } from './components/BradHelpCenter';
 import { ChatThread } from './components/ChatThread';
 import { ActiveCasePanel } from './components/ActiveCasePanel';
+import { DemoCriticalEmergencyResponse } from './components/DemoCriticalEmergencyResponse';
+import { DemoCriticalOrchestrationPanel } from './components/DemoCriticalOrchestrationPanel';
+import { classifyScenario } from './lib/classifyScenario';
+import { getComplianceActionDefinition, type ResolvedComplianceActionDefinition } from './lib/complianceActionMap';
+import {
+  acknowledgeDemoCriticalEmergency,
+  createDemoCriticalEmergencyState,
+  isDemoCriticalTrigger,
+  selectDemoItem,
+  type DemoCriticalEmergencyState,
+} from './lib/demoCriticalEmergency';
 import { useIaHealth, useIaQuery, useIaReference, useChatThread } from './lib/useIa';
 import { iaClient } from './lib/iaClient';
+import { consumePendingMissionQuery } from '@/policy/components/onboarding/missionHandoff';
+import { useComplianceExecution } from '@/policy/compliance-execution/complianceExecutionStore';
+import { openReferenceInNewTab } from './lib/referenceRouting';
+import type { BradRuntimeSnapshot } from '@/services/bradAppContext';
 import type { AvailableAction, IntentKind, StructuredResponse } from './lib/responseTypes';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -48,11 +64,37 @@ export function IAdministratorPage() {
   const theme = useShellStore(s => s.theme);
   const isLight = theme === 'care-indeed-light';
   const navigate = useNavigate();
+  const execution = useComplianceExecution();
+
+  const bradRuntimeSnapshot = useMemo<BradRuntimeSnapshot>(() => ({
+    events: execution.events.map(event => ({
+      id: event.id,
+      title: event.title,
+      anchorDate: event.anchorDate,
+      domain: event.domain,
+    })),
+    executionUnits: execution.executionUnits.map(unit => ({
+      id: unit.id,
+      title: unit.title,
+      dueDate: unit.dueDate,
+      complianceState: unit.complianceState,
+      parentEventId: unit.parentEventId,
+      workflowId: unit.workflowId,
+      sourcePolicyIds: unit.sourcePolicyIds,
+      sourceFormIds: unit.sourceFormIds,
+    })),
+    workflows: execution.workflows.map(workflow => ({
+      id: workflow.id,
+      title: workflow.title,
+      eventId: workflow.eventId,
+    })),
+    sprintMetrics: execution.sprintMetrics,
+  }), [execution.events, execution.executionUnits, execution.workflows, execution.sprintMetrics]);
 
   const { health, loading: healthLoading, error: healthError, backendMode, refresh } = useIaHealth();
-  const query = useIaQuery();
+  const query = useIaQuery(backendMode, bradRuntimeSnapshot);
   const reference = useIaReference();
-  const chat = useChatThread();
+  const chat = useChatThread(bradRuntimeSnapshot);
 
   const [activeTab, setActiveTab] = useState<StudioTabId>('answer');
   const [rebuildState, setRebuildState] = useState<'idle' | 'running' | 'error'>('idle');
@@ -60,27 +102,79 @@ export function IAdministratorPage() {
   const [runningActionId, setRunningActionId] = useState<string | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [chatMode, setChatMode] = useState(false);
+  const [demoCriticalState, setDemoCriticalState] = useState<DemoCriticalEmergencyState | null>(null);
+  const isMockDemoMode = backendMode === 'checking'
+    || backendMode === 'static_deploy'
+    || backendMode === 'not_found'
+    || backendMode === 'unreachable'
+    || backendMode === 'method_mismatch';
+
+  const localScenarioClassification = useMemo(
+    () => (query.lastInput ? classifyScenario(query.lastInput) : null),
+    [query.lastInput],
+  );
+  const localScenarioActionDefinition = useMemo<ResolvedComplianceActionDefinition | null>(
+    () => (localScenarioClassification ? getComplianceActionDefinition(localScenarioClassification.scenarioId) : null),
+    [localScenarioClassification],
+  );
 
   /* ── Submit handler ─────────────────────────────────────────── */
   const submitCommand = useCallback((input: string, explicitIntent?: IntentKind) => {
+    if (isDemoCriticalTrigger(input)) {
+      query.reset();
+      reference.clear();
+      setActiveTab('answer');
+      setDemoCriticalState(createDemoCriticalEmergencyState(input));
+      return;
+    }
+    setDemoCriticalState(null);
     const intent = explicitIntent ?? tabToIntent(activeTab);
     query.submit({ input, intent });
-  }, [query, activeTab]);
+  }, [query, activeTab, reference]);
+
+  /* ── Pending mission handoff (returning-user mission prompt) ──
+     Runs once on mount: if a query was stashed by MissionPromptOverlay,
+     consume it and submit through the existing query infrastructure. */
+  useEffect(() => {
+    const pending = consumePendingMissionQuery();
+    if (pending) submitCommand(pending);
+    // Intentionally mount-only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ── Tab change re-runs the last command under the new intent ── */
   const onTabChange = useCallback((tab: StudioTabId) => {
     setActiveTab(tab);
+    if (demoCriticalState) return;
     if (query.lastInput && !query.loading) {
       query.submit({ input: query.lastInput, intent: tabToIntent(tab) });
     }
-  }, [query]);
+  }, [query, demoCriticalState]);
+
+  const onAcknowledgeDemoCritical = useCallback(() => {
+    setDemoCriticalState((prev) => (prev ? acknowledgeDemoCriticalEmergency(prev) : prev));
+  }, []);
+
+  const onOpenDemoForm = useCallback((id: string) => {
+    setDemoCriticalState((prev) => {
+      if (!prev || !prev.acknowledged) return prev;
+      return selectDemoItem(prev, 'form', id);
+    });
+  }, []);
+
+  const onOpenDemoPolicy = useCallback((id: string) => {
+    setDemoCriticalState((prev) => {
+      if (!prev || !prev.acknowledged) return prev;
+      return selectDemoItem(prev, 'policy', id);
+    });
+  }, []);
 
   /* ── Action dispatch ────────────────────────────────────────── */
   const handleAction = useCallback(async (action: AvailableAction) => {
     setRunningActionId(action.id);
     try {
       if (action.type.startsWith('open_') && action.targetId) {
-        await reference.load(action.targetId);
+        openReferenceInNewTab(action.targetId);
         return;
       }
       if (action.type.startsWith('generate_') && action.studioOutputType) {
@@ -94,11 +188,11 @@ export function IAdministratorPage() {
       }
       // print_form / download_pdf / attach_to_event / mark_complete:
       // staged for future workflow layer; show reference for now.
-      if (action.targetId) await reference.load(action.targetId);
+      if (action.targetId) openReferenceInNewTab(action.targetId);
     } finally {
       setRunningActionId(null);
     }
-  }, [reference, query]);
+  }, [query]);
 
   const handleRebuild = useCallback(async () => {
     // Guard: never attempt rebuild when no backend is available
@@ -133,30 +227,35 @@ export function IAdministratorPage() {
 
   /* ── Phase-1 SSE: pre-load right panel the moment retrieval completes ── */
   useEffect(() => {
+    if (demoCriticalState) return;
     const topDocId = query.phase1TopDocId;
     if (!topDocId) return;
     // Only pre-load if the user hasn't opened something manually.
     if (reference.reference) return;
     void reference.load(topDocId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.phase1TopDocId]);
+  }, [query.phase1TopDocId, demoCriticalState, isMockDemoMode]);
 
   /* ── Auto-select reference from first linkedReference / citation ── */
   useEffect(() => {
+    if (demoCriticalState) return;
     const r = query.response;
     if (!r || r.noAnswerFound) return;
     if (reference.reference) return; // don't override a user selection
     const auto =
+      localScenarioActionDefinition?.relatedPolicies[0]?.id ??
+      localScenarioActionDefinition?.relatedForms[0]?.id ??
+      localScenarioActionDefinition?.relatedWorkflows[0]?.id ??
       r.linkedReferences[0]?.id ??
       r.citations[0]?.policyId ??
       r.availableActions.find(a => a.type.startsWith('open_'))?.targetId;
     if (auto) void reference.load(auto);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.response?.id]);
+  }, [query.response?.id, localScenarioActionDefinition, demoCriticalState, isMockDemoMode]);
 
   const suggestions = useMemo(() =>
-    query.response ? undefined : DEFAULT_SUGGESTIONS,
-    [query.response],
+    (query.response || demoCriticalState) ? undefined : DEFAULT_SUGGESTIONS,
+    [query.response, demoCriticalState],
   );
 
   /* ── Render ─────────────────────────────────────────────────── */
@@ -285,7 +384,7 @@ export function IAdministratorPage() {
                 isLight={isLight}
                 onSubmit={chat.submit}
                 onNewCase={chat.newThread}
-                onOpenReference={id => void reference.load(id)}
+                onOpenReference={openReferenceInNewTab}
                 onAction={handleAction}
               />
             </div>
@@ -299,14 +398,14 @@ export function IAdministratorPage() {
                   error={reference.error}
                   isLight={isLight}
                   onClose={reference.clear}
-                  onOpenLinked={id => void reference.load(id)}
+                  onOpenLinked={openReferenceInNewTab}
                 />
               ) : (
                 <ActiveCasePanel
                   session={chat.session}
                   isLight={isLight}
                   onNewCase={chat.newThread}
-                  onOpenReference={id => void reference.load(id)}
+                  onOpenReference={openReferenceInNewTab}
                   onSessionUpdate={chat.updateSession}
                 />
               )}
@@ -356,15 +455,25 @@ export function IAdministratorPage() {
                 {query.response && (
                   <ResponseStack
                     response={query.response}
+                    localScenarioClassification={localScenarioClassification}
+                    localScenarioActionDefinition={localScenarioActionDefinition}
                     isLight={isLight}
                     activeReferenceId={reference.reference?.id ?? null}
                     runningActionId={runningActionId}
-                    onOpenReference={id => void reference.load(id)}
+                    onOpenReference={openReferenceInNewTab}
                     onAction={handleAction}
                   />
                 )}
 
-                {!query.loading && !query.response && !query.error && (
+                {demoCriticalState && (
+                  <DemoCriticalEmergencyResponse
+                    isLight={isLight}
+                    acknowledged={demoCriticalState.acknowledged}
+                    onAcknowledge={onAcknowledgeDemoCritical}
+                  />
+                )}
+
+                {!query.loading && !query.response && !query.error && !demoCriticalState && (
                   <WelcomeState isLight={isLight} />
                 )}
               </div>
@@ -372,14 +481,23 @@ export function IAdministratorPage() {
 
             {/* RIGHT column: execution workspace */}
             <div className="hidden lg:flex flex-col min-h-0">
-              <RightPanelPreview
-                reference={reference.reference}
-                loading={reference.loading}
-                error={reference.error}
-                isLight={isLight}
-                onClose={reference.clear}
-                onOpenLinked={id => void reference.load(id)}
-              />
+              {demoCriticalState ? (
+                <DemoCriticalOrchestrationPanel
+                  state={demoCriticalState}
+                  isLight={isLight}
+                  onOpenForm={onOpenDemoForm}
+                  onOpenPolicy={onOpenDemoPolicy}
+                />
+              ) : (
+                <RightPanelPreview
+                  reference={reference.reference}
+                  loading={reference.loading}
+                  error={reference.error}
+                  isLight={isLight}
+                  onClose={reference.clear}
+                  onOpenLinked={openReferenceInNewTab}
+                />
+              )}
             </div>
           </>
         )}
@@ -427,6 +545,8 @@ export function IAdministratorPage() {
    ───────────────────────────────────────────────────────────── */
 function ResponseStack({
   response,
+  localScenarioClassification,
+  localScenarioActionDefinition,
   isLight,
   activeReferenceId,
   runningActionId,
@@ -434,6 +554,8 @@ function ResponseStack({
   onAction,
 }: {
   response: StructuredResponse;
+  localScenarioClassification: ReturnType<typeof classifyScenario>;
+  localScenarioActionDefinition: ResolvedComplianceActionDefinition | null;
   isLight: boolean;
   activeReferenceId: string | null;
   runningActionId: string | null;
@@ -441,17 +563,28 @@ function ResponseStack({
   onAction: (action: AvailableAction) => void;
 }) {
   const hasScenario = Boolean(response.scenario && response.scenario.category !== 'GENERAL_QUERY');
+  const hasLocalScenarioActionLayer = Boolean(localScenarioClassification && localScenarioActionDefinition);
 
   if (response.noAnswerFound) {
     return (
       <>
-        <NoAnswer
-          reason={response.noAnswerReason}
-          isLight={isLight}
-          hasScenarioMapping={hasScenario}
-        />
+        {!hasLocalScenarioActionLayer && (
+          <NoAnswer
+            reason={response.noAnswerReason}
+            isLight={isLight}
+            hasScenarioMapping={hasScenario}
+          />
+        )}
         {hasScenario && response.scenario && (
           <ScenarioResponse scenario={response.scenario} isFallback isLight={isLight} />
+        )}
+        {hasLocalScenarioActionLayer && localScenarioClassification && localScenarioActionDefinition && (
+          <ScenarioActionSections
+            classification={localScenarioClassification}
+            definition={localScenarioActionDefinition}
+            isLight={isLight}
+            onOpenReference={onOpenReference}
+          />
         )}
         {response.linkedReferences.length > 0 && (
           <ReferenceCards
@@ -482,10 +615,18 @@ function ResponseStack({
   }
   return (
     <>
+      {hasLocalScenarioActionLayer && localScenarioClassification && localScenarioActionDefinition && (
+        <ScenarioActionSections
+          classification={localScenarioClassification}
+          definition={localScenarioActionDefinition}
+          isLight={isLight}
+          onOpenReference={onOpenReference}
+        />
+      )}
       {hasScenario && response.scenario && (
         <ScenarioResponse scenario={response.scenario} isLight={isLight} />
       )}
-      <StructuredAnswer response={response} isLight={isLight} onOpenReference={onOpenReference} />
+      <StructuredAnswer response={response} isLight={isLight} />
       {response.requirementsSnapshot.length > 0 && (
         <RequirementsSnapshot items={response.requirementsSnapshot} isLight={isLight} onOpenReference={onOpenReference} />
       )}

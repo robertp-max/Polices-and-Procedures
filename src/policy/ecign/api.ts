@@ -4,20 +4,12 @@
  * frontend. All state-changing calls run through here so audit trail
  * is created on EVERY action.
  */
-import { DEMO_SESSION } from '@/policy/components/FormSignatureContext';
+import { buildEcignAuthHeaders } from './signerIdentity';
 
 const BASE = '/api';
 
 function authHeaders(extra?: Record<string, string>): HeadersInit {
-  return {
-    'Content-Type':   'application/json',
-    'X-User-Id':      DEMO_SESSION.id,
-    'X-User-Name':    DEMO_SESSION.name,
-    'X-User-Role':    DEMO_SESSION.role,
-    'X-User-Email':   DEMO_SESSION.email,
-    'X-User-Tier':    String(DEMO_SESSION.tier),
-    ...(extra ?? {}),
-  };
+  return buildEcignAuthHeaders(extra);
 }
 
 export class EcignApiError extends Error {

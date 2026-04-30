@@ -21,6 +21,7 @@ import {
 import type { SessionSummary, BradMode, BradUrgency, CaseStatus } from '../lib/sessionTypes';
 import { MODE_LABELS, MODE_COLORS, URGENCY_COLORS } from '../lib/sessionTypes';
 import { iaClient } from '../lib/iaClient';
+import { ReferenceLink } from './ReferenceLink';
 
 const ACCENT = '#C8A96E';
 
@@ -154,7 +155,7 @@ export interface ActiveCasePanelProps {
 }
 
 export function ActiveCasePanel({
-  session, isLight, onNewCase, onOpenReference, onSessionUpdate,
+  session, isLight, onNewCase, onOpenReference: _onOpenReference, onSessionUpdate,
 }: ActiveCasePanelProps) {
   const [completedActions, setCompletedActions] = useState<Set<number>>(new Set());
   const [completedTasks, setCompletedTasks] = useState<Set<number>>(new Set());
@@ -360,20 +361,20 @@ export function ActiveCasePanel({
           >
             <div className="flex flex-wrap gap-1.5">
               {session.activeForms.map(formId => (
-                <button
+                <ReferenceLink
                   key={formId}
-                  type="button"
-                  onClick={() => onOpenReference?.(formId)}
+                  id={formId}
                   className="text-[10px] font-semibold px-2 py-0.5 rounded hover:opacity-80 transition-opacity"
                   style={{
                     color: ACCENT,
                     background: 'rgba(200,169,110,0.12)',
                     border: '1px solid rgba(200,169,110,0.3)',
                     fontFamily: mono,
+                    textDecoration: 'none',
                   }}
                 >
                   {formId}
-                </button>
+                </ReferenceLink>
               ))}
             </div>
           </Section>
@@ -389,20 +390,20 @@ export function ActiveCasePanel({
           >
             <div className="flex flex-wrap gap-1.5">
               {session.activePolicies.map(pId => (
-                <button
+                <ReferenceLink
                   key={pId}
-                  type="button"
-                  onClick={() => onOpenReference?.(pId)}
+                  id={pId}
                   className="text-[10px] font-semibold px-2 py-0.5 rounded hover:opacity-80 transition-opacity"
                   style={{
                     color: subColor,
                     background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)',
                     border: `1px solid ${border}`,
                     fontFamily: mono,
+                    textDecoration: 'none',
                   }}
                 >
                   {pId}
-                </button>
+                </ReferenceLink>
               ))}
             </div>
           </Section>

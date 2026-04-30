@@ -30,8 +30,7 @@ export function WorkflowLibraryApp() {
 
   return (
     <div
-      className="w-full h-full flex overflow-hidden"
-      style={{ fontFamily: 'Roboto, sans-serif' }}
+      className="w-full h-full flex overflow-hidden bg-ci-bg text-ci-text-primary font-roboto"
     >
       <BrandRail
         selectedDomain={selectedDomain}
@@ -40,7 +39,7 @@ export function WorkflowLibraryApp() {
         onSelectSavedView={setSavedView}
         compact={compact}
       />
-      <main className="flex-1 min-w-0 overflow-hidden">
+      <main className="flex-1 min-w-0 overflow-hidden bg-ci-bg">
         <Routes>
           <Route
             index

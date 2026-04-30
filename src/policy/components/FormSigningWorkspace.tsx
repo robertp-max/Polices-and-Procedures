@@ -15,8 +15,7 @@
 import { useState, useCallback, useRef, useEffect, Fragment, useMemo } from 'react';
 import {
   PenLine, CheckCircle2, Shield, X, Send, Printer, Download,
-  ArrowLeft, Lock, Camera, RefreshCw,
-  CameraOff, ChevronRight,
+  ArrowLeft, Lock, RefreshCw, ChevronRight,
   FileSignature, ScanFace, Sparkles, IdCard,
 } from 'lucide-react';
 import eCIgnLogo from '@/assets/eCIgn.png';
@@ -26,7 +25,6 @@ import {
   type GeoInfo,
   type FieldEdit,
   type DemoUser,
-  DEMO_SESSION,
   DEMO_STAFF,
   signerNanoid,
   fmtSignTs,
@@ -42,6 +40,7 @@ import {
   queryEvidenceByContext,
   type EsignEvidenceResponse,
 } from '@/policy/ecign/hhcEvidence';
+import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
 import { HelpContextLink } from '@/policy/help/HelpContextLink';
 import {
   type PolicyLinkMeta,
@@ -734,6 +733,7 @@ export function eCIgnWorkspace({
   onClose,
   onRequestSecond,
 }: eCIgnWorkspaceProps) {
+  const signer = useEcignSignerIdentity();
   const linkedPolicyIds = useMemo<string[]>(() => {
     if (Array.isArray(linkedPolicyIdsProp) && linkedPolicyIdsProp.length > 0) {
       return [...linkedPolicyIdsProp];
@@ -805,10 +805,10 @@ export function eCIgnWorkspace({
           document_hash:    instance.document_hash || null,
           signature_hash:   sigHash,
           attestation_text: attestationText,
-          signer_id:        DEMO_SESSION.id,
-          signer_name:      DEMO_SESSION.name,
-          signer_role:      DEMO_SESSION.role,
-          signer_email:     DEMO_SESSION.email,
+          signer_id:        signer.id,
+          signer_name:      signer.name,
+          signer_role:      signer.role,
+          signer_email:     signer.email,
           signed_at:        instance.locked_at_utc || new Date().toISOString(),
           network_location: {
             ip_address: evidenceNetworkLocation.ip_address,
@@ -844,8 +844,8 @@ export function eCIgnWorkspace({
           signature_hash: sigHash,
           document_hash: instance.document_hash || null,
           attestation_text: attestationText,
-          signer_name: DEMO_SESSION.name,
-          signer_role: DEMO_SESSION.role,
+          signer_name: signer.name,
+          signer_role: signer.role,
           signed_at: instance.locked_at_utc || new Date().toISOString(),
           searched_events: evidenceRefresh.searched_events,
           refreshed_count: evidenceRefresh.matches.length,
@@ -859,7 +859,7 @@ export function eCIgnWorkspace({
         }
       }
     })();
-  }, [backendState, instance, linkedPolicyIds, policies, formInstanceId, formId, hhcEventId, hhcWorkflowId]);
+  }, [backendState, formId, formInstanceId, hhcEventId, hhcWorkflowId, instance, linkedPolicyIds, policies, signer.email, signer.id, signer.name, signer.role]);
 
   const [auditEvents, setAuditEvents] = useState<AuditEventShape[]>([]);
   useEffect(() => {
@@ -878,25 +878,30 @@ export function eCIgnWorkspace({
     return () => { cancelled = true; };
   }, [backendState, instance?.instance_id]);
 
-  /* ── Local-only UI state (presentational, never gates progression) ── */
+  /* ── Local UI state ──────────────────────────────────────────────── */
   const [localRecord,    setLocalRecord]    = useState<SignatureRecord | null>(null);
   const [showSecondSig,  setShowSecondSig]  = useState(false);
   const [consentChecked, setConsentChecked] = useState(false);
+  const [identityAttested, setIdentityAttested] = useState(false);
   const [localTask,      setLocalTask]      = useState<SecondSigTask | null>(initialSecondSigTask);
   const certAt = useState(() => new Date().toISOString())[0];
+  const hasSignerIdentity = useMemo(
+    () => Boolean(signer.name?.trim() && signer.email?.trim() && signer.role?.trim()),
+    [signer.email, signer.name, signer.role],
+  );
   const effectiveRecord = useMemo<SignatureRecord>(() => {
     if (localRecord) return localRecord;
     const firstKnown = signatures.values().next().value as SignatureRecord | undefined;
     if (firstKnown) return firstKnown;
     return {
       fieldId,
-      signerName: DEMO_SESSION.name,
-      signerRole: DEMO_SESSION.role,
-      signerEmail: DEMO_SESSION.email,
+      signerName: signer.name,
+      signerRole: signer.role,
+      signerEmail: signer.email,
       signedAt: instance?.locked_at_utc || certAt,
       signatureDataUrl: SIGNATURE_PLACEHOLDER_DATA_URL,
     };
-  }, [localRecord, signatures, fieldId, instance, certAt]);
+  }, [certAt, fieldId, instance, localRecord, signatures, signer.email, signer.name, signer.role]);
 
   /* ── Signature canvas — only mounted on the SIGNED screen ───────── */
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -941,76 +946,15 @@ export function eCIgnWorkspace({
     setEmpty(true);
   };
 
-  /* ── Camera (IDENTITY screen only) ───────────────────────────────── */
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [camStream,   setCamStream]   = useState<MediaStream | null>(null);
-  const [camError,    setCamError]    = useState('');
-  const [signerPhoto, setSignerPhoto] = useState<string | null>(null);
-
-  const startCamera = useCallback(async () => {
-    setCamError('');
-    try {
-      if (!window.isSecureContext) {
-        setCamError('Camera requires a secure context. Use https:// or http://localhost.');
-        return;
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } },
-      });
-      setCamStream(stream);
-    } catch {
-      setCamError('Camera access denied or unavailable.');
-    }
-  }, []);
-
-  const stopCamera = useCallback(() => {
-    camStream?.getTracks().forEach(t => t.stop());
-    setCamStream(null);
-  }, [camStream]);
-
-  const capturePhoto = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const c = document.createElement('canvas');
-    c.width  = video.videoWidth;
-    c.height = video.videoHeight;
-    c.getContext('2d')?.drawImage(video, 0, 0);
-    setSignerPhoto(c.toDataURL('image/jpeg', 0.88));
-    stopCamera();
-  }, [stopCamera]);
-
-  const retakePhoto = useCallback(() => {
-    setSignerPhoto(null);
-    startCamera();
-  }, [startCamera]);
-
-  useEffect(() => {
-    if (!camStream || !videoRef.current) return;
-    const v = videoRef.current;
-    v.srcObject = camStream;
-    v.muted     = true;
-    void v.play().catch(() => undefined);
-  }, [camStream]);
-
-  // auto-start when entering IDENTITY; stop when leaving
-  useEffect(() => {
-    if (backendState === 'disclosed' && !camStream && !signerPhoto) {
-      void startCamera();
-    }
-    if (backendState !== 'disclosed') stopCamera();
-  // intentional: avoid camStream/signerPhoto dep loops
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [backendState]);
-
   /* ── Action: apply signature → backend transitions to attested ─── */
   const handleApplySignature = useCallback(async () => {
     if (empty) return;
     const dataUrl = canvasRef.current?.toDataURL('image/png') ?? '';
     const rec: SignatureRecord = {
       fieldId,
-      signerName:       DEMO_SESSION.name,
-      signerRole:       DEMO_SESSION.role,
-      signerEmail:      DEMO_SESSION.email,
+      signerName:       signer.name,
+      signerRole:       signer.role,
+      signerEmail:      signer.email,
       signedAt:         new Date().toISOString(),
       signatureDataUrl: dataUrl,
     };
@@ -1029,7 +973,7 @@ export function eCIgnWorkspace({
       },
     });
     onConfirm(rec);
-  }, [empty, fieldId, onConfirm, applyServerSignature, geoInfo]);
+  }, [applyServerSignature, empty, fieldId, geoInfo, onConfirm, signer.email, signer.name, signer.role]);
 
   /* ── Second signer (LOCKED screen action) ────────────────────────── */
   const handleSelectApprover = useCallback(async (user: DemoUser) => {
@@ -1039,7 +983,7 @@ export function eCIgnWorkspace({
       type:           'signature_request',
       formInstanceId,
       assignedTo:     user.id,
-      assignedBy:     DEMO_SESSION.id,
+      assignedBy:     signer.id,
       status:         'pending',
       createdAt:      new Date().toISOString(),
       // Phase 11 — task INHERITS the parent artifact's linked policy set.
@@ -1054,7 +998,7 @@ export function eCIgnWorkspace({
     setLocalTask(task);
     onRequestSecond(task);
     setShowSecondSig(false);
-  }, [instance, formInstanceId, onRequestSecond, linkedPolicyIds, formSource, parentTaskId]);
+  }, [formInstanceId, formSource, instance, linkedPolicyIds, onRequestSecond, parentTaskId, signer.id]);
 
   const buildPacketHtml = useCallback((record: SignatureRecord) => {
     /* ── Style harvest ──────────────────────────────────────────────
@@ -1442,89 +1386,52 @@ export function eCIgnWorkspace({
                         Verify your identity
                       </h2>
                       <p className="font-roboto text-[13px] mt-1.5" style={{ color: MUTED }}>
-                        Capture an optional photo for the attestation certificate, then verify your identity to proceed.
+                        Confirm your signer identity and attestation to proceed.
                       </p>
                     </div>
                   </div>
 
                   <SectionCard title="Signer Identity" icon={<IdCard size={13} />}>
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
-                      <InfoRow label="Name"  value={DEMO_SESSION.name} />
-                      <InfoRow label="Role"  value={DEMO_SESSION.role} />
-                      <InfoRow label="Email" value={DEMO_SESSION.email} mono />
-                      <InfoRow label="Date"  value={today} />
-                      <InfoRow label="Time"  value={timeNow} />
+                      <InfoRow label="Name"  value={signer.name} />
+                      <InfoRow label="Role"  value={signer.role} />
+                      <InfoRow label="Email" value={signer.email} mono />
+                      <InfoRow label="Timestamp" value={`${today} ${timeNow}`} />
                     </dl>
                   </SectionCard>
 
-                  <div
-                    className="relative rounded-[20px] overflow-hidden mt-5 mb-5 bg-black"
-                    style={{ aspectRatio: '4/3', boxShadow: '0 10px 30px rgba(18,37,85,0.12)' }}
-                  >
-                    {signerPhoto ? (
-                      <img src={signerPhoto} alt="Signer" className="w-full h-full object-cover" />
-                    ) : camStream ? (
-                      <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center flex-col gap-3">
-                        {camError ? (
-                          <>
-                            <CameraOff size={44} className="text-white/40" />
-                            <p className="font-roboto text-[12px] text-center text-white/60 max-w-xs px-6">{camError}</p>
-                          </>
-                        ) : (
-                          <>
-                            <Camera size={44} className="text-white/40" />
-                            <p className="font-roboto text-[12px] text-white/50">Starting camera…</p>
-                          </>
-                        )}
-                      </div>
-                    )}
-                    {signerPhoto && (
-                      <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full font-roboto text-[11px] font-semibold" style={{ background: '#16A34A', color: 'white' }}>
-                        <CheckCircle2 size={12} className="text-white" /> Photo captured
-                      </div>
-                    )}
-                  </div>
+                  <SectionCard title="Identity Attestation" icon={<Shield size={13} />}>
+                    <label
+                      className="flex items-start gap-3 rounded-xl p-3"
+                      style={{ background: identityAttested ? NAVY_SOFT : 'white', border: `1px solid ${identityAttested ? NAVY : BORDER}` }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={identityAttested}
+                        onChange={(e) => setIdentityAttested(e.target.checked)}
+                        className="mt-0.5"
+                        style={{ accentColor: NAVY }}
+                      />
+                      <span className="font-roboto text-[12.5px] leading-relaxed" style={{ color: INK }}>
+                        I attest that I am the authorized signer and this electronic signature is legally binding.
+                      </span>
+                    </label>
 
-                  <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <div className="flex gap-2 flex-wrap">
-                      {!camStream && !signerPhoto && (
-                        <button
-                          type="button"
-                          onClick={startCamera}
-                          className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-roboto text-[12px] font-bold"
-                          style={{ background: NAVY, color: '#fff' }}
-                        >
-                          <Camera size={14} className="text-white" /> {camError ? 'Try Again' : 'Start Camera'}
-                        </button>
-                      )}
-                      {camStream && !signerPhoto && (
-                        <button
-                          type="button"
-                          onClick={capturePhoto}
-                          className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-roboto text-[12px] font-bold"
-                          style={{ background: ORANGE, color: '#fff', boxShadow: '0 6px 18px rgba(240,75,34,0.35)' }}
-                        >
-                          <Camera size={14} className="text-white" /> Capture Photo
-                        </button>
-                      )}
-                      {signerPhoto && (
-                        <button
-                          type="button"
-                          onClick={retakePhoto}
-                          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border font-roboto text-[12px] font-semibold"
-                          style={{ borderColor: BORDER, color: NAVY, background: 'white' }}
-                        >
-                          <RefreshCw size={13} /> Retake
-                        </button>
-                      )}
-                    </div>
+                    {!hasSignerIdentity && (
+                      <p className="font-roboto text-[12px] mt-3" style={{ color: ORANGE }}>
+                        Signer identity is unavailable. Please refresh your session before verifying identity.
+                      </p>
+                    )}
+                  </SectionCard>
 
+                  <div className="flex items-center justify-end gap-3 flex-wrap mt-5">
                     <button
                       type="button"
-                      onClick={() => { void verifyIdentity(); }}
-                      disabled={busy === 'identity'}
+                      onClick={() => {
+                        if (!hasSignerIdentity || !identityAttested) return;
+                        void verifyIdentity();
+                      }}
+                      disabled={!hasSignerIdentity || !identityAttested || busy === 'identity'}
                       className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-roboto text-[12px] font-bold disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{ background: NAVY, color: '#fff' }}
                     >
@@ -1917,6 +1824,7 @@ function SecondSignerPicker({
   onCancel: () => void;
   onSelect: (user: DemoUser) => void;
 }) {
+  const signer = useEcignSignerIdentity();
   return (
     <div className="max-w-2xl mx-auto p-6 md:p-10">
       <button
@@ -1940,15 +1848,15 @@ function SecondSignerPicker({
             Send for second signature
           </h3>
           <p className="font-roboto text-[13px]" style={{ color: MUTED }}>
-            Signed as <strong style={{ color: INK }}>{DEMO_SESSION.name}</strong> · {DEMO_SESSION.role}. Only one-tier-above approvers are selectable.
+            Signed as <strong style={{ color: INK }}>{signer.name}</strong> · {signer.role}. Only one-tier-above approvers are selectable.
           </p>
         </div>
       </div>
 
       <ul className="space-y-2">
         {DEMO_STAFF.map(user => {
-          const ok   = user.tier === DEMO_SESSION.tier - 1;
-          const self = user.id === DEMO_SESSION.id;
+          const ok   = user.tier === signer.tier - 1;
+          const self = user.id === signer.id;
           return (
             <li key={user.id}>
               <button

@@ -1,6 +1,6 @@
-import { CesLayout } from '../layouts/CesLayout';
-import { CesExecutiveDashboard } from '../components/dashboard/CesExecutiveDashboard';
+import { MasterCalendarPage } from '@/policy/pages/MasterCalendarPage';
 
 export function CesDashboardPage() {
-  return <CesLayout><CesExecutiveDashboard /></CesLayout>;
+  // CES home now follows the calendar-first command-center experience.
+  return <MasterCalendarPage />;
 }

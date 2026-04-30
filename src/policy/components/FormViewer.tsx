@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, Printer, Download, Building2, User, Briefcase, HeartPulse, Info, CheckCircle2, Shield, ShieldCheck } from 'lucide-react';
 import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useShellStore } from '@/policy/stores/uiStore';
@@ -24,7 +24,6 @@ import {
   type SignFlowState,
   type GeoInfo,
   type FieldEdit,
-  DEMO_SESSION,
   DEMO_STAFF,
   signerNanoid,
   fmtSignTs,
@@ -35,6 +34,7 @@ import {
   validateAcknowledgmentLinks,
 } from '@/policy/services/policyLinkService';
 import { ecignApi } from '@/policy/ecign/api';
+import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
 
 // ─── FormCertificatePage ───────────────────────────────────────────
 // CI-App Internal Attestation Certificate.
@@ -956,7 +956,9 @@ export interface FormViewerProps {
 
 export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, parentTaskId, hhcEventId, hhcWorkflowId }: FormViewerProps) {
   const { formId: routeId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const signer = useEcignSignerIdentity();
   // If formId prop is supplied → embedded inside a parent panel (no shell)
   const isEmbedded = formId !== undefined;
   const signatureEnabled = !isEmbedded || enableEmbeddedSigning;
@@ -964,6 +966,9 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
   const effectiveSource: 'policy_viewer' | 'task' | 'forms_library' | 'workflow' =
     formSource ?? (isEmbedded ? 'policy_viewer' : 'forms_library');
   const id = formId ?? routeId;
+  const queryInstanceId = searchParams.get('instance') ?? undefined;
+  const queryEventId = searchParams.get('event') ?? undefined;
+  const queryWorkflowId = searchParams.get('workflow') ?? undefined;
   const setDetailMode = useShellStore(s => s.setDetailMode);
 
   useEffect(() => {
@@ -985,7 +990,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
 
   // ── Signature state (standalone mode only) ────────────────────────
   // All hooks must be called before any early returns.
-  const [formInstanceId]  = useState(() => `fi_${signerNanoid(12)}`);
+  const [formInstanceId]  = useState(() => queryInstanceId ?? `fi_${signerNanoid(12)}`);
   const [certId]          = useState(() => `CERT-${id ?? 'fm'}-${signerNanoid(8)}`);
   const [signatures,      setSignatures]    = useState<Map<string, SignatureRecord>>(new Map());
   const [activeFieldId,   setActiveFieldId] = useState<string | null>(null);
@@ -1104,7 +1109,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
           oldValue:   oldVal,
           newValue:   newVal,
           changedAt:  new Date().toISOString(),
-          changedBy:  DEMO_SESSION.name,
+          changedBy:  signer.name,
         },
       ]);
       oldValues.delete(el);
@@ -1115,7 +1120,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
       paper.removeEventListener('focusin', onFocus);
       paper.removeEventListener('change',  onChange);
     };
-  }, []);
+  }, [signer.name]);
 
   // ── Signature handlers ────────────────────────────────────────────
   const handleRequestSign = useCallback((fid: string) => {
@@ -1146,7 +1151,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
     // 1. Auto-fill Printed Name (pos 0) and Date (pos 2) in the
     //    same signature section (fieldId pattern: {sectionIdx}-sig-{pos}).
     const sigSectionIdx = rec.fieldId.split('-')[0];
-    newFills.set(`${sigSectionIdx}-sig-0`, DEMO_SESSION.name);
+    newFills.set(`${sigSectionIdx}-sig-0`, signer.name);
     newFills.set(`${sigSectionIdx}-sig-2`, today);
 
     // 2. Auto-fill identification fields in grid sections.
@@ -1158,12 +1163,12 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
           const lbl = (field.label ?? '').toLowerCase();
           const fid = `${sIdx}-grid-${fIdx}`;
           if (lbl.includes('completed by') || lbl.includes('full name') || lbl === 'name') {
-            newFills.set(fid, DEMO_SESSION.name);
+            newFills.set(fid, signer.name);
           } else if (
             (lbl.includes('title') || lbl.includes('role')) &&
             !lbl.includes('approval') && !lbl.includes('supervisor')
           ) {
-            newFills.set(fid, DEMO_SESSION.role);
+            newFills.set(fid, signer.role);
           } else if (
             field.type === 'date' &&
             (lbl.includes('date') || lbl.includes('completed'))
@@ -1183,7 +1188,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
     // DO NOT call setActiveFieldId(null) — eCIgnWorkspace stays open
     // until the user clicks "Done" or the X button.
     setFlowState('signed');
-  }, [content]);
+  }, [content, signer.name, signer.role]);
 
   // Close / cancel closes the workspace
   const handleCancelSign    = useCallback(() => setActiveFieldId(null), []);
@@ -1249,14 +1254,14 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
   if (!id) return null;
   if (!content) {
     return (
-      <div className={`flex items-center justify-center ${isEmbedded ? 'w-full h-full' : 'min-h-screen bg-[#F2F2F0]'}`}>
+      <div className={`flex items-center justify-center ${isEmbedded ? 'w-full h-full' : 'min-h-screen bg-ci-bg'}`}>
         <div className="p-8 text-center">
-          <h2 className="font-montserrat font-bold text-xl" style={{ color: CI_INK }}>Form Not Found</h2>
-          <p className="font-roboto text-sm text-[#747470] mt-2">Form ID "{id}" is not in the Enterprise Forms Library.</p>
+          <h2 className="font-montserrat font-bold text-xl text-ci-text-primary">Form Not Found</h2>
+          <p className="font-roboto text-sm text-ci-text-subtle mt-2">Form ID "{id}" is not in the Enterprise Forms Library.</p>
           {!isEmbedded && (
             <button
               onClick={() => navigate('/forms')}
-              className="mt-4 px-4 py-2 rounded-[8px] bg-[#007970] text-white font-roboto text-sm hover:bg-[#005751] transition-colors"
+              className="mt-4 px-4 py-2 rounded-[8px] bg-ci-accent text-white font-roboto text-sm hover:brightness-95 transition-colors"
             >
               Return to Forms Library
             </button>
@@ -1272,8 +1277,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
       <SignatureCtx.Provider value={ctxValue}>
         <div
           ref={formPaperRef}
-          className="w-full h-full overflow-y-auto px-8 py-8 md:px-10 md:py-10"
-          style={{ color: CI_INK, fontFamily: "'Roboto','Open Sans',sans-serif" }}
+          className="w-full h-full overflow-y-auto px-8 py-8 md:px-10 md:py-10 font-roboto text-ci-text-primary"
         >
           <FormBody content={content} isEmbedded={true} />
         </div>
@@ -1312,21 +1316,18 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
 
   return (
     <SignatureCtx.Provider value={ctxValue}>
-      <div
-        className="min-h-screen overflow-auto"
-        style={{ background: '#F2F2F0', fontFamily: "'Roboto','Open Sans',sans-serif" }}
-      >
+      <div className="min-h-screen overflow-auto bg-[#F2F2F0] font-roboto text-[#1F1C1B]">
         {/* ── No-print action bar ── */}
         <div className={`no-print flex items-center justify-between px-6 md:px-10 pt-5 pb-3 mx-auto ${maxW}`}>
           <button
             type="button"
             onClick={() => navigate('/forms')}
-            className="flex items-center gap-2 font-roboto text-[12px] font-semibold text-[#1F1C1B] hover:text-[#007970] transition-colors"
+            className="flex items-center gap-2 text-[12px] font-semibold text-[#1F1C1B] hover:text-[#007970] transition-colors"
           >
             <ChevronLeft size={15} /> Return to Forms Library
           </button>
           <div className="flex items-center gap-3">
-            <span className="font-roboto text-[11px] text-[#747470] font-mono">{content.id} · v{content.version}</span>
+            <span className="text-[11px] text-[#747470] font-mono">{content.id} · v{content.version}</span>
             <button
               type="button"
               onClick={() => {
@@ -1336,7 +1337,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
                 }
                 printForm(content.id);
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#007970] hover:bg-[#005751] text-white font-roboto text-[12px] font-semibold transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#007970] hover:brightness-95 text-white text-[12px] font-semibold transition-colors"
             >
               <Printer size={14} /> Print
             </button>
@@ -1354,6 +1355,8 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
                   for (const [k, v] of autoFills.entries()) fields[k] = v;
                   const r = await recordFormSubmission({
                     policy_id:        content.policies[0],
+                    workflow_id:      hhcWorkflowId ?? queryWorkflowId,
+                    event_id:         hhcEventId ?? queryEventId,
                     form_id:          content.id,
                     form_instance_id: formInstanceId,
                     fields,
@@ -1370,7 +1373,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
                 }
               }}
               disabled={submitBusy}
-              className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-[#1A3778] text-[#1A3778] font-roboto text-[12px] font-semibold hover:bg-[#1A3778] hover:text-white disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-[#C4C2C0] text-[#1F1C1B] text-[12px] font-semibold hover:bg-[#EAEAE8] disabled:opacity-50 transition-colors"
               title="Capture this form's current field values as compliance evidence (writes S3 + DDB + audit)"
             >
               <ShieldCheck size={14} /> {submitBusy ? 'Saving…' : 'Save as Evidence'}
@@ -1386,7 +1389,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
                 a.click();
                 URL.revokeObjectURL(url);
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-[#E5E4E3] text-[#1F1C1B] font-roboto text-[12px] font-semibold hover:bg-white transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-[#E5E4E3] text-[#1F1C1B] text-[12px] font-semibold hover:bg-white transition-colors"
             >
               <Download size={14} /> Download
             </button>
@@ -1428,8 +1431,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
         {isEnfm001Standalone && (
           <div className={`mx-auto ${maxW} px-4 md:px-8 pb-4`}>
             <div
-              className="rounded-[10px] border bg-white px-4 py-3"
-              style={{ borderColor: enfmPolicyValidation.ok ? '#E5E4E3' : '#FCA5A5' }}
+              className={`rounded-[10px] border bg-white px-4 py-3 ${enfmPolicyValidation.ok ? 'border-[#E5E4E3]' : 'border-rose-300'}`}
             >
               <PolicyLinkSelector
                 value={enfmLinkedPolicyIds}
@@ -1444,11 +1446,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
                 required
               />
               {enfmPolicyError && (
-                <div
-                  className="mt-2 px-3 py-2 rounded-lg font-roboto text-[12px]"
-                  style={{ background: '#FEF2F2', color: '#991B1B', border: '1px solid #FCA5A5' }}
-                  role="alert"
-                >
+                <div className="mt-2 px-3 py-2 rounded-lg font-roboto text-[12px] bg-rose-50 text-rose-800 border border-rose-300" role="alert">
                   {enfmPolicyError}
                 </div>
               )}
@@ -1460,8 +1458,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
         <div className={`screen-shell mx-auto ${maxW} px-4 py-6 md:px-8 md:py-10`}>
           <div
             ref={formPaperRef}
-            className="form-page bg-white border border-[#E5E4E3] rounded-[12px] shadow-sm px-8 py-10 md:px-12 md:py-14"
-            style={{ color: CI_INK }}
+            className="form-page bg-white border border-[#E5E4E3] rounded-[12px] shadow-sm px-8 py-10 md:px-12 md:py-14 text-[#1F1C1B]"
           >
             <FormBody content={content} />
             {hasSigned && Array.from(signatures.values())[0] && (

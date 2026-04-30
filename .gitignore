@@ -23,3 +23,6 @@ Builder/**/*.json
 tmp-*.json
 tmp-*.log
 .vercel
+
+# PM local persistence (JSON files; regenerated from in-memory store)
+data/pm/

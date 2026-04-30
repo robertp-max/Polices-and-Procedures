@@ -405,6 +405,12 @@ const NEW_POLICIES: Array<{ id: string; title: string; domainCode: string; subdo
   { id: 'HR-EH-101', title: 'Employee Health, Exposure & Occupational Clearance',       domainCode: 'HR', subdomainCode: 'WM' },
   { id: 'RM-OS-101', title: 'Cal/OSHA Occupational Safety Program (IIPP)',               domainCode: 'RM', subdomainCode: 'SS' },
   { id: 'RM-EP-004', title: 'Public Health Emergency Integration',                      domainCode: 'RM', subdomainCode: 'EP' },
+  // ── 2026-04-29 — CMS workflow-enforcement & evidence pack (see EN-WF-101) ──
+  { id: 'CL-OA-101', title: 'OASIS Data Accuracy, Validation & Submission Integrity',   domainCode: 'CL', subdomainCode: 'OA' },
+  { id: 'CL-DC-101', title: 'Clinical Documentation Integrity & Authenticity',          domainCode: 'CL', subdomainCode: 'CD' },
+  { id: 'CL-CC-101', title: 'Care Coordination & SDOH Management',                      domainCode: 'CL', subdomainCode: 'PR' },
+  { id: 'QA-VBP-101', title: 'HHVBP Performance & Outcomes Management',                 domainCode: 'QA', subdomainCode: 'SM' },
+  { id: 'EN-WF-101', title: 'Policy Execution, Workflow Enforcement & Evidence Traceability', domainCode: 'EN', subdomainCode: 'LC' },
 ];
 
 // ─── Validation guard ─────────────────────────────────────────────

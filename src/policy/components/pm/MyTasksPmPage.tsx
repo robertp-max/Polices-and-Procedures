@@ -3,7 +3,9 @@
  *
  * Spec: Builder/Compliance-Execution-Sprints/PM-Kanban-and-My-Tasks.md §2
  *
- * Tabs: Today · This Sprint · Upcoming · Personal · Watching · Calendar
+ * Tabs (8):
+ *   Assigned to Me · Created by Me · Watching · Calendar
+ *   Personal Tasks · Blocked · Overdue · Completed
  *
  * Reuses PmTaskCard + PmFilterBar + TaskDetailRightPanel.
  * Compliance constraint: no "Mark Done" button anywhere for CES tasks.
@@ -15,6 +17,7 @@ import { usePmPersonalStore } from '@/policy/pm/personalStore';
 import { usePmOverlayStore } from '@/policy/pm/pmOverlayStore';
 import { currentSprint } from '@/policy/pm/sprintWindows';
 import { isPersonalTask, type Task } from '@/policy/pm/types';
+import { getCurrentUserId } from '@/policy/pm/currentUser';
 import { PmTaskCard } from './PmTaskCard';
 import { PmFilterBar, applyPmFilter, type PmFilterState } from './PmFilterBar';
 import { TaskDetailRightPanel } from './TaskDetailRightPanel';
@@ -22,29 +25,84 @@ import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { NotificationCenter } from './NotificationCenter';
 import { usePmNotificationTicker } from '@/policy/pm/notificationTicker';
 
-type TabKey = 'today' | 'sprint' | 'upcoming' | 'personal' | 'watching';
+// ── Tab definitions ──────────────────────────────────────────────────────────
+type TabKey =
+  | 'assigned'
+  | 'created'
+  | 'watching'
+  | 'calendar'
+  | 'personal'
+  | 'blocked'
+  | 'overdue'
+  | 'completed';
 
-const TAB_LABEL: Record<TabKey, string> = {
-  today: 'Today',
-  sprint: 'This Sprint',
-  upcoming: 'Upcoming',
-  personal: 'Personal',
-  watching: 'Watching',
-};
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'assigned',  label: 'Assigned to Me' },
+  { key: 'created',   label: 'Created by Me'  },
+  { key: 'watching',  label: 'Watching'       },
+  { key: 'calendar',  label: 'Calendar'       },
+  { key: 'personal',  label: 'Personal Tasks' },
+  { key: 'blocked',   label: 'Blocked'        },
+  { key: 'overdue',   label: 'Overdue'        },
+  { key: 'completed', label: 'Completed'      },
+];
 
+// ── Calendar grouping helpers ────────────────────────────────────────────────
+interface CalendarGroup {
+  label: string;
+  tasks: Task[];
+}
+
+function groupByDate(tasks: Task[], todayMs: number): CalendarGroup[] {
+  const scheduled: Map<string, Task[]> = new Map();
+  const unscheduled: Task[] = [];
+
+  for (const t of tasks) {
+    const dateStr = t.due_date ?? (t as { start_date?: string }).start_date;
+    if (!dateStr) { unscheduled.push(t); continue; }
+    const bucket = dateStr.slice(0, 10);
+    if (!scheduled.has(bucket)) scheduled.set(bucket, []);
+    scheduled.get(bucket)!.push(t);
+  }
+
+  const sortedKeys = [...scheduled.keys()].sort();
+  const todayStr = new Date(todayMs).toISOString().slice(0, 10);
+
+  const groups: CalendarGroup[] = sortedKeys.map(dateStr => {
+    const d = new Date(dateStr + 'T00:00:00');
+    const diffDays = Math.round((new Date(dateStr + 'T00:00:00').getTime() - todayMs) / 86_400_000);
+    let label = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    if (dateStr === todayStr)   label = `Today — ${label}`;
+    else if (diffDays === 1)    label = `Tomorrow — ${label}`;
+    else if (diffDays === -1)   label = `Yesterday — ${label}`;
+    else if (diffDays < 0)      label = `${Math.abs(diffDays)}d ago — ${label}`;
+    return { label, tasks: scheduled.get(dateStr)! };
+  });
+
+  if (unscheduled.length > 0) {
+    groups.push({ label: 'Unscheduled', tasks: unscheduled });
+  }
+
+  return groups;
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
 export interface MyTasksPmPageProps {
-  /** Current user id; defaults to the dev placeholder. */
+  /** Current user id; falls back to getCurrentUserId() / localStorage. */
   userId?: string;
   /** Optional handler for "Open form" deep links. */
   onOpenForm?: (formId: string) => void;
 }
 
 export function MyTasksPmPage({
-  userId = 'me',
+  userId: userIdProp,
   onOpenForm,
 }: MyTasksPmPageProps): ReactElement {
+  const userId = userIdProp ?? getCurrentUserId();
+
   const tasks = useProjectedTasks();
   const personal = usePmPersonalStore();
+  const overlays = usePmOverlayStore(s => s.overlays);
   const sprint = currentSprint();
 
   // Hydrate from backend on first mount; local cache stays valid if API is down.
@@ -56,7 +114,7 @@ export function MyTasksPmPage({
   // Phase 4: notification ticker
   usePmNotificationTicker(userId);
 
-  const [tab, setTab] = useState<TabKey>('today');
+  const [tab, setTab] = useState<TabKey>('assigned');
   const [filter, setFilter] = useState<PmFilterState>({});
   const activeTaskId = useSelectedTaskStore(s => s.taskId);
   const openTaskGlobal = useSelectedTaskStore(s => s.openTask);
@@ -70,43 +128,84 @@ export function MyTasksPmPage({
     return t.getTime();
   }, []);
 
-  const isMine = (t: Task): boolean => {
-    if (isPersonalTask(t)) return t.owner_user_id === userId;
-    return (t as { assigned_user_id?: string }).assigned_user_id === userId;
-  };
-
+  // ── Per-tab task lists ───────────────────────────────────────────────────
   const tabTasks: Task[] = useMemo(() => {
-    const inWindow = (t: Task, fromDays: number, toDays: number): boolean => {
-      if (!t.due_date) return false;
-      const d = new Date(t.due_date + (t.due_date.length === 10 ? 'T00:00:00' : '')).getTime();
-      const days = Math.round((d - todayMs) / 86400000);
-      return days >= fromDays && days <= toDays;
+    const isAssignedToMe = (t: Task): boolean => {
+      if (isPersonalTask(t)) return t.owner_user_id === userId;
+      return (t as { assigned_user_id?: string }).assigned_user_id === userId;
     };
+
+    const isCreatedByMe = (t: Task): boolean => {
+      // Personal tasks always "created by me" if owner matches
+      if (isPersonalTask(t)) return t.owner_user_id === userId;
+      // For overlay tasks check created_by_user_id
+      const overlay = overlays[t.task_id];
+      return overlay?.created_by_user_id === userId;
+    };
+
+    const isWatching = (t: Task): boolean => {
+      const overlay = overlays[t.task_id];
+      return (overlay?.watcher_user_ids ?? []).includes(userId);
+    };
+
+    const isBlocked = (t: Task): boolean => {
+      if (t.status === 'blocked') return true;
+      // Use the task's already-merged dependency list (applyOverlay merges
+      // overlay.dependencies into task.depends_on at projection time).
+      const deps = t.depends_on ?? t.dependencies ?? [];
+      if (deps.length === 0) return false;
+      return deps.some(depId => {
+        const dep = tasks.find(d => d.task_id === depId);
+        return dep ? dep.status !== 'done' : false;
+      });
+    };
+
     switch (tab) {
-      case 'today':
-        return tasks.filter(
-          t =>
-            isMine(t) &&
-            t.status !== 'done' &&
-            (inWindow(t, -3650, 0) || t.status === 'in_progress'),
-        );
-      case 'sprint':
-        return tasks.filter(t => isMine(t) && t.sprint_id === sprint.id);
-      case 'upcoming':
-        return tasks.filter(t => isMine(t) && inWindow(t, 1, 14));
+      case 'assigned':
+        return tasks.filter(t => isAssignedToMe(t) && t.status !== 'done');
+
+      case 'created':
+        return tasks.filter(t => isCreatedByMe(t) && t.status !== 'done');
+
+      case 'watching':
+        return tasks.filter(t => isWatching(t) && t.status !== 'done');
+
+      case 'calendar':
+        // All active tasks with dates visible to this user
+        return tasks.filter(t => t.status !== 'done' && (isAssignedToMe(t) || isWatching(t)));
+
       case 'personal':
         return tasks.filter(t => isPersonalTask(t) && t.owner_user_id === userId);
-      case 'watching':
-        // Watchers are not yet modeled in PmOverlay; surface tasks the user
-        // is NOT assigned to but recently audited (placeholder: empty).
-        return [];
+
+      case 'blocked':
+        return tasks.filter(t => t.status !== 'done' && isBlocked(t));
+
+      case 'overdue': {
+        const todayIso = new Date(todayMs).toISOString().slice(0, 10);
+        return tasks.filter(t => {
+          if (t.status === 'done') return false;
+          const dd = t.due_date;
+          return dd ? dd < todayIso : false;
+        });
+      }
+
+      case 'completed':
+        return tasks.filter(t => t.status === 'done');
+
       default:
         return [];
     }
-  }, [tab, tasks, userId, sprint.id, todayMs]);
+  }, [tab, tasks, userId, overlays, todayMs]);
 
   const filtered = useMemo(() => applyPmFilter(tabTasks, filter), [tabTasks, filter]);
 
+  // ── Calendar groups (only used in calendar tab) ─────────────────────────
+  const calendarGroups = useMemo(
+    () => (tab === 'calendar' ? groupByDate(filtered, todayMs) : []),
+    [tab, filtered, todayMs],
+  );
+
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="flex h-full min-h-0 gap-3">
       <div className="flex-1 min-w-0 flex flex-col gap-3">
@@ -157,22 +256,22 @@ export function MyTasksPmPage({
           </div>
         </header>
 
-        {/* Tabs */}
-        <nav className="flex gap-1 border-b border-white/10">
-          {(Object.keys(TAB_LABEL) as TabKey[]).map(k => {
-            const active = tab === k;
+        {/* Tabs — scrollable on narrow viewports */}
+        <nav className="flex gap-0 border-b border-white/10 overflow-x-auto">
+          {TABS.map(({ key, label }) => {
+            const active = tab === key;
             return (
               <button
-                key={k}
+                key={key}
                 type="button"
-                onClick={() => setTab(k)}
-                className={`px-3 py-1.5 text-[11px] font-montserrat uppercase tracking-[0.22em] border-b-2 transition-colors ${
+                onClick={() => setTab(key)}
+                className={`shrink-0 px-3 py-1.5 text-[10px] font-montserrat uppercase tracking-[0.2em] border-b-2 transition-colors whitespace-nowrap ${
                   active
                     ? 'border-cyan-400 text-white'
                     : 'border-transparent text-white/55 hover:text-white/85'
                 }`}
               >
-                {TAB_LABEL[k]}
+                {label}
               </button>
             );
           })}
@@ -204,15 +303,48 @@ export function MyTasksPmPage({
           </form>
         )}
 
-        {/* Filter bar */}
-        <PmFilterBar value={filter} onChange={setFilter} tasks={tabTasks} />
+        {/* Filter bar (hidden for calendar view where grouping is the primary structure) */}
+        {tab !== 'calendar' && (
+          <PmFilterBar value={filter} onChange={setFilter} tasks={tabTasks} />
+        )}
 
-        {/* Task list */}
+        {/* ── Task list / Calendar view ──────────────────────────────────── */}
         <div className="flex-1 min-h-0 overflow-y-auto rounded-lg border border-white/10 bg-white/[0.02] p-2">
-          {filtered.length === 0 ? (
+          {tab === 'calendar' ? (
+            calendarGroups.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-white/45 text-[12px] font-outfit">
+                No active tasks with dates.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {calendarGroups.map(group => (
+                  <div key={group.label}>
+                    <div className="text-[10px] font-montserrat font-bold uppercase tracking-[0.22em] text-white/45 mb-1.5 px-1">
+                      {group.label}
+                    </div>
+                    <div className="space-y-1.5">
+                      {group.tasks.map(t => (
+                        <PmTaskCard
+                          key={t.task_id}
+                          task={t}
+                          onSelect={setActiveTaskId}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : filtered.length === 0 ? (
             <div className="h-full flex items-center justify-center text-white/45 text-[12px] font-outfit">
               {tab === 'watching'
-                ? 'Watcher relations not yet recorded.'
+                ? 'You are not watching any tasks yet. Open a task and click Watch to subscribe.'
+                : tab === 'blocked'
+                ? 'No blocked tasks.'
+                : tab === 'overdue'
+                ? 'No overdue tasks — great work!'
+                : tab === 'completed'
+                ? 'No completed tasks yet.'
                 : 'No tasks match the current filter.'}
             </div>
           ) : (

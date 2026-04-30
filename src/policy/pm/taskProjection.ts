@@ -11,6 +11,8 @@
 import { useMemo } from 'react';
 import { REGULATORY_EVENTS } from '../data/regulatoryEvents';
 import { useRegulatoryExecutionStore } from '../stores/regulatoryExecutionStore';
+import { useAutogenStore } from '../stores/autogenStore';
+import { WORKFLOWS } from '../data/workflows.generated';
 import { usePmOverlayStore } from './pmOverlayStore';
 import { usePmPersonalStore } from './personalStore';
 import { projectTasks, assertNoDuplicateTaskIds, type ProjectorEvent } from './taskProjectionCore';
@@ -38,10 +40,20 @@ export function useProjectedTasks(): Task[] {
   const formStates = useRegulatoryExecutionStore(s => s.formStates);
   const overlays = usePmOverlayStore(s => s.overlays);
   const personal = usePmPersonalStore(s => s.tasks);
+  const generatedEvents = useAutogenStore(s => s.generatedEvents);
+  const triggeredEvents = useAutogenStore(s => s.triggeredEvents);
+  const allEvents = useMemo(
+    () => [...REGULATORY_EVENTS, ...generatedEvents, ...triggeredEvents].filter(e => !e.isContext),
+    [generatedEvents, triggeredEvents],
+  );
 
   return useMemo(() => {
+    const enrichedEvents = allEvents.map((event) => ({
+      ...event,
+      workflowTitle: event.workflowId ? WORKFLOWS[event.workflowId]?.title ?? event.workflowId : undefined,
+    }));
     const cesTasks = projectTasks({
-      events: REGULATORY_EVENTS as unknown as ProjectorEvent[],
+      events: enrichedEvents as unknown as ProjectorEvent[],
       formStates,
       overlays,
     });
@@ -52,7 +64,7 @@ export function useProjectedTasks(): Task[] {
       assertNoDuplicateTaskIds(merged);
     }
     return merged;
-  }, [formStates, overlays, personal]);
+  }, [allEvents, formStates, overlays, personal]);
 }
 
 /** Lookup helper: return a single task by id, or undefined. */

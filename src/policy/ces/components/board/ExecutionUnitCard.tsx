@@ -6,7 +6,7 @@
 
 import { Calendar, FileText, AlertCircle } from 'lucide-react';
 import type { ExecutionUnit as ExecutionUnitT } from '../../types';
-import { CES_TOKENS } from '../../theme';
+import { useCesTokens } from '../../theme';
 import {
   ComplianceStateBadge, PhaseIndicator, AuditReadinessTag,
   UserAvatar, EscalationTimer,
@@ -27,15 +27,16 @@ interface Props {
 export function ExecutionUnitCard({
   unit, draggable = true, onClick, onDragStart, onDragEnd,
 }: Props) {
+  const t = useCesTokens();
   const isBlocked  = unit.complianceState === 'blocked';
   const isAwaiting = unit.complianceState === 'awaiting_signature';
   const isCompleted = unit.complianceState === 'completed';
 
   const topBar =
-    isBlocked   ? CES_TOKENS.red :
-    isAwaiting  ? CES_TOKENS.orange :
-    isCompleted ? CES_TOKENS.green :
-                  CES_TOKENS.navy;
+    isBlocked   ? t.red :
+    isAwaiting  ? t.orange :
+    isCompleted ? t.green :
+                  t.navy;
 
   return (
     <article
@@ -45,14 +46,14 @@ export function ExecutionUnitCard({
       onClick={onClick}
       className="cursor-pointer rounded-lg shadow-sm transition-shadow hover:shadow-md select-none"
       style={{
-        background: CES_TOKENS.white,
-        border: `1px solid ${isBlocked ? CES_TOKENS.red + '55' : CES_TOKENS.border}`,
+        background: t.white,
+        border: `1px solid ${isBlocked ? t.red + '55' : t.border}`,
         borderTop: `3px solid ${topBar}`,
       }}
     >
       <div className="p-3 space-y-2">
         {/* Title */}
-        <h4 className="text-[12.5px] font-semibold leading-snug" style={{ color: CES_TOKENS.ink }}>
+        <h4 className="text-[12.5px] font-semibold leading-snug" style={{ color: t.ink }}>
           {unit.title}
         </h4>
 
@@ -67,7 +68,7 @@ export function ExecutionUnitCard({
         {isBlocked && unit.blockedReason && (
           <div
             className="flex items-start gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-semibold"
-            style={{ background: CES_TOKENS.redSoft, color: CES_TOKENS.red, border: `1px solid ${CES_TOKENS.red}55` }}
+            style={{ background: t.redSoft, color: t.red, border: `1px solid ${t.red}55` }}
           >
             <AlertCircle size={12} className="shrink-0 mt-px" />
             <span>{unit.blockedReason.label}</span>
@@ -83,7 +84,7 @@ export function ExecutionUnitCard({
                   <UserAvatar initials={s.initials} size={22} status={s.status} />
                 </span>
               ))}
-              <span className="text-[10.5px]" style={{ color: CES_TOKENS.muted }}>
+              <span className="text-[10.5px]" style={{ color: t.muted }}>
                 {unit.evidenceStatus.signaturesComplete}/{unit.evidenceStatus.signaturesRequired} signed
               </span>
             </div>
@@ -95,7 +96,7 @@ export function ExecutionUnitCard({
         {isCompleted && (
           <div
             className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10.5px] font-semibold"
-            style={{ background: CES_TOKENS.greenSoft, color: CES_TOKENS.green }}
+            style={{ background: t.greenSoft, color: t.green }}
           >
             <FileText size={11} />
             Evidence complete · Audit indexed
@@ -103,12 +104,12 @@ export function ExecutionUnitCard({
         )}
 
         {/* Footer: owner + due */}
-        <div className="flex items-center justify-between pt-1" style={{ borderTop: `1px dashed ${CES_TOKENS.border}` }}>
+        <div className="flex items-center justify-between pt-1" style={{ borderTop: `1px dashed ${t.border}` }}>
           <div className="flex items-center gap-1.5">
             <UserAvatar initials={unit.owner.initials} size={20} />
-            <span className="text-[11px]" style={{ color: CES_TOKENS.ink }}>{unit.owner.name}</span>
+            <span className="text-[11px]" style={{ color: t.ink }}>{unit.owner.name}</span>
           </div>
-          <div className="flex items-center gap-1 text-[11px] font-mono" style={{ color: CES_TOKENS.navy }}>
+          <div className="flex items-center gap-1 text-[11px] font-mono" style={{ color: t.navy }}>
             <Calendar size={11} />
             {fmtDateShort(unit.dueDate)}
           </div>

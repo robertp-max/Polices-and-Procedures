@@ -7,6 +7,12 @@ import { FORMS_TEMPLATES } from './forms-templates';
 import { DEVELOPER_ECIGN } from './developer-ecign';
 import { POLICY_LIFECYCLE } from './policy-lifecycle';
 import { ONBOARDING_V2 } from './onboarding-v2';
+import { DASHBOARD_ARTICLES } from './dashboard';
+import { CALENDAR_ARTICLES } from './calendar';
+import { IADMINISTRATOR_ARTICLES } from './iadministrator';
+import { EVIDENCE_CENTER_ARTICLES } from './evidence-center';
+import { AUDIT_MODE_ARTICLES } from './audit-mode';
+import { MASTER_CONTROLS_ARTICLES } from './master-controls';
 
 export interface HelpArticle {
   slug:        string;
@@ -25,6 +31,20 @@ export interface HelpArticle {
     endpoints?: string[];
     components?: string[];
   };
+  /** Audit-ready extensions — present on upgraded articles */
+  complianceRequirement?: string;
+  enforcementRules?: string[];
+  requiredActions?: string[];
+  auditLogging?: string;
+  failureImpact?: string;
+  traceability?: {
+    policy_id?:   string;
+    workflow_id?: string;
+    event_id?:    string;
+    form_id?:     string;
+    evidence_id?: string;
+    audit_id?:    string;
+  };
 }
 
 export const CATEGORIES: Array<{ id: string; label: string; subcategories?: string[] }> = [
@@ -36,6 +56,12 @@ export const CATEGORIES: Array<{ id: string; label: string; subcategories?: stri
   { id: 'forms-templates',    label: 'Forms & Templates' },
   { id: 'developer',          label: 'Developer', subcategories: ['eCIgn'] },
   { id: 'onboarding-v2',      label: 'Onboarding v2', subcategories: ['Getting Started','Role-Based Onboarding','CES Integration','Evidence & Forms','Competency Validation','Policy Acknowledgments','eCIgn Signatures','Audit Readiness','Recurring Revalidation','Vendor & Governance','Compliance Enforcement & Overrides','Troubleshooting','Surveyor Quick Answers'] },
+  { id: 'dashboard',          label: 'Command Center Dashboard' },
+  { id: 'calendar',           label: 'Master Calendar' },
+  { id: 'iadministrator',     label: 'Brad iAdministrator' },
+  { id: 'evidence-center',    label: 'Evidence Center' },
+  { id: 'audit-mode',         label: 'Audit Mode' },
+  { id: 'master-controls',    label: 'Master Controls' },
 ];
 
 export const ARTICLES: HelpArticle[] = [
@@ -47,6 +73,12 @@ export const ARTICLES: HelpArticle[] = [
   ...FORMS_TEMPLATES,
   ...DEVELOPER_ECIGN,
   ...ONBOARDING_V2,
+  ...DASHBOARD_ARTICLES,
+  ...CALENDAR_ARTICLES,
+  ...IADMINISTRATOR_ARTICLES,
+  ...EVIDENCE_CENTER_ARTICLES,
+  ...AUDIT_MODE_ARTICLES,
+  ...MASTER_CONTROLS_ARTICLES,
 ];
 
 export function findArticle(slug: string): HelpArticle | undefined {

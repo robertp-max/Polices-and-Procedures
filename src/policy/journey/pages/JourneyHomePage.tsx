@@ -9,8 +9,51 @@ import { ModuleCard } from '@/policy/journey/components/ModuleCard';
 import { GateBanner } from '@/policy/journey/components/GateBanner';
 import { EmployeePicker } from '@/policy/journey/components/EmployeePicker';
 import { BookOpen, GraduationCap } from 'lucide-react';
+import type { JourneyModule } from '@/policy/journey/types/journey';
 
 type PhaseId = 'PRE_DAY_1' | 'GAO' | 'ROLE' | 'SUPERVISED' | 'CLEARED' | 'ANN' | 'DRILL';
+type JourneyCategory =
+  | 'Core Compliance'
+  | 'Clinical Care'
+  | 'QAPI and Performance'
+  | 'Safety and OSHA'
+  | 'Workforce Health'
+  | 'Workflow Execution';
+
+const CATEGORY_ORDER: JourneyCategory[] = [
+  'Core Compliance',
+  'Clinical Care',
+  'QAPI and Performance',
+  'Safety and OSHA',
+  'Workforce Health',
+  'Workflow Execution',
+];
+
+function classifyJourneyCategory(module: JourneyModule): JourneyCategory {
+  const text = `${module.id} ${module.title}`.toLowerCase();
+
+  if (/qapi|root cause|rca|survey|audit|metrics|performance improvement|pip/.test(text)) {
+    return 'QAPI and Performance';
+  }
+
+  if (/safety|violence|bloodborne|atd|ppe|hazard|ergonomic|heat illness|injury|infection|pathogen/.test(text)) {
+    return 'Safety and OSHA';
+  }
+
+  if (/tb |occupational health|post-exposure|fit-for-duty|vaccination/.test(text)) {
+    return 'Workforce Health';
+  }
+
+  if (/workflow|task execution|evidence|logging|policy acknowledgment|event-based|acceptable use|phishing/.test(text)) {
+    return 'Workflow Execution';
+  }
+
+  if (/hipaa|privacy|security|compliance|fraud|ethics|retaliation|breach|minimum necessary|business associate|vendor|ai /.test(text)) {
+    return 'Core Compliance';
+  }
+
+  return 'Clinical Care';
+}
 
 export function JourneyHomePage() {
   const nav = useNavigate();
@@ -51,13 +94,32 @@ export function JourneyHomePage() {
     }
   }, [mods, phase]);
 
+  const categorizedPhaseModules = useMemo(() => {
+    const grouped = new Map<JourneyCategory, JourneyModule[]>();
+    for (const category of CATEGORY_ORDER) {
+      grouped.set(category, []);
+    }
+
+    phaseModules.forEach(module => {
+      const category = classifyJourneyCategory(module);
+      const bucket = grouped.get(category);
+      if (bucket) {
+        bucket.push(module);
+      }
+    });
+
+    return CATEGORY_ORDER
+      .map(category => ({ category, modules: grouped.get(category) ?? [] }))
+      .filter(section => section.modules.length > 0);
+  }, [phaseModules]);
+
   const clearGate = canClearForIndependentWork(employee, attempts, visits);
 
   return (
     <div className="h-full w-full flex flex-col p-6 md:p-10 font-sans animate-in fade-in duration-500 overflow-y-auto custom-scrollbar">
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <div className="text-[10px] font-montserrat font-bold text-[#FFC107] uppercase tracking-[0.28em] mb-2">Onboarding Journey</div>
+          <div className="text-[10px] font-montserrat font-bold text-[#FFC107] uppercase tracking-[0.28em] mb-2">Journey Dashboard</div>
           <h1 className="font-outfit font-light text-white leading-tight" style={{ fontSize: 28, letterSpacing: '-0.01em' }}>
             {employee.name}
           </h1>
@@ -161,8 +223,23 @@ export function JourneyHomePage() {
           )}
 
           {phase !== 'PRE_DAY_1' && phase !== 'CLEARED' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {phaseModules.map(m => <ModuleCard key={m.id} module={m} />)}
+            <div className="space-y-8">
+              {categorizedPhaseModules.map(section => (
+                <div key={section.category}>
+                  <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-2">
+                    <h3 className="font-montserrat text-[11px] font-bold uppercase tracking-[0.2em] text-[#FFC107]">
+                      {section.category}
+                    </h3>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">
+                      {section.modules.length} module(s)
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {section.modules.map(module => <ModuleCard key={module.id} module={module} />)}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </section>

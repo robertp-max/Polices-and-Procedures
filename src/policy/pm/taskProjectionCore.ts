@@ -5,24 +5,6 @@
  * Suitable for tsx scripts and unit verification.
  *
  * The React-bound hook lives in `taskProjection.ts`.
- *
- * ─── PROJECTION CONTRACT (single source of truth) ────────────────────
- *
- * For every event we project ONE task per `processFlow` step:
- *
- *   task_id    = "{event.id}-{NN}"  (NN = step ordinal in processFlow, 01-based)
- *   step_id    = step.id            (e.g. "s2", "qapi-gov-minutes")
- *   title      = step.label         (NEVER a form id, NEVER form.label)
- *   form_ids   = step.requiredFormIds                       (attached)
- *   packets    = packets built from those form ids          (attached)
- *   due_date   = event.date  + step.dueOffsetDays           (weekend-rolled)
- *   status     = derived from step.status, escalated to 'in_review'/'blocked'
- *                if any attached packet says so
- *
- * Forms in `event.requiredForms[]` that are NOT consumed by any step are
- * emitted as ONE orphan task each (so survey evidence is never lost).
- *
- * Events themselves are NEVER tasks.
  */
 
 import {
@@ -30,10 +12,12 @@ import {
   derivePmTaskStatus,
   inferEcignInternalFromCesFormStatus,
 } from './ecignStatusMap';
+import { FORMS_DATASET } from '../data/formsLibraryDataset';
+import { FORMS_CATALOG } from '../data/formsCatalog';
 import type { PmOverlay } from './pmOverlayStore.types';
+import { inferSprintIdFromDate } from './sprintId';
 import type {
   EcignPacket,
-  EcignPacketStatus,
   EcignSubmissionTask,
   NonFormCesTask,
   PacketSnapshot,
@@ -50,33 +34,50 @@ export interface ProjectorEventForm {
   id: string;
   label: string;
   formId?: string;
-  status?: 'missing' | 'pending' | 'in-progress' | 'requires-review' | 'complete';
-  dueOffsetDays?: number;
 }
 
 export interface ProjectorEventStep {
   id: string;
   label: string;
   description?: string;
-  instructions?: string;
   status: 'complete' | 'in-progress' | 'pending';
-  /** Form IDs (matching ProjectorEventForm.id) that this step produces/consumes. */
+  dueOffsetDays?: number;
   requiredFormIds?: string[];
   storyPoints?: 1 | 2 | 3 | 5 | 8;
-  /** Days relative to event.date. Negative = before, positive = after. */
-  dueOffsetDays?: number;
 }
 
 export interface ProjectorEvent {
   id: string;
+  title?: string;
   workflowId?: string;
+  workflowTitle?: string;
   policyRefs?: string[];
-  /** Calendar date for the event (YYYY-MM-DD). Anchor for step due-date math. */
+  complianceFlags?: { auditRisk?: 'low' | 'medium' | 'high' | 'critical' };
+  /** Calendar date for the event (YYYY-MM-DD). Used as default task due_date. */
   date?: string;
-  /** Optional end date (YYYY-MM-DD). Used as fallback when `date` absent. */
+  /** Optional end date (YYYY-MM-DD). Preferred over `date` for due-date default. */
   endDate?: string;
   requiredForms: ProjectorEventForm[];
   processFlow: ProjectorEventStep[];
+}
+
+const formInstanceIdFor = (eventId: string, formId: string): string => `${eventId}--${formId}`;
+const TEMPLATE_FORMS = new Set<string>([
+  ...FORMS_DATASET.map(f => f.id),
+  ...Object.keys(FORMS_CATALOG),
+]);
+
+function resolveTemplateFormId(form: ProjectorEventForm): string | undefined {
+  const candidate = form.formId ?? form.id;
+  return TEMPLATE_FORMS.has(candidate) ? candidate : undefined;
+}
+
+function riskFromEvent(event: ProjectorEvent): 'low' | 'medium' | 'high' | 'critical' {
+  return event.complianceFlags?.auditRisk ?? 'medium';
+}
+
+function priorityFromRisk(risk: 'low' | 'medium' | 'high' | 'critical'): 'low' | 'medium' | 'high' | 'critical' {
+  return risk;
 }
 
 export interface ProjectorInput {
@@ -86,7 +87,6 @@ export interface ProjectorInput {
   overlays: Record<string, PmOverlay>;
 }
 
-/* ─── helpers ───────────────────────────────────────────────────────── */
 const pad2 = (n: number): string => (n < 10 ? `0${n}` : String(n));
 const formKey = (eventId: string, formId: string) => `${eventId}::${formId}`;
 
@@ -95,68 +95,38 @@ function makeCesTaskId(eventId: string, ordinal: number): string {
   return `${eventId}-${pad2(ordinal)}`;
 }
 
-/**
- * Compute due date for a step.
- *
- *   anchor = event.date (or endDate fallback)
- *   raw    = anchor + offsetDays
- *   final  = raw rolled off Sat/Sun
- *
- * Roll direction: pre-event (offset < 0) rolls EARLIER (Friday); on/after
- * event (offset >= 0) rolls LATER (Monday). This preserves intent.
- */
-function computeStepDueDate(
-  anchorIso: string | undefined,
-  offsetDays: number | undefined,
-): string | undefined {
-  if (!anchorIso) return undefined;
-  const base = new Date(`${anchorIso}T00:00:00Z`);
-  if (Number.isNaN(base.getTime())) return undefined;
-  const offset = offsetDays ?? 0;
-  base.setUTCDate(base.getUTCDate() + offset);
-  // Roll off weekend.
-  const direction = offset < 0 ? -1 : 1;
-  let guard = 0;
-  while ((base.getUTCDay() === 0 || base.getUTCDay() === 6) && guard++ < 7) {
-    base.setUTCDate(base.getUTCDate() + direction);
-  }
-  return base.toISOString().slice(0, 10);
+function parseIsoDate(date?: string): Date | null {
+  if (!date) return null;
+  const d = new Date(`${date.slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
 }
 
-/**
- * Spread an array of step due-dates so that no two steps in the same event
- * land on the same calendar day. Anchored at the earliest preferred date,
- * each colliding step is pushed forward by one workday at a time. Steps
- * with `undefined` due-dates are left untouched.
- *
- * This guards against the "every task due 05/05/2026" defect that occurs
- * when upstream workflow alignment sets every step's dueOffsetDays to 0.
- */
-function spreadCollisions(
-  preferredDates: Array<string | undefined>,
-): Array<string | undefined> {
-  const taken = new Set<string>();
-  const result: Array<string | undefined> = new Array(preferredDates.length);
+function toIsoDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
 
-  for (let i = 0; i < preferredDates.length; i++) {
-    const seed = preferredDates[i];
-    if (!seed) {
-      result[i] = undefined;
-      continue;
-    }
-    let candidate = seed;
-    let guard = 0;
-    while (taken.has(candidate) && guard++ < 365) {
-      const d = new Date(`${candidate}T00:00:00Z`);
-      do {
-        d.setUTCDate(d.getUTCDate() + 1);
-      } while (d.getUTCDay() === 0 || d.getUTCDay() === 6);
-      candidate = d.toISOString().slice(0, 10);
-    }
-    result[i] = candidate;
-    taken.add(candidate);
-  }
-  return result;
+function isWeekendUtc(date: Date): boolean {
+  const day = date.getUTCDay();
+  return day === 0 || day === 6;
+}
+
+function shiftToBusinessDay(date: Date, direction: 1 | -1): Date {
+  const out = new Date(date.getTime());
+  while (isWeekendUtc(out)) out.setUTCDate(out.getUTCDate() + direction);
+  return out;
+}
+
+function addDays(date: Date, days: number): Date {
+  const out = new Date(date.getTime());
+  out.setUTCDate(out.getUTCDate() + days);
+  return out;
+}
+
+function maxIsoDate(values: Array<string | undefined>): string | undefined {
+  const filtered = values.filter(Boolean) as string[];
+  if (filtered.length === 0) return undefined;
+  return filtered.reduce((a, b) => (a > b ? a : b));
 }
 
 function snapshotFromFormState(formState: ProjectorFormState | undefined): PacketSnapshot {
@@ -191,198 +161,413 @@ function packetFromSnapshot(formId: string, snap: PacketSnapshot): EcignPacket {
   };
 }
 
-/** Map step.status into PmTaskStatus. */
-function pmStatusFromStep(stepStatus: ProjectorEventStep['status']): PmTaskStatus {
-  if (stepStatus === 'complete') return 'done';
-  if (stepStatus === 'in-progress') return 'in_progress';
-  return 'todo';
-}
-
-/**
- * Combine the step-derived status with packet statuses from any attached
- * forms. The "worst" packet condition wins (returned/rejected → blocked,
- * awaiting_approval → in_review, awaiting_signature → in_progress).
- */
-function reconcileStatus(
-  base: PmTaskStatus,
-  packetStatuses: EcignPacketStatus[],
-): PmTaskStatus {
-  if (base === 'done') return 'done';
-  let next = base;
-  for (const ps of packetStatuses) {
-    if (ps === 'rejected' || ps === 'returned_for_correction') return 'blocked';
-    if (ps === 'awaiting_approval' && next !== 'blocked') next = 'in_review';
-    else if (
-      ps === 'awaiting_signature' &&
-      next !== 'in_review' &&
-      next !== 'blocked'
-    )
-      next = 'in_progress';
-    else if (ps === 'submitted' && next === 'todo') next = 'in_progress';
-  }
-  return next;
-}
-
 function applyOverlay<T extends EcignSubmissionTask | NonFormCesTask>(
   task: T,
   overlay: PmOverlay | undefined,
 ): T {
+  const mergedDeps = Array.from(
+    new Set([...(task.depends_on ?? task.dependencies ?? []), ...overlay?.dependencies ?? []]),
+  );
+  const dueDate = overlay?.due_date ?? task.due_date;
+  const sprintId = overlay?.sprint_id ?? task.sprint_id ?? inferSprintIdFromDate(dueDate);
   if (!overlay) return task;
   return {
     ...task,
     assigned_user_id: overlay.assigned_user_id ?? task.assigned_user_id,
-    sprint_id: overlay.sprint_id ?? task.sprint_id,
+    assignee: overlay.assigned_user_id ?? task.assignee,
     story_points: overlay.story_points ?? task.story_points,
     due_date: overlay.due_date ?? task.due_date,
-    dependencies: Array.from(
-      new Set([...(task.dependencies ?? []), ...overlay.dependencies]),
-    ),
+    depends_on: mergedDeps,
+    dependencies: mergedDeps,
+    // Apply overlay start_date if provided, otherwise keep task's computed start;
+    // clamp so start never exceeds due_date.
+    start_date: (() => {
+      const base = overlay.start_date ?? task.start_date;
+      return base > dueDate ? dueDate : base;
+    })(),
+    sprint_id: sprintId,
     weekend_override: overlay.weekend_override ?? task.weekend_override,
   };
 }
 
-/* ─── projector ─────────────────────────────────────────────────────── */
 export function projectTasks(input: ProjectorInput): Task[] {
   const tasks: Task[] = [];
+  const firstTaskByEvent = new Map<string, string>();
+  const lastTaskByEvent = new Map<string, string>();
+
+  const taskById = new Map<string, EcignSubmissionTask | NonFormCesTask>();
 
   for (const event of input.events) {
-    const anchor = event.date ?? event.endDate;
     let ordinal = 1;
-    const consumedFormIds = new Set<string>();
+    const eventDueDate = (event.endDate ?? event.date ?? new Date().toISOString().slice(0, 10)).slice(0, 10);
+    const eventDue = shiftToBusinessDay(parseIsoDate(eventDueDate) ?? new Date(), 1);
+    const defaultDue = toIsoDate(eventDue);
+    const eventRisk = riskFromEvent(event);
+    const eventPriority = priorityFromRisk(eventRisk);
+    const eventTitle = event.title ?? event.id;
+    const workflowTitle = event.workflowTitle ?? event.workflowId ?? 'Unlinked workflow';
 
-    /* Pre-compute due dates for every step so we can spread collisions
-       across consecutive workdays (defends against upstream data where
-       every step has dueOffsetDays=0). */
-    const preferredDates = event.processFlow.map((step) =>
-      computeStepDueDate(anchor, step.dueOffsetDays ?? 0),
-    );
-    const spreadDates = spreadCollisions(preferredDates);
+    const formMetaById = new Map<string, ProjectorEventForm>();
+    for (const form of event.requiredForms) formMetaById.set(form.id, form);
+    const formsConsumedBySteps = new Set<string>();
+    const eventTaskIds: string[] = [];
 
-    /* (1) One task per processFlow step. */
-    for (let stepIdx = 0; stepIdx < event.processFlow.length; stepIdx++) {
-      const step = event.processFlow[stepIdx];
-      const task_id = makeCesTaskId(event.id, ordinal++);
-      const overlay = input.overlays[task_id];
-      const stepDue = spreadDates[stepIdx];
-      const stepBaseStatus = pmStatusFromStep(step.status);
+    const pushTask = (task: EcignSubmissionTask | NonFormCesTask): void => {
+      const projected = applyOverlay(task, input.overlays[task.task_id]);
+      tasks.push(projected);
+      taskById.set(projected.task_id, projected);
+      eventTaskIds.push(projected.task_id);
+    };
 
-      // Resolve attached forms. step.requiredFormIds[] may reference either
-      // requiredForms[].id (the local item id) or requiredForms[].formId
-      // (the global Forms-Library id). Match on either.
-      const attachedFormIds = step.requiredFormIds ?? [];
-      const attachedForms = attachedFormIds
-        .map(fid => {
-          const match =
-            event.requiredForms.find(f => f.id === fid) ??
-            event.requiredForms.find(f => f.formId === fid);
-          if (match) consumedFormIds.add(match.id);
-          else consumedFormIds.add(fid); // suppress orphan if data only references the global formId
-          return match;
-        })
+    for (const step of event.processFlow) {
+      const stepTaskId = makeCesTaskId(event.id, ordinal++);
+      const linkedForms = (step.requiredFormIds ?? [])
+        .map(id => formMetaById.get(id))
         .filter((f): f is ProjectorEventForm => Boolean(f));
+      for (const lf of linkedForms) formsConsumedBySteps.add(lf.id);
 
-      if (attachedFormIds.length === 0) {
-        // Pure execution step — no eCIgn packet attached.
-        const base: NonFormCesTask = {
-          task_id,
-          source: 'ces',
-          event_id: event.id,
-          workflow_id: event.workflowId ?? '',
-          policy_id: event.policyRefs?.[0],
-          step_id: step.id,
-          title: step.label,
-          description: step.instructions ?? step.description,
-          status: stepBaseStatus,
-          story_points: step.storyPoints,
-          dependencies: [],
-          due_date: stepDue,
-        };
-        tasks.push(applyOverlay(base, overlay));
-        continue;
-      }
+      const stepDue = step.dueOffsetDays !== undefined
+        ? toIsoDate(shiftToBusinessDay(addDays(eventDue, step.dueOffsetDays), 1))
+        : defaultDue;
 
-      // Step with attached forms — build packets, escalate status.
-      const packets: EcignPacket[] = [];
-      const packetStatuses: EcignPacketStatus[] = [];
-      for (const f of attachedForms) {
-        const formStateKey = f.formId ?? f.id;
-        const fs =
-          input.formStates[formKey(event.id, formStateKey)] ??
-          (f.status ? { status: f.status } : undefined);
-        const snap = snapshotFromFormState(fs);
-        const pkt = packetFromSnapshot(f.formId ?? f.id, snap);
-        packets.push(pkt);
-        packetStatuses.push(pkt.packet_status);
-      }
+      const previousTaskId = eventTaskIds[eventTaskIds.length - 1];
+      const stepDependsOn = previousTaskId ? [previousTaskId] : [];
 
-      const primaryFormId =
-        attachedForms[0]?.formId ?? attachedForms[0]?.id ?? attachedFormIds[0];
-      const reconciled = reconcileStatus(stepBaseStatus, packetStatuses);
+      const stepStatus: PmTaskStatus =
+        step.status === 'complete'
+          ? 'done'
+          : step.status === 'in-progress'
+            ? 'in_progress'
+            : 'todo';
 
-      const base: EcignSubmissionTask = {
-        task_id,
-        source: 'ces',
+      const nominalStart = toIsoDate(shiftToBusinessDay(addDays(parseIsoDate(stepDue) ?? eventDue, -1), -1));
+
+      const stepTask: NonFormCesTask = {
+        task_id: stepTaskId,
+        source: 'CES',
+        task_type: 'workflow_step',
         event_id: event.id,
+        event_title: eventTitle,
         workflow_id: event.workflowId ?? '',
+        workflow_title: workflowTitle,
         policy_id: event.policyRefs?.[0],
+        policy_refs: event.policyRefs ?? [],
+        form_refs: linkedForms.map(resolveTemplateFormId).filter((x): x is string => Boolean(x)),
+        generated_form_instance_ids: linkedForms.map(form => formInstanceIdFor(event.id, resolveTemplateFormId(form) ?? (form.formId ?? form.id))),
+        source_form_id: linkedForms.map(resolveTemplateFormId).find(Boolean),
+        priority: eventPriority,
+        risk: eventRisk,
+        blockers: [],
+        policyRefs: event.policyRefs,
         step_id: step.id,
-        form_id: primaryFormId,
-        form_ids: attachedForms.map(f => f.formId ?? f.id),
-        ecign_packet_id: packets[0]?.packet_id,
-        packet: packets[0],
-        packets,
         title: step.label,
-        description: step.instructions ?? step.description,
-        status: reconciled,
-        packet_status: packets[0]?.packet_status ?? 'not_started',
-        required_signers: [],
-        approvers: [],
-        dependencies: [],
+        description: step.description,
+        status: stepStatus,
+        start_date: nominalStart,
+        assigned_user_id: undefined,
+        assignee: undefined,
+        owner: undefined,
         due_date: stepDue,
-        evidence_id: packets[0]?.evidence?.evidence_id,
-        audit_log_refs: [],
+        sprint_id: inferSprintIdFromDate(stepDue),
         story_points: step.storyPoints,
+        depends_on: stepDependsOn,
+        dependencies: stepDependsOn,
       };
-      tasks.push(applyOverlay(base, overlay));
+      pushTask(stepTask);
+
+      for (const form of linkedForms) {
+        const resolvedFormId = resolveTemplateFormId(form) ?? (form.formId ?? form.id);
+        const instanceId = formInstanceIdFor(event.id, resolvedFormId);
+        const completionTaskId = makeCesTaskId(event.id, ordinal++);
+        const reviewTaskId = makeCesTaskId(event.id, ordinal++);
+
+        const formState = input.formStates[formKey(event.id, form.id)];
+        const snap = snapshotFromFormState(formState);
+        const packet = resolvedFormId ? packetFromSnapshot(resolvedFormId, snap) : undefined;
+
+        const completionBase: EcignSubmissionTask = {
+          task_id: completionTaskId,
+          source: 'CES',
+          task_type: 'form_completion',
+          event_id: event.id,
+          event_title: eventTitle,
+          workflow_id: event.workflowId ?? '',
+          workflow_title: workflowTitle,
+          policy_id: event.policyRefs?.[0],
+          policy_refs: event.policyRefs ?? [],
+          form_refs: resolveTemplateFormId(form) ? [resolvedFormId] : [],
+          generated_form_instance_ids: [instanceId],
+          source_form_id: resolveTemplateFormId(form),
+          priority: eventPriority,
+          risk: eventRisk,
+          blockers: [],
+          policyRefs: event.policyRefs,
+          step_id: step.id,
+          form_id: resolvedFormId,
+          form_ids: [resolvedFormId],
+          ecign_packet_id: packet?.packet_id,
+          packet,
+          packets: packet ? [packet] : [],
+          title: `Complete ${form.label}`,
+          description: `Fill event-specific form instance ${instanceId}.`,
+          status: derivePmTaskStatus(snap),
+          packet_status: deriveEcignPacketStatus(snap),
+          start_date: nominalStart,
+          due_date: stepDue,
+          sprint_id: inferSprintIdFromDate(stepDue),
+          assigned_user_id: undefined,
+          assignee: undefined,
+          owner: undefined,
+          required_signers: [],
+          approvers: [],
+          depends_on: [stepTaskId],
+          dependencies: [stepTaskId],
+          story_points: 1,
+          evidence_id: packet?.evidence?.evidence_id,
+          audit_log_refs: [],
+        };
+        pushTask(completionBase);
+
+        const reviewBase: EcignSubmissionTask = {
+          task_id: reviewTaskId,
+          source: 'CES',
+          task_type: 'form_review',
+          event_id: event.id,
+          event_title: eventTitle,
+          workflow_id: event.workflowId ?? '',
+          workflow_title: workflowTitle,
+          policy_id: event.policyRefs?.[0],
+          policy_refs: event.policyRefs ?? [],
+          form_refs: resolveTemplateFormId(form) ? [resolvedFormId] : [],
+          generated_form_instance_ids: [instanceId],
+          source_form_id: resolveTemplateFormId(form),
+          priority: eventPriority,
+          risk: eventRisk,
+          blockers: [],
+          policyRefs: event.policyRefs,
+          step_id: step.id,
+          form_id: resolvedFormId,
+          form_ids: [resolvedFormId],
+          ecign_packet_id: packet?.packet_id,
+          packet,
+          packets: packet ? [packet] : [],
+          title: `Review ${form.label}`,
+          description: `Review submission for instance ${instanceId}.`,
+          status: completionBase.status === 'done' ? 'in_review' : 'todo',
+          packet_status: deriveEcignPacketStatus(snap),
+          start_date: stepDue,
+          due_date: stepDue,
+          sprint_id: inferSprintIdFromDate(stepDue),
+          assigned_user_id: undefined,
+          assignee: undefined,
+          owner: undefined,
+          required_signers: [],
+          approvers: [],
+          depends_on: [completionTaskId],
+          dependencies: [completionTaskId],
+          story_points: 1,
+          evidence_id: packet?.evidence?.evidence_id,
+          audit_log_refs: [],
+        };
+        pushTask(reviewBase);
+      }
+
+      if (linkedForms.length === 0) {
+        const evidenceTaskId = makeCesTaskId(event.id, ordinal++);
+        const evidenceBase: NonFormCesTask = {
+          task_id: evidenceTaskId,
+          source: 'CES',
+          task_type: 'evidence',
+          event_id: event.id,
+          event_title: eventTitle,
+          workflow_id: event.workflowId ?? '',
+          workflow_title: workflowTitle,
+          policy_id: event.policyRefs?.[0],
+          policy_refs: event.policyRefs ?? [],
+          form_refs: [],
+          generated_form_instance_ids: [],
+          priority: eventPriority,
+          risk: eventRisk,
+          blockers: [],
+          policyRefs: event.policyRefs,
+          step_id: step.id,
+          title: `Evidence for ${step.label}`,
+          description: 'Attach supporting evidence for this workflow step.',
+          status: stepStatus,
+          start_date: nominalStart,
+          assigned_user_id: undefined,
+          assignee: undefined,
+          owner: undefined,
+          due_date: stepDue,
+          sprint_id: inferSprintIdFromDate(stepDue),
+          story_points: 1,
+          depends_on: [stepTaskId],
+          dependencies: [stepTaskId],
+        };
+        pushTask(evidenceBase);
+      }
     }
 
-    /* (2) Orphan forms — required but never owned by a step. */
     for (const form of event.requiredForms) {
-      if (consumedFormIds.has(form.id)) continue;
+      if (formsConsumedBySteps.has(form.id)) continue;
+      const formState = input.formStates[formKey(event.id, form.id)];
+      const snap = snapshotFromFormState(formState);
+      const packet = form.formId ? packetFromSnapshot(form.formId, snap) : undefined;
       const task_id = makeCesTaskId(event.id, ordinal++);
-      const overlay = input.overlays[task_id];
-      const formStateKey = form.formId ?? form.id;
-      const fs =
-        input.formStates[formKey(event.id, formStateKey)] ??
-        (form.status ? { status: form.status } : undefined);
-      const snap = snapshotFromFormState(fs);
-      const pkt = packetFromSnapshot(form.formId ?? form.id, snap);
-      const orphanDue = computeStepDueDate(anchor, form.dueOffsetDays);
+
+      const previousTaskId = eventTaskIds[eventTaskIds.length - 1];
+      const dependsOn = previousTaskId ? [previousTaskId] : [];
+      const startDate = toIsoDate(shiftToBusinessDay(addDays(eventDue, -1), -1));
+      const templateFormId = resolveTemplateFormId(form);
+      const resolvedFormId = templateFormId ?? (form.formId ?? form.id);
+      const instanceId = formInstanceIdFor(event.id, resolvedFormId);
 
       const base: EcignSubmissionTask = {
         task_id,
-        source: 'ces',
+        source: 'CES',
+        task_type: 'form_completion',
         event_id: event.id,
+        event_title: eventTitle,
         workflow_id: event.workflowId ?? '',
+        workflow_title: workflowTitle,
         policy_id: event.policyRefs?.[0],
-        // step_id intentionally omitted — no owning execution step.
-        form_id: form.formId ?? form.id,
-        form_ids: [form.formId ?? form.id],
-        ecign_packet_id: pkt.packet_id,
-        packet: pkt,
-        packets: [pkt],
-        title: form.label,
+        policy_refs: event.policyRefs ?? [],
+        form_refs: templateFormId ? [resolvedFormId] : [],
+        generated_form_instance_ids: [instanceId],
+        source_form_id: templateFormId,
+        priority: eventPriority,
+        risk: eventRisk,
+        blockers: [],
+        policyRefs: event.policyRefs,
+        form_id: resolvedFormId,
+        form_ids: [resolvedFormId],
+        ecign_packet_id: packet?.packet_id,
+        packet,
+        packets: packet ? [packet] : [],
+        title: `Complete form ${form.label}`,
         status: derivePmTaskStatus(snap),
-        packet_status: pkt.packet_status,
+        packet_status: deriveEcignPacketStatus(snap),
+        start_date: startDate,
+        assignee: undefined,
+        owner: undefined,
         required_signers: [],
         approvers: [],
-        dependencies: [],
-        due_date: orphanDue,
-        evidence_id: pkt.evidence?.evidence_id,
+        depends_on: dependsOn,
+        dependencies: dependsOn,
+        due_date: defaultDue,
+        sprint_id: inferSprintIdFromDate(defaultDue),
+        evidence_id: packet?.evidence?.evidence_id,
         audit_log_refs: [],
       };
-      tasks.push(applyOverlay(base, overlay));
+      pushTask(base);
     }
+
+    const approvalTaskId = makeCesTaskId(event.id, ordinal++);
+    const certificationTaskId = makeCesTaskId(event.id, ordinal++);
+    const approvalDue = toIsoDate(shiftToBusinessDay(addDays(eventDue, -1), -1));
+
+    pushTask({
+      task_id: approvalTaskId,
+      source: 'CES',
+      task_type: 'approval',
+      event_id: event.id,
+      event_title: eventTitle,
+      workflow_id: event.workflowId ?? '',
+      workflow_title: workflowTitle,
+      policy_id: event.policyRefs?.[0],
+      policy_refs: event.policyRefs ?? [],
+      form_refs: [],
+      generated_form_instance_ids: [],
+      priority: eventPriority,
+      risk: eventRisk,
+      blockers: [],
+      policyRefs: event.policyRefs,
+      step_id: 'approval',
+      title: 'Approval Gate',
+      description: 'Approve forms and evidence before certification.',
+      status: 'todo',
+      start_date: approvalDue,
+      assigned_user_id: undefined,
+      assignee: undefined,
+      owner: undefined,
+      due_date: approvalDue,
+      sprint_id: inferSprintIdFromDate(approvalDue),
+      story_points: 1,
+      depends_on: eventTaskIds.length > 0 ? [eventTaskIds[eventTaskIds.length - 1]] : [],
+      dependencies: eventTaskIds.length > 0 ? [eventTaskIds[eventTaskIds.length - 1]] : [],
+    });
+
+    pushTask({
+      task_id: certificationTaskId,
+      source: 'CES',
+      task_type: 'certification',
+      event_id: event.id,
+      event_title: eventTitle,
+      workflow_id: event.workflowId ?? '',
+      workflow_title: workflowTitle,
+      policy_id: event.policyRefs?.[0],
+      policy_refs: event.policyRefs ?? [],
+      form_refs: [],
+      generated_form_instance_ids: [],
+      priority: eventPriority,
+      risk: eventRisk,
+      blockers: [],
+      policyRefs: event.policyRefs,
+      step_id: 'certification',
+      title: 'Certification',
+      description: 'Certify event completion after approvals and evidence closure.',
+      status: 'todo',
+      start_date: defaultDue,
+      assigned_user_id: undefined,
+      assignee: undefined,
+      owner: undefined,
+      due_date: defaultDue,
+      sprint_id: inferSprintIdFromDate(defaultDue),
+      story_points: 1,
+      depends_on: [approvalTaskId],
+      dependencies: [approvalTaskId],
+    });
+
+    if (eventTaskIds.length > 0) {
+      firstTaskByEvent.set(event.id, eventTaskIds[0]);
+      lastTaskByEvent.set(event.id, eventTaskIds[eventTaskIds.length - 1]);
+    }
+  }
+
+  // Event-level dependency stitching: upstream event's final task -> this event's first task.
+  for (const event of input.events) {
+    const upstream = (event as unknown as { dependencies?: { dependsOn?: string[] } }).dependencies?.dependsOn ?? [];
+    if (upstream.length === 0) continue;
+    const firstTaskId = firstTaskByEvent.get(event.id);
+    if (!firstTaskId) continue;
+    const firstTask = taskById.get(firstTaskId);
+    if (!firstTask) continue;
+    const additional = upstream
+      .map(id => lastTaskByEvent.get(id))
+      .filter((id): id is string => Boolean(id));
+    if (additional.length === 0) continue;
+    const merged = Array.from(new Set([...(firstTask.depends_on ?? firstTask.dependencies ?? []), ...additional]));
+    firstTask.depends_on = merged;
+    firstTask.dependencies = merged;
+  }
+
+  // Final start-date inference pass using dependency order and due date.
+  const dueByTask = new Map<string, string>();
+  for (const t of tasks) {
+    dueByTask.set(t.task_id, t.due_date);
+  }
+  for (const t of tasks) {
+    const preds = t.depends_on ?? t.dependencies ?? [];
+    const maxPredDue = maxIsoDate(preds.map(dep => dueByTask.get(dep)));
+    if (maxPredDue) {
+      const predStart = shiftToBusinessDay(addDays(parseIsoDate(maxPredDue) ?? new Date(`${maxPredDue}T00:00:00Z`), 1), 1);
+      const predStartIso = toIsoDate(predStart);
+      t.start_date = t.start_date && t.start_date > predStartIso ? t.start_date : predStartIso;
+    }
+    if (!t.start_date || t.start_date > t.due_date) {
+      t.start_date = toIsoDate(shiftToBusinessDay(addDays(parseIsoDate(t.due_date) ?? new Date(), -1), -1));
+    }
+    if (!t.sprint_id) t.sprint_id = inferSprintIdFromDate(t.due_date);
   }
 
   const isProd =

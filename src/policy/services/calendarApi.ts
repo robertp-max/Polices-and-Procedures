@@ -11,6 +11,7 @@ import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 /* ─── Transport types (mirror server/mappers.ts PlannerEventPayload) ─── */
 
 export interface PlannerEventPayload {
+  event_id?: string;
   appEventId: string;
   title: string;
   summary?: string;
@@ -39,30 +40,31 @@ export interface PlannerEventPayload {
 }
 
 export interface PlannerEventResponse extends PlannerEventPayload {
+  event_id: string;
   googleEventId: string;
   htmlLink?: string;
   createdAt?: string;
   updatedAt?: string;
   source: 'google';
-  /** Whether the backend created a new event or updated an existing one. */
-  action?: 'created' | 'updated';
+  action?: 'created' | 'updated' | 'skipped' | 'deleted' | 'failed';
 }
 
 export interface BulkSyncResultItem {
-  appEventId: string;
+  event_id: string;
   ok: boolean;
-  googleEventId?: string;
-  action?: 'created' | 'updated';
+  google_event_id?: string | null;
+  action: 'created' | 'updated' | 'skipped' | 'failed';
   error?: string;
+  skipped_reason?: 'hash_unchanged' | 'stale_version';
 }
 
 export interface BulkSyncResult {
   results: BulkSyncResultItem[];
   count: number;
-  okCount: number;
-  createdCount: number;
-  updatedCount: number;
-  failedCount: number;
+  created: number;
+  updated: number;
+  skipped: number;
+  failed: number;
 }
 
 export interface CalendarApiError {
@@ -127,12 +129,12 @@ export const CalendarApi = {
   async create(payload: PlannerEventPayload): Promise<PlannerEventResponse> {
     return request('POST', '/events', payload);
   },
-  async update(googleEventId: string, payload: PlannerEventPayload): Promise<PlannerEventResponse> {
-    return request('PUT', `/events/${encodeURIComponent(googleEventId)}`, payload);
+  async update(appEventId: string, payload: PlannerEventPayload): Promise<PlannerEventResponse> {
+    return request('PUT', `/events/${encodeURIComponent(appEventId)}`, payload);
   },
-  async remove(googleEventId: string, opts: { cancelOnly?: boolean } = {}): Promise<void> {
+  async remove(appEventId: string, opts: { cancelOnly?: boolean } = {}): Promise<void> {
     const qs = opts.cancelOnly ? '?cancelOnly=1' : '';
-    await request<void>('DELETE', `/events/${encodeURIComponent(googleEventId)}${qs}`);
+    await request<void>('DELETE', `/events/${encodeURIComponent(appEventId)}${qs}`);
   },
   async sync(events: PlannerEventPayload[]): Promise<BulkSyncResult> {
     return request('POST', '/sync', { events });
@@ -153,16 +155,20 @@ export interface EnforcementSyncContext {
 }
 
 export function toPlannerPayload(ev: RegulatoryEvent, enforcement?: EnforcementSyncContext): PlannerEventPayload {
-  const titlePrefix =
-    enforcement?.riskLevel === 'immediate-jeopardy' ? '[JEOPARDY] '
-    : enforcement?.isLocked ? '[LOCKED] '
-    : '';
+  const eventType = deriveEventType(ev);
+  const titlePrefix = enforcement?.riskLevel === 'immediate-jeopardy' ? '[Incident/Safety] ' : `[${eventType}] `;
+  const appBase = (import.meta.env.VITE_APP_BASE_URL as string | undefined) ?? 'https://dovdry3t4njek.cloudfront.net';
+  const normalizedBase = appBase.replace(/\/$/, '');
+  const eventUrl = `${normalizedBase}/calendar?event=${encodeURIComponent(ev.id)}`;
+  const workflowUrl = ev.workflowId
+    ? `${normalizedBase}/calendar?event=${encodeURIComponent(ev.id)}&workflow=1`
+    : undefined;
 
   return {
+    event_id: ev.id,
     appEventId: ev.id,
     title: `${titlePrefix}${ev.title}`,
     summary: ev.summary,
-    description: buildLongDescription(ev, enforcement),
     date: ev.date,
     endDate: ev.endDate,
     time: ev.time,
@@ -170,7 +176,7 @@ export function toPlannerPayload(ev: RegulatoryEvent, enforcement?: EnforcementS
     allDay: ev.allDay,
     timezone: ev.timezone ?? 'America/Los_Angeles',
     domain: ev.domain,
-    category: ev.category,
+    category: ev.category ?? eventType,
     cadence: ev.cadence,
     mandateType: ev.mandateType,
     policyRefs: ev.policyRefs,
@@ -178,43 +184,56 @@ export function toPlannerPayload(ev: RegulatoryEvent, enforcement?: EnforcementS
     ownerRole: ev.ownerRole,
     regulatoryDriver: ev.regulatoryDriver,
     auditRisk: enforcement?.riskLevel === 'immediate-jeopardy' ? 'critical' : (ev.complianceFlags?.auditRisk),
-    status: enforcement?.isLocked ? 'complete' : ev.urgency,
+    status: deriveStatus(ev, enforcement),
+    completionState: deriveStatus(ev, enforcement),
     evidenceStatus: ev.requiredForms?.some(f => f.status === 'missing')
       ? 'missing'
       : ev.requiredForms?.every(f => f.status === 'complete')
         ? 'complete'
         : 'pending',
     location: ev.location,
+    description: [
+      'Title:',
+      ev.title,
+      '',
+      'Compliance Event ID:',
+      ev.id,
+      '',
+      'Category:',
+      ev.category ?? eventType,
+      '',
+      'Status:',
+      deriveStatus(ev, enforcement),
+      '',
+      'Owner:',
+      ev.owner ? `${ev.owner}${ev.ownerRole ? ` (${ev.ownerRole})` : ''}` : 'Unassigned',
+      '',
+      'Open in Compliance App:',
+      eventUrl,
+      '',
+      'Related Workflow:',
+      workflowUrl ?? 'N/A',
+      '',
+      'Notes:',
+      ev.summary ?? 'No additional description provided.',
+      'This calendar entry is synced from the Home Health Compliance Platform. The app remains the source of truth.',
+    ].join('\n'),
   };
 }
 
-function buildLongDescription(ev: RegulatoryEvent, enforcement?: EnforcementSyncContext): string {
-  const parts: string[] = [];
-  if (enforcement) {
-    const lines: string[] = ['— Enforcement snapshot —'];
-    if (enforcement.riskLevel)        lines.push(`Risk: ${enforcement.riskLevel.toUpperCase()}${enforcement.riskScore != null ? ` (${enforcement.riskScore}/100)` : ''}`);
-    if (enforcement.isLocked)         lines.push('Status: LOCKED (post-approval immutability)');
-    else if (enforcement.canComplete) lines.push('Status: Ready to close');
-    if (enforcement.blockerCount)     lines.push(`Blockers: ${enforcement.blockerCount}`);
-    if (enforcement.approvalGapCount) lines.push(`Approval gaps: ${enforcement.approvalGapCount}`);
-    if (enforcement.summary)          lines.push(enforcement.summary);
-    parts.push(lines.join('\n'));
-  }
-  if (ev.summary)          parts.push(ev.summary);
-  if (ev.mandateType)      parts.push(`Mandate: ${ev.mandateType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`);
-  if (ev.regulatoryDriver) parts.push(`Regulatory driver: ${ev.regulatoryDriver}`);
-  if (ev.complianceFlags?.citation) parts.push(`Citation: ${ev.complianceFlags.citation}`);
-  if (ev.processFlow?.length) {
-    parts.push(
-      'Workflow:\n' +
-      ev.processFlow.map((s, i) => `  ${i + 1}. ${s.label}${s.description ? ` — ${s.description}` : ''}`).join('\n'),
-    );
-  }
-  if (ev.requiredForms?.length) {
-    parts.push(
-      'Required evidence:\n' +
-      ev.requiredForms.map(f => `  • ${f.label}${f.formId ? ` (${f.formId})` : ''}`).join('\n'),
-    );
-  }
-  return parts.join('\n\n');
+function deriveStatus(ev: RegulatoryEvent, enforcement?: EnforcementSyncContext): string {
+  if (enforcement?.isLocked) return 'completed';
+  if (ev.urgency === 'complete') return 'completed';
+  if (ev.urgency === 'overdue') return 'overdue';
+  return 'scheduled';
 }
+
+function deriveEventType(ev: RegulatoryEvent): 'Compliance' | 'Audit' | 'Training' | 'Policy' | 'Incident/Safety' {
+  const key = `${ev.category ?? ''} ${ev.domain ?? ''} ${ev.title ?? ''}`.toLowerCase();
+  if (key.includes('incident') || key.includes('safety') || key.includes('jeopardy')) return 'Incident/Safety';
+  if (key.includes('audit')) return 'Audit';
+  if (key.includes('training') || key.includes('in-service')) return 'Training';
+  if (key.includes('policy')) return 'Policy';
+  return 'Compliance';
+}
+

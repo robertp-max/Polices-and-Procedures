@@ -92,6 +92,7 @@ export function toGoogleEvent(
     summary: p.title,
     description,
     location: p.location,
+    colorId: mapGoogleColorId(p),
     extendedProperties: {
       private: pruneStrings({
         // PRIMARY identity keys — strict-match lookup uses these.
@@ -194,31 +195,56 @@ export function normalizeEventId(p: PlannerEventPayload): string {
 }
 
 function buildDescription(p: PlannerEventPayload): string {
-  const parts: string[] = [];
-  if (p.summary) parts.push(p.summary);
-  if (p.description) parts.push(p.description);
-  const meta: string[] = [];
-  if (p.domain)            meta.push(`Domain: ${p.domain}`);
-  if (p.category)          meta.push(`Category: ${p.category}`);
-  if (p.policyRefs?.length) meta.push(`Policy: ${p.policyRefs.join(', ')}`);
-  if (p.owner)             meta.push(`Owner: ${p.owner}${p.ownerRole ? ` (${p.ownerRole})` : ''}`);
-  if (p.regulatoryDriver)  meta.push(`Driver: ${p.regulatoryDriver}`);
-  if (p.auditRisk)         meta.push(`Audit risk: ${p.auditRisk}`);
-  if (meta.length) parts.push('\n— Regulatory Planner —\n' + meta.join('\n'));
-  // Machine-readable fallback ID block. extendedProperties.private.event_id is
-  // the PRIMARY channel; this block exists so the identity survives manual
-  // copy-paste of events between calendars and is greppable in the Google UI.
   const envTag = p.env ?? 'PROD';
   const eventId = p.event_id || p.appEventId || '';
-  parts.push(
-    [
-      '[CI-EVENT]',
-      `event_id=${eventId}`,
-      `env=${envTag}`,
-      `source=CI_ENGINE`,
-    ].join('\n'),
-  );
-  return parts.filter(Boolean).join('\n\n');
+  const appEventUrl = `https://dovdry3t4njek.cloudfront.net/calendar?event=${encodeURIComponent(eventId)}`;
+  const workflowUrl = p.category || p.cadence
+    ? `https://dovdry3t4njek.cloudfront.net/calendar?event=${encodeURIComponent(eventId)}&workflow=1`
+    : '';
+
+  const lines = [
+    'Title:',
+    p.title || '(untitled)',
+    '',
+    'Compliance Event ID:',
+    eventId,
+    '',
+    'Category:',
+    p.category || p.domain || 'Compliance',
+    '',
+    'Status:',
+    p.status || p.completionState || 'scheduled',
+    '',
+    'Owner:',
+    p.owner ? `${p.owner}${p.ownerRole ? ` (${p.ownerRole})` : ''}` : 'Unassigned',
+    '',
+    'Open in Compliance App:',
+    appEventUrl,
+    '',
+    'Related Workflow:',
+    workflowUrl || 'N/A',
+    '',
+    'Notes:',
+    p.summary || p.description || 'No additional description provided.',
+    'This calendar entry is synced from the Home Health Compliance Platform. The app remains the source of truth.',
+    '',
+    '[CI-EVENT]',
+    `event_id=${eventId}`,
+    `env=${envTag}`,
+    'source=CI_ENGINE',
+  ];
+
+  return lines.join('\n');
+}
+
+function mapGoogleColorId(p: PlannerEventPayload): string | undefined {
+  const key = `${p.category ?? ''} ${p.domain ?? ''}`.toLowerCase();
+  if (key.includes('audit')) return '6';
+  if (key.includes('training')) return '10';
+  if (key.includes('policy')) return '3';
+  if (key.includes('incident') || key.includes('safety')) return '11';
+  if (key.includes('compliance')) return '9';
+  return undefined;
 }
 
 function addDaysISO(dateISO: string, days: number): string {

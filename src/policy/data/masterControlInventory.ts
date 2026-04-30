@@ -11,6 +11,11 @@ import type {
 export const MASTER_CONTROL_INVENTORY_SOURCE_PATH =
   '/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json';
 
+export const MASTER_CONTROL_INVENTORY_SOURCE_PATH_FALLBACKS = [
+  '/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  '/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+] as const;
+
 export const MASTER_CONTROL_CATEGORIES: MasterControlCategory[] = [
   'Patient Rights & Access',
   'Clinical Operations',
@@ -75,14 +80,41 @@ export function mapMasterControlRecord(source: MasterControlSourceRecord): Maste
 }
 
 export async function loadMasterControlInventorySeed(): Promise<MasterControlItem[]> {
-  try {
-    const res = await fetch(MASTER_CONTROL_INVENTORY_SOURCE_PATH);
-    if (!res.ok) return FALLBACK_CONTROLS;
-    const payload = (await res.json()) as MasterControlSourcePayload;
-    if (!payload.controls?.length) return FALLBACK_CONTROLS;
-    return payload.controls.map(mapMasterControlRecord);
-  } catch {
-    return FALLBACK_CONTROLS;
+  const attemptedPaths = [
+    MASTER_CONTROL_INVENTORY_SOURCE_PATH,
+    ...MASTER_CONTROL_INVENTORY_SOURCE_PATH_FALLBACKS,
+  ];
+
+  for (const path of attemptedPaths) {
+    try {
+      const res = await fetch(path);
+      if (!res.ok) {
+        console.error('[MasterControlInventory] Dataset fetch failed', {
+          path,
+          status: res.status,
+          statusText: res.statusText,
+        });
+        continue;
+      }
+
+      const payload = (await res.json()) as MasterControlSourcePayload;
+      if (!payload.controls?.length) {
+        console.error('[MasterControlInventory] Dataset payload was empty', { path });
+        continue;
+      }
+
+      return payload.controls.map(mapMasterControlRecord);
+    } catch (error) {
+      console.error('[MasterControlInventory] Dataset fetch threw an error', {
+        path,
+        error,
+      });
+    }
   }
+
+  console.error('[MasterControlInventory] Exhausted dataset fetch paths', {
+    attemptedPaths,
+  });
+  return FALLBACK_CONTROLS;
 }
 

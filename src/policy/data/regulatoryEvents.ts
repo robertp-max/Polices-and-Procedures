@@ -938,7 +938,7 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
   {
     id: 'governing_body_prep-20260511-01',
     eventSubType: 'governing_body_prep',
-    title: 'Governing Body Mtg (Prep â€” Owner Brief)',
+    title: 'Governing Body Mtg (Prep - Owner Brief)',
     domain: 'Governance',
     date: '2026-05-11',
     time: '14:00',

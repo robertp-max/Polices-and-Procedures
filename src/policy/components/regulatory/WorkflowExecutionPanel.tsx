@@ -39,6 +39,7 @@ import {
 import { downloadBlob } from '@/policy/audit/exportReport';
 import { CalendarApi, toPlannerPayload } from '@/policy/services/calendarApi';
 import { EventTaskList } from '@/policy/components/pm/EventTaskList';
+import { useShellStore } from '@/policy/stores/uiStore';
 
 /* ═══════════════════════════════════════════════════════════════
    WorkflowExecutionPanel
@@ -61,9 +62,10 @@ export interface WorkflowExecutionPanelProps {
   event: RegulatoryEvent | null;
   onClear?: () => void;
   today?: Date;
+  onSelectTask?: (taskId: string) => void;
 }
 
-type PanelTab = 'event' | 'workflow' | 'record' | 'audit';
+type PanelTab = 'event' | 'workflow' | 'related_tasks' | 'record' | 'audit';
 type CalendarSideTab = 'guests' | 'resources';
 
 interface CalendarGuest {
@@ -83,6 +85,7 @@ export function WorkflowExecutionPanel({
   event,
   onClear,
   today = TODAY_ANCHOR,
+  onSelectTask,
 }: WorkflowExecutionPanelProps) {
   const store = useRegulatoryExecutionStore();
 
@@ -90,19 +93,21 @@ export function WorkflowExecutionPanel({
     return <EmptyPanel />;
   }
 
-  return <ActivePanel event={event} onClear={onClear} today={today} store={store} />;
+  return <ActivePanel event={event} onClear={onClear} today={today} store={store} onSelectTask={onSelectTask} />;
 }
 
 /* ─── Active ─────────────────────────────────────────── */
 function ActivePanel({
-  event, onClear, today, store,
+  event, onClear, today, store, onSelectTask,
 }: {
   event: RegulatoryEvent;
   onClear?: () => void;
   today: Date;
   store: ReturnType<typeof useRegulatoryExecutionStore.getState>;
+  onSelectTask?: (taskId: string) => void;
 }) {
   const [tab, setTab] = useState<PanelTab>('event');
+  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
 
   const state: InstanceState = classifyInstance(event, today, store);
   const auditState = classifyAuditState(event, today, store);
@@ -127,7 +132,10 @@ function ActivePanel({
   return (
     <aside
       className="h-full w-full flex flex-col min-h-0 rounded-xl border overflow-hidden"
-      style={{ borderColor: `${stateColor}55`, background: 'rgba(255,255,255,0.015)' }}
+      style={{
+        borderColor: `${stateColor}55`,
+        background: isLight ? 'var(--ci-surface-2)' : 'rgba(255,255,255,0.015)',
+      }}
     >
       {/* ── Header: instance projection ── */}
       <header
@@ -191,8 +199,11 @@ function ActivePanel({
 
       {/* ── Tab bar ── */}
       <nav
-        className="grid grid-cols-4 items-stretch border-b"
-        style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(248,250,252,0.9)' }}
+        className="grid grid-cols-5 items-stretch border-b"
+        style={{
+          borderColor: 'var(--ci-border)',
+          background: isLight ? 'var(--ci-surface-muted)' : 'rgba(248,250,252,0.9)',
+        }}
       >
         <TabButton
           active={tab === 'event'}
@@ -206,6 +217,13 @@ function ActivePanel({
           onClick={() => setTab('workflow')}
           icon={<Workflow size={11} />}
           label="Workflow"
+          accent={TEAL_PRIMARY}
+        />
+        <TabButton
+          active={tab === 'related_tasks'}
+          onClick={() => setTab('related_tasks')}
+          icon={<ListChecks size={11} />}
+          label="Related Tasks"
           accent={TEAL_PRIMARY}
         />
         <TabButton
@@ -228,12 +246,10 @@ function ActivePanel({
       {/* ── Body ── */}
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
         {tab === 'event' && <CalendarEventView event={event} today={today} state={state} sla={sla} />}
-        {tab === 'workflow' && (
-          <div className="flex flex-col gap-3">
-            <div className="px-3 pt-3">
-              <EventTaskList eventId={event.id} />
-            </div>
-            <WorkflowBody event={event} />
+        {tab === 'workflow' && <WorkflowBody event={event} />}
+        {tab === 'related_tasks' && (
+          <div className="p-3">
+            <EventTaskList eventId={event.id} onSelectTask={onSelectTask} />
           </div>
         )}
         {tab === 'record' && <EventRecordPanel event={event} />}
@@ -271,15 +287,16 @@ function TabButton({
   count?: number;
   accent: string;
 }) {
+  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   return (
     <button
       type="button"
       onClick={onClick}
       className="flex min-w-0 items-center justify-center gap-1 px-1.5 py-2 text-[9px] sm:text-[10px] font-montserrat font-bold uppercase tracking-[0.1em] transition border-r last:border-r-0"
       style={{
-        borderRightColor: 'rgba(148,163,184,0.30)',
-        color: active ? accent : '#475569',
-        background: active ? `${accent}1a` : 'rgba(248,250,252,0.75)',
+        borderRightColor: 'var(--ci-border)',
+        color: active ? accent : (isLight ? 'var(--ci-text-muted-2)' : '#475569'),
+        background: active ? `${accent}1a` : (isLight ? 'var(--ci-surface-muted)' : 'rgba(248,250,252,0.75)'),
         borderBottom: active ? `2px solid ${accent}` : '2px solid transparent',
       }}
     >
@@ -1772,13 +1789,13 @@ function PushToGoogleCalendarButton({ event }: { event: RegulatoryEvent }) {
     try {
       const payload = toPlannerPayload(event);
       const res = await CalendarApi.sync([payload]);
-      if (res.failedCount > 0) {
+      if (res.failed > 0) {
         setState('error');
-        push('error', 'Google Calendar push failed', res.results[0]?.error ?? 'Unknown error');
+        push('error', 'Google Calendar sync failed', res.results[0]?.error ?? 'Unknown error');
         return;
       }
       setState('pushed');
-      const action = res.createdCount > 0 ? 'Created' : 'Updated';
+      const action = res.created > 0 ? 'Created' : (res.updated > 0 ? 'Updated' : 'Skipped');
       push('success', `${action} on Google Calendar`, event.title);
     } catch (e) {
       setState('error');
@@ -1788,10 +1805,10 @@ function PushToGoogleCalendarButton({ event }: { event: RegulatoryEvent }) {
   };
 
   const label =
-    state === 'pushing' ? 'Pushing…'
+    state === 'pushing' ? 'Syncing…'
     : state === 'pushed' ? 'Synced to Google Calendar'
-    : state === 'error'  ? 'Retry push to Google Calendar'
-    : 'Push to Google Calendar';
+    : state === 'error'  ? 'Retry Sync to Google Calendar'
+    : 'Sync to Google Calendar';
 
   const Icon =
     state === 'pushing' ? Loader2

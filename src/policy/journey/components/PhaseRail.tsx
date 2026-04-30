@@ -9,11 +9,11 @@ interface Props {
 
 const PHASES: { id: Props['active']; label: string; icon: React.ReactNode }[] = [
   { id: 'PRE_DAY_1',  label: 'Pre-Day-1',       icon: <ShieldAlert size={16} /> },
-  { id: 'GAO',        label: 'Orientation',     icon: <ClipboardCheck size={16} /> },
-  { id: 'ROLE',       label: 'Role-Specific',   icon: <UserCheck size={16} /> },
+  { id: 'GAO',        label: 'Core Journey',    icon: <ClipboardCheck size={16} /> },
+  { id: 'ROLE',       label: 'Clinical Role',   icon: <UserCheck size={16} /> },
   { id: 'SUPERVISED', label: 'Supervised',      icon: <Users size={16} /> },
   { id: 'CLEARED',    label: 'Cleared',         icon: <Award size={16} /> },
-  { id: 'ANN',        label: 'Annual',          icon: <RotateCw size={16} /> },
+  { id: 'ANN',        label: 'Annual and Recurrent', icon: <RotateCw size={16} /> },
   { id: 'DRILL',      label: 'Drills',          icon: <Siren size={16} /> },
 ];
 

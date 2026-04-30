@@ -21,6 +21,7 @@ import type {
   OperationalGapType,
   PhaseStatus,
 } from '../lib/responseTypes.js';
+import { ReferenceLink } from './ReferenceLink';
 
 const ACCENT = '#C8A96E';
 
@@ -150,7 +151,16 @@ function GapCard({ gap, isLight }: { gap: OperationalGap; isLight: boolean }) {
           {gap.owner && (
             <p className="text-[10px] mt-0.5" style={{ color: subColor }}>
               Owner: {gap.owner}
-              {gap.linkedPolicyId && ` · ${gap.linkedPolicyId}`}
+              {gap.linkedPolicyId && (
+                <>
+                  {' '}
+                  ·
+                  {' '}
+                  <ReferenceLink id={gap.linkedPolicyId} isLight={isLight}>
+                    {gap.linkedPolicyId}
+                  </ReferenceLink>
+                </>
+              )}
             </p>
           )}
         </div>
@@ -186,7 +196,10 @@ function GapCard({ gap, isLight }: { gap: OperationalGap; isLight: boolean }) {
           </div>
           {gap.linkedFormId && (
             <p className="text-[10px]" style={{ fontFamily: mono, color: subColor }}>
-              Linked Form: {gap.linkedFormId}
+              Linked Form:{' '}
+              <ReferenceLink id={gap.linkedFormId} isLight={isLight}>
+                {gap.linkedFormId}
+              </ReferenceLink>
             </p>
           )}
         </div>
@@ -232,7 +245,13 @@ function LifecycleCard({ alert, isLight }: { alert: LifecycleAlert; isLight: boo
             )}
           </div>
           <p className="text-[12px] font-semibold mt-0.5" style={{ color: textColor }}>
-            {alert.policyId} — {alert.policyTitle}
+            <ReferenceLink id={alert.policyId} isLight={isLight}>
+              {alert.policyId}
+            </ReferenceLink>
+            {' '}
+            -
+            {' '}
+            {alert.policyTitle}
           </p>
           <p className="text-[10px] mt-0.5" style={{ color: subColor }}>
             Owner: {alert.owner}{alert.approver ? ` · Approver: ${alert.approver}` : ''}

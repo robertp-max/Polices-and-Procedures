@@ -84,6 +84,22 @@ export const pmApi = {
   listAudit:     (taskId: string) =>
                   call<{ task_id: string; audit: Array<Record<string, unknown>> }>(
                     'GET', `/pm/audit?task_id=${encodeURIComponent(taskId)}`),
+
+  listWatchers:  (opts?: { user_id?: string; task_id?: string }) => {
+                  const qs = new URLSearchParams();
+                  if (opts?.user_id)  qs.set('user_id', opts.user_id);
+                  if (opts?.task_id)  qs.set('task_id', opts.task_id);
+                  const q = qs.toString();
+                  return call<{ watchers: Array<{ task_id: string; user_id: string; created_at: string }> }>(
+                    'GET', `/pm/watchers${q ? `?${q}` : ''}`);
+                  },
+  addWatcher:    (taskId: string, userId: string) =>
+                  call<{ watcher: { task_id: string; user_id: string }; created: boolean }>(
+                    'POST', '/pm/watchers', { task_id: taskId, user_id: userId }),
+  removeWatcher: (taskId: string, userId: string) =>
+                  call<{ deleted: boolean }>(
+                    'DELETE', `/pm/watchers/${encodeURIComponent(taskId)}?user_id=${encodeURIComponent(userId)}`),
+
   listNotifications: (userId: string) =>
                   call<{ user_id: string; notifications: Array<Record<string, unknown>> }>(
                     'GET', `/pm/notifications?user_id=${encodeURIComponent(userId)}`),

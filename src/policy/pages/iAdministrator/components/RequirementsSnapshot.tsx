@@ -1,5 +1,6 @@
 import { CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import type { RequirementSnapshotItem } from '../lib/responseTypes';
+import { ReferenceLink } from './ReferenceLink';
 
 /* ═══════════════════════════════════════════════════════════════
    RequirementsSnapshot — compact rows that feel like a survey
@@ -10,10 +11,10 @@ import type { RequirementSnapshotItem } from '../lib/responseTypes';
 export interface RequirementsSnapshotProps {
   items: RequirementSnapshotItem[];
   isLight: boolean;
-  onOpenReference: (policyId: string) => void;
+  onOpenReference: (_policyId: string) => void;
 }
 
-export function RequirementsSnapshot({ items, isLight, onOpenReference }: RequirementsSnapshotProps) {
+export function RequirementsSnapshot({ items, isLight, onOpenReference: _onOpenReference }: RequirementsSnapshotProps) {
   if (items.length === 0) return null;
 
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
@@ -57,14 +58,13 @@ export function RequirementsSnapshot({ items, isLight, onOpenReference }: Requir
                   style={{ color: muted, fontFamily: "'JetBrains Mono', monospace" }}
                 >
                   {it.sourcePolicyId && (
-                    <button
-                      type="button"
-                      onClick={() => it.sourcePolicyId && onOpenReference(it.sourcePolicyId)}
-                      className="hover:underline"
+                    <ReferenceLink
+                      id={it.sourcePolicyId}
+                      isLight={isLight}
                       style={{ color: isLight ? '#52404B' : 'rgba(255,255,255,0.65)' }}
                     >
                       {it.sourcePolicyId}
-                    </button>
+                    </ReferenceLink>
                   )}
                   {it.sourcePolicyId && it.sourceSection && ' · '}
                   {it.sourceSection}

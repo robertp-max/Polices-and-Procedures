@@ -12,11 +12,22 @@ import {
   Clock, FileBadge, Receipt, Tags, PieChart, LogIn, Truck,
   MessageSquare, Key, DatabaseBackup, MonitorCog, Smartphone,
   BarChart2, UserCheck, Home, Siren, FolderTree, RefreshCw,
-  BarChart, Network, ClipboardList, X
+  BarChart, Network, ClipboardList
 } from 'lucide-react';
 import { AlertTriangle } from 'lucide-react';
 import { SharedPolicyDetailView, type SharedPolicy } from '../components/SharedPolicyDetailView';
 import { getPolicyContent } from '../data/policyContentMap';
+import { EmptyState } from '@/policy/components/ui';
+
+// ── Title resolver: extract Title row from Policy Header content section ──────
+function resolveTitleFromContent(sections: { order: number; body: string }[] | undefined): string | null {
+  if (!sections) return null;
+  const headerSec = sections.find(s => s.order === 2);
+  if (!headerSec?.body) return null;
+  // Match "| Title | Some Title |" row in the GFM metadata table
+  const m = headerSec.body.match(/\|\s*Title\s*\|\s*([^|\n]+?)\s*\|/i);
+  return m ? m[1].trim() : null;
+}
 
 // ══════════════════════════════════════════════════════════════
 // ENTERPRISE POLICY TAXONOMY – FULL 278-POLICY DATASET
@@ -263,8 +274,10 @@ newPoliciesData.forEach(p => {
 // ── ADAPTER: map PolicyRecord → SharedPolicy ──────────────────
 function toSharedPolicy(p: PolicyRecord): SharedPolicy {
   const content = getPolicyContent(p.policyId);
+  // Priority: content Title row > corpus rawPolicies title > policyId fallback
+  const resolvedTitle = resolveTitleFromContent(content?.sections) ?? p.title;
   return {
-    id: p.id, policyId: p.policyId, title: p.title,
+    id: p.id, policyId: p.policyId, title: resolvedTitle,
     domain: p.domain, domainCode: p.domainCode,
     subdomain: p.subdomain, subdomainCode: p.subdomainCode,
     classificationTier: p.classificationTier, status: p.status,
@@ -292,7 +305,8 @@ export function LibraryPage() {
   const [selectedDomain, setSelectedDomain] = useState('ALL');
   const [selectedSubdomain, setSelectedSubdomain] = useState<string>('ALL');
   const [activeRegFilter, setActiveRegFilter] = useState('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, _setSearchQuery] = useState('');
+  void _setSearchQuery;
 
   const filteredSubdomains = useMemo(() => {
     if (selectedDomain === 'ALL')
@@ -358,11 +372,11 @@ export function LibraryPage() {
       {selectedPolicy ? (
         <SharedPolicyDetailView policy={toSharedPolicy(selectedPolicy)} onBack={() => setSelectedPolicy(null)} />
       ) : (
-      <div className="h-full w-full font-roboto text-white flex flex-col overflow-hidden">
+      <div className="h-full w-full font-roboto text-ci-text-primary bg-ci-bg flex flex-col overflow-hidden">
         {/* HEADER */}
         <div className="px-10 pt-10 pb-4 flex items-center justify-between shrink-0">
           <div className="flex flex-col">
-            <h1 className="font-montserrat text-3xl font-light text-white flex items-center gap-4">
+            <h1 className="font-montserrat text-3xl font-light text-ci-text-primary flex items-center gap-4">
               <Library className="text-[#FFC107]" size={36} strokeWidth={1.5}/> Enterprise Policy Library
             </h1>
             <div className="flex items-center gap-3 mt-4 ml-1">
@@ -370,49 +384,32 @@ export function LibraryPage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FFC107]/20 to-transparent -translate-x-full"
                   style={{animation:'shimmerLib 2.5s infinite'}}/>
                 <FileText size={12} className="text-[#FFC107] animate-pulse"/>
-                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-white">278 POLICIES</span>
+                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-ci-text-primary">278 POLICIES</span>
               </div>
               <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] border-[#a855f7]/40 flex items-center gap-2 relative overflow-hidden cursor-pointer"
                 onClick={() => navigate('/forms')}>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#a855f7]/20 to-transparent -translate-x-full"
                   style={{animation:'shimmerLib 3s infinite 0.5s'}}/>
                 <Layers size={12} className="text-[#a855f7] animate-pulse"/>
-                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-white">361 FORMS</span>
+                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-ci-text-primary">361 FORMS</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Search */}
-            <div className="glass-interactive-lib flex items-center gap-3 px-4 py-2.5 rounded-full border-[0.77px] border-white/20 w-[280px]">
-              <Search size={14} className="text-white/40 shrink-0"/>
-              <input
-                type="text"
-                placeholder="Search policies..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="bg-transparent w-full outline-none text-sm text-white placeholder:text-white/30 font-roboto"
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="text-white/30 hover:text-white shrink-0">
-                  <X size={13}/>
-                </button>
-              )}
-            </div>
-
             {/* Policies / Forms toggle */}
-            <div className="flex items-center p-1 rounded-full border-[0.77px] border-white/20">
+            <div className="flex items-center p-1 rounded-full border border-ci-border">
               <button className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-[#FFC107] text-[#FFC107] font-montserrat">
                 Policies
               </button>
               <button onClick={() => navigate('/forms')}
-                className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-transparent text-white/40 hover:text-white transition-colors font-montserrat">
+                className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-transparent text-ci-text-subtle hover:text-ci-text-primary transition-colors font-montserrat">
                 Forms
               </button>
             </div>
 
             {/* Export */}
-            <button className="glass-interactive-lib flex items-center gap-2 px-5 py-2.5 rounded-full border-[0.77px] border-white/20 text-[9px] font-bold tracking-widest uppercase text-white/60 hover:text-white transition-colors font-montserrat">
+            <button className="glass-interactive-lib flex items-center gap-2 px-5 py-2.5 rounded-full border border-ci-border text-[9px] font-bold tracking-widest uppercase text-ci-text-subtle hover:text-ci-text-primary transition-colors font-montserrat">
               <Printer size={13}/> Export
             </button>
           </div>
@@ -421,9 +418,9 @@ export function LibraryPage() {
         {/* MAIN BODY: sidebar + content */}
         <div className="flex-1 flex min-h-0">
           {/* SIDEBAR */}
-          <aside className="w-[280px] px-6 py-4 shrink-0 overflow-y-auto lib-custom-scrollbar border-r border-white/[0.06]">
+          <aside className="w-[280px] px-6 py-4 shrink-0 overflow-y-auto lib-custom-scrollbar border-r border-ci-border">
             {/* Regulatory Filters */}
-            <h2 className="text-[8px] font-bold text-white/30 tracking-[0.2em] uppercase mb-4 pl-2 font-montserrat">Regulatory Filters</h2>
+            <h2 className="text-[8px] font-bold text-ci-text-subtle tracking-[0.2em] uppercase mb-4 pl-2 font-montserrat">Regulatory Filters</h2>
             <div className="flex flex-wrap gap-1.5 pl-2 mb-8">
               {[{ id: 'ALL', shortName: 'All', color: '#ffffff', icon: Layers }, ...REGULATORY_ITEMS].map(reg => {
                 const isActive = activeRegFilter === reg.id;
@@ -434,7 +431,7 @@ export function LibraryPage() {
                     className="glass-interactive-lib flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-widest border-[0.77px] font-montserrat transition-colors"
                     style={isActive
                       ? { borderColor: mapColor(reg.color), color: mapColor(reg.color) }
-                      : { borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}>
+                      : isLight ? { borderColor: 'rgba(0,0,0,0.12)', color: '#747470' } : { borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}>
                     <Icon size={10}/> {reg.shortName.toUpperCase()}
                   </button>
                 );
@@ -442,11 +439,14 @@ export function LibraryPage() {
             </div>
 
             {/* Domain Buttons */}
-            <h2 className="text-[8px] font-bold text-white/30 tracking-[0.2em] uppercase mb-4 pl-2 font-montserrat">Strategic Domains</h2>
+            <h2 className="text-[8px] font-bold text-ci-text-subtle tracking-[0.2em] uppercase mb-4 pl-2 font-montserrat">Strategic Domains</h2>
             <div className="space-y-1 pl-1">
               <button
                 onClick={() => handleDomainSelect('ALL')}
-                className={`glass-interactive-lib w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[9px] font-bold border-[0.77px] font-montserrat tracking-wider uppercase transition-colors text-left ${selectedDomain === 'ALL' ? 'border-white/30 text-white' : 'border-transparent text-white/40 hover:text-white hover:border-white/10'}`}>
+                className={`glass-interactive-lib w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[9px] font-bold border-[0.77px] font-montserrat tracking-wider uppercase transition-colors text-left`}
+                style={selectedDomain === 'ALL'
+                  ? isLight ? { borderColor: 'rgba(0,0,0,0.2)', color: '#1F1C1B' } : { borderColor: 'rgba(255,255,255,0.3)', color: '#fff' }
+                  : isLight ? { borderColor: 'transparent', color: '#747470' } : { borderColor: 'transparent', color: 'rgba(255,255,255,0.4)' }}>
                 <Layers size={13}/> Global Repository
               </button>
               {DOMAINS.map(d => {
@@ -459,7 +459,7 @@ export function LibraryPage() {
                     className="glass-interactive-lib w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[9px] font-bold border-[0.77px] font-montserrat tracking-wider uppercase transition-colors text-left"
                     style={isActive
                       ? { borderColor: `${dColor}60`, color: dColor, backgroundColor: `${dColor}10` }
-                      : { borderColor: 'transparent', color: 'rgba(255,255,255,0.4)' }}>
+                      : isLight ? { borderColor: 'transparent', color: '#747470' } : { borderColor: 'transparent', color: 'rgba(255,255,255,0.4)' }}>
                     <Icon size={13} style={{ color: isActive ? dColor : undefined }}/> {d.name}
                   </button>
                 );
@@ -470,16 +470,16 @@ export function LibraryPage() {
           {/* MAIN CONTENT */}
           <section className="flex-1 flex flex-col overflow-hidden">
             {/* Top nav bar */}
-            <div className="px-8 py-4 flex items-center gap-4 shrink-0 border-b border-white/[0.06]">
+            <div className="px-8 py-4 flex items-center gap-4 shrink-0 border-b border-ci-border">
               {selectedSubdomain !== 'ALL' && (
                 <button
                   onClick={() => setSelectedSubdomain('ALL')}
-                  className="glass-interactive-lib flex items-center gap-2 px-3 py-1.5 rounded-full border-[0.77px] border-white/20 text-[9px] font-bold tracking-widest uppercase text-white/60 hover:text-white transition-colors font-montserrat">
+                  className="glass-interactive-lib flex items-center gap-2 px-3 py-1.5 rounded-full border-[0.77px] border-ci-border text-[9px] font-bold tracking-widest uppercase text-ci-text-subtle hover:text-ci-text-primary transition-colors font-montserrat">
                   <ChevronLeft size={13}/> Back
                 </button>
               )}
               <div className="flex-1">
-                <p className="text-[8px] text-white/30 tracking-[0.2em] uppercase font-montserrat font-bold">
+                <p className="text-[8px] text-ci-text-subtle tracking-[0.2em] uppercase font-montserrat font-bold">
                   {selectedSubdomain === 'BROWSE' || selectedSubdomain === 'ALL'
                     ? browseTitle
                     : `${selectedSubdomainObj ? `${selectedSubdomainObj.domainCode}-${selectedSubdomainObj.code} — ${selectedSubdomainObj.name}` : ''}`}
@@ -488,11 +488,11 @@ export function LibraryPage() {
               {selectedSubdomain !== 'BROWSE' && (
                 <button
                   onClick={() => setSelectedSubdomain('BROWSE')}
-                  className="glass-interactive-lib flex items-center gap-2 px-3 py-1.5 rounded-full border-[0.77px] border-white/10 text-[9px] font-bold tracking-widest uppercase text-white/40 hover:text-white/60 transition-colors font-montserrat">
+                  className="glass-interactive-lib flex items-center gap-2 px-3 py-1.5 rounded-full border-[0.77px] border-ci-border text-[9px] font-bold tracking-widest uppercase text-ci-text-subtle hover:text-ci-text-primary transition-colors font-montserrat">
                   <FolderTree size={11}/> Categories
                 </button>
               )}
-              <span className="text-[9px] font-mono text-white/40">
+              <span className="text-[9px] font-mono text-ci-text-subtle">
                 {selectedSubdomain === 'BROWSE'
                   ? `${filteredSubdomains.length} subdomains`
                   : `${visiblePolicies.length} policies`}
@@ -513,15 +513,15 @@ export function LibraryPage() {
                           if (selectedDomain === 'ALL') setSelectedDomain(sub.domainCode);
                           handleSubdomainSelect(sub.code);
                         }}
-                        className="glass-interactive-lib glass-panel-lib border-[0.77px] border-white/10 p-6 rounded-2xl flex items-center gap-5 text-left hover:border-[#FFC107]/40 transition-colors group">
-                        <div className="w-12 h-12 rounded-xl border-[0.77px] border-white/10 flex items-center justify-center shrink-0"
+                        className={`glass-interactive-lib glass-panel-lib border-[0.77px] p-6 rounded-2xl flex items-center gap-5 text-left hover:border-[#FFC107]/40 transition-colors group ${isLight ? 'border-[#E5E4E3]' : 'border-white/10'}`}>
+                          <div className={`w-12 h-12 rounded-xl border-[0.77px] flex items-center justify-center shrink-0 ${isLight ? 'border-black/10' : 'border-white/10'}`}
                           style={{ color: mapColor(sub.domainColor) }}>
                           <SubIcon size={20} strokeWidth={1.5}/>
                         </div>
                         <div className="min-w-0">
                           <p className="text-[13px] font-mono text-gray-500 mb-0.5">{sub.domainCode}-{sub.code}</p>
-                          <p className="text-[13px] font-bold text-white uppercase font-montserrat group-hover:text-[#FFC107] transition-colors truncate">{sub.name}</p>
-                          <p className="text-[9px] text-white/30 font-montserrat mt-1">{count} policies</p>
+                          <p className="text-[13px] font-bold text-ci-text-primary uppercase font-montserrat group-hover:text-[#FFC107] transition-colors truncate">{sub.name}</p>
+                          <p className="text-[9px] text-ci-text-subtle font-montserrat mt-1">{count} policies</p>
                         </div>
                       </button>
                     );
@@ -537,27 +537,30 @@ export function LibraryPage() {
                     return (
                       <button key={policy.id}
                         onClick={() => setSelectedPolicy(policy)}
-                        className="glass-interactive-lib glass-panel-lib border-[0.77px] border-white/10 p-6 rounded-2xl flex flex-col h-[180px] hover:border-[#FFC107]/40 transition-colors group cursor-pointer text-left">
+                        className={`glass-interactive-lib glass-panel-lib border-[0.77px] p-6 rounded-2xl flex flex-col h-[180px] hover:border-[#FFC107]/40 transition-colors group cursor-pointer text-left ${isLight ? 'border-[#E5E4E3]' : 'border-white/10'}`}>
                         <span className="inline-block text-[11px] font-mono font-bold tracking-widest border-[0.77px] px-2 py-1 rounded mb-3 w-max"
                           style={{ color, borderColor: `${color}40` }}>
                           {policy.policyId}
                         </span>
-                        <h3 className="text-[15px] font-medium text-gray-200 line-clamp-3 mb-auto leading-snug group-hover:text-white transition-colors">
+                        <h3 className="text-[15px] font-medium text-ci-text-primary line-clamp-3 mb-auto leading-snug group-hover:text-ci-text-primary transition-colors">
                           {policy.title}
                         </h3>
                         <div className="flex items-center gap-1.5 mt-3">
                           {regDots.slice(0, 4).map(r => (
                             <span key={r.id} className="w-1.5 h-1.5 rounded-full" style={{ background: mapColor(r.color) }} title={r.shortName}/>
                           ))}
-                          {regDots.length > 4 && <span className="text-[8px] text-white/30">+{regDots.length - 4}</span>}
+                          {regDots.length > 4 && <span className="text-[8px] text-ci-text-subtle">+{regDots.length - 4}</span>}
                         </div>
                       </button>
                     );
                   })}
                   {visiblePolicies.length === 0 && (
-                    <div className="col-span-4 text-center py-20 text-white/20">
-                      <Search size={40} className="mx-auto mb-4 text-white/10"/>
-                      <p className="text-lg font-light font-montserrat">No policies match criteria.</p>
+                    <div className="col-span-4">
+                      <EmptyState
+                        icon={<Search size={40} />}
+                        title="No policies match criteria"
+                        description="Try adjusting domain, category, regulatory filter, or search terms."
+                      />
                     </div>
                   )}
                 </div>

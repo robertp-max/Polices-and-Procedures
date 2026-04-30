@@ -42,7 +42,7 @@ export interface SchedulableOptions {
 
 /**
  * Throws WeekendNotAllowedError when:
- *   - source = 'ces' and date is a weekend and weekendOverride !== true
+ *   - source = 'CES'/'ces' and date is a weekend and weekendOverride !== true
  *   - source = 'personal' and date is a weekend and isWeekendOk !== true
  *
  * No-op for weekday dates and undefined dates.
@@ -50,9 +50,9 @@ export interface SchedulableOptions {
 export function assertSchedulable(isoDate: string | undefined, opts: SchedulableOptions): void {
   if (!isoDate) return;
   if (!isWeekend(isoDate)) return;
-  if (opts.source === 'ces') {
+  if (opts.source === 'ces' || opts.source === 'CES') {
     if (opts.weekendOverride === true) return;
-    throw new WeekendNotAllowedError(isoDate, 'ces');
+    throw new WeekendNotAllowedError(isoDate, 'CES');
   }
   // personal
   if (opts.isWeekendOk === true) return;
@@ -66,5 +66,5 @@ export function assertSchedulable(isoDate: string | undefined, opts: Schedulable
 export function requiresOverrideReason(isoDate: string | undefined, source: TaskSource): boolean {
   if (!isoDate) return false;
   if (!isWeekend(isoDate)) return false;
-  return source === 'ces';
+  return source === 'ces' || source === 'CES';
 }

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useShellStore } from '@/policy/stores/uiStore';
 import {
   ChevronLeft, ChevronRight, CalendarDays, CalendarRange, Zap, Sparkles,
-  Columns3, GitBranch,
+  Columns3, GitBranch, CloudUpload,
 } from 'lucide-react';
 import {
   REGULATORY_EVENTS, TODAY_ANCHOR, type RegulatoryEvent,
@@ -21,6 +22,8 @@ import { useComplianceExecution } from '@/policy/compliance-execution';
 import { KanbanView, GanttView, SprintBoardView } from '@/policy/components/pm/PmViews';
 import { TaskDetailRightPanel } from '@/policy/components/pm/TaskDetailRightPanel';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
+import { useCalendarSyncStore, type BulkSyncSummary } from '@/policy/stores/calendarSyncStore';
+import { SurfaceCard, EmptyState } from '@/policy/components/ui';
 
 export type PmView = 'calendar' | 'sprint' | 'kanban' | 'gantt';
 
@@ -52,6 +55,8 @@ export function MasterCalendarPage() {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [activeId, setActiveId] = useState<string | null>(eventParam);
+  const [bulkSyncPending, setBulkSyncPending] = useState(false);
+  const [lastBulkSync, setLastBulkSync] = useState<BulkSyncSummary | null>(null);
 
   /* ── All workflow instances (base + autogen + triggered) ── */
   const generatedEvents = useAutogenStore(s => s.generatedEvents);
@@ -163,6 +168,31 @@ export function MasterCalendarPage() {
   const openTask = useSelectedTaskStore(s => s.openTask);
   const closeTask = useSelectedTaskStore(s => s.closeTask);
   const setActiveTaskId = (id: string | null) => (id ? openTask(id, view as 'calendar' | 'gantt' | 'kanban' | 'sprint') : closeTask());
+  const syncAllEvents = useCalendarSyncStore(s => s.syncAll);
+  const pushToast = useToastStore(s => s.push);
+
+  const handleBulkSync = async () => {
+    setBulkSyncPending(true);
+    try {
+      const summary = await syncAllEvents(allInstances);
+      setLastBulkSync(summary);
+      if (summary.failed > 0) {
+        pushToast(
+          'warn',
+          'Google Calendar sync completed with failures',
+          `Created ${summary.created}, updated ${summary.updated}, skipped ${summary.skipped}, failed ${summary.failed}`,
+        );
+      } else {
+        pushToast(
+          'success',
+          'All events synced to Google Calendar',
+          `Created ${summary.created}, updated ${summary.updated}, skipped ${summary.skipped}`,
+        );
+      }
+    } finally {
+      setBulkSyncPending(false);
+    }
+  };
 
   /* ── Sprint window scoping (Mon week 1 → Fri week 2) ──
      In sprint mode the calendar shell is the SAME as Events mode, but
@@ -201,6 +231,9 @@ export function MasterCalendarPage() {
         onPrev={() => shiftMonth(-1)}
         onNext={() => shiftMonth(+1)}
         onToday={goToday}
+        onSyncAll={handleBulkSync}
+        syncAllPending={bulkSyncPending}
+        lastBulkSync={lastBulkSync}
         rollup={rollup}
         view={view}
         onViewChange={setView}
@@ -222,18 +255,26 @@ export function MasterCalendarPage() {
             />
           </div>
           <div className="col-span-3 flex flex-col min-h-0">
-            <WorkflowExecutionPanel
-              event={activeInstance}
-              onClear={activeInstance ? clearSelection : undefined}
-              today={today}
-            />
+            {activeTaskId ? (
+              <TaskDetailRightPanel
+                taskId={activeTaskId}
+                onClose={() => setActiveTaskId(null)}
+              />
+            ) : (
+              <WorkflowExecutionPanel
+                event={activeInstance}
+                onClear={activeInstance ? clearSelection : undefined}
+                today={today}
+                onSelectTask={(taskId) => setActiveTaskId(taskId)}
+              />
+            )}
           </div>
         </div>
       ) : view === 'sprint' ? (
         /* ── Sprint Board view — canonical projected tasks scoped to active sprint ── */
         <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
           <div className="col-span-7 flex flex-col min-h-0">
-            <SprintBoardView onSelect={setActiveTaskId} />
+            <SprintBoardView onSelect={setActiveTaskId} selectedEventId={activeInstance?.id ?? null} />
           </div>
           <div className="col-span-3 flex flex-col min-h-0">
             {activeTaskId ? (
@@ -258,7 +299,7 @@ export function MasterCalendarPage() {
         /* ── Kanban view — PM status columns over canonical projection ── */
         <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
           <div className="col-span-7 flex flex-col min-h-0">
-            <KanbanView onSelect={setActiveTaskId} />
+            <KanbanView onSelect={setActiveTaskId} selectedEventId={null} />
           </div>
           <div className="col-span-3 flex flex-col min-h-0">
             {activeTaskId ? (
@@ -275,7 +316,7 @@ export function MasterCalendarPage() {
         /* ── Gantt view — date-axis bars over canonical projection ── */
         <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
           <div className="col-span-7 flex flex-col min-h-0">
-            <GanttView onSelect={setActiveTaskId} />
+            <GanttView onSelect={setActiveTaskId} selectedEventId={null} />
           </div>
           <div className="col-span-3 flex flex-col min-h-0">
             {activeTaskId ? (
@@ -297,9 +338,9 @@ export function MasterCalendarPage() {
 
 function EmptyRightPanel({ label }: { label: string }) {
   return (
-    <div className="flex-1 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-center text-[12px] font-outfit text-white/55 p-6 text-center">
-      {label}
-    </div>
+    <SurfaceCard className="flex-1 flex items-center justify-center" padding="md">
+      <EmptyState title={label} description="Select a task from Kanban, Gantt, or the workflow panel to open the shared detail panel." />
+    </SurfaceCard>
   );
 }
 
@@ -311,30 +352,17 @@ function PmTab({
   onClick: () => void;
   children: React.ReactNode;
 }) {
+  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   return (
     <button
       role="tab"
       aria-selected={active ? 'true' : 'false'}
       onClick={onClick}
-      className="text-[11px] font-outfit font-medium px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors border focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
-      style={{
-        background:  active ? 'rgba(45,212,191,0.18)'  : 'rgba(255,255,255,0.03)',
-        color:       active ? '#5eead4'                : 'rgba(255,255,255,0.78)',
-        borderColor: active ? 'rgba(45,212,191,0.55)'  : 'rgba(255,255,255,0.10)',
-        boxShadow:   active ? '0 0 0 1px rgba(45,212,191,0.25)' : undefined,
-      }}
-      onMouseEnter={(e) => {
-        if (!active) {
-          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.07)';
-          (e.currentTarget as HTMLButtonElement).style.color = '#fff';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!active) {
-          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.03)';
-          (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.78)';
-        }
-      }}
+      className="text-[11px] font-outfit px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors"
+      style={isLight
+        ? { background: active ? 'rgba(0,0,0,0.07)' : 'transparent', color: active ? '#1F1C1B' : '#747470' }
+        : { background: active ? 'rgba(255,255,255,0.08)' : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.65)' }
+      }
     >
       {children}
     </button>
@@ -343,13 +371,16 @@ function PmTab({
 
 /* ─── Header (month nav + state roll-up) ─────────────── */
 function TimelineHeader({
-  monthLabel, today, onPrev, onNext, onToday, rollup, view, onViewChange,
+  monthLabel, today, onPrev, onNext, onToday, onSyncAll, syncAllPending, lastBulkSync, rollup, view, onViewChange,
 }: {
   monthLabel: string;
   today: Date;
   onPrev: () => void;
   onNext: () => void;
   onToday: () => void;
+  onSyncAll: () => void;
+  syncAllPending: boolean;
+  lastBulkSync: BulkSyncSummary | null;
   rollup: { overdue: number; blocked: number; dueSoon: number; onTrack: number; complete: number };
   view: PmView;
   onViewChange: (v: PmView) => void;
@@ -391,7 +422,7 @@ function TimelineHeader({
 
         {/* View switcher: Calendar | Sprint | Kanban | Gantt */}
         <div
-          className="flex items-center gap-1 rounded-lg border border-white/15 bg-white/[0.04] p-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)]"
+          className="flex items-center gap-1 rounded-lg border border-white/10 p-0.5"
           role="tablist"
           aria-label="PM view"
         >
@@ -425,6 +456,26 @@ function TimelineHeader({
           </button>
           <NavBtn onClick={onNext} ariaLabel="Next month"><ChevronRight size={14} /></NavBtn>
         </div>
+
+        <button
+          type="button"
+          onClick={onSyncAll}
+          disabled={syncAllPending}
+          className="inline-flex items-center gap-2 rounded-lg border border-[#0D9488]/40 bg-[#0D9488]/12 px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#5EEAD4] hover:bg-[#0D9488]/18 disabled:opacity-60"
+          title="Sync all in-scope compliance events to Google Calendar"
+        >
+          <CloudUpload size={12} className={syncAllPending ? 'animate-pulse' : ''} />
+          {syncAllPending ? 'Syncing…' : 'Sync All Events to Google Calendar'}
+        </button>
+
+        {lastBulkSync && (
+          <div className="text-[10px] font-roboto text-white/70 leading-snug">
+            {`Created ${lastBulkSync.created} · Updated ${lastBulkSync.updated} · Skipped ${lastBulkSync.skipped} · Failed ${lastBulkSync.failed}`}
+            {lastBulkSync.failedEventIds.length > 0 && (
+              <div className="text-[#FCA5A5]">{`Failed IDs: ${lastBulkSync.failedEventIds.join(', ')}`}</div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -472,7 +523,7 @@ function LegendPill({ color, label, value }: { color: string; label: string; val
       <span className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.16em]" style={{ color }}>
         {label}
       </span>
-      <span className="text-[10px] font-outfit text-white/80 leading-none">{value}</span>
+      <span className="text-[10px] font-outfit leading-none" style={{ color: 'inherit' }}>{value}</span>
     </span>
   );
 }

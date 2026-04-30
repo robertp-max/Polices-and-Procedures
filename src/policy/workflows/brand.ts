@@ -9,27 +9,27 @@ import type { DomainCode, RiskBand } from '@/policy/types/workflow';
 
 export const CI = {
   // Primary teal — active state, selected filter, link, brand divider
-  teal: '#007970',
-  tealHover: '#006B63',
-  tealSoft: 'rgba(0,121,112,0.08)',
-  tealRing: 'rgba(0,121,112,0.24)',
+  teal: 'var(--ci-link)',
+  tealHover: 'var(--ci-link-hover)',
+  tealSoft: 'var(--ci-info-bg)',
+  tealRing: 'var(--ci-focus-ring)',
 
   // Deep primary — emphasis / dark surfaces
-  deepTeal: '#004142',
+  deepTeal: 'var(--ci-link-hover)',
 
   // Action orange — primary CTA / required asterisk / overdue chip
-  orange: '#C74600',
-  orangeHover: '#A63A00',
-  orangeSoft: 'rgba(199,70,0,0.08)',
+  orange: 'var(--ci-cta)',
+  orangeHover: 'var(--ci-primary-600)',
+  orangeSoft: 'var(--ci-warning-bg)',
 
   // Neutrals
-  ink: '#1F1C1B',
-  inkSoft: '#524D4B',
-  muted: '#747470',
-  line: '#E5E4E3',
-  lineSoft: '#EFEEEC',
-  canvas: '#FAFBF8',
-  paper: '#FFFFFF',
+  ink: 'var(--ci-text-primary)',
+  inkSoft: 'var(--ci-text-muted-2)',
+  muted: 'var(--ci-text-subtle)',
+  line: 'var(--ci-border)',
+  lineSoft: 'var(--ci-border-strong)',
+  canvas: 'var(--ci-bg)',
+  paper: 'var(--ci-surface)',
 } as const;
 
 export const DOMAIN_META: Record<DomainCode, {
@@ -50,8 +50,8 @@ export const DOMAIN_META: Record<DomainCode, {
 };
 
 export const RISK_META: Record<RiskBand, { label: string; dot: string; text: string }> = {
-  low:                 { label: 'Low risk',         dot: '#34A37C', text: CI.inkSoft },
-  moderate:            { label: 'Moderate risk',    dot: '#C8A96E', text: CI.inkSoft },
+  low:                 { label: 'Low risk',         dot: 'var(--ci-success-fg)', text: CI.inkSoft },
+  moderate:            { label: 'Moderate risk',    dot: 'var(--ci-warning-fg)', text: CI.inkSoft },
   high:                { label: 'High risk',        dot: CI.orange, text: CI.orange },
   immediate_jeopardy:  { label: 'Immediate jeopardy', dot: CI.orange, text: CI.orange },
 };

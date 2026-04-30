@@ -7,7 +7,7 @@
  */
 import { useCallback, useState } from 'react';
 import { ecignApi, EcignApiError, ATTESTATION_TEXT, sha256Hex, HIGH_IMPACT_FORMS } from './api';
-import { DEMO_SESSION } from '@/policy/components/FormSignatureContext';
+import { buildEcignAuthHeaders, useEcignSignerIdentity } from './signerIdentity';
 
 export interface CommitArgs {
   formId:              string;
@@ -36,6 +36,7 @@ export interface SessionStatus {
 
 export function useEcignSession() {
   const [status, setStatus] = useState<SessionStatus>({ phase: 'idle', message: '' });
+  const signer = useEcignSignerIdentity();
 
   const reset = useCallback(() => setStatus({ phase: 'idle', message: '' }), []);
 
@@ -47,14 +48,7 @@ export function useEcignSession() {
       try {
         await fetch('/api/ecign/versions', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User-Id':    DEMO_SESSION.id,
-            'X-User-Name':  DEMO_SESSION.name,
-            'X-User-Role':  DEMO_SESSION.role,
-            'X-User-Email': DEMO_SESSION.email,
-            'X-User-Tier':  String(DEMO_SESSION.tier),
-          },
+          headers: buildEcignAuthHeaders(),
           body: JSON.stringify({
             version_id:       documentVersionId,
             form_id:          args.formId,
@@ -83,9 +77,9 @@ export function useEcignSession() {
         form_id:              args.formId,
         document_version_id:  documentVersionId,
         required_signers:     [{
-          role:     DEMO_SESSION.role,
-          tier:     DEMO_SESSION.tier,
-          user_id:  DEMO_SESSION.id,
+          role:     signer.role,
+          tier:     signer.tier,
+          user_id:  signer.id,
           field_id: args.fieldId,
         }],
         workflow_instance_id: args.workflowInstanceId,
@@ -131,7 +125,7 @@ export function useEcignSession() {
       setStatus({ phase: 'error', message: err.message, error: err });
       return null;
     }
-  }, []);
+  }, [signer.id, signer.role, signer.tier]);
 
   return { status, commitSignature, reset };
 }
