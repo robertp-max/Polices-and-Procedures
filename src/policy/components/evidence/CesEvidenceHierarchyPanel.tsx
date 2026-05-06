@@ -581,10 +581,10 @@ function TaskRow({
           <div className="mt-1 flex flex-wrap gap-2 text-teal-200">
             <Link to={`/tasks/${encodeURIComponent(task.task_id)}`} target="_blank" rel="noopener noreferrer" className="underline">open task</Link>
             {mainForm ? <Link to={`/forms/${encodeURIComponent(mainForm)}`} target="_blank" rel="noopener noreferrer" className="underline">open form</Link> : null}
-            <Link to={`/evidence?event_id=${encodeURIComponent(task.event_id)}&task_id=${encodeURIComponent(task.task_id)}`} target="_blank" rel="noopener noreferrer" className="underline">upload supporting evidence</Link>
-            <Link to={`/evidence?event_id=${encodeURIComponent(task.event_id)}&task_id=${encodeURIComponent(task.task_id)}`} target="_blank" rel="noopener noreferrer" className="underline">view evidence package</Link>
-            <Link to={`/calendar/event/${encodeURIComponent(task.event_id)}/approval`} target="_blank" rel="noopener noreferrer" className="underline">request signature</Link>
-            <Link to={`/audit?event=${encodeURIComponent(task.event_id)}`} target="_blank" rel="noopener noreferrer" className="underline">view audit log</Link>
+            <Link to={`/evidence?event_id=${encodeURIComponent(task.event_id ?? '')}&task_id=${encodeURIComponent(task.task_id ?? '')}`} target="_blank" rel="noopener noreferrer" className="underline">upload supporting evidence</Link>
+            <Link to={`/evidence?event_id=${encodeURIComponent(task.event_id ?? '')}&task_id=${encodeURIComponent(task.task_id ?? '')}`} target="_blank" rel="noopener noreferrer" className="underline">view evidence package</Link>
+            <Link to={`/calendar/event/${encodeURIComponent(task.event_id ?? '')}/approval`} target="_blank" rel="noopener noreferrer" className="underline">request signature</Link>
+            <Link to={`/audit?event=${encodeURIComponent(task.event_id ?? '')}`} target="_blank" rel="noopener noreferrer" className="underline">view audit log</Link>
           </div>
         </div>
         <div className="text-right text-white/70">

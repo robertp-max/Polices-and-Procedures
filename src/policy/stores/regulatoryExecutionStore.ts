@@ -673,7 +673,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
                 if (!existingForKey || candidate.id !== existingForKey.id) return candidate;
                 return {
                   ...candidate,
-                  status: 'SUPERSEDED',
+                  status: 'SUPERSEDED' as const,
                   supersededAt: nowISO(),
                   supersededById: id,
                 };
@@ -1074,9 +1074,6 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
             }),
           },
         }));
-        get().appendTaskAuditEvent(eventId, 'formInstance', instance.id, 'FORM_INSTANCE_CREATED', {
-          after: { formId, workflowId, policyIds },
-        });
         return instance;
       },
 

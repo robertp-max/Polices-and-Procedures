@@ -1445,7 +1445,7 @@ function InlineTaskActionPanel({
   );
 }
 
-function RequiredFormsTab({
+export const _RequiredFormsTab = ({
   event,
   dataflow,
   onOpenTaskContext,
@@ -1453,7 +1453,7 @@ function RequiredFormsTab({
   event: RegulatoryEvent;
   dataflow: EventExecutionDataflow;
   onOpenTaskContext: (target: TaskDeepLinkTarget) => void;
-}) {
+}) => {
   const store = useRegulatoryExecutionStore();
   return (
     <div className="p-4 space-y-2">
@@ -1512,15 +1512,15 @@ function RequiredFormsTab({
       })}
     </div>
   );
-}
+};
 
-function ApprovalsTab({
+export const _ApprovalsTab = ({
   dataflow,
   onOpenTaskContext,
 }: {
   dataflow: EventExecutionDataflow;
   onOpenTaskContext: (target: TaskDeepLinkTarget) => void;
-}) {
+}) => {
   return (
     <div className="p-4 space-y-2">
       <div className="rounded-md border border-teal-300/35 bg-teal-500/10 px-3 py-2 text-[10.5px] text-teal-100">
@@ -1552,7 +1552,7 @@ function ApprovalsTab({
       ))}
     </div>
   );
-}
+};
 
 function TechnicalDetailsTab({ dataflow }: { dataflow: EventExecutionDataflow }) {
   return (
@@ -1590,13 +1590,13 @@ function TechnicalDetailsTab({ dataflow }: { dataflow: EventExecutionDataflow })
   );
 }
 
-function EvidenceByTaskTab({
+export const _EvidenceByTaskTab = ({
   dataflow,
   onOpenTaskContext,
 }: {
   dataflow: EventExecutionDataflow;
   onOpenTaskContext: (target: TaskDeepLinkTarget) => void;
-}) {
+}) => {
   const taskIds = new Set(dataflow.tasks.filter(task => !task.isDeleted).map(task => task.id));
   const orphanEvidence = dataflow.evidence.filter(item => !item.taskId || !taskIds.has(item.taskId));
   return (
@@ -1635,7 +1635,7 @@ function EvidenceByTaskTab({
       )}
     </div>
   );
-}
+};
 
 function EventAuditTrailTab({ dataflow }: { dataflow: EventExecutionDataflow }) {
   const ordered = [...dataflow.auditTrail].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
