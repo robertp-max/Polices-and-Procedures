@@ -18,6 +18,7 @@ export class DemoAuthStack extends Stack {
     super(scope, id, props);
 
     const autoApprovedDomain = this.node.tryGetContext('autoApprovedDomain') || process.env.AUTO_APPROVED_DOMAIN || 'careindeed.com';
+    const autoApprovedEmails = this.node.tryGetContext('autoApprovedEmails') || process.env.AUTO_APPROVED_EMAILS || '';
     const appBaseUrl = this.node.tryGetContext('appBaseUrl') || process.env.APP_BASE_URL || 'http://localhost:5173';
     const allowedOriginsRaw = this.node.tryGetContext('allowedOrigins') || process.env.ALLOWED_ORIGINS;
     const allowedOrigins = Array.from(new Set((typeof allowedOriginsRaw === 'string' && allowedOriginsRaw.trim().length > 0
@@ -82,6 +83,7 @@ export class DemoAuthStack extends Stack {
       REGISTRATION_TABLE_NAME: registrationTable.tableName,
       SETUP_TOKEN_TTL_MINUTES: '60',
       AUTO_APPROVED_DOMAIN: autoApprovedDomain,
+      AUTO_APPROVED_EMAILS: autoApprovedEmails,
       DEMO_AUTH_DEBUG: demoAuthDebug,
     };
 

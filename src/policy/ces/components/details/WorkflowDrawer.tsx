@@ -14,7 +14,9 @@ import {
 } from '../../types';
 import { useExecutionEnforcement } from '../../hooks/useExecutionEnforcement';
 import { summarizeEvidence } from '../../hooks/useEvidenceTracker';
-import { useComplianceExecution } from '@/policy/compliance-execution';
+import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
+import { useAutogenStore } from '@/policy/stores/autogenStore';
+import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import {
   ComplianceStateBadge, AuditReadinessTag, UserAvatar, EscalationTimer, KV,
 } from '../primitives';
@@ -26,10 +28,18 @@ interface Props {
   onUpdate: (u: ExecutionUnit) => void;
 }
 
-export function WorkflowDrawer({ unit, onClose, onUpdate }: Props) {
-  const snap = useComplianceExecution();
-  const ev  = snap.events.find(e => e.id === unit.parentEventId);
-  const wf  = snap.workflows.find(w => w.id === unit.workflowId);
+export function WorkflowDrawer({ unit, allUnits, onClose, onUpdate }: Props) {
+  const generated = useAutogenStore(s => s.generatedEvents);
+  const triggered = useAutogenStore(s => s.triggeredEvents);
+  const ev = useMemo(() => {
+    const pool = [...REGULATORY_EVENTS, ...generated, ...triggered].filter(e => !e.isContext);
+    return pool.find(e => e.id === unit.parentEventId);
+  }, [generated, triggered, unit.parentEventId]);
+  const wf = useMemo(() => {
+    if (!unit.workflowId) return undefined;
+    const title = WORKFLOWS[unit.workflowId]?.title ?? unit.workflowId;
+    return { id: unit.workflowId, title };
+  }, [unit.workflowId]);
   const evd = summarizeEvidence(unit.evidenceStatus);
   const enforcement = useExecutionEnforcement();
 
@@ -63,7 +73,7 @@ export function WorkflowDrawer({ unit, onClose, onUpdate }: Props) {
         >
           <div className="flex-1 min-w-0">
             <div className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: CES_TOKENS.muted }}>
-              {ev?.category ?? '—'} · {ev?.title ?? '—'}
+              {(ev?.category ?? ev?.domain) ?? '—'} · {ev?.title ?? '—'}
             </div>
             <h2 className="text-[16px] font-bold mt-0.5" style={{ color: CES_TOKENS.navy }}>
               {unit.title}
@@ -139,7 +149,11 @@ export function WorkflowDrawer({ unit, onClose, onUpdate }: Props) {
           <ComplianceActionPanel unit={unit} enforcement={enforcement} onUpdate={onUpdate} />
 
           {/* Sibling execution tasks (same SPRINT_TASK container) */}
-          <ChildTasksPanel parentObligationId={unit.parentObligationId ?? unit.parentEventId} currentUnitId={unit.id} />
+          <ChildTasksPanel
+            parentObligationId={unit.parentObligationId ?? unit.parentEventId}
+            currentUnitId={unit.id}
+            allUnits={allUnits}
+          />
         </div>
       </aside>
     </div>
@@ -150,9 +164,16 @@ export function WorkflowDrawer({ unit, onClose, onUpdate }: Props) {
    ChildTasksPanel — lists TASK obligations under the same
    SPRINT_TASK container. Read-only navigation aid.
    ───────────────────────────────────────────────────────── */
-function ChildTasksPanel({ parentObligationId, currentUnitId }: { parentObligationId: string; currentUnitId: string }) {
-  const snap = useComplianceExecution();
-  const siblings = snap.executionUnits.filter(
+function ChildTasksPanel({
+  parentObligationId,
+  currentUnitId,
+  allUnits,
+}: {
+  parentObligationId: string;
+  currentUnitId: string;
+  allUnits: ExecutionUnit[];
+}) {
+  const siblings = allUnits.filter(
     u => (u.parentObligationId ?? u.parentEventId) === parentObligationId,
   );
   if (siblings.length <= 1) return null;

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShellStore } from '@/policy/stores/uiStore';
 import {
@@ -39,6 +39,8 @@ export function DashboardPage() {
   const today = TODAY_ANCHOR;
   const store = useRegulatoryExecutionStore();
   const isLight = useShellStore(s => s.theme === 'care-indeed-light');
+  const [viewportWidth, setViewportWidth] = useState(() => (typeof window === 'undefined' ? 1920 : window.innerWidth));
+  const isMobile = viewportWidth < 768;
 
   const generatedEvents = useAutogenStore(s => s.generatedEvents);
   const triggeredEvents = useAutogenStore(s => s.triggeredEvents);
@@ -369,15 +371,55 @@ export function DashboardPage() {
     },
   ];
 
+  const kpiByLabel = useMemo(() => {
+    const map = new Map<string, KpiCardData>();
+    kpis.forEach(k => map.set(k.label, k));
+    return map;
+  }, [kpis]);
+
+  const mobilePrimaryKpis = useMemo(() => {
+    const overdueRiskCard: KpiCardData = {
+      label: 'Overdue / SLA Risk',
+      value: `${critical.overdue.length}`,
+      trend: `${critical.atRisk.length} at risk`,
+      tone: critical.overdue.length > 0 ? 'danger' : (critical.atRisk.length > 0 ? 'warning' : 'default'),
+      onClick: () => goAudit('overdue'),
+    };
+    const ordered = [
+      'Critical Actions',
+      '__OVERDUE_RISK__',
+      'Missing Evidence',
+      'Action In Progress',
+      'Active Sprint',
+      'Audit Ready',
+    ];
+    return ordered.map(label => (label === '__OVERDUE_RISK__' ? overdueRiskCard : kpiByLabel.get(label))).filter(Boolean) as KpiCardData[];
+  }, [critical.atRisk.length, critical.overdue.length, goAudit, kpiByLabel]);
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   return (
     <div className={`h-full w-full flex flex-col px-3 sm:px-5 md:px-8 py-3 sm:py-5 gap-3 sm:gap-5 overflow-x-hidden overflow-y-auto md:overflow-hidden animate-in fade-in duration-500 ${isLight ? '' : 'bg-gradient-to-b from-white/5 to-white/[0.02]'}`}>
       <DashboardHero />
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 sm:gap-3">
-        {kpis.map(kpi => (
-          <KpiCard key={kpi.label} {...kpi} />
-        ))}
-      </section>
+      {isMobile ? (
+        <section className="grid grid-cols-1 gap-2">
+          {mobilePrimaryKpis.map((kpi, idx) => (
+            <KpiCard key={kpi.label} {...kpi} emphasize={idx < 2 || kpi.label === 'Missing Evidence'} />
+          ))}
+          {kpiByLabel.get('Audit Open') ? <KpiCard {...(kpiByLabel.get('Audit Open') as KpiCardData)} /> : null}
+        </section>
+      ) : (
+        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 sm:gap-3">
+          {kpis.map(kpi => (
+            <KpiCard key={kpi.label} {...kpi} />
+          ))}
+        </section>
+      )}
 
       <AgencyReadinessBanner
         ready={readiness.agencyReady}
@@ -403,8 +445,8 @@ export function DashboardPage() {
         </div>
       </section>
 
-      <div className="flex-1 min-h-0 overflow-x-auto pb-2 -mx-3 sm:mx-0 px-3 sm:px-0">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4 lg:min-w-0 min-w-[88vw] sm:min-w-[680px] h-full">
+      <div className={`flex-1 min-h-0 pb-2 ${isMobile ? '' : '-mx-3 sm:mx-0 px-3 sm:px-0'} ${isMobile ? 'overflow-x-hidden' : 'overflow-x-auto'}`}>
+        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'} gap-3 sm:gap-4 lg:min-w-0 ${isMobile ? 'min-w-0' : 'min-w-[88vw] sm:min-w-[680px]'} h-full`}>
           <BoardColumn
             title="Critical & Overdue"
             count={criticalAndOverdue.length}
@@ -479,7 +521,7 @@ function DashboardHero() {
   );
 }
 
-function KpiCard({ label, value, trend, tone = 'default', alert, onClick }: KpiCardData) {
+function KpiCard({ label, value, trend, tone = 'default', alert, onClick, emphasize = false }: KpiCardData & { emphasize?: boolean }) {
   const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const valueClass = {
     default: isLight ? 'text-slate-900' : 'text-slate-50',
@@ -494,8 +536,8 @@ function KpiCard({ label, value, trend, tone = 'default', alert, onClick }: KpiC
     danger: 'text-red-500',
   }[tone];
   const shellClass = isLight
-    ? 'bg-white border-slate-200 shadow-[0_8px_24px_rgba(15,23,42,0.05)]'
-    : 'bg-white/5 border-white/10';
+    ? `bg-white ${emphasize ? 'border-[#C74601]/30' : 'border-slate-200'} shadow-[0_8px_24px_rgba(15,23,42,0.05)]`
+    : `bg-white/5 ${emphasize ? 'border-[#FFC107]/30' : 'border-white/10'}`;
 
   const content = (
     <>
@@ -642,28 +684,28 @@ function BoardColumn({
     critical: {
       icon: AlertTriangle,
       accent: 'text-red-500',
-      shell: isLight ? 'bg-red-50/70 border-slate-200' : 'bg-red-500/8 border-white/10',
+      shell: isLight ? 'bg-transparent border-transparent shadow-none p-0' : 'bg-white/5 border-white/10',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
     warning: {
       icon: Clock,
       accent: 'text-amber-500',
-      shell: isLight ? 'bg-amber-50/70 border-slate-200' : 'bg-amber-500/8 border-white/10',
+      shell: isLight ? 'bg-transparent border-transparent shadow-none p-0' : 'bg-white/5 border-white/10',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
     progress: {
       icon: Activity,
       accent: 'text-blue-500',
-      shell: isLight ? 'bg-blue-50/70 border-slate-200' : 'bg-blue-500/8 border-white/10',
+      shell: isLight ? 'bg-transparent border-transparent shadow-none p-0' : 'bg-white/5 border-white/10',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
     pending: {
       icon: FileText,
       accent: 'text-slate-500',
-      shell: isLight ? 'bg-slate-50/80 border-slate-200' : 'bg-slate-500/8 border-white/10',
+      shell: isLight ? 'bg-transparent border-transparent shadow-none p-0' : 'bg-white/5 border-white/10',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
@@ -672,7 +714,7 @@ function BoardColumn({
   const Icon = column.icon;
 
   return (
-    <section className={`rounded-2xl border p-3 flex flex-col min-h-0 ${column.shell}`}>
+    <section className={`rounded-2xl border ${isLight ? 'p-0' : 'p-3'} flex flex-col min-h-0 ${column.shell}`}>
       <header className="flex items-center justify-between px-1 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <Icon size={16} className={column.accent} />

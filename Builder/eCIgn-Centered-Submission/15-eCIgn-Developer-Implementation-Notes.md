@@ -148,7 +148,7 @@ export type Task = EcignSubmissionTask | PersonalTask | NonFormCesTask;
 ### `taskProjection.ts`
 - Reads CES events + eCIgn packet snapshots + PM overlay.
 - Emits deterministic `Task[]`.
-- Exports `useProjectedTasks()` React hook (memoized) and `assertNoDuplicateTaskIds(tasks)` dev guard.
+- Exports `useProjectedTasks('sprint' | 'full')` React hook (memoized; default sprint-scoped) and `assertNoDuplicateTaskIds(tasks)` dev guard.
 
 ### `pmOverlayStore.ts`
 - Zustand store with: `assign`, `unassign`, `pinToSprint`, `setStoryPoints`, `addLabel`, `removeLabel`, `addDependency`, `removeDependency`, `setDueDate`, `setWeekendOverride`.

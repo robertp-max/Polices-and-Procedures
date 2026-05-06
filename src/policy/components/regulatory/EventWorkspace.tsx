@@ -636,7 +636,20 @@ function MinutesView({ event }: { event: RegulatoryEvent }) {
           </ActionBtn>
           <ActionBtn color="#FFC107" onClick={() => {
             const name = `${event.title} – Minutes ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.pdf`;
-            store.uploadEvidence(event.id, { name, kind: 'minutes', sizeLabel: '420 KB' });
+            const taskId = store.generateTaskFromWorkflowStep(event.id, 'minutes', { adminOverride: true });
+            const evidenceId = store.uploadEvidence(event.id, {
+              taskId,
+              policyIds: event.policyRefs,
+              workflowId: event.workflowId || '',
+              formIds: [],
+              name,
+              kind: 'minutes',
+              sizeLabel: '420 KB',
+            });
+            if (!evidenceId) {
+              push('error', 'Upload failed', store.evidenceErrorsByEventId[event.id] || 'Missing required evidence bindings.');
+              return;
+            }
             store.setMinutesStatus(event.id, 'finalized');
             push('success', 'Minutes uploaded & finalized', name);
           }}>

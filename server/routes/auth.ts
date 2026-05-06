@@ -38,6 +38,15 @@ authRouter.post('/login', asyncHandler(async (req, res) => {
   res.json(result);
 }));
 
+authRouter.post('/respond-challenge', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const email = String(req.body?.email || '');
+  const session = String(req.body?.session || '');
+  const newPassword = String(req.body?.newPassword || '');
+  const result = await service.respondToNewPasswordChallenge(email, session, newPassword);
+  res.json(result);
+}));
+
 authRouter.post('/refresh', asyncHandler(async (req, res) => {
   const service = buildDemoAuthServiceFromEnv(process.env);
   const refreshToken = String(req.body?.refreshToken || '');

@@ -1,4 +1,5 @@
 import { CI, DOMAIN_META, RISK_META, CADENCE_LABEL } from '../brand';
+import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import type { WorkflowCardProjection } from '@/policy/types/workflow';
 
 /* ══════════════════════════════════════════════════════════════════
@@ -13,11 +14,13 @@ import type { WorkflowCardProjection } from '@/policy/types/workflow';
 interface Props {
   card: WorkflowCardProjection;
   onOpen: () => void;
+  compact?: boolean;
 }
 
-export function WorkflowCard({ card, onOpen }: Props) {
+export function WorkflowCard({ card, onOpen, compact = false }: Props) {
   const domain = DOMAIN_META[card.domain];
   const risk = RISK_META[card.declaredRisk];
+  const stepCount = WORKFLOWS[card.id]?.steps?.length ?? 0;
 
   return (
     <button
@@ -27,7 +30,7 @@ export function WorkflowCard({ card, onOpen }: Props) {
         background: CI.paper,
         border: `1px solid ${CI.line}`,
         borderRadius: 8,
-        padding: 16,
+        padding: compact ? 14 : 16,
       }}
       onMouseEnter={(e) => { e.currentTarget.style.borderColor = CI.teal; }}
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = CI.line; }}
@@ -85,22 +88,23 @@ export function WorkflowCard({ card, onOpen }: Props) {
         {titleCase(card.title)}
       </div>
 
-      {/* Row 4 — Process overview */}
-      <div
-        style={{
-          marginTop: 10,
-          fontFamily: 'Roboto, sans-serif',
-          fontSize: 12, lineHeight: 1.5,
-          color: CI.inkSoft,
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-          minHeight: 36,
-        }}
-      >
-        {card.processOverview || card.triggerSummary}
-      </div>
+      {!compact && (
+        <div
+          style={{
+            marginTop: 10,
+            fontFamily: 'Roboto, sans-serif',
+            fontSize: 12, lineHeight: 1.5,
+            color: CI.inkSoft,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            minHeight: 36,
+          }}
+        >
+          {card.processOverview || card.triggerSummary}
+        </div>
+      )}
 
       <div className="flex-1" />
 
@@ -116,9 +120,15 @@ export function WorkflowCard({ card, onOpen }: Props) {
         <div className="flex items-center gap-3">
           <span>{CADENCE_LABEL[card.cadence.interval] ?? 'On demand'}</span>
           <span style={{ color: CI.line }}>·</span>
-          <span>{card.formCount} form{card.formCount === 1 ? '' : 's'}</span>
+          <span>{stepCount} step{stepCount === 1 ? '' : 's'}</span>
           <span style={{ color: CI.line }}>·</span>
-          <span>{card.policyCount} polic{card.policyCount === 1 ? 'y' : 'ies'}</span>
+          <span>{card.formCount} form{card.formCount === 1 ? '' : 's'}</span>
+          {!compact && (
+            <>
+              <span style={{ color: CI.line }}>·</span>
+              <span>{card.policyCount} polic{card.policyCount === 1 ? 'y' : 'ies'}</span>
+            </>
+          )}
         </div>
         {card.requiresGoverningBody ? (
           <span

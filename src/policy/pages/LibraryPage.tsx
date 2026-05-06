@@ -5,7 +5,7 @@ import { remapForLight } from '../utils/lightColorRemap';
 import {
   Shield, Search, FileText, Building2, Users,
   DollarSign, Monitor, BarChart3, Scale, Heart, Cpu, Briefcase,
-  Landmark, ShieldCheck, Gavel, ChevronLeft, Printer,
+  Landmark, ShieldCheck, Gavel, ChevronLeft,
   Lock, FileCheck, Layers, Library,
   Activity, FileDigit, TrendingUp,
   AlertOctagon, Eye, UserPlus, GraduationCap, HeartHandshake,
@@ -17,6 +17,8 @@ import {
 import { AlertTriangle } from 'lucide-react';
 import { SharedPolicyDetailView, type SharedPolicy } from '../components/SharedPolicyDetailView';
 import { getPolicyContent } from '../data/policyContentMap';
+import { frameworkPolicies } from '../data/frameworkSeed.generated';
+import { achcSurveyByPolicyId, type AchcMappingType, type AchcSurveyMetadata } from '@/policy/data/achcSurveyProjection.generated';
 import { EmptyState } from '@/policy/components/ui';
 
 // ── Title resolver: extract Title row from Policy Header content section ──────
@@ -30,7 +32,7 @@ function resolveTitleFromContent(sections: { order: number; body: string }[] | u
 }
 
 // ══════════════════════════════════════════════════════════════
-// ENTERPRISE POLICY TAXONOMY – FULL 278-POLICY DATASET
+// ENTERPRISE POLICY TAXONOMY DATASET
 // ══════════════════════════════════════════════════════════════
 
 const REGULATORY_ITEMS = [
@@ -221,11 +223,17 @@ function getTagsForPolicy(id: string): string[] {
   return [...new Set(tags)];
 }
 
+function hasPrefix(values: string[], prefix: string): boolean {
+  if (prefix === 'ALL') return true;
+  return values.some((value) => value.startsWith(prefix));
+}
+
 interface PolicyRecord {
   id: string; policyId: string; title: string; domain: string; domainCode: string;
   subdomain: string; subdomainCode: string; classificationTier: string; status: string;
   version: string; effectiveDate: string; nextReviewDate: string; policyOwner: string;
   approvedBy: string; purpose: string; scope: string[]; regulatoryTags: string[];
+  achc: AchcSurveyMetadata | null;
 }
 
 const FULL_POLICY_DATASET: PolicyRecord[] = [];
@@ -247,7 +255,7 @@ Object.entries(rawPolicies).forEach(([prefix, items]) => {
       effectiveDate: '2025-07-10', nextReviewDate: '2026-07-10',
       policyOwner: 'Administrator', approvedBy: 'Governing Body Chair',
       purpose: `This policy establishes standards for ${title} to ensure compliance with enterprise and regulatory requirements.`,
-      scope: ['All applicable personnel', 'Management'], regulatoryTags: getTagsForPolicy(fullId),
+      scope: ['All applicable personnel', 'Management'], regulatoryTags: getTagsForPolicy(fullId), achc: null,
     });
   });
 });
@@ -263,8 +271,39 @@ newPoliciesData.forEach(p => {
     effectiveDate: '2025-07-10', nextReviewDate: '2026-07-10',
     policyOwner: 'Compliance Officer', approvedBy: 'Governing Body Chair',
     purpose: `This policy establishes standards for ${p.title}.`,
-    scope: ['All applicable personnel'], regulatoryTags: getTagsForPolicy(p.id),
+    scope: ['All applicable personnel'], regulatoryTags: getTagsForPolicy(p.id), achc: null,
   });
+});
+
+const LIBRARY_ENRICHMENT_BY_ID = new Map(FULL_POLICY_DATASET.map(policy => [policy.policyId, policy]));
+
+const FRAMEWORK_RENDER_DATASET: PolicyRecord[] = frameworkPolicies.map((frameworkPolicy) => {
+  const enriched = LIBRARY_ENRICHMENT_BY_ID.get(frameworkPolicy.id);
+  const domain = DOMAINS.find(d => d.code === frameworkPolicy.domainCode);
+  const subdomain = domain?.subdomains.find(s => s.code === frameworkPolicy.subdomainCode);
+  const fallbackEffectiveDate = frameworkPolicy.createdAt?.slice(0, 10) ?? '';
+  const fallbackNextReviewDate = frameworkPolicy.updatedAt?.slice(0, 10) ?? '';
+
+  return {
+    id: frameworkPolicy.id.toLowerCase(),
+    policyId: frameworkPolicy.id,
+    title: enriched?.title ?? frameworkPolicy.title,
+    domain: domain?.fullName ?? frameworkPolicy.domainCode,
+    domainCode: frameworkPolicy.domainCode,
+    subdomain: enriched?.subdomain ?? (subdomain ? `${subdomain.code} — ${subdomain.name}` : frameworkPolicy.subdomainCode),
+    subdomainCode: frameworkPolicy.subdomainCode,
+    classificationTier: enriched?.classificationTier ?? frameworkPolicy.tier,
+    status: enriched?.status ?? frameworkPolicy.lifecycleStatus,
+    version: enriched?.version ?? frameworkPolicy.currentVersion.replace(/^v/i, ''),
+    effectiveDate: enriched?.effectiveDate ?? fallbackEffectiveDate,
+    nextReviewDate: enriched?.nextReviewDate ?? fallbackNextReviewDate,
+    policyOwner: enriched?.policyOwner ?? frameworkPolicy.ownerSteward,
+    approvedBy: enriched?.approvedBy ?? 'Governing Body Chair',
+    purpose: enriched?.purpose ?? frameworkPolicy.description,
+    scope: enriched?.scope ?? ['All applicable personnel'],
+    regulatoryTags: enriched?.regulatoryTags ?? getTagsForPolicy(frameworkPolicy.id),
+    achc: achcSurveyByPolicyId[frameworkPolicy.id] ?? null,
+  };
 });
 
 // ══════════════════════════════════════════════════════════════
@@ -295,6 +334,7 @@ export function LibraryPage() {
   const isLight = theme === 'care-indeed-light';
   const mapColor = (c: string) => remapForLight(c, isLight);
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyRecord | null>(null);
+  const [libraryView, setLibraryView] = useState<'IBM' | 'ACHC'>('IBM');
   const setDetailMode = useShellStore(s => s.setDetailMode);
 
   // Hide the app chrome immediately (before paint) when a policy is selected
@@ -305,6 +345,11 @@ export function LibraryPage() {
   const [selectedDomain, setSelectedDomain] = useState('ALL');
   const [selectedSubdomain, setSelectedSubdomain] = useState<string>('ALL');
   const [activeRegFilter, setActiveRegFilter] = useState('ALL');
+  const [achcMappingFilter, setAchcMappingFilter] = useState<'ALL' | AchcMappingType>('ALL');
+  const [achcEvidenceFilter, setAchcEvidenceFilter] = useState<'ALL' | 'P' | 'D' | 'I' | 'O' | 'S'>('ALL');
+  const [achcTitle22Filter, setAchcTitle22Filter] = useState('ALL');
+  const [achcStandardFilter, setAchcStandardFilter] = useState('ALL');
+  const [achcCopFilter, setAchcCopFilter] = useState('ALL');
   const [searchQuery, _setSearchQuery] = useState('');
   void _setSearchQuery;
 
@@ -315,18 +360,52 @@ export function LibraryPage() {
     return domain?.subdomains.map(s => ({ ...s, domainCode: domain.code, domainColor: domain.color })) || [];
   }, [selectedDomain]);
 
-  const visiblePolicies = useMemo(() => {
-    let p = FULL_POLICY_DATASET;
+  const renderedPolicies = useMemo(() => {
+    let p = FRAMEWORK_RENDER_DATASET;
     if (selectedDomain !== 'ALL') p = p.filter(x => x.domainCode === selectedDomain);
     if (selectedSubdomain !== 'BROWSE' && selectedSubdomain !== 'ALL')
       p = p.filter(x => x.subdomainCode === selectedSubdomain);
-    if (activeRegFilter !== 'ALL') p = p.filter(x => x.regulatoryTags.includes(activeRegFilter));
+    if (libraryView === 'IBM' && activeRegFilter !== 'ALL') p = p.filter(x => x.regulatoryTags.includes(activeRegFilter));
+    if (libraryView === 'ACHC') {
+      p = p.filter((x) => {
+        const achc = x.achc;
+        if (!achc) return false;
+        if (achcMappingFilter !== 'ALL' && achc.mappingType !== achcMappingFilter) return false;
+        if (achcEvidenceFilter !== 'ALL' && !achc.evidenceCodes.includes(achcEvidenceFilter)) return false;
+        if (achcTitle22Filter !== 'ALL' && !achc.title22.some((ref) => ref.includes(achcTitle22Filter))) return false;
+        if (!hasPrefix(achc.achcStandards, achcStandardFilter)) return false;
+        if (achcCopFilter !== 'ALL' && !achc.medicareCop.some((ref) => ref.includes(achcCopFilter))) return false;
+        return true;
+      });
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       p = p.filter(x => x.policyId.toLowerCase().includes(q) || x.title.toLowerCase().includes(q));
     }
     return p;
-  }, [selectedDomain, selectedSubdomain, searchQuery, activeRegFilter]);
+  }, [selectedDomain, selectedSubdomain, searchQuery, activeRegFilter, libraryView, achcMappingFilter, achcEvidenceFilter, achcTitle22Filter, achcStandardFilter, achcCopFilter]);
+
+  const achcTitle22Prefixes = useMemo(() => {
+    return [...new Set(FRAMEWORK_RENDER_DATASET.flatMap((p) =>
+      (p.achc?.title22 ?? [])
+        .map((ref) => {
+          const m = ref.match(/(\d{3})/);
+          return m ? m[1] : '';
+        })
+        .filter(Boolean)))].sort((a, b) => a.localeCompare(b));
+  }, []);
+  const achcStandardPrefixes = useMemo(() => {
+    return [...new Set(FRAMEWORK_RENDER_DATASET.flatMap((p) => (p.achc?.achcStandards ?? []).map((s) => s.slice(0, 3)).filter(Boolean)))].sort((a, b) => a.localeCompare(b));
+  }, []);
+  const achcCopPrefixes = useMemo(() => {
+    return [...new Set(FRAMEWORK_RENDER_DATASET.flatMap((p) =>
+      (p.achc?.medicareCop ?? [])
+        .map((ref) => {
+          const m = ref.match(/(\d{3})/);
+          return m ? m[1] : '';
+        })
+        .filter(Boolean)))].sort((a, b) => a.localeCompare(b));
+  }, []);
 
   const handleDomainSelect = (code: string) => {
     setSelectedDomain(code);
@@ -384,7 +463,7 @@ export function LibraryPage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FFC107]/20 to-transparent -translate-x-full"
                   style={{animation:'shimmerLib 2.5s infinite'}}/>
                 <FileText size={12} className="text-[#FFC107] animate-pulse"/>
-                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-ci-text-primary">278 POLICIES</span>
+                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-ci-text-primary">{renderedPolicies.length} POLICIES</span>
               </div>
               <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] border-[#a855f7]/40 flex items-center gap-2 relative overflow-hidden cursor-pointer"
                 onClick={() => navigate('/forms')}>
@@ -396,8 +475,7 @@ export function LibraryPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Policies / Forms toggle */}
+          {libraryView === 'IBM' && (
             <div className="flex items-center p-1 rounded-full border border-ci-border">
               <button className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-[#FFC107] text-[#FFC107] font-montserrat">
                 Policies
@@ -407,36 +485,128 @@ export function LibraryPage() {
                 Forms
               </button>
             </div>
+          )}
+        </div>
 
-            {/* Export */}
-            <button className="glass-interactive-lib flex items-center gap-2 px-5 py-2.5 rounded-full border border-ci-border text-[9px] font-bold tracking-widest uppercase text-ci-text-subtle hover:text-ci-text-primary transition-colors font-montserrat">
-              <Printer size={13}/> Export
+        {/* PROMINENT VIEW MODE SWITCH */}
+        <div className="px-10 pb-5 shrink-0">
+          <div className="flex rounded-xl overflow-hidden border border-ci-border">
+            <button
+              onClick={() => setLibraryView('IBM')}
+              className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 text-[11px] font-bold tracking-widest uppercase font-montserrat transition-colors ${
+                libraryView === 'IBM'
+                  ? 'bg-[#007970] text-white'
+                  : isLight ? 'bg-white text-[#747470] hover:text-[#007970]' : 'text-ci-text-subtle hover:text-[#007970]'
+              }`}
+            >
+              <Library size={15} /> IBM Framework View
+            </button>
+            <button
+              onClick={() => setLibraryView('ACHC')}
+              className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 text-[11px] font-bold tracking-widest uppercase font-montserrat transition-colors ${
+                libraryView === 'ACHC'
+                  ? 'bg-[#ea580c] text-white'
+                  : isLight ? 'bg-white text-[#747470] hover:text-[#ea580c]' : 'text-ci-text-subtle hover:text-[#ea580c]'
+              }`}
+            >
+              <ShieldCheck size={15} /> ACHC Survey View
             </button>
           </div>
         </div>
 
+        {/* ACHC HORIZONTAL FILTER BAR */}
+        {libraryView === 'ACHC' && (
+          <div className="px-8 py-3 bg-[#f0fdfa] border-b border-[#99f6e4] shrink-0">
+            <div className="flex items-center gap-1.5 mb-2.5">
+              <ShieldCheck size={12} className="text-[#0f766e]" />
+              <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-[#0f766e] uppercase">ACHC Survey Filters</span>
+              <span className="ml-auto text-[9px] font-mono text-[#0f766e]">{renderedPolicies.length} policies</span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <select
+                value={selectedDomain}
+                onChange={(e) => handleDomainSelect(e.target.value)}
+                className="rounded-lg border border-[#99f6e4] bg-white px-2.5 py-1.5 text-[10px] font-montserrat text-[#0f766e] focus:outline-none focus:border-[#0f766e]"
+              >
+                <option value="ALL">Governance: ALL</option>
+                {DOMAINS.map((d) => <option key={d.code} value={d.code}>{d.code} — {d.name}</option>)}
+              </select>
+              <select
+                value={achcMappingFilter}
+                onChange={(e) => setAchcMappingFilter(e.target.value as 'ALL' | AchcMappingType)}
+                className="rounded-lg border border-[#cbd5e1] bg-white px-2.5 py-1.5 text-[10px] font-montserrat focus:outline-none focus:border-[#0f766e]"
+              >
+                <option value="ALL">Status: ALL</option>
+                <option value="DIRECT">DIRECT</option>
+                <option value="PARTIAL">PARTIAL</option>
+                <option value="NONE">NONE</option>
+                <option value="SME_REVIEW">SME_REVIEW</option>
+              </select>
+              <select
+                value={achcEvidenceFilter}
+                onChange={(e) => setAchcEvidenceFilter(e.target.value as 'ALL' | 'P' | 'D' | 'I' | 'O' | 'S')}
+                className="rounded-lg border border-[#cbd5e1] bg-white px-2.5 py-1.5 text-[10px] font-montserrat focus:outline-none focus:border-[#0f766e]"
+              >
+                <option value="ALL">Evidence: ALL</option>
+                <option value="P">P — Policy</option>
+                <option value="D">D — Document</option>
+                <option value="I">I — Interview</option>
+                <option value="O">O — Observation</option>
+                <option value="S">S — Simulation</option>
+              </select>
+              <select
+                value={achcTitle22Filter}
+                onChange={(e) => setAchcTitle22Filter(e.target.value)}
+                className="rounded-lg border border-[#cbd5e1] bg-white px-2.5 py-1.5 text-[10px] font-montserrat focus:outline-none focus:border-[#0f766e]"
+              >
+                <option value="ALL">CA Title 22: ALL</option>
+                {achcTitle22Prefixes.map((prefix) => <option key={prefix} value={prefix}>{prefix}</option>)}
+              </select>
+              <select
+                value={achcStandardFilter}
+                onChange={(e) => setAchcStandardFilter(e.target.value)}
+                className="rounded-lg border border-[#cbd5e1] bg-white px-2.5 py-1.5 text-[10px] font-montserrat focus:outline-none focus:border-[#0f766e]"
+              >
+                <option value="ALL">ACHC HH Standards: ALL</option>
+                {achcStandardPrefixes.map((prefix) => <option key={prefix} value={prefix}>{prefix}</option>)}
+              </select>
+              <select
+                value={achcCopFilter}
+                onChange={(e) => setAchcCopFilter(e.target.value)}
+                className="rounded-lg border border-[#cbd5e1] bg-white px-2.5 py-1.5 text-[10px] font-montserrat focus:outline-none focus:border-[#0f766e]"
+              >
+                <option value="ALL">Medicare CoP: ALL</option>
+                {achcCopPrefixes.map((prefix) => <option key={prefix} value={prefix}>{prefix}</option>)}
+              </select>
+            </div>
+          </div>
+        )}
+
         {/* MAIN BODY: sidebar + content */}
         <div className="flex-1 flex min-h-0">
-          {/* SIDEBAR */}
+          {/* SIDEBAR — IBM View only */}
+          {libraryView === 'IBM' && (
           <aside className="w-[280px] px-6 py-4 shrink-0 overflow-y-auto lib-custom-scrollbar border-r border-ci-border">
-            {/* Regulatory Filters */}
-            <h2 className="text-[8px] font-bold text-ci-text-subtle tracking-[0.2em] uppercase mb-4 pl-2 font-montserrat">Regulatory Filters</h2>
-            <div className="flex flex-wrap gap-1.5 pl-2 mb-8">
-              {[{ id: 'ALL', shortName: 'All', color: '#ffffff', icon: Layers }, ...REGULATORY_ITEMS].map(reg => {
-                const isActive = activeRegFilter === reg.id;
-                const Icon = reg.icon;
-                return (
-                  <button key={reg.id}
-                    onClick={() => setActiveRegFilter(isActive && reg.id !== 'ALL' ? 'ALL' : reg.id)}
-                    className="glass-interactive-lib flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-widest border-[0.77px] font-montserrat transition-colors"
-                    style={isActive
-                      ? { borderColor: mapColor(reg.color), color: mapColor(reg.color) }
-                      : isLight ? { borderColor: 'rgba(0,0,0,0.12)', color: '#747470' } : { borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}>
-                    <Icon size={10}/> {reg.shortName.toUpperCase()}
-                  </button>
-                );
-              })}
-            </div>
+            <>
+              {/* Regulatory Filters */}
+              <h2 className="text-[8px] font-bold text-ci-text-subtle tracking-[0.2em] uppercase mb-4 pl-2 font-montserrat">Regulatory Filters</h2>
+              <div className="flex flex-wrap gap-1.5 pl-2 mb-8">
+                {[{ id: 'ALL', shortName: 'All', color: '#ffffff', icon: Layers }, ...REGULATORY_ITEMS].map(reg => {
+                  const isActive = activeRegFilter === reg.id;
+                  const Icon = reg.icon;
+                  return (
+                    <button key={reg.id}
+                      onClick={() => setActiveRegFilter(isActive && reg.id !== 'ALL' ? 'ALL' : reg.id)}
+                      className="glass-interactive-lib flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-widest border-[0.77px] font-montserrat transition-colors"
+                      style={isActive
+                        ? { borderColor: mapColor(reg.color), color: mapColor(reg.color) }
+                        : isLight ? { borderColor: 'rgba(0,0,0,0.12)', color: '#747470' } : { borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}>
+                      <Icon size={10}/> {reg.shortName.toUpperCase()}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
 
             {/* Domain Buttons */}
             <h2 className="text-[8px] font-bold text-ci-text-subtle tracking-[0.2em] uppercase mb-4 pl-2 font-montserrat">Strategic Domains</h2>
@@ -466,6 +636,7 @@ export function LibraryPage() {
               })}
             </div>
           </aside>
+          )}
 
           {/* MAIN CONTENT */}
           <section className="flex-1 flex flex-col overflow-hidden">
@@ -495,7 +666,7 @@ export function LibraryPage() {
               <span className="text-[9px] font-mono text-ci-text-subtle">
                 {selectedSubdomain === 'BROWSE'
                   ? `${filteredSubdomains.length} subdomains`
-                  : `${visiblePolicies.length} policies`}
+                  : `${renderedPolicies.length} policies`}
               </span>
             </div>
 
@@ -506,7 +677,7 @@ export function LibraryPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-fadeUpLib">
                   {filteredSubdomains.map(sub => {
                     const SubIcon = sub.icon;
-                    const count = FULL_POLICY_DATASET.filter(p => p.domainCode === sub.domainCode && p.subdomainCode === sub.code).length;
+                    const count = renderedPolicies.filter(p => p.domainCode === sub.domainCode && p.subdomainCode === sub.code).length;
                     return (
                       <button key={`${sub.domainCode}-${sub.code}`}
                         onClick={() => {
@@ -530,31 +701,72 @@ export function LibraryPage() {
               ) : (
                 /* POLICY CARDS */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-fadeUpLib">
-                  {visiblePolicies.map(policy => {
+                  {renderedPolicies.map(policy => {
                     const domain = DOMAINS.find(d => d.code === policy.domainCode);
                     const color = mapColor(domain?.color || '#ffffff');
                     const regDots = REGULATORY_ITEMS.filter(r => policy.regulatoryTags.includes(r.id));
+                    const achc = policy.achc;
                     return (
                       <button key={policy.id}
                         onClick={() => setSelectedPolicy(policy)}
-                        className={`glass-interactive-lib glass-panel-lib border-[0.77px] p-6 rounded-2xl flex flex-col h-[180px] hover:border-[#FFC107]/40 transition-colors group cursor-pointer text-left ${isLight ? 'border-[#E5E4E3]' : 'border-white/10'}`}>
+                        className={`glass-interactive-lib glass-panel-lib border-[0.77px] p-5 rounded-2xl flex flex-col ${libraryView === 'ACHC' ? 'h-auto min-h-[220px]' : 'h-[210px]'} hover:border-[#FFC107]/40 transition-colors group cursor-pointer text-left ${isLight ? 'border-[#E5E4E3]' : 'border-white/10'}`}>
                         <span className="inline-block text-[11px] font-mono font-bold tracking-widest border-[0.77px] px-2 py-1 rounded mb-3 w-max"
                           style={{ color, borderColor: `${color}40` }}>
                           {policy.policyId}
                         </span>
-                        <h3 className="text-[15px] font-medium text-ci-text-primary line-clamp-3 mb-auto leading-snug group-hover:text-ci-text-primary transition-colors">
+                        <h3 className={`text-[15px] font-medium text-ci-text-primary ${libraryView === 'ACHC' ? 'line-clamp-2' : 'line-clamp-3'} mb-auto leading-snug group-hover:text-ci-text-primary transition-colors`}>
                           {policy.title}
                         </h3>
-                        <div className="flex items-center gap-1.5 mt-3">
-                          {regDots.slice(0, 4).map(r => (
-                            <span key={r.id} className="w-1.5 h-1.5 rounded-full" style={{ background: mapColor(r.color) }} title={r.shortName}/>
-                          ))}
-                          {regDots.length > 4 && <span className="text-[8px] text-ci-text-subtle">+{regDots.length - 4}</span>}
-                        </div>
+                        {libraryView === 'IBM' ? (
+                          <div className="flex items-center gap-1.5 mt-3">
+                            {regDots.slice(0, 4).map(r => (
+                              <span key={r.id} className="w-1.5 h-1.5 rounded-full" style={{ background: mapColor(r.color) }} title={r.shortName}/>
+                            ))}
+                            {regDots.length > 4 && <span className="text-[8px] text-ci-text-subtle">+{regDots.length - 4}</span>}
+                          </div>
+                        ) : (
+                          <div className="mt-3 pt-2.5 border-t border-[#99f6e4] space-y-1.5">
+                            {/* Mapping badge + evidence codes */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {achc ? (
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full border font-montserrat font-bold text-[9px] tracking-wider ${
+                                  achc.mappingType === 'DIRECT' ? 'bg-[#0f766e]/10 text-[#0f766e] border-[#0f766e]/30' :
+                                  achc.mappingType === 'PARTIAL' ? 'bg-[#ea580c]/10 text-[#ea580c] border-[#ea580c]/30' :
+                                  achc.mappingType === 'SME_REVIEW' ? 'bg-amber-500/10 text-amber-700 border-amber-500/30' :
+                                  'bg-slate-100 text-slate-500 border-slate-200'
+                                }`}>
+                                  {achc.mappingType}
+                                </span>
+                              ) : null}
+                              {achc && achc.evidenceCodes.length > 0 && (
+                                <span className="text-[9px] font-mono text-ci-text-subtle">{achc.evidenceCodes.join(' ')}</span>
+                              )}
+                            </div>
+                            {/* ACHC standards list */}
+                            {achc && achc.achcStandards.length > 0 ? (
+                              <div className="text-[9px] text-[#0f766e] font-mono leading-snug truncate">
+                                {achc.achcStandards.slice(0, 3).join(', ')}{achc.achcStandards.length > 3 ? ` +${achc.achcStandards.length - 3}` : ''}
+                              </div>
+                            ) : (
+                              <div className="text-[9px] text-ci-text-subtle italic">No validated ACHC mapping</div>
+                            )}
+                            {/* Title 22 + Medicare CoP */}
+                            {achc && (achc.title22.length > 0 || achc.medicareCop.length > 0) && (
+                              <div className="flex gap-3 text-[8px] text-ci-text-subtle">
+                                {achc.title22.length > 0 && (
+                                  <span>T22: {achc.title22.slice(0, 2).join(', ')}{achc.title22.length > 2 ? ' …' : ''}</span>
+                                )}
+                                {achc.medicareCop.length > 0 && (
+                                  <span>CoP: {achc.medicareCop.slice(0, 1).join(', ')}{achc.medicareCop.length > 1 ? ' …' : ''}</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </button>
                     );
                   })}
-                  {visiblePolicies.length === 0 && (
+                  {renderedPolicies.length === 0 && (
                     <div className="col-span-4">
                       <EmptyState
                         icon={<Search size={40} />}

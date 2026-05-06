@@ -35,6 +35,9 @@ import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { getCorpusPolicy } from '@/policy/data/policyCorpus';
 import { RightDrawer, CiStatusBadge } from '@/policy/components/ui';
 
+/** Stable fallback for Zustand selectors — never use `?? []` inline (new ref → useSyncExternalStore loop). */
+const EMPTY_WATCHER_IDS: readonly string[] = [];
+
 const STATUS_TONE: Record<PmTaskStatus, 'neutral' | 'info' | 'warning' | 'danger' | 'success'> = {
   todo: 'neutral',
   in_progress: 'info',
@@ -252,7 +255,7 @@ function Field({
   tokens: PanelTokens;
 }): ReactElement {
   return (
-    <div className="grid grid-cols-[110px_1fr] items-baseline gap-2">
+    <div className="grid grid-cols-1 items-baseline gap-1.5 sm:grid-cols-[110px_1fr] sm:gap-2">
       <span className={`text-[10px] font-mono uppercase tracking-wider ${tokens.mutedText}`}>
         {label}
       </span>
@@ -347,7 +350,7 @@ function SectionAssignment({ task, tokens }: { task: Task; tokens: PanelTokens }
       : task.assigned_user_id ?? 'Unassigned';
   const signers = isEcignSubmissionTask(task) ? task.required_signers : [];
   const approvers = isEcignSubmissionTask(task) ? task.approvers : [];
-  const watcherIds = usePmOverlayStore(s => s.overlays[task.task_id]?.watcher_user_ids ?? []);
+  const watcherIds = usePmOverlayStore(s => s.overlays[task.task_id]?.watcher_user_ids ?? EMPTY_WATCHER_IDS);
   return (
     <Section icon={<Users size={11} />} title="Assignment" tokens={tokens}>
       <Field label="Assigned to" tokens={tokens}>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useShellStore } from '@/policy/stores/uiStore';
 import {
   ChevronLeft, ChevronRight, CalendarDays, CalendarRange, Zap, Sparkles,
@@ -18,12 +18,15 @@ import {
   TEAL_PRIMARY, ACTION_COLOR, STATE_COLOR, classifyInstance,
 } from '@/policy/components/regulatory/timelineState';
 import { SprintTaskPanel } from '@/policy/ces/components/details/SprintTaskPanel';
-import { useComplianceExecution } from '@/policy/compliance-execution';
+import { regulatoryEventOverlapsSprint } from '@/policy/pm/sprintWindows';
+import { usePmViewSprintStore } from '@/policy/pm/pmViewSprintStore';
+import { SprintScopeToolbar } from '@/policy/components/pm/SprintScopeToolbar';
 import { KanbanView, GanttView, SprintBoardView } from '@/policy/components/pm/PmViews';
 import { TaskDetailRightPanel } from '@/policy/components/pm/TaskDetailRightPanel';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { useCalendarSyncStore, type BulkSyncSummary } from '@/policy/stores/calendarSyncStore';
 import { SurfaceCard, EmptyState } from '@/policy/components/ui';
+import { RightDrawer } from '@/policy/components/ui/RightDrawer';
 
 export type PmView = 'calendar' | 'sprint' | 'kanban' | 'gantt';
 
@@ -46,6 +49,7 @@ export type PmView = 'calendar' | 'sprint' | 'kanban' | 'gantt';
 
 export function MasterCalendarPage() {
   const today = TODAY_ANCHOR;
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const store = useRegulatoryExecutionStore();
 
@@ -57,6 +61,12 @@ export function MasterCalendarPage() {
   const [activeId, setActiveId] = useState<string | null>(eventParam);
   const [bulkSyncPending, setBulkSyncPending] = useState(false);
   const [lastBulkSync, setLastBulkSync] = useState<BulkSyncSummary | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState<number>(() =>
+    typeof window === 'undefined' ? 1920 : window.innerWidth,
+  );
+  const isCompactLayout = viewportWidth < 1280;
+  const isMobileLayout = viewportWidth < 768;
 
   /* ── All workflow instances (base + autogen + triggered) ── */
   const generatedEvents = useAutogenStore(s => s.generatedEvents);
@@ -82,8 +92,7 @@ export function MasterCalendarPage() {
       const match = allInstances.find(e => e.id === activeId);
       if (match) return match;
     }
-    // Prefer an instance in the visible month; otherwise first overall.
-    return monthInstances[0] ?? allInstances[0] ?? null;
+    return monthInstances[0] ?? null;
   }, [activeId, allInstances, monthInstances]);
 
   /* ── React to URL (Dashboard → Timeline deep link) ── */
@@ -111,6 +120,10 @@ export function MasterCalendarPage() {
   }, [workflowParam, eventParam]);
 
   const selectInstance = (e: RegulatoryEvent) => {
+    if (isMobileLayout) {
+      navigate(`/calendar/event/${encodeURIComponent(e.id)}`);
+      return;
+    }
     setActiveId(e.id);
     const next = new URLSearchParams(searchParams);
     next.set('event', e.id);
@@ -118,6 +131,7 @@ export function MasterCalendarPage() {
     // The inline panel is always visible, but mark the workflow active
     // so any enforcement log / audit signals that execution has started.
     store.openWorkflow(e.id);
+    if (isCompactLayout) setDetailsOpen(true);
   };
 
   const clearSelection = () => {
@@ -194,36 +208,40 @@ export function MasterCalendarPage() {
     }
   };
 
-  /* ── Sprint window scoping (Mon week 1 → Fri week 2) ──
-     In sprint mode the calendar shell is the SAME as Events mode, but
-     the dataset is filtered to the active sprint window and limited to
-     mandated/recurring obligations (no per-clinician onboarding). */
-  const ces = useComplianceExecution();
+  const sprintWindow = usePmViewSprintStore(s => s.window);
+
+  /* ── Sprint calendar shell: events overlapping selected PM sprint ── */
   const sprintInstances = useMemo(() => {
     if (view !== 'sprint') return [];
-    const startMs = new Date(ces.activeSprint.startDate + 'T00:00:00').getTime();
-    const endMs   = new Date(ces.activeSprint.endDate   + 'T23:59:59').getTime();
     return allInstances.filter(e => {
-      const t = new Date(e.date + 'T00:00:00').getTime();
-      if (t < startMs || t > endMs) return false;
-      // Strip per-employee onboarding tasks; keep mandated/recurring/etc.
+      if (!regulatoryEventOverlapsSprint(e, sprintWindow)) return false;
       const cad = (e.cadence ?? '').toString().toLowerCase();
       if (cad === 'onboarding' || cad === 'personal') return false;
       return true;
     });
-  }, [view, allInstances, ces.activeSprint.startDate, ces.activeSprint.endDate]);
+  }, [view, allInstances, sprintWindow]);
 
-  // In sprint mode, jump the visible month to the sprint's anchor month
-  // so the calendar shell shows the sprint days first.
   useEffect(() => {
-    if (view !== 'sprint') return;
-    const d = new Date(ces.activeSprint.startDate + 'T00:00:00');
-    setYear(d.getFullYear());
-    setMonth(d.getMonth());
-  }, [view, ces.activeSprint.startDate]);
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    if (!isCompactLayout) setDetailsOpen(false);
+  }, [isCompactLayout]);
+
+  const selectTask = (id: string | null) => {
+    setActiveTaskId(id);
+    if (id && isCompactLayout) setDetailsOpen(true);
+  };
+
+  const hasDetailContext = view === 'kanban' || view === 'gantt'
+    ? Boolean(activeTaskId)
+    : Boolean(activeInstance || activeTaskId);
 
   return (
-    <div className="h-full w-full flex flex-col font-sans animate-in fade-in duration-500 px-6 md:px-10 py-5 gap-4 overflow-hidden relative z-10">
+    <div className="ci-page-container h-full w-full flex flex-col font-sans animate-in fade-in duration-500 gap-3 sm:gap-4 overflow-hidden relative z-10">
 
       <TimelineHeader
         monthLabel={monthLabel}
@@ -239,96 +257,186 @@ export function MasterCalendarPage() {
         onViewChange={setView}
       />
 
+      {view !== 'calendar' && (
+        <div className="shrink-0">
+          <SprintScopeToolbar />
+        </div>
+      )}
+
       {view === 'calendar' && <JulyReadinessBanner today={today} />}
 
       {view === 'calendar' ? (
-        /* ── 70 / 30 split (Events View — image 1 layout) ── */
-        <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
-          <div className="col-span-7 flex flex-col min-h-0">
-            <TimelineMonth
-              year={year}
-              month={month}
-              events={monthInstances}
-              activeId={activeInstance?.id ?? null}
-              onSelect={selectInstance}
-              today={today}
-            />
-          </div>
-          <div className="col-span-3 flex flex-col min-h-0">
-            {activeTaskId ? (
-              <TaskDetailRightPanel
-                taskId={activeTaskId}
-                onClose={() => setActiveTaskId(null)}
+        <div className={`${isCompactLayout ? 'flex-1 min-h-0 flex flex-col' : 'ci-content-grid min-h-0 overflow-hidden'}`}>
+          <div className="min-h-0 flex flex-col">
+            {isMobileLayout ? (
+              <MobileAgendaList
+                events={monthInstances}
+                activeId={activeInstance?.id ?? null}
+                onSelect={selectInstance}
               />
             ) : (
-              <WorkflowExecutionPanel
-                event={activeInstance}
-                onClear={activeInstance ? clearSelection : undefined}
+              <TimelineMonth
+                year={year}
+                month={month}
+                events={monthInstances}
+                activeId={activeInstance?.id ?? null}
+                onSelect={selectInstance}
                 today={today}
-                onSelectTask={(taskId) => setActiveTaskId(taskId)}
               />
             )}
           </div>
+          {!isCompactLayout && (
+            <div className="ci-right-panel">
+              {activeTaskId ? (
+                <TaskDetailRightPanel
+                  taskId={activeTaskId}
+                  onClose={() => setActiveTaskId(null)}
+                />
+              ) : (
+                <WorkflowExecutionPanel
+                  event={activeInstance}
+                  onClear={activeInstance ? clearSelection : undefined}
+                  today={today}
+                  onSelectTask={(taskId) => selectTask(taskId)}
+                />
+              )}
+            </div>
+          )}
         </div>
       ) : view === 'sprint' ? (
-        /* ── Sprint Board view — canonical projected tasks scoped to active sprint ── */
-        <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
-          <div className="col-span-7 flex flex-col min-h-0">
-            <SprintBoardView onSelect={setActiveTaskId} selectedEventId={activeInstance?.id ?? null} />
+        <div className={`${isCompactLayout ? 'flex-1 min-h-0 flex flex-col' : 'ci-content-grid min-h-0 overflow-hidden'}`}>
+          <div className="min-h-0 flex flex-col">
+            <SprintBoardView onSelect={selectTask} selectedEventId={activeInstance?.id ?? null} />
           </div>
-          <div className="col-span-3 flex flex-col min-h-0">
-            {activeTaskId ? (
-              <TaskDetailRightPanel
-                taskId={activeTaskId}
-                onClose={() => setActiveTaskId(null)}
-              />
-            ) : (
-              <SprintTaskPanel
-                event={
-                  activeInstance && sprintInstances.some(e => e.id === activeInstance.id)
-                    ? activeInstance
-                    : sprintInstances[0] ?? null
-                }
-                onClear={activeInstance ? clearSelection : undefined}
-                today={today}
-              />
-            )}
-          </div>
+          {!isCompactLayout && (
+            <div className="ci-right-panel">
+              {activeTaskId ? (
+                <TaskDetailRightPanel
+                  taskId={activeTaskId}
+                  onClose={() => setActiveTaskId(null)}
+                />
+              ) : (
+                <SprintTaskPanel
+                  event={
+                    activeInstance && sprintInstances.some(e => e.id === activeInstance.id)
+                      ? activeInstance
+                      : sprintInstances[0] ?? null
+                  }
+                  onClear={activeInstance ? clearSelection : undefined}
+                  today={today}
+                />
+              )}
+            </div>
+          )}
         </div>
       ) : view === 'kanban' ? (
-        /* ── Kanban view — PM status columns over canonical projection ── */
-        <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
-          <div className="col-span-7 flex flex-col min-h-0">
-            <KanbanView onSelect={setActiveTaskId} selectedEventId={null} />
+        <div className={`${isCompactLayout ? 'flex-1 min-h-0 flex flex-col' : 'ci-content-grid min-h-0 overflow-hidden'}`}>
+          <div className="min-h-0 flex flex-col">
+            <KanbanView onSelect={selectTask} selectedEventId={null} />
           </div>
-          <div className="col-span-3 flex flex-col min-h-0">
-            {activeTaskId ? (
-              <TaskDetailRightPanel
-                taskId={activeTaskId}
-                onClose={() => setActiveTaskId(null)}
-              />
-            ) : (
-              <EmptyRightPanel label="Select a task to see details." />
-            )}
-          </div>
+          {!isCompactLayout && (
+            <div className="ci-right-panel">
+              {activeTaskId ? (
+                <TaskDetailRightPanel
+                  taskId={activeTaskId}
+                  onClose={() => setActiveTaskId(null)}
+                />
+              ) : (
+                <EmptyRightPanel label="Select a task to see details." />
+              )}
+            </div>
+          )}
         </div>
       ) : (
-        /* ── Gantt view — date-axis bars over canonical projection ── */
-        <div className="flex-1 grid grid-cols-10 gap-4 min-h-0 overflow-hidden">
-          <div className="col-span-7 flex flex-col min-h-0">
-            <GanttView onSelect={setActiveTaskId} selectedEventId={null} />
+        <div className={`${isCompactLayout ? 'flex-1 min-h-0 flex flex-col' : 'ci-content-grid min-h-0 overflow-hidden'}`}>
+          <div className="min-h-0 flex flex-col">
+            <GanttView onSelect={selectTask} selectedEventId={null} />
           </div>
-          <div className="col-span-3 flex flex-col min-h-0">
-            {activeTaskId ? (
-              <TaskDetailRightPanel
-                taskId={activeTaskId}
-                onClose={() => setActiveTaskId(null)}
-              />
-            ) : (
-              <EmptyRightPanel label="Select a task to see details." />
-            )}
-          </div>
+          {!isCompactLayout && (
+            <div className="ci-right-panel">
+              {activeTaskId ? (
+                <TaskDetailRightPanel
+                  taskId={activeTaskId}
+                  onClose={() => setActiveTaskId(null)}
+                />
+              ) : (
+                <EmptyRightPanel label="Select a task to see details." />
+              )}
+            </div>
+          )}
         </div>
+      )}
+
+      {isCompactLayout && (
+        <>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setDetailsOpen(true)}
+              disabled={!hasDetailContext}
+              className="ci-touch-target rounded-md border px-3 py-1.5 text-[11px] font-montserrat font-bold uppercase tracking-[0.14em] text-white/85 disabled:opacity-45"
+              style={{ borderColor: 'rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)' }}
+            >
+              Open Details
+            </button>
+          </div>
+          <RightDrawer
+            open={detailsOpen}
+            onClose={() => setDetailsOpen(false)}
+            width="lg"
+          >
+            <div className="h-full min-h-0">
+              {view === 'calendar' ? (
+                activeTaskId ? (
+                  <TaskDetailRightPanel
+                    taskId={activeTaskId}
+                    onClose={() => {
+                      setActiveTaskId(null);
+                      setDetailsOpen(false);
+                    }}
+                  />
+                ) : (
+                  <WorkflowExecutionPanel
+                    event={activeInstance}
+                    onClear={activeInstance ? clearSelection : undefined}
+                    today={today}
+                    onSelectTask={(taskId) => selectTask(taskId)}
+                  />
+                )
+              ) : view === 'sprint' ? (
+                activeTaskId ? (
+                  <TaskDetailRightPanel
+                    taskId={activeTaskId}
+                    onClose={() => {
+                      setActiveTaskId(null);
+                      setDetailsOpen(false);
+                    }}
+                  />
+                ) : (
+                  <SprintTaskPanel
+                    event={
+                      activeInstance && sprintInstances.some(e => e.id === activeInstance.id)
+                        ? activeInstance
+                        : sprintInstances[0] ?? null
+                    }
+                    onClear={activeInstance ? clearSelection : undefined}
+                    today={today}
+                  />
+                )
+              ) : activeTaskId ? (
+                <TaskDetailRightPanel
+                  taskId={activeTaskId}
+                  onClose={() => {
+                    setActiveTaskId(null);
+                    setDetailsOpen(false);
+                  }}
+                />
+              ) : (
+                <EmptyRightPanel label="Select a task to see details." />
+              )}
+            </div>
+          </RightDrawer>
+        </>
       )}
 
       <ToastHost />
@@ -358,7 +466,7 @@ function PmTab({
       role="tab"
       aria-selected={active ? 'true' : 'false'}
       onClick={onClick}
-      className="text-[11px] font-outfit px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors"
+      className="ci-touch-target whitespace-nowrap text-[11px] font-outfit px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors"
       style={isLight
         ? { background: active ? 'rgba(0,0,0,0.07)' : 'transparent', color: active ? '#1F1C1B' : '#747470' }
         : { background: active ? 'rgba(255,255,255,0.08)' : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.65)' }
@@ -386,7 +494,7 @@ function TimelineHeader({
   onViewChange: (v: PmView) => void;
 }) {
   return (
-    <div className="flex items-end justify-between gap-4 flex-wrap">
+    <div className="ci-toolbar-wrap justify-between items-end">
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL_PRIMARY }} />
@@ -417,12 +525,12 @@ function TimelineHeader({
         </h1>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="ci-toolbar-wrap justify-end">
         {view === 'calendar' && <StateLegend rollup={rollup} />}
 
         {/* View switcher: Calendar | Sprint | Kanban | Gantt */}
         <div
-          className="flex items-center gap-1 rounded-lg border border-white/10 p-0.5"
+          className="flex max-w-full items-center gap-1 overflow-x-auto rounded-lg border border-white/10 p-0.5"
           role="tablist"
           aria-label="PM view"
         >
@@ -448,7 +556,7 @@ function TimelineHeader({
           <NavBtn onClick={onPrev} ariaLabel="Previous month"><ChevronLeft size={14} /></NavBtn>
           <button
             onClick={onToday}
-            className="text-[11px] font-outfit text-white/90 px-3 py-1 rounded-md hover:bg-white/[0.05] transition-colors flex items-center gap-1.5"
+            className="ci-touch-target text-[11px] font-outfit text-white/90 px-3 py-1 rounded-md hover:bg-white/[0.05] transition-colors flex items-center gap-1.5 whitespace-nowrap"
             title={`Today · ${today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
           >
             <CalendarDays size={11} className="text-white/65" />
@@ -461,11 +569,11 @@ function TimelineHeader({
           type="button"
           onClick={onSyncAll}
           disabled={syncAllPending}
-          className="inline-flex items-center gap-2 rounded-lg border border-[#0D9488]/40 bg-[#0D9488]/12 px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#5EEAD4] hover:bg-[#0D9488]/18 disabled:opacity-60"
+          className="ci-touch-target inline-flex items-center gap-2 rounded-lg border border-[#0D9488]/40 bg-[#0D9488]/12 px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#5EEAD4] hover:bg-[#0D9488]/18 disabled:opacity-60 whitespace-nowrap"
           title="Sync all in-scope compliance events to Google Calendar"
         >
           <CloudUpload size={12} className={syncAllPending ? 'animate-pulse' : ''} />
-          {syncAllPending ? 'Syncing…' : 'Sync All Events to Google Calendar'}
+          {syncAllPending ? 'Syncing…' : 'Sync All Events'}
         </button>
 
         {lastBulkSync && (
@@ -488,7 +596,7 @@ function NavBtn({
     <button
       onClick={onClick}
       aria-label={ariaLabel}
-      className="w-7 h-7 rounded-md flex items-center justify-center text-white/65 hover:text-white hover:bg-white/[0.05]"
+      className="ci-touch-target w-9 h-9 rounded-md flex items-center justify-center text-white/65 hover:text-white hover:bg-white/[0.05]"
     >
       {children}
     </button>
@@ -676,6 +784,56 @@ function PreviewMatrix({ preview }: { preview: SchedulingPreview }) {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function MobileAgendaList({
+  events,
+  activeId,
+  onSelect,
+}: {
+  events: RegulatoryEvent[];
+  activeId: string | null;
+  onSelect: (event: RegulatoryEvent) => void;
+}) {
+  const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date));
+  if (sorted.length === 0) {
+    return (
+      <SurfaceCard className="flex-1 flex items-center justify-center" padding="md">
+        <EmptyState title="No events in this month." description="Try another month or switch to Sprint/Kanban/Gantt views." />
+      </SurfaceCard>
+    );
+  }
+
+  return (
+    <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar space-y-2 pr-0.5">
+      {sorted.map(event => {
+        const isActive = event.id === activeId;
+        const dateLabel = new Date(`${event.date}T00:00:00`).toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+        });
+        return (
+          <button
+            key={event.id}
+            type="button"
+            onClick={() => onSelect(event)}
+            className="w-full rounded-lg border px-3 py-2.5 text-left transition-colors"
+            style={{
+              borderColor: isActive ? 'rgba(20,184,166,0.7)' : 'rgba(255,255,255,0.18)',
+              background: isActive ? 'rgba(20,184,166,0.16)' : 'rgba(255,255,255,0.04)',
+            }}
+          >
+            <p className="text-[11px] font-montserrat font-bold uppercase tracking-[0.14em] text-white/60">{dateLabel}</p>
+            <p className="mt-1 text-[13px] font-outfit text-white">{event.title}</p>
+            <p className="mt-0.5 text-[11px] font-roboto text-white/70">
+              {event.time ? `${event.time}${event.timeEnd ? ` - ${event.timeEnd}` : ''}` : 'All day'} · {event.cadence}
+            </p>
+          </button>
+        );
+      })}
     </div>
   );
 }

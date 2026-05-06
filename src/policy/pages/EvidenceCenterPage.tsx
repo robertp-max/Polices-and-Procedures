@@ -11,11 +11,25 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   FolderOpen, Download, Upload, RefreshCw, FileText, ShieldCheck,
   Search, AlertCircle, CheckCircle2, Clock, ExternalLink, Info, X, History,
 } from 'lucide-react';
+import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
+import { useAutogenStore } from '@/policy/stores/autogenStore';
+import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
+import { useProjectedTasks } from '@/policy/pm/taskProjection';
+import { isCesTask } from '@/policy/pm/types';
+import { CesEvidenceHierarchyPanel } from '@/policy/components/evidence/CesEvidenceHierarchyPanel';
+import {
+  type EvidenceAuditEvent,
+  type EvidenceMode,
+  type EvidenceStatus,
+  logEvidenceDevWarning,
+  toEvidenceModeLabel,
+  validateEvidenceUploadInput,
+} from '@/policy/evidence/evidenceModel';
 
 // ── Configuration ──────────────────────────────────────────────
 // Override at build time with VITE_HHC_API_BASE.
@@ -23,13 +37,12 @@ const API_BASE: string =
   (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_HHC_API_BASE ||
   'https://rtllnugat0.execute-api.us-west-1.amazonaws.com';
 
-/** Set true to stub all Lambda/API-Gateway calls (no network traffic). */
-const LAMBDA_DISABLED = true;
+const REQUESTED_MODE: EvidenceMode =
+  ((import.meta as unknown as { env?: Record<string, string> }).env?.VITE_EVIDENCE_MODE || 'DEMO_LOCAL').toUpperCase() === 'BACKEND_LIVE'
+    ? 'BACKEND_LIVE'
+    : 'DEMO_LOCAL';
 
 const DEFAULT_EVENT  = 'EVT-DEMO-001';
-const DEFAULT_POLICY = 'POL-DEMO-001';
-const DEFAULT_WF     = 'WF-DEMO-001';
-const DEFAULT_FORM   = 'FRM-DEMO-001';
 const DEMO_STORE_KEY = 'evidence-center-demo-store-v1';
 
 // Phase-1 actor stub (replace with Cognito JWT later). Read from localStorage so a user
@@ -51,8 +64,12 @@ interface EvidenceFile {
   policy_id:        string;
   workflow_id:      string;
   event_id:         string;
+  task_id:          string | null;
   form_id:          string | null;
-  status:           string;
+  status:           EvidenceStatus;
+  version:          number;
+  superseded_by:    string | null;
+  local_data_url:   string | null;
   signature_status: string | null;
   source_system:    string | null;
   mime_type:        string | null;
@@ -63,7 +80,7 @@ interface EvidenceFile {
 
 interface AuditEntry {
   ts:            string;
-  action:        string;
+  action:        EvidenceAuditEvent;
   actor:         string | null;
   source_system: string | null;
   evidence_id:   string | null;
@@ -126,12 +143,14 @@ interface DemoStore {
 const STATUS_COLOR: Record<string, string> = {
   PENDING_UPLOAD: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
   UPLOADED:       'bg-sky-500/15 text-sky-300 border-sky-500/30',
+  VALIDATING:     'bg-sky-500/15 text-sky-300 border-sky-500/30',
   VALIDATED:      'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
   EVIDENCE_LOCKED:'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-  PROMOTED:          'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-  APPROVED_EVIDENCE: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-  SIGNED:            'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-  FAILED:         'bg-rose-500/15 text-rose-300 border-rose-500/30',
+  PROMOTED:       'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+  REJECTED:       'bg-rose-500/15 text-rose-300 border-rose-500/30',
+  SUPERSEDED:     'bg-violet-500/15 text-violet-300 border-violet-500/30',
+  EXPORTED:       'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+  RETAINED:       'bg-slate-500/15 text-slate-300 border-slate-500/30',
 };
 
 function readDemoStore(): DemoStore {
@@ -190,6 +209,8 @@ export function EvidenceCenterPage() {
   const qFormId = (query.get('form_id') || '').trim();
   const qPolicyId = (query.get('policy_id') || '').trim();
   const qWorkflowId = (query.get('workflow_id') || '').trim();
+  const qTaskId = (query.get('task_id') || '').trim();
+  const qRequirementId = (query.get('requirement_id') || '').trim();
 
   const [eventId,    setEventId]    = useState(qEventId || DEFAULT_EVENT);
   const [eventInput, setEventInput] = useState(qEventId || DEFAULT_EVENT);
@@ -197,6 +218,8 @@ export function EvidenceCenterPage() {
   const [filterEventId,    setFilterEventId]    = useState(qEventId);
   const [filterFormId,     setFilterFormId]     = useState(qFormId);
   const [filterPolicyId,   setFilterPolicyId]   = useState(qPolicyId);
+  const [filterWorkflowId, setFilterWorkflowId] = useState(qWorkflowId);
+  const [filterTaskId, setFilterTaskId] = useState(qTaskId);
   const [filterEvidenceId, setFilterEvidenceId] = useState(qEvidenceId);
   const [files,   setFiles] = useState<EvidenceFile[]>([]);
   const [audit,   setAudit] = useState<AuditEntry[]>([]);
@@ -206,9 +229,21 @@ export function EvidenceCenterPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [effectiveMode, setEffectiveMode] = useState<EvidenceMode>(REQUESTED_MODE);
+  const [centerView, setCenterView] = useState<'hierarchy' | 'files'>('hierarchy');
+  const isDemoMode = effectiveMode === 'DEMO_LOCAL';
+  const store = useRegulatoryExecutionStore();
+  const projectedTasks = useProjectedTasks('full');
+  const generatedEvents = useAutogenStore(s => s.generatedEvents);
+  const triggeredEvents = useAutogenStore(s => s.triggeredEvents);
+  const hierarchyEvents = useMemo(
+    () => [...REGULATORY_EVENTS, ...generatedEvents, ...triggeredEvents].filter(event => !event.isContext),
+    [generatedEvents, triggeredEvents],
+  );
+  const cesTasks = useMemo(() => projectedTasks.filter(isCesTask), [projectedTasks]);
 
   const load = useCallback(async (id: string) => {
-    if (LAMBDA_DISABLED) {
+    if (isDemoMode) {
       const store = readDemoStore();
       setFiles(store.filesByEvent[id] || []);
       setAudit(store.auditByEvent[id] || []);
@@ -223,13 +258,22 @@ export function EvidenceCenterPage() {
       setFiles(data.files || []);
       setAudit(data.audit || []);
     } catch (e) {
-      setError((e as Error).message);
-      setFiles([]);
-      setAudit([]);
+      if (effectiveMode === 'BACKEND_LIVE') {
+        setEffectiveMode('DEMO_LOCAL');
+        setError('Backend evidence endpoints are unavailable. The page switched to local demo evidence mode.');
+        logEvidenceDevWarning('Evidence Center backend unavailable. Falling back to DEMO_LOCAL mode.', e);
+        const store = readDemoStore();
+        setFiles(store.filesByEvent[id] || []);
+        setAudit(store.auditByEvent[id] || []);
+      } else {
+        setError((e as Error).message);
+        setFiles([]);
+        setAudit([]);
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isDemoMode, effectiveMode]);
 
   useEffect(() => { load(eventId); }, [eventId, load]);
 
@@ -246,14 +290,22 @@ export function EvidenceCenterPage() {
     if (nextEvidence) setFilterEvidenceId(nextEvidence);
     if (nextForm) setFilterFormId(nextForm);
     if (nextPolicy) setFilterPolicyId(nextPolicy);
+    if (qWorkflowId) setFilterWorkflowId(qWorkflowId);
+    if (qTaskId) setFilterTaskId(qTaskId);
   }, [query]);
+
+  useEffect(() => {
+    if (!qTaskId) return;
+    const match = files.find(item => (item.task_id || '').toLowerCase() === qTaskId.toLowerCase());
+    if (match) setSelected(match);
+  }, [files, qTaskId]);
 
   const filtered = useMemo(() => {
     let result = files;
     const q = search.trim().toLowerCase();
     if (q) {
       result = result.filter((f) =>
-        [f.filename, f.policy_id, f.workflow_id, f.event_id, f.form_id || '', f.status, f.source_system || '', f.evidence_id]
+        [f.filename, f.policy_id, f.workflow_id, f.event_id, f.task_id || '', f.form_id || '', f.status, f.source_system || '', f.evidence_id]
           .join(' ').toLowerCase().includes(q)
       );
     }
@@ -263,10 +315,14 @@ export function EvidenceCenterPage() {
     if (evid) result = result.filter((f) => f.event_id.toLowerCase().includes(evid));
     const pid = filterPolicyId.trim().toLowerCase();
     if (pid) result = result.filter((f) => f.policy_id.toLowerCase().includes(pid));
+    const wid = filterWorkflowId.trim().toLowerCase();
+    if (wid) result = result.filter((f) => f.workflow_id.toLowerCase().includes(wid));
+    const tid = filterTaskId.trim().toLowerCase();
+    if (tid) result = result.filter((f) => (f.task_id || '').toLowerCase().includes(tid));
     const eid = filterEvidenceId.trim().toLowerCase();
     if (eid) result = result.filter((f) => f.evidence_id.toLowerCase().includes(eid));
     return result;
-  }, [files, search, filterEventId, filterFormId, filterPolicyId, filterEvidenceId]);
+  }, [files, search, filterEventId, filterFormId, filterPolicyId, filterWorkflowId, filterTaskId, filterEvidenceId]);
 
   useEffect(() => {
     const eid = filterEvidenceId.trim();
@@ -282,8 +338,33 @@ export function EvidenceCenterPage() {
   };
 
   const onDownload = async (f: EvidenceFile) => {
-    if (LAMBDA_DISABLED) {
-      setError('Demo Mode: local metadata only. File download is not available in this mock flow.');
+    if (isDemoMode) {
+      if (!f.local_data_url) {
+        setError('Download is unavailable for this local demo record because file bytes were not persisted.');
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = f.local_data_url;
+      a.download = f.filename;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      const store = readDemoStore();
+      const actor = actorHeaders()['x-hhc-actor-id'] || 'demo-user';
+      store.auditByEvent[f.event_id] = [{
+        ts: new Date().toISOString(),
+        action: 'DOWNLOAD_URL_CREATED',
+        actor,
+        source_system: 'demo-local',
+        evidence_id: f.evidence_id,
+        upload_id: null,
+        before_status: f.status,
+        after_status: f.status,
+      }, ...(store.auditByEvent[f.event_id] || [])];
+      writeDemoStore(store);
+      setAudit(store.auditByEvent[f.event_id] || []);
       return;
     }
     try {
@@ -305,20 +386,70 @@ export function EvidenceCenterPage() {
     const file = ev.target.files?.[0];
     if (!file) return;
 
-    const uploadPolicyId = qPolicyId || filterPolicyId || DEFAULT_POLICY;
-    const uploadWorkflowId = qWorkflowId || DEFAULT_WF;
-    const uploadFormId = qFormId || filterFormId || DEFAULT_FORM;
+    const uploadPolicyId = (qPolicyId || filterPolicyId).trim();
+    const uploadWorkflowId = (qWorkflowId || filterWorkflowId).trim();
+    const uploadFormId = (qFormId || filterFormId).trim();
+    const uploadTaskId = (qTaskId || filterTaskId).trim();
+    if (qEventId && qEventId !== eventId) {
+      setError(`Context mismatch: URL event_id=${qEventId} does not match selected event_id=${eventId}.`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+    if (qRequirementId && !uploadTaskId) {
+      setError('Task-linked requirement upload requires task_id in context.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+    const eventExists = REGULATORY_EVENTS.some(item => item.id === eventId) || eventId.startsWith('EVT-FORM-');
+    const validation = validateEvidenceUploadInput({
+      policyId: uploadPolicyId,
+      workflowId: uploadWorkflowId,
+      eventId,
+      eventExists,
+      requiredFormBinding: Boolean(uploadFormId),
+      formId: uploadFormId || undefined,
+      requiredTaskBinding: Boolean(uploadTaskId),
+      taskId: uploadTaskId || undefined,
+    });
+    if (!validation.ok) {
+      setError(validation.message || 'Evidence validation failed.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
 
-    if (LAMBDA_DISABLED) {
+    if (isDemoMode) {
       setUploading(true);
       setUploadMsg(null);
       setError(null);
       try {
         const nowIso = new Date().toISOString();
         const evidenceId = `EVD-${Date.now()}`;
+        const actor = (() => {
+          const headers = actorHeaders();
+          const id = headers['x-hhc-actor-id'];
+          const role = headers['x-hhc-actor-role'];
+          return role ? `${id} (${role})` : id;
+        })();
+        const localDataUrl = await new Promise<string | null>(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(file);
+        });
 
         setUploadMsg(`Simulating upload for ${file.name}…`);
         await new Promise((resolve) => window.setTimeout(resolve, 350));
+        const store = readDemoStore();
+        const eventFiles = store.filesByEvent[eventId] || [];
+        const existingLocked = eventFiles.find(candidate =>
+          candidate.filename === file.name
+          && candidate.policy_id === uploadPolicyId
+          && candidate.workflow_id === uploadWorkflowId
+          && candidate.form_id === (uploadFormId || null)
+          && candidate.task_id === (uploadTaskId || null)
+          && candidate.status === 'EVIDENCE_LOCKED',
+        );
+        const version = (existingLocked?.version ?? 0) + 1;
 
         const mockFile: EvidenceFile = {
           evidence_id: evidenceId,
@@ -326,8 +457,12 @@ export function EvidenceCenterPage() {
           policy_id: uploadPolicyId,
           workflow_id: uploadWorkflowId,
           event_id: eventId,
-          form_id: uploadFormId,
+          task_id: uploadTaskId || null,
+          form_id: uploadFormId || null,
           status: 'EVIDENCE_LOCKED',
+          version,
+          superseded_by: null,
+          local_data_url: localDataUrl,
           signature_status: 'LOCKED',
           source_system: 'demo-local',
           mime_type: file.type || 'application/octet-stream',
@@ -336,29 +471,33 @@ export function EvidenceCenterPage() {
           updated_at: nowIso,
         };
 
-        const actor = (() => {
-          const headers = actorHeaders();
-          const id = headers['x-hhc-actor-id'];
-          const role = headers['x-hhc-actor-role'];
-          return role ? `${id} (${role})` : id;
-        })();
-
-        const mockAudit: AuditEntry = {
-          ts: nowIso,
-          action: 'Evidence uploaded (demo mode)',
-          actor,
-          source_system: 'demo-local',
-          evidence_id: evidenceId,
-          upload_id: null,
-          before_status: null,
-          after_status: 'EVIDENCE_LOCKED',
-        };
-
-        const store = readDemoStore();
-        const eventFiles = store.filesByEvent[eventId] || [];
         const eventAudit = store.auditByEvent[eventId] || [];
-        store.filesByEvent[eventId] = [mockFile, ...eventFiles];
-        store.auditByEvent[eventId] = [mockAudit, ...eventAudit];
+        const timeline: AuditEntry[] = [
+          { ts: nowIso, action: 'UPLOAD_INITIATED', actor, source_system: 'demo-local', evidence_id: evidenceId, upload_id: null, before_status: null, after_status: 'PENDING_UPLOAD' },
+          { ts: nowIso, action: 'FILE_UPLOADED', actor, source_system: 'demo-local', evidence_id: evidenceId, upload_id: null, before_status: 'PENDING_UPLOAD', after_status: 'UPLOADED' },
+          { ts: nowIso, action: 'FILE_VALIDATED', actor, source_system: 'demo-local', evidence_id: evidenceId, upload_id: null, before_status: 'UPLOADED', after_status: 'VALIDATED' },
+          { ts: nowIso, action: 'EVIDENCE_PROMOTED', actor, source_system: 'demo-local', evidence_id: evidenceId, upload_id: null, before_status: 'VALIDATED', after_status: 'PROMOTED' },
+          { ts: nowIso, action: 'EVIDENCE_LOCKED', actor, source_system: 'demo-local', evidence_id: evidenceId, upload_id: null, before_status: 'PROMOTED', after_status: 'EVIDENCE_LOCKED' },
+        ];
+        const normalized = eventFiles.map(candidate => (
+          existingLocked && candidate.evidence_id === existingLocked.evidence_id
+            ? { ...candidate, status: 'SUPERSEDED' as const, superseded_by: evidenceId }
+            : candidate
+        ));
+        if (existingLocked) {
+          timeline.unshift({
+            ts: nowIso,
+            action: 'EVIDENCE_SUPERSEDED',
+            actor,
+            source_system: 'demo-local',
+            evidence_id: existingLocked.evidence_id,
+            upload_id: null,
+            before_status: 'EVIDENCE_LOCKED',
+            after_status: 'SUPERSEDED',
+          });
+        }
+        store.filesByEvent[eventId] = [mockFile, ...normalized];
+        store.auditByEvent[eventId] = [...timeline, ...eventAudit];
         writeDemoStore(store);
 
         setFiles(store.filesByEvent[eventId]);
@@ -384,10 +523,11 @@ export function EvidenceCenterPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...ah },
           body: JSON.stringify({
-            policy_id:     DEFAULT_POLICY,
-            workflow_id:   DEFAULT_WF,
+            policy_id:     uploadPolicyId,
+            workflow_id:   uploadWorkflowId,
             event_id:      eventId,
-            form_id:       DEFAULT_FORM,
+            form_id:       uploadFormId || null,
+            task_id:       uploadTaskId || null,
             filename:      file.name,
             mime_type:     file.type || 'application/octet-stream',
             size_bytes:    file.size,
@@ -445,21 +585,62 @@ export function EvidenceCenterPage() {
           <FolderOpen size={22} className="text-cyan-300" />
           <h1 className="text-xl font-semibold tracking-tight text-[var(--ci-text-primary,#f8fafc)]">Evidence Center</h1>
           <span className="ml-2 text-xs text-[var(--ci-text-muted,#cbd5e1)]">
-            Phase 1 demo backend · us-west-1
+            Evidence mode: {toEvidenceModeLabel(effectiveMode)}
           </span>
         </div>
         <p className="mt-1 text-sm text-[var(--ci-text-muted,#cbd5e1)] max-w-3xl">
           Every file is bound to a <span className="text-[var(--ci-text-primary,#f8fafc)] font-semibold">policy / workflow / event</span> triplet
           and read through the API — never directly from S3.
         </p>
-        {LAMBDA_DISABLED && (
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCenterView('hierarchy')}
+            className={`rounded border px-2.5 py-1 text-xs ${centerView === 'hierarchy' ? 'border-cyan-300/60 bg-cyan-300/20 text-cyan-100' : 'border-cyan-300/25 bg-slate-900/45 text-slate-300'}`}
+          >
+            CES hierarchy
+          </button>
+          <button
+            type="button"
+            onClick={() => setCenterView('files')}
+            className={`rounded border px-2.5 py-1 text-xs ${centerView === 'files' ? 'border-cyan-300/60 bg-cyan-300/20 text-cyan-100' : 'border-cyan-300/25 bg-slate-900/45 text-slate-300'}`}
+          >
+            File ledger
+          </button>
+        </div>
+        {isDemoMode && (
           <div className="mt-3 flex items-start gap-2 rounded border border-cyan-400/35 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-100">
             <Info size={16} className="mt-0.5 flex-shrink-0" />
-            <span>Demo Mode: Evidence stored locally</span>
+            <span>DEMO_LOCAL: Evidence metadata is stored locally for this demo environment.</span>
+          </div>
+        )}
+        {(qTaskId || qRequirementId) && (
+          <div className="mt-3 flex items-start gap-2 rounded border border-[#2D8C83] bg-[#0F4A45] px-3 py-2 text-sm text-[#A7F3D0] select-none">
+            <Info size={16} className="mt-0.5 flex-shrink-0 text-[#6EE7B7]" />
+            <div>
+              <div className="font-medium text-[#D1FAE5]">You are uploading evidence for this task requirement.</div>
+              <div className="text-xs text-[#6EE7B7] mt-1 font-mono">
+                event={eventId} · task={qTaskId || filterTaskId || '—'} · form={qFormId || filterFormId || '—'} · requirement={qRequirementId || '—'}
+              </div>
+            </div>
           </div>
         )}
       </div>
 
+      {centerView === 'hierarchy' ? (
+        <CesEvidenceHierarchyPanel
+          events={hierarchyEvents}
+          tasks={cesTasks}
+          evidenceByEvent={store.evidence}
+          approvals={store.approvals}
+          auditByEvent={store.taskAuditByEventId}
+          onSelectEvent={(id) => {
+            setEventId(id);
+            setEventInput(id);
+          }}
+        />
+      ) : (
+      <>
       {/* ── Main grid: left = browser+table+audit, right = guidance ── */}
       <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
         {/* Left column */}
@@ -523,6 +704,28 @@ export function EvidenceCenterPage() {
               />
             </div>
             <div className="flex items-center gap-2">
+              <label className="text-xs uppercase tracking-wider text-slate-300">Workflow</label>
+              <input
+                title="Filter by Workflow ID"
+                aria-label="Filter by Workflow ID"
+                value={filterWorkflowId}
+                onChange={(e) => setFilterWorkflowId(e.target.value)}
+                placeholder="WF-..."
+                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-32 text-slate-100 focus:outline-none focus:border-cyan-300/75"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs uppercase tracking-wider text-slate-300">Task</label>
+              <input
+                title="Filter by Task ID"
+                aria-label="Filter by Task ID"
+                value={filterTaskId}
+                onChange={(e) => setFilterTaskId(e.target.value)}
+                placeholder="TASK-..."
+                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-32 text-slate-100 focus:outline-none focus:border-cyan-300/75"
+              />
+            </div>
+            <div className="flex items-center gap-2">
               <label className="text-xs uppercase tracking-wider text-slate-300">Evidence ID</label>
               <input
                 title="Filter by Evidence ID"
@@ -533,12 +736,14 @@ export function EvidenceCenterPage() {
                 className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-36 text-slate-100 focus:outline-none focus:border-cyan-300/75"
               />
             </div>
-            {(filterEventId || filterFormId || filterPolicyId || filterEvidenceId) && (
+            {(filterEventId || filterFormId || filterPolicyId || filterWorkflowId || filterTaskId || filterEvidenceId) && (
               <button
                 onClick={() => {
                   setFilterEventId('');
                   setFilterFormId('');
                   setFilterPolicyId('');
+                  setFilterWorkflowId('');
+                  setFilterTaskId('');
                   setFilterEvidenceId('');
                 }}
                 className="text-xs px-2 py-1 rounded bg-slate-800/70 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-200"
@@ -608,14 +813,14 @@ export function EvidenceCenterPage() {
             {loading && files.length === 0 ? (
               <div className="text-sm text-slate-300 py-12 text-center">Loading evidence…</div>
             ) : filtered.length === 0 ? (
-              <EmptyState eventId={eventId} onUpload={onUploadClick} />
+              <EvidenceCenterEmptyState eventId={eventId} onUpload={onUploadClick} />
             ) : (
               <table className="w-full text-sm border-separate border-spacing-y-1">
                 <thead className="text-xs uppercase tracking-wider text-slate-300">
                   <tr>
                     <th className="text-left px-3 py-2">Filename</th>
                     <th className="text-left px-3 py-2">Policy / Workflow / Event</th>
-                    <th className="text-left px-3 py-2">Form</th>
+                    <th className="text-left px-3 py-2">Form / Task</th>
                     <th className="text-left px-3 py-2">Status</th>
                     <th className="text-left px-3 py-2">Source</th>
                     <th className="text-left px-3 py-2">Created</th>
@@ -627,7 +832,7 @@ export function EvidenceCenterPage() {
                   {filtered.map((f) => (
                     <tr
                       key={f.evidence_id}
-                      className="bg-slate-900/75 hover:bg-slate-800/90 cursor-pointer border border-cyan-300/15"
+                      className="bg-slate-900/75 hover:bg-slate-800/90 cursor-pointer border border-cyan-300/15 select-none"
                       onClick={() => setSelected(f)}
                     >
                       <td className="px-3 py-2">
@@ -637,11 +842,14 @@ export function EvidenceCenterPage() {
                         </div>
                       </td>
                       <td className="px-3 py-2 text-xs text-slate-300">
-                        <div>{f.policy_id}</div>
-                        <div>{f.workflow_id}</div>
-                        <div className="text-slate-100">{f.event_id}</div>
+                        <div><Link to={`/library/${encodeURIComponent(f.policy_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.policy_id}</Link></div>
+                        <div><Link to={`/workflows/${encodeURIComponent(f.workflow_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.workflow_id}</Link></div>
+                        <div className="text-slate-100"><Link to={`/calendar/event/${encodeURIComponent(f.event_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.event_id}</Link></div>
                       </td>
-                      <td className="px-3 py-2 text-xs text-slate-300">{f.form_id || '—'}</td>
+                      <td className="px-3 py-2 text-xs text-slate-300">
+                        <div>{f.form_id ? <Link to={`/forms/${encodeURIComponent(f.form_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.form_id}</Link> : '—'}</div>
+                        <div>{f.task_id ? <Link to={`/calendar/event/${encodeURIComponent(f.event_id)}/task/${encodeURIComponent(f.task_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.task_id}</Link> : '—'}</div>
+                      </td>
                       <td className="px-3 py-2">
                         <span className={`text-xs px-2 py-0.5 rounded border ${STATUS_COLOR[f.status] || 'bg-slate-500/15 text-slate-300 border-slate-500/30'}`}>
                           {f.status}
@@ -761,6 +969,8 @@ export function EvidenceCenterPage() {
           </div>
         </aside>
       </div>
+      </>
+      )}
 
       {/* Detail drawer */}
       {selected && <DetailDrawer file={selected} onClose={() => setSelected(null)} onDownload={onDownload} />}
@@ -769,7 +979,7 @@ export function EvidenceCenterPage() {
 }
 
 // ── Empty state ────────────────────────────────────────────────
-function EmptyState({ eventId, onUpload }: { eventId: string; onUpload: () => void }) {
+export function EvidenceCenterEmptyState({ eventId, onUpload }: { eventId: string; onUpload: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-16 px-6">
       <FolderOpen size={42} className="text-cyan-300/75 mb-3" />
@@ -819,8 +1029,11 @@ function DetailDrawer({
           <Field k="policy_id"        v={file.policy_id} />
           <Field k="workflow_id"      v={file.workflow_id} />
           <Field k="event_id"         v={file.event_id} />
+          <Field k="task_id"          v={file.task_id || '—'} />
           <Field k="form_id"          v={file.form_id || '—'} />
           <Field k="status"           v={file.status} />
+          <Field k="version"          v={String(file.version)} />
+          <Field k="superseded_by"    v={file.superseded_by || '—'} />
           <Field k="signature_status" v={file.signature_status || 'NONE'} />
           <Field k="source_system"    v={file.source_system || '—'} />
           <Field k="mime_type"        v={file.mime_type || '—'} />

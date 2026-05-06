@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardCheck, Network, FileEdit,
   PlayCircle,
+  CalendarDays,
   HelpCircle, Search, ChevronLeft, Menu,
   ShieldCheck, Zap,
   ArrowUpCircle, FolderOpen, UserCheck, Sparkles,
@@ -23,54 +24,14 @@ import { GlobalTaskDrawer } from '@/policy/components/pm/GlobalTaskDrawer';
 import { GuidedTourGate, restartGuidedTour } from '@/policy/components/onboarding/GuidedTourGate';
 
 function BradRobotIcon({ size = 24, strokeWidth = 1.5, className }: { size?: number; strokeWidth?: number; className?: string }) {
-  const sw = strokeWidth ?? 1.5;
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-      <defs>
-        <radialGradient id="brad-bg-glow" cx="50%" cy="55%" r="55%">
-          <stop offset="0%"   stopColor="#00D9C5" stopOpacity="0.50" />
-          <stop offset="50%"  stopColor="#FF8C1A" stopOpacity="0.20" />
-          <stop offset="100%" stopColor="#FF6200" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="brad-line-grad" x1="5" y1="4" x2="19" y2="20" gradientUnits="userSpaceOnUse">
-          <stop offset="0%"   stopColor="#00D9C5" />
-          <stop offset="100%" stopColor="#FF8C1A" />
-        </linearGradient>
-      </defs>
-
-      {/* Radial glow bloom */}
-      <circle cx="12" cy="13" r="11" fill="url(#brad-bg-glow)" />
-
-      {/* Radiating light spokes */}
-      <line x1="12" y1="0.5"  x2="12" y2="2"    stroke="#00D9C5" strokeOpacity="0.55" strokeWidth="1"    strokeLinecap="round" />
-      <line x1="12" y1="22"   x2="12" y2="23.5"  stroke="#FF8C1A" strokeOpacity="0.55" strokeWidth="1"    strokeLinecap="round" />
-      <line x1="0.5"  y1="13" x2="2"   y2="13"   stroke="#00D9C5" strokeOpacity="0.50" strokeWidth="1"    strokeLinecap="round" />
-      <line x1="22"   y1="13" x2="23.5" y2="13"  stroke="#FF8C1A" strokeOpacity="0.50" strokeWidth="1"    strokeLinecap="round" />
-      <line x1="2.2"  y1="4.2"  x2="3.3"  y2="5.3"  stroke="#00D9C5" strokeOpacity="0.40" strokeWidth="0.9" strokeLinecap="round" />
-      <line x1="21.8" y1="4.2"  x2="20.7" y2="5.3"  stroke="#FF8C1A" strokeOpacity="0.40" strokeWidth="0.9" strokeLinecap="round" />
-      <line x1="2.2"  y1="21.8" x2="3.3"  y2="20.7" stroke="#00D9C5" strokeOpacity="0.35" strokeWidth="0.9" strokeLinecap="round" />
-      <line x1="21.8" y1="21.8" x2="20.7" y2="20.7" stroke="#FF8C1A" strokeOpacity="0.35" strokeWidth="0.9" strokeLinecap="round" />
-
-      {/* Left ear */}
-      <rect x="2.75" y="11.25" width="2.75" height="3.5" rx="1" stroke="url(#brad-line-grad)" strokeWidth={sw * 0.75} />
-      {/* Right ear */}
-      <rect x="18.5"  y="11.25" width="2.75" height="3.5" rx="1" stroke="url(#brad-line-grad)" strokeWidth={sw * 0.75} />
-
-      {/* Robot head */}
-      <rect x="5.5" y="8" width="13" height="10.5" rx="2.25" stroke="url(#brad-line-grad)" strokeWidth={sw} />
-
-      {/* Antenna stem */}
-      <line x1="12" y1="8" x2="12" y2="5.25" stroke="url(#brad-line-grad)" strokeWidth={sw} strokeLinecap="round" />
-      {/* Antenna tip */}
-      <circle cx="12" cy="4" r="1.5" fill="#00D9C5" />
-
-      {/* Left eye — teal */}
-      <circle cx="9.5"  cy="12.75" r="1.6" fill="#00D9C5" />
-      {/* Right eye — orange */}
-      <circle cx="14.5" cy="12.75" r="1.6" fill="#FF8C1A" />
-
-      {/* Mouth smile */}
-      <path d="M9.25 16.5 Q12 18.25 14.75 16.5" stroke="url(#brad-line-grad)" strokeWidth={sw * 0.85} strokeLinecap="round" fill="none" />
+      <rect x="4.5" y="7" width="15" height="11" rx="2.25" stroke="currentColor" strokeWidth={strokeWidth} />
+      <line x1="12" y1="7" x2="12" y2="4.5" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" />
+      <circle cx="12" cy="3.25" r="1.25" fill="currentColor" />
+      <circle cx="9" cy="12" r="1.25" fill="currentColor" />
+      <circle cx="15" cy="12" r="1.25" fill="currentColor" />
+      <path d="M9 15.5C10 16.4 11 16.9 12 16.9C13 16.9 14 16.4 15 15.5" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" />
     </svg>
   );
 }
@@ -157,6 +118,14 @@ const NAV_ITEMS: NavItem[] = [
   },
   { id: 'help', to: '/help', label: 'Help Center', icon: HelpCircle },
   { id: 'demo', to: '/demo', label: 'Demo', icon: PlayCircle },
+];
+
+const MOBILE_PRIMARY_TABS: Array<{ id: string; to: string; label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = [
+  { id: 'dashboard', to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'calendar', to: '/calendar', label: 'Calendar', icon: CalendarDays },
+  { id: 'tasks', to: '/my-tasks', label: 'Tasks', icon: ListChecks },
+  { id: 'workflows', to: '/workflows', label: 'Workflows', icon: ClipboardCheck },
+  { id: 'more', to: '/help', label: 'More', icon: UserCheck },
 ];
 
 // ── Viewport detection (mobile vs. desktop) ──────────────
@@ -286,6 +255,10 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   const hideGlobalSearch = /^\/(library|help|iadministrator)(?:\/|$)/.test(location.pathname);
 
   const currentNav = resolveActiveNav(location.pathname, allNavItems);
+  const isMobileTabActive = (to: string) => {
+    const tabPath = to.split('?')[0].split('#')[0];
+    return location.pathname === tabPath || location.pathname.startsWith(`${tabPath}/`);
+  };
 
   // ── Nav icons click-to-expand sub-navigation ───────────────────────────────
   const [expandedNavId, setExpandedNavId] = useState<string | null>(null);
@@ -814,12 +787,12 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                 {/* ══════════════════════════════════════════
                     MAIN APP CONTENT
                    ══════════════════════════════════════════ */}
-                <div className={`flex-1 flex flex-col relative z-10 w-full overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isMenuOpen ? 'blur-[12px] opacity-30 scale-[0.98]' : ''}`}>
+                <div className={`flex-1 flex flex-col relative z-10 w-full overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isMenuOpen ? 'blur-[12px] opacity-30 scale-[0.98]' : ''} ${isMobile ? 'pb-16' : ''}`}>
 
                   {!hideChrome && (
-                    <header className="w-full px-3 sm:px-6 md:px-10 pt-3 sm:pt-6 md:pt-8 pb-0 shrink-0 relative z-20">
+                    <header className="w-full px-2 sm:px-4 md:px-6 lg:px-8 pt-2 sm:pt-4 md:pt-5 pb-1 shrink-0 relative z-20">
                       {/* ── Main nav row: Logo · Nav icons · Right controls ── */}
-                      <div className="flex items-center justify-between gap-4">
+                      <div className="ci-toolbar-wrap justify-between">
                         {/* Left: Logo + horizontal nav icons */}
                         <div className="flex items-center gap-3 min-w-0">
                           {/* Logo — theme toggle, +33% larger */}
@@ -902,10 +875,10 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         </div>
 
                         {/* Right: Search + Help + Account */}
-                        <div className="flex items-center gap-2 sm:gap-4 md:gap-6 flex-shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 ml-auto">
                           {!hideGlobalSearch && (
                             <div
-                              className={`hidden sm:flex items-center bg-transparent border rounded-full px-5 py-2.5 w-48 md:w-64 transition-all ${
+                              className={`hidden lg:flex items-center bg-transparent border rounded-full px-4 py-2 w-[clamp(180px,18vw,300px)] transition-all ${
                                 isVisualLight
                                   ? 'border-slate-300 focus-within:border-[#007970]/60'
                                   : 'border-white/10 focus-within:border-[#FFC107]/50'
@@ -1079,6 +1052,43 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     </div>
                     <GlobalTaskDrawer />
                   </main>
+                  {!hideChrome && isMobile && (
+                    <nav
+                      aria-label="Primary mobile navigation"
+                      className="absolute inset-x-0 bottom-0 z-30 border-t backdrop-blur-md"
+                      style={{
+                        borderColor: isVisualLight ? 'rgba(31,28,27,0.12)' : 'rgba(255,255,255,0.12)',
+                        background: isVisualLight ? 'rgba(255,255,255,0.95)' : 'rgba(10,2,2,0.92)',
+                        paddingBottom: 'max(8px, env(safe-area-inset-bottom))',
+                      }}
+                    >
+                      <div className="grid grid-cols-5 gap-0 px-1 pt-1">
+                        {MOBILE_PRIMARY_TABS.map(item => {
+                          const active = isMobileTabActive(item.to);
+                          const activeColor = isCareIndeed ? '#007970' : '#FFC107';
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => navigate(item.to)}
+                              className="ci-touch-target flex flex-col items-center justify-center gap-0.5 rounded-md px-1 text-[9px] font-montserrat font-bold uppercase tracking-[0.08em]"
+                              style={{
+                                color: active
+                                  ? activeColor
+                                  : isVisualLight ? '#52404B' : 'rgba(255,255,255,0.65)',
+                                background: active
+                                  ? (isCareIndeed ? 'rgba(0,121,112,0.14)' : 'rgba(255,193,7,0.14)')
+                                  : 'transparent',
+                              }}
+                            >
+                              <item.icon size={16} strokeWidth={1.8} />
+                              <span className="leading-none">{item.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </nav>
+                  )}
                 </div>
               </>
             )}

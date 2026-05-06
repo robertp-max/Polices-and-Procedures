@@ -58,7 +58,7 @@ Set `VITE_AUTH_API_BASE_URL` to `${ApiBaseUrl}/auth` and restart Vite.
 The stack seeds this demo user:
 - Name: `TJ Padilla`
 - Email: `robertp@careindeed.com`
-- Password: `Super!7`
+- Password: `Super!7!7`
 
 ## 6. Local Express fallback
 

@@ -1,26 +1,15 @@
-const DAY_MS = 24 * 60 * 60 * 1000;
-const EPOCH_MONDAY_UTC = new Date(Date.UTC(2026, 0, 5));
+import { sprintForDate } from './sprintWindows';
 
-function toUtcDateOnly(isoDate: string): Date | null {
-  if (!isoDate) return null;
-  const d = new Date(`${isoDate.slice(0, 10)}T00:00:00Z`);
-  if (Number.isNaN(d.getTime())) return null;
-  return d;
-}
-
-function startOfMondayUTC(date: Date): Date {
-  const day = date.getUTCDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  const out = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  out.setUTCDate(out.getUTCDate() + diff);
-  return out;
-}
-
+/**
+ * PM canonical sprint id for a calendar date (`YYYY-NN`, e.g. `2026-03`),
+ * aligned with `sprintWindows.ts` (first Sunday of year, 26 × 14-day sprints).
+ */
 export function inferSprintIdFromDate(isoDate: string): string {
-  const d = toUtcDateOnly(isoDate);
+  const d = isoDate?.slice(0, 10);
   if (!d) return 'sprint-unknown';
-  const monday = startOfMondayUTC(d);
-  const weeksFromEpoch = Math.floor((monday.getTime() - EPOCH_MONDAY_UTC.getTime()) / (7 * DAY_MS));
-  const sprintNum = Math.floor(weeksFromEpoch / 2) + 1;
-  return `sprint-${Math.max(1, sprintNum)}`;
+  try {
+    return sprintForDate(d).id;
+  } catch {
+    return 'sprint-unknown';
+  }
 }

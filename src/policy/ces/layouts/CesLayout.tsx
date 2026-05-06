@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { useCesTokens } from '../theme';
 import { useComplianceExecution } from '@/policy/compliance-execution';
+import { usePmViewSprintStore } from '@/policy/pm/pmViewSprintStore';
+import { toDisplaySprintId, sprintDropdownLabel } from '@/policy/pm/sprintWindows';
 
 const PROFILE = { initials: 'JV', name: 'JD Vance', role: 'Administrator Designee' };
 
@@ -25,6 +27,7 @@ function fmtRange(startISO: string, endISO: string): string {
 export function CesLayout({ children }: PropsWithChildren) {
   const t = useCesTokens();
   const snap = useComplianceExecution();
+  const pmSprint = usePmViewSprintStore(s => s.window);
   const ACTIVE_SPRINT = snap.activeSprint;
   const EXECUTION_UNITS = snap.executionUnits;
 
@@ -63,14 +66,19 @@ export function CesLayout({ children }: PropsWithChildren) {
             >
               Active Sprint
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[13px] font-semibold" style={{ color: t.navy }}>
-                {ACTIVE_SPRINT.label}
-              </span>
-              <span className="text-[12px]" style={{ color: t.muted }}>
-                {fmtRange(ACTIVE_SPRINT.startDate, ACTIVE_SPRINT.endDate)}
-              </span>
-              <ChevronDown size={14} style={{ color: t.muted }} />
+            <div className="flex flex-col gap-0.5 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[13px] font-semibold" style={{ color: t.navy }}>
+                  {ACTIVE_SPRINT.label}
+                </span>
+                <span className="text-[12px]" style={{ color: t.muted }}>
+                  {fmtRange(ACTIVE_SPRINT.startDate, ACTIVE_SPRINT.endDate)}
+                </span>
+                <ChevronDown size={14} style={{ color: t.muted }} />
+              </div>
+              <div className="text-[10px] font-mono truncate" style={{ color: t.muted }} title={sprintDropdownLabel(pmSprint)}>
+                PM scope: {toDisplaySprintId(pmSprint)} · {pmSprint.startDate}–{pmSprint.endDate}
+              </div>
             </div>
           </div>
 

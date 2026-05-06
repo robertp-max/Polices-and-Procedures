@@ -46,7 +46,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  status: 'active' | 'suspended';
+  status: 'active' | 'pending' | 'suspended';
+  /** How the user was provisioned — 'manual' for CRUD-created users */
+  source?: 'manual-provisioned' | 'seed';
 }
 
 export interface UserGroup {

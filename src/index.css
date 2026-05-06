@@ -116,6 +116,71 @@
 [data-shell-scroll] aside,
 [data-shell-scroll] article { min-width: 0; }
 
+/* Responsive layout foundation (1920x1080 baseline first). */
+:root {
+  --ci-desktop-baseline: 1920px;
+  --ci-content-gutter-x: clamp(12px, 1.2vw, 24px);
+  --ci-content-gutter-y: clamp(10px, 1.1vh, 20px);
+  --ci-panel-min: 320px;
+  --ci-panel-max: 680px;
+}
+
+.ci-page-container {
+  width: min(100%, var(--ci-desktop-baseline));
+  margin-inline: auto;
+  padding-inline: var(--ci-content-gutter-x);
+  padding-block: var(--ci-content-gutter-y);
+  min-height: 100%;
+}
+
+.ci-toolbar-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(8px, 0.9vw, 14px);
+}
+
+.ci-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(10px, 0.9vw, 16px);
+  min-height: 0;
+  flex: 1;
+}
+
+@media (min-width: 1280px) {
+  .ci-content-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(var(--ci-panel-min), 34vw);
+  }
+}
+
+@media (min-width: 1700px) {
+  .ci-content-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 30vw);
+  }
+}
+
+.ci-right-panel {
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.ci-scroll-safe {
+  min-height: 0;
+  overflow: auto;
+}
+
+.ci-responsive-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: clamp(10px, 1vw, 16px);
+}
+
+.ci-touch-target {
+  min-height: 44px;
+}
+
 .font-montserrat { font-family: 'Montserrat', sans-serif; }
 .font-roboto     { font-family: 'Roboto', sans-serif; }
 .font-outfit     { font-family: 'Outfit', sans-serif; }

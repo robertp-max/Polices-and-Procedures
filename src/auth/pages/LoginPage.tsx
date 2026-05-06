@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthProvider';
 import { AuthCard, useAuthTheme } from '../components/AuthCard';
+import type { LoginChallengeResponse } from '../api';
 
 const AUTH_PAGE_PATHS = new Set(['/', '/login', '/register', '/check-email', '/setup-account', '/forgot-password', '/reset-password']);
 
@@ -26,7 +27,15 @@ export function LoginPage() {
     try {
       await login(email.trim().toLowerCase(), password);
       navigate(next, { replace: true });
-    } catch {
+    } catch (err) {
+      const typed = err as Error & { challenge?: LoginChallengeResponse };
+      if (typed.challenge?.challenge === 'NEW_PASSWORD_REQUIRED') {
+        navigate('/set-new-password', {
+          replace: true,
+          state: { email: typed.challenge.email, session: typed.challenge.session, next },
+        });
+        return;
+      }
       setError('Unable to sign in. Please check your credentials.');
     } finally {
       setLoading(false);

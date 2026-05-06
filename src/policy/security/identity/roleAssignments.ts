@@ -94,6 +94,34 @@ export const ROLE_ASSIGNMENTS: RoleAssignment[] = [
     scope: { organizationId: 'careindeed-demo' },
     effectiveFrom: START,
   },
+  {
+    id: 'asn-dagny',
+    userId: 'usr-dagny',
+    groupId: 'grp-admin',
+    scope: { organizationId: 'careindeed-demo' },
+    effectiveFrom: START,
+  },
+  {
+    id: 'asn-janine',
+    userId: 'usr-janine',
+    groupId: 'grp-admin',
+    scope: { organizationId: 'careindeed-demo' },
+    effectiveFrom: START,
+  },
+  {
+    id: 'asn-reden',
+    userId: 'usr-reden',
+    groupId: 'grp-admin',
+    scope: { organizationId: 'careindeed-demo' },
+    effectiveFrom: START,
+  },
+  {
+    id: 'asn-monserat',
+    userId: 'usr-monserat',
+    groupId: 'grp-admin',
+    scope: { organizationId: 'careindeed-demo' },
+    effectiveFrom: START,
+  },
 ];
 
 export function getActiveAssignments(userId: string, atIso: string): RoleAssignment[] {

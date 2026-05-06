@@ -137,3 +137,37 @@ export function sprintDays(window: SprintWindow): string[] {
   }
   return out;
 }
+
+/** Display id per product spec: `2026:01` (colon between year and sprint number). */
+export function toDisplaySprintId(window: SprintWindow | { id: string }): string {
+  const id = window.id;
+  const parts = id.split('-');
+  if (parts.length !== 2) return id;
+  return `${parts[0]}:${parts[1]}`;
+}
+
+/** Dropdown label: `2026:01 — Sprint 1` */
+export function sprintDropdownLabel(window: SprintWindow): string {
+  return `${toDisplaySprintId(window)} — Sprint ${window.number}`;
+}
+
+/** True if a regulatory event's schedule overlaps the sprint window (inclusive, UTC date-only). */
+export function regulatoryEventOverlapsSprint(
+  event: { date: string; endDate?: string | null },
+  window: SprintWindow,
+): boolean {
+  const ws = parseISO(window.startDate).getTime();
+  const we = parseISO(window.endDate).getTime() + DAY_MS - 1;
+  const es = parseISO(event.date.slice(0, 10)).getTime();
+  const endStr = event.endDate?.slice(0, 10) ?? event.date.slice(0, 10);
+  const ee = parseISO(endStr).getTime() + DAY_MS - 1;
+  return es <= we && ee >= ws;
+}
+
+/** True if a YYYY-MM-DD string falls inside the sprint window (inclusive). */
+export function isoDateInSprint(isoDate: string, window: SprintWindow): boolean {
+  const t = parseISO(isoDate.slice(0, 10)).getTime();
+  const ws = parseISO(window.startDate).getTime();
+  const we = parseISO(window.endDate).getTime() + DAY_MS - 1;
+  return t >= ws && t <= we;
+}

@@ -58,6 +58,7 @@ function usePrefersReducedMotion(): boolean {
 
 // ─── component ──────────────────────────────────────────────────
 export function GuidedTourOverlay({ required, onClose }: GuidedTourOverlayProps) {
+  void required;
   const [index, setIndex]   = useState(0);
   const [phase, setPhase]   = useState<'in' | 'out'>('in');
   const reducedMotion        = usePrefersReducedMotion();
@@ -68,6 +69,7 @@ export function GuidedTourOverlay({ required, onClose }: GuidedTourOverlayProps)
   const isDecision           = card.kind === 'decision';
   const isFinal              = card.kind === 'final';
   const pendingDir           = useRef<1 | -1>(1);
+  const [isMobile, setIsMobile] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 768));
   const transDur             = reducedMotion ? 0 : TRANSITION_MS;
 
   // ── single-mount instrumentation ───────────────────────────────
@@ -78,6 +80,12 @@ export function GuidedTourOverlay({ required, onClose }: GuidedTourOverlayProps)
       // eslint-disable-next-line no-console
       console.log('[GuidedTourOverlay] UNMOUNT');
     };
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   const warnedAnchorsRef = useRef<Set<string>>(new Set());
@@ -151,7 +159,7 @@ export function GuidedTourOverlay({ required, onClose }: GuidedTourOverlayProps)
   const handleNext = useCallback(() => { if (isFinal) { handleFinishFull(); return; } advance(1); }, [advance, isFinal, handleFinishFull]);
   const handleBack = useCallback(() => { if (isFirst) return; advance(-1); }, [advance, isFirst]);
 
-  const canSkip = !required || index > 0;
+  const canSkip = true;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -167,11 +175,12 @@ export function GuidedTourOverlay({ required, onClose }: GuidedTourOverlayProps)
 
   const wrapStyle: React.CSSProperties = {
     position: 'fixed',
-    bottom: FLOATING_BOTTOM,
-    right: FLOATING_RIGHT,
-    width: FLOATING_WIDTH,
-    maxWidth: 'calc(100vw - 32px)',
-    maxHeight: 'calc(100vh - 32px)',
+    bottom: isMobile ? 8 : FLOATING_BOTTOM,
+    right: isMobile ? 8 : FLOATING_RIGHT,
+    left: isMobile ? 8 : undefined,
+    width: isMobile ? undefined : FLOATING_WIDTH,
+    maxWidth: isMobile ? undefined : 'calc(100vw - 32px)',
+    maxHeight: isMobile ? '58vh' : 'calc(100vh - 32px)',
     zIndex: 1000,
     pointerEvents: 'auto',
     transform: 'translateZ(0)',
@@ -188,9 +197,10 @@ export function GuidedTourOverlay({ required, onClose }: GuidedTourOverlayProps)
             overflowY: 'auto',
             overflowX: 'hidden',
             borderRadius: 18,
-            background: 'linear-gradient(135deg, #006A62 0%, #007970 50%, #00554F 100%)',
-            color: '#FFFFFF',
-            boxShadow: '0 28px 68px rgba(0,0,0,0.46), 0 10px 28px rgba(0,0,0,0.30), 0 2px 8px rgba(0,0,0,0.20)',
+            background: '#FFFFFF',
+            color: '#1F1C1B',
+            border: '1px solid #E5E4E3',
+            boxShadow: '0 14px 38px rgba(15,23,42,0.14)',
             fontFamily: "'Roboto', 'Inter', system-ui, sans-serif",
             display: 'flex',
             flexDirection: 'column',
@@ -206,31 +216,60 @@ export function GuidedTourOverlay({ required, onClose }: GuidedTourOverlayProps)
         >
           {/* Skip button */}
           {canSkip && (
-            <button
-              type="button"
-              onClick={handleSkip}
-              aria-label="Skip tour"
+            <div
               style={{
                 position: 'absolute',
                 top: 10,
                 right: 10,
-                display: 'inline-flex',
+                display: 'flex',
                 alignItems: 'center',
-                gap: 4,
-                padding: '5px 10px',
-                borderRadius: 999,
-                background: 'rgba(255,255,255,0.12)',
-                color: '#FFFFFF',
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: '0.04em',
-                border: '1px solid rgba(255,255,255,0.24)',
-                cursor: 'pointer',
+                gap: 6,
                 zIndex: 2,
               }}
             >
-              <X size={11} /> Skip
-            </button>
+              <button
+                type="button"
+                onClick={handleSkip}
+                aria-label="Skip tour"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '5px 10px',
+                  borderRadius: 999,
+                  background: '#F8FAFC',
+                  color: '#334155',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.04em',
+                  border: '1px solid #E2E8F0',
+                  cursor: 'pointer',
+                }}
+              >
+                <FastForward size={11} /> Skip
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Exit tour"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '5px 10px',
+                  borderRadius: 999,
+                  background: '#FFFFFF',
+                  color: '#334155',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.04em',
+                  border: '1px solid #CBD5E1',
+                  cursor: 'pointer',
+                }}
+              >
+                <X size={11} /> Exit
+              </button>
+            </div>
           )}
 
           {/* Body */}
@@ -250,7 +289,7 @@ export function GuidedTourOverlay({ required, onClose }: GuidedTourOverlayProps)
                   fontSize: 10,
                   letterSpacing: '0.18em',
                   textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,0.68)',
+                  color: '#64748B',
                   fontFamily: "'Montserrat', 'Inter', system-ui, sans-serif",
                 }}
               >
@@ -275,7 +314,7 @@ export function GuidedTourOverlay({ required, onClose }: GuidedTourOverlayProps)
                 style={{
                   fontSize: 13,
                   lineHeight: 1.6,
-                  color: 'rgba(255,255,255,0.88)',
+                  color: '#334155',
                   margin: 0,
                 }}
               >
@@ -329,14 +368,14 @@ export function GuidedTourOverlay({ required, onClose }: GuidedTourOverlayProps)
                   height: 4,
                   borderRadius: 2,
                   flexShrink: 0,
-                  background:
+                    background:
                     i === index
-                      ? '#FFFFFF'
+                      ? '#007970'
                       : i === DECISION_INDEX
                         ? 'rgba(255,193,7,0.50)'
                         : i === FINAL_INDEX
                           ? 'rgba(199,70,0,0.50)'
-                          : 'rgba(255,255,255,0.30)',
+                          : '#CBD5E1',
                   transition: 'width 140ms ease',
                 }}
               />
@@ -347,8 +386,8 @@ export function GuidedTourOverlay({ required, onClose }: GuidedTourOverlayProps)
           {!isDecision && !isFinal && (
             <div
               style={{
-                background: 'rgba(0,0,0,0.14)',
-                borderTop: '1px solid rgba(255,255,255,0.10)',
+                background: '#F8FAFC',
+                borderTop: '1px solid #E2E8F0',
                 padding: '9px 16px',
                 display: 'flex',
                 alignItems: 'center',
@@ -386,7 +425,7 @@ const btnPrimary: React.CSSProperties = {
   fontSize: 13,
   border: 'none',
   cursor: 'pointer',
-  boxShadow: '0 4px 12px rgba(199,70,0,0.30)',
+  boxShadow: '0 4px 12px rgba(199,70,0,0.22)',
 };
 
 const btnSecondary: React.CSSProperties = {
@@ -395,18 +434,18 @@ const btnSecondary: React.CSSProperties = {
   gap: 6,
   padding: '8px 13px',
   borderRadius: 8,
-  background: 'rgba(255,255,255,0.10)',
-  color: '#FFFFFF',
+  background: '#FFFFFF',
+  color: '#334155',
   fontFamily: "'Montserrat', 'Inter', system-ui, sans-serif",
   fontWeight: 600,
   fontSize: 13,
-  border: '1px solid rgba(255,255,255,0.22)',
+  border: '1px solid #CBD5E1',
   cursor: 'pointer',
 };
 
 const btnSecondaryFilled: React.CSSProperties = {
   ...btnSecondary,
-  background: 'rgba(255,255,255,0.16)',
+  background: '#F8FAFC',
   padding: '9px 15px',
 };
 

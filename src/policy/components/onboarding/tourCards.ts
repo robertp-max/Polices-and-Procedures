@@ -2,10 +2,10 @@
  * Guided tour cards — first-person Brad. Spec: 2026-04-29 update.
  *
  *  1–2  hero welcome (head-to-hips Brad portrait)
- *  3–9  basic tour, anchored to top-nav targets
- *  10   decision card (Finish Basic / Continue Full / Skip)
- *  11–12 advanced (Help Center / Contextual Tips)
- *  13   final ("You're Ready") with Finish Tour + Ask Brad
+ *  3–13 basic tour, anchored to key execution areas
+ *  14   decision card (Finish Basic / Continue Full / Skip)
+ *  15–16 advanced (Help Center / Contextual Tips)
+ *  17   final ("You're Ready") with Finish Tour + Ask Brad
  */
 
 export type TourCardKind = 'hero' | 'standard' | 'decision' | 'final';
@@ -46,7 +46,7 @@ export const TOUR_CARDS: ReadonlyArray<TourCard> = [
     route: '/iadministrator',
   },
 
-  // ── 3–9 basic tour ──────────────────────────────────────────
+  // ── 3–13 basic tour ──────────────────────────────────────────
   {
     id: 'command-dashboard',
     kind: 'standard',
@@ -102,6 +102,51 @@ export const TOUR_CARDS: ReadonlyArray<TourCard> = [
     anchorSelector: '[aria-label="Compliance Execution (CES)"]',
   },
   {
+    id: 'event-detail',
+    kind: 'standard',
+    title: 'Open event details to continue workflow execution.',
+    body:
+      'Use Event Detail to review status, risk, SLA, owner, policies, required forms, and audit context before taking action.',
+    route: '/calendar',
+    anchorSelector: '[aria-label="Compliance Execution (CES)"]',
+  },
+  {
+    id: 'tasks',
+    kind: 'standard',
+    title: 'Tasks track owner-level execution.',
+    body:
+      'Task detail screens show blockers, required forms, required evidence, and the exact next action for completion.',
+    route: '/pm/my-tasks',
+    anchorSelector: '[aria-label="Task List"]',
+  },
+  {
+    id: 'evidence',
+    kind: 'standard',
+    title: 'Evidence is linked and traceable.',
+    body:
+      'Attach artifacts with traceability to event, workflow, task, form, and policy IDs so audit review is evidence-complete.',
+    route: '/evidence',
+    anchorSelector: '[aria-label="Evidence Center"]',
+  },
+  {
+    id: 'approval',
+    kind: 'standard',
+    title: 'Approval closes the execution path.',
+    body:
+      'Approval review validates blockers are resolved before final sign-off, and records approver decisions for audit.',
+    route: '/pm/approvals',
+    anchorSelector: '[aria-label="Approvals"]',
+  },
+  {
+    id: 'forms-library',
+    kind: 'standard',
+    title: 'Forms and policies remain linked to execution.',
+    body:
+      'Every workflow action can be traced back to approved forms and source-of-truth policy content.',
+    route: '/forms',
+    anchorSelector: '[aria-label="Form Library"]',
+  },
+  {
     id: 'audit',
     kind: 'standard',
     title: "This is your audit readiness area.",
@@ -111,7 +156,7 @@ export const TOUR_CARDS: ReadonlyArray<TourCard> = [
     anchorSelector: '[aria-label="Compliance Execution (CES)"]',
   },
 
-  // ── 10 decision ─────────────────────────────────────────────
+  // ── 14 decision ─────────────────────────────────────────────
   {
     id: 'basics-decision',
     kind: 'decision',
@@ -121,7 +166,7 @@ export const TOUR_CARDS: ReadonlyArray<TourCard> = [
     showBrad: true,
   },
 
-  // ── 11–12 advanced ──────────────────────────────────────────
+  // ── 15–16 advanced ──────────────────────────────────────────
   {
     id: 'help-center',
     kind: 'standard',
@@ -144,7 +189,7 @@ export const TOUR_CARDS: ReadonlyArray<TourCard> = [
     ],
   },
 
-  // ── 13 final ────────────────────────────────────────────────
+  // ── 17 final ────────────────────────────────────────────────
   {
     id: 'final',
     kind: 'final',

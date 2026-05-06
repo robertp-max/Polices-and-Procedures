@@ -5,7 +5,7 @@
  *
  * Used inside WorkflowExecutionPanel (Event view) to confirm the principle
  * that tasks shown on Calendar / Gantt / Kanban / Sprint are the SAME
- * canonical Task objects (same task_id) projected by `useProjectedTasks()`.
+ * canonical Task objects (same task_id) projected by `useProjectedTasks('full')` (per-event list, not sprint-scoped).
  *
  * Clicking a row opens the global TaskDetailRightPanel via selectedTaskStore.
  */
@@ -22,7 +22,7 @@ interface Props {
 }
 
 export function EventTaskList({ eventId, onSelectTask }: Props): ReactElement {
-  const tasks = useProjectedTasks();
+  const tasks = useProjectedTasks('full');
   const openTask = useSelectedTaskStore(s => s.openTask);
   const handleSelect = onSelectTask ?? ((taskId: string) => openTask(taskId, 'event'));
   const formRefsOf = (t: (typeof tasks)[number]): string[] => {

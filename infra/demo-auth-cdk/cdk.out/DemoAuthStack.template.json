@@ -264,24 +264,27 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
-     "S3Key": "a53023ecf5d0188795d78ede0f82ff031228cb6ba6f053167e2f1bc7de56f139.zip"
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
+     },
+     "S3Key": "0a30d4fc5654fd729639103ca2d874d52bd93658e25778312a758d4159a79b7a.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "APP_BASE_URL": "http://localhost:5173",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
       "COGNITO_CLIENT_ID": {
        "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
       },
-      "FROM_EMAIL": "no-reply@careindeed.com",
+      "FROM_EMAIL": "no-reply@example.com",
       "REGISTRATION_TABLE_NAME": {
        "Ref": "DemoAuthRegistrationsTable8576514C"
       },
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -302,7 +305,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/RegisterRequestHandler/Resource",
-    "aws:asset:path": "asset.a53023ecf5d0188795d78ede0f82ff031228cb6ba6f053167e2f1bc7de56f139",
+    "aws:asset:path": "asset.0a30d4fc5654fd729639103ca2d874d52bd93658e25778312a758d4159a79b7a",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -434,24 +437,27 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
-     "S3Key": "df383dcd50964defb0278c95e95b65972cfea48a1d93e7360efa2ee5408f0b07.zip"
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
+     },
+     "S3Key": "8921c77392fa19f08f2a167b0b3eff363bcd00a08c734781084c1cb5322e01cd.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "APP_BASE_URL": "http://localhost:5173",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
       "COGNITO_CLIENT_ID": {
        "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
       },
-      "FROM_EMAIL": "no-reply@careindeed.com",
+      "FROM_EMAIL": "no-reply@example.com",
       "REGISTRATION_TABLE_NAME": {
        "Ref": "DemoAuthRegistrationsTable8576514C"
       },
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -472,7 +478,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/SetupAccountHandler/Resource",
-    "aws:asset:path": "asset.df383dcd50964defb0278c95e95b65972cfea48a1d93e7360efa2ee5408f0b07",
+    "aws:asset:path": "asset.8921c77392fa19f08f2a167b0b3eff363bcd00a08c734781084c1cb5322e01cd",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -604,24 +610,27 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
-     "S3Key": "635b19ac0b1895261602a0630146d786587a060c4afd0e297a6f39bcde4e7994.zip"
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
+     },
+     "S3Key": "7de6b6744f9b2cd79cca0b1417ee6709c9d582b333b18378c1cdbb364afb28f8.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "APP_BASE_URL": "http://localhost:5173",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
       "COGNITO_CLIENT_ID": {
        "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
       },
-      "FROM_EMAIL": "no-reply@careindeed.com",
+      "FROM_EMAIL": "no-reply@example.com",
       "REGISTRATION_TABLE_NAME": {
        "Ref": "DemoAuthRegistrationsTable8576514C"
       },
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -642,7 +651,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/ResendSetupLinkHandler/Resource",
-    "aws:asset:path": "asset.635b19ac0b1895261602a0630146d786587a060c4afd0e297a6f39bcde4e7994",
+    "aws:asset:path": "asset.7de6b6744f9b2cd79cca0b1417ee6709c9d582b333b18378c1cdbb364afb28f8",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -774,24 +783,27 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
-     "S3Key": "25129d24aff2ea1b083e049bfc8b78ca4f9f50906f973afa33debee7dee206d5.zip"
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
+     },
+     "S3Key": "c47dc783c51c6dd091bee375c5b12b4086ce6f62d4465316ef2c449a3cb974f6.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "APP_BASE_URL": "http://localhost:5173",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
       "COGNITO_CLIENT_ID": {
        "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
       },
-      "FROM_EMAIL": "no-reply@careindeed.com",
+      "FROM_EMAIL": "no-reply@example.com",
       "REGISTRATION_TABLE_NAME": {
        "Ref": "DemoAuthRegistrationsTable8576514C"
       },
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -812,7 +824,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/LoginHandler/Resource",
-    "aws:asset:path": "asset.25129d24aff2ea1b083e049bfc8b78ca4f9f50906f973afa33debee7dee206d5",
+    "aws:asset:path": "asset.c47dc783c51c6dd091bee375c5b12b4086ce6f62d4465316ef2c449a3cb974f6",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -944,24 +956,27 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
-     "S3Key": "fb1c5d42c31504802c988aea94adc7cb56287cc99cf44b52494fe173d6ae5c5b.zip"
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
+     },
+     "S3Key": "5330a2023c7cc88ff448fc6827d73f91ae966d672464bbd837f550b52a2596ce.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "APP_BASE_URL": "http://localhost:5173",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
       "COGNITO_CLIENT_ID": {
        "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
       },
-      "FROM_EMAIL": "no-reply@careindeed.com",
+      "FROM_EMAIL": "no-reply@example.com",
       "REGISTRATION_TABLE_NAME": {
        "Ref": "DemoAuthRegistrationsTable8576514C"
       },
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -982,7 +997,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/RefreshHandler/Resource",
-    "aws:asset:path": "asset.fb1c5d42c31504802c988aea94adc7cb56287cc99cf44b52494fe173d6ae5c5b",
+    "aws:asset:path": "asset.5330a2023c7cc88ff448fc6827d73f91ae966d672464bbd837f550b52a2596ce",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -1114,24 +1129,27 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
-     "S3Key": "cae81474f4b690ac290661a6091ec13243f91ab31ad6a69967f9d37043bc61e8.zip"
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
+     },
+     "S3Key": "7f1528b39cc46a0e4dfeb37e8f04f58e9f6992e2bcac6b23fabf8a5038ba8e6d.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "APP_BASE_URL": "http://localhost:5173",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
       "COGNITO_CLIENT_ID": {
        "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
       },
-      "FROM_EMAIL": "no-reply@careindeed.com",
+      "FROM_EMAIL": "no-reply@example.com",
       "REGISTRATION_TABLE_NAME": {
        "Ref": "DemoAuthRegistrationsTable8576514C"
       },
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -1152,7 +1170,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/MeHandler/Resource",
-    "aws:asset:path": "asset.cae81474f4b690ac290661a6091ec13243f91ab31ad6a69967f9d37043bc61e8",
+    "aws:asset:path": "asset.7f1528b39cc46a0e4dfeb37e8f04f58e9f6992e2bcac6b23fabf8a5038ba8e6d",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -1284,24 +1302,27 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
-     "S3Key": "1d1796122f4635d832f6e34aee463bfd14bc0611ba9dc07bcab0cf6654a22997.zip"
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
+     },
+     "S3Key": "0ed4ceea56e36a2914bd752c34fb688e578019f65e7f78a49e5d7be4479803e4.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "APP_BASE_URL": "http://localhost:5173",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
       "COGNITO_CLIENT_ID": {
        "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
       },
-      "FROM_EMAIL": "no-reply@careindeed.com",
+      "FROM_EMAIL": "no-reply@example.com",
       "REGISTRATION_TABLE_NAME": {
        "Ref": "DemoAuthRegistrationsTable8576514C"
       },
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -1322,7 +1343,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/LogoutHandler/Resource",
-    "aws:asset:path": "asset.1d1796122f4635d832f6e34aee463bfd14bc0611ba9dc07bcab0cf6654a22997",
+    "aws:asset:path": "asset.0ed4ceea56e36a2914bd752c34fb688e578019f65e7f78a49e5d7be4479803e4",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -1454,24 +1475,27 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
-     "S3Key": "7a9c5ab0e2a7192ffc981ef95e716510b765c78337bf3e8254cd281cf7170291.zip"
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
+     },
+     "S3Key": "b901811e965ec297af9e4527161671285e1dd8e03a09f0b2f425048a403b9283.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "APP_BASE_URL": "http://localhost:5173",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
       "COGNITO_CLIENT_ID": {
        "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
       },
-      "FROM_EMAIL": "no-reply@careindeed.com",
+      "FROM_EMAIL": "no-reply@example.com",
       "REGISTRATION_TABLE_NAME": {
        "Ref": "DemoAuthRegistrationsTable8576514C"
       },
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -1492,7 +1516,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/ForgotPasswordHandler/Resource",
-    "aws:asset:path": "asset.7a9c5ab0e2a7192ffc981ef95e716510b765c78337bf3e8254cd281cf7170291",
+    "aws:asset:path": "asset.b901811e965ec297af9e4527161671285e1dd8e03a09f0b2f425048a403b9283",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -1624,24 +1648,27 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
-     "S3Key": "09b2fe0f9bea811eb16941ee85a45ed6611215aca165b88a6862b0e3fb12c5db.zip"
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
+     },
+     "S3Key": "1ec390a3202ef60469dffdce3fd4043dcbd006b0ec26e758ae97a84b9b371e87.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "APP_BASE_URL": "http://localhost:5173",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
       "COGNITO_CLIENT_ID": {
        "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
       },
-      "FROM_EMAIL": "no-reply@careindeed.com",
+      "FROM_EMAIL": "no-reply@example.com",
       "REGISTRATION_TABLE_NAME": {
        "Ref": "DemoAuthRegistrationsTable8576514C"
       },
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -1662,7 +1689,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/ResetPasswordHandler/Resource",
-    "aws:asset:path": "asset.09b2fe0f9bea811eb16941ee85a45ed6611215aca165b88a6862b0e3fb12c5db",
+    "aws:asset:path": "asset.1ec390a3202ef60469dffdce3fd4043dcbd006b0ec26e758ae97a84b9b371e87",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -1682,8 +1709,8 @@
       "OPTIONS"
      ],
      "AllowOrigins": [
-      "https://dovdry3t4njek.cloudfront.net",
       "http://localhost:5173",
+      "https://dovdry3t4njek.cloudfront.net",
       "http://localhost:5176",
       "http://localhost:5177"
      ],
@@ -1747,7 +1774,11 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-west-1:069857851156:",
+       ":execute-api:us-east-2:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -1822,7 +1853,11 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-west-1:069857851156:",
+       ":execute-api:us-east-2:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -1897,7 +1932,11 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-west-1:069857851156:",
+       ":execute-api:us-east-2:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -1972,7 +2011,11 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-west-1:069857851156:",
+       ":execute-api:us-east-2:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2047,7 +2090,11 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-west-1:069857851156:",
+       ":execute-api:us-east-2:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2122,7 +2169,11 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-west-1:069857851156:",
+       ":execute-api:us-east-2:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2197,7 +2248,11 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-west-1:069857851156:",
+       ":execute-api:us-east-2:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2272,7 +2327,11 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-west-1:069857851156:",
+       ":execute-api:us-east-2:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2347,7 +2406,11 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-west-1:069857851156:",
+       ":execute-api:us-east-2:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2483,7 +2546,9 @@
    "Type": "AWS::Lambda::Function",
    "Properties": {
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
+     },
      "S3Key": "56f7467bbde8a5efebcf57ae9e460027607099bab9f844669dcf5d800172ee5a.zip"
     },
     "Handler": "index.handler",
@@ -2593,7 +2658,7 @@
        {
         "Ref": "DemoAuthRegistrationsTable8576514C"
        },
-       "\",\"Item\":{\"pk\":{\"S\":\"EMAIL#robertp@careindeed.com\"},\"sk\":{\"S\":\"REGISTRATION\"},\"email\":{\"S\":\"robertp@careindeed.com\"},\"emailDomain\":{\"S\":\"careindeed.com\"},\"cognitoUsername\":{\"S\":\"robertp@careindeed.com\"},\"status\":{\"S\":\"active\"},\"approvedBy\":{\"S\":\"stack-seed\"},\"approvedAt\":{\"S\":\"2026-04-30T22:46:19.783Z\"},\"setupCompletedAt\":{\"S\":\"2026-04-30T22:46:19.783Z\"},\"createdAt\":{\"S\":\"2026-04-30T22:46:19.783Z\"},\"updatedAt\":{\"S\":\"2026-04-30T22:46:19.783Z\"}}},\"physicalResourceId\":{\"id\":\"seed-super-admin-registration\"}}"
+       "\",\"Item\":{\"pk\":{\"S\":\"EMAIL#robertp@careindeed.com\"},\"sk\":{\"S\":\"REGISTRATION\"},\"email\":{\"S\":\"robertp@careindeed.com\"},\"emailDomain\":{\"S\":\"careindeed.com\"},\"cognitoUsername\":{\"S\":\"robertp@careindeed.com\"},\"status\":{\"S\":\"active\"},\"approvedBy\":{\"S\":\"stack-seed\"},\"approvedAt\":{\"S\":\"2026-05-01T23:25:24.118Z\"},\"setupCompletedAt\":{\"S\":\"2026-05-01T23:25:24.118Z\"},\"createdAt\":{\"S\":\"2026-05-01T23:25:24.118Z\"},\"updatedAt\":{\"S\":\"2026-05-01T23:25:24.118Z\"}}},\"physicalResourceId\":{\"id\":\"seed-super-admin-registration\"}}"
       ]
      ]
     },
@@ -2646,7 +2711,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12Q0W7CMAxFv4X34EHZPgAqTdvLhsr2XLlpqAJpUtUOFYry71NayhBP91xfx7aSQfa2htUCB1rK+rw0uoJwYJRngQOVob5abF1dQfjByiiRH+0IUUjXWM0Owi+pfu+cSdmdZ8iNVpYfo6kShcG2qrG0rlYngq9R3r2VrJ0VGlsIhZsWjrp3RstrshNFQZsSiRQTbJMI2sDOy7PiHZK6jYeQH+19anqs+lYTJXfQtjGK3X8+QxTY6QZZDXi9ZBA+mLttp9P7JMkeGJvxuAlSqXCeJ/q0rJoe551PduyLURSKnO+lEuP5aY62jZCe2LVlfwsJtgPlY+3e/2yP9pG/PXeeo0gfCyd6uWSvsN7AanEirZe9t6xbBcWkfyR6mWX/AQAA"
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12Q0W7CMAxFv4X34LGgfQBUmraXDZXtuXLTUAXSpKodKlTl36ekwBBP91xfx7YiQb69wmqBIy1Vc1paU8O0Z1QngSNVU3Nx2PmmhukHa6tFcXAZolC+dYY9TL+kh533NmV3vkFhjXb8GM2VKCx2dYOV840+EnxleQ9OsfFOGOxgKv28MOvOW6Muyc4UBa0rJNJMsEkiaA3boE6at0j6Oh6m4uDuU9NjPXSGKLm9ca3V7P/zG0SBvWmR9YiXs4Tpg7nf9Ca9T5LsnrHNx82QSqUPPNOnY90OeNv5ZHNfjKLU5MOgtMjnpznGtUIFYt9VwzUk2IxU5Nq9/9ke3CN/B+4DR5E+Fo70cpYSpITV4kjGLIfg2HQayln/AJf0CG3/AQAA"
    },
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/CDKMetadata/Default"
@@ -2674,7 +2739,7 @@
    }
   },
   "Region": {
-   "Value": "us-west-1"
+   "Value": "us-east-2"
   }
  },
  "Parameters": {

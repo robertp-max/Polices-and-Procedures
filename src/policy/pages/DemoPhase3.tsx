@@ -56,16 +56,6 @@ function P3Head({ number, subtitle, title, badge }: { number: string; subtitle: 
   );
 }
 
-function P3Metric({ value, label, sub, hi = false }: { value: string; label: string; sub: string; hi?: boolean }) {
-  return (
-    <div className={`rounded-2xl border p-5 ${hi ? 'bg-[#EFF6FF] border-[#1d4ed8]/20' : 'bg-white border-[#E5E4E3]'}`}>
-      <div className={`text-[30px] font-light font-montserrat leading-none mb-2 ${hi ? 'text-[#1d4ed8]' : 'text-[#1F1C1B]'}`}>{value}</div>
-      <div className="text-[12px] font-semibold text-[#1F1C1B] font-montserrat mb-0.5">{label}</div>
-      <div className="text-[9px] text-[#747474] uppercase tracking-wider font-montserrat">{sub}</div>
-    </div>
-  );
-}
-
 function P3Rule() { return <div className="my-6 border-t border-[#E5E4E3]" />; }
 
 function P3BulletList({ items, color = '#1d4ed8' }: { items: string[]; color?: string }) {
@@ -515,7 +505,7 @@ function P3Ch05() {
         {envs.map((env, i) => (
           <div key={i} className="flex items-center gap-2 flex-1">
             <div className={`flex-1 rounded-2xl border-2 p-4 ${env.current ? 'ring-2 ring-offset-2' : ''}`}
-              style={{ borderColor: env.border, background: env.bg, ringColor: env.current ? env.color : undefined }}>
+              style={{ borderColor: env.border, background: env.bg }}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[8px] font-bold tracking-[0.25em] uppercase font-montserrat" style={{ color: env.color }}>{env.stage}</span>
                 {env.current && <span className="text-[7px] font-bold bg-[#C74601] text-white px-1.5 py-0.5 rounded-full tracking-wider">CURRENT</span>}

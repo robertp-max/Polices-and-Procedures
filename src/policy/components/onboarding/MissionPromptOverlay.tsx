@@ -72,9 +72,10 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
         maxHeight: 'calc(100vh - 32px)',
         zIndex: 1000,
         borderRadius: 18,
-        background: 'linear-gradient(135deg, #006A62 0%, #007970 55%, #00554F 100%)',
-        color: '#FFFFFF',
-        boxShadow: '0 28px 68px rgba(0,0,0,0.46), 0 10px 28px rgba(0,0,0,0.30), 0 2px 8px rgba(0,0,0,0.20)',
+        background: '#FFFFFF',
+        color: '#1F1C1B',
+        border: '1px solid #E5E4E3',
+        boxShadow: '0 18px 45px rgba(15,23,42,0.18)',
         fontFamily: "'Roboto', 'Inter', system-ui, sans-serif",
         overflowY: 'auto',
         overflowX: 'hidden',
@@ -94,9 +95,9 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
             width: 36,
             height: 36,
             borderRadius: '50%',
-            background: 'rgba(255,255,255,0.14)',
-            color: '#FFFFFF',
-            border: '1px solid rgba(255,255,255,0.22)',
+            background: '#F8FAFC',
+            color: '#334155',
+            border: '1px solid #E2E8F0',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -114,7 +115,7 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
                 fontSize: 11,
                 letterSpacing: '0.22em',
                 textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.72)',
+                color: '#64748B',
                 fontFamily: "'Montserrat', 'Inter', system-ui, sans-serif",
                 marginBottom: 8,
               }}
@@ -138,8 +139,8 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
         <form onSubmit={onSubmit} style={{ padding: '8px 22px 4px' }}>
           <div
             style={{
-              background: 'rgba(255,255,255,0.95)',
-              border: '1px solid rgba(255,255,255,0.8)',
+              background: '#FFFFFF',
+              border: '1px solid #E5E4E3',
               borderRadius: 16,
               padding: 14,
               display: 'flex',
@@ -147,7 +148,7 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
               gap: 10,
             }}
           >
-            <Sparkles size={20} style={{ color: '#006A62', flexShrink: 0, marginLeft: 6 }} />
+            <Sparkles size={20} style={{ color: '#007970', flexShrink: 0, marginLeft: 6 }} />
             <input
               type="text"
               value={value}
@@ -160,7 +161,7 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
                 background: 'transparent',
                 border: 'none',
                 outline: 'none',
-                color: '#0F3D3A',
+                color: '#334155',
                 fontSize: 16,
                 padding: '10px 6px',
               }}
@@ -184,7 +185,7 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
                 cursor: submitting || !value.trim() ? 'not-allowed' : 'pointer',
                 opacity: submitting || !value.trim() ? 0.7 : 1,
                 whiteSpace: 'nowrap',
-                boxShadow: '0 6px 18px rgba(199,70,0,0.35)',
+                boxShadow: '0 6px 18px rgba(199,70,0,0.22)',
               }}
             >
               {submitting ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
@@ -199,7 +200,7 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
               fontSize: 10,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.65)',
+              color: '#64748B',
               fontFamily: "'JetBrains Mono', 'Menlo', monospace",
               marginBottom: 10,
             }}
@@ -216,9 +217,9 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
                 style={{
                   padding: '10px 14px',
                   borderRadius: 999,
-                  background: 'rgba(255,255,255,0.10)',
-                  border: '1px solid rgba(255,255,255,0.22)',
-                  color: '#FFFFFF',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  color: '#334155',
                   fontSize: 13,
                   fontWeight: 500,
                   cursor: submitting ? 'not-allowed' : 'pointer',
@@ -232,8 +233,8 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
 
         <div
           style={{
-            background: 'rgba(0,0,0,0.18)',
-            borderTop: '1px solid rgba(255,255,255,0.12)',
+            background: '#F8FAFC',
+            borderTop: '1px solid #E2E8F0',
             padding: '14px 18px',
             display: 'flex',
             alignItems: 'center',
@@ -251,7 +252,7 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
               fontSize: 11,
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.78)',
+              color: '#64748B',
               fontFamily: "'JetBrains Mono', 'Menlo', monospace",
             }}
           >
@@ -269,9 +270,9 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
                 gap: 8,
                 padding: '12px 20px',
                 borderRadius: 12,
-                background: 'rgba(255,255,255,0.16)',
-                color: '#FFFFFF',
-                border: '1px solid rgba(255,255,255,0.32)',
+                background: '#FFFFFF',
+                color: '#007970',
+                border: '1px solid #CFE7E5',
                 fontFamily: "'Montserrat', 'Inter', system-ui, sans-serif",
                 fontWeight: 700,
                 fontSize: 13,
@@ -292,8 +293,8 @@ export function MissionPromptOverlay({ onClose, onStartTour }: MissionPromptOver
                 padding: '12px 18px',
                 borderRadius: 12,
                 background: 'transparent',
-                color: 'rgba(255,255,255,0.85)',
-                border: '1px solid rgba(255,255,255,0.22)',
+                color: '#475569',
+                border: '1px solid #CBD5E1',
                 fontFamily: "'Montserrat', 'Inter', system-ui, sans-serif",
                 fontWeight: 600,
                 fontSize: 13,

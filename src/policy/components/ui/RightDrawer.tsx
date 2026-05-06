@@ -47,8 +47,9 @@ export function RightDrawer({
       aria-label={typeof title === 'string' ? title : 'Detail panel'}
       className="ci-glass-panel flex flex-col"
       style={{
-        width: inline ? '100%' : WIDTH[width],
-        height: '100%',
+        width: inline ? '100%' : `min(calc(100vw - 16px), ${WIDTH[width]}px)`,
+        maxWidth: inline ? undefined : '100vw',
+        height: '100dvh',
         borderTopRightRadius: inline ? undefined : 0,
         borderBottomRightRadius: inline ? undefined : 0,
       }}
@@ -56,7 +57,7 @@ export function RightDrawer({
       {(title || eyebrow || headerActions) && (
         <header
           className="flex items-center justify-between gap-3 shrink-0"
-          style={{ padding: '16px 24px', borderBottom: '1px solid var(--ci-border)' }}
+          style={{ padding: 'clamp(12px, 1.5vh, 16px) clamp(12px, 1.6vw, 24px)', borderBottom: '1px solid var(--ci-border)' }}
         >
           <div className="min-w-0">
             {eyebrow && (
@@ -89,7 +90,7 @@ export function RightDrawer({
           </div>
         </header>
       )}
-      <div className="flex-1 overflow-auto" style={{ padding: 24 }}>
+      <div className="flex-1 overflow-auto" style={{ padding: 'clamp(12px, 1.6vw, 24px)' }}>
         {children}
       </div>
       {footer && (

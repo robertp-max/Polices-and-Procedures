@@ -3,6 +3,7 @@ import { Lock } from 'lucide-react';
 import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
+import { useShellStore } from '@/policy/stores/uiStore';
 import {
   classifyInstance, STATE_COLOR, STATE_SOFT,
   type InstanceState,
@@ -44,6 +45,7 @@ export function TimelineMonth({
   year, month, events, activeId, onSelect, today,
 }: TimelineMonthProps) {
   const store = useRegulatoryExecutionStore();
+  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
 
   const { cells, weeks } = useMemo(() => {
     const first = new Date(year, month, 1);
@@ -78,7 +80,7 @@ export function TimelineMonth({
         {WEEKDAYS.map(w => (
           <div
             key={w}
-            className="text-center font-montserrat font-bold text-white/40 uppercase tracking-[0.24em]"
+            className={`text-center font-montserrat font-bold uppercase tracking-[0.24em] ${isLight ? 'text-slate-500' : 'text-white/40'}`}
             style={{ fontSize: 9 }}
           >
             {w}
@@ -90,7 +92,8 @@ export function TimelineMonth({
       <div
         className="grid grid-cols-7 gap-px rounded-xl overflow-hidden border border-white/10 flex-1 min-h-0"
         style={{
-          background: 'rgba(255,255,255,0.05)',
+          background: isLight ? 'rgba(15,23,42,0.05)' : 'rgba(255,255,255,0.05)',
+          borderColor: isLight ? 'rgba(15,23,42,0.12)' : 'rgba(255,255,255,0.10)',
           gridTemplateRows: `repeat(${weeks}, minmax(0, 1fr))`,
         }}
       >
@@ -102,6 +105,7 @@ export function TimelineMonth({
             onSelect={onSelect}
             today={today}
             store={store}
+            isLight={isLight}
           />
         ))}
       </div>
@@ -112,19 +116,21 @@ export function TimelineMonth({
 /* ─── Day cell ─────────────────────────────────────────── */
 function DayCell({
   cell, activeId, onSelect, today, store,
+  isLight,
 }: {
   cell: { dateISO: string; day: number; outOfMonth: boolean; isToday: boolean; events: RegulatoryEvent[] };
   activeId: string | null;
   onSelect: (e: RegulatoryEvent) => void;
   today: Date;
   store: ReturnType<typeof useRegulatoryExecutionStore.getState>;
+  isLight: boolean;
 }) {
-  const eventsToShow = cell.events.slice(0, 3);
+  const eventsToShow = cell.events.slice(0, 2);
   const overflow = cell.events.length - eventsToShow.length;
 
   return (
     <div
-      className="relative flex flex-col p-1.5 transition-colors duration-200 hover:bg-white/[0.03]"
+      className="relative flex min-h-0 flex-col p-1.5 transition-colors duration-200 hover:bg-white/[0.03]"
       style={{
         background: cell.outOfMonth
           ? 'var(--ci-cell-out, rgba(0,0,0,0.10))'
@@ -139,8 +145,8 @@ function DayCell({
             cell.isToday
               ? 'rounded-full text-white w-6 h-6'
               : cell.outOfMonth
-                ? 'text-white/25'
-                : 'text-white/75'
+                ? (isLight ? 'text-slate-300' : 'text-white/25')
+                : (isLight ? 'text-slate-700' : 'text-white/75')
           }`}
           style={{
             fontSize: 11,
@@ -150,7 +156,7 @@ function DayCell({
           {cell.day}
         </span>
       </div>
-      <div className="flex flex-col gap-1 overflow-hidden">
+      <div className="flex min-h-0 flex-col gap-1 overflow-y-auto custom-scrollbar">
         {eventsToShow.map(ev => (
           <TimelineChip
             key={ev.id}
@@ -158,12 +164,13 @@ function DayCell({
             active={ev.id === activeId}
             today={today}
             store={store}
+            isLight={isLight}
             onClick={() => onSelect(ev)}
           />
         ))}
         {overflow > 0 && (
           <button
-            className="self-start font-montserrat font-bold text-white/55 hover:text-white px-1"
+            className={`self-start font-montserrat font-bold px-1 ${isLight ? 'text-slate-500 hover:text-slate-800' : 'text-white/55 hover:text-white'}`}
             style={{ fontSize: 9 }}
             onClick={() => { if (cell.events[eventsToShow.length]) onSelect(cell.events[eventsToShow.length]); }}
           >
@@ -180,12 +187,14 @@ function DayCell({
 /* ─── Timeline chip (state-colored only) ────────────────── */
 function TimelineChip({
   event, active, today, store, onClick,
+  isLight,
 }: {
   event: RegulatoryEvent;
   active?: boolean;
   today: Date;
   store: ReturnType<typeof useRegulatoryExecutionStore.getState>;
   onClick: () => void;
+  isLight: boolean;
 }) {
   const state: InstanceState = classifyInstance(event, today, store);
   const certified = store.isCertified(event.id);
@@ -216,13 +225,13 @@ function TimelineChip({
         />
         <div className="min-w-0">
           <p
-            className="font-montserrat font-bold text-white leading-tight truncate"
+            className={`font-montserrat font-bold leading-tight truncate ${isLight ? 'text-slate-800' : 'text-white'}`}
             style={{ fontSize: 10 }}
           >
             {event.title}
           </p>
           {subtitle && (
-            <p className="font-roboto truncate leading-snug text-white/55" style={{ fontSize: 9 }}>
+            <p className={`font-roboto truncate leading-snug ${isLight ? 'text-slate-500' : 'text-white/55'}`} style={{ fontSize: 9 }}>
               {subtitle}
             </p>
           )}

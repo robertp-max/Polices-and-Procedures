@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Workflow, AlertTriangle, Clock, CheckCircle2, X,
-  FolderOpen, ShieldCheck, MessageSquare, FileText,
+  FolderOpen, MessageSquare, FileText,
   Upload, History, ListChecks, Lock, Unlock, Check,
   UserCheck, Stamp, FileCheck, Users, AlertCircle,
   GitBranch, Download, RotateCcw, MapPin, ArrowRight,
@@ -15,10 +15,9 @@ import {
 import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
 import {
   useRegulatoryExecutionStore,
-  useEventEvidence, useEventNotes, useEventCertification,
+  useEventNotes, useEventCertification,
 } from '@/policy/stores/regulatoryExecutionStore';
 import { useEnforcementStore } from '@/policy/stores/enforcementStore';
-import { WorkflowBody } from './WorkflowDrawer';
 import { EvidencePanel } from './EvidencePanel';
 import { useToastStore } from './Toast';
 import {
@@ -38,8 +37,13 @@ import {
 } from '@/policy/audit/surveyPacket';
 import { downloadBlob } from '@/policy/audit/exportReport';
 import { CalendarApi, toPlannerPayload } from '@/policy/services/calendarApi';
-import { EventTaskList } from '@/policy/components/pm/EventTaskList';
 import { useShellStore } from '@/policy/stores/uiStore';
+import { useEventExecutionDataflow, type EventExecutionDataflow } from '@/policy/compliance-execution';
+import { buildCesTaskRequirements, type CesTaskWithExecutionRequirements, type CesExecutionRequirement } from '@/policy/evidence/cesEvidenceHierarchy';
+import type { Task as PmTask } from '@/policy/pm/types';
+import { useLocation } from 'react-router-dom';
+import { FormViewer } from '@/policy/components/FormViewer';
+import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
 
 /* ═══════════════════════════════════════════════════════════════
    WorkflowExecutionPanel
@@ -65,8 +69,15 @@ export interface WorkflowExecutionPanelProps {
   onSelectTask?: (taskId: string) => void;
 }
 
-type PanelTab = 'event' | 'workflow' | 'related_tasks' | 'record' | 'audit';
+type PanelTab = 'overview' | 'tasks' | 'audit' | 'technical';
 type CalendarSideTab = 'guests' | 'resources';
+const TASK_FIRST_SUMMARY_GUIDANCE = 'This is a summary view. Complete forms, upload evidence, and request signatures from the linked task in the Tasks tab so the audit trail stays connected.';
+
+interface TaskDeepLinkTarget {
+  taskId: string;
+  requirementType?: CesExecutionRequirement['type'];
+  requirementId?: string;
+}
 
 interface CalendarGuest {
   id: string;
@@ -85,7 +96,6 @@ export function WorkflowExecutionPanel({
   event,
   onClear,
   today = TODAY_ANCHOR,
-  onSelectTask,
 }: WorkflowExecutionPanelProps) {
   const store = useRegulatoryExecutionStore();
 
@@ -93,20 +103,21 @@ export function WorkflowExecutionPanel({
     return <EmptyPanel />;
   }
 
-  return <ActivePanel event={event} onClear={onClear} today={today} store={store} onSelectTask={onSelectTask} />;
+  return <ActivePanel event={event} onClear={onClear} today={today} store={store} />;
 }
 
 /* ─── Active ─────────────────────────────────────────── */
 function ActivePanel({
-  event, onClear, today, store, onSelectTask,
+  event, onClear, today, store,
 }: {
   event: RegulatoryEvent;
   onClear?: () => void;
   today: Date;
   store: ReturnType<typeof useRegulatoryExecutionStore.getState>;
-  onSelectTask?: (taskId: string) => void;
 }) {
-  const [tab, setTab] = useState<PanelTab>('event');
+  const [tab, setTab] = useState<PanelTab>('overview');
+  const [taskDeepLink, setTaskDeepLink] = useState<TaskDeepLinkTarget | null>(null);
+  const location = useLocation();
   const isLight = useShellStore(s => s.theme === 'care-indeed-light');
 
   const state: InstanceState = classifyInstance(event, today, store);
@@ -115,8 +126,7 @@ function ActivePanel({
   const auditStateColor = AUDIT_STATE_COLOR[auditState];
   const certified = store.isCertified(event.id);
   const cert = useEventCertification(event.id);
-  const evidence = useEventEvidence(event.id);
-  const notes = useEventNotes(event.id);
+  const dataflow = useEventExecutionDataflow(event);
 
   const currentStep = useMemo(
     () => event.processFlow.find(s => store.effectiveStepStatus(event, s.id) !== 'complete'),
@@ -128,6 +138,14 @@ function ActivePanel({
   const stepsTotal = event.processFlow.length;
 
   const sla = useMemo(() => computeSla(event, today), [event, today]);
+
+  useEffect(() => {
+    const q = new URLSearchParams(location.search);
+    const legacyTab = (q.get('tab') || '').trim().toLowerCase();
+    if (legacyTab === 'forms' || legacyTab === 'evidence' || legacyTab === 'approvals' || legacyTab === 'signatures') {
+      setTab('tasks');
+    }
+  }, [location.search]);
 
   return (
     <aside
@@ -181,7 +199,12 @@ function ActivePanel({
             {event.title}
           </h2>
         </div>
-        <div className="grid grid-cols-3 items-end gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em]">
+        {dataflow && (
+          <div className="text-[9.5px] text-white/55 font-mono break-all">
+            {dataflow.eventId} · {dataflow.folder.folderPath}
+          </div>
+        )}
+        <div className="grid grid-cols-1 gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] sm:grid-cols-4">
           <ProjectionCell label="Step" value={stepsTotal > 0 ? `${currentStepIndex}/${stepsTotal}` : '—'} />
           <ProjectionCell
             label="SLA"
@@ -194,66 +217,65 @@ function ActivePanel({
             value={state === 'blocked' || state === 'overdue' ? 'High' : state === 'due-soon' ? 'Medium' : 'Low'}
             color={stateColor}
           />
+          <ProjectionCell
+            label="Audit Readiness"
+            value={dataflow ? `${dataflow.auditReadinessScore}%` : '—'}
+            color={TEAL_PRIMARY}
+          />
         </div>
       </header>
 
       {/* ── Tab bar ── */}
       <nav
-        className="grid grid-cols-5 items-stretch border-b"
+        className="flex items-stretch gap-0 overflow-x-auto border-b"
         style={{
           borderColor: 'var(--ci-border)',
           background: isLight ? 'var(--ci-surface-muted)' : 'rgba(248,250,252,0.9)',
         }}
       >
         <TabButton
-          active={tab === 'event'}
-          onClick={() => setTab('event')}
+          active={tab === 'overview'}
+          onClick={() => setTab('overview')}
           icon={<CalIcon size={11} />}
-          label="Event"
+          label="Overview"
           accent={TEAL_PRIMARY}
         />
         <TabButton
-          active={tab === 'workflow'}
-          onClick={() => setTab('workflow')}
-          icon={<Workflow size={11} />}
-          label="Workflow"
-          accent={TEAL_PRIMARY}
-        />
-        <TabButton
-          active={tab === 'related_tasks'}
-          onClick={() => setTab('related_tasks')}
+          active={tab === 'tasks'}
+          onClick={() => setTab('tasks')}
           icon={<ListChecks size={11} />}
-          label="Related Tasks"
-          accent={TEAL_PRIMARY}
-        />
-        <TabButton
-          active={tab === 'record'}
-          onClick={() => setTab('record')}
-          icon={<FolderOpen size={11} />}
-          label="Event Record"
-          count={evidence.length + notes.length}
+          label="Tasks"
           accent={TEAL_PRIMARY}
         />
         <TabButton
           active={tab === 'audit'}
           onClick={() => setTab('audit')}
-          icon={<ShieldCheck size={11} />}
-          label="Audit View"
+          icon={<History size={11} />}
+          label="Audit Trail"
+          accent={AUDIT_STATE_COLOR['audit-ready']}
+        />
+        <TabButton
+          active={tab === 'technical'}
+          onClick={() => setTab('technical')}
+          icon={<Activity size={11} />}
+          label="Technical Details"
           accent={AUDIT_STATE_COLOR['audit-ready']}
         />
       </nav>
 
       {/* ── Body ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
-        {tab === 'event' && <CalendarEventView event={event} today={today} state={state} sla={sla} />}
-        {tab === 'workflow' && <WorkflowBody event={event} />}
-        {tab === 'related_tasks' && (
-          <div className="p-3">
-            <EventTaskList eventId={event.id} onSelectTask={onSelectTask} />
-          </div>
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar">
+        {tab === 'overview' && <CalendarEventView event={event} today={today} state={state} sla={sla} />}
+        {tab === 'tasks' && dataflow && (
+          <EventTasksTab
+            event={event}
+            dataflow={dataflow}
+            deepLinkTarget={taskDeepLink}
+            onConsumedDeepLink={() => setTaskDeepLink(null)}
+          />
         )}
-        {tab === 'record' && <EventRecordPanel event={event} />}
-        {tab === 'audit' && <AuditViewPanel event={event} today={today} />}
+        {tab === 'audit' && dataflow && <EventAuditTrailTab dataflow={dataflow} />}
+        {tab === 'technical' && dataflow && <TechnicalDetailsTab dataflow={dataflow} />}
       </div>
 
       {/* ── Footer: Certify / Locked receipt ── */}
@@ -292,7 +314,7 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-w-0 items-center justify-center gap-1 px-1.5 py-2 text-[9px] sm:text-[10px] font-montserrat font-bold uppercase tracking-[0.1em] transition border-r last:border-r-0"
+      className="ci-touch-target flex min-w-max flex-none items-center justify-center gap-1 whitespace-nowrap px-2 py-2 text-[9px] sm:min-w-0 sm:flex-1 sm:text-[10px] font-montserrat font-bold uppercase tracking-[0.1em] transition border-r last:border-r-0"
       style={{
         borderRightColor: 'var(--ci-border)',
         color: active ? accent : (isLight ? 'var(--ci-text-muted-2)' : '#475569'),
@@ -469,6 +491,1163 @@ function EventRecordPanel({ event }: { event: RegulatoryEvent }) {
           </ul>
         )}
       </section>
+    </div>
+  );
+}
+void EventRecordPanel;
+
+function EventTasksTab({
+  event,
+  dataflow,
+  deepLinkTarget,
+  onConsumedDeepLink,
+}: {
+  event: RegulatoryEvent;
+  dataflow: EventExecutionDataflow;
+  deepLinkTarget?: TaskDeepLinkTarget | null;
+  onConsumedDeepLink?: () => void;
+}) {
+  const store = useRegulatoryExecutionStore();
+  const push = useToastStore(s => s.push);
+  const [title, setTitle] = useState('');
+  const [formTaskId, setFormTaskId] = useState('');
+  const [stepTaskId, setStepTaskId] = useState('');
+  const [expandedTaskIds, setExpandedTaskIds] = useState<Record<string, boolean>>({});
+  const [focusedRequirementId, setFocusedRequirementId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [requirementFilter, setRequirementFilter] = useState<'all' | CesExecutionRequirement['type']>('all');
+  const [missingOnly, setMissingOnly] = useState(false);
+  const [pendingSignatureOnly, setPendingSignatureOnly] = useState(false);
+  const [blockedOnly, setBlockedOnly] = useState(false);
+  const [inlineAction, setInlineAction] = useState<{ taskId: string; requirementId: string } | null>(null);
+  const taskRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  const requirementRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const activeTasks = dataflow.tasks.filter(task => !task.isDeleted);
+  const deletedTasks = dataflow.tasks.filter(task => task.isDeleted);
+  const taskAuditRefs = useMemo(() => dataflow.auditTrail.slice(0, 20).map(item => item.auditId), [dataflow.auditTrail]);
+  const taskRequirements = useMemo<Record<string, CesTaskWithExecutionRequirements>>(() => {
+    const entries = activeTasks.map(task => {
+      const pmTask = toPmTask(task, event);
+      const linkedEvidence = dataflow.evidence.filter(item => item.taskId === task.id);
+      const requirementView = buildCesTaskRequirements(
+        pmTask,
+        dataflow.eventId,
+        task.policyIds[0] ?? event.policyRefs[0] ?? '',
+        task.workflowId ?? event.workflowId ?? '',
+        task.dueDate,
+        linkedEvidence,
+        dataflow.approvals,
+        taskAuditRefs,
+      );
+      const requirements = ensureAllRequirementTypes(requirementView.requirements, task.id, dataflow.eventId, task.policyIds[0] ?? event.policyRefs[0] ?? '', task.workflowId ?? event.workflowId ?? '', task.formIds[0]);
+      return [task.id, { ...requirementView, requirements }] as const;
+    });
+    return Object.fromEntries(entries);
+  }, [activeTasks, dataflow.approvals, dataflow.evidence, dataflow.eventId, event, taskAuditRefs]);
+  const displayedTasks = useMemo(() => activeTasks.filter(task => {
+    const req = taskRequirements[task.id];
+    if (!req) return false;
+    const q = searchTerm.trim().toLowerCase();
+    if (q) {
+      const haystack = [
+        task.title,
+        task.id,
+        ...(task.formIds || []),
+        ...(req.linkedEvidence.map(item => item.id)),
+      ].join(' ').toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    if (missingOnly && !req.requirements.some(r => r.completionPercentage < 100)) return false;
+    if (pendingSignatureOnly && req.pendingSignatures <= 0) return false;
+    if (blockedOnly && !req.isBlocked) return false;
+    return true;
+  }), [activeTasks, blockedOnly, missingOnly, pendingSignatureOnly, searchTerm, taskRequirements]);
+
+  useEffect(() => {
+    if (!deepLinkTarget?.taskId) return;
+    const taskView = taskRequirements[deepLinkTarget.taskId];
+    if (!taskView) {
+      onConsumedDeepLink?.();
+      return;
+    }
+    setExpandedTaskIds(prev => ({ ...prev, [deepLinkTarget.taskId]: true }));
+    const targetRequirementId = deepLinkTarget.requirementId
+      ?? (deepLinkTarget.requirementType
+        ? taskView.requirements.find(req => req.type === deepLinkTarget.requirementType)?.requirement_id
+        : undefined);
+    if (targetRequirementId) {
+      setFocusedRequirementId(targetRequirementId);
+    }
+    window.setTimeout(() => {
+      if (targetRequirementId && requirementRefs.current[targetRequirementId]) {
+        requirementRefs.current[targetRequirementId]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        taskRefs.current[deepLinkTarget.taskId]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      onConsumedDeepLink?.();
+    }, 60);
+  }, [deepLinkTarget, onConsumedDeepLink, taskRequirements]);
+
+  return (
+    <div className="p-4 flex flex-col gap-3">
+      <div className="rounded-md border p-2.5" style={{ borderColor: 'rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.02)' }}>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Search task title / form ID / evidence ID"
+            className="rounded border bg-black/20 px-2 py-1 text-[11px]"
+          />
+          <select
+            value={requirementFilter}
+            onChange={e => setRequirementFilter(e.target.value as 'all' | CesExecutionRequirement['type'])}
+            className="rounded border bg-black/20 px-2 py-1 text-[11px]"
+          >
+            <option value="all">All requirements</option>
+            <option value="FORM_COMPLETION">Form</option>
+            <option value="SUPPORTING_EVIDENCE_UPLOAD">Supporting evidence</option>
+            <option value="SIGNATURE_REQUIRED">Signatures</option>
+            <option value="REVIEW_REQUIRED">Review</option>
+            <option value="CERTIFICATION_REQUIRED">Certification</option>
+            <option value="LOCK_REQUIRED">Lock</option>
+          </select>
+          <label className="text-[10px] text-white/70 flex items-center gap-1">
+            <input type="checkbox" checked={missingOnly} onChange={e => setMissingOnly(e.target.checked)} />
+            Missing only
+          </label>
+          <label className="text-[10px] text-white/70 flex items-center gap-1">
+            <input type="checkbox" checked={pendingSignatureOnly} onChange={e => setPendingSignatureOnly(e.target.checked)} />
+            Pending signatures
+          </label>
+          <label className="text-[10px] text-white/70 flex items-center gap-1">
+            <input type="checkbox" checked={blockedOnly} onChange={e => setBlockedOnly(e.target.checked)} />
+            Blocked only
+          </label>
+          <button
+            type="button"
+            onClick={() => {
+              const next = Object.fromEntries(displayedTasks.map(task => [task.id, true]));
+              setExpandedTaskIds(next);
+            }}
+            className="rounded border px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-teal-200"
+          >
+            Expand all
+          </button>
+          <button
+            type="button"
+            onClick={() => setExpandedTaskIds({})}
+            className="rounded border px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-slate-300"
+          >
+            Collapse all
+          </button>
+        </div>
+      </div>
+      <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
+        <div className="text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-white/60 mb-2">Generate task</div>
+        <div className="grid grid-cols-1 gap-2">
+          <div className="flex gap-2">
+            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Manual task title" className="flex-1 rounded border px-2 py-1 text-[11px] bg-white/[0.03]" />
+            <button
+              type="button"
+              onClick={() => {
+                const id = store.createTask(dataflow.eventId, {
+                  title,
+                  source: 'manual',
+                  taskSourceType: 'manual',
+                  taskSourceId: `manual:${Date.now().toString(36)}`,
+                  policyIds: event.policyRefs,
+                  formIds: [],
+                  workflowId: event.workflowId,
+                });
+                if (id) setTitle('');
+              }}
+              className="rounded border px-2 py-1 text-[10px] uppercase tracking-[0.12em]"
+            >
+              Add
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <select value={formTaskId} onChange={e => setFormTaskId(e.target.value)} className="flex-1 rounded border px-2 py-1 text-[11px] bg-white/[0.03]">
+              <option value="">Generate from required form…</option>
+              {dataflow.requiredForms.map(form => <option key={form.id} value={form.formId ?? form.id}>{form.label}</option>)}
+            </select>
+            <button type="button" onClick={() => formTaskId && store.generateTaskFromForm(dataflow.eventId, formTaskId)} className="rounded border px-2 py-1 text-[10px] uppercase tracking-[0.12em]">Generate</button>
+          </div>
+          <div className="flex gap-2">
+            <select value={stepTaskId} onChange={e => setStepTaskId(e.target.value)} className="flex-1 rounded border px-2 py-1 text-[11px] bg-white/[0.03]">
+              <option value="">Generate from workflow step…</option>
+              {event.processFlow.map(step => <option key={step.id} value={step.id}>{step.label}</option>)}
+            </select>
+            <button type="button" onClick={() => stepTaskId && store.generateTaskFromWorkflowStep(dataflow.eventId, stepTaskId)} className="rounded border px-2 py-1 text-[10px] uppercase tracking-[0.12em]">Generate</button>
+          </div>
+        </div>
+      </div>
+
+      <ul className="space-y-2">
+        {displayedTasks.map(task => (
+          <li
+            key={task.id}
+            ref={node => { taskRefs.current[task.id] = node; }}
+            className="rounded-md border p-3"
+            style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <input
+                value={task.title}
+                onChange={e => store.updateTask(dataflow.eventId, task.id, { title: e.target.value })}
+                className="flex-1 bg-transparent text-[12px] font-semibold"
+              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const gate = store.attemptCompleteTask(dataflow.eventId, task.id);
+                    if (gate.canComplete) {
+                      push('success', 'Task certified', gate.message);
+                    } else {
+                      push(
+                        'error',
+                        'Task blocked',
+                        'Cannot complete this task yet. Complete the required form, supporting evidence, and signature requirements first.',
+                      );
+                    }
+                  }}
+                  className="text-[10px] uppercase tracking-[0.12em] text-emerald-300"
+                >
+                  Complete Task
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExpandedTaskIds(prev => ({ ...prev, [task.id]: !prev[task.id] }))}
+                  className="text-[10px] uppercase tracking-[0.12em] text-teal-300"
+                >
+                  {expandedTaskIds[task.id] ? 'Hide Requirements' : 'Show Requirements'}
+                </button>
+                <button type="button" onClick={() => store.softDeleteTask(dataflow.eventId, task.id)} className="text-[10px] uppercase tracking-[0.12em] text-red-300">Delete</button>
+              </div>
+            </div>
+            <div className="mt-2 text-[10px] text-white/65 flex flex-wrap gap-2">
+              <span>{task.id}</span>
+              {task.workflowId && <span>Workflow: {task.workflowId}</span>}
+              <span>Story points: {taskRequirements[task.id]?.storyPoints ?? 1}</span>
+              <span>Weighted completion: {taskRequirements[task.id]?.weightedCompletionPercentage ?? 0}%</span>
+              <span>Audit readiness: {taskRequirements[task.id]?.auditReadinessPercentage ?? 0}%</span>
+              <span>Missing requirements: {taskRequirements[task.id]?.requirements.filter(req => req.completionPercentage < 100).length ?? 0}</span>
+              <span>Pending signatures: {taskRequirements[task.id]?.pendingSignatures ?? 0}</span>
+              <span>Missing evidence: {taskRequirements[task.id]?.requirements.filter(req => req.type === 'SUPPORTING_EVIDENCE_UPLOAD' && req.completionPercentage < 100).length ?? 0}</span>
+              <span>Status: {(taskRequirements[task.id]?.packageState === 'CERTIFIED' || taskRequirements[task.id]?.packageState === 'LOCKED') ? 'Certified/Locked' : taskRequirements[task.id]?.packageState}</span>
+              {task.completionBlockedReason && <span className="text-amber-300">Blocked: {task.completionBlockedReason}</span>}
+              {typeof task.evidenceCount === 'number' && <span>Evidence: {task.evidenceCount}</span>}
+              {task.formIds.map(fid => (
+                <button
+                  key={fid}
+                  type="button"
+                  onClick={() => window.open(buildTaskLinkedFormRoute({
+                    formId: fid,
+                    dataflow,
+                    task,
+                  }), '_blank', 'noopener,noreferrer')}
+                  className="rounded border px-1.5 py-0.5"
+                >
+                  {fid}
+                </button>
+              ))}
+              {task.policyIds.map(pid => <button key={pid} type="button" onClick={() => window.open(`/policies/${encodeURIComponent(pid)}`, '_blank')} className="rounded border px-1.5 py-0.5">{pid}</button>)}
+            </div>
+            {expandedTaskIds[task.id] && (
+              <div className="mt-3 rounded border border-white/10 bg-black/10 p-2">
+                <p className="mb-2 text-[10px] font-montserrat uppercase tracking-[0.14em] text-white/60">
+                  Task execution requirements
+                </p>
+                <div className="space-y-2">
+                  {([
+                    { title: 'Form', types: ['FORM_COMPLETION'] as CesExecutionRequirement['type'][] },
+                    { title: 'Supporting Evidence', types: ['SUPPORTING_EVIDENCE_UPLOAD'] as CesExecutionRequirement['type'][] },
+                    { title: 'Signatures', types: ['SIGNATURE_REQUIRED'] as CesExecutionRequirement['type'][] },
+                    { title: 'Review / Certification', types: ['REVIEW_REQUIRED', 'CERTIFICATION_REQUIRED'] as CesExecutionRequirement['type'][] },
+                    { title: 'Lock / Audit', types: ['LOCK_REQUIRED'] as CesExecutionRequirement['type'][] },
+                  ]).map(group => {
+                    const groupRows = taskRequirements[task.id]?.requirements
+                      .filter(req => group.types.some(type => type === req.type))
+                      .filter(req => requirementFilter === 'all' || req.type === requirementFilter) ?? [];
+                    if (groupRows.length === 0) return null;
+                    return (
+                      <div key={group.title}>
+                        <p className="mb-1 text-[9.5px] font-montserrat uppercase tracking-[0.14em] text-teal-200">{group.title}</p>
+                        <div className="space-y-1.5">
+                          {groupRows.map(requirement => (
+                            <TaskRequirementRow
+                              key={requirement.requirement_id}
+                              dataflow={dataflow}
+                              task={task}
+                              requirement={requirement}
+                              onPrimaryAction={() => setInlineAction({ taskId: task.id, requirementId: requirement.requirement_id })}
+                              highlight={focusedRequirementId === requirement.requirement_id}
+                              onRegister={node => { requirementRefs.current[requirement.requirement_id] = node; }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      {deletedTasks.length > 0 && (
+        <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div className="text-[10px] uppercase tracking-[0.12em] text-white/60 mb-2">Deleted tasks</div>
+          {deletedTasks.map(task => (
+            <div key={task.id} className="flex items-center justify-between text-[11px] py-1">
+              <span>{task.title}</span>
+              <button type="button" onClick={() => store.restoreTask(dataflow.eventId, task.id)} className="text-[10px] uppercase tracking-[0.12em] text-emerald-300">Restore</button>
+            </div>
+          ))}
+        </div>
+      )}
+      {inlineAction && (
+        <InlineTaskActionPanel
+          event={event}
+          dataflow={dataflow}
+          task={displayedTasks.find(task => task.id === inlineAction.taskId) ?? activeTasks.find(task => task.id === inlineAction.taskId) ?? null}
+          requirement={Object.values(taskRequirements).flatMap(task => task.requirements).find(req => req.requirement_id === inlineAction.requirementId) ?? null}
+          onClose={() => setInlineAction(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function toPmTask(task: EventExecutionDataflow['tasks'][number], event: RegulatoryEvent): PmTask {
+  const primaryFormId = task.formIds[0] ?? '';
+  return {
+    task_id: task.id,
+    source: 'CES',
+    task_type: task.taskSourceType === 'approval' ? 'approval' : task.taskSourceType === 'requiredForm' ? 'form_completion' : 'workflow_step',
+    event_id: task.eventId,
+    event_title: event.title,
+    workflow_id: task.workflowId ?? event.workflowId ?? '',
+    workflow_title: event.title,
+    policy_id: task.policyIds[0],
+    policy_refs: task.policyIds,
+    form_refs: task.formIds,
+    generated_form_instance_ids: [],
+    source_form_id: primaryFormId || undefined,
+    priority: 'medium',
+    risk: 'medium',
+    blockers: task.blockedReason ? [task.blockedReason] : [],
+    step_id: task.taskSourceType === 'processFlow' ? task.taskSourceId.replace(/^processFlow:/, '') : undefined,
+    form_id: primaryFormId,
+    form_ids: task.formIds,
+    title: task.title,
+    description: task.description,
+    status: task.status === 'completed' ? 'done' : task.status === 'in_progress' ? 'in_progress' : task.status === 'blocked' ? 'blocked' : 'todo',
+    packet_status: task.status === 'awaiting_signature' ? 'awaiting_signature' : task.status === 'completed' ? 'completed' : 'draft',
+    start_date: task.createdAt.slice(0, 10),
+    due_date: task.dueDate ?? event.date,
+    sprint_id: 'EVENT',
+    story_points: 1,
+    depends_on: [],
+    dependencies: [],
+    required_signers: [],
+    approvers: [],
+    audit_log_refs: [],
+    assignee: task.ownerUserId,
+    owner: task.ownerRole,
+  };
+}
+
+function ensureAllRequirementTypes(
+  requirements: CesExecutionRequirement[],
+  taskId: string,
+  eventId: string,
+  policyId: string,
+  workflowId: string,
+  formId?: string,
+): CesExecutionRequirement[] {
+  const requiredTypes: Array<CesExecutionRequirement['type']> = [
+    'FORM_COMPLETION',
+    'SUPPORTING_EVIDENCE_UPLOAD',
+    'SIGNATURE_REQUIRED',
+    'REVIEW_REQUIRED',
+    'CERTIFICATION_REQUIRED',
+    'LOCK_REQUIRED',
+  ];
+  const existing = new Map(requirements.map(item => [item.type, item]));
+  return requiredTypes.map((type, idx) => existing.get(type) ?? {
+    requirement_id: `${taskId}::virtual-${type.toLowerCase()}`,
+    task_id: taskId,
+    event_id: eventId,
+    policy_id: policyId,
+    workflow_id: workflowId,
+    form_id: formId,
+    title: type === 'REVIEW_REQUIRED'
+      ? 'Review submission package'
+      : type === 'CERTIFICATION_REQUIRED'
+        ? 'Certification required before completion'
+        : type === 'LOCK_REQUIRED'
+          ? 'Lock evidence package'
+          : type === 'SIGNATURE_REQUIRED'
+            ? 'Collect required signatures'
+            : type === 'SUPPORTING_EVIDENCE_UPLOAD'
+              ? 'Upload supporting evidence'
+              : 'Complete required form',
+    type,
+    status: 'PENDING',
+    completionPercentage: 0,
+    weightPercentage: Math.round(100 / requiredTypes.length),
+    auditTrailReferences: [],
+    actionNeeded: 'Complete this requirement from the task workspace.',
+    dueDate: undefined,
+    assignedRole: undefined,
+    assignedTo: undefined,
+    storyPoints: idx + 1,
+  });
+}
+
+function buildTaskLinkedEvidenceRoute({
+  dataflow,
+  task,
+  requirement,
+  formId,
+}: {
+  dataflow: EventExecutionDataflow;
+  task: EventExecutionDataflow['tasks'][number];
+  requirement?: CesExecutionRequirement;
+  formId?: string;
+}): string {
+  const params = new URLSearchParams();
+  params.set('event_id', dataflow.eventId);
+  params.set('task_id', task.id);
+  if (formId) params.set('form_id', formId);
+  if (task.policyIds[0]) params.set('policy_id', task.policyIds[0]);
+  if (task.workflowId) params.set('workflow_id', task.workflowId);
+  if (requirement?.requirement_id) params.set('requirement_id', requirement.requirement_id);
+  return `/evidence?${params.toString()}`;
+}
+
+function buildTaskLinkedFormRoute({
+  formId,
+  dataflow,
+  task,
+  requirement,
+}: {
+  formId: string;
+  dataflow: EventExecutionDataflow;
+  task: EventExecutionDataflow['tasks'][number];
+  requirement?: CesExecutionRequirement;
+}): string {
+  const params = new URLSearchParams();
+  params.set('event_id', dataflow.eventId);
+  params.set('task_id', task.id);
+  params.set('form_id', formId);
+  if (task.policyIds[0]) params.set('policy_id', task.policyIds[0]);
+  if (task.workflowId) params.set('workflow_id', task.workflowId);
+  if (requirement?.requirement_id) params.set('requirement_id', requirement.requirement_id);
+  return `/forms/${encodeURIComponent(formId)}?${params.toString()}`;
+}
+
+function buildTaskLinkedAuditRoute({
+  dataflow,
+  task,
+  requirement,
+}: {
+  dataflow: EventExecutionDataflow;
+  task: EventExecutionDataflow['tasks'][number];
+  requirement?: CesExecutionRequirement;
+}): string {
+  const params = new URLSearchParams();
+  params.set('event', dataflow.eventId);
+  params.set('event_id', dataflow.eventId);
+  params.set('task_id', task.id);
+  if (task.policyIds[0]) params.set('policy_id', task.policyIds[0]);
+  if (task.workflowId) params.set('workflow_id', task.workflowId);
+  if (requirement?.requirement_id) params.set('requirement_id', requirement.requirement_id);
+  return `/audit?${params.toString()}`;
+}
+
+function TaskRequirementRow({
+  dataflow,
+  task,
+  requirement,
+  onPrimaryAction,
+  highlight,
+  onRegister,
+}: {
+  dataflow: EventExecutionDataflow;
+  task: EventExecutionDataflow['tasks'][number];
+  requirement: CesExecutionRequirement;
+  onPrimaryAction: () => void;
+  highlight?: boolean;
+  onRegister?: (node: HTMLDivElement | null) => void;
+}) {
+  const actionLabel = requirement.type === 'FORM_COMPLETION'
+    ? 'Complete Form'
+    : requirement.type === 'SUPPORTING_EVIDENCE_UPLOAD'
+      ? 'Upload Supporting Evidence'
+      : requirement.type === 'SIGNATURE_REQUIRED'
+        ? 'Request Signature'
+        : requirement.type === 'REVIEW_REQUIRED'
+          ? 'Review Package'
+          : requirement.type === 'CERTIFICATION_REQUIRED'
+            ? 'Certify Package'
+            : 'Lock Package';
+  const linkedArtifact = requirement.evidence_id || requirement.form_id || requirement.signature_id || requirement.signer_id || '—';
+  const routeForAudit = buildTaskLinkedAuditRoute({ dataflow, task, requirement });
+
+  return (
+    <div
+      ref={onRegister}
+      className="rounded border bg-black/20 px-2 py-1.5 text-[10px]"
+      style={{ borderColor: highlight ? 'rgba(20,184,166,0.6)' : 'rgba(255,255,255,0.10)' }}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-white/90">{requirement.title}</p>
+        <p className="text-white/60">{requirement.type} · {requirement.weightPercentage}% · {requirement.completionPercentage}% · {requirement.status}</p>
+      </div>
+      <div className="mt-1 flex flex-wrap items-center gap-2 text-white/55">
+        <span>Required action: {requirement.actionNeeded}</span>
+        <span>Linked artifact: {linkedArtifact}</span>
+        <span>Audit ref: {requirement.auditTrailReferences[0] || '—'}</span>
+      </div>
+      <div className="mt-1 flex flex-wrap gap-2">
+        <button type="button" onClick={onPrimaryAction} className="rounded border border-teal-300/40 px-2 py-0.5 text-[9.5px] uppercase tracking-[0.12em] text-teal-200">
+          {actionLabel}
+        </button>
+        <button
+          type="button"
+          onClick={() => window.open(routeForAudit, '_blank', 'noopener,noreferrer')}
+          className="rounded border border-white/20 px-2 py-0.5 text-[9.5px] uppercase tracking-[0.12em] text-white/70"
+        >
+          View Audit Trail
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function validateInlineTaskContext({
+  dataflow,
+  task,
+  requirement,
+}: {
+  dataflow: EventExecutionDataflow;
+  task: EventExecutionDataflow['tasks'][number];
+  requirement: CesExecutionRequirement;
+}): { ok: boolean; message?: string } {
+  if (task.eventId !== dataflow.eventId) {
+    return { ok: false, message: 'Action blocked: selected task does not belong to the active event context.' };
+  }
+  if (requirement.event_id !== dataflow.eventId || requirement.task_id !== task.id) {
+    return { ok: false, message: 'Action blocked: requirement context does not match the selected task.' };
+  }
+  if (requirement.form_id && task.formIds.length > 0 && !task.formIds.includes(requirement.form_id)) {
+    return { ok: false, message: 'Action blocked: selected form does not belong to this task requirement.' };
+  }
+  if (requirement.workflow_id && task.workflowId && requirement.workflow_id !== task.workflowId) {
+    return { ok: false, message: 'Action blocked: workflow context mismatch for this task requirement.' };
+  }
+  if (requirement.policy_id && task.policyIds[0] && requirement.policy_id !== task.policyIds[0]) {
+    return { ok: false, message: 'Action blocked: policy context mismatch for this task requirement.' };
+  }
+  return { ok: true };
+}
+
+/** Resolve a form template from FORMS_DATASET by ID. */
+function resolveFormTemplate(formId: string): { found: boolean; name?: string; reason?: string } {
+  if (!formId) return { found: false, reason: 'No form_id provided for this requirement.' };
+  const rec = FORMS_DATASET.find(f => f.id === formId);
+  if (rec) return { found: true, name: rec.name };
+  return {
+    found: false,
+    reason: `Form template ${formId} was referenced by this task but is not in the Forms Library.`,
+  };
+}
+
+function InlineTaskActionPanel({
+  event,
+  dataflow,
+  task,
+  requirement,
+  onClose,
+}: {
+  event: RegulatoryEvent;
+  dataflow: EventExecutionDataflow;
+  task: EventExecutionDataflow['tasks'][number] | null;
+  requirement: CesExecutionRequirement | null;
+  onClose: () => void;
+}) {
+  const store = useRegulatoryExecutionStore();
+  const push = useToastStore(s => s.push);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [formMarkedComplete, setFormMarkedComplete] = useState(false);
+  const [formInstanceId, setFormInstanceId] = useState<string | null>(null);
+
+  const isFormType = requirement?.type === 'FORM_COMPLETION';
+  const formId = requirement ? (requirement.form_id || (task?.formIds[0] ?? '')) : '';
+  const policyId = task?.policyIds[0] || requirement?.policy_id || '';
+  const workflowId = task?.workflowId || requirement?.workflow_id || '';
+
+  // Resolve form template on every render (no cost, synchronous lookup)
+  const formTemplate = isFormType ? resolveFormTemplate(formId) : null;
+  const formTemplateFound = formTemplate?.found ?? true;
+
+  // For FORM_COMPLETION: get-or-create the form instance ONCE on mount (idempotent).
+  // If the same event+task+form+requirement is reopened, the existing instance is returned.
+  useEffect(() => {
+    if (!isFormType || !task || !requirement || !formId) return;
+    if (!formTemplateFound) return; // don't create instance for missing templates
+    const ctx = validateInlineTaskContext({ dataflow, task, requirement });
+    if (!ctx.ok) return;
+    const instance = store.getOrCreateFormInstance({
+      eventId: dataflow.eventId,
+      formId,
+      taskId: task.id,
+      requirementId: requirement.requirement_id,
+      policyIds: event.policyRefs,
+      workflowId: event.workflowId,
+    });
+    if (instance) {
+      setFormInstanceId(instance.id);
+      store.setFormStatus(dataflow.eventId, formId, 'in-progress');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!task || !requirement) return null;
+
+  const context = validateInlineTaskContext({ dataflow, task, requirement });
+
+  const actionTitle = requirement.type === 'FORM_COMPLETION'
+    ? 'Complete Form'
+    : requirement.type === 'SUPPORTING_EVIDENCE_UPLOAD'
+      ? 'Upload Supporting Evidence'
+      : requirement.type === 'SIGNATURE_REQUIRED'
+        ? 'Request Signature'
+        : requirement.type === 'REVIEW_REQUIRED'
+          ? 'Review Package'
+          : requirement.type === 'CERTIFICATION_REQUIRED'
+            ? 'Certify Package'
+            : 'Lock Package';
+
+  const markFormComplete = () => {
+    if (!context.ok) { setError(context.message ?? 'Context mismatch.'); return; }
+    if (!formInstanceId) { setError('Form instance not yet created. Please wait or reopen.'); return; }
+    if (!formTemplateFound) { setError(formTemplate?.reason ?? 'Form template not found.'); return; }
+    store.setFormInstanceStatus(dataflow.eventId, formInstanceId, 'COMPLETED');
+    store.setFormStatus(dataflow.eventId, formId, 'complete');
+    store.appendTaskAuditEvent(dataflow.eventId, 'task', task.id, 'FORM_COMPLETED', {
+      reason: `Form ${formId} marked complete from inline drawer`,
+      after: { requirementId: requirement.requirement_id, formId, formInstanceId, status: 'COMPLETED' },
+    });
+    setFormMarkedComplete(true);
+    push('success', 'Form marked complete', `Instance ${formInstanceId} linked to task ${task.id}.`);
+  };
+
+  const submit = async () => {
+    if (!context.ok) {
+      setError(context.message ?? 'Action blocked due to invalid context.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      if (requirement.type === 'SUPPORTING_EVIDENCE_UPLOAD') {
+        if (!uploadFile) {
+          setError('Select a file to upload first.');
+          return;
+        }
+        const evidenceId = store.uploadEvidence(dataflow.eventId, {
+          taskId: task.id,
+          policyIds: [policyId],
+          workflowId,
+          formIds: formId ? [formId] : [],
+          linkedFormId: formId,
+          linkedFormInstanceId: formInstanceId ?? undefined,
+          name: uploadFile.name,
+          kind: 'attachment',
+          sizeLabel: `${Math.max(1, Math.round(uploadFile.size / 1024))} KB`,
+        });
+        if (!evidenceId) {
+          setError(store.evidenceErrorsByEventId[dataflow.eventId] || 'Upload failed due to missing evidence bindings.');
+          return;
+        }
+        store.appendTaskAuditEvent(dataflow.eventId, 'task', task.id, 'SUPPORTING_EVIDENCE_UPLOADED', {
+          after: { evidenceId, requirementId: requirement.requirement_id, formInstanceId: formInstanceId ?? undefined },
+        });
+        push('success', 'Evidence uploaded inline', `Evidence ${evidenceId} linked to ${task.id}.`);
+        return;
+      }
+      if (requirement.type === 'SIGNATURE_REQUIRED') {
+        const requestId = store.requestApproval(
+          dataflow.eventId,
+          'form',
+          `Task signature request — ${task.title}`,
+          formId,
+          `task_id=${task.id}; requirement_id=${requirement.requirement_id}; form_instance_id=${formInstanceId ?? '—'}`,
+        );
+        if (!requestId) {
+          setError('Signature request could not be created for this requirement.');
+          return;
+        }
+        push('success', 'Signature requested', `Request ${requestId} is linked to ${task.id}.`);
+        return;
+      }
+      if (requirement.type === 'REVIEW_REQUIRED') {
+        store.appendTaskAuditEvent(dataflow.eventId, 'task', task.id, 'REQUIREMENT_COMPLETED', {
+          reason: 'Inline package review acknowledged',
+          after: { requirementId: requirement.requirement_id, review: 'acknowledged' },
+        });
+        push('success', 'Package reviewed', 'Review action was recorded in task audit trail.');
+        return;
+      }
+      if (requirement.type === 'CERTIFICATION_REQUIRED') {
+        const gate = store.attemptCompleteTask(dataflow.eventId, task.id);
+        if (!gate.canComplete) {
+          setError(gate.message);
+          return;
+        }
+        push('success', 'Task certified', gate.message);
+        return;
+      }
+      if (requirement.type === 'LOCK_REQUIRED') {
+        const locked = dataflow.evidence.find(item => item.taskId === task.id && item.status === 'EVIDENCE_LOCKED');
+        if (!locked) {
+          setError('Cannot lock yet: no EVIDENCE_LOCKED artifact found for this task.');
+          return;
+        }
+        store.appendTaskAuditEvent(dataflow.eventId, 'task', task.id, 'TASK_LOCKED', {
+          reason: `Inline lock confirmation for evidence ${locked.id}`,
+          after: { evidenceId: locked.id, requirementId: requirement.requirement_id },
+        });
+        push('success', 'Package lock confirmed', `Evidence ${locked.id} remains immutable.`);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const openInNewTab = () => {
+    if (requirement.type === 'FORM_COMPLETION' && formId) {
+      const base = buildTaskLinkedFormRoute({ formId, dataflow, task, requirement });
+      const url = formInstanceId ? `${base}&form_instance_id=${encodeURIComponent(formInstanceId)}` : base;
+      window.open(url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (requirement.type === 'SUPPORTING_EVIDENCE_UPLOAD') {
+      window.open(buildTaskLinkedEvidenceRoute({ dataflow, task, requirement, formId }), '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (requirement.type === 'SIGNATURE_REQUIRED') {
+      window.open(
+        `/calendar/event/${encodeURIComponent(dataflow.eventId)}/approval?task_id=${encodeURIComponent(task.id)}&requirement_id=${encodeURIComponent(requirement.requirement_id)}`,
+        '_blank', 'noopener,noreferrer',
+      );
+      return;
+    }
+    window.open(buildTaskLinkedAuditRoute({ dataflow, task, requirement }), '_blank', 'noopener,noreferrer');
+  };
+
+  // Always right-side drawer. Wider panel for forms to give the FormViewer room.
+  const drawerWidth = isFormType && formId ? 'w-[min(680px,92vw)]' : 'w-[480px]';
+
+  // Mark as Complete is disabled until: context ok, template found, instance exists, not already done
+  const markCompleteDisabled = !context.ok || !formTemplateFound || !formInstanceId || formMarkedComplete;
+
+  return (
+    <div className="fixed inset-0 z-[70] flex justify-end" onClick={onClose}>
+      <div className="flex-1 bg-black/50" />
+      <div
+        className={`${drawerWidth} max-w-full h-full border-l border-cyan-300/25 bg-[#0d1a2d] flex flex-col`}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* ── Header ── */}
+        <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3 border-b border-white/10 flex-shrink-0">
+          <div className="min-w-0">
+            <h4 className="text-sm font-semibold text-white truncate">{actionTitle}</h4>
+            <p className="text-[10.5px] text-cyan-200/70 mt-0.5 truncate">{task.title}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close drawer"
+            className="text-slate-400 hover:text-white flex-shrink-0 mt-0.5"
+          >
+            <X size={15} />
+          </button>
+        </div>
+
+        {/* ── Context strip: shows all 7 binding IDs including form_instance_id ── */}
+        <div className="px-4 py-2 border-b border-white/10 flex-shrink-0 bg-cyan-950/30">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono text-cyan-200/80">
+            <span>event: <span className="text-white/90">{dataflow.eventId}</span></span>
+            <span>task: <span className="text-white/90 break-all">{task.id.split('::')[0]}</span></span>
+            <span>form template: <span className="text-white/90">{formId || '—'}</span></span>
+            <span>form instance: <span className={`${formInstanceId ? 'text-teal-300' : 'text-slate-500'} break-all`}>{formInstanceId || (isFormType ? 'creating…' : '—')}</span></span>
+            <span>policy: <span className="text-white/90">{policyId || '—'}</span></span>
+            <span>workflow: <span className="text-white/90">{workflowId || '—'}</span></span>
+            <span className="col-span-2">req: <span className="text-white/90 truncate">{requirement.requirement_id.split('::').pop()}</span></span>
+          </div>
+        </div>
+
+        {/* ── Context mismatch error ── */}
+        {!context.ok && (
+          <div className="mx-4 mt-3 rounded border border-rose-300/35 bg-rose-500/10 p-2 text-xs text-rose-200 flex-shrink-0">
+            {context.message}
+          </div>
+        )}
+
+        {/* ── Missing form template error ── */}
+        {isFormType && !formTemplateFound && (
+          <div className="mx-4 mt-3 rounded border border-amber-300/35 bg-amber-900/20 p-3 text-xs flex-shrink-0">
+            <p className="font-semibold text-amber-200 mb-1">Form Template Not Found</p>
+            <p className="text-amber-100/80">{formTemplate?.reason}</p>
+            <p className="text-amber-100/60 mt-1.5">Mark as Complete is disabled until the template is added to the Forms Library. You may still open in a new tab for manual tracking.</p>
+          </div>
+        )}
+
+        {/* ── Body (scrollable) ── */}
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+
+          {/* FORM COMPLETION — embedded FormViewer fills the body */}
+          {requirement.type === 'FORM_COMPLETION' && (
+            <div className="flex flex-col h-full">
+              {!formId && (
+                <div className="p-4 text-xs text-rose-200">No form_id found for this requirement. Use "Open in new tab" to complete the form.</div>
+              )}
+              {formId && !formTemplateFound && (
+                <div className="p-4 text-xs text-amber-200/80 space-y-2">
+                  <p className="font-medium text-amber-100">Form body cannot be rendered.</p>
+                  <p>{formTemplate?.reason}</p>
+                  <p className="text-amber-100/60">Contact your administrator to add <span className="font-mono text-amber-200">{formId}</span> to the Forms Library, then reopen this requirement.</p>
+                </div>
+              )}
+              {formId && formTemplateFound && (
+                <div className="flex-1 min-h-0 bg-white overflow-y-auto">
+                  <FormViewer
+                    formId={formId}
+                    formSource="task"
+                    parentTaskId={task.id}
+                    hhcEventId={dataflow.eventId}
+                    hhcWorkflowId={workflowId || undefined}
+                    enableEmbeddedSigning
+                  />
+                </div>
+              )}
+              {formMarkedComplete && (
+                <div className="px-4 py-2 flex-shrink-0 text-xs text-emerald-300 bg-emerald-900/20 border-t border-emerald-500/20">
+                  Instance {formInstanceId} marked complete and linked to task.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SUPPORTING EVIDENCE UPLOAD */}
+          {requirement.type === 'SUPPORTING_EVIDENCE_UPLOAD' && (
+            <div className="p-4 space-y-3">
+              <div className="rounded border border-white/10 bg-black/20 p-3 text-xs text-slate-200">
+                <p className="text-sm text-white mb-1.5 font-medium">Uploading evidence for: {task.title}</p>
+                <p className="text-slate-300 leading-relaxed">
+                  This file will be linked to Event <span className="text-white">{dataflow.eventId}</span>,
+                  Task <span className="text-white">{task.id}</span>,
+                  Form <span className="text-white">{formId || '—'}</span>,
+                  Policy <span className="text-white">{policyId || '—'}</span>,
+                  Workflow <span className="text-white">{workflowId || '—'}</span>.
+                </p>
+              </div>
+              <input
+                type="file"
+                onChange={e => setUploadFile(e.target.files?.[0] ?? null)}
+                className="text-xs text-slate-200"
+              />
+              {uploadFile && (
+                <div className="rounded border border-teal-300/30 bg-teal-900/20 p-2 text-xs text-teal-200">
+                  Ready to upload: {uploadFile.name} ({Math.max(1, Math.round(uploadFile.size / 1024))} KB)
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* OTHER ACTIONS (Signature, Review, Certify, Lock) */}
+          {requirement.type !== 'FORM_COMPLETION' && requirement.type !== 'SUPPORTING_EVIDENCE_UPLOAD' && (
+            <div className="p-4">
+              <div className="rounded border border-white/10 bg-black/20 p-3 text-xs text-slate-200">
+                <p className="font-medium text-white mb-1.5">{actionTitle}</p>
+                <p className="text-slate-300 leading-relaxed">{requirement.title}</p>
+                {requirement.status && (
+                  <p className="mt-1.5 text-slate-400">Current status: <span className="text-white">{requirement.status}</span></p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="mx-4 mb-3 rounded border border-rose-300/35 bg-rose-500/10 p-2 text-xs text-rose-200">
+              {error}
+            </div>
+          )}
+        </div>
+
+        {/* ── Footer actions ── */}
+        <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-t border-white/10 flex-shrink-0 bg-black/20">
+          {/* Form type: show Mark Complete (gated) + secondary Open in new tab */}
+          {requirement.type === 'FORM_COMPLETION' ? (
+            <>
+              <button
+                type="button"
+                onClick={markFormComplete}
+                disabled={markCompleteDisabled}
+                title={
+                  !formTemplateFound ? `Form template ${formId} not in Forms Library` :
+                  !formInstanceId ? 'Form instance not yet created' :
+                  formMarkedComplete ? 'Already marked complete' :
+                  'Mark this form instance as complete'
+                }
+                className="rounded border border-teal-300/45 bg-teal-400/15 px-2.5 py-1 text-xs uppercase tracking-[0.12em] text-teal-100 disabled:opacity-40"
+              >
+                {formMarkedComplete ? '✓ Marked complete' : 'Mark as Complete'}
+              </button>
+              <button
+                type="button"
+                onClick={openInNewTab}
+                className="rounded border border-white/20 px-2.5 py-1 text-xs uppercase tracking-[0.12em] text-slate-300"
+              >
+                Open in new tab
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={busy || !context.ok}
+                className="rounded border border-teal-300/45 bg-teal-400/15 px-2.5 py-1 text-xs uppercase tracking-[0.12em] text-teal-100 disabled:opacity-40"
+              >
+                {busy ? 'Working…' : actionTitle}
+              </button>
+              <button
+                type="button"
+                onClick={openInNewTab}
+                className="rounded border border-white/20 px-2.5 py-1 text-xs uppercase tracking-[0.12em] text-slate-300"
+              >
+                Open in new tab
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RequiredFormsTab({
+  event,
+  dataflow,
+  onOpenTaskContext,
+}: {
+  event: RegulatoryEvent;
+  dataflow: EventExecutionDataflow;
+  onOpenTaskContext: (target: TaskDeepLinkTarget) => void;
+}) {
+  const store = useRegulatoryExecutionStore();
+  return (
+    <div className="p-4 space-y-2">
+      <div className="rounded-md border border-teal-300/35 bg-teal-500/10 px-3 py-2 text-[10.5px] text-teal-100">
+        {TASK_FIRST_SUMMARY_GUIDANCE}
+      </div>
+      {dataflow.requiredForms.map(form => {
+        const formId = form.formId ?? form.id;
+        const status = store.effectiveFormStatus(event, form.id);
+        const linkedTasks = dataflow.tasks.filter(task => task.formIds.includes(formId) && !task.isDeleted);
+        return (
+          <div key={form.id} className="rounded-md border p-3 flex items-center justify-between gap-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+            <div>
+              <div className="text-[12px] font-semibold">{form.label}</div>
+              <div className="text-[10px] text-white/60">{formId} · {status}</div>
+              {linkedTasks.length > 0 && (
+                <div className="text-[10px] text-white/50 mt-1">
+                  Linked task: {linkedTasks[0].title}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const linked = linkedTasks[0];
+                  if (!linked) {
+                    window.open(`/forms/${encodeURIComponent(formId)}`, '_blank', 'noopener,noreferrer');
+                    return;
+                  }
+                  window.open(buildTaskLinkedFormRoute({
+                    formId,
+                    dataflow,
+                    task: linked,
+                  }), '_blank', 'noopener,noreferrer');
+                }}
+                className="rounded border px-2 py-1 text-[10px] uppercase tracking-[0.12em]"
+              >
+                Open
+              </button>
+              {linkedTasks[0] && (
+                <button
+                  type="button"
+                  onClick={() => onOpenTaskContext({
+                    taskId: linkedTasks[0].id,
+                    requirementType: 'FORM_COMPLETION',
+                  })}
+                  className="rounded border px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-teal-200"
+                >
+                  Open Linked Task
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ApprovalsTab({
+  dataflow,
+  onOpenTaskContext,
+}: {
+  dataflow: EventExecutionDataflow;
+  onOpenTaskContext: (target: TaskDeepLinkTarget) => void;
+}) {
+  return (
+    <div className="p-4 space-y-2">
+      <div className="rounded-md border border-teal-300/35 bg-teal-500/10 px-3 py-2 text-[10.5px] text-teal-100">
+        {TASK_FIRST_SUMMARY_GUIDANCE}
+      </div>
+      {dataflow.approvals.length === 0 && <EmptyHint label="No approval requests for this event." />}
+      {dataflow.approvals.map(approval => (
+        <div key={approval.id} className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div className="text-[12px] font-semibold">{approval.targetLabel}</div>
+          <div className="text-[10px] text-white/60">{approval.targetKind} · {approval.status}</div>
+          <div className="mt-1 text-[10px] text-white/50">
+            Linked task:{' '}
+            {(dataflow.tasks.find(task => task.formIds.includes(approval.targetId ?? '') && !task.isDeleted)?.title) || 'Not linked'}
+          </div>
+          {dataflow.tasks.find(task => task.formIds.includes(approval.targetId ?? '') && !task.isDeleted) && (
+            <button
+              type="button"
+              className="mt-2 rounded border px-2 py-0.5 text-[9.5px] uppercase tracking-[0.12em] text-teal-200"
+              onClick={() => {
+                const linked = dataflow.tasks.find(task => task.formIds.includes(approval.targetId ?? '') && !task.isDeleted);
+                if (!linked) return;
+                onOpenTaskContext({ taskId: linked.id, requirementType: 'SIGNATURE_REQUIRED' });
+              }}
+            >
+              Open Linked Task
+            </button>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TechnicalDetailsTab({ dataflow }: { dataflow: EventExecutionDataflow }) {
+  return (
+    <div className="p-4 space-y-2 text-[11px]">
+      <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+        <div className="text-[10px] uppercase tracking-[0.12em] text-white/60">Event Instance</div>
+        <div className="font-mono mt-1">{dataflow.eventId}</div>
+        <div className="text-white/70 mt-1">Source Event: <span className="font-mono">{dataflow.sourceEventId}</span></div>
+        <div className="text-white/70 mt-1">Status: {dataflow.eventInstance.status} · {dataflow.eventInstance.lockState}</div>
+        <div className="text-white/70 mt-2">Folder: <span className="font-mono">{dataflow.folder.folderPath}</span></div>
+      </div>
+      <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+        <div className="text-[10px] uppercase tracking-[0.12em] text-white/60">Task Source IDs</div>
+        {dataflow.tasks.map(task => (
+          <div key={task.id} className="font-mono text-[10px] mt-1">
+            {task.id} · {task.taskSourceId}
+          </div>
+        ))}
+      </div>
+      <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+        <div className="text-[10px] uppercase tracking-[0.12em] text-white/60">Generated Form Instances</div>
+        {dataflow.generatedFormInstances.length === 0 && <div className="text-white/50 mt-1">None yet.</div>}
+        {dataflow.generatedFormInstances.map(inst => (
+          <div key={inst.id} className="font-mono text-[10px] mt-1">{inst.id} · {inst.formId} · {inst.folderPath}</div>
+        ))}
+      </div>
+      <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+        <div className="text-[10px] uppercase tracking-[0.12em] text-white/60">Event Audit Trail</div>
+        {dataflow.auditTrail.length === 0 && <div className="text-white/50 mt-1">No task/form mutations yet.</div>}
+        {dataflow.auditTrail.slice(0, 30).map(row => (
+          <div key={row.auditId} className="font-mono text-[10px] mt-1">{row.timestamp} · {row.entityType}:{row.entityId} · {row.action} · v{row.recordVersion}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EvidenceByTaskTab({
+  dataflow,
+  onOpenTaskContext,
+}: {
+  dataflow: EventExecutionDataflow;
+  onOpenTaskContext: (target: TaskDeepLinkTarget) => void;
+}) {
+  const taskIds = new Set(dataflow.tasks.filter(task => !task.isDeleted).map(task => task.id));
+  const orphanEvidence = dataflow.evidence.filter(item => !item.taskId || !taskIds.has(item.taskId));
+  return (
+    <div className="p-4 space-y-3">
+      <div className="rounded-md border border-teal-300/35 bg-teal-500/10 px-3 py-2 text-[10.5px] text-teal-100">
+        {TASK_FIRST_SUMMARY_GUIDANCE}
+      </div>
+      {dataflow.tasks.filter(task => !task.isDeleted).map(task => {
+        const taskEvidence = dataflow.evidence.filter(evidence => evidence.taskId === task.id);
+        return (
+          <div key={task.id} className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+            <div className="text-[12px] font-semibold">{task.title}</div>
+            <div className="text-[10px] text-white/60">{task.id} · {taskEvidence.length} evidence</div>
+            {taskEvidence.length === 0 && <div className="text-[10px] text-white/45 mt-1">No evidence linked.</div>}
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => onOpenTaskContext({ taskId: task.id, requirementType: 'SUPPORTING_EVIDENCE_UPLOAD' })}
+                className="rounded border border-teal-300/40 px-2 py-0.5 text-[9.5px] uppercase tracking-[0.12em] text-teal-200"
+              >
+                Open Linked Task
+              </button>
+            </div>
+            {taskEvidence.map(evidence => (
+              <div key={evidence.id} className="mt-2 text-[10px] text-white/70 font-mono">
+                {evidence.id} · {evidence.name} · {evidence.objectPath}
+              </div>
+            ))}
+          </div>
+        );
+      })}
+      {orphanEvidence.length > 0 && (
+        <div className="rounded-md border border-orange-400/35 bg-orange-500/10 p-3 text-[10.5px] text-orange-200">
+          Needs Review / Orphan Evidence: {orphanEvidence.length}. These records are excluded from completion and audit readiness until linked to a task.
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EventAuditTrailTab({ dataflow }: { dataflow: EventExecutionDataflow }) {
+  const ordered = [...dataflow.auditTrail].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  return (
+    <div className="p-4 space-y-2">
+      {ordered.length === 0 && <EmptyHint label="No event/task/form/evidence actions yet." />}
+      {ordered.map(row => (
+        <div key={row.auditId} className="rounded-md border p-2 text-[10px] font-mono" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div>{row.timestamp} · {row.entityType}:{row.entityId} · {row.action}</div>
+          <div className="text-white/50">version={row.recordVersion} prev={row.prevHash ?? '—'} hash={row.currentHash ?? '—'}</div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -714,6 +1893,7 @@ function AuditViewPanel({ event, today }: { event: RegulatoryEvent; today: Date 
     </div>
   );
 }
+void AuditViewPanel;
 
 /* ─── DependenciesSection ───────────────────────────────────
    Renders upstream and downstream references for the instance.
@@ -1334,8 +2514,8 @@ function CalendarEventView({
         </div>
       </div>
 
-      <div className="grid min-h-[520px] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="border-b border-gray-200 px-5 py-4 lg:border-b-0 lg:border-r">
+      <div className="grid min-h-0 grid-cols-1">
+        <div className="border-b border-gray-200 px-5 py-4">
           <div className="space-y-4">
             <section className="rounded-xl border border-gray-200 bg-white">
               <div className="grid gap-0 border-b border-gray-200 md:grid-cols-3">
@@ -1500,7 +2680,7 @@ function CalendarEventView({
           </div>
         </div>
 
-        <aside className="bg-gray-50/80 px-4 py-4">
+        <aside className="border-t border-gray-200 bg-gray-50/80 px-4 py-4">
           <div className="border-b border-gray-200">
             <div className="flex items-center gap-4">
               <CalendarSideTabButton

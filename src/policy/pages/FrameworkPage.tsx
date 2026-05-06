@@ -231,6 +231,12 @@ export function FrameworkPage() {
               </button>
             </div>
             <button
+              onClick={() => navigate('/framework/achc-survey')}
+              className="fw-glass-btn hover:border-[#14b8a6]/40 px-6 py-3 rounded-full font-bold text-[10px] tracking-[0.2em] flex items-center gap-2 text-[#14b8a6] uppercase transition-all"
+            >
+              <FileCheck size={14} /> ACHC SURVEY VIEW
+            </button>
+            <button
               onClick={() => navigate('/library')}
               className="fw-glass-btn hover:border-[#00e59b]/40 px-6 py-3 rounded-full font-bold text-[10px] tracking-[0.2em] flex items-center gap-2 text-[#00e59b] uppercase transition-all"
             >

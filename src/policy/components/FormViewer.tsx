@@ -969,6 +969,15 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
   const queryInstanceId = searchParams.get('instance') ?? undefined;
   const queryEventId = searchParams.get('event') ?? undefined;
   const queryWorkflowId = searchParams.get('workflow') ?? undefined;
+  const queryEventIdV2 = searchParams.get('event_id') ?? undefined;
+  const queryTaskId = searchParams.get('task_id') ?? undefined;
+  const queryFormId = searchParams.get('form_id') ?? undefined;
+  const queryPolicyId = searchParams.get('policy_id') ?? undefined;
+  const queryWorkflowIdV2 = searchParams.get('workflow_id') ?? undefined;
+  const queryRequirementId = searchParams.get('requirement_id') ?? undefined;
+  const effectiveEventContext = hhcEventId ?? queryEventIdV2 ?? queryEventId;
+  const effectiveWorkflowContext = hhcWorkflowId ?? queryWorkflowIdV2 ?? queryWorkflowId;
+  const hasTaskLinkedContext = Boolean(queryEventIdV2 || queryTaskId || queryRequirementId);
   const setDetailMode = useShellStore(s => s.setDetailMode);
 
   useEffect(() => {
@@ -1317,6 +1326,35 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
   return (
     <SignatureCtx.Provider value={ctxValue}>
       <div className="min-h-screen overflow-auto bg-[#F2F2F0] font-roboto text-[#1F1C1B]">
+        {hasTaskLinkedContext && (
+          <div className={`no-print mx-auto ${maxW} px-6 md:px-10 pt-5`}>
+            <div className="rounded-[10px] border border-[#56B6A9] bg-[#E8F6F4] px-3 py-2 text-[12px] text-[#134E4A]">
+              <div className="font-semibold">Task-linked form context detected.</div>
+              <div className="mt-1 text-[11px]">
+                event_id={queryEventIdV2 || effectiveEventContext || '—'} · task_id={queryTaskId || parentTaskId || '—'} · form_id={queryFormId || content.id} · policy_id={queryPolicyId || content.policies[0] || '—'} · workflow_id={queryWorkflowIdV2 || effectiveWorkflowContext || '—'} · requirement_id={queryRequirementId || '—'}
+              </div>
+              <div className="mt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const eventForRoute = queryEventIdV2 || effectiveEventContext;
+                    if (!eventForRoute) {
+                      navigate('/calendar');
+                      return;
+                    }
+                    const q = new URLSearchParams();
+                    if (queryTaskId) q.set('task_id', queryTaskId);
+                    if (queryRequirementId) q.set('requirement_id', queryRequirementId);
+                    navigate(`/calendar/event/${encodeURIComponent(eventForRoute)}${q.toString() ? `?${q.toString()}` : ''}`);
+                  }}
+                  className="rounded-[8px] border border-[#2D8C83] px-2 py-1 text-[11px] font-semibold text-[#0F766E] hover:bg-[#D7F0ED]"
+                >
+                  Return to Event Task Workspace
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* ── No-print action bar ── */}
         <div className={`no-print flex items-center justify-between px-6 md:px-10 pt-5 pb-3 mx-auto ${maxW}`}>
           <button
@@ -1355,8 +1393,8 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
                   for (const [k, v] of autoFills.entries()) fields[k] = v;
                   const r = await recordFormSubmission({
                     policy_id:        content.policies[0],
-                    workflow_id:      hhcWorkflowId ?? queryWorkflowId,
-                    event_id:         hhcEventId ?? queryEventId,
+                    workflow_id:      effectiveWorkflowContext,
+                    event_id:         effectiveEventContext,
                     form_id:          content.id,
                     form_instance_id: formInstanceId,
                     fields,

@@ -7,6 +7,7 @@ import { useMemo } from 'react';
 import { Repeat, RotateCcw, PenLine, Anchor } from 'lucide-react';
 import { CES_TOKENS } from '../../theme';
 import { useComplianceExecution } from '@/policy/compliance-execution';
+import { usePmViewSprintStore } from '@/policy/pm/pmViewSprintStore';
 import {
   type ComplianceDomain, type ComplianceEvent, type ExecutionUnit,
   COMPLIANCE_DOMAIN_LABEL,
@@ -34,13 +35,13 @@ function sameDay(a: Date, b: Date) {
 }
 
 export function ComplianceCalendar() {
-  const snap = useComplianceExecution();
-  const ACTIVE_SPRINT   = snap.activeSprint;
+  const sprintWindow = usePmViewSprintStore(s => s.window);
+  const snap = useComplianceExecution({ mode: 'sprint', window: sprintWindow });
   const EVENTS          = snap.events;
   const EXECUTION_UNITS = snap.executionUnits;
 
-  const days = useMemo(() => buildDays(ACTIVE_SPRINT.startDate), [ACTIVE_SPRINT.startDate]);
-  const sprintEnd = useMemo(() => startOfDay(new Date(ACTIVE_SPRINT.endDate)), [ACTIVE_SPRINT.endDate]);
+  const days = useMemo(() => buildDays(sprintWindow.startDate), [sprintWindow.startDate]);
+  const sprintEnd = useMemo(() => startOfDay(new Date(sprintWindow.endDate)), [sprintWindow.endDate]);
 
   const eventsByDay = useMemo(() => {
     const map = new Map<string, ComplianceEvent[]>();

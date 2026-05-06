@@ -2,9 +2,13 @@ import type { DemoUser as AuthDemoUser } from '@/auth/api';
 import type { User } from './types';
 
 export const DEMO_USERS: User[] = [
-  { id: 'demo-user-careindeed', email: 'robertp@careindeed.com', name: 'TJ Padilla', status: 'active' },
-  { id: 'usr-admin', email: 'admin@careindeed.com', name: 'Alicia Admin', status: 'active' },
-  { id: 'usr-deeb-admin', email: 'deeb@careindeed.com', name: 'Deeb Admin', status: 'active' },
+  { id: 'demo-user-careindeed', email: 'robertp@careindeed.com', name: 'TJ Padilla', status: 'active', source: 'seed' },
+  { id: 'usr-admin', email: 'admin@careindeed.com', name: 'Alicia Admin', status: 'active', source: 'seed' },
+  { id: 'usr-deeb-admin', email: 'deeb@careindeed.com', name: 'Deeb Admin', status: 'active', source: 'seed' },
+  { id: 'usr-dagny', email: 'dagnyy@careindeed.com', name: 'Dagny Yenko', status: 'active', source: 'seed' },
+  { id: 'usr-janine', email: 'janinec@careindeed.com', name: 'Janine Catanghal', status: 'active', source: 'seed' },
+  { id: 'usr-reden', email: 'redenv@careindeed.com', name: 'Reden Valerio', status: 'active', source: 'seed' },
+  { id: 'usr-monserat', email: 'monseratz@careindeed.com', name: 'Monserat Zapanta', status: 'active', source: 'seed' },
   { id: 'usr-rn', email: 'rn@careindeed.com', name: 'Riley RN', status: 'active' },
   { id: 'usr-lvn', email: 'lvn@careindeed.com', name: 'Logan LVN', status: 'active' },
   { id: 'usr-chha', email: 'chha@careindeed.com', name: 'Casey CHHA', status: 'active' },

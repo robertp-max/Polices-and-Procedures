@@ -29,6 +29,9 @@ export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(0);
+  const [viewportWidth, setViewportWidth] = useState(() => (typeof window === 'undefined' ? 1920 : window.innerWidth));
+  const isMobile = viewportWidth < 768;
+  const isTablet = viewportWidth >= 768 && viewportWidth < 1200;
 
   // Filter
   const filtered: WorkflowCardProjection[] = useMemo(() => {
@@ -52,6 +55,11 @@ export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
   }, [selectedDomain, savedView, query]);
 
   useEffect(() => { setPage(0); }, [selectedDomain, savedView, query]);
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const start = page * PAGE_SIZE;
@@ -84,7 +92,7 @@ export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
     null;
 
   return (
-    <div className="h-full flex flex-col" style={{ padding: '28px 32px 20px 32px' }}>
+    <div className="h-full flex flex-col" style={{ padding: isMobile ? '14px 14px 12px 14px' : '28px 32px 20px 32px' }}>
       {/* 1. Title row */}
       <div className="flex items-end justify-between" style={{ marginBottom: 8 }}>
         <div>
@@ -130,7 +138,7 @@ export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
       </div>
 
       {/* 3. KPI band */}
-      <div className="grid grid-cols-4 gap-4" style={{ marginBottom: 16 }}>
+      <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-3`} style={{ marginBottom: 16 }}>
         {kpis.map((k) => (
           <div
             key={k.label}
@@ -163,7 +171,7 @@ export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
       </div>
 
       {/* 4. Command line */}
-      <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+      <div className="flex items-center gap-3 flex-wrap" style={{ marginBottom: 16 }}>
         <div
           className="flex items-center gap-2 flex-1"
           style={{
@@ -203,11 +211,12 @@ export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
       </div>
 
       {/* 5. Card grid 3×3 */}
-      <div className="grid grid-cols-3 gap-4 flex-1 min-h-0">
+      <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-3'} gap-4 flex-1 min-h-0`}>
         {pageItems.map((c) => (
           <WorkflowCard
             key={c.id}
             card={c}
+            compact={isMobile}
             onOpen={() => navigate(`/workflows/${c.id}`)}
           />
         ))}

@@ -19,7 +19,7 @@ import { isPersonalTask } from '@/policy/pm/types';
 import type { Task } from '@/policy/pm/types';
 
 export function ApprovalsQueuePage(): ReactElement {
-  const tasks = useProjectedTasks();
+  const tasks = useProjectedTasks('full');
   const overlay = usePmOverlayStore();
   const ingest = usePmNotificationStore(s => s.ingest);
   const [actor] = useState(() => localStorage.getItem('hhc_actor_id') || 'me');

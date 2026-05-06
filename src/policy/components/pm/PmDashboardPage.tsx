@@ -91,7 +91,7 @@ function buildThroughput(tasks: Task[], anchorSprintId: string, count = 6): Thro
 }
 
 export function PmDashboardPage(): ReactElement {
-  const tasks = useProjectedTasks();
+  const tasks = useProjectedTasks('full');
   const today = currentSprint();
   const [sprintId, setSprintId] = useState<string>(today.id);
 

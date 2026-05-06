@@ -18,6 +18,7 @@ export interface AuthSession {
 
 export interface RegisterRequestResponse {
   requiresApproval: boolean;
+  autoActivated?: boolean;
   message: string;
   debug?: {
     setupLink?: string;
@@ -32,6 +33,12 @@ export interface RegisterRequestResponse {
 interface LoginResponse {
   session: AuthSession;
   user: DemoUser;
+}
+
+export interface LoginChallengeResponse {
+  challenge: 'NEW_PASSWORD_REQUIRED';
+  session: string;
+  email: string;
 }
 
 interface RefreshResponse {
@@ -103,10 +110,17 @@ export const AuthApi = {
     });
   },
 
-  login(email: string, password: string): Promise<LoginResponse> {
+  login(email: string, password: string): Promise<LoginResponse | LoginChallengeResponse> {
     return call('/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
+    });
+  },
+
+  respondChallenge(email: string, session: string, newPassword: string): Promise<LoginResponse> {
+    return call('/respond-challenge', {
+      method: 'POST',
+      body: JSON.stringify({ email, session, newPassword }),
     });
   },
 

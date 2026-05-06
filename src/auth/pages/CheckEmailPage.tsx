@@ -16,6 +16,8 @@ export function CheckEmailPage() {
     return /^https?:\/\//i.test(raw) ? raw : '';
   }, [params]);
   const isDebugMode = useMemo(() => params.get('debug') === '1' && Boolean(debugSetupLink), [params, debugSetupLink]);
+  const emailDeliveryFailed = useMemo(() => params.get('emailDelivery') === 'failed', [params]);
+  const emailDeliveryErr = useMemo(() => (params.get('emailErr') || '').trim(), [params]);
 
   const onResend = async (e: FormEvent) => {
     e.preventDefault();
@@ -36,10 +38,23 @@ export function CheckEmailPage() {
 
   return (
     <AuthCard
-      title="Check your email"
-      subtitle="If your email is eligible, we sent a secure setup link."
+      title={emailDeliveryFailed ? 'Setup email pending' : 'Check your email'}
+      subtitle={emailDeliveryFailed
+        ? 'Your registration was accepted, but setup email delivery is pending. Please contact your administrator to complete account setup.'
+        : 'If your email is eligible, we sent a secure setup link.'}
     >
       {email && <p className={`text-sm font-medium ${t.accentClass}`}>{email}</p>}
+
+      {emailDeliveryFailed && (
+        <div className={`mt-4 rounded-md border p-3 text-sm ${t.isLight ? 'border-[#E5E4E3] bg-[#FFF8F2]' : 'border-amber-200 bg-amber-50'}`}>
+          <p className={t.errorClass}>
+            Email delivery is not yet available for this address.
+          </p>
+          {emailDeliveryErr && (
+            <p className={`mt-1 text-xs ${t.mutedTextClass}`}>{emailDeliveryErr}</p>
+          )}
+        </div>
+      )}
 
       <form onSubmit={onResend} className="mt-5">
         <button
@@ -57,7 +72,7 @@ export function CheckEmailPage() {
       {isDebugMode && (
         <div className={`mt-4 rounded-md border p-3 text-sm ${t.isLight ? 'border-[#E5E4E3] bg-[#FFF8F2]' : 'border-slate-200 bg-slate-50'}`}>
           <p className={t.mutedTextClass}>
-            Demo mode: email delivery is unavailable. Use the direct setup link below.
+            Email delivery is currently unavailable. Use the direct setup link below.
           </p>
           <a
             href={debugSetupLink}

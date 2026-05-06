@@ -11,6 +11,8 @@ import {
   COMPLIANCE_STATE_ORDER, COMPLIANCE_STATE_LABEL, COMPLIANCE_DOMAIN_LABEL,
 } from '../../types';
 import { useComplianceExecution } from '@/policy/compliance-execution';
+import { usePmViewSprintStore } from '@/policy/pm/pmViewSprintStore';
+import { SprintScopeToolbar } from '@/policy/components/pm/SprintScopeToolbar';
 import { useExecutionEnforcement } from '../../hooks/useExecutionEnforcement';
 import { ExecutionUnitCard } from './ExecutionUnitCard';
 import { WorkflowDrawer } from '../details/WorkflowDrawer';
@@ -26,7 +28,8 @@ interface FlashWarning {
 
 export function SprintExecutionBoard() {
   const t = useCesTokens();
-  const snap = useComplianceExecution();
+  const sprintWindow = usePmViewSprintStore(s => s.window);
+  const snap = useComplianceExecution({ mode: 'sprint', window: sprintWindow });
   const EVENTS          = snap.events;
   const EXECUTION_UNITS = snap.executionUnits;
 
@@ -97,6 +100,7 @@ export function SprintExecutionBoard() {
 
   return (
     <div className="space-y-5">
+      <SprintScopeToolbar className="max-w-3xl" />
       {/* ── Header ─────────────────────────────────────── */}
       <div className="flex items-end justify-between gap-4">
         <div>

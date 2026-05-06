@@ -35,7 +35,7 @@ function ownerOf(t: Task): string | undefined {
 }
 
 export function SprintPlanPage(): ReactElement {
-  const allTasks = useProjectedTasks();
+  const allTasks = useProjectedTasks('full');
   const overlay = usePmOverlayStore();
 
   const today = useMemo(() => currentSprint(), []);

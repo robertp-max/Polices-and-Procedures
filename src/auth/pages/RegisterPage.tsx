@@ -22,8 +22,17 @@ export function RegisterPage() {
       const result = await AuthApi.registerRequest(normalizedEmail);
       if (result.requiresApproval) {
         setApprovalMessage('Registration request received. Administrator approval is required.');
+      } else if (result.autoActivated) {
+        navigate('/login', { replace: true, state: { notice: result.message } });
       } else {
         const search = new URLSearchParams({ email: normalizedEmail });
+        const deliveryOk = result.debug?.emailDelivery?.ok !== false;
+        if (!deliveryOk) {
+          search.set('emailDelivery', 'failed');
+          if (result.debug?.emailDelivery?.errMessage) {
+            search.set('emailErr', result.debug.emailDelivery.errMessage);
+          }
+        }
         if (result.debug?.setupLink) {
           search.set('debugSetupLink', result.debug.setupLink);
           search.set('debug', '1');

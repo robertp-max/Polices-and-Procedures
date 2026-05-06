@@ -79,12 +79,12 @@ See [03-eCIgn-Evidence-Lifecycle.md](../../Builder/eCIgn-Centered-Submission/03-
 |---|---|---|
 | `WeekendNotAllowedError` on save | due date is Sat/Sun, no override | Provide `{ weekendOverride: true, reason }` or pick a weekday. |
 | Right Panel shows "Task not found" | `task_id` not in projector output | Confirm event still exists in `REGULATORY_EVENTS`; check ordinal counter. |
-| `Duplicate task_ids detected` thrown in dev | Caller built a Task manually | Replace with `useProjectedTasks()`/`useProjectedTaskById()`. |
+| `Duplicate task_ids detected` thrown in dev | Caller built a Task manually | Replace with `useProjectedTasks(...)`/`useProjectedTaskById()`. |
 | Status chip mismatch between views | A view is computing status locally | Replace with `ECIGN_PACKET_STATUS_LABEL[task.packet_status]` or `PM_TASK_STATUS_LABEL[task.status]`. |
 | Overlay not persisting | Running outside browser | Persist key `pm-overlay-v1` requires `window.localStorage`. |
 
 ## A12. Maintenance guide
 - All status-mapping changes go in [ecignStatusMap.ts](../../src/policy/pm/ecignStatusMap.ts).
-- New PM views: depend on `useProjectedTasks()` and reuse `TaskDetailRightPanel`.
+- New PM views: use `useProjectedTasks('sprint')` (default) for Kanban-style surfaces, or `useProjectedTasks('full')` if the view must span all sprints; reuse `TaskDetailRightPanel`.
 - Adding a new overlay field: extend `PmOverlay` in [pmOverlayStore.types.ts](../../src/policy/pm/pmOverlayStore.types.ts), add an action that appends a `PmAuditEntry`, surface in `applyOverlay()` if it should affect the projected task.
 - Keep `taskProjectionCore.ts` free of React/store imports — it is the testable kernel.

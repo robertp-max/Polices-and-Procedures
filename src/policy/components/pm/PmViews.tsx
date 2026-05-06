@@ -1,7 +1,7 @@
 /**
  * PM views — Kanban, Gantt, Sprint Board.
  *
- * All views render the SAME canonical Task[] from `useProjectedTasks()`.
+ * Kanban / Gantt / Sprint board render sprint-scoped tasks from `useProjectedTasks()` (default).
  * Clicking any task fires `onSelect(task_id)`.
  *
  * Implementation summary:
@@ -20,7 +20,7 @@
  *   PM-Sprint-Board-Design.md §3 (Plan/Execute/Review)
  */
 
-import { useMemo, useRef, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import {
   DndContext,
   PointerSensor,
@@ -33,41 +33,32 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { PM_TASK_STATUS_LABEL } from '@/policy/pm/ecignStatusMap';
 import { useProjectedTasks } from '@/policy/pm/taskProjection';
-import { usePmOverlayStore } from '@/policy/pm/pmOverlayStore';
 import { usePmPersonalStore } from '@/policy/pm/personalStore';
 import {
-  isCesTask,
   isPersonalTask,
   type PmTaskStatus,
-  type TaskSource,
   type Task,
 } from '@/policy/pm/types';
-import { useComplianceExecution } from '@/policy/compliance-execution';
-import {
-  criticalPath,
-  CycleError,
-  type PmEdge,
-} from '@/policy/pm/scheduling/dependencyGraph';
 import { PmTaskCard } from './PmTaskCard';
+import { usePmViewSprintStore } from '@/policy/pm/pmViewSprintStore';
 import { EntityLink } from './EntityLink';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { EmptyState as UiEmptyState, SurfaceCard } from '@/policy/components/ui';
 
 const EMPTY_MSG = 'No CES tasks available for this view.';
 const STATUS_ORDER: PmTaskStatus[] = ['todo', 'in_progress', 'in_review', 'blocked', 'done'];
-const STATUS_COLOR: Record<PmTaskStatus, string> = {
-  todo: 'rgba(148,163,184,0.85)',
-  in_progress: 'rgba(56,189,248,0.85)',
-  in_review: 'rgba(251,191,36,0.85)',
-  blocked: 'rgba(244,114,182,0.9)',
-  done: 'rgba(45,212,191,0.9)',
+const EXECUTION_EXCLUDE_RE = /(onboarding|orientation|training)/i;
+
+const isExecutionTask = (task: Task): boolean => {
+  if (task.source === 'personal') return false;
+  const text = `${task.title} ${task.event_title ?? ''} ${task.workflow_title ?? ''}`;
+  return !EXECUTION_EXCLUDE_RE.test(text);
 };
 
-const taskDepends = (task: Task): string[] => task.depends_on ?? task.dependencies ?? [];
-
 const bySelectedEvent = (tasks: Task[], selectedEventId?: string | null): Task[] => {
-  if (!selectedEventId) return tasks;
-  return tasks.filter(t => t.source !== 'personal' && t.event_id === selectedEventId);
+  const executionTasks = tasks.filter(isExecutionTask);
+  if (!selectedEventId) return executionTasks;
+  return executionTasks.filter(t => t.event_id === selectedEventId);
 };
 
 /* ─── Drag-rules matrix (PM-Kanban-and-My-Tasks.md §3.3) ───────────── */
@@ -223,7 +214,7 @@ export function KanbanView({
       <DndContext sensors={sensors} onDragEnd={onDragEnd}>
         <div
           className="flex-1 grid gap-3 min-h-0 overflow-hidden"
-          style={{ gridTemplateColumns: 'repeat(5, minmax(0,1fr))' }}
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}
         >
           {columns.map(col => (
             <KanbanColumn key={col.status} {...col} onSelect={onSelect} />
@@ -243,12 +234,51 @@ export function KanbanView({
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   GANTT VIEW (Phase 5)
+   GANTT VIEW — Event Grouped Product Pipeline
    ═══════════════════════════════════════════════════════════════ */
 
-const ROW_H = 44;
-const NAME_W = 640;
-const DAY_PX = 26;
+const GANTT_DAY_PX = 22;
+const GANTT_EVENT_LABEL_W = 300;
+
+type GanttTaskBar = {
+  task: Task;
+  startOffset: number;
+  endOffset: number;
+  durationDays: number;
+  progressPct: number;
+  overdue: boolean;
+  tone: 'teal' | 'orange' | 'red' | 'gray';
+};
+
+type GanttEventGroup = {
+  eventId: string;
+  eventLabel: string;
+  risk: 'low' | 'medium' | 'high';
+  completionPct: number;
+  taskCount: number;
+  bars: GanttTaskBar[];
+};
+
+const parseIsoDate = (iso: string): Date => new Date(`${iso.slice(0, 10)}T00:00:00`);
+
+const computeProgressPct = (task: Task): number => {
+  if (task.status === 'done') return 100;
+  if (task.status === 'in_review') return 80;
+  if (task.status === 'in_progress') return 55;
+  if (task.status === 'blocked') return 20;
+  return 5;
+};
+
+const computeTaskTone = (task: Task): 'teal' | 'orange' | 'red' | 'gray' => {
+  const due = parseIsoDate(task.due_date).getTime();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const overdue = due < today.getTime() && task.status !== 'done';
+  if (overdue || task.status === 'blocked') return 'red';
+  if (task.status === 'in_review' || task.status === 'todo') return 'orange';
+  if (task.status === 'in_progress' || task.status === 'done') return 'teal';
+  return 'gray';
+};
 
 export function GanttView({
   onSelect,
@@ -258,415 +288,214 @@ export function GanttView({
   selectedEventId?: string | null;
 }): ReactElement {
   const projected = useProjectedTasks();
-  const overlay = usePmOverlayStore();
+  const sprintWindow = usePmViewSprintStore(s => s.window);
   const theme = useShellStore(s => s.theme);
   const isLight = theme === 'care-indeed-light';
-  const [linkSource, setLinkSource] = useState<string | null>(null);
-  const [linkMode, setLinkMode] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-  const [eventFilter, setEventFilter] = useState<string>('all');
-  const [monthFilter, setMonthFilter] = useState<string>('all');
-  const [quarterFilter, setQuarterFilter] = useState<string>('all');
-  const [yearFilter, setYearFilter] = useState<string>('all');
-  const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | PmTaskStatus>('all');
-  const [sourceFilter, setSourceFilter] = useState<'all' | TaskSource>('all');
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [viewportWidth, setViewportWidth] = useState(() => (typeof window === 'undefined' ? 1920 : window.innerWidth));
   const tasks = useMemo(() => bySelectedEvent(projected, selectedEventId), [projected, selectedEventId]);
+  const isMobile = viewportWidth < 768;
+  const isTablet = viewportWidth >= 768 && viewportWidth < 1024;
 
-  const dayMs = 86400000;
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
-  const toDate = (iso: string) => new Date(`${iso.slice(0, 10)}T00:00:00Z`);
-  const monthKey = (iso: string) => iso.slice(0, 7);
-  const quarterKey = (iso: string) => {
-    const d = toDate(iso);
-    const q = Math.floor(d.getUTCMonth() / 3) + 1;
-    return `${d.getUTCFullYear()}-Q${q}`;
-  };
-  const yearKey = (iso: string) => iso.slice(0, 4);
-
-  const filteredTasks = useMemo(() => {
-    return tasks.filter(t => {
-      const taskEvent = t.source === 'personal' ? (t.event_id ?? t.linked_event_id) : t.event_id;
-      const eventPass = eventFilter === 'all' || taskEvent === eventFilter;
-      const monthPass = monthFilter === 'all' || monthKey(t.due_date) === monthFilter;
-      const quarterPass = quarterFilter === 'all' || quarterKey(t.due_date) === quarterFilter;
-      const yearPass = yearFilter === 'all' || yearKey(t.due_date) === yearFilter;
-      const owner = t.assignee ?? t.owner ?? (t.source === 'personal' ? t.owner_user_id : t.assigned_user_id) ?? 'Unassigned';
-      const assigneePass = assigneeFilter === 'all' || owner === assigneeFilter;
-      const statusPass = statusFilter === 'all' || t.status === statusFilter;
-      const sourcePass = sourceFilter === 'all' || t.source === sourceFilter;
-      return eventPass && monthPass && quarterPass && yearPass && assigneePass && statusPass && sourcePass;
+  /** Keep all hooks before any early return (tasks may load async). */
+  const ganttModel = useMemo(() => {
+    if (tasks.length === 0) return null;
+    const dayMs = 86400000;
+    const sprintStart = parseIsoDate(sprintWindow.startDate).getTime() - dayMs;
+    const sprintEnd = parseIsoDate(sprintWindow.endDate).getTime() + 2 * dayMs;
+    const tasksInWin = tasks.filter(t => {
+      const s = parseIsoDate(t.start_date).getTime();
+      const e = parseIsoDate(t.due_date).getTime();
+      return e >= sprintStart && s <= sprintEnd;
     });
-  }, [tasks, eventFilter, monthFilter, quarterFilter, yearFilter, assigneeFilter, statusFilter, sourceFilter]);
-
-  const allEvents = useMemo(
-    () => Array.from(new Set(tasks.map(t => (t.source === 'personal' ? (t.event_id ?? t.linked_event_id) : t.event_id)).filter(Boolean))) as string[],
-    [tasks],
-  );
-  const allMonths = useMemo(() => Array.from(new Set(tasks.map(t => monthKey(t.due_date)))).sort(), [tasks]);
-  const allQuarters = useMemo(() => Array.from(new Set(tasks.map(t => quarterKey(t.due_date)))).sort(), [tasks]);
-  const allYears = useMemo(() => Array.from(new Set(tasks.map(t => yearKey(t.due_date)))).sort(), [tasks]);
-  const allAssignees = useMemo(() => Array.from(new Set(tasks.map(t => t.assignee ?? t.owner ?? (t.source === 'personal' ? t.owner_user_id : t.assigned_user_id) ?? 'Unassigned'))).sort(), [tasks]);
-
-  const startDates = filteredTasks.map(t => toDate(t.start_date).getTime());
-  const dueDates = filteredTasks.map(t => toDate(t.due_date).getTime());
-  const minStart = startDates.length > 0 ? Math.min(...startDates) : Date.now();
-  const maxDue = dueDates.length > 0 ? Math.max(...dueDates) : Date.now();
-  const winStart = new Date(minStart - 2 * dayMs);
-  const winEnd = new Date(maxDue + 2 * dayMs);
-  const totalDays = Math.max(
-    1,
-    Math.round((winEnd.getTime() - winStart.getTime()) / dayMs) + 1,
-  );
-
-  const taskBars = useMemo(() => {
-    return filteredTasks
-      .map(t => {
-        const start = toDate(t.start_date).getTime();
-        const due = toDate(t.due_date).getTime();
-        if (Number.isNaN(start) || Number.isNaN(due)) return null;
-        const startOffsetDays = Math.round((start - winStart.getTime()) / dayMs);
-        const endOffsetDays = Math.round((due - winStart.getTime()) / dayMs);
-        if (endOffsetDays < 0 || startOffsetDays > totalDays) return null;
-        return { task: t, startOffsetDays, endOffsetDays };
-      })
-      .filter((x): x is { task: Task; startOffsetDays: number; endOffsetDays: number } => x !== null);
-  }, [filteredTasks, winStart, totalDays]);
-
-  const edges: PmEdge[] = useMemo(() => {
-    const out: PmEdge[] = [];
-    for (const t of filteredTasks) {
-      for (const dep of taskDepends(t)) {
-        out.push({ from: dep, to: t.task_id });
-      }
+    if (tasksInWin.length === 0) return null;
+    let winStartMs = sprintStart;
+    let winEndMs = sprintEnd;
+    const maxSpanMs = 22 * dayMs;
+    if (winEndMs - winStartMs > maxSpanMs) {
+      winEndMs = winStartMs + maxSpanMs;
     }
-    return out;
-  }, [filteredTasks]);
+    const totalDays = Math.max(1, Math.floor((winEndMs - winStartMs) / dayMs) + 1);
 
-  const cp = useMemo(() => {
-    try {
-      return criticalPath(filteredTasks.map(t => t.task_id), edges);
-    } catch {
-      return { nodes: new Set<string>(), length: 0 };
-    }
-  }, [filteredTasks, edges]);
+    const grouped = new Map<string, Task[]>();
+    tasksInWin.forEach(task => {
+      const key = task.event_id ?? task.workflow_id ?? 'unlinked';
+      const list = grouped.get(key) ?? [];
+      list.push(task);
+      grouped.set(key, list);
+    });
 
-  const indexById = useMemo(() => {
-    const m = new Map<string, number>();
-    taskBars.forEach((b, i) => m.set(b.task.task_id, i));
-    return m;
-  }, [taskBars]);
+    const eventGroups: GanttEventGroup[] = Array.from(grouped.entries()).map(([eventId, groupTasks]) => {
+      const bars = groupTasks.map(task => {
+        const start = parseIsoDate(task.start_date).getTime();
+        const end = parseIsoDate(task.due_date).getTime();
+        const startOffset = Math.max(0, Math.floor((start - winStartMs) / dayMs));
+        const endOffset = Math.max(startOffset, Math.floor((end - winStartMs) / dayMs));
+        const durationDays = Math.max(1, endOffset - startOffset + 1);
+        const progressPct = computeProgressPct(task);
+        const tone = computeTaskTone(task);
+        const overdue = tone === 'red';
+        return { task, startOffset, endOffset, durationDays, progressPct, overdue, tone };
+      });
+      const completed = groupTasks.filter(t => t.status === 'done').length;
+      const completionPct = Math.round((completed / Math.max(1, groupTasks.length)) * 100);
+      const hasHigh = bars.some(b => b.tone === 'red');
+      const hasMedium = bars.some(b => b.tone === 'orange');
+      const risk: GanttEventGroup['risk'] = hasHigh ? 'high' : hasMedium ? 'medium' : 'low';
+      const eventLabel = groupTasks[0]?.event_title ?? eventId;
+      return { eventId, eventLabel, risk, completionPct, taskCount: groupTasks.length, bars };
+    });
 
-  if (tasks.length === 0) return <EmptyState />;
-  if (taskBars.length === 0) {
+    return { eventGroups, totalDays, timelineWidth: totalDays * GANTT_DAY_PX };
+  }, [tasks, sprintWindow.endDate, sprintWindow.startDate]);
+
+  if (!ganttModel) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-1 text-white/55 text-[12px] font-outfit">
-        <div>{EMPTY_MSG}</div>
-        <div className="text-[10px] text-white/40">
-          (Projected tasks have no due dates inside the active sprint window.)
-        </div>
+      <EmptyState
+        message={tasks.length === 0 ? EMPTY_MSG : 'No tasks overlap the selected sprint. Try another sprint or widen filters.'}
+      />
+    );
+  }
+
+  const { eventGroups, totalDays, timelineWidth } = ganttModel;
+  const gridLines = Array.from({ length: totalDays });
+
+  if (isMobile) {
+    return (
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
+        {eventGroups.map(group => (
+          <section key={group.eventId} className="ci-card p-3">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold ci-text truncate">{group.eventLabel}</h3>
+              <span className={`text-[10px] uppercase px-2 py-0.5 rounded-full ${group.risk === 'high' ? 'bg-red-100 text-red-700' : group.risk === 'medium' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700'}`}>
+                {group.risk} risk
+              </span>
+            </div>
+            <p className="text-[11px] ci-text-muted mt-1">{group.taskCount} tasks · {group.completionPct}% complete</p>
+            <div className="mt-3 space-y-2">
+              {group.bars.map(bar => (
+                <button key={bar.task.task_id} type="button" onClick={() => onSelect(bar.task.task_id)} className="w-full text-left rounded-lg border border-slate-200 p-2.5 bg-white">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[12px] font-semibold ci-text truncate">{bar.task.title}</p>
+                    <span className="text-[10px] ci-text-muted">{bar.durationDays}d</span>
+                  </div>
+                  <p className="text-[10px] ci-text-muted mt-1">{bar.task.assignee ?? bar.task.owner ?? 'Unassigned'} · {bar.task.due_date}</p>
+                  <div className="mt-2 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div className={`h-full ${bar.tone === 'red' ? 'bg-red-500' : bar.tone === 'orange' ? 'bg-orange-500' : bar.tone === 'teal' ? 'bg-teal-600' : 'bg-slate-400'}`} style={{ width: `${bar.progressPct}%` }} />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
     );
   }
 
-  const handleBarClick = (taskId: string) => {
-    if (!linkMode) {
-      onSelect(taskId);
-      return;
-    }
-    if (!linkSource) {
-      setLinkSource(taskId);
-      return;
-    }
-    if (linkSource === taskId) {
-      setLinkSource(null);
-      return;
-    }
-    try {
-      overlay.addDependency(taskId, linkSource, 'gantt-link');
-      setToast(`Linked ${linkSource} → ${taskId}`);
-    } catch (err) {
-      const msg = err instanceof CycleError ? err.message : 'Failed to add dependency.';
-      setToast(msg);
-    } finally {
-      setLinkSource(null);
-      setLinkMode(false);
-      window.setTimeout(() => setToast(null), 4000);
-    }
-  };
-
-  const totalWidth = NAME_W + totalDays * DAY_PX;
-  const totalHeight = Math.max(ROW_H, taskBars.length * ROW_H);
-
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-2">
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2">
-        <select aria-label="Filter by event" title="Filter by event" value={eventFilter} onChange={e => setEventFilter(e.target.value)} className="ci-field text-[11px]">
-          <option value="all">Event: all</option>
-          {allEvents.map(id => <option key={id} value={id}>{id}</option>)}
-        </select>
-        <select aria-label="Filter by month" title="Filter by month" value={monthFilter} onChange={e => setMonthFilter(e.target.value)} className="ci-field text-[11px]">
-          <option value="all">Month: all</option>
-          {allMonths.map(m => <option key={m} value={m}>{m}</option>)}
-        </select>
-        <select aria-label="Filter by quarter" title="Filter by quarter" value={quarterFilter} onChange={e => setQuarterFilter(e.target.value)} className="ci-field text-[11px]">
-          <option value="all">Quarter: all</option>
-          {allQuarters.map(q => <option key={q} value={q}>{q}</option>)}
-        </select>
-        <select aria-label="Filter by year" title="Filter by year" value={yearFilter} onChange={e => setYearFilter(e.target.value)} className="ci-field text-[11px]">
-          <option value="all">Year: all</option>
-          {allYears.map(y => <option key={y} value={y}>{y}</option>)}
-        </select>
-        <select aria-label="Filter by assignee" title="Filter by assignee" value={assigneeFilter} onChange={e => setAssigneeFilter(e.target.value)} className="ci-field text-[11px]">
-          <option value="all">Assignee: all</option>
-          {allAssignees.map(a => <option key={a} value={a}>{a}</option>)}
-        </select>
-        <select aria-label="Filter by status" title="Filter by status" value={statusFilter} onChange={e => setStatusFilter(e.target.value as 'all' | PmTaskStatus)} className="ci-field text-[11px]">
-          <option value="all">Status: all</option>
-          {STATUS_ORDER.map(s => <option key={s} value={s}>{PM_TASK_STATUS_LABEL[s]}</option>)}
-        </select>
-        <select aria-label="Filter by source" title="Filter by source" value={sourceFilter} onChange={e => setSourceFilter(e.target.value as 'all' | TaskSource)} className="ci-field text-[11px]">
-          <option value="all">Source: all</option>
-          <option value="CES">CES</option>
-          <option value="manual">manual</option>
-          <option value="personal">personal</option>
-        </select>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            setLinkMode(m => !m);
-            setLinkSource(null);
-          }}
-          className={`text-[10px] uppercase tracking-[0.22em] px-2 py-1 rounded-sm border transition-colors ${
-            linkMode
-              ? 'bg-cyan-500/20 border-cyan-400/40 text-cyan-100'
-              : 'bg-white/5 border-white/15 text-white/65 hover:text-white'
-          }`}
-          title="Click to enter link mode, then click predecessor + successor."
-        >
-          {linkMode ? 'Cancel link mode' : '+ Link tasks'}
-        </button>
-        {linkMode && !linkSource && (
-          <span className="text-[10px] font-mono text-cyan-200">
-            Click the predecessor task first
-          </span>
-        )}
-        {linkMode && linkSource && (
-          <span className="text-[10px] font-mono text-cyan-200">
-            From: {linkSource} → click successor task
-          </span>
-        )}
-        {cp.nodes.size > 0 && (
-          <span className="ml-auto text-[10px] font-mono text-amber-300">
-            Filtered: {filteredTasks.length} task(s) · Critical path: {cp.nodes.size}
-          </span>
-        )}
-      </div>
-
-      <div
-        ref={containerRef}
-        className="flex-1 min-h-0 overflow-auto rounded-lg border"
-        style={{
-          borderColor: isLight ? 'rgba(15,23,42,0.12)' : 'rgba(255,255,255,0.12)',
-          background: isLight ? '#f8fafc' : 'rgba(255,255,255,0.02)',
-        }}
-      >
-        <div className="sticky top-0 z-10 grid" style={{ gridTemplateColumns: `${NAME_W}px 1fr` }}>
-          <div
-            className="grid items-center border-b"
-            style={{
-              height: ROW_H,
-              gridTemplateColumns: '2fr 1.2fr 1.1fr 1fr 0.8fr 0.8fr',
-              borderColor: isLight ? 'rgba(15,23,42,0.12)' : 'rgba(255,255,255,0.10)',
-              background: isLight ? '#e2e8f0' : '#0b1220',
-            }}
-          >
-            {['Task', 'Workflow', 'Event', 'Assignee', 'Status', 'Due'].map(col => (
-              <div key={col} className="px-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]" style={{ color: isLight ? '#334155' : 'rgba(255,255,255,0.75)' }}>
-                {col}
-              </div>
-            ))}
-          </div>
-          <div className="flex border-b" style={{ borderColor: isLight ? 'rgba(15,23,42,0.12)' : 'rgba(255,255,255,0.10)', background: isLight ? '#e2e8f0' : '#0b1220' }}>
-            {Array.from({ length: totalDays }).map((_, i) => {
-              const d = new Date(winStart.getTime() + i * dayMs);
-              const isWeekend = d.getUTCDay() === 0 || d.getUTCDay() === 6;
-              return (
-                <div
-                  key={i}
-                  className="text-center border-l text-[9px] font-mono"
-                  style={{
-                    width: DAY_PX,
-                    lineHeight: `${ROW_H}px`,
-                    borderColor: isLight ? 'rgba(15,23,42,0.08)' : 'rgba(255,255,255,0.08)',
-                    color: isWeekend ? (isLight ? '#94a3b8' : 'rgba(255,255,255,0.32)') : (isLight ? '#334155' : 'rgba(255,255,255,0.68)'),
-                    background: isWeekend ? (isLight ? '#f1f5f9' : 'rgba(255,255,255,0.03)') : 'transparent',
-                  }}
-                  title={d.toDateString()}
-                >
-                  {d.getUTCDate()}
+    <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-slate-200 bg-white">
+      <div className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50">
+        <div className="grid" style={{ gridTemplateColumns: `${GANTT_EVENT_LABEL_W}px ${timelineWidth}px` }}>
+          <div className="px-3 py-2 text-[10px] uppercase tracking-[0.16em] font-semibold text-slate-500">Event Pipeline</div>
+          <div className="relative h-8">
+            <div className="absolute inset-0 flex">
+              {gridLines.map((_, idx) => (
+                <div key={idx} className="border-l border-slate-200/70 text-[9px] text-slate-500 font-mono text-center" style={{ width: GANTT_DAY_PX, lineHeight: '32px' }}>
+                  {idx % 7 === 0 ? idx + 1 : ''}
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="relative" style={{ width: totalWidth, height: totalHeight }}>
-          {taskBars.map(({ task, startOffsetDays, endOffsetDays }, rowIdx) => {
-            const onCp = cp.nodes.has(task.task_id);
-            const isLinkSrc = linkSource === task.task_id;
-            const spanCells = Math.max(1, endOffsetDays - startOffsetDays + 1);
-            const top = rowIdx * ROW_H;
-            const owner = task.assignee ?? task.owner ?? (task.source === 'personal' ? task.owner_user_id : task.assigned_user_id) ?? 'Unassigned';
-            const isMilestone = task.task_type === 'approval' || task.task_type === 'certification';
-            const isFormTask = task.task_type === 'form_completion' || task.task_type === 'form_review';
-            const overdue = toDate(task.due_date).getTime() < new Date().setHours(0, 0, 0, 0) && task.status !== 'done';
-            const workflowLabel = task.workflow_title ?? task.workflow_id ?? 'Unlinked';
-            const eventLabel = task.event_title ?? task.event_id ?? 'No event';
-
-            return (
-              <div
-                key={task.task_id}
-                className="absolute left-0 right-0 grid border-b"
-                style={{
-                  top,
-                  height: ROW_H,
-                  gridTemplateColumns: `${NAME_W}px 1fr`,
-                  borderColor: isLight ? 'rgba(15,23,42,0.08)' : 'rgba(255,255,255,0.08)',
-                  background: rowIdx % 2 === 0 ? (isLight ? '#ffffff' : 'rgba(255,255,255,0.01)') : (isLight ? '#f8fafc' : 'rgba(255,255,255,0.03)'),
-                }}
-              >
-                <div
-                  onClick={() => onSelect(task.task_id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      onSelect(task.task_id);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  className="grid items-center text-left px-2 gap-2"
-                  style={{ gridTemplateColumns: '2fr 1.2fr 1.1fr 1fr 0.8fr 0.8fr' }}
-                  title={task.title}
-                >
-                  <div className="min-w-0">
-                    <div className="truncate text-[12px] font-outfit" style={{ color: isLight ? '#0f172a' : '#f8fafc' }}>{task.title}</div>
-                    <div className="truncate text-[9px] font-mono" style={{ color: isLight ? '#64748b' : 'rgba(255,255,255,0.45)' }}>
-                      <EntityLink kind="task" id={task.task_id} onSelectTask={onSelect} />
-                    </div>
-                  </div>
-                  <div className="truncate text-[10px]" title={workflowLabel}>
-                    {task.workflow_id ? <EntityLink kind="workflow" id={task.workflow_id} label={workflowLabel} /> : workflowLabel}
-                  </div>
-                  <div className="truncate text-[10px]" title={eventLabel}>
-                    {task.event_id ? <EntityLink kind="event" id={task.event_id} label={eventLabel} /> : eventLabel}
-                  </div>
-                  <div className="truncate text-[10px]" style={{ color: isLight ? '#334155' : 'rgba(255,255,255,0.72)' }} title={owner}>{owner}</div>
-                  <div className="truncate text-[10px]" style={{ color: isLight ? '#334155' : 'rgba(255,255,255,0.72)' }}>{PM_TASK_STATUS_LABEL[task.status]}</div>
-                  <div className="truncate text-[10px]" style={{ color: overdue ? '#ef4444' : (isLight ? '#334155' : 'rgba(255,255,255,0.72)') }}>{task.due_date}</div>
+      <div className="p-2">
+        {eventGroups.map(group => (
+          <section key={group.eventId} className="mb-3 rounded-lg border border-slate-200 overflow-hidden">
+            <div className="grid items-center border-b border-slate-200 bg-slate-50" style={{ gridTemplateColumns: `${GANTT_EVENT_LABEL_W}px ${timelineWidth}px` }}>
+              <div className="px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900 truncate">{group.eventLabel}</h3>
+                  <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded-full ${group.risk === 'high' ? 'bg-red-100 text-red-700' : group.risk === 'medium' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700'}`}>
+                    {group.risk}
+                  </span>
                 </div>
+                <p className="text-[11px] text-slate-500 mt-0.5">{group.taskCount} tasks · {group.completionPct}% complete</p>
+              </div>
+              <div />
+            </div>
 
-                <div className="relative" style={{ width: totalDays * DAY_PX }}>
-                  {Array.from({ length: totalDays }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="absolute top-0 bottom-0 border-l"
-                      style={{
-                        left: i * DAY_PX,
-                        borderColor: isLight ? 'rgba(15,23,42,0.06)' : 'rgba(255,255,255,0.05)',
-                      }}
-                    />
-                  ))}
+            {group.bars.map(bar => (
+              <div key={bar.task.task_id} className="grid border-b last:border-b-0 border-slate-100" style={{ gridTemplateColumns: `${GANTT_EVENT_LABEL_W}px ${timelineWidth}px` }}>
+                <button type="button" onClick={() => onSelect(bar.task.task_id)} className="px-3 py-2 text-left hover:bg-slate-50">
+                  <p className="text-[12px] font-medium text-slate-900 truncate">{bar.task.title}</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">
+                    {bar.task.assignee ?? bar.task.owner ?? 'Unassigned'} · {PM_TASK_STATUS_LABEL[bar.task.status]} · {bar.progressPct}%
+                  </p>
+                </button>
+                <div className="relative h-11">
+                  <div className="absolute inset-0 flex pointer-events-none">
+                    {gridLines.map((_, idx) => (
+                      <div key={idx} className="border-l border-slate-200/60" style={{ width: GANTT_DAY_PX }} />
+                    ))}
+                  </div>
                   <button
                     type="button"
-                    onClick={() => handleBarClick(task.task_id)}
-                    className="absolute top-[9px] h-[26px] rounded-md hover:brightness-110"
+                    onClick={() => onSelect(bar.task.task_id)}
+                    className={`absolute top-2 h-7 rounded-md px-2 text-left overflow-hidden ${bar.tone === 'red' ? 'bg-red-500' : bar.tone === 'orange' ? 'bg-orange-500' : bar.tone === 'teal' ? 'bg-teal-600' : 'bg-slate-500'} text-white`}
                     style={{
-                      left: `${startOffsetDays * DAY_PX + 1}px`,
-                      width: isMilestone ? '16px' : `${Math.max(14, spanCells * DAY_PX - 2)}px`,
-                      transform: isMilestone ? 'rotate(45deg)' : undefined,
-                      transformOrigin: 'center',
-                      background: isMilestone
-                        ? '#f59e0b'
-                        : isFormTask
-                          ? 'rgba(14,165,233,0.85)'
-                          : STATUS_COLOR[task.status],
-                      border: onCp ? '1px solid rgba(251,191,36,0.95)' : undefined,
-                      boxShadow: isLinkSrc ? '0 0 0 2px rgba(56,189,248,0.7)' : undefined,
-                      outline: overdue ? '2px solid rgba(239,68,68,0.8)' : undefined,
+                      left: bar.startOffset * GANTT_DAY_PX + 2,
+                      width: Math.max(18, (bar.durationDays * GANTT_DAY_PX) - 4),
+                      boxShadow: isLight ? '0 2px 7px rgba(15,23,42,0.22)' : undefined,
                     }}
-                    aria-label={`${task.title} ${task.start_date} to ${task.due_date}`}
-                    title={`${task.title} (${task.start_date} → ${task.due_date})`}
-                  />
+                    title={`${bar.task.title} · ${bar.durationDays}d · ${bar.progressPct}%`}
+                  >
+                    <span className="text-[9px] font-semibold truncate block">{bar.task.title}</span>
+                    <span className="text-[8px] opacity-90">{bar.progressPct}% · {bar.durationDays}d {bar.overdue ? '· SLA risk' : ''}</span>
+                  </button>
                 </div>
               </div>
-            );
-          })}
-
-          <svg
-            className="absolute inset-0 pointer-events-none"
-            width={totalWidth}
-            height={totalHeight}
-          >
-            <defs>
-              <marker
-                id="dep-arrow"
-                viewBox="0 0 10 10"
-                refX="9"
-                refY="5"
-                markerWidth="6"
-                markerHeight="6"
-                orient="auto-start-reverse"
-              >
-                <path d="M 0 0 L 10 5 L 0 10 z" fill={isLight ? 'rgba(51,65,85,0.75)' : 'rgba(251,191,36,0.85)'} />
-              </marker>
-            </defs>
-            {edges.map((e, i) => {
-              const fromIdx = indexById.get(e.from);
-              const toIdx = indexById.get(e.to);
-              if (fromIdx === undefined || toIdx === undefined) return null;
-              const fromBar = taskBars[fromIdx];
-              const toBar = taskBars[toIdx];
-              const x1 = NAME_W + fromBar.endOffsetDays * DAY_PX + DAY_PX;
-              const y1 = fromIdx * ROW_H + ROW_H / 2;
-              const x2 = NAME_W + toBar.startOffsetDays * DAY_PX;
-              const y2 = toIdx * ROW_H + ROW_H / 2;
-              const onCpEdge = cp.nodes.has(e.from) && cp.nodes.has(e.to);
-              return (
-                <path
-                  key={`${e.from}-${e.to}-${i}`}
-                  d={`M ${x1} ${y1} C ${x1 + 24} ${y1}, ${x2 - 24} ${y2}, ${x2} ${y2}`}
-                  stroke={onCpEdge ? 'rgba(251,191,36,0.85)' : (isLight ? 'rgba(51,65,85,0.45)' : 'rgba(148,163,184,0.55)')}
-                  strokeWidth={onCpEdge ? 2 : 1.25}
-                  fill="none"
-                  markerEnd="url(#dep-arrow)"
-                />
-              );
-            })}
-          </svg>
-        </div>
+            ))}
+          </section>
+        ))}
       </div>
-
-      {toast && (
-        <div
-          role="alert"
-          className="self-end max-w-[420px] rounded-lg border border-cyan-400/40 bg-cyan-500/15 px-3 py-2 text-[11px] font-outfit text-cyan-100"
-        >
-          {toast}
-        </div>
-      )}
+      {isTablet ? (
+        <div className="px-3 pb-2 text-[10px] text-slate-500">Tablet mode: timeline scrolls horizontally inside this panel.</div>
+      ) : null}
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SPRINT BOARD VIEW (Phase 3 partial: Execute tab + Burndown)
+   SPRINT BOARD VIEW — CES Execution Tasks Only
    ═══════════════════════════════════════════════════════════════ */
+
+type SprintColumnKey = 'overdue' | 'at_risk' | 'in_progress' | 'awaiting' | 'completed';
+
+const SPRINT_COLUMN_LABEL: Record<SprintColumnKey, string> = {
+  overdue: 'Overdue',
+  at_risk: 'At Risk',
+  in_progress: 'In Progress',
+  awaiting: 'Awaiting',
+  completed: 'Completed',
+};
+
+const classifySprintColumn = (task: Task): SprintColumnKey => {
+  const due = parseIsoDate(task.due_date).getTime();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (task.status === 'done') return 'completed';
+  if (task.status === 'in_review') return 'awaiting';
+  if (task.status === 'in_progress') return 'in_progress';
+  if (task.status === 'blocked') return 'at_risk';
+  if (due < today.getTime()) return 'overdue';
+  return 'at_risk';
+};
 
 export function SprintBoardView({
   onSelect,
@@ -676,153 +505,95 @@ export function SprintBoardView({
   selectedEventId?: string | null;
 }): ReactElement {
   const projected = useProjectedTasks();
-  const personal = usePmPersonalStore();
-  const ces = useComplianceExecution();
-  const [toast, setToast] = useState<string | null>(null);
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+  const sprintWindow = usePmViewSprintStore(s => s.window);
+  const baseTasks = useMemo(() => bySelectedEvent(projected, selectedEventId), [projected, selectedEventId]);
+  const sprintTasks = useMemo(
+    () => baseTasks.filter(t => t.source !== 'personal' && t.sprint_id === sprintWindow.id),
+    [baseTasks, sprintWindow.id],
   );
 
-  const sprintId = ces.activeSprint.id;
-  const tasks = useMemo(() => bySelectedEvent(projected, selectedEventId), [projected, selectedEventId]);
-
-  const sprintTasks = useMemo(() => {
-    return tasks.filter(t => t.sprint_id === sprintId);
-  }, [tasks, sprintId]);
-
   const columns = useMemo(() => {
-    const map: Record<PmTaskStatus, Task[]> = {
-      todo: [],
+    const map: Record<SprintColumnKey, Task[]> = {
+      overdue: [],
+      at_risk: [],
       in_progress: [],
-      in_review: [],
-      blocked: [],
-      done: [],
+      awaiting: [],
+      completed: [],
     };
-    for (const t of sprintTasks) map[t.status].push(t);
-    return STATUS_ORDER.map(status => ({ status, items: map[status] }));
+    sprintTasks.forEach(task => map[classifySprintColumn(task)].push(task));
+    return map;
   }, [sprintTasks]);
-
-  const burndown = useMemo(() => {
-    const totalPoints = sprintTasks.reduce((s, t) => s + (t.story_points ?? 1), 0);
-    const remainingPoints = sprintTasks
-      .filter(t => t.status !== 'done')
-      .reduce((s, t) => s + (t.story_points ?? 1), 0);
-    const dayMs = 86400000;
-    const sprintStart = new Date(ces.activeSprint.startDate + 'T00:00:00').getTime();
-    const sprintEnd = new Date(ces.activeSprint.endDate + 'T23:59:59').getTime();
-    const days = Math.max(1, Math.round((sprintEnd - sprintStart) / dayMs) + 1);
-    const todayMs = new Date().setHours(0, 0, 0, 0);
-    const elapsed = Math.max(0, Math.min(days, Math.round((todayMs - sprintStart) / dayMs)));
-    const ideal = Math.max(0, totalPoints - (totalPoints / days) * elapsed);
-    return { totalPoints, remainingPoints, days, elapsed, ideal };
-  }, [sprintTasks, ces.activeSprint.startDate, ces.activeSprint.endDate]);
-
-  const onDragEnd = (e: DragEndEvent) => {
-    const overId = e.over?.id;
-    if (!overId || typeof overId !== 'string' || !overId.startsWith('col:')) return;
-    const target = overId.slice(4) as PmTaskStatus;
-    const task = sprintTasks.find(t => t.task_id === e.active.id);
-    if (!task) return;
-    const rule = isDropAllowed(task, target);
-    if (!rule.ok) {
-      setToast(rule.reason);
-      window.setTimeout(() => setToast(null), 4000);
-      return;
-    }
-    if (isPersonalTask(task)) personal.setStatus(task.task_id, target, 'sprint-drag');
-  };
 
   if (sprintTasks.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-1 text-white/55 text-[12px] font-outfit">
+      <div className="flex-1 flex flex-col items-center justify-center gap-1 text-[12px] ci-text-muted">
         <div>{EMPTY_MSG}</div>
-        <div className="text-[10px] text-white/40">
-          Active sprint: <span className="font-mono">{sprintId}</span> ·{' '}
-          {ces.activeSprint.startDate} → {ces.activeSprint.endDate}
-        </div>
+        <div className="text-[10px]">Sprint {sprintWindow.id} · {sprintWindow.startDate} to {sprintWindow.endDate}</div>
       </div>
     );
   }
 
-  const cesDone = sprintTasks.filter(t => isCesTask(t) && t.status === 'done').length;
-  const cesTotal = sprintTasks.filter(t => isCesTask(t)).length;
+  const blockers = columns.at_risk.length;
+  const overdue = columns.overdue.length;
+  const awaiting = columns.awaiting.length;
+  const completed = columns.completed.length;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 gap-2">
-      <div className="flex items-center gap-3">
-        <span className="text-[10px] font-montserrat font-bold uppercase tracking-[0.22em] text-white/85">
-          Sprint {sprintId}
-        </span>
-        <span className="text-[10px] font-mono text-white/55">
-          {ces.activeSprint.startDate} → {ces.activeSprint.endDate}
-        </span>
-        <span className="text-[10px] font-mono text-white/55">
-          · {sprintTasks.length} tasks
-        </span>
-        <span className="text-[10px] font-mono text-cyan-300 ml-auto">
-          Compliance: {cesDone}/{cesTotal} done
-        </span>
+    <div className="flex-1 min-h-0 flex flex-col gap-3">
+      <div className="ci-card p-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.16em] font-semibold ci-text-muted">Sprint {sprintWindow.id}</p>
+            <h3 className="text-base font-semibold ci-text">Sprint {sprintWindow.number}</h3>
+            <p className="text-[11px] ci-text-muted">{sprintWindow.startDate} to {sprintWindow.endDate}</p>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] flex-wrap">
+            <StatChip label="Tasks" value={sprintTasks.length} tone="gray" />
+            <StatChip label="Blockers" value={blockers} tone={blockers > 0 ? 'red' : 'gray'} />
+            <StatChip label="Overdue" value={overdue} tone={overdue > 0 ? 'red' : 'gray'} />
+            <StatChip label="Awaiting Signature" value={awaiting} tone={awaiting > 0 ? 'orange' : 'gray'} />
+            <StatChip label="Completed" value={completed} tone="teal" />
+          </div>
+        </div>
       </div>
 
-      <Burndown {...burndown} />
-
-      <DndContext sensors={sensors} onDragEnd={onDragEnd}>
-        <div
-          className="flex-1 grid gap-3 min-h-0 overflow-hidden"
-          style={{ gridTemplateColumns: 'repeat(5, minmax(0,1fr))' }}
-        >
-          {columns.map(col => (
-            <KanbanColumn key={col.status} {...col} onSelect={onSelect} />
+      <div className="flex-1 min-h-0 overflow-auto">
+        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))' }}>
+          {(Object.keys(SPRINT_COLUMN_LABEL) as SprintColumnKey[]).map(col => (
+            <section key={col} className="rounded-lg border border-slate-200 bg-white min-h-[220px] flex flex-col">
+              <header className="px-3 py-2 border-b border-slate-200 flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-slate-600">{SPRINT_COLUMN_LABEL[col]}</span>
+                <span className="text-[10px] font-mono text-slate-500">{columns[col].length}</span>
+              </header>
+              <div className="p-2 space-y-2 overflow-y-auto min-h-0">
+                {columns[col].length === 0 ? <p className="text-[11px] text-slate-400 text-center py-6">No tasks</p> : null}
+                {columns[col].map(task => (
+                  <button key={task.task_id} type="button" onClick={() => onSelect(task.task_id)} className="w-full text-left rounded-md border border-slate-200 bg-slate-50 px-2.5 py-2 hover:bg-slate-100">
+                    <p className="text-[12px] font-semibold text-slate-900 truncate">{task.title}</p>
+                    <p className="text-[10px] text-slate-500 mt-1 truncate">{task.event_id ? <EntityLink kind="event" id={task.event_id} label={task.event_title ?? task.event_id} /> : (task.event_title ?? 'No linked event')}</p>
+                    <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-500">
+                      <span className="truncate">{task.assignee ?? task.owner ?? 'Unassigned'}</span>
+                      <span>{task.due_date}</span>
+                    </div>
+                    <div className="mt-1 text-[10px] text-slate-500">{PM_TASK_STATUS_LABEL[task.status]}</div>
+                  </button>
+                ))}
+              </div>
+            </section>
           ))}
         </div>
-      </DndContext>
-
-      {toast && (
-        <div
-          role="alert"
-          className="self-end max-w-[420px] rounded-lg border border-pink-400/40 bg-pink-500/15 px-3 py-2 text-[11px] font-outfit text-pink-100"
-        >
-          {toast}
-        </div>
-      )}
+      </div>
     </div>
   );
 }
 
-function Burndown({
-  totalPoints,
-  remainingPoints,
-  days,
-  elapsed,
-  ideal,
-}: {
-  totalPoints: number;
-  remainingPoints: number;
-  days: number;
-  elapsed: number;
-  ideal: number;
-}) {
-  if (totalPoints === 0) return null;
-  const pct = (remainingPoints / totalPoints) * 100;
-  const idealPct = (ideal / totalPoints) * 100;
-  const onTrack = remainingPoints <= ideal;
-  return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
-      <div className="flex items-center justify-between text-[10px] font-mono text-white/55 mb-1.5">
-        <span>
-          Burndown · day {elapsed}/{days}
-        </span>
-        <span className={onTrack ? 'text-emerald-300' : 'text-pink-300'}>
-          {remainingPoints} pt remaining (ideal {Math.round(ideal)})
-        </span>
-      </div>
-      <div className="relative h-2 rounded-full bg-white/10 overflow-hidden">
-        <div className="absolute inset-y-0 left-0 bg-cyan-400/80" style={{ width: `${pct}%` }} />
-        <div
-          className="absolute inset-y-0 w-px bg-amber-300"
-          style={{ left: `${idealPct}%` }}
-        />
-      </div>
-    </div>
-  );
+function StatChip({ label, value, tone }: { label: string; value: number; tone: 'gray' | 'teal' | 'orange' | 'red' }) {
+  const cls = tone === 'teal'
+    ? 'bg-teal-50 text-teal-700 border-teal-200'
+    : tone === 'orange'
+      ? 'bg-orange-50 text-orange-700 border-orange-200'
+      : tone === 'red'
+        ? 'bg-red-50 text-red-700 border-red-200'
+        : 'bg-slate-50 text-slate-700 border-slate-200';
+  return <span className={`text-[10px] px-2 py-1 rounded-full border ${cls}`}>{label}: {value}</span>;
 }

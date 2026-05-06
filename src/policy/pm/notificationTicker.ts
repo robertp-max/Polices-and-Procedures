@@ -37,7 +37,7 @@ export function tickOnce(now: Date, tasks: Task[], prefs: NotificationPrefs): nu
  * Pass userId to scope user-specific prefs / hydration.
  */
 export function usePmNotificationTicker(userId: string = 'me'): void {
-  const tasks = useProjectedTasks();
+  const tasks = useProjectedTasks('full');
 
   useEffect(() => {
     const prefs: NotificationPrefs = { ...DEFAULT_PREFS, user_id: userId };

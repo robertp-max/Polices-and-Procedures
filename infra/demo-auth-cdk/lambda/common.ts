@@ -49,6 +49,10 @@ const appBaseUrl = mustEnv('APP_BASE_URL');
 const tableName = mustEnv('REGISTRATION_TABLE_NAME');
 const setupTokenTtlMinutes = Number(process.env.SETUP_TOKEN_TTL_MINUTES || 60);
 const autoApprovedDomain = String(process.env.AUTO_APPROVED_DOMAIN || 'careindeed.com').toLowerCase();
+const autoApprovedEmails = String(process.env.AUTO_APPROVED_EMAILS || '')
+  .split(',')
+  .map(e => e.trim().toLowerCase())
+  .filter(Boolean);
 const demoAuthDebug = /^(1|true|yes|on)$/i.test(String(process.env.DEMO_AUTH_DEBUG || 'false'));
 
 export const clients = {
@@ -67,6 +71,7 @@ export const config = {
   tableName,
   setupTokenTtlMinutes,
   autoApprovedDomain,
+  autoApprovedEmails,
   demoAuthDebug,
 };
 
@@ -222,13 +227,13 @@ export async function ensureCognitoUser(email: string): Promise<void> {
   }
 }
 
-export async function sendSetupEmail(email: string, token: string): Promise<void> {
+export async function sendSetupEmail(email: string, token: string): Promise<string | undefined> {
   const setupLink = `${config.appBaseUrl.replace(/\/$/, '')}/setup-account?token=${encodeURIComponent(token)}`;
-  await clients.ses.send(new SendEmailCommand({
+  const response = await clients.ses.send(new SendEmailCommand({
     Source: config.fromEmail,
     Destination: { ToAddresses: [email] },
     Message: {
-      Subject: { Data: 'Set up your Care Indeed Compliance Demo account' },
+      Subject: { Data: 'Set up your Care Indeed account' },
       Body: {
         Text: {
           Data: [
@@ -244,6 +249,7 @@ export async function sendSetupEmail(email: string, token: string): Promise<void
       },
     },
   }));
+  return response.MessageId;
 }
 
 export async function activateUser(email: string, firstName: string, lastName: string, password: string): Promise<void> {

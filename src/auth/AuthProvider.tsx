@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
-import { AuthApi, type AuthSession, type DemoUser } from './api';
+import { AuthApi, type AuthSession, type DemoUser, type LoginChallengeResponse } from './api';
 
 interface StoredAuth {
   session: AuthSession;
@@ -18,7 +18,30 @@ interface AuthContextValue {
 
 const STORAGE_KEY = 'ci_demo_auth_v1';
 const BYPASS_LOGGED_OUT_KEY = 'ci_demo_bypass_logged_out_v1';
+const LOGOUT_BROADCAST_KEY = 'ci_demo_auth_logout_broadcast_v1';
 const REFRESH_WINDOW_MS = 60_000;
+const LOGIN_PATH = '/login';
+
+function broadcastLogout(): void {
+  try {
+    localStorage.setItem(LOGOUT_BROADCAST_KEY, String(Date.now()));
+  } catch {
+    /* noop */
+  }
+}
+
+function redirectToLogin(): void {
+  try {
+    if (typeof window === 'undefined') return;
+    const path = window.location.pathname;
+    if (path === LOGIN_PATH || path.startsWith('/login') || path === '/' || path.startsWith('/setup-account') || path.startsWith('/forgot-password') || path.startsWith('/reset-password') || path.startsWith('/check-email') || path.startsWith('/register') || path.startsWith('/set-new-password')) {
+      return;
+    }
+    window.location.assign(LOGIN_PATH);
+  } catch {
+    /* noop */
+  }
+}
 const LOCAL_DEMO_AUTH_BYPASS = import.meta.env.VITE_LOCAL_DEMO_AUTH_BYPASS === 'true';
 const LOCAL_DEMO_USER: DemoUser = {
   id: 'demo-user-careindeed',
@@ -34,7 +57,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 function isBypassLoggedOut(): boolean {
   try {
-    return sessionStorage.getItem(BYPASS_LOGGED_OUT_KEY) === '1';
+    return localStorage.getItem(BYPASS_LOGGED_OUT_KEY) === '1';
   } catch {
     return false;
   }
@@ -43,9 +66,9 @@ function isBypassLoggedOut(): boolean {
 function setBypassLoggedOut(next: boolean): void {
   try {
     if (next) {
-      sessionStorage.setItem(BYPASS_LOGGED_OUT_KEY, '1');
+      localStorage.setItem(BYPASS_LOGGED_OUT_KEY, '1');
     } else {
-      sessionStorage.removeItem(BYPASS_LOGGED_OUT_KEY);
+      localStorage.removeItem(BYPASS_LOGGED_OUT_KEY);
     }
   } catch {
     /* noop */
@@ -93,6 +116,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setUser(null);
     saveStoredAuth(null);
   }, []);
+
+  const forceLogout = useCallback((opts?: { redirect?: boolean; broadcast?: boolean }) => {
+    const redirect = opts?.redirect !== false;
+    const broadcast = opts?.broadcast === true;
+    if (LOCAL_DEMO_AUTH_BYPASS) {
+      setBypassLoggedOut(true);
+    }
+    clearAuth();
+    setLoading(false);
+    if (broadcast) broadcastLogout();
+    if (redirect) redirectToLogin();
+  }, [clearAuth]);
 
   const writeAuth = useCallback((next: StoredAuth, nextUser?: DemoUser | null) => {
     const resolvedUser = typeof nextUser !== 'undefined' ? nextUser : (next.user ?? user ?? null);
@@ -154,6 +189,56 @@ export function AuthProvider({ children }: PropsWithChildren) {
     void bootstrap();
   }, [bootstrap]);
 
+  // Cross-tab logout sync. When another tab broadcasts a logout (or clears the
+  // stored auth blob, or sets the bypass-logged-out flag), this tab also force-
+  // logs out and redirects to /login. Tokens are wiped from localStorage and
+  // React state in all tabs without requiring a manual refresh.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onStorage = (event: StorageEvent) => {
+      if (!event.key) {
+        // entire storage cleared from another tab
+        forceLogout({ redirect: true, broadcast: false });
+        return;
+      }
+      if (event.key === LOGOUT_BROADCAST_KEY) {
+        forceLogout({ redirect: true, broadcast: false });
+        return;
+      }
+      if (event.key === STORAGE_KEY && event.newValue === null) {
+        forceLogout({ redirect: true, broadcast: false });
+        return;
+      }
+      if (event.key === BYPASS_LOGGED_OUT_KEY && event.newValue === '1') {
+        forceLogout({ redirect: true, broadcast: false });
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [forceLogout]);
+
+  // Re-validate session on tab focus. If the refresh token has been revoked
+  // (e.g. logout from another tab/device), this clears local state and
+  // redirects to login.
+  useEffect(() => {
+    if (LOCAL_DEMO_AUTH_BYPASS) return;
+    if (typeof window === 'undefined') return;
+    const onFocus = async () => {
+      const current = stored ?? loadStoredAuth();
+      if (!current) return;
+      try {
+        const next = await refreshIfNeeded();
+        if (!next) {
+          forceLogout({ redirect: true, broadcast: false });
+        }
+      } catch {
+        forceLogout({ redirect: true, broadcast: false });
+      }
+    };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [forceLogout, refreshIfNeeded, stored]);
+
   const login = useCallback(async (email: string, password: string) => {
     if (LOCAL_DEMO_AUTH_BYPASS) {
       setBypassLoggedOut(false);
@@ -163,6 +248,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
 
     const result = await AuthApi.login(email, password);
+    if ('challenge' in result) {
+      // Cognito requires a new password — throw a typed error for the UI to handle
+      const err = new Error('NEW_PASSWORD_REQUIRED') as Error & { challenge: LoginChallengeResponse };
+      err.challenge = result as LoginChallengeResponse;
+      throw err;
+    }
     writeAuth({ ...toStored(result.session), user: result.user }, result.user);
   }, [writeAuth]);
 
@@ -171,16 +262,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setBypassLoggedOut(true);
       setUser(null);
       setLoading(false);
+      broadcastLogout();
       return;
     }
 
     const accessToken = stored?.session.accessToken;
     clearAuth();
+    broadcastLogout();
     if (accessToken) {
       try {
         await AuthApi.logout(accessToken);
       } catch {
-        // no-op for demo
+        // best-effort: tokens are already cleared locally
       }
     }
   }, [clearAuth, stored?.session.accessToken]);

@@ -47,14 +47,14 @@ export async function handler(event: APIGatewayProxyEventV2) {
     allowedDomain: config.autoApprovedDomain,
   });
 
-  if (domain !== config.autoApprovedDomain) {
+  if (domain !== config.autoApprovedDomain && !config.autoApprovedEmails.includes(email)) {
     logRegistrationAttempt('domain_rejected', {
       requestId,
       email,
       domain,
       allowedDomain: config.autoApprovedDomain,
     });
-    return jsonError(403, 'validation_error', `Only @${config.autoApprovedDomain} email addresses are allowed for this demo.`);
+    return jsonError(403, 'validation_error', `Only @${config.autoApprovedDomain} email addresses are allowed.`);
   }
 
   const now = nowIso();
@@ -83,8 +83,8 @@ export async function handler(event: APIGatewayProxyEventV2) {
     await writeToken(tokenHash, email, now, expiresAt);
 
     try {
-      await sendSetupEmail(email, token);
-      logRegistrationAttempt('email_sent', { requestId, email });
+      const messageId = await sendSetupEmail(email, token);
+      logRegistrationAttempt('email_sent', { requestId, email, messageId });
       return json(200, { requiresApproval: false, message: DEFAULT_MESSAGE });
     } catch (err) {
       const errCode = String((err as { name?: string; code?: string })?.name || (err as { code?: string })?.code || 'unknown');
@@ -100,7 +100,7 @@ export async function handler(event: APIGatewayProxyEventV2) {
         const setupLink = `${config.appBaseUrl.replace(/\/$/, '')}/setup-account?token=${encodeURIComponent(token)}`;
         return json(200, {
           requiresApproval: false,
-          message: 'Registration accepted, but email delivery failed because SES is not fully configured.',
+          message: 'Registration accepted, but setup email delivery is pending. Contact administrator.',
           debug: {
             setupLink,
             emailDelivery: {
@@ -115,7 +115,7 @@ export async function handler(event: APIGatewayProxyEventV2) {
       return jsonError(
         502,
         'upstream_error',
-        'Registration accepted, but email delivery failed because SES is not fully configured.',
+        'Registration accepted, but setup email delivery is pending. Contact administrator.',
         { errCode, errMessage },
       );
     }

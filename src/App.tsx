@@ -12,12 +12,15 @@ const PolicyDetailPage  = lazy(() => import('@/policy/pages/PolicyDetailPage').t
 const TaxonomyPage      = lazy(() => import('@/policy/pages/TaxonomyPage').then(m => ({ default: m.TaxonomyPage })))
 const GovernancePage    = lazy(() => import('@/policy/pages/GovernancePage').then(m => ({ default: m.GovernancePage })))
 const MasterCalendarPage = lazy(() => import('@/policy/pages/MasterCalendarPage').then(m => ({ default: m.MasterCalendarPage })))
+const MobileIncidentExecutionPage = lazy(() => import('@/policy/pages/MobileIncidentExecutionPage').then(m => ({ default: m.MobileIncidentExecutionPage })))
 const AuditModePage      = lazy(() => import('@/policy/pages/AuditModePage').then(m => ({ default: m.AuditModePage })))
 const EvidenceCenterPage = lazy(() => import('@/policy/pages/EvidenceCenterPage').then(m => ({ default: m.EvidenceCenterPage })))
 const DemoPage          = lazy(() => import('@/policy/pages/DemoPage').then(m => ({ default: m.DemoPage })))
 const FrameworkPage     = lazy(() => import('@/policy/pages/FrameworkPage').then(m => ({ default: m.FrameworkPage })))
+const AchcSurveyAlignmentPage = lazy(() => import('@/policy/pages/AchcSurveyAlignmentPage').then(m => ({ default: m.AchcSurveyAlignmentPage })))
 const FormsPage         = lazy(() => import('@/policy/pages/FormsPage').then(m => ({ default: m.FormsPage })))
 const PrintPage         = lazy(() => import('@/policy/pages/PrintPage').then(m => ({ default: m.PrintPage })))
+const SurveyorPolicyViewerPage = lazy(() => import('@/policy/pages/SurveyorPolicyViewerPage').then(m => ({ default: m.SurveyorPolicyViewerPage })))
 const GVGBPrintDocument = lazy(() => import('@/policy/pages/GVGBPrintDocument').then(m => ({ default: m.GVGBPrintDocument })))
 const GVGBAppendixPrint = lazy(() => import('@/policy/pages/GVGBAppendixPrint').then(m => ({ default: m.GVGBAppendixPrint })))
 const FormViewer        = lazy(() => import('@/policy/components/FormViewer').then(m => ({ default: m.FormViewer })))
@@ -35,6 +38,7 @@ const CheckEmailPage = lazy(() => import('@/auth/pages/CheckEmailPage').then(m =
 const SetupAccountPage = lazy(() => import('@/auth/pages/SetupAccountPage').then(m => ({ default: m.SetupAccountPage })))
 const ForgotPasswordPage = lazy(() => import('@/auth/pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })))
 const ResetPasswordPage = lazy(() => import('@/auth/pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })))
+const SetNewPasswordPage = lazy(() => import('@/auth/pages/SetNewPasswordPage').then(m => ({ default: m.SetNewPasswordPage })))
 const UserGroupsPage = lazy(() => import('@/policy/security/identity/UserGroupsPage').then(m => ({ default: m.UserGroupsPage })))
 const PermissionCatalogPage = lazy(() => import('@/policy/security/identity/PermissionCatalogPage').then(m => ({ default: m.PermissionCatalogPage })))
 const UserAssignmentsPage = lazy(() => import('@/policy/security/identity/UserAssignmentsPage').then(m => ({ default: m.UserAssignmentsPage })))
@@ -134,6 +138,7 @@ function AppRoutes() {
 
         {/* Generic print page */}
         <Route path="/print/:policyId" element={<PrintPage />} />
+        <Route path="/surveyor/policy/:policyId" element={<ProtectedRoute><SurveyorPolicyViewerPage /></ProtectedRoute>} />
 
         {/* Standalone form print — outside layout shell for clean pagination */}
         <Route path="/forms/:formId/print" element={<FormPrintView />} />
@@ -146,6 +151,7 @@ function AppRoutes() {
         <Route path="/setup-account" element={<PublicAuthRoute><SetupAccountPage /></PublicAuthRoute>} />
         <Route path="/forgot-password" element={<PublicAuthRoute><ForgotPasswordPage /></PublicAuthRoute>} />
         <Route path="/reset-password" element={<PublicAuthRoute><ResetPasswordPage /></PublicAuthRoute>} />
+        <Route path="/set-new-password" element={<PublicAuthRoute><SetNewPasswordPage /></PublicAuthRoute>} />
 
         {/* Hidden executive proposal — accessed via Brad iAdministrator corner trigger */}
         <Route path="/brad-proposal" element={<ProtectedRoute><BradProposalPage /></ProtectedRoute>} />
@@ -162,6 +168,11 @@ function AppRoutes() {
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/calendar" element={<MasterCalendarPage />} />
+                    <Route path="/calendar/event/:eventId" element={<MobileIncidentExecutionPage stage="event" />} />
+                    <Route path="/calendar/event/:eventId/workflow" element={<MobileIncidentExecutionPage stage="workflow" />} />
+                    <Route path="/calendar/event/:eventId/task/:taskId" element={<MobileIncidentExecutionPage stage="task" />} />
+                    <Route path="/calendar/event/:eventId/evidence/:taskId" element={<MobileIncidentExecutionPage stage="evidence" />} />
+                    <Route path="/calendar/event/:eventId/approval" element={<MobileIncidentExecutionPage stage="approval" />} />
                     <Route path="/audit" element={<AuditModePage />} />
                     <Route path="/evidence" element={<EvidenceCenterPage />} />
                     <Route path="/library" element={<LibraryPage />} />
@@ -177,6 +188,7 @@ function AppRoutes() {
                     <Route path="/publish" element={<Navigate to="/policy-lifecycle?stage=APPROVED" replace />} />
                     <Route path="/taxonomy" element={<TaxonomyPage />} />
                     <Route path="/framework" element={<FrameworkPage />} />
+                    <Route path="/framework/achc-survey" element={<AchcSurveyAlignmentPage />} />
                     <Route path="/forms" element={<FormsPage />} />
                     <Route path="/forms/:formId" element={<FormViewer />} />
                     <Route path="/viewer/:referenceId" element={<GenericReferenceViewer />} />

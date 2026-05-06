@@ -9,6 +9,7 @@ import {
   GetUserCommand,
   GlobalSignOutCommand,
   InitiateAuthCommand,
+  RespondToAuthChallengeCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
@@ -32,11 +33,16 @@ interface DemoAuthConfig {
   tableName: string;
   setupTokenTtlMinutes: number;
   autoApprovedDomain: string;
+  autoApprovedEmails: string[];
 }
 
 interface RegisterResult {
   requiresApproval: boolean;
   message: string;
+  debug?: {
+    setupLink?: string;
+    emailDelivery?: { ok: boolean; errCode?: string; errMessage?: string };
+  };
 }
 
 const DEFAULT_REGISTER_MESSAGE = 'If your email is eligible, we sent a setup link. Please check your inbox.';
@@ -200,16 +206,24 @@ export class DemoAuthService {
       allowedDomain: this.cfg.autoApprovedDomain,
     });
 
-    if (emailDomain !== this.cfg.autoApprovedDomain) {
+    if (emailDomain !== this.cfg.autoApprovedDomain && !this.cfg.autoApprovedEmails.includes(email)) {
       throw new ApiError(
         'validation_error',
-        `Only @${this.cfg.autoApprovedDomain} email addresses are allowed for this demo.`,
+        `Only @${this.cfg.autoApprovedDomain} email addresses are allowed.`,
         403,
       );
     }
 
     const now = this.nowIso();
     const existing = await this.getRegistration(email);
+
+    // If already active, don't let re-registration overwrite their status
+    if (existing?.status === 'active') {
+      return {
+        requiresApproval: false,
+        message: DEFAULT_REGISTER_MESSAGE,
+      };
+    }
 
     if (this.shouldThrottle(existing)) {
       return {
@@ -242,17 +256,53 @@ export class DemoAuthService {
 
       await this.writeRegistration(record);
       await this.writeTokenRecord(tokenHash, email, now, expiresAt);
-      await this.sendSetupEmail(email, token);
-      log.info('auth.register_request.email_sent', { email });
 
-      return { requiresApproval: false, message: DEFAULT_REGISTER_MESSAGE };
+      try {
+        await this.sendSetupEmail(email, token);
+        log.info('auth.register_request.email_sent', { email });
+        return { requiresApproval: false, message: DEFAULT_REGISTER_MESSAGE };
+      } catch (sesErr) {
+        const errCode = String((sesErr as { name?: string; code?: string })?.name || (sesErr as { code?: string })?.code || 'unknown');
+        const errMessage = (sesErr as Error)?.message || 'Unknown email delivery failure';
+        log.warn('auth.register_request.email_send_failed', { email, errCode, errMessage });
+
+        // Auto-approve domain: SES is unreliable for internal users.
+        // Skip email verification — activate them directly so they can log in immediately.
+        const isAutoApproved = emailDomain === this.cfg.autoApprovedDomain || this.cfg.autoApprovedEmails.includes(email);
+        if (isAutoApproved) {
+          log.info('auth.register_request.auto_activate', { email, reason: 'ses_failed_auto_approved_domain' });
+          await this.dynamo.send(new UpdateCommand({
+            TableName: this.cfg.tableName,
+            Key: this.registrationKey(email),
+            UpdateExpression: 'SET #status = :active, updatedAt = :now, setupCompletedAt = :now REMOVE setupTokenHash, setupTokenExpiresAt',
+            ExpressionAttributeNames: { '#status': 'status' },
+            ExpressionAttributeValues: {
+              ':active': 'active' as RegistrationStatus,
+              ':now': now,
+            },
+          }));
+          await this.deleteToken(tokenHash);
+          return {
+            requiresApproval: false,
+            autoActivated: true,
+            message: 'Your account is ready. Please sign in — you may set a new password on first login.',
+          };
+        }
+
+        const setupLink = `${this.cfg.appBaseUrl.replace(/\/$/, '')}/setup-account?token=${encodeURIComponent(token)}`;
+        return {
+          requiresApproval: false,
+          message: 'Registration accepted, but setup email delivery is pending. Contact administrator.',
+          debug: {
+            setupLink,
+            emailDelivery: { ok: false, errCode, errMessage },
+          },
+        };
+      }
     } catch (err) {
       const errCode = (err as { name?: string; code?: string })?.name || (err as { code?: string })?.code || 'unknown';
       const errMessage = (err as Error)?.message || 'Unknown registration failure';
       log.warn('auth.register_request.failed', { email, errCode, errMessage });
-      if (errCode === 'MessageRejected') {
-        throw new ApiError('upstream_error', 'Registration accepted, but email delivery failed because SES is not fully configured.', 502);
-      }
       throw new ApiError('internal_error', 'Registration failed due to a system error. Please try again shortly.', 500);
     }
   }
@@ -283,9 +333,16 @@ export class DemoAuthService {
     });
 
     await this.writeTokenRecord(tokenHash, email, now, expiresAt);
-    await this.sendSetupEmail(email, token);
 
-    return { message: DEFAULT_REGISTER_MESSAGE };
+    try {
+      await this.sendSetupEmail(email, token);
+      return { message: DEFAULT_REGISTER_MESSAGE };
+    } catch (sesErr) {
+      const errCode = String((sesErr as { name?: string; code?: string })?.name || (sesErr as { code?: string })?.code || 'unknown');
+      const errMessage = (sesErr as Error)?.message || 'Unknown email delivery failure';
+      log.warn('auth.resend_setup_link.email_send_failed', { email, errCode, errMessage });
+      return { message: 'Setup email delivery is currently unavailable. Please contact your administrator.' };
+    }
   }
 
   async setupAccount(input: {
@@ -328,12 +385,25 @@ export class DemoAuthService {
     }
 
     await this.ensureCognitoUser(email);
-    await this.cognito.send(new AdminSetUserPasswordCommand({
+
+    // Only set the password if the user has NOT already logged in.
+    // A CONFIRMED user has already authenticated and set their own password — don't override it.
+    const cognitoUser = await this.cognito.send(new AdminGetUserCommand({
       UserPoolId: this.cfg.userPoolId,
       Username: email,
-      Password: input.password,
-      Permanent: true,
     }));
+    const alreadyLoggedIn = cognitoUser.UserStatus === 'CONFIRMED';
+
+    if (!alreadyLoggedIn) {
+      await this.cognito.send(new AdminSetUserPasswordCommand({
+        UserPoolId: this.cfg.userPoolId,
+        Username: email,
+        Password: input.password,
+        Permanent: true,
+      }));
+    } else {
+      log.info('auth.setup_account.skip_password_override', { email, reason: 'user already confirmed' });
+    }
 
     await this.cognito.send(new AdminUpdateUserAttributesCommand({
       UserPoolId: this.cfg.userPoolId,
@@ -389,6 +459,15 @@ export class DemoAuthService {
         },
       }));
 
+      // User has a temporary password — must set a new one before getting tokens
+      if (response.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
+        return {
+          challenge: 'NEW_PASSWORD_REQUIRED' as const,
+          session: response.Session!,
+          email,
+        } as unknown as { session: AuthSession; user: DemoUser };
+      }
+
       const auth = response.AuthenticationResult;
       if (!auth?.AccessToken || !auth.IdToken || !auth.RefreshToken || !auth.ExpiresIn || !auth.TokenType) {
         throw new ApiError('auth_error', 'Login failed. Please try again.', 401);
@@ -408,6 +487,42 @@ export class DemoAuthService {
     } catch (err) {
       log.warn('auth.login.failed', { email, err: (err as Error).message });
       throw new ApiError('auth_error', 'Invalid email or password.', 401);
+    }
+  }
+
+  async respondToNewPasswordChallenge(email: string, session: string, newPassword: string): Promise<{ session: AuthSession; user: DemoUser }> {
+    if (!email || !session || !newPassword) {
+      throw new ApiError('validation_error', 'Email, session, and new password are required.', 400);
+    }
+    try {
+      const response = await this.cognito.send(new RespondToAuthChallengeCommand({
+        ClientId: this.cfg.clientId,
+        ChallengeName: 'NEW_PASSWORD_REQUIRED',
+        Session: session,
+        ChallengeResponses: {
+          USERNAME: email,
+          NEW_PASSWORD: newPassword,
+        },
+      }));
+      const auth = response.AuthenticationResult;
+      if (!auth?.AccessToken || !auth.IdToken || !auth.RefreshToken || !auth.ExpiresIn || !auth.TokenType) {
+        throw new ApiError('auth_error', 'Failed to set new password. Please try again.', 401);
+      }
+      const user = await this.getCurrentUser(auth.AccessToken);
+      return {
+        session: {
+          accessToken: auth.AccessToken,
+          idToken: auth.IdToken,
+          refreshToken: auth.RefreshToken,
+          expiresIn: auth.ExpiresIn,
+          tokenType: auth.TokenType,
+        },
+        user,
+      };
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      log.warn('auth.respond_challenge.failed', { email, err: (err as Error).message });
+      throw new ApiError('auth_error', 'Failed to set new password. Please try again.', 401);
     }
   }
 
@@ -465,6 +580,10 @@ export function buildDemoAuthServiceFromEnv(envLike: NodeJS.ProcessEnv): DemoAut
   const tableName = envLike.REGISTRATION_TABLE_NAME || '';
   const setupTokenTtlMinutes = Number(envLike.SETUP_TOKEN_TTL_MINUTES || 60);
   const autoApprovedDomain = (envLike.AUTO_APPROVED_DOMAIN || 'careindeed.com').toLowerCase();
+  const autoApprovedEmails = String(envLike.AUTO_APPROVED_EMAILS || '')
+    .split(',')
+    .map(email => email.trim().toLowerCase())
+    .filter(Boolean);
 
   if (!region || !userPoolId || !clientId || !fromEmail || !tableName) {
     throw new ApiError('internal_error', 'Auth environment is not configured.', 500);
@@ -479,5 +598,6 @@ export function buildDemoAuthServiceFromEnv(envLike: NodeJS.ProcessEnv): DemoAut
     tableName,
     setupTokenTtlMinutes,
     autoApprovedDomain,
+    autoApprovedEmails,
   });
 }

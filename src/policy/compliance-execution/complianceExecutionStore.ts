@@ -30,6 +30,11 @@ import {
 } from '@/policy/onboarding/onboardingExecutionEngine';
 
 import { regulatoryEventToComplianceEvent } from './complianceExecutionAdapters';
+import { buildEventExecutionDataflow } from './useEventExecutionDataflow';
+import {
+  regulatoryEventOverlapsSprint,
+  type SprintWindow,
+} from '@/policy/pm/sprintWindows';
 import type {
   MergedComplianceEvent, MergedExecutionUnit,
 } from './complianceExecutionTypes';
@@ -212,10 +217,34 @@ function computeSprintTrends(metrics: SprintMetrics, sprints: readonly Sprint[])
   }));
 }
 
+/** Limits expensive `buildEventExecutionDataflow` work to a month or PM sprint window. */
+export type ComplianceExecutionScope =
+  | { mode: 'all' }
+  | { mode: 'month'; year: number; monthIndex: number }
+  | { mode: 'sprint'; window: SprintWindow };
+
+const DEFAULT_COMPLIANCE_SCOPE: ComplianceExecutionScope = { mode: 'all' };
+
+function filterRegulatoryEventsForScope(
+  regEvents: RegulatoryEvent[],
+  scope: ComplianceExecutionScope,
+): RegulatoryEvent[] {
+  if (scope.mode === 'all') return regEvents;
+  if (scope.mode === 'month') {
+    return regEvents.filter(e => {
+      const d = new Date(e.date + 'T00:00:00');
+      return d.getFullYear() === scope.year && d.getMonth() === scope.monthIndex;
+    });
+  }
+  return regEvents.filter(e => regulatoryEventOverlapsSprint(e, scope.window));
+}
+
 /* ═══════════════════════════════════════════════════════════════
    useComplianceExecution
    ═══════════════════════════════════════════════════════════════ */
-export function useComplianceExecution(): ComplianceExecutionSnapshot {
+export function useComplianceExecution(
+  scope: ComplianceExecutionScope = DEFAULT_COMPLIANCE_SCOPE,
+): ComplianceExecutionSnapshot {
   const today = TODAY_ANCHOR;
 
   const generated = useAutogenStore(s => s.generatedEvents);
@@ -223,17 +252,31 @@ export function useComplianceExecution(): ComplianceExecutionSnapshot {
   const store     = useRegulatoryExecutionStore();
   const engine    = useOnboardingEngine();
 
+  const scopeKey =
+    scope.mode === 'all'
+      ? 'all'
+      : scope.mode === 'month'
+        ? `m:${scope.year}-${scope.monthIndex}`
+        : `s:${scope.window.id}`;
+
   return useMemo(() => {
     /* ── Regulatory events kept ONLY as event-layer metadata ── */
-    const regEvents: RegulatoryEvent[] = [
+    const regEventsAll: RegulatoryEvent[] = [
       ...REGULATORY_EVENTS, ...generated, ...triggered,
     ].filter(e => !e.isContext);
+
+    const regEvents = filterRegulatoryEventsForScope(regEventsAll, scope);
 
     const auditEvaluations = new Map<string, AuditEvaluation>();
     for (const e of regEvents) {
       auditEvaluations.set(e.id, evaluateAudit(e, today, store));
     }
 
+    const hasDatasetRegulatory = regEventsAll.length > 0;
+    const hasRegulatoryEvents = hasDatasetRegulatory;
+    const eventPackages = hasRegulatoryEvents
+      ? regEvents.map(event => buildEventExecutionDataflow(event, store))
+      : [];
     const regulatoryEventTiles: MergedComplianceEvent[] = regEvents.map(regulatoryEventToComplianceEvent);
 
     /* ── Synthetic onboarding events from the engine ── */
@@ -251,22 +294,27 @@ export function useComplianceExecution(): ComplianceExecutionSnapshot {
     const activeSprintForUnits  = buildSprintWindow(today, 0);
     const sprintStartMs = new Date(activeSprintForUnits.startDate).getTime();
     const sprintEndMs   = new Date(activeSprintForUnits.endDate).getTime() + 24 * 60 * 60 * 1000 - 1;
-    const executionUnits: MergedExecutionUnit[] = engineUnits.map(u => {
-      const dueMs = new Date(u.dueDate).getTime();
-      const inActiveSprint = dueMs >= sprintStartMs && dueMs <= sprintEndMs;
-      // Engine's `u.kind` is the onboarding unit kind (appendix_f, module, …)
-      // — NOT the canonical Obligation discriminator. We project all
-      // engine-produced units as TASK obligations under their parent
-      // SPRINT_TASK (the regulatory event).
-      return {
-        ...u,
-        source: 'autogen' as const,
-        obligationKind:     'TASK' as const,
-        parentObligationId: u.parentObligationId ?? u.parentEventId,
-        sourceType:         u.sourceType ?? 'ONBOARDING',
-        sprintId:           u.sprintId ?? (inActiveSprint ? activeSprintForUnits.id : undefined),
-      };
-    });
+    const executionUnits: MergedExecutionUnit[] = hasRegulatoryEvents
+      ? eventPackages.flatMap(pkg =>
+          pkg.cesExecutionUnits.map(unit => ({
+            ...unit,
+            parentObligationId: unit.parentObligationId ?? unit.parentEventId,
+            obligationKind: 'TASK' as const,
+            sourceType: unit.sourceType ?? 'REGULATORY_EVENT',
+          })),
+        )
+      : engineUnits.map(u => {
+          const dueMs = new Date(u.dueDate).getTime();
+          const inActiveSprint = dueMs >= sprintStartMs && dueMs <= sprintEndMs;
+          return {
+            ...u,
+            source: 'autogen' as const,
+            obligationKind: 'TASK' as const,
+            parentObligationId: u.parentObligationId ?? u.parentEventId,
+            sourceType: u.sourceType ?? 'ONBOARDING',
+            sprintId: u.sprintId ?? (inActiveSprint ? activeSprintForUnits.id : undefined),
+          };
+        });
 
     /* ── Sprint windows ── */
     const activeSprint  = buildSprintWindow(today,  0);
@@ -280,14 +328,18 @@ export function useComplianceExecution(): ComplianceExecutionSnapshot {
     const sprintMetrics    = computeSprintMetrics(engineUnits, today);
     const domainRisks      = computeDomainRisks(engineUnits);
     const ownerAssignments = computeOwnerAssignments(engineUnits);
-    const workflows        = computeWorkflows(engine.getBatches());
+    const workflows = hasRegulatoryEvents
+      ? eventPackages
+        .flatMap(pkg => pkg.workflows.map(wf => ({ id: wf.id, eventId: pkg.event.id, title: wf.title, requiredFormIds: [] as string[] })))
+        .filter((wf, idx, arr) => arr.findIndex(other => other.id === wf.id && other.eventId === wf.eventId) === idx)
+      : computeWorkflows(engine.getBatches());
     const sprintTrends     = computeSprintTrends(sprintMetrics, sprintHistory);
 
     return {
       activeSprint,
       sprintHistory,
       today,
-      events:           [...regulatoryEventTiles, ...onboardingEventTiles],
+      events:           hasRegulatoryEvents ? regulatoryEventTiles : onboardingEventTiles,
       executionUnits,
       workflows,
       auditEvaluations,
@@ -300,8 +352,12 @@ export function useComplianceExecution(): ComplianceExecutionSnapshot {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    scopeKey,
     today, generated, triggered, engine,
     store.formStates, store.stepStates, store.minutesStates,
     store.approvals, store.completions, store.certifications,
+    store.taskOverridesByEventId, store.taskAuditByEventId,
+    store.generatedFormInstancesByEventId, store.evidence,
+    store.eventInstancesById, store.eventInstanceIdsBySourceEventId,
   ]);
 }

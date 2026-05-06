@@ -57,6 +57,11 @@ export interface MergedComplianceEvent extends ComplianceEvent {
 export interface MergedExecutionUnit extends ExecutionUnit {
   source:        ExecutionSource;
   regulatoryRef?: RegulatoryEvent;
+  sourceEventId?: string;
+  taskSourceId?: string;
+  sourceEvidenceIds?: string[];
+  folderPath?: string;
+  auditReadinessScore?: number;
 }
 
 /** Cross-system audit-readiness rollup, computed once per render. */

@@ -31,6 +31,7 @@ export function ExecutionUnitCard({
   const isBlocked  = unit.complianceState === 'blocked';
   const isAwaiting = unit.complianceState === 'awaiting_signature';
   const isCompleted = unit.complianceState === 'completed';
+  const auditScore = (unit as { auditReadinessScore?: number }).auditReadinessScore;
 
   const topBar =
     isBlocked   ? t.red :
@@ -100,6 +101,11 @@ export function ExecutionUnitCard({
           >
             <FileText size={11} />
             Evidence complete · Audit indexed
+          </div>
+        )}
+        {typeof auditScore === 'number' && (
+          <div className="text-[10px] font-semibold" style={{ color: t.muted }}>
+            Audit readiness score: {auditScore}%
           </div>
         )}
 

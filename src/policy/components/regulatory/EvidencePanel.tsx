@@ -10,6 +10,7 @@ import {
 } from '@/policy/stores/regulatoryExecutionStore';
 import { useToastStore } from './Toast';
 import { ModalShell } from './ModalShell';
+import { isEvidenceImmutable } from '@/policy/evidence/evidenceModel';
 
 /* ═══════════════════════════════════════════════════════════════
    Evidence Panel — documents / uploads / generated reports
@@ -41,7 +42,12 @@ export function EvidencePanel({ event, compact = false }: { event: RegulatoryEve
             <button
               onClick={() => {
                 const title = `${event.title} – Report ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.pdf`;
-                store.generateReport(event.id, title);
+                const taskId = store.generateTaskFromWorkflowStep(event.id, 'report', { adminOverride: true });
+                const reportId = store.generateReport(event.id, title, taskId);
+                if (!reportId) {
+                  push('error', 'Report not generated', store.evidenceErrorsByEventId[event.id] || 'Missing required evidence bindings.');
+                  return;
+                }
                 push('success', 'Report generated', title);
               }}
               className="flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-montserrat font-bold uppercase tracking-[0.12em]"
@@ -76,6 +82,7 @@ function EvidenceRow({ doc, eventLocked }: { doc: EvidenceDoc; eventLocked: bool
   const store = useRegulatoryExecutionStore();
   const push = useToastStore(s => s.push);
   const icon = kindIcon(doc.kind);
+  const immutable = isEvidenceImmutable(doc.status);
   return (
     <li className="flex items-center gap-2.5 p-2 rounded-md border ci-border transition-colors" style={{ background: 'var(--ci-surface-2)' }}>
       <span
@@ -91,6 +98,7 @@ function EvidenceRow({ doc, eventLocked }: { doc: EvidenceDoc; eventLocked: bool
           {' · '}{new Date(doc.uploadedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
           {' · '}{doc.uploadedBy}
           {doc.sizeLabel && doc.sizeLabel !== '—' && ` · ${doc.sizeLabel}`}
+          {' · '}status={doc.status}
         </p>
       </div>
       <div className="flex items-center gap-1 shrink-0">
@@ -101,7 +109,7 @@ function EvidenceRow({ doc, eventLocked }: { doc: EvidenceDoc; eventLocked: bool
         >
           <Download size={10} />
         </button>
-        {!eventLocked && (
+        {!eventLocked && !immutable && (
           <button
             onClick={() => { store.removeEvidence(doc.eventId, doc.id); push('warn', 'Document removed', doc.name); }}
             aria-label="Remove"
@@ -152,19 +160,29 @@ function UploadModal({
   const [kind, setKind] = useState<EvidenceKind>('attachment');
   const [linkedFormId, setLinkedFormId] = useState<string>('');
   const [note, setNote] = useState('');
+  const [taskId, setTaskId] = useState('');
 
-  const reset = () => { setName(''); setKind('attachment'); setLinkedFormId(''); setNote(''); };
+  const reset = () => { setName(''); setKind('attachment'); setLinkedFormId(''); setNote(''); setTaskId(''); };
 
   const submit = () => {
     if (!name.trim()) return;
-    store.uploadEvidence(event.id, {
+    const id = store.uploadEvidence(event.id, {
+      taskId: taskId || (linkedFormId ? store.generateTaskFromForm(event.id, linkedFormId, { adminOverride: true }) : store.generateTaskFromWorkflowStep(event.id, 'evidence', { adminOverride: true })),
+      policyIds: event.policyRefs,
+      workflowId: event.workflowId || '',
+      formIds: linkedFormId ? [linkedFormId] : [],
       name: name.trim(),
       kind,
       sizeLabel: '1.2 MB',
       linkedFormId: linkedFormId || undefined,
       note: note || undefined,
     });
-    push('success', 'Document uploaded', name.trim());
+    if (!id) {
+      const message = store.evidenceErrorsByEventId[event.id] || 'Unable to upload evidence. Please verify required policy/workflow/event/task bindings.';
+      push('error', 'Upload failed', message);
+      return;
+    }
+    push('success', 'Document uploaded', `${name.trim()} (${id})`);
     reset();
     onClose();
   };
@@ -250,6 +268,15 @@ function UploadModal({
             <p className="text-[10px] font-roboto text-white/45 mt-1">Linking auto-marks the form as complete.</p>
           </Field>
         )}
+
+        <Field label="Task ID (optional)">
+          <input
+            value={taskId}
+            onChange={e => setTaskId(e.target.value)}
+            placeholder="TASK-..."
+            className="w-full ci-field text-[12px] font-roboto"
+          />
+        </Field>
 
         <Field label="Note (optional)">
           <textarea

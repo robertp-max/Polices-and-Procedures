@@ -15,7 +15,9 @@ import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import { useProjectedTasks } from '@/policy/pm/taskProjection';
 import { usePmPersonalStore } from '@/policy/pm/personalStore';
 import { usePmOverlayStore } from '@/policy/pm/pmOverlayStore';
-import { currentSprint } from '@/policy/pm/sprintWindows';
+import { usePmViewSprintStore } from '@/policy/pm/pmViewSprintStore';
+import { sprintDropdownLabel, toDisplaySprintId } from '@/policy/pm/sprintWindows';
+import { SprintScopeToolbar } from '@/policy/components/pm/SprintScopeToolbar';
 import { isPersonalTask, type Task } from '@/policy/pm/types';
 import { getCurrentUserId } from '@/policy/pm/currentUser';
 import { PmTaskCard } from './PmTaskCard';
@@ -103,7 +105,7 @@ export function MyTasksPmPage({
   const tasks = useProjectedTasks();
   const personal = usePmPersonalStore();
   const overlays = usePmOverlayStore(s => s.overlays);
-  const sprint = currentSprint();
+  const sprintWindow = usePmViewSprintStore(s => s.window);
 
   // Hydrate from backend on first mount; local cache stays valid if API is down.
   useEffect(() => {
@@ -210,19 +212,20 @@ export function MyTasksPmPage({
     <div className="flex h-full min-h-0 gap-3">
       <div className="flex-1 min-w-0 flex flex-col gap-3">
         {/* Header */}
-        <header className="flex items-center justify-between">
-          <div>
-            <div className="text-[10px] font-montserrat font-bold uppercase tracking-[0.22em] text-white/55">
-              My Tasks
+        <header className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <div className="text-[10px] font-montserrat font-bold uppercase tracking-[0.22em] text-white/55">
+                My Tasks
+              </div>
+              <div className="text-[18px] font-outfit text-white">
+                <span className="font-mono text-teal-300">{toDisplaySprintId(sprintWindow)}</span>
+                <span className="text-white/55 text-[12px] ml-2 block sm:inline">
+                  {sprintDropdownLabel(sprintWindow)}
+                </span>
+              </div>
             </div>
-            <div className="text-[18px] font-outfit text-white">
-              Sprint <span className="font-mono">{sprint.id}</span>
-              <span className="text-white/55 text-[12px] ml-2">
-                {sprint.startDate} → {sprint.endDate}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap justify-end">
             <a
               href="#/pm/sprint-plan"
               onClick={e => { e.preventDefault(); window.location.hash = '/pm/sprint-plan'; window.location.assign('/pm/sprint-plan'); }}
@@ -253,7 +256,9 @@ export function MyTasksPmPage({
             </a>
             <NotificationCenter userId={userId} onOpenTask={(id) => setActiveTaskId(id)} />
             <div className="text-[10px] font-mono text-white/55">user: {userId}</div>
+            </div>
           </div>
+          <SprintScopeToolbar className="max-w-4xl" />
         </header>
 
         {/* Tabs — scrollable on narrow viewports */}

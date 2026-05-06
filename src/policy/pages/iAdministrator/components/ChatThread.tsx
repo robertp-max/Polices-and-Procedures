@@ -401,7 +401,6 @@ export function ChatThread({
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const textColor = isLight ? '#1F1C1B' : '#E8E4DF';
   const subColor = isLight ? '#6B6860' : '#9B9488';
   const surface = isLight ? '#F7F6F5' : 'rgba(255,255,255,0.02)';
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
@@ -531,9 +530,9 @@ export function ChatThread({
         >
           <textarea
             ref={inputRef}
-            value=""
-            onChange={() => { /* locked */ }}
-            onKeyDown={() => { /* locked */ }}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
             rows={1}
             placeholder="Chat input under construction — use guided prompts for demo"
             className="flex-1 resize-none bg-transparent outline-none text-[12px] leading-relaxed"

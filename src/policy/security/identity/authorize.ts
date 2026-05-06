@@ -1,7 +1,7 @@
 import type { DemoUser as AuthDemoUser } from '@/auth/api';
-import { getDemoUserById, resolveUserIdFromAuth } from './demoUsers';
+import { resolveUserIdFromAuth } from './demoUsers';
 import { PERMISSION_BY_ID } from './permissionCatalog';
-import { getActiveAssignments } from './roleAssignments';
+import { getLiveUserById, getLiveActiveAssignments } from './userAssignmentsStore';
 import { evaluateSeparationOfDuties } from './separationOfDuties';
 import { USER_GROUP_BY_ID } from './userGroups';
 import type { AccessDecisionEvent, Decision, PermissionId, ResourceRef, RoleAssignment, Scope, UserGroup } from './types';
@@ -62,7 +62,7 @@ export function authorize(userId: string, permission: PermissionId, resource: Re
     return decision;
   }
 
-  const user = getDemoUserById(userId);
+  const user = getLiveUserById(userId);
   if (!user) {
     const decision = deny('user.unknown', 'User identity was not found in the Phase A demo dataset.');
     pushAccessDecision(userId, permission, resource, decision);
@@ -70,12 +70,12 @@ export function authorize(userId: string, permission: PermissionId, resource: Re
   }
 
   if (user.status !== 'active') {
-    const decision = deny('user.suspended', 'User is suspended and cannot execute access-controlled actions.');
+    const decision = deny('user.suspended', 'User is suspended or pending and cannot execute access-controlled actions.');
     pushAccessDecision(userId, permission, resource, decision);
     return decision;
   }
 
-  const assignments = getActiveAssignments(userId, atIso);
+  const assignments = getLiveActiveAssignments(userId, atIso);
   if (assignments.length === 0) {
     const decision = deny('user.no_assignment', 'User has no active role assignment for this environment.');
     pushAccessDecision(userId, permission, resource, decision);

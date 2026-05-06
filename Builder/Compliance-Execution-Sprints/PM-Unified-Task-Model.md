@@ -24,9 +24,8 @@ PM views never:
 | Personal tasks        | `pmPersonalStore`                              |
 | API mirror            | `pmApiClient` → `hhc-pm-api` Lambda            |
 
-`useProjectedTasks()` in `src/policy/pm/taskProjection.ts` merges CES + Personal
-into the canonical `Task[]`. In dev it asserts `assertNoDuplicateTaskIds()`
-across the full merged list. Any duplicate throws and breaks the build.
+`useProjectedTasks('sprint' | 'full')` in `src/policy/pm/taskProjection.ts` merges CES + Personal
+into the canonical `Task[]`. **Default `'sprint'`** limits CES parents to events overlapping the selected PM sprint (`pmViewSprintStore`) and personal tasks with `due_date` in that window — Kanban, Gantt, Sprint Board, My Tasks. **`'full'`** keeps the entire backlog for dashboards, sprint plan/review, approvals, event lists, mobile execution, and the PM notification ticker. In dev it asserts `assertNoDuplicateTaskIds()` across the merged list. Any duplicate throws and breaks the build.
 
 ## 3. Selected-task store
 
@@ -61,15 +60,11 @@ view never silently no-ops.
 [CES write / overlay write / personal write]
         │
         ▼
-useProjectedTasks()  ──memoized──>  same Task[] reference for all consumers
+useProjectedTasks('sprint'|'full')  ──memoized──>  Task[] per scope
         │
-        ├── KanbanView          (column derived from t.status)
-        ├── GanttView           (bar from t.due_date / dependencies)
-        ├── SprintBoardView     (filtered by t.sprint_id)
-        ├── MyTasksPmPage       (filtered by t.assigned_user_id)
-        ├── ApprovalsQueuePage  (filtered to t.status === 'in_review')
-        ├── PmDashboardPage     (rolled up by sprint)
-        └── EventTaskList       (filtered by t.event_id)
+        ├── KanbanView / GanttView / SprintBoardView / MyTasksPmPage  ('sprint' default)
+        ├── ApprovalsQueuePage / PmDashboardPage / plan & review pages / EventTaskList / mobile / ticker  ('full')
+        └── Right panel: useProjectedTaskById (sprint list + fallback single-event project)
 ```
 
 When eCIgn marks a packet `signed_locked + approved`, `derivePmTaskStatus()`

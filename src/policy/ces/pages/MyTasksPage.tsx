@@ -93,10 +93,27 @@ export function MyTasksPage({
       <main className="flex-1 overflow-y-auto p-6">
         {filtered.length === 0 ? (
           <div
-            className="rounded-lg p-10 text-center text-[13px]"
+            className="rounded-lg p-8 text-center text-[13px]"
             style={{ background: CES_TOKENS.white, border: `1px solid ${CES_TOKENS.border}`, color: CES_TOKENS.muted }}
           >
-            No tasks match this filter.
+            <p className="font-semibold text-[14px]" style={{ color: CES_TOKENS.ink }}>
+              No tasks match this filter.
+            </p>
+            <p className="mt-2">
+              Try All, Overdue, or Awaiting Signature.
+            </p>
+            <button
+              type="button"
+              onClick={() => setFilter('all')}
+              className="mt-4 px-4 py-2 rounded-md text-[12px] font-semibold"
+              style={{
+                background: CES_TOKENS.navy,
+                color: '#fff',
+                border: `1px solid ${CES_TOKENS.navy}`,
+              }}
+            >
+              View all tasks
+            </button>
           </div>
         ) : (
           <ul className="space-y-2">

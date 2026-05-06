@@ -86,7 +86,7 @@ Guarantee that the **same canonical task objects** drive every PM view (Event Vi
 - Overlay endpoints land in PM phase 1; today the overlay is in-memory + persisted to local storage.
 
 ## 10. Acceptance criteria
-- All PM views consume `useProjectedTasks()`.
+- Task-heavy PM views consume sprint-scoped `useProjectedTasks()` (default); cross-sprint surfaces pass `useProjectedTasks('full')`.
 - Same `task_id` returned across views for the same compliance unit.
 - Right Panel renders identical content given the same `task_id` regardless of entry view.
 - Updates from any source flow to all views simultaneously.

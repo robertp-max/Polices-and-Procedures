@@ -12,6 +12,7 @@ import { FormViewer } from '@/policy/components/FormViewer';
 import { PolicyAppendicesPanel } from '@/policy/components/PolicyAppendicesPanel';
 import { printForm } from '@/policy/utils/printForm';
 import type { PolicyContentSection } from '@/policy/types';
+import { achcSurveyByPolicyId } from '@/policy/data/achcSurveyProjection.generated';
 
 // ══════════════════════════════════════════════════════════════
 // SHARED POLICY DETAIL VIEW
@@ -496,6 +497,92 @@ function SCard({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ── ACHC SURVEY ALIGNMENT PANEL ──────────────────────────────
+function AchcAlignmentPanel({ policyId }: { policyId: string }) {
+  const achc = achcSurveyByPolicyId[policyId];
+  if (!achc) return null;
+
+  const badgeClass =
+    achc.mappingType === 'DIRECT'   ? 'bg-[#0f766e]/10 text-[#0f766e] border-[#0f766e]/40' :
+    achc.mappingType === 'PARTIAL'  ? 'bg-[#ea580c]/10 text-[#ea580c] border-[#ea580c]/40' :
+    achc.mappingType === 'SME_REVIEW' ? 'bg-amber-500/10 text-amber-700 border-amber-500/40' :
+    'bg-slate-100 text-slate-500 border-slate-300';
+
+  return (
+    <div className="mt-8 border-t border-[#e2e8f0] pt-6">
+      <h3 className="font-montserrat font-semibold text-[13px] text-[#007970] tracking-[0.15em] uppercase mb-5 flex items-center gap-2">
+        <ShieldCheck size={14} className="text-[#007970]" /> ACHC Survey Alignment
+      </h3>
+      <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-5">
+        <div>
+          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">Mapping Type</dt>
+          <dd>
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full border font-montserrat font-semibold text-[11px] tracking-wide ${badgeClass}`}>
+              {achc.mappingType}
+            </span>
+          </dd>
+        </div>
+        <div>
+          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">Evidence Codes</dt>
+          <dd className="font-roboto text-[14px] text-[#1F1C1B]">{achc.evidenceCodes.join(', ') || '—'}</dd>
+        </div>
+        <div>
+          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">Corridor Row</dt>
+          <dd className="font-roboto text-[14px] text-[#1F1C1B]">{achc.corridorPolicyNo || '—'}</dd>
+        </div>
+        <div>
+          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">Corridor Title</dt>
+          <dd className="font-roboto text-[13px] text-[#52404B]">{achc.corridorPolicyTitle || '—'}</dd>
+        </div>
+      </dl>
+
+      {achc.achcStandards.length > 0 && (
+        <div className="mt-5">
+          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-2">ACHC Standards</dt>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {achc.achcStandards.map(s => (
+              <span key={s} className="inline-flex items-center px-2.5 py-1 rounded-full border border-[#007970]/30 bg-[#007970]/08 font-montserrat font-semibold text-[11px] text-[#007970]">
+                {s}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {(achc.title22.length > 0 || achc.medicareCop.length > 0) && (
+        <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mt-5">
+          {achc.title22.length > 0 && (
+            <div>
+              <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">CA Title 22</dt>
+              <dd className="font-roboto text-[13px] text-[#1F1C1B]">{achc.title22.join('; ')}</dd>
+            </div>
+          )}
+          {achc.medicareCop.length > 0 && (
+            <div>
+              <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">Medicare CoP</dt>
+              <dd className="font-roboto text-[13px] text-[#1F1C1B]">{achc.medicareCop.join('; ')}</dd>
+            </div>
+          )}
+        </dl>
+      )}
+
+      {achc.surveyNotes && (
+        <div className="mt-5 rounded-lg bg-[#f0fdfa] border border-[#99f6e4] px-4 py-3">
+          <dt className="font-montserrat font-semibold text-[10px] text-[#0f766e] tracking-[0.16em] uppercase mb-1.5">Survey Notes</dt>
+          <dd className="font-roboto text-[13px] text-[#374151] leading-relaxed">{achc.surveyNotes}</dd>
+        </div>
+      )}
+
+      {achc.mappingType === 'SME_REVIEW' && (
+        <div className="mt-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
+          <p className="font-montserrat font-semibold text-[10px] text-amber-700 tracking-[0.16em] uppercase">SME Review Hold</p>
+          <p className="font-roboto text-[12px] text-amber-700 mt-1">This policy is pending subject-matter expert review. Mapping is provisional and excluded from the final ACHC crosswalk until validated.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── TAB: OVERVIEW — one section at a time (sectionIdx 0-3) ────
 function TabOverview({ policy, sectionIdx = 0 }: { policy: SharedPolicy; sectionIdx?: number }) {
   const isGV = policy.policyId === 'GV-GB-001';
@@ -530,6 +617,7 @@ function TabOverview({ policy, sectionIdx = 0 }: { policy: SharedPolicy; section
           </div>
         ))}
       </dl>
+      <AchcAlignmentPanel policyId={policy.policyId} />
     </SCard>
   );
 

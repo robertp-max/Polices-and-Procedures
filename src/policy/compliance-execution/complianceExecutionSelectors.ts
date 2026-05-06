@@ -37,6 +37,45 @@ export function selectEventsInRange(
   });
 }
 
+export function getEventsByPolicyId(
+  s: ComplianceExecutionSnapshot,
+  policyId: string,
+): MergedComplianceEvent[] {
+  const needle = policyId.toUpperCase();
+  return s.events.filter(event =>
+    (event.regulatoryRef?.policyRefs ?? []).some(ref => ref.toUpperCase() === needle),
+  );
+}
+
+export function getEventsByWorkflowId(
+  s: ComplianceExecutionSnapshot,
+  workflowId: string,
+): MergedComplianceEvent[] {
+  const eventIds = new Set(
+    s.executionUnits
+      .filter(unit => unit.workflowId === workflowId)
+      .map(unit => unit.parentEventId),
+  );
+  return s.events.filter(event => eventIds.has(event.id));
+}
+
+export function getEventsByDateRange(
+  s: ComplianceExecutionSnapshot,
+  startISO: string,
+  endISO: string,
+): MergedComplianceEvent[] {
+  return selectEventsInRange(s, startISO, endISO);
+}
+
+export function getIncompleteEvents(s: ComplianceExecutionSnapshot): MergedComplianceEvent[] {
+  const incompleteIds = new Set(
+    s.executionUnits
+      .filter(unit => unit.complianceState !== 'completed')
+      .map(unit => unit.parentEventId),
+  );
+  return s.events.filter(event => incompleteIds.has(event.id));
+}
+
 /* ─── Execution unit selectors ───────────────────────────── */
 
 export function selectAllExecutionUnits(s: ComplianceExecutionSnapshot): readonly MergedExecutionUnit[] {

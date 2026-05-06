@@ -25,12 +25,11 @@
         "Annotations.addWarningV2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:1087)",
         "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\custom-resources\\lib\\aws-custom-resource\\aws-custom-resource.js:1:8694)",
         "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\prop-injectable.js:1:855)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:170:30)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:172:30)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6:1",
-        "ModuleJob.run (node:internal/modules/esm/module_job:413:25)",
-        "processTicksAndRejections (node:internal/process/task_queues:103:5)",
-        "onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)",
-        "asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)"
+        "ModuleJob.run (node:internal/modules/esm/module_job:343:25)",
+        "onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)",
+        "asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)"
       ]
     }
   ],
@@ -69,12 +68,11 @@
         "Annotations.addWarningV2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:1087)",
         "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\custom-resources\\lib\\aws-custom-resource\\aws-custom-resource.js:1:8694)",
         "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\prop-injectable.js:1:855)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:195:33)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:197:33)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6:1",
-        "ModuleJob.run (node:internal/modules/esm/module_job:413:25)",
-        "processTicksAndRejections (node:internal/process/task_queues:103:5)",
-        "onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)",
-        "asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)"
+        "ModuleJob.run (node:internal/modules/esm/module_job:343:25)",
+        "onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)",
+        "asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)"
       ]
     }
   ],
@@ -87,12 +85,11 @@
         "Annotations.addWarningV2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:1087)",
         "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\custom-resources\\lib\\aws-custom-resource\\aws-custom-resource.js:1:8694)",
         "new AwsCustomResource2 (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\core\\lib\\prop-injectable.js:1:855)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:215:27)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:217:27)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6:1",
-        "ModuleJob.run (node:internal/modules/esm/module_job:413:25)",
-        "processTicksAndRejections (node:internal/process/task_queues:103:5)",
-        "onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)",
-        "asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)"
+        "ModuleJob.run (node:internal/modules/esm/module_job:343:25)",
+        "onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)",
+        "asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)"
       ]
     }
   ],
@@ -104,7 +101,7 @@
     {
       "type": "aws:cdk:creationStack",
       "data": [
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:245:9)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:247:9)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -118,7 +115,7 @@
     {
       "type": "aws:cdk:creationStack",
       "data": [
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:249:9)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:251:9)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -132,7 +129,7 @@
     {
       "type": "aws:cdk:creationStack",
       "data": [
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:252:9)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:254:9)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -146,7 +143,7 @@
     {
       "type": "aws:cdk:creationStack",
       "data": [
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:255:9)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:257:9)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -187,7 +184,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new Table2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:32:35)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:33:35)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -202,7 +199,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new UserPool2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:40:26)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:41:26)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -217,8 +214,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:79:33)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:81:33)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -233,8 +230,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:80:30)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:82:30)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -249,8 +246,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:81:31)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:83:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -265,8 +262,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:82:30)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:84:30)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -281,8 +278,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:83:32)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:85:32)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -297,8 +294,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:84:27)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:86:27)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -313,8 +310,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:85:31)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:87:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -329,8 +326,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:86:39)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:88:39)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -345,8 +342,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:87:38)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:89:38)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -361,7 +358,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new HttpApi2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:111:25)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:113:25)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -376,7 +373,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new AwsCustomResource2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:170:30)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:172:30)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -404,7 +401,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...WrappedClass.addClient in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:60:41)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:61:41)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -419,8 +416,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:79:33)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:81:33)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -435,8 +432,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:80:30)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:82:30)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -451,8 +448,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:81:31)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:83:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -467,8 +464,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:82:30)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:84:30)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -483,8 +480,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:83:32)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:85:32)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -499,8 +496,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:84:27)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:86:27)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -515,8 +512,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:85:31)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:87:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -531,8 +528,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:86:39)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:88:39)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -547,8 +544,8 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new NodejsFunction in aws-cdk-lib...",
-        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:260:16)",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:87:38)",
+        "DemoAuthStack.createHandler (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:262:16)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:89:38)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -563,7 +560,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new HttpApi2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:111:25)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:113:25)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -580,7 +577,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:125:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:127:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -597,7 +594,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:125:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:127:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -614,7 +611,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:130:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:132:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -631,7 +628,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:130:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:132:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -648,7 +645,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:135:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:137:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -665,7 +662,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:135:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:137:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -682,7 +679,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:140:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:142:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -699,7 +696,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:140:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:142:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -716,7 +713,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:145:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:147:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -733,7 +730,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:145:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:147:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -750,7 +747,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:150:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:152:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -767,7 +764,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:150:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:152:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -784,7 +781,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:155:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:157:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -801,7 +798,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:155:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:157:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -818,7 +815,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:160:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:162:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -835,7 +832,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:160:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:162:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -852,7 +849,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:165:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:167:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -869,7 +866,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:165:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:167:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -884,7 +881,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new AwsCustomResource2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:170:30)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:172:30)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -899,7 +896,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new AwsCustomResource2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:170:30)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:172:30)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -914,7 +911,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new AwsCustomResource2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:170:30)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:172:30)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -929,7 +926,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new AwsCustomResource2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:195:33)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:197:33)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -944,7 +941,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new AwsCustomResource2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:195:33)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:197:33)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -959,7 +956,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new AwsCustomResource2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:215:27)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:217:27)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -974,7 +971,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new AwsCustomResource2 in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:215:27)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:217:27)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -989,7 +986,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:92:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1004,7 +1001,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:92:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1019,7 +1016,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:92:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1034,7 +1031,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:92:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1049,7 +1046,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:92:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1064,7 +1061,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:92:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1079,7 +1076,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:92:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1094,7 +1091,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:92:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1109,7 +1106,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...WrappedClass.grantReadWriteData in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:90:31)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:92:31)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1126,7 +1123,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:125:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:127:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1143,7 +1140,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:130:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:132:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1160,7 +1157,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:135:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:137:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1177,7 +1174,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:140:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:142:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1194,7 +1191,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:145:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:147:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1211,7 +1208,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:150:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:152:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1228,7 +1225,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:155:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:157:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1245,7 +1242,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:160:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:162:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]
@@ -1262,7 +1259,7 @@
         "...C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\infra\\demo-auth-cdk\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
         "Array.map (:)",
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:165:17)",
+        "new DemoAuthStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/lib/demo-auth-stack.ts:167:17)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/demo-auth-cdk/bin/demo-auth.ts:6 (:)",
         "...node internals..."
       ]

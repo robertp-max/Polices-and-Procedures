@@ -34,7 +34,7 @@ interface AssigneeStat {
 }
 
 export function SprintReviewPage(): ReactElement {
-  const allTasks = useProjectedTasks();
+  const allTasks = useProjectedTasks('full');
   // Default to the previous sprint (review the one that just ended).
   const today = useMemo(() => currentSprint(), []);
   const previousId = useMemo(() => neighbourSprint(today.id, -1).id, [today]);

@@ -413,12 +413,20 @@ export function FormExecutionRow({
     const formInstanceId = existingInstance?.id || `FI-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
     if (!existingInstance) {
-      store.uploadEvidence(event.id, {
+      const taskIdForForm = store.generateTaskFromForm(event.id, formId, { adminOverride: true });
+      const evidenceId = store.uploadEvidence(event.id, {
+        taskId: taskIdForForm,
+        policyIds: event.policyRefs,
+        workflowId,
+        formIds: [formId],
         name: `${formCode}_${formInstanceId}.json`,
         kind: 'form',
         sizeLabel: 'instance',
         note: `form_instance_id=${formInstanceId}; event_id=${event.id}; execution_unit_id=${executionUnitId}; workflow_id=${workflowId}; form_id=${formId}; user_id=Current User; timestamp=${timestamp}`,
       });
+      if (!evidenceId) {
+        push('error', 'Form evidence not created', store.evidenceErrorsByEventId[event.id] || 'Missing required evidence bindings.');
+      }
     }
 
     if (status !== 'complete') {

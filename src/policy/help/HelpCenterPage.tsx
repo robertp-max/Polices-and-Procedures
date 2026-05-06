@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import {
   Search,
@@ -236,14 +236,47 @@ function ArticleViewer({
   category,
   onHomeClick,
   onCategoryClick,
+  isMobile = false,
 }: {
   article: HelpArticle;
   category: CategoryModel;
   onHomeClick: () => void;
   onCategoryClick: (id: string) => void;
+  isMobile?: boolean;
 }) {
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    purpose: true,
+    usage: true,
+    steps: true,
+    behavior: true,
+    impact: true,
+    evidence: true,
+    compliance: true,
+    enforcement: true,
+    actions: true,
+    audit: true,
+    failure: true,
+    traceability: true,
+  });
+
+  const toggleSection = (key: string) => {
+    setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const sectionWrap = isMobile ? 'border border-[#E5E4E3] rounded-[10px] p-3.5' : '';
+  const sectionTitle = (id: string, label: string) => (
+    <button
+      type="button"
+      onClick={() => toggleSection(id)}
+      className={`w-full text-left flex items-center justify-between ${isMobile ? '' : 'pointer-events-none'}`}
+    >
+      <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase">{label}</h3>
+      {isMobile ? <span className="text-[#C74601] text-xs font-semibold">{openSections[id] ? 'Hide' : 'Show'}</span> : null}
+    </button>
+  );
+
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white p-10 md:p-16">
+    <div className={`w-full max-w-4xl mx-auto bg-white ${isMobile ? 'p-4' : 'p-10 md:p-16'}`}>
       <div className="flex items-center gap-2 text-sm font-roboto mb-8 flex-wrap">
         <button className="text-[#52404B] hover:text-[#C74601] transition-colors" onClick={onHomeClick}>Help Center</button>
         <span className="text-[#E5E4E3]">/</span>
@@ -261,112 +294,131 @@ function ArticleViewer({
         </h1>
       </div>
 
-      <div className="space-y-10">
-        <section>
-          <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase mb-3">Purpose</h3>
-          <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed">{article.purpose}</p>
+      <div className={`${isMobile ? 'space-y-3' : 'space-y-10'}`}>
+        <section className={sectionWrap}>
+          {sectionTitle('purpose', 'Purpose')}
+          {(openSections.purpose || !isMobile) ? <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed mt-3">{article.purpose}</p> : null}
         </section>
 
-        <section>
-          <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase mb-3">When To Use It</h3>
-          <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed">{article.whenToUse}</p>
+        <section className={sectionWrap}>
+          {sectionTitle('usage', 'When To Use It')}
+          {(openSections.usage || !isMobile) ? <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed mt-3">{article.whenToUse}</p> : null}
         </section>
 
         {!!article.steps?.length && (
-          <section>
-            <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase mb-3">Step By Step</h3>
-            <ol className="list-decimal list-outside ml-4 space-y-2 text-[#1F1C1B] font-roboto text-[15px] leading-relaxed marker:text-[#52404B]">
-              {article.steps.map((step, i) => (
-                <li key={i} className="pl-2">{step}</li>
-              ))}
-            </ol>
+          <section className={sectionWrap}>
+            {sectionTitle('steps', 'Step By Step')}
+            {(openSections.steps || !isMobile) ? (
+              <ol className="list-decimal list-outside ml-4 mt-3 space-y-2 text-[#1F1C1B] font-roboto text-[15px] leading-relaxed marker:text-[#52404B]">
+                {article.steps.map((step, i) => (
+                  <li key={i} className="pl-2">{step}</li>
+                ))}
+              </ol>
+            ) : null}
           </section>
         )}
 
-        <section>
-          <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase mb-3">System Behavior</h3>
-          <div className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-[8px] p-6 text-[14px] font-mono text-[#52404B] leading-relaxed overflow-x-auto whitespace-pre-wrap">
-            {article.systemBehavior}
-          </div>
+        <section className={sectionWrap}>
+          {sectionTitle('behavior', 'System Behavior')}
+          {(openSections.behavior || !isMobile) ? (
+            <div className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-[8px] p-4 mt-3 text-[13px] font-mono text-[#52404B] leading-relaxed whitespace-pre-wrap break-words">
+              {article.systemBehavior}
+            </div>
+          ) : null}
         </section>
 
-        <section>
-          <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase mb-3">Compliance Impact</h3>
-          <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed">{article.complianceImpact}</p>
+        <section className={sectionWrap}>
+          {sectionTitle('impact', 'Compliance Impact')}
+          {(openSections.impact || !isMobile) ? <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed mt-3">{article.complianceImpact}</p> : null}
         </section>
 
-        <section>
-          <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase mb-3">Evidence Generated</h3>
-          <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed break-words">{article.evidence}</p>
+        <section className={sectionWrap}>
+          {sectionTitle('evidence', 'Evidence Generated')}
+          {(openSections.evidence || !isMobile) ? <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed mt-3 break-words">{article.evidence}</p> : null}
         </section>
 
         {!!article.complianceRequirement && (
-          <section className="border-t-2 border-[#FFD5BF] pt-8">
-            <div className="inline-flex items-center gap-2 mb-3">
-              <ShieldCheck className="w-4 h-4 text-[#C74601]" />
-              <h3 className="text-[#C74601] font-montserrat font-semibold text-xs tracking-widest uppercase">Compliance Requirement</h3>
-            </div>
-            <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed">{article.complianceRequirement}</p>
+          <section className={isMobile ? sectionWrap : 'border-t-2 border-[#FFD5BF] pt-8'}>
+            {isMobile ? sectionTitle('compliance', 'Compliance Requirement') : null}
+            {(openSections.compliance || !isMobile) ? (
+              <>
+                <div className="inline-flex items-center gap-2 mb-3 mt-2">
+                  <ShieldCheck className="w-4 h-4 text-[#C74601]" />
+                  <h3 className="text-[#C74601] font-montserrat font-semibold text-xs tracking-widest uppercase">Compliance Requirement</h3>
+                </div>
+                <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed">{article.complianceRequirement}</p>
+              </>
+            ) : null}
           </section>
         )}
 
         {!!article.enforcementRules?.length && (
-          <section>
-            <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase mb-3">Enforcement Rules</h3>
-            <ul className="space-y-2">
-              {article.enforcementRules.map((rule: string, i: number) => (
-                <li key={i} className="flex items-start gap-2 text-[15px] font-roboto text-[#1F1C1B] leading-relaxed">
-                  <span className="text-[#C74601] font-bold shrink-0 mt-0.5">&rsaquo;</span>
-                  <span>{rule}</span>
-                </li>
-              ))}
-            </ul>
+          <section className={sectionWrap}>
+            {sectionTitle('enforcement', 'Enforcement Rules')}
+            {(openSections.enforcement || !isMobile) ? (
+              <ul className="space-y-2 mt-3">
+                {article.enforcementRules.map((rule: string, i: number) => (
+                  <li key={i} className="flex items-start gap-2 text-[15px] font-roboto text-[#1F1C1B] leading-relaxed">
+                    <span className="text-[#C74601] font-bold shrink-0 mt-0.5">&rsaquo;</span>
+                    <span>{rule}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </section>
         )}
 
         {!!article.requiredActions?.length && (
-          <section>
-            <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase mb-3">Required Actions</h3>
-            <ul className="space-y-2">
-              {article.requiredActions.map((action: string, i: number) => (
-                <li key={i} className="flex items-start gap-2 text-[15px] font-roboto text-[#1F1C1B] leading-relaxed">
-                  <span className="w-5 h-5 rounded-full bg-[#007970] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-                  <span>{action}</span>
-                </li>
-              ))}
-            </ul>
+          <section className={sectionWrap}>
+            {sectionTitle('actions', 'Required Actions')}
+            {(openSections.actions || !isMobile) ? (
+              <ul className="space-y-2 mt-3">
+                {article.requiredActions.map((action: string, i: number) => (
+                  <li key={i} className="flex items-start gap-2 text-[15px] font-roboto text-[#1F1C1B] leading-relaxed">
+                    <span className="w-5 h-5 rounded-full bg-[#007970] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                    <span>{action}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </section>
         )}
 
         {!!article.auditLogging && (
-          <section>
-            <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase mb-3">Audit Logging</h3>
-            <div className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-[8px] p-6 text-[14px] font-mono text-[#52404B] leading-relaxed overflow-x-auto whitespace-pre-wrap">
-              {article.auditLogging}
-            </div>
+          <section className={sectionWrap}>
+            {sectionTitle('audit', 'Audit Logging')}
+            {(openSections.audit || !isMobile) ? (
+              <div className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-[8px] p-4 mt-3 text-[13px] font-mono text-[#52404B] leading-relaxed whitespace-pre-wrap break-words">
+                {article.auditLogging}
+              </div>
+            ) : null}
           </section>
         )}
 
         {!!article.failureImpact && (
-          <section>
-            <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase mb-3">Failure Impact</h3>
-            <div className="bg-[#FFF5F0] border border-[#FFD5BF] rounded-[8px] p-4 text-[15px] font-roboto text-[#1F1C1B] leading-relaxed">
-              {article.failureImpact}
-            </div>
+          <section className={sectionWrap}>
+            {sectionTitle('failure', 'Failure Impact')}
+            {(openSections.failure || !isMobile) ? (
+              <div className="bg-[#FFF5F0] border border-[#FFD5BF] rounded-[8px] p-4 mt-3 text-[15px] font-roboto text-[#1F1C1B] leading-relaxed">
+                {article.failureImpact}
+              </div>
+            ) : null}
           </section>
         )}
 
         {!!article.traceability && (
-          <section>
-            <h3 className="text-[#52404B] font-montserrat font-semibold text-xs tracking-widest uppercase mb-3">Traceability</h3>
-            <div className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-[8px] p-4 font-mono text-[13px] space-y-1">
-              {Object.entries(article.traceability).map(([key, value]) => (
-                <div key={key} className="flex gap-3">
-                  <span className="text-[#007970] w-32 shrink-0">{key}:</span>
-                  <span className="text-[#52404B] break-all">{String(value ?? 'GAP')}</span>
-                </div>
-              ))}
-            </div>
+          <section className={sectionWrap}>
+            {sectionTitle('traceability', 'Traceability')}
+            {(openSections.traceability || !isMobile) ? (
+              <div className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-[8px] p-4 mt-3 font-mono text-[13px] space-y-1">
+                {Object.entries(article.traceability).map(([key, value]) => (
+                  <div key={key} className="flex gap-3">
+                    <span className={`${isMobile ? 'w-24' : 'w-32'} text-[#007970] shrink-0`}>{key}:</span>
+                    <span className="text-[#52404B] break-all">{String(value ?? 'GAP')}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </section>
         )}
       </div>
@@ -475,10 +527,12 @@ function HelpArticleRoute({
   categories,
   onHomeClick,
   onCategoryClick,
+  isMobile = false,
 }: {
   categories: CategoryModel[];
   onHomeClick: () => void;
   onCategoryClick: (id: string) => void;
+  isMobile?: boolean;
 }) {
   const { slug } = useParams<{ slug: string }>();
   const article = slug ? findArticle(slug) : undefined;
@@ -494,7 +548,7 @@ function HelpArticleRoute({
 
   return (
     <main className="flex-1 w-full bg-white border-t border-[#E5E4E3]">
-      <ArticleViewer article={article} category={category} onHomeClick={onHomeClick} onCategoryClick={onCategoryClick} />
+      <ArticleViewer article={article} category={category} onHomeClick={onHomeClick} onCategoryClick={onCategoryClick} isMobile={isMobile} />
     </main>
   );
 }
@@ -502,7 +556,14 @@ function HelpArticleRoute({
 export function HelpCenterPage() {
   const categories = useCategoryModels();
   const [query, setQuery] = useState('');
+  const [isMobile, setIsMobile] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 768));
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const handleSelectArticle = (slug: string) => {
     setQuery('');
@@ -555,6 +616,7 @@ export function HelpCenterPage() {
               categories={categories}
               onHomeClick={handleHomeClick}
               onCategoryClick={handleSelectCategory}
+              isMobile={isMobile}
             />
           }
         />
