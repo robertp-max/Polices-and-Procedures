@@ -35,6 +35,7 @@ const EXCLUDED_PATTERNS: RegExp[] = [
   /^\/library\/.+/,
   /^\/gv-policy\/.+/,
   /^\/forms\/[^/]+(\/|$)/, // /forms/:formId  and  /forms/:formId/print
+  /^\/artifacts\/[^/]+(\/|$)/, // /artifacts/:artifactId
   /^\/print(\/|$)/,
   /^\/drafts\/.+/,
   /^\/brad-proposal/,

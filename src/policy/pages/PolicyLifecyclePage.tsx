@@ -33,6 +33,7 @@ import { PolicyLibraryDocumentView } from '@/policy/components/PolicyLibraryDocu
 import { useAuditorModeStore } from '@/policy/stores/auditorModeStore';
 import { useAuth } from '@/auth/AuthProvider';
 import { authorizeForAuthUser, type PermissionId } from '@/policy/security/identity';
+import { PermissionGate } from '@/policy/security/features/PermissionGate';
 import {
   usePolicyLifecycleStore,
   TJ_PADILLA,
@@ -756,15 +757,28 @@ function ActionsRail({
         )}
         {intents.map(intent => {
           const Icon = INTENT_ICON[intent];
+          // Map lifecycle intent → Phase A permission required to perform it.
+          const intentPermission: PermissionId =
+            intent === 'approve' || intent === 'reject'
+              ? 'policy.approve'
+              : intent === 'publish' || intent === 'archive'
+                ? 'policy.publish'
+                : 'policy.draft';
           return (
-            <button
+            <PermissionGate
               key={intent}
-              onClick={() => onIntent(intent)}
-              className="flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 bg-white text-[12px] font-semibold text-gray-800 hover:bg-gray-50 transition"
+              permissionId={intentPermission}
+              mode="disable"
+              disabledTitle={`Requires ${intentPermission} — ask an admin to grant your role this permission.`}
             >
-              <Icon size={13} />
-              {INTENT_LABEL[intent]}
-            </button>
+              <button
+                onClick={() => onIntent(intent)}
+                className="flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 bg-white text-[12px] font-semibold text-gray-800 hover:bg-gray-50 transition"
+              >
+                <Icon size={13} />
+                {INTENT_LABEL[intent]}
+              </button>
+            </PermissionGate>
           );
         })}
       </div>

@@ -3,9 +3,54 @@ import { useParams } from 'react-router-dom';
 import { Printer, AlertTriangle } from 'lucide-react';
 import { getPolicyContent } from '@/policy/data/policyContentMap';
 import { usePolicyStore } from '@/policy/stores/policyStore';
+import { loadFrameworkSeed } from '@/policy/adapters/frameworkSeedAdapter';
 import type { PolicyContentSection } from '@/policy/types';
+import { achcSurveyByPolicyId } from '@/policy/data/achcSurveyProjection.generated';
+import { formatAnchorRefsForDisplay, getSupportRefsForPolicy } from '@/policy/data/achcSupportAnchors';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 
-// ─── MARKDOWN RENDERER (same as PolicyDetailModal/PolicyDetailPage) ──────────
+// Pre-load seed data for domain / subdomain name lookups and version metadata
+const { domains, subdomains, policyVersions } = loadFrameworkSeed();
+
+function domainName(code: string): string {
+  const d = domains.find(x => x.code === code);
+  return d ? `${d.code} — ${d.name}` : code;
+}
+
+function subdomainName(code: string): string {
+  const s = subdomains.find(x => x.code === code);
+  return s ? `${s.code} — ${s.name}` : code;
+}
+
+// ─── PRINT META CELL ─────────────────────────────────────────────────────────
+function PrintMeta({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div>
+      <span style={{
+        display: 'block',
+        fontSize: '9px',
+        fontFamily: 'Montserrat, sans-serif',
+        fontWeight: 700,
+        textTransform: 'uppercase' as const,
+        letterSpacing: '0.12em',
+        color: '#524048',
+        marginBottom: '3px',
+      }}>
+        {label}
+      </span>
+      <span style={{
+        fontFamily: 'Roboto, sans-serif',
+        fontSize: '11px',
+        fontWeight: 500,
+        color: '#1F1C1B',
+      }}>
+        {value ?? '—'}
+      </span>
+    </div>
+  );
+}
+
+// ─── MARKDOWN RENDERER ───────────────────────────────────────────────────────
 function GfmTable({ text }: { text: string }) {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   if (!lines[0]?.startsWith('|')) return null;
@@ -14,11 +59,11 @@ function GfmTable({ text }: { text: string }) {
   const headers = parseRow(lines[0]);
   const dataLines = lines.slice(2);
   return (
-    <table className="w-full text-left border-collapse text-xs mb-5 print-color-exact">
+    <table className="w-full text-left border-collapse text-xs mb-5">
       <thead>
-        <tr style={{ backgroundColor: '#D4AF37', color: '#ffffff' }}>
+        <tr style={{ backgroundColor: '#007970', color: '#ffffff' }}>
           {headers.map((h, i) => (
-            <th key={i} style={{ border: '1px solid #004d47', padding: '6px 10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>
+            <th key={i} style={{ border: '1px solid #00594f', padding: '6px 10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>
               {h}
             </th>
           ))}
@@ -26,7 +71,7 @@ function GfmTable({ text }: { text: string }) {
       </thead>
       <tbody>
         {dataLines.map((row, i) => (
-          <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#ffffff' : '#FAFBF8' }}>
+          <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#ffffff' : '#f8fffe' }}>
             {parseRow(row).map((cell, j) => (
               <td key={j} style={{ border: '1px solid #E5E4E3', padding: '6px 10px', verticalAlign: 'top', lineHeight: '1.4', fontSize: '11px' }}>
                 {cell}
@@ -75,7 +120,7 @@ function PrintSectionPanel({ section, isTopLevel }: { section: PolicyContentSect
           fontFamily: 'Montserrat, sans-serif',
           fontWeight: section.level === 2 ? 800 : 700,
           fontSize: section.level === 2 ? '13px' : section.level === 3 ? '11px' : '10px',
-          color: section.level === 2 ? '#1F1C1B' : '#D4AF37',
+          color: section.level === 2 ? '#1F1C1B' : '#524048',
           borderBottom: isTopLevel ? '1px solid #E5E4E3' : 'none',
           paddingBottom: isTopLevel ? '6px' : '0',
           marginBottom: '8px',
@@ -94,8 +139,13 @@ function PrintSectionPanel({ section, isTopLevel }: { section: PolicyContentSect
 // ─── PAGE COMPONENT ──────────────────────────────────────────────────────────
 export function PrintPage() {
   const params = useParams<{ policyId: string }>();
+  const paramId = params.policyId ?? '';
   const policy = usePolicyStore(state =>
-    state.policies.find(item => item.id === params.policyId),
+    state.policies.find(
+      item =>
+        item.id === paramId ||
+        item.id.toLowerCase() === paramId.toLowerCase(),
+    ),
   );
 
   if (!policy) {
@@ -112,26 +162,68 @@ export function PrintPage() {
     return () => { document.title = prev; };
   }, [policy.id, policy.title]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('autoprint') === '1') {
+      window.setTimeout(() => window.print(), 250);
+    }
+  }, []);
+
   const isOfficialVersion =
     policy.lifecycleStatus === 'Approved' || policy.lifecycleStatus === 'Published';
   const isDraft = !isOfficialVersion;
 
+  // Version metadata (effectiveDate, approvedBy, nextReviewDate)
+  const seedVersion = policyVersions.find(v => v.policyId === policy.id && v.version === policy.currentVersion)
+    ?? policyVersions.find(v => v.policyId === policy.id);
+  const effectiveDateRaw = seedVersion?.effectiveDate ?? null;
+  const approvedByRaw = seedVersion?.approvedBy ?? null;
+
+  // Compute next review from effectiveDate + reviewCycle
+  function addYears(iso: string | null, years: number): string | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+    d.setFullYear(d.getFullYear() + years);
+    return d.toISOString().slice(0, 10);
+  }
+  const reviewYears = policy.reviewCycle.includes('2') ? 2 : 1;
+  const nextReviewDate = addYears(effectiveDateRaw, reviewYears);
+
   const content = getPolicyContent(policy.id);
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const achcMeta = achcSurveyByPolicyId[policy.id] ?? null;
+  const supportRefs = achcMeta ? getSupportRefsForPolicy(policy.id) : [];
+  const supportRefLabel = supportRefs.length ? formatAnchorRefsForDisplay(supportRefs) : 'ANCHOR_REVIEW_REQUIRED';
 
-  // Filter out the level-1 title section (order=1, body="---") from the document body
   const printSections = content
     ? content.sections.filter(s => !(s.order === 1 || (s.level === 1 && s.body.trim() === '---')))
     : [];
 
   return (
-    <div className="bg-[#E5E4E3] py-8 print:bg-white print:p-0">
+    <div className="policy-print-page bg-[#E5E4E3] py-8 print:bg-white print:p-0">
       <style>{`
         @page { size: letter; margin: 0.5in; }
         @media print {
+          body:has(.policy-print-page) * {
+            visibility: hidden !important;
+          }
+          body:has(.policy-print-page) .policy-print-page,
+          body:has(.policy-print-page) .policy-print-page * {
+            visibility: visible !important;
+          }
+          body:has(.policy-print-page) .policy-print-page {
+            position: static !important;
+            inset: auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+          }
           body { background: white !important; }
           .no-print { display: none !important; }
           .avoid-break { page-break-inside: avoid; }
+          .page-break { page-break-before: always; break-before: page; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           .print-document {
             box-shadow: none !important;
@@ -177,46 +269,94 @@ export function PrintPage() {
       </div>
 
       {/* DOCUMENT CONTAINER */}
-      <article className="print-document mx-auto max-w-[850px] bg-white shadow-xl print:max-w-full print:shadow-none">
+      <article className="print-document mx-auto max-w-[850px] bg-white shadow-xl print:max-w-full print:shadow-none px-12 py-16 text-[#1F1C1B]">
 
-        {/* COVER BLOCK */}
-        <div className="avoid-break" style={{ backgroundColor: '#D4AF37', padding: '40px 48px', color: '#ffffff' }}>
+        {/* COVER BLOCK — matches PolicyPrintDocument / Documents PDF brand */}
+        <div className="avoid-break" style={{ borderBottom: '2px solid #007970', paddingBottom: '32px', marginBottom: '40px' }}>
+
+          {/* Logo + document type */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <img
+              src={ciLogoGray}
+              alt="Care Indeed — The Heart of Home Health"
+              style={{ height: '40px', width: 'auto' }}
+            />
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: '10px', textTransform: 'uppercase' as const, letterSpacing: '0.18em', color: '#524048', marginBottom: '4px' }}>
+                Corporate Policy Document
+              </p>
+              <p style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '11px', color: '#524048' }}>
+                Care Indeed Home Health Care, Inc.
+              </p>
+            </div>
+          </div>
+
           {isDraft && (
-            <div style={{ marginBottom: '16px', display: 'inline-block', backgroundColor: 'rgba(199,70,0,0.9)', padding: '4px 12px', borderRadius: '4px', fontSize: '10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            <div style={{ marginBottom: '12px', display: 'inline-block', backgroundColor: '#C74600', padding: '4px 12px', borderRadius: '4px', fontSize: '10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#ffffff' }}>
               DRAFT — NOT FOR OFFICIAL USE
             </div>
           )}
-          <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '26px', fontWeight: 900, lineHeight: '1.25', letterSpacing: '-0.02em', marginBottom: '12px', color: '#ffffff' }}>
+
+          {/* Policy ID / status / tier badges */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' as const }}>
+            <span style={{ color: '#007970', border: '1px solid rgba(0,121,112,0.3)', backgroundColor: '#E5FEFF', padding: '2px 10px', borderRadius: '999px', fontSize: '10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.12em' }}>
+              {policy.id}
+            </span>
+            <span style={{ color: '#ffffff', backgroundColor: '#007970', padding: '2px 10px', borderRadius: '999px', fontSize: '10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.12em' }}>
+              {policy.lifecycleStatus.replace('_', ' ')}
+            </span>
+            <span style={{ color: '#524048', border: '1px solid #E5E4E3', backgroundColor: '#ffffff', padding: '2px 10px', borderRadius: '999px', fontSize: '10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.12em' }}>
+              {policy.tier}
+            </span>
+          </div>
+
+          {/* Title */}
+          <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300, fontSize: '32px', lineHeight: '1.2', color: '#1F1C1B', marginBottom: '24px', letterSpacing: '-0.02em' }}>
             {policy.title}
           </h1>
-          <span style={{ display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 14px', borderRadius: '999px', fontSize: '12px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, marginBottom: '24px' }}>
-            ID: {policy.id}
-          </span>
-          <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.2)', marginBottom: '24px' }} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', fontSize: '12px' }}>
-            {[
-              ['Domain', policy.domainCode],
-              ['Subdomain', policy.subdomainCode],
-              ['Owner / Steward', policy.ownerSteward],
-              ['Status', policy.lifecycleStatus],
-              ['Version', policy.currentVersion],
-              ['Tier', policy.tier],
-              ['Access', policy.accessTier],
-              ['Review Cycle', policy.reviewCycle],
-              ['Print Date', today],
-            ].map(([label, value]) => (
-              <div key={label}>
-                <span style={{ display: 'block', fontSize: '9px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.55)', marginBottom: '3px' }}>
-                  {label}
-                </span>
-                <span style={{ fontFamily: 'Roboto, sans-serif', fontWeight: 500, color: '#ffffff' }}>{value}</span>
-              </div>
-            ))}
+
+          {/* Metadata grid */}
+          <div style={{ borderTop: '1px solid #E5E4E3', paddingTop: '20px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px 32px' }}>
+            <PrintMeta label="Version" value={`v${policy.currentVersion}`} />
+            <PrintMeta label="Effective" value={effectiveDateRaw} />
+            <PrintMeta label="Last Reviewed" value={effectiveDateRaw} />
+            <PrintMeta label="Next Review" value={nextReviewDate} />
+            <PrintMeta label="Policy Owner" value={policy.ownerSteward} />
+            <PrintMeta label="Subdomain" value={subdomainName(policy.subdomainCode)} />
+            <div style={{ gridColumn: 'span 2' }}>
+              <PrintMeta label="Domain" value={domainName(policy.domainCode)} />
+            </div>
+            <div style={{ gridColumn: 'span 2' }}>
+              <PrintMeta label="Approved By" value={approvedByRaw ?? (policy.tier === 'REQUIRED' ? 'Governing Body Chair' : policy.ownerSteward)} />
+            </div>
           </div>
+
+          {/* ACHC Tags (if mapped) */}
+          {achcMeta && (
+            <div style={{ marginTop: '20px', borderTop: '1px solid #E5E4E3', paddingTop: '16px' }}>
+              <p style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: '9.5px', textTransform: 'uppercase' as const, letterSpacing: '0.14em', color: '#524048', marginBottom: '8px' }}>
+                ACHC Tags
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '6px' }}>
+                <span style={{ color: '#007970', border: '1px solid rgba(0,121,112,0.4)', backgroundColor: '#E5FEFF', padding: '2px 8px', borderRadius: '999px', fontSize: '10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em' }}>
+                  {achcMeta.mappingType}
+                </span>
+                {achcMeta.achcStandards.slice(0, 8).map((standard) => (
+                  <span key={standard} style={{ color: '#ea580c', border: '1px solid rgba(234,88,12,0.35)', backgroundColor: 'rgba(234,88,12,0.1)', padding: '2px 8px', borderRadius: '999px', fontSize: '10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>
+                    {standard}
+                  </span>
+                ))}
+                <span style={{ color: '#0f766e', border: '1px solid rgba(15,118,110,0.35)', backgroundColor: 'rgba(15,118,110,0.1)', padding: '2px 8px', borderRadius: '999px', fontSize: '10px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>
+                  {supportRefLabel}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* POLICY BODY */}
-        <div style={{ padding: '40px 48px' }}>
+        {/* POLICY BODY — starts on page 2 */}
+        <div className="page-break" />
+        <div style={{ fontSize: '12px', lineHeight: '1.7', color: '#1F1C1B' }}>
           {content && printSections.length > 0 ? (
             printSections.map(section => (
               <PrintSectionPanel
@@ -232,8 +372,8 @@ export function PrintPage() {
           )}
         </div>
 
-        {/* FOOTER */}
-        <footer className="no-print" style={{ borderTop: '1px solid #E5E4E3', padding: '16px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* FOOTER (screen only) */}
+        <footer className="no-print" style={{ borderTop: '1px solid #E5E4E3', marginTop: '40px', padding: '16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontFamily: 'Roboto, sans-serif', fontSize: '10px', color: '#524048' }}>
             {isDraft ? '⚠ DRAFT — Not for official use' : 'For official use only.'}
           </span>
@@ -246,4 +386,3 @@ export function PrintPage() {
     </div>
   );
 }
-

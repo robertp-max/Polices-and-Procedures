@@ -4,6 +4,7 @@ import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecution
 import { useEnforcementStore } from '@/policy/stores/enforcementStore';
 import { computeEnforcement, computeBatch } from './enforcementEngine';
 import { computeEscalations } from './escalationEngine';
+import { isCesSandboxDate } from '@/policy/ces/cesExecutionMode';
 import type { EnforcementReport } from './types';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -72,11 +73,15 @@ export function useEnforcementBatch(events: RegulatoryEvent[], now: Date = TODAY
   [events, now, formStates, stepStates, minutesStates, evidence, approvals, completions, locks]);
 }
 
-/** Periodic escalation sweep — materializes missing escalations into the store. */
+/** Periodic escalation sweep — materializes missing escalations into the store.
+ *  Skips sandbox-dated events (Q1/Q2 2026) so the playground stays clean after reset. */
 export function sweepEscalations(events: RegulatoryEvent[] = REGULATORY_EVENTS, now: Date = new Date()) {
   const exec = useRegulatoryExecutionStore.getState();
   const enf  = useEnforcementStore.getState();
   for (const event of events) {
+    // Sandbox events: no auto-escalation — users control them freely.
+    if (isCesSandboxDate(event.date)) continue;
+
     const report = computeEnforcement({
       event,
       now,
@@ -96,7 +101,6 @@ export function sweepEscalations(events: RegulatoryEvent[] = REGULATORY_EVENTS, 
       approvals: exec.approvals.filter(a => a.eventId === event.id),
       now,
     });
-    // Raise any desired escalation that is not already open/acknowledged for this event.
     const current = enf.escalationsForEvent(event.id);
     for (const d of desired) {
       const already = current.find(

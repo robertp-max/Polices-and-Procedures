@@ -6,6 +6,7 @@ import type { ApprovalRequest, ValidationReport } from '@/policy/stores/regulato
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import { useProjectedTasks } from '@/policy/pm/taskProjection';
 import { isEvidenceImmutable } from '@/policy/evidence/evidenceModel';
+import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 
 type MobileFlowStage = 'event' | 'workflow' | 'task' | 'evidence' | 'approval';
 
@@ -171,6 +172,8 @@ function MobileWorkflowStepper({
   tasks: ProjectedTask[];
 }) {
   const navigate = useNavigate();
+  const store = useRegulatoryExecutionStore();
+  const eventEvidence = store.evidence[event.id] ?? [];
   return (
     <section className="space-y-3">
       <header className="ci-card p-4">
@@ -181,6 +184,9 @@ function MobileWorkflowStepper({
       <div className="space-y-2">
         {workflow.steps.map(step => {
           const mappedTask = tasks.find(t => ('step_id' in t ? t.step_id : undefined) === step.stepId) ?? tasks.find(t => t.task_id === step.stepId);
+          const stepEvidence = mappedTask
+            ? eventEvidence.find(doc => doc.taskId === mappedTask.task_id)
+            : null;
           return (
           <button
             key={step.stepId}
@@ -194,6 +200,25 @@ function MobileWorkflowStepper({
             </div>
             <p className="text-xs ci-text-muted mt-1">Role: {step.assignedRole} · Due: {step.dueDate}</p>
             <p className="text-xs ci-text-muted mt-1">Forms: {step.requiredFormIds.join(', ') || 'None'} · Evidence: {step.requiredEvidence.join(', ') || 'None'}</p>
+            {mappedTask && stepEvidence && (
+              <div className="mt-2">
+                <Link
+                  to={buildArtifactRoute(stepEvidence.id, {
+                    eventId: event.id,
+                    taskId: mappedTask.task_id,
+                    formId: ('form_id' in mappedTask ? mappedTask.form_id : undefined) || stepEvidence.linkedFormId || stepEvidence.formIds[0],
+                    formInstanceId: stepEvidence.linkedFormInstanceId,
+                    evidenceId: stepEvidence.id,
+                    type: stepEvidence.kind,
+                  })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center rounded-lg border border-teal-300/50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-teal-700"
+                >
+                  View Evidence Artifact
+                </Link>
+              </div>
+            )}
           </button>
         );
         })}
@@ -213,6 +238,8 @@ function MobileTaskDetail({ event, task, evidenceCount, approvals }: { event: Re
   const requiresEvidence = (task.task_type === 'evidence' || task.blockers?.some(b => /evidence/i.test(b))) ?? false;
   const evidenceMissing = requiresEvidence && evidenceCount === 0;
   const approvalRequired = (event.approvals ?? []).some(rule => rule.required);
+  const taskEvidence = (store.evidence[event.id] ?? []).filter(doc => doc.taskId === task.task_id);
+  const latestTaskEvidence = taskEvidence[0] ?? null;
   const cta = evidenceMissing
     ? 'Attach Evidence'
     : hasMissingForms
@@ -244,6 +271,26 @@ function MobileTaskDetail({ event, task, evidenceCount, approvals }: { event: Re
         <p><span className="font-semibold">Required evidence:</span> {requiresEvidence ? 'Required' : 'Not required'}</p>
         <p><span className="font-semibold">Approvals in flight:</span> {approvals}</p>
         <p><span className="font-semibold">Completion blockers:</span> {task.blockers?.join(' · ') || 'None'}</p>
+        {latestTaskEvidence && (
+          <p>
+            <span className="font-semibold">Latest evidence:</span>{' '}
+            <Link
+              to={buildArtifactRoute(latestTaskEvidence.id, {
+                eventId: event.id,
+                taskId: task.task_id,
+                formId: formId || latestTaskEvidence.linkedFormId || latestTaskEvidence.formIds[0],
+                formInstanceId: latestTaskEvidence.linkedFormInstanceId,
+                evidenceId: latestTaskEvidence.id,
+                type: latestTaskEvidence.kind,
+              })}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline text-teal-700"
+            >
+              View Evidence Artifact
+            </Link>
+          </p>
+        )}
       </section>
       <div className="fixed bottom-16 left-0 right-0 px-3 z-20">
         <button type="button" onClick={onPrimary} className="w-full ci-touch-target rounded-xl bg-[#007970] text-white font-semibold">
@@ -330,7 +377,21 @@ function MobileEvidencePanel({ event, task }: { event: RegulatoryEvent; task: Pr
               <p className="font-medium">{doc.name}</p>
               <p className="text-xs ci-text-muted">evidence_id: {doc.id}</p>
               <div className="mt-2 flex gap-2">
-                <button type="button" className="text-xs border rounded px-2 py-1">View Evidence</button>
+                <Link
+                  to={buildArtifactRoute(doc.id, {
+                    eventId: event.id,
+                    taskId: task.task_id,
+                    formId: ('form_id' in task ? task.form_id : undefined),
+                    formInstanceId: doc.linkedFormInstanceId,
+                    evidenceId: doc.id,
+                    type: doc.kind,
+                  })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs border rounded px-2 py-1"
+                >
+                  View Evidence
+                </Link>
                 {!locked && !isEvidenceImmutable(doc.status) ? (
                   <button type="button" onClick={() => store.removeEvidence(event.id, doc.id)} className="text-xs border rounded px-2 py-1">
                     Remove/Replace

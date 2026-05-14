@@ -14,6 +14,7 @@ export * from './eventInstanceId';
 export * from './eventFolders';
 export * from './types';
 export * from './eventTaskAdapter';
+export * from './taskIdentity';
 export * from './useEventExecutionDataflow';
 export * from './stateMachine';
 export * from './eventStateEvaluator';

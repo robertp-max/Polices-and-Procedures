@@ -17,6 +17,7 @@ import type {
 import type {
   Obligation, ObligationKind, ComplianceState, ComplianceDomain,
 } from '@/policy/ces/types';
+import { resolveCesRole } from '@/policy/ces/cesRoles';
 
 /* ─── Resolution helpers ─────────────────────────────────────── */
 
@@ -168,4 +169,67 @@ export function selectMyOpenTaskObligations(
   return selectMyTaskObligations(s, filter).filter(
     u => u.complianceState !== 'completed',
   );
+}
+
+/* ─── CES Role-based filtering (for review mode) ─────────── */
+
+/**
+ * Filters obligations visible to a specific CES role.
+ * Checks assignedRole, canCompleteRoles, canReviewRoles, canApproveRoles,
+ * and signerRole on the obligation.
+ *
+ * Used exclusively by Robert's CES review mode — does not affect
+ * production permission logic.
+ */
+export function selectObligationsByRole(
+  s:    ComplianceExecutionSnapshot,
+  role: string,
+): MergedExecutionUnit[] {
+  return s.executionUnits.filter(u => obligationVisibleToRole(u, role));
+}
+
+export function selectOpenObligationsByRole(
+  s:    ComplianceExecutionSnapshot,
+  role: string,
+): MergedExecutionUnit[] {
+  return selectObligationsByRole(s, role).filter(u => u.complianceState !== 'completed');
+}
+
+/** Internal type alias for CES role extension fields on MergedExecutionUnit. */
+type WithCesRoles = {
+  assignedRole?:    string;
+  accountableRole?: string;
+  reviewerRole?:    string;
+  approverRole?:    string;
+  signerRole?:      string;
+  canCompleteRoles?: readonly string[];
+  canReviewRoles?:  readonly string[];
+  canApproveRoles?: readonly string[];
+};
+
+function obligationVisibleToRole(u: MergedExecutionUnit, role: string): boolean {
+  const ext = u as MergedExecutionUnit & WithCesRoles;
+
+  /* DON is the canonical backfill for any unit without an explicit assignedRole.
+     This covers onboarding engine units and any legacy unit created before the
+     role assignment system was introduced. */
+  const effectiveAssigned = ext.assignedRole ?? 'DON';
+
+  if (effectiveAssigned === role)              return true;
+  if (ext.accountableRole === role)            return true;
+  if (ext.reviewerRole === role)               return true;
+  if (ext.approverRole === role)               return true;
+  if (ext.signerRole === role)                 return true;
+  if (ext.canCompleteRoles?.includes(role))    return true;
+  if (ext.canReviewRoles?.includes(role))      return true;
+  if (ext.canApproveRoles?.includes(role))     return true;
+
+  /* Normalize owner.role through the CES role resolver so that raw role
+     strings from the onboarding engine (e.g. 'Director of Nursing', 'RN',
+     'HHA') correctly map to the canonical role 'DON'. */
+  if (u.owner?.role && resolveCesRole(u.owner.role) === role)   return true;
+  if (u.approver?.role && resolveCesRole(u.approver.role) === role) return true;
+
+  if (u.ownership?.assignedRoleIds?.includes(role))             return true;
+  return false;
 }

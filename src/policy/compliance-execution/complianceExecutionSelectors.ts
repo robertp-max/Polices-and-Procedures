@@ -13,6 +13,7 @@ import type {
 import type {
   ComplianceState, WorkflowPhase, ComplianceDomain,
 } from '@/policy/ces/types';
+import { isCesFutureLockedDate } from '@/policy/ces/cesExecutionMode';
 
 /* ─── Event selectors ─────────────────────────────────────── */
 
@@ -70,7 +71,7 @@ export function getEventsByDateRange(
 export function getIncompleteEvents(s: ComplianceExecutionSnapshot): MergedComplianceEvent[] {
   const incompleteIds = new Set(
     s.executionUnits
-      .filter(unit => unit.complianceState !== 'completed')
+      .filter(unit => unit.complianceState !== 'completed' && !isCesFutureLockedDate(unit.dueDate))
       .map(unit => unit.parentEventId),
   );
   return s.events.filter(event => incompleteIds.has(event.id));
@@ -110,22 +111,32 @@ export function selectUnitsByDomain(
 
 export function selectCriticalUnits(s: ComplianceExecutionSnapshot): MergedExecutionUnit[] {
   return s.executionUnits.filter(u =>
-    (u.complianceState === 'awaiting_signature' && (u.escalationTimer ?? 0) < 0) ||
-    (u.complianceState === 'blocked' && u.workflowPhase === 'audit') ||
-    (u.complianceState === 'blocked' && u.auditReadiness === 'not_ready'),
+    !isCesFutureLockedDate(u.dueDate) && (
+      (u.complianceState === 'awaiting_signature' && (u.escalationTimer ?? 0) < 0) ||
+      (u.complianceState === 'blocked' && u.workflowPhase === 'audit') ||
+      (u.complianceState === 'blocked' && u.auditReadiness === 'not_ready')
+    ),
   );
 }
 
 export function selectBlockedUnits(s: ComplianceExecutionSnapshot): MergedExecutionUnit[] {
-  return s.executionUnits.filter(u => u.complianceState === 'blocked');
+  return s.executionUnits.filter(u =>
+    !isCesFutureLockedDate(u.dueDate) && u.complianceState === 'blocked',
+  );
 }
 
 export function selectOverdueUnits(s: ComplianceExecutionSnapshot): MergedExecutionUnit[] {
-  return s.executionUnits.filter(u => (u.escalationTimer ?? 0) < 0 && u.complianceState !== 'completed');
+  return s.executionUnits.filter(u =>
+    !isCesFutureLockedDate(u.dueDate) &&
+    (u.escalationTimer ?? 0) < 0 &&
+    u.complianceState !== 'completed',
+  );
 }
 
 export function selectAwaitingSignatureUnits(s: ComplianceExecutionSnapshot): MergedExecutionUnit[] {
-  return s.executionUnits.filter(u => u.complianceState === 'awaiting_signature');
+  return s.executionUnits.filter(u =>
+    !isCesFutureLockedDate(u.dueDate) && u.complianceState === 'awaiting_signature',
+  );
 }
 
 export function selectUpcomingDeadlines(
@@ -134,7 +145,7 @@ export function selectUpcomingDeadlines(
   const now = s.today.getTime();
   const horizon = now + withinDays * 24 * 60 * 60 * 1000;
   return s.executionUnits
-    .filter(u => u.complianceState !== 'completed')
+    .filter(u => u.complianceState !== 'completed' && !isCesFutureLockedDate(u.dueDate))
     .filter(u => {
       const t = new Date(u.dueDate).getTime();
       return t >= now && t <= horizon;
@@ -146,14 +157,16 @@ export function selectUpcomingDeadlines(
 /* ─── Audit readiness rollup ─────────────────────────────── */
 
 export function selectAuditReadinessRollup(s: ComplianceExecutionSnapshot): AuditReadinessRollup {
+  // Exclude future-locked units from audit-readiness calculations.
+  const activeUnits = s.executionUnits.filter(u => !isCesFutureLockedDate(u.dueDate));
   let notReady = 0, partial = 0, ready = 0, certified = 0;
-  for (const u of s.executionUnits) {
+  for (const u of activeUnits) {
     if (u.complianceState === 'completed' && u.auditReadiness === 'ready') { certified += 1; continue; }
-    if (u.auditReadiness === 'ready')   ready += 1;
+    if (u.auditReadiness === 'ready')        ready   += 1;
     else if (u.auditReadiness === 'partial') partial += 1;
-    else notReady += 1;
+    else                                     notReady += 1;
   }
-  const totalOpen = s.executionUnits.filter(u => u.complianceState !== 'completed').length;
+  const totalOpen = activeUnits.filter(u => u.complianceState !== 'completed').length;
   return { notReady, partial, ready, certified, totalOpen };
 }
 

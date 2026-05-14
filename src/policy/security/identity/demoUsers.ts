@@ -3,6 +3,7 @@ import type { User } from './types';
 
 export const DEMO_USERS: User[] = [
   { id: 'demo-user-careindeed', email: 'robertp@careindeed.com', name: 'TJ Padilla', status: 'active', source: 'seed' },
+  { id: 'usr-marites', email: 'maritesa@careindeed.com', name: 'Marites Arzaga', status: 'active', source: 'seed' },
   { id: 'usr-admin', email: 'admin@careindeed.com', name: 'Alicia Admin', status: 'active', source: 'seed' },
   { id: 'usr-deeb-admin', email: 'deeb@careindeed.com', name: 'Deeb Admin', status: 'active', source: 'seed' },
   { id: 'usr-dagny', email: 'dagnyy@careindeed.com', name: 'Dagny Yenko', status: 'active', source: 'seed' },

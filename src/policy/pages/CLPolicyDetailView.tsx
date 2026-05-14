@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { PolicyAppendicesPanel } from '@/policy/components/PolicyAppendicesPanel';
+import { openPolicyPrintRoute } from '@/policy/utils/openPolicyPrintRoute';
 
 // ─── ALL 70 CL POLICY IDS ─────────────────────────────────────────────────────
 export const CL_POLICY_IDS: string[] = [
@@ -1314,7 +1315,7 @@ export function CLPolicyDetailView() {
             <ArrowLeft size={13} /> Return to Policy Library
           </button>
           <button
-            onClick={() => window.open(`/print/${pc.id}`, '_blank', 'noopener,noreferrer')}
+            onClick={() => openPolicyPrintRoute(`/print/${encodeURIComponent(pc.id)}`)}
             className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-white/20"
           >
             <Printer size={16} />

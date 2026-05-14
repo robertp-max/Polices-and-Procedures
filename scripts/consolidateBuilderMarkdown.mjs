@@ -1,6 +1,9 @@
 /**
- * One-shot consolidation of all Markdown under Builder/ into a single file
+ * One-shot consolidation of documentation under Builder/ into a single Markdown file
  * with per-file sections and SHA-256 deduplication of identical bodies.
+ *
+ * Includes: `.md`, `.mdx`, `.csv` anywhere under Builder/, plus extensionless text
+ * files directly in Builder/_chatGPT/ (e.g. ACHC-Crosswalk).
  *
  * Run from repo root:
  *   node scripts/consolidateBuilderMarkdown.mjs
@@ -25,8 +28,24 @@ function stampLocal() {
 
 const SKIP_DIR = new Set(['node_modules', '.git']);
 
+function isWalkedDocFile(name) {
+  const n = name.toLowerCase();
+  return n.endsWith('.md') || n.endsWith('.mdx') || n.endsWith('.csv');
+}
+
+/** Markdown-like paths: emit body as-is; otherwise wrap in fenced block for safe embedding. */
+function formatSectionBody(rel, text) {
+  const n = rel.toLowerCase();
+  if (n.endsWith('.md') || n.endsWith('.mdx')) {
+    return text.endsWith('\n') ? text : `${text}\n`;
+  }
+  const lang = n.endsWith('.csv') ? 'csv' : 'text';
+  const inner = text.endsWith('\n') ? text.slice(0, -1) : text;
+  return `\`\`\`${lang}\n${inner}\n\`\`\`\n`;
+}
+
 /** @param {string} dir @param {string[]} acc */
-function walkMd(dir, acc = []) {
+function walkBuilderDocs(dir, acc = []) {
   let entries;
   try {
     entries = readdirSync(dir, { withFileTypes: true });
@@ -37,17 +56,40 @@ function walkMd(dir, acc = []) {
     const p = join(dir, e.name);
     if (e.isDirectory()) {
       if (SKIP_DIR.has(e.name)) continue;
-      walkMd(p, acc);
-    } else if (e.isFile() && e.name.endsWith('.md')) {
+      walkBuilderDocs(p, acc);
+    } else if (e.isFile() && isWalkedDocFile(e.name)) {
       const rel = relative(BUILDER, p).split(sep).join('/');
-      if (rel.startsWith('_chatGPT/current_state_') && rel.endsWith('.md')) continue;
+      if (rel.startsWith('_chatGPT/current_state_')) continue;
       acc.push(p);
     }
   }
   return acc;
 }
 
-const files = walkMd(BUILDER).sort((a, b) => relative(BUILDER, a).localeCompare(relative(BUILDER, b)));
+/** Extensionless text artifacts in `Builder/_chatGPT/` (e.g. `ACHC-Crosswalk`) are not picked up by extension walk. */
+function appendChatGptExtensionless(paths) {
+  const dir = join(BUILDER, '_chatGPT');
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  const have = new Set(paths.map((p) => p.toLowerCase()));
+  for (const e of entries) {
+    if (!e.isFile()) continue;
+    if (e.name.startsWith('current_state_')) continue;
+    if (isWalkedDocFile(e.name)) continue;
+    const abs = join(dir, e.name);
+    if (have.has(abs.toLowerCase())) continue;
+    paths.push(abs);
+    have.add(abs.toLowerCase());
+  }
+}
+
+const files = walkBuilderDocs(BUILDER);
+appendChatGptExtensionless(files);
+files.sort((a, b) => relative(BUILDER, a).localeCompare(relative(BUILDER, b)));
 
 const hashToFirstPath = new Map();
 const sections = [];
@@ -77,7 +119,7 @@ for (const abs of files) {
   hashToFirstPath.set(h, rel);
   uniqueInBytes += buf.length;
   includedFiles += 1;
-  sections.push(`\n\n---\n\n## ${rel}\n\n${text.endsWith('\n') ? text : `${text}\n`}`);
+  sections.push(`\n\n---\n\n## ${rel}\n\n${formatSectionBody(rel, text)}`);
 }
 
 mkdirSync(OUT_DIR, { recursive: true });
@@ -90,12 +132,14 @@ const header = [
   '',
   `Generated (local): **${stamp.replace('_', ' ')}**`,
   '',
-  'This file merges every `.md` file under `Builder/` (folder order = lexicographic path). ' +
+  'This file merges documentation under `Builder/`: `.md`, `.mdx`, `.csv`, plus extensionless text files ' +
+    'directly in `Builder/_chatGPT/` (lexicographic path order). ' +
+    'Non-Markdown bodies are wrapped in fenced code blocks. ' +
     'If two files have identical bytes, the first occurrence keeps the full body; later paths reference the first and omit the duplicate body.',
   '',
   '| Metric | Value |',
   '| --- | ---: |',
-  `| Markdown files scanned | ${files.length} |`,
+  `| Files scanned | ${files.length} |`,
   `| Unique bodies (full text below) | ${includedFiles} |`,
   `| Duplicate bodies (reference only) | ${skippedDupBodies} |`,
   `| Total bytes (all inputs) | ${totalInBytes} |`,

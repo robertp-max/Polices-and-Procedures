@@ -305,13 +305,39 @@ const COMP: JourneyModule[] = [
   },
 ];
 
+/* ───────────────────────────────────────────────────────────────
+   ACHC REQUIRED ANNUAL TRAINING — Field Worker Edition
+   Source: ACHC Training Module for Field Worker Employees (PDF)
+   Architecture: Care Indeed LMS Flow v2.0
+   Frequency: On hire + Annual  |  Passing Threshold: 80%
+   ───────────────────────────────────────────────────────────── */
+const ALL_FIELD_WORKERS: JourneyRole[] = ['RN', 'LVN', 'HHA', 'PT', 'PTA', 'OT', 'COTA', 'SLP', 'MSW'];
+
+const ACHC_ART: JourneyModule[] = [
+  { id: 'ACHC-ART-M01', group: 'ANN', phase: 'ANN', annualQuarter: 'Q1', title: 'Cultural Awareness', roles: ALL_FIELD_WORKERS, policyRefs: ['HR-TD-001', 'CL-PR-001'], cmsRefs: ['CLAS Standards', '42 CFR 484.50'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 45 },
+  { id: 'ACHC-ART-M02', group: 'ANN', phase: 'ANN', annualQuarter: 'Q1', title: 'Emergency & Disaster Preparedness', roles: ALL_FIELD_WORKERS, policyRefs: ['OP-FM-005'], cmsRefs: ['42 CFR 484.102', 'ACHC EM.1'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 45 },
+  { id: 'ACHC-ART-M03', group: 'ANN', phase: 'ANN', annualQuarter: 'Q1', title: 'Complaints & Grievances', roles: ALL_FIELD_WORKERS, policyRefs: ['CL-PR-004'], cmsRefs: ['42 CFR 484.50(c)', 'ACHC'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 40 },
+  { id: 'ACHC-ART-M04', group: 'ANN', phase: 'ANN', annualQuarter: 'Q2', title: 'HIPAA Privacy & Security', roles: 'ALL', policyRefs: ['CO-HP-001', 'CO-HP-002', 'CO-HP-003'], cmsRefs: ['45 CFR 164', 'HIPAA Privacy Rule'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 50 },
+  { id: 'ACHC-ART-M05', group: 'ANN', phase: 'ANN', annualQuarter: 'Q2', title: 'Infection Control', roles: ALL_FIELD_WORKERS, policyRefs: ['CL-SD-016'], cmsRefs: ['CDC', 'OSHA 29 CFR 1910.1030', '42 CFR 484.70'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 50 },
+  { id: 'ACHC-ART-M06', group: 'ANN', phase: 'ANN', annualQuarter: 'Q2', title: 'Communication Barriers', roles: ALL_FIELD_WORKERS, policyRefs: ['CL-PR-001', 'CL-CD-001'], cmsRefs: ['Title VI', '42 CFR 484.50'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 45 },
+  { id: 'ACHC-ART-M07', group: 'ANN', phase: 'ANN', annualQuarter: 'Q3', title: 'Workplace & Patient Safety (OSHA)', roles: 'ALL', policyRefs: ['RM-OS-001', 'RM-SS-001', 'RM-SS-002'], cmsRefs: ['OSH Act', 'OSHA 29 CFR 1910', '21 CFR 803'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 45 },
+  { id: 'ACHC-ART-M08', group: 'ANN', phase: 'ANN', annualQuarter: 'Q3', title: 'Patient Rights & Responsibilities', roles: ALL_FIELD_WORKERS, policyRefs: ['CL-PR-001', 'CL-PR-002', 'CL-PR-006'], cmsRefs: ['42 CFR 484.50', 'CMS CoP'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 45 },
+  { id: 'ACHC-ART-M09', group: 'ANN', phase: 'ANN', annualQuarter: 'Q3', title: 'Corporate Compliance', roles: 'ALL', policyRefs: ['CO-CP-001', 'CO-CP-004', 'CO-CP-005', 'CO-CP-006'], cmsRefs: ['OIG', 'False Claims Act', 'Anti-Kickback Statute'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 45 },
+  { id: 'ACHC-ART-M10', group: 'ANN', phase: 'ANN', annualQuarter: 'Q4', title: 'Ethics in Healthcare', roles: ALL_FIELD_WORKERS, policyRefs: ['CL-PR-002', 'CL-PR-001'], cmsRefs: ['42 CFR 489.100', 'CMS CoP'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 50 },
+  { id: 'ACHC-ART-M11', group: 'ANN', phase: 'ANN', annualQuarter: 'Q4', title: 'TB & Blood Borne Pathogens', roles: ALL_FIELD_WORKERS, policyRefs: ['RM-OS-001', 'HR-WM-002'], cmsRefs: ['OSHA 29 CFR 1910.1030', 'CDC', '42 CFR 484.70'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 50 },
+  { id: 'ACHC-ART-M12', group: 'ANN', phase: 'ANN', annualQuarter: 'Q4', title: 'Medical Device Act', roles: ALL_FIELD_WORKERS, policyRefs: ['RM-MD-001'], cmsRefs: ['21 CFR 803', 'FDA MDR'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 45 },
+];
+
 export const ALL_MODULES: JourneyModule[] = [
   ...GAO,
   ...ADM, ...DON, ...RN, ...LVN,
   ...PT, ...PTA, ...OT, ...COTA,
   ...SLP, ...MSW, ...HHA,
   ...ANN, ...COMP,
+  ...ACHC_ART,
 ];
+
+export { ACHC_ART };
 
 export function modulesForRole(role: JourneyRole): JourneyModule[] {
   return ALL_MODULES.filter(m => m.roles === 'ALL' || m.roles.includes(role));

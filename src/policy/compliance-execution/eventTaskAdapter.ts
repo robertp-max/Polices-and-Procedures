@@ -1,6 +1,7 @@
 import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import type { EventTask, EventTaskStatus } from './types';
 import { resolveEventFolder } from './eventFolders';
+import { buildCesRoleAssignment } from '@/policy/ces/cesRoles';
 
 const nowISO = () => new Date().toISOString();
 
@@ -27,6 +28,13 @@ export function deriveDefaultEventTasks(
   event.processFlow.forEach(step => {
     (step.requiredFormIds ?? []).forEach(fid => requiredFormCovered.add(fid));
     const taskSourceId = `processFlow:${step.id}`;
+    const ra = buildCesRoleAssignment({
+      domain:         event.domain,
+      taskSourceType: 'processFlow',
+      ownerRole:      event.ownerRole,
+      title:          step.label,
+      workflowId:     event.workflowId,
+    });
     tasks.push({
       id: buildDeterministicTaskId(eventId, taskSourceId),
       eventId,
@@ -47,6 +55,15 @@ export function deriveDefaultEventTasks(
       createdAt: timestamp,
       updatedAt: timestamp,
       isDeleted: false,
+      assignedRole:     ra.assignedRole,
+      accountableRole:  ra.accountableRole,
+      reviewerRole:     ra.reviewerRole,
+      approverRole:     ra.approverRole,
+      canCompleteRoles: ra.canCompleteRoles,
+      canReviewRoles:   ra.canReviewRoles,
+      canApproveRoles:  ra.canApproveRoles,
+      escalationRole:   ra.escalationRole,
+      blocksOnSignerTasks: (step.requiredFormIds?.length ?? 0) > 0,
     });
   });
 
@@ -55,6 +72,13 @@ export function deriveDefaultEventTasks(
     if (represented) return;
     const formId = form.formId ?? form.id;
     const taskSourceId = `form:${formId}`;
+    const ra = buildCesRoleAssignment({
+      domain:         event.domain,
+      taskSourceType: 'requiredForm',
+      ownerRole:      event.ownerRole,
+      title:          form.label,
+      workflowId:     event.workflowId,
+    });
     tasks.push({
       id: buildDeterministicTaskId(eventId, taskSourceId),
       eventId,
@@ -75,11 +99,27 @@ export function deriveDefaultEventTasks(
       createdAt: timestamp,
       updatedAt: timestamp,
       isDeleted: false,
+      assignedRole:     ra.assignedRole,
+      accountableRole:  ra.accountableRole,
+      reviewerRole:     ra.reviewerRole,
+      approverRole:     ra.approverRole,
+      canCompleteRoles: ra.canCompleteRoles,
+      canReviewRoles:   ra.canReviewRoles,
+      canApproveRoles:  ra.canApproveRoles,
+      escalationRole:   ra.escalationRole,
+      blocksOnSignerTasks: true,
     });
   });
 
   if (event.minutes) {
     const taskSourceId = `minutes:${eventId}`;
+    const ra = buildCesRoleAssignment({
+      domain:         event.domain,
+      taskSourceType: 'minutes',
+      ownerRole:      event.ownerRole,
+      title:          'Finalize meeting minutes',
+      workflowId:     event.workflowId,
+    });
     tasks.push({
       id: buildDeterministicTaskId(eventId, taskSourceId),
       eventId,
@@ -101,11 +141,26 @@ export function deriveDefaultEventTasks(
       createdAt: timestamp,
       updatedAt: timestamp,
       isDeleted: false,
+      assignedRole:     ra.assignedRole,
+      accountableRole:  ra.accountableRole,
+      reviewerRole:     ra.reviewerRole,
+      approverRole:     ra.approverRole,
+      canCompleteRoles: ra.canCompleteRoles,
+      canReviewRoles:   ra.canReviewRoles,
+      canApproveRoles:  ra.canApproveRoles,
+      escalationRole:   ra.escalationRole,
     });
   }
 
   (event.approvals ?? []).forEach(approval => {
     const taskSourceId = `approval:${approval.id ?? `${approval.targetKind}:${approval.targetLabel}`}`;
+    const ra = buildCesRoleAssignment({
+      domain:         event.domain,
+      taskSourceType: 'approval',
+      ownerRole:      approval.approverRole ?? event.ownerRole,
+      title:          `Approval: ${approval.targetLabel}`,
+      workflowId:     event.workflowId,
+    });
     tasks.push({
       id: buildDeterministicTaskId(eventId, taskSourceId),
       eventId,
@@ -126,6 +181,14 @@ export function deriveDefaultEventTasks(
       createdAt: timestamp,
       updatedAt: timestamp,
       isDeleted: false,
+      assignedRole:     ra.assignedRole,
+      accountableRole:  ra.accountableRole,
+      reviewerRole:     ra.reviewerRole,
+      approverRole:     ra.approverRole,
+      canCompleteRoles: ra.canCompleteRoles,
+      canReviewRoles:   ra.canReviewRoles,
+      canApproveRoles:  ra.canApproveRoles,
+      escalationRole:   ra.escalationRole,
     });
   });
 
@@ -138,12 +201,22 @@ function dueDateFromOffset(baseDate: string, offsetDays: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function buildDeterministicTaskId(eventId: string, taskSourceId: string): string {
+/** Stable id for CES event tasks; used by overrides merge and store helpers. */
+export function buildDeterministicTaskId(eventId: string, taskSourceId: string): string {
+  const hash = stableHash(taskSourceId);
   const slug = taskSourceId
     .replace(/[^A-Za-z0-9]/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
-    .slice(0, 48)
+    .slice(0, 42)
     .toUpperCase();
-  return `TASK-${eventId}-${slug}`;
+  return `TASK-${eventId}-${slug}-${hash}`;
+}
+
+function stableHash(value: string): string {
+  let hash = 5381;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = ((hash << 5) + hash) ^ value.charCodeAt(i);
+  }
+  return (hash >>> 0).toString(36).toUpperCase().padStart(6, '0').slice(-6);
 }

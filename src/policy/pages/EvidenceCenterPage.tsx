@@ -21,7 +21,9 @@ import { useAutogenStore } from '@/policy/stores/autogenStore';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import { useProjectedTasks } from '@/policy/pm/taskProjection';
 import { isCesTask } from '@/policy/pm/types';
+import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { CesEvidenceHierarchyPanel } from '@/policy/components/evidence/CesEvidenceHierarchyPanel';
+import { resolveEvidenceDataUrl } from '@/policy/evidence/demoEvidenceRuntimeCache';
 import {
   type EvidenceAuditEvent,
   type EvidenceMode,
@@ -43,7 +45,6 @@ const REQUESTED_MODE: EvidenceMode =
     : 'DEMO_LOCAL';
 
 const DEFAULT_EVENT  = 'EVT-DEMO-001';
-const DEMO_STORE_KEY = 'evidence-center-demo-store-v1';
 
 // Phase-1 actor stub (replace with Cognito JWT later). Read from localStorage so a user
 // can self-identify in the demo without an auth flow. Defaults to a Compliance Officer.
@@ -66,6 +67,8 @@ interface EvidenceFile {
   event_id:         string;
   task_id:          string | null;
   form_id:          string | null;
+  form_instance_id?: string | null;
+  kind?:            string;
   status:           EvidenceStatus;
   version:          number;
   superseded_by:    string | null;
@@ -134,11 +137,6 @@ interface PromoteResponse {
   idempotent?: boolean;
 }
 
-interface DemoStore {
-  filesByEvent: Record<string, EvidenceFile[]>;
-  auditByEvent: Record<string, AuditEntry[]>;
-}
-
 // ── Helpers ────────────────────────────────────────────────────
 const STATUS_COLOR: Record<string, string> = {
   PENDING_UPLOAD: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
@@ -153,28 +151,6 @@ const STATUS_COLOR: Record<string, string> = {
   RETAINED:       'bg-slate-500/15 text-slate-300 border-slate-500/30',
 };
 
-function readDemoStore(): DemoStore {
-  try {
-    const raw = localStorage.getItem(DEMO_STORE_KEY);
-    if (!raw) return { filesByEvent: {}, auditByEvent: {} };
-    const parsed = JSON.parse(raw) as DemoStore;
-    return {
-      filesByEvent: parsed.filesByEvent || {},
-      auditByEvent: parsed.auditByEvent || {},
-    };
-  } catch {
-    return { filesByEvent: {}, auditByEvent: {} };
-  }
-}
-
-function writeDemoStore(store: DemoStore): void {
-  try {
-    localStorage.setItem(DEMO_STORE_KEY, JSON.stringify(store));
-  } catch {
-    // Best-effort demo persistence only.
-  }
-}
-
 function formatBytes(n: number | null | undefined): string {
   if (n == null) return '—';
   if (n < 1024) return `${n} B`;
@@ -187,6 +163,24 @@ function formatTs(iso: string | null | undefined): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleString();
+}
+
+function estimateDataUrlBytes(dataUrl: string | null | undefined): number | null {
+  if (!dataUrl || !dataUrl.startsWith('data:')) return null;
+  const comma = dataUrl.indexOf(',');
+  if (comma < 0) return null;
+  const meta = dataUrl.slice(0, comma);
+  const payload = dataUrl.slice(comma + 1);
+  if (meta.includes(';base64')) {
+    const clean = payload.replace(/\s/g, '');
+    const padding = clean.endsWith('==') ? 2 : clean.endsWith('=') ? 1 : 0;
+    return Math.max(0, Math.floor((clean.length * 3) / 4) - padding);
+  }
+  try {
+    return decodeURIComponent(payload).length;
+  } catch {
+    return payload.length;
+  }
 }
 
 async function jsonOrThrow<T>(res: Response): Promise<T> {
@@ -211,6 +205,7 @@ export function EvidenceCenterPage() {
   const qWorkflowId = (query.get('workflow_id') || '').trim();
   const qTaskId = (query.get('task_id') || '').trim();
   const qRequirementId = (query.get('requirement_id') || '').trim();
+  const qFormInstanceId = (query.get('form_instance_id') || '').trim();
 
   const [eventId,    setEventId]    = useState(qEventId || DEFAULT_EVENT);
   const [eventInput, setEventInput] = useState(qEventId || DEFAULT_EVENT);
@@ -241,12 +236,93 @@ export function EvidenceCenterPage() {
     [generatedEvents, triggeredEvents],
   );
   const cesTasks = useMemo(() => projectedTasks.filter(isCesTask), [projectedTasks]);
+  const resolveEventAliases = useCallback((id: string): string[] => {
+    const source = store.eventInstancesById[id]?.sourceEventId ?? id;
+    const instanceIds = store.eventInstanceIdsBySourceEventId[source] ?? [];
+    return Array.from(new Set([id, source, ...instanceIds]));
+  }, [store.eventInstanceIdsBySourceEventId, store.eventInstancesById]);
+  const toEvidenceFile = useCallback((doc: ReturnType<typeof useRegulatoryExecutionStore.getState>['evidence'][string][number]): EvidenceFile => {
+    const dataUrl = resolveEvidenceDataUrl(doc);
+    const estimatedBytes = estimateDataUrlBytes(dataUrl);
+    const resolvedSize = (doc.fileSize && doc.fileSize > 0) ? doc.fileSize : estimatedBytes;
+    return ({
+    evidence_id: doc.id,
+    filename: doc.name,
+    policy_id: doc.policyId,
+    workflow_id: doc.workflowId,
+    event_id: doc.eventId,
+    task_id: doc.taskId || null,
+    form_id: doc.linkedFormId || doc.formIds[0] || null,
+    status: doc.status,
+    version: doc.version,
+    superseded_by: doc.supersededById ?? null,
+    local_data_url: dataUrl ?? null,
+    signature_status: doc.status === 'EVIDENCE_LOCKED' ? 'LOCKED' : null,
+    source_system: 'ces-store',
+    mime_type: doc.mimeType ?? null,
+    size_bytes: resolvedSize ?? null,
+    created_at: doc.createdAt,
+    updated_at: doc.uploadedAt ?? doc.createdAt,
+  });
+  }, []);
+  const toAuditEntry = useCallback((row: ReturnType<typeof useRegulatoryExecutionStore.getState>['taskAuditByEventId'][string][number]): AuditEntry => ({
+    ts: row.timestamp,
+    action: (row.action as EvidenceAuditEvent),
+    actor: row.actorId ?? null,
+    source_system: 'ces-store',
+    evidence_id: row.entityType === 'evidence' ? row.entityId : null,
+    upload_id: null,
+    before_status: null,
+    after_status: null,
+  }), []);
+  const normalizedEvidenceByEvent = useMemo(() => {
+    const out: Record<string, typeof store.evidence[string]> = {};
+    const candidateEventIds = new Set<string>([
+      ...hierarchyEvents.map(event => event.id),
+      ...cesTasks.map(task => task.event_id).filter((value): value is string => Boolean(value)),
+      ...Object.keys(store.evidence),
+    ]);
+    candidateEventIds.forEach(eventId => {
+      const docs = resolveEventAliases(eventId)
+        .flatMap(alias => store.evidence[alias] ?? [])
+        .filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx);
+      if (docs.length > 0) {
+        out[eventId] = docs;
+      }
+    });
+    return out;
+  }, [cesTasks, hierarchyEvents, resolveEventAliases, store.evidence]);
+  const normalizedAuditByEvent = useMemo(() => {
+    const out: Record<string, typeof store.taskAuditByEventId[string]> = {};
+    const candidateEventIds = new Set<string>([
+      ...hierarchyEvents.map(event => event.id),
+      ...cesTasks.map(task => task.event_id).filter((value): value is string => Boolean(value)),
+      ...Object.keys(store.taskAuditByEventId),
+    ]);
+    candidateEventIds.forEach(eventId => {
+      const rows = resolveEventAliases(eventId)
+        .flatMap(alias => store.taskAuditByEventId[alias] ?? [])
+        .filter((item, idx, arr) => arr.findIndex(candidate => candidate.auditId === item.auditId) === idx);
+      if (rows.length > 0) {
+        out[eventId] = rows;
+      }
+    });
+    return out;
+  }, [cesTasks, hierarchyEvents, resolveEventAliases, store.taskAuditByEventId]);
 
   const load = useCallback(async (id: string) => {
     if (isDemoMode) {
-      const store = readDemoStore();
-      setFiles(store.filesByEvent[id] || []);
-      setAudit(store.auditByEvent[id] || []);
+      const aliases = resolveEventAliases(id);
+      const docs = aliases
+        .flatMap(alias => store.evidence[alias] ?? [])
+        .filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx)
+        .filter(item => (item.artifactType || item.kind) !== 'signed_form_instance');
+      const auditRows = aliases
+        .flatMap(alias => store.taskAuditByEventId[alias] ?? [])
+        .filter(row => row.entityType === 'evidence' || row.action === 'FILE_UPLOADED' || row.action === 'FILE_VALIDATED' || row.action === 'EVIDENCE_PROMOTED' || row.action === 'EVIDENCE_LOCKED')
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      setFiles(docs.map(toEvidenceFile));
+      setAudit(auditRows.map(toAuditEntry));
       return;
     }
     setLoading(true);
@@ -262,9 +338,17 @@ export function EvidenceCenterPage() {
         setEffectiveMode('DEMO_LOCAL');
         setError('Backend evidence endpoints are unavailable. The page switched to local demo evidence mode.');
         logEvidenceDevWarning('Evidence Center backend unavailable. Falling back to DEMO_LOCAL mode.', e);
-        const store = readDemoStore();
-        setFiles(store.filesByEvent[id] || []);
-        setAudit(store.auditByEvent[id] || []);
+        const aliases = resolveEventAliases(id);
+        const docs = aliases
+          .flatMap(alias => store.evidence[alias] ?? [])
+          .filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx)
+          .filter(item => (item.artifactType || item.kind) !== 'signed_form_instance');
+        const auditRows = aliases
+          .flatMap(alias => store.taskAuditByEventId[alias] ?? [])
+          .filter(row => row.entityType === 'evidence' || row.action === 'FILE_UPLOADED' || row.action === 'FILE_VALIDATED' || row.action === 'EVIDENCE_PROMOTED' || row.action === 'EVIDENCE_LOCKED')
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        setFiles(docs.map(toEvidenceFile));
+        setAudit(auditRows.map(toAuditEntry));
       } else {
         setError((e as Error).message);
         setFiles([]);
@@ -273,7 +357,7 @@ export function EvidenceCenterPage() {
     } finally {
       setLoading(false);
     }
-  }, [isDemoMode, effectiveMode]);
+  }, [effectiveMode, isDemoMode, resolveEventAliases, store.evidence, store.taskAuditByEventId, toAuditEntry, toEvidenceFile]);
 
   useEffect(() => { load(eventId); }, [eventId, load]);
 
@@ -351,20 +435,6 @@ export function EvidenceCenterPage() {
       document.body.appendChild(a);
       a.click();
       a.remove();
-      const store = readDemoStore();
-      const actor = actorHeaders()['x-hhc-actor-id'] || 'demo-user';
-      store.auditByEvent[f.event_id] = [{
-        ts: new Date().toISOString(),
-        action: 'DOWNLOAD_URL_CREATED',
-        actor,
-        source_system: 'demo-local',
-        evidence_id: f.evidence_id,
-        upload_id: null,
-        before_status: f.status,
-        after_status: f.status,
-      }, ...(store.auditByEvent[f.event_id] || [])];
-      writeDemoStore(store);
-      setAudit(store.auditByEvent[f.event_id] || []);
       return;
     }
     try {
@@ -400,7 +470,7 @@ export function EvidenceCenterPage() {
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
-    const eventExists = REGULATORY_EVENTS.some(item => item.id === eventId) || eventId.startsWith('EVT-FORM-');
+    const eventExists = hierarchyEvents.some(item => item.id === eventId) || resolveEventAliases(eventId).length > 0 || eventId.startsWith('EVT-FORM-');
     const validation = validateEvidenceUploadInput({
       policyId: uploadPolicyId,
       workflowId: uploadWorkflowId,
@@ -422,87 +492,47 @@ export function EvidenceCenterPage() {
       setUploadMsg(null);
       setError(null);
       try {
-        const nowIso = new Date().toISOString();
-        const evidenceId = `EVD-${Date.now()}`;
-        const actor = (() => {
-          const headers = actorHeaders();
-          const id = headers['x-hhc-actor-id'];
-          const role = headers['x-hhc-actor-role'];
-          return role ? `${id} (${role})` : id;
-        })();
-        const localDataUrl = await new Promise<string | null>(resolve => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
-          reader.onerror = () => resolve(null);
-          reader.readAsDataURL(file);
+        const linkedInstance = qFormInstanceId
+          || resolveEventAliases(eventId)
+            .flatMap(alias => store.generatedFormInstancesByEventId[alias] ?? [])
+            .find(instance =>
+              instance.status !== 'SUPERSEDED'
+              && (!uploadTaskId || instance.taskId === uploadTaskId)
+              && (!uploadFormId || instance.formId === uploadFormId),
+            )?.id;
+        const evidenceId = store.uploadEvidence(eventId, {
+          taskId: uploadTaskId || undefined,
+          policyIds: [uploadPolicyId],
+          workflowId: uploadWorkflowId,
+          formIds: uploadFormId ? [uploadFormId] : [],
+          linkedFormId: uploadFormId || undefined,
+          linkedFormInstanceId: linkedInstance || undefined,
+          name: file.name,
+          kind: 'attachment',
+          sizeLabel: `${Math.max(1, Math.round(file.size / 1024))} KB`,
+          localDataUrl: await new Promise<string | undefined>(resolve => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : undefined);
+            reader.onerror = () => resolve(undefined);
+            reader.readAsDataURL(file);
+          }),
         });
-
-        setUploadMsg(`Simulating upload for ${file.name}…`);
-        await new Promise((resolve) => window.setTimeout(resolve, 350));
-        const store = readDemoStore();
-        const eventFiles = store.filesByEvent[eventId] || [];
-        const existingLocked = eventFiles.find(candidate =>
-          candidate.filename === file.name
-          && candidate.policy_id === uploadPolicyId
-          && candidate.workflow_id === uploadWorkflowId
-          && candidate.form_id === (uploadFormId || null)
-          && candidate.task_id === (uploadTaskId || null)
-          && candidate.status === 'EVIDENCE_LOCKED',
-        );
-        const version = (existingLocked?.version ?? 0) + 1;
-
-        const mockFile: EvidenceFile = {
-          evidence_id: evidenceId,
-          filename: file.name,
-          policy_id: uploadPolicyId,
-          workflow_id: uploadWorkflowId,
-          event_id: eventId,
-          task_id: uploadTaskId || null,
-          form_id: uploadFormId || null,
-          status: 'EVIDENCE_LOCKED',
-          version,
-          superseded_by: null,
-          local_data_url: localDataUrl,
-          signature_status: 'LOCKED',
-          source_system: 'demo-local',
-          mime_type: file.type || 'application/octet-stream',
-          size_bytes: file.size,
-          created_at: nowIso,
-          updated_at: nowIso,
-        };
-
-        const eventAudit = store.auditByEvent[eventId] || [];
-        const timeline: AuditEntry[] = [
-          { ts: nowIso, action: 'UPLOAD_INITIATED', actor, source_system: 'demo-local', evidence_id: evidenceId, upload_id: null, before_status: null, after_status: 'PENDING_UPLOAD' },
-          { ts: nowIso, action: 'FILE_UPLOADED', actor, source_system: 'demo-local', evidence_id: evidenceId, upload_id: null, before_status: 'PENDING_UPLOAD', after_status: 'UPLOADED' },
-          { ts: nowIso, action: 'FILE_VALIDATED', actor, source_system: 'demo-local', evidence_id: evidenceId, upload_id: null, before_status: 'UPLOADED', after_status: 'VALIDATED' },
-          { ts: nowIso, action: 'EVIDENCE_PROMOTED', actor, source_system: 'demo-local', evidence_id: evidenceId, upload_id: null, before_status: 'VALIDATED', after_status: 'PROMOTED' },
-          { ts: nowIso, action: 'EVIDENCE_LOCKED', actor, source_system: 'demo-local', evidence_id: evidenceId, upload_id: null, before_status: 'PROMOTED', after_status: 'EVIDENCE_LOCKED' },
-        ];
-        const normalized = eventFiles.map(candidate => (
-          existingLocked && candidate.evidence_id === existingLocked.evidence_id
-            ? { ...candidate, status: 'SUPERSEDED' as const, superseded_by: evidenceId }
-            : candidate
-        ));
-        if (existingLocked) {
-          timeline.unshift({
-            ts: nowIso,
-            action: 'EVIDENCE_SUPERSEDED',
-            actor,
-            source_system: 'demo-local',
-            evidence_id: existingLocked.evidence_id,
-            upload_id: null,
-            before_status: 'EVIDENCE_LOCKED',
-            after_status: 'SUPERSEDED',
-          });
+        if (!evidenceId) {
+          setError(store.evidenceErrorsByEventId[eventId] || 'Evidence upload failed validation and was not persisted.');
+          return;
         }
-        store.filesByEvent[eventId] = [mockFile, ...normalized];
-        store.auditByEvent[eventId] = [...timeline, ...eventAudit];
-        writeDemoStore(store);
-
-        setFiles(store.filesByEvent[eventId]);
-        setAudit(store.auditByEvent[eventId]);
-        setSelected(mockFile);
+        await load(eventId);
+        const persisted = resolveEventAliases(eventId)
+          .flatMap(alias => store.evidence[alias] ?? [])
+          .some(item => item.id === evidenceId);
+        if (!persisted) {
+          setError(`Upload failed persistence check for evidence_id=${evidenceId}.`);
+          return;
+        }
+        const uploaded = resolveEventAliases(eventId)
+          .flatMap(alias => store.evidence[alias] ?? [])
+          .find(item => item.id === evidenceId);
+        if (uploaded) setSelected(toEvidenceFile(uploaded));
         setUploadMsg(`✓ ${file.name} → EVIDENCE_LOCKED (evidence_id=${evidenceId})`);
       } finally {
         setUploading(false);
@@ -587,6 +617,20 @@ export function EvidenceCenterPage() {
           <span className="ml-2 text-xs text-[var(--ci-text-muted,#cbd5e1)]">
             Evidence mode: {toEvidenceModeLabel(effectiveMode)}
           </span>
+          <div className="ml-auto">
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm('Delete ALL signed forms, uploaded evidence, task state, form instances, and certifications? This cannot be undone.')) {
+                  store.clearAllEvidence();
+                  window.location.reload();
+                }
+              }}
+              className="rounded border border-red-400/50 bg-red-500/15 px-3 py-1 text-xs font-semibold text-red-300 hover:bg-red-500/25"
+            >
+              Clear All Evidence
+            </button>
+          </div>
         </div>
         <p className="mt-1 text-sm text-[var(--ci-text-muted,#cbd5e1)] max-w-3xl">
           Every file is bound to a <span className="text-[var(--ci-text-primary,#f8fafc)] font-semibold">policy / workflow / event</span> triplet
@@ -631,9 +675,9 @@ export function EvidenceCenterPage() {
         <CesEvidenceHierarchyPanel
           events={hierarchyEvents}
           tasks={cesTasks}
-          evidenceByEvent={store.evidence}
+          evidenceByEvent={normalizedEvidenceByEvent}
           approvals={store.approvals}
-          auditByEvent={store.taskAuditByEventId}
+          auditByEvent={normalizedAuditByEvent}
           onSelectEvent={(id) => {
             setEventId(id);
             setEventInput(id);
@@ -838,7 +882,20 @@ export function EvidenceCenterPage() {
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
                           <FileText size={14} className="text-cyan-200/80" />
-                          <span className="text-slate-50">{f.filename}</span>
+                          <Link
+                            to={buildArtifactRoute(f.evidence_id, {
+                              eventId: f.event_id,
+                              taskId: f.task_id ?? undefined,
+                              formId: f.form_id ?? undefined,
+                              evidenceId: f.evidence_id,
+                              type: 'evidence',
+                            })}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-slate-50 underline decoration-dotted"
+                          >
+                            {f.filename}
+                          </Link>
                         </div>
                       </td>
                       <td className="px-3 py-2 text-xs text-slate-300">
@@ -864,13 +921,31 @@ export function EvidenceCenterPage() {
                       <td className="px-3 py-2 text-xs text-slate-300">{formatTs(f.created_at)}</td>
                       <td className="px-3 py-2 text-xs text-slate-300 text-right">{formatBytes(f.size_bytes)}</td>
                       <td className="px-3 py-2 text-right">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onDownload(f); }}
-                          className="text-xs px-2 py-1 rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 inline-flex items-center gap-1"
-                          title="Get presigned download URL"
-                        >
-                          <Download size={12} /> Download
-                        </button>
+                        <div className="inline-flex gap-2">
+                          <Link
+                            to={buildArtifactRoute(f.evidence_id, {
+                              eventId: f.event_id,
+                              taskId: f.task_id ?? undefined,
+                              formId: f.form_id ?? undefined,
+                              evidenceId: f.evidence_id,
+                              type: 'evidence',
+                            })}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-xs px-2 py-1 rounded bg-teal-500/20 hover:bg-teal-500/30 border border-teal-300/35 text-teal-100 inline-flex items-center gap-1"
+                            title="Open artifact viewer"
+                          >
+                            <ExternalLink size={12} /> View Artifact
+                          </Link>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onDownload(f); }}
+                            className="text-xs px-2 py-1 rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 inline-flex items-center gap-1"
+                            title="Get presigned download URL"
+                          >
+                            <Download size={12} /> Download
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1043,8 +1118,22 @@ function DetailDrawer({
         </dl>
 
         <button
+          onClick={() => window.open(buildArtifactRoute(file.evidence_id, {
+            eventId: file.event_id,
+            taskId: file.task_id || undefined,
+            formId: file.form_id || undefined,
+            formInstanceId: file.form_instance_id || undefined,
+            evidenceId: file.evidence_id,
+            type: file.kind,
+          }), '_blank', 'noopener,noreferrer')}
+          className="mt-5 w-full px-3 py-2 text-sm rounded bg-teal-300/15 hover:bg-teal-300/25 border border-teal-300/45 text-teal-200 inline-flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={14} /> View in Artifact Viewer
+        </button>
+
+        <button
           onClick={() => onDownload(file)}
-          className="mt-5 w-full px-3 py-2 text-sm rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 inline-flex items-center justify-center gap-2"
+          className="mt-2 w-full px-3 py-2 text-sm rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 inline-flex items-center justify-center gap-2"
         >
           <ExternalLink size={14} /> Open presigned download
         </button>

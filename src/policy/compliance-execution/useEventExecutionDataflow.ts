@@ -8,12 +8,16 @@ import type { MergedExecutionUnit } from './complianceExecutionTypes';
 import { buildEventInstanceIndex } from './eventInstanceId';
 import { resolveEventFolder } from './eventFolders';
 import { deriveDefaultEventTasks } from './eventTaskAdapter';
+import { evidenceTaskIdMatchesTask, mergeDerivedEventTasksWithOverrides } from './taskIdentity';
 import type { EventTask, EventExecutionAuditEvent, EventFormInstance, EventInstance } from './types';
 import { isEvidenceUsable } from '@/policy/evidence/evidenceModel';
 import { buildCesTaskRequirements } from '@/policy/evidence/cesEvidenceHierarchy';
 import type { Task as PmTask } from '@/policy/pm/types';
+import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
+
 
 const EVENT_INSTANCE_INDEX = buildEventInstanceIndex(REGULATORY_EVENTS);
+const FORM_TEMPLATE_IDS = new Set(FORMS_DATASET.map(form => form.id));
 
 export interface EventExecutionDataflow {
   event: RegulatoryEvent;
@@ -51,7 +55,7 @@ function toPmTask(task: EventTask, event: RegulatoryEvent): PmTask {
     policy_id: task.policyIds[0],
     policy_refs: task.policyIds,
     form_refs: task.formIds,
-    generated_form_instance_ids: [],
+    generated_form_instance_ids: task.generated_form_instance_ids ?? [],
     source_form_id: primaryFormId || undefined,
     priority: 'medium',
     risk: 'medium',
@@ -96,29 +100,24 @@ export function buildEventExecutionDataflow(
 
   const derived = deriveDefaultEventTasks(event, eventId, { stepStatusById, formStatusById, approvalsById });
   const overrides = (store.taskOverridesByEventId[eventId] ?? []).map(task => ({ ...task, eventId }));
-  const mergedBySource = new Map<string, EventTask>();
-  const mergedById = new Map<string, EventTask>();
-  for (const task of derived) {
-    mergedBySource.set(task.taskSourceId, task);
-    mergedById.set(task.id, task);
-  }
-  for (const task of overrides) {
-    const sourceKey = task.taskSourceId;
-    if (sourceKey && mergedBySource.has(sourceKey)) {
-      mergedBySource.set(sourceKey, { ...mergedBySource.get(sourceKey)!, ...task });
-      continue;
-    }
-    if (mergedById.has(task.id)) {
-      mergedById.set(task.id, { ...mergedById.get(task.id)!, ...task });
-      continue;
-    }
-    if (sourceKey) {
-      mergedBySource.set(sourceKey, task);
-    } else {
-      mergedById.set(task.id, task);
-    }
-  }
-  const tasks = [...mergedBySource.values(), ...Array.from(mergedById.values()).filter(task => !task.taskSourceId)];
+  const tasksMerged = mergeDerivedEventTasksWithOverrides(eventId, derived, overrides);
+
+  const mergedFormInstances = [
+    ...(store.generatedFormInstancesByEventId[eventId] ?? []),
+    ...(eventId === event.id ? [] : (store.generatedFormInstancesByEventId[event.id] ?? [])),
+  ].filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx);
+
+  const tasks = tasksMerged.map(task => {
+    if (!task.formIds?.length) return task;
+    const ids = task.formIds.map(fid => {
+      const exact = mergedFormInstances.find(inst => inst.formId === fid && inst.taskId === task.id);
+      if (exact) return exact.id;
+      const loose = mergedFormInstances.find(inst => inst.formId === fid);
+      if (loose) return loose.id;
+      return undefined;
+    }).filter((id): id is string => !!id);
+    return { ...task, generated_form_instance_ids: ids };
+  });
 
   const policies = event.policyRefs.map(policyId => {
     const policy = frameworkPolicies.find(p => p.id === policyId);
@@ -135,17 +134,28 @@ export function buildEventExecutionDataflow(
     formPath: `${folder.paths.formsRequiredDir}/${form.formId ?? form.id}.json`,
   }));
 
-  const evidence = store.evidence[eventId] ?? store.evidence[event.id] ?? [];
+  const evidence = [
+    ...(store.evidence[eventId] ?? []),
+    ...(eventId === event.id ? [] : (store.evidence[event.id] ?? [])),
+  ].filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx);
   const tasksWithRollup: EventTask[] = tasks.map(task => {
-    const taskEvidence = evidence.filter(item => item.taskId === task.id && isEvidenceUsable(item.status));
+    const taskEvidence = evidence.filter(item => evidenceTaskIdMatchesTask(task, item.taskId) && isEvidenceUsable(item.status));
     const evidenceIds = taskEvidence.map(item => item.id);
     const requiredFormsSatisfied = task.formIds.length === 0
       ? true
       : task.formIds.every(formId => {
           const req = event.requiredForms.find(form => (form.formId ?? form.id) === formId || form.id === formId);
           if (!req) return false;
-          const hasGeneratedInstance = (store.generatedFormInstancesByEventId[eventId] ?? []).some(inst => inst.formId === formId || inst.formId === (req.formId ?? req.id));
-          return hasGeneratedInstance || store.effectiveFormStatus(event, req.id) === 'complete';
+          const templateId = req.formId ?? req.id;
+          if (!FORM_TEMPLATE_IDS.has(templateId)) return false;
+          const hasCompletedInstance = [
+            ...(store.generatedFormInstancesByEventId[eventId] ?? []),
+            ...(eventId === event.id ? [] : (store.generatedFormInstancesByEventId[event.id] ?? [])),
+          ].some(inst =>
+            (inst.formId === formId || inst.formId === (req.formId ?? req.id))
+            && (inst.status === 'COMPLETED' || inst.status === 'LOCKED' || inst.status === 'SIGNED'),
+          );
+          return hasCompletedInstance || store.effectiveFormStatus(event, req.id) === 'complete';
         });
     const requiredEvidenceSatisfied = task.source === 'approval' || task.source === 'generated'
       ? evidenceIds.length > 0
@@ -175,7 +185,7 @@ export function buildEventExecutionDataflow(
       task.policyIds[0] ?? event.policyRefs[0] ?? '',
       task.workflowId ?? event.workflowId ?? '',
       task.dueDate,
-      evidence.filter(item => item.taskId === task.id),
+      evidence.filter(item => evidenceTaskIdMatchesTask(task, item.taskId)),
       approvals,
       (store.taskAuditByEventId[eventId] ?? []).slice(0, 20).map(item => item.auditId),
     ));
@@ -253,6 +263,22 @@ export function buildEventExecutionDataflow(
       folderPath: task.folderPath,
       auditReadinessScore: completionScore,
       regulatoryRef: event,
+      /* ── CES Role Assignment — carried from EventTask ──────────────────────
+         buildCesRoleAssignment() populates these in eventTaskAdapter.ts.
+         They must be explicitly forwarded here because cesExecutionUnits is
+         a manual object construction (not a spread of task).               */
+      assignedRole:     task.assignedRole,
+      accountableRole:  task.accountableRole,
+      reviewerRole:     task.reviewerRole,
+      approverRole:     task.approverRole,
+      canCompleteRoles: task.canCompleteRoles,
+      canReviewRoles:   task.canReviewRoles,
+      canApproveRoles:  task.canApproveRoles,
+      escalationRole:   task.escalationRole,
+      isSignerTask:     task.isSignerTask,
+      signerRole:       task.signerRole,
+      parentFormTaskId: task.parentFormTaskId,
+      blocksOnSignerTasks: task.blocksOnSignerTasks,
     }));
 
   return {
@@ -274,7 +300,10 @@ export function buildEventExecutionDataflow(
     auditReadinessScore,
     cesExecutionUnits,
     auditTrail: store.taskAuditByEventId[eventId] ?? [],
-    generatedFormInstances: store.generatedFormInstancesByEventId[eventId] ?? [],
+    generatedFormInstances: [
+      ...(store.generatedFormInstancesByEventId[eventId] ?? []),
+      ...(eventId === event.id ? [] : (store.generatedFormInstancesByEventId[event.id] ?? [])),
+    ].filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx),
     sourceEventId: event.id,
   };
 }

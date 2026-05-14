@@ -212,9 +212,14 @@ function EventAnchorMarker({ event }: { event: ComplianceEvent }) {
   const tone = DOMAIN_TONE[event.domain];
   return (
     <div
-      className="text-[10.5px] font-semibold rounded px-1.5 py-1 leading-tight"
+      data-testid="calendar-event"
+      data-event-id={event.id}
+      data-event-domain={event.domain}
+      className="text-[10.5px] font-semibold rounded px-1.5 py-1 leading-tight cursor-pointer"
       style={{ background: tone.bg, color: tone.fg, borderLeft: `3px solid ${tone.fg}` }}
       title={`${COMPLIANCE_DOMAIN_LABEL[event.domain]} · ${event.title}`}
+      role="button"
+      tabIndex={0}
     >
       {event.title}
     </div>

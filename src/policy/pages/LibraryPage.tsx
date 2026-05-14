@@ -19,7 +19,7 @@ import { SharedPolicyDetailView, type SharedPolicy } from '../components/SharedP
 import { getPolicyContent } from '../data/policyContentMap';
 import { frameworkPolicies } from '../data/frameworkSeed.generated';
 import { achcSurveyByPolicyId, type AchcMappingType, type AchcSurveyMetadata } from '@/policy/data/achcSurveyProjection.generated';
-import { EmptyState } from '@/policy/components/ui';
+import { EmptyState, SearchField } from '@/policy/components/ui';
 
 // ── Title resolver: extract Title row from Policy Header content section ──────
 function resolveTitleFromContent(sections: { order: number; body: string }[] | undefined): string | null {
@@ -350,8 +350,7 @@ export function LibraryPage() {
   const [achcTitle22Filter, setAchcTitle22Filter] = useState('ALL');
   const [achcStandardFilter, setAchcStandardFilter] = useState('ALL');
   const [achcCopFilter, setAchcCopFilter] = useState('ALL');
-  const [searchQuery, _setSearchQuery] = useState('');
-  void _setSearchQuery;
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredSubdomains = useMemo(() => {
     if (selectedDomain === 'ALL')
@@ -410,10 +409,12 @@ export function LibraryPage() {
   const handleDomainSelect = (code: string) => {
     setSelectedDomain(code);
     setSelectedSubdomain('ALL');
+    setSearchQuery('');
   };
 
   const handleSubdomainSelect = (code: string) => {
     setSelectedSubdomain(code);
+    setSearchQuery('');
   };
 
   const selectedSubdomainObj = filteredSubdomains.find(s => s.code === selectedSubdomain);
@@ -475,7 +476,16 @@ export function LibraryPage() {
             </div>
           </div>
 
-          {libraryView === 'IBM' && (
+          <div className="flex items-center gap-4">
+            {/* Policy Search */}
+            <SearchField
+              placeholder="Search policies..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-[280px]"
+            />
+
+            {/* Policies / Forms toggle */}
             <div className="flex items-center p-1 rounded-full border border-ci-border">
               <button className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-[#FFC107] text-[#FFC107] font-montserrat">
                 Policies
@@ -485,7 +495,7 @@ export function LibraryPage() {
                 Forms
               </button>
             </div>
-          )}
+          </div>
         </div>
 
         {/* PROMINENT VIEW MODE SWITCH */}

@@ -35,6 +35,7 @@ import {
   regulatoryEventOverlapsSprint,
   type SprintWindow,
 } from '@/policy/pm/sprintWindows';
+import { isCesFutureLockedDate } from '@/policy/ces/cesExecutionMode';
 import type {
   MergedComplianceEvent, MergedExecutionUnit,
 } from './complianceExecutionTypes';
@@ -265,7 +266,9 @@ export function useComplianceExecution(
       ...REGULATORY_EVENTS, ...generated, ...triggered,
     ].filter(e => !e.isContext);
 
-    const regEvents = filterRegulatoryEventsForScope(regEventsAll, scope);
+    const regEventsScoped = filterRegulatoryEventsForScope(regEventsAll, scope);
+    /** Same regulatory id must not appear twice (seed + autogen overlap duplicates execution units + React keys). */
+    const regEvents = regEventsScoped.filter((e, idx, arr) => arr.findIndex(x => x.id === e.id) === idx);
 
     const auditEvaluations = new Map<string, AuditEvaluation>();
     for (const e of regEvents) {
@@ -325,9 +328,12 @@ export function useComplianceExecution(
     ];
 
     /* ── Metrics & rollups computed from real units ── */
-    const sprintMetrics    = computeSprintMetrics(engineUnits, today);
-    const domainRisks      = computeDomainRisks(engineUnits);
-    const ownerAssignments = computeOwnerAssignments(engineUnits);
+    // Future-locked units (Jul 2026+) are excluded from all metric calculations.
+    // They remain in executionUnits for display/planning purposes only.
+    const activeUnitsForMetrics = engineUnits.filter(u => !isCesFutureLockedDate(u.dueDate));
+    const sprintMetrics    = computeSprintMetrics(activeUnitsForMetrics, today);
+    const domainRisks      = computeDomainRisks(activeUnitsForMetrics);
+    const ownerAssignments = computeOwnerAssignments(activeUnitsForMetrics);
     const workflows = hasRegulatoryEvents
       ? eventPackages
         .flatMap(pkg => pkg.workflows.map(wf => ({ id: wf.id, eventId: pkg.event.id, title: wf.title, requiredFormIds: [] as string[] })))

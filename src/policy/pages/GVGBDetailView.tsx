@@ -10,10 +10,12 @@ import {
   Printer, FileText, Shield, Search, CheckCircle, BookOpen,
   AlertTriangle, Settings, List, CheckSquare, Archive, Info,
   LayoutList, ChevronRight, FileLock2, Award, ExternalLink,
-  ArrowLeft, Building2, User, Briefcase, HeartPulse,
+  ArrowLeft,
 } from 'lucide-react';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { FormViewer } from '@/policy/components/FormViewer';
+import { openPolicyPrintRoute } from '@/policy/utils/openPolicyPrintRoute';
+import { getFormsForPolicy } from '@/policy/utils/policyFormLinks';
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -225,28 +227,29 @@ const Card = ({ children, className = '' }: { children: React.ReactNode; classNa
   </div>
 );
 
-const SectionTitle = ({ icon: Icon, title, color = 'text-[#D4AF37]' }: { icon?: React.ElementType; title: string; color?: string }) => (
-  <h2 className={`font-montserrat text-2xl font-bold flex items-center mb-6 ${color}`}>
-    {Icon && <Icon className="mr-3" size={28} />}
-    {title}
+const SectionTitle = ({ icon: Icon, title, color = 'text-[#1F1C1B]' }: { icon?: React.ElementType; title: string; color?: string }) => (
+  <h2 className={`font-montserrat font-semibold text-[13px] tracking-[0.22em] uppercase mb-8 flex items-center gap-4 w-full ${color}`}>
+    {Icon && <Icon className="shrink-0 text-[#007970]" size={20} />}
+    <span className="shrink-0">{title}</span>
+    <span className="flex-grow h-px bg-[#007970]"></span>
   </h2>
 );
 
 const SimpleTable = ({ headers, rows }: { headers: string[]; rows: (string | React.ReactNode)[][] }) => (
-  <div className="overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm mb-6">
-    <table className="w-full table-fixed text-left border-collapse">
+  <div className="w-full overflow-x-auto overflow-y-hidden mb-10 border-y border-[#E5E4E3]">
+    <table className="w-full text-left border-collapse min-w-max">
       <thead>
-        <tr className="bg-[#D4AF37] text-white">
+        <tr>
           {headers.map((h, i) => (
-            <th key={i} className="p-4 font-montserrat font-bold text-sm tracking-wide border-b border-[#006059]">{h}</th>
+            <th key={i} className="py-4 px-3 font-montserrat font-semibold text-[11px] tracking-[0.12em] uppercase text-[#524048] border-b border-[#E5E4E3]">{h}</th>
           ))}
         </tr>
       </thead>
-      <tbody className="divide-y divide-gray-200">
+      <tbody className="divide-y divide-[#E5E4E3]">
         {rows.map((row, i) => (
-          <tr key={i} className="hover:bg-gray-50 transition-colors even:bg-gray-50/30">
+          <tr key={i} className="hover:bg-[#FAFBF8] transition-colors">
             {row.map((cell, j) => (
-              <td key={j} className="p-4 text-gray-700 text-sm align-top leading-relaxed whitespace-pre-line">{cell}</td>
+              <td key={j} className={`py-4 px-3 text-[#1F1C1B] font-roboto text-[14px] align-top leading-relaxed whitespace-pre-line break-words ${j === 0 ? 'font-medium text-[#007970]' : ''}`}>{cell}</td>
             ))}
           </tr>
         ))}
@@ -258,10 +261,10 @@ const SimpleTable = ({ headers, rows }: { headers: string[]; rows: (string | Rea
 const TabButton = ({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-2.5 rounded-full font-montserrat font-bold text-sm transition-all duration-200 whitespace-nowrap ${
+    className={`px-5 py-3 font-montserrat font-semibold text-[13px] transition-all duration-200 whitespace-nowrap border-b-[3px] ${
       active
-        ? 'bg-[#D4AF37] text-white shadow-md'
-        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+        ? 'text-[#C74601] border-[#C74601]'
+        : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
     }`}
   >
     {children}
@@ -294,7 +297,7 @@ const ViewOverview = () => (
             'All contracted management entities performing governing body functions on behalf of the agency',
           ].map((item, i) => (
             <li key={i} className="flex items-start">
-              <CheckCircle className="text-[#D4AF37] mr-3 mt-0.5 flex-shrink-0" size={18} />
+              <CheckCircle className="text-[#007970] mr-3 mt-0.5 flex-shrink-0" size={18} />
               <span className="text-gray-700 text-[15px]">{item}</span>
             </li>
           ))}
@@ -310,7 +313,7 @@ const ViewOverview = () => (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {DEFINITIONS.map((def, i) => (
           <div key={i} className="bg-gray-50 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <h4 className="font-montserrat font-extrabold text-[#D4AF37] mb-2">{def.term}</h4>
+            <h4 className="font-montserrat font-extrabold text-[#007970] mb-2">{def.term}</h4>
             <p className="text-gray-600 text-sm leading-relaxed">{def.definition}</p>
           </div>
         ))}
@@ -326,7 +329,7 @@ const ViewPolicyStatements = () => (
       <div className="space-y-4">
         {POLICY_STATEMENTS.map((stmt, i) => (
           <div key={i} className="flex items-start bg-gray-50 border border-gray-200 p-5 rounded-xl shadow-sm">
-            <div className="bg-[#D4AF37] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold font-montserrat flex-shrink-0 mr-5 shadow-inner text-sm">
+            <div className="bg-[#007970] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold font-montserrat flex-shrink-0 mr-5 shadow-inner text-sm">
               4.{i + 1}
             </div>
             <p className="text-gray-800 leading-relaxed pt-2 text-[15px] whitespace-pre-line">{stmt.substring(4)}</p>
@@ -448,7 +451,7 @@ const ViewCompliance = () => (
             'Meeting frequency and documentation quality. Surveyors will request all meeting minutes for the survey look-back period and assess completeness, including attendance, quorum, and documented decisions.',
           ].map((item, i) => (
             <li key={i} className="text-[15px] text-[#1F1C1B] font-roboto flex items-start">
-              <ChevronRight className="text-[#D4AF37] mt-0.5 mr-2 flex-shrink-0" />
+              <ChevronRight className="text-[#007970] mt-0.5 mr-2 flex-shrink-0" />
               {i + 1}. {item}
             </li>
           ))}
@@ -484,11 +487,11 @@ const ViewReferencesAdmin = () => (
         <div>
           <h3 className="font-montserrat font-bold text-lg text-gray-800 mb-4 pb-2 border-b border-gray-200">9.2 CMS Guidance</h3>
           <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-3">
-            <p className="font-bold text-sm text-[#D4AF37]">CMS State Operations Manual, Appx B — Guidance to Surveyors</p>
+            <p className="font-bold text-sm text-[#007970]">CMS State Operations Manual, Appx B — Guidance to Surveyors</p>
             <p className="text-sm text-gray-700 mt-1">Provides interpretive guidelines for survey of 42 CFR § 484.105 compliance; defines surveyor expectations for governing body evidence.</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-            <p className="font-bold text-sm text-[#D4AF37]">CMS OASIS-E2 Guidance Manual</p>
+            <p className="font-bold text-sm text-[#007970]">CMS OASIS-E2 Guidance Manual</p>
             <p className="text-sm text-gray-700 mt-1">While not directly governing the Governing Body, the Governing Body is accountable for ensuring the agency's OASIS program meets CMS requirements.</p>
           </div>
         </div>
@@ -516,7 +519,7 @@ const ViewReferencesAdmin = () => (
             <tbody className="divide-y divide-gray-200 bg-white">
               {REFERENCES_CROSS.map((row, i) => (
                 <tr key={i} className="hover:bg-gray-50">
-                  <td className="p-3 text-sm font-bold text-[#D4AF37] whitespace-nowrap">{row[0]}</td>
+                  <td className="p-3 text-sm font-bold text-[#007970] whitespace-nowrap">{row[0]}</td>
                   <td className="p-3 text-sm text-gray-800 font-medium">{row[1]}</td>
                   <td className="p-3 text-sm text-gray-600">{row[2]}</td>
                 </tr>
@@ -538,7 +541,7 @@ const ViewReferencesAdmin = () => (
             'Annual refresher training on governing body responsibilities shall be conducted at the first quarterly meeting of each calendar year. Attendance shall be documented in meeting minutes.',
           ].map((item, i) => (
             <li key={i} className="flex items-start bg-gray-50 p-4 rounded-lg">
-              <div className="bg-[#D4AF37] text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs mr-3 flex-shrink-0">{i + 1}</div>
+              <div className="bg-[#007970] text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs mr-3 flex-shrink-0">{i + 1}</div>
               <p className="text-[15px] leading-relaxed text-gray-800">{item}</p>
             </li>
           ))}
@@ -564,489 +567,35 @@ const ViewReferencesAdmin = () => (
     </div>
   </div>
 );
+// --- APPENDICES (Forms Library: same linkage as PolicyAppendicesPanel) ---
 
-// ─── APPENDIX FORMS ───────────────────────────────────────────────────────────
+const GV_GB_LINKED_FORMS = getFormsForPolicy('GV-GB-001');
 
-const AppendixHeader = ({ title }: { id: string; title: string }) => (
-  <div className="text-center mb-8 pb-6 border-b border-gray-100">
-    <img
-      src="https://cdn.jsdelivr.net/gh/robertp-max/CSM-485-Form@main/src/assets/CI%20Home%20Health%20Logo_Gray.png"
-      alt="Care Indeed Home Health Care"
-      className="h-16 mx-auto mb-4 opacity-70"
-      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-    />
-    <h3 className="font-montserrat text-2xl font-extrabold text-gray-900 mb-2">{title}</h3>
-    <p className="text-xs text-gray-400 mt-1 italic">Care Indeed Home Health Care, Inc. · Policy GV-GB-001 · Version 6.0 · 2025-07-10</p>
-  </div>
-);
-
-const AppendixA = () => (
-  <div className="max-w-6xl mx-auto">
-    <AppendixHeader id="A" title="Governing Body Membership Roster" />
-    <p className="text-sm text-gray-600 mb-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
-      <strong>Instructions:</strong> The Governing Body Chair (or designee) shall update this roster within 7 calendar days of any membership change. A copy shall be maintained in the agency governance file and provided to the Administrator. This roster must be readily accessible for CMS survey review.
-    </p>
-    <div className="border border-gray-300 rounded-lg overflow-hidden">
-      <table className="w-full text-left text-xs table-fixed border-collapse">
-        <colgroup>
-          <col className="w-[3%]" />
-          <col className="w-[13%]" />
-          <col className="w-[11%]" />
-          <col className="w-[9%]" />
-          <col className="w-[9%]" />
-          <col className="w-[9%]" />
-          <col className="w-[14%]" />
-          <col className="w-[24%]" />
-          <col className="w-[8%]" />
-        </colgroup>
-        <thead className="bg-gray-100 border-b border-gray-300">
-          <tr>
-            {['#', 'Full Legal Name', 'Title / Role', 'Voting Status', 'Appt Date', 'Term Exp', 'Competency Area', 'Email Address', 'OIG/SAM?'].map((h, i) => (
-              <th key={i} className="p-2 font-bold border-r last:border-r-0 break-words leading-snug">{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200">
-          {[1, 2, 3, 4, 5, 6, 7].map(i => (
-            <tr key={i}>
-              <td className="p-2 text-gray-400 border-r text-center text-xs">{i}</td>
-              <td className="p-2 border-r"><input type="text" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#D4AF37] text-xs" placeholder="Type here..." /></td>
-              <td className="p-2 border-r"><input type="text" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#D4AF37] text-xs" /></td>
-              <td className="p-2 border-r"><select className="border border-gray-200 rounded p-1 w-full bg-transparent text-xs"><option>Voting</option><option>Non-Voting</option><option>Advisory</option></select></td>
-              <td className="p-2 border-r"><input type="date" className="border border-gray-200 rounded p-1 text-xs w-full bg-transparent" /></td>
-              <td className="p-2 border-r"><input type="date" className="border border-gray-200 rounded p-1 text-xs w-full bg-transparent" /></td>
-              <td className="p-2 border-r"><input type="text" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#D4AF37] text-xs" /></td>
-              <td className="p-2 border-r"><input type="email" className="border-b border-gray-200 bg-transparent w-full focus:outline-none focus:border-[#D4AF37] text-xs" /></td>
-              <td className="p-2 text-center"><input type="checkbox" className="w-4 h-4 text-[#D4AF37]" /></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <div className="mt-8 grid grid-cols-2 gap-4 text-sm font-bold text-[#524048]">
-      <div className="flex items-center flex-wrap gap-1">Roster Maintained By: <input type="text" className="border-b border-[#524048] bg-transparent focus:outline-none w-44 px-1 text-sm font-normal" aria-label="Roster Maintained By" /> Title: <input type="text" className="border-b border-[#524048] bg-transparent focus:outline-none w-32 ml-1 px-1 text-sm font-normal" aria-label="Title" /></div>
-      <div className="flex items-center gap-1">Date Last Updated: <input type="text" className="border-b border-[#524048] bg-transparent focus:outline-none w-36 ml-1 px-1 text-sm font-normal" aria-label="Date Last Updated" /></div>
-      <div className="flex items-center flex-wrap gap-1">Quorum Requirement: <input type="text" className="border-b border-[#524048] bg-transparent focus:outline-none w-10 ml-1 text-center text-sm font-normal" aria-label="Quorum number" /> of <input type="text" className="border-b border-[#524048] bg-transparent focus:outline-none w-10 mx-1 text-center text-sm font-normal" aria-label="Total voting members" /> voting members</div>
-      <div className="flex items-center flex-wrap gap-1">Total Voting Members: <input type="text" className="border-b border-[#524048] bg-transparent focus:outline-none w-10 ml-1 text-center text-sm font-normal" aria-label="Total voting members count" /> | Total Non-Voting / Advisory Members: <input type="text" className="border-b border-[#524048] bg-transparent focus:outline-none w-10 ml-1 text-center text-sm font-normal" aria-label="Non-voting members count" /></div>
-    </div>
-  </div>
-);
-
-const AppendixB = () => (
-  <div className="max-w-4xl mx-auto">
-    <AppendixHeader id="B" title="Conflict of Interest Disclosure Form" />
-    <p className="text-sm text-gray-600 mb-6 bg-orange-50 p-4 rounded-lg border border-orange-100">
-      <strong>Instructions:</strong> Each Governing Body member shall complete this form: (1) at the time of initial appointment; (2) annually, at the first quarterly meeting of each calendar year; and (3) within 7 calendar days of any change in circumstances that could create a new actual or potential conflict. Submit to Compliance Officer.
-    </p>
-    <div className="space-y-8">
-      <section>
-        <h4 className="font-bold text-lg bg-gray-100 p-2 rounded mb-4">SECTION 1 — MEMBER INFORMATION</h4>
-        <div className="grid grid-cols-2 gap-6 bg-gray-50 p-6 rounded-lg border border-gray-200">
-          {[['Full Legal Name', 'text'], ['Title / Role on Governing Body', 'text'], ['Date of Appointment', 'date']].map(([label, type], i) => (
-            <div key={i}>
-              <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">{label}</label>
-              <input type={type} className="border p-2 rounded w-full bg-white" />
-            </div>
-          ))}
-          <div className="col-span-2 flex items-center gap-6 mt-2 pt-4 border-t border-gray-200">
-            <span className="font-bold text-gray-700">Type of Disclosure:</span>
-            {['Initial', 'Annual Renewal', 'Change in Circumstances'].map(opt => (
-              <label key={opt} className="flex items-center"><input type="radio" name="disclosureType" className="mr-2 w-4 h-4" /> {opt}</label>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h4 className="font-bold text-lg bg-gray-100 p-2 rounded mb-4">SECTION 2 — FINANCIAL INTERESTS</h4>
-        <p className="text-sm text-gray-600 mb-4 italic">Do you, or any member of your immediate family (spouse, domestic partner, parent, child, sibling), hold any of the following interests?</p>
-        <table className="w-full text-sm text-left border border-gray-300">
-          <thead className="bg-gray-100"><tr className="border-b border-gray-300"><th className="p-3 border-r">Question</th><th className="p-3 w-16 text-center border-r">Yes</th><th className="p-3 w-16 text-center border-r">No</th><th className="p-3 w-64">If Yes, Describe</th></tr></thead>
-          <tbody className="divide-y divide-gray-200">
-            {[
-              '2.1 Ownership interest (equity, stock, partnership) in any entity that does business with, competes with, or provides referrals to Care Indeed Home Health Care, Inc.?',
-              '2.2 Employment, consulting, or advisory relationship with any entity that does business with, competes with, or provides referrals to this agency?',
-              '2.3 Financial interest in any vendor, supplier, or contractor used by the agency?',
-              '2.4 Receipt of compensation, gifts, gratuities, or other benefits (exceeding $50 in aggregate annually) from any entity that does business with or seeks to do business with the agency?',
-            ].map((q, i) => (
-              <tr key={i}><td className="p-3 border-r font-medium">{q}</td><td className="text-center border-r"><input type="radio" name={`q2${i}`} className="w-4 h-4" /></td><td className="text-center border-r"><input type="radio" name={`q2${i}`} className="w-4 h-4" /></td><td className="p-2"><input type="text" className="w-full border-b bg-transparent" /></td></tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
-      <section>
-        <h4 className="font-bold text-lg bg-gray-100 p-2 rounded mb-4">SECTION 3 — PROFESSIONAL & ORGANIZATIONAL RELATIONSHIPS</h4>
-        <table className="w-full text-sm text-left border border-gray-300">
-          <thead className="bg-gray-100"><tr className="border-b border-gray-300"><th className="p-3 border-r">Question</th><th className="p-3 w-16 text-center border-r">Yes</th><th className="p-3 w-16 text-center border-r">No</th><th className="p-3 w-64">If Yes, Describe</th></tr></thead>
-          <tbody className="divide-y divide-gray-200">
-            {[
-              '3.1 Do you serve on the board of directors, governing body, or advisory board of any other healthcare entity, referral source, or competitor?',
-              '3.2 Do you have any professional relationship with any physician, physician group, hospital, skilled nursing facility, or other provider that refers patients to or receives referrals from Care Indeed Home Health Care, Inc.?',
-              '3.3 Do you have any other relationship or interest that could reasonably be perceived as creating a conflict of interest with your duties as a Governing Body member?',
-            ].map((q, i) => (
-              <tr key={i}><td className="p-3 border-r font-medium">{q}</td><td className="text-center w-16 border-r"><input type="radio" name={`q3${i}`} className="w-4 h-4" /></td><td className="text-center w-16 border-r"><input type="radio" name={`q3${i}`} className="w-4 h-4" /></td><td className="p-2"><input type="text" className="w-full border-b bg-transparent" /></td></tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
-      <section className="bg-[#D4AF37]/5 p-6 rounded-lg border border-[#D4AF37]/20">
-        <h4 className="font-bold text-lg text-[#D4AF37] mb-4">SECTION 4 — ATTESTATION</h4>
-        <p className="text-sm text-gray-700 mb-6">I hereby certify that the information provided above is true, complete, and accurate to the best of my knowledge. I understand that I have an ongoing obligation to disclose any new conflict within 7 calendar days, I must recuse myself from voting on conflicted matters, and failure to disclose a known conflict may result in removal from the Governing Body.</p>
-        <div className="grid grid-cols-2 gap-8">
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Signature</label>
-            <div className="border-b-2 border-gray-300 border-dashed h-10 w-full" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Date Signed</label>
-            <input type="date" className="border-b-2 border-gray-300 w-full focus:outline-none focus:border-[#D4AF37] pb-2 text-gray-500 bg-transparent" />
-          </div>
-        </div>
-      </section>
-    </div>
-  </div>
-);
-
-const AppendixC = () => (
-  <div className="max-w-2xl mx-auto">
-    <AppendixHeader id="C" title="Policy Acknowledgment Form" />
-    <div className="bg-gray-50 p-6 rounded-lg mb-8 border border-gray-200 shadow-sm">
-      <p className="text-gray-800 font-bold mb-4">I, the undersigned, acknowledge that:</p>
-      <ol className="list-decimal list-inside space-y-4 text-[15px] text-gray-700 ml-2">
-        <li>I have received and read Policy <strong>GV-GB-001 — Governing Body Authority &amp; Responsibilities, Version 6.0</strong>, effective 2025-07-10.</li>
-        <li>I understand the responsibilities, requirements, and expectations described in this policy as they apply to my role at Care Indeed Home Health Care, Inc.</li>
-        <li>I understand that I am accountable for complying with this policy and that non-compliance may result in corrective action.</li>
-        <li>I have had the opportunity to ask questions and receive clarification regarding any aspect of this policy.</li>
-      </ol>
-    </div>
-    <div className="grid grid-cols-2 gap-6 bg-white p-8 border border-gray-300 rounded-xl shadow-sm">
-      {[['Full Name (Printed)', 'text'], ['Title / Role', 'text']].map(([label, type], i) => (
-        <div key={i}>
-          <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{label}</label>
-          <input type={type} className="border-b-2 border-gray-300 w-full focus:outline-none focus:border-[#D4AF37] p-1" />
-        </div>
-      ))}
-      <div className="col-span-2 mt-4">
-        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Signature</label>
-        <div className="border-b-2 border-gray-300 border-dashed h-16 w-full" />
-      </div>
-      <div className="col-span-2 mt-4">
-        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Date Signed</label>
-        <input type="date" className="border-b-2 border-gray-300 w-full md:w-1/2 focus:outline-none focus:border-[#D4AF37] p-1 text-gray-600" />
-      </div>
-    </div>
-  </div>
-);
-
-const AppendixD = () => (
-  <div className="max-w-4xl mx-auto space-y-8">
-    <AppendixHeader id="D" title="Governing Body Meeting Minutes Template" />
-    <p className="text-sm text-gray-600 bg-gray-100 p-4 rounded-lg border border-gray-200">
-      <strong>Instructions:</strong> Use this template for all regular and special Governing Body meetings. Draft minutes shall be completed within 14 calendar days of the meeting and retained for a minimum of 7 years.
-    </p>
-    <div className="border border-gray-300 p-8 rounded-xl space-y-8 bg-gray-50">
-      <div className="grid grid-cols-2 gap-6 bg-white p-6 rounded-lg border border-gray-200">
-        {[
-          { label: 'Meeting Type', type: 'select', options: ['Regular Quarterly', 'Special', 'Annual'] },
-          { label: 'Date', type: 'date' },
-          { label: 'Time (Start/End)', type: 'text', placeholder: '00:00 - 00:00' },
-          { label: 'Location', type: 'text', placeholder: 'In-Person: 890 Santa Cruz Ave, Menlo Park, CA' },
-        ].map((field, i) => (
-          <div key={i}>
-            <span className="font-bold text-sm text-gray-600 uppercase">{field.label}:</span>
-            {field.type === 'select' ? (
-              <select className="border-b border-gray-300 ml-2 p-1 bg-transparent w-full mt-1">{field.options!.map(o => <option key={o}>{o}</option>)}</select>
-            ) : (
-              <input type={field.type} placeholder={field.placeholder} className="border-b border-gray-300 ml-2 p-1 bg-transparent w-full mt-1 text-gray-500" />
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div>
-        <h4 className="font-bold bg-[#D4AF37] text-white p-3 rounded-t-lg uppercase text-sm tracking-wide">ATTENDANCE &amp; QUORUM</h4>
-        <table className="w-full text-sm border-l border-r border-b border-gray-300 bg-white rounded-b-lg overflow-hidden">
-          <thead><tr className="bg-gray-100 border-b border-gray-300"><th className="p-3 border-r text-left">Member Name</th><th className="p-3 border-r w-24 text-center">Present?</th><th className="p-3 text-left">Attendance Method</th></tr></thead>
-          <tbody>
-            {[1, 2, 3, 4, 5].map(i => (
-              <tr key={i} className="border-b border-gray-200 last:border-0">
-                <td className="p-2 border-r"><input type="text" className="w-full bg-transparent focus:outline-none" /></td>
-                <td className="p-2 border-r text-center"><input type="checkbox" className="w-4 h-4" /></td>
-                <td className="p-2"><input type="text" className="w-full bg-transparent focus:outline-none" placeholder="In-person / Video" /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="mt-4 flex items-center gap-6 text-sm font-bold text-gray-700">
-          <span>Quorum Required: <input type="number" className="w-12 border-b text-center mx-1" /></span>
-          <span>Members Present: <input type="number" className="w-12 border-b text-center mx-1" /></span>
-          <span>Quorum Achieved? <label className="ml-2 font-normal"><input type="radio" name="quorum" className="mr-1" />Yes</label> <label className="ml-2 font-normal"><input type="radio" name="quorum" className="mr-1" />No</label></span>
-        </div>
-      </div>
-
-      <div>
-        <h4 className="font-bold bg-[#D4AF37] text-white p-3 rounded-t-lg uppercase text-sm tracking-wide">STANDING AGENDA ITEMS (Summary)</h4>
-        <div className="space-y-4 bg-white border-l border-r border-b border-gray-300 p-6 rounded-b-lg">
-          {['3. Administrator Report', '4. Compliance Report', '5. QAPI Report', '6. Financial Report'].map((item, i) => (
-            <div key={i} className="border border-gray-200 p-4 rounded-lg bg-gray-50">
-              <strong className="text-gray-800 text-[15px] block mb-2">{item}:</strong>
-              <textarea className="w-full border border-gray-300 p-3 h-20 rounded bg-white text-sm resize-none" placeholder="Document summary, discussion, action items, responsible party, and deadline..." />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const AppendixE = () => {
-  const checklistItems = [
-    'Governing Body meeting convened this quarter with quorum?',
-    'Meeting agenda distributed at least 7 days prior?',
-    'Prior meeting minutes approved?',
-    'Administrator report presented?',
-    'Compliance Officer report presented?',
-    'QAPI report presented?',
-    'Financial report presented?',
-    'All Governing Body member OIG/SAM screenings current (monthly)?',
-    'All Conflict of Interest disclosures current?',
-    'All key leadership positions filled (Administrator, Clinical Manager, Compliance Officer)?',
-    'Governing Body membership roster current?',
-    'Policy acknowledgments current for all members/leaders in scope?',
-    'Q1 Only: Annual QAPI plan reviewed and approved?',
-    'Q1 Only: Annual refresher training on governance responsibilities conducted?',
-    'Q1 Only: Governing Body composition reviewed for competency coverage?',
-    'Q2 Only: Succession plan reviewed and approved?',
-    'Q3 Only: Emergency preparedness plan reviewed and approved?',
-    'Pre-Fiscal Year: Annual operating budget reviewed and approved?',
-    'All directives from prior meeting assigned, tracked, and status reported?',
-    'Any Condition-level survey findings requiring Governing Body action?',
-  ];
-  return (
-    <div className="max-w-6xl mx-auto">
-      <AppendixHeader id="E" title="Quarterly Governance Oversight Checklist" />
-      <p className="text-sm text-gray-600 mb-6 bg-[#D4AF37]/10 p-5 rounded-lg border border-[#D4AF37]/20 leading-relaxed">
-        <strong>Purpose:</strong> To provide the Governing Body Chair and Administrator with a structured checklist to verify that all required oversight activities are completed each quarter, supporting continuous survey readiness and compliance with 42 CFR § 484.105.
-      </p>
-      <div className="flex items-center gap-6 mb-6 font-bold text-gray-700 bg-gray-100 p-4 rounded-lg">
-        <span>Quarter: {['Q1', 'Q2', 'Q3', 'Q4'].map(q => <label key={q} className="ml-3 font-normal"><input type="radio" name="quarter" className="mr-1" />{q}</label>)}</span>
-        <span className="ml-8">Calendar Year: <input type="text" className="w-24 border-b border-gray-400 bg-transparent text-center" /></span>
-      </div>
-      <div className="border border-gray-300 rounded-lg overflow-hidden">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-[#D4AF37] text-white">
-            <tr><th className="p-3 border-r border-[#006059] w-12 text-center">#</th><th className="p-3 border-r border-[#006059]">Oversight Item</th><th className="p-3 border-r border-[#006059] w-28 text-center">Y / N / N-A</th><th className="p-3 w-64">Notes / Corrective Action if "No"</th></tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {checklistItems.map((item, i) => (
-              <tr key={i} className="hover:bg-gray-50">
-                <td className="p-3 border-r font-bold text-gray-400 text-center">{i + 1}</td>
-                <td className="p-3 border-r font-medium text-gray-800">{item}</td>
-                <td className="p-3 border-r text-center">
-                  <select className="border border-gray-300 rounded p-1 w-full bg-white font-medium text-gray-700">
-                    <option value="" /><option value="Y">Y</option><option value="N">N</option><option value="NA">N/A</option>
-                  </select>
-                </td>
-                <td className="p-3"><input type="text" className="w-full bg-transparent border-b border-gray-200 focus:outline-none focus:border-[#D4AF37]" placeholder="Document here..." /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="mt-6 grid grid-cols-2 gap-4 text-sm font-bold text-gray-600 bg-gray-50 p-6 rounded-lg border border-gray-200">
-        <div>Completed By: <span className="border-b border-gray-400 inline-block w-48 mx-2" /></div>
-        <div>Title: <span className="border-b border-gray-400 inline-block w-48 mx-2" /></div>
-        <div>Date: <span className="border-b border-gray-400 inline-block w-48 mx-2" /></div>
-        <div>Presented to Chair? <label className="ml-2 font-normal"><input type="checkbox" className="mr-1" />Yes</label> — Date: <span className="border-b border-gray-400 inline-block w-24 ml-2" /></div>
-      </div>
-    </div>
-  );
-};
-
-const AppendixF = () => (
-  <div className="max-w-6xl mx-auto">
-    <AppendixHeader id="F" title="Annual Governance Calendar" />
-    <p className="text-sm text-gray-600 mb-6 bg-gray-100 p-5 rounded-lg border border-gray-200 leading-relaxed">
-      <strong>Purpose:</strong> To provide a consolidated annual calendar of all Governing Body actions required by this policy and cross-referenced policies, ensuring no required action is missed.
-    </p>
-    <SimpleTable
-      headers={['Quarter', 'Required Actions', 'Policy Reference', 'Responsible Party']}
-      rows={[
-        ['Q1', '• Convene regular quarterly meeting.\n• Review and approve the annual QAPI plan.\n• Conduct annual Governing Body composition review (competency coverage).\n• Collect annual Conflict of Interest disclosures from all members.\n• Conduct annual refresher training on governance responsibilities.\n• Conduct annual Governance Self-Assessment (if adopted).', 'GV-GB-001 §6.3\nGV-GB-001 §6.2.4.1; QA-PG-002\nGV-GB-001 §6.1.3\nGV-GB-001 §6.4.1; GV-GB-003\nGV-GB-001 §10.4\nGV-GB-005', 'Governing Body Chair\nGoverning Body\nGoverning Body Chair\nCompliance Officer\nAdministrator\nGoverning Body Chair'],
-        ['Q2', '• Convene regular quarterly meeting.\n• Review and approve succession plan for key leadership.\n• Review scope of services (if fiscal year begins Q3).', 'GV-GB-001 §6.3\nGV-GB-001 §6.2.2.5; GV-GB-004\nGV-GB-001 §6.2.1.3; GV-OG-003', 'Governing Body Chair\nGoverning Body\nGoverning Body'],
-        ['Q3', '• Convene regular quarterly meeting.\n• Review and approve Emergency Preparedness Plan.\n• Review emergency drill results.', 'GV-GB-001 §6.3\nGV-GB-001 §6.2.6.1; OP-FM-005\nGV-GB-001 §6.2.6.2', 'Governing Body Chair\nGoverning Body\nAdministrator'],
-        ['Q4', '• Convene regular quarterly meeting.\n• Review and approve annual operating budget for upcoming fiscal year.\n• Complete annual Administrator performance evaluation.\n• Establish and distribute next year\'s meeting schedule by December 15.\n• Review and approve scope of services for upcoming year.', 'GV-GB-001 §6.3\nGV-GB-001 §6.2.5.1; FN-FP-005\nGV-GB-001 §6.2.2.4\nGV-GB-001 §6.3.1\nGV-GB-001 §6.2.1.3', 'Governing Body Chair\nGoverning Body\nGoverning Body\nGoverning Body Chair\nGoverning Body'],
-        ['Ongoing\n(Every Meeting)', '• Review Administrator report.\n• Review Compliance Officer report.\n• Review QAPI report.\n• Review financial report.\n• Review status of prior meeting directives.\n• Verify OIG/SAM screening currency for all members.', 'GV-GB-001 §6.2.5.2\nGV-GB-001 §6.2.3.2\nGV-GB-001 §6.2.4.2\nGV-GB-001 §6.2.5.2\nGV-GB-001 §6.3.4\nGV-GB-001 §6.1.4; HR-TA-003', 'Administrator\nCompliance Officer\nClinical Manager\nAdministrator\nDesignated Secretary\nCompliance Officer'],
-        ['Ongoing\n(Monthly)', '• OIG/SAM exclusion screening of all Governing Body members.', 'GV-GB-001 §6.1.4; HR-TA-003', 'Compliance Officer'],
-      ]}
-    />
-  </div>
-);
-
-// ─── Org Chart Tree Primitives (GV-FM-003 · v6.0 spec) ──────────────────────
-
-const OrgTreeRow = ({ children }: { children: React.ReactNode }) => {
-  const count = React.Children.count(children);
-  return (
-    <div className="flex flex-row justify-center items-start w-full">
-      {React.Children.map(children, (child, index) => {
-        const isFirst = index === 0;
-        const isLast  = index === count - 1;
-        const isOnly  = count === 1;
-        return (
-          <div className="relative flex flex-col items-center px-4 sm:px-6">
-            {!isOnly && (
-              <>
-                <div className={`absolute top-0 h-8 w-1/2 left-0 ${!isFirst ? 'border-t-2 border-[#E5E4E3]' : ''}`} />
-                <div className={`absolute top-0 h-8 w-1/2 right-0 ${!isLast  ? 'border-t-2 border-[#E5E4E3]' : ''}`} />
-              </>
-            )}
-            <div className="absolute top-0 w-[2px] h-8 bg-[#E5E4E3]" />
-            <div className="mt-8 z-10 w-full flex justify-center">{child}</div>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const OrgTreeNode = ({ card, children }: { card: React.ReactNode; children?: React.ReactNode }) => (
-  <div className="flex flex-col items-center">
-    <div className="z-10">{card}</div>
-    {children && (
-      <>
-        <div className="w-[2px] h-8 bg-[#E5E4E3]" />
-        <OrgTreeRow>{children}</OrgTreeRow>
-      </>
-    )}
-  </div>
-);
-
-const AppendixG = () => (
-  <div className="pb-12">
-    <AppendixHeader id="G" title="Agency Organizational Chart" />
-
-    {/* Purpose callout — matches FormsViewerLightDesign.html */}
-    <div className="bg-[#E5FEFF]/40 border-l-[3px] border-[#007970] rounded-r-[8px] px-5 py-4 mb-8 max-w-3xl">
-      <p className="font-roboto text-[#1F1C1B] text-[13px] leading-relaxed">
-        <span className="font-montserrat font-semibold text-[#007970]">GV-FM-003 · v6.0 — </span>
-        Official agency organizational chart establishing reporting relationships from the Governing Body
-        through senior clinical and administrative leadership as required by 42 CFR § 484.105.
-        Updated within 7 calendar days of any reorganization or leadership change.
-      </p>
-    </div>
-
-    {/* Interactive tree — horizontally scrollable */}
-    <div className="overflow-x-auto w-full pb-8 cursor-grab active:cursor-grabbing">
-      <div className="min-w-[900px] flex justify-center pt-4 px-4">
-        <OrgTreeNode
-          card={
-            <div className="bg-[#007970] rounded-[20px] p-6 w-72 text-center flex flex-col items-center relative overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/10 rounded-full blur-2xl" />
-              <Building2 size={24} className="text-[#E5FEFF] mb-3 opacity-90" />
-              <h2 className="text-white font-montserrat font-bold text-[15px] tracking-[0.15em] mb-3">GOVERNING BODY</h2>
-              <div className="bg-[#E5FEFF] text-[#007970] rounded-full px-4 py-1.5 text-[10px] font-montserrat font-bold tracking-widest uppercase shadow-sm">
-                Ultimate Legal Authority
-              </div>
-            </div>
-          }
-        >
-          {/* Compliance Officer */}
-          <OrgTreeNode
-            card={
-              <div className="bg-white rounded-[20px] p-5 w-56 text-center shadow-sm border border-[#E5E4E3] flex flex-col hover:border-[#1F1C1B]/30 hover:shadow-md transition-all duration-300">
-                <div className="flex justify-center mb-2">
-                  <div className="bg-[#FAFBF8] border border-[#E5E4E3] p-2 rounded-full text-[#524D4B]"><Briefcase size={18} /></div>
-                </div>
-                <h3 className="font-montserrat font-bold text-[#1F1C1B] text-[12px] tracking-widest mb-3">COMPLIANCE OFFICER</h3>
-                <input type="text" placeholder="Enter Name…" className="w-full text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#C74601] bg-transparent placeholder-[#747470] font-roboto text-sm transition-colors" />
-              </div>
-            }
-          />
-
-          {/* Administrator → level-3 children */}
-          <OrgTreeNode
-            card={
-              <div className="bg-[#C74601] rounded-[20px] p-5 w-60 text-center shadow-md relative overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div className="flex justify-center mb-2">
-                  <div className="bg-white/20 p-2 rounded-full text-white"><User size={18} /></div>
-                </div>
-                <h3 className="text-white font-montserrat font-bold text-[13px] tracking-widest mb-3">ADMINISTRATOR</h3>
-                <input type="text" placeholder="Enter Name…" className="w-full text-center border-b-2 border-[#FFD5BF]/50 pb-1.5 text-white focus:outline-none focus:border-white bg-transparent placeholder-white/70 font-roboto text-sm transition-colors" />
-              </div>
-            }
-          >
-            {/* Clinical Manager */}
-            <OrgTreeNode
-              card={
-                <div className="bg-white rounded-[14px] p-5 w-52 text-center border border-[#E5E4E3] flex flex-col hover:border-[#007970]/50 hover:shadow-md transition-all duration-300">
-                  <h4 className="font-montserrat font-bold text-[#007970] text-[11px] tracking-widest mb-3">CLINICAL MANAGER</h4>
-                  <input type="text" placeholder="Enter Name…" className="w-full text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#007970] bg-transparent placeholder-[#747470] mb-3 font-roboto text-sm transition-colors" />
-                  <div className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg py-2 px-2 text-[10px] font-medium tracking-wide text-[#524D4B] font-roboto">
-                    RN, PT, OT, ST, MSW, CHHA
-                  </div>
-                </div>
-              }
-            />
-            {/* Medical Director */}
-            <OrgTreeNode
-              card={
-                <div className="bg-white rounded-[14px] p-5 w-52 text-center border border-[#E5E4E3] flex flex-col hover:border-[#004142]/50 hover:shadow-md transition-all duration-300">
-                  <div className="bg-[#004142] text-white rounded-lg py-1.5 px-3 mb-3 mx-auto shadow-sm flex items-center gap-1.5">
-                    <HeartPulse size={12} />
-                    <h4 className="font-montserrat font-bold text-[10px] tracking-widest uppercase">MEDICAL DIRECTOR</h4>
-                  </div>
-                  <input type="text" placeholder="Enter Name…" className="w-full text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#004142] bg-transparent placeholder-[#747470] font-roboto text-sm transition-colors" />
-                </div>
-              }
-            />
-            {/* Business Ops */}
-            <OrgTreeNode
-              card={
-                <div className="bg-white rounded-[14px] p-5 w-52 text-center border border-[#E5E4E3] flex flex-col hover:border-[#1F1C1B]/40 hover:shadow-md transition-all duration-300">
-                  <div className="bg-[#1F1C1B] text-white rounded-lg py-1.5 px-3 mb-3 mx-auto shadow-sm">
-                    <h4 className="font-montserrat font-bold text-[10px] tracking-widest uppercase">BUSINESS OPS</h4>
-                  </div>
-                  <input type="text" placeholder="Enter Name…" className="w-full text-center border-b-2 border-[#E5E4E3] pb-1.5 text-[#1F1C1B] focus:outline-none focus:border-[#1F1C1B] bg-transparent placeholder-[#747470] mb-3 font-roboto text-sm transition-colors" />
-                  <div className="bg-[#FAFBF8] border border-[#E5E4E3] rounded-lg py-2 px-2 text-[10px] font-medium tracking-wide text-[#524D4B] font-roboto">
-                    HR, Finance, Intake, Scheduling
-                  </div>
-                </div>
-              }
-            />
-          </OrgTreeNode>
-        </OrgTreeNode>
-      </div>
-    </div>
-  </div>
-);
-
-// ─── APPENDICES SHELL (with Print Form + Sign on Dropbox) ────────────────────
-
-const APPENDIX_DEFS = [
-  { id: 'A', label: 'Membership Roster',     title: 'Governing Body Membership Roster',  formId: 'GV-FM-011', Component: AppendixA },
-  { id: 'B', label: 'Conflict of Interest',  title: 'Conflict of Interest Form',          formId: 'GV-FM-006', Component: AppendixB },
-  { id: 'C', label: 'Policy Acknowledgment', title: 'Policy Acknowledgment Form',         formId: 'GV-FM-024', Component: AppendixC },
-  { id: 'D', label: 'Meeting Minutes',       title: 'Meeting Minutes Template',           formId: 'GV-FM-005', Component: AppendixD },
-  { id: 'E', label: 'Oversight Checklist',   title: 'Quarterly Oversight Checklist',      formId: 'GV-FM-008', Component: AppendixE },
-  { id: 'F', label: 'Governance Calendar',   title: 'Annual Governance Calendar',         formId: 'GV-FM-004', Component: AppendixF },
-  { id: 'G', label: 'Org Chart',             title: 'Agency Organizational Chart',        formId: 'GV-FM-003', Component: AppendixG },
-];
+function shortAppendixTabLabel(name: string): string {
+  return name.replace(/\bform\b/gi, '').replace(/\s+/g, ' ').trim();
+}
 
 const ViewAppendices = () => {
-  const [activeApp, setActiveApp] = useState('A');
-  const activeAppDef = APPENDIX_DEFS.find(a => a.id === activeApp)!;
+  const forms = GV_GB_LINKED_FORMS;
+  const [activeFormId, setActiveFormId] = useState(forms[0]?.id ?? '');
+  const active = forms.find(f => f.id === activeFormId) ?? forms[0];
+
+  if (!active) {
+    return (
+      <div className="p-8 text-center text-[#524048] font-roboto text-sm">
+        No forms are linked to GV-GB-001 in the Forms Library.
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col pb-6 relative">
-      {/* Header card with title + buttons — exact HTML design */}
-      <Card className="flex-shrink-0 mb-4 border-b-4 border-[#D4AF37]">
+      <Card className="flex-shrink-0 mb-4 border-b-2 border-[#007970]">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <SectionTitle icon={LayoutList} title="Appendices (Forms & Templates)" />
+          <SectionTitle icon={LayoutList} title="Appendices (Forms and Templates)" />
           <div className="flex gap-3 flex-shrink-0">
             <button
+              type="button"
               onClick={() => window.open('https://sign.dropbox.com', '_blank', 'noopener,noreferrer')}
               className="flex items-center gap-2 bg-[#0061FE]/10 hover:bg-[#0061FE]/20 text-[#0061FE] px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-[#0061FE]/30"
             >
@@ -1054,7 +603,8 @@ const ViewAppendices = () => {
               Sign on Dropbox
             </button>
             <button
-              onClick={() => window.open(`/print/GV-GB-001/appendix/${activeApp}`, '_blank', 'noopener,noreferrer')}
+              type="button"
+              onClick={() => openPolicyPrintRoute(`/print/GV-GB-001/appendix/${encodeURIComponent(active.id)}`)}
               className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-gray-300"
             >
               <Printer size={16} />
@@ -1062,19 +612,17 @@ const ViewAppendices = () => {
             </button>
           </div>
         </div>
-        {/* Appendix sub-tabs */}
         <div className="flex space-x-2 overflow-x-auto pb-2">
-          {APPENDIX_DEFS.map(app => (
-            <TabButton key={app.id} active={activeApp === app.id} onClick={() => setActiveApp(app.id)}>
-              {app.label}
+          {forms.map(f => (
+            <TabButton key={f.id} active={activeFormId === f.id} onClick={() => setActiveFormId(f.id)}>
+              {shortAppendixTabLabel(f.name || f.id)}
             </TabButton>
           ))}
         </div>
       </Card>
 
-      {/* Active appendix form — Brad's FormViewer inside the green box */}
       <div className="flex-1 bg-white rounded-xl shadow-sm border-2 border-[#007970] overflow-y-auto">
-        <FormViewer formId={activeAppDef.formId} enableEmbeddedSigning />
+        <FormViewer formId={active.id} enableEmbeddedSigning />
       </div>
     </div>
   );
@@ -1125,39 +673,32 @@ export function GVGBDetailView() {
   return (
     <div className="space-y-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
 
-      {/* ── DOCUMENT HEADER / COVER BLOCK ────────────────────────────────── */}
-      <div className="bg-[#D4AF37] text-white relative p-8">
-        {/* Back + Print row */}
-        <div className="flex items-start justify-between mb-4">
+      {/* ── DOCUMENT HEADER (flat white editorial — canonical) ────────────── */}
+      <div className="bg-white p-8 pb-6 border-b border-[#E5E4E3]">
+        <div className="flex items-start justify-between mb-6">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-1.5 text-xs font-montserrat font-bold text-white/70 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-xs font-montserrat font-semibold text-[#524048] hover:text-[#1F1C1B] transition-colors"
           >
             <ArrowLeft size={13} /> Return to Policy Library
           </button>
           <button
-            onClick={() => window.open(`/print/${POLICY_META.id}`, '_blank', 'noopener,noreferrer')}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-white/20"
+            onClick={() => openPolicyPrintRoute(`/print/${POLICY_META.id}`)}
+            className="flex items-center gap-2 bg-[#FAFBF8] hover:bg-[#E5E4E3] text-[#1F1C1B] px-4 py-2 rounded-lg font-semibold text-sm transition-colors border border-[#E5E4E3]"
           >
             <Printer size={16} />
             Print / Export PDF
           </button>
         </div>
 
-        {/* ID badge */}
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-montserrat font-bold">{POLICY_META.id}</span>
-          <span className="rounded-md bg-[#C74600] px-2.5 py-1 text-[10px] font-montserrat font-bold uppercase tracking-wider border border-[#C74600]">Draft</span>
-          <span className="rounded-md bg-white/10 border border-white/30 px-2.5 py-1 text-[10px] font-montserrat font-bold uppercase tracking-wider">{POLICY_META.tier}</span>
-        </div>
-
-        {/* Title */}
-        <h2 className="font-montserrat text-3xl font-extrabold leading-tight tracking-tight mb-3">
+        <h1 className="font-montserrat font-semibold text-[28px] md:text-[32px] leading-tight text-[#1F1C1B] mb-1">
           {POLICY_META.title}
-        </h2>
+        </h1>
+        <p className="font-montserrat font-medium text-[11px] text-[#007970] tracking-[0.22em] uppercase mb-8">
+          Policy ID: {POLICY_META.id}
+        </p>
 
-        {/* Metadata grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-sm mt-4 border-t border-white/20 pt-4">
+        <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6">
           {[
             ['Domain',          POLICY_META.domain],
             ['Tier',            POLICY_META.tier],
@@ -1168,28 +709,28 @@ export function GVGBDetailView() {
             ['Next Review',     POLICY_META.nextReviewDate],
             ['Version',         `v${POLICY_META.version}`],
           ].map(([label, value]) => (
-            <div key={label}>
-              <span className="text-white/70 block text-xs uppercase tracking-wider font-bold">{label}</span>
-              <strong className="text-white text-sm">{value}</strong>
+            <div key={label} className="flex flex-col">
+              <dt className="font-montserrat font-semibold text-[10px] text-[#524048] tracking-[0.16em] uppercase mb-1">{label}</dt>
+              <dd className="font-roboto text-[14px] text-[#1F1C1B]">{value}</dd>
             </div>
           ))}
-        </div>
+        </dl>
       </div>
 
-      {/* ── TAB BAR ──────────────────────────────────────────────────────── */}
-      <div className="border-b border-gray-200 bg-gray-50 overflow-x-auto">
+      {/* ── TAB BAR (canonical: orange active underline) ────────────────── */}
+      <div className="border-b border-[#E5E4E3] bg-white overflow-x-auto">
         <div className="flex min-w-max">
           {NAV_TABS.map(({ id, label, Icon }) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-1.5 px-5 py-3.5 text-xs font-montserrat font-bold whitespace-nowrap border-b-2 transition-colors ${
+              className={`flex items-center gap-1.5 px-5 py-3.5 font-montserrat font-semibold text-[13px] whitespace-nowrap border-b-[3px] transition-colors ${
                 activeTab === id
-                  ? 'border-[#D4AF37] text-[#D4AF37] bg-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-white'
+                  ? 'text-[#C74601] border-[#C74601]'
+                  : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
               }`}
             >
-              <Icon size={12} /> {label}
+              <Icon size={14} /> {label}
             </button>
           ))}
         </div>

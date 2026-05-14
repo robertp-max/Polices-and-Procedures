@@ -107,7 +107,8 @@ export type AuditAction =
   | 'event.unlocked'
   | 'escalation.raised'
   | 'escalation.resolved'
-  | 'mutation.blocked';
+  | 'mutation.blocked'
+  | 'signer_task.created';
 
 export interface AuditEntry {
   id: string;

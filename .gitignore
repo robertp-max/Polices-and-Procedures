@@ -14,7 +14,6 @@ dist
 server/credentials/*.json
 !server/credentials/.gitkeep
 !server/credentials/README.md
-Builder/**/*.json
 
 # Compliance Intelligence local index (rebuild with `npm run ia:index`)
 .cache/
@@ -26,3 +25,30 @@ tmp-*.log
 
 # PM local persistence (JSON files; regenerated from in-memory store)
 data/pm/
+
+# Local/generated Builder exports and working documentation dumps
+Builder/
+Builder/**
+
+# Trash/archive folder
+Bin-(thrash)/
+Bin-(thrash)/**
+
+# Local project intelligence / scratch exports
+Project_Intelligence/
+Project_Intelligence/**
+
+# Local screenshots, UAT outputs, generated reports
+**/screenshots/
+**/uat-results/
+**/uat-html-report/
+**/downloads/
+
+# Local current-state exports
+current_state_*.md
+current_state_*.txt
+*_part1.md
+*_part2.md
+*_part3.md
+*_part4.md
+*_part5.md

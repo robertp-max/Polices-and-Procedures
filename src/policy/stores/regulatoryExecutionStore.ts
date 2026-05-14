@@ -9,7 +9,25 @@ import type { EventTask, EventExecutionAuditEvent, EventFormInstance, EventInsta
 import { buildEventInstanceIndex, composeEventInstanceId, seedFromRegulatoryEvent } from '@/policy/compliance-execution/eventInstanceId';
 import { canTransitionEventInstance, canTransitionTaskStatus } from '@/policy/compliance-execution/stateMachine';
 import { evaluateEventState } from '@/policy/compliance-execution/eventStateEvaluator';
-import { deriveDefaultEventTasks } from '@/policy/compliance-execution/eventTaskAdapter';
+import { buildDeterministicTaskId, deriveDefaultEventTasks } from '@/policy/compliance-execution/eventTaskAdapter';
+import { formatCesFormInstanceId } from '@/policy/compliance-execution/cesFormInstanceId';
+import {
+  buildTaskIdRemapForEventInstance,
+  dedupeEventTasksByCanonicalId,
+  evidenceTaskIdMatchesTask,
+  legacyStableAlternateTaskId,
+  mergeDerivedEventTasksWithOverrides,
+  normalizeEventTaskIdentity,
+} from '@/policy/compliance-execution/taskIdentity';
+import {
+  stashDemoEvidenceDataUrl,
+  clearDemoEvidenceDataUrl,
+  clearFormFieldsForIds,
+} from '@/policy/evidence/demoEvidenceRuntimeCache';
+import {
+  clearDemoEcignForEvents,
+} from '@/policy/ecign/demoLocalApi';
+import type { SignerTask } from '@/policy/components/FormSignatureContext';
 import {
   type EvidenceAuditEvent,
   type EvidenceStatus,
@@ -17,6 +35,12 @@ import {
   isEvidenceUsable,
   validateEvidenceUploadInput,
 } from '@/policy/evidence/evidenceModel';
+import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
+import {
+  isCesFutureLockedDate,
+  isCesSandboxDate,
+  FUTURE_LOCKED_GUARD_MSG,
+} from '@/policy/ces/cesExecutionMode';
 
 /* ═══════════════════════════════════════════════════════════════
    Regulatory Execution Store
@@ -56,7 +80,15 @@ export interface MinutesState {
   finalizedBy?: string;
 }
 
-export type EvidenceKind = 'minutes' | 'report' | 'form' | 'attachment' | 'other';
+export type EvidenceKind =
+  | 'minutes'
+  | 'report'
+  | 'form'
+  | 'attachment'
+  | 'other'
+  | 'signed_certificate'
+  | 'signed_package'
+  | 'signed_form_instance';
 
 export interface EvidenceDoc {
   id: string;
@@ -82,12 +114,27 @@ export interface EvidenceDoc {
   sizeLabel: string;      // e.g. "1.2 MB"
   linkedFormId?: string;
   linkedFormInstanceId?: string;
+  artifactType?: 'evidence' | 'signed_certificate' | 'signed_package' | 'signed_form_instance';
+  artifactVersion?: string;
+  ecignSessionId?: string;
+  signatureSessionId?: string;
+  finalizedAt?: string;
+  signerName?: string;
+  signerRole?: string;
+  signerEmail?: string;
+  attestationText?: string;
+  documentHash?: string | null;
+  manifestHash?: string | null;
+  signatureHash?: string | null;
+  auditEventRefs?: string[];
   note?: string;
   lockedAt?: string;
   supersededAt?: string;
   supersededById?: string;
   supersedesEvidenceId?: string;
   localDataUrl?: string;
+  /** When true, this row must not be superseded or semantically replaced (set at certification / audit lock). */
+  auditFrozen?: boolean;
 }
 
 export type ApprovalTargetKind = 'event' | 'form' | 'report' | 'minutes';
@@ -218,6 +265,7 @@ interface RegulatoryExecutionState {
   taskAuditByEventId: Record<string, EventExecutionAuditEvent[]>;
   generatedFormInstancesByEventId: Record<string, EventFormInstance[]>;
   activeWorkflowEventId: string | null;
+  signerTasksByFormInstanceId: Record<string, SignerTask[]>;
 
   /* ── workflow drawer ── */
   openWorkflow:  (eventId: string) => void;
@@ -240,6 +288,19 @@ interface RegulatoryExecutionState {
     sizeLabel: string;
     linkedFormId?: string;
     linkedFormInstanceId?: string;
+    artifactType?: EvidenceDoc['artifactType'];
+    artifactVersion?: string;
+    ecignSessionId?: string;
+    signatureSessionId?: string;
+    finalizedAt?: string;
+    signerName?: string;
+    signerRole?: string;
+    signerEmail?: string;
+    attestationText?: string;
+    documentHash?: string | null;
+    manifestHash?: string | null;
+    signatureHash?: string | null;
+    auditEventRefs?: string[];
     note?: string;
     localDataUrl?: string;
   }, actor?: string) => string;
@@ -303,6 +364,12 @@ interface RegulatoryExecutionState {
   evaluateTaskCertificationGate: (eventId: string, taskId: string) => TaskCertificationGateReport;
   attemptCompleteTask: (eventId: string, taskId: string) => TaskCertificationGateReport;
 
+  /* ── signer tasks (multi-signer eCIgn) ── */
+  createSignerTask: (task: SignerTask) => void;
+  updateSignerTaskStatus: (formInstanceId: string, taskId: string, status: SignerTask['status'], extra?: { declineReason?: string }) => void;
+  getSignerTasksForInstance: (formInstanceId: string) => SignerTask[];
+  getNextPendingSignerTask: (formInstanceId: string) => SignerTask | undefined;
+
   /* ── completion + certification ── */
   validateEvent:        (event: RegulatoryEvent) => ValidationReport;
   markEventComplete:    (event: RegulatoryEvent) => { ok: boolean; message: string };
@@ -319,15 +386,28 @@ interface RegulatoryExecutionState {
   isCertified:            (eventId: string) => boolean;
   getCertification:       (eventId: string) => CertificationRecord | undefined;
 
+  resetEvent: (eventId: string) => void;
+  clearAllEvidence: () => void;
   resetAll: () => void;
+
+  /* ── Sandbox reset (Q1/Q2 2026 playground) ── */
+  /**
+   * Resets a single task's execution state inside a sandbox event.
+   * Clears task status, task-linked evidence, form instances, and task audit entries.
+   * No-op when the event is not in the Q1/Q2 2026 sandbox period.
+   */
+  resetSandboxTask: (eventId: string, taskId: string) => void;
+  /**
+   * Resets all CES events whose date falls in the Q1/Q2 2026 sandbox window
+   * (Jan 1 – Jun 30, 2026).  Preserves source templates, workflows, and forms.
+   */
+  resetAllSandboxQ1Q2: () => void;
+  /** Alias for `resetAllSandboxQ1Q2`. */
+  resetAllCesSandbox: () => void;
 }
 
 const nowISO = () => new Date().toISOString();
 const cleanForId = (value: string) => value.replace(/[^A-Za-z0-9-]/g, '-');
-const stableTaskId = (eventId: string, taskSourceId: string) => {
-  const sourceSlug = cleanForId(taskSourceId).toUpperCase().slice(0, 64);
-  return `TASK-${cleanForId(eventId)}-${sourceSlug}`;
-};
 const nextAuditId = () => `AUD-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 const EVENT_INSTANCE_INDEX = buildEventInstanceIndex(REGULATORY_EVENTS);
 const SOURCE_EVENT_BY_INSTANCE_ID = Object.fromEntries(
@@ -335,6 +415,31 @@ const SOURCE_EVENT_BY_INSTANCE_ID = Object.fromEntries(
 );
 const SOURCE_EVENT_BY_ID = Object.fromEntries(REGULATORY_EVENTS.map(event => [event.id, event]));
 const resolveCanonicalEventId = (eventId: string) => SOURCE_EVENT_BY_INSTANCE_ID[eventId] ?? eventId;
+const FORM_TEMPLATE_IDS = new Set(FORMS_DATASET.map(form => form.id));
+const EVENT_INSTANCE_ID_BY_SOURCE = EVENT_INSTANCE_INDEX.bySourceEventId;
+const getEventAliases = (eventId: string): string[] => {
+  const canonical = resolveCanonicalEventId(eventId);
+  const instance = EVENT_INSTANCE_ID_BY_SOURCE[canonical];
+  return Array.from(new Set([eventId, canonical, instance].filter((value): value is string => Boolean(value))));
+};
+
+/**
+ * Resolves the canonical ISO date string for any event ID (source or instance).
+ * Returns undefined when the event cannot be found in the seed dataset.
+ */
+function resolveEventDate(eventId: string): string | undefined {
+  const sourceId = resolveCanonicalEventId(eventId);
+  return SOURCE_EVENT_BY_ID[sourceId]?.date;
+}
+
+/**
+ * Returns true when the event falls in the locked-future period (Jul 1 2026+).
+ * Used as a mutation guard across all write actions.
+ */
+function isEventFutureLocked(eventId: string): boolean {
+  const date = resolveEventDate(eventId);
+  return date != null ? isCesFutureLockedDate(date) : false;
+}
 const migrateLegacyEvidenceStatus = (status: string | undefined): EvidenceStatus => {
   if (status === 'active') return 'EVIDENCE_LOCKED';
   if (status === 'superseded') return 'SUPERSEDED';
@@ -363,6 +468,144 @@ function migrateEvidenceRecords(raw: unknown): Record<string, EvidenceDoc[]> {
     }) : [];
     return [eventId, normalizedDocs];
   }));
+}
+
+function stripEvidenceLargePayloads(doc: EvidenceDoc): EvidenceDoc {
+  // Strip localDataUrl from the persisted store to prevent localStorage quota overflow.
+  // The actual bytes live in separate ces_ev_data_* localStorage keys (via demoEvidenceRuntimeCache)
+  // and are re-loaded on resolveEvidenceDataUrl calls. In-memory docs keep localDataUrl.
+  if (!doc.localDataUrl) return doc;
+  const { localDataUrl: _drop, ...rest } = doc;
+  return rest as EvidenceDoc;
+}
+
+function compactPersistAuditValue(value: unknown): unknown {
+  if (value == null) return value;
+  try {
+    const s = typeof value === 'string' ? value : JSON.stringify(value);
+    if (s.length <= 2400) return value;
+    return { _persistTruncated: true, approxLen: s.length };
+  } catch {
+    return { _persistTruncated: true };
+  }
+}
+
+function sanitizeTaskAuditForPersist(rows: EventExecutionAuditEvent[] | undefined): EventExecutionAuditEvent[] {
+  if (!rows?.length) return [];
+  const capped = rows.slice(0, 500);
+  return capped.map(row => ({
+    ...row,
+    before: compactPersistAuditValue(row.before) as EventExecutionAuditEvent['before'],
+    after: compactPersistAuditValue(row.after) as EventExecutionAuditEvent['after'],
+  }));
+}
+
+function migrateRegExecutionV3Shape(state: RegulatoryExecutionState): RegulatoryExecutionState {
+  const base = state ?? ({} as RegulatoryExecutionState);
+  const next: RegulatoryExecutionState = {
+    ...base,
+    taskOverridesByEventId: { ...(base.taskOverridesByEventId ?? {}) },
+    evidence: { ...(base.evidence ?? {}) },
+    generatedFormInstancesByEventId: { ...(base.generatedFormInstancesByEventId ?? {}) },
+    eventInstancesById: { ...(base.eventInstancesById ?? {}) },
+    taskAuditByEventId: { ...(base.taskAuditByEventId ?? {}) },
+  };
+
+  const taskRemaps = new Map<string, Map<string, string>>();
+
+  for (const eventId of Object.keys(next.taskOverridesByEventId)) {
+    const canon = resolveCanonicalEventId(eventId);
+    const sourceEvent = SOURCE_EVENT_BY_ID[canon];
+    const oldRows = next.taskOverridesByEventId[eventId] ?? [];
+    const remap = buildTaskIdRemapForEventInstance(eventId, sourceEvent, oldRows);
+    taskRemaps.set(eventId, remap);
+    const normalizedRows = dedupeEventTasksByCanonicalId(
+      oldRows.map(row => normalizeEventTaskIdentity(eventId, { ...row, eventId })),
+      `migrateV3:overrides:${eventId}`,
+    );
+    next.taskOverridesByEventId[eventId] = normalizedRows;
+  }
+
+  const remapEvidenceTaskId = (eventId: string, taskId: string): string => {
+    const m = taskRemaps.get(eventId);
+    if (!m) return taskId;
+    return m.get(taskId) ?? taskId;
+  };
+
+  next.evidence = Object.fromEntries(
+    Object.entries(next.evidence).map(([eventId, docs]) => [
+      eventId,
+      docs.map(doc => {
+        const stripped = stripEvidenceLargePayloads(doc);
+        return {
+          ...stripped,
+          taskId: remapEvidenceTaskId(eventId, stripped.taskId),
+        };
+      }),
+    ]),
+  );
+
+  next.generatedFormInstancesByEventId = Object.fromEntries(
+    Object.entries(next.generatedFormInstancesByEventId).map(([eventId, rows]) => [
+      eventId,
+      rows.map(inst => {
+        if (!inst.taskId) return inst;
+        return { ...inst, taskId: remapEvidenceTaskId(eventId, inst.taskId) };
+      }),
+    ]),
+  );
+
+  next.eventInstancesById = Object.fromEntries(
+    Object.entries(next.eventInstancesById).map(([eid, inst]) => {
+      if (!inst.certificationSnapshot?.tasks?.length) return [eid, inst];
+      const remap = taskRemaps.get(eid) ?? new Map<string, string>();
+      const tasks = inst.certificationSnapshot.tasks.map(t => {
+        const tid = remap.get(t.id) ?? t.id;
+        return normalizeEventTaskIdentity(eid, { ...t, id: tid, eventId: t.eventId ?? eid });
+      });
+      return [
+        eid,
+        {
+          ...inst,
+          certificationSnapshot: {
+            ...inst.certificationSnapshot,
+            tasks,
+          },
+        },
+      ];
+    }),
+  );
+
+  next.taskAuditByEventId = Object.fromEntries(
+    Object.entries(next.taskAuditByEventId).map(([eventId, rows]) => [
+      eventId,
+      rows.map(row => {
+        if (row.entityType !== 'task') return row;
+        const mapped = remapEvidenceTaskId(eventId, row.entityId);
+        return mapped === row.entityId ? row : { ...row, entityId: mapped };
+      }),
+    ]),
+  );
+
+  return next;
+}
+
+function collectByEventAliases<T>(
+  byEvent: Record<string, T[]>,
+  eventId: string,
+  dedupeKey: (item: T) => string,
+): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const key of getEventAliases(eventId)) {
+    for (const item of (byEvent[key] ?? [])) {
+      const marker = dedupeKey(item);
+      if (seen.has(marker)) continue;
+      seen.add(marker);
+      out.push(item);
+    }
+  }
+  return out;
 }
 
 const readApprovalNoteValue = (note: string | undefined, key: string): string | undefined => {
@@ -455,6 +698,15 @@ function evaluateAndApplyEventState(
   return instance;
 }
 
+/**
+ * When true, ensureEventInstance skips writing audit trail entries.
+ * Set by reset functions BEFORE calling set() so the post-reset
+ * re-renders don't immediately re-populate the audit trail.
+ * Stays true for the remainder of the current page lifecycle —
+ * the subsequent window.location.reload() starts fresh with false.
+ */
+let _suppressEnsureAudit = false;
+
 export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
   persist(
     (set, get) => ({
@@ -473,6 +725,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
       generatedFormInstancesByEventId: {},
       activeWorkflowEventId: null,
       evidenceErrorsByEventId: {},
+      signerTasksByFormInstanceId: {},
 
       /* ── workflow drawer ── */
       openWorkflow: eventId => set({ activeWorkflowEventId: eventId }),
@@ -483,6 +736,10 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         const enf = useEnforcementStore.getState();
         if (enf.isLocked(eventId) || isEventInstanceCertified(get(), eventId)) {
           enf.log({ action: 'mutation.blocked', eventId, targetKind: 'step', targetId: stepId, reason: `Attempt to set step status to ${status} on a locked event.` });
+          return;
+        }
+        if (isEventFutureLocked(eventId)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'step', targetId: stepId, reason: FUTURE_LOCKED_GUARD_MSG });
           return;
         }
         const before = get().stepStates[sKey(eventId, stepId)]?.status ?? 'pending';
@@ -505,6 +762,10 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           enf.log({ action: 'mutation.blocked', eventId, targetKind: 'step', targetId: stepId, reason: 'advanceStep on a locked event' });
           return;
         }
+        if (isEventFutureLocked(eventId)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'step', targetId: stepId, reason: FUTURE_LOCKED_GUARD_MSG });
+          return;
+        }
         const key = sKey(eventId, stepId);
         const before = get().stepStates[key]?.status ?? 'pending';
         set(state => ({
@@ -522,17 +783,28 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           enf.log({ action: 'mutation.blocked', eventId, targetKind: 'form', targetId: formId, reason: `Attempt to set form status to ${status} on a locked event.` });
           return;
         }
-        const before = get().formStates[fKey(eventId, formId)]?.status ?? 'pending';
+        if (isEventFutureLocked(eventId)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'form', targetId: formId, reason: FUTURE_LOCKED_GUARD_MSG });
+          return;
+        }
+        const aliases = getEventAliases(eventId);
+        const before = aliases
+          .map(alias => get().formStates[fKey(alias, formId)]?.status)
+          .find(Boolean) ?? 'pending';
         set(state => ({
           formStates: {
             ...state.formStates,
-            [fKey(eventId, formId)]: {
-              status,
-              completedAt: status === 'complete' ? nowISO() : state.formStates[fKey(eventId, formId)]?.completedAt,
-              completedBy: status === 'complete' ? actor : state.formStates[fKey(eventId, formId)]?.completedBy,
-              reviewer:    status === 'requires-review' ? actor : state.formStates[fKey(eventId, formId)]?.reviewer,
-              note: note ?? state.formStates[fKey(eventId, formId)]?.note,
-            },
+            ...Object.fromEntries(aliases.map(alias => {
+              const key = fKey(alias, formId);
+              const previous = state.formStates[key];
+              return [key, {
+                status,
+                completedAt: status === 'complete' ? nowISO() : previous?.completedAt,
+                completedBy: status === 'complete' ? actor : previous?.completedBy,
+                reviewer: status === 'requires-review' ? actor : previous?.reviewer,
+                note: note ?? previous?.note,
+              }];
+            })),
           },
         }));
         const instanceId = EVENT_INSTANCE_INDEX.bySourceEventId[eventId] ?? eventId;
@@ -549,6 +821,10 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         const enf = useEnforcementStore.getState();
         if (enf.isLocked(eventId) || isEventInstanceCertified(get(), eventId)) {
           enf.log({ action: 'mutation.blocked', eventId, targetKind: 'minutes', reason: `Attempt to set minutes status to ${status} on a locked event.` });
+          return;
+        }
+        if (isEventFutureLocked(eventId)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'minutes', reason: FUTURE_LOCKED_GUARD_MSG });
           return;
         }
         const before = get().minutesStates[eventId]?.status;
@@ -574,6 +850,25 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         if (enf.isLocked(eventId) || enf.isLocked(canonicalEventId) || instance?.lockState === 'certified' || isEventInstanceCertified(state, eventId)) {
           enf.log({ action: 'mutation.blocked', eventId, targetKind: 'evidence', reason: 'uploadEvidence on a locked event' });
           return '';
+        }
+        if (isEventFutureLocked(eventId)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'evidence', reason: FUTURE_LOCKED_GUARD_MSG });
+          return '';
+        }
+        if (doc.linkedFormInstanceId && doc.artifactType) {
+          const sessionKey = doc.ecignSessionId ?? doc.signatureSessionId ?? '';
+          const dup = (state.evidence[eventId] ?? []).find(candidate =>
+            candidate.linkedFormInstanceId === doc.linkedFormInstanceId
+            && candidate.artifactType === doc.artifactType
+            && (candidate.ecignSessionId ?? candidate.signatureSessionId ?? '') === sessionKey
+            && isEvidenceUsable(candidate.status),
+          );
+          if (dup) {
+            // Always stash the raw data URL — blob URLs are ephemeral and die on reload.
+            // useIframeSafeSrc converts to blob URL at display time.
+            if (doc.localDataUrl) stashDemoEvidenceDataUrl(dup.id, doc.localDataUrl);
+            return dup.id;
+          }
         }
         const derivedTaskId = doc.taskId
           || (doc.linkedFormId ? get().generateTaskFromForm(eventId, doc.linkedFormId) : '');
@@ -625,6 +920,19 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           && candidate.taskId === derivedTaskId,
         );
         const version = (existingForKey?.version ?? 0) + 1;
+        const inferredMimeType = doc.localDataUrl?.startsWith('data:')
+          ? doc.localDataUrl.slice(5, doc.localDataUrl.indexOf(';'))
+          : doc.name.endsWith('.json')
+            ? 'application/json'
+            : doc.name.endsWith('.html')
+              ? 'text/html'
+              : doc.name.endsWith('.pdf')
+                ? 'application/pdf'
+                : 'application/octet-stream';
+        const rawDataUrl = doc.localDataUrl;
+        // Always stash the raw data URL. Blob URLs are ephemeral (tab-scoped) and
+        // break after a reload. useIframeSafeSrc converts to blob URL at display time.
+        const previewForStash = rawDataUrl ?? undefined;
         const newDoc: EvidenceDoc = {
           ...doc,
           id,
@@ -642,12 +950,14 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           status: 'EVIDENCE_LOCKED',
           checksum,
           fileSize: Number.parseInt(doc.sizeLabel, 10) || 0,
-          mimeType: doc.name.endsWith('.json') ? 'application/json' : 'application/octet-stream',
+          mimeType: inferredMimeType,
           uploadedAt: nowISO(),
           uploadedBy: actor,
           lockedAt: nowISO(),
           supersedesEvidenceId: existingForKey?.id,
+          auditFrozen: isEventInstanceCertified(state, eventId),
         };
+        if (previewForStash) stashDemoEvidenceDataUrl(id, previewForStash);
         const evidenceAuditRows: Array<{ action: EvidenceAuditEvent; before?: unknown; after?: unknown; reason?: string; entityId?: string }> = [
           { action: 'UPLOAD_INITIATED', after: { name: doc.name, taskId: derivedTaskId, linkedFormId: doc.linkedFormId } },
           { action: 'FILE_UPLOADED', after: { status: 'UPLOADED' } },
@@ -792,6 +1102,14 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         if (!current || !isEvidenceImmutable(current.status)) {
           return '';
         }
+        if (current.auditFrozen) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'evidence', targetId: docId, reason: 'supersedeEvidence blocked: audit-frozen evidence row.' });
+          return '';
+        }
+        if (enf.isLocked(eventId)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'evidence', targetId: docId, reason: 'supersedeEvidence blocked: event enforcement lock.' });
+          return '';
+        }
         const newId = get().uploadEvidence(eventId, {
           taskId: current.taskId,
           policyIds: current.policyIds,
@@ -843,6 +1161,10 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         const enf = useEnforcementStore.getState();
         if (enf.isLocked(eventId)) {
           enf.log({ action: 'mutation.blocked', eventId, targetKind: 'approval', reason: 'requestApproval on a locked event' });
+          return '';
+        }
+        if (isEventFutureLocked(eventId)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'approval', reason: FUTURE_LOCKED_GUARD_MSG });
           return '';
         }
         const id = `AP-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
@@ -1006,30 +1328,39 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           updatedAt: createdAt,
           createdBy: useEnforcementStore.getState().actor.displayName,
         };
-        set(prev => ({
-          eventInstancesById: { ...prev.eventInstancesById, [instance.eventId]: instance },
-          eventInstanceIdsBySourceEventId: {
-            ...prev.eventInstanceIdsBySourceEventId,
-            [sourceEvent.id]: [...(prev.eventInstanceIdsBySourceEventId[sourceEvent.id] ?? []), instance.eventId],
-          },
-          taskAuditByEventId: {
-            ...prev.taskAuditByEventId,
-            [instance.eventId]: appendExecutionAudit(
-              prev.taskAuditByEventId[instance.eventId] ?? [],
-              {
-                auditId: nextAuditId(),
-                eventId: instance.eventId,
-                entityType: 'eventInstance',
-                entityId: instance.eventId,
-                action: 'event_instance.ensure',
-                actorId: useEnforcementStore.getState().actor.userId,
-                actorRole: useEnforcementStore.getState().actor.role,
-                timestamp: createdAt,
-                after: instance,
-              },
-            ),
-          },
-        }));
+        set(prev => {
+          const base = {
+            eventInstancesById: { ...prev.eventInstancesById, [instance.eventId]: instance },
+            eventInstanceIdsBySourceEventId: {
+              ...prev.eventInstanceIdsBySourceEventId,
+              [sourceEvent.id]: [...(prev.eventInstanceIdsBySourceEventId[sourceEvent.id] ?? []), instance.eventId],
+            },
+          };
+          // After a reset, _suppressEnsureAudit is true until the page reloads.
+          // This prevents the audit trail from being re-populated by the
+          // post-reset render cycle calling ensureEventInstance on every event.
+          if (_suppressEnsureAudit) return base;
+          return {
+            ...base,
+            taskAuditByEventId: {
+              ...prev.taskAuditByEventId,
+              [instance.eventId]: appendExecutionAudit(
+                prev.taskAuditByEventId[instance.eventId] ?? [],
+                {
+                  auditId: nextAuditId(),
+                  eventId: instance.eventId,
+                  entityType: 'eventInstance',
+                  entityId: instance.eventId,
+                  action: 'event_instance.ensure',
+                  actorId: useEnforcementStore.getState().actor.userId,
+                  actorRole: useEnforcementStore.getState().actor.role,
+                  timestamp: createdAt,
+                  after: instance,
+                },
+              ),
+            },
+          };
+        });
         return instance;
       },
 
@@ -1173,25 +1504,32 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           },
           updatedAt: nowISO(),
         };
-        set(prev => ({
-          eventInstancesById: { ...prev.eventInstancesById, [eventId]: updated },
-          taskAuditByEventId: {
-            ...prev.taskAuditByEventId,
-            [eventId]: appendExecutionAudit(prev.taskAuditByEventId[eventId] ?? [], {
-              auditId: nextAuditId(),
-              eventId,
-              entityType: 'eventInstance',
-              entityId: eventId,
-              action: 'event_instance.certify',
-              actorId: useEnforcementStore.getState().actor.userId,
-              actorRole: useEnforcementStore.getState().actor.role,
-              timestamp: updated.updatedAt,
-              before: current,
-              after: updated,
-              reason: certificationInput.reason,
-            }),
-          },
-        }));
+        set(prev => {
+          const evRows = prev.evidence[eventId] ?? [];
+          const frozenEvidence = evRows.map(d =>
+            (isEvidenceImmutable(d.status) ? { ...d, auditFrozen: true } : d),
+          );
+          return {
+            eventInstancesById: { ...prev.eventInstancesById, [eventId]: updated },
+            evidence: { ...prev.evidence, [eventId]: frozenEvidence },
+            taskAuditByEventId: {
+              ...prev.taskAuditByEventId,
+              [eventId]: appendExecutionAudit(prev.taskAuditByEventId[eventId] ?? [], {
+                auditId: nextAuditId(),
+                eventId,
+                entityType: 'eventInstance',
+                entityId: eventId,
+                action: 'event_instance.certify',
+                actorId: useEnforcementStore.getState().actor.userId,
+                actorRole: useEnforcementStore.getState().actor.role,
+                timestamp: updated.updatedAt,
+                before: current,
+                after: updated,
+                reason: certificationInput.reason,
+              }),
+            },
+          };
+        });
         return updated;
       },
 
@@ -1205,17 +1543,28 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           enf.log({ action: 'mutation.blocked', eventId, targetKind: 'task', reason: 'createTask blocked for locked/certified event.' });
           return '';
         }
+        if (isEventFutureLocked(eventId) && !canBypassCertification(opts?.adminOverride)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'task', reason: FUTURE_LOCKED_GUARD_MSG });
+          return '';
+        }
         const existing = state.taskOverridesByEventId[eventId] ?? [];
         const folder = resolveEventFolder(eventId);
         const createdAt = nowISO();
         const taskSourceType = task.taskSourceType ?? task.source ?? 'manual';
         const taskSourceId = task.taskSourceId
           ?? (taskSourceType === 'manual' ? `manual:${Date.now().toString(36)}` : `generated:${Date.now().toString(36)}`);
-        const id = task.id?.trim() || stableTaskId(eventId, taskSourceId);
-        const sourceMatch = existing.find(candidate => candidate.taskSourceId === taskSourceId || candidate.id === id);
+        const canonicalId = buildDeterministicTaskId(eventId, taskSourceId);
+        const legacyAlt = legacyStableAlternateTaskId(eventId, taskSourceId);
+        const sourceMatch = existing.find(candidate =>
+          candidate.taskSourceId === taskSourceId
+          || candidate.id === canonicalId
+          || candidate.id === legacyAlt
+          || candidate.legacyId === legacyAlt,
+        );
         if (sourceMatch) {
-          return sourceMatch.id;
+          return normalizeEventTaskIdentity(eventId, { ...sourceMatch, eventId }).id;
         }
+        const id = canonicalId;
         const nextTask: EventTask = {
           id,
           eventId,
@@ -1275,9 +1624,18 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           enf.log({ action: 'mutation.blocked', eventId, targetKind: 'task', targetId: taskId, reason: 'updateTask blocked for locked/certified event.' });
           return false;
         }
+        if (isEventFutureLocked(eventId) && !canBypassCertification(opts?.adminOverride)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'task', targetId: taskId, reason: FUTURE_LOCKED_GUARD_MSG });
+          return false;
+        }
         const existing = state.taskOverridesByEventId[eventId] ?? [];
-        const before = existing.find(t => t.id === taskId);
+        const before = existing.find(t =>
+          t.id === taskId
+          || t.legacyId === taskId
+          || (t.taskSourceId && legacyStableAlternateTaskId(eventId, t.taskSourceId) === taskId),
+        );
         if (!before) return false;
+        const canonicalTaskId = normalizeEventTaskIdentity(eventId, before).id;
         const nextStatus = patch.status ?? before.status;
         if (nextStatus !== before.status && !canTransitionTaskStatus(before.status, nextStatus)) {
           return false;
@@ -1299,19 +1657,37 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
             if (!sourceEvent || !requiredForm) return false;
             return get().effectiveFormStatus(sourceEvent, requiredForm.id) === 'complete';
           });
-          const evidenceForTask = (state.evidence[eventId] ?? []).filter(evidence => evidence.taskId === taskId && isEvidenceUsable(evidence.status));
+          const evidenceForTask = (state.evidence[eventId] ?? []).filter(evidence =>
+            (evidence.taskId === taskId || evidence.taskId === canonicalTaskId) && isEvidenceUsable(evidence.status),
+          );
           const evidenceRequired = before.source === 'approval' || before.taskSourceType === 'minutes';
           const requiredEvidenceSatisfied = !evidenceRequired || evidenceForTask.length > 0;
           if (!requiredFormsSatisfied || !requiredEvidenceSatisfied) {
             return false;
           }
         }
-        const updated: EventTask = { ...before, ...patch, id: before.id, eventId, updatedAt: nowISO() };
+        const {
+          id: _pid,
+          eventId: _pe,
+          taskSourceId: _pts,
+          taskSourceType: _ptst,
+          legacyId: _pl,
+          ...patchWithoutIdentity
+        } = patch;
+        const updated: EventTask = {
+          ...before,
+          ...patchWithoutIdentity,
+          id: canonicalTaskId,
+          eventId,
+          taskSourceId: before.taskSourceId,
+          taskSourceType: before.taskSourceType,
+          updatedAt: nowISO(),
+        };
         set(prev => ({
           taskOverridesByEventId: {
             ...prev.taskOverridesByEventId,
             [eventId]: (prev.taskOverridesByEventId[eventId] ?? []).map(t =>
-              (t.taskSourceId === before.taskSourceId || t.id === taskId ? updated : t),
+              (t.taskSourceId === before.taskSourceId || t.id === taskId || t.id === before.id || t.legacyId === taskId ? updated : t),
             ),
           },
           taskAuditByEventId: {
@@ -1320,7 +1696,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
               auditId: nextAuditId(),
               eventId,
               entityType: 'task',
-              entityId: taskId,
+              entityId: canonicalTaskId,
               action: 'task.update',
               actorId: enf.actor.userId,
               actorRole: enf.actor.role,
@@ -1342,13 +1718,24 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
       },
 
       softDeleteTask: (eventId, taskId, opts) => {
-        const task = (get().taskOverridesByEventId[eventId] ?? []).find(entry => entry.id === taskId);
+        const task = (get().taskOverridesByEventId[eventId] ?? []).find(entry =>
+          entry.id === taskId
+          || entry.legacyId === taskId
+          || (entry.taskSourceId && legacyStableAlternateTaskId(eventId, entry.taskSourceId) === taskId),
+        );
         if (task?.isRequired && !opts?.reason) return false;
-        return get().updateTask(eventId, taskId, { isDeleted: true, deletedAt: nowISO(), status: 'cancelled' }, opts);
+        const resolved = task ? normalizeEventTaskIdentity(eventId, task).id : taskId;
+        return get().updateTask(eventId, resolved, { isDeleted: true, deletedAt: nowISO(), status: 'cancelled' }, opts);
       },
 
       restoreTask: (eventId, taskId, opts) => {
-        return get().updateTask(eventId, taskId, { isDeleted: false, deletedAt: undefined, status: 'not_started' }, opts);
+        const row = (get().taskOverridesByEventId[eventId] ?? []).find(entry =>
+          entry.id === taskId
+          || entry.legacyId === taskId
+          || (entry.taskSourceId && legacyStableAlternateTaskId(eventId, entry.taskSourceId) === taskId),
+        );
+        const resolved = row ? normalizeEventTaskIdentity(eventId, row).id : taskId;
+        return get().updateTask(eventId, resolved, { isDeleted: false, deletedAt: undefined, status: 'not_started' }, opts);
       },
 
       generateTaskFromForm: (eventId, formId, opts) => {
@@ -1419,11 +1806,11 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           return null;
         }
         const folder = resolveEventFolder(eventId);
-        const existing = (state.generatedFormInstancesByEventId[eventId] ?? [])
+        const existing = collectByEventAliases(state.generatedFormInstancesByEventId, eventId, item => item.id)
           .filter(i => i.formId === formId && i.status !== 'SUPERSEDED');
         const sequence = existing.length + 1;
         const instance: EventFormInstance = {
-          id: `FI-${eventId}-${formId}-${String(sequence).padStart(3, '0')}`,
+          id: `${eventId}-${formId}-${String(sequence).padStart(3, '0')}`,
           eventId,
           formId,
           policyIds,
@@ -1464,20 +1851,44 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           enf.log({ action: 'mutation.blocked', eventId, targetKind: 'form', targetId: formId, reason: 'getOrCreateFormInstance blocked for locked/certified event.' });
           return null;
         }
-        const existing = (state.generatedFormInstancesByEventId[eventId] ?? []).find(i => {
+        /* ─────────────────────────────────────────────────────────────
+         * Idempotency by (eventId, formId, taskId) ONLY.
+         *
+         * Previously the lookup ALSO required `requirementId` equality,
+         * which caused duplicate form instances every time two different
+         * call sites passed different requirement-id shapes:
+         *
+         *   - WorkflowExecutionPanel passes  `${taskId}::form`
+         *   - FormSigningWorkspace    passes `${taskId}::FORM_COMPLETION::${formId}`
+         *
+         * Both refer to the SAME canonical form requirement. We now
+         * match on (eventId, formId, taskId) and treat requirementId as
+         * metadata only.  This is the single source of truth fix the
+         * user has asked for repeatedly.
+         * ───────────────────────────────────────────────────────────── */
+        const existing = collectByEventAliases(state.generatedFormInstancesByEventId, eventId, item => item.id).find(i => {
           if (i.formId !== formId) return false;
           if (i.status === 'SUPERSEDED') return false;
           if (taskId && i.taskId && i.taskId !== taskId) return false;
-          if (requirementId && i.requirementId && i.requirementId !== requirementId) return false;
           return true;
         });
-        if (existing) return existing;
+        if (existing) {
+          // Backfill taskId/requirementId if the prior instance was created
+          // before either was known (e.g. from a Forms Library opening).
+          if (!existing.taskId && taskId) {
+            existing.taskId = taskId;
+          }
+          if (!existing.requirementId && requirementId) {
+            existing.requirementId = requirementId;
+          }
+          return existing;
+        }
 
         const folder = resolveEventFolder(eventId);
-        const allForForm = (state.generatedFormInstancesByEventId[eventId] ?? []).filter(i => i.formId === formId);
+        const allForForm = collectByEventAliases(state.generatedFormInstancesByEventId, eventId, item => item.id).filter(i => i.formId === formId);
         const sequence = allForForm.length + 1;
         const instance: EventFormInstance = {
-          id: `FI-${eventId}-${formId}-${String(sequence).padStart(3, '0')}`,
+          id: formatCesFormInstanceId(eventId, formId, sequence),
           eventId,
           formId,
           taskId,
@@ -1526,11 +1937,68 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
             : status === 'SIGNED' ? 'FORM_SIGNED'
             : status === 'SUPERSEDED' ? 'FORM_SUPERSEDED'
             : 'FORM_STATUS_CHANGED';
+
+          // When a form instance is signed or locked, also mark the form status
+          // as 'complete' in formStates so effectiveFormStatus returns 'complete'
+          // everywhere it is checked (dashboard, validation, task gate, etc.)
+          const isCompletion = (status === 'SIGNED' || status === 'LOCKED' || status === 'COMPLETED') && instance?.formId;
+          const formStatesPatch = isCompletion
+            ? { ...prev.formStates, [fKey(eventId, instance!.formId)]: { status: 'complete' as FormStatus, actor: enf.actor.userId, timestamp: now } }
+            : prev.formStates;
+
+          // ── Auto-complete signer tasks for this form when signed/locked ──
+          const signerOverridesPatch: EventTask[] = [];
+          if (isCompletion && instance?.formId) {
+            const currentRole = enf.actor.role;
+            const safeRole = currentRole.replace(/\s+/g, '_').toUpperCase();
+            const signerTaskId = `SIGN-${eventId}-${instance.formId}-${safeRole}`;
+            const existingOverrides = prev.taskOverridesByEventId[eventId] ?? [];
+            const existing = existingOverrides.find(t => t.id === signerTaskId);
+            if (existing && existing.status !== 'completed') {
+              signerOverridesPatch.push({ ...existing, status: 'completed', updatedAt: now });
+            } else if (!existing) {
+              // Create the override as completed so it's tracked
+              signerOverridesPatch.push({
+                id: signerTaskId,
+                eventId,
+                taskSourceId: `signer:${instance.formId}:${safeRole}`,
+                taskSourceType: 'requiredForm',
+                isRequired: true,
+                requirementSource: 'regulation',
+                policyIds: [],
+                formIds: [instance.formId],
+                title: `Sign ${instance.formId} as ${currentRole}`,
+                source: 'generated',
+                status: 'completed',
+                ownerRole: currentRole,
+                folderPath: '',
+                createdAt: now,
+                updatedAt: now,
+                isDeleted: false,
+                isSignerTask: true,
+                signerRole: currentRole,
+              });
+            }
+          }
+
+          const mergedOverrides = signerOverridesPatch.length > 0
+            ? [
+                ...(prev.taskOverridesByEventId[eventId] ?? []).filter(
+                  t => !signerOverridesPatch.some(p => p.id === t.id),
+                ),
+                ...signerOverridesPatch,
+              ]
+            : (prev.taskOverridesByEventId[eventId] ?? []);
+
           return {
+            formStates: formStatesPatch,
             generatedFormInstancesByEventId: {
               ...prev.generatedFormInstancesByEventId,
               [eventId]: updated,
             },
+            taskOverridesByEventId: signerOverridesPatch.length > 0
+              ? { ...prev.taskOverridesByEventId, [eventId]: mergedOverrides }
+              : prev.taskOverridesByEventId,
             taskAuditByEventId: {
               ...prev.taskAuditByEventId,
               [eventId]: appendExecutionAudit(prev.taskAuditByEventId[eventId] ?? [], {
@@ -1573,7 +2041,24 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
 
       evaluateTaskCertificationGate: (eventId, taskId) => {
         const state = get();
-        const task = (state.taskOverridesByEventId[eventId] ?? []).find(item => item.id === taskId && !item.isDeleted);
+        const raw = (state.taskOverridesByEventId[eventId] ?? []).find(item =>
+          !item.isDeleted
+          && (item.id === taskId
+            || item.legacyId === taskId
+            || (item.taskSourceId && legacyStableAlternateTaskId(eventId, item.taskSourceId) === taskId)),
+        );
+        let task = raw ? normalizeEventTaskIdentity(eventId, raw) : null;
+
+        // If not found in overrides, search derived tasks (signer tasks live there)
+        if (!task) {
+          const sourceEvent = SOURCE_EVENT_BY_ID[resolveCanonicalEventId(eventId)];
+          if (sourceEvent) {
+            const derived = deriveDefaultEventTasks(sourceEvent, eventId);
+            const derivedMatch = derived.find(t => t.id === taskId || t.legacyId === taskId);
+            if (derivedMatch) task = derivedMatch;
+          }
+        }
+
         if (!task) {
           return {
             canComplete: false,
@@ -1582,28 +2067,111 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           };
         }
         const sourceEvent = SOURCE_EVENT_BY_ID[resolveCanonicalEventId(eventId)];
+        const aliases = getEventAliases(eventId);
+
+        // Collect all form instances for this task across all event aliases
+        const allFormInstances = aliases.flatMap(alias =>
+          state.generatedFormInstancesByEventId[alias] ?? [],
+        );
+        const taskFormInstances = allFormInstances.filter(i =>
+          task.formIds.includes(i.formId)
+          && (!i.taskId || i.taskId === taskId || i.taskId === task.id || i.taskId === task.legacyId),
+        );
+        const signedStatuses: FormInstanceStatus[] = ['SIGNED', 'LOCKED', 'COMPLETED'];
+        const signedFormIds = new Set(
+          taskFormInstances.filter(i => signedStatuses.includes(i.status)).map(i => i.formId),
+        );
+
+        // Collect all evidence across aliases
+        const allEvidence = aliases.flatMap(alias => state.evidence[alias] ?? []);
+        const usableEvidence = allEvidence.filter(item =>
+          evidenceTaskIdMatchesTask(task, item.taskId) && isEvidenceUsable(item.status),
+        );
+
+        // Locked signed evidence (signed_package or signed_form_instance) proves form completion + signature
+        const lockedSignedEvidence = usableEvidence.filter(
+          item => item.status === 'EVIDENCE_LOCKED'
+            && (item.artifactType === 'signed_package'
+              || item.artifactType === 'signed_form_instance'
+              || item.artifactType === 'signed_certificate'),
+        );
+        const lockedSignedFormIds = new Set(
+          lockedSignedEvidence
+            .filter(item => item.linkedFormId || (item.formIds && item.formIds.length > 0))
+            .flatMap(item => item.linkedFormId ? [item.linkedFormId] : (item.formIds ?? [])),
+        );
+
         const missingForms = task.formIds.filter(formId => {
+          // A SIGNED/LOCKED form instance proves completion
+          if (signedFormIds.has(formId)) return false;
+          // Locked signed evidence for this form proves completion
+          if (lockedSignedFormIds.has(formId)) return false;
+          // Fall back to effectiveFormStatus
           const requiredForm = sourceEvent?.requiredForms.find(form => form.id === formId || form.formId === formId);
-          if (!sourceEvent || !requiredForm) return true;
+          if (!sourceEvent || !requiredForm) return false; // unknown form — don't block
           return get().effectiveFormStatus(sourceEvent, requiredForm.id) !== 'complete';
         });
-        const usableEvidence = (state.evidence[eventId] ?? []).filter(item => item.taskId === taskId && isEvidenceUsable(item.status));
+
         const hasSupportingEvidence = usableEvidence.length > 0;
-        const signatureRequests = state.approvals.filter(item =>
-          item.eventId === eventId
+
+        // Signature satisfied if: approved form approval exists, OR locked signed evidence exists for task forms, OR form instances are SIGNED/LOCKED
+        const approvedSignatures = state.approvals.filter(item =>
+          aliases.includes(item.eventId)
           && item.targetKind === 'form'
           && item.targetId
-          && task.formIds.includes(item.targetId),
-        );
-        const approvedSignatures = signatureRequests.filter(item => item.status === 'approved').length;
+          && task.formIds.includes(item.targetId)
+          && item.status === 'approved',
+        ).length;
+        const hasLockedSignedEvidenceForForm = task.formIds.length === 0
+          || lockedSignedEvidence.length > 0
+          || signedFormIds.size > 0;
         const requiredSignatureTarget = task.formIds.length > 0 ? 1 : 0;
-        const signaturesSatisfied = requiredSignatureTarget === 0 || approvedSignatures >= requiredSignatureTarget;
+        const signaturesSatisfied = requiredSignatureTarget === 0
+          || approvedSignatures >= requiredSignatureTarget
+          || hasLockedSignedEvidenceForForm;
+
         const packageReady = usableEvidence.some(item => item.status === 'EVIDENCE_LOCKED') || usableEvidence.length > 0;
+
+        // ── Signer task gating ──
+        // If this task blocksOnSignerTasks, check that all child SIGN- tasks are completed.
+        // Check both derived tasks and overrides (overrides may mark them completed).
+        let pendingSignerTasks: string[] = [];
+        if (task.blocksOnSignerTasks && sourceEvent) {
+          const derived = deriveDefaultEventTasks(sourceEvent, eventId);
+          const allOverrides = state.taskOverridesByEventId[eventId] ?? [];
+          const derivedSignerTasks = derived.filter(dt => dt.isSignerTask && dt.parentFormTaskId === task.id);
+          pendingSignerTasks = derivedSignerTasks
+            .filter(dt => {
+              // Check if an override marks it completed
+              const override = allOverrides.find(ov => ov.id === dt.id);
+              if (override) return !override.isDeleted && override.status !== 'completed';
+              return dt.status !== 'completed';
+            })
+            .map(dt => `${dt.signerRole ?? dt.id} (awaiting_signature)`);
+        }
+        // If THIS is a signer task, only check if it has been signed (no form/evidence requirements)
+        if (task.isSignerTask) {
+          // Signer tasks are completed by signing — check if the form has a locked signature for this role
+          const signerFormIds = task.formIds ?? [];
+          const hasSigned = signerFormIds.length > 0 && signerFormIds.some(fid =>
+            signedFormIds.has(fid) || lockedSignedFormIds.has(fid),
+          );
+          if (hasSigned) {
+            return { canComplete: true, message: 'Signature verified.', blockers: [] };
+          }
+          return {
+            canComplete: false,
+            message: `Awaiting eCIgn signature from ${task.signerRole ?? task.assignedRole ?? 'assigned signer'}.`,
+            blockers: [`Signature required from ${task.signerRole ?? task.assignedRole ?? 'assigned signer'}`],
+          };
+        }
+
         const blockers: string[] = [];
         if (missingForms.length > 0) blockers.push(`Missing required form completion: ${missingForms.join(', ')}`);
         if (!hasSupportingEvidence) blockers.push('Missing required supporting evidence upload');
         if (!signaturesSatisfied) blockers.push('Required signature is still pending');
         if (!packageReady) blockers.push('Evidence package is not certified or locked');
+        if (pendingSignerTasks.length > 0) blockers.push(`Pending signer tasks: ${pendingSignerTasks.join(', ')}`);
         return {
           canComplete: blockers.length === 0,
           message: blockers.length === 0
@@ -1614,6 +2182,13 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
       },
 
       attemptCompleteTask: (eventId, taskId) => {
+        if (isEventFutureLocked(eventId)) {
+          return {
+            canComplete: false,
+            message: FUTURE_LOCKED_GUARD_MSG,
+            blockers: ['Locked — Future Period'],
+          };
+        }
         const gate = get().evaluateTaskCertificationGate(eventId, taskId);
         if (!gate.canComplete) {
           get().appendTaskAuditEvent(eventId, 'task', taskId, 'TASK_COMPLETION_BLOCKED', {
@@ -1622,15 +2197,34 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           });
           return gate;
         }
-        const existing = (get().taskOverridesByEventId[eventId] ?? []).find(item => item.id === taskId);
+        let existing = (get().taskOverridesByEventId[eventId] ?? []).find(item =>
+          item.id === taskId
+          || item.legacyId === taskId
+          || (item.taskSourceId && legacyStableAlternateTaskId(eventId, item.taskSourceId) === taskId),
+        );
+
+        // If not in overrides, check if it's a derived task (e.g., signer task) and create an override
+        if (!existing) {
+          const sourceEvent = SOURCE_EVENT_BY_ID[resolveCanonicalEventId(eventId)];
+          if (sourceEvent) {
+            const derived = deriveDefaultEventTasks(sourceEvent, eventId);
+            const derivedMatch = derived.find(t => t.id === taskId);
+            if (derivedMatch) {
+              get().createTask(eventId, derivedMatch, { reason: 'SIGNER_TASK_MATERIALIZED' });
+              existing = (get().taskOverridesByEventId[eventId] ?? []).find(t => t.id === taskId);
+            }
+          }
+        }
+
+        const resolvedTaskId = existing ? normalizeEventTaskIdentity(eventId, existing).id : taskId;
         let updated = true;
         if (existing && existing.status === 'not_started') {
-          updated = get().updateTask(eventId, taskId, { status: 'in_progress' }, {
+          updated = get().updateTask(eventId, resolvedTaskId, { status: 'in_progress' }, {
             reason: 'REQUIREMENT_COMPLETED',
           });
         }
         if (updated) {
-          updated = get().updateTask(eventId, taskId, { status: 'completed' }, {
+          updated = get().updateTask(eventId, resolvedTaskId, { status: 'completed' }, {
             reason: 'REQUIREMENT_COMPLETED',
           });
         }
@@ -1641,7 +2235,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
             blockers: ['Task status update was rejected by transition guards'],
           };
         }
-        get().appendTaskAuditEvent(eventId, 'task', taskId, 'TASK_CERTIFIED', {
+        get().appendTaskAuditEvent(eventId, 'task', resolvedTaskId, 'TASK_CERTIFIED', {
           after: { status: 'completed' },
         });
         return {
@@ -1651,6 +2245,48 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         };
       },
 
+      /* ── signer tasks (multi-signer eCIgn) ── */
+      createSignerTask: (task) => {
+        set(state => ({
+          signerTasksByFormInstanceId: {
+            ...state.signerTasksByFormInstanceId,
+            [task.formInstanceId]: [
+              ...(state.signerTasksByFormInstanceId[task.formInstanceId] ?? []),
+              task,
+            ],
+          },
+        }));
+        const enf = useEnforcementStore.getState();
+        enf.log({ action: 'signer_task.created', eventId: task.eventId, targetKind: 'task', targetId: task.taskId,
+          after: { formInstanceId: task.formInstanceId, slotFieldId: task.slotFieldId, assignedTo: task.assignedTo, sequenceGroup: task.sequenceGroup, signerIndex: task.signerIndex } });
+      },
+
+      updateSignerTaskStatus: (formInstanceId, taskId, status, extra) => {
+        set(state => {
+          const tasks = state.signerTasksByFormInstanceId[formInstanceId];
+          if (!tasks) return state;
+          return {
+            signerTasksByFormInstanceId: {
+              ...state.signerTasksByFormInstanceId,
+              [formInstanceId]: tasks.map(t =>
+                t.taskId === taskId ? { ...t, status, ...(extra?.declineReason ? { declineReason: extra.declineReason } : {}) } : t,
+              ),
+            },
+          };
+        });
+      },
+
+      getSignerTasksForInstance: (formInstanceId) => {
+        return get().signerTasksByFormInstanceId[formInstanceId] ?? [];
+      },
+
+      getNextPendingSignerTask: (formInstanceId) => {
+        const tasks = get().signerTasksByFormInstanceId[formInstanceId] ?? [];
+        return tasks
+          .filter(t => t.status === 'pending')
+          .sort((a, b) => a.sequenceGroup - b.sequenceGroup || a.signerIndex - b.signerIndex)[0];
+      },
+
       /* ── certification ──
          Builds on markEventComplete but enforces the stricter
          closure gate: every required approval must be recorded,
@@ -1658,6 +2294,9 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
          must report zero blockers. Writes an immutable receipt
          and hard-locks the instance. */
       certifyEventComplete: (event, certifier = CURRENT_USER, certifierRole, note) => {
+        if (isCesFutureLockedDate(event.date)) {
+          return { ok: false, message: FUTURE_LOCKED_GUARD_MSG };
+        }
         const enf = useEnforcementStore.getState();
         const s = get();
         const instance = s.ensureEventInstance(event);
@@ -1667,9 +2306,8 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           approvalsById: Object.fromEntries(s.approvals.filter(ap => ap.eventId === event.id).map(ap => [ap.id, ap.status])),
         });
         const overrides = s.taskOverridesByEventId[instance.eventId] ?? [];
-        const requiredTasks = [...derivedTasks, ...overrides]
-          .filter(task => task.isRequired && !task.isDeleted)
-          .filter((task, idx, arr) => arr.findIndex(other => other.taskSourceId === task.taskSourceId) === idx);
+        const requiredTasks = mergeDerivedEventTasksWithOverrides(instance.eventId, derivedTasks, overrides)
+          .filter(task => task.isRequired && !task.isDeleted);
         const incompleteRequiredTasks = requiredTasks.filter(task => task.status !== 'completed');
         if (incompleteRequiredTasks.length > 0) {
           return {
@@ -1849,54 +2487,63 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         return { ok: true, message: 'Certification revoked. Instance is reopened.' };
       },
 
-      isCertified: eventId => !!get().certifications[eventId],
-      getCertification: eventId => get().certifications[eventId],
+      isCertified: eventId => getEventAliases(eventId).some(key => !!get().certifications[key]),
+      getCertification: eventId => {
+        const certs = get().certifications;
+        return getEventAliases(eventId).map(key => certs[key]).find(Boolean);
+      },
 
       /* ── selectors ── */
       effectiveStepStatus: (event, stepId) => {
         const override = get().stepStates[sKey(event.id, stepId)];
         if (override) return override.status;
-        const seed = event.processFlow.find(s => s.id === stepId);
-        return (seed?.status as StepStatus) || 'pending';
+        // No store override — return 'pending' so that after a reset
+        // (which clears stepStates) all steps read as not-started.
+        // The source processFlow status is just a template hint.
+        return 'pending';
       },
 
       effectiveFormStatus: (event, formId) => {
         const approvals = get().approvals;
+        const aliases = getEventAliases(event.id);
         const approvedViaESign = approvals.some(a =>
-          a.eventId === event.id &&
+          aliases.includes(a.eventId) &&
           a.targetKind === 'form' &&
           a.targetId === formId &&
           a.status === 'approved',
         );
         if (approvedViaESign) return 'complete';
 
-        const override = get().formStates[fKey(event.id, formId)];
+        const override = getEventAliases(event.id)
+          .map(alias => get().formStates[fKey(alias, formId)])
+          .find(Boolean);
         if (override) return override.status;
 
         const pendingESign = approvals.some(a =>
-          a.eventId === event.id &&
+          aliases.includes(a.eventId) &&
           a.targetKind === 'form' &&
           a.targetId === formId &&
           a.status === 'pending',
         );
         if (pendingESign) return 'in-progress';
 
-        const seed = event.requiredForms.find(f => f.id === formId);
-        return (seed?.status as FormStatus) || 'pending';
+        return 'pending';
       },
 
       effectiveMinutesStatus: event => {
         if (!event.minutes) return null;
-        return (get().minutesStates[event.id]?.status) || event.minutes.status;
+        return (get().minutesStates[event.id]?.status) || 'missing';
       },
 
       effectiveUrgency: event => {
-        const completion = get().completions[event.id];
+        const completion = getEventAliases(event.id)
+          .map(alias => get().completions[alias])
+          .find(Boolean);
         if (completion?.status === 'complete') return 'complete';
         return event.urgency;
       },
 
-      isEventComplete: eventId => get().completions[eventId]?.status === 'complete',
+      isEventComplete: eventId => getEventAliases(eventId).some(key => get().completions[key]?.status === 'complete'),
 
       /* ── completion validation ── */
       validateEvent: event => {
@@ -1919,6 +2566,15 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           }
         });
         event.requiredForms.forEach(f => {
+          const templateId = f.formId ?? f.id;
+          if (!FORM_TEMPLATE_IDS.has(templateId)) {
+            blockers.push({
+              kind: 'form',
+              label: `${f.label} (${templateId}) — Form template missing from Forms Library`,
+              targetId: f.id,
+            });
+            return;
+          }
           if (s.effectiveFormStatus(event, f.id) !== 'complete') {
             blockers.push({ kind: 'form', label: f.label, targetId: f.id });
           }
@@ -1926,7 +2582,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         if (minutesRequired && !minutesFinalized) {
           blockers.push({ kind: 'minutes', label: 'Meeting minutes finalization' });
         }
-        const pendingApprovals = s.approvals.filter(a => a.eventId === event.id && a.status === 'pending');
+        const pendingApprovals = s.approvals.filter(a => getEventAliases(event.id).includes(a.eventId) && a.status === 'pending');
         pendingApprovals.forEach(a => blockers.push({ kind: 'approval', label: a.targetLabel, targetId: a.id }));
 
         return {
@@ -1937,6 +2593,9 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
       },
 
       markEventComplete: event => {
+        if (isCesFutureLockedDate(event.date)) {
+          return { ok: false, message: FUTURE_LOCKED_GUARD_MSG };
+        }
         const enf = useEnforcementStore.getState();
         const instance = get().ensureEventInstance(event);
         if (instance.status === 'scheduled') {
@@ -2018,38 +2677,319 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         enf.log({ action: 'event.reopened', eventId, before: prev });
       },
 
-      resetAll: () => set({
-        formStates: {}, stepStates: {}, minutesStates: {},
-        evidence: {}, approvals: [], completions: {},
-        notes: {}, certifications: {},
-        eventInstancesById: {},
-        eventInstanceIdsBySourceEventId: {},
-        taskOverridesByEventId: {},
-        taskAuditByEventId: {},
-        generatedFormInstancesByEventId: {},
-        evidenceErrorsByEventId: {},
-        activeWorkflowEventId: null,
-      }),
+      resetEvent: (eventId: string) => {
+        _suppressEnsureAudit = true;
+        // Collect ALL aliases (source event ID + instance event ID) so we clear
+        // every key variant the store may have used.
+        const aliases = getEventAliases(eventId);
+        const aliasSet = new Set(aliases);
+
+        const state = get();
+        // Clear evidence data URLs from BOTH the in-memory cache and localStorage.
+        // Using clearDemoEvidenceDataUrl (not raw localStorage.removeItem) ensures
+        // the memCache is also purged so stale blobs don't survive in the same session.
+        const formInstanceIds: string[] = [];
+        aliases.forEach(alias => {
+          (state.evidence[alias] ?? []).forEach(doc => {
+            clearDemoEvidenceDataUrl(doc.id);
+          });
+          (state.generatedFormInstancesByEventId[alias] ?? []).forEach(fi => {
+            formInstanceIds.push(fi.id);
+          });
+        });
+        // Clear persisted form-field values for every form instance in this event.
+        clearFormFieldsForIds(formInstanceIds);
+        // Clear eCIgn demo backend sessions for this event
+        clearDemoEcignForEvents(aliasSet);
+
+        set(prev => {
+          // Clear evidence, task overrides, audit, form instances for all aliases
+          const evidence = { ...prev.evidence };
+          const taskOverridesByEventId = { ...prev.taskOverridesByEventId };
+          const taskAuditByEventId = { ...prev.taskAuditByEventId };
+          const generatedFormInstancesByEventId = { ...prev.generatedFormInstancesByEventId };
+          const evidenceErrorsByEventId = { ...prev.evidenceErrorsByEventId };
+          const completions = { ...prev.completions };
+          const notes = { ...prev.notes };
+          const eventInstanceIdsBySourceEventId = { ...prev.eventInstanceIdsBySourceEventId };
+
+          aliases.forEach(alias => {
+            evidence[alias] = [];
+            taskOverridesByEventId[alias] = [];
+            taskAuditByEventId[alias] = [];
+            generatedFormInstancesByEventId[alias] = [];
+            delete evidenceErrorsByEventId[alias];
+            delete completions[alias];
+            delete notes[alias];
+            eventInstanceIdsBySourceEventId[alias] = [];
+          });
+
+          return {
+            evidence,
+            approvals: prev.approvals.filter(a => !aliasSet.has(a.eventId)),
+            completions,
+            notes,
+            certifications: Object.fromEntries(
+              Object.entries(prev.certifications ?? {}).filter(([k]) => !aliasSet.has(k))
+            ),
+            taskOverridesByEventId,
+            taskAuditByEventId,
+            generatedFormInstancesByEventId,
+            evidenceErrorsByEventId,
+            // Clear formStates and stepStates for any key prefixed with any alias
+            formStates: Object.fromEntries(
+              Object.entries(prev.formStates).filter(([k]) => !aliases.some(a => k.startsWith(a)))
+            ),
+            stepStates: Object.fromEntries(
+              Object.entries(prev.stepStates).filter(([k]) => !aliases.some(a => k.startsWith(a)))
+            ),
+            minutesStates: Object.fromEntries(
+              Object.entries(prev.minutesStates ?? {}).filter(([k]) => !aliasSet.has(k))
+            ),
+            // Remove event instances that belong to this event
+            eventInstancesById: Object.fromEntries(
+              Object.entries(prev.eventInstancesById).filter(
+                ([, v]) => !aliasSet.has(v.sourceEventId) && !aliasSet.has(v.eventId)
+              )
+            ),
+            eventInstanceIdsBySourceEventId,
+          };
+        });
+      },
+
+      clearAllEvidence: () => {
+        // Scoped to Q1/Q2 sandbox events only.
+        get().resetAllSandboxQ1Q2();
+      },
+
+      resetAll: () => {
+        // Scoped to Q1/Q2 sandbox events only.
+        get().resetAllSandboxQ1Q2();
+      },
+
+      /* ── Sandbox reset actions ─────────────────────────────── */
+
+      resetSandboxTask: (eventId, taskId) => {
+        const date = resolveEventDate(eventId);
+        if (!date || !isCesSandboxDate(date)) return;
+        const aliases = getEventAliases(eventId);
+        // Wipe per-doc localStorage data URL entries for this task's evidence
+        const formInstanceIds: string[] = [];
+        aliases.forEach(alias => {
+          (get().evidence[alias] ?? []).forEach(doc => {
+            if (doc.taskId === taskId) {
+              // Clear from both memCache and localStorage (not just localStorage).
+              clearDemoEvidenceDataUrl(doc.id);
+            }
+          });
+          (get().generatedFormInstancesByEventId[alias] ?? []).forEach(fi => {
+            if (fi.taskId === taskId) formInstanceIds.push(fi.id);
+          });
+        });
+        clearFormFieldsForIds(formInstanceIds);
+        clearDemoEcignForEvents(new Set(aliases));
+        set(prev => {
+          const evidence = { ...prev.evidence };
+          const taskOverridesByEventId = { ...prev.taskOverridesByEventId };
+          const generatedFormInstancesByEventId = { ...prev.generatedFormInstancesByEventId };
+          const taskAuditByEventId = { ...prev.taskAuditByEventId };
+          aliases.forEach(alias => {
+            // Remove evidence linked to this task
+            evidence[alias] = (prev.evidence[alias] ?? []).filter(doc => doc.taskId !== taskId);
+            // Reset task status back to not_started (preserve the task definition itself)
+            taskOverridesByEventId[alias] = (prev.taskOverridesByEventId[alias] ?? []).map(task =>
+              (task.id === taskId || task.legacyId === taskId)
+                ? {
+                    ...task,
+                    status: 'not_started',
+                    completionBlockedReason: undefined,
+                    blockedReason: undefined,
+                    updatedAt: nowISO(),
+                  }
+                : task,
+            );
+            // Remove form instances linked to this task
+            generatedFormInstancesByEventId[alias] = (
+              prev.generatedFormInstancesByEventId[alias] ?? []
+            ).filter(fi => !fi.taskId || fi.taskId !== taskId);
+            // Clear task audit log entries for this task
+            taskAuditByEventId[alias] = (prev.taskAuditByEventId[alias] ?? []).filter(
+              a => a.entityId !== taskId,
+            );
+          });
+          return {
+            evidence,
+            taskOverridesByEventId,
+            generatedFormInstancesByEventId,
+            taskAuditByEventId,
+          };
+        });
+      },
+
+      resetAllSandboxQ1Q2: () => {
+        // Suppress audit trail writes from ensureEventInstance for the rest
+        // of this page lifecycle. The subsequent reload() starts fresh.
+        _suppressEnsureAudit = true;
+        const state = get();
+        // Collect every event ID (source + instance alias) in the sandbox window.
+        const sandboxSourceEvents = REGULATORY_EVENTS.filter(e => isCesSandboxDate(e.date));
+        const sandboxIds = new Set<string>();
+        for (const e of sandboxSourceEvents) {
+          sandboxIds.add(e.id);
+          const canonical = resolveCanonicalEventId(e.id);
+          sandboxIds.add(canonical);
+          const instanceId = EVENT_INSTANCE_ID_BY_SOURCE[canonical];
+          if (instanceId) sandboxIds.add(instanceId);
+          for (const id of (state.eventInstanceIdsBySourceEventId[e.id] ?? [])) {
+            sandboxIds.add(id);
+          }
+        }
+        // Also check all keys in evidence/taskOverrides/etc for sandbox-dated IDs
+        for (const key of Object.keys(state.evidence)) {
+          if (sandboxIds.has(key)) continue;
+          const src = resolveCanonicalEventId(key);
+          const srcEvent = SOURCE_EVENT_BY_ID[src];
+          if (srcEvent && isCesSandboxDate(srcEvent.date)) sandboxIds.add(key);
+        }
+
+        // 1. Clear evidence blobs from localStorage + memCache for all sandbox docs
+        for (const id of sandboxIds) {
+          for (const doc of (state.evidence[id] ?? [])) {
+            clearDemoEvidenceDataUrl(doc.id);
+          }
+          for (const fi of (state.generatedFormInstancesByEventId[id] ?? [])) {
+            try { localStorage.removeItem('ci_form_fields_' + fi.id); } catch { /* noop */ }
+          }
+        }
+
+        // 1b. Clear eCIgn demo backend sessions for sandbox events
+        clearDemoEcignForEvents(sandboxIds);
+
+        // 2. Build the new state: remove sandbox keys, keep everything else
+        const evidence = { ...state.evidence };
+        const taskOverridesByEventId = { ...state.taskOverridesByEventId };
+        const taskAuditByEventId = { ...state.taskAuditByEventId };
+        const generatedFormInstancesByEventId = { ...state.generatedFormInstancesByEventId };
+        const evidenceErrorsByEventId = { ...state.evidenceErrorsByEventId };
+        const completions = { ...state.completions };
+        const notes = { ...state.notes };
+        const certifications = { ...state.certifications };
+        const formStates = { ...state.formStates };
+        const stepStates = { ...state.stepStates };
+        const minutesStates = { ...state.minutesStates };
+        const eventInstancesById = { ...state.eventInstancesById };
+        const eventInstanceIdsBySourceEventId = { ...state.eventInstanceIdsBySourceEventId };
+
+        for (const id of sandboxIds) {
+          delete evidence[id];
+          delete taskOverridesByEventId[id];
+          delete taskAuditByEventId[id];
+          delete generatedFormInstancesByEventId[id];
+          delete evidenceErrorsByEventId[id];
+          delete completions[id];
+          delete notes[id];
+          delete certifications[id];
+          delete eventInstanceIdsBySourceEventId[id];
+          // Remove event instances
+          for (const [instId, inst] of Object.entries(eventInstancesById)) {
+            if (sandboxIds.has(inst.sourceEventId) || sandboxIds.has(inst.eventId)) {
+              delete eventInstancesById[instId];
+            }
+          }
+        }
+        // Remove formStates/stepStates/minutesStates keyed with sandbox event ID prefix
+        const sandboxArr = Array.from(sandboxIds);
+        for (const key of Object.keys(formStates)) {
+          if (sandboxArr.some(id => key.startsWith(id))) delete formStates[key];
+        }
+        for (const key of Object.keys(stepStates)) {
+          if (sandboxArr.some(id => key.startsWith(id))) delete stepStates[key];
+        }
+        for (const key of Object.keys(minutesStates)) {
+          if (sandboxArr.some(id => key.startsWith(id))) delete minutesStates[key];
+        }
+
+        // Filter approvals to remove sandbox events
+        const approvals = state.approvals.filter(a => !sandboxIds.has(a.eventId));
+
+        // 3. Also clear sandbox escalations from enforcement store
+        try {
+          const enf = useEnforcementStore.getState();
+          enf.resetAll();
+        } catch { /* noop */ }
+
+        // 4. Write clean state back to zustand (persist middleware writes to localStorage)
+        set({
+          evidence,
+          taskOverridesByEventId,
+          taskAuditByEventId,
+          generatedFormInstancesByEventId,
+          evidenceErrorsByEventId,
+          completions,
+          notes,
+          certifications,
+          formStates,
+          stepStates,
+          minutesStates,
+          eventInstancesById,
+          eventInstanceIdsBySourceEventId,
+          approvals,
+          activeWorkflowEventId: null,
+          signerTasksByFormInstanceId: {},
+        });
+      },
+
+      resetAllCesSandbox: () => {
+        get().resetAllSandboxQ1Q2();
+      },
     }),
     {
       name: 'reg-execution-v2',
-      version: 2,
-      storage: createJSONStorage(() => localStorage),
+      version: 4,
+      storage: createJSONStorage(() => ({
+        getItem: name => localStorage.getItem(name),
+        setItem: (name, value) => {
+          try {
+            localStorage.setItem(name, value);
+          } catch (err) {
+            const isQuota = err instanceof DOMException && (err.code === 22 || err.name === 'QuotaExceededError');
+            if (import.meta.env.DEV) {
+              // eslint-disable-next-line no-console
+              console.warn('[reg-execution] persist skipped (storage). Metadata remains in memory.', isQuota ? 'QuotaExceededError' : err);
+            }
+          }
+        },
+        removeItem: name => localStorage.removeItem(name),
+      })),
       migrate: (persistedState, version) => {
         if (!persistedState || typeof persistedState !== 'object') return persistedState as RegulatoryExecutionState;
-        if (version >= 2) return persistedState as RegulatoryExecutionState;
-        const legacy = persistedState as Partial<RegulatoryExecutionState> & { evidence?: unknown };
-        return {
-          ...legacy,
-          evidence: migrateEvidenceRecords(legacy.evidence),
-          evidenceErrorsByEventId: legacy.evidenceErrorsByEventId ?? {},
-        } as RegulatoryExecutionState;
+        let merged = persistedState as RegulatoryExecutionState;
+        if (version < 2) {
+          const legacy = persistedState as Partial<RegulatoryExecutionState> & { evidence?: unknown };
+          merged = {
+            ...legacy,
+            evidence: migrateEvidenceRecords(legacy.evidence),
+            evidenceErrorsByEventId: legacy.evidenceErrorsByEventId ?? {},
+          } as RegulatoryExecutionState;
+        }
+        if (version < 3) {
+          merged = migrateRegExecutionV3Shape(merged);
+        }
+        if (version < 4) {
+          merged = migrateRegExecutionV3Shape(merged);
+        }
+        return merged;
       },
       partialize: state => ({
         formStates: state.formStates,
         stepStates: state.stepStates,
         minutesStates: state.minutesStates,
-        evidence: state.evidence,
+        evidence: Object.fromEntries(
+          Object.entries(state.evidence ?? {}).map(([eventId, docs]) => [
+            eventId,
+            (docs ?? []).map(doc => stripEvidenceLargePayloads(doc)),
+          ]),
+        ),
         approvals: state.approvals,
         completions: state.completions,
         notes: state.notes,
@@ -2057,7 +2997,12 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         eventInstancesById: state.eventInstancesById,
         eventInstanceIdsBySourceEventId: state.eventInstanceIdsBySourceEventId,
         taskOverridesByEventId: state.taskOverridesByEventId,
-        taskAuditByEventId: state.taskAuditByEventId,
+        taskAuditByEventId: Object.fromEntries(
+          Object.entries(state.taskAuditByEventId ?? {}).map(([eventId, rows]) => [
+            eventId,
+            sanitizeTaskAuditForPersist(rows),
+          ]),
+        ),
         generatedFormInstancesByEventId: state.generatedFormInstancesByEventId,
         evidenceErrorsByEventId: state.evidenceErrorsByEventId,
       }),
@@ -2076,12 +3021,21 @@ const EMPTY_EVIDENCE: EvidenceDoc[] = [];
 
 export function useEventEvidence(eventId: string): EvidenceDoc[] {
   const byEvent = useRegulatoryExecutionStore(state => state.evidence);
-  return useMemo(() => byEvent[eventId] || EMPTY_EVIDENCE, [byEvent, eventId]);
+  return useMemo(
+    () => {
+      const merged = collectByEventAliases(byEvent, eventId, item => item.id);
+      return merged.length ? merged : EMPTY_EVIDENCE;
+    },
+    [byEvent, eventId],
+  );
 }
 
 export function useEventApprovals(eventId: string): ApprovalRequest[] {
   const all = useRegulatoryExecutionStore(state => state.approvals);
-  return useMemo(() => all.filter(a => a.eventId === eventId), [all, eventId]);
+  return useMemo(() => {
+    const aliases = getEventAliases(eventId);
+    return all.filter(a => aliases.includes(a.eventId));
+  }, [all, eventId]);
 }
 
 export function useAllPendingApprovalsCount(): number {
@@ -2093,12 +3047,18 @@ const EMPTY_NOTES: InstanceNote[] = [];
 
 export function useEventNotes(eventId: string): InstanceNote[] {
   const byEvent = useRegulatoryExecutionStore(state => state.notes);
-  return useMemo(() => byEvent[eventId] || EMPTY_NOTES, [byEvent, eventId]);
+  return useMemo(() => {
+    const merged = collectByEventAliases(byEvent, eventId, item => item.id);
+    return merged.length ? merged : EMPTY_NOTES;
+  }, [byEvent, eventId]);
 }
 
 export function useEventCertification(eventId: string): CertificationRecord | undefined {
   const byEvent = useRegulatoryExecutionStore(state => state.certifications);
-  return useMemo(() => byEvent[eventId], [byEvent, eventId]);
+  return useMemo(
+    () => getEventAliases(eventId).map(alias => byEvent[alias]).find(Boolean),
+    [byEvent, eventId],
+  );
 }
 
 export function useCertifiedCount(): number {

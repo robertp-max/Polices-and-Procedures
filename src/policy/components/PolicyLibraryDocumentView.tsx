@@ -12,7 +12,11 @@
  *   - /policy-lifecycle View mode (this is the canonical embed)
  */
 
-import { SharedPolicyDetailView, type SharedPolicy } from '@/policy/components/SharedPolicyDetailView';
+import {
+  SharedPolicyDetailView,
+  type SharedPolicy,
+  type AchcViewerContext,
+} from '@/policy/components/SharedPolicyDetailView';
 import { getCorpusPolicy } from '@/policy/data/policyCorpus';
 import { getPolicyContent } from '@/policy/data/policyContentMap';
 
@@ -91,12 +95,15 @@ export interface PolicyLibraryDocumentViewProps {
   showAppendices?: boolean;
   /** Optional callback invoked when the embedded back button is clicked. */
   onBack?: () => void;
+  /** Optional ACHC contextual overlay when launched from ACHC matrix/crosswalk. */
+  achcContext?: AchcViewerContext;
 }
 
 export function PolicyLibraryDocumentView({
   policyId,
   embedded = true,
   onBack,
+  achcContext,
 }: PolicyLibraryDocumentViewProps) {
   const shared = buildSharedPolicy(policyId);
 
@@ -113,6 +120,7 @@ export function PolicyLibraryDocumentView({
       policy={shared}
       embedded={embedded}
       onBack={onBack}
+      achcContext={achcContext}
     />
   );
 }

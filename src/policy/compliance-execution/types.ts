@@ -35,6 +35,8 @@ export interface EventInstance {
 
 export interface EventTask {
   id: string;
+  /** Persisted pre-normalization id (debug / evidence remap). */
+  legacyId?: string;
   eventId: string;
   taskSourceId: string;
   taskSourceType: EventTaskSourceType;
@@ -61,6 +63,36 @@ export interface EventTask {
   evidenceCount?: number;
   requiredEvidenceSatisfied?: boolean;
   requiredFormsSatisfied?: boolean;
+  /** Canonical CES form instance ids (aligned with `regulatoryExecutionStore` + PM projection). */
+  generated_form_instance_ids?: string[];
+
+  /* ─── CES Role Assignment (canonical — never null on new tasks) ─── */
+  /** Authorized CES role responsible for executing this task. */
+  assignedRole?: string;
+  /** Ultimately accountable role (may differ from assignedRole). */
+  accountableRole?: string;
+  /** Role responsible for reviewing task quality/completeness. */
+  reviewerRole?: string;
+  /** Role authorized to approve / certify completion. */
+  approverRole?: string;
+  /** Roles that may mark this task complete. */
+  canCompleteRoles?: readonly string[];
+  /** Roles that may review this task. */
+  canReviewRoles?: readonly string[];
+  /** Roles that may approve / certify this task. */
+  canApproveRoles?: readonly string[];
+  /** Role that receives escalation when this task is overdue. */
+  escalationRole?: string;
+
+  /* ─── Signer task fields ─────────────────────────────────────── */
+  /** When true, this task is a signer task generated from a required form. */
+  isSignerTask?: boolean;
+  /** The CES role assigned to sign (signer tasks only). */
+  signerRole?: string;
+  /** Parent form task ID (signer tasks only). */
+  parentFormTaskId?: string;
+  /** True when this task cannot complete until all signer tasks are signed. */
+  blocksOnSignerTasks?: boolean;
 }
 
 export interface EventExecutionAuditEvent {
@@ -90,7 +122,7 @@ export type FormInstanceStatus =
   | 'SUPERSEDED';
 
 export interface EventFormInstance {
-  /** Stable ID: FI-{eventId}-{formId}-{padded_sequence} */
+  /** Stable ID: {eventId}-{formId}-{padded_sequence} */
   id: string;
   eventId: string;
   formId: string;

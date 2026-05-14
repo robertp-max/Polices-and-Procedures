@@ -1,5 +1,6 @@
 import { type ReactElement } from 'react';
 import { Link } from 'react-router-dom';
+import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 
 export type EntityKind =
   | 'event'
@@ -35,12 +36,13 @@ function hrefFor(kind: EntityKind, id: string, formContext?: EntityLinkProps['fo
   }
   if (kind === 'form') return `/forms/${encodeURIComponent(normalizedId)}`;
   if (kind === 'form_instance') {
-    const params = new URLSearchParams();
-    params.set('instance', normalizedId);
-    if (formContext?.eventId) params.set('event', formContext.eventId);
-    if (formContext?.workflowId) params.set('workflow', formContext.workflowId);
     const sourceFormId = formContext?.sourceFormId?.trim() || normalizedId.split('--').slice(1).join('--');
-    return `/forms/${encodeURIComponent(sourceFormId)}?${params.toString()}`;
+    return buildArtifactRoute(normalizedId, {
+      eventId: formContext?.eventId,
+      formId: sourceFormId,
+      formInstanceId: normalizedId,
+      type: 'form_instance',
+    });
   }
   return '#';
 }

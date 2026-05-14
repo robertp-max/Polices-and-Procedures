@@ -1,0 +1,110 @@
+# ──────────────────────────────────────────────────────────────────
+# CI — pre-merge validation
+# Runs on every push to main / staging and every PR targeting them.
+# Fails fast on broken typecheck, lint, build, or permission matrix.
+# Does NOT deploy. Deployment is a separate manual workflow.
+# ──────────────────────────────────────────────────────────────────
+name: CI
+
+on:
+  push:
+    branches: [ main, staging ]
+  pull_request:
+    branches: [ main, staging ]
+  # Allow manual re-runs from the Actions tab.
+  workflow_dispatch:
+
+# Cancel in-progress runs on new pushes to the same ref to save minutes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Build · Typecheck · Lint · Permission matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies (npm ci)
+        run: npm ci --no-audit --no-fund
+
+      # TypeScript compilation check (no emit). Fails the job on any TS error.
+      - name: Typecheck
+        run: npx tsc -b --noEmit
+
+      # ESLint. Configured to be informational for the existing pre-deploy
+      # codebase (continue-on-error true) until the wider lint backlog is
+      # cleared. Errors are still surfaced in the job output.
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true
+
+      # Vite production build — the canonical "deploy is possible" gate.
+      - name: Build
+        run: npm run build
+        env:
+          # Build-time vars — staging mode emits the AWS env-mode boundary
+          # but does NOT call AWS (that requires the deploy workflow).
+          VITE_EVIDENCE_STORAGE_MODE: local-demo
+          VITE_LOCAL_DEMO_AUTH_BYPASS: 'true'
+
+      # Permission-matrix smoke test (Trainer/Admin decoupling fix).
+      # Pure JS, no AWS calls. Fails the job on any acceptance regression.
+      - name: Permission matrix verification
+        run: npx tsx scripts/verify-feature-access.mjs
+
+      # Conditional Playwright e2e step — only runs when test files exist.
+      - name: Playwright tests (if present)
+        run: |
+          if [ -d "tests" ] || ls -1 *.spec.ts 2>/dev/null | head -n 1; then
+            npx playwright install --with-deps chromium
+            npx playwright test --reporter=list
+          else
+            echo "No Playwright specs found; skipping."
+          fi
+
+      - name: Upload build artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: dist/
+          retention-days: 7
+          if-no-files-found: warn
+
+  # Lightweight surface check — catches deployment-affecting changes
+  # (env vars, package.json scripts, AWS infra files) so reviewers know
+  # to re-read the SAFE_DEPLOYMENT_REPORT.md.
+  surface-changes:
+    name: Surface check (deploy-sensitive paths)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect deploy-sensitive changes
+        run: |
+          BASE_SHA=${{ github.event.pull_request.base.sha }}
+          HEAD_SHA=${{ github.event.pull_request.head.sha }}
+          CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -E '^(\.env\.example|package\.json|package-lock\.json|infra/|\.github/workflows/|src/policy/evidence/storageMode\.ts)$' || true)
+          if [ -n "$CHANGED" ]; then
+            echo "::warning::Deploy-sensitive paths changed. Re-read SAFE_DEPLOYMENT_REPORT.md before merging."
+            echo "$CHANGED"
+          else
+            echo "No deploy-sensitive paths changed."
+          fi

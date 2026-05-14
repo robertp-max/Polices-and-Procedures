@@ -1,0 +1,160 @@
+/* ═══════════════════════════════════════════════════════════════
+   CesRoleReviewSwitcher — Robert-only CES role simulation control.
+   ---------------------------------------------------------------
+   AUTHORIZED USER: robertp@careindeed.com ONLY.
+   All other users: this component renders null with zero side effects.
+
+   Placement: Profile dropdown, below "My Tasks".
+   To remove: delete this file + cesReviewMode.ts + RobertCesReviewLayer.tsx
+   ═══════════════════════════════════════════════════════════════ */
+
+import { useCesReviewMode, isRobertUser } from '@/policy/ces/cesReviewMode';
+import type { CesRole } from '@/policy/ces/cesRoles';
+
+interface Props {
+  /** Current user email — used to gate visibility. */
+  userEmail?: string | null;
+  userId?:    string | null;
+  /** Visual style variant matching the host dropdown. */
+  isLight?:   boolean;
+}
+
+const ROLE_LABELS: CesRole[] = [
+  'Governing Body',
+  'Administrator',
+  'Admin Designee',
+  'DON',
+  'DON Assistant',
+  'Accounting',
+  'Systems',
+];
+
+export function CesRoleReviewSwitcher({ userEmail, userId, isLight = true }: Props) {
+  const allowed = isRobertUser(userEmail, userId);
+  const { isEnabled, reviewRole, setReviewRole } = useCesReviewMode(userEmail, userId);
+
+  if (!allowed || !isEnabled) return null;
+
+  const textColor     = isLight ? '#374151' : 'rgba(255,255,255,0.85)';
+  const mutedColor    = isLight ? '#6B7280' : 'rgba(255,255,255,0.45)';
+  const borderColor   = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.11)';
+  const selectBg      = isLight ? '#F9FAFB' : 'rgba(255,255,255,0.07)';
+  const selectBorder  = isLight ? '#D1D5DB' : 'rgba(255,255,255,0.18)';
+  const badgeBg       = '#1E3A5F';
+
+  return (
+    <div
+      style={{
+        padding: '10px 14px',
+        borderTop: `1px solid ${borderColor}`,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+      }}
+    >
+      {/* Section label */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span
+          style={{
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: mutedColor,
+          }}
+        >
+          CES Review Role
+        </span>
+        {reviewRole && (
+          <button
+            type="button"
+            onClick={() => setReviewRole(null)}
+            title="Clear review role"
+            style={{
+              fontSize: 9,
+              color: '#C74601',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              fontWeight: 600,
+              letterSpacing: '0.1em',
+            }}
+          >
+            CLEAR
+          </button>
+        )}
+      </div>
+
+      {/* Dropdown */}
+      <select
+        aria-label="CES Review Role"
+        value={reviewRole ?? ''}
+        onChange={e => setReviewRole((e.target.value as CesRole) || null)}
+        style={{
+          fontSize: 12,
+          fontWeight: 500,
+          color: textColor,
+          background: selectBg,
+          border: `1px solid ${selectBorder}`,
+          borderRadius: 6,
+          padding: '4px 8px',
+          width: '100%',
+          cursor: 'pointer',
+          outline: 'none',
+        }}
+      >
+        <option value="">— None (real role) —</option>
+        {ROLE_LABELS.map(role => (
+          <option key={role} value={role}>
+            {role}
+          </option>
+        ))}
+      </select>
+
+      {/* Active badge */}
+      {reviewRole && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '4px 8px',
+            borderRadius: 6,
+            background: badgeBg,
+          }}
+        >
+          {/* Pulsing dot */}
+          <span
+            style={{
+              display: 'inline-flex',
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              background: '#FFC107',
+              flexShrink: 0,
+              animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite',
+            }}
+          />
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              color: '#F9FAFB',
+              letterSpacing: '0.05em',
+            }}
+          >
+            Reviewing as: {reviewRole}
+          </span>
+        </div>
+      )}
+
+      {/* Guardrail notice */}
+      <p style={{ fontSize: 9, color: mutedColor, margin: 0, lineHeight: 1.4 }}>
+        ROBERT_REVIEW_MODE — simulation only. Real permissions unchanged.
+      </p>
+    </div>
+  );
+}

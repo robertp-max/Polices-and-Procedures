@@ -34,6 +34,7 @@ import { EntityLink } from './EntityLink';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { getCorpusPolicy } from '@/policy/data/policyCorpus';
 import { RightDrawer, CiStatusBadge } from '@/policy/components/ui';
+import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 
 /** Stable fallback for Zustand selectors — never use `?? []` inline (new ref → useSyncExternalStore loop). */
 const EMPTY_WATCHER_IDS: readonly string[] = [];
@@ -554,7 +555,20 @@ function SectionEvidence({ task, tokens }: { task: EcignSubmissionTask; tokens: 
             <span className={tokens.secondaryText}>{evidence.status}</span>
           </Field>
           <Field label="Evidence ID" tokens={tokens}>
-            <code className={`text-[11px] ${tokens.mutedText}`}>{evidence.evidence_id}</code>
+            <a
+              href={buildArtifactRoute(evidence.evidence_id, {
+                eventId: task.event_id,
+                taskId: task.task_id,
+                formId: task.form_id,
+                evidenceId: evidence.evidence_id,
+                type: 'evidence',
+              })}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`text-[11px] underline ${tokens.mutedText}`}
+            >
+              {evidence.evidence_id}
+            </a>
           </Field>
           {evidence.s3_key && (
             <Field label="Location" tokens={tokens}>

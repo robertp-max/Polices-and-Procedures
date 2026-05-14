@@ -1,8 +1,10 @@
+import type { FormSignerSlot } from '@/policy/components/FormSignatureContext';
+
 /* ═══════════════════════════════════════════════════════════════
    ENTERPRISE FORMS LIBRARY — 281 ARTIFACTS · FULL CONTENT
    -----------------------------------------------------------------
-   Gold standard: GV-GB-001 appendices.
-   Care Indeed branding (teal #00e59b / orange #e85200 accents).
+   Canonical reference: GV-GB-001 appendices.
+   Care Indeed branding (teal #007970 / orange #C74601 accents).
    Every form below is fully populated with:
      • Purpose        • Instructions
      • Linked policy IDs
@@ -153,6 +155,7 @@ interface FormOverride {
   ackIntro?: string;         // attestation intro text
   fields?: FormField[];      // custom fields for "Form" type
   signers?: string[];        // custom signer roles
+  signerSlots?: FormSignerSlot[]; // multi-signer eCIgn slot definitions
   extra?: FormSection[];     // extra bespoke sections
 }
 
@@ -176,6 +179,10 @@ export const FORM_OVERRIDES: Record<string, FormOverride> = {
       { label: 'Policy Effective Date', type: 'date', col: 2 },
     ],
     signers: ['Workforce Member'],
+    signerSlots: [
+      { field_id: 'sig_workforce_member', role: 'Workforce Member', tier: 5, required: true, resolver: 'self', sequence_group: 1 },
+      { field_id: 'sig_administrator', role: 'Administrator', tier: 1, required: true, resolver: { role_id: 'administrator' }, sequence_group: 2 },
+    ],
   },
   'EN-FM-002': {
     p: 'Canonical master index of every policy in the enterprise taxonomy, including policy ID, title, domain, subdomain, owner, version, effective/revision dates, status, and CoP/regulatory crosswalk.',
@@ -257,6 +264,12 @@ export const FORM_OVERRIDES: Record<string, FormOverride> = {
       { label: 'Regulatory Impact Assessment', type: 'textarea', col: 4 },
     ],
     signers: ['Requester', 'Domain Owner', 'Compliance Officer', 'Administrator'],
+    signerSlots: [
+      { field_id: 'sig_requester', role: 'Requester', tier: 5, required: true, resolver: 'self', sequence_group: 1 },
+      { field_id: 'sig_domain_owner', role: 'Domain Owner', tier: 3, required: true, resolver: { role_id: 'domain_owner' }, sequence_group: 2 },
+      { field_id: 'sig_compliance_officer', role: 'Compliance Officer', tier: 2, required: true, resolver: { role_id: 'compliance_officer' }, sequence_group: 3 },
+      { field_id: 'sig_administrator', role: 'Administrator', tier: 1, required: true, resolver: { role_id: 'administrator' }, sequence_group: 3 },
+    ],
   },
   'EN-FM-012': {
     p: 'Running log of every policy exception and waiver granted, active, expired, or rescinded, for audit traceability and trend analysis.',
@@ -760,8 +773,9 @@ export const FORM_OVERRIDES: Record<string, FormOverride> = {
 
 import { FORM_OVERRIDES_EXT } from './formsLibraryContentHR_CL';
 import { FORM_OVERRIDES_EXT2 } from './formsLibraryContentCO_More';
+import { FORM_OVERRIDES_JD } from './formsLibraryContentJD';
 
-Object.assign(FORM_OVERRIDES, FORM_OVERRIDES_EXT, FORM_OVERRIDES_EXT2);
+Object.assign(FORM_OVERRIDES, FORM_OVERRIDES_EXT, FORM_OVERRIDES_EXT2, FORM_OVERRIDES_JD);
 
 // ────────────────────────────────────────────────────────────────
 // GENERIC TEMPLATE GENERATION FOR FORMS WITHOUT RICH OVERRIDES
@@ -896,6 +910,21 @@ export function buildFormContent(rec: FormRecord): FormContent {
           { label: 'Version / Date', type: 'text', col: 2 },
           { label: 'Owner', type: 'text', col: 2 },
           { label: 'Reference Body', type: 'textarea', col: 4 },
+        ],
+      });
+      break;
+    }
+    case 'job description': {
+      sections.push({
+        title: 'Section 2 — Position Information',
+        layout: 'grid',
+        fields: o?.fields ?? [
+          { label: 'Position Title', type: 'text', required: true, col: 2 },
+          { label: 'Department', type: 'text', required: true, col: 2 },
+          { label: 'Reports To', type: 'text', required: true, col: 2 },
+          { label: 'Supervises', type: 'text', col: 2 },
+          { label: 'FLSA Classification', type: 'text', col: 2 },
+          { label: 'Review Cycle', type: 'text', col: 2 },
         ],
       });
       break;

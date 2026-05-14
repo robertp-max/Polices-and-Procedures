@@ -9,19 +9,26 @@ import {
   HelpCircle, Search, ChevronLeft, Menu,
   ShieldCheck, Zap,
   ArrowUpCircle, FolderOpen, UserCheck, Sparkles,
-  ListChecks, LogOut, Compass,
+  ListChecks, LogOut, Compass, Trash2,
+  Users, Heart,
 } from 'lucide-react';
+import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import TravelightBG from '@/components/TravelightBG';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { useCiModeStore } from '@/policy/stores/ciModeStore';
 import { useAuth } from '@/auth/AuthProvider';
 import { evaluateAdminAccess } from '@/policy/security/identity';
+import { canViewNavItem as canViewNavItemFn } from '@/policy/security/features/featureAccess';
+import { useUserAssignmentsStore } from '@/policy/security/identity/userAssignmentsStore';
+import { RolloutPhaseBadge } from '@/policy/security/features/RolloutPhaseBadge';
+import { PermissionGate } from '@/policy/security/features/PermissionGate';
 import { ThemeModeToggle } from '@/policy/components/ui/ThemeModeToggle';
 import { ContextualKnowledgeBulb } from '@/policy/components/help/ContextualKnowledgeBulb';
 import { useNavStore } from '@/policy/stores/navStore';
 import { isNavExcludedRoute, hasActiveInputFocus } from '@/policy/utils/navExclusions';
 import { GlobalTaskDrawer } from '@/policy/components/pm/GlobalTaskDrawer';
 import { GuidedTourGate, restartGuidedTour } from '@/policy/components/onboarding/GuidedTourGate';
+import { CesRoleReviewSwitcher } from '@/policy/ces/components/review/CesRoleReviewSwitcher';
 
 function BradRobotIcon({ size = 24, strokeWidth = 1.5, className }: { size?: number; strokeWidth?: number; className?: string }) {
   return (
@@ -53,11 +60,20 @@ interface NavItem {
   label: string;
   subItems?: NavSubItem[];
   icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  /**
+   * Maps this nav item to a feature catalog id. When set, the item is
+   * hidden from users whose role/group does not pass canViewNavItem.
+   * Items without a featureId are visible to all authenticated users.
+   */
+  featureId?: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard', to: '/dashboard', label: 'Command Center', subItems: [{ to: '/dashboard', label: 'Overview' }], icon: LayoutDashboard },
-  { id: 'iadmin', to: '/iadministrator', label: 'Brad', icon: BradRobotIcon },
+  { id: 'dashboard', to: '/dashboard', label: 'Command Center', subItems: [{ to: '/dashboard', label: 'Overview' }], icon: LayoutDashboard, featureId: 'dashboard.view' },
+  { id: 'clinician-profiles', to: '/clinicians', label: 'Clinician Profiles', icon: Users, featureId: 'clinicians.view' },
+  { id: 'patient-profiles', to: '/patients', label: 'Patient Profiles', icon: Heart, featureId: 'patients.view' },
+  { id: 'staffing-calendar', to: '/staffing-calendar', label: 'Calendar', icon: CalendarDays, featureId: 'staffing.calendar.view' },
+  { id: 'iadmin', to: '/iadministrator', label: 'Brad', icon: BradRobotIcon, featureId: 'brad.view' },
   {
     id: 'ces', to: '/ces/dashboard', label: 'Compliance Execution (CES)',
     subItems: [
@@ -71,8 +87,9 @@ const NAV_ITEMS: NavItem[] = [
       { to: '/ces/reports',           label: 'Reports' },
     ],
     icon: ClipboardCheck,
+    featureId: 'ces.view',
   },
-  { id: 'taxonomy', to: '/framework', label: 'Taxonomy', subItems: [{ to: '/framework', label: 'Framework' }, { to: '/library', label: 'Policies' }, { to: '/forms', label: 'Forms' }], icon: Network },
+  { id: 'taxonomy', to: '/framework', label: 'Taxonomy', subItems: [{ to: '/framework', label: 'Framework' }, { to: '/library', label: 'Policies' }, { to: '/forms', label: 'Forms' }], icon: Network, featureId: 'frameworkTaxonomy.view' },
   {
     id: 'onboarding', to: '/journey', label: 'Onboarding',
     subItems: [
@@ -84,6 +101,7 @@ const NAV_ITEMS: NavItem[] = [
       { to: '/journey/guide',       label: 'User Guide' },
     ],
     icon: UserCheck,
+    featureId: 'journey.view',
   },
   {
     id: 'onboarding-v2', to: '/onboarding-v2/dashboard', label: 'Onboarding v2',
@@ -95,10 +113,11 @@ const NAV_ITEMS: NavItem[] = [
       { to: '/onboarding-v2/governance', label: 'Governance' },
     ],
     icon: Sparkles,
+    featureId: 'onboardingV2.view',
   },
-  { id: 'lifecycle', to: '/policy-lifecycle', label: 'Policy Lifecycle', icon: FileEdit },
-  { id: 'evidence', to: '/evidence', label: 'Evidence', icon: FolderOpen },
-  { id: 'hubstaff', to: '/hubstaff', label: 'Hubstaff', icon: ArrowUpCircle },
+  { id: 'lifecycle', to: '/policy-lifecycle', label: 'Policy Lifecycle', icon: FileEdit, featureId: 'policyLifecycle.view' },
+  { id: 'evidence', to: '/evidence', label: 'Evidence', icon: FolderOpen, featureId: 'evidence.view' },
+  { id: 'hubstaff', to: '/hubstaff', label: 'Hubstaff', icon: ArrowUpCircle, featureId: 'hubstaff.view' },
   {
     id: 'system-documentation',
     to: '/system-documentation',
@@ -115,9 +134,10 @@ const NAV_ITEMS: NavItem[] = [
       { to: '/system-documentation/production-roadmap', label: 'Production Roadmap' },
     ],
     icon: FolderOpen,
+    featureId: 'systemDocumentation.view',
   },
-  { id: 'help', to: '/help', label: 'Help Center', icon: HelpCircle },
-  { id: 'demo', to: '/demo', label: 'Demo', icon: PlayCircle },
+  { id: 'help', to: '/help', label: 'Help Center', icon: HelpCircle, featureId: 'helpCenter.view' },
+  { id: 'demo', to: '/demo', label: 'Demo', icon: PlayCircle, featureId: 'demo.view' },
 ];
 
 const MOBILE_PRIMARY_TABS: Array<{ id: string; to: string; label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = [
@@ -181,9 +201,19 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
           { to: '/admin/users', label: 'User Assignments' },
         ],
         icon: ShieldCheck,
+        featureId: 'admin.permissions.view',
       }
     : null;
-  const allNavItems = adminNavItem ? [...NAV_ITEMS, adminNavItem] : NAV_ITEMS;
+  // Subscribe to assignment changes so nav re-renders when admins
+  // add / remove role assignments from the User Groups page.
+  const _assignmentsRev = useUserAssignmentsStore(s => s.assignments);
+  const _usersRev = useUserAssignmentsStore(s => s.users);
+  const fullNavItems = adminNavItem ? [...NAV_ITEMS, adminNavItem] : NAV_ITEMS;
+  const allNavItems = useMemo(
+    () => fullNavItems.filter(item => !item.featureId || canViewNavItemFn(user, item.featureId)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [user, _assignmentsRev, _usersRev, adminAccess.allowed],
+  );
 
   const detailMode = useShellStore(s => s.detailMode);
   const theme = useShellStore(s => s.theme);
@@ -738,10 +768,11 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                                     />
                                   </span>
                                   <span
-                                    className={`icon-interactive text-xs sm:text-lg font-light uppercase tracking-[0.18em] sm:tracking-[0.2em] text-center ${isActive ? '!opacity-100' : isVisualLight ? 'text-slate-700' : 'text-white'}`}
+                                    className={`icon-interactive text-xs sm:text-lg font-light uppercase tracking-[0.18em] sm:tracking-[0.2em] text-center inline-flex items-center justify-center ${isActive ? '!opacity-100' : isVisualLight ? 'text-slate-700' : 'text-white'}`}
                                     style={isActive ? { color: isCareIndeed ? '#007970' : '#FFC107' } : undefined}
                                   >
                                     {item.label}
+                                    {item.featureId && <RolloutPhaseBadge featureId={item.featureId} />}
                                   </span>
                                 </button>
                               );
@@ -978,6 +1009,38 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                                   <Compass size={16} />
                                   Restart Guided Tour
                                 </button>
+
+                                {/* Robert-only CES review role switcher — renders null for all other users */}
+                                <CesRoleReviewSwitcher
+                                  userEmail={user?.email}
+                                  userId={user?.id}
+                                  isLight={isVisualLight}
+                                />
+
+                                {/* Nuclear reset — gated by system.replay permission
+                                    AND by the protected TJ Padilla user id (defense in depth) */}
+                                {user?.id === 'demo-user-careindeed' && (
+                                  <PermissionGate permissionId="system.replay">
+                                    <button
+                                      type="button"
+                                      role="menuitem"
+                                      onClick={() => {
+                                        if (window.confirm('RESET ALL?\n\nThis deletes every signed form, uploaded evidence, task completion, form instance, approval, and certification.\n\nCannot be undone.')) {
+                                          useRegulatoryExecutionStore.getState().resetAll();
+                                          window.location.reload();
+                                        }
+                                      }}
+                                      className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
+                                        isVisualLight
+                                          ? 'text-red-700 hover:bg-red-50'
+                                          : 'text-red-400 hover:bg-red-500/15'
+                                      }`}
+                                    >
+                                      <Trash2 size={16} />
+                                      Reset All Data
+                                    </button>
+                                  </PermissionGate>
+                                )}
 
                                 <button
                                   type="button"

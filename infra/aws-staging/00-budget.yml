@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  HHC Staging — Budget controls. Created FIRST per Phase 1 plan §14
+  to protect the personal AWS learning credits before any billable
+  resources are created.
+
+Parameters:
+  NotificationEmail:
+    Type: String
+    Description: Email to receive budget + billing-alarm notifications.
+  MonthlySoftLimitUSD:
+    Type: Number
+    Default: 25
+    Description: Soft alert threshold (Plan §11 hard guardrails).
+  MonthlyHardLimitUSD:
+    Type: Number
+    Default: 40
+    Description: Hard warning threshold (Plan §11 hard guardrails).
+
+Resources:
+
+  # ─── AWS Budgets — monthly cost cap with two alert thresholds ───
+  StagingMonthlyBudget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName: hhc-staging-monthly
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: !Ref MonthlyHardLimitUSD
+          Unit: USD
+        CostFilters: {}
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 80
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref NotificationEmail
+        - Notification:
+            NotificationType: FORECASTED
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref NotificationEmail
+
+  # ─── SNS topic the CloudWatch billing alarm publishes to ───
+  BillingAlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: hhc-staging-billing-alarm
+      Subscription:
+        - Endpoint: !Ref NotificationEmail
+          Protocol: email
+
+  # ─── CloudWatch billing alarm (must run in us-east-1 for billing) ───
+  # Note: when deploying this stack, target us-east-1 OR provision a
+  # separate stack in us-east-1 for billing alarms (Plan §14 footnote).
+  BillingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: hhc-staging-billing-soft
+      AlarmDescription: !Sub "Triggers when staging spend exceeds $${MonthlySoftLimitUSD} USD."
+      Namespace: AWS/Billing
+      MetricName: EstimatedCharges
+      Dimensions:
+        - Name: Currency
+          Value: USD
+      Statistic: Maximum
+      Period: 21600   # 6 hours (billing metric updates every ~6h)
+      EvaluationPeriods: 1
+      Threshold: !Ref MonthlySoftLimitUSD
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref BillingAlarmTopic
+
+Outputs:
+  BudgetName:
+    Value: !Ref StagingMonthlyBudget
+    Description: AWS Budgets resource name.
+  BillingTopicArn:
+    Value: !Ref BillingAlarmTopic
+    Description: SNS topic for billing notifications.

@@ -13,6 +13,7 @@ import {
   type LeaderboardEntry,
   type YearHierarchyNode,
 } from '@/policy/evidence/cesEvidenceHierarchy';
+import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 
 interface HierarchyFilters {
   year: string;
@@ -570,6 +571,14 @@ function TaskRow({
   const task = taskNode.task;
   const mainForm = 'form_id' in task ? task.form_id : '';
   const mainEvidence = taskNode.linkedEvidence[0]?.id || 'Missing';
+  const mainFormInstance = task.generated_form_instance_ids?.[0];
+  const taskArtifactContext = {
+    eventId: task.event_id,
+    taskId: task.task_id,
+    formId: mainForm || undefined,
+    formInstanceId: mainFormInstance,
+    evidenceId: taskNode.linkedEvidence[0]?.id,
+  };
   return (
     <button type="button" onClick={onToggle} className="w-full px-3 py-2 text-left text-xs hover:bg-white/5">
       <div className="flex items-center justify-between">
@@ -580,9 +589,30 @@ function TaskRow({
           <div className="text-white/65">Assigned: {task.assignee || task.owner || 'Unassigned'} · Due: {task.due_date || 'Needs confirmation'}</div>
           <div className="mt-1 flex flex-wrap gap-2 text-teal-200">
             <Link to={`/tasks/${encodeURIComponent(task.task_id)}`} target="_blank" rel="noopener noreferrer" className="underline">open task</Link>
-            {mainForm ? <Link to={`/forms/${encodeURIComponent(mainForm)}`} target="_blank" rel="noopener noreferrer" className="underline">open form</Link> : null}
+            {mainFormInstance ? (
+              <Link
+                to={buildArtifactRoute(mainFormInstance, { ...taskArtifactContext, type: 'form_instance' })}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                open form
+              </Link>
+            ) : (
+              mainForm ? <Link to={`/forms/${encodeURIComponent(mainForm)}`} target="_blank" rel="noopener noreferrer" className="underline">open form</Link> : null
+            )}
             <Link to={`/evidence?event_id=${encodeURIComponent(task.event_id ?? '')}&task_id=${encodeURIComponent(task.task_id ?? '')}`} target="_blank" rel="noopener noreferrer" className="underline">upload supporting evidence</Link>
-            <Link to={`/evidence?event_id=${encodeURIComponent(task.event_id ?? '')}&task_id=${encodeURIComponent(task.task_id ?? '')}`} target="_blank" rel="noopener noreferrer" className="underline">view evidence package</Link>
+            <Link
+              to={buildArtifactRoute('ces-evidence-package', {
+                ...taskArtifactContext,
+                type: 'evidence_package',
+              })}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              view evidence package
+            </Link>
             <Link to={`/calendar/event/${encodeURIComponent(task.event_id ?? '')}/approval`} target="_blank" rel="noopener noreferrer" className="underline">request signature</Link>
             <Link to={`/audit?event=${encodeURIComponent(task.event_id ?? '')}`} target="_blank" rel="noopener noreferrer" className="underline">view audit log</Link>
           </div>

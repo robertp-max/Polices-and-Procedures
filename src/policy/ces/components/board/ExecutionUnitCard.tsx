@@ -45,6 +45,10 @@ export function ExecutionUnitCard({
       onDragStart={e => onDragStart?.(e, unit)}
       onDragEnd={onDragEnd}
       onClick={onClick}
+      data-testid="execution-unit-card"
+      data-unit-id={unit.id}
+      data-compliance-state={unit.complianceState}
+      data-workflow-phase={unit.workflowPhase}
       className="cursor-pointer rounded-lg shadow-sm transition-shadow hover:shadow-md select-none"
       style={{
         background: t.white,

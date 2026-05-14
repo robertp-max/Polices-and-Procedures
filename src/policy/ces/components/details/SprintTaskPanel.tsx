@@ -15,7 +15,7 @@
 import { useMemo, useState } from 'react';
 import {
   X, FileText, PenLine, Upload, ShieldAlert, CheckCircle2, Circle,
-  ListChecks, AlertCircle, Maximize2, Minimize2,
+  ListChecks, AlertCircle, Maximize2, Minimize2, AlertTriangle,
 } from 'lucide-react';
 import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { TEAL_PRIMARY } from '@/policy/components/regulatory/timelineState';
@@ -23,6 +23,9 @@ import { FormViewer } from '@/policy/components/FormViewer';
 import { useObligations } from '@/policy/ces/obligations';
 import type { ComplianceState } from '@/policy/ces/types';
 import type { MergedExecutionUnit } from '@/policy/compliance-execution/complianceExecutionTypes';
+import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
+import { buildEventInstanceIndex } from '@/policy/compliance-execution/eventInstanceId';
+import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
 
 export interface SprintTaskPanelProps {
   /** Selected sprint task (mandated event) — same selection model as
@@ -31,6 +34,8 @@ export interface SprintTaskPanelProps {
   onClear?: () => void;
   today?:   Date;
 }
+
+const EVENT_INSTANCE_INDEX = buildEventInstanceIndex(REGULATORY_EVENTS);
 
 const STATE_SECTIONS: ReadonlyArray<{ key: ComplianceState; label: string; tone: string; bg: string; border: string }> = [
   { key: 'ready',              label: 'Ready',              tone: '#1A3778', bg: 'rgba(26,55,120,0.08)',  border: 'rgba(26,55,120,0.25)' },
@@ -81,6 +86,8 @@ function SprintTaskPanelContent({
   renderFormId: string | null;
   setRenderFormId: (id: string | null) => void;
 }) {
+  const resolvedEventId = EVENT_INSTANCE_INDEX.bySourceEventId[event.id] ?? event.id;
+
   const sprintTask = obligations.getSprintTaskById(event.id);
   const childTasks = useMemo(
     () => {
@@ -254,7 +261,14 @@ function SprintTaskPanelContent({
               </div>
             </div>
             <div className="border-t border-[#E5E4E3]">
-              <FormViewer formId={activeTaskFormId} formSource="task" parentTaskId={activeTask.id} enableEmbeddedSigning />
+              <FormViewer
+                formId={activeTaskFormId}
+                formSource="task"
+                parentTaskId={activeTask.id}
+                hhcEventId={resolvedEventId}
+                hhcWorkflowId={activeTask.workflowId ?? event.workflowId}
+                enableEmbeddedSigning
+              />
             </div>
           </section>
         )}
@@ -265,6 +279,8 @@ function SprintTaskPanelContent({
         <FormMaximizedModal
           formId={activeTaskFormId}
           parentTaskId={activeTask.id}
+          hhcEventId={resolvedEventId}
+          hhcWorkflowId={activeTask.workflowId ?? event.workflowId}
           onMinimize={() => setFormMaximized(false)}
           onClose={() => { setFormMaximized(false); setRenderFormId(null); }}
         />
@@ -327,6 +343,14 @@ function RollupChip({ label, value, tone = '#1A3778' }: { label: string; value: 
   );
 }
 
+/** Resolves the effective formId, checking FORMS_DATASET for existence. */
+function resolveTaskFormId(task: MergedExecutionUnit): { formId: string | null; templateExists: boolean } {
+  const raw = task.sourceFormIds?.[0] ?? null;
+  if (!raw) return { formId: null, templateExists: false };
+  const exists = FORMS_DATASET.some(f => f.id === raw);
+  return { formId: raw, templateExists: exists };
+}
+
 function TaskRow({
   task, sectionBg, sectionBorder, active, onSelect, onCompleteForm,
 }: {
@@ -339,7 +363,9 @@ function TaskRow({
   onCompleteForm: (formId: string) => void;
 }) {
   const isDone   = task.complianceState === 'completed';
-  const formId   = task.sourceFormIds?.[0] ?? null;
+  const { formId, templateExists } = resolveTaskFormId(task);
+  const assignedRole = (task as { assignedRole?: string }).assignedRole;
+
   return (
     <li>
       <button
@@ -360,13 +386,35 @@ function TaskRow({
           <div className="text-[12.5px] font-semibold leading-snug" style={{ color: '#1F1C1B' }}>
             {task.title}
           </div>
-          <div className="text-[10.5px] text-[#747470] mt-0.5">
+          <div className="text-[10.5px] text-[#747470] mt-0.5 flex items-center gap-1.5 flex-wrap">
             Due {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            {/* Role-only assignment per policy refs (e.g. Governing Body, Administrator). */}
-            {task.owner?.role && <> · {task.owner.role}</>}
+            {assignedRole && (
+              <span
+                style={{
+                  padding: '0 4px',
+                  borderRadius: 3,
+                  background: '#EFF6FF',
+                  color: '#1D4ED8',
+                  fontSize: 9,
+                  fontWeight: 700,
+                }}
+              >
+                {assignedRole}
+              </span>
+            )}
+            {task.owner?.role && !assignedRole && <> · {task.owner.role}</>}
           </div>
+          {/* Diagnostic for missing formId when task expects a form */}
+          {active && formId && !templateExists && (
+            <div className="mt-1.5 text-[9px] leading-relaxed p-2 rounded bg-amber-50 border border-amber-200 text-amber-800">
+              <AlertTriangle size={10} className="inline mr-1" />
+              <strong>Missing template</strong> — formId=<code>{formId}</code> not in Forms Library.
+              <br />task.id=<code>{task.id}</code> · sourceFormIds=<code>{JSON.stringify(task.sourceFormIds ?? [])}</code>
+              <br />Cannot complete until form template is registered.
+            </div>
+          )}
         </div>
-        {formId && !isDone && (
+        {formId && !isDone && templateExists && (
           <span
             role="button"
             tabIndex={0}
@@ -377,6 +425,16 @@ function TaskRow({
           >
             <FileText size={10} className="inline mr-1" />
             Complete Form
+          </span>
+        )}
+        {formId && !isDone && !templateExists && (
+          <span
+            className="text-[10px] font-bold uppercase tracking-[0.14em] px-2 py-1 rounded"
+            style={{ background: '#FEF3C7', color: '#92400E', border: '1px solid #FCD34D' }}
+            title="Form template not found in Forms Library"
+          >
+            <AlertTriangle size={10} className="inline mr-1" />
+            Missing Template
           </span>
         )}
       </button>
@@ -390,10 +448,12 @@ function TaskRow({
    inline mode; X closes the form workspace entirely.
    ---------------------------------------------------------------- */
 function FormMaximizedModal({
-  formId, parentTaskId, onMinimize, onClose,
+  formId, parentTaskId, hhcEventId, hhcWorkflowId, onMinimize, onClose,
 }: {
   formId: string;
   parentTaskId: string;
+  hhcEventId?: string;
+  hhcWorkflowId?: string;
   onMinimize: () => void;
   onClose: () => void;
 }) {
@@ -440,6 +500,8 @@ function FormMaximizedModal({
             formId={formId}
             formSource="task"
             parentTaskId={parentTaskId}
+            hhcEventId={hhcEventId}
+            hhcWorkflowId={hhcWorkflowId}
             enableEmbeddedSigning
           />
         </div>

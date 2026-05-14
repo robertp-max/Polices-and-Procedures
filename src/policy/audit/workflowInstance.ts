@@ -258,6 +258,7 @@ export function useWorkflowInstance(
   const notes               = useEventNotes(evId);
   const certificationRecord = useEventCertification(evId) ?? null;
   const auditLog            = useEnforcementStore(s => s.auditLog);
+  const taskAuditByEventId  = useRegulatoryExecutionStore(s => s.taskAuditByEventId);
   const generatedEvents     = useAutogenStore(s => s.generatedEvents);
   const triggeredEvents     = useAutogenStore(s => s.triggeredEvents);
 
@@ -269,7 +270,25 @@ export function useWorkflowInstance(
 
   return useMemo<WorkflowInstance | null>(() => {
     if (!event) return null;
-    const auditTrail = auditLog.filter(l => l.eventId === event.id);
+    const eventAliases = Array.from(new Set([event.id, ...(store.eventInstanceIdsBySourceEventId[event.id] ?? [])]));
+    const enforcementTrail = auditLog.filter(l => eventAliases.includes(l.eventId));
+    const executionTrail: AuditEntry[] = eventAliases
+      .flatMap(alias => taskAuditByEventId[alias] ?? [])
+      .map(row => ({
+        id: `exec-${row.auditId}`,
+        ts: row.timestamp,
+        actor: row.actorId ?? 'system',
+        actorRole: row.actorRole,
+        action: row.action as AuditEntry['action'],
+        eventId: event.id,
+        targetKind: row.entityType,
+        targetId: row.entityId,
+        before: row.before,
+        after: row.after,
+        reason: row.reason,
+      }));
+    const auditTrail = [...enforcementTrail, ...executionTrail]
+      .sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
     return buildWorkflowInstance({
       event,
       today,
@@ -288,9 +307,9 @@ export function useWorkflowInstance(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     event, today, allEvents,
-    documents, approvalReqs, notes, certificationRecord, auditLog,
+    documents, approvalReqs, notes, certificationRecord, auditLog, taskAuditByEventId,
     store.stepStates, store.formStates, store.minutesStates,
-    store.completions, store.certifications,
+    store.completions, store.certifications, store.eventInstanceIdsBySourceEventId,
   ]);
 }
 

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { PolicyAppendicesPanel, type ExtraAppendix } from '@/policy/components/PolicyAppendicesPanel';
+import { openPolicyPrintRoute } from '@/policy/utils/openPolicyPrintRoute';
 
 function useDetailShell() {
   const setDetailMode = useShellStore(s => s.setDetailMode);
@@ -1730,7 +1731,7 @@ export function GVPolicyDetailView() {
             <ArrowLeft size={13} /> Return to Policy Library
           </button>
           <button
-            onClick={() => window.open(`/print/${pc.id}`, '_blank', 'noopener,noreferrer')}
+            onClick={() => openPolicyPrintRoute(`/print/${encodeURIComponent(pc.id)}`)}
             className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-white/20"
           >
             <Printer size={16} />

@@ -40,11 +40,17 @@ export {
  */
 export function useProjectedTasks(scope: 'full' | 'sprint' = 'sprint'): Task[] {
   const formStates = useRegulatoryExecutionStore(s => s.formStates);
+  const rawStepStates = useRegulatoryExecutionStore(s => s.stepStates);
+  const signerTasksByFormInstanceId = useRegulatoryExecutionStore(s => s.signerTasksByFormInstanceId);
   const overlays = usePmOverlayStore(s => s.overlays);
   const personal = usePmPersonalStore(s => s.tasks);
   const generatedEvents = useAutogenStore(s => s.generatedEvents);
   const triggeredEvents = useAutogenStore(s => s.triggeredEvents);
   const sprintWindow = usePmViewSprintStore(s => s.window);
+  const stepStates = useMemo(
+    () => Object.fromEntries(Object.entries(rawStepStates).map(([k, v]) => [k, v.status])),
+    [rawStepStates],
+  );
   const allEvents = useMemo(
     () => [...REGULATORY_EVENTS, ...generatedEvents, ...triggeredEvents].filter(e => !e.isContext),
     [generatedEvents, triggeredEvents],
@@ -66,8 +72,51 @@ export function useProjectedTasks(scope: 'full' | 'sprint' = 'sprint'): Task[] {
     const cesTasks = projectTasks({
       events: enrichedEvents as unknown as ProjectorEvent[],
       formStates,
+      stepStates,
       overlays,
     });
+
+    // Inject pending signer tasks from the multi-signer store as NonFormCesTask entries
+    const signerPmTasks: Task[] = [];
+    for (const [, tasks] of Object.entries(signerTasksByFormInstanceId)) {
+      for (const st of tasks) {
+        if (st.status !== 'pending') continue;
+        const existingIds = new Set(cesTasks.map(t => t.task_id));
+        if (existingIds.has(st.taskId)) continue;
+
+        const pmStatus: import('./types').PmTaskStatus = st.status === 'pending' ? 'todo' : 'done';
+        const event = allEvents.find(e => e.id === st.eventId);
+        signerPmTasks.push({
+          task_id: st.taskId,
+          source: 'CES' as const,
+          task_type: 'form_completion' as const,
+          event_id: st.eventId,
+          event_title: event?.title || st.eventId,
+          workflow_id: event?.workflowId || '',
+          workflow_title: '',
+          policy_refs: st.linkedPolicyIds,
+          form_refs: [st.formId],
+          generated_form_instance_ids: [st.formInstanceId],
+          source_form_id: st.formId,
+          priority: 'high' as const,
+          risk: 'high' as const,
+          blockers: [],
+          step_id: st.slotFieldId,
+          title: `eCIgn Signature Required — Signer ${st.signerIndex} of ${st.totalSigners} (${st.assignedToRole || st.assignedTo})`,
+          description: `Signature request for ${st.formId} instance ${st.formInstanceId}`,
+          status: pmStatus,
+          start_date: st.createdAt.slice(0, 10),
+          assigned_user_id: st.assignedTo,
+          assignee: st.assignedToName || st.assignedTo,
+          owner: st.assignedToName || st.assignedTo,
+          due_date: st.dueDate || st.createdAt.slice(0, 10),
+          sprint_id: '',
+          depends_on: [],
+          dependencies: [],
+        } satisfies import('./types').NonFormCesTask);
+      }
+    }
+
     const personalTasks =
       scope === 'full'
         ? Object.values(personal)
@@ -76,13 +125,12 @@ export function useProjectedTasks(scope: 'full' | 'sprint' = 'sprint'): Task[] {
             if (!due) return false;
             return isoDateInSprint(due, sprintWindow);
           });
-    const merged = [...cesTasks, ...personalTasks];
-    // Anti-duplication enforcement across CES + Personal partitions.
+    const merged = [...cesTasks, ...signerPmTasks, ...personalTasks];
     if (import.meta.env?.DEV) {
       assertNoDuplicateTaskIds(merged);
     }
     return merged;
-  }, [scopedCesEvents, formStates, overlays, personal, scope, sprintWindow]);
+  }, [scopedCesEvents, formStates, stepStates, overlays, personal, scope, sprintWindow, signerTasksByFormInstanceId, allEvents]);
 }
 
 function findOwningEventIdForTask(taskId: string, events: { id: string }[]): string | null {
@@ -98,6 +146,11 @@ function findOwningEventIdForTask(taskId: string, events: { id: string }[]): str
 /** Lookup helper: return a single task by id, or undefined. */
 export function useProjectedTaskById(task_id: string): Task | undefined {
   const formStates = useRegulatoryExecutionStore(s => s.formStates);
+  const rawStepStates = useRegulatoryExecutionStore(s => s.stepStates);
+  const stepStates = useMemo(
+    () => Object.fromEntries(Object.entries(rawStepStates).map(([k, v]) => [k, v.status])),
+    [rawStepStates],
+  );
   const overlays = usePmOverlayStore(s => s.overlays);
   const personal = usePmPersonalStore(s => s.tasks);
   const generatedEvents = useAutogenStore(s => s.generatedEvents);
@@ -125,8 +178,9 @@ export function useProjectedTaskById(task_id: string): Task | undefined {
     const projected = projectTasks({
       events: [enriched as unknown as ProjectorEvent],
       formStates,
+      stepStates,
       overlays,
     });
     return projected.find(t => t.task_id === task_id);
-  }, [task_id, tasks, personal, allEvents, formStates, overlays]);
+  }, [task_id, tasks, personal, allEvents, formStates, stepStates, overlays]);
 }

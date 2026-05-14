@@ -468,8 +468,11 @@ export function buildCompletionChecklist(
   store: ExecStore,
 ): CompletionChecklist {
   const report = store.validateEvent(event);
-  const evidenceList = (store.evidence[event.id] || []);
-  const approvalsForEvent = store.approvals.filter(a => a.eventId === event.id);
+  const eventAliases = Array.from(new Set([event.id, ...(store.eventInstanceIdsBySourceEventId[event.id] ?? [])]));
+  const evidenceList = eventAliases
+    .flatMap(eventId => store.evidence[eventId] || [])
+    .filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx);
+  const approvalsForEvent = store.approvals.filter(a => eventAliases.includes(a.eventId));
   const requiredApprovalRules = (event.approvals ?? []).filter(r => r.required);
   const approvedRequired = requiredApprovalRules.filter(r =>
     approvalsForEvent.some(a =>

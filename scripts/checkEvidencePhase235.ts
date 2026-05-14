@@ -109,10 +109,10 @@ function main(): void {
     'EventFormInstance has taskId, requirementId, status, and sequence fields',
   );
 
-  // 14. Stable FI- prefix ID format used in store
+  // 14. Stable {eventId}-{formId}-{sequence} format used in store
   assert.ok(
-    storeSource.includes('`FI-${eventId}-${formId}-'),
-    'Store generates stable FI-{eventId}-{formId}-{sequence} form instance IDs',
+    storeSource.includes('`${eventId}-${formId}-'),
+    'Store generates stable {eventId}-{formId}-{sequence} form instance IDs',
   );
 
   // 15. getOrCreateFormInstance is idempotent (looks up existing before creating)
@@ -168,7 +168,7 @@ function main(): void {
   console.log('PASS: Evidence Center readability fixed with select-none and readable banner');
   console.log('PASS: FormInstanceStatus type defined with all required states');
   console.log('PASS: EventFormInstance extended with taskId/requirementId/status/sequence');
-  console.log('PASS: Stable FI-{eventId}-{formId}-{seq} ID format in store');
+  console.log('PASS: Stable {eventId}-{formId}-{seq} ID format in store');
   console.log('PASS: getOrCreateFormInstance is idempotent (no duplicate instances on clicks)');
   console.log('PASS: setFormInstanceStatus exists for lifecycle management');
   console.log('PASS: resolveFormTemplate checks FORMS_DATASET with clear missing-template message');

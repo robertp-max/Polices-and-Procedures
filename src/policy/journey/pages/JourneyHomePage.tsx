@@ -8,8 +8,24 @@ import { PhaseRail } from '@/policy/journey/components/PhaseRail';
 import { ModuleCard } from '@/policy/journey/components/ModuleCard';
 import { GateBanner } from '@/policy/journey/components/GateBanner';
 import { EmployeePicker } from '@/policy/journey/components/EmployeePicker';
-import { BookOpen, GraduationCap } from 'lucide-react';
+import { BookOpen, GraduationCap, FlaskConical, Play, Clock, ChevronRight } from 'lucide-react';
 import type { JourneyModule } from '@/policy/journey/types/journey';
+
+/* ─── Staging module catalogue ─────────────────────────────────────────── */
+const STAGING_MODULES = [
+  {
+    id: 'STAGING-M01',
+    title: "Marites' Journey",
+    subtitle: 'Cultural Awareness & CLAS Standards',
+    tag: 'ACHC-ART-M01',
+    duration: '35–40 min',
+    path: '/journey/staging/m01',
+    description:
+      'A cinematic, scenario-based module following Marites — a newly immigrated Filipina nurse — as she navigates cultural awareness, language access, implicit bias, and ACHC CLAS Standards in home health care.',
+    acts: ['Act 1 · Philippines origins & arrival', 'Act 2 · Conflict & operational consequences', 'Act 3 · Adaptation & professional success'],
+    structure: ['Pre-Assessment Hook (3Q)', '17 narrative content slides', '6 story challenges + debriefs', 'Final Assessment (5Q)', 'Summary & Certificate'],
+  },
+];
 
 type PhaseId = 'PRE_DAY_1' | 'GAO' | 'ROLE' | 'SUPERVISED' | 'CLEARED' | 'ANN' | 'DRILL';
 type JourneyCategory =
@@ -174,6 +190,85 @@ export function JourneyHomePage() {
           body="DON has signed HR-TA-005 Appendix B = SATISFACTORY. Continue with annual training cadence and supervised-visit cycles as required by policy."
         />
       )}
+
+      {/* ── STAGING CATEGORY ──────────────────────────────────────────────── */}
+      <section className="mb-8 rounded-2xl overflow-hidden border border-amber-500/15 bg-gradient-to-br from-amber-950/30 via-black/0 to-transparent">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-amber-500/10">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-amber-500/15 border border-amber-500/30">
+              <FlaskConical size={15} className="text-amber-400" strokeWidth={1.75} />
+            </div>
+            <div>
+              <h3 className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-amber-400">Staging</h3>
+              <p className="text-[10px] text-white/40 font-roboto">Prototype cinematic modules — in active development</p>
+            </div>
+          </div>
+          <span className="text-[9px] font-bold uppercase tracking-[0.2em] px-2 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+            Preview
+          </span>
+        </div>
+
+        <div className="p-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
+          {STAGING_MODULES.map(m => (
+            <div key={m.id} className="group relative flex flex-col gap-4 p-6 rounded-xl bg-white/[0.03] border border-white/8 hover:border-amber-500/30 hover:bg-amber-950/20 transition-all duration-300">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.25em] px-2 py-0.5 rounded-full bg-[#C74601]/15 text-[#C74601] border border-[#C74601]/25">
+                      {m.tag}
+                    </span>
+                    <span className="flex items-center gap-1 text-[9px] text-white/30 font-bold uppercase tracking-widest">
+                      <Clock size={9} /> {m.duration}
+                    </span>
+                  </div>
+                  <h4 className="font-outfit font-light text-white text-xl leading-tight" style={{ letterSpacing: '-0.01em' }}>
+                    {m.title}
+                  </h4>
+                  <p className="text-[11px] text-[#C74601] font-medium mt-0.5">{m.subtitle}</p>
+                </div>
+                <button
+                  onClick={() => nav(m.path)}
+                  className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-bold text-[11px] uppercase tracking-widest transition-all duration-300 hover:scale-105 shadow-lg"
+                  style={{ background: '#C74601', boxShadow: '0 0 20px rgba(199,70,1,0.35)' }}
+                >
+                  <Play size={12} fill="currentColor" /> Launch
+                </button>
+              </div>
+
+              {/* Description */}
+              <p className="text-[11px] text-white/50 font-roboto leading-relaxed">{m.description}</p>
+
+              {/* Story acts */}
+              <div className="flex flex-col gap-1">
+                {m.acts.map((act, i) => (
+                  <div key={i} className="flex items-center gap-2 text-[10px] text-white/35">
+                    <div className="w-1 h-1 rounded-full bg-[#C74601]/50 flex-shrink-0" />
+                    {act}
+                  </div>
+                ))}
+              </div>
+
+              {/* Structure pills */}
+              <div className="flex flex-wrap gap-1.5 pt-1 border-t border-white/5">
+                {m.structure.map((item, i) => (
+                  <span key={i} className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-white/[0.04] text-white/30 border border-white/6">
+                    {item}
+                  </span>
+                ))}
+              </div>
+
+              <button
+                onClick={() => nav(m.path)}
+                className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+                aria-label={`Launch ${m.title}`}
+              >
+                <ChevronRight size={32} className="text-white/10" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <div className="grid grid-cols-12 gap-6">
         <aside className="col-span-12 lg:col-span-3 space-y-6">

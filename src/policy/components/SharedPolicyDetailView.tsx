@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState, useRef } from 'react';
 import {
   ChevronLeft, Printer, Download, Target, CheckCircle, BookOpen, List,
   Settings, FileText, CheckSquare, Archive, LayoutList, Bell,
@@ -12,7 +12,12 @@ import { FormViewer } from '@/policy/components/FormViewer';
 import { PolicyAppendicesPanel } from '@/policy/components/PolicyAppendicesPanel';
 import { printForm } from '@/policy/utils/printForm';
 import type { PolicyContentSection } from '@/policy/types';
-import { achcSurveyByPolicyId } from '@/policy/data/achcSurveyProjection.generated';
+import {
+  achcSurveyByPolicyId,
+  type AchcSurveyMetadata,
+} from '@/policy/data/achcSurveyProjection.generated';
+import type { AchcSupportRef } from '@/policy/data/achcSupportAnchors';
+import { openPolicyPrintRoute } from '@/policy/utils/openPolicyPrintRoute';
 
 // ══════════════════════════════════════════════════════════════
 // SHARED POLICY DETAIL VIEW
@@ -33,6 +38,32 @@ export interface SharedPolicy {
    *  routes the content area through the generic generated-content
    *  renderer instead of the GV-GB-001 specimen fallbacks. */
   generatedSections?: PolicyContentSection[];
+}
+
+export interface AchcViewerContext {
+  source: 'ACHC_MATRIX' | 'ACHC_CROSSWALK' | 'ACHC_LIBRARY';
+  metadata: AchcSurveyMetadata | null;
+  supportRefs: AchcSupportRef[];
+  activeHhGroup?: string;
+  highlightedAnchorRef?: string;
+  selectedAchcStandard?: string;
+  hhGroups?: string[];
+  onSetActiveHhGroup?: (group: string | undefined) => void;
+}
+
+
+const GV_SECTION_ID_TO_VIEWER_SECTION: Record<string, { tabId: string; sIdx: number }> = {
+  '2-1-policy-header': { tabId: 'overview', sIdx: 0 },
+  '3-2-purpose': { tabId: 'overview', sIdx: 1 },
+  '4-3-scope': { tabId: 'overview', sIdx: 2 },
+  '5-4-policy-statement': { tabId: 'statements', sIdx: 0 },
+  '6-5-definitions': { tabId: 'overview', sIdx: 3 },
+};
+
+function getSectionFromPageRef(pageRef: string): { policyId: string; pageNumber: number } | null {
+  const match = pageRef.match(/^([A-Z]{2}-[A-Z]{2}-\d{3})-P(\d{2})$/);
+  if (!match) return null;
+  return { policyId: match[1], pageNumber: Number(match[2]) };
 }
 
 // ── SHARED REGULATORY ITEMS (colour lookups) ──────────────────
@@ -459,7 +490,7 @@ function splitPolicyStatements(body: string): string[] {
 
 /** Renders a single generated-content section inside the carousel.
  *  Container is fully transparent (no border, no background) per
- *  the GV-GB-001 gold-standard layout — only tables retain visible chrome. */
+ *  the canonical light editorial layout — only tables retain visible chrome. */
 function GenericSectionPanel({ section }: { section: import('@/policy/types').PolicyContentSection }) {
   const cleanTitle = cleanGenericTitle(section.title);
   const isEmpty = !section.body || section.body.trim() === '' || section.body.trim() === '---';
@@ -498,9 +529,29 @@ function SCard({ children }: { children: React.ReactNode }) {
 }
 
 // ── ACHC SURVEY ALIGNMENT PANEL ──────────────────────────────
-function AchcAlignmentPanel({ policyId }: { policyId: string }) {
-  const achc = achcSurveyByPolicyId[policyId];
+function AchcAlignmentPanel({
+  policyId,
+  achcContext,
+  activeAnchorRef,
+  activeStandard,
+  standardTargets,
+  onStandardActivate,
+}: {
+  policyId: string;
+  achcContext?: AchcViewerContext;
+  activeAnchorRef?: string;
+  activeStandard?: string;
+  standardTargets: Map<string, number>;
+  onStandardActivate: (standard: string) => void;
+}) {
+  const achc = achcContext?.metadata ?? achcSurveyByPolicyId[policyId] ?? null;
   if (!achc) return null;
+  const supportRefs = achcContext?.supportRefs ?? [];
+  const hhFilter = achcContext?.activeHhGroup;
+  const highlightedAnchor = activeAnchorRef ?? achcContext?.highlightedAnchorRef;
+  const filteredStandards = hhFilter
+    ? achc.achcStandards.filter((standard) => standard.startsWith(hhFilter))
+    : achc.achcStandards;
 
   const badgeClass =
     achc.mappingType === 'DIRECT'   ? 'bg-[#0f766e]/10 text-[#0f766e] border-[#0f766e]/40' :
@@ -508,8 +559,15 @@ function AchcAlignmentPanel({ policyId }: { policyId: string }) {
     achc.mappingType === 'SME_REVIEW' ? 'bg-amber-500/10 text-amber-700 border-amber-500/40' :
     'bg-slate-100 text-slate-500 border-slate-300';
 
+  const validatedSupportRefs = supportRefs.filter(
+    (ref) => ref.status === 'VALIDATED' && ref.pageRef !== 'ANCHOR_REVIEW_REQUIRED',
+  );
+  const hasPendingPageAnchor = supportRefs.some(
+    (ref) => ref.status === 'ANCHOR_REVIEW_REQUIRED' || ref.pageRef === 'ANCHOR_REVIEW_REQUIRED',
+  );
+
   return (
-    <div className="mt-8 border-t border-[#e2e8f0] pt-6">
+    <div id="achc-context-panel" className="mt-8 border-t border-[#e2e8f0] pt-6">
       <h3 className="font-montserrat font-semibold text-[13px] text-[#007970] tracking-[0.15em] uppercase mb-5 flex items-center gap-2">
         <ShieldCheck size={14} className="text-[#007970]" /> ACHC Survey Alignment
       </h3>
@@ -536,17 +594,68 @@ function AchcAlignmentPanel({ policyId }: { policyId: string }) {
         </div>
       </dl>
 
-      {achc.achcStandards.length > 0 && (
+      {filteredStandards.length > 0 && (
         <div className="mt-5">
           <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-2">ACHC Standards</dt>
           <div className="flex flex-wrap gap-1.5 mt-1">
-            {achc.achcStandards.map(s => (
-              <span key={s} className="inline-flex items-center px-2.5 py-1 rounded-full border border-[#007970]/30 bg-[#007970]/08 font-montserrat font-semibold text-[11px] text-[#007970]">
-                {s}
+            {filteredStandards.map((s) => {
+              const hasTarget = standardTargets.has(s);
+              const isActive = activeStandard === s;
+              const className = hasTarget
+                ? `inline-flex items-center px-2.5 py-1 rounded-full border font-montserrat font-semibold text-[11px] transition-colors ${
+                    isActive
+                      ? 'border-[#ea580c] bg-[#ea580c]/15 text-[#ea580c]'
+                      : hhFilter && s.startsWith(hhFilter)
+                      ? 'border-[#ea580c]/40 bg-[#ea580c]/10 text-[#ea580c]'
+                      : 'border-[#007970]/30 bg-[#007970]/08 text-[#007970] hover:bg-[#007970]/15'
+                  }`
+                : 'inline-flex items-center px-2.5 py-1 rounded-full border font-montserrat font-semibold text-[11px] border-slate-300 bg-slate-100 text-slate-500 cursor-not-allowed';
+              if (!hasTarget) {
+                return (
+                  <span key={s} className={className} title="Anchor pending">
+                    {s} · Anchor pending
+                  </span>
+                );
+              }
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => onStandardActivate(s)}
+                  className={className}
+                  title={`Jump to ${s} support`}
+                >
+                  {s}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {validatedSupportRefs.length > 0 && (
+        <div className="mt-5">
+          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-2">Support References</dt>
+          <div className="flex flex-wrap gap-2">
+            {validatedSupportRefs.map((ref) => (
+              <span
+                key={`${ref.pageRef}-${ref.sectionTitle ?? ''}`}
+                className={`inline-flex items-center px-2.5 py-1 rounded-full border font-montserrat font-semibold text-[10px] ${
+                  highlightedAnchor && highlightedAnchor === ref.pageRef
+                    ? 'border-[#ea580c] bg-[#ea580c]/15 text-[#ea580c]'
+                    : 'border-[#007970]/30 bg-[#007970]/08 text-[#007970]'
+                }`}
+              >
+                {ref.pageRef}
+                {ref.pageNumber ? ` · Page ${String(ref.pageNumber).padStart(2, '0')}` : ''}
+                {ref.sectionTitle ? ` · ${ref.sectionTitle}` : ''}
               </span>
             ))}
           </div>
         </div>
+      )}
+      {hasPendingPageAnchor && (
+        <p className="mt-2 font-roboto text-[12px] text-slate-500">Page anchor pending</p>
       )}
 
       {(achc.title22.length > 0 || achc.medicareCop.length > 0) && (
@@ -584,7 +693,23 @@ function AchcAlignmentPanel({ policyId }: { policyId: string }) {
 }
 
 // ── TAB: OVERVIEW — one section at a time (sectionIdx 0-3) ────
-function TabOverview({ policy, sectionIdx = 0 }: { policy: SharedPolicy; sectionIdx?: number }) {
+function TabOverview({
+  policy,
+  sectionIdx = 0,
+  achcContext,
+  activeAnchorRef,
+  activeStandard,
+  standardTargets = new Map<string, number>(),
+  onStandardActivate = () => {},
+}: {
+  policy: SharedPolicy;
+  sectionIdx?: number;
+  achcContext?: AchcViewerContext;
+  activeAnchorRef?: string;
+  activeStandard?: string;
+  standardTargets?: Map<string, number>;
+  onStandardActivate?: (standard: string) => void;
+}) {
   const isGV = policy.policyId === 'GV-GB-001';
   const purposeText = isGV ? GV_PURPOSE : policy.purpose;
   const scopeItems  = isGV ? GV_SCOPE    : policy.scope;
@@ -617,7 +742,16 @@ function TabOverview({ policy, sectionIdx = 0 }: { policy: SharedPolicy; section
           </div>
         ))}
       </dl>
-      <AchcAlignmentPanel policyId={policy.policyId} />
+      {achcContext && (
+        <AchcAlignmentPanel
+          policyId={policy.policyId}
+          achcContext={achcContext}
+          activeAnchorRef={activeAnchorRef}
+          activeStandard={activeStandard}
+          standardTargets={standardTargets}
+          onStandardActivate={onStandardActivate}
+        />
+      )}
     </SCard>
   );
 
@@ -1178,8 +1312,18 @@ function PrintMeta({ label, value }: { label: string; value: string }) {
   );
 }
 
-function PolicyPrintDocument({ policy, isGV }: { policy: SharedPolicy; isGV: boolean }) {
+function PolicyPrintDocument({
+  policy,
+  isGV,
+  achcContext,
+}: {
+  policy: SharedPolicy;
+  isGV: boolean;
+  achcContext?: AchcViewerContext;
+}) {
   const procedureSections = isGV ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] : [0];
+  const printSupportRefs = achcContext?.supportRefs ?? [];
+  const printStandards = achcContext?.metadata?.achcStandards ?? [];
   const appendixForms = isGV
     ? [
         { id: 'A', title: 'Appendix A — Governing Body Membership Roster', formId: 'GV-FM-011' },
@@ -1228,9 +1372,38 @@ function PolicyPrintDocument({ policy, isGV }: { policy: SharedPolicy; isGV: boo
               <div className="col-span-2"><PrintMeta label="Domain" value={policy.domain} /></div>
               <div className="col-span-2"><PrintMeta label="Approved By" value={policy.approvedBy} /></div>
             </div>
+            {achcContext?.metadata && (
+              <div className="mt-5 border-t border-[#E5E4E3] pt-4">
+                <p className="font-montserrat font-bold text-[9.5px] uppercase tracking-[0.14em] text-[#524048] mb-2">ACHC Tags</p>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="text-[#007970] border border-[#007970]/40 bg-[#E5FEFF] px-2 py-0.5 rounded-full text-[10px] font-montserrat font-bold uppercase tracking-[0.1em]">
+                    {achcContext.metadata.mappingType}
+                  </span>
+                  {printStandards.slice(0, 8).map((standard) => (
+                    <span
+                      key={standard}
+                      className="text-[#ea580c] border border-[#ea580c]/35 bg-[#ea580c]/10 px-2 py-0.5 rounded-full text-[10px] font-montserrat font-bold"
+                    >
+                      {standard}
+                    </span>
+                  ))}
+                  {printSupportRefs.map((ref) => (
+                    <span
+                      key={ref.pageRef}
+                      className="text-[#0f766e] border border-[#0f766e]/35 bg-[#0f766e]/10 px-2 py-0.5 rounded-full text-[10px] font-montserrat font-bold"
+                    >
+                      {ref.pageRef}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="mb-8 break-inside-avoid"><TabOverview policy={policy} sectionIdx={1} /></div>
+          {/* Keep page 1 header-only; content starts page 2 */}
+          <div className="page-break" />
+
+          <div className="mb-8 break-inside-avoid"><TabOverview policy={policy} sectionIdx={1} achcContext={achcContext} /></div>
           <div className="mb-8 break-inside-avoid"><TabOverview policy={policy} sectionIdx={2} /></div>
           <div className="mb-8"><TabStatements policy={policy} /></div>
           <div className="mb-8"><TabOverview policy={policy} sectionIdx={3} /></div>
@@ -1279,7 +1452,17 @@ function PolicyPrintDocument({ policy, isGV }: { policy: SharedPolicy; isGV: boo
 // MAIN EXPORT — SharedPolicyDetailView
 // ══════════════════════════════════════════════════════════════
 
-export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { policy: SharedPolicy; onBack?: () => void; embedded?: boolean }) {
+export function SharedPolicyDetailView({
+  policy,
+  onBack,
+  embedded = false,
+  achcContext,
+}: {
+  policy: SharedPolicy;
+  onBack?: () => void;
+  embedded?: boolean;
+  achcContext?: AchcViewerContext;
+}) {
   // ── CORE STATE ────────────────────────────────────────────────
   const isGV = policy.policyId === 'GV-GB-001';
   useShellStore(s => s.theme);
@@ -1409,16 +1592,128 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
   const activeSection    = FULL_SECTIONS[activeSectionGlobalIdx] ?? FULL_SECTIONS[0];
   const activeTab        = activeSection.tabId;
   const activeSectionInTab = activeSection.sIdx;
+  const [activeAnchorRef, setActiveAnchorRef] = useState<string | undefined>(achcContext?.highlightedAnchorRef);
+  const [flashAnchorRef, setFlashAnchorRef] = useState<string | undefined>(undefined);
+  const [activeStandard, setActiveStandard] = useState<string | undefined>(undefined);
 
-  // ── ANIMATION STATE MACHINE ───────────────────────────────────
-  const [slidePhase, setSlidePhase] = useState<'idle' | 'exit' | 'enter'>('idle');
+  const anchorTargetsByRef = useMemo(() => {
+    const targets = new Map<string, number>();
+    const refs = achcContext?.supportRefs ?? [];
+    if (!refs.length) return targets;
+
+    for (const ref of refs) {
+      if (ref.status !== 'VALIDATED') continue;
+      let targetIdx = -1;
+
+      if (ref.sectionId) {
+        if (useGenericContent) {
+          const tabIds = Object.keys(genericSectionsByTab);
+          for (const tabId of tabIds) {
+            const list = genericSectionsByTab[tabId] ?? [];
+            const secIdx = list.findIndex((section) => section.id === ref.sectionId);
+            if (secIdx >= 0) {
+              targetIdx = FULL_SECTIONS.findIndex((section) => section.tabId === tabId && section.sIdx === secIdx);
+              break;
+            }
+          }
+        } else if (policy.policyId === 'GV-GB-001') {
+          const mapTarget = GV_SECTION_ID_TO_VIEWER_SECTION[ref.sectionId];
+          if (mapTarget) {
+            targetIdx = FULL_SECTIONS.findIndex(
+              (section) => section.tabId === mapTarget.tabId && section.sIdx === mapTarget.sIdx,
+            );
+          }
+        }
+      }
+
+      if (targetIdx < 0 && ref.pageRef) {
+        const parsed = getSectionFromPageRef(ref.pageRef);
+        if (parsed && parsed.policyId === 'GV-GB-001' && parsed.pageNumber === 1) {
+          targetIdx = FULL_SECTIONS.findIndex((section) => section.tabId === 'overview' && section.sIdx === 0);
+        }
+      }
+
+      if (targetIdx >= 0) {
+        targets.set(ref.pageRef, targetIdx);
+      }
+    }
+
+    return targets;
+  }, [achcContext?.supportRefs, FULL_SECTIONS, genericSectionsByTab, policy.policyId, useGenericContent]);
+
+  const sectionTextByIndex = useMemo(() => {
+    const out = new Map<number, string>();
+    const achcText = [
+      achcContext?.metadata?.surveyNotes ?? '',
+      ...(achcContext?.metadata?.achcStandards ?? []),
+    ]
+      .join('\n')
+      .toLowerCase();
+    FULL_SECTIONS.forEach((section, idx) => {
+      let text = `${section.label}\n`;
+      if (useGenericContent) {
+        const sec = genericSectionsByTab[section.tabId]?.[section.sIdx];
+        if (sec) text += `${sec.title}\n${sec.body ?? ''}`;
+      } else {
+        // Lightweight fallback corpus for specimen mode.
+        text += `${policy.title}\n${policy.purpose}\n${policy.scope.join('\n')}`;
+      }
+      if (section.tabId === 'overview' && section.sIdx <= 0) {
+        text += `\n${achcText}`;
+      }
+      out.set(idx, text.toLowerCase());
+    });
+    return out;
+  }, [FULL_SECTIONS, achcContext?.metadata?.achcStandards, achcContext?.metadata?.surveyNotes, genericSectionsByTab, policy.scope, policy.title, policy.purpose, useGenericContent]);
+
+  const standardTargetsByStandard = useMemo(() => {
+    const targets = new Map<string, number>();
+    const standards = achcContext?.metadata?.achcStandards ?? [];
+    const surveyNotes = achcContext?.metadata?.surveyNotes?.toLowerCase() ?? '';
+    const sectionMatch = surveyNotes.match(/\bsection\s+(\d{1,2})\b/i);
+    const fallbackSectionNo = sectionMatch ? Number(sectionMatch[1]) : null;
+
+    for (const standard of standards) {
+      const token = standard.toLowerCase();
+      let targetIdx = -1;
+      for (let i = 0; i < FULL_SECTIONS.length; i += 1) {
+        const corpus = sectionTextByIndex.get(i) ?? '';
+        if (corpus.includes(token)) {
+          targetIdx = i;
+          break;
+        }
+      }
+      if (targetIdx < 0 && fallbackSectionNo != null) {
+        targetIdx = FULL_SECTIONS.findIndex((section) => section.label.trim().startsWith(`${fallbackSectionNo}.`));
+      }
+      if (targetIdx < 0) {
+        if (surveyNotes.includes('policy statement')) {
+          targetIdx = FULL_SECTIONS.findIndex((section) => section.label.toLowerCase().startsWith('4.'));
+        } else if (surveyNotes.includes('purpose')) {
+          targetIdx = FULL_SECTIONS.findIndex((section) => section.label.toLowerCase().startsWith('2.'));
+        } else if (surveyNotes.includes('scope')) {
+          targetIdx = FULL_SECTIONS.findIndex((section) => section.label.toLowerCase().startsWith('3.'));
+        } else if (surveyNotes.includes('compliance') || surveyNotes.includes('audit')) {
+          targetIdx = FULL_SECTIONS.findIndex((section) => section.tabId === 'compliance');
+        }
+      }
+      if (targetIdx >= 0) {
+        targets.set(standard, targetIdx);
+      }
+    }
+    return targets;
+  }, [achcContext?.metadata?.achcStandards, achcContext?.metadata?.surveyNotes, FULL_SECTIONS, sectionTextByIndex]);
+
+  // ── ANIMATION + NAV STATE ─────────────────────────────────────
+  const [slidePhase, setSlidePhase] = useState<'idle' | 'enter'>('idle');
   const [slideDir, setSlideDir] = useState<1 | -1>(1);
-  const pendingIdxRef  = useRef<number | null>(null);
-  const isAnimatingRef = useRef(false);
+  const mainPanelRef = useRef<HTMLElement>(null);
+  const autoAdvanceGuardRef = useRef(0);
 
   // ── HELP MODAL ────────────────────────────────────────────────
   const [helpOpen, setHelpOpen] = useState(false);
   const [doNotShowAgain, setDoNotShowAgain] = useState(false);
+  const [printNotice, setPrintNotice] = useState(false);
   const helpCloseRef = useRef<HTMLButtonElement>(null);
 
   // ── TOUCH / SWIPE REFS ────────────────────────────────────────
@@ -1461,32 +1756,19 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
 
   // ── CORE NAVIGATE FUNCTION — operates on global section index ─
   function navigateToSection(targetIdx: number, dir: 1 | -1) {
-    if (isAnimatingRef.current) return;
     if (targetIdx < 0 || targetIdx >= FULL_SECTIONS.length) return;
     if (targetIdx === activeSectionGlobalIdx) return;
-    isAnimatingRef.current = true;
-    pendingIdxRef.current  = targetIdx;
     setSlideDir(dir);
-    setSlidePhase('exit');
+    setActiveSectionGlobalIdx(targetIdx);
+    setSlidePhase('enter');
   }
 
-  // ── ANIMATION SEQUENCE ────────────────────────────────────────
+  // ── ANIMATION RESET ────────────────────────────────────────────
   useEffect(() => {
-    if (slidePhase === 'exit') {
-      const t = setTimeout(() => {
-        if (pendingIdxRef.current !== null) {
-          setActiveSectionGlobalIdx(pendingIdxRef.current);
-          pendingIdxRef.current = null;
-        }
-        setSlidePhase('enter');
-      }, 500);
-      return () => clearTimeout(t);
-    }
     if (slidePhase === 'enter') {
       const t = setTimeout(() => {
         setSlidePhase('idle');
-        isAnimatingRef.current = false;
-      }, 500);
+      }, 220);
       return () => clearTimeout(t);
     }
   }, [slidePhase]);
@@ -1504,6 +1786,14 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
     const dir: 1 | -1 = targetFirstIdx > activeSectionGlobalIdx ? 1 : -1;
     navigateToSection(targetFirstIdx, dir);
   }
+  function handleStandardActivate(standard: string) {
+    const targetIdx = standardTargetsByStandard.get(standard);
+    if (typeof targetIdx !== 'number') return;
+    navigateToSection(targetIdx, targetIdx > activeSectionGlobalIdx ? 1 : -1);
+    setActiveStandard(standard);
+    setFlashAnchorRef(`std:${standard}`);
+    window.setTimeout(() => setFlashAnchorRef(undefined), 2000);
+  }
 
   // ── KEYBOARD NAVIGATION ───────────────────────────────────────
   useEffect(() => {
@@ -1517,6 +1807,31 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [activeSectionGlobalIdx]); // fresh closure on section change
+
+  // Keep URL hash synchronized with active section index for stable routing.
+  useEffect(() => {
+    const hash = `section-${activeSectionGlobalIdx + 1}`;
+    if (window.location.hash !== `#${hash}`) {
+      window.history.replaceState(null, '', `#${hash}`);
+    }
+  }, [activeSectionGlobalIdx]);
+
+  // Initial restore from hash.
+  useEffect(() => {
+    const match = window.location.hash.match(/^#section-(\d+)$/);
+    if (!match) return;
+    const fromHash = Number(match[1]) - 1;
+    if (!Number.isNaN(fromHash) && fromHash >= 0 && fromHash < FULL_SECTIONS.length) {
+      setActiveSectionGlobalIdx(fromHash);
+    }
+  }, [FULL_SECTIONS.length]);
+
+  // Scroll restoration to top on section change.
+  useEffect(() => {
+    const main = mainPanelRef.current;
+    if (!main) return;
+    main.scrollTo({ top: 0, behavior: 'auto' });
+  }, [activeSectionGlobalIdx]);
 
   // ── SWIPE + EDGE-TAP HANDLERS ────────────────────────────────
   // touch-action: pan-y on the container lets the browser scroll
@@ -1551,14 +1866,88 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
     }
   };
 
+  const handleMainScroll = (e: React.UIEvent<HTMLElement>) => {
+    const target = e.currentTarget;
+    const nearBottom = target.scrollTop + target.clientHeight >= target.scrollHeight - 8;
+    if (!nearBottom) return;
+    // Prevent scroll jitter from triggering multiple automatic advances.
+    const now = Date.now();
+    if (now - autoAdvanceGuardRef.current < 450) return;
+    autoAdvanceGuardRef.current = now;
+    navigateForward();
+  };
+
+  // ACHC context: HH anchor rail selection should snap back to overview context section.
+  useEffect(() => {
+    if (!achcContext?.activeHhGroup) return;
+    const overviewIdx = FULL_SECTIONS.findIndex((s) => s.tabId === 'overview');
+    if (overviewIdx >= 0) {
+      navigateToSection(overviewIdx, overviewIdx > activeSectionGlobalIdx ? 1 : -1);
+      requestAnimationFrame(() => {
+        const panel = document.getElementById('achc-context-panel');
+        panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [FULL_SECTIONS, achcContext?.activeHhGroup]); // intentionally reacts to HH rail only
+
+  useEffect(() => {
+    if (!achcContext?.highlightedAnchorRef) return;
+    const targetIdx = anchorTargetsByRef.get(achcContext.highlightedAnchorRef);
+    if (typeof targetIdx === 'number') {
+      navigateToSection(targetIdx, targetIdx > activeSectionGlobalIdx ? 1 : -1);
+      setActiveAnchorRef(achcContext.highlightedAnchorRef);
+      setFlashAnchorRef(achcContext.highlightedAnchorRef);
+      const timer = window.setTimeout(() => setFlashAnchorRef(undefined), 2000);
+      return () => window.clearTimeout(timer);
+    }
+    const overviewIdx = FULL_SECTIONS.findIndex((s) => s.tabId === 'overview');
+    if (overviewIdx >= 0) {
+      navigateToSection(overviewIdx, overviewIdx > activeSectionGlobalIdx ? 1 : -1);
+      setActiveAnchorRef(achcContext.highlightedAnchorRef);
+      requestAnimationFrame(() => {
+        const panel = document.getElementById('achc-context-panel');
+        panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    return undefined;
+  }, [FULL_SECTIONS, achcContext?.highlightedAnchorRef, activeSectionGlobalIdx, anchorTargetsByRef]);
+
+  useEffect(() => {
+    const refs = achcContext?.supportRefs ?? [];
+    const matched = refs.find((ref) => anchorTargetsByRef.get(ref.pageRef) === activeSectionGlobalIdx);
+    if (matched) {
+      setActiveAnchorRef(matched.pageRef);
+    }
+  }, [achcContext?.supportRefs, activeSectionGlobalIdx, anchorTargetsByRef]);
+
+  useEffect(() => {
+    if (!achcContext?.selectedAchcStandard) return;
+    const targetIdx = standardTargetsByStandard.get(achcContext.selectedAchcStandard);
+    if (typeof targetIdx !== 'number') return;
+    navigateToSection(targetIdx, targetIdx > activeSectionGlobalIdx ? 1 : -1);
+    setActiveStandard(achcContext.selectedAchcStandard);
+    setFlashAnchorRef(`std:${achcContext.selectedAchcStandard}`);
+    const timer = window.setTimeout(() => setFlashAnchorRef(undefined), 2000);
+    return () => window.clearTimeout(timer);
+  }, [achcContext?.selectedAchcStandard, activeSectionGlobalIdx, standardTargetsByStandard]);
+
+  useEffect(() => {
+    setActiveStandard(undefined);
+  }, [policy.policyId]);
+
   // ── PRINT / DOWNLOAD ──────────────────────────────────────────
-  const handlePrint    = () => window.print();
+  // Print uses the dedicated print route in a new tab so only print-specific
+  // content is rendered (no overlays/widgets/shell noise in preview).
+  const handlePrint = () => {
+    setPrintNotice(true);
+    openPolicyPrintRoute(`/print/${encodeURIComponent(policy.policyId)}?autoprint=1`);
+    setTimeout(() => setPrintNotice(false), 2200);
+  };
+
+  // Download opens the dedicated print route in a new tab so the user can
+  // use the browser's "Save as PDF" action. Same branded layout for ALL policies.
   const handleDownload = () => {
-    const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = `${policy.policyId}.html`; a.click();
-    URL.revokeObjectURL(url);
+    openPolicyPrintRoute(`/print/${encodeURIComponent(policy.policyId)}`);
   };
 
   // ── CLOSE HELP MODAL ──────────────────────────────────────────
@@ -1573,8 +1962,7 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
   const canGoForward     = activeSectionGlobalIdx < FULL_SECTIONS.length - 1;
   const currentSectionLabel = activeSection.label;
   const slideClass       =
-    slidePhase === 'exit'  ? (slideDir === 1 ? 'policy-slide-exit-fwd'  : 'policy-slide-exit-bwd')
-    : slidePhase === 'enter' ? (slideDir === 1 ? 'policy-slide-enter-fwd' : 'policy-slide-enter-bwd')
+    slidePhase === 'enter' ? (slideDir === 1 ? 'policy-slide-enter-fwd' : 'policy-slide-enter-bwd')
     : '';
 
   const navBtnBase =
@@ -1586,6 +1974,8 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
   const persistentTags: string[] = policy.policyId === 'GV-GB-001'
     ? ['42cfr', 'title22', 'cms', 'hipaa', 'oig', 'fca']
     : (policy.regulatoryTags ?? []);
+  const hhGroupOptions = achcContext?.hhGroups ?? [];
+  const activeHhGroup = achcContext?.activeHhGroup ?? 'ALL';
 
   return (
     <div
@@ -1595,7 +1985,7 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
       <div className="policy-carousel-screen relative h-full w-full bg-white flex flex-col overflow-hidden">
 
       {/* ══ ACTION BAR ══════════════════════════════════════════ */}
-      <div className="no-print flex items-center justify-between px-5 py-3 bg-white border-b border-[#E5E4E3] shrink-0 z-20 gap-3">
+      <div className="no-print flex items-center justify-between px-5 py-3 bg-white shrink-0 z-20 gap-3">
 
         {/* Left — back (hidden when embedded inside another shell) */}
         {!embedded && onBack ? (
@@ -1640,6 +2030,9 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
 
         {/* Right — help + print + download */}
         <div className="flex items-center gap-3 shrink-0">
+          {printNotice && (
+            <span className="text-[10px] font-semibold text-[#007970] hidden md:inline">Print requested</span>
+          )}
           <button
             onClick={() => setHelpOpen(true)}
             aria-label="How to navigate this document"
@@ -1649,13 +2042,13 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
             <HelpCircle size={15} strokeWidth={2.2} />
           </button>
           <button
-            type="button" onClick={handlePrint}
+            type="button" onClick={handlePrint} data-testid="canonical-viewer-print-btn"
             className="flex items-center gap-1.5 text-[#1F1C1B] font-montserrat font-semibold text-[11px] uppercase tracking-wider hover:opacity-70 transition-opacity no-print"
           >
             <Printer size={15} /> Print
           </button>
           <button
-            type="button" onClick={handleDownload}
+            type="button" onClick={handleDownload} data-testid="canonical-viewer-download-btn"
             className="flex items-center gap-1.5 text-[#007970] font-montserrat font-semibold text-[11px] uppercase tracking-wider hover:opacity-70 transition-opacity no-print"
           >
             <Download size={15} /> Download
@@ -1665,7 +2058,7 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
 
       {/* ══ TAB BAR ════════════════════════════════════════════ */}
       <nav
-        className="no-print bg-white border-b border-[#E5E4E3] shrink-0 overflow-x-auto custom-scrollbar"
+        className="no-print bg-white border-b border-[#f1efec] shrink-0 overflow-x-auto custom-scrollbar"
         role="tablist"
         aria-label="Policy sections"
       >
@@ -1700,24 +2093,36 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
 
       {/* ══ MAIN CONTENT — section-by-section carousel ══════════ */}
       <main
+        ref={mainPanelRef}
         className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar bg-white policy-content flex flex-col"
         role="tabpanel"
         style={{ touchAction: 'pan-y' }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        onScroll={handleMainScroll}
       >
         {/* Content starts near the top — pt-10 gives breathing room */}
         <div className="flex flex-col">
           <div
             key={`section-${activeSectionGlobalIdx}-${slidePhase === 'enter' ? 'in' : 'out'}`}
-            className={`max-w-[1200px] w-full px-6 pt-10 pb-16 md:px-10 lg:px-12 ${slideClass}`}
+            className={`max-w-[1200px] w-full px-6 pt-10 pb-8 md:px-10 lg:px-12 ${slideClass} ${
+              flashAnchorRef ? 'ring-2 ring-[#ea580c]/50 rounded-xl transition-all duration-500' : ''
+            }`}
           >
             {useGenericContent ? (
               activeTab === 'appendices'
                 ? <TabAppendices policy={policy} />
                 : activeSectionInTab === -1
                   // Synthetic GV-GB-001-style overview header (big title + metadata grid)
-                  ? <TabOverview policy={policy} sectionIdx={0} />
+                  ? <TabOverview
+                      policy={policy}
+                      sectionIdx={0}
+                      achcContext={achcContext}
+                      activeAnchorRef={activeAnchorRef}
+                      activeStandard={activeStandard}
+                      standardTargets={standardTargetsByStandard}
+                      onStandardActivate={handleStandardActivate}
+                    />
                   : (() => {
                       const list = genericSectionsByTab[activeTab] ?? [];
                       const sec = list[activeSectionInTab];
@@ -1732,7 +2137,15 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
                   })()
             ) : (
               <>
-                {activeTab === 'overview'      && <TabOverview      policy={policy} sectionIdx={activeSectionInTab} />}
+                {activeTab === 'overview'      && <TabOverview
+                  policy={policy}
+                  sectionIdx={activeSectionInTab}
+                  achcContext={achcContext}
+                  activeAnchorRef={activeAnchorRef}
+                  activeStandard={activeStandard}
+                  standardTargets={standardTargetsByStandard}
+                  onStandardActivate={handleStandardActivate}
+                />}
                 {activeTab === 'statements'    && <TabStatements    policy={policy} />}
                 {activeTab === 'procedures'    && <TabProcedures    policy={policy} sectionIdx={activeSectionInTab} />}
                 {activeTab === 'documentation' && <TabDocumentation policy={policy} />}
@@ -1765,7 +2178,7 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
           />
 
           {/* Panel */}
-          <div className="policy-help-modal-panel relative bg-white rounded-[18px] shadow-2xl border border-[#E5E4E3] max-w-[520px] w-full overflow-hidden">
+          <div className="policy-help-modal-panel relative bg-white rounded-[18px] shadow-2xl border border-[#E5E4E3] max-w-[520px] w-full max-h-[92vh] flex flex-col overflow-hidden">
 
             {/* Header */}
             <div className="flex items-center justify-between px-7 py-5 border-b border-[#E5E4E3]">
@@ -1788,7 +2201,7 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
             </div>
 
             {/* Body */}
-            <div className="px-7 py-6 space-y-5">
+            <div className="px-7 py-6 space-y-5 overflow-y-auto flex-1">
               <p className="text-[14px] text-[#524048] font-roboto leading-relaxed">
                 This document is presented as a{' '}
                 <strong className="text-[#1F1C1B] font-semibold">guided carousel</strong> — each section
@@ -1845,7 +2258,7 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-7 py-4 border-t border-[#E5E4E3] bg-[#FAFBF8]">
+            <div className="flex items-center justify-between px-7 py-4 border-t border-[#E5E4E3] bg-[#FAFBF8] shrink-0">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -1867,8 +2280,8 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
       )}
 
       {/* ══ PERSISTENT REGULATORY TAGS — bottom-right, outside carousel ══ */}
-      {persistentTags.length > 0 && (
-        <div className="no-print absolute bottom-6 right-6 flex flex-col items-end gap-2 pointer-events-none z-10">
+      {(persistentTags.length > 0 || achcContext?.metadata) && (
+        <div className="no-print absolute bottom-6 right-6 flex flex-col items-end gap-2 pointer-events-none z-10 max-w-[540px]">
           <p className="font-montserrat font-semibold text-[9px] tracking-[0.18em] uppercase text-[#7A6A72]">
             Regulatory References
           </p>
@@ -1889,11 +2302,40 @@ export function SharedPolicyDetailView({ policy, onBack, embedded = false }: { p
               );
             })}
           </div>
+          {achcContext?.metadata && hhGroupOptions.length > 0 && (
+            <div className="pointer-events-auto flex flex-wrap gap-2 justify-end max-w-[520px]">
+              <button
+                type="button"
+                onClick={() => achcContext.onSetActiveHhGroup?.(undefined)}
+                className={`inline-flex items-center px-3 py-1 rounded-full border font-montserrat font-semibold text-[10px] tracking-wide transition-colors ${
+                  activeHhGroup === 'ALL'
+                    ? 'border-[#0f766e] bg-[#0f766e] text-white'
+                    : 'border-[#0f766e]/35 bg-white text-[#0f766e]'
+                }`}
+              >
+                ALL
+              </button>
+              {hhGroupOptions.map((group) => (
+                <button
+                  key={group}
+                  type="button"
+                  onClick={() => achcContext.onSetActiveHhGroup?.(group)}
+                  className={`inline-flex items-center px-3 py-1 rounded-full border font-montserrat font-semibold text-[10px] tracking-wide transition-colors ${
+                    activeHhGroup === group
+                      ? 'border-[#ea580c] bg-[#ea580c] text-white'
+                      : 'border-[#ea580c]/35 bg-white text-[#ea580c]'
+                  }`}
+                >
+                  {group}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       </div>
-      <PolicyPrintDocument policy={policy} isGV={isGV} />
+      <PolicyPrintDocument policy={policy} isGV={isGV} achcContext={achcContext} />
 
     </div>
   );

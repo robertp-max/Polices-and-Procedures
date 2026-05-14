@@ -4,7 +4,11 @@
  * Opens in a new tab and auto-triggers the device print dialog.
  * No sidebar / CommandCenterLayout.
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
+import { buildFormContent } from '@/policy/data/formsLibraryContent';
+import { FormBody } from '@/policy/components/FormViewer';
+import { getFormsForPolicy } from '@/policy/utils/policyFormLinks';
 
 // ─── DATA (100% QA Audited — matches GV-GB-001_Final.md exactly) ─────────────
 
@@ -20,6 +24,8 @@ const META = {
   lastReviewed: '2025-07-10',
   nextReviewDate: '2026-07-10',
   supersedes: 'N/A (Initial Version)',
+  /** Cover metadata — aligned to approved print PDF (GV-GB-001). */
+  policyOwner: 'Administrator',
 };
 
 const DEFINITIONS = [
@@ -234,76 +240,40 @@ const VERSION_ITEMS = [
   'Non-substantive revisions (formatting, typographical corrections, updated cross-references) may be approved by the Administrator with notification to the Governing Body at the next regular meeting. Non-substantive revisions do not require re-acknowledgment.',
 ];
 
-const CHECKLIST_ITEMS = [
-  'Governing Body meeting convened this quarter with quorum?',
-  'Meeting agenda distributed at least 7 days prior?',
-  'Prior meeting minutes approved?',
-  'Administrator report presented?',
-  'Compliance Officer report presented?',
-  'QAPI report presented?',
-  'Financial report presented?',
-  'All Governing Body member OIG/SAM screenings current (monthly)?',
-  'All Conflict of Interest disclosures current?',
-  'All key leadership positions filled (Administrator, Clinical Manager, Compliance Officer)?',
-  'Governing Body membership roster current?',
-  'Policy acknowledgments current for all members/leaders in scope?',
-  'Q1 Only: Annual QAPI plan reviewed and approved?',
-  'Q1 Only: Annual refresher training on governance responsibilities conducted?',
-  'Q1 Only: Governing Body composition reviewed for competency coverage?',
-  'Q2 Only: Succession plan reviewed and approved?',
-  'Q3 Only: Emergency preparedness plan reviewed and approved?',
-  'Pre-Fiscal Year: Annual operating budget reviewed and approved?',
-  'All directives from prior meeting assigned, tracked, and status reported?',
-  'Any Condition-level survey findings requiring Governing Body action?',
-];
-
 // ─── PRIMITIVE HELPERS ───────────────────────────────────────────────────────
 
-const TEAL = '#D4AF37';
+/** Care Indeed document accent (approved light print kit — not legacy gold). */
+const PRINT_ACCENT = '#007970';
 const RUST = '#C74600';
 const DARK = '#1F1C1B';
 const MID  = '#524048';
 const PALE = '#FAFBF8';
 const BORDER = '#E5E4E3';
+/** Publication-style tables (approved PDF procedures ~pp.20–28): neutral header, teal accent on body first column only. */
+const TABLE_HEAD_BG = '#eceef0';
+const TABLE_HEAD_BORDER = '#b8bdc4';
+const TABLE_CELL_BORDER = '#d8dce1';
 
-/** Underline line field (for print fill-in) */
-const LineField = ({ w = 120, label = '' }: { w?: number; label?: string }) => (
-  <input
-    type="text"
-    aria-label={label}
-    style={{
-      border: 'none',
-      borderBottom: `1px solid ${DARK}`,
-      background: 'transparent',
-      outline: 'none',
-      width: w,
-      fontSize: 11,
-      fontFamily: 'Roboto, sans-serif',
-      padding: '0 2px',
-      verticalAlign: 'bottom',
-      marginLeft: 4,
-      marginRight: 2,
-    }}
-  />
-);
-
-/** Standard print table */
+/** Standard print table — neutral header band; first column accent (approved PDF). */
 const PT = ({ headers, rows }: { headers: string[]; rows: (string | React.ReactNode)[][] }) => (
-  <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 16, fontSize: 11 }}>
+  <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 14, fontSize: 10.5 }}>
     <thead>
       <tr>
         {headers.map((h, i) => (
           <th
             key={i}
             style={{
-              backgroundColor: TEAL,
-              color: '#fff',
-              padding: '6px 8px',
+              backgroundColor: TABLE_HEAD_BG,
+              color: DARK,
+              padding: '5px 7px',
               textAlign: 'left',
               fontFamily: 'Montserrat, sans-serif',
               fontWeight: 700,
-              fontSize: 10,
-              border: `1px solid #004d47`,
+              fontSize: 8,
+              textTransform: 'uppercase' as const,
+              letterSpacing: '0.07em',
+              border: `1px solid ${TABLE_HEAD_BORDER}`,
+              borderBottom: `2px solid ${TABLE_HEAD_BORDER}`,
             }}
           >
             {h}
@@ -313,19 +283,20 @@ const PT = ({ headers, rows }: { headers: string[]; rows: (string | React.ReactN
     </thead>
     <tbody>
       {rows.map((row, i) => (
-        <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#fff' : PALE }}>
+        <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#fff' : '#fafbfc' }}>
           {row.map((cell, j) => (
             <td
               key={j}
               style={{
-                border: `1px solid ${BORDER}`,
-                padding: '5px 8px',
+                border: `1px solid ${TABLE_CELL_BORDER}`,
+                padding: '5px 7px',
                 verticalAlign: 'top',
-                fontSize: 11,
-                lineHeight: 1.45,
+                fontSize: 10.5,
+                lineHeight: 1.42,
                 whiteSpace: 'pre-line',
-                color: DARK,
+                color: j === 0 ? PRINT_ACCENT : DARK,
                 fontFamily: 'Roboto, sans-serif',
+                fontWeight: j === 0 ? 700 : 400,
               }}
             >
               {cell}
@@ -338,13 +309,13 @@ const PT = ({ headers, rows }: { headers: string[]; rows: (string | React.ReactN
 );
 
 const H1 = ({ children }: { children: React.ReactNode }) => (
-  <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: 14, color: DARK, borderBottom: `2px solid ${TEAL}`, paddingBottom: 4, marginTop: 28, marginBottom: 10 }}>
+  <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 13, color: DARK, borderBottom: `1px solid ${PRINT_ACCENT}`, paddingBottom: 5, marginTop: 22, marginBottom: 10, letterSpacing: '0.04em' }}>
     {children}
   </h2>
 );
 
 const H2 = ({ children }: { children: React.ReactNode }) => (
-  <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 12, color: TEAL, marginTop: 16, marginBottom: 6 }}>
+  <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 11, color: DARK, marginTop: 14, marginBottom: 6 }}>
     {children}
   </h3>
 );
@@ -352,61 +323,151 @@ const H2 = ({ children }: { children: React.ReactNode }) => (
 const PageBreak = () => <div style={{ pageBreakBefore: 'always' }} />;
 
 const AppPrintHeader = ({ id, title }: { id: string; title: string }) => (
-  <div style={{ textAlign: 'center', marginBottom: 24, paddingBottom: 16, borderBottom: `2px solid ${TEAL}` }}>
-    <div style={{ display: 'inline-block', width: 50, height: 50, borderRadius: '50%', backgroundColor: `${TEAL}20`, border: `2px solid ${TEAL}40`, lineHeight: '46px', textAlign: 'center', marginBottom: 8 }}>
-      <span style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 900, fontSize: 18, color: TEAL }}>{id}</span>
-    </div>
-    <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 900, fontSize: 20, color: DARK }}>Appendix {id}</div>
-    <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: MID, marginTop: 4 }}>{title}</div>
-    <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: 10, color: '#999', fontStyle: 'italic', marginTop: 6 }}>
-      Care Indeed Home Health Care, Inc. · Policy GV-GB-001 · Version 6.0 · 2025-07-10
-    </div>
+  <div style={{ marginBottom: 20, paddingBottom: 12, borderBottom: `1px solid ${BORDER}` }}>
+    <p style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 8, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: MID, margin: '0 0 4px' }}>
+      Appendix {id}
+    </p>
+    <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 600, fontSize: 16, color: DARK, margin: '0 0 6px', letterSpacing: '-0.02em' }}>{title}</h2>
+    <p style={{ fontFamily: 'Roboto, sans-serif', fontSize: 10, color: MID, margin: 0 }}>
+      Care Indeed Home Health Care, Inc. · Policy GV-GB-001 · Version 6.0 · Effective {META.effective}
+    </p>
   </div>
 );
 
 // ─── PRINT SECTIONS ──────────────────────────────────────────────────────────
 
 const Cover = () => (
-  <div style={{ backgroundColor: TEAL, color: '#fff', padding: '40px 48px', pageBreakAfter: 'always' }}>
+  <div
+    style={{
+      backgroundColor: '#fff',
+      color: DARK,
+      padding: '32px 48px 28px',
+      pageBreakAfter: 'always',
+      borderBottom: `3px solid ${PRINT_ACCENT}`,
+    }}
+  >
     <img
-      src="https://cdn.jsdelivr.net/gh/robertp-max/CSM-485-Form@main/src/assets/CI%20Home%20Health%20Logo_White.png"
-      alt="Care Indeed Home Health Care"
-      style={{ height: 48, marginBottom: 24 }}
-      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+      src={ciLogoGray}
+      alt="Care Indeed — The Heart of Home Health"
+      style={{ height: 40, width: 'auto', display: 'block' }}
     />
-    <div style={{ marginBottom: 12 }}>
-      <span style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '3px 12px', borderRadius: 999, fontSize: 11, fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>
+    <p
+      style={{
+        fontFamily: 'Montserrat, sans-serif',
+        fontWeight: 700,
+        fontSize: 9,
+        letterSpacing: '0.22em',
+        textTransform: 'uppercase' as const,
+        color: MID,
+        margin: '18px 0 4px',
+      }}
+    >
+      Corporate Policy Document
+    </p>
+    <p style={{ fontFamily: 'Roboto, sans-serif', fontSize: 11, color: MID, margin: '0 0 18px' }}>
+      Care Indeed Home Health Care, Inc.
+    </p>
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 18 }}>
+      <span
+        style={{
+          color: PRINT_ACCENT,
+          border: `1px solid rgba(0,121,112,0.35)`,
+          backgroundColor: '#f0faf9',
+          padding: '2px 10px',
+          borderRadius: 999,
+          fontSize: 9,
+          fontFamily: 'Montserrat, sans-serif',
+          fontWeight: 700,
+          textTransform: 'uppercase' as const,
+          letterSpacing: '0.1em',
+        }}
+      >
         {META.id}
       </span>
-      <span style={{ backgroundColor: '#C74600', padding: '3px 10px', borderRadius: 4, fontSize: 9, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginLeft: 8 }}>
-        Draft
+      <span
+        style={{
+          color: '#0f5132',
+          border: '1px solid #badbcc',
+          backgroundColor: '#d1e7dd',
+          padding: '2px 10px',
+          borderRadius: 999,
+          fontSize: 9,
+          fontFamily: 'Montserrat, sans-serif',
+          fontWeight: 700,
+          textTransform: 'uppercase' as const,
+          letterSpacing: '0.1em',
+        }}
+      >
+        Active
       </span>
-      <span style={{ backgroundColor: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', padding: '3px 10px', borderRadius: 4, fontSize: 9, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginLeft: 8 }}>
+      <span
+        style={{
+          color: MID,
+          border: `1px solid ${BORDER}`,
+          backgroundColor: '#fff',
+          padding: '2px 10px',
+          borderRadius: 999,
+          fontSize: 9,
+          fontFamily: 'Montserrat, sans-serif',
+          fontWeight: 700,
+          textTransform: 'uppercase' as const,
+          letterSpacing: '0.1em',
+        }}
+      >
         {META.tier}
       </span>
     </div>
-    <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 900, fontSize: 24, lineHeight: 1.25, marginBottom: 12 }}>{META.title}</h1>
-    <div style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.2)', marginBottom: 20 }} />
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, fontSize: 12 }}>
-      {[
-        ['Domain', META.domain],
-        ['Tier', META.tier],
-        ['Approved By', META.approvedBy],
-        ['Supersedes', META.supersedes],
-        ['Effective Date', META.effective],
-        ['Last Reviewed', META.lastReviewed],
-        ['Next Review', META.nextReviewDate],
-        ['Version', `v${META.version}`],
-      ].map(([label, value]) => (
-        <div key={label}>
-          <span style={{ display: 'block', fontSize: 9, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.55)', marginBottom: 2 }}>{label}</span>
-          <strong style={{ fontFamily: 'Roboto, sans-serif', fontSize: 11 }}>{value}</strong>
-        </div>
-      ))}
+    <h1
+      style={{
+        fontFamily: 'Montserrat, sans-serif',
+        fontWeight: 300,
+        fontSize: 26,
+        lineHeight: 1.22,
+        letterSpacing: '-0.02em',
+        margin: '0 0 20px',
+        color: DARK,
+      }}
+    >
+      {META.title}
+    </h1>
+    <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px 28px' }}>
+        {[
+          ['Version', `v${META.version}`],
+          ['Effective', META.effective],
+          ['Last Reviewed', META.lastReviewed],
+          ['Next Review', META.nextReviewDate],
+          ['Policy Owner', META.policyOwner],
+          ['Subdomain', META.subdomain],
+          ['Domain', META.domain],
+          ['Approved By', META.approvedBy],
+        ].map(([label, value]) => (
+          <div key={label}>
+            <span
+              style={{
+                display: 'block',
+                fontSize: 8,
+                fontFamily: 'Montserrat, sans-serif',
+                fontWeight: 700,
+                textTransform: 'uppercase' as const,
+                letterSpacing: '0.12em',
+                color: MID,
+                marginBottom: 3,
+              }}
+            >
+              {label}
+            </span>
+            <span style={{ fontFamily: 'Roboto, sans-serif', fontSize: 10.5, fontWeight: 500, color: DARK }}>{value}</span>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontFamily: 'Roboto, sans-serif', fontSize: 9.5, color: MID, margin: '16px 0 0' }}>
+        <span style={{ fontWeight: 600, color: DARK }}>Supersedes:</span> {META.supersedes}
+      </p>
     </div>
-    <div style={{ marginTop: 32, fontSize: 10, color: 'rgba(255,255,255,0.6)', fontFamily: 'Roboto, sans-serif' }}>
+    <p style={{ fontFamily: 'Roboto, sans-serif', fontSize: 9.5, color: MID, margin: '20px 0 0' }}>
       Printed: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-    </div>
+    </p>
   </div>
 );
 
@@ -446,10 +507,32 @@ const Sec4Statements = () => (
     <H1>4. Policy Statement</H1>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {STATEMENTS.map((stmt, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '10px 14px' }}>
-          <div style={{ minWidth: 28, height: 28, borderRadius: '50%', backgroundColor: TEAL, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 10, flexShrink: 0 }}>
+        <div
+          key={i}
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 12,
+            backgroundColor: '#fff',
+            border: `1px solid ${TABLE_CELL_BORDER}`,
+            borderLeft: `3px solid ${PRINT_ACCENT}`,
+            borderRadius: 4,
+            padding: '10px 14px',
+          }}
+        >
+          <span
+            style={{
+              minWidth: 32,
+              fontFamily: 'Montserrat, sans-serif',
+              fontWeight: 700,
+              fontSize: 10,
+              color: PRINT_ACCENT,
+              flexShrink: 0,
+              paddingTop: 1,
+            }}
+          >
             4.{i + 1}
-          </div>
+          </span>
           <p style={{ fontFamily: 'Roboto, sans-serif', fontSize: 11, lineHeight: 1.6, color: DARK, margin: 0, whiteSpace: 'pre-line' }}>{stmt.substring(4)}</p>
         </div>
       ))}
@@ -463,7 +546,7 @@ const Sec5Definitions = () => (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
       {DEFINITIONS.map((def, i) => (
         <div key={i} style={{ backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '10px 12px' }}>
-          <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: 11, color: TEAL, marginBottom: 4 }}>{def.term}</div>
+          <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 10.5, color: DARK, marginBottom: 4, borderLeft: `2px solid ${PRINT_ACCENT}`, paddingLeft: 8 }}>{def.term}</div>
           <p style={{ fontFamily: 'Roboto, sans-serif', fontSize: 10, lineHeight: 1.5, color: MID, margin: 0 }}>{def.definition}</p>
         </div>
       ))}
@@ -544,7 +627,7 @@ const Sec9References = () => (
         ['CMS OASIS-E2 Guidance Manual', "While not directly governing the Governing Body, the Governing Body is accountable for ensuring the agency's OASIS program meets CMS requirements."],
       ].map(([title, body], i) => (
         <div key={i} style={{ backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '10px 12px' }}>
-          <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 11, color: TEAL, marginBottom: 4 }}>{title}</div>
+          <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 10.5, color: DARK, marginBottom: 4, borderLeft: `2px solid ${PRINT_ACCENT}`, paddingLeft: 8 }}>{title}</div>
           <p style={{ fontFamily: 'Roboto, sans-serif', fontSize: 10, color: MID, margin: 0 }}>{body}</p>
         </div>
       ))}
@@ -567,8 +650,8 @@ const Sec10Training = () => (
     <H1>10. Training Requirements</H1>
     <ul style={{ paddingLeft: 0, margin: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
       {TRAINING_ITEMS.map((item, i) => (
-        <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 6, padding: '8px 12px' }}>
-          <div style={{ minWidth: 22, height: 22, borderRadius: '50%', backgroundColor: TEAL, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 10, flexShrink: 0 }}>{i + 1}</div>
+        <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, backgroundColor: '#fff', border: `1px solid ${TABLE_CELL_BORDER}`, borderLeft: `3px solid ${PRINT_ACCENT}`, borderRadius: 4, padding: '8px 12px' }}>
+          <span style={{ minWidth: 22, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 10, color: PRINT_ACCENT, flexShrink: 0, paddingTop: 1 }}>{i + 1}.</span>
           <p style={{ fontFamily: 'Roboto, sans-serif', fontSize: 11, lineHeight: 1.6, color: DARK, margin: 0 }}>{item}</p>
         </li>
       ))}
@@ -590,420 +673,35 @@ const Sec11Version = () => (
   </div>
 );
 
-// ─── APPENDICES ───────────────────────────────────────────────────────────────
+// --- APPENDIX FORMS (Forms Library; same pathway as PolicyAppendicesPanel / FormPrintView) ---
 
-const AppA = () => (
-  <div>
-    <AppPrintHeader id="A" title="Governing Body Membership Roster" />
-    <div style={{ backgroundColor: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 6, padding: '10px 14px', marginBottom: 14, fontSize: 11, fontFamily: 'Roboto, sans-serif', lineHeight: 1.5 }}>
-      <strong>Instructions:</strong> The Governing Body Chair (or designee) shall update this roster within 7 calendar days of any membership change. A copy shall be maintained in the agency governance file and provided to the Administrator. This roster must be readily accessible for CMS survey review.
-    </div>
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10, whiteSpace: 'nowrap' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#F8F9FA', borderBottom: `2px solid ${BORDER}` }}>
-            {['#', 'Full Legal Name', 'Title/Role', 'Voting Status', 'Appt Date', 'Term Exp', 'Competency Area', 'Email Address', 'OIG/SAM\nCurrent?'].map((h, i) => (
-              <th key={i} style={{ padding: '8px 6px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9, textAlign: 'left', border: `1px solid ${BORDER}`, whiteSpace: 'pre-line' }}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {[1, 2, 3, 4, 5, 6, 7].map(n => (
-            <tr key={n} style={{ borderBottom: `1px solid ${BORDER}` }}>
-              <td style={{ padding: '6px', border: `1px solid ${BORDER}`, textAlign: 'center', color: MID, fontFamily: 'Roboto, sans-serif', fontSize: 10 }}>{n}</td>
-              {[100, 90, 80, 80, 80, 80, 80, 100].map((w, j) => (
-                <td key={j} style={{ padding: '4px 6px', border: `1px solid ${BORDER}` }}>
-                  <input type="text" style={{ border: 'none', borderBottom: `1px solid ${BORDER}`, background: 'transparent', outline: 'none', width: w, fontSize: 10, fontFamily: 'Roboto, sans-serif' }} />
-                </td>
-              ))}
-              <td style={{ padding: '6px', border: `1px solid ${BORDER}`, textAlign: 'center' }}>
-                <input type="checkbox" style={{ width: 14, height: 14 }} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 11, fontFamily: 'Roboto, sans-serif', fontWeight: 700, color: MID }}>
-      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-        Roster Maintained By: <LineField w={140} label="Roster Maintained By" /> Title: <LineField w={100} label="Title" />
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        Date Last Updated: <LineField w={120} label="Date Last Updated" />
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-        Quorum Requirement: <LineField w={36} label="Quorum number" /> of <LineField w={36} label="Total members" /> voting members
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-        Total Voting Members: <LineField w={36} label="Voting members" /> | Total Non-Voting / Advisory Members: <LineField w={36} label="Non-voting members" />
-      </div>
-    </div>
-  </div>
-);
+function appendixLetterFromIndex(index: number): string {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let n = index;
+  let out = '';
+  do {
+    out = alphabet[n % 26] + out;
+    n = Math.floor(n / 26) - 1;
+  } while (n >= 0);
+  return out;
+}
 
-const AppB = () => (
-  <div>
-    <AppPrintHeader id="B" title="Conflict of Interest Disclosure Form" />
-    <div style={{ backgroundColor: '#FFF7ED', border: `1px solid ${RUST}33`, borderRadius: 6, padding: '10px 14px', marginBottom: 20, fontSize: 11, fontFamily: 'Roboto, sans-serif', lineHeight: 1.5 }}>
-      <strong>Instructions:</strong> Each Governing Body member shall complete this form: (1) at the time of initial appointment; (2) annually, at the first quarterly meeting of each calendar year; and (3) within 7 calendar days of any change in circumstances that could create a new actual or potential conflict. Submit to Compliance Officer.
-    </div>
-
-    {/* Section 1 */}
-    <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 11, backgroundColor: '#F3F4F6', padding: '6px 10px', borderRadius: 4, marginBottom: 12 }}>SECTION 1 — MEMBER INFORMATION</div>
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: 16, marginBottom: 20 }}>
-      {['Full Legal Name', 'Title / Role on Governing Body', 'Date of Appointment'].map((label, i) => (
-        <div key={i}>
-          <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9, textTransform: 'uppercase', color: MID, marginBottom: 4 }}>{label}</div>
-          <input type={label.includes('Date') ? 'text' : 'text'} placeholder={label.includes('Date') ? 'mm/dd/yyyy' : ''} style={{ border: 'none', borderBottom: `1px solid ${DARK}`, background: 'transparent', outline: 'none', width: '100%', fontSize: 11, fontFamily: 'Roboto, sans-serif', padding: '2px 0' }} />
-        </div>
-      ))}
-      <div style={{ gridColumn: '1 / -1', borderTop: `1px solid ${BORDER}`, paddingTop: 12, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' as const }}>
-        <span style={{ fontFamily: 'Roboto, sans-serif', fontSize: 11, fontWeight: 700, color: DARK }}>Type of Disclosure:</span>
-        {['Initial', 'Annual Renewal', 'Change in Circumstances'].map(opt => (
-          <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Roboto, sans-serif', fontSize: 11, fontWeight: 400, color: DARK }}>
-            <input type="radio" name="disclosureType" style={{ width: 14, height: 14 }} /> {opt}
-          </label>
-        ))}
-      </div>
-    </div>
-
-    {/* Section 2 */}
-    <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 11, backgroundColor: '#F3F4F6', padding: '6px 10px', borderRadius: 4, marginBottom: 8 }}>SECTION 2 — FINANCIAL INTERESTS</div>
-    <p style={{ fontFamily: 'Roboto, sans-serif', fontSize: 10, fontStyle: 'italic', color: MID, marginBottom: 8 }}>Do you, or any member of your immediate family (spouse, domestic partner, parent, child, sibling), hold any of the following interests?</p>
-    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10, marginBottom: 20 }}>
-      <thead>
-        <tr style={{ backgroundColor: PALE, borderBottom: `1px solid ${BORDER}` }}>
-          <th style={{ padding: '6px 8px', textAlign: 'left', border: `1px solid ${BORDER}`, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9 }}>Question</th>
-          {['Yes', 'No', 'If Yes, Describe'].map(h => <th key={h} style={{ padding: '6px 8px', textAlign: 'center', border: `1px solid ${BORDER}`, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9 }}>{h}</th>)}
-        </tr>
-      </thead>
-      <tbody>
-        {[
-          '2.1 Ownership interest (equity, stock, partnership) in any entity that does business with, competes with, or provides referrals to Care Indeed Home Health Care, Inc.?',
-          '2.2 Employment, consulting, or advisory relationship with any entity that does business with, competes with, or provides referrals to this agency?',
-          '2.3 Financial interest in any vendor, supplier, or contractor used by the agency?',
-          '2.4 Receipt of compensation, gifts, gratuities, or other benefits (exceeding $50 in aggregate annually) from any entity that does business with or seeks to do business with the agency?',
-        ].map((q, i) => (
-          <tr key={i} style={{ borderBottom: `1px solid ${BORDER}` }}>
-            <td style={{ padding: '6px 8px', border: `1px solid ${BORDER}`, fontFamily: 'Roboto, sans-serif', fontSize: 10, fontWeight: 500 }}>{q}</td>
-            <td style={{ padding: 6, border: `1px solid ${BORDER}`, textAlign: 'center' }}><input type="radio" name={`q2${i}`} style={{ width: 14, height: 14 }} /></td>
-            <td style={{ padding: 6, border: `1px solid ${BORDER}`, textAlign: 'center' }}><input type="radio" name={`q2${i}`} style={{ width: 14, height: 14 }} /></td>
-            <td style={{ padding: 4, border: `1px solid ${BORDER}` }}><input type="text" style={{ border: 'none', borderBottom: `1px solid ${BORDER}`, background: 'transparent', outline: 'none', width: '100%', fontSize: 10 }} /></td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-
-    {/* Section 3 */}
-    <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 11, backgroundColor: '#F3F4F6', padding: '6px 10px', borderRadius: 4, marginBottom: 8 }}>SECTION 3 — PROFESSIONAL &amp; ORGANIZATIONAL RELATIONSHIPS</div>
-    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10, marginBottom: 20 }}>
-      <thead>
-        <tr style={{ backgroundColor: PALE, borderBottom: `1px solid ${BORDER}` }}>
-          <th style={{ padding: '6px 8px', textAlign: 'left', border: `1px solid ${BORDER}`, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9 }}>Question</th>
-          {['Yes', 'No', 'If Yes, Describe'].map(h => <th key={h} style={{ padding: '6px 8px', textAlign: 'center', border: `1px solid ${BORDER}`, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9 }}>{h}</th>)}
-        </tr>
-      </thead>
-      <tbody>
-        {[
-          '3.1 Do you serve on the board of directors, governing body, or advisory board of any other healthcare entity, referral source, or competitor?',
-          '3.2 Do you have any professional relationship with any physician, physician group, hospital, skilled nursing facility, or other provider that refers patients to or receives referrals from Care Indeed Home Health Care, Inc.?',
-          '3.3 Do you have any other relationship or interest that could reasonably be perceived as creating a conflict of interest with your duties as a Governing Body member?',
-        ].map((q, i) => (
-          <tr key={i} style={{ borderBottom: `1px solid ${BORDER}` }}>
-            <td style={{ padding: '6px 8px', border: `1px solid ${BORDER}`, fontFamily: 'Roboto, sans-serif', fontSize: 10, fontWeight: 500 }}>{q}</td>
-            <td style={{ padding: 6, border: `1px solid ${BORDER}`, textAlign: 'center' }}><input type="radio" name={`q3${i}`} style={{ width: 14, height: 14 }} /></td>
-            <td style={{ padding: 6, border: `1px solid ${BORDER}`, textAlign: 'center' }}><input type="radio" name={`q3${i}`} style={{ width: 14, height: 14 }} /></td>
-            <td style={{ padding: 4, border: `1px solid ${BORDER}` }}><input type="text" style={{ border: 'none', borderBottom: `1px solid ${BORDER}`, background: 'transparent', outline: 'none', width: '100%', fontSize: 10 }} /></td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-
-    {/* Section 4 */}
-    <div style={{ backgroundColor: `${TEAL}0D`, border: `1px solid ${TEAL}33`, borderRadius: 8, padding: 16 }}>
-      <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 12, color: TEAL, marginBottom: 10 }}>SECTION 4 — ATTESTATION</div>
-      <p style={{ fontFamily: 'Roboto, sans-serif', fontSize: 11, lineHeight: 1.6, color: DARK, marginBottom: 16 }}>
-        I hereby certify that the information provided above is true, complete, and accurate to the best of my knowledge. I understand that I have an ongoing obligation to disclose any new conflict within 7 calendar days, I must recuse myself from voting on conflicted matters, and failure to disclose a known conflict may result in removal from the Governing Body of Care Indeed Home Health Care, Inc.
-      </p>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-        <div>
-          <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9, textTransform: 'uppercase', color: MID, marginBottom: 6 }}>Signature</div>
-          <div style={{ borderBottom: `2px dashed #999`, height: 36 }} />
-        </div>
-        <div>
-          <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9, textTransform: 'uppercase', color: MID, marginBottom: 6 }}>Date Signed</div>
-          <input type="text" placeholder="mm/dd/yyyy" style={{ border: 'none', borderBottom: `2px solid #999`, background: 'transparent', outline: 'none', width: '100%', fontSize: 11, fontFamily: 'Roboto, sans-serif', paddingBottom: 4 }} />
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const AppC = () => (
-  <div>
-    <AppPrintHeader id="C" title="Policy Acknowledgment Form" />
-    <div style={{ backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '16px 20px', marginBottom: 20 }}>
-      <p style={{ fontFamily: 'Roboto, sans-serif', fontWeight: 700, fontSize: 12, color: DARK, marginBottom: 12 }}>I, the undersigned, acknowledge that:</p>
-      <ol style={{ paddingLeft: 20, margin: 0 }}>
-        {[
-          'I have received and read Policy GV-GB-001 — Governing Body Authority & Responsibilities, Version 6.0, effective 2025-07-10.',
-          'I understand the responsibilities, requirements, and expectations described in this policy as they apply to my role at Care Indeed Home Health Care, Inc.',
-          'I understand that I am accountable for complying with this policy and that non-compliance may result in corrective action.',
-          'I have had the opportunity to ask questions and receive clarification regarding any aspect of this policy.',
-        ].map((item, i) => (
-          <li key={i} style={{ fontFamily: 'Roboto, sans-serif', fontSize: 12, lineHeight: 1.6, color: DARK, marginBottom: 6 }}>{item}</li>
-        ))}
-      </ol>
-    </div>
-    <div style={{ backgroundColor: '#fff', border: `1px solid ${BORDER}`, borderRadius: 12, padding: '24px 32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-      {['Full Name (Printed)', 'Title / Role'].map((label, i) => (
-        <div key={i}>
-          <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9, textTransform: 'uppercase', color: MID, marginBottom: 6 }}>{label}</div>
-          <input type="text" style={{ border: 'none', borderBottom: `2px solid #999`, background: 'transparent', outline: 'none', width: '100%', fontSize: 12, fontFamily: 'Roboto, sans-serif', paddingBottom: 4 }} />
-        </div>
-      ))}
-      <div style={{ gridColumn: '1 / -1', marginTop: 8 }}>
-        <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9, textTransform: 'uppercase', color: MID, marginBottom: 6 }}>Signature</div>
-        <div style={{ borderBottom: '2px dashed #999', height: 48 }} />
-      </div>
-      <div style={{ gridColumn: '1 / -1', marginTop: 8 }}>
-        <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9, textTransform: 'uppercase', color: MID, marginBottom: 6 }}>Date Signed</div>
-        <input type="text" placeholder="mm/dd/yyyy" style={{ border: 'none', borderBottom: `2px solid #999`, background: 'transparent', outline: 'none', width: 240, fontSize: 12, fontFamily: 'Roboto, sans-serif', paddingBottom: 4 }} />
-      </div>
-    </div>
-  </div>
-);
-
-const AppD = () => (
-  <div>
-    <AppPrintHeader id="D" title="Governing Body Meeting Minutes Template" />
-    <div style={{ backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 6, padding: '10px 14px', marginBottom: 16, fontSize: 11, fontFamily: 'Roboto, sans-serif' }}>
-      <strong>Instructions:</strong> Use this template for all regular and special Governing Body meetings to satisfy CMS surveyor expectations. Draft minutes shall be completed within 14 calendar days of the meeting and retained for a minimum of 7 years.
-    </div>
-
-    <div style={{ border: `1px solid ${BORDER}`, borderRadius: 12, padding: 24, backgroundColor: PALE }}>
-      {/* Meeting header */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, backgroundColor: '#fff', border: `1px solid ${BORDER}`, borderRadius: 8, padding: 16, marginBottom: 20 }}>
-        {[
-          { label: 'Meeting Type', hint: 'Regular Quarterly / Special / Annual' },
-          { label: 'Date', hint: 'mm/dd/yyyy' },
-          { label: 'Time (Start/End)', hint: '00:00 – 00:00' },
-          { label: 'Location', hint: 'In-Person / Remote' },
-        ].map(({ label, hint }, i) => (
-          <div key={i}>
-            <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9, textTransform: 'uppercase', color: MID }}>{label}:</div>
-            <input type="text" placeholder={hint} style={{ border: 'none', borderBottom: `1px solid ${BORDER}`, background: 'transparent', outline: 'none', width: '100%', fontSize: 11, fontFamily: 'Roboto, sans-serif', marginTop: 4, paddingBottom: 2 }} />
-          </div>
-        ))}
-      </div>
-
-      {/* Attendance */}
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ backgroundColor: TEAL, color: '#fff', padding: '8px 12px', borderRadius: '8px 8px 0 0', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>ATTENDANCE &amp; QUORUM</div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10, backgroundColor: '#fff', border: `1px solid ${BORDER}`, borderTop: 'none' }}>
-          <thead>
-            <tr style={{ backgroundColor: PALE, borderBottom: `1px solid ${BORDER}` }}>
-              <th style={{ padding: '6px 8px', textAlign: 'left', border: `1px solid ${BORDER}`, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9 }}>Member Name</th>
-              <th style={{ padding: '6px 8px', textAlign: 'center', border: `1px solid ${BORDER}`, width: 70, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9 }}>Present?</th>
-              <th style={{ padding: '6px 8px', textAlign: 'left', border: `1px solid ${BORDER}`, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9 }}>Attendance Method</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[1, 2, 3, 4, 5].map(n => (
-              <tr key={n} style={{ borderBottom: `1px solid ${BORDER}` }}>
-                <td style={{ padding: '6px 8px', border: `1px solid ${BORDER}` }}><input type="text" style={{ border: 'none', borderBottom: `1px solid ${BORDER}`, background: 'transparent', outline: 'none', width: '100%', fontSize: 10 }} /></td>
-                <td style={{ padding: 6, border: `1px solid ${BORDER}`, textAlign: 'center' }}><input type="checkbox" style={{ width: 14, height: 14 }} /></td>
-                <td style={{ padding: '6px 8px', border: `1px solid ${BORDER}` }}><input type="text" placeholder="In-person / Video" style={{ border: 'none', borderBottom: `1px solid ${BORDER}`, background: 'transparent', outline: 'none', width: '100%', fontSize: 10 }} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 20, fontSize: 11, fontFamily: 'Roboto, sans-serif', fontWeight: 700, color: DARK }}>
-          <span>Quorum Required: <LineField w={40} /></span>
-          <span>Members Present: <LineField w={40} /></span>
-          <span>Quorum Achieved? <label style={{ fontWeight: 400, marginLeft: 8 }}><input type="radio" name="quorumD" style={{ marginRight: 4 }} />Yes</label> <label style={{ fontWeight: 400, marginLeft: 8 }}><input type="radio" name="quorumD" style={{ marginRight: 4 }} />No</label></span>
-        </div>
-      </div>
-
-      {/* Standing items */}
-      <div>
-        <div style={{ backgroundColor: TEAL, color: '#fff', padding: '8px 12px', borderRadius: '8px 8px 0 0', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>STANDING AGENDA ITEMS (Summary)</div>
-        <div style={{ border: `1px solid ${BORDER}`, borderTop: 'none', borderRadius: '0 0 8px 8px', backgroundColor: '#fff', padding: 16 }}>
-          {['3. Administrator Report', '4. Compliance Report', '5. QAPI Report', '6. Financial Report'].map((item, i) => (
-            <div key={i} style={{ border: `1px solid ${BORDER}`, borderRadius: 6, padding: '10px 12px', backgroundColor: PALE, marginBottom: 10 }}>
-              <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: 11, fontWeight: 700, color: DARK, marginBottom: 6 }}>{item}:</div>
-              <textarea style={{ width: '100%', border: `1px solid ${BORDER}`, borderRadius: 4, padding: 8, minHeight: 60, fontSize: 10, fontFamily: 'Roboto, sans-serif', resize: 'vertical', backgroundColor: '#fff' }} placeholder="Document Summary of Report, Discussion/Questions, Action Required, Responsible Party, and Deadline..." />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const AppE = () => (
-  <div>
-    <AppPrintHeader id="E" title="Quarterly Governance Oversight Checklist" />
-    <div style={{ backgroundColor: `${TEAL}0D`, border: `1px solid ${TEAL}33`, borderRadius: 6, padding: '10px 14px', marginBottom: 14, fontSize: 11, fontFamily: 'Roboto, sans-serif', lineHeight: 1.5 }}>
-      <strong>Purpose:</strong> To provide the Governing Body Chair and Administrator with a structured checklist to verify that all required oversight activities are completed each quarter, supporting continuous survey readiness and compliance with 42 CFR § 484.105. Administrator must complete prior to each quarterly meeting.
-    </div>
-    <div style={{ backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 6, padding: '10px 14px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' as const, fontSize: 11, fontFamily: 'Roboto, sans-serif', fontWeight: 700, color: DARK }}>
-      <span>Quarter: {['Q1', 'Q2', 'Q3', 'Q4'].map(q => <label key={q} style={{ fontWeight: 400, marginLeft: 10 }}><input type="radio" name="quarter" style={{ marginRight: 4 }} />{q}</label>)}</span>
-      <span style={{ marginLeft: 20 }}>Calendar Year: <LineField w={80} /></span>
-    </div>
-    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10 }}>
-      <thead>
-        <tr>
-          <th style={{ backgroundColor: TEAL, color: '#fff', padding: '6px 8px', border: `1px solid #004d47`, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9, width: 28, textAlign: 'center' }}>#</th>
-          <th style={{ backgroundColor: TEAL, color: '#fff', padding: '6px 8px', border: `1px solid #004d47`, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9 }}>Oversight Item</th>
-          <th style={{ backgroundColor: TEAL, color: '#fff', padding: '6px 8px', border: `1px solid #004d47`, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9, width: 80, textAlign: 'center' }}>Y / N / N-A</th>
-          <th style={{ backgroundColor: TEAL, color: '#fff', padding: '6px 8px', border: `1px solid #004d47`, fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 9, width: 180 }}>Notes / Corrective Action if "No"</th>
-        </tr>
-      </thead>
-      <tbody>
-        {CHECKLIST_ITEMS.map((item, i) => (
-          <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#fff' : PALE }}>
-            <td style={{ padding: '5px 6px', border: `1px solid ${BORDER}`, textAlign: 'center', fontFamily: 'Roboto, sans-serif', fontSize: 9, color: MID, fontWeight: 700 }}>{i + 1}</td>
-            <td style={{ padding: '5px 8px', border: `1px solid ${BORDER}`, fontFamily: 'Roboto, sans-serif', fontSize: 10, fontWeight: 500, color: DARK }}>{item}</td>
-            <td style={{ padding: 4, border: `1px solid ${BORDER}`, textAlign: 'center' }}>
-              <select style={{ border: `1px solid ${BORDER}`, borderRadius: 4, padding: '2px 4px', width: '100%', fontSize: 10, backgroundColor: '#fff' }}>
-                <option value="" />
-                <option value="Y">Y</option>
-                <option value="N">N</option>
-                <option value="NA">N/A</option>
-              </select>
-            </td>
-            <td style={{ padding: 4, border: `1px solid ${BORDER}` }}><input type="text" style={{ border: 'none', borderBottom: `1px solid ${BORDER}`, background: 'transparent', outline: 'none', width: '100%', fontSize: 9 }} /></td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-    <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 11, fontFamily: 'Roboto, sans-serif', fontWeight: 700, color: MID, backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 6, padding: 14 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Completed By: <LineField w={160} /></div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Title: <LineField w={160} /></div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Date: <LineField w={120} /></div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Presented to Chair? <label style={{ fontWeight: 400, marginLeft: 8 }}><input type="checkbox" style={{ marginRight: 4 }} />Yes</label> — Date: <LineField w={80} /></div>
-    </div>
-  </div>
-);
-
-const AppF = () => (
-  <div>
-    <AppPrintHeader id="F" title="Annual Governance Calendar" />
-    <div style={{ backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 6, padding: '10px 14px', marginBottom: 14, fontSize: 11, fontFamily: 'Roboto, sans-serif', lineHeight: 1.5 }}>
-      <strong>Purpose:</strong> To provide a consolidated annual calendar of all Governing Body actions required by this policy and cross-referenced policies, ensuring no required action is missed.
-    </div>
-    <PT
-      headers={['Quarter', 'Required Actions', 'Policy Reference', 'Responsible Party']}
-      rows={[
-        ['Q1', '• Convene regular quarterly meeting.\n• Review and approve the annual QAPI plan.\n• Conduct annual Governing Body composition review (competency coverage).\n• Collect annual Conflict of Interest disclosures from all members.\n• Conduct annual refresher training on governance responsibilities.\n• Conduct annual Governance Self-Assessment (if adopted).', 'GV-GB-001 §6.3\nGV-GB-001 §6.2.4.1; QA-PG-002\nGV-GB-001 §6.1.3\nGV-GB-001 §6.4.1; GV-GB-003\nGV-GB-001 §10.4\nGV-GB-005', 'Governing Body Chair\nGoverning Body\nGoverning Body Chair\nCompliance Officer\nAdministrator\nGoverning Body Chair'],
-        ['Q2', '• Convene regular quarterly meeting.\n• Review and approve succession plan for key leadership.\n• Review scope of services (if fiscal year begins Q3).', 'GV-GB-001 §6.3\nGV-GB-001 §6.2.2.5; GV-GB-004\nGV-GB-001 §6.2.1.3; GV-OG-003', 'Governing Body Chair\nGoverning Body\nGoverning Body'],
-        ['Q3', '• Convene regular quarterly meeting.\n• Review and approve Emergency Preparedness Plan.\n• Review emergency drill results.', 'GV-GB-001 §6.3\nGV-GB-001 §6.2.6.1; OP-FM-005\nGV-GB-001 §6.2.6.2', 'Governing Body Chair\nGoverning Body\nAdministrator'],
-        ['Q4', "• Convene regular quarterly meeting.\n• Review and approve annual operating budget for upcoming fiscal year.\n• Complete annual Administrator performance evaluation.\n• Establish and distribute next year's meeting schedule by December 15.\n• Review and approve scope of services for upcoming year.", 'GV-GB-001 §6.3\nGV-GB-001 §6.2.5.1; FN-FP-005\nGV-GB-001 §6.2.2.4\nGV-GB-001 §6.3.1\nGV-GB-001 §6.2.1.3', 'Governing Body Chair\nGoverning Body\nGoverning Body\nGoverning Body Chair\nGoverning Body'],
-        ['Ongoing\n(Every Meeting)', '• Review Administrator report.\n• Review Compliance Officer report.\n• Review QAPI report.\n• Review financial report.\n• Review status of prior meeting directives.\n• Verify OIG/SAM screening currency for all members.', 'GV-GB-001 §6.2.5.2\nGV-GB-001 §6.2.3.2\nGV-GB-001 §6.2.4.2\nGV-GB-001 §6.2.5.2\nGV-GB-001 §6.3.4\nGV-GB-001 §6.1.4; HR-TA-003', 'Administrator\nCompliance Officer\nClinical Manager\nAdministrator\nDesignated Secretary\nCompliance Officer'],
-        ['Ongoing\n(Monthly)', '• OIG/SAM exclusion screening of all Governing Body members.', 'GV-GB-001 §6.1.4; HR-TA-003', 'Compliance Officer'],
-      ]}
-    />
-  </div>
-);
-
-const AppG = () => {
-  const box = (label: string, bg: string, borderColor: string, textColor: string, w = 220) => (
-    <div style={{ backgroundColor: bg, border: `2px solid ${borderColor}`, borderRadius: 12, padding: '14px 16px', width: w, textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }}>
-      <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: textColor, marginBottom: 8 }}>{label}</div>
-      <div style={{ borderBottom: `1px solid ${borderColor}`, marginBottom: 4, paddingBottom: 2, fontSize: 10, fontFamily: 'Roboto, sans-serif', color: textColor === '#fff' ? 'rgba(255,255,255,0.7)' : '#888' }}>Enter Name…</div>
-    </div>
-  );
-
-  return (
-    <div>
-      <AppPrintHeader id="G" title="Agency Organizational Chart" />
-      <div style={{ backgroundColor: `${TEAL}0A`, border: `1px solid ${TEAL}20`, borderRadius: 8, padding: '10px 16px', marginBottom: 24, textAlign: 'center', fontSize: 11, fontFamily: 'Roboto, sans-serif', lineHeight: 1.5 }}>
-        <strong>Agency Organizational Structure:</strong> This chart illustrates the reporting relationships and accountability framework from the Governing Body through the senior administrative and clinical leadership, as required by 42 CFR § 484.105.
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 860 }}>
-        {/* Level 1 — Governing Body */}
-        <div style={{ backgroundColor: TEAL, border: `2px solid #004d47`, borderRadius: 14, padding: '16px 24px', width: 260, textAlign: 'center', boxShadow: '0 4px 12px rgba(0,119,112,0.3)', zIndex: 1 }}>
-          <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#fff', marginBottom: 8 }}>Governing Body</div>
-          <span style={{ backgroundColor: '#fff', color: TEAL, padding: '3px 12px', borderRadius: 999, fontSize: 10, fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>Ultimate Legal Authority</span>
-        </div>
-
-        {/* Connector down */}
-        <div style={{ width: 2, height: 32, backgroundColor: '#CCC' }} />
-        {/* Horizontal line spanning to L2 positions */}
-        <div style={{ width: 460, height: 2, backgroundColor: '#CCC', position: 'relative' }}>
-          <div style={{ position: 'absolute', left: 0, top: -1, width: 2, height: 32, backgroundColor: '#CCC', transform: 'translateY(-100%)' }} />
-          <div style={{ position: 'absolute', right: 0, top: -1, width: 2, height: 32, backgroundColor: '#CCC', transform: 'translateY(-100%)' }} />
-        </div>
-        <div style={{ display: 'flex', gap: 0, width: 460, justifyContent: 'space-between', marginBottom: 0 }}>
-          <div style={{ width: 2, height: 32, backgroundColor: '#CCC', marginLeft: 0 }} />
-          <div style={{ width: 2, height: 32, backgroundColor: '#CCC', marginRight: 0 }} />
-        </div>
-
-        {/* Level 2 — Compliance Officer & Administrator */}
-        <div style={{ display: 'flex', gap: 32, justifyContent: 'center', width: '100%', marginBottom: 0 }}>
-          {box('Compliance Officer', '#1F1C1B', '#333', '#fff', 200)}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {box('Administrator', RUST, '#943400', '#fff', 220)}
-            {/* Connector down from Administrator */}
-            <div style={{ width: 2, height: 28, backgroundColor: '#CCC' }} />
-            {/* Horizontal line for L3 */}
-            <div style={{ width: 440, height: 2, backgroundColor: '#CCC' }} />
-            <div style={{ display: 'flex', gap: 0, width: 440, justifyContent: 'space-between' }}>
-              <div style={{ width: 2, height: 28, backgroundColor: '#CCC' }} />
-              <div style={{ width: 2, height: 28, backgroundColor: '#CCC' }} />
-              <div style={{ width: 2, height: 28, backgroundColor: '#CCC' }} />
-            </div>
-          </div>
-        </div>
-
-        {/* Level 3 */}
-        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 0 }}>
-          {/* Clinical Manager */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ backgroundColor: '#fff', border: `2px solid ${TEAL}`, borderRadius: 12, padding: '12px 14px', width: 180, textAlign: 'center' }}>
-              <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', color: TEAL, marginBottom: 6 }}>Clinical Manager</div>
-              <div style={{ borderBottom: `1px solid ${TEAL}44`, paddingBottom: 2, fontSize: 10, fontFamily: 'Roboto, sans-serif', color: '#888', marginBottom: 4 }}>Enter Name (DON)…</div>
-            </div>
-            <div style={{ width: 2, height: 20, backgroundColor: '#CCC' }} />
-            <div style={{ backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '8px 10px', width: 160, textAlign: 'center', fontSize: 10, fontFamily: 'Roboto, sans-serif', color: MID }}>
-              Clinical Staff<br />(RN, PT, OT, ST, MSW, CHHA)
-            </div>
-          </div>
-
-          {/* Medical Director */}
-          <div style={{ backgroundColor: '#fff', border: `2px solid #CCC`, borderRadius: 12, padding: '12px 14px', width: 180, textAlign: 'center', alignSelf: 'flex-start' }}>
-            <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', color: '#555', marginBottom: 6 }}>Medical Director</div>
-            <div style={{ borderBottom: `1px solid #DDD`, paddingBottom: 2, fontSize: 10, fontFamily: 'Roboto, sans-serif', color: '#888' }}>Enter Name…</div>
-          </div>
-
-          {/* Business Operations */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ backgroundColor: '#fff', border: `2px solid #CCC`, borderRadius: 12, padding: '12px 14px', width: 180, textAlign: 'center' }}>
-              <div style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', color: '#555', marginBottom: 6 }}>Business Operations</div>
-              <div style={{ borderBottom: `1px solid #DDD`, paddingBottom: 2, fontSize: 10, fontFamily: 'Roboto, sans-serif', color: '#888', marginBottom: 4 }}>Enter Lead Name…</div>
-            </div>
-            <div style={{ width: 2, height: 20, backgroundColor: '#CCC' }} />
-            <div style={{ backgroundColor: PALE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '8px 10px', width: 160, textAlign: 'center', fontSize: 10, fontFamily: 'Roboto, sans-serif', color: MID }}>
-              HR, Finance, Intake,<br />&amp; Scheduling
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // ─── MAIN EXPORT ─────────────────────────────────────────────────────────────
 
 export function GVGBPrintDocument() {
+  const linkedForms = useMemo(() => getFormsForPolicy('GV-GB-001'), []);
+
   useEffect(() => {
     const prev = document.title;
     document.title = `${META.id} — ${META.title}`;
-    const timer = setTimeout(() => window.print(), 1200);
+    const params = new URLSearchParams(window.location.search);
+    const shouldAutoPrint = params.get('autoprint') === '1';
+    const timer = shouldAutoPrint
+      ? window.setTimeout(() => window.print(), 1200)
+      : undefined;
     return () => {
-      clearTimeout(timer);
+      if (timer !== undefined) window.clearTimeout(timer);
       document.title = prev;
     };
   }, []);
@@ -1031,18 +729,50 @@ export function GVGBPrintDocument() {
           }
           thead { display: table-header-group !important; }
           tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+          .gvgb-print-appendix { break-inside: auto; }
+          .gvgb-print-form-frame table {
+            table-layout: fixed !important;
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
         }
         body { margin: 0; padding: 0; }
       `}</style>
 
       {/* No-print header for screen view */}
-      <div className="no-print" style={{ position: 'sticky', top: 0, zIndex: 100, backgroundColor: TEAL, color: '#fff', padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '8px solid #ffffff' }}>
-        <span style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 13 }}>GV-GB-001 — Print Preview</span>
+      <div
+        className="no-print"
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          backgroundColor: '#f4f5f6',
+          color: DARK,
+          padding: '10px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: `1px solid ${BORDER}`,
+          boxShadow: '0 1px 0 rgba(0,0,0,0.04)',
+        }}
+      >
+        <span style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 600, fontSize: 12, color: MID }}>GV-GB-001 — print preview</span>
         <button
+          type="button"
           onClick={() => window.print()}
-          style={{ backgroundColor: '#fff', color: TEAL, border: 'none', borderRadius: 6, padding: '6px 16px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}
+          style={{
+            backgroundColor: '#fff',
+            color: PRINT_ACCENT,
+            border: `1px solid rgba(0,121,112,0.35)`,
+            borderRadius: 6,
+            padding: '6px 16px',
+            fontFamily: 'Montserrat, sans-serif',
+            fontWeight: 700,
+            fontSize: 11,
+            cursor: 'pointer',
+          }}
         >
-          🖨 Print / Save PDF
+          Print / Save as PDF
         </button>
       </div>
 
@@ -1064,27 +794,55 @@ export function GVGBPrintDocument() {
           <Sec11Version />
         </div>
 
-        {/* Appendices */}
+        {/* Appendices: Forms Library (same ordering as PolicyAppendicesPanel — getFormsForPolicy + buildFormContent + FormBody / FormPrintView) */}
         <PageBreak />
-        <div style={{ padding: '32px 48px' }}><AppA /></div>
-
-        <PageBreak />
-        <div style={{ padding: '32px 48px' }}><AppB /></div>
-
-        <PageBreak />
-        <div style={{ padding: '32px 48px' }}><AppC /></div>
-
-        <PageBreak />
-        <div style={{ padding: '32px 48px' }}><AppD /></div>
-
-        <PageBreak />
-        <div style={{ padding: '32px 48px' }}><AppE /></div>
-
-        <PageBreak />
-        <div style={{ padding: '32px 48px' }}><AppF /></div>
-
-        <PageBreak />
-        <div style={{ padding: '32px 48px' }}><AppG /></div>
+        {linkedForms.length === 0 ? (
+          <div style={{ padding: '32px 48px', fontFamily: 'Roboto, sans-serif', fontSize: 12, color: MID }}>
+            No appendix forms are linked to GV-GB-001 in the Forms Library dataset.
+          </div>
+        ) : (
+          linkedForms.map((rec, idx) => {
+            const content = buildFormContent(rec);
+            const letter = appendixLetterFromIndex(idx);
+            return (
+              <div
+                key={rec.id}
+                className="gvgb-print-appendix"
+                style={{
+                  pageBreakBefore: idx === 0 ? 'auto' : 'always',
+                  breakBefore: idx === 0 ? 'auto' : 'page',
+                  padding: '32px 48px',
+                }}
+              >
+                <AppPrintHeader id={letter} title={rec.name || rec.id} />
+                <div
+                  className="gvgb-print-form-frame"
+                  style={{
+                    border: `1px solid ${TABLE_CELL_BORDER}`,
+                    borderTop: `2px solid ${PRINT_ACCENT}`,
+                    borderRadius: 6,
+                    padding: '20px 24px 28px',
+                    backgroundColor: '#fff',
+                  }}
+                >
+                  <p
+                    style={{
+                      fontFamily: 'Montserrat, sans-serif',
+                      fontSize: 9,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase' as const,
+                      color: PRINT_ACCENT,
+                      margin: '0 0 14px',
+                    }}
+                  >
+                    Form {rec.id}
+                  </p>
+                  <FormBody content={content} />
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

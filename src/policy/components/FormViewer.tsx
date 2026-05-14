@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, Printer, Download, Building2, User, Briefcase, HeartPulse, Info, CheckCircle2, Shield, ShieldCheck } from 'lucide-react';
 import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useShellStore } from '@/policy/stores/uiStore';
+import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import {
   buildFormContent,
   type FormContent,
@@ -16,6 +17,8 @@ import eCIgnLogo from '@/assets/eCIgn.png';
 import { FormSignatureFlow } from './FormSignatureFlow';
 import { eCIgnWorkspace as ECIgnWorkspace } from './FormSigningWorkspace';
 import { PolicyLinkSelector } from './PolicyLinkSelector';
+import { resolveCesRole, isDonAssistant } from '@/policy/ces/cesRoles';
+import { getCesReviewRole } from '@/policy/ces/cesReviewMode';
 import {
   SignatureCtx,
   useSignatureCtx,
@@ -35,6 +38,11 @@ import {
 } from '@/policy/services/policyLinkService';
 import { ecignApi } from '@/policy/ecign/api';
 import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
+
+function isCanonicalCesFormInstanceId(value: string, eventId: string, formId: string): boolean {
+  if (!value || value.startsWith('fi_')) return false;
+  return value.startsWith(`${eventId}-${formId}-`);
+}
 
 // ─── FormCertificatePage ───────────────────────────────────────────
 // CI-App Internal Attestation Certificate.
@@ -532,8 +540,11 @@ function Field({ f, sig = false, fieldId }: { f: FormField; sig?: boolean; field
     return (
       <button
         type="button"
+        data-testid="ecign-sign-btn"
+        data-field-id={fId}
+        aria-label="Sign with eCIgn"
         onClick={() => requestSign(fId)}
-        className="h-14 w-full flex items-center justify-center px-3 rounded-md transition-colors"
+        className="h-14 w-full flex items-center justify-center gap-2 px-3 rounded-md transition-colors"
         style={{
           border:     '1px dashed #007970',
           background: 'transparent',
@@ -542,6 +553,7 @@ function Field({ f, sig = false, fieldId }: { f: FormField; sig?: boolean; field
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
         <img src={eCIgnLogo} alt="Sign with eCign" className="h-10 w-auto object-contain pointer-events-none" />
+        <span className="text-[11px] font-semibold text-[#007970] pointer-events-none">Sign</span>
       </button>
     );
   };
@@ -943,6 +955,7 @@ export function FormBody({ content, isEmbedded = false }: { content: FormContent
 // ─── Main view ────────────────────────────────────────────────────
 export interface FormViewerProps {
   formId?:               string;
+  formInstanceId?:       string;
   enableEmbeddedSigning?: boolean;
   /** Phase 11 — origin context for the Linked Policy / Procedure auto-link rule. */
   formSource?:           'policy_viewer' | 'task' | 'forms_library' | 'workflow';
@@ -954,11 +967,12 @@ export interface FormViewerProps {
   hhcWorkflowId?:        string;
 }
 
-export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, parentTaskId, hhcEventId, hhcWorkflowId }: FormViewerProps) {
+export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableEmbeddedSigning = false, formSource, parentTaskId, hhcEventId, hhcWorkflowId }: FormViewerProps) {
   const { formId: routeId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const signer = useEcignSignerIdentity();
+  const getOrCreateFormInstance = useRegulatoryExecutionStore(state => state.getOrCreateFormInstance);
   // If formId prop is supplied → embedded inside a parent panel (no shell)
   const isEmbedded = formId !== undefined;
   const signatureEnabled = !isEmbedded || enableEmbeddedSigning;
@@ -966,7 +980,11 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
   const effectiveSource: 'policy_viewer' | 'task' | 'forms_library' | 'workflow' =
     formSource ?? (isEmbedded ? 'policy_viewer' : 'forms_library');
   const id = formId ?? routeId;
-  const queryInstanceId = searchParams.get('instance') ?? undefined;
+  const queryInstanceId =
+    formInstanceIdProp
+    ?? searchParams.get('form_instance_id')
+    ?? searchParams.get('instance')
+    ?? undefined;
   const queryEventId = searchParams.get('event') ?? undefined;
   const queryWorkflowId = searchParams.get('workflow') ?? undefined;
   const queryEventIdV2 = searchParams.get('event_id') ?? undefined;
@@ -981,6 +999,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
   const setDetailMode = useShellStore(s => s.setDetailMode);
 
   useEffect(() => {
+    if (isEmbedded) return;
     const prev = document.title;
     document.title = 'Care Indeed Home Health Care, Inc. - Policies and Procedures';
     setDetailMode(true);
@@ -988,7 +1007,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
       document.title = prev;
       setDetailMode(false);
     };
-  }, [setDetailMode]);
+  }, [isEmbedded, setDetailMode]);
 
   const content: FormContent | null = useMemo(() => {
     if (!id) return null;
@@ -999,7 +1018,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
 
   // ── Signature state (standalone mode only) ────────────────────────
   // All hooks must be called before any early returns.
-  const [formInstanceId]  = useState(() => queryInstanceId ?? `fi_${signerNanoid(12)}`);
+  const [formInstanceId, setFormInstanceId] = useState(() => queryInstanceId ?? `fi_${signerNanoid(12)}`);
   const [certId]          = useState(() => `CERT-${id ?? 'fm'}-${signerNanoid(8)}`);
   const [signatures,      setSignatures]    = useState<Map<string, SignatureRecord>>(new Map());
   const [activeFieldId,   setActiveFieldId] = useState<string | null>(null);
@@ -1008,6 +1027,34 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
   const [autoFills,       setAutoFills]     = useState<Map<string, string>>(new Map());
   const [enfmLinkedPolicyIds, setEnfmLinkedPolicyIds] = useState<string[]>([]);
   const [enfmPolicyError, setEnfmPolicyError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!content?.id) return;
+    if (!effectiveEventContext) return;
+    if (isCanonicalCesFormInstanceId(formInstanceId, effectiveEventContext, content.id)) return;
+    const canonical = getOrCreateFormInstance({
+      eventId: effectiveEventContext,
+      formId: content.id,
+      taskId: parentTaskId ?? queryTaskId ?? undefined,
+      requirementId: queryRequirementId ?? (parentTaskId || queryTaskId ? `${parentTaskId ?? queryTaskId}::FORM_COMPLETION::${content.id}` : undefined),
+      policyIds: queryPolicyId ? [queryPolicyId] : (content.policies?.length ? content.policies : ['UNASSIGNED-POLICY']),
+      workflowId: effectiveWorkflowContext ?? undefined,
+    });
+    if (canonical?.id && canonical.id !== formInstanceId) {
+      setFormInstanceId(canonical.id);
+    }
+  }, [
+    content?.id,
+    content?.policies,
+    effectiveEventContext,
+    effectiveWorkflowContext,
+    formInstanceId,
+    getOrCreateFormInstance,
+    parentTaskId,
+    queryPolicyId,
+    queryRequirementId,
+    queryTaskId,
+  ]);
 
   // ── HHC compliance form-submission state ─────────────────────
   const formRootRef = useRef<HTMLDivElement | null>(null);
@@ -1085,10 +1132,72 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
     };
   }, []);
 
+  // ── Canonical logo data URL (base64) ─────────────────────────────
+  // The Vite asset URL (e.g. /assets/ci-logo-gray-abc123.png) is
+  // localhost-relative and breaks in saved-HTML packets. We convert it
+  // to a base64 data URL once at mount so it embeds inline in the packet.
+  const ciLogoDataUrlRef = useRef<string>(ciLogoGray);
+  useEffect(() => {
+    let cancelled = false;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      if (cancelled) return;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          ciLogoDataUrlRef.current = canvas.toDataURL('image/png');
+        }
+      } catch { /* keep original URL on CORS failure */ }
+    };
+    img.src = ciLogoGray;
+    return () => { cancelled = true; };
+  }, []);
+
   // ── Document edit tracking ────────────────────────────────────────
   // Listens to focusin (capture old value) + change (record diff).
   const [fieldEdits, setFieldEdits] = useState<FieldEdit[]>([]);
   const formPaperRef = useRef<HTMLDivElement>(null);
+
+  // ── Form field persistence (localStorage keyed by form_instance_id) ──
+  // On mount: restore previously-saved field values into the DOM.
+  // On change: save snapshot to localStorage for cross-refresh continuity.
+  const PERSIST_KEY = `ci_form_fields_${formInstanceId}`;
+
+  // Restore saved field values when the form mounts or instance ID changes.
+  useEffect(() => {
+    const paper = formPaperRef.current;
+    if (!paper || !formInstanceId) return;
+    try {
+      const raw = localStorage.getItem(PERSIST_KEY);
+      if (!raw) return;
+      const saved: Record<string, string> = JSON.parse(raw);
+      // Delay slightly to ensure React has rendered all controlled fields
+      const timer = setTimeout(() => {
+        Object.entries(saved).forEach(([name, value]) => {
+          const el = paper.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+            `[name="${name}"], [data-field-id="${name}"]`
+          );
+          if (!el) return;
+          const setter = Object.getOwnPropertyDescriptor(
+            el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype :
+            el instanceof HTMLSelectElement   ? HTMLSelectElement.prototype   :
+                                               HTMLInputElement.prototype,
+            'value'
+          )?.set;
+          setter?.call(el, value);
+          el.dispatchEvent(new Event('input',  { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+      }, 200);
+      return () => clearTimeout(timer);
+    } catch { /* noop — corrupted storage */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [PERSIST_KEY]);
 
   useEffect(() => {
     const paper = formPaperRef.current;
@@ -1122,6 +1231,21 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
         },
       ]);
       oldValues.delete(el);
+
+      // Persist all field values to localStorage on every change
+      try {
+        const allInputs = Array.from(
+          paper.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+            'input, textarea, select'
+          )
+        );
+        const snapshot: Record<string, string> = {};
+        allInputs.forEach(inp => {
+          const key = inp.getAttribute('name') || inp.getAttribute('data-field-id') || inp.id;
+          if (key && inp.value) snapshot[key] = inp.value;
+        });
+        localStorage.setItem(PERSIST_KEY, JSON.stringify(snapshot));
+      } catch { /* noop — storage quota exceeded */ }
     };
     paper.addEventListener('focusin', onFocus);
     paper.addEventListener('change',  onChange);
@@ -1129,10 +1253,24 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
       paper.removeEventListener('focusin', onFocus);
       paper.removeEventListener('change',  onChange);
     };
-  }, [signer.name]);
+  }, [signer.name, PERSIST_KEY]);
+
+  // ── CES signing role gate ─────────────────────────────────────────
+  const [cesSignBlock, setCesSignBlock] = useState<string | null>(null);
+  const activeCesRole = useMemo(() => {
+    if (effectiveSource !== 'task') return null;
+    const reviewRole = getCesReviewRole(signer.email);
+    if (reviewRole) return reviewRole;
+    return resolveCesRole(signer.role);
+  }, [effectiveSource, signer.email, signer.role]);
 
   // ── Signature handlers ────────────────────────────────────────────
   const handleRequestSign = useCallback((fid: string) => {
+    if (effectiveSource === 'task' && activeCesRole && isDonAssistant(activeCesRole)) {
+      setCesSignBlock('DON Assistant cannot sign, approve, or certify forms. Switch to an authorized signer role.');
+      return;
+    }
+    setCesSignBlock(null);
     if (isEnfm001Standalone) {
       const v = validateAcknowledgmentLinks(enfmLinkedPolicyIds);
       if (!v.ok) {
@@ -1149,7 +1287,7 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
       setEnfmPolicyError(null);
     }
     setActiveFieldId(fid);
-  }, [isEnfm001Standalone, enfmLinkedPolicyIds, formInstanceId, parentTaskId]);
+  }, [isEnfm001Standalone, enfmLinkedPolicyIds, formInstanceId, parentTaskId, effectiveSource, activeCesRole]);
 
   const handleConfirmSign = useCallback((rec: SignatureRecord) => {
     setSignatures(prev => { const m = new Map(prev); m.set(rec.fieldId, rec); return m; });
@@ -1252,8 +1390,16 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
       }
     });
 
+    // Preserve the actual Forms Library DOM. Only inline the logo asset so
+    // downloaded/saved eCIgn packets do not depend on localhost asset URLs.
+    Array.from(clone.querySelectorAll('img')).forEach(img => {
+      if (img.getAttribute('src') === ciLogoGray || img.alt.includes('Care Indeed')) {
+        img.setAttribute('src', ciLogoDataUrlRef.current);
+      }
+    });
+
     return clone.outerHTML;
-  }, []);
+  }, [content]);
 
   const ctxValue = useMemo(
     () => ({ enabled: signatureEnabled, signatures, requestSign: handleRequestSign, autoFills }),
@@ -1286,9 +1432,17 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
       <SignatureCtx.Provider value={ctxValue}>
         <div
           ref={formPaperRef}
-          className="w-full h-full overflow-y-auto px-8 py-8 md:px-10 md:py-10 font-roboto text-ci-text-primary"
+          className="form-frame bg-white border border-[#E5E4E3] rounded-[12px] shadow-sm px-8 py-10 md:px-12 md:py-14 text-[#1F1C1B] font-roboto"
         >
-          <FormBody content={content} isEmbedded={true} />
+          <FormBody content={content} />
+          {cesSignBlock && (
+            <div className="mx-4 my-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-[12px] text-amber-900">
+              <div className="font-semibold mb-1">Signing Blocked</div>
+              <div>{cesSignBlock}</div>
+              {activeCesRole && <div className="mt-1 text-[10px] text-amber-700">Active CES role: <strong>{activeCesRole}</strong></div>}
+              <button type="button" onClick={() => setCesSignBlock(null)} className="mt-2 text-[10px] underline text-amber-700 hover:text-amber-900">Dismiss</button>
+            </div>
+          )}
         </div>
 
         {signatureEnabled && activeFieldId !== null && (
@@ -1306,9 +1460,9 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
             linkedPolicyIds={content.id === 'EN-FM-001' ? enfmLinkedPolicyIds : content.policies}
             policies={content.policies}
             formSource={effectiveSource}
-            parentTaskId={parentTaskId}
-            hhcEventId={hhcEventId}
-            hhcWorkflowId={hhcWorkflowId}
+            parentTaskId={parentTaskId ?? queryTaskId ?? undefined}
+            hhcEventId={effectiveEventContext}
+            hhcWorkflowId={effectiveWorkflowContext}
             getPrintableFormHtml={getPrintableFormHtml}
             onConfirm={handleConfirmSign}
             onClose={handleCancelSign}
@@ -1326,6 +1480,17 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
   return (
     <SignatureCtx.Provider value={ctxValue}>
       <div className="min-h-screen overflow-auto bg-[#F2F2F0] font-roboto text-[#1F1C1B]">
+        {effectiveSource === 'task' && !parentTaskId && !queryTaskId && (
+          <div className={`no-print mx-auto ${maxW} px-6 md:px-10 pt-5`}>
+            <div className="rounded-[10px] border border-rose-300 bg-rose-50 px-3 py-2 text-[12px] text-rose-900">
+              <div className="font-semibold">Missing taskId — form/evidence/signature operations blocked.</div>
+              <div className="mt-1 text-[11px]">
+                event_id={effectiveEventContext || '—'} · form_id={content.id} · formSource=task
+                <br />No parentTaskId or query task_id found. Backfill by linking this form to its CES event task.
+              </div>
+            </div>
+          </div>
+        )}
         {hasTaskLinkedContext && (
           <div className={`no-print mx-auto ${maxW} px-6 md:px-10 pt-5`}>
             <div className="rounded-[10px] border border-[#56B6A9] bg-[#E8F6F4] px-3 py-2 text-[12px] text-[#134E4A]">
@@ -1543,9 +1708,9 @@ export function FormViewer({ formId, enableEmbeddedSigning = false, formSource, 
           linkedPolicyIds={isEnfm001Standalone ? enfmLinkedPolicyIds : content.policies}
           policies={content.policies}
           formSource={effectiveSource}
-          parentTaskId={parentTaskId}
-          hhcEventId={hhcEventId}
-          hhcWorkflowId={hhcWorkflowId}
+          parentTaskId={parentTaskId ?? queryTaskId ?? undefined}
+          hhcEventId={effectiveEventContext}
+          hhcWorkflowId={effectiveWorkflowContext}
           getPrintableFormHtml={getPrintableFormHtml}
           onConfirm={handleConfirmSign}
           onClose={handleCancelSign}

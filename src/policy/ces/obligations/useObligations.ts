@@ -17,6 +17,8 @@ import {
   selectMyOpenTaskObligations,
   selectObligationById,
   selectSprintTaskById,
+  selectObligationsByRole,
+  selectOpenObligationsByRole,
   resolveObligationKind,
   resolveParentObligationId,
   type SprintTaskObligation,
@@ -41,6 +43,10 @@ export interface UseObligationsResult {
   getMyTasks:        (filter: MyTaskFilter) => MergedExecutionUnit[];
   getMyOpenTasks:    (filter: MyTaskFilter) => MergedExecutionUnit[];
 
+  /** CES role-based filtering — used by Robert review mode only. */
+  getTasksByRole:     (role: string) => MergedExecutionUnit[];
+  getOpenTasksByRole: (role: string) => MergedExecutionUnit[];
+
   resolveKind:       typeof resolveObligationKind;
   resolveParentId:   typeof resolveParentObligationId;
 }
@@ -58,6 +64,8 @@ export function useObligations(): UseObligationsResult {
     getChildTasks:     (pid) => selectChildTasks(snap, pid),
     getMyTasks:        (f) => selectMyTaskObligations(snap, f),
     getMyOpenTasks:    (f) => selectMyOpenTaskObligations(snap, f),
+    getTasksByRole:    (role) => selectObligationsByRole(snap, role),
+    getOpenTasksByRole:(role) => selectOpenObligationsByRole(snap, role),
 
     resolveKind:       resolveObligationKind,
     resolveParentId:   resolveParentObligationId,

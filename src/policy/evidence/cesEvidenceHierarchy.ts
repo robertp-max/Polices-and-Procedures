@@ -2,6 +2,7 @@ import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import type { EventExecutionAuditEvent } from '@/policy/compliance-execution/types';
 import type { Task } from '@/policy/pm/types';
 import type { ApprovalRequest, EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
+import { isCesFutureLockedDate } from '@/policy/ces/cesExecutionMode';
 
 export type ExecutionRequirementType =
   | 'FORM_COMPLETION'
@@ -30,6 +31,7 @@ export interface CesExecutionRequirement {
   policy_id: string;
   workflow_id: string;
   form_id?: string;
+  form_instance_id?: string;
   evidence_id?: string;
   signer_id?: string;
   signature_id?: string;
@@ -85,6 +87,12 @@ export interface EventHierarchyNode {
   year: number;
   quarter: `Q1` | `Q2` | `Q3` | `Q4`;
   month: number;
+  /**
+   * True when the event falls in the future-locked window (Jul 2026+).
+   * Future-locked nodes are still included in the hierarchy for display,
+   * but their metrics are excluded from month/quarter/year rollups.
+   */
+  isFutureLocked: boolean;
   tasks: CesTaskWithExecutionRequirements[];
   orphanEvidence: EvidenceDoc[];
   metrics: HierarchyMetrics;
@@ -138,12 +146,12 @@ interface BuildInput {
 }
 
 const REQUIREMENT_WEIGHTS: Record<ExecutionRequirementType, number> = {
-  FORM_COMPLETION: 25,
+  FORM_COMPLETION: 30,
   SUPPORTING_EVIDENCE_UPLOAD: 25,
   SIGNATURE_REQUIRED: 25,
   REVIEW_REQUIRED: 10,
   CERTIFICATION_REQUIRED: 10,
-  LOCK_REQUIRED: 5,
+  LOCK_REQUIRED: 0,
 };
 
 const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long' });
@@ -170,9 +178,21 @@ function isEvidenceUsableForCompletion(doc: EvidenceDoc): boolean {
   return !['REJECTED', 'SUPERSEDED', 'RETAINED'].includes(doc.status);
 }
 
-function countApprovedSignatures(eventId: string, task: Task, approvals: ApprovalRequest[]): number {
+/** Exclude e-signature system artifacts from the generic "supporting upload" slot so OPEN ARTIFACT binds to the real upload row. */
+function isSupportingEvidenceAttachment(doc: EvidenceDoc): boolean {
+  if (!isEvidenceUsableForCompletion(doc)) return false;
+  if (doc.artifactType === 'signed_form_instance' || doc.artifactType === 'signed_certificate' || doc.artifactType === 'signed_package') {
+    return false;
+  }
+  if (doc.kind === 'signed_form_instance' || doc.kind === 'signed_certificate' || doc.kind === 'signed_package') {
+    return false;
+  }
+  return true;
+}
+
+function countApprovedSignatures(eventId: string, task: Task, approvals: ApprovalRequest[], linkedEvidence?: EvidenceDoc[]): number {
   const formId = 'form_id' in task ? task.form_id : undefined;
-  return approvals.filter(ap =>
+  const approvalCount = approvals.filter(ap =>
     ap.eventId === eventId
     && ap.status === 'approved'
     && (
@@ -182,6 +202,12 @@ function countApprovedSignatures(eventId: string, task: Task, approvals: Approva
       || ap.targetKind === 'minutes'
     )
   ).length;
+  const ecignSignatureCount = (linkedEvidence ?? []).filter(doc =>
+    (doc.artifactType === 'signed_package' || doc.kind === 'signed_package')
+    && doc.status === 'EVIDENCE_LOCKED'
+    && (!formId || doc.linkedFormId === formId || (doc.formIds ?? []).includes(formId))
+  ).length > 0 ? 1 : 0;
+  return Math.max(approvalCount, ecignSignatureCount);
 }
 
 function requiredSignerTarget(task: Task): number {
@@ -287,6 +313,7 @@ export function buildCesTaskRequirements(
       policy_id: policyId,
       workflow_id: workflowId,
       form_id: input.form_id,
+      form_instance_id: input.form_instance_id,
       evidence_id: input.evidence_id,
       signer_id: input.signer_id,
       signature_id: input.signature_id,
@@ -305,7 +332,10 @@ export function buildCesTaskRequirements(
   };
 
   const formId = 'form_id' in task ? task.form_id : undefined;
-  const formCompletion = task.status === 'done' ? 100 : (task.status === 'in_progress' || task.status === 'in_review' ? 50 : 0);
+  const formInstanceId = task.generated_form_instance_ids?.[0];
+  const formCompletion = task.status === 'done'
+    ? 100
+    : (task.status === 'in_progress' || task.status === 'in_review' ? 50 : 0);
   if (formId) {
     addRequirement({
       suffix: 'form',
@@ -315,27 +345,58 @@ export function buildCesTaskRequirements(
       completionPercentage: formCompletion,
       weightPercentage: REQUIREMENT_WEIGHTS.FORM_COMPLETION,
       form_id: formId,
-      actionNeeded: formCompletion >= 100 ? 'No action needed' : 'Open form and complete required fields',
+      form_instance_id: formInstanceId,
+      actionNeeded: formCompletion >= 100 ? 'No action needed' : (formInstanceId ? 'Open existing form instance and complete required fields' : 'Open form and complete required fields'),
     });
   }
 
-  const usableEvidence = linkedEvidence.filter(isEvidenceUsableForCompletion);
-  const evidenceCompletion = usableEvidence.length > 0 ? 100 : 0;
-  addRequirement({
-    suffix: 'evidence',
-    title: 'Upload supporting evidence',
-    type: 'SUPPORTING_EVIDENCE_UPLOAD',
-    status: requirementStatusForCompletion(evidenceCompletion),
-    completionPercentage: evidenceCompletion,
-    weightPercentage: REQUIREMENT_WEIGHTS.SUPPORTING_EVIDENCE_UPLOAD,
-    evidence_id: usableEvidence[0]?.id,
-    form_id: formId,
-    actionNeeded: evidenceCompletion >= 100 ? 'No action needed' : 'Upload required supporting evidence',
-  });
+  /* ─────────────────────────────────────────────────────────────────────
+   * SUPPORTING_EVIDENCE_UPLOAD — ONLY for non-form tasks.
+   *
+   * If the task has a form_id, the signed/locked form instance IS the
+   * evidence. We DO NOT generate a redundant "upload supporting evidence"
+   * requirement because:
+   *   1. There is nothing to upload — the form is completed inside CES.
+   *   2. It creates a fake task that says "missing evidence" forever.
+   *   3. It blocks readiness scoring permanently for form-only tasks.
+   *
+   * For non-form tasks (e.g. meeting attachments, photo of facility) the
+   * upload row is still required and supplies the canonical evidence.
+   * ───────────────────────────────────────────────────────────────────── */
+  const supportingPool = linkedEvidence.filter(isSupportingEvidenceAttachment);
+  const supportingEvidenceId = supportingPool.find(d => d.kind === 'attachment' || d.kind === 'report')?.id
+    ?? supportingPool[0]?.id;
+  if (!formId) {
+    const evidenceCompletion = supportingPool.length > 0 ? 100 : 0;
+    addRequirement({
+      suffix: 'evidence',
+      title: 'Upload supporting evidence',
+      type: 'SUPPORTING_EVIDENCE_UPLOAD',
+      status: requirementStatusForCompletion(evidenceCompletion),
+      completionPercentage: evidenceCompletion,
+      weightPercentage: REQUIREMENT_WEIGHTS.SUPPORTING_EVIDENCE_UPLOAD,
+      evidence_id: supportingEvidenceId,
+      form_id: undefined,
+      actionNeeded: evidenceCompletion >= 100 ? 'No action needed' : 'Upload required supporting evidence',
+    });
+  }
 
   const signerTarget = requiredSignerTarget(task);
-  const signed = Math.min(signerTarget, countApprovedSignatures(eventId, task, approvals));
+  const signed = Math.min(signerTarget, countApprovedSignatures(eventId, task, approvals, linkedEvidence));
   const signatureCompletion = Math.round((signed / Math.max(1, signerTarget)) * 100);
+  const signatureApprovalForRow = approvals.find(ap =>
+    ap.eventId === eventId
+    && ap.status !== 'approved'
+    && (
+      (formId && ap.targetKind === 'form' && ap.targetId === formId)
+      || (ap.note?.includes(task.task_id) ?? false)
+    ),
+  ) ?? approvals.find(ap =>
+    ap.eventId === eventId
+    && formId
+    && ap.targetKind === 'form'
+    && ap.targetId === formId,
+  );
   addRequirement({
     suffix: 'signature',
     title: signerTarget > 1 ? `Collect ${signerTarget} required signatures` : 'Collect required signature',
@@ -344,6 +405,7 @@ export function buildCesTaskRequirements(
     completionPercentage: signatureCompletion,
     weightPercentage: REQUIREMENT_WEIGHTS.SIGNATURE_REQUIRED,
     form_id: formId,
+    signature_id: signatureApprovalForRow?.id,
     actionNeeded: signatureCompletion >= 100 ? 'No action needed' : 'Request missing signatures',
   });
 
@@ -373,17 +435,7 @@ export function buildCesTaskRequirements(
     });
   }
 
-  const lockCompletion = usableEvidence.some(doc => doc.status === 'EVIDENCE_LOCKED') ? 100 : 0;
-  addRequirement({
-    suffix: 'lock',
-    title: 'Evidence lock required',
-    type: 'LOCK_REQUIRED',
-    status: requirementStatusForCompletion(lockCompletion),
-    completionPercentage: lockCompletion,
-    weightPercentage: REQUIREMENT_WEIGHTS.LOCK_REQUIRED,
-    evidence_id: usableEvidence.find(doc => doc.status === 'EVIDENCE_LOCKED')?.id,
-    actionNeeded: lockCompletion >= 100 ? 'No action needed' : 'Promote and lock evidence package',
-  });
+  const usableEvidence = linkedEvidence.filter(isEvidenceUsableForCompletion);
 
   // Normalize weights to 100 for task-specific requirement set.
   const totalWeight = reqs.reduce((acc, req) => acc + req.weightPercentage, 0) || 1;
@@ -560,6 +612,7 @@ export function buildCesEvidenceHierarchy(input: BuildInput): CesHierarchyBuildR
       );
     });
 
+    const isFutureLocked = isCesFutureLockedDate(dateFromEvent.toISOString());
     const metrics = eventMetrics(extendedTasks, orphanEvidence);
     eventNodes.push({
       eventId,
@@ -568,6 +621,7 @@ export function buildCesEvidenceHierarchy(input: BuildInput): CesHierarchyBuildR
       year,
       quarter,
       month,
+      isFutureLocked,
       tasks: extendedTasks,
       orphanEvidence,
       metrics,
@@ -580,6 +634,7 @@ export function buildCesEvidenceHierarchy(input: BuildInput): CesHierarchyBuildR
     if (evidence.length === 0) continue;
     const event = eventsById.get(eventId) ?? null;
     const dateFromEvent = safeDate(event?.date || now.toISOString()) ?? now;
+    const isFutureLocked = isCesFutureLockedDate(dateFromEvent.toISOString());
     const year = dateFromEvent.getFullYear();
     const month = dateFromEvent.getMonth();
     const quarter = quarterForMonth(month);
@@ -607,6 +662,7 @@ export function buildCesEvidenceHierarchy(input: BuildInput): CesHierarchyBuildR
       year,
       quarter,
       month,
+      isFutureLocked,
       tasks: [],
       orphanEvidence: evidence,
       metrics,
@@ -645,7 +701,9 @@ export function buildCesEvidenceHierarchy(input: BuildInput): CesHierarchyBuildR
             .sort((a, b) => a.month - b.month)
             .map(monthNode => {
               monthNode.events = monthNode.events.sort((a, b) => a.date.localeCompare(b.date));
-              monthNode.metrics = sumMetrics(monthNode.events.map(event => event.metrics));
+              // Exclude future-locked events from metric rollups; they remain in .events for display.
+              const activeEvents = monthNode.events.filter(e => !e.isFutureLocked);
+              monthNode.metrics = sumMetrics(activeEvents.map(event => event.metrics));
               return monthNode;
             });
           quarterNode.metrics = sumMetrics(quarterNode.months.map(month => month.metrics));

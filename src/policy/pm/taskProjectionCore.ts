@@ -1,7 +1,8 @@
 /**
  * taskProjectionCore — PURE projection logic.
  *
- * No React imports. No store imports. No alias imports.
+ * No React imports. No store imports.
+ * Imports only pure id helpers from `compliance-execution/cesFormInstanceId`.
  * Suitable for tsx scripts and unit verification.
  *
  * The React-bound hook lives in `taskProjection.ts`.
@@ -24,6 +25,7 @@ import type {
   PmTaskStatus,
   Task,
 } from './types';
+import { formatCesFormInstanceId } from '../compliance-execution/cesFormInstanceId';
 
 /* ─── Minimal external shapes used by the projector ─────────────────── */
 export interface ProjectorFormState {
@@ -61,7 +63,16 @@ export interface ProjectorEvent {
   processFlow: ProjectorEventStep[];
 }
 
-const formInstanceIdFor = (eventId: string, formId: string): string => `${eventId}--${formId}`;
+/** Per-event allocator: sequences match `regulatoryExecutionStore.getOrCreateFormInstance`. */
+function createFormInstanceIdAllocator(eventId: string): (formId: string) => string {
+  const seqByForm = new Map<string, number>();
+  return (formId: string) => {
+    const next = (seqByForm.get(formId) ?? 0) + 1;
+    seqByForm.set(formId, next);
+    return formatCesFormInstanceId(eventId, formId, next);
+  };
+}
+
 const TEMPLATE_FORMS = new Set<string>([
   ...FORMS_DATASET.map(f => f.id),
   ...Object.keys(FORMS_CATALOG),
@@ -84,11 +95,14 @@ export interface ProjectorInput {
   events: ProjectorEvent[];
   /** Flat key = `${eventId}::${formId}` (matches CES store). */
   formStates: Record<string, ProjectorFormState>;
+  /** Flat key = `${eventId}::${stepId}`. Overrides processFlow step status when present. */
+  stepStates?: Record<string, string>;
   overlays: Record<string, PmOverlay>;
 }
 
 const pad2 = (n: number): string => (n < 10 ? `0${n}` : String(n));
 const formKey = (eventId: string, formId: string) => `${eventId}::${formId}`;
+const stepKey = (eventId: string, stepId: string) => `${eventId}::${stepId}`;
 
 /** task_id format: "{event.id}-{NN}" */
 function makeCesTaskId(eventId: string, ordinal: number): string {
@@ -199,6 +213,7 @@ export function projectTasks(input: ProjectorInput): Task[] {
 
   for (const event of input.events) {
     let ordinal = 1;
+    const nextFormInstanceId = createFormInstanceIdAllocator(event.id);
     const eventDueDate = (event.endDate ?? event.date ?? new Date().toISOString().slice(0, 10)).slice(0, 10);
     const eventDue = shiftToBusinessDay(parseIsoDate(eventDueDate) ?? new Date(), 1);
     const defaultDue = toIsoDate(eventDue);
@@ -233,14 +248,28 @@ export function projectTasks(input: ProjectorInput): Task[] {
       const previousTaskId = eventTaskIds[eventTaskIds.length - 1];
       const stepDependsOn = previousTaskId ? [previousTaskId] : [];
 
+      // If stepStates dict was provided, it is the authority. Source
+      // event processFlow status is treated as a static template hint
+      // only when no store-managed state is available at all.
+      const sk = stepKey(event.id, step.id);
+      const storeVal = input.stepStates?.[sk];
+      const useStoreBased = input.stepStates !== undefined;
+      const effectiveStepSrc = useStoreBased
+        ? (storeVal === 'complete' ? 'complete' : storeVal === 'in-progress' ? 'in-progress' : 'pending')
+        : step.status;
       const stepStatus: PmTaskStatus =
-        step.status === 'complete'
+        effectiveStepSrc === 'complete'
           ? 'done'
-          : step.status === 'in-progress'
+          : effectiveStepSrc === 'in-progress'
             ? 'in_progress'
             : 'todo';
 
       const nominalStart = toIsoDate(shiftToBusinessDay(addDays(parseIsoDate(stepDue) ?? eventDue, -1), -1));
+
+      const linkedFormInstanceIds = linkedForms.map(form => {
+        const fid = resolveTemplateFormId(form) ?? (form.formId ?? form.id);
+        return nextFormInstanceId(fid);
+      });
 
       const stepTask: NonFormCesTask = {
         task_id: stepTaskId,
@@ -253,7 +282,7 @@ export function projectTasks(input: ProjectorInput): Task[] {
         policy_id: event.policyRefs?.[0],
         policy_refs: event.policyRefs ?? [],
         form_refs: linkedForms.map(resolveTemplateFormId).filter((x): x is string => Boolean(x)),
-        generated_form_instance_ids: linkedForms.map(form => formInstanceIdFor(event.id, resolveTemplateFormId(form) ?? (form.formId ?? form.id))),
+        generated_form_instance_ids: linkedFormInstanceIds,
         source_form_id: linkedForms.map(resolveTemplateFormId).find(Boolean),
         priority: eventPriority,
         risk: eventRisk,
@@ -275,9 +304,10 @@ export function projectTasks(input: ProjectorInput): Task[] {
       };
       pushTask(stepTask);
 
-      for (const form of linkedForms) {
+      for (let formIdx = 0; formIdx < linkedForms.length; formIdx += 1) {
+        const form = linkedForms[formIdx];
         const resolvedFormId = resolveTemplateFormId(form) ?? (form.formId ?? form.id);
-        const instanceId = formInstanceIdFor(event.id, resolvedFormId);
+        const instanceId = linkedFormInstanceIds[formIdx] ?? nextFormInstanceId(resolvedFormId);
         const completionTaskId = makeCesTaskId(event.id, ordinal++);
         const reviewTaskId = makeCesTaskId(event.id, ordinal++);
 
@@ -420,7 +450,7 @@ export function projectTasks(input: ProjectorInput): Task[] {
       const startDate = toIsoDate(shiftToBusinessDay(addDays(eventDue, -1), -1));
       const templateFormId = resolveTemplateFormId(form);
       const resolvedFormId = templateFormId ?? (form.formId ?? form.id);
-      const instanceId = formInstanceIdFor(event.id, resolvedFormId);
+      const instanceId = nextFormInstanceId(resolvedFormId);
 
       const base: EcignSubmissionTask = {
         task_id,

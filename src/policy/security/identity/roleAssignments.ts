@@ -11,6 +11,13 @@ export const ROLE_ASSIGNMENTS: RoleAssignment[] = [
     effectiveFrom: START,
   },
   {
+    id: 'asn-marites-super-admin',
+    userId: 'usr-marites',
+    groupId: 'grp-super-admin',
+    scope: { organizationId: 'careindeed-demo' },
+    effectiveFrom: START,
+  },
+  {
     id: 'asn-admin',
     userId: 'usr-admin',
     groupId: 'grp-admin',

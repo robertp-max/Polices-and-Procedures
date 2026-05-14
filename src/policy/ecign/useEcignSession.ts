@@ -7,7 +7,7 @@
  */
 import { useCallback, useState } from 'react';
 import { ecignApi, EcignApiError, ATTESTATION_TEXT, sha256Hex, HIGH_IMPACT_FORMS } from './api';
-import { buildEcignAuthHeaders, useEcignSignerIdentity } from './signerIdentity';
+import { useEcignSignerIdentity } from './signerIdentity';
 
 export interface CommitArgs {
   formId:              string;
@@ -46,16 +46,12 @@ export function useEcignSession() {
       const documentVersionId = `${args.formId}@${args.formVersion}`;
       const templateSnapshot  = args.templateSnapshot ?? `${args.formId}@${args.formVersion}`;
       try {
-        await fetch('/api/ecign/versions', {
-          method: 'POST',
-          headers: buildEcignAuthHeaders(),
-          body: JSON.stringify({
-            version_id:       documentVersionId,
-            form_id:          args.formId,
-            semver:           args.formVersion,
-            template_snapshot: templateSnapshot,
-            effective_at_utc: new Date().toISOString(),
-          }),
+        await ecignApi.registerVersion({
+          version_id:        documentVersionId,
+          form_id:           args.formId,
+          semver:            args.formVersion,
+          template_snapshot: templateSnapshot,
+          effective_at_utc:  new Date().toISOString(),
         });
       } catch { /* swallow — append-only, duplicates are harmless */ }
 
@@ -91,7 +87,7 @@ export function useEcignSession() {
       await ecignApi.disclose(inst.instance_id);
 
       setStatus({ phase: 'verify', message: 'Verifying identity…' });
-      await ecignApi.verify(inst.instance_id);
+      await ecignApi.verify(inst.instance_id, mfaToken);
 
       setStatus({ phase: 'review', message: 'Recording document review…' });
       await ecignApi.reviewAck(inst.instance_id);

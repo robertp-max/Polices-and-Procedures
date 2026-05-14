@@ -241,6 +241,33 @@ export interface ExecutionUnit {
   ownership?:             ObligationOwnership;
   /** Sprint window membership (when assigned). */
   sprintId?:              string;
+
+  /* ─── CES Canonical Role Assignment ──────────────────────
+     All CES tasks must have these fields populated.
+     assignedRole defaults to 'DON' for any ambiguous task.   */
+  /** Authorized CES role responsible for executing this obligation. */
+  assignedRole?:      string;
+  /** Ultimately accountable CES role. */
+  accountableRole?:   string;
+  /** Role responsible for reviewing quality/completeness. */
+  reviewerRole?:      string;
+  /** Role authorized to approve / certify completion. */
+  approverRole?:      string;
+  /** Roles that may mark this obligation complete. */
+  canCompleteRoles?:  readonly string[];
+  /** Roles that may review this obligation. */
+  canReviewRoles?:    readonly string[];
+  /** Roles that may approve / certify this obligation. */
+  canApproveRoles?:   readonly string[];
+  /** Role that receives escalation when this obligation is overdue. */
+  escalationRole?:    string;
+
+  /* ─── Signer task fields ──────────────────────────────────
+     Populated on signer task obligations (isSignerTask = true). */
+  isSignerTask?:       boolean;
+  signerRole?:         string;
+  parentFormTaskId?:   string;
+  blocksOnSignerTasks?: boolean;
 }
 
 export interface Sprint {

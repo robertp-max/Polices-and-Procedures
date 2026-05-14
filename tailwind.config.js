@@ -21,9 +21,9 @@ export default {
           'maroon-deep': '#0A0202',
           'maroon-mid':  '#310707',
           'maroon-glow': '#5D0E0E',
-          // Legacy aliases kept for module compatibility
-          teal:          '#FFC107',
-          'teal-dark':   '#D4AF37',
+          // Brand secondary (Care Indeed light kit). Use `gold` / `gold-dark` for gold — never alias `teal` to gold.
+          teal:          '#007970',
+          'teal-dark':   '#004142',
           orange:        '#D9A406',
           red:           '#E2463C',
           green:         '#4ade80',

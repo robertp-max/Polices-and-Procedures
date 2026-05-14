@@ -125,7 +125,7 @@ export default function TravelightBG({ isLight = false }: TravelightBGProps) {
 
       <div style={{ position: 'absolute', inset: 0, background: '#0A0202' }} />
       <div style={{ position: 'absolute', inset: 0, opacity: 0.98, background: 'radial-gradient(ellipse at top, #5D0E0E 0%, #310707 40%, #0A0202 100%)' }} />
-      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 800, height: 800, borderRadius: '50%', background: '#D4AF37', opacity: 0.04, filter: 'blur(180px)' }} />
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 800, height: 800, borderRadius: '50%', background: '#007970', opacity: 0.04, filter: 'blur(180px)' }} />
       <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(to right, rgba(255,193,7,0.018) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,193,7,0.018) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       <TravelightCanvas />
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>

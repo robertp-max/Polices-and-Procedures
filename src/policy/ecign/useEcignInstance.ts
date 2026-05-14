@@ -12,9 +12,9 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ecignApi, EcignApiError, ATTESTATION_TEXT, sha256Hex, HIGH_IMPACT_FORMS,
+  ecignApi, EcignApiError, ATTESTATION_TEXT, sha256Hex, HIGH_IMPACT_FORMS, getEcignClientMode,
 } from './api';
-import { buildEcignAuthHeaders, useEcignSignerIdentity } from './signerIdentity';
+import { useEcignSignerIdentity } from './signerIdentity';
 
 export type BackendState =
   | 'created' | 'disclosed' | 'verified' | 'reviewed'
@@ -59,12 +59,20 @@ export interface InstanceShape {
 const LS_KEY = (formId: string, fieldId: string, signerId: string) =>
   `ecign:instance:${formId}:${fieldId}:${signerId}`;
 
+const LS_KEY_SHARED = (formId: string, formInstanceId: string) =>
+  `ecign:shared_instance:${formId}:${formInstanceId}`;
+
 export interface UseInstanceArgs {
   formId:              string;
   formVersion:         string;
   fieldId:             string;
   workflowInstanceId?: string;
   eventId?:            string;
+  formInstanceId?:     string;
+  sharedInstance?:     boolean;
+  signerSlots?:        Array<{ field_id: string; role: string; tier: number; user_id?: string }>;
+  signerIndex?:        number;
+  totalSigners?:       number;
 }
 
 export interface InstanceError { code: string; message: string }
@@ -79,7 +87,12 @@ export function useEcignInstance(args: UseInstanceArgs) {
 
   const captureError = useCallback((e: unknown) => {
     const err = e instanceof EcignApiError
-      ? { code: e.code, message: e.message }
+      ? {
+          code: e.code,
+          message: e.code === 'ECIGN_BACKEND_UNAVAILABLE'
+            ? 'eCIgn backend is unavailable. Use DEMO_LOCAL mode or enable configured fallback.'
+            : e.message,
+        }
       : { code: 'CLIENT_ERROR', message: e instanceof Error ? e.message : String(e) };
     setError(err);
   }, []);
@@ -94,13 +107,17 @@ export function useEcignInstance(args: UseInstanceArgs) {
   }, [captureError]);
 
   /* ── Bootstrap: recover existing instance, or create a new one ── */
+  const useShared = args.sharedInstance === true && !!args.formInstanceId;
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
       setError(null);
       try {
-        const lsKey = LS_KEY(args.formId, args.fieldId, signer.id);
+        const lsKey = useShared
+          ? LS_KEY_SHARED(args.formId, args.formInstanceId!)
+          : LS_KEY(args.formId, args.fieldId, signer.id);
         const existingId = typeof window !== 'undefined'
           ? window.localStorage.getItem(lsKey) : null;
 
@@ -117,31 +134,41 @@ export function useEcignInstance(args: UseInstanceArgs) {
         // Idempotent version registration (append-only store, dupes are no-ops)
         const documentVersionId = `${args.formId}@${args.formVersion}`;
         try {
-          await fetch('/api/ecign/versions', {
-            method: 'POST',
-            headers: buildEcignAuthHeaders(),
-            body: JSON.stringify({
-              version_id:        documentVersionId,
-              form_id:           args.formId,
-              semver:            args.formVersion,
-              template_snapshot: `${args.formId}@${args.formVersion}`,
-              effective_at_utc:  new Date().toISOString(),
-            }),
+          await ecignApi.registerVersion({
+            version_id:        documentVersionId,
+            form_id:           args.formId,
+            semver:            args.formVersion,
+            template_snapshot: `${args.formId}@${args.formVersion}`,
+            effective_at_utc:  new Date().toISOString(),
           });
         } catch { /* non-fatal */ }
 
-        const inst = await ecignApi.createInstance({
+        const requiredSigners = useShared && args.signerSlots?.length
+          ? args.signerSlots.map(s => ({
+              role:     s.role,
+              tier:     s.tier,
+              user_id:  s.user_id,
+              field_id: s.field_id,
+            }))
+          : [{
+              role:     signer.role,
+              tier:     signer.tier,
+              user_id:  signer.id,
+              field_id: args.fieldId,
+            }];
+
+        const created = await ecignApi.createInstance({
           form_id:             args.formId,
           document_version_id: documentVersionId,
-          required_signers: [{
-            role:     signer.role,
-            tier:     signer.tier,
-            user_id:  signer.id,
-            field_id: args.fieldId,
-          }],
+          required_signers:    requiredSigners,
           workflow_instance_id: args.workflowInstanceId,
           event_id:             args.eventId,
         }) as unknown as InstanceShape;
+
+        const inst = await ecignApi.getInstance(created.instance_id) as unknown as InstanceShape;
+        if (!inst?.instance_id) {
+          throw new EcignApiError(500, 'ECIGN_PERSISTENCE_FAILED', 'Session was not persisted and reloadable.', created);
+        }
 
         if (cancelled) return;
         if (typeof window !== 'undefined') window.localStorage.setItem(lsKey, inst.instance_id);
@@ -155,7 +182,7 @@ export function useEcignInstance(args: UseInstanceArgs) {
     return () => { cancelled = true; };
   // bootstrap once for these props
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [args.eventId, args.fieldId, args.formId, args.formVersion, args.workflowInstanceId, signer.id, signer.role, signer.tier]);
+  }, [args.eventId, args.fieldId, args.formId, args.formVersion, args.formInstanceId, args.workflowInstanceId, useShared, signer.id, signer.role, signer.tier]);
 
   /* ── State-machine actions: each calls backend, then refreshes ── */
 
@@ -181,17 +208,7 @@ export function useEcignInstance(args: UseInstanceArgs) {
         token = su.mfa_token;
         setMfaToken(token);
       }
-      // Verify must carry the X-MFA-Token header when produced
-      const res = await fetch(`/api/ecign/instances/${instance.instance_id}/verify`, {
-        method: 'POST',
-        headers: buildEcignAuthHeaders(token ? { 'X-MFA-Token': token } : undefined),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null) as { error?: { code?: string; message?: string } } | null;
-        throw new EcignApiError(res.status,
-          body?.error?.code ?? 'UNKNOWN',
-          body?.error?.message ?? `HTTP ${res.status}`, body);
-      }
+      await ecignApi.verify(instance.instance_id, token);
       await refresh(instance.instance_id);
     } catch (e) { captureError(e); }
     finally { setBusy(null); }
@@ -242,9 +259,12 @@ export function useEcignInstance(args: UseInstanceArgs) {
 
   return {
     instance, loading, error, busy,
+    mode: getEcignClientMode(),
     acceptConsent, verifyIdentity, acknowledgeReview,
     applySignature,
     lockDocument,
     refresh,
+    signerIndex:  args.signerIndex,
+    totalSigners: args.totalSigners,
   };
 }

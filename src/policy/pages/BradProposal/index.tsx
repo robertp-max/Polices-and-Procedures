@@ -654,7 +654,7 @@ function BriefView({ openTile, audit }: { openTile: (t: DrillDown) => void; audi
         display: 'flex', flexDirection: 'column', gap: 16,
       }}>
         <div style={rise(40)}>
-          <Label color={C.orange} style={{ marginBottom: 8 }}>Brad 2.0 · Mission Brief</Label>
+          <Label color={C.orange} style={{ marginBottom: 8 }}>Brad.pi · Mission Brief</Label>
           <div style={{ fontFamily: C.H, fontSize: 26, fontWeight: 700, color: C.t0, letterSpacing: '-0.015em', lineHeight: 1.1, marginTop: 8 }}>
             Architecture cannot transfer liability.
           </div>
@@ -1573,7 +1573,7 @@ export function BradProposalPage() {
               </div>
               <div>
                 <div style={{ fontFamily: C.H, fontSize: 13, fontWeight: 700, color: C.t0, letterSpacing: '-0.01em', lineHeight: 1 }}>
-                  Brad 2.0
+                  Brad.pi
                 </div>
                 <Label color={C.teal} style={{ marginTop: 2, letterSpacing: '0.16em' }}>
                   {activeTab.code} · {activeTab.label}

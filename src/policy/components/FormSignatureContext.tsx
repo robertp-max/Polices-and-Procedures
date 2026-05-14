@@ -43,7 +43,51 @@ export interface SecondSigTask {
   };
 }
 
-export type SignFlowState = 'unsigned' | 'signed' | 'pending_second' | 'completed';
+/** Resolver for determining who fills a signer slot. */
+export type SignerResolver =
+  | 'self'
+  | { role_id: string }
+  | { tier_above: number }
+  | { user_id: string };
+
+/** Per-form signer slot definition from form template. */
+export interface FormSignerSlot {
+  field_id: string;
+  role: string;
+  tier: number;
+  required: boolean;
+  resolver: SignerResolver;
+  sequence_group: number;
+}
+
+/** Generalized signer task (replaces SecondSigTask for multi-signer flows). */
+export interface SignerTask {
+  taskId: string;
+  type: 'signature_request';
+  formInstanceId: string;
+  formId: string;
+  eventId: string;
+  assignedTo: string;
+  assignedToName?: string;
+  assignedToRole?: string;
+  assignedBy: string;
+  status: 'pending' | 'opened' | 'signed' | 'declined' | 'expired';
+  createdAt: string;
+  dueDate?: string;
+  escalationAt?: string;
+  slotFieldId: string;
+  sequenceGroup: number;
+  signerIndex: number;
+  totalSigners: number;
+  declineReason?: string;
+  linkedPolicyIds: string[];
+  sourcePolicyContext?: {
+    source: 'policy_viewer' | 'task' | 'forms_library' | 'workflow';
+    parentTaskId?: string;
+  };
+}
+
+export type SignFlowState = 'unsigned' | 'signed' | 'pending_second' | 'pending_next_signer' | 'all_signed' | 'completed';
 
 // ── Geo / network info ──
 

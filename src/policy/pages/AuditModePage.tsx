@@ -42,6 +42,7 @@ import {
 import {
   useComplianceExecution, selectAuditReadinessRollup, selectCriticalUnits,
 } from '@/policy/compliance-execution';
+import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 
 /* ═══════════════════════════════════════════════════════════════
    AUDIT — Compliance Validation + Survey Readiness
@@ -123,6 +124,20 @@ export function AuditModePage() {
     () => [...REGULATORY_EVENTS, ...generated, ...triggered].filter(e => !e.isContext),
     [generated, triggered],
   );
+  const getEventAliases = (eventId: string): string[] =>
+    Array.from(new Set([eventId, ...(exec.eventInstanceIdsBySourceEventId[eventId] ?? [])]));
+  const getEventEvidenceDocs = (eventId: string) =>
+    getEventAliases(eventId)
+      .flatMap(id => exec.evidence[id] ?? [])
+      .filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx);
+  const getEventApprovals = (eventId: string) =>
+    exec.approvals.filter(item => getEventAliases(eventId).includes(item.eventId));
+  const getEventNotes = (eventId: string) =>
+    getEventAliases(eventId)
+      .flatMap(id => exec.notes?.[id] ?? [])
+      .filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx);
+  const getEventTrail = (eventId: string) =>
+    auditLog.filter(entry => getEventAliases(eventId).includes(entry.eventId));
 
   /* ── Classify every instance ── */
   const auditByEvent = useMemo(() => {
@@ -230,11 +245,11 @@ export function AuditModePage() {
 
   const handleSurveyRollup = () => {
     const packets = filtered.map(ev => {
-      const docs    = exec.evidence[ev.id] ?? [];
-      const apReqs  = exec.approvals.filter(a => a.eventId === ev.id);
-      const notes   = exec.notes?.[ev.id] ?? [];
+      const docs    = getEventEvidenceDocs(ev.id);
+      const apReqs  = getEventApprovals(ev.id);
+      const notes   = getEventNotes(ev.id);
       const cert    = exec.certifications[ev.id] ?? null;
-      const trail   = auditLog.filter(l => l.eventId === ev.id);
+      const trail   = getEventTrail(ev.id);
       const inst = buildWorkflowInstance({
         event: ev, today, store: exec, allEvents,
         documents: docs, approvalReqs: apReqs,
@@ -264,11 +279,11 @@ export function AuditModePage() {
   };
 
   const handleExportInstance = (ev: RegulatoryEvent) => {
-    const docs   = exec.evidence[ev.id] ?? [];
-    const apReqs = exec.approvals.filter(a => a.eventId === ev.id);
-    const notes  = exec.notes?.[ev.id] ?? [];
+    const docs   = getEventEvidenceDocs(ev.id);
+    const apReqs = getEventApprovals(ev.id);
+    const notes  = getEventNotes(ev.id);
     const cert   = exec.certifications[ev.id] ?? null;
-    const trail  = auditLog.filter(l => l.eventId === ev.id);
+    const trail  = getEventTrail(ev.id);
     const inst   = buildWorkflowInstance({
       event: ev, today, store: exec, allEvents,
       documents: docs, approvalReqs: apReqs,
@@ -281,11 +296,11 @@ export function AuditModePage() {
   };
 
   const handleExportInstanceMd = (ev: RegulatoryEvent) => {
-    const docs   = exec.evidence[ev.id] ?? [];
-    const apReqs = exec.approvals.filter(a => a.eventId === ev.id);
-    const notes  = exec.notes?.[ev.id] ?? [];
+    const docs   = getEventEvidenceDocs(ev.id);
+    const apReqs = getEventApprovals(ev.id);
+    const notes  = getEventNotes(ev.id);
     const cert   = exec.certifications[ev.id] ?? null;
-    const trail  = auditLog.filter(l => l.eventId === ev.id);
+    const trail  = getEventTrail(ev.id);
     const inst   = buildWorkflowInstance({
       event: ev, today, store: exec, allEvents,
       documents: docs, approvalReqs: apReqs,
@@ -1361,7 +1376,7 @@ function EvidenceTab({
             <table className="w-full text-[10.5px] font-roboto">
               <thead>
                 <tr className="border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
-                  {['Artifact', 'Kind', 'Uploaded', 'By', 'Size'].map(h => (
+                  {['Artifact', 'Kind', 'Uploaded', 'By', 'Size', 'Action'].map(h => (
                     <th key={h} className="px-3 py-2 text-left font-montserrat font-bold text-white/40 text-[9px] uppercase tracking-[0.14em]">{h}</th>
                   ))}
                 </tr>
@@ -1379,6 +1394,44 @@ function EvidenceTab({
                     <td className="px-3 py-2 text-white/55">{new Date(d.uploadedAt).toLocaleDateString()}</td>
                     <td className="px-3 py-2 text-white/55">{d.uploadedBy}</td>
                     <td className="px-3 py-2 text-white/45">{d.sizeLabel}</td>
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-1.5">
+                        <a
+                          href={buildArtifactRoute(d.id, {
+                            eventId: d.eventId,
+                            taskId: d.taskId,
+                            formId: d.linkedFormId || d.formIds[0],
+                            formInstanceId: d.linkedFormInstanceId,
+                            evidenceId: d.id,
+                            type: d.kind,
+                          })}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded border border-teal-300/45 bg-teal-400/10 px-1.5 py-0.5 text-[9px] font-montserrat font-bold uppercase tracking-[0.1em] text-teal-200"
+                        >
+                          View Artifact
+                        </a>
+                        {d.localDataUrl && (
+                          <>
+                            <a
+                              href={d.localDataUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="rounded border border-white/20 px-1.5 py-0.5 text-[9px] font-montserrat font-bold uppercase tracking-[0.1em] text-white/75"
+                            >
+                              Open File
+                            </a>
+                            <a
+                              href={d.localDataUrl}
+                              download={d.name}
+                              className="rounded border border-white/20 px-1.5 py-0.5 text-[9px] font-montserrat font-bold uppercase tracking-[0.1em] text-white/75"
+                            >
+                              Download
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1452,6 +1505,85 @@ function ApprovalsTab({ instance }: { instance: ReturnType<typeof useWorkflowIns
   );
 }
 
+function artifactRouteForAuditEntry(entry: {
+  eventId: string;
+  targetKind?: string;
+  targetId?: string;
+  action?: string;
+  after?: unknown;
+}): string | null {
+  // Primary path: explicit targetKind / targetId on the entry.
+  const targetId = entry.targetId?.trim();
+  if (entry.targetKind === 'evidence' && targetId) {
+    return buildArtifactRoute(targetId, { eventId: entry.eventId, type: 'evidence' });
+  }
+  if ((entry.targetKind === 'formInstance' || entry.targetKind === 'form_instance') && targetId) {
+    return buildArtifactRoute(targetId, { eventId: entry.eventId, type: 'form_instance' });
+  }
+  if ((entry.targetKind === 'approval' || entry.targetKind === 'signature') && targetId) {
+    return buildArtifactRoute(targetId, { eventId: entry.eventId, type: 'signature' });
+  }
+
+  // Fallback path: execution-trail entries store artifact IDs in `after`.
+  // entityType maps to 'task' / 'approval' — not directly to artifact types —
+  // so we inspect the action string and after object to derive the artifact route.
+  const after = entry.after as Record<string, unknown> | undefined;
+  if (!after) return null;
+
+  const action = entry.action ?? '';
+
+  // Form-related actions: artifact = the form instance
+  if (
+    action === 'FORM_COMPLETED' ||
+    action === 'FORM_INSTANCE_CREATED' ||
+    action === 'form.status.changed'
+  ) {
+    const formInstanceId = (after.formInstanceId ?? after.form_instance_id) as string | undefined;
+    const formId = (after.formId ?? after.form_id) as string | undefined;
+    if (formInstanceId) {
+      return buildArtifactRoute(formInstanceId, {
+        eventId: entry.eventId,
+        type: 'form_instance',
+        ...(formId ? { formId } : {}),
+      });
+    }
+    if (formId) {
+      return buildArtifactRoute(formId, { eventId: entry.eventId, type: 'form_instance' });
+    }
+  }
+
+  // Evidence-related actions: artifact = the evidence record
+  if (
+    action === 'FILE_UPLOADED' ||
+    action === 'EVIDENCE_PROMOTED' ||
+    action === 'EVIDENCE_LOCKED' ||
+    action === 'FILE_VALIDATED' ||
+    action === 'SUPPORTING_EVIDENCE_UPLOADED' ||
+    action === 'evidence.uploaded'
+  ) {
+    const evidenceId = (after.evidenceId ?? after.evidence_id ?? after.id) as string | undefined;
+    if (evidenceId) {
+      return buildArtifactRoute(evidenceId, { eventId: entry.eventId, type: 'evidence' });
+    }
+  }
+
+  // Signature-related actions
+  if (
+    action === 'SIGNATURE_REQUESTED' ||
+    action === 'SIGNATURE_COMPLETED' ||
+    action === 'TASK_CERTIFIED' ||
+    action === 'approval.requested' ||
+    action === 'approval.decided'
+  ) {
+    const approvalId = (after.approvalId ?? after.approval_id ?? after.requestId ?? targetId) as string | undefined;
+    if (approvalId) {
+      return buildArtifactRoute(approvalId, { eventId: entry.eventId, type: 'signature' });
+    }
+  }
+
+  return null;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    TAB: Timeline — chronological event log with exact labels
    ═══════════════════════════════════════════════════════════════ */
@@ -1473,6 +1605,12 @@ function TimelineTab({ instance }: { instance: ReturnType<typeof useWorkflowInst
     'escalation.raised':     'Escalation Raised',
     'escalation.resolved':   'Escalation Resolved',
     'mutation.blocked':      'Certification Blocked',
+    'FORM_INSTANCE_CREATED': 'Form Instance Created',
+    'FORM_COMPLETED':        'Form Completed',
+    'FILE_UPLOADED':         'File Uploaded',
+    'FILE_VALIDATED':        'File Validated',
+    'EVIDENCE_PROMOTED':     'Evidence Promoted',
+    'EVIDENCE_LOCKED':       'Evidence Locked',
   };
 
   const ACTION_COLOR_MAP: Record<string, string> = {
@@ -1498,6 +1636,7 @@ function TimelineTab({ instance }: { instance: ReturnType<typeof useWorkflowInst
         const label = ACTION_LABEL[entry.action] ?? entry.action;
         const color = ACTION_COLOR_MAP[entry.action] ?? 'rgba(255,255,255,0.50)';
         const isLast = idx === trail.length - 1;
+        const artifactRoute = artifactRouteForAuditEntry({ ...entry, action: entry.action, after: (entry as { after?: unknown }).after });
         return (
           <div key={entry.id} className="grid grid-cols-[auto_12px_1fr] gap-x-3 gap-y-0 relative">
             {/* Timestamp */}
@@ -1518,6 +1657,17 @@ function TimelineTab({ instance }: { instance: ReturnType<typeof useWorkflowInst
                 {entry.actor && <span className="text-white/70">{entry.actor}</span>}
                 {entry.targetKind && <span className="text-white/40"> · {entry.targetKind}{entry.targetId ? `:${entry.targetId}` : ''}</span>}
                 {entry.reason && <span className="text-white/55"> · {entry.reason}</span>}
+                {artifactRoute && (
+                  <a
+                    href={artifactRoute}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="view-artifact-link"
+                    className="ml-2 text-teal-200 underline hover:text-teal-100"
+                  >
+                    View Artifact
+                  </a>
+                )}
               </p>
             </div>
           </div>
@@ -1692,6 +1842,12 @@ function AuditTrailTab({ instance }: { instance: ReturnType<typeof useWorkflowIn
     'escalation.raised':     'Escalation Raised',
     'escalation.resolved':   'Escalation Resolved',
     'mutation.blocked':      'Certification Blocked',
+    'FORM_INSTANCE_CREATED': 'Form Instance Created',
+    'FORM_COMPLETED':        'Form Completed',
+    'FILE_UPLOADED':         'File Uploaded',
+    'FILE_VALIDATED':        'File Validated',
+    'EVIDENCE_PROMOTED':     'Evidence Promoted',
+    'EVIDENCE_LOCKED':       'Evidence Locked',
   };
 
   return (
@@ -1699,6 +1855,7 @@ function AuditTrailTab({ instance }: { instance: ReturnType<typeof useWorkflowIn
       <ul className="space-y-0 divide-y divide-white/5">
         {trail.map(entry => {
           const label = ACTION_LABEL[entry.action] ?? entry.action;
+          const artifactRoute = artifactRouteForAuditEntry({ ...entry, action: entry.action, after: (entry as { after?: unknown }).after });
           return (
             <li key={entry.id} className="grid grid-cols-[120px_1fr] gap-3 py-2 text-[10.5px] font-roboto">
               <span className="font-mono-jb text-white/40 pt-0.5 leading-snug">
@@ -1713,6 +1870,17 @@ function AuditTrailTab({ instance }: { instance: ReturnType<typeof useWorkflowIn
                 <span className="text-white/75">{label}</span>
                 {entry.reason && <span className="text-white/45 ml-1">— {entry.reason}</span>}
                 {entry.targetKind && <span className="text-white/35 ml-1 font-mono-jb text-[9px]">· {entry.targetKind}</span>}
+                {artifactRoute && (
+                  <a
+                    href={artifactRoute}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="view-artifact-link"
+                    className="ml-2 text-teal-200 underline hover:text-teal-100"
+                  >
+                    View Artifact
+                  </a>
+                )}
               </div>
             </li>
           );

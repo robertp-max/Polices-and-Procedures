@@ -1,4 +1,5 @@
 import type { FormStatus } from '../stores/regulatoryExecutionStore';
+import { formatCesFormInstanceId } from '../compliance-execution/cesFormInstanceId';
 
 export type FormInstanceStatus = 'not_started' | 'in_progress' | 'submitted' | 'reviewed' | 'approved';
 
@@ -35,11 +36,15 @@ export function resolveFormInstances(
   formStates: Record<string, { status: FormStatus; completedAt?: string; completedBy?: string; reviewer?: string }>,
 ): Record<string, FormInstanceRecord> {
   const out: Record<string, FormInstanceRecord> = {};
+  const seqByEventForm = new Map<string, number>();
   for (const event of events) {
     for (const form of event.requiredForms) {
       const sourceFormId = form.formId ?? form.id;
       const formState = formStates[key(event.id, form.id)];
-      const instanceId = `${event.id}--${sourceFormId}`;
+      const k = `${event.id}::${sourceFormId}`;
+      const seq = (seqByEventForm.get(k) ?? 0) + 1;
+      seqByEventForm.set(k, seq);
+      const instanceId = formatCesFormInstanceId(event.id, sourceFormId, seq);
       out[instanceId] = {
         form_instance_id: instanceId,
         source_form_id: sourceFormId,

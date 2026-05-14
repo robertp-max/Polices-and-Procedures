@@ -25,6 +25,8 @@ import {
   type GeoInfo,
   type FieldEdit,
   type DemoUser,
+  type FormSignerSlot,
+  type SignerTask,
   DEMO_STAFF,
   signerNanoid,
   fmtSignTs,
@@ -40,7 +42,11 @@ import {
   queryEvidenceByContext,
   type EsignEvidenceResponse,
 } from '@/policy/ecign/hhcEvidence';
+import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
+import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
+import { buildSignerRosterHtml, type RosterSignerEntry } from '@/policy/ecign/buildSignerRosterHtml';
 import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { HelpContextLink } from '@/policy/help/HelpContextLink';
 import {
   type PolicyLinkMeta,
@@ -71,6 +77,16 @@ function escHtml(s: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function isCanonicalCesFormInstanceId(value: string, eventId: string, formId: string): boolean {
+  if (!value || value.startsWith('fi_')) return false;
+  return value.startsWith(`${eventId}-${formId}-`);
+}
+
+/** External API mirror ids — never treat as canonical CES artifact targets. */
+function isInternalMirrorEvidenceId(value: string | undefined): boolean {
+  return Boolean(value && (/^ECIGN-INTERNAL-MIRROR-/i.test(value) || /^STUB-ESIGN-/i.test(value)));
 }
 
 /* ═══ Certificate HTML builder ══════════════════════════════════════ */
@@ -271,7 +287,7 @@ function resolveNetworkLocationFromEvent(signatureEvt?: AuditEventShape): Requir
   };
 }
 
-function buildAuditTrailHtml(events: AuditEventShape[]): string {
+function buildAuditTrailHtml(events: AuditEventShape[], logoSrc: string = eCIgnLogo): string {
   const rows = events
     .slice()
     .sort((a, b) => (a.occurred_at_utc || '').localeCompare(b.occurred_at_utc || ''));
@@ -281,7 +297,7 @@ function buildAuditTrailHtml(events: AuditEventShape[]): string {
   return `
 <section class="ecign-page ecign-cert-section">
   <div class="header">
-    <img class="logo" src="${eCIgnLogo}" alt="eCIgn"/>
+    <img class="logo" src="${logoSrc}" alt="eCIgn"/>
     <div>
       <div class="badge">Audit Trail</div>
       <h1>Audit Trail Timeline</h1>
@@ -309,14 +325,16 @@ function buildIntegrityManifestHtml(args: {
   signatureHash?: string | null;
   certId: string;
   auditEvents: AuditEventShape[];
+  logoSrc?: string;
 }): string {
+  const logoSrc = args.logoSrc ?? eCIgnLogo;
   const chainHead = args.auditEvents.length
     ? (args.auditEvents[args.auditEvents.length - 1].hash || 'GENESIS')
     : 'GENESIS';
   return `
 <section class="ecign-page ecign-cert-section">
   <div class="header">
-    <img class="logo" src="${eCIgnLogo}" alt="eCIgn"/>
+    <img class="logo" src="${logoSrc}" alt="eCIgn"/>
     <div>
       <div class="badge">Integrity</div>
       <h1>Document Integrity Manifest</h1>
@@ -466,7 +484,14 @@ function buildPrintablePacketHtml(args: {
   signerName: string;
   signedAt: string;
   logoSrc: string;
-  /** Combined <link> + <style> tags, in head-source order. */
+  /** Care Indeed brand logo as a data URL; rendered as a banner on every page. */
+  ciLogoSrc: string;
+  /**
+   * Combined <link> + <style> tags, in head-source order.
+   * Pass an empty string when building the STORED artifact so the packet
+   * stays under the 4 MB localStorage threshold and survives page reloads.
+   * The certificate CSS below is self-contained and handles all rendering.
+   */
   styleAssets: string;
 }) {
   return `<!DOCTYPE html>
@@ -474,25 +499,71 @@ function buildPrintablePacketHtml(args: {
 <title>${escHtml(args.formTitle)} — eCIgn Packet</title>
 ${args.styleAssets}
 <style>
+  /*
+   * ── Standalone-packet isolation ──────────────────────────────────────
+   * The styleAssets block above includes the full CI application CSS
+   * (Tailwind + brand tokens). Those rules set body background patterns
+   * (the orange-arc logo watermark) that must NOT appear in the signed
+   * artifact or in the artifact-viewer iframe.  All rules below use
+   * !important so they win the specificity race against any rule above.
+   */
+  html,
+  body,
+  #root,
+  [id^="root-"],
+  .min-h-screen,
+  [class*="bg-ci-bg"],
+  [class*="bg-zinc"],
+  [class*="bg-slate"],
+  [class*="bg-gray"] {
+    background: #ffffff !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+  }
+  /* Hide any nav, sidebar, topbar, or action bars baked into the form HTML */
+  nav,
+  header:not(.ecign-cert-section *),
+  [class*="navbar"],
+  [class*="sidebar"],
+  [class*="topbar"],
+  [class*="action-bar"],
+  [class*="no-print"],
+  .no-print { display: none !important; }
   /* ── Packet overrides (do NOT touch form layout) ── */
-  @page{margin:0.5in 0.75in 0.55in 0.75in}
+  @page{size:Letter;margin:0.5in}
   @media print{
     html,body{background:white !important;margin:0 !important;padding:0 !important}
     /* Global print CSS can hide popup nodes via body:has(...) guards. */
     .ecign-print-root,.ecign-print-root *{visibility:visible !important}
     body:has(.form-page) .ecign-cert-section,
     body:has(.form-page) .ecign-cert-section *,
+    body:has(.form-frame) .ecign-cert-section,
+    body:has(.form-frame) .ecign-cert-section *,
     body:has(.form-page) .ecign-footer,
+    body:has(.form-frame) .ecign-footer,
     body:has(.form-page) .ecign-footer *{visibility:visible !important}
+    body:has(.form-frame) .ecign-footer *{visibility:visible !important}
     .ecign-cert-section{page-break-before:auto;break-before:auto}
     .ecign-page{page-break-before:auto;break-before:auto}
     .ecign-print-root .ecign-page:first-of-type{page-break-before:always;break-before:page}
-    .ecign-print-root,.ecign-print-root .form-page{height:auto !important;min-height:0 !important;overflow:visible !important}
+    .ecign-print-root,.ecign-print-root .form-page,.ecign-print-root .form-frame{height:auto !important;min-height:0 !important;overflow:visible !important}
+    .screen-shell{background:#FFFFFF !important;padding:0 !important;margin:0 !important;max-width:none !important}
+    .form-frame{
+      box-shadow:none !important;border:none !important;border-radius:0 !important;
+      padding:0 !important;margin:0 !important;max-width:none !important;
+      width:100% !important;background:#FFFFFF !important;
+    }
+    .form-frame table{table-layout:fixed !important;width:100% !important;max-width:100% !important;border-collapse:collapse !important}
+    .form-frame table th,.form-frame table td{word-break:break-word !important;overflow-wrap:anywhere !important;white-space:normal !important}
+    .avoid-break{break-inside:avoid;page-break-inside:avoid}
+    thead{display:table-header-group}
+    tr,td,th{break-inside:avoid;page-break-inside:avoid}
     /* Hide the on-screen action bar / close affordances if cloned */
     .no-print,.print\\:hidden{display:none !important}
+    *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;transition:none !important}
   }
-  html,body{margin:0;padding:0;background:white}
-  .ecign-print-root{position:relative;background:white;min-height:100vh}
+  html,body{margin:0;padding:0;background:#ffffff !important;background-image:none !important}
+  .ecign-print-root{position:relative;background:#ffffff !important;min-height:100vh}
   /* ── Certificate section (appended after original form pages) ── */
   .ecign-cert-section{
     max-width:none;width:100%;margin:0;padding:12px 10px 34px;
@@ -535,6 +606,25 @@ ${args.styleAssets}
   .ecign-cert-page .tbl td{padding:3px 5px}
   .ecign-cert-page .sig-box{padding:8px;margin-top:8px}
   .ecign-cert-page .sig-img{height:48px;max-width:200px}
+  /* ── Care Indeed brand header — visible on EVERY printed page ── */
+  .ci-brand-header{
+    position:fixed;top:0;left:0;right:0;height:34px;
+    background:rgba(255,255,255,0.97);border-bottom:1px solid #007970;
+    display:flex;align-items:center;gap:10px;padding:4px 18px 4px 18px;
+    font-family:'Segoe UI',Arial,sans-serif;z-index:9999;
+  }
+  .ci-brand-header-logo{height:24px;object-fit:contain}
+  .ci-brand-header-meta{display:flex;flex-direction:column;line-height:1.05}
+  .ci-brand-header-meta .lib{font-size:8.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#52404B}
+  .ci-brand-header-meta .org{font-size:9px;color:${MUTED};font-weight:500}
+  .ci-brand-header-spacer{flex:1}
+  .ci-brand-header-form{font-size:9px;color:${NAVY};font-weight:700;letter-spacing:.10em;text-transform:uppercase;text-align:right}
+  /* Push the form content & appended cert pages below the fixed brand header so
+     it never overlaps form text on print. */
+  @page{margin-top:0.7in;margin-bottom:0.5in}
+  @media print{
+    .ci-brand-header{display:flex !important}
+  }
   /* ── Single watermark footer — once per page via position:fixed ── */
   .ecign-footer{
     position:fixed;bottom:0;left:0;right:0;height:22px;
@@ -548,6 +638,16 @@ ${args.styleAssets}
 </style>
 </head><body>
   <div class="ecign-print-root">
+    <!-- Care Indeed brand header pinned to every printed page -->
+    <div class="ci-brand-header" aria-hidden="true">
+      <img class="ci-brand-header-logo" src="${args.ciLogoSrc}" alt="Care Indeed — The Heart of Home Health"/>
+      <div class="ci-brand-header-meta">
+        <span class="lib">Care Indeed Home Health Care, Inc.</span>
+        <span class="org">Enterprise Forms Library · Signed Document Package</span>
+      </div>
+      <span class="ci-brand-header-spacer"></span>
+      <span class="ci-brand-header-form">${escHtml(args.formTitle)}</span>
+    </div>
     ${args.formHtml}
     ${args.appendedHtml}
     <div class="ecign-footer">
@@ -708,6 +808,14 @@ export interface eCIgnWorkspaceProps {
   onConfirm:            (record: SignatureRecord) => void;
   onClose:              () => void;
   onRequestSecond:      (task: SecondSigTask) => void;
+
+  /* ── Multi-signer (Phase 3 / 09-Multi-Signature-Flow) ── */
+  /** Signer slot definitions from the form template. When provided, enables multi-signer flow. */
+  signerSlots?:         FormSignerSlot[];
+  /** 1-based index of the current signer in the roster (default: 1). */
+  signerIndex?:         number;
+  /** Total number of required signers (default: 1). */
+  totalSigners?:        number;
 }
 
 /* ═══ eCIgnWorkspace ═══════════════════════════════════════════════ */
@@ -732,7 +840,43 @@ export function eCIgnWorkspace({
   onConfirm,
   onClose,
   onRequestSecond,
+  signerSlots,
+  signerIndex = 1,
+  totalSigners = 1,
 }: eCIgnWorkspaceProps) {
+  // ── eCIgn logo as base64 data URL ────────────────────────────────
+  // The Vite asset URL is localhost-relative and breaks in saved HTML packets.
+  // We convert once at mount and use the data URL for all injected HTML.
+  const eCIgnLogoDataUrlRef = useRef<string>(eCIgnLogo);
+  // ── Care Indeed brand logo as base64 data URL ────────────────────
+  // Required on EVERY page of the final PDF artifact for brand
+  // defensibility. The user has demanded this be present 100+ times.
+  const ciLogoDataUrlRef = useRef<string>(ciLogoGray);
+  useEffect(() => {
+    let cancelled = false;
+    const inline = (src: string, target: { current: string }) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        if (cancelled) return;
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            target.current = canvas.toDataURL('image/png');
+          }
+        } catch { /* keep original URL on CORS failure */ }
+      };
+      img.src = src;
+    };
+    inline(eCIgnLogo, eCIgnLogoDataUrlRef);
+    inline(ciLogoGray, ciLogoDataUrlRef);
+    return () => { cancelled = true; };
+  }, []);
+
   const signer = useEcignSignerIdentity();
   const linkedPolicyIds = useMemo<string[]>(() => {
     if (Array.isArray(linkedPolicyIdsProp) && linkedPolicyIdsProp.length > 0) {
@@ -745,15 +889,84 @@ export function eCIgnWorkspace({
     [linkedPolicyIds],
   );
   /* ── Backend instance is the single source of truth ─────────────── */
+  const isMultiSigner = (signerSlots?.length ?? 0) > 1;
   const {
     instance, loading, error, busy,
+    mode: ecignMode,
     acceptConsent, verifyIdentity, acknowledgeReview,
     applySignature: applyServerSignature, lockDocument,
-  } = useEcignInstance({ formId, formVersion, fieldId });
+  } = useEcignInstance({
+    formId,
+    formVersion,
+    fieldId,
+    eventId: hhcEventId,
+    workflowInstanceId: hhcWorkflowId,
+    ...(isMultiSigner ? {
+      formInstanceId: formInstanceId,
+      sharedInstance: true,
+      signerSlots: signerSlots?.map(s => ({ field_id: s.field_id, role: s.role, tier: s.tier })),
+      signerIndex,
+      totalSigners,
+    } : {}),
+  });
+  const emittedAuditActionsRef = useRef<Set<string>>(new Set());
+  const createdArtifactsRef = useRef<{ packageId?: string; signedFormInstanceId?: string }>({});
+  /** After successful finalize uploads, blocks duplicate triple-upload on effect re-runs (Strict Mode / dep churn). */
+  const cesFinalizeCommittedKeyRef = useRef<string | null>(null);
+  /** Synchronous guard so React Strict double-invoke cannot interleave two finalize batches. */
+  const cesFinalizeSyncLockRef = useRef(false);
+  const canonicalFormInstanceId = useMemo(() => {
+    if (!hhcEventId) return formInstanceId;
+    if (isCanonicalCesFormInstanceId(formInstanceId, hhcEventId, formId)) return formInstanceId;
+    const resolved = useRegulatoryExecutionStore.getState().getOrCreateFormInstance({
+      eventId: hhcEventId,
+      formId,
+      taskId: parentTaskId || undefined,
+      requirementId: parentTaskId ? `${parentTaskId}::FORM_COMPLETION::${formId}` : undefined,
+      policyIds: linkedPolicyIds.length > 0 ? linkedPolicyIds : (policies.length > 0 ? policies : ['UNASSIGNED-POLICY']),
+      workflowId: hhcWorkflowId || undefined,
+    });
+    return resolved?.id || formInstanceId;
+  }, [formId, formInstanceId, hhcEventId, hhcWorkflowId, linkedPolicyIds, parentTaskId, policies]);
 
   /* Map backend state → UI step. UI never drives state itself. */
   const backendState: BackendState = (instance?.state ?? 'created') as BackendState;
   const activeIdx = Math.max(0, UI_STEPS.findIndex(s => s.backend === backendState));
+
+  const appendExecutionAudit = useCallback((action: string, reason?: string, after?: Record<string, unknown>) => {
+    if (!hhcEventId || !parentTaskId) return;
+    const key = `${instance?.instance_id ?? canonicalFormInstanceId}:${action}`;
+    if (emittedAuditActionsRef.current.has(key)) return;
+    emittedAuditActionsRef.current.add(key);
+    useRegulatoryExecutionStore.getState().appendTaskAuditEvent(hhcEventId, 'task', parentTaskId, action, {
+      reason,
+      after: {
+        formId,
+        canonicalFormInstanceId,
+        ecignSessionId: instance?.instance_id,
+        ...after,
+      },
+    });
+  }, [canonicalFormInstanceId, formId, hhcEventId, instance?.instance_id, parentTaskId]);
+
+  useEffect(() => {
+    if (!instance?.instance_id) return;
+    if (!hhcEventId || !parentTaskId) return;
+    if (backendState === 'created') {
+      appendExecutionAudit('SIGNATURE_SESSION_CREATED', 'eCIgn signing session opened.');
+    } else if (backendState === 'disclosed') {
+      appendExecutionAudit('CONSENT_ACCEPTED', 'Signer accepted electronic signature disclosure.');
+    } else if (backendState === 'verified') {
+      appendExecutionAudit('IDENTITY_CONFIRMED', 'Signer identity was verified.');
+    } else if (backendState === 'reviewed') {
+      appendExecutionAudit('DOCUMENT_REVIEWED', 'Signer acknowledged full document review.');
+    } else if (backendState === 'attested') {
+      appendExecutionAudit('SIGNATURE_APPLIED', 'Signature image was applied.');
+      appendExecutionAudit('ATTESTATION_ACCEPTED', 'Signer attestation accepted.');
+    } else if (backendState === 'signed_locked') {
+      appendExecutionAudit('SIGNATURE_FINALIZED', 'Document hash and manifest were finalized.');
+    }
+  }, [appendExecutionAudit, backendState, hhcEventId, instance?.instance_id, parentTaskId]);
 
   /* ── HHC compliance evidence mirror: when the eCIgn document locks (terminal),
      post a DOCUMENT_SIGNED evidence record + audit row to the Phase-1 backend.
@@ -775,14 +988,13 @@ export function eCIgnWorkspace({
   useEffect(() => {
     if (backendState !== 'signed_locked') return;
     if (!instance) return;
-    const key = `${instance.instance_id}:locked`;
+    const key = `${instance.instance_id}:locked:${canonicalFormInstanceId}`;
     if (hhcMirroredRef.current === key) return;
     hhcMirroredRef.current = key;
     const sigHash = (instance.manifest_hash || instance.document_hash || '').toString();
     if (!sigHash) return;            // nothing to attest yet
-    // Use the regulatory event_id if provided; fall back to a stable derived key
-    // so that evidence is not indexed under the transient form_instance_id.
-    const resolvedEventId    = hhcEventId    || `EVT-FORM-${formInstanceId}`;
+    // Use the regulatory event_id if provided; fall back to a stable derived key.
+    const resolvedEventId    = hhcEventId    || `EVT-FORM-${canonicalFormInstanceId}`;
     const resolvedWorkflowId = hhcWorkflowId || undefined;
     const attestationText = ATTESTATION_TEXT;
     void (async () => {
@@ -800,7 +1012,7 @@ export function eCIgnWorkspace({
           workflow_id:      resolvedWorkflowId,
           event_id:         resolvedEventId,
           form_id:          formId,
-          form_instance_id: formInstanceId,   // stored separately — NOT used as event key
+          form_instance_id: canonicalFormInstanceId,   // canonical CES binding for compliance traceability
           document_id:      String(instance.document_version_id || formId),
           document_hash:    instance.document_hash || null,
           signature_hash:   sigHash,
@@ -830,8 +1042,8 @@ export function eCIgnWorkspace({
           event_id: r.event_id,
           event_candidates: [
             resolvedEventId,
-            `EVT-FORM-${formInstanceId}`,
-            formInstanceId, // fallback legacy key probe
+            `EVT-FORM-${canonicalFormInstanceId}`,
+            canonicalFormInstanceId, // fallback legacy key probe
           ],
           evidence_id: r.evidence_id,
           form_id: r.form_id,
@@ -840,7 +1052,7 @@ export function eCIgnWorkspace({
 
         setHhcEvidenceResult({
           ...r,
-          form_instance_id: formInstanceId,
+          form_instance_id: canonicalFormInstanceId,
           signature_hash: sigHash,
           document_hash: instance.document_hash || null,
           attestation_text: attestationText,
@@ -850,16 +1062,29 @@ export function eCIgnWorkspace({
           searched_events: evidenceRefresh.searched_events,
           refreshed_count: evidenceRefresh.matches.length,
         });
-        if (import.meta.env.DEV) {
-          console.info('[hhc.esign.evidence]', r);
-        }
       } catch (e) {
         if (import.meta.env.DEV) {
           console.warn('[hhc.esign.evidence] failed', e);
         }
       }
     })();
-  }, [backendState, formId, formInstanceId, hhcEventId, hhcWorkflowId, instance, linkedPolicyIds, policies, signer.email, signer.id, signer.name, signer.role]);
+  }, [
+    backendState,
+    canonicalFormInstanceId,
+    formId,
+    hhcEventId,
+    hhcWorkflowId,
+    instance?.document_hash,
+    instance?.instance_id,
+    instance?.locked_at_utc,
+    instance?.manifest_hash,
+    linkedPolicyIds,
+    policies,
+    signer.email,
+    signer.id,
+    signer.name,
+    signer.role,
+  ]);
 
   const [auditEvents, setAuditEvents] = useState<AuditEventShape[]>([]);
   useEffect(() => {
@@ -975,18 +1200,19 @@ export function eCIgnWorkspace({
     onConfirm(rec);
   }, [applyServerSignature, empty, fieldId, geoInfo, onConfirm, signer.email, signer.name, signer.role]);
 
-  /* ── Second signer (LOCKED screen action) ────────────────────────── */
+  /* ── Next signer routing (LOCKED screen action) ─────────────────── */
   const handleSelectApprover = useCallback(async (user: DemoUser) => {
     if (!instance) return;
+    const nextIndex = signerIndex + 1;
+    const nextSlot = signerSlots?.[nextIndex - 1];
     const task: SecondSigTask = {
       taskId:         `task_${signerNanoid(12)}`,
       type:           'signature_request',
-      formInstanceId,
+      formInstanceId: canonicalFormInstanceId,
       assignedTo:     user.id,
       assignedBy:     signer.id,
       status:         'pending',
       createdAt:      new Date().toISOString(),
-      // Phase 11 — task INHERITS the parent artifact's linked policy set.
       linkedPolicyIds: [...linkedPolicyIds],
       sourcePolicyContext: {
         source:        formSource,
@@ -995,26 +1221,45 @@ export function eCIgnWorkspace({
     };
     try { await ecignApi.requestSecondSignature(instance.instance_id, user.id); }
     catch { /* surface via local state only */ }
+
+    // Persist as a SignerTask in the execution store for multi-signer tracking
+    if (hhcEventId) {
+      const signerTask: SignerTask = {
+        taskId: task.taskId,
+        type: 'signature_request',
+        formInstanceId: canonicalFormInstanceId,
+        formId,
+        eventId: hhcEventId,
+        assignedTo: user.id,
+        assignedToName: user.name,
+        assignedToRole: user.role,
+        assignedBy: signer.id,
+        status: 'pending',
+        createdAt: task.createdAt,
+        slotFieldId: nextSlot?.field_id || `sig_${nextIndex}`,
+        sequenceGroup: nextSlot?.sequence_group || nextIndex,
+        signerIndex: nextIndex,
+        totalSigners: totalSigners,
+        linkedPolicyIds: [...linkedPolicyIds],
+        sourcePolicyContext: task.sourcePolicyContext,
+      };
+      useRegulatoryExecutionStore.getState().createSignerTask(signerTask);
+    }
+
     setLocalTask(task);
     onRequestSecond(task);
     setShowSecondSig(false);
-  }, [formInstanceId, formSource, instance, linkedPolicyIds, onRequestSecond, parentTaskId, signer.id]);
+  }, [canonicalFormInstanceId, formId, formSource, hhcEventId, instance, linkedPolicyIds, onRequestSecond, parentTaskId, signer.id, signerIndex, signerSlots, totalSigners]);
 
   const buildPacketHtml = useCallback((record: SignatureRecord) => {
-    /* ── Style harvest ──────────────────────────────────────────────
-     * Vite dev injects every stylesheet as an inline <style> block; in
-     * production they ship as <link rel="stylesheet">. Collect BOTH so
-     * the packet renders identically in either mode (fixes the
-     * unstyled IMG1 issue documented in 06-Outputs §B.4).
-     */
-    const styleAssets = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'))
-      .map(node => {
-        if (node.tagName === 'LINK') {
-          const href = (node as HTMLLinkElement).href;
-          return `<link rel="stylesheet" href="${href}"/>`;
-        }
-        return `<style>${(node as HTMLStyleElement).innerHTML}</style>`;
-      })
+    // Inline all <style> blocks from the document head. We intentionally
+    // skip <link rel="stylesheet"> tags because those reference localhost
+    // URLs that cannot resolve in an off-screen DOM or saved HTML packet.
+    // In Vite dev mode ALL CSS is injected as inline <style> so this
+    // captures the full Tailwind + brand token styling needed for both
+    // the print view and the html2pdf.js canvas capture.
+    const styleAssets = Array.from(document.head.querySelectorAll('style'))
+      .map(node => `<style>${(node as HTMLStyleElement).innerHTML}</style>`)
       .join('\n');
 
     const signatureHash = (instance?.manifest_hash || instance?.document_hash || '').toString() ||
@@ -1054,10 +1299,10 @@ export function eCIgnWorkspace({
     const deviceOsVersion = device?.os_version || 'Not Reported';
 
     const certHtml = buildCertHtml({
-      certId, certAt, formId, formTitle, formVersion, formInstanceId,
+      certId, certAt, formId, formTitle, formVersion, formInstanceId: canonicalFormInstanceId,
       linkedPolicyIds, linkedPolicyMeta,
       record,
-      eventId: hhcEvidenceResult?.event_id || hhcEventId || `EVT-FORM-${formInstanceId}`,
+      eventId: hhcEvidenceResult?.event_id || hhcEventId || `EVT-FORM-${canonicalFormInstanceId}`,
       workflowId: hhcEvidenceResult?.workflow_id || hhcWorkflowId,
       evidenceId: hhcEvidenceResult?.evidence_id,
       evidenceStatus: hhcEvidenceResult?.status,
@@ -1089,20 +1334,67 @@ export function eCIgnWorkspace({
       deviceProcessor,
       deviceOs,
       deviceOsVersion,
-    }, eCIgnLogo);
+    }, eCIgnLogoDataUrlRef.current);
 
-    const auditTrailHtml = buildAuditTrailHtml(auditEvents);
+    const auditTrailHtml = buildAuditTrailHtml(auditEvents, eCIgnLogoDataUrlRef.current);
     const manifestHtml = buildIntegrityManifestHtml({
       certId,
       auditEvents,
       documentHash: hhcEvidenceResult?.document_hash || instance?.document_hash || null,
       signatureHash,
+      logoSrc: eCIgnLogoDataUrlRef.current,
     });
+
+    // Build the signer roster page (spec C.4 — always last appended page)
+    const rosterEntries: RosterSignerEntry[] = (signerSlots || []).map((slot, idx) => {
+      const matchedSig = signatures.get(slot.field_id);
+      const exec = useRegulatoryExecutionStore.getState();
+      const signerTasks = exec.signerTasksByFormInstanceId?.[canonicalFormInstanceId] ?? [];
+      const task = signerTasks.find(t => t.slotFieldId === slot.field_id);
+      const isSelf = slot.resolver === 'self';
+      const isCurrent = idx + 1 === signerIndex;
+      const isPriorGroup = slot.sequence_group < (signerSlots?.[signerIndex - 1]?.sequence_group ?? 1);
+
+      if (matchedSig || (isCurrent && record)) {
+        const sig = matchedSig || record;
+        return {
+          index: idx + 1,
+          fieldId: slot.field_id,
+          role: slot.role,
+          name: sig.signerName,
+          email: sig.signerEmail,
+          status: 'signed' as const,
+          signedAt: sig.signedAt,
+          signatureDataUrl: sig.signatureDataUrl,
+          sequenceGroup: slot.sequence_group,
+        };
+      }
+      return {
+        index: idx + 1,
+        fieldId: slot.field_id,
+        role: slot.role,
+        name: isSelf ? signer.name : (task?.assignedToName || undefined),
+        email: isSelf ? signer.email : undefined,
+        status: isPriorGroup ? ('awaiting_group' as const) : ('pending' as const),
+        dueDate: task?.dueDate,
+        sequenceGroup: slot.sequence_group,
+      };
+    });
+
+    const rosterHtml = rosterEntries.length > 0 ? buildSignerRosterHtml({
+      formId,
+      formTitle,
+      formVersion,
+      formInstanceId: canonicalFormInstanceId,
+      entries: rosterEntries,
+      logoSrc: eCIgnLogoDataUrlRef.current,
+    }) : '';
 
     const appendedHtml = `
       <section class="ecign-page ecign-cert-section">${certHtml}</section>
       ${auditTrailHtml}
       ${manifestHtml}
+      ${rosterHtml}
     `;
 
     const html = buildPrintablePacketHtml({
@@ -1112,7 +1404,8 @@ export function eCIgnWorkspace({
       certId,
       signerName: record.signerName,
       signedAt:   record.signedAt,
-      logoSrc:    eCIgnLogo,
+      logoSrc:    eCIgnLogoDataUrlRef.current,
+      ciLogoSrc:  ciLogoDataUrlRef.current,
       styleAssets,
     });
 
@@ -1123,9 +1416,14 @@ export function eCIgnWorkspace({
     formId,
     formTitle,
     formVersion,
-    formInstanceId,
+    canonicalFormInstanceId,
     linkedPolicyIds,
     linkedPolicyMeta,
+    signerSlots,
+    signerIndex,
+    signer.name,
+    signer.email,
+    signatures,
     instance,
     hhcEvidenceResult,
     hhcEventId,
@@ -1135,8 +1433,219 @@ export function eCIgnWorkspace({
     getPrintableFormHtml,
   ]);
 
+  // Store the generated PDF blob URL so Download PDF serves the exact same file.
+  const [, setGeneratedPdfBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (backendState !== 'signed_locked') return;
+    if (!hhcEventId) return;
+    if (createdArtifactsRef.current.packageId) return;
+    if (!isCanonicalCesFormInstanceId(canonicalFormInstanceId, hhcEventId, formId)) return;
+
+    const finalizeRunKey = `${hhcEventId}|${canonicalFormInstanceId}|${instance?.instance_id ?? ''}`;
+    if (cesFinalizeCommittedKeyRef.current === finalizeRunKey) return;
+    if (cesFinalizeSyncLockRef.current) return;
+    cesFinalizeSyncLockRef.current = true;
+
+    const hasExistingSignedPackage = (() => {
+      const exec = useRegulatoryExecutionStore.getState();
+      const aliases = [hhcEventId, ...(exec.eventInstanceIdsBySourceEventId[hhcEventId] ?? [])];
+      return aliases.some(alias => (exec.evidence[alias] ?? []).some(d =>
+        (d.artifactType === 'signed_package' || d.kind === 'signed_package')
+        && d.linkedFormInstanceId === canonicalFormInstanceId
+        && d.status !== 'SUPERSEDED',
+      ));
+    })();
+
+    /* ─────────────────────────────────────────────────────────────────
+     * SINGLE SOURCE OF TRUTH — store the packet HTML as the artifact.
+     *
+     * Previously this used html2pdf.js → html2canvas → JPEG → jsPDF,
+     * which rasterizes the entire form into a low-quality image, breaks
+     * text, and reliably hides the Care Indeed logo. The user has asked
+     * to STOP doing this and instead store the EXACT print view as the
+     * artifact.
+     *
+     * We now store the same HTML that the print window renders. The
+     * artifact viewer renders it natively (text stays vector, fonts stay
+     * crisp, the Care Indeed brand header is preserved). The Download
+     * button opens the same HTML in a print popup so the browser saves
+     * it as a faithful PDF via its native print engine.
+     * ───────────────────────────────────────────────────────────────── */
+    (async () => {
+    try {
+    const packetHtml = buildPacketHtml(effectiveRecord);
+    const packetPdfDataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(packetHtml)}`;
+    // Stable blob URL for Download flow — same bytes as the stored artifact.
+    try {
+      const blob = new Blob([packetHtml], { type: 'text/html;charset=utf-8' });
+      setGeneratedPdfBlobUrl(URL.createObjectURL(blob));
+    } catch { /* non-fatal */ }
+    const formSnapshotHtml = getPrintableFormHtml();
+    void formSnapshotHtml;
+
+    const exec = useRegulatoryExecutionStore.getState();
+    const artifactPolicyId = linkedPolicyIds[0] || policies[0] || 'UNASSIGNED-POLICY';
+    const artifactWorkflowId = hhcWorkflowId || '';
+    const actorLabel = signer.name || 'Current User';
+    const finalizedAt = instance?.locked_at_utc || new Date().toISOString();
+    const auditRefs = ['SIGNATURE_FINALIZED', 'CERTIFICATE_CREATED', 'SIGNED_PACKAGE_CREATED', 'ARTIFACT_REGISTERED', 'ARTIFACT_LOCKED'];
+    const commonArtifactMeta = {
+      taskId: parentTaskId || undefined,
+      policyIds: [artifactPolicyId],
+      workflowId: artifactWorkflowId,
+      formIds: [formId],
+      linkedFormId: formId,
+      linkedFormInstanceId: canonicalFormInstanceId,
+      artifactVersion: formVersion,
+      ecignSessionId: instance?.instance_id || undefined,
+      signatureSessionId: instance?.instance_id || undefined,
+      finalizedAt,
+      signerName: signer.name,
+      signerRole: signer.role,
+      signerEmail: signer.email,
+      attestationText: ATTESTATION_TEXT,
+      documentHash: instance?.document_hash || null,
+      manifestHash: instance?.manifest_hash || null,
+      signatureHash: (instance?.manifest_hash || instance?.document_hash || null),
+      auditEventRefs: auditRefs,
+    };
+
+    const isSubsequentSigner = (signerIndex > 1 && totalSigners > 1) || hasExistingSignedPackage;
+
+    // For subsequent signers, supersede existing evidence; for first signer, upload fresh.
+    let signedPackageArtifactId: string;
+    let signedFormInstanceArtifactId: string | undefined;
+
+    if (isSubsequentSigner) {
+      const aliases = [hhcEventId, ...(exec.eventInstanceIdsBySourceEventId[hhcEventId] ?? [])];
+      const allDocs = aliases.flatMap(alias => exec.evidence[alias] ?? []);
+      const priorArtifacts = allDocs.filter(d =>
+        d.linkedFormInstanceId === canonicalFormInstanceId
+        && ['signed_package', 'signed_form_instance'].includes(d.artifactType || '')
+        && d.status !== 'SUPERSEDED',
+      );
+      for (const prior of priorArtifacts) {
+        exec.removeEvidence(hhcEventId, prior.id);
+      }
+
+      const versionedMeta = {
+        ...commonArtifactMeta,
+        artifactVersion: `${formVersion}-s${signerIndex}`,
+        note: `signer_index=${signerIndex};total_signers=${totalSigners};canonical_form_instance_id=${canonicalFormInstanceId};ecign_session_id=${instance?.instance_id ?? ''}`,
+      };
+
+      signedPackageArtifactId = exec.uploadEvidence(hhcEventId, {
+        ...versionedMeta,
+        name: `${formId}-${canonicalFormInstanceId}-signed-package-v${signerIndex}.html`,
+        kind: 'signed_package',
+        sizeLabel: `${Math.round(packetPdfDataUrl.length / 1024)} KB`,
+        artifactType: 'signed_package',
+        localDataUrl: packetPdfDataUrl,
+      }, actorLabel);
+
+      const signerTasks = exec.signerTasksByFormInstanceId?.[canonicalFormInstanceId] ?? [];
+      const myTask = signerTasks.find(t => t.signerIndex === signerIndex && t.status !== 'signed');
+      if (myTask) {
+        exec.updateSignerTaskStatus(canonicalFormInstanceId, myTask.taskId, 'signed');
+      }
+    } else {
+      signedPackageArtifactId = exec.uploadEvidence(hhcEventId, {
+        ...commonArtifactMeta,
+        name: `${formId}-${canonicalFormInstanceId}-signed-package.html`,
+        kind: 'signed_package',
+        sizeLabel: `${Math.round(packetPdfDataUrl.length / 1024)} KB`,
+        artifactType: 'signed_package',
+        note: `artifact_type=signed_package;canonical_form_instance_id=${canonicalFormInstanceId};ecign_session_id=${instance?.instance_id ?? ''}`,
+        localDataUrl: packetPdfDataUrl,
+      }, actorLabel);
+
+      signedFormInstanceArtifactId = undefined;
+    }
+
+    if (!signedPackageArtifactId) {
+      return;
+    }
+    const stashKey = 'ces_ev_data_' + signedPackageArtifactId;
+    if (!localStorage.getItem(stashKey)) {
+      try { localStorage.setItem(stashKey, packetPdfDataUrl); } catch { /* quota */ }
+    }
+    cesFinalizeCommittedKeyRef.current = finalizeRunKey;
+    createdArtifactsRef.current = {
+      packageId: signedPackageArtifactId,
+      signedFormInstanceId: signedFormInstanceArtifactId,
+    };
+
+    exec.appendTaskAuditEvent(hhcEventId, 'evidence', signedPackageArtifactId, 'SIGNED_PACKAGE_CREATED', {
+      after: { artifactType: 'signed_package', canonicalFormInstanceId, ecignSessionId: instance?.instance_id },
+    });
+    exec.appendTaskAuditEvent(hhcEventId, 'evidence', signedPackageArtifactId, 'ARTIFACT_LOCKED', {
+      after: { artifactType: 'signed_package', canonicalFormInstanceId, lockedAt: finalizedAt },
+    });
+
+    appendExecutionAudit('SIGNED_PACKAGE_CREATED', 'Signed package artifact registered in canonical CES store.', {
+      canonicalFormInstanceId,
+      ecignSessionId: instance?.instance_id,
+      signedPackageArtifactId,
+      signedFormInstanceArtifactId: signedFormInstanceArtifactId ?? null,
+    });
+    appendExecutionAudit('ARTIFACT_REGISTERED', 'Finalized artifacts persisted to canonical CES snapshot.', {
+      canonicalFormInstanceId,
+      signedPackageArtifactId,
+      signedFormInstanceArtifactId: signedFormInstanceArtifactId ?? null,
+    });
+    appendExecutionAudit('ARTIFACT_LOCKED', 'Finalized artifacts locked for audit/compliance review.', {
+      canonicalFormInstanceId,
+      signedPackageArtifactId,
+      signedFormInstanceArtifactId,
+    });
+
+    if (parentTaskId) {
+      const aliases = [hhcEventId, ...(exec.eventInstanceIdsBySourceEventId[hhcEventId] ?? [])];
+      const linkedInstance = aliases
+        .flatMap(alias => exec.generatedFormInstancesByEventId[alias] ?? [])
+        .find(item => item.id === canonicalFormInstanceId);
+      if (linkedInstance) {
+        exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'SIGNED');
+        exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'LOCKED');
+      }
+      exec.attemptCompleteTask(hhcEventId, parentTaskId);
+    }
+    } finally {
+      cesFinalizeSyncLockRef.current = false;
+    }
+    })();
+  }, [
+    appendExecutionAudit,
+    backendState,
+    buildPacketHtml,
+    effectiveRecord,
+    canonicalFormInstanceId,
+    formId,
+    formTitle,
+    hhcEventId,
+    hhcWorkflowId,
+    formVersion,
+    getPrintableFormHtml,
+    instance?.document_hash,
+    instance?.instance_id,
+    instance?.locked_at_utc,
+    instance?.manifest_hash,
+    linkedPolicyIds,
+    parentTaskId,
+    policies,
+    signer.email,
+    signer.name,
+    signer.role,
+    signerIndex,
+    totalSigners,
+  ]);
+
   const openPacketWindow = useCallback((opts?: { fallbackDownload?: boolean }) => {
     const html = buildPacketHtml(effectiveRecord);
+    // Sanitise formTitle for use in filenames (strip characters illegal on Windows/macOS/Linux).
+    const safeTitle = (formTitle || formId).replace(/[/\\?%*:|"<>]/g, '-').trim();
+    const pdfFilename = `${safeTitle} — ${canonicalFormInstanceId}`;
     const win = window.open('', '_blank', 'width=840,height=980');
     if (!win) {
       if (opts?.fallbackDownload) {
@@ -1144,7 +1653,7 @@ export function eCIgnWorkspace({
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${formId}-eCIgn-signature-packet.html`;
+        a.download = `${pdfFilename} — eCIgn-Signed.html`;
         a.click();
         URL.revokeObjectURL(url);
       }
@@ -1152,7 +1661,9 @@ export function eCIgnWorkspace({
     }
 
     win.document.write(html);
-    win.document.title = `${formId} - eCIgn Signature Packet`;
+    // Setting document.title BEFORE print() causes most browsers to use it as
+    // the default filename in the "Save Print Output As" / "Print to PDF" dialog.
+    win.document.title = pdfFilename;
     win.document.close();
 
     const triggerPrint = () => {
@@ -1164,21 +1675,24 @@ export function eCIgnWorkspace({
     setTimeout(() => {
       triggerPrint();
     }, 450);
-  }, [buildPacketHtml, effectiveRecord, formId]);
+  }, [buildPacketHtml, canonicalFormInstanceId, effectiveRecord, formId, formTitle]);
 
   /* ── Print packet (FINALIZE action) ─────────────────────────────── */
   const handlePrint = useCallback(() => {
     openPacketWindow();
   }, [openPacketWindow]);
 
-  /* ── Download packet (FINALIZE action) ──────────────────────────── */
+  /* ── Download = open the packet HTML in a print popup ───────────────
+   *
+   * The single rendering pipeline is the browser's native print engine
+   * (window.print on the popup HTML). The stored artifact, the print
+   * view, and the artifact viewer all use the SAME HTML, so the
+   * download is byte-for-byte identical to what the user sees in print
+   * preview. This is the user's stated source of truth.
+   * ─────────────────────────────────────────────────────────────────── */
   const handleDownload = useCallback(() => {
-    // Save-as-PDF still uses browser print; if popup is blocked, fall back
-    // to downloading the packet HTML so users can still open/print locally.
     openPacketWindow({ fallbackDownload: true });
-  }, [
-    openPacketWindow,
-  ]);
+  }, [openPacketWindow]);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
@@ -1295,6 +1809,20 @@ export function eCIgnWorkspace({
                 </div>
                 <div>{error.message}</div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {instance && (
+          <div className="max-w-3xl mx-auto pt-3 px-6">
+            <div
+              className="px-3 py-2 rounded-lg font-roboto text-[11px]"
+              style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}
+            >
+              eCIgn mode: <strong>{ecignMode.resolved}</strong>
+              {ecignMode.requested !== ecignMode.resolved && (
+                <span> (requested {ecignMode.requested}, fallback enabled)</span>
+              )}
             </div>
           </div>
         )}
@@ -1650,6 +2178,12 @@ export function eCIgnWorkspace({
                     <h2 className="font-montserrat font-bold text-[26px] md:text-[30px] leading-tight" style={{ color: NAVY_DEEP }}>
                       Finalize
                     </h2>
+                    {totalSigners > 1 && (
+                      <p className="font-montserrat font-semibold text-[11px] mt-2 mb-1" style={{ color: NAVY }}>
+                        Signer {signerIndex} of {totalSigners}
+                        {signerIndex < totalSigners ? ' — Next signer required' : ' — All signatures complete'}
+                      </p>
+                    )}
                     <p className="font-roboto text-[13px] mt-2" style={{ color: MUTED }}>
                       Your attestation is complete and locked on the server. Choose how to handle the finalized document.
                     </p>
@@ -1673,7 +2207,14 @@ export function eCIgnWorkspace({
                         </div>
 
                         <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 font-mono text-[10.5px]" style={{ color: '#065F46' }}>
-                          <div><span className="font-montserrat">Evidence ID:</span> {hhcEvidenceResult.evidence_id}</div>
+                          {isInternalMirrorEvidenceId(hhcEvidenceResult.evidence_id) ? (
+                            <div className="md:col-span-2">
+                              <span className="font-montserrat">External mirror:</span>{' '}
+                              session-only (not a CES artifact). Use “Open signed package / form instance” for canonical evidence IDs.
+                            </div>
+                          ) : (
+                            <div><span className="font-montserrat">Evidence ID:</span> {hhcEvidenceResult.evidence_id}</div>
+                          )}
                           <div>
                             <span className="font-montserrat">Event ID:</span> {hhcEvidenceResult.event_id}
                             {hhcEvidenceResult.event_id.startsWith('EVT-FORM-FI') && (
@@ -1686,25 +2227,34 @@ export function eCIgnWorkspace({
                           <div><span className="font-montserrat">Policy ID:</span> {hhcEvidenceResult.policy_id}</div>
                           <div><span className="font-montserrat">Workflow ID:</span> {hhcEvidenceResult.workflow_id}</div>
                           <div><span className="font-montserrat">Status:</span> {hhcEvidenceResult.status} / {hhcEvidenceResult.signature_status}</div>
-                          <div className="md:col-span-2 break-all"><span className="font-montserrat">S3 key:</span> {hhcEvidenceResult.s3_key}</div>
+                          {!isInternalMirrorEvidenceId(hhcEvidenceResult.evidence_id) && (
+                            <div className="md:col-span-2 break-all"><span className="font-montserrat">S3 key:</span> {hhcEvidenceResult.s3_key}</div>
+                          )}
                         </div>
 
                         <div className="mt-3 flex flex-wrap gap-2">
                           <button
                             type="button"
                             onClick={() => {
-                              const q = new URLSearchParams({
-                                event_id: hhcEvidenceResult.event_id,
-                                evidence_id: hhcEvidenceResult.evidence_id,
-                                form_id: hhcEvidenceResult.form_id,
-                                policy_id: hhcEvidenceResult.policy_id,
+                              const fallbackArtifactId = !isInternalMirrorEvidenceId(hhcEvidenceResult.evidence_id)
+                                ? hhcEvidenceResult.evidence_id
+                                : undefined;
+                              const artifactId = createdArtifactsRef.current.packageId || fallbackArtifactId;
+                              if (!artifactId) return;
+                              const artifactUrl = buildArtifactRoute(artifactId, {
+                                eventId: hhcEventId || hhcEvidenceResult.event_id,
+                                taskId: parentTaskId,
+                                formId,
+                                formInstanceId: canonicalFormInstanceId,
+                                evidenceId: artifactId,
+                                type: createdArtifactsRef.current.packageId ? 'signed_package' : 'evidence',
                               });
-                              window.open(`/evidence?${q.toString()}`, '_blank', 'noopener');
+                              window.open(artifactUrl, '_blank', 'noopener');
                             }}
                             className="px-3 py-1.5 rounded-lg border text-[11px] font-montserrat font-semibold"
                             style={{ borderColor: '#6EE7B7', color: '#065F46', background: 'white' }}
                           >
-                            View in Evidence Center
+                            Open Artifact Viewer
                           </button>
                         </div>
                       </div>
