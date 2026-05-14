@@ -9,9 +9,10 @@ import type {
 } from '@/policy/types/masterControlInventory';
 
 export const MASTER_CONTROL_INVENTORY_SOURCE_PATH =
-  '/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json';
+  '/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json';
 
 export const MASTER_CONTROL_INVENTORY_SOURCE_PATH_FALLBACKS = [
+  '/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
   '/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
   '/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
 ] as const;

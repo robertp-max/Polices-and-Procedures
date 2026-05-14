@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import eCignLogo from '../../../Builder/eCIgn.png';
+import eCignLogo from '@/assets/eCIgn.png';
 import {
   CheckCircle2, Clock, Send, Printer,
   Save, User, Lock,

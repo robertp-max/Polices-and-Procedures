@@ -399,7 +399,7 @@ export function MasterControlInventory() {
                 <AlertTriangle size={20} className="mx-auto mb-2" style={{ color: remapForLight('#EF4444', isLight) }} />
                 <p className={`text-[12px] ${bodyText}`}>{error}</p>
                 <p className={`text-[10px] mt-1 ${mutedText}`}>
-                  Expected dataset at <span className="font-mono">{'/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'}</span>
+                  Expected dataset at <span className="font-mono">{'/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'}</span>
                 </p>
               </div>
             </div>
