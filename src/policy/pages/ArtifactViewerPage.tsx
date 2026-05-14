@@ -647,9 +647,21 @@ export function ArtifactViewerPage() {
                   </p>
                 )}
                 {formInstanceIsTerminal && !immutableFormArtifactUrl && (
-                  <div className="mb-2 rounded border border-amber-300/40 bg-amber-500/10 p-2 text-[11px] text-amber-100">
-                    No signed snapshot found. If you just signed this form, return to the CES sprint and
-                    re-sign — the signed document will be saved and viewable here.
+                  <div className="mb-2 rounded border border-amber-300/40 bg-amber-500/10 p-2 text-[11px] text-amber-100 space-y-1">
+                    <div className="flex items-center gap-1.5 font-semibold">
+                      <span className="rounded bg-amber-500/30 px-1 py-0.5 text-[9px] uppercase tracking-widest">DEMO-LOCAL</span>
+                      Signed artifact not available in this session
+                    </div>
+                    <p>
+                      Signed document snapshots are stored in browser localStorage during the signing session.
+                      They are not available after clearing browser data, opening a new browser session, or
+                      if the artifact exceeded the browser storage limit (~4 MB).
+                    </p>
+                    <p className="text-amber-200/70">
+                      To view this artifact: open the form workspace from the originating CES event task and
+                      use the &ldquo;Open Artifact Viewer&rdquo; button immediately after signing.
+                      Persistent artifact storage requires server-side S3/DynamoDB integration (Phase 1 backend).
+                    </p>
                   </div>
                 )}
                 {iframeDisplaySrc ? (

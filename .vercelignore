@@ -1,0 +1,10 @@
+Builder/
+Bin-(thrash)/
+Project_Intelligence/
+**/screenshots/
+**/uat-results/
+**/uat-html-report/
+**/downloads/
+*.docx
+*.xlsx
+*.pptx
