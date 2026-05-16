@@ -22,6 +22,7 @@ import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
 import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
 import type { AuthSession, DemoUser, RegistrationRecord, RegistrationStatus, TokenRecord } from './types.js';
+import { findApprovedUser, getLoadError, isAllowlistAvailable, normalizeEmail as normalizeApprovedEmail, normalizeSfOrgId } from './approvedUsers.js';
 
 interface DemoAuthConfig {
   region: string;
@@ -477,6 +478,142 @@ export class DemoAuthService {
       lastName: attrs.family_name,
       emailVerified: attrs.email_verified === 'true',
     };
+  }
+
+  async verifyRegistration(emailRaw: string, sfOrgIdRaw: string): Promise<{
+    verified: true;
+    approvedUser: { fullName: string; role: string; department: string };
+  }> {
+    // Fail closed if allowlist not loaded.
+    if (!isAllowlistAvailable()) {
+      log.error('auth.verify_registration.allowlist_unavailable', { error: getLoadError() });
+      throw new ApiError('auth_error', 'Registration verification failed. Please contact your administrator.', 403);
+    }
+
+    const email = normalizeApprovedEmail(emailRaw);
+    // sfOrgId is normalized but never logged.
+    const sfOrgId = normalizeSfOrgId(sfOrgIdRaw);
+
+    if (!email || !email.includes('@')) {
+      throw new ApiError('validation_error', 'Registration verification failed. Please contact your administrator.', 403);
+    }
+    if (!sfOrgId) {
+      throw new ApiError('validation_error', 'Registration verification failed. Please contact your administrator.', 403);
+    }
+
+    log.info('auth.verify_registration.attempt', { email });
+
+    // Block if account already fully registered.
+    const existingReg = await this.getRegistration(email);
+    if (existingReg?.status === 'active') {
+      log.warn('auth.verify_registration.already_registered', { email });
+      throw new ApiError('auth_error', 'Registration verification failed. Please contact your administrator.', 403);
+    }
+
+    const approved = findApprovedUser(email, sfOrgId);
+    if (!approved) {
+      log.warn('auth.verify_registration.denied', { email });
+      throw new ApiError('auth_error', 'Registration verification failed. Please contact your administrator.', 403);
+    }
+
+    // Log outcome only: email + role. Never log the SF Org ID or password.
+    log.info('auth.verify_registration.approved', { email, role: approved.role });
+    return {
+      verified: true,
+      approvedUser: {
+        fullName: approved.fullName,
+        role: approved.role,
+        department: approved.department,
+      },
+    };
+  }
+
+  async setupAccountDirect(input: {
+    email: string;
+    sfOrgId: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+  }): Promise<{ success: true }> {
+    // Fail closed if allowlist not loaded.
+    if (!isAllowlistAvailable()) {
+      log.error('auth.setup_account_direct.allowlist_unavailable', { error: getLoadError() });
+      throw new ApiError('auth_error', 'Registration verification failed. Please contact your administrator.', 403);
+    }
+
+    const email = normalizeApprovedEmail(input.email);
+    // sfOrgId is normalized but never logged.
+    const sfOrgId = normalizeSfOrgId(input.sfOrgId);
+
+    // Re-verify against allowlist (prevents bypass if verify step was skipped).
+    const approved = findApprovedUser(email, sfOrgId);
+    if (!approved) {
+      log.warn('auth.setup_account_direct.not_approved', { email });
+      throw new ApiError('auth_error', 'Registration verification failed. Please contact your administrator.', 403);
+    }
+
+    // Prevent duplicate account creation.
+    const existing = await this.getRegistration(email);
+    if (existing?.status === 'active') {
+      log.warn('auth.setup_account_direct.duplicate', { email });
+      throw new ApiError('auth_error', 'Registration verification failed. Please contact your administrator.', 403);
+    }
+
+    const firstName = String(input.firstName || '').trim();
+    const lastName  = String(input.lastName  || '').trim();
+    if (!firstName || !lastName) {
+      throw new ApiError('validation_error', 'First name and last name are required.', 400);
+    }
+    // validatePassword never logs the password value.
+    this.validatePassword(input.password);
+
+    await this.ensureCognitoUser(email);
+
+    await this.cognito.send(new AdminSetUserPasswordCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: email,
+      Password: input.password,
+      Permanent: true,
+    }));
+
+    await this.cognito.send(new AdminUpdateUserAttributesCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: email,
+      UserAttributes: [
+        { Name: 'given_name', Value: firstName },
+        { Name: 'family_name', Value: lastName },
+        { Name: 'email', Value: email },
+        { Name: 'email_verified', Value: 'true' },
+      ],
+    }));
+
+    await this.cognito.send(new AdminEnableUserCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: email,
+    }));
+
+    const now = this.nowIso();
+    const emailDomain = this.emailDomain(email);
+
+    const record: RegistrationRecord = {
+      ...(existing?.pk ? existing : this.registrationKey(email)),
+      email,
+      emailDomain,
+      cognitoUsername: email,
+      status: 'active' as RegistrationStatus,
+      setupCompletedAt: now,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      approvedBy: 'sf-org-id-verification',
+    };
+    delete (record as Partial<RegistrationRecord>).setupTokenHash;
+    delete (record as Partial<RegistrationRecord>).setupTokenExpiresAt;
+
+    await this.writeRegistration(record);
+
+    // Log outcome only: email + role. Never log SF Org ID or password.
+    log.info('auth.setup_account_direct.complete', { email, role: approved.role });
+    return { success: true };
   }
 }
 

@@ -756,7 +756,22 @@ export function GVGBPrintDocument() {
           boxShadow: '0 1px 0 rgba(0,0,0,0.04)',
         }}
       >
-        <span style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 600, fontSize: 12, color: MID }}>GV-GB-001 — print preview</span>
+        <a
+          href="/library/GV-GB-001"
+          style={{
+            fontFamily: 'Montserrat, sans-serif',
+            fontWeight: 600,
+            fontSize: 12,
+            color: '#007970',
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+          className="no-print"
+        >
+          ← Back to GV-GB-001
+        </a>
         <button
           type="button"
           onClick={() => window.print()}

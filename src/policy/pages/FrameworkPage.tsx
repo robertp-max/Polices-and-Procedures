@@ -398,7 +398,7 @@ export function FrameworkPage() {
                   {[
                     { icon: <LayoutList size={16} />, bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20', color: 'text-[#a855f7]', title: 'Form Builder', desc: '176+ Canonical templates with dynamic routing and smart logic.' },
                     { icon: <Printer size={16} />, bg: 'bg-[#ec4899]/10', border: 'border-[#ec4899]/20', color: 'text-[#ec4899]', title: 'Print & Export', desc: 'PDF generation, batch printing, and regulatory audit exports.' },
-                    { icon: <FileSignature size={16} />, bg: 'bg-[#3b82f6]/10', border: 'border-[#3b82f6]/20', color: 'text-[#3b82f6]', title: 'Sign & Cloud', desc: 'E-Signature workflows and automated syncing to Dropbox / Drive.' },
+                    { icon: <FileSignature size={16} />, bg: 'bg-[#3b82f6]/10', border: 'border-[#3b82f6]/20', color: 'text-[#3b82f6]', title: 'Sign & Cloud', desc: 'E-Signature workflows and automated syncing to approved cloud repositories.' },
                   ].map((item, i) => (
                     <div key={i} className="flex-1 fw-glass-btn rounded-2xl p-4 flex flex-col justify-center cursor-default fw-group">
                       <div className="flex gap-3 items-center mb-1.5">

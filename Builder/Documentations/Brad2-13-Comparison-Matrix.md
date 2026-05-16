@@ -1,18 +1,18 @@
-# 13 — Comprehensive Architecture Comparison (27 Dimensions)
+﻿# 13 â€” Comprehensive Architecture Comparison (27 Dimensions)
 
 **Subjects:**
-- **SH** — Self-hosted Brad 2.0 (validated)
-- **A** — Salesforce Health Cloud + Agentforce + Einstein Trust Layer
-- **B** — Azure HIPAA Stack (Azure OpenAI + Health Data Services)
-- **C** — Vertical Healthcare AI SaaS (Abridge / Notable / Innovaccer class)
+- **SH** â€” Self-hosted Brad.pi (validated)
+- **A** â€” Salesforce Health Cloud + Agentforce + Einstein Trust Layer
+- **B** â€” Azure HIPAA Stack (Azure OpenAI + Health Data Services)
+- **C** â€” Vertical Healthcare AI SaaS (Abridge / Notable / Innovaccer class)
 
-**Theme reminder:** HIPAA-eligibility ≠ HIPAA compliance. Every "vendor handles it" cell below assumes correct configuration and supported architecture. Off-pattern use voids that assumption.
+**Theme reminder:** HIPAA-eligibility â‰  HIPAA compliance. Every "vendor handles it" cell below assumes correct configuration and supported architecture. Off-pattern use voids that assumption.
 
 ---
 
 ## 13.1 Quick Scoreboard
 
-Lower is better for risk/cost dimensions; higher is better for capability dimensions. Scale 1–5.
+Lower is better for risk/cost dimensions; higher is better for capability dimensions. Scale 1â€“5.
 
 | Dimension | SH | A | B | C |
 |---|---|---|---|---|
@@ -33,25 +33,25 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 
 ## 13.2 Dimension-by-Dimension Analysis
 
-### 1. Total Cost of Ownership (TCO) — 5-year horizon
+### 1. Total Cost of Ownership (TCO) â€” 5-year horizon
 
-- **SH:** Capital up front (~$120k GPU/server + $30k network/security tooling) + ~$240k/yr ops (DevSecOps headcount portion, power, replacement reserve, audits). 5-yr ≈ **$1.35M**. Cost grows linearly with site count, sub-linearly with users.
-- **A:** Health Cloud ~$300/user/mo + Agentforce/Einstein add-ons (~$50–125/conversation or per-action pricing) + Shield ~$25k/yr base + implementation partner ~$300k year 1. 100 clinical users 5-yr ≈ **$2.4–4.0M**.
-- **B:** Azure consumption-based. 100 users at moderate inference (~50 calls/day/user, GPT-4o class, regional capacity) ≈ $35–55k/mo all-in including Health Data Services, App Service, storage, Sentinel. Plus ~2 FTE platform engineers. 5-yr ≈ **$3.2–4.5M**.
-- **C:** Per-clinician licensing ~$500–2,000/clinician/mo depending on workflow scope; implementation $100–250k. 100 clinicians 5-yr ≈ **$3.5–13M**.
+- **SH:** Capital up front (~$120k GPU/server + $30k network/security tooling) + ~$240k/yr ops (DevSecOps headcount portion, power, replacement reserve, audits). 5-yr â‰ˆ **$1.35M**. Cost grows linearly with site count, sub-linearly with users.
+- **A:** Health Cloud ~$300/user/mo + Agentforce/Einstein add-ons (~$50â€“125/conversation or per-action pricing) + Shield ~$25k/yr base + implementation partner ~$300k year 1. 100 clinical users 5-yr â‰ˆ **$2.4â€“4.0M**.
+- **B:** Azure consumption-based. 100 users at moderate inference (~50 calls/day/user, GPT-4o class, regional capacity) â‰ˆ $35â€“55k/mo all-in including Health Data Services, App Service, storage, Sentinel. Plus ~2 FTE platform engineers. 5-yr â‰ˆ **$3.2â€“4.5M**.
+- **C:** Per-clinician licensing ~$500â€“2,000/clinician/mo depending on workflow scope; implementation $100â€“250k. 100 clinicians 5-yr â‰ˆ **$3.5â€“13M**.
 
 **Verdict:** Self-hosted is cheapest at scale. SaaS is cheapest at very small scale and during ramp.
 
-### 2. Total Cost of Risk (TCOR) — expected breach + downtime + remediation
+### 2. Total Cost of Risk (TCOR) â€” expected breach + downtime + remediation
 
-- **SH:** Highest infrastructure-attack surface internally, but smallest blast radius (no shared tenancy, no internet exposure). Major risk: insider + ops error. Expected annual loss ≈ **$80–150k** with current controls.
-- **A:** Lower infra risk, but very high config risk (Salesforce sharing model is the #1 cause of real-world breaches in this class). Expected ≈ **$150–400k**, dominated by misconfiguration.
-- **B:** Medium config risk, broad Azure attack surface if misused. Expected ≈ **$130–300k**.
-- **C:** Lowest day-to-day operational risk, but **vendor concentration risk**: a vendor breach is your breach to notify. Expected ≈ **$100–500k**, fat-tailed by vendor incidents.
+- **SH:** Highest infrastructure-attack surface internally, but smallest blast radius (no shared tenancy, no internet exposure). Major risk: insider + ops error. Expected annual loss â‰ˆ **$80â€“150k** with current controls.
+- **A:** Lower infra risk, but very high config risk (Salesforce sharing model is the #1 cause of real-world breaches in this class). Expected â‰ˆ **$150â€“400k**, dominated by misconfiguration.
+- **B:** Medium config risk, broad Azure attack surface if misused. Expected â‰ˆ **$130â€“300k**.
+- **C:** Lowest day-to-day operational risk, but **vendor concentration risk**: a vendor breach is your breach to notify. Expected â‰ˆ **$100â€“500k**, fat-tailed by vendor incidents.
 
 ### 3. Shared Responsibility Model (clarity)
 
-- **SH:** None — you own it all. Crystal clear.
+- **SH:** None â€” you own it all. Crystal clear.
 - **A:** Documented but very large customer-side surface (sharing, profiles, code, AppExchange).
 - **B:** Industry-standard cloud SRM, well-documented, but very deep customer surface (you're building an app).
 - **C:** Smallest customer-side surface but customer responsibility for identity, scope, output review remains.
@@ -103,7 +103,7 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 - **SH:** You set it. Practiced quarterly. RTO 4h.
 - **A:** Outages are Salesforce's; your MTTR = "wait." Status page is the SLA. Historic Salesforce outages have been hours.
 - **B:** Region failover possible if architected; depends on your design.
-- **C:** Vendor-defined, often opaque. SLA credit ≠ uptime.
+- **C:** Vendor-defined, often opaque. SLA credit â‰  uptime.
 
 ### 11. MTTD (Mean Time to Detect)
 
@@ -115,7 +115,7 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 ### 12. Scalability Model
 
 - **SH:** Vertical scaling (add GPU nodes) or horizontal (add inference workers). Capex required. Predictable.
-- **A:** Salesforce scales for you — within license tiers; cost scales linearly with users.
+- **A:** Salesforce scales for you â€” within license tiers; cost scales linearly with users.
 - **B:** Cloud-elastic; great for spiky workloads.
 - **C:** Vendor-managed.
 
@@ -136,8 +136,8 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 ### 15. Audit Readiness
 
 - **SH:** Excellent if maintained; otherwise terrible. You own evidence quality.
-- **A:** Good — Shield + Event Monitoring give strong audit if enabled. You must enable them.
-- **B:** Good — Sentinel + Log Analytics give strong audit if configured.
+- **A:** Good â€” Shield + Event Monitoring give strong audit if enabled. You must enable them.
+- **B:** Good â€” Sentinel + Log Analytics give strong audit if configured.
 - **C:** Limited to vendor exports; auditor may require additional evidence the vendor must provide.
 
 ### 16. Change Management Complexity
@@ -150,16 +150,16 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 ### 17. DevOps / DevSecOps Maturity Required
 
 - **SH:** Maximum. Without it, the system fails.
-- **A:** Salesforce DevOps (DX, CI for Apex, sandbox strategy) — meaningful.
+- **A:** Salesforce DevOps (DX, CI for Apex, sandbox strategy) â€” meaningful.
 - **B:** Cloud-native DevSecOps. Comparable to SH in skill needs.
-- **C:** Lowest — vendor-driven.
+- **C:** Lowest â€” vendor-driven.
 
 ### 18. Human Error Risk
 
 - **SH:** Concentrated in DevSecOps team; mitigated by GitOps reviewers and CI gates.
-- **A:** Distributed (admins, developers, business users w/ flow access). **Highest** in practice — most SaaS HIPAA breaches are admin/sharing errors.
+- **A:** Distributed (admins, developers, business users w/ flow access). **Highest** in practice â€” most SaaS HIPAA breaches are admin/sharing errors.
 - **B:** Cloud admin error (public storage, NSG misconfig) is the dominant risk class.
-- **C:** Concentrated in identity and EHR scope — fewer surfaces but high-impact when wrong.
+- **C:** Concentrated in identity and EHR scope â€” fewer surfaces but high-impact when wrong.
 
 ### 19. Insider Threat Surface
 
@@ -178,7 +178,7 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 ### 21. Disaster Recovery Complexity
 
 - **SH:** You design and execute; LTO offline + offsite + drills.
-- **A:** Salesforce backup is **not** a substitute for a customer backup — you must export periodically (own a Salesforce backup tool like OwnBackup/Salesforce Backup) or face data loss on accidental delete.
+- **A:** Salesforce backup is **not** a substitute for a customer backup â€” you must export periodically (own a Salesforce backup tool like OwnBackup/Salesforce Backup) or face data loss on accidental delete.
 - **B:** You design DR; standard Azure patterns apply.
 - **C:** Vendor handles platform DR; you must plan for **vendor failure / vendor exit**.
 
@@ -206,13 +206,13 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 ### 25. Flexibility / Customization
 
 - **SH:** Maximum.
-- **A:** Within Salesforce paradigm — flexible. Outside it — impossible.
+- **A:** Within Salesforce paradigm â€” flexible. Outside it â€” impossible.
 - **B:** Maximum (you build the app).
 - **C:** Minimum.
 
 ### 26. Time to Market
 
-- **SH:** Months (build, harden, validate). Already done for Brad 2.0.
+- **SH:** Months (build, harden, validate). Already done for Brad.pi.
 - **A:** Weeks-to-months (Salesforce delivery partner).
 - **B:** Months (custom build).
 - **C:** Weeks (configuration only).
@@ -228,11 +228,11 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 
 ## 13.3 Composite Verdict
 
-| If you optimize for… | Pick |
+| If you optimize forâ€¦ | Pick |
 |---|---|
 | **Maximum control over PHI** | **SH** |
 | **Minimum operational labor** | **C** |
-| **Minimum HIPAA liability transfer** | None — they're all equivalent (HIPAA accountability does not transfer) |
+| **Minimum HIPAA liability transfer** | None â€” they're all equivalent (HIPAA accountability does not transfer) |
 | **Minimum *infrastructure* liability** | **C**, then **A**, then **B** |
 | **Maximum customization for chart-review/QAPI** | **SH** or **B** |
 | **Fastest deployment** | **C** |
@@ -242,7 +242,7 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 | **Best fit when you're already a Salesforce shop** | **A** |
 | **Best fit when you're already an Azure shop** | **B** |
 
-(See [17 — Final Recommendation](./17-Final-Recommendation.md) for synthesized guidance.)
+(See [17 â€” Final Recommendation](./17-Final-Recommendation.md) for synthesized guidance.)
 
 ---
 
@@ -251,3 +251,4 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 In **all** four architectures:
 
 > **Care Indeed remains the Covered Entity. The BAA is a floor. Configuration, integration, scope, and clinical use determine whether that floor holds. Misconfiguration in any architecture = full organizational liability.**
+

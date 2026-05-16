@@ -1,12 +1,12 @@
-# Brad 2.0 — Self-Hosted Healthcare AI Security Architecture, Penetration Test Suite, & SaaS Alternatives Evaluation
+﻿# Brad.pi â€” Self-Hosted Healthcare AI Security Architecture, Penetration Test Suite, & SaaS Alternatives Evaluation
 
-**System:** Brad 2.0 — Business Risk & Analytics Director
+**System:** Brad.pi â€” Business Risk & Analytics Director
 **Owner:** Care Indeed
-**Environment:** Self-hosted Linux + 4× RTX 6000 Ada + Local Qwen LLM + Dockerized services
+**Environment:** Self-hosted Linux + 4Ã— RTX 6000 Ada + Local Qwen LLM + Dockerized services
 **Data Class:** PHI (HIPAA-regulated)
 **Document Set Version:** 1.0
 **Status:** Production-Approval Candidate (post 100 consecutive pass validation)
-**Classification:** CONFIDENTIAL — INTERNAL SECURITY / AUDIT USE ONLY
+**Classification:** CONFIDENTIAL â€” INTERNAL SECURITY / AUDIT USE ONLY
 
 ---
 
@@ -22,7 +22,7 @@
 | 06 | [100-Consecutive-Pass Breach Simulation](./06-Breach-Simulation-100-Pass.md) | Iterative red-team validation log |
 | 07 | [Failure & Restart Log](./07-Failure-Restart-Log.md) | Every failure, root cause, patch, restart |
 | 08 | [Final System Hardening Manifest](./08-Final-Hardening-Manifest.md) | Approved control baseline |
-| 09 | [Penetration Test Report (Audit-Ready)](./09-Penetration-Test-Report.md) | Formal report suite (Sections 1–15) |
+| 09 | [Penetration Test Report (Audit-Ready)](./09-Penetration-Test-Report.md) | Formal report suite (Sections 1â€“15) |
 | 10 | [Operational Recommendations](./10-Operational-Recommendations.md) | Governance, cadences, drills, training |
 
 ### SaaS Alternatives Evaluation Suite
@@ -41,18 +41,18 @@
 
 ## Reading Order for Executives (SaaS Decision)
 
-1. **17 Final Recommendation** — the decision and conditions.
-2. **13 Comparison Matrix** — the 27-dimension scoreboard.
-3. **14 Cost Analysis** — what each architecture costs and what each budget tier buys.
-4. **12 Liability Failure Analysis** — what goes wrong in each, and who pays.
-5. **11 SaaS Architecture Alternatives** — design detail for each SaaS option.
-6. **15 Product Requirements** + **16 Sprint Plan** — execution detail if a SaaS path is chosen.
+1. **17 Final Recommendation** â€” the decision and conditions.
+2. **13 Comparison Matrix** â€” the 27-dimension scoreboard.
+3. **14 Cost Analysis** â€” what each architecture costs and what each budget tier buys.
+4. **12 Liability Failure Analysis** â€” what goes wrong in each, and who pays.
+5. **11 SaaS Architecture Alternatives** â€” design detail for each SaaS option.
+6. **15 Product Requirements** + **16 Sprint Plan** â€” execution detail if a SaaS path is chosen.
 
 ---
 
-## Core Theme — All 17 Documents
+## Core Theme â€” All 17 Documents
 
-> **HIPAA-eligibility ≠ HIPAA compliance. A BAA is a floor, not a ceiling. Misconfiguration in any architecture (self-hosted or SaaS) results in full organizational liability. SaaS reduces operational labor; it does not transfer regulatory accountability.**
+> **HIPAA-eligibility â‰  HIPAA compliance. A BAA is a floor, not a ceiling. Misconfiguration in any architecture (self-hosted or SaaS) results in full organizational liability. SaaS reduces operational labor; it does not transfer regulatory accountability.**
 
 ---
 
@@ -74,3 +74,4 @@
 - **PHI exposure events:** **0 / 247** (zero across all runs, including failures)
 - **Critical residual findings:** 0
 - **Recommendation:** **GO for production** with conditions enumerated in Section 15 of [09](./09-Penetration-Test-Report.md).
+

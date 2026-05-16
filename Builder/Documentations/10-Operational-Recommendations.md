@@ -1,4 +1,4 @@
-# 10 — Operational Recommendations (Brad 1.0 LIVE)
+﻿# 10 â€” Operational Recommendations (Brad 1.0 LIVE)
 
 **Status:** **RECOMMENDATIONS ONLY. NOT APPLIED.**
 **Audience:** Care Indeed leadership, HIPAA Security Officer, IT/Operations.
@@ -99,7 +99,7 @@
 
 ## 10.9 Administrator Approval Controls
 
-- **Two-person rule** enforced server-side (technical control in [05 §5.5](./05-Hardening-Blueprint.md#55-local-service-architecture)) for:
+- **Two-person rule** enforced server-side (technical control in [05 Â§5.5](./05-Hardening-Blueprint.md#55-local-service-architecture)) for:
   - PIP creation / approval / execution,
   - corrective action execution,
   - chart write-back,
@@ -147,15 +147,16 @@
 These are the high-leverage operational actions Care Indeed should consider, in priority order, **regardless of platform topology**:
 
 1. **Confirm BAA scope of every Google service touched by `Builder/orbital-stage-443721-v1-99d78d776418.json`.** If any of those scopes can touch PHI, treat the service relationship itself as a compliance question.
-2. **Treat the file above as a credential-leak risk and plan a coordinated rotation** with the Google Cloud project owner. (Technical removal from working tree is recommended in [05 §5.7](./05-Hardening-Blueprint.md#57-secrets-management) but is **not** performed by this assessment.)
-3. **Pause unrestricted PHI use of Brad 1.0** pending a decision on the constrained interim operating mode in [01 §1.5](./01-Executive-Security-Summary.md#15-recommended-interim-operating-mode-recommendation-only--not-implemented).
-4. **Authorize the Brad 2.0 build-out** as the defensible production target.
-5. **Charter the Brad governance committee** in §10.1 above.
+2. **Treat the file above as a credential-leak risk and plan a coordinated rotation** with the Google Cloud project owner. (Technical removal from working tree is recommended in [05 Â§5.7](./05-Hardening-Blueprint.md#57-secrets-management) but is **not** performed by this assessment.)
+3. **Pause unrestricted PHI use of Brad 1.0** pending a decision on the constrained interim operating mode in [01 Â§1.5](./01-Executive-Security-Summary.md#15-recommended-interim-operating-mode-recommendation-only--not-implemented).
+4. **Authorize the Brad.pi build-out** as the defensible production target.
+5. **Charter the Brad governance committee** in Â§10.1 above.
 6. **Schedule the first quarterly internal pen-test re-run** after any remediation, using the protocol in [06](./06-Breach-Simulation-100-Pass.md).
-7. **Fund the operational cadences** in §10.4–§10.7 as recurring line items, not one-time projects.
+7. **Fund the operational cadences** in Â§10.4â€“Â§10.7 as recurring line items, not one-time projects.
 
 ---
 
 ## 10.14 Final Note
 
 > Technical hardening alone will not produce HIPAA / SOC 2 compliance. Compliance is the **operational practice** of running, monitoring, reviewing, drilling, retraining, and re-testing those technical controls over time. The recommendations in this document are the operational scaffolding around the technical recommendations elsewhere in this set. **None of them have been applied** by this assessment; they are presented for leadership decision.
+

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ExternalLink, LayoutList, Printer } from 'lucide-react';
+import { LayoutList, Printer } from 'lucide-react';
 import { FormViewer } from '@/policy/components/FormViewer';
 import { printForm } from '@/policy/utils/printForm';
 import { getFormsForPolicy } from '@/policy/utils/policyFormLinks';
@@ -124,12 +124,6 @@ export function PolicyAppendicesPanel({
           </div>
 
           <div className="mt-6 flex flex-col gap-2">
-            <button
-              onClick={() => window.open('https://sign.dropbox.com', '_blank', 'noopener,noreferrer')}
-              className="flex items-center gap-2 text-blue-600 font-montserrat font-semibold text-[12px] hover:underline transition-all"
-            >
-              <ExternalLink size={14} /> Sign on Dropbox
-            </button>
             {active?.printAction && (
               <button
                 onClick={active.printAction}

@@ -1,8 +1,8 @@
-# 08 — Recommended Hardening Manifest (Brad 1.0 LIVE)
+﻿# 08 â€” Recommended Hardening Manifest (Brad 1.0 LIVE)
 
 **Status:** **RECOMMENDED TARGET STATE. NOT APPLIED.** This document defines the control baseline that, if adopted, would put Brad 1.0 (or its successor) into a posture capable of surviving a 100-consecutive-pass simulation. It is the consolidation of [05](./05-Hardening-Blueprint.md) into a manifest format suitable for governance use. **Nothing in this document has been implemented by this assessment.**
 
-> The most direct path to this manifest in practice is to migrate Brad 1.0's PHI workload onto the **Brad 2.0** architecture (see `../../Business Risk & Analytics Director Brad2.0/Documentation/08-Final-Hardening-Manifest.md`). The manifest below is therefore expressed in terms of "the Brad-1.0 deployment, once migrated / hardened to this baseline."
+> The most direct path to this manifest in practice is to migrate Brad 1.0's PHI workload onto the **Brad.pi** architecture (see `../../Business Risk & Analytics Director Brad.pi/Documentation/08-Final-Hardening-Manifest.md`). The manifest below is therefore expressed in terms of "the Brad-1.0 deployment, once migrated / hardened to this baseline."
 
 ---
 
@@ -11,7 +11,7 @@
 - Seven security zones (Z0 Edge / Z1 Proxy+Auth / Z2 App / Z3 Inference / Z4 Retrieval / Z5 PHI Data / Z6 Audit / Z7 Admin), with the non-PHI marketing/ComfyUI module on a fully isolated Z-NPHI VLAN with no L3 route to PHI zones.
 - Default-DROP at host firewall for every zone; explicit allowlists per direction.
 - mTLS east-west; no plaintext channels internally.
-- Single ingress: WireGuard UDP from internet → edge appliance (not the operator workstation).
+- Single ingress: WireGuard UDP from internet â†’ edge appliance (not the operator workstation).
 
 ## 8.2 Access Control Model (Recommended)
 
@@ -28,24 +28,24 @@
 - Service identity = mTLS certificate SAN, issued by Vault PKI, 24-hour TTL.
 - Admins hold two FIDO2 keys (primary + offline backup).
 
-## 8.4 Encryption — At Rest (Recommended)
+## 8.4 Encryption â€” At Rest (Recommended)
 
 - LUKS2 on all data volumes; TPM 2.0 + PIN unsealing for boot.
 - Postgres TDE (filesystem) + pgcrypto column-level on identifiers (MRN, SSN, DOB).
 - MinIO SSE-KMS with per-bucket keys via Vault transit engine.
 - Key custody: production data KEK separate from backup KEK; both in Vault; root sealed offline.
 
-## 8.5 Encryption — In Transit (Recommended)
+## 8.5 Encryption â€” In Transit (Recommended)
 
 - TLS 1.3 only externally; TLS 1.3 + mTLS internally.
 - AEAD ciphers only.
-- HSTS, CSP `default-src 'self'`, X-Frame-Options DENY, Referrer-Policy strict-origin, Permissions-Policy minimal — enforced at proxy.
+- HSTS, CSP `default-src 'self'`, X-Frame-Options DENY, Referrer-Policy strict-origin, Permissions-Policy minimal â€” enforced at proxy.
 - WireGuard UDP at the edge with FIDO2-bound enrollment and TPM-backed device cert.
 
 ## 8.6 Logging & Audit Immutability (Recommended)
 
 - Sources: app audit, OPA decisions, inference prompts/outputs (encrypted, Z6 only), proxy access logs, WireGuard, auditd, Falco, Docker events, Vault audit, Postgres `pgaudit`, MinIO audit.
-- Pipeline: source → local agent (Wazuh/Filebeat/auditbeat) → mTLS → Z6 ingester → Wazuh manager → (a) search indices and (b) WORM bucket (raw, hash-chained batches) → hourly chain root anchored to offline notary HSM.
+- Pipeline: source â†’ local agent (Wazuh/Filebeat/auditbeat) â†’ mTLS â†’ Z6 ingester â†’ Wazuh manager â†’ (a) search indices and (b) WORM bucket (raw, hash-chained batches) â†’ hourly chain root anchored to offline notary HSM.
 - Integrity: each batch contains `prev_hash`, `batch_hash`, `batch_id`, `timestamp`, `count`. Continuous verifier; P1 alarm on chain break.
 - Retention: 7 years (audit), 1 year (operational). Legal hold mechanism documented.
 
@@ -86,20 +86,20 @@
 ## 8.10 Monitoring & Alerting (Recommended)
 
 - **Wazuh** (or equivalent) as SIEM with rules tuned to suppress noise but escalate on:
-  - Audit chain break → P1, page immediately.
-  - New admin role assignment → P2.
-  - WireGuard new peer or revocation → P2.
-  - Falco rule fire (e.g., `Terminal shell in container`) in PHI zones → P1.
-  - Failed FIDO2 attempts above threshold → P2.
-  - **Outbound connection attempt from inference host → P1.**
-  - File integrity change in `/etc`, `/opt/brad`, model weights dir, policy corpus dir → P1.
-  - Detection of plaintext credential pattern in any log → P1.
+  - Audit chain break â†’ P1, page immediately.
+  - New admin role assignment â†’ P2.
+  - WireGuard new peer or revocation â†’ P2.
+  - Falco rule fire (e.g., `Terminal shell in container`) in PHI zones â†’ P1.
+  - Failed FIDO2 attempts above threshold â†’ P2.
+  - **Outbound connection attempt from inference host â†’ P1.**
+  - File integrity change in `/etc`, `/opt/brad`, model weights dir, policy corpus dir â†’ P1.
+  - Detection of plaintext credential pattern in any log â†’ P1.
 - Alerts mirrored to two independent channels (on-prem ntfy + offsite SMS gateway) to defeat local-only suppression.
 
 ## 8.11 Separation of PHI vs Non-PHI Modules (Recommended)
 
 - Separate physical host or strictly separate VM with PCIe GPU passthrough for non-PHI generative work.
-- Separate VLAN with **no L3 route** to PHI zones — verified by router ACL audit AND active probe (must time out).
+- Separate VLAN with **no L3 route** to PHI zones â€” verified by router ACL audit AND active probe (must time out).
 - Separate identity store (different OIDC realm).
 - Separate storage; no shared NFS/SMB; no shared LDAP.
 - Admin context switch is explicit and logged.
@@ -112,7 +112,7 @@
 - AppRole + workload identity (signed JWT from app) for service auth to Vault.
 - PKI engine issues short-lived (24h) mTLS certs to all services.
 - Transit engine for envelope encryption of PHI exports.
-- Audit device → Z6 WORM.
+- Audit device â†’ Z6 WORM.
 - Root token sealed in tamper-evident envelope, vaulted physically; emergency-only.
 
 ## 8.13 Change Control (Recommended)
@@ -146,7 +146,7 @@
 
 ## 8.17 Admin Workstation Standard (Recommended)
 
-- Dedicated admin device — no email, no general browsing.
+- Dedicated admin device â€” no email, no general browsing.
 - FDE (BitLocker / LUKS), TPM-bound; EDR with tamper protection.
 - Patch within 7 days for critical OS/browser vulns.
 - USB storage class blocked except whitelisted secure tokens.
@@ -158,10 +158,10 @@
 
 | Activity | Cadence |
 |---|---|
-| Patch — Critical CVE | 72h |
-| Patch — High | 7d |
-| Patch — Medium | 30d |
-| Patch — Low | 90d |
+| Patch â€” Critical CVE | 72h |
+| Patch â€” High | 7d |
+| Patch â€” Medium | 30d |
+| Patch â€” Low | 90d |
 | Access review | Quarterly |
 | Backup restore drill | Quarterly |
 | Internal pentest | Quarterly |
@@ -183,3 +183,4 @@ This manifest is the **target** baseline. Acceptance against it requires:
 3. Sign-off by HIPAA Security Officer and SOC 2 control owner.
 
 **As of this assessment, none of these acceptance conditions are met for Brad 1.0.** This document records the recommended target only.
+

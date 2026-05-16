@@ -1,7 +1,7 @@
-# 04 — Threat Model
+﻿# 04 â€” Threat Model
 
 **Methodology:** STRIDE + LINDDUN + adversary-driven attack-path analysis.
-**Scope:** Brad 2.0 self-hosted Linux + GPU + Docker + Local Qwen LLM.
+**Scope:** Brad.pi self-hosted Linux + GPU + Docker + Local Qwen LLM.
 
 ---
 
@@ -25,7 +25,7 @@
 
 | Actor | Motivation | Capability | Likelihood | Prioritized? |
 |---|---|---|---|---|
-| External opportunist | Ransom, data theft | Low–Med (commodity tooling) | Medium | Yes |
+| External opportunist | Ransom, data theft | Lowâ€“Med (commodity tooling) | Medium | Yes |
 | Targeted external (APT) | Targeted data theft, espionage | High | Low | Yes |
 | Compromised remote endpoint | Pivot to PHI | Medium | Medium-High | Yes |
 | Malicious insider (clinical) | Curiosity, revenge | Low | Medium | Yes |
@@ -39,30 +39,30 @@
 
 ## 4.3 Attack Surfaces
 
-1. **WireGuard endpoint** — UDP port, peer key compromise, FIDO2 bypass.
-2. **Reverse proxy (Caddy)** — TLS misconfig, OIDC redirect abuse, header smuggling.
-3. **OIDC / IdP** — Account takeover, SSO bug, MFA recovery abuse.
-4. **Brad API** — AuthZ bypass, IDOR, SQLi, SSRF.
-5. **OPA policy engine** — Stale bundle, policy bypass.
-6. **Approval engine** — Race conditions, replay of approval tokens.
-7. **vLLM inference** — Prompt injection, output exfiltration, model file swap.
-8. **GPU driver / VRAM** — Data remanence, side-channel.
-9. **Qdrant / retrieval** — Index poisoning, query exfiltration.
-10. **Postgres / MinIO** — RLS bypass, backup access, IAM misconfig.
-11. **Docker daemon / socket** — Socket exposure, container escape.
-12. **Container images** — Compromised base, dependency confusion, typosquat.
-13. **Host OS / Linux kernel** — Privilege escalation (e.g., dirty-pipe class), unpatched CVEs.
-14. **SSH / Bastion** — Stale keys, weak ciphers, missing MFA.
-15. **Vault** — Auto-unseal compromise, token leak.
-16. **Backup repository** — Restic key theft, immutability bypass.
-17. **Audit pipeline** — Log injection, hash chain forgery, log dropping.
-18. **Time source (NTP)** — Time-skew to break audit ordering or cert validation.
-19. **DNS** — DNS rebinding, internal DNS poisoning.
-20. **Cross-module (ComfyUI)** — Shared host/network/storage leak.
-21. **Admin workstation** — Endpoint malware, browser exploit, USB.
-22. **Physical** — Server room access, console access, drive theft.
-23. **Update / patch pipeline** — Compromised CI/CD, image registry poisoning.
-24. **Email/Slack out-of-band** — Phishing of admins/clinicians.
+1. **WireGuard endpoint** â€” UDP port, peer key compromise, FIDO2 bypass.
+2. **Reverse proxy (Caddy)** â€” TLS misconfig, OIDC redirect abuse, header smuggling.
+3. **OIDC / IdP** â€” Account takeover, SSO bug, MFA recovery abuse.
+4. **Brad API** â€” AuthZ bypass, IDOR, SQLi, SSRF.
+5. **OPA policy engine** â€” Stale bundle, policy bypass.
+6. **Approval engine** â€” Race conditions, replay of approval tokens.
+7. **vLLM inference** â€” Prompt injection, output exfiltration, model file swap.
+8. **GPU driver / VRAM** â€” Data remanence, side-channel.
+9. **Qdrant / retrieval** â€” Index poisoning, query exfiltration.
+10. **Postgres / MinIO** â€” RLS bypass, backup access, IAM misconfig.
+11. **Docker daemon / socket** â€” Socket exposure, container escape.
+12. **Container images** â€” Compromised base, dependency confusion, typosquat.
+13. **Host OS / Linux kernel** â€” Privilege escalation (e.g., dirty-pipe class), unpatched CVEs.
+14. **SSH / Bastion** â€” Stale keys, weak ciphers, missing MFA.
+15. **Vault** â€” Auto-unseal compromise, token leak.
+16. **Backup repository** â€” Restic key theft, immutability bypass.
+17. **Audit pipeline** â€” Log injection, hash chain forgery, log dropping.
+18. **Time source (NTP)** â€” Time-skew to break audit ordering or cert validation.
+19. **DNS** â€” DNS rebinding, internal DNS poisoning.
+20. **Cross-module (ComfyUI)** â€” Shared host/network/storage leak.
+21. **Admin workstation** â€” Endpoint malware, browser exploit, USB.
+22. **Physical** â€” Server room access, console access, drive theft.
+23. **Update / patch pipeline** â€” Compromised CI/CD, image registry poisoning.
+24. **Email/Slack out-of-band** â€” Phishing of admins/clinicians.
 
 ---
 
@@ -70,16 +70,16 @@
 
 | # | Path | Why High Risk |
 |---|---|---|
-| 1 | Phish admin → steal session → pivot via OIDC → trigger PIP without 2-person | Bypasses governance |
-| 2 | Compromised endpoint over VPN → access Brad UI as legitimate role → exfil chart via export | Endpoint trust failure |
-| 3 | Container escape via misconfigured Docker socket → root on host → read PHI volumes / disable audit | Single weakness, total compromise |
-| 4 | Prompt injection in chart text → LLM emits PHI to attacker-supplied callback channel | Subtle, hard to detect |
+| 1 | Phish admin â†’ steal session â†’ pivot via OIDC â†’ trigger PIP without 2-person | Bypasses governance |
+| 2 | Compromised endpoint over VPN â†’ access Brad UI as legitimate role â†’ exfil chart via export | Endpoint trust failure |
+| 3 | Container escape via misconfigured Docker socket â†’ root on host â†’ read PHI volumes / disable audit | Single weakness, total compromise |
+| 4 | Prompt injection in chart text â†’ LLM emits PHI to attacker-supplied callback channel | Subtle, hard to detect |
 | 5 | VRAM remanence: prior session data accessed by next user via shared worker | Healthcare-specific, easy to miss |
-| 6 | Stolen admin FIDO2 + coerced quorum → backup restore to attacker-controlled host | Insider w/ duress |
-| 7 | Audit log tampering by compromised root → cover up breach | Defeats detection |
-| 8 | Supply chain: poisoned base image → ships with backdoor → C2 over allowed egress | Persistent foothold |
-| 9 | Approval workflow race condition → single approval treated as two | Workflow bug = governance bypass |
-| 10 | Backup compromise → ransomware → restore from poisoned backup | DR turned into attack vector |
+| 6 | Stolen admin FIDO2 + coerced quorum â†’ backup restore to attacker-controlled host | Insider w/ duress |
+| 7 | Audit log tampering by compromised root â†’ cover up breach | Defeats detection |
+| 8 | Supply chain: poisoned base image â†’ ships with backdoor â†’ C2 over allowed egress | Persistent foothold |
+| 9 | Approval workflow race condition â†’ single approval treated as two | Workflow bug = governance bypass |
+| 10 | Backup compromise â†’ ransomware â†’ restore from poisoned backup | DR turned into attack vector |
 | 11 | ComfyUI host bridged to PHI storage via shared NFS or shared admin workstation | Module crossover |
 | 12 | DNS rebinding against internal admin dashboard from attacker-controlled site visited on admin laptop | Endpoint browser pivot |
 
@@ -129,8 +129,8 @@ These are the scenarios that, if they occur, would constitute reportable breache
 
 1. PHI extracted from VRAM after a session by the next user.
 2. Audit log tampering goes undetected.
-3. Two-person approval bypassed → unauthorized chart write.
-4. Backup repository compromised → restore from poisoned backup.
+3. Two-person approval bypassed â†’ unauthorized chart write.
+4. Backup repository compromised â†’ restore from poisoned backup.
 5. ComfyUI module gains read access to PHI volumes.
 6. Container escape leads to host root and PHI volume read.
 7. Prompt injection causes PHI to be emitted into a non-PHI sink.
@@ -139,3 +139,4 @@ These are the scenarios that, if they occur, would constitute reportable breache
 10. Stale VPN peer/SSH key used by ex-employee for re-entry.
 
 Every scenario above appears as an explicit test in [06](./06-Breach-Simulation-100-Pass.md).
+

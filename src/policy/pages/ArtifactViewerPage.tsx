@@ -458,7 +458,11 @@ export function ArtifactViewerPage() {
 
   // When we have a signed_package URL, use it as the iframe source; otherwise fall back to the
   // raw evidence data URL. The hook must be called unconditionally (Rules of Hooks).
-  const rawEvidenceHtmlSrc = previewMode === 'html' ? (ecignPacketPrintUrl ?? evidencePreviewUrl) : undefined;
+  // Also handle the case where the evidence doc's own data is missing (previewMode === 'missing')
+  // but the linked eCIgn packet still has a valid URL — without this, the iframe gets src=""
+  // and renders about:blank.
+  const hasPacketFallback = previewMode === 'missing' && !!ecignPacketPrintUrl;
+  const rawEvidenceHtmlSrc = (previewMode === 'html' || hasPacketFallback) ? (ecignPacketPrintUrl ?? evidencePreviewUrl) : undefined;
   const evidenceHtmlIframeSrc = useIframeSafeSrc(rawEvidenceHtmlSrc);
 
   // Auto-convert signed HTML evidence to a real PDF for display.
@@ -468,7 +472,7 @@ export function ArtifactViewerPage() {
   const evidencePdfTitle = activeEvidence?.name?.replace(/\.html?$/i, '.pdf') || 'signed-document.pdf';
   const { pdfBlobUrl: evidencePdfBlobUrl, converting: evidencePdfConverting } = useHtmlToPdfBlobUrl(
     rawEvidenceHtmlSrc,
-    isSignedArtifact && previewMode === 'html',
+    isSignedArtifact && (previewMode === 'html' || hasPacketFallback),
     evidencePdfTitle,
   );
 
@@ -716,10 +720,12 @@ export function ArtifactViewerPage() {
                       </div>
                     </div>
                   )}
-                  {evidencePdfBlobUrl ? (
-                    <iframe title={activeEvidence.name} src={evidencePdfBlobUrl} className="h-full w-full rounded border border-white/10" />
+                  {(evidencePdfBlobUrl || evidenceHtmlIframeSrc) ? (
+                    <iframe title={activeEvidence.name} src={evidencePdfBlobUrl || evidenceHtmlIframeSrc} className="h-full w-full rounded border border-white/10 bg-white" />
                   ) : (
-                    <iframe title={activeEvidence.name} src={evidenceHtmlIframeSrc || ''} className="h-full w-full rounded border border-white/10 bg-white" />
+                    <div className="flex h-full items-center justify-center rounded border border-white/10 bg-black/40 text-xs text-white/60">
+                      Signed document preview is loading or unavailable.
+                    </div>
                   )}
                 </div>
               )}

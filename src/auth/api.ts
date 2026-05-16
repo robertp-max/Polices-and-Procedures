@@ -30,6 +30,15 @@ export interface RegisterRequestResponse {
   };
 }
 
+export interface VerifyRegistrationResponse {
+  verified: true;
+  approvedUser: {
+    fullName: string;
+    role: string;
+    department: string;
+  };
+}
+
 interface LoginResponse {
   session: AuthSession;
   user: DemoUser;
@@ -89,6 +98,24 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const AuthApi = {
+  getAllowlistStatus(): Promise<{ available: boolean }> {
+    return call('/allowlist-status', { method: 'GET' });
+  },
+
+  verifyRegistration(email: string, sfOrgId: string): Promise<VerifyRegistrationResponse> {
+    return call('/verify-registration', {
+      method: 'POST',
+      body: JSON.stringify({ email, sfOrgId }),
+    });
+  },
+
+  setupAccountDirect(email: string, sfOrgId: string, firstName: string, lastName: string, password: string): Promise<{ success: true }> {
+    return call('/setup-account-direct', {
+      method: 'POST',
+      body: JSON.stringify({ email, sfOrgId, firstName, lastName, password }),
+    });
+  },
+
   registerRequest(email: string): Promise<RegisterRequestResponse> {
     return call('/register-request', {
       method: 'POST',

@@ -1,4 +1,4 @@
-# 15 — Product Requirements & User Stories (per Architecture)
+﻿# 15 â€” Product Requirements & User Stories (per Architecture)
 
 **Scope:** Translate each of the four candidate architectures (SH, A, B, C) into product build requirements suitable for engineering execution and compliance review.
 
@@ -24,16 +24,16 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 
 ### 15.1.2 Non-functional (common)
 - **NF-COM-01** PHI encrypted at rest and in transit (TLS 1.3 min).
-- **NF-COM-02** RTO ≤ 4h, RPO ≤ 1h.
-- **NF-COM-03** Audit retention ≥ 7 years, tamper-evident.
-- **NF-COM-04** P95 chart review latency ≤ 30s; P99 ≤ 90s.
-- **NF-COM-05** ≥ 99.5% uptime within business hours.
+- **NF-COM-02** RTO â‰¤ 4h, RPO â‰¤ 1h.
+- **NF-COM-03** Audit retention â‰¥ 7 years, tamper-evident.
+- **NF-COM-04** P95 chart review latency â‰¤ 30s; P99 â‰¤ 90s.
+- **NF-COM-05** â‰¥ 99.5% uptime within business hours.
 - **NF-COM-06** All third-party processors of PHI must hold a current BAA.
 - **NF-COM-07** All deviations from supported vendor architecture require Security Officer approval and documented compensating controls.
 
 ---
 
-## 15.2 Architecture SH — Self-hosted Brad 2.0
+## 15.2 Architecture SH â€” Self-hosted Brad.pi
 
 ### 15.2.1 Functional (SH-specific)
 - **F-SH-01** Local LLM inference on dedicated GPU host with per-session worker isolation.
@@ -52,7 +52,7 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 - **As an RN (DON):** I want to request a chart review and see deficiencies cited to specific chart sections and specific policy clauses, so I can act with confidence.
 - **As a Compliance Officer:** I want to co-approve every PIP with my own FIDO2 key, so that no single user can issue an unauthorized PIP.
 - **As an Admin:** I want backup restores to require two-person approval, so an insider cannot poison recovery alone.
-- **As an Executive:** I want a monthly attestation that PHI never left the building, so I can confidently sign §164.402 risk assessments.
+- **As an Executive:** I want a monthly attestation that PHI never left the building, so I can confidently sign Â§164.402 risk assessments.
 - **As an Auditor:** I want to verify the audit hash chain end-to-end and read all audit entries without write capability, so I can attest integrity.
 - **As IT:** I want all hosts to revert configuration drift overnight, so I never come in to a misconfigured production.
 - **As an RN on call after hours:** I want emergency mode to allow PHI read with extra logging, so I can act in patient safety situations without bypassing the audit.
@@ -77,11 +77,11 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 
 ---
 
-## 15.3 Architecture A — Salesforce / Agentforce
+## 15.3 Architecture A â€” Salesforce / Agentforce
 
 ### 15.3.1 Functional (A-specific)
 - **F-A-01** Health Cloud objects + sharing model designed for least-privilege site/panel scope.
-- **F-A-02** Agentforce action library limited to vetted, BAA-covered LLMs and Trust Layer–brokered prompts.
+- **F-A-02** Agentforce action library limited to vetted, BAA-covered LLMs and Trust Layerâ€“brokered prompts.
 - **F-A-03** Field Audit Trail enabled on all PHI fields with maximum retention.
 - **F-A-04** Shield Platform Encryption on PHI fields/objects.
 - **F-A-05** Two-person approval implemented as Approval Process + Apex guard with `WITH SHARING` and CAS check.
@@ -122,7 +122,7 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 
 ---
 
-## 15.4 Architecture B — Azure HIPAA Stack
+## 15.4 Architecture B â€” Azure HIPAA Stack
 
 ### 15.4.1 Functional (B-specific)
 - **F-B-01** Custom app on App Service / AKS with Entra ID auth + Conditional Access.
@@ -167,7 +167,7 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 
 ---
 
-## 15.5 Architecture C — Vertical Healthcare AI SaaS
+## 15.5 Architecture C â€” Vertical Healthcare AI SaaS
 
 ### 15.5.1 Functional (C-specific)
 - **F-C-01** SSO from organization IdP with FIDO2 enforcement.
@@ -208,7 +208,7 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 
 ---
 
-## 15.6 Sprint Plans (per architecture, 6–10 sprints, 2-week sprints)
+## 15.6 Sprint Plans (per architecture, 6â€“10 sprints, 2-week sprints)
 
 ### 15.6.1 SH Sprint Plan (already validated; included for completeness)
 | Sprint | Focus | Priorities | Dependencies |
@@ -220,9 +220,9 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 | 5 | Approval engine | DB constraints, property tests | Sprint 3 |
 | 6 | Audit pipeline + WORM + chain | Hash chain + offline anchor | Sprint 1 |
 | 7 | Backup + DR | Restic + LTO + restore drill | Sprint 6 |
-| 8 | First red-team pass + remediation | Run scenario set 1–50 | Sprints 1–7 |
-| 9 | Second red-team pass + remediation | Run 51–100 | Sprint 8 |
-| 10 | Compliance evidence + go-live readiness | Hardening manifest, pen test report, sign-off | Sprints 1–9 |
+| 8 | First red-team pass + remediation | Run scenario set 1â€“50 | Sprints 1â€“7 |
+| 9 | Second red-team pass + remediation | Run 51â€“100 | Sprint 8 |
+| 10 | Compliance evidence + go-live readiness | Hardening manifest, pen test report, sign-off | Sprints 1â€“9 |
 
 ### 15.6.2 A Sprint Plan
 | Sprint | Focus | Priorities | Dependencies |
@@ -230,12 +230,12 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 | 1 | Org strategy + data model | Sharing model, profiles, FLS | Health Cloud provisioned |
 | 2 | Shield + FAT + EM enablement | Field-level encryption, audit retention | Sprint 1 |
 | 3 | Approval Process + Apex guard | 2-person rule, idempotency | Sprint 1 |
-| 4 | Agentforce action set + Trust Layer prompts | Grounding scope tied to user perms | Sprints 1–3 |
+| 4 | Agentforce action set + Trust Layer prompts | Grounding scope tied to user perms | Sprints 1â€“3 |
 | 5 | Sandbox + Data Mask + DX/CI | Sandbox refresh gated; CI for Apex | Sprint 1 |
 | 6 | OwnBackup + restore drill | Backup config + first drill | Sprints 1, 5 |
 | 7 | Sharing-violation monitoring + dashboards | Detect over-share | Sprint 2 |
-| 8 | AppExchange + sub-processor review process | Inventory + cadence | — |
-| 9 | UAT + clinician training | End-to-end validation | Sprints 1–8 |
+| 8 | AppExchange + sub-processor review process | Inventory + cadence | â€” |
+| 9 | UAT + clinician training | End-to-end validation | Sprints 1â€“8 |
 | 10 | Go-live + 30-day shadow + sign-off | Compliance evidence | All prior |
 
 ### 15.6.3 B Sprint Plan
@@ -244,10 +244,10 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 | 1 | Landing zone + RBAC + network | Subscription, VNets, Private Endpoints | Tenant ready |
 | 2 | Identity + Conditional Access | Entra ID FIDO2, CA policies | Sprint 1 |
 | 3 | Storage + FHIR + Key Vault HSM + CMK | Encryption + rotation | Sprint 1 |
-| 4 | App skeleton (App Service/AKS) | Auth, OPA, audit emit | Sprints 1–2 |
+| 4 | App skeleton (App Service/AKS) | Auth, OPA, audit emit | Sprints 1â€“2 |
 | 5 | Azure OpenAI deployment + abuse opt-out | Region selection, content filter, opt-out request | Sprint 1 |
 | 6 | Approval engine + DB constraints | 2-person rule, property tests | Sprint 4 |
-| 7 | Sentinel + Defender + analytics rules | Custom rules, dashboards | Sprints 1–6 |
+| 7 | Sentinel + Defender + analytics rules | Custom rules, dashboards | Sprints 1â€“6 |
 | 8 | Backup + DR + drill | Geo-redundancy + restore | Sprint 3 |
 | 9 | Pentest pass + remediation | External or internal | All prior |
 | 10 | Go-live + sign-off | Evidence, runbooks | All prior |
@@ -258,11 +258,11 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 | 1 | BAA + ToS amendment + procurement | Legal + carve-outs | Vendor selection |
 | 2 | SSO + IdP integration | Provisioning + FIDO2 | Sprint 1 |
 | 3 | EHR integration least-scope | Single-site pilot scope | Sprint 1 |
-| 4 | Workflow configuration | Roles, panels, sign-off requirements | Sprints 2–3 |
+| 4 | Workflow configuration | Roles, panels, sign-off requirements | Sprints 2â€“3 |
 | 5 | Audit export + SIEM ingestion | Wazuh/Sentinel ingest of vendor audit | Sprint 4 |
-| 6 | Offline workflow design + tabletop | Vendor-down runbook | — |
-| 7 | Vendor risk register + quarterly cadence | Sub-processor review | — |
-| 8 | UAT + clinician training | End-to-end validation | Sprints 1–6 |
+| 6 | Offline workflow design + tabletop | Vendor-down runbook | â€” |
+| 7 | Vendor risk register + quarterly cadence | Sub-processor review | â€” |
+| 8 | UAT + clinician training | End-to-end validation | Sprints 1â€“6 |
 | 9 | Pilot go-live (single site) | Limited PHI flow | All prior |
 | 10 | Expand or termination playbook dry-run | Decision gate | All prior |
 
@@ -282,3 +282,4 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 | Backup + DR drill evidence | Quarterly | Quarterly (OwnBackup) | Quarterly (Azure Backup) | Documented vendor + customer-side offline drill |
 | Vendor risk re-evaluation | Annual | Quarterly (AppExchange + sub-processors) | Quarterly (Microsoft sub-processors) | **Quarterly (critical)** |
 | Training records | Required | Required | Required | Required |
+

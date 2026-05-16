@@ -1,4 +1,4 @@
-# 03 — Conceptual Documentation Map
+﻿# 03 â€” Conceptual Documentation Map
 
 > **Location:** `Builder/Knowledge-Base/03-Conceptual-Documentation-Map.md`
 > **Status:** Authoritative mapping of conceptual / architecture documents into the Knowledge Base structure defined in `02-Knowledge-Base-Architecture.md`.
@@ -25,7 +25,7 @@
 
 | Source | Verb | Target |
 |---|---|---|
-| `Compliance-Execution-Sprints/00-README.md` | LINK | `Architecture/CES/00-Charter.md` (one-line index → original) |
+| `Compliance-Execution-Sprints/00-README.md` | LINK | `Architecture/CES/00-Charter.md` (one-line index â†’ original) |
 | `Compliance-Execution-Sprints/01-Execution-Model.md` | LINK | `Architecture/CES/` |
 | `Compliance-Execution-Sprints/02-Sprint-Structure.md` | LINK | `Architecture/CES/` |
 | `Compliance-Execution-Sprints/03-Workflow-Based-Execution.md` | LINK | `Architecture/CES/` |
@@ -37,7 +37,7 @@
 | `Compliance-Execution-Sprints/09-Calendar-Integration.md` | LINK | `Architecture/CES/` |
 | `Compliance-Execution-Sprints/10-Enforcement-and-Rules.md` | LINK | `Architecture/CES/` |
 | `Compliance-Execution-Sprints/11-Metrics-and-Reporting.md` | LINK | `Architecture/CES/` |
-| `Compliance-Execution-Sprints/Documentation/01-System-Overview.md` | SUMMARIZE | `Architecture/CES/Overview.md` (5–10 lines + link) |
+| `Compliance-Execution-Sprints/Documentation/01-System-Overview.md` | SUMMARIZE | `Architecture/CES/Overview.md` (5â€“10 lines + link) |
 | `Compliance-Execution-Sprints/Documentation/02-Architecture-and-Data-Model.md` | LINK | `Developer-Reference/CES/Data-Model.md` |
 | `Compliance-Execution-Sprints/Documentation/03..06,09` | DEPRECATE | Replace body with redirect to canonical at root |
 | `Compliance-Execution-Sprints/Documentation/07-Signature-and-eCIgn-Integration.md` | LINK | `Architecture/Integrations/CES-eCIgn.md` |
@@ -98,7 +98,7 @@
 | `Builder/Documentations/Brad_System_Architecture.md` | DEPRECATE (superseded by Brad2) | redirect to Brad2 set |
 | `Builder/Brad/FinalUpgradeBrad421.txt` | LINK | `Architecture/Brad/Upgrade-Notes/421.md` |
 | `Builder/Documentations/Brad2-01..17-*.md` | LINK | `Architecture/Brad/2.0/` (preserve numbering) |
-| `Business Risk & Analytics Director Brad2.0/` content | LINK | `Architecture/Brad/2.0/` (canonical Brad2 lineage) |
+| `Business Risk & Analytics Director Brad.pi/` content | LINK | `Architecture/Brad/2.0/` (canonical Brad2 lineage) |
 | `Business_Risk_&_Analytics_Director/` content | DEPRECATE if pre-Brad2 | redirect |
 | `documentation/Brad_Model_Usage_Policy.md` | LINK | `Architecture/Brad/Policies/Model-Usage.md` |
 | `documentation/Brad_QA_*` (4 files) | LINK | `Architecture/Brad/QA/` (canonical at root `documentation/`) |
@@ -159,7 +159,7 @@
 | Source | Verb | Target |
 |---|---|---|
 | `eCIgn/08-Validation-and-Defensibility.md` | LINK | `Compliance-Rationale/eCIgn-Defensibility.md` |
-| `Builder/Documentations/01-Executive-Security-Summary.md` … `10-Operational-Recommendations.md` | LINK | `Compliance-Rationale/Security/Brad1/` (DEPRECATE if Brad2 set is current) |
+| `Builder/Documentations/01-Executive-Security-Summary.md` â€¦ `10-Operational-Recommendations.md` | LINK | `Compliance-Rationale/Security/Brad1/` (DEPRECATE if Brad2 set is current) |
 | `Builder/Documentations/Brad2-01..10-*.md` | LINK | `Compliance-Rationale/Security/Brad2/` (canonical) |
 | `Builder/Documentations/HIPAA-SOC2 Control Matrix*` | LINK | `Compliance-Rationale/Control-Matrices/` |
 | `Builder/Documentations/LIBRARY_COVERAGE_9_POLICIES.md` | LINK | `Compliance-Rationale/Coverage-Reports/Policies-9.md` |
@@ -212,41 +212,42 @@
 
 ```
 Architecture/
-├── CES/
-│   ├── 00-Charter.md                  → Compliance-Execution-Sprints/00-README.md
-│   ├── 01-Execution-Model.md          → ...
-│   ├── ...
-│   ├── Overview.md                    (SUMMARIZE)
-│   ├── Risk-and-Escalation.md
-├── eCIgn/
-│   ├── 00-Charter.md
-│   ├── 01-System-Architecture.md
-│   ├── 02-Signature-Workflow.md
-│   ├── 03-Audit-and-Compliance-Model.md
-│   ├── 05-Failure-Prevention.md
-│   ├── 06-Outputs-Templates-Watermarks.md
-│   ├── 09-Multi-Signature-Flow.md
-├── Workflows/
-│   ├── System.md
-│   └── Library.md
-├── Audit/
-│   ├── Evidence-Model.md
-│   └── eCIgn-Audit-Model.md
-├── Print/
-│   ├── System.md
-│   └── Template-Preservation-Contract.md
-├── Regulatory-Planner/
-│   ├── Overview.md
-│   └── Mandated-Events.md
-├── Brad/
-│   ├── 2.0/                           (canonical Brad2 set)
-│   ├── Upgrade-Notes/
-│   ├── Policies/
-│   └── QA/
-├── Survey-Simulation/
-└── Integrations/
-    ├── Map.md
-    └── CES-eCIgn.md
+â”œâ”€â”€ CES/
+â”‚   â”œâ”€â”€ 00-Charter.md                  â†’ Compliance-Execution-Sprints/00-README.md
+â”‚   â”œâ”€â”€ 01-Execution-Model.md          â†’ ...
+â”‚   â”œâ”€â”€ ...
+â”‚   â”œâ”€â”€ Overview.md                    (SUMMARIZE)
+â”‚   â”œâ”€â”€ Risk-and-Escalation.md
+â”œâ”€â”€ eCIgn/
+â”‚   â”œâ”€â”€ 00-Charter.md
+â”‚   â”œâ”€â”€ 01-System-Architecture.md
+â”‚   â”œâ”€â”€ 02-Signature-Workflow.md
+â”‚   â”œâ”€â”€ 03-Audit-and-Compliance-Model.md
+â”‚   â”œâ”€â”€ 05-Failure-Prevention.md
+â”‚   â”œâ”€â”€ 06-Outputs-Templates-Watermarks.md
+â”‚   â”œâ”€â”€ 09-Multi-Signature-Flow.md
+â”œâ”€â”€ Workflows/
+â”‚   â”œâ”€â”€ System.md
+â”‚   â””â”€â”€ Library.md
+â”œâ”€â”€ Audit/
+â”‚   â”œâ”€â”€ Evidence-Model.md
+â”‚   â””â”€â”€ eCIgn-Audit-Model.md
+â”œâ”€â”€ Print/
+â”‚   â”œâ”€â”€ System.md
+â”‚   â””â”€â”€ Template-Preservation-Contract.md
+â”œâ”€â”€ Regulatory-Planner/
+â”‚   â”œâ”€â”€ Overview.md
+â”‚   â””â”€â”€ Mandated-Events.md
+â”œâ”€â”€ Brad/
+â”‚   â”œâ”€â”€ 2.0/                           (canonical Brad2 set)
+â”‚   â”œâ”€â”€ Upgrade-Notes/
+â”‚   â”œâ”€â”€ Policies/
+â”‚   â””â”€â”€ QA/
+â”œâ”€â”€ Survey-Simulation/
+â””â”€â”€ Integrations/
+    â”œâ”€â”€ Map.md
+    â””â”€â”€ CES-eCIgn.md
 ```
 
 > Each leaf file is a **stub MD** that contains: title, one-paragraph summary, and a relative link to the canonical document under `Builder/`. This avoids duplication and prevents drift while still letting the KB and Help Center deep-link into a clean tree.
+

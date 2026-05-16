@@ -5,7 +5,7 @@ import {
   AlertTriangle, FileText, Building2, Users, Target,
   DollarSign, Monitor, BarChart3, Scale, Heart, Cpu, Briefcase,
   GitBranch, Landmark, ShieldCheck, Gavel, ChevronLeft, Printer, LayoutList, Lock, FileCheck, Layers,
-  Settings, RefreshCw, CheckCircle2, Play, BookOpen, List, CheckSquare, Archive, ExternalLink,
+  Settings, RefreshCw, CheckCircle2, Play, BookOpen, List, CheckSquare, Archive,
   Bell, HelpCircle, Clock, Sparkles, Cloud
 } from 'lucide-react';
 import ciLogoWhite from '@/assets/ci-logo-white.png';
@@ -1354,9 +1354,6 @@ function TabAppendices({ policy }: { policy: DemoPolicy }) {
           <p className="text-[11px] text-white/50 mt-1">GV-GB-001 — Governing Body Authority &amp; Responsibilities · Version 6.0 · 2025-07-10</p>
         </div>
         <div className="flex gap-3 mt-4 md:mt-0">
-          <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-bold text-[11px] transition-colors border border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
-            <ExternalLink size={13} /> Sign on Dropbox
-          </button>
           <button onClick={() => window.print()} className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-bold text-[11px] transition-colors border border-white/20 text-white hover:bg-white/10">
             <Printer size={13} /> Print Form
           </button>

@@ -693,41 +693,39 @@ function SectionRenderer({ s, idx }: { s: FormSection; idx: number }) {
 
       {/* ── checklist layout ── */}
       {s.layout === 'checklist' && s.items && (
-        <ul className="space-y-2">
-          {s.items.map((item, i) => (
-            <li
-              key={i}
-              className="flex items-start gap-3 p-2 border-b border-[#E5E4E3]"
-            >
-              <input
-                type="checkbox"
-                className="w-5 h-5 mt-0.5 accent-[#007970] shrink-0"
-              />
-              <div className="flex-1">
+        <>
+          <ul className="space-y-1">
+            {s.items.map((item, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-3 py-2 border-b border-[#E5E4E3]"
+              >
+                <span
+                  className="shrink-0 mt-[3px] w-[6px] h-[6px] rounded-full bg-[#007970]"
+                  aria-hidden="true"
+                />
                 <span className="font-roboto text-[12px] text-[#1F1C1B] leading-relaxed">
                   {item}
                 </span>
-                <div className="grid grid-cols-3 gap-3 mt-1.5">
-                  <input
-                    placeholder="Date completed"
-                    className="font-roboto text-[10px] border-b border-[#E5E4E3]
-                               bg-transparent focus:outline-none focus:border-[#007970]"
-                  />
-                  <input
-                    placeholder="Initials"
-                    className="font-roboto text-[10px] border-b border-[#E5E4E3]
-                               bg-transparent focus:outline-none focus:border-[#007970]"
-                  />
-                  <input
-                    placeholder="Notes"
-                    className="font-roboto text-[10px] border-b border-[#E5E4E3]
-                               bg-transparent focus:outline-none focus:border-[#007970]"
-                  />
-                </div>
+              </li>
+            ))}
+          </ul>
+          {s.sectionAck && (
+            <div className="mt-4 pt-4 border-t border-[#E5E4E3] flex flex-wrap items-center gap-6">
+              <label className="flex items-center gap-2 font-roboto text-[12px] text-[#52404B] cursor-pointer select-none">
+                <input type="checkbox" className="w-4 h-4 accent-[#007970] shrink-0" />
+                <span>Section reviewed and acknowledged</span>
+              </label>
+              <div className="flex flex-col">
+                <span className={LABEL_CLS}>Initials</span>
+                <input
+                  placeholder="___"
+                  className="w-16 font-roboto text-[12px] border-b border-[#C8C6C5] bg-transparent focus:outline-none focus:border-[#007970] text-center"
+                />
               </div>
-            </li>
-          ))}
-        </ul>
+            </div>
+          )}
+        </>
       )}
 
       {/* ── attestation layout ── */}

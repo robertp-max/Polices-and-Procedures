@@ -53,6 +53,14 @@ export interface FormSection {
   acknowledgments?: string[];
   matrixRows?: string[];
   matrixCols?: string[];
+  /**
+   * When true, renders a single section-level acknowledgment row
+   * (one checkbox + one initials field) at the bottom of a checklist
+   * section instead of per-line date/initials/notes fields.
+   * Use only for sections that require discrete section-level sign-off
+   * (e.g. competency validation, corrective action items).
+   */
+  sectionAck?: boolean;
 }
 
 export interface SignatureBlock {

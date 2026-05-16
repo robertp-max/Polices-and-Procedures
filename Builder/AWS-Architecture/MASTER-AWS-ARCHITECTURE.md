@@ -1763,14 +1763,14 @@ Phase 1 must proceed in this order to avoid blocking dependencies:
 # 02 â€” Environment Architecture
 
 **Document:** Target Production Architecture, Security Zones, Trust Boundaries, PHI Flows
-**Scope:** Brad 2.0 self-hosted Linux + GPU + Docker + Local Qwen LLM
+**Scope:** Brad.pi self-hosted Linux + GPU + Docker + Local Qwen LLM
 **Audience:** Security architects, auditors, platform engineers
 
 ---
 
 ## 2.1 Architectural Overview
 
-Brad 2.0 is composed of **seven security zones** with strictly mediated crossings. No zone trusts another by default; all crossings authenticate (mTLS), authorize (OPA / RBAC), and log (append-only audit).
+Brad.pi is composed of **seven security zones** with strictly mediated crossings. No zone trusts another by default; all crossings authenticate (mTLS), authorize (OPA / RBAC), and log (append-only audit).
 
 ```
                     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
@@ -2006,8 +2006,8 @@ Auditor (Z0) â†’ VPN â†’ Caddy (Z1) â†’ Brad API (Z2, Auditor rol
 
 # 11 â€” SaaS Architecture Alternatives (Three Distinct Designs)
 
-**Companion to:** [01â€“10 self-hosted Brad 2.0 deliverables](./README.md)
-**Purpose:** Evaluate SaaS-based alternatives to the validated self-hosted Brad 2.0 architecture.
+**Companion to:** [01â€“10 self-hosted Brad.pi deliverables](./README.md)
+**Purpose:** Evaluate SaaS-based alternatives to the validated self-hosted Brad.pi architecture.
 **Audience:** Executive sponsors, HIPAA Security Officer, Enterprise Architecture, Compliance.
 
 ---
@@ -2305,7 +2305,7 @@ Vendor's tenancy. Some vendors offer single-tenant deployment for premium tiers.
 | **A â€” Salesforce/Agentforce** | Platform, LLM brokering, Trust Layer, datacenter | Sharing model, profiles, prompts, custom code, AppExchange, sandbox PHI, report scope |
 | **B â€” Azure HIPAA stack** | Eligible service infra, Azure OpenAI infra, key infra | RBAC, network, app code, deployment options, content filter, prompts, logging, eligibility selection |
 | **C â€” Vertical Healthcare AI SaaS** | Almost everything technical | Identity config, EHR scope, role assignment, output responsibility, vendor risk, exports |
-| **Self-hosted Brad 2.0** | Nothing (no vendor risk transfer) | Everything (full ownership = full control = full responsibility) |
+| **Self-hosted Brad.pi** | Nothing (no vendor risk transfer) | Everything (full ownership = full control = full responsibility) |
 
 In **every** SaaS model, the **customer remains the Covered Entity** under HIPAA. The vendor is at most a Business Associate. **The Covered Entity carries unconditional accountability** under Â§164.308 and Â§164.402 regardless of who operates the infrastructure.
 
@@ -2316,4 +2316,5 @@ In **every** SaaS model, the **customer remains the Covered Entity** under HIPAA
 > - SaaS shifts **operational labor** and a sliver of **infrastructure liability**. It does **not** shift **HIPAA accountability**.
 
 ---
+
 

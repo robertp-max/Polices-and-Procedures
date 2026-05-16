@@ -1,6 +1,6 @@
-# 01 — Executive Security Architecture Summary
+﻿# 01 â€” Executive Security Architecture Summary
 
-**System:** Brad 2.0 (Business Risk & Analytics Director)
+**System:** Brad.pi (Business Risk & Analytics Director)
 **Owner:** Care Indeed
 **Classification:** PHI-bearing healthcare AI platform
 **Date of Certification:** 2026-04-21
@@ -9,9 +9,9 @@
 
 ## 1.1 Overall Security Posture
 
-**Posture: PASS — Production-Ready (with conditions)**
+**Posture: PASS â€” Production-Ready (with conditions)**
 
-Brad 2.0 is architected as a **fully self-hosted, local-first, zero-trust, deny-by-default healthcare AI environment**. After 247 adversarial simulation iterations and 4 documented restart cycles, the environment achieved **100 consecutive passes with zero PHI exposure**.
+Brad.pi is architected as a **fully self-hosted, local-first, zero-trust, deny-by-default healthcare AI environment**. After 247 adversarial simulation iterations and 4 documented restart cycles, the environment achieved **100 consecutive passes with zero PHI exposure**.
 
 | Metric | Result |
 |---|---|
@@ -35,7 +35,7 @@ The architecture is governed by seven non-negotiable principles:
 2. **Zero trust internal.** Every container, user, and service authenticates and authorizes on every call. mTLS enforced east-west.
 3. **Deny-by-default networking.** All ingress and egress is explicitly allowlisted. Default DROP at host firewall, container network, and reverse proxy.
 4. **Read-only by default.** PHI corpora and policy library are mounted read-only to inference and reasoning workloads. Writes require a privileged write-broker with human approval.
-5. **Deterministic gates over AI judgment.** All compliance-affecting actions (PIPs, corrective actions, chart mutations, exports) require a deterministic policy check **and** human authorization. The LLM never executes — it only proposes.
+5. **Deterministic gates over AI judgment.** All compliance-affecting actions (PIPs, corrective actions, chart mutations, exports) require a deterministic policy check **and** human authorization. The LLM never executes â€” it only proposes.
 6. **Immutable, append-only audit.** Every PHI access, model inference, approval, and admin action is logged to a WORM (Write-Once-Read-Many) sink with hash-chained integrity.
 7. **Blast-radius minimization.** PHI is segmented from non-PHI (marketing/ComfyUI). Inference, storage, retrieval, and admin live in separate trust zones with mTLS-only crossing.
 
@@ -88,10 +88,11 @@ Production go-live is conditional on:
 
 ## 1.6 Final Statement
 
-> Brad 2.0, as architected and validated in this document set, **meets the technical and architectural requirements** of HIPAA Security Rule §164.308, §164.310, §164.312 and SOC 2 Trust Services Criteria for Security, Availability, and Confidentiality. **No PHI exposure occurred across 100 consecutive validated adversarial simulations.** The environment is approved for production handling of PHI subject to the conditions above.
+> Brad.pi, as architected and validated in this document set, **meets the technical and architectural requirements** of HIPAA Security Rule Â§164.308, Â§164.310, Â§164.312 and SOC 2 Trust Services Criteria for Security, Availability, and Confidentiality. **No PHI exposure occurred across 100 consecutive validated adversarial simulations.** The environment is approved for production handling of PHI subject to the conditions above.
 
 Signed (logical):
 
-- Lead Security Architect / DevSecOps — Brad 2.0 Program
-- HIPAA Security Officer — Care Indeed
-- SOC 2 Control Owner — Care Indeed
+- Lead Security Architect / DevSecOps â€” Brad.pi Program
+- HIPAA Security Officer â€” Care Indeed
+- SOC 2 Control Owner â€” Care Indeed
+

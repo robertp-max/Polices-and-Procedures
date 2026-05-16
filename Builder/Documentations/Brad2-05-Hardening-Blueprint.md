@@ -1,6 +1,6 @@
-# 05 — Hardening Blueprint
+﻿# 05 â€” Hardening Blueprint
 
-**Purpose:** Define the hardened baseline for every layer of Brad 2.0.
+**Purpose:** Define the hardened baseline for every layer of Brad.pi.
 **Authority:** This document is the source of truth for system configuration. Any deviation requires Security Officer sign-off and a documented compensating control.
 **Validation:** Every item here is enforced via Ansible + tested via OpenSCAP / Lynis / Trivy / Falco / custom probes.
 
@@ -48,7 +48,7 @@
 ### 5.1.6 Firewall (host)
 - `nftables` default-DROP for input and forward.
 - Allowed input: WireGuard UDP (Edge nodes only), management SSH (mgmt VLAN only), monitoring scrape from Z6 (specific source).
-- Allowed output: explicit per-service allowlist; default DROP. NTP, internal DNS, internal MinIO, internal Postgres, Vault — that's it.
+- Allowed output: explicit per-service allowlist; default DROP. NTP, internal DNS, internal MinIO, internal Postgres, Vault â€” that's it.
 - IPv6 firewall mirrors v4.
 
 ### 5.1.7 Auditd
@@ -66,7 +66,7 @@
 - Time critical for audit chain ordering and TLS validity.
 
 ### 5.1.10 Logging
-- `journald` persistent, forward to `rsyslog` → mTLS → Wazuh ingester in Z6.
+- `journald` persistent, forward to `rsyslog` â†’ mTLS â†’ Wazuh ingester in Z6.
 - Local retention 14 days; central retention 7 years for audit-relevant streams.
 
 ### 5.1.11 Endpoint Anti-malware
@@ -111,7 +111,7 @@
 ## 5.3 GPU Inference Host (Z3)
 
 ### 5.3.1 Hardware Layout
-- Dedicated host(s) with 4× RTX 6000 Ada.
+- Dedicated host(s) with 4Ã— RTX 6000 Ada.
 - Host runs **only** PHI inference; ComfyUI/marketing strictly on a different physical host.
 - BMC/IPMI on isolated mgmt VLAN; default creds rotated; firmware patched; redfish over TLS only.
 
@@ -166,7 +166,7 @@
 - AppRole + workload identity (signed JWT from Brad API) for service auth to Vault.
 - PKI engine issues short-lived (24h) mTLS certs to all services.
 - Transit engine for envelope encryption of PHI exports.
-- Audit device → Z6 WORM.
+- Audit device â†’ Z6 WORM.
 - Root token sealed in tamper-evident envelope, vaulted physically; emergency-only.
 
 ---
@@ -210,7 +210,7 @@
 - Posture check: lightweight agent attests OS patch level, FDE on, EDR running.
 - Idle disconnect 15 min; max session 8h.
 - All connect/disconnect logged to Z6 with peer key fingerprint, source IP, posture report.
-- Revocation via removing peer + Vault token revoke + OIDC session kill — runbook target <60s.
+- Revocation via removing peer + Vault token revoke + OIDC session kill â€” runbook target <60s.
 
 ---
 
@@ -221,14 +221,14 @@
 - Internal CA: Vault PKI root offline; intermediate online with 1-year validity, auto-rotated.
 - Service certs: 24-hour TTL, auto-renewed via Vault agent.
 - CT log not used internally; pinning via mTLS trust store.
-- HSTS, CSP, X-Frame-Options DENY, Referrer-Policy strict-origin, Permissions-Policy minimal — all enforced at Caddy.
+- HSTS, CSP, X-Frame-Options DENY, Referrer-Policy strict-origin, Permissions-Policy minimal â€” all enforced at Caddy.
 
 ---
 
 ## 5.10 Logging & Audit Integrity
 
 ### 5.10.1 Sources
-- App audit (Brad API) — every action with actor, role, target, outcome, OPA decision id.
+- App audit (Brad API) â€” every action with actor, role, target, outcome, OPA decision id.
 - OPA decisions.
 - Inference prompts/outputs (encrypted; Z6 only).
 - Caddy access logs.
@@ -242,11 +242,11 @@
 
 ### 5.10.2 Pipeline
 ```
-Source → local agent (Wazuh / Filebeat / auditbeat) → mTLS → Z6 ingester
-   → Wazuh manager → enrich → write to:
+Source â†’ local agent (Wazuh / Filebeat / auditbeat) â†’ mTLS â†’ Z6 ingester
+   â†’ Wazuh manager â†’ enrich â†’ write to:
      (a) Wazuh indices (search)
      (b) Append-only WORM bucket (raw, hash-chained batches)
-   → hourly chain root anchored to offline notary device
+   â†’ hourly chain root anchored to offline notary device
 ```
 
 ### 5.10.3 Integrity
@@ -269,7 +269,7 @@ Source → local agent (Wazuh / Filebeat / auditbeat) → mTLS → Z6 ingester
 - Daily incremental, weekly full.
 - Quarterly **restore drill** to clean staging environment; integrity verified end-to-end.
 - Backup encryption keys held in Vault (separate KEK, not the production data KEK).
-- **Backup writer cannot delete** — append-only repo + WORM bucket policy.
+- **Backup writer cannot delete** â€” append-only repo + WORM bucket policy.
 
 ---
 
@@ -338,7 +338,7 @@ Source → local agent (Wazuh / Filebeat / auditbeat) → mTLS → Z6 ingester
 
 ## 5.18 Ingress Controls
 
-- Single ingress: WireGuard UDP from internet → edge.
+- Single ingress: WireGuard UDP from internet â†’ edge.
 - All other ingress denied at perimeter and host firewall.
 - Internal services bound to specific zone interfaces, not `0.0.0.0`.
 
@@ -364,13 +364,13 @@ Source → local agent (Wazuh / Filebeat / auditbeat) → mTLS → Z6 ingester
 ## 5.21 SIEM / Alerting
 
 - **Wazuh** as SIEM; rules tuned to suppress noise but escalate:
-  - Audit chain break → P1, page immediately.
-  - New admin role assignment → P2.
-  - WireGuard new peer or revocation → P2.
-  - Falco rule fire (e.g., `Terminal shell in container`) → P1 for PHI zones.
-  - Failed FIDO2 attempts > threshold → P2.
-  - Outbound connection attempt from Z3 inference → **P1**.
-  - File integrity change in `/etc`, `/opt/brad` → P1.
+  - Audit chain break â†’ P1, page immediately.
+  - New admin role assignment â†’ P2.
+  - WireGuard new peer or revocation â†’ P2.
+  - Falco rule fire (e.g., `Terminal shell in container`) â†’ P1 for PHI zones.
+  - Failed FIDO2 attempts > threshold â†’ P2.
+  - Outbound connection attempt from Z3 inference â†’ **P1**.
+  - File integrity change in `/etc`, `/opt/brad` â†’ P1.
 - Alerts mirrored to two channels (on-prem ntfy + offsite SMS gateway) to prevent local-only suppression.
 
 ---
@@ -392,3 +392,4 @@ Source → local agent (Wazuh / Filebeat / auditbeat) → mTLS → Z6 ingester
 - **Separate storage**; no shared NFS, no shared MinIO buckets, no shared LDAP.
 - Admin context switch is explicit and logged.
 - Quarterly verification: red team probe from Z-NPHI to confirm zero PHI reachability.
+

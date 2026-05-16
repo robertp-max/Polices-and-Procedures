@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Printer, FileText, Shield, Search, CheckCircle, BookOpen,
   AlertTriangle, Settings, List, CheckSquare, Archive, Info,
-  LayoutList, ChevronRight, FileLock2, Award, ExternalLink,
+  LayoutList, ChevronRight, FileLock2, Award,
   ArrowLeft,
 } from 'lucide-react';
 import { useShellStore } from '@/policy/stores/uiStore';
@@ -275,6 +275,34 @@ const TabButton = ({ active, onClick, children }: { active: boolean; onClick: ()
 
 const ViewOverview = () => (
   <div className="space-y-6 pb-12">
+
+    {/* Policy identity — title + metadata, lives here now that header is gone */}
+    <div className="bg-white rounded-xl border border-[#E5E4E3] px-6 py-5">
+      <h1 className="font-montserrat font-semibold text-[22px] leading-tight text-[#1F1C1B] mb-1">
+        {POLICY_META.title}
+      </h1>
+      <p className="font-montserrat font-medium text-[10px] text-[#007970] tracking-[0.22em] uppercase mb-4">
+        Policy ID: {POLICY_META.id}
+      </p>
+      <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
+        {([
+          ['Domain',         POLICY_META.domain],
+          ['Tier',           POLICY_META.tier],
+          ['Approved By',    POLICY_META.approvedBy],
+          ['Supersedes',     POLICY_META.supersedes],
+          ['Effective Date', POLICY_META.effective],
+          ['Last Reviewed',  POLICY_META.lastReviewed],
+          ['Next Review',    POLICY_META.nextReviewDate],
+          ['Version',        `v${POLICY_META.version}`],
+        ] as [string, string][]).map(([label, value]) => (
+          <div key={label} className="flex flex-col">
+            <dt className="font-montserrat font-semibold text-[10px] text-[#524048] tracking-[0.14em] uppercase mb-0.5">{label}</dt>
+            <dd className="font-roboto text-[13px] text-[#1F1C1B]">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card>
         <SectionTitle icon={Shield} title="2. Purpose" />
@@ -343,13 +371,7 @@ const ViewPolicyStatements = () => (
 const ViewProcedures = () => {
   const [activeSub, setActiveSub] = useState('6.2');
 
-  const tabs = [
-    { id: '6.1', label: '6.1 Establishment' },
-    { id: '6.2', label: '6.2 Core Responsibilities' },
-    { id: '6.3', label: '6.3 Meetings' },
-    { id: '6.4', label: '6.4 Conflict of Interest' },
-    { id: '6.5', label: '6.5 Escalation' },
-  ];
+  const tabs = PROCEDURE_SUBTABS;
 
   return (
     <div className="h-full flex flex-col pb-6">
@@ -596,14 +618,6 @@ const ViewAppendices = () => {
           <div className="flex gap-3 flex-shrink-0">
             <button
               type="button"
-              onClick={() => window.open('https://sign.dropbox.com', '_blank', 'noopener,noreferrer')}
-              className="flex items-center gap-2 bg-[#0061FE]/10 hover:bg-[#0061FE]/20 text-[#0061FE] px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-[#0061FE]/30"
-            >
-              <ExternalLink size={16} />
-              Sign on Dropbox
-            </button>
-            <button
-              type="button"
               onClick={() => openPolicyPrintRoute(`/print/GV-GB-001/appendix/${encodeURIComponent(active.id)}`)}
               className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-gray-300"
             >
@@ -628,6 +642,24 @@ const ViewAppendices = () => {
   );
 };
 
+// ─── CONFIG (centralised) — edit here to update all transitions & section order ─
+
+/** Transition animation timing — one place to change everything. */
+const ANIMATION_CONFIG = {
+  duration: 220,     // ms — keep subtle; increase for slower feel
+  easing: 'ease-out',
+  slideDistance: 26, // px — lateral travel distance on enter
+} as const;
+
+/** Procedure sub-tab definitions — order here controls tab order in Section 6. */
+const PROCEDURE_SUBTABS = [
+  { id: '6.1', label: '6.1 Establishment' },
+  { id: '6.2', label: '6.2 Core Responsibilities' },
+  { id: '6.3', label: '6.3 Meetings' },
+  { id: '6.4', label: '6.4 Conflict of Interest' },
+  { id: '6.5', label: '6.5 Escalation' },
+] as const;
+
 // ─── MAIN TABS SHELL ─────────────────────────────────────────────────────────
 
 const NAV_TABS = [
@@ -644,6 +676,8 @@ type TabId = typeof NAV_TABS[number]['id'];
 
 export function GVGBDetailView() {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [direction, setDirection] = useState<1 | -1>(1);
+  const [contentKey, setContentKey] = useState(0);
   const navigate = useNavigate();
   const setDetailMode = useShellStore(s => s.setDetailMode);
 
@@ -657,89 +691,136 @@ export function GVGBDetailView() {
     };
   }, [setDetailMode]);
 
+  /** Navigate to a tab with directional animation. */
+  const navigateToTab = (tabId: TabId) => {
+    if (tabId === activeTab) return;
+    const curr = NAV_TABS.findIndex(t => t.id === activeTab);
+    const next = NAV_TABS.findIndex(t => t.id === tabId);
+    setDirection(next > curr ? 1 : -1);
+    setContentKey(k => k + 1);
+    setActiveTab(tabId);
+  };
+
+  // ← / → keyboard navigation between tabs
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable) return;
+      const curr = NAV_TABS.findIndex(t => t.id === activeTab);
+      if (e.key === 'ArrowRight' && curr < NAV_TABS.length - 1) {
+        e.preventDefault();
+        setDirection(1);
+        setContentKey(k => k + 1);
+        setActiveTab(NAV_TABS[curr + 1].id);
+      } else if (e.key === 'ArrowLeft' && curr > 0) {
+        e.preventDefault();
+        setDirection(-1);
+        setContentKey(k => k + 1);
+        setActiveTab(NAV_TABS[curr - 1].id);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [activeTab]);
+
   const renderContent = () => {
     switch (activeTab) {
-      case 'overview':     return <ViewOverview />;
-      case 'policy':       return <ViewPolicyStatements />;
-      case 'procedures':   return <ViewProcedures />;
-      case 'documentation':return <ViewDocumentation />;
-      case 'compliance':   return <ViewCompliance />;
-      case 'references':   return <ViewReferencesAdmin />;
-      case 'appendices':   return <ViewAppendices />;
-      default:             return <ViewOverview />;
+      case 'overview':      return <ViewOverview />;
+      case 'policy':        return <ViewPolicyStatements />;
+      case 'procedures':    return <ViewProcedures />;
+      case 'documentation': return <ViewDocumentation />;
+      case 'compliance':    return <ViewCompliance />;
+      case 'references':    return <ViewReferencesAdmin />;
+      case 'appendices':    return <ViewAppendices />;
+      default:              return <ViewOverview />;
     }
   };
 
+  // No animation on initial load (contentKey === 0)
+  const animClass = contentKey > 0
+    ? (direction === 1 ? 'gvgb-enter-right' : 'gvgb-enter-left')
+    : '';
+
   return (
-    <div className="space-y-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <>
+      {/* Keyframe definitions — scoped names prevent collision */}
+      <style>{`
+        @keyframes gvgb-from-right {
+          from { opacity: 0; transform: translateX(${ANIMATION_CONFIG.slideDistance}px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes gvgb-from-left {
+          from { opacity: 0; transform: translateX(-${ANIMATION_CONFIG.slideDistance}px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .gvgb-enter-right { animation: gvgb-from-right ${ANIMATION_CONFIG.duration}ms ${ANIMATION_CONFIG.easing} both; }
+        .gvgb-enter-left  { animation: gvgb-from-left  ${ANIMATION_CONFIG.duration}ms ${ANIMATION_CONFIG.easing} both; }
+      `}</style>
 
-      {/* ── DOCUMENT HEADER (flat white editorial — canonical) ────────────── */}
-      <div className="bg-white p-8 pb-6 border-b border-[#E5E4E3]">
-        <div className="flex items-start justify-between mb-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-1.5 text-xs font-montserrat font-semibold text-[#524048] hover:text-[#1F1C1B] transition-colors"
-          >
-            <ArrowLeft size={13} /> Return to Policy Library
-          </button>
-          <button
-            onClick={() => openPolicyPrintRoute(`/print/${POLICY_META.id}`)}
-            className="flex items-center gap-2 bg-[#FAFBF8] hover:bg-[#E5E4E3] text-[#1F1C1B] px-4 py-2 rounded-lg font-semibold text-sm transition-colors border border-[#E5E4E3]"
-          >
-            <Printer size={16} />
-            Print / Export PDF
-          </button>
-        </div>
+      {/*
+        contain:paint clips overflow to the border-box for visual correctness
+        (preserves rounded-xl corner clipping) without creating a scroll container,
+        so sticky positioning inside still works relative to the page scroll.
+      */}
+      <div
+        className="rounded-xl border border-gray-200 bg-white shadow-sm"
+        style={{ contain: 'paint' } as React.CSSProperties}
+      >
 
-        <h1 className="font-montserrat font-semibold text-[28px] md:text-[32px] leading-tight text-[#1F1C1B] mb-1">
-          {POLICY_META.title}
-        </h1>
-        <p className="font-montserrat font-medium text-[11px] text-[#007970] tracking-[0.22em] uppercase mb-8">
-          Policy ID: {POLICY_META.id}
-        </p>
+        {/* ── SINGLE STICKY NAV ROW: [← Library · ID] [tabs…] [Print] ──────── */}
+        <div className="sticky top-0 z-20 bg-white border-b border-[#E5E4E3] flex items-stretch">
 
-        <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6">
-          {[
-            ['Domain',          POLICY_META.domain],
-            ['Tier',            POLICY_META.tier],
-            ['Approved By',     POLICY_META.approvedBy],
-            ['Supersedes',      POLICY_META.supersedes],
-            ['Effective Date',  POLICY_META.effective],
-            ['Last Reviewed',   POLICY_META.lastReviewed],
-            ['Next Review',     POLICY_META.nextReviewDate],
-            ['Version',         `v${POLICY_META.version}`],
-          ].map(([label, value]) => (
-            <div key={label} className="flex flex-col">
-              <dt className="font-montserrat font-semibold text-[10px] text-[#524048] tracking-[0.16em] uppercase mb-1">{label}</dt>
-              <dd className="font-roboto text-[14px] text-[#1F1C1B]">{value}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-
-      {/* ── TAB BAR (canonical: orange active underline) ────────────────── */}
-      <div className="border-b border-[#E5E4E3] bg-white overflow-x-auto">
-        <div className="flex min-w-max">
-          {NAV_TABS.map(({ id, label, Icon }) => (
+          {/* Left anchor — back + policy ID */}
+          <div className="flex items-center gap-2 px-4 shrink-0 border-r border-[#E5E4E3]">
             <button
-              key={id}
-              onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-1.5 px-5 py-3.5 font-montserrat font-semibold text-[13px] whitespace-nowrap border-b-[3px] transition-colors ${
-                activeTab === id
-                  ? 'text-[#C74601] border-[#C74601]'
-                  : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
-              }`}
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-1 text-xs font-montserrat font-semibold text-[#524048] hover:text-[#1F1C1B] transition-colors whitespace-nowrap"
             >
-              <Icon size={14} /> {label}
+              <ArrowLeft size={12} /> Library
             </button>
-          ))}
+            <span className="font-montserrat font-medium text-[10px] text-[#007970] tracking-[0.14em] uppercase hidden md:block whitespace-nowrap">
+              {POLICY_META.id}
+            </span>
+          </div>
+
+          {/* Tabs — scrollable, fill remaining space */}
+          <div className="flex-1 overflow-x-auto">
+            <div className="flex min-w-max h-full">
+              {NAV_TABS.map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => navigateToTab(id)}
+                  className={`flex items-center gap-2 px-5 py-3.5 font-montserrat font-semibold text-[13px] whitespace-nowrap border-b-[3px] transition-colors ${
+                    activeTab === id
+                      ? 'text-[#C74601] border-[#C74601]'
+                      : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
+                  }`}
+                >
+                  <Icon size={14} /> {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Right anchor — print */}
+          <div className="flex items-center px-3 shrink-0 border-l border-[#E5E4E3]">
+            <button
+              onClick={() => openPolicyPrintRoute(`/print/${POLICY_META.id}`)}
+              className="flex items-center gap-1.5 bg-[#FAFBF8] hover:bg-[#E5E4E3] text-[#1F1C1B] px-3 py-1.5 rounded-lg font-semibold text-[11px] transition-colors border border-[#E5E4E3] whitespace-nowrap"
+            >
+              <Printer size={12} /> Print
+            </button>
+          </div>
+        </div>
+
+        {/* ── CONTENT — directionally animated on tab change ───────────────── */}
+        <div
+          key={contentKey}
+          className={`p-5 lg:p-7 bg-[#FAFBF8] ${animClass}`}
+        >
+          {renderContent()}
         </div>
       </div>
-
-      {/* ── CONTENT ──────────────────────────────────────────────────────── */}
-      <div className="p-6 lg:p-8 bg-[#FAFBF8]">
-        {renderContent()}
-      </div>
-    </div>
+    </>
   );
 }

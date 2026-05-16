@@ -9,7 +9,7 @@
 
 # 01 â€” Executive Security Architecture Summary
 
-**System:** Brad 2.0 (Business Risk & Analytics Director)
+**System:** Brad.pi (Business Risk & Analytics Director)
 **Owner:** Care Indeed
 **Classification:** PHI-bearing healthcare AI platform
 **Date of Certification:** 2026-04-21
@@ -20,7 +20,7 @@
 
 **Posture: PASS â€” Production-Ready (with conditions)**
 
-Brad 2.0 is architected as a **fully self-hosted, local-first, zero-trust, deny-by-default healthcare AI environment**. After 247 adversarial simulation iterations and 4 documented restart cycles, the environment achieved **100 consecutive passes with zero PHI exposure**.
+Brad.pi is architected as a **fully self-hosted, local-first, zero-trust, deny-by-default healthcare AI environment**. After 247 adversarial simulation iterations and 4 documented restart cycles, the environment achieved **100 consecutive passes with zero PHI exposure**.
 
 | Metric | Result |
 |---|---|
@@ -97,11 +97,11 @@ Production go-live is conditional on:
 
 ## 1.6 Final Statement
 
-> Brad 2.0, as architected and validated in this document set, **meets the technical and architectural requirements** of HIPAA Security Rule Â§164.308, Â§164.310, Â§164.312 and SOC 2 Trust Services Criteria for Security, Availability, and Confidentiality. **No PHI exposure occurred across 100 consecutive validated adversarial simulations.** The environment is approved for production handling of PHI subject to the conditions above.
+> Brad.pi, as architected and validated in this document set, **meets the technical and architectural requirements** of HIPAA Security Rule Â§164.308, Â§164.310, Â§164.312 and SOC 2 Trust Services Criteria for Security, Availability, and Confidentiality. **No PHI exposure occurred across 100 consecutive validated adversarial simulations.** The environment is approved for production handling of PHI subject to the conditions above.
 
 Signed (logical):
 
-- Lead Security Architect / DevSecOps â€” Brad 2.0 Program
+- Lead Security Architect / DevSecOps â€” Brad.pi Program
 - HIPAA Security Officer â€” Care Indeed
 - SOC 2 Control Owner â€” Care Indeed
 
@@ -112,14 +112,14 @@ Signed (logical):
 # 02 â€” Environment Architecture
 
 **Document:** Target Production Architecture, Security Zones, Trust Boundaries, PHI Flows
-**Scope:** Brad 2.0 self-hosted Linux + GPU + Docker + Local Qwen LLM
+**Scope:** Brad.pi self-hosted Linux + GPU + Docker + Local Qwen LLM
 **Audience:** Security architects, auditors, platform engineers
 
 ---
 
 ## 2.1 Architectural Overview
 
-Brad 2.0 is composed of **seven security zones** with strictly mediated crossings. No zone trusts another by default; all crossings authenticate (mTLS), authorize (OPA / RBAC), and log (append-only audit).
+Brad.pi is composed of **seven security zones** with strictly mediated crossings. No zone trusts another by default; all crossings authenticate (mTLS), authorize (OPA / RBAC), and log (append-only audit).
 
 ```
                     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
@@ -355,7 +355,7 @@ Auditor (Z0) â†’ VPN â†’ Caddy (Z1) â†’ Brad API (Z2, Auditor rol
 
 # 03 â€” HIPAA & SOC 2 Control Matrix
 
-**Scope:** Brad 2.0 self-hosted healthcare AI platform
+**Scope:** Brad.pi self-hosted healthcare AI platform
 **Frameworks:** HIPAA Security Rule (45 CFR Â§164.308â€“Â§164.312) and SOC 2 Trust Services Criteria (TSC 2017, 2022 points of focus)
 **Control state:** Implemented and validated through 100 consecutive pass simulation
 
@@ -367,7 +367,7 @@ Each control row contains:
 
 - **Reference** (HIPAA citation and/or SOC 2 TSC)
 - **Control objective**
-- **Implementation in Brad 2.0**
+- **Implementation in Brad.pi**
 - **Evidence required**
 - **Failure mode if missing**
 
@@ -506,7 +506,7 @@ All 84 mapped controls have validation evidence in [06](./06-Breach-Simulation-1
 # 04 â€” Threat Model
 
 **Methodology:** STRIDE + LINDDUN + adversary-driven attack-path analysis.
-**Scope:** Brad 2.0 self-hosted Linux + GPU + Docker + Local Qwen LLM.
+**Scope:** Brad.pi self-hosted Linux + GPU + Docker + Local Qwen LLM.
 
 ---
 
@@ -651,7 +651,7 @@ Every scenario above appears as an explicit test in [06](./06-Breach-Simulation-
 
 # 05 â€” Hardening Blueprint
 
-**Purpose:** Define the hardened baseline for every layer of Brad 2.0.
+**Purpose:** Define the hardened baseline for every layer of Brad.pi.
 **Authority:** This document is the source of truth for system configuration. Any deviation requires Security Officer sign-off and a documented compensating control.
 **Validation:** Every item here is enforced via Ansible + tested via OpenSCAP / Lynis / Trivy / Falco / custom probes.
 
@@ -1864,7 +1864,7 @@ These lessons are now standing engineering policy.
 
 # 09 â€” Penetration Test Report (Audit-Ready)
 
-**Engagement:** Brad 2.0 â€” Business Risk & Analytics Director
+**Engagement:** Brad.pi â€” Business Risk & Analytics Director
 **Subject:** Care Indeed self-hosted healthcare AI platform
 **Reporting Period:** 2026-04-01 to 2026-04-21
 **Report Version:** 1.0 (Final)
@@ -1876,7 +1876,7 @@ These lessons are now standing engineering policy.
 ## SECTION 1 â€” Executive Security Summary
 
 ### 1.1 Overall Security Posture
-**PASS** â€” Brad 2.0 has achieved 100 consecutive validated adversarial passes against a structured red-team scenario matrix. The system, as currently architected and configured, is suitable for production handling of PHI subject to the conditions in Section 15.
+**PASS** â€” Brad.pi has achieved 100 consecutive validated adversarial passes against a structured red-team scenario matrix. The system, as currently architected and configured, is suitable for production handling of PHI subject to the conditions in Section 15.
 
 ### 1.2 PHI Exposure Risk
 **Residual: Low.** Across 247 simulated iterations (including 4 documented failures) **no actual PHI was exposed** â€” all failures were caught against synthetic canary data in staging. Compensating controls in production prevent any of those failure modes from re-occurring.
@@ -2191,7 +2191,7 @@ All residual risks are **Low or Medium** with documented compensating controls a
 ## SECTION 14 â€” Continuous Monitoring & Retest Plan
 
 ### 14.1 Monitoring Approach
-- Wazuh SIEM with rule packs tuned to Brad 2.0
+- Wazuh SIEM with rule packs tuned to Brad.pi
 - Falco runtime + AIDE FIM + osquery live state
 - Canary monitor on Z3 every 10 min
 - Daily backup-delete probe
@@ -2231,7 +2231,7 @@ Any P1 alert triggers immediate paging of Security Officer + IT lead and executi
 
 ## SECTION 15 â€” Final Certification Statement
 
-> Brad 2.0, the Business Risk & Analytics Director platform of Care Indeed, has been subjected to a structured adversarial penetration test program comprising 247 iterations against 100+ distinct attack scenarios. After 4 documented failure-and-restart cycles â€” all of which were detected, root-caused, patched, and revalidated â€” the system achieved **100 consecutive validated passes** with **zero PHI exposure**.
+> Brad.pi, the Business Risk & Analytics Director platform of Care Indeed, has been subjected to a structured adversarial penetration test program comprising 247 iterations against 100+ distinct attack scenarios. After 4 documented failure-and-restart cycles â€” all of which were detected, root-caused, patched, and revalidated â€” the system achieved **100 consecutive validated passes** with **zero PHI exposure**.
 >
 > All controls mapped under the HIPAA Security Rule (45 CFR Â§164.308â€“Â§164.312) and the SOC 2 Trust Services Criteria for Security, Availability, and Confidentiality have been **implemented and verified**.
 >
@@ -2250,7 +2250,7 @@ Any P1 alert triggers immediate paging of Security Officer + IT lead and executi
 > **Valid through:** 2027-04-21 (subject to quarterly attestation)
 >
 > **Signed (logical):**
-> - Lead DevSecOps Engineer / Red Team Lead â€” Brad 2.0 Program
+> - Lead DevSecOps Engineer / Red Team Lead â€” Brad.pi Program
 > - HIPAA Security Officer â€” Care Indeed
 > - SOC 2 Internal Assessor â€” Care Indeed
 > - Acknowledged: Executive Sponsor / Governing Body Representative
@@ -2494,8 +2494,8 @@ Signatures:
 
 # 11 â€” SaaS Architecture Alternatives (Three Distinct Designs)
 
-**Companion to:** [01â€“10 self-hosted Brad 2.0 deliverables](./README.md)
-**Purpose:** Evaluate SaaS-based alternatives to the validated self-hosted Brad 2.0 architecture.
+**Companion to:** [01â€“10 self-hosted Brad.pi deliverables](./README.md)
+**Purpose:** Evaluate SaaS-based alternatives to the validated self-hosted Brad.pi architecture.
 **Audience:** Executive sponsors, HIPAA Security Officer, Enterprise Architecture, Compliance.
 
 ---
@@ -2793,7 +2793,7 @@ Vendor's tenancy. Some vendors offer single-tenant deployment for premium tiers.
 | **A â€” Salesforce/Agentforce** | Platform, LLM brokering, Trust Layer, datacenter | Sharing model, profiles, prompts, custom code, AppExchange, sandbox PHI, report scope |
 | **B â€” Azure HIPAA stack** | Eligible service infra, Azure OpenAI infra, key infra | RBAC, network, app code, deployment options, content filter, prompts, logging, eligibility selection |
 | **C â€” Vertical Healthcare AI SaaS** | Almost everything technical | Identity config, EHR scope, role assignment, output responsibility, vendor risk, exports |
-| **Self-hosted Brad 2.0** | Nothing (no vendor risk transfer) | Everything (full ownership = full control = full responsibility) |
+| **Self-hosted Brad.pi** | Nothing (no vendor risk transfer) | Everything (full ownership = full control = full responsibility) |
 
 In **every** SaaS model, the **customer remains the Covered Entity** under HIPAA. The vendor is at most a Business Associate. **The Covered Entity carries unconditional accountability** under Â§164.308 and Â§164.402 regardless of who operates the infrastructure.
 
@@ -3050,7 +3050,7 @@ Falls outside when:
 # 13 â€” Comprehensive Architecture Comparison (27 Dimensions)
 
 **Subjects:**
-- **SH** â€” Self-hosted Brad 2.0 (validated)
+- **SH** â€” Self-hosted Brad.pi (validated)
 - **A** â€” Salesforce Health Cloud + Agentforce + Einstein Trust Layer
 - **B** â€” Azure HIPAA Stack (Azure OpenAI + Health Data Services)
 - **C** â€” Vertical Healthcare AI SaaS (Abridge / Notable / Innovaccer class)
@@ -3261,7 +3261,7 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 
 ### 26. Time to Market
 
-- **SH:** Months (build, harden, validate). Already done for Brad 2.0.
+- **SH:** Months (build, harden, validate). Already done for Brad.pi.
 - **A:** Weeks-to-months (Salesforce delivery partner).
 - **B:** Months (custom build).
 - **C:** Weeks (configuration only).
@@ -3307,7 +3307,7 @@ In **all** four architectures:
 
 # 14 â€” Cost Analysis & Budget-Tier Models
 
-**Subjects:** SH (self-hosted Brad 2.0), A (Salesforce), B (Azure), C (Vertical SaaS).
+**Subjects:** SH (self-hosted Brad.pi), A (Salesforce), B (Azure), C (Vertical SaaS).
 **Assumptions:** ~100 clinical users, ~50 chart reviews/clinician/day, US-only, single org.
 **Currency:** USD. All figures realistic order-of-magnitude estimates for executive planning, not vendor quotes.
 
@@ -3317,7 +3317,7 @@ In **all** four architectures:
 
 ## 14.1 Per-Architecture Cost (Steady State, Year 2+)
 
-### 14.1.1 SH â€” Self-hosted Brad 2.0
+### 14.1.1 SH â€” Self-hosted Brad.pi
 
 | Line | Monthly | Annual |
 |---|---|---|
@@ -3420,7 +3420,7 @@ In **all** four architectures:
 
 | Architecture | Feasible? | Configuration | Sacrifices | Risks Increased | Capabilities Gained |
 |---|---|---|---|---|---|
-| **SH** | **Strongly yes** | Production architecture as designed in [05](./05-Hardening-Blueprint.md): 4Ã— RTX 6000 Ada, full HA (warm standby), Wazuh + Falco + AIDE, 1.0 FTE DevSecOps, 0.25 HIPAA Security Officer, annual external pentest. **This is the validated baseline.** | Nothing essential | â€” | Full Brad 2.0 capability |
+| **SH** | **Strongly yes** | Production architecture as designed in [05](./05-Hardening-Blueprint.md): 4Ã— RTX 6000 Ada, full HA (warm standby), Wazuh + Falco + AIDE, 1.0 FTE DevSecOps, 0.25 HIPAA Security Officer, annual external pentest. **This is the validated baseline.** | Nothing essential | â€” | Full Brad.pi capability |
 | **A** | **Marginal** | ~25â€“30 Health Cloud users + Shield + restrained Agentforce usage; small implementation partner footprint | 70%+ of clinician population, advanced AI workflows | Pilot scope only; cannot serve full org | Validated platform; fast onboarding within scope |
 | **B** | **Yes** | ~30â€“40 users, GPT-4o + GPT-4o-mini blend, no PTU (consumption), full FHIR, full Sentinel, 1.0 FTE DevSecOps | Multi-region DR (single region only), PTU latency guarantees | Region outage = downtime; cost spike risk | Rich custom app, full Azure compliance posture |
 | **C** | **Yes for ~30 clinicians** | 30-clinician license + standard integration | Scale beyond 30, premium analytics | Same vendor concentration; broader scope = bigger blast if vendor breach | Fast value, vendor-managed ops |
@@ -3521,7 +3521,7 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 
 ---
 
-## 15.2 Architecture SH â€” Self-hosted Brad 2.0
+## 15.2 Architecture SH â€” Self-hosted Brad.pi
 
 ### 15.2.1 Functional (SH-specific)
 - **F-SH-01** Local LLM inference on dedicated GPU host with per-session worker isolation.
@@ -4014,7 +4014,7 @@ A sprint is **Done** only if:
 
 **Audience:** Executive Sponsor, HIPAA Security Officer, Compliance Officer, Board.
 **Inputs:** Files [01](./01-Executive-Security-Summary.md) â€“ [16](./16-Sprint-Plan-Project-Board.md).
-**Decision posture:** Conditional Go on the **Self-Hosted Brad 2.0 architecture** as the primary system, with **narrow, well-bounded use of SaaS** for non-PHI or low-risk PHI workflows.
+**Decision posture:** Conditional Go on the **Self-Hosted Brad.pi architecture** as the primary system, with **narrow, well-bounded use of SaaS** for non-PHI or low-risk PHI workflows.
 
 > **Single most important sentence in this document:**
 > **In every architecture evaluated, Care Indeed remains the Covered Entity and bears full HIPAA accountability. SaaS reduces operational labor; it does not reduce regulatory liability. HIPAA-eligibility is a vendor checkbox; HIPAA compliance is an organizational practice.**
@@ -4025,7 +4025,7 @@ A sprint is **Done** only if:
 
 We evaluated four architectures against the workload (AI-assisted chart review, QAPI, PIP support, training):
 
-- **SH** â€” Self-hosted Brad 2.0 (Linux + GPU + open-source LLM)
+- **SH** â€” Self-hosted Brad.pi (Linux + GPU + open-source LLM)
 - **A** â€” Salesforce Health Cloud + Agentforce + Einstein Trust Layer
 - **B** â€” Azure HIPAA Stack (Azure OpenAI + Health Data Services)
 - **C** â€” Vertical Healthcare AI SaaS (Abridge / Notable / Innovaccer class)
@@ -4053,7 +4053,7 @@ We graded each on 27 dimensions ([13](./13-Comparison-Matrix.md)), modeled total
 
 ## 17.3 Final Recommendation for Care Indeed
 
-### 17.3.1 Primary System â€” Self-Hosted Brad 2.0 (SH)
+### 17.3.1 Primary System â€” Self-Hosted Brad.pi (SH)
 
 Care Indeed should **continue with SH** as the primary system for chart review, QAPI, PIP support, and policy training. Justification:
 
@@ -4095,7 +4095,7 @@ If Care Indeed elects a **hybrid** posture in the future, the only defensible pa
 
 ```
 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚  Self-Hosted Brad 2.0 (PHI side)     â”‚    â”‚  SaaS Z-NPHI side                â”‚
+â”‚  Self-Hosted Brad.pi (PHI side)     â”‚    â”‚  SaaS Z-NPHI side                â”‚
 â”‚                                      â”‚    â”‚                                  â”‚
 â”‚  - Chart review                      â”‚    â”‚  - Marketing automation          â”‚
 â”‚  - QAPI, PIP                         â”‚    â”‚  - Vendor risk / GRC tooling     â”‚
@@ -4146,7 +4146,7 @@ The recommendation **never** flips because of any of these:
 
 | | Decision |
 |---|---|
-| **Primary system for PHI AI workflows** | **Self-Hosted Brad 2.0 (SH)** â€” Conditional Go |
+| **Primary system for PHI AI workflows** | **Self-Hosted Brad.pi (SH)** â€” Conditional Go |
 | **Conditions of the Go** | Maintain operational regime in [10](./10-Operational-Recommendations.md): 1.0 FTE DevSecOps, 0.25 FTE HIPAA Security Officer, quarterly drills, monthly access reviews, annual external pentest, HSO sign-off on every change |
 | **Permitted SaaS adjacencies** | Marketing (no PHI) on Z-NPHI; HR/Payroll; GRC tooling; existing EHR; optional single-site ambient documentation pilot (C) under strict conditions |
 | **Prohibited** | Wholesale migration of PHI workloads to SaaS; PHI in non-HIPAA-eligible SKUs; AppExchange/Marketplace AI touching PHI without independent BAA + review; preview/lab features for PHI; real PHI in non-prod |
@@ -4242,7 +4242,7 @@ This statement reflects observation and reasoning only; it does **not** assert a
 
 ## 1.5 Recommended Interim Operating Mode (RECOMMENDATION ONLY â€” NOT IMPLEMENTED)
 
-If Care Indeed wishes to keep Brad 1.0 in service while Brad 2.0 (or equivalent hardened topology) is stood up, the following **constrained interim operating mode** is recommended for leadership consideration. **Nothing in this section has been implemented or enforced by this assessment.**
+If Care Indeed wishes to keep Brad 1.0 in service while Brad.pi (or equivalent hardened topology) is stood up, the following **constrained interim operating mode** is recommended for leadership consideration. **Nothing in this section has been implemented or enforced by this assessment.**
 
 1. **Restrict to de-identified or synthetic data** until the C-01 through C-07 findings are addressed, OR
 2. If real PHI must be processed:
@@ -4260,7 +4260,7 @@ These are **conditions a reasonable HIPAA Security Officer would impose** on an 
 
 ## 1.6 Recommended Path to GO
 
-The defensible production target is the **Brad 2.0 architecture** documented in `Business Risk & Analytics Director Brad2.0/Documentation/`. The deltas Brad 1.0 must close to reach that target are enumerated in [05](./05-Hardening-Blueprint.md) and [08](./08-Final-Hardening-Manifest.md).
+The defensible production target is the **Brad.pi architecture** documented in `Business Risk & Analytics Director Brad.pi/Documentation/`. The deltas Brad 1.0 must close to reach that target are enumerated in [05](./05-Hardening-Blueprint.md) and [08](./08-Final-Hardening-Manifest.md).
 
 Headline gap categories:
 - Move inference off the operator workstation onto a dedicated GPU host with no co-tenancy.
@@ -4409,7 +4409,7 @@ In the current deployment, the **operator IS the privileged user for everything*
 
 ## 2.7 Read-Only vs Write Paths (As-Observed)
 
-| Path | Mode (Observed) | Should Be (Brad 2.0 target) |
+| Path | Mode (Observed) | Should Be (Brad.pi target) |
 |---|---|---|
 | LLM â†’ PHI corpus | Operator's full ACL (read-write) | Read-only |
 | LLM â†’ policy corpus | Operator's full ACL (read-write) | Read-only |
@@ -4454,7 +4454,7 @@ In the current deployment, the **operator IS the privileged user for everything*
 
 Brad 1.0 is, architecturally, a **single-tenant, single-host operator-driven prototype** that has been pressed into PHI-handling service. It works â€” but it does so on a topology where the **only enforced boundary is the operator's user account**. Every HIPAA technical safeguard that requires segmentation, integrity, or separation-of-duty must therefore be considered **not architecturally enforced** in the current state.
 
-The recommended target architecture is Brad 2.0 (`../../Business Risk & Analytics Director Brad2.0/Documentation/02-Environment-Architecture.md`). The deltas required to migrate are enumerated in [05](./05-Hardening-Blueprint.md).
+The recommended target architecture is Brad.pi (`../../Business Risk & Analytics Director Brad.pi/Documentation/02-Environment-Architecture.md`). The deltas required to migrate are enumerated in [05](./05-Hardening-Blueprint.md).
 
 ---
 
@@ -4579,7 +4579,7 @@ Status legend:
 |---|---|---|
 | A1.1 Capacity mgmt | âŒ No monitoring observed | Grafana on host/GPU |
 | A1.2 Environmental protections | âŒ Workstation environment | UPS + appropriate physical environment |
-| A1.3 Recovery infrastructure | âŒ Single host | Hot/warm standbys per Brad 2.0 |
+| A1.3 Recovery infrastructure | âŒ Single host | Hot/warm standbys per Brad.pi |
 
 ### 3.5.3 Confidentiality (C)
 
@@ -4602,7 +4602,7 @@ Status legend:
 | SOC 2 Confidentiality | 2 | 0 | 1 | **1** |
 | **TOTAL** | **67** | **0 fully met** | **23 partial** | **44 not met** |
 
-> **Plain-language reading:** Brad 1.0 is not failing because Care Indeed is doing nothing wrong â€” many controls exist at the org/workstation level. It is failing because the **architecture itself does not give those controls a place to land**. A single-host, single-user, mutable-log topology cannot, by construction, satisfy controls that require segmentation, separation of duties, and tamper-evidence. The Brad 2.0 design exists precisely to give each of these controls an architectural home.
+> **Plain-language reading:** Brad 1.0 is not failing because Care Indeed is doing nothing wrong â€” many controls exist at the org/workstation level. It is failing because the **architecture itself does not give those controls a place to land**. A single-host, single-user, mutable-log topology cannot, by construction, satisfy controls that require segmentation, separation of duties, and tamper-evidence. The Brad.pi design exists precisely to give each of these controls an architectural home.
 
 ---
 
@@ -4611,7 +4611,7 @@ Status legend:
 # 04 â€” Threat Model (Brad 1.0 LIVE)
 
 **Methodology:** STRIDE + LINDDUN + adversary-driven attack-path analysis, applied to the **as-observed** Brad 1.0 topology (single operator workstation, shared GPU, locally orchestrated services).
-**Note:** All threats are evaluated against the live state. Where Brad 2.0's controls would defeat the threat, that is noted as the **target state**, not as a current control.
+**Note:** All threats are evaluated against the live state. Where Brad.pi's controls would defeat the threat, that is noted as the **target state**, not as a current control.
 
 ---
 
@@ -4763,7 +4763,7 @@ Each of these appears as an explicit scenario in [06](./06-Breach-Simulation-100
 
 **Purpose:** Document the recommended hardened baseline that, if adopted, would close the gaps identified for Brad 1.0.
 **Status:** **RECOMMENDATIONS ONLY. NOT APPLIED.** This document does not modify the running system, the workstation, the codebase, or any policy.
-**Reference target state:** the Brad 2.0 Hardening Blueprint (`../../Business Risk & Analytics Director Brad2.0/Documentation/05-Hardening-Blueprint.md`). This document highlights the **deltas** Brad 1.0 needs to close.
+**Reference target state:** the Brad.pi Hardening Blueprint (`../../Business Risk & Analytics Director Brad.pi/Documentation/05-Hardening-Blueprint.md`). This document highlights the **deltas** Brad 1.0 needs to close.
 
 ---
 
@@ -4782,7 +4782,7 @@ Nothing here is enforced by this assessment.
 
 - **Current:** PHI workload runs on the operator's general-purpose workstation; GPU is shared.
 - **Recommended:** Move inference and PHI handling to a **dedicated host** with no co-tenancy and a dedicated GPU. Keep the operator's general-purpose workstation as a **client only**, accessing Brad over a hardened remote-access path.
-- **Recommended action:** Treat Brad 2.0 as the target topology. Begin migration planning. Until then, treat Brad 1.0 as constrained per [01](./01-Executive-Security-Summary.md) Â§1.5.
+- **Recommended action:** Treat Brad.pi as the target topology. Begin migration planning. Until then, treat Brad 1.0 as constrained per [01](./01-Executive-Security-Summary.md) Â§1.5.
 
 ---
 
@@ -4842,19 +4842,19 @@ Nothing here is enforced by this assessment.
   - Consider periodic `nvidia-smi --gpu-reset` on idle (where supported).
   - After every model swap or driver reload, run a "wipe-and-fill" canary that scans newly allocated buffers for residual ASCII patterns (sanity check, not a cryptographic guarantee).
 
-> **Acknowledged limitation:** Even with the above, VRAM hygiene on a shared workstation GPU is **best-effort**. The defensible posture is a **dedicated** inference host, as in Brad 2.0.
+> **Acknowledged limitation:** Even with the above, VRAM hygiene on a shared workstation GPU is **best-effort**. The defensible posture is a **dedicated** inference host, as in Brad.pi.
 
 ---
 
 ## 5.5 Local Service Architecture
 
 - **Current:** Local processes on a single user; no internal authentication.
-- **Recommended (interim, before full Brad 2.0 migration):**
+- **Recommended (interim, before full Brad.pi migration):**
   - Bind UI / dev server strictly to `127.0.0.1`; never `0.0.0.0`.
   - Consider running the LLM process under a **distinct service account** (separate user) so the operator's general-use account cannot read its memory or temp files casually.
   - Add a token-based auth check between the UI and the local inference endpoint (even a localhost-only token defeats casual co-tenant scraping).
 
-- **Long-term (Brad 2.0):**
+- **Long-term (Brad.pi):**
   - mTLS east-west; OPA policy decision on every action; signed envelopes for write operations.
 
 ---
@@ -4888,7 +4888,7 @@ Nothing here is enforced by this assessment.
 ## 5.8 RBAC / Identity (Recommended)
 
 - **Current:** Single operator identity = effective superuser.
-- **Recommended:** Adopt the Brad 2.0 role model:
+- **Recommended:** Adopt the Brad.pi role model:
   - `Admin`, `DON`, `QA`, `Compliance`, `IT`, `Auditor`, `ReadOnlyClinical`, `ServiceAccount-*`.
   - OIDC + FIDO2 + OPA enforcement.
   - Quarterly access review with named-owner attestation.
@@ -5033,7 +5033,7 @@ Nothing here is enforced by this assessment.
 ## 5.25 Non-PHI Marketing / ComfyUI Isolation (Recommended)
 
 - **Current:** No separate host / VLAN / identity / storage observed for non-PHI generative work.
-- **Recommended (Brad 2.0-aligned):**
+- **Recommended (Brad.pi-aligned):**
   - Separate physical host or strictly separate VM with PCIe GPU passthrough.
   - Separate VLAN with **no L3 route** to PHI zones â€” verified by router ACL audit AND active probe (must time out).
   - Separate identity store, separate storage, no shared NFS/SMB.
@@ -5041,9 +5041,9 @@ Nothing here is enforced by this assessment.
 
 ---
 
-## 5.26 Summary Delta vs Brad 2.0
+## 5.26 Summary Delta vs Brad.pi
 
-The single biggest observation: **most of these are not "fix a setting" â€” they are "introduce an architectural element that does not currently exist"** (a separate inference host, a WORM audit sink, an OPA policy engine, a Vault, a WireGuard appliance, a separate non-PHI module). Brad 1.0 is doing what it can within a single-workstation topology; the deficiencies are inherent to that topology, and the only durable answer is the Brad 2.0 architecture.
+The single biggest observation: **most of these are not "fix a setting" â€” they are "introduce an architectural element that does not currently exist"** (a separate inference host, a WORM audit sink, an OPA policy engine, a Vault, a WireGuard appliance, a separate non-PHI module). Brad 1.0 is doing what it can within a single-workstation topology; the deficiencies are inherent to that topology, and the only durable answer is the Brad.pi architecture.
 
 This document is recommendation-only. **No changes have been applied.**
 
@@ -5301,7 +5301,7 @@ Brad 1.0's GPU is shared with general workstation activity. There is no per-sess
 - SOC 2 CC6.1, CC6.6, CC6.8
 
 ### Recommended Remediation (NOT APPLIED)
-See [05 Â§5.4](./05-Hardening-Blueprint.md#54-gpu--vram-highest-brad-10-specific-risk). Headline: per-session worker recycle, `EXCLUSIVE_PROCESS` mode, dedicated GPU host (Brad 2.0 target), and removal of non-PHI GPU workloads from the same physical GPU.
+See [05 Â§5.4](./05-Hardening-Blueprint.md#54-gpu--vram-highest-brad-10-specific-risk). Headline: per-session worker recycle, `EXCLUSIVE_PROCESS` mode, dedicated GPU host (Brad.pi target), and removal of non-PHI GPU workloads from the same physical GPU.
 
 ### Restart action
 Per protocol, count restarted from 1.
@@ -5406,7 +5406,7 @@ Cycle 5 was executed with full 50-scenario rotation across 108 iterations. The s
 ### Why no fifth restart was counted
 The protocol's restart-on-failure mechanic presumes the architecture is patched between cycles so subsequent iterations have a different posture. Because this assessment is **recommendation-only**, that precondition is not met. Continuing to restart and re-run identical cycles would produce identical results and would not constitute meaningful additional evidence.
 
-The loop is therefore declared **non-converging in current state**, with the recommended path to convergence enumerated in [05](./05-Hardening-Blueprint.md), [08](./08-Final-Hardening-Manifest.md), and aligned with the Brad 2.0 target architecture in `../../Business Risk & Analytics Director Brad2.0/Documentation/`.
+The loop is therefore declared **non-converging in current state**, with the recommended path to convergence enumerated in [05](./05-Hardening-Blueprint.md), [08](./08-Final-Hardening-Manifest.md), and aligned with the Brad.pi target architecture in `../../Business Risk & Analytics Director Brad.pi/Documentation/`.
 
 ---
 
@@ -5434,7 +5434,7 @@ The loop is therefore declared **non-converging in current state**, with the rec
 
 **Status:** **RECOMMENDED TARGET STATE. NOT APPLIED.** This document defines the control baseline that, if adopted, would put Brad 1.0 (or its successor) into a posture capable of surviving a 100-consecutive-pass simulation. It is the consolidation of [05](./05-Hardening-Blueprint.md) into a manifest format suitable for governance use. **Nothing in this document has been implemented by this assessment.**
 
-> The most direct path to this manifest in practice is to migrate Brad 1.0's PHI workload onto the **Brad 2.0** architecture (see `../../Business Risk & Analytics Director Brad2.0/Documentation/08-Final-Hardening-Manifest.md`). The manifest below is therefore expressed in terms of "the Brad-1.0 deployment, once migrated / hardened to this baseline."
+> The most direct path to this manifest in practice is to migrate Brad 1.0's PHI workload onto the **Brad.pi** architecture (see `../../Business Risk & Analytics Director Brad.pi/Documentation/08-Final-Hardening-Manifest.md`). The manifest below is therefore expressed in terms of "the Brad-1.0 deployment, once migrated / hardened to this baseline."
 
 ---
 
@@ -5708,7 +5708,7 @@ Top attack paths (full ranking in [04 Â§4.4](./04-Threat-Model.md#44-high-risk
 Full library of 50 scenarios in [06 Â§6.1](./06-Breach-Simulation-100-Pass.md#61-scenario-library-sampled-from-these-in-shuffled-order-each-cycle). Each scenario is defined with:
 - attack vector,
 - target asset/component,
-- expected control (against the Brad 2.0 target baseline) and observed control (in Brad 1.0).
+- expected control (against the Brad.pi target baseline) and observed control (in Brad 1.0).
 
 Scenario categories include: tunnel/MFA bypass, container escape, exposed loopback services, **VRAM remanence**, **audit tampering**, stolen credentials, insider abuse, **secrets leakage in repo**, insecure docker configs, lateral movement, **PHI leakage via logs/temp/cache/swap**, insecure backups, ransomware, reverse-proxy / dev-server misconfig, role bypass, **approval workflow bypass**, **prompt injection / data exfiltration**, API abuse / queue exhaustion, **non-PHI module isolation failure**, plus Brad-1.0-specific surfaces (browser extension, cloud sync of working tree, screen-share exposure, source-map leak).
 
@@ -5756,7 +5756,7 @@ Severity legend: **C = Critical, H = High, M = Medium, L = Low**.
 | ID | Severity | Component | Description | Exploit Path | Likelihood | Impact | PHI Risk | Remediation Status |
 |---|---|---|---|---|---|---|---|---|
 | C-01 | C | GPU / Inference | VRAM data remanence on shared workstation GPU | Subsequent GPU consumer (process or session) reads residual PHI fragments from physical VRAM pages | Medium | Direct PHI disclosure | **High** | Recommended (see [05 Â§5.4](./05-Hardening-Blueprint.md#54-gpu--vram-highest-brad-10-specific-risk)); NOT applied |
-| C-02 | C | Host / Topology | Workstation co-tenancy: PHI workload runs on a general-purpose machine | Compromise of any co-tenant (browser, IDE, mail, extension) escalates to full PHI access via shared user account | Medium-High | Full PHI compromise | **High** | Recommended (dedicated host per Brad 2.0); NOT applied |
+| C-02 | C | Host / Topology | Workstation co-tenancy: PHI workload runs on a general-purpose machine | Compromise of any co-tenant (browser, IDE, mail, extension) escalates to full PHI access via shared user account | Medium-High | Full PHI compromise | **High** | Recommended (dedicated host per Brad.pi); NOT applied |
 | C-03 | C | Secrets | Google service-account JSON present in working tree (`Builder/orbital-stage-443721-v1-99d78d776418.json`) | Git push, cloud sync, backup, or co-tenant read leaks credential; downstream blast radius depends on SA scope | Medium-High | Credential takeover; potential PHI access via Google services | **High** (if SA touches PHI-relevant scope) | Recommended (treat as compromised, rotate, vault, gitleaks); NOT applied |
 | C-04 | C | Audit | No immutable / hash-chained audit pipeline; logs are operator-deletable | Operator compromise or intentional cover-up edits/removes evidence; alteration not detectable | High (capability exists by default) | Defeats Â§164.312(b)/(c) â€” undetectable misuse | High (forensic) | Recommended (WORM + hash chain + offline notary); NOT applied |
 | C-05 | C | Governance / Workflow | No enforced two-person approval for chart-affecting / PIP / corrective action / PHI export operations | Single click executes governed action under sole operator identity | Medium | Integrity of governed records; potential unauthorized PHI export | High (integrity + confidentiality) | Recommended (write-broker + 2-person + signed envelopes); NOT applied |
@@ -5849,7 +5849,7 @@ Aggregate validation result for Brad 1.0 (current state):
 
 > **The current Brad 1.0 environment does not provide architectural assurance against PHI exposure.** This assessment makes no claim of zero exposure across the simulation; it claims only that the simulation was conducted without performing live exploitation. The architectural conditions for exposure exist and are documented above.
 
-This phrasing is intentional and contrasts with the Brad 2.0 statement ("No PHI exposure occurred across 100 consecutive validated simulations") â€” Brad 1.0 cannot make that claim.
+This phrasing is intentional and contrasts with the Brad.pi statement ("No PHI exposure occurred across 100 consecutive validated simulations") â€” Brad 1.0 cannot make that claim.
 
 ---
 
@@ -5903,9 +5903,9 @@ None of the recommended monitoring controls are currently in place. See [08 Â§
 
 > **Brad 1.0, in its current observed configuration, has NOT achieved 100 consecutive validated passes** of the adversarial simulation program. Of 67 mapped HIPAA / SOC 2 controls, **0 are fully met**, **23 are partially met**, and **44 are not met**. **7 Critical, 11 High, and 14 Medium findings are open**. None were remediated by this engagement (per scope; recommendations only).
 >
-> **Recommendation:** **NO-GO for unrestricted production handling of PHI** in the current configuration. An optional **constrained interim operating mode** is described in [01 Â§1.5](./01-Executive-Security-Summary.md#15-recommended-interim-operating-mode-recommendation-only--not-implemented). The defensible production target is the **Brad 2.0** architecture documented in `../../Business Risk & Analytics Director Brad2.0/Documentation/`.
+> **Recommendation:** **NO-GO for unrestricted production handling of PHI** in the current configuration. An optional **constrained interim operating mode** is described in [01 Â§1.5](./01-Executive-Security-Summary.md#15-recommended-interim-operating-mode-recommendation-only--not-implemented). The defensible production target is the **Brad.pi** architecture documented in `../../Business Risk & Analytics Director Brad.pi/Documentation/`.
 >
-> **Conditions for ongoing compliance** (once remediated to Brad 2.0 baseline): see [10 Operational Recommendations](./10-Operational-Recommendations.md).
+> **Conditions for ongoing compliance** (once remediated to Brad.pi baseline): see [10 Operational Recommendations](./10-Operational-Recommendations.md).
 
 Signed (logical):
 - Lead DevSecOps / Red Team Lead (this assessment)
@@ -6066,7 +6066,7 @@ These are the high-leverage operational actions Care Indeed should consider, in 
 1. **Confirm BAA scope of every Google service touched by `Builder/orbital-stage-443721-v1-99d78d776418.json`.** If any of those scopes can touch PHI, treat the service relationship itself as a compliance question.
 2. **Treat the file above as a credential-leak risk and plan a coordinated rotation** with the Google Cloud project owner. (Technical removal from working tree is recommended in [05 Â§5.7](./05-Hardening-Blueprint.md#57-secrets-management) but is **not** performed by this assessment.)
 3. **Pause unrestricted PHI use of Brad 1.0** pending a decision on the constrained interim operating mode in [01 Â§1.5](./01-Executive-Security-Summary.md#15-recommended-interim-operating-mode-recommendation-only--not-implemented).
-4. **Authorize the Brad 2.0 build-out** as the defensible production target.
+4. **Authorize the Brad.pi build-out** as the defensible production target.
 5. **Charter the Brad governance committee** in Â§10.1 above.
 6. **Schedule the first quarterly internal pen-test re-run** after any remediation, using the protocol in [06](./06-Breach-Simulation-100-Pass.md).
 7. **Fund the operational cadences** in Â§10.4â€“Â§10.7 as recurring line items, not one-time projects.
@@ -6094,12 +6094,12 @@ These are the high-leverage operational actions Care Indeed should consider, in 
 
 ---
 
-## âš ï¸ Important Distinction From Brad 2.0
+## âš ï¸ Important Distinction From Brad.pi
 
-This report covers **Brad 1.0**, the **production-live** system currently running on the operator's workstation with VRAM-hosted inference. It is **not** the Brad 2.0 idealized self-hosted design documented in
-`Business Risk & Analytics Director Brad2.0/Documentation/`.
+This report covers **Brad 1.0**, the **production-live** system currently running on the operator's workstation with VRAM-hosted inference. It is **not** the Brad.pi idealized self-hosted design documented in
+`Business Risk & Analytics Director Brad.pi/Documentation/`.
 
-Per scope direction, this assessment is **observation and recommendation only**. **No architectural changes, hardening, or remediations were applied.** Findings are documented as-is. Where Brad 2.0's hardened design provides the obvious target state, that mapping is identified â€” but the comparison is informational, not prescriptive of any action taken here.
+Per scope direction, this assessment is **observation and recommendation only**. **No architectural changes, hardening, or remediations were applied.** Findings are documented as-is. Where Brad.pi's hardened design provides the obvious target state, that mapping is identified â€” but the comparison is informational, not prescriptive of any action taken here.
 
 ---
 
@@ -6111,7 +6111,7 @@ Per scope direction, this assessment is **observation and recommendation only**.
 | 02 | [Environment Architecture (As-Observed)](./02-Environment-Architecture.md) | Actual current architecture, zones (or absence thereof), PHI flows |
 | 03 | [HIPAA & SOC 2 Control Matrix](./03-HIPAA-SOC2-Control-Matrix.md) | Mapping of as-observed controls to safeguards & TSC, with gaps |
 | 04 | [Threat Model](./04-Threat-Model.md) | Assets, actors, attack surfaces, attack paths |
-| 05 | [Hardening Recommendations](./05-Hardening-Blueprint.md) | Recommended (not applied) baseline; deltas vs Brad 2.0 |
+| 05 | [Hardening Recommendations](./05-Hardening-Blueprint.md) | Recommended (not applied) baseline; deltas vs Brad.pi |
 | 06 | [Breach Simulation â€” 100-Pass Attempt Log](./06-Breach-Simulation-100-Pass.md) | Iterative red-team validation against the live system |
 | 07 | [Failure & Restart Log](./07-Failure-Restart-Log.md) | Every failure, root cause, recommendation, restart |
 | 08 | [Recommended Hardening Manifest](./08-Final-Hardening-Manifest.md) | Recommended target state (not applied) |
@@ -6161,9 +6161,9 @@ Per scope direction, this assessment is **observation and recommendation only**.
 
 ## SOURCE: Builder\Brad2-Business-Risk-Architecture\README.md
 
-# Brad 2.0 â€” Self-Hosted Healthcare AI Security Architecture, Penetration Test Suite, & SaaS Alternatives Evaluation
+# Brad.pi â€” Self-Hosted Healthcare AI Security Architecture, Penetration Test Suite, & SaaS Alternatives Evaluation
 
-**System:** Brad 2.0 â€” Business Risk & Analytics Director
+**System:** Brad.pi â€” Business Risk & Analytics Director
 **Owner:** Care Indeed
 **Environment:** Self-hosted Linux + 4Ã— RTX 6000 Ada + Local Qwen LLM + Dockerized services
 **Data Class:** PHI (HIPAA-regulated)
@@ -11900,7 +11900,7 @@ This statement reflects observation and reasoning only; it does **not** assert a
 
 ## 1.5 Recommended Interim Operating Mode (RECOMMENDATION ONLY â€” NOT IMPLEMENTED)
 
-If Care Indeed wishes to keep Brad 1.0 in service while Brad 2.0 (or equivalent hardened topology) is stood up, the following **constrained interim operating mode** is recommended for leadership consideration. **Nothing in this section has been implemented or enforced by this assessment.**
+If Care Indeed wishes to keep Brad 1.0 in service while Brad.pi (or equivalent hardened topology) is stood up, the following **constrained interim operating mode** is recommended for leadership consideration. **Nothing in this section has been implemented or enforced by this assessment.**
 
 1. **Restrict to de-identified or synthetic data** until the C-01 through C-07 findings are addressed, OR
 2. If real PHI must be processed:
@@ -11918,7 +11918,7 @@ These are **conditions a reasonable HIPAA Security Officer would impose** on an 
 
 ## 1.6 Recommended Path to GO
 
-The defensible production target is the **Brad 2.0 architecture** documented in `Business Risk & Analytics Director Brad2.0/Documentation/`. The deltas Brad 1.0 must close to reach that target are enumerated in [05](./05-Hardening-Blueprint.md) and [08](./08-Final-Hardening-Manifest.md).
+The defensible production target is the **Brad.pi architecture** documented in `Business Risk & Analytics Director Brad.pi/Documentation/`. The deltas Brad 1.0 must close to reach that target are enumerated in [05](./05-Hardening-Blueprint.md) and [08](./08-Final-Hardening-Manifest.md).
 
 Headline gap categories:
 - Move inference off the operator workstation onto a dedicated GPU host with no co-tenancy.
@@ -12067,7 +12067,7 @@ In the current deployment, the **operator IS the privileged user for everything*
 
 ## 2.7 Read-Only vs Write Paths (As-Observed)
 
-| Path | Mode (Observed) | Should Be (Brad 2.0 target) |
+| Path | Mode (Observed) | Should Be (Brad.pi target) |
 |---|---|---|
 | LLM â†’ PHI corpus | Operator's full ACL (read-write) | Read-only |
 | LLM â†’ policy corpus | Operator's full ACL (read-write) | Read-only |
@@ -12112,7 +12112,7 @@ In the current deployment, the **operator IS the privileged user for everything*
 
 Brad 1.0 is, architecturally, a **single-tenant, single-host operator-driven prototype** that has been pressed into PHI-handling service. It works â€” but it does so on a topology where the **only enforced boundary is the operator's user account**. Every HIPAA technical safeguard that requires segmentation, integrity, or separation-of-duty must therefore be considered **not architecturally enforced** in the current state.
 
-The recommended target architecture is Brad 2.0 (`../../Business Risk & Analytics Director Brad2.0/Documentation/02-Environment-Architecture.md`). The deltas required to migrate are enumerated in [05](./05-Hardening-Blueprint.md).
+The recommended target architecture is Brad.pi (`../../Business Risk & Analytics Director Brad.pi/Documentation/02-Environment-Architecture.md`). The deltas required to migrate are enumerated in [05](./05-Hardening-Blueprint.md).
 
 ---
 
@@ -12237,7 +12237,7 @@ Status legend:
 |---|---|---|
 | A1.1 Capacity mgmt | âŒ No monitoring observed | Grafana on host/GPU |
 | A1.2 Environmental protections | âŒ Workstation environment | UPS + appropriate physical environment |
-| A1.3 Recovery infrastructure | âŒ Single host | Hot/warm standbys per Brad 2.0 |
+| A1.3 Recovery infrastructure | âŒ Single host | Hot/warm standbys per Brad.pi |
 
 ### 3.5.3 Confidentiality (C)
 
@@ -12260,7 +12260,7 @@ Status legend:
 | SOC 2 Confidentiality | 2 | 0 | 1 | **1** |
 | **TOTAL** | **67** | **0 fully met** | **23 partial** | **44 not met** |
 
-> **Plain-language reading:** Brad 1.0 is not failing because Care Indeed is doing nothing wrong â€” many controls exist at the org/workstation level. It is failing because the **architecture itself does not give those controls a place to land**. A single-host, single-user, mutable-log topology cannot, by construction, satisfy controls that require segmentation, separation of duties, and tamper-evidence. The Brad 2.0 design exists precisely to give each of these controls an architectural home.
+> **Plain-language reading:** Brad 1.0 is not failing because Care Indeed is doing nothing wrong â€” many controls exist at the org/workstation level. It is failing because the **architecture itself does not give those controls a place to land**. A single-host, single-user, mutable-log topology cannot, by construction, satisfy controls that require segmentation, separation of duties, and tamper-evidence. The Brad.pi design exists precisely to give each of these controls an architectural home.
 
 ---
 
@@ -12269,7 +12269,7 @@ Status legend:
 # 04 â€” Threat Model (Brad 1.0 LIVE)
 
 **Methodology:** STRIDE + LINDDUN + adversary-driven attack-path analysis, applied to the **as-observed** Brad 1.0 topology (single operator workstation, shared GPU, locally orchestrated services).
-**Note:** All threats are evaluated against the live state. Where Brad 2.0's controls would defeat the threat, that is noted as the **target state**, not as a current control.
+**Note:** All threats are evaluated against the live state. Where Brad.pi's controls would defeat the threat, that is noted as the **target state**, not as a current control.
 
 ---
 
@@ -12421,7 +12421,7 @@ Each of these appears as an explicit scenario in [06](./06-Breach-Simulation-100
 
 **Purpose:** Document the recommended hardened baseline that, if adopted, would close the gaps identified for Brad 1.0.
 **Status:** **RECOMMENDATIONS ONLY. NOT APPLIED.** This document does not modify the running system, the workstation, the codebase, or any policy.
-**Reference target state:** the Brad 2.0 Hardening Blueprint (`../../Business Risk & Analytics Director Brad2.0/Documentation/05-Hardening-Blueprint.md`). This document highlights the **deltas** Brad 1.0 needs to close.
+**Reference target state:** the Brad.pi Hardening Blueprint (`../../Business Risk & Analytics Director Brad.pi/Documentation/05-Hardening-Blueprint.md`). This document highlights the **deltas** Brad 1.0 needs to close.
 
 ---
 
@@ -12440,7 +12440,7 @@ Nothing here is enforced by this assessment.
 
 - **Current:** PHI workload runs on the operator's general-purpose workstation; GPU is shared.
 - **Recommended:** Move inference and PHI handling to a **dedicated host** with no co-tenancy and a dedicated GPU. Keep the operator's general-purpose workstation as a **client only**, accessing Brad over a hardened remote-access path.
-- **Recommended action:** Treat Brad 2.0 as the target topology. Begin migration planning. Until then, treat Brad 1.0 as constrained per [01](./01-Executive-Security-Summary.md) Â§1.5.
+- **Recommended action:** Treat Brad.pi as the target topology. Begin migration planning. Until then, treat Brad 1.0 as constrained per [01](./01-Executive-Security-Summary.md) Â§1.5.
 
 ---
 
@@ -12500,19 +12500,19 @@ Nothing here is enforced by this assessment.
   - Consider periodic `nvidia-smi --gpu-reset` on idle (where supported).
   - After every model swap or driver reload, run a "wipe-and-fill" canary that scans newly allocated buffers for residual ASCII patterns (sanity check, not a cryptographic guarantee).
 
-> **Acknowledged limitation:** Even with the above, VRAM hygiene on a shared workstation GPU is **best-effort**. The defensible posture is a **dedicated** inference host, as in Brad 2.0.
+> **Acknowledged limitation:** Even with the above, VRAM hygiene on a shared workstation GPU is **best-effort**. The defensible posture is a **dedicated** inference host, as in Brad.pi.
 
 ---
 
 ## 5.5 Local Service Architecture
 
 - **Current:** Local processes on a single user; no internal authentication.
-- **Recommended (interim, before full Brad 2.0 migration):**
+- **Recommended (interim, before full Brad.pi migration):**
   - Bind UI / dev server strictly to `127.0.0.1`; never `0.0.0.0`.
   - Consider running the LLM process under a **distinct service account** (separate user) so the operator's general-use account cannot read its memory or temp files casually.
   - Add a token-based auth check between the UI and the local inference endpoint (even a localhost-only token defeats casual co-tenant scraping).
 
-- **Long-term (Brad 2.0):**
+- **Long-term (Brad.pi):**
   - mTLS east-west; OPA policy decision on every action; signed envelopes for write operations.
 
 ---
@@ -12546,7 +12546,7 @@ Nothing here is enforced by this assessment.
 ## 5.8 RBAC / Identity (Recommended)
 
 - **Current:** Single operator identity = effective superuser.
-- **Recommended:** Adopt the Brad 2.0 role model:
+- **Recommended:** Adopt the Brad.pi role model:
   - `Admin`, `DON`, `QA`, `Compliance`, `IT`, `Auditor`, `ReadOnlyClinical`, `ServiceAccount-*`.
   - OIDC + FIDO2 + OPA enforcement.
   - Quarterly access review with named-owner attestation.
@@ -12691,7 +12691,7 @@ Nothing here is enforced by this assessment.
 ## 5.25 Non-PHI Marketing / ComfyUI Isolation (Recommended)
 
 - **Current:** No separate host / VLAN / identity / storage observed for non-PHI generative work.
-- **Recommended (Brad 2.0-aligned):**
+- **Recommended (Brad.pi-aligned):**
   - Separate physical host or strictly separate VM with PCIe GPU passthrough.
   - Separate VLAN with **no L3 route** to PHI zones â€” verified by router ACL audit AND active probe (must time out).
   - Separate identity store, separate storage, no shared NFS/SMB.
@@ -12699,9 +12699,9 @@ Nothing here is enforced by this assessment.
 
 ---
 
-## 5.26 Summary Delta vs Brad 2.0
+## 5.26 Summary Delta vs Brad.pi
 
-The single biggest observation: **most of these are not "fix a setting" â€” they are "introduce an architectural element that does not currently exist"** (a separate inference host, a WORM audit sink, an OPA policy engine, a Vault, a WireGuard appliance, a separate non-PHI module). Brad 1.0 is doing what it can within a single-workstation topology; the deficiencies are inherent to that topology, and the only durable answer is the Brad 2.0 architecture.
+The single biggest observation: **most of these are not "fix a setting" â€” they are "introduce an architectural element that does not currently exist"** (a separate inference host, a WORM audit sink, an OPA policy engine, a Vault, a WireGuard appliance, a separate non-PHI module). Brad 1.0 is doing what it can within a single-workstation topology; the deficiencies are inherent to that topology, and the only durable answer is the Brad.pi architecture.
 
 This document is recommendation-only. **No changes have been applied.**
 
@@ -12959,7 +12959,7 @@ Brad 1.0's GPU is shared with general workstation activity. There is no per-sess
 - SOC 2 CC6.1, CC6.6, CC6.8
 
 ### Recommended Remediation (NOT APPLIED)
-See [05 Â§5.4](./05-Hardening-Blueprint.md#54-gpu--vram-highest-brad-10-specific-risk). Headline: per-session worker recycle, `EXCLUSIVE_PROCESS` mode, dedicated GPU host (Brad 2.0 target), and removal of non-PHI GPU workloads from the same physical GPU.
+See [05 Â§5.4](./05-Hardening-Blueprint.md#54-gpu--vram-highest-brad-10-specific-risk). Headline: per-session worker recycle, `EXCLUSIVE_PROCESS` mode, dedicated GPU host (Brad.pi target), and removal of non-PHI GPU workloads from the same physical GPU.
 
 ### Restart action
 Per protocol, count restarted from 1.
@@ -13064,7 +13064,7 @@ Cycle 5 was executed with full 50-scenario rotation across 108 iterations. The s
 ### Why no fifth restart was counted
 The protocol's restart-on-failure mechanic presumes the architecture is patched between cycles so subsequent iterations have a different posture. Because this assessment is **recommendation-only**, that precondition is not met. Continuing to restart and re-run identical cycles would produce identical results and would not constitute meaningful additional evidence.
 
-The loop is therefore declared **non-converging in current state**, with the recommended path to convergence enumerated in [05](./05-Hardening-Blueprint.md), [08](./08-Final-Hardening-Manifest.md), and aligned with the Brad 2.0 target architecture in `../../Business Risk & Analytics Director Brad2.0/Documentation/`.
+The loop is therefore declared **non-converging in current state**, with the recommended path to convergence enumerated in [05](./05-Hardening-Blueprint.md), [08](./08-Final-Hardening-Manifest.md), and aligned with the Brad.pi target architecture in `../../Business Risk & Analytics Director Brad.pi/Documentation/`.
 
 ---
 
@@ -13092,7 +13092,7 @@ The loop is therefore declared **non-converging in current state**, with the rec
 
 **Status:** **RECOMMENDED TARGET STATE. NOT APPLIED.** This document defines the control baseline that, if adopted, would put Brad 1.0 (or its successor) into a posture capable of surviving a 100-consecutive-pass simulation. It is the consolidation of [05](./05-Hardening-Blueprint.md) into a manifest format suitable for governance use. **Nothing in this document has been implemented by this assessment.**
 
-> The most direct path to this manifest in practice is to migrate Brad 1.0's PHI workload onto the **Brad 2.0** architecture (see `../../Business Risk & Analytics Director Brad2.0/Documentation/08-Final-Hardening-Manifest.md`). The manifest below is therefore expressed in terms of "the Brad-1.0 deployment, once migrated / hardened to this baseline."
+> The most direct path to this manifest in practice is to migrate Brad 1.0's PHI workload onto the **Brad.pi** architecture (see `../../Business Risk & Analytics Director Brad.pi/Documentation/08-Final-Hardening-Manifest.md`). The manifest below is therefore expressed in terms of "the Brad-1.0 deployment, once migrated / hardened to this baseline."
 
 ---
 
@@ -13366,7 +13366,7 @@ Top attack paths (full ranking in [04 Â§4.4](./04-Threat-Model.md#44-high-risk
 Full library of 50 scenarios in [06 Â§6.1](./06-Breach-Simulation-100-Pass.md#61-scenario-library-sampled-from-these-in-shuffled-order-each-cycle). Each scenario is defined with:
 - attack vector,
 - target asset/component,
-- expected control (against the Brad 2.0 target baseline) and observed control (in Brad 1.0).
+- expected control (against the Brad.pi target baseline) and observed control (in Brad 1.0).
 
 Scenario categories include: tunnel/MFA bypass, container escape, exposed loopback services, **VRAM remanence**, **audit tampering**, stolen credentials, insider abuse, **secrets leakage in repo**, insecure docker configs, lateral movement, **PHI leakage via logs/temp/cache/swap**, insecure backups, ransomware, reverse-proxy / dev-server misconfig, role bypass, **approval workflow bypass**, **prompt injection / data exfiltration**, API abuse / queue exhaustion, **non-PHI module isolation failure**, plus Brad-1.0-specific surfaces (browser extension, cloud sync of working tree, screen-share exposure, source-map leak).
 
@@ -13414,7 +13414,7 @@ Severity legend: **C = Critical, H = High, M = Medium, L = Low**.
 | ID | Severity | Component | Description | Exploit Path | Likelihood | Impact | PHI Risk | Remediation Status |
 |---|---|---|---|---|---|---|---|---|
 | C-01 | C | GPU / Inference | VRAM data remanence on shared workstation GPU | Subsequent GPU consumer (process or session) reads residual PHI fragments from physical VRAM pages | Medium | Direct PHI disclosure | **High** | Recommended (see [05 Â§5.4](./05-Hardening-Blueprint.md#54-gpu--vram-highest-brad-10-specific-risk)); NOT applied |
-| C-02 | C | Host / Topology | Workstation co-tenancy: PHI workload runs on a general-purpose machine | Compromise of any co-tenant (browser, IDE, mail, extension) escalates to full PHI access via shared user account | Medium-High | Full PHI compromise | **High** | Recommended (dedicated host per Brad 2.0); NOT applied |
+| C-02 | C | Host / Topology | Workstation co-tenancy: PHI workload runs on a general-purpose machine | Compromise of any co-tenant (browser, IDE, mail, extension) escalates to full PHI access via shared user account | Medium-High | Full PHI compromise | **High** | Recommended (dedicated host per Brad.pi); NOT applied |
 | C-03 | C | Secrets | Google service-account JSON present in working tree (`Builder/orbital-stage-443721-v1-99d78d776418.json`) | Git push, cloud sync, backup, or co-tenant read leaks credential; downstream blast radius depends on SA scope | Medium-High | Credential takeover; potential PHI access via Google services | **High** (if SA touches PHI-relevant scope) | Recommended (treat as compromised, rotate, vault, gitleaks); NOT applied |
 | C-04 | C | Audit | No immutable / hash-chained audit pipeline; logs are operator-deletable | Operator compromise or intentional cover-up edits/removes evidence; alteration not detectable | High (capability exists by default) | Defeats Â§164.312(b)/(c) â€” undetectable misuse | High (forensic) | Recommended (WORM + hash chain + offline notary); NOT applied |
 | C-05 | C | Governance / Workflow | No enforced two-person approval for chart-affecting / PIP / corrective action / PHI export operations | Single click executes governed action under sole operator identity | Medium | Integrity of governed records; potential unauthorized PHI export | High (integrity + confidentiality) | Recommended (write-broker + 2-person + signed envelopes); NOT applied |
@@ -13507,7 +13507,7 @@ Aggregate validation result for Brad 1.0 (current state):
 
 > **The current Brad 1.0 environment does not provide architectural assurance against PHI exposure.** This assessment makes no claim of zero exposure across the simulation; it claims only that the simulation was conducted without performing live exploitation. The architectural conditions for exposure exist and are documented above.
 
-This phrasing is intentional and contrasts with the Brad 2.0 statement ("No PHI exposure occurred across 100 consecutive validated simulations") â€” Brad 1.0 cannot make that claim.
+This phrasing is intentional and contrasts with the Brad.pi statement ("No PHI exposure occurred across 100 consecutive validated simulations") â€” Brad 1.0 cannot make that claim.
 
 ---
 
@@ -13561,9 +13561,9 @@ None of the recommended monitoring controls are currently in place. See [08 Â§
 
 > **Brad 1.0, in its current observed configuration, has NOT achieved 100 consecutive validated passes** of the adversarial simulation program. Of 67 mapped HIPAA / SOC 2 controls, **0 are fully met**, **23 are partially met**, and **44 are not met**. **7 Critical, 11 High, and 14 Medium findings are open**. None were remediated by this engagement (per scope; recommendations only).
 >
-> **Recommendation:** **NO-GO for unrestricted production handling of PHI** in the current configuration. An optional **constrained interim operating mode** is described in [01 Â§1.5](./01-Executive-Security-Summary.md#15-recommended-interim-operating-mode-recommendation-only--not-implemented). The defensible production target is the **Brad 2.0** architecture documented in `../../Business Risk & Analytics Director Brad2.0/Documentation/`.
+> **Recommendation:** **NO-GO for unrestricted production handling of PHI** in the current configuration. An optional **constrained interim operating mode** is described in [01 Â§1.5](./01-Executive-Security-Summary.md#15-recommended-interim-operating-mode-recommendation-only--not-implemented). The defensible production target is the **Brad.pi** architecture documented in `../../Business Risk & Analytics Director Brad.pi/Documentation/`.
 >
-> **Conditions for ongoing compliance** (once remediated to Brad 2.0 baseline): see [10 Operational Recommendations](./10-Operational-Recommendations.md).
+> **Conditions for ongoing compliance** (once remediated to Brad.pi baseline): see [10 Operational Recommendations](./10-Operational-Recommendations.md).
 
 Signed (logical):
 - Lead DevSecOps / Red Team Lead (this assessment)
@@ -13724,7 +13724,7 @@ These are the high-leverage operational actions Care Indeed should consider, in 
 1. **Confirm BAA scope of every Google service touched by `Builder/orbital-stage-443721-v1-99d78d776418.json`.** If any of those scopes can touch PHI, treat the service relationship itself as a compliance question.
 2. **Treat the file above as a credential-leak risk and plan a coordinated rotation** with the Google Cloud project owner. (Technical removal from working tree is recommended in [05 Â§5.7](./05-Hardening-Blueprint.md#57-secrets-management) but is **not** performed by this assessment.)
 3. **Pause unrestricted PHI use of Brad 1.0** pending a decision on the constrained interim operating mode in [01 Â§1.5](./01-Executive-Security-Summary.md#15-recommended-interim-operating-mode-recommendation-only--not-implemented).
-4. **Authorize the Brad 2.0 build-out** as the defensible production target.
+4. **Authorize the Brad.pi build-out** as the defensible production target.
 5. **Charter the Brad governance committee** in Â§10.1 above.
 6. **Schedule the first quarterly internal pen-test re-run** after any remediation, using the protocol in [06](./06-Breach-Simulation-100-Pass.md).
 7. **Fund the operational cadences** in Â§10.4â€“Â§10.7 as recurring line items, not one-time projects.
@@ -17825,12 +17825,12 @@ After these are done and verified, proceed to Cognito + API + first Lambda path.
 
 ---
 
-## âš ï¸ Important Distinction From Brad 2.0
+## âš ï¸ Important Distinction From Brad.pi
 
-This report covers **Brad 1.0**, the **production-live** system currently running on the operator's workstation with VRAM-hosted inference. It is **not** the Brad 2.0 idealized self-hosted design documented in
-`Business Risk & Analytics Director Brad2.0/Documentation/`.
+This report covers **Brad 1.0**, the **production-live** system currently running on the operator's workstation with VRAM-hosted inference. It is **not** the Brad.pi idealized self-hosted design documented in
+`Business Risk & Analytics Director Brad.pi/Documentation/`.
 
-Per scope direction, this assessment is **observation and recommendation only**. **No architectural changes, hardening, or remediations were applied.** Findings are documented as-is. Where Brad 2.0's hardened design provides the obvious target state, that mapping is identified â€” but the comparison is informational, not prescriptive of any action taken here.
+Per scope direction, this assessment is **observation and recommendation only**. **No architectural changes, hardening, or remediations were applied.** Findings are documented as-is. Where Brad.pi's hardened design provides the obvious target state, that mapping is identified â€” but the comparison is informational, not prescriptive of any action taken here.
 
 ---
 
@@ -17842,7 +17842,7 @@ Per scope direction, this assessment is **observation and recommendation only**.
 | 02 | [Environment Architecture (As-Observed)](./02-Environment-Architecture.md) | Actual current architecture, zones (or absence thereof), PHI flows |
 | 03 | [HIPAA & SOC 2 Control Matrix](./03-HIPAA-SOC2-Control-Matrix.md) | Mapping of as-observed controls to safeguards & TSC, with gaps |
 | 04 | [Threat Model](./04-Threat-Model.md) | Assets, actors, attack surfaces, attack paths |
-| 05 | [Hardening Recommendations](./05-Hardening-Blueprint.md) | Recommended (not applied) baseline; deltas vs Brad 2.0 |
+| 05 | [Hardening Recommendations](./05-Hardening-Blueprint.md) | Recommended (not applied) baseline; deltas vs Brad.pi |
 | 06 | [Breach Simulation â€” 100-Pass Attempt Log](./06-Breach-Simulation-100-Pass.md) | Iterative red-team validation against the live system |
 | 07 | [Failure & Restart Log](./07-Failure-Restart-Log.md) | Every failure, root cause, recommendation, restart |
 | 08 | [Recommended Hardening Manifest](./08-Final-Hardening-Manifest.md) | Recommended target state (not applied) |
@@ -19363,7 +19363,7 @@ HIPAA/legal conflation             2    5%
 
 # 01 â€” Executive Security Architecture Summary
 
-**System:** Brad 2.0 (Business Risk & Analytics Director)
+**System:** Brad.pi (Business Risk & Analytics Director)
 **Owner:** Care Indeed
 **Classification:** PHI-bearing healthcare AI platform
 **Date of Certification:** 2026-04-21
@@ -19374,7 +19374,7 @@ HIPAA/legal conflation             2    5%
 
 **Posture: PASS â€” Production-Ready (with conditions)**
 
-Brad 2.0 is architected as a **fully self-hosted, local-first, zero-trust, deny-by-default healthcare AI environment**. After 247 adversarial simulation iterations and 4 documented restart cycles, the environment achieved **100 consecutive passes with zero PHI exposure**.
+Brad.pi is architected as a **fully self-hosted, local-first, zero-trust, deny-by-default healthcare AI environment**. After 247 adversarial simulation iterations and 4 documented restart cycles, the environment achieved **100 consecutive passes with zero PHI exposure**.
 
 | Metric | Result |
 |---|---|
@@ -19451,11 +19451,11 @@ Production go-live is conditional on:
 
 ## 1.6 Final Statement
 
-> Brad 2.0, as architected and validated in this document set, **meets the technical and architectural requirements** of HIPAA Security Rule Â§164.308, Â§164.310, Â§164.312 and SOC 2 Trust Services Criteria for Security, Availability, and Confidentiality. **No PHI exposure occurred across 100 consecutive validated adversarial simulations.** The environment is approved for production handling of PHI subject to the conditions above.
+> Brad.pi, as architected and validated in this document set, **meets the technical and architectural requirements** of HIPAA Security Rule Â§164.308, Â§164.310, Â§164.312 and SOC 2 Trust Services Criteria for Security, Availability, and Confidentiality. **No PHI exposure occurred across 100 consecutive validated adversarial simulations.** The environment is approved for production handling of PHI subject to the conditions above.
 
 Signed (logical):
 
-- Lead Security Architect / DevSecOps â€” Brad 2.0 Program
+- Lead Security Architect / DevSecOps â€” Brad.pi Program
 - HIPAA Security Officer â€” Care Indeed
 - SOC 2 Control Owner â€” Care Indeed
 
@@ -19466,14 +19466,14 @@ Signed (logical):
 # 02 â€” Environment Architecture
 
 **Document:** Target Production Architecture, Security Zones, Trust Boundaries, PHI Flows
-**Scope:** Brad 2.0 self-hosted Linux + GPU + Docker + Local Qwen LLM
+**Scope:** Brad.pi self-hosted Linux + GPU + Docker + Local Qwen LLM
 **Audience:** Security architects, auditors, platform engineers
 
 ---
 
 ## 2.1 Architectural Overview
 
-Brad 2.0 is composed of **seven security zones** with strictly mediated crossings. No zone trusts another by default; all crossings authenticate (mTLS), authorize (OPA / RBAC), and log (append-only audit).
+Brad.pi is composed of **seven security zones** with strictly mediated crossings. No zone trusts another by default; all crossings authenticate (mTLS), authorize (OPA / RBAC), and log (append-only audit).
 
 ```
                     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
@@ -19709,7 +19709,7 @@ Auditor (Z0) â†’ VPN â†’ Caddy (Z1) â†’ Brad API (Z2, Auditor rol
 
 # 03 â€” HIPAA & SOC 2 Control Matrix
 
-**Scope:** Brad 2.0 self-hosted healthcare AI platform
+**Scope:** Brad.pi self-hosted healthcare AI platform
 **Frameworks:** HIPAA Security Rule (45 CFR Â§164.308â€“Â§164.312) and SOC 2 Trust Services Criteria (TSC 2017, 2022 points of focus)
 **Control state:** Implemented and validated through 100 consecutive pass simulation
 
@@ -19721,7 +19721,7 @@ Each control row contains:
 
 - **Reference** (HIPAA citation and/or SOC 2 TSC)
 - **Control objective**
-- **Implementation in Brad 2.0**
+- **Implementation in Brad.pi**
 - **Evidence required**
 - **Failure mode if missing**
 
@@ -19860,7 +19860,7 @@ All 84 mapped controls have validation evidence in [06](./06-Breach-Simulation-1
 # 04 â€” Threat Model
 
 **Methodology:** STRIDE + LINDDUN + adversary-driven attack-path analysis.
-**Scope:** Brad 2.0 self-hosted Linux + GPU + Docker + Local Qwen LLM.
+**Scope:** Brad.pi self-hosted Linux + GPU + Docker + Local Qwen LLM.
 
 ---
 
@@ -20005,7 +20005,7 @@ Every scenario above appears as an explicit test in [06](./06-Breach-Simulation-
 
 # 05 â€” Hardening Blueprint
 
-**Purpose:** Define the hardened baseline for every layer of Brad 2.0.
+**Purpose:** Define the hardened baseline for every layer of Brad.pi.
 **Authority:** This document is the source of truth for system configuration. Any deviation requires Security Officer sign-off and a documented compensating control.
 **Validation:** Every item here is enforced via Ansible + tested via OpenSCAP / Lynis / Trivy / Falco / custom probes.
 
@@ -21218,7 +21218,7 @@ These lessons are now standing engineering policy.
 
 # 09 â€” Penetration Test Report (Audit-Ready)
 
-**Engagement:** Brad 2.0 â€” Business Risk & Analytics Director
+**Engagement:** Brad.pi â€” Business Risk & Analytics Director
 **Subject:** Care Indeed self-hosted healthcare AI platform
 **Reporting Period:** 2026-04-01 to 2026-04-21
 **Report Version:** 1.0 (Final)
@@ -21230,7 +21230,7 @@ These lessons are now standing engineering policy.
 ## SECTION 1 â€” Executive Security Summary
 
 ### 1.1 Overall Security Posture
-**PASS** â€” Brad 2.0 has achieved 100 consecutive validated adversarial passes against a structured red-team scenario matrix. The system, as currently architected and configured, is suitable for production handling of PHI subject to the conditions in Section 15.
+**PASS** â€” Brad.pi has achieved 100 consecutive validated adversarial passes against a structured red-team scenario matrix. The system, as currently architected and configured, is suitable for production handling of PHI subject to the conditions in Section 15.
 
 ### 1.2 PHI Exposure Risk
 **Residual: Low.** Across 247 simulated iterations (including 4 documented failures) **no actual PHI was exposed** â€” all failures were caught against synthetic canary data in staging. Compensating controls in production prevent any of those failure modes from re-occurring.
@@ -21545,7 +21545,7 @@ All residual risks are **Low or Medium** with documented compensating controls a
 ## SECTION 14 â€” Continuous Monitoring & Retest Plan
 
 ### 14.1 Monitoring Approach
-- Wazuh SIEM with rule packs tuned to Brad 2.0
+- Wazuh SIEM with rule packs tuned to Brad.pi
 - Falco runtime + AIDE FIM + osquery live state
 - Canary monitor on Z3 every 10 min
 - Daily backup-delete probe
@@ -21585,7 +21585,7 @@ Any P1 alert triggers immediate paging of Security Officer + IT lead and executi
 
 ## SECTION 15 â€” Final Certification Statement
 
-> Brad 2.0, the Business Risk & Analytics Director platform of Care Indeed, has been subjected to a structured adversarial penetration test program comprising 247 iterations against 100+ distinct attack scenarios. After 4 documented failure-and-restart cycles â€” all of which were detected, root-caused, patched, and revalidated â€” the system achieved **100 consecutive validated passes** with **zero PHI exposure**.
+> Brad.pi, the Business Risk & Analytics Director platform of Care Indeed, has been subjected to a structured adversarial penetration test program comprising 247 iterations against 100+ distinct attack scenarios. After 4 documented failure-and-restart cycles â€” all of which were detected, root-caused, patched, and revalidated â€” the system achieved **100 consecutive validated passes** with **zero PHI exposure**.
 >
 > All controls mapped under the HIPAA Security Rule (45 CFR Â§164.308â€“Â§164.312) and the SOC 2 Trust Services Criteria for Security, Availability, and Confidentiality have been **implemented and verified**.
 >
@@ -21604,7 +21604,7 @@ Any P1 alert triggers immediate paging of Security Officer + IT lead and executi
 > **Valid through:** 2027-04-21 (subject to quarterly attestation)
 >
 > **Signed (logical):**
-> - Lead DevSecOps Engineer / Red Team Lead â€” Brad 2.0 Program
+> - Lead DevSecOps Engineer / Red Team Lead â€” Brad.pi Program
 > - HIPAA Security Officer â€” Care Indeed
 > - SOC 2 Internal Assessor â€” Care Indeed
 > - Acknowledged: Executive Sponsor / Governing Body Representative
@@ -21848,8 +21848,8 @@ Signatures:
 
 # 11 â€” SaaS Architecture Alternatives (Three Distinct Designs)
 
-**Companion to:** [01â€“10 self-hosted Brad 2.0 deliverables](./README.md)
-**Purpose:** Evaluate SaaS-based alternatives to the validated self-hosted Brad 2.0 architecture.
+**Companion to:** [01â€“10 self-hosted Brad.pi deliverables](./README.md)
+**Purpose:** Evaluate SaaS-based alternatives to the validated self-hosted Brad.pi architecture.
 **Audience:** Executive sponsors, HIPAA Security Officer, Enterprise Architecture, Compliance.
 
 ---
@@ -22147,7 +22147,7 @@ Vendor's tenancy. Some vendors offer single-tenant deployment for premium tiers.
 | **A â€” Salesforce/Agentforce** | Platform, LLM brokering, Trust Layer, datacenter | Sharing model, profiles, prompts, custom code, AppExchange, sandbox PHI, report scope |
 | **B â€” Azure HIPAA stack** | Eligible service infra, Azure OpenAI infra, key infra | RBAC, network, app code, deployment options, content filter, prompts, logging, eligibility selection |
 | **C â€” Vertical Healthcare AI SaaS** | Almost everything technical | Identity config, EHR scope, role assignment, output responsibility, vendor risk, exports |
-| **Self-hosted Brad 2.0** | Nothing (no vendor risk transfer) | Everything (full ownership = full control = full responsibility) |
+| **Self-hosted Brad.pi** | Nothing (no vendor risk transfer) | Everything (full ownership = full control = full responsibility) |
 
 In **every** SaaS model, the **customer remains the Covered Entity** under HIPAA. The vendor is at most a Business Associate. **The Covered Entity carries unconditional accountability** under Â§164.308 and Â§164.402 regardless of who operates the infrastructure.
 
@@ -22404,7 +22404,7 @@ Falls outside when:
 # 13 â€” Comprehensive Architecture Comparison (27 Dimensions)
 
 **Subjects:**
-- **SH** â€” Self-hosted Brad 2.0 (validated)
+- **SH** â€” Self-hosted Brad.pi (validated)
 - **A** â€” Salesforce Health Cloud + Agentforce + Einstein Trust Layer
 - **B** â€” Azure HIPAA Stack (Azure OpenAI + Health Data Services)
 - **C** â€” Vertical Healthcare AI SaaS (Abridge / Notable / Innovaccer class)
@@ -22615,7 +22615,7 @@ Lower is better for risk/cost dimensions; higher is better for capability dimens
 
 ### 26. Time to Market
 
-- **SH:** Months (build, harden, validate). Already done for Brad 2.0.
+- **SH:** Months (build, harden, validate). Already done for Brad.pi.
 - **A:** Weeks-to-months (Salesforce delivery partner).
 - **B:** Months (custom build).
 - **C:** Weeks (configuration only).
@@ -22661,7 +22661,7 @@ In **all** four architectures:
 
 # 14 â€” Cost Analysis & Budget-Tier Models
 
-**Subjects:** SH (self-hosted Brad 2.0), A (Salesforce), B (Azure), C (Vertical SaaS).
+**Subjects:** SH (self-hosted Brad.pi), A (Salesforce), B (Azure), C (Vertical SaaS).
 **Assumptions:** ~100 clinical users, ~50 chart reviews/clinician/day, US-only, single org.
 **Currency:** USD. All figures realistic order-of-magnitude estimates for executive planning, not vendor quotes.
 
@@ -22671,7 +22671,7 @@ In **all** four architectures:
 
 ## 14.1 Per-Architecture Cost (Steady State, Year 2+)
 
-### 14.1.1 SH â€” Self-hosted Brad 2.0
+### 14.1.1 SH â€” Self-hosted Brad.pi
 
 | Line | Monthly | Annual |
 |---|---|---|
@@ -22774,7 +22774,7 @@ In **all** four architectures:
 
 | Architecture | Feasible? | Configuration | Sacrifices | Risks Increased | Capabilities Gained |
 |---|---|---|---|---|---|
-| **SH** | **Strongly yes** | Production architecture as designed in [05](./05-Hardening-Blueprint.md): 4Ã— RTX 6000 Ada, full HA (warm standby), Wazuh + Falco + AIDE, 1.0 FTE DevSecOps, 0.25 HIPAA Security Officer, annual external pentest. **This is the validated baseline.** | Nothing essential | â€” | Full Brad 2.0 capability |
+| **SH** | **Strongly yes** | Production architecture as designed in [05](./05-Hardening-Blueprint.md): 4Ã— RTX 6000 Ada, full HA (warm standby), Wazuh + Falco + AIDE, 1.0 FTE DevSecOps, 0.25 HIPAA Security Officer, annual external pentest. **This is the validated baseline.** | Nothing essential | â€” | Full Brad.pi capability |
 | **A** | **Marginal** | ~25â€“30 Health Cloud users + Shield + restrained Agentforce usage; small implementation partner footprint | 70%+ of clinician population, advanced AI workflows | Pilot scope only; cannot serve full org | Validated platform; fast onboarding within scope |
 | **B** | **Yes** | ~30â€“40 users, GPT-4o + GPT-4o-mini blend, no PTU (consumption), full FHIR, full Sentinel, 1.0 FTE DevSecOps | Multi-region DR (single region only), PTU latency guarantees | Region outage = downtime; cost spike risk | Rich custom app, full Azure compliance posture |
 | **C** | **Yes for ~30 clinicians** | 30-clinician license + standard integration | Scale beyond 30, premium analytics | Same vendor concentration; broader scope = bigger blast if vendor breach | Fast value, vendor-managed ops |
@@ -22875,7 +22875,7 @@ Every architecture (including SH) must satisfy these baseline functional + non-f
 
 ---
 
-## 15.2 Architecture SH â€” Self-hosted Brad 2.0
+## 15.2 Architecture SH â€” Self-hosted Brad.pi
 
 ### 15.2.1 Functional (SH-specific)
 - **F-SH-01** Local LLM inference on dedicated GPU host with per-session worker isolation.
@@ -23368,7 +23368,7 @@ A sprint is **Done** only if:
 
 **Audience:** Executive Sponsor, HIPAA Security Officer, Compliance Officer, Board.
 **Inputs:** Files [01](./01-Executive-Security-Summary.md) â€“ [16](./16-Sprint-Plan-Project-Board.md).
-**Decision posture:** Conditional Go on the **Self-Hosted Brad 2.0 architecture** as the primary system, with **narrow, well-bounded use of SaaS** for non-PHI or low-risk PHI workflows.
+**Decision posture:** Conditional Go on the **Self-Hosted Brad.pi architecture** as the primary system, with **narrow, well-bounded use of SaaS** for non-PHI or low-risk PHI workflows.
 
 > **Single most important sentence in this document:**
 > **In every architecture evaluated, Care Indeed remains the Covered Entity and bears full HIPAA accountability. SaaS reduces operational labor; it does not reduce regulatory liability. HIPAA-eligibility is a vendor checkbox; HIPAA compliance is an organizational practice.**
@@ -23379,7 +23379,7 @@ A sprint is **Done** only if:
 
 We evaluated four architectures against the workload (AI-assisted chart review, QAPI, PIP support, training):
 
-- **SH** â€” Self-hosted Brad 2.0 (Linux + GPU + open-source LLM)
+- **SH** â€” Self-hosted Brad.pi (Linux + GPU + open-source LLM)
 - **A** â€” Salesforce Health Cloud + Agentforce + Einstein Trust Layer
 - **B** â€” Azure HIPAA Stack (Azure OpenAI + Health Data Services)
 - **C** â€” Vertical Healthcare AI SaaS (Abridge / Notable / Innovaccer class)
@@ -23407,7 +23407,7 @@ We graded each on 27 dimensions ([13](./13-Comparison-Matrix.md)), modeled total
 
 ## 17.3 Final Recommendation for Care Indeed
 
-### 17.3.1 Primary System â€” Self-Hosted Brad 2.0 (SH)
+### 17.3.1 Primary System â€” Self-Hosted Brad.pi (SH)
 
 Care Indeed should **continue with SH** as the primary system for chart review, QAPI, PIP support, and policy training. Justification:
 
@@ -23449,7 +23449,7 @@ If Care Indeed elects a **hybrid** posture in the future, the only defensible pa
 
 ```
 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚  Self-Hosted Brad 2.0 (PHI side)     â”‚    â”‚  SaaS Z-NPHI side                â”‚
+â”‚  Self-Hosted Brad.pi (PHI side)     â”‚    â”‚  SaaS Z-NPHI side                â”‚
 â”‚                                      â”‚    â”‚                                  â”‚
 â”‚  - Chart review                      â”‚    â”‚  - Marketing automation          â”‚
 â”‚  - QAPI, PIP                         â”‚    â”‚  - Vendor risk / GRC tooling     â”‚
@@ -23500,7 +23500,7 @@ The recommendation **never** flips because of any of these:
 
 | | Decision |
 |---|---|
-| **Primary system for PHI AI workflows** | **Self-Hosted Brad 2.0 (SH)** â€” Conditional Go |
+| **Primary system for PHI AI workflows** | **Self-Hosted Brad.pi (SH)** â€” Conditional Go |
 | **Conditions of the Go** | Maintain operational regime in [10](./10-Operational-Recommendations.md): 1.0 FTE DevSecOps, 0.25 FTE HIPAA Security Officer, quarterly drills, monthly access reviews, annual external pentest, HSO sign-off on every change |
 | **Permitted SaaS adjacencies** | Marketing (no PHI) on Z-NPHI; HR/Payroll; GRC tooling; existing EHR; optional single-site ambient documentation pilot (C) under strict conditions |
 | **Prohibited** | Wholesale migration of PHI workloads to SaaS; PHI in non-HIPAA-eligible SKUs; AppExchange/Marketplace AI touching PHI without independent BAA + review; preview/lab features for PHI; real PHI in non-prod |
@@ -23523,9 +23523,9 @@ The recommendation **never** flips because of any of these:
 
 ## SOURCE: Builder\Documentations\Brad2-README.md
 
-# Brad 2.0 â€” Self-Hosted Healthcare AI Security Architecture, Penetration Test Suite, & SaaS Alternatives Evaluation
+# Brad.pi â€” Self-Hosted Healthcare AI Security Architecture, Penetration Test Suite, & SaaS Alternatives Evaluation
 
-**System:** Brad 2.0 â€” Business Risk & Analytics Director
+**System:** Brad.pi â€” Business Risk & Analytics Director
 **Owner:** Care Indeed
 **Environment:** Self-hosted Linux + 4Ã— RTX 6000 Ada + Local Qwen LLM + Dockerized services
 **Data Class:** PHI (HIPAA-regulated)
@@ -27190,12 +27190,12 @@ This guarantees survey readiness, audit traceability, and workflow-level evidenc
 
 ---
 
-## âš ï¸ Important Distinction From Brad 2.0
+## âš ï¸ Important Distinction From Brad.pi
 
-This report covers **Brad 1.0**, the **production-live** system currently running on the operator's workstation with VRAM-hosted inference. It is **not** the Brad 2.0 idealized self-hosted design documented in
-`Business Risk & Analytics Director Brad2.0/Documentation/`.
+This report covers **Brad 1.0**, the **production-live** system currently running on the operator's workstation with VRAM-hosted inference. It is **not** the Brad.pi idealized self-hosted design documented in
+`Business Risk & Analytics Director Brad.pi/Documentation/`.
 
-Per scope direction, this assessment is **observation and recommendation only**. **No architectural changes, hardening, or remediations were applied.** Findings are documented as-is. Where Brad 2.0's hardened design provides the obvious target state, that mapping is identified â€” but the comparison is informational, not prescriptive of any action taken here.
+Per scope direction, this assessment is **observation and recommendation only**. **No architectural changes, hardening, or remediations were applied.** Findings are documented as-is. Where Brad.pi's hardened design provides the obvious target state, that mapping is identified â€” but the comparison is informational, not prescriptive of any action taken here.
 
 ---
 
@@ -27207,7 +27207,7 @@ Per scope direction, this assessment is **observation and recommendation only**.
 | 02 | [Environment Architecture (As-Observed)](./02-Environment-Architecture.md) | Actual current architecture, zones (or absence thereof), PHI flows |
 | 03 | [HIPAA & SOC 2 Control Matrix](./03-HIPAA-SOC2-Control-Matrix.md) | Mapping of as-observed controls to safeguards & TSC, with gaps |
 | 04 | [Threat Model](./04-Threat-Model.md) | Assets, actors, attack surfaces, attack paths |
-| 05 | [Hardening Recommendations](./05-Hardening-Blueprint.md) | Recommended (not applied) baseline; deltas vs Brad 2.0 |
+| 05 | [Hardening Recommendations](./05-Hardening-Blueprint.md) | Recommended (not applied) baseline; deltas vs Brad.pi |
 | 06 | [Breach Simulation â€” 100-Pass Attempt Log](./06-Breach-Simulation-100-Pass.md) | Iterative red-team validation against the live system |
 | 07 | [Failure & Restart Log](./07-Failure-Restart-Log.md) | Every failure, root cause, recommendation, restart |
 | 08 | [Recommended Hardening Manifest](./08-Final-Hardening-Manifest.md) | Recommended target state (not applied) |
@@ -32280,7 +32280,7 @@ This is the **current shipping** Help Center. It is implementation, not architec
 | `RegulatoryPlannerOverview.txt` | CONCEPT | Regulatory planner | `Architecture/Regulatory-Planner/Overview.md` |
 | `PP_AMENDMENT_REGISTER.md` | OPS | Amendment register | `Compliance-Rationale/Amendment-Register.md` |
 | `Brad_QA_*` (3 files) | OPS | Brad QA reports | `Architecture/Brad/QA/` |
-| `Brad2-01..17-*` | CONCEPT + OPS | Brad 2.0 architecture sprint set | `Architecture/Brad/2.0/` |
+| `Brad2-01..17-*` | CONCEPT + OPS | Brad.pi architecture sprint set | `Architecture/Brad/2.0/` |
 | `Brad2-README.md`, `Brad-README.md`, `BizRisk-README.md`, `README.md` | INDEX | READMEs | Link from `Architecture/Brad/` |
 | `01..10-*` (Executive Security, Threat Model, etc.) | LEGAL + CONCEPT | Security & compliance documents | `Compliance-Rationale/Security/` |
 | `CO-CA-001.md`, `EN-CM-001.md`, `EN-LC-001.md`, `EN-TG-001.md`, `RM-EP-001.md`, `RM-OS-001..004.md` | OPS | Policy source docs | Stay in `Builder/Compliance/` (policies are not KB articles); link from KB |
@@ -32288,7 +32288,7 @@ This is the **current shipping** Help Center. It is implementation, not architec
 | `AUDIT_REPORT.md` | OPS | Internal audit report | `Compliance-Rationale/Internal-Audits/` |
 | `AWS_Phase1_Foundation_Build_Plan.md` | TECH | AWS build plan | `Developer-Reference/Infrastructure/AWS-Build-Plan.md` |
 
-> **Duplication risk:** Several Brad/Brad2 documents and the security/threat-model series exist in **two roots** (`Builder/Documentations/` and `Builder/Brad/`, `Business Risk & Analytics Director Brad2.0/`). The Knowledge Base must point at **one canonical copy** per document and mark the others as superseded. See `03-Conceptual-Documentation-Map.md` Â§ "Brad lineage".
+> **Duplication risk:** Several Brad/Brad2 documents and the security/threat-model series exist in **two roots** (`Builder/Documentations/` and `Builder/Brad/`, `Business Risk & Analytics Director Brad.pi/`). The Knowledge Base must point at **one canonical copy** per document and mark the others as superseded. See `03-Conceptual-Documentation-Map.md` Â§ "Brad lineage".
 
 ---
 
@@ -32757,7 +32757,7 @@ Every screen surface declares a `helpSlug`. `HelpContextLink` reads the slug and
 | `Builder/Documentations/Brad_System_Architecture.md` | DEPRECATE (superseded by Brad2) | redirect to Brad2 set |
 | `Builder/Brad/FinalUpgradeBrad421.txt` | LINK | `Architecture/Brad/Upgrade-Notes/421.md` |
 | `Builder/Documentations/Brad2-01..17-*.md` | LINK | `Architecture/Brad/2.0/` (preserve numbering) |
-| `Business Risk & Analytics Director Brad2.0/` content | LINK | `Architecture/Brad/2.0/` (canonical Brad2 lineage) |
+| `Business Risk & Analytics Director Brad.pi/` content | LINK | `Architecture/Brad/2.0/` (canonical Brad2 lineage) |
 | `Business_Risk_&_Analytics_Director/` content | DEPRECATE if pre-Brad2 | redirect |
 | `documentation/Brad_Model_Usage_Policy.md` | LINK | `Architecture/Brad/Policies/Model-Usage.md` |
 | `documentation/Brad_QA_*` (4 files) | LINK | `Architecture/Brad/QA/` (canonical at root `documentation/`) |
@@ -41911,4 +41911,5 @@ Build order is dependency-driven. Each phase delivers a vertical slice that the 
 - Any change to permission catalog, action codes, or state graph requires an ADR and a versioned migration event in the audit log (`CONFIG_CHANGED`).
 
 ---
+
 

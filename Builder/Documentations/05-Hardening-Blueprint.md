@@ -1,8 +1,8 @@
-# 05 — Hardening Recommendations (Brad 1.0 LIVE)
+﻿# 05 â€” Hardening Recommendations (Brad 1.0 LIVE)
 
 **Purpose:** Document the recommended hardened baseline that, if adopted, would close the gaps identified for Brad 1.0.
 **Status:** **RECOMMENDATIONS ONLY. NOT APPLIED.** This document does not modify the running system, the workstation, the codebase, or any policy.
-**Reference target state:** the Brad 2.0 Hardening Blueprint (`../../Business Risk & Analytics Director Brad2.0/Documentation/05-Hardening-Blueprint.md`). This document highlights the **deltas** Brad 1.0 needs to close.
+**Reference target state:** the Brad.pi Hardening Blueprint (`../../Business Risk & Analytics Director Brad.pi/Documentation/05-Hardening-Blueprint.md`). This document highlights the **deltas** Brad 1.0 needs to close.
 
 ---
 
@@ -17,11 +17,11 @@ Nothing here is enforced by this assessment.
 
 ---
 
-## 5.2 Topology — The Single Highest-Leverage Recommendation
+## 5.2 Topology â€” The Single Highest-Leverage Recommendation
 
 - **Current:** PHI workload runs on the operator's general-purpose workstation; GPU is shared.
 - **Recommended:** Move inference and PHI handling to a **dedicated host** with no co-tenancy and a dedicated GPU. Keep the operator's general-purpose workstation as a **client only**, accessing Brad over a hardened remote-access path.
-- **Recommended action:** Treat Brad 2.0 as the target topology. Begin migration planning. Until then, treat Brad 1.0 as constrained per [01](./01-Executive-Security-Summary.md) §1.5.
+- **Recommended action:** Treat Brad.pi as the target topology. Begin migration planning. Until then, treat Brad 1.0 as constrained per [01](./01-Executive-Security-Summary.md) Â§1.5.
 
 ---
 
@@ -81,19 +81,19 @@ Nothing here is enforced by this assessment.
   - Consider periodic `nvidia-smi --gpu-reset` on idle (where supported).
   - After every model swap or driver reload, run a "wipe-and-fill" canary that scans newly allocated buffers for residual ASCII patterns (sanity check, not a cryptographic guarantee).
 
-> **Acknowledged limitation:** Even with the above, VRAM hygiene on a shared workstation GPU is **best-effort**. The defensible posture is a **dedicated** inference host, as in Brad 2.0.
+> **Acknowledged limitation:** Even with the above, VRAM hygiene on a shared workstation GPU is **best-effort**. The defensible posture is a **dedicated** inference host, as in Brad.pi.
 
 ---
 
 ## 5.5 Local Service Architecture
 
 - **Current:** Local processes on a single user; no internal authentication.
-- **Recommended (interim, before full Brad 2.0 migration):**
+- **Recommended (interim, before full Brad.pi migration):**
   - Bind UI / dev server strictly to `127.0.0.1`; never `0.0.0.0`.
   - Consider running the LLM process under a **distinct service account** (separate user) so the operator's general-use account cannot read its memory or temp files casually.
   - Add a token-based auth check between the UI and the local inference endpoint (even a localhost-only token defeats casual co-tenant scraping).
 
-- **Long-term (Brad 2.0):**
+- **Long-term (Brad.pi):**
   - mTLS east-west; OPA policy decision on every action; signed envelopes for write operations.
 
 ---
@@ -127,7 +127,7 @@ Nothing here is enforced by this assessment.
 ## 5.8 RBAC / Identity (Recommended)
 
 - **Current:** Single operator identity = effective superuser.
-- **Recommended:** Adopt the Brad 2.0 role model:
+- **Recommended:** Adopt the Brad.pi role model:
   - `Admin`, `DON`, `QA`, `Compliance`, `IT`, `Auditor`, `ReadOnlyClinical`, `ServiceAccount-*`.
   - OIDC + FIDO2 + OPA enforcement.
   - Quarterly access review with named-owner attestation.
@@ -168,7 +168,7 @@ Nothing here is enforced by this assessment.
 - **Current:** Mutable, operator-deletable.
 - **Recommended:**
   - Stand up a **WORM** sink (MinIO with object-lock, or AWS S3 Object Lock in a separate account/BAA-covered, or equivalent).
-  - Ship log batches with `prev_hash`, `batch_hash`, `batch_id`, `timestamp`, `count` — hash-chained.
+  - Ship log batches with `prev_hash`, `batch_hash`, `batch_id`, `timestamp`, `count` â€” hash-chained.
   - Hourly chain root signed with an **offline** HSM (USB security key on a separate admin machine).
   - Continuous verifier alarm on chain break.
   - 7-year retention for audit; 1-year for operational.
@@ -200,7 +200,7 @@ Nothing here is enforced by this assessment.
 ## 5.16 Admin Workstation Requirements (Recommended)
 
 - **Current:** Single shared workstation for everything.
-- **Recommended:** Dedicated admin device — no email, no general browsing — for any privileged Brad operation; FDE; TPM-bound; EDR with tamper protection; USB storage class blocked except whitelisted secure tokens; hardened browser profile.
+- **Recommended:** Dedicated admin device â€” no email, no general browsing â€” for any privileged Brad operation; FDE; TPM-bound; EDR with tamper protection; USB storage class blocked except whitelisted secure tokens; hardened browser profile.
 
 ---
 
@@ -249,14 +249,14 @@ Nothing here is enforced by this assessment.
 
 - **Current:** None Brad-specific.
 - **Recommended (key alerts):**
-  - Audit chain break → P1.
-  - New admin role assignment → P2.
-  - Tunnel new peer or revocation → P2.
-  - Falco / EDR rule fire on the inference host → P1.
-  - Failed FIDO2 attempts above threshold → P2.
-  - **Outbound connection attempt from the inference process → P1.**
-  - File integrity change in `Builder/`, model weights, policy corpus → P1.
-  - Detection of plaintext credential pattern in any log → P1.
+  - Audit chain break â†’ P1.
+  - New admin role assignment â†’ P2.
+  - Tunnel new peer or revocation â†’ P2.
+  - Falco / EDR rule fire on the inference host â†’ P1.
+  - Failed FIDO2 attempts above threshold â†’ P2.
+  - **Outbound connection attempt from the inference process â†’ P1.**
+  - File integrity change in `Builder/`, model weights, policy corpus â†’ P1.
+  - Detection of plaintext credential pattern in any log â†’ P1.
 
 ---
 
@@ -272,16 +272,17 @@ Nothing here is enforced by this assessment.
 ## 5.25 Non-PHI Marketing / ComfyUI Isolation (Recommended)
 
 - **Current:** No separate host / VLAN / identity / storage observed for non-PHI generative work.
-- **Recommended (Brad 2.0-aligned):**
+- **Recommended (Brad.pi-aligned):**
   - Separate physical host or strictly separate VM with PCIe GPU passthrough.
-  - Separate VLAN with **no L3 route** to PHI zones — verified by router ACL audit AND active probe (must time out).
+  - Separate VLAN with **no L3 route** to PHI zones â€” verified by router ACL audit AND active probe (must time out).
   - Separate identity store, separate storage, no shared NFS/SMB.
   - Quarterly red-team probe from the non-PHI side to confirm zero PHI reachability.
 
 ---
 
-## 5.26 Summary Delta vs Brad 2.0
+## 5.26 Summary Delta vs Brad.pi
 
-The single biggest observation: **most of these are not "fix a setting" — they are "introduce an architectural element that does not currently exist"** (a separate inference host, a WORM audit sink, an OPA policy engine, a Vault, a WireGuard appliance, a separate non-PHI module). Brad 1.0 is doing what it can within a single-workstation topology; the deficiencies are inherent to that topology, and the only durable answer is the Brad 2.0 architecture.
+The single biggest observation: **most of these are not "fix a setting" â€” they are "introduce an architectural element that does not currently exist"** (a separate inference host, a WORM audit sink, an OPA policy engine, a Vault, a WireGuard appliance, a separate non-PHI module). Brad 1.0 is doing what it can within a single-workstation topology; the deficiencies are inherent to that topology, and the only durable answer is the Brad.pi architecture.
 
 This document is recommendation-only. **No changes have been applied.**
+

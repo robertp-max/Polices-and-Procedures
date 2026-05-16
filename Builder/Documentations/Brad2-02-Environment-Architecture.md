@@ -1,44 +1,44 @@
-# 02 — Environment Architecture
+﻿# 02 â€” Environment Architecture
 
 **Document:** Target Production Architecture, Security Zones, Trust Boundaries, PHI Flows
-**Scope:** Brad 2.0 self-hosted Linux + GPU + Docker + Local Qwen LLM
+**Scope:** Brad.pi self-hosted Linux + GPU + Docker + Local Qwen LLM
 **Audience:** Security architects, auditors, platform engineers
 
 ---
 
 ## 2.1 Architectural Overview
 
-Brad 2.0 is composed of **seven security zones** with strictly mediated crossings. No zone trusts another by default; all crossings authenticate (mTLS), authorize (OPA / RBAC), and log (append-only audit).
+Brad.pi is composed of **seven security zones** with strictly mediated crossings. No zone trusts another by default; all crossings authenticate (mTLS), authorize (OPA / RBAC), and log (append-only audit).
 
 ```
-                    ┌─────────────────────────────────────────────────────────┐
-                    │                  CARE INDEED PERIMETER                  │
-                    │                                                         │
-   Remote User ───► │  Z0  Edge / VPN  (WireGuard, FIDO2, device cert)        │
-                    │            │                                            │
-                    │            ▼                                            │
-                    │  Z1  Reverse Proxy / Auth (Caddy + OIDC + mTLS term.)   │
-                    │            │                                            │
-                    │            ▼                                            │
-                    │  Z2  Application Tier (Brad API, RBAC, approval engine) │
-                    │            │            ▲                               │
-                    │            ▼            │                               │
-                    │  Z3  Inference Tier  Z4 Retrieval Tier                  │
-                    │  (Qwen vLLM, GPU)    (vector DB, rerank, policy corpus) │
-                    │            │            │                               │
-                    │            ▼            ▼                               │
-                    │  Z5  PHI Data Plane  (Postgres, MinIO PHI bucket)       │
-                    │                                                         │
-                    │  Z6  Audit / Logging Plane  (WORM MinIO, Wazuh SIEM)    │
-                    │                                                         │
-                    │  Z7  Admin / Management  (jump host, secrets, backup)   │
-                    └─────────────────────────────────────────────────────────┘
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚                  CARE INDEED PERIMETER                  â”‚
+                    â”‚                                                         â”‚
+   Remote User â”€â”€â”€â–º â”‚  Z0  Edge / VPN  (WireGuard, FIDO2, device cert)        â”‚
+                    â”‚            â”‚                                            â”‚
+                    â”‚            â–¼                                            â”‚
+                    â”‚  Z1  Reverse Proxy / Auth (Caddy + OIDC + mTLS term.)   â”‚
+                    â”‚            â”‚                                            â”‚
+                    â”‚            â–¼                                            â”‚
+                    â”‚  Z2  Application Tier (Brad API, RBAC, approval engine) â”‚
+                    â”‚            â”‚            â–²                               â”‚
+                    â”‚            â–¼            â”‚                               â”‚
+                    â”‚  Z3  Inference Tier  Z4 Retrieval Tier                  â”‚
+                    â”‚  (Qwen vLLM, GPU)    (vector DB, rerank, policy corpus) â”‚
+                    â”‚            â”‚            â”‚                               â”‚
+                    â”‚            â–¼            â–¼                               â”‚
+                    â”‚  Z5  PHI Data Plane  (Postgres, MinIO PHI bucket)       â”‚
+                    â”‚                                                         â”‚
+                    â”‚  Z6  Audit / Logging Plane  (WORM MinIO, Wazuh SIEM)    â”‚
+                    â”‚                                                         â”‚
+                    â”‚  Z7  Admin / Management  (jump host, secrets, backup)   â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
-                    ┌─────────────────────────────────────────────────────────┐
-                    │  ISOLATED — NON-PHI MARKETING / COMFYUI ZONE (Z-NPHI)   │
-                    │  Separate VLAN, separate GPU host, separate storage,    │
-                    │  no route to Z2-Z6, no shared secrets, no shared FS     │
-                    └─────────────────────────────────────────────────────────┘
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚  ISOLATED â€” NON-PHI MARKETING / COMFYUI ZONE (Z-NPHI)   â”‚
+                    â”‚  Separate VLAN, separate GPU host, separate storage,    â”‚
+                    â”‚  no route to Z2-Z6, no shared secrets, no shared FS     â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
@@ -74,7 +74,7 @@ Brad 2.0 is composed of **seven security zones** with strictly mediated crossing
 - Strict route allowlist; no proxy_pass to inference (Z3) directly.
 
 ### 2.3.3 Application Tier (Z2)
-- **Brad API** (Node/Python) — REST + WebSocket.
+- **Brad API** (Node/Python) â€” REST + WebSocket.
 - **RBAC engine** with roles: `Admin`, `DON`, `QA`, `Compliance`, `IT`, `Auditor`, `ReadOnlyClinical`.
 - **Approval Engine**: two-person rule for any PIP / corrective action / chart write.
 - **Job Orchestrator**: queues chart review jobs to Z3 with rate limits.
@@ -82,7 +82,7 @@ Brad 2.0 is composed of **seven security zones** with strictly mediated crossing
 
 ### 2.3.4 Inference Tier (Z3)
 - **vLLM** serving Qwen, **dedicated GPU node**, no co-tenancy with non-PHI.
-- One **worker process per session**, killed at session end → forces VRAM reclaim.
+- One **worker process per session**, killed at session end â†’ forces VRAM reclaim.
 - `cudaMemset` of allocator pools on worker recycle.
 - KV-cache disabled across users; no cross-session prompt caching.
 - Prompt + output captured to Z6 audit (PHI-tagged, encrypted at rest).
@@ -113,7 +113,7 @@ Brad 2.0 is composed of **seven security zones** with strictly mediated crossing
 
 ### 2.3.9 Non-PHI Marketing / ComfyUI (Z-NPHI)
 - Separate physical host or strictly separate VM with **PCIe passthrough** to its own GPU.
-- Separate VLAN, separate switch port, **no route** in router ACL to 10.30–10.70 ranges.
+- Separate VLAN, separate switch port, **no route** in router ACL to 10.30â€“10.70 ranges.
 - Separate identity store; admin must explicitly switch context.
 - Storage is local to Z-NPHI; no shared NFS/SMB with PHI zones.
 
@@ -123,46 +123,46 @@ Brad 2.0 is composed of **seven security zones** with strictly mediated crossing
 
 | Boundary | Crossing Control |
 |---|---|
-| Internet → Z0 | WireGuard handshake + device cert; UDP only on configured port; rate-limited |
-| Z0 → Z1 | mTLS + OIDC session |
-| Z1 → Z2 | mTLS + signed JWT (15-min TTL) + OPA decision |
-| Z2 → Z3 | mTLS, signed inference request envelope, per-session token |
-| Z2 → Z4 | mTLS, read-only API |
-| Z2 → Z5 | mTLS, RLS-bound DB user, parameterized queries only |
-| Z3 → Z6 | One-way syslog over mTLS (UDP→TCP relay), no return path |
-| Z7 → all | Jump host only, FIDO2, session recorded |
-| Z-NPHI ↔ PHI zones | **No route. Physical/L2 separation.** |
+| Internet â†’ Z0 | WireGuard handshake + device cert; UDP only on configured port; rate-limited |
+| Z0 â†’ Z1 | mTLS + OIDC session |
+| Z1 â†’ Z2 | mTLS + signed JWT (15-min TTL) + OPA decision |
+| Z2 â†’ Z3 | mTLS, signed inference request envelope, per-session token |
+| Z2 â†’ Z4 | mTLS, read-only API |
+| Z2 â†’ Z5 | mTLS, RLS-bound DB user, parameterized queries only |
+| Z3 â†’ Z6 | One-way syslog over mTLS (UDPâ†’TCP relay), no return path |
+| Z7 â†’ all | Jump host only, FIDO2, session recorded |
+| Z-NPHI â†” PHI zones | **No route. Physical/L2 separation.** |
 
 ---
 
 ## 2.5 PHI Data Flows
 
-### Flow A — Chart Review Request (read-only reasoning)
+### Flow A â€” Chart Review Request (read-only reasoning)
 ```
-User (Z0) → VPN → Caddy (Z1) → Brad API (Z2)
-   → OPA check → Job Queue → Inference Worker (Z3)
-   → Retrieval read-only fetch from Qdrant + Postgres (Z4/Z5, mTLS)
-   → LLM reasoning (Z3, dedicated worker, VRAM scoped)
-   → Findings JSON → Brad API (Z2) → User UI
-   → Audit entry → Z6 (WORM)
+User (Z0) â†’ VPN â†’ Caddy (Z1) â†’ Brad API (Z2)
+   â†’ OPA check â†’ Job Queue â†’ Inference Worker (Z3)
+   â†’ Retrieval read-only fetch from Qdrant + Postgres (Z4/Z5, mTLS)
+   â†’ LLM reasoning (Z3, dedicated worker, VRAM scoped)
+   â†’ Findings JSON â†’ Brad API (Z2) â†’ User UI
+   â†’ Audit entry â†’ Z6 (WORM)
 ```
 **Properties:** No write to Z5. Worker recycled after session. Findings include evidence pointers (chart line, policy section) for explainability.
 
-### Flow B — Corrective Action / PIP Execution (write, governed)
+### Flow B â€” Corrective Action / PIP Execution (write, governed)
 ```
-DON proposes PIP in UI → Brad API (Z2)
-   → OPA policy check (deterministic)
-   → Approval Engine: requires 2-person sign-off (DON + Compliance)
-   → Signed envelope → Write Broker (Z2) → Z5 with append-only PIP table
-   → Audit entry → Z6 (WORM)
+DON proposes PIP in UI â†’ Brad API (Z2)
+   â†’ OPA policy check (deterministic)
+   â†’ Approval Engine: requires 2-person sign-off (DON + Compliance)
+   â†’ Signed envelope â†’ Write Broker (Z2) â†’ Z5 with append-only PIP table
+   â†’ Audit entry â†’ Z6 (WORM)
 ```
 **Properties:** LLM never executes. Two-person rule enforced server-side. Every approval is logged with FIDO2 attestation.
 
-### Flow C — Audit Read (Auditor Role)
+### Flow C â€” Audit Read (Auditor Role)
 ```
-Auditor (Z0) → VPN → Caddy (Z1) → Brad API (Z2, Auditor role)
-   → Read-only audit query → Z6 with hash-chain verification
-   → Result rendered with chain proof
+Auditor (Z0) â†’ VPN â†’ Caddy (Z1) â†’ Brad API (Z2, Auditor role)
+   â†’ Read-only audit query â†’ Z6 with hash-chain verification
+   â†’ Result rendered with chain proof
 ```
 **Properties:** Auditor role cannot write anywhere. All auditor reads are themselves logged.
 
@@ -202,12 +202,12 @@ Auditor (Z0) → VPN → Caddy (Z1) → Brad API (Z2, Auditor role)
 
 | Path | Mode | Enforcement |
 |---|---|---|
-| LLM → PHI corpus | Read-only | DB user has only `SELECT`; mount is `ro` |
-| LLM → policy corpus | Read-only | Filesystem `ro,nosuid,nodev` |
-| Brad API → PHI write | Write via broker only | Broker requires 2-person token |
+| LLM â†’ PHI corpus | Read-only | DB user has only `SELECT`; mount is `ro` |
+| LLM â†’ policy corpus | Read-only | Filesystem `ro,nosuid,nodev` |
+| Brad API â†’ PHI write | Write via broker only | Broker requires 2-person token |
 | Audit log writes | Append-only | WORM object-lock + hash chain |
 | Backup writes | Append-only | Restic repository in append-only mode |
-| Admin → host config | Write via signed Ansible only | All hosts immutable except via pipeline |
+| Admin â†’ host config | Write via signed Ansible only | All hosts immutable except via pipeline |
 
 ---
 
@@ -219,11 +219,11 @@ Auditor (Z0) → VPN → Caddy (Z1) → Brad API (Z2, Auditor role)
 | Reason / summarize / detect deficiencies | YES |
 | Recommend corrective actions | YES |
 | Draft PIP text | YES |
-| **Execute** PIP / corrective action | **NO — human approval required** |
-| **Write** to chart record | **NO — write broker + 2-person** |
+| **Execute** PIP / corrective action | **NO â€” human approval required** |
+| **Write** to chart record | **NO â€” write broker + 2-person** |
 | **Approve** anything | **NO** |
-| Export PHI | **NO — Admin + audit + DLP scan** |
-| Send PHI outside Z5 | **NO — egress firewall blocks** |
+| Export PHI | **NO â€” Admin + audit + DLP scan** |
+| Send PHI outside Z5 | **NO â€” egress firewall blocks** |
 
 ---
 
@@ -237,3 +237,4 @@ Auditor (Z0) → VPN → Caddy (Z1) → Brad API (Z2, Auditor role)
 - **Admin access separation:** Admins use a dedicated admin laptop (no email, no general browsing) with separate VPN profile and FIDO2 key.
 - **Remote logging:** all VPN connect/disconnect events go to Z6 with source IP, peer key fingerprint, and device cert serial.
 - **Kill/revoke:** WireGuard peer revoke + Vault token revoke + OIDC session revoke can be executed from jump host in <60 seconds; documented runbook.
+

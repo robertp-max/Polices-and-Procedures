@@ -1,14 +1,14 @@
-# 11 — SaaS Architecture Alternatives (Three Distinct Designs)
+﻿# 11 â€” SaaS Architecture Alternatives (Three Distinct Designs)
 
-**Companion to:** [01–10 self-hosted Brad 2.0 deliverables](./README.md)
-**Purpose:** Evaluate SaaS-based alternatives to the validated self-hosted Brad 2.0 architecture.
+**Companion to:** [01â€“10 self-hosted Brad.pi deliverables](./README.md)
+**Purpose:** Evaluate SaaS-based alternatives to the validated self-hosted Brad.pi architecture.
 **Audience:** Executive sponsors, HIPAA Security Officer, Enterprise Architecture, Compliance.
 
 ---
 
-## ⚠️ CORE PRINCIPLE — READ FIRST
+## âš ï¸ CORE PRINCIPLE â€” READ FIRST
 
-> **HIPAA eligibility ≠ HIPAA compliance.**
+> **HIPAA eligibility â‰  HIPAA compliance.**
 >
 > A signed BAA and a "HIPAA-eligible" service tier cover **only the vendor's infrastructure and platform-level controls**. They do **not** cover:
 > - how the system is designed
@@ -17,7 +17,7 @@
 > - how PHI is used, exposed, logged, exported, or shown to AI models
 > - how custom code, custom prompts, custom integrations, or custom storage behave
 >
-> If the system is misconfigured, built outside the vendor's documented supported architecture, or implemented incorrectly, **the organization assumes FULL liability** — even if every checkbox in the vendor's "HIPAA-eligible" feature matrix is ticked.
+> If the system is misconfigured, built outside the vendor's documented supported architecture, or implemented incorrectly, **the organization assumes FULL liability** â€” even if every checkbox in the vendor's "HIPAA-eligible" feature matrix is ticked.
 >
 > **You are only eligible for vendor coverage and protection if you stay within the platform's supported architecture. The moment you deviate, you are on your own when things fail.**
 
@@ -25,7 +25,7 @@ This principle is repeated in every architecture below because it determines whe
 
 ---
 
-## 11.1 Architecture A — Salesforce Health Cloud + Agentforce + Einstein Trust Layer
+## 11.1 Architecture A â€” Salesforce Health Cloud + Agentforce + Einstein Trust Layer
 
 ### A.1 System Overview
 
@@ -48,15 +48,15 @@ A managed CRM-anchored platform where PHI lives in Salesforce Health Cloud, AI a
 
 ```
 Clinician (browser, MFA via SSO)
-   → Salesforce Health Cloud (PHI at rest, Shield-encrypted)
-   → Agent invocation
-   → Einstein Trust Layer
+   â†’ Salesforce Health Cloud (PHI at rest, Shield-encrypted)
+   â†’ Agent invocation
+   â†’ Einstein Trust Layer
        - dynamic grounding pulls only fields user has permission to see
        - PII/PHI masking before prompt leaves Trust Layer
        - prompt sent to approved LLM with ZDR
        - response defense + demasking
-   → response surfaced in Health Cloud UI
-   → audit captured in Field Audit Trail + Event Monitoring
+   â†’ response surfaced in Health Cloud UI
+   â†’ audit captured in Field Audit Trail + Event Monitoring
 ```
 
 ### A.4 Where AI Runs
@@ -70,38 +70,38 @@ Salesforce-managed multi-tenant cloud (US data residency, with Hyperforce region
 - ZDR contractual term means model providers do not retain prompts/completions.
 - Shield Platform Encryption + Field Audit Trail + Event Monitoring cover technical safeguards at the platform layer.
 
-### A.7 Shared Responsibility — Architecture A
+### A.7 Shared Responsibility â€” Architecture A
 
 | Domain | Salesforce | Customer |
 |---|---|---|
-| Physical security of data centers | ✅ | — |
-| Hypervisor / multi-tenant isolation | ✅ | — |
-| Platform patching | ✅ | — |
-| Encryption-at-rest infrastructure | ✅ | — |
-| TLS termination | ✅ | — |
-| Einstein Trust Layer masking engine | ✅ | — |
-| LLM provider BAA chain | ✅ | — |
-| **Org-wide sharing model** | — | ✅ |
-| **Profile / permission set design** | — | ✅ |
-| **Field-level security on PHI fields** | — | ✅ |
-| **Sharing rules / role hierarchy** | — | ✅ |
-| **Apex / LWC custom code (callouts, queries)** | — | ✅ |
-| **Prompt templates & grounding scope** | — | ✅ |
-| **Choice of LLM (some non-eligible)** | — | ✅ |
-| **Connected Apps / OAuth scopes** | — | ✅ |
-| **External integrations (MuleSoft, custom APIs)** | — | ✅ |
-| **Data classification (which fields are PHI)** | — | ✅ |
-| **Salesforce Reports / Dashboards exposing PHI** | — | ✅ |
-| **Sandboxes containing real PHI** | — | ✅ |
-| **MFA enforcement, IP allowlists** | — | ✅ |
-| **AppExchange package risk** | — | ✅ |
+| Physical security of data centers | âœ… | â€” |
+| Hypervisor / multi-tenant isolation | âœ… | â€” |
+| Platform patching | âœ… | â€” |
+| Encryption-at-rest infrastructure | âœ… | â€” |
+| TLS termination | âœ… | â€” |
+| Einstein Trust Layer masking engine | âœ… | â€” |
+| LLM provider BAA chain | âœ… | â€” |
+| **Org-wide sharing model** | â€” | âœ… |
+| **Profile / permission set design** | â€” | âœ… |
+| **Field-level security on PHI fields** | â€” | âœ… |
+| **Sharing rules / role hierarchy** | â€” | âœ… |
+| **Apex / LWC custom code (callouts, queries)** | â€” | âœ… |
+| **Prompt templates & grounding scope** | â€” | âœ… |
+| **Choice of LLM (some non-eligible)** | â€” | âœ… |
+| **Connected Apps / OAuth scopes** | â€” | âœ… |
+| **External integrations (MuleSoft, custom APIs)** | â€” | âœ… |
+| **Data classification (which fields are PHI)** | â€” | âœ… |
+| **Salesforce Reports / Dashboards exposing PHI** | â€” | âœ… |
+| **Sandboxes containing real PHI** | â€” | âœ… |
+| **MFA enforcement, IP allowlists** | â€” | âœ… |
+| **AppExchange package risk** | â€” | âœ… |
 
 ### A.8 Where Liability Transfers vs Stays Internal
 
 **Transferred to Salesforce (covered by BAA):**
 - Datacenter, hypervisor, platform code defects in covered services on supported tiers.
 
-**Stays internal — and this is most of the risk:**
+**Stays internal â€” and this is most of the risk:**
 - Sharing model misconfiguration
 - Profile/permission/field-level security errors
 - Custom Apex with insecure SOQL/queries
@@ -111,7 +111,7 @@ Salesforce-managed multi-tenant cloud (US data residency, with Hyperforce region
 - Use of an LLM not on the eligible list
 - AppExchange packages with unvetted access
 
-> ⚠️ **HIPAA-eligibility boundary breaks if:**
+> âš ï¸ **HIPAA-eligibility boundary breaks if:**
 > - You enable a non-eligible Einstein feature or non-eligible LLM connector
 > - You install AppExchange components that process PHI without their own BAA
 > - You sync PHI to a non-eligible Salesforce service (e.g., legacy Marketing Cloud edition without BAA)
@@ -122,7 +122,7 @@ Salesforce-managed multi-tenant cloud (US data residency, with Hyperforce region
 
 ---
 
-## 11.2 Architecture B — Microsoft Azure HIPAA Stack (Azure OpenAI + Azure Health Data Services + Azure AD)
+## 11.2 Architecture B â€” Microsoft Azure HIPAA Stack (Azure OpenAI + Azure Health Data Services + Azure AD)
 
 ### B.1 System Overview
 
@@ -132,7 +132,7 @@ A cloud-native, customer-built application using Azure HIPAA-eligible services. 
 
 | Component | Vendor | Purpose |
 |---|---|---|
-| Azure OpenAI Service | Microsoft | LLM inference (GPT-4o / Phi / o-series) — **eligible** |
+| Azure OpenAI Service | Microsoft | LLM inference (GPT-4o / Phi / o-series) â€” **eligible** |
 | Azure Health Data Services (FHIR + DICOM + MedTech) | Microsoft | PHI storage in FHIR-compliant store |
 | Azure AD / Entra ID | Microsoft | Identity + Conditional Access + MFA |
 | Azure Key Vault (HSM tier) | Microsoft | Key custody |
@@ -146,12 +146,12 @@ A cloud-native, customer-built application using Azure HIPAA-eligible services. 
 ### B.3 Data Flow (PHI)
 
 ```
-Clinician → Entra ID (FIDO2) → Front Door + WAF
-   → Private endpoint → Customer app (App Service / AKS)
-   → FHIR Service (PHI read, RBAC + tenant scope)
-   → Azure OpenAI deployment (regional, no-training opt, content-filter configured)
-   → response → app → user
-   → audit → Log Analytics → Sentinel → immutable storage account
+Clinician â†’ Entra ID (FIDO2) â†’ Front Door + WAF
+   â†’ Private endpoint â†’ Customer app (App Service / AKS)
+   â†’ FHIR Service (PHI read, RBAC + tenant scope)
+   â†’ Azure OpenAI deployment (regional, no-training opt, content-filter configured)
+   â†’ response â†’ app â†’ user
+   â†’ audit â†’ Log Analytics â†’ Sentinel â†’ immutable storage account
 ```
 
 ### B.4 Where AI Runs
@@ -165,28 +165,28 @@ Customer's Azure tenant, FHIR Service + Storage with customer-managed keys (CMK)
 - Azure OpenAI is eligible; abuse-monitoring **opt-out** must be requested for additional PHI protection.
 - HITRUST/SOC 2/ISO inheritance from Azure.
 
-### B.7 Shared Responsibility — Architecture B
+### B.7 Shared Responsibility â€” Architecture B
 
 | Domain | Microsoft | Customer |
 |---|---|---|
-| Physical / hypervisor / OS for PaaS | ✅ | — |
-| Platform patching for managed services | ✅ | — |
-| Eligible service infrastructure | ✅ | — |
-| Azure OpenAI service infrastructure | ✅ | — |
-| Identity provider infrastructure | ✅ | — |
-| Key custody infrastructure (HSM) | ✅ | — |
-| **Subscription/RBAC design** | — | ✅ |
-| **Conditional Access policies** | — | ✅ |
-| **Network design (VNet, NSG, Private Endpoints)** | — | ✅ |
-| **CMK rotation, Key Vault access policies** | — | ✅ |
-| **Application code (auth checks, query scoping)** | — | ✅ |
-| **Azure OpenAI deployment config (region, model, abuse-monitoring opt-out)** | — | ✅ |
-| **Content filter + jailbreak protections** | — | ✅ |
-| **Prompt design (PHI minimization)** | — | ✅ |
-| **Logging configuration & retention** | — | ✅ |
-| **Sentinel rules** | — | ✅ |
-| **Backup + DR design** | — | ✅ |
-| **Service eligibility — using only eligible SKUs** | — | ✅ |
+| Physical / hypervisor / OS for PaaS | âœ… | â€” |
+| Platform patching for managed services | âœ… | â€” |
+| Eligible service infrastructure | âœ… | â€” |
+| Azure OpenAI service infrastructure | âœ… | â€” |
+| Identity provider infrastructure | âœ… | â€” |
+| Key custody infrastructure (HSM) | âœ… | â€” |
+| **Subscription/RBAC design** | â€” | âœ… |
+| **Conditional Access policies** | â€” | âœ… |
+| **Network design (VNet, NSG, Private Endpoints)** | â€” | âœ… |
+| **CMK rotation, Key Vault access policies** | â€” | âœ… |
+| **Application code (auth checks, query scoping)** | â€” | âœ… |
+| **Azure OpenAI deployment config (region, model, abuse-monitoring opt-out)** | â€” | âœ… |
+| **Content filter + jailbreak protections** | â€” | âœ… |
+| **Prompt design (PHI minimization)** | â€” | âœ… |
+| **Logging configuration & retention** | â€” | âœ… |
+| **Sentinel rules** | â€” | âœ… |
+| **Backup + DR design** | â€” | âœ… |
+| **Service eligibility â€” using only eligible SKUs** | â€” | âœ… |
 
 ### B.8 Where Liability Transfers vs Stays Internal
 
@@ -196,7 +196,7 @@ Customer's Azure tenant, FHIR Service + Storage with customer-managed keys (CMK)
 **Stays internal:**
 - Everything above the platform plane: identity policies, network design, app code, storage configuration, Azure OpenAI deployment options, content filter behavior, logging, prompts, retention.
 
-> ⚠️ **HIPAA-eligibility boundary breaks if:**
+> âš ï¸ **HIPAA-eligibility boundary breaks if:**
 > - You use a non-eligible Azure service (e.g., a preview feature, a non-HIPAA region, a Power Platform SKU not in scope) for PHI
 > - You deploy Azure OpenAI in a region/SKU not covered by your BAA
 > - You leave default abuse-monitoring on without understanding that human reviewers may see flagged content (acceptable with opt-out request)
@@ -210,7 +210,7 @@ Customer's Azure tenant, FHIR Service + Storage with customer-managed keys (CMK)
 
 ---
 
-## 11.3 Architecture C — Fully Managed Healthcare AI SaaS (e.g., Abridge / Notable / Innovaccer / Hippocratic class)
+## 11.3 Architecture C â€” Fully Managed Healthcare AI SaaS (e.g., Abridge / Notable / Innovaccer / Hippocratic class)
 
 ### C.1 System Overview
 
@@ -220,7 +220,7 @@ A turnkey vertical SaaS purpose-built for healthcare AI workflows (chart review,
 
 | Component | Vendor | Purpose |
 |---|---|---|
-| Vertical Healthcare AI SaaS | Vendor | All — UI, AI, storage, workflows |
+| Vertical Healthcare AI SaaS | Vendor | All â€” UI, AI, storage, workflows |
 | Vendor's AI models | Vendor (often via partner LLMs under sub-BAA) | Inference |
 | Vendor's data warehouse | Vendor | PHI store |
 | EHR integrations (Epic / Cerner / etc.) | Vendor + customer | Source data |
@@ -229,10 +229,10 @@ A turnkey vertical SaaS purpose-built for healthcare AI workflows (chart review,
 
 ### C.3 Data Flow (PHI)
 ```
-EHR → Vendor integration (HL7 / FHIR) → Vendor cloud (PHI at rest)
-   → Vendor AI processing
-   → Vendor UI → Clinician (SSO from customer IdP)
-   → Audit captured by vendor; customer-accessible audit export
+EHR â†’ Vendor integration (HL7 / FHIR) â†’ Vendor cloud (PHI at rest)
+   â†’ Vendor AI processing
+   â†’ Vendor UI â†’ Clinician (SSO from customer IdP)
+   â†’ Audit captured by vendor; customer-accessible audit export
 ```
 
 ### C.4 Where AI Runs
@@ -246,24 +246,24 @@ Vendor's tenancy. Some vendors offer single-tenant deployment for premium tiers.
 - Vendor maintains HITRUST CSF / SOC 2 Type II / sometimes HITRUST r2.
 - Sub-processor BAAs cover LLM providers.
 
-### C.7 Shared Responsibility — Architecture C
+### C.7 Shared Responsibility â€” Architecture C
 
 | Domain | Vendor | Customer |
 |---|---|---|
-| Entire technical stack (infra, app, AI, storage, network) | ✅ | — |
-| Platform compliance attestations | ✅ | — |
-| Sub-processor BAA chain | ✅ | — |
-| Vulnerability management of platform | ✅ | — |
-| Backup/DR of vendor cloud | ✅ | — |
-| **Identity / SSO config** | — | ✅ |
-| **User provisioning / deprovisioning** | — | ✅ |
-| **Role / scope assignment** | — | ✅ |
-| **EHR data scope (which patients, which fields flow)** | — | ✅ |
-| **Output review / clinical sign-off** | — | ✅ |
-| **Acceptable use policy / training** | — | ✅ |
-| **Vendor risk management (ongoing)** | — | ✅ |
-| **Configuration of any vendor-exposed knobs** | — | ✅ |
-| **Termination / data deletion / portability** | — | ✅ |
+| Entire technical stack (infra, app, AI, storage, network) | âœ… | â€” |
+| Platform compliance attestations | âœ… | â€” |
+| Sub-processor BAA chain | âœ… | â€” |
+| Vulnerability management of platform | âœ… | â€” |
+| Backup/DR of vendor cloud | âœ… | â€” |
+| **Identity / SSO config** | â€” | âœ… |
+| **User provisioning / deprovisioning** | â€” | âœ… |
+| **Role / scope assignment** | â€” | âœ… |
+| **EHR data scope (which patients, which fields flow)** | â€” | âœ… |
+| **Output review / clinical sign-off** | â€” | âœ… |
+| **Acceptable use policy / training** | â€” | âœ… |
+| **Vendor risk management (ongoing)** | â€” | âœ… |
+| **Configuration of any vendor-exposed knobs** | â€” | âœ… |
+| **Termination / data deletion / portability** | â€” | âœ… |
 
 ### C.8 Where Liability Transfers vs Stays Internal
 
@@ -279,7 +279,7 @@ Vendor's tenancy. Some vendors offer single-tenant deployment for premium tiers.
 - Termination handling (data extraction + deletion verification)
 - Use of any custom integrations or data feeds
 
-> ⚠️ **HIPAA-eligibility boundary breaks if:**
+> âš ï¸ **HIPAA-eligibility boundary breaks if:**
 > - Vendor uses a sub-processor without a BAA (your responsibility to verify)
 > - You feed PHI into a vendor "lab" / "preview" feature outside the BAA scope
 > - You export PHI to a destination not covered by the BAA (CSV download to local laptop, BI tool, email)
@@ -296,15 +296,16 @@ Vendor's tenancy. Some vendors offer single-tenant deployment for premium tiers.
 
 | Architecture | What you can offload | What you cannot offload |
 |---|---|---|
-| **A — Salesforce/Agentforce** | Platform, LLM brokering, Trust Layer, datacenter | Sharing model, profiles, prompts, custom code, AppExchange, sandbox PHI, report scope |
-| **B — Azure HIPAA stack** | Eligible service infra, Azure OpenAI infra, key infra | RBAC, network, app code, deployment options, content filter, prompts, logging, eligibility selection |
-| **C — Vertical Healthcare AI SaaS** | Almost everything technical | Identity config, EHR scope, role assignment, output responsibility, vendor risk, exports |
-| **Self-hosted Brad 2.0** | Nothing (no vendor risk transfer) | Everything (full ownership = full control = full responsibility) |
+| **A â€” Salesforce/Agentforce** | Platform, LLM brokering, Trust Layer, datacenter | Sharing model, profiles, prompts, custom code, AppExchange, sandbox PHI, report scope |
+| **B â€” Azure HIPAA stack** | Eligible service infra, Azure OpenAI infra, key infra | RBAC, network, app code, deployment options, content filter, prompts, logging, eligibility selection |
+| **C â€” Vertical Healthcare AI SaaS** | Almost everything technical | Identity config, EHR scope, role assignment, output responsibility, vendor risk, exports |
+| **Self-hosted Brad.pi** | Nothing (no vendor risk transfer) | Everything (full ownership = full control = full responsibility) |
 
-In **every** SaaS model, the **customer remains the Covered Entity** under HIPAA. The vendor is at most a Business Associate. **The Covered Entity carries unconditional accountability** under §164.308 and §164.402 regardless of who operates the infrastructure.
+In **every** SaaS model, the **customer remains the Covered Entity** under HIPAA. The vendor is at most a Business Associate. **The Covered Entity carries unconditional accountability** under Â§164.308 and Â§164.402 regardless of who operates the infrastructure.
 
 > **Restated for executive clarity:**
 > - Self-hosted: you own everything, including the breach.
 > - SaaS: you own the design and configuration, including the breach.
 > - There is no architecture in which the organization stops owning the breach.
 > - SaaS shifts **operational labor** and a sliver of **infrastructure liability**. It does **not** shift **HIPAA accountability**.
+

@@ -1,21 +1,21 @@
-# 09 — Penetration Test Report (Audit-Ready)
+﻿# 09 â€” Penetration Test Report (Audit-Ready)
 
-**Engagement:** Brad 2.0 — Business Risk & Analytics Director
+**Engagement:** Brad.pi â€” Business Risk & Analytics Director
 **Subject:** Care Indeed self-hosted healthcare AI platform
 **Reporting Period:** 2026-04-01 to 2026-04-21
 **Report Version:** 1.0 (Final)
-**Classification:** CONFIDENTIAL — INTERNAL SECURITY / AUDIT USE ONLY
+**Classification:** CONFIDENTIAL â€” INTERNAL SECURITY / AUDIT USE ONLY
 **Authoring Roles:** Lead DevSecOps Engineer; Red Team Lead; HIPAA Security Officer; SOC 2 Internal Assessor
 
 ---
 
-## SECTION 1 — Executive Security Summary
+## SECTION 1 â€” Executive Security Summary
 
 ### 1.1 Overall Security Posture
-**PASS** — Brad 2.0 has achieved 100 consecutive validated adversarial passes against a structured red-team scenario matrix. The system, as currently architected and configured, is suitable for production handling of PHI subject to the conditions in Section 15.
+**PASS** â€” Brad.pi has achieved 100 consecutive validated adversarial passes against a structured red-team scenario matrix. The system, as currently architected and configured, is suitable for production handling of PHI subject to the conditions in Section 15.
 
 ### 1.2 PHI Exposure Risk
-**Residual: Low.** Across 247 simulated iterations (including 4 documented failures) **no actual PHI was exposed** — all failures were caught against synthetic canary data in staging. Compensating controls in production prevent any of those failure modes from re-occurring.
+**Residual: Low.** Across 247 simulated iterations (including 4 documented failures) **no actual PHI was exposed** â€” all failures were caught against synthetic canary data in staging. Compensating controls in production prevent any of those failure modes from re-occurring.
 
 ### 1.3 Test Iterations
 - Total executed: **247**
@@ -40,18 +40,18 @@
 
 ---
 
-## SECTION 2 — Scope & Methodology
+## SECTION 2 â€” Scope & Methodology
 
 ### 2.1 Systems In Scope
 - WireGuard edge (Z0)
 - Caddy reverse proxy + OIDC IdP (Z1)
 - Brad API, RBAC, Approval Engine, Job Orchestrator (Z2)
-- vLLM Qwen inference (Z3) — 4× RTX 6000 Ada
+- vLLM Qwen inference (Z3) â€” 4Ã— RTX 6000 Ada
 - Qdrant vector DB + reranker + policy corpus (Z4)
 - Postgres + MinIO PHI bucket (Z5)
 - WORM MinIO + Wazuh SIEM + hash-chain verifier (Z6)
 - Hashicorp Vault, jump host, Restic backup orchestrator, LTO + offsite MinIO backup (Z7)
-- Non-PHI ComfyUI / marketing module (Z-NPHI) — isolation verification only
+- Non-PHI ComfyUI / marketing module (Z-NPHI) â€” isolation verification only
 
 ### 2.2 Out of Scope
 - Public-facing Care Indeed corporate websites
@@ -64,7 +64,7 @@
 - All PHI processing local; no third-party SaaS handles PHI
 - Remote access only via VPN/private tunnel
 - Staff have completed HIPAA training
-- Physical environment secured per [05](./05-Hardening-Blueprint.md) §5.1
+- Physical environment secured per [05](./05-Hardening-Blueprint.md) Â§5.1
 
 ### 2.4 Test Approach
 - Adversarial red-team simulation
@@ -80,12 +80,12 @@
 
 ---
 
-## SECTION 3 — System Overview
+## SECTION 3 â€” System Overview
 
 (Summary; full detail in [02](./02-Environment-Architecture.md).)
 
 ### 3.1 Architecture (high level)
-Eight security zones (Z0–Z7) plus an isolated non-PHI VLAN (Z-NPHI). Deny-by-default networking, mTLS east-west, OIDC + FIDO2 north-south, OPA policy decisions on every request, append-only WORM audit, two-person rule on privileged operations, dedicated GPU inference with per-session worker isolation.
+Eight security zones (Z0â€“Z7) plus an isolated non-PHI VLAN (Z-NPHI). Deny-by-default networking, mTLS east-west, OIDC + FIDO2 north-south, OPA policy decisions on every request, append-only WORM audit, two-person rule on privileged operations, dedicated GPU inference with per-session worker isolation.
 
 ### 3.2 Key Components
 Caddy + OIDC, Brad API, OPA, Approval Engine, vLLM (Qwen), Qdrant, Postgres, MinIO, Wazuh, Vault, WireGuard.
@@ -94,14 +94,14 @@ Caddy + OIDC, Brad API, OPA, Approval Engine, vLLM (Qwen), Qdrant, Postgres, Min
 PHI enters Z2 from authenticated UI/API; flows read-only to Z3/Z4/Z5; writes only via signed broker in Z2; exports require Admin + DLP + 2-person; audit always to Z6. PHI never crosses to Z-NPHI.
 
 ### 3.4 Trust Zones
-See [02](./02-Environment-Architecture.md) §2.4. Zero zone is implicitly trusted; every crossing is authenticated, authorized, and logged.
+See [02](./02-Environment-Architecture.md) Â§2.4. Zero zone is implicitly trusted; every crossing is authenticated, authorized, and logged.
 
 ### 3.5 Remote Access Model
 WireGuard + device cert + posture check + FIDO2 + short session. Admin access gated through bastion with recorded sessions.
 
 ---
 
-## SECTION 4 — Threat Model
+## SECTION 4 â€” Threat Model
 
 (Summary; full detail in [04](./04-Threat-Model.md).)
 
@@ -115,13 +115,13 @@ External opportunist, targeted external, compromised remote endpoint, malicious 
 24 enumerated surfaces across edge, proxy, identity, application, OPA, approval, inference, GPU, retrieval, storage, runtime, images, kernel, SSH, Vault, backup, audit, time, DNS, cross-module, endpoint, physical, CI/CD, OOB.
 
 ### 4.4 High-Risk Attack Paths
-12 ranked composite paths (see [04](./04-Threat-Model.md) §4.4); top 3 are: phished admin pivoting through OIDC; compromised endpoint over VPN exfiltrating via export; container escape via misconfigured Docker socket.
+12 ranked composite paths (see [04](./04-Threat-Model.md) Â§4.4); top 3 are: phished admin pivoting through OIDC; compromised endpoint over VPN exfiltrating via export; container escape via misconfigured Docker socket.
 
 ---
 
-## SECTION 5 — Penetration Test Scenario Matrix
+## SECTION 5 â€” Penetration Test Scenario Matrix
 
-The full matrix appears in [06](./06-Breach-Simulation-100-Pass.md). The following table summarizes scenario categories (each entry expanded in §5.x of [06](./06-Breach-Simulation-100-Pass.md)).
+The full matrix appears in [06](./06-Breach-Simulation-100-Pass.md). The following table summarizes scenario categories (each entry expanded in Â§5.x of [06](./06-Breach-Simulation-100-Pass.md)).
 
 | # | Category | Attack Vector | Target | Expected Control |
 |---|---|---|---|---|
@@ -155,38 +155,38 @@ The full matrix appears in [06](./06-Breach-Simulation-100-Pass.md). The followi
 
 ---
 
-## SECTION 6 — Exploit Simulation Log
+## SECTION 6 â€” Exploit Simulation Log
 
 | Iteration | Scenario | Result | Detection | Mitigation |
 |---|---|---|---|---|
-| Attempt 1, iter 1–11 | (mixed; see §6.2 in [06](./06-Breach-Simulation-100-Pass.md)) | PASS | Y | Y |
+| Attempt 1, iter 1â€“11 | (mixed; see Â§6.2 in [06](./06-Breach-Simulation-100-Pass.md)) | PASS | Y | Y |
 | Attempt 1, iter 12 | VRAM remanence | **FAIL** | N | N |
-| Attempt 2, iter 1–30 | (rerun + new) | PASS | Y | Y |
+| Attempt 2, iter 1â€“30 | (rerun + new) | PASS | Y | Y |
 | Attempt 2, iter 31 | Approval race | **FAIL** | N | N |
-| Attempt 3, iter 1–47 | (rerun + new) | PASS | Y | Y |
+| Attempt 3, iter 1â€“47 | (rerun + new) | PASS | Y | Y |
 | Attempt 3, iter 48 | Backup operator prune | **FAIL** | Partial | N |
-| Attempt 4, iter 1–55 | (rerun + new) | PASS | Y | Y |
+| Attempt 4, iter 1â€“55 | (rerun + new) | PASS | Y | Y |
 | Attempt 4, iter 56 | Reverse proxy %2f admin bypass | **FAIL** | Y (post-fact) | Partial |
-| Attempt 5, iter 1–100 | Full regression + extended | **PASS×100** | Y | Y |
+| Attempt 5, iter 1â€“100 | Full regression + extended | **PASSÃ—100** | Y | Y |
 
 Detailed per-iteration log: [06](./06-Breach-Simulation-100-Pass.md). Failure deep-dives: [07](./07-Failure-Restart-Log.md).
 
 ---
 
-## SECTION 7 — Failure & Restart Log (Mandatory)
+## SECTION 7 â€” Failure & Restart Log (Mandatory)
 
 Full deep-dive in [07](./07-Failure-Restart-Log.md). Summary:
 
 | # | Iter | Scenario | Root Cause | PHI Exposure | HIPAA Failed | SOC 2 Failed | Patch | Restart Confirmed |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 12 | VRAM remanence | KV-cache shared across sessions; no memset on recycle | None (canary) | §164.312(a)(1), §164.308(a)(4) | CC6.1, CC6.6 | One-worker-per-session + memset + canary monitor | YES, count → 0 |
-| 2 | 31 | Approval race | No UNIQUE constraint; predicate not distinct-subject | None (staging) | §164.308(a)(3)(ii)(A), §164.312(c)(1) | CC6.1, CC6.3, CC8.1 | UNIQUE + distinct-subject + throttle + property test | YES, count → 0 |
-| 3 | 48 | Backup operator prune | Object-lock Governance + missing IAM Deny on lock-mutation | None (staging) | §164.308(a)(7)(ii)(A), §164.312(c)(1) | CC9.1, A1.3 | Object-lock Compliance + IAM Deny + 2-person + LTO + delete probe | YES, count → 0 |
-| 4 | 56 | %2f admin bypass | Caddy decoded slashes; URL-pattern-based admin gate | None (staging) | §164.312(a)(1), §164.308(a)(4) | CC6.1, CC6.6, CC6.8 | Separate admin hostname + mgmt VLAN bind + group-claim gate + path normalization | YES, count → 0; reached 100 |
+| 1 | 12 | VRAM remanence | KV-cache shared across sessions; no memset on recycle | None (canary) | Â§164.312(a)(1), Â§164.308(a)(4) | CC6.1, CC6.6 | One-worker-per-session + memset + canary monitor | YES, count â†’ 0 |
+| 2 | 31 | Approval race | No UNIQUE constraint; predicate not distinct-subject | None (staging) | Â§164.308(a)(3)(ii)(A), Â§164.312(c)(1) | CC6.1, CC6.3, CC8.1 | UNIQUE + distinct-subject + throttle + property test | YES, count â†’ 0 |
+| 3 | 48 | Backup operator prune | Object-lock Governance + missing IAM Deny on lock-mutation | None (staging) | Â§164.308(a)(7)(ii)(A), Â§164.312(c)(1) | CC9.1, A1.3 | Object-lock Compliance + IAM Deny + 2-person + LTO + delete probe | YES, count â†’ 0 |
+| 4 | 56 | %2f admin bypass | Caddy decoded slashes; URL-pattern-based admin gate | None (staging) | Â§164.312(a)(1), Â§164.308(a)(4) | CC6.1, CC6.6, CC6.8 | Separate admin hostname + mgmt VLAN bind + group-claim gate + path normalization | YES, count â†’ 0; reached 100 |
 
 ---
 
-## SECTION 8 — Vulnerability Findings Report
+## SECTION 8 â€” Vulnerability Findings Report
 
 | ID | Description | Severity | Component | Exploit Path | Likelihood | Impact | PHI Risk | Status |
 |---|---|---|---|---|---|---|---|---|
@@ -207,7 +207,7 @@ Full deep-dive in [07](./07-Failure-Restart-Log.md). Summary:
 
 ---
 
-## SECTION 9 — Remediation & Hardening Actions
+## SECTION 9 â€” Remediation & Hardening Actions
 
 ### 9.1 Technical Controls Added/Modified
 - vLLM worker per-session isolation + cudaMemset + canary monitor
@@ -238,23 +238,23 @@ See [08](./08-Final-Hardening-Manifest.md) for the canonical baseline.
 
 ---
 
-## SECTION 10 — Control Validation Mapping
+## SECTION 10 â€” Control Validation Mapping
 
 (Full matrix in [03](./03-HIPAA-SOC2-Control-Matrix.md). All 84 mapped controls **PASS**.)
 
 | Control | Implementation | Validation Result |
 |---|---|---|
-| HIPAA §164.308(a)(1) Security Mgmt | Documented program; named officer | **PASS** |
-| HIPAA §164.308(a)(3)(ii)(C) Termination | <60s revocation runbook | **PASS** |
-| HIPAA §164.308(a)(4) Info Access Mgmt | OIDC + OPA + RLS; revalidated post-Failure-1 and Failure-4 | **PASS** |
-| HIPAA §164.308(a)(7) Contingency | Restic + LTO + drills; revalidated post-Failure-3 | **PASS** |
-| HIPAA §164.310(a)(1) Facility Access | Locked server room + badge | **PASS** |
-| HIPAA §164.312(a)(1) Access Control | OIDC+FIDO2+RBAC+OPA; revalidated post-Failure-1 and Failure-4 | **PASS** |
-| HIPAA §164.312(a)(2)(iv) Encryption | LUKS+TDE+pgcrypto+TLS1.3+mTLS | **PASS** |
-| HIPAA §164.312(b) Audit Controls | Hash-chained WORM + Wazuh | **PASS** |
-| HIPAA §164.312(c)(1) Integrity | WORM + AIDE + pg triggers + signed envelopes; revalidated post-Failure-2 and Failure-3 | **PASS** |
-| HIPAA §164.312(d) Person/Entity Auth | FIDO2 + mTLS | **PASS** |
-| HIPAA §164.312(e)(1) Transmission Security | TLS1.3 + mTLS + WireGuard | **PASS** |
+| HIPAA Â§164.308(a)(1) Security Mgmt | Documented program; named officer | **PASS** |
+| HIPAA Â§164.308(a)(3)(ii)(C) Termination | <60s revocation runbook | **PASS** |
+| HIPAA Â§164.308(a)(4) Info Access Mgmt | OIDC + OPA + RLS; revalidated post-Failure-1 and Failure-4 | **PASS** |
+| HIPAA Â§164.308(a)(7) Contingency | Restic + LTO + drills; revalidated post-Failure-3 | **PASS** |
+| HIPAA Â§164.310(a)(1) Facility Access | Locked server room + badge | **PASS** |
+| HIPAA Â§164.312(a)(1) Access Control | OIDC+FIDO2+RBAC+OPA; revalidated post-Failure-1 and Failure-4 | **PASS** |
+| HIPAA Â§164.312(a)(2)(iv) Encryption | LUKS+TDE+pgcrypto+TLS1.3+mTLS | **PASS** |
+| HIPAA Â§164.312(b) Audit Controls | Hash-chained WORM + Wazuh | **PASS** |
+| HIPAA Â§164.312(c)(1) Integrity | WORM + AIDE + pg triggers + signed envelopes; revalidated post-Failure-2 and Failure-3 | **PASS** |
+| HIPAA Â§164.312(d) Person/Entity Auth | FIDO2 + mTLS | **PASS** |
+| HIPAA Â§164.312(e)(1) Transmission Security | TLS1.3 + mTLS + WireGuard | **PASS** |
 | SOC 2 CC6.1 Logical Access provisioning | OIDC + ticket-based | **PASS** |
 | SOC 2 CC6.3 Modify/Remove | <60s revocation; revalidated post-Failure-2 | **PASS** |
 | SOC 2 CC6.6 Logical boundaries | Zone segmentation + mTLS; revalidated post-Failure-1 and Failure-4 | **PASS** |
@@ -262,21 +262,21 @@ See [08](./08-Final-Hardening-Manifest.md) for the canonical baseline.
 | SOC 2 CC7.2 Anomaly monitoring | Wazuh | **PASS** |
 | SOC 2 CC8.1 Change management | GitOps + signed + reviewers; revalidated post-Failure-2 | **PASS** |
 | SOC 2 CC9.1 Disruption mitigation | DR + redundancy; revalidated post-Failure-3 | **PASS** |
-| SOC 2 A1.1–1.3 Availability | Capacity + UPS + standby | **PASS** |
-| SOC 2 C1.1–1.2 Confidentiality | Classification + secure disposal | **PASS** |
+| SOC 2 A1.1â€“1.3 Availability | Capacity + UPS + standby | **PASS** |
+| SOC 2 C1.1â€“1.2 Confidentiality | Classification + secure disposal | **PASS** |
 
 ---
 
-## SECTION 11 — PHI Exposure Analysis
+## SECTION 11 â€” PHI Exposure Analysis
 
 ### 11.1 Was PHI exposed in any test?
 **No.** Across 247 simulated iterations and 4 documented failures, **zero PHI exposure events occurred**. All testing used synthetic canary data in a staging mirror; no PHI was introduced into the test environment.
 
 ### 11.2 Where could exposure have occurred (if controls had not held)?
 - **Failure 1 (VRAM remanence):** cross-session disclosure via shared GPU memory.
-- **Failure 2 (Approval race):** indirect — unauthorized chart-affecting actions.
-- **Failure 3 (Backup prune):** indirect — destruction of recovery integrity, enabling ransomware.
-- **Failure 4 (Admin route bypass):** indirect — privilege escalation to admin metadata supporting further attack.
+- **Failure 2 (Approval race):** indirect â€” unauthorized chart-affecting actions.
+- **Failure 3 (Backup prune):** indirect â€” destruction of recovery integrity, enabling ransomware.
+- **Failure 4 (Admin route bypass):** indirect â€” privilege escalation to admin metadata supporting further attack.
 
 ### 11.3 How was each prevented in the final architecture?
 - **Failure 1:** One worker per session + cudaMemset + canary monitor + KV-cache scoped + Z3 egress DROP.
@@ -289,7 +289,7 @@ See [08](./08-Final-Hardening-Manifest.md) for the canonical baseline.
 
 ---
 
-## SECTION 12 — Final System Hardening Manifest
+## SECTION 12 â€” Final System Hardening Manifest
 
 The complete final state is in [08](./08-Final-Hardening-Manifest.md). High-level snapshot:
 
@@ -309,7 +309,7 @@ The complete final state is in [08](./08-Final-Hardening-Manifest.md). High-leve
 
 ---
 
-## SECTION 13 — Residual Risk Report
+## SECTION 13 â€” Residual Risk Report
 
 | Risk | Why Acceptable | Mitigation Strategy | Monitoring |
 |---|---|---|---|
@@ -320,14 +320,14 @@ The complete final state is in [08](./08-Final-Hardening-Manifest.md). High-leve
 | **R-05** Supply chain risk on rare specialty packages | Internal mirror + lockfiles + SBOM review reduces likelihood; cannot eliminate | Vendor risk review; pinned versions; cosign + SBOM | Trivy nightly; SBOM diff alerts |
 | **R-06** Physical compromise of server room | Mitigated by access controls, but not eliminated | Locked, badged, camera, alarm; offsite encrypted backups | Camera review; badge audit |
 
-All residual risks are **Low or Medium** with documented compensating controls and monitoring. None constitute reportable HIPAA breach risk under §164.402.
+All residual risks are **Low or Medium** with documented compensating controls and monitoring. None constitute reportable HIPAA breach risk under Â§164.402.
 
 ---
 
-## SECTION 14 — Continuous Monitoring & Retest Plan
+## SECTION 14 â€” Continuous Monitoring & Retest Plan
 
 ### 14.1 Monitoring Approach
-- Wazuh SIEM with rule packs tuned to Brad 2.0
+- Wazuh SIEM with rule packs tuned to Brad.pi
 - Falco runtime + AIDE FIM + osquery live state
 - Canary monitor on Z3 every 10 min
 - Daily backup-delete probe
@@ -348,7 +348,7 @@ All residual risks are **Low or Medium** with documented compensating controls a
 | Container shell in PHI zone | 1 event | **P1** |
 
 ### 14.3 Incident Response Triggers
-Any P1 alert triggers immediate paging of Security Officer + IT lead and execution of the relevant runbook (see [10](./10-Operational-Recommendations.md) §10.5).
+Any P1 alert triggers immediate paging of Security Officer + IT lead and execution of the relevant runbook (see [10](./10-Operational-Recommendations.md) Â§10.5).
 
 ### 14.4 Cadences
 | Activity | Cadence |
@@ -365,15 +365,15 @@ Any P1 alert triggers immediate paging of Security Officer + IT lead and executi
 
 ---
 
-## SECTION 15 — Final Certification Statement
+## SECTION 15 â€” Final Certification Statement
 
-> Brad 2.0, the Business Risk & Analytics Director platform of Care Indeed, has been subjected to a structured adversarial penetration test program comprising 247 iterations against 100+ distinct attack scenarios. After 4 documented failure-and-restart cycles — all of which were detected, root-caused, patched, and revalidated — the system achieved **100 consecutive validated passes** with **zero PHI exposure**.
+> Brad.pi, the Business Risk & Analytics Director platform of Care Indeed, has been subjected to a structured adversarial penetration test program comprising 247 iterations against 100+ distinct attack scenarios. After 4 documented failure-and-restart cycles â€” all of which were detected, root-caused, patched, and revalidated â€” the system achieved **100 consecutive validated passes** with **zero PHI exposure**.
 >
-> All controls mapped under the HIPAA Security Rule (45 CFR §164.308–§164.312) and the SOC 2 Trust Services Criteria for Security, Availability, and Confidentiality have been **implemented and verified**.
+> All controls mapped under the HIPAA Security Rule (45 CFR Â§164.308â€“Â§164.312) and the SOC 2 Trust Services Criteria for Security, Availability, and Confidentiality have been **implemented and verified**.
 >
 > The environment is **suitable for production handling of Protected Health Information**, conditional on the following:
 >
-> 1. Acceptance and execution of the operational regime in [10 — Operational Recommendations](./10-Operational-Recommendations.md).
+> 1. Acceptance and execution of the operational regime in [10 â€” Operational Recommendations](./10-Operational-Recommendations.md).
 > 2. Successful completion of a 30-day shadow-mode soak with PHI-free synthetic data prior to first live PHI ingest.
 > 3. HIPAA Security Officer formal sign-off recorded in the Care Indeed compliance repository.
 > 4. Quarterly internal red-team revalidation of the scenario regression set.
@@ -386,7 +386,8 @@ Any P1 alert triggers immediate paging of Security Officer + IT lead and executi
 > **Valid through:** 2027-04-21 (subject to quarterly attestation)
 >
 > **Signed (logical):**
-> - Lead DevSecOps Engineer / Red Team Lead — Brad 2.0 Program
-> - HIPAA Security Officer — Care Indeed
-> - SOC 2 Internal Assessor — Care Indeed
+> - Lead DevSecOps Engineer / Red Team Lead â€” Brad.pi Program
+> - HIPAA Security Officer â€” Care Indeed
+> - SOC 2 Internal Assessor â€” Care Indeed
 > - Acknowledged: Executive Sponsor / Governing Body Representative
+

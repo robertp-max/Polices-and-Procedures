@@ -1,0 +1,36 @@
+=== CareIndeed v2 Light Mode Generation Queue ===
+
+Priority Order (as of now):
+
+1. CES Calendar - Mobile (Light v2)           [HIGHEST - User specifically requested]
+2. CES Calendar - Desktop (Light v2)          [HIGHEST - User specifically requested]
+3. Journey Home / Module List - Mobile (Light v2)
+4. Journey Home / Module List - Desktop (Light v2)
+5. Journey Module Player - Mobile (Light v2)
+6. Journey Module Player - Desktop (Light v2)
+7. Journey Supervisor / Progress - Mobile (Light v2)   [Optional]
+8. Journey Supervisor / Progress - Desktop (Light v2)  [Optional]
+
+Already Generated in v2 (Dark + some Light):
+Mobile: 01 to 13
+Desktop: 01 to 12
+
+Next files to generate (Light v2):
+14_CES_Calendar_Mobile_v2.jpg
+15_CES_Calendar_Desktop_v2.jpg
+16_Journey_Home_Mobile_v2.jpg
+17_Journey_Home_Desktop_v2.jpg
+18_Journey_Module_Player_Mobile_v2.jpg
+19_Journey_Module_Player_Desktop_v2.jpg
+
+Style Notes:
+- Base: Dark glassmorphic from CES Board (mobile) + Evidence Center (desktop)
+- Light mode: Soft glassmorphic with very subtle hairline borders + layered shadows (no hard/dark borders)
+- Vary layouts per screen type
+- Incorporate good elements from previous successful mockups (typography, card treatment, spacing, accent usage)
+- Keep expensive, clean, modern, clinical, professional feel
+
+=== Next Actions ===
+- Wait for image generation limit to reset
+- Generate CES Calendar (Mobile + Desktop) first in light v2
+- Then Journey (LMS) screens

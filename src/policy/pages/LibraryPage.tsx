@@ -1,4 +1,4 @@
-import { useState, useMemo, useLayoutEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShellStore } from '../stores/uiStore';
 import { remapForLight } from '../utils/lightColorRemap';
@@ -15,21 +15,12 @@ import {
   BarChart, Network, ClipboardList
 } from 'lucide-react';
 import { AlertTriangle } from 'lucide-react';
-import { SharedPolicyDetailView, type SharedPolicy } from '../components/SharedPolicyDetailView';
-import { getPolicyContent } from '../data/policyContentMap';
+
 import { frameworkPolicies } from '../data/frameworkSeed.generated';
 import { achcSurveyByPolicyId, type AchcMappingType, type AchcSurveyMetadata } from '@/policy/data/achcSurveyProjection.generated';
 import { EmptyState, SearchField } from '@/policy/components/ui';
 
-// ── Title resolver: extract Title row from Policy Header content section ──────
-function resolveTitleFromContent(sections: { order: number; body: string }[] | undefined): string | null {
-  if (!sections) return null;
-  const headerSec = sections.find(s => s.order === 2);
-  if (!headerSec?.body) return null;
-  // Match "| Title | Some Title |" row in the GFM metadata table
-  const m = headerSec.body.match(/\|\s*Title\s*\|\s*([^|\n]+?)\s*\|/i);
-  return m ? m[1].trim() : null;
-}
+
 
 // ══════════════════════════════════════════════════════════════
 // ENTERPRISE POLICY TAXONOMY DATASET
@@ -310,38 +301,14 @@ const FRAMEWORK_RENDER_DATASET: PolicyRecord[] = frameworkPolicies.map((framewor
 // LIBRARY PAGE — GLASS-INTERACTIVE DESIGN
 // ══════════════════════════════════════════════════════════════
 
-// ── ADAPTER: map PolicyRecord → SharedPolicy ──────────────────
-function toSharedPolicy(p: PolicyRecord): SharedPolicy {
-  const content = getPolicyContent(p.policyId);
-  // Priority: content Title row > corpus rawPolicies title > policyId fallback
-  const resolvedTitle = resolveTitleFromContent(content?.sections) ?? p.title;
-  return {
-    id: p.id, policyId: p.policyId, title: resolvedTitle,
-    domain: p.domain, domainCode: p.domainCode,
-    subdomain: p.subdomain, subdomainCode: p.subdomainCode,
-    classificationTier: p.classificationTier, status: p.status,
-    version: p.version, effectiveDate: p.effectiveDate,
-    nextReviewDate: p.nextReviewDate, policyOwner: p.policyOwner,
-    approvedBy: p.approvedBy, purpose: p.purpose, scope: p.scope,
-    regulatoryTags: p.regulatoryTags,
-    generatedSections: content?.sections,
-  };
-}
+
 
 export function LibraryPage() {
   const navigate = useNavigate();
   const theme = useShellStore(s => s.theme);
   const isLight = theme === 'care-indeed-light';
   const mapColor = (c: string) => remapForLight(c, isLight);
-  const [selectedPolicy, setSelectedPolicy] = useState<PolicyRecord | null>(null);
   const [libraryView, setLibraryView] = useState<'IBM' | 'ACHC'>('IBM');
-  const setDetailMode = useShellStore(s => s.setDetailMode);
-
-  // Hide the app chrome immediately (before paint) when a policy is selected
-  useLayoutEffect(() => {
-    setDetailMode(!!selectedPolicy);
-    return () => { setDetailMode(false); };
-  }, [selectedPolicy, setDetailMode]);
   const [selectedDomain, setSelectedDomain] = useState('ALL');
   const [selectedSubdomain, setSelectedSubdomain] = useState<string>('ALL');
   const [activeRegFilter, setActiveRegFilter] = useState('ALL');
@@ -449,9 +416,6 @@ export function LibraryPage() {
         }
       `}</style>
 
-      {selectedPolicy ? (
-        <SharedPolicyDetailView policy={toSharedPolicy(selectedPolicy)} onBack={() => setSelectedPolicy(null)} />
-      ) : (
       <div className="h-full w-full font-roboto text-ci-text-primary bg-ci-bg flex flex-col overflow-hidden">
         {/* HEADER */}
         <div className="px-10 pt-10 pb-4 flex items-center justify-between shrink-0">
@@ -718,7 +682,7 @@ export function LibraryPage() {
                     const achc = policy.achc;
                     return (
                       <button key={policy.id}
-                        onClick={() => setSelectedPolicy(policy)}
+                        onClick={() => navigate(`/library/${policy.policyId}`)}
                         className={`glass-interactive-lib glass-panel-lib border-[0.77px] p-5 rounded-2xl flex flex-col ${libraryView === 'ACHC' ? 'h-auto min-h-[220px]' : 'h-[210px]'} hover:border-[#FFC107]/40 transition-colors group cursor-pointer text-left ${isLight ? 'border-[#E5E4E3]' : 'border-white/10'}`}>
                         <span className="inline-block text-[11px] font-mono font-bold tracking-widest border-[0.77px] px-2 py-1 rounded mb-3 w-max"
                           style={{ color, borderColor: `${color}40` }}>
@@ -791,7 +755,6 @@ export function LibraryPage() {
           </section>
         </div>
       </div>
-      )}
     </>
   );
 }

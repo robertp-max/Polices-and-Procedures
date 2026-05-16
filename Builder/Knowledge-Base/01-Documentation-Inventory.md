@@ -1,4 +1,4 @@
-# 01 — Documentation Inventory
+﻿# 01 â€” Documentation Inventory
 
 > **Location:** `Builder/Knowledge-Base/01-Documentation-Inventory.md`
 > **Author:** Information Architecture
@@ -24,7 +24,7 @@ Recommended target folders are defined in `02-Knowledge-Base-Architecture.md` an
 
 ---
 
-## 1. Compliance Execution Sprints (CES) — `Builder/Compliance-Execution-Sprints/`
+## 1. Compliance Execution Sprints (CES) â€” `Builder/Compliance-Execution-Sprints/`
 
 CES is the **primary operational system** of the platform. These docs are the source of truth for execution architecture.
 
@@ -33,7 +33,7 @@ CES is the **primary operational system** of the platform. These docs are the so
 | `00-README.md` | CONCEPT | Program charter, non-negotiables, doc index | `Architecture/CES/00-Charter.md` |
 | `01-Execution-Model.md` | CONCEPT | Calendar-driven sequential model | `Architecture/CES/` |
 | `02-Sprint-Structure.md` | CONCEPT | 2-week cadence, naming, boundaries | `Architecture/CES/` |
-| `03-Workflow-Based-Execution.md` | CONCEPT | Event → Workflow → Execution Unit decomposition | `Architecture/CES/` |
+| `03-Workflow-Based-Execution.md` | CONCEPT | Event â†’ Workflow â†’ Execution Unit decomposition | `Architecture/CES/` |
 | `04-Assignment-Model.md` | CONCEPT | Owner / Role / Approver / Signer | `Architecture/CES/` |
 | `05-Work-Bundling-Strategy.md` | CONCEPT | Bundling for efficiency (QAPI worked example) | `Architecture/CES/` |
 | `06-Sprint-Board-and-States.md` | CONCEPT + UIUX | Columns, state mapping, audit-readiness | `Architecture/CES/` + `UIUX/CES-Board.md` |
@@ -49,12 +49,12 @@ CES is the **primary operational system** of the platform. These docs are the so
 | `Documentation/04-Workflow-and-Execution-Units.md` | DUP of 03-Workflow-Based-Execution | Duplication risk | Same as above |
 | `Documentation/05-Enforcement-and-Compliance-Rules.md` | DUP of 10-Enforcement | Duplication risk | Same as above |
 | `Documentation/06-Calendar-Integration.md` | DUP of 09-Calendar-Integration | Duplication risk | Same as above |
-| `Documentation/07-Signature-and-eCIgn-Integration.md` | CONCEPT | CES↔eCIgn boundary | `Architecture/Integrations/CES-eCIgn.md` |
+| `Documentation/07-Signature-and-eCIgn-Integration.md` | CONCEPT | CESâ†”eCIgn boundary | `Architecture/Integrations/CES-eCIgn.md` |
 | `Documentation/08-Audit-and-Evidence-Model.md` | CONCEPT | Evidence rollup | `Architecture/Audit/Evidence-Model.md` |
 | `Documentation/09-Metrics-and-Reporting.md` | DUP of 11-Metrics | Duplication risk | Keep canonical |
 | `Documentation/10-Risk-and-Escalation-Model.md` | CONCEPT | Risk + escalation | `Architecture/CES/Risk-and-Escalation.md` |
 | `UIUX/00-README.md` | UIUX | UI spec index | `UIUX/CES/` |
-| `UIUX/01-UI-to-Execution-Mapping.md` | UIUX | Screen → execution-unit mapping | `UIUX/CES/` |
+| `UIUX/01-UI-to-Execution-Mapping.md` | UIUX | Screen â†’ execution-unit mapping | `UIUX/CES/` |
 | `UIUX/02-Enforcement-Implementation.md` | UIUX | UI-side enforcement | `UIUX/CES/` |
 | `UIUX/03-Board-Operation-In-Use.md` | UIUX | Board operation walkthrough | `UIUX/CES/` |
 | `UIUX/04-eCIgn-Integration.md` | UIUX | Signature handoff UI | `UIUX/CES/` |
@@ -64,7 +64,7 @@ CES is the **primary operational system** of the platform. These docs are the so
 
 ---
 
-## 2. eCIgn — `Builder/eCIgn/`
+## 2. eCIgn â€” `Builder/eCIgn/`
 
 eCIgn is **one subsystem** of the platform. It must not dominate the Help Center.
 
@@ -83,7 +83,7 @@ eCIgn is **one subsystem** of the platform. It must not dominate the Help Center
 
 ---
 
-## 3. In-app Help Center — `src/policy/help/`
+## 3. In-app Help Center â€” `src/policy/help/`
 
 This is the **current shipping** Help Center. It is implementation, not architecture. The article registry will be re-shaped per `02-Knowledge-Base-Architecture.md` and `04-Knowledge-Base-Article-Plan.md`.
 
@@ -92,7 +92,7 @@ This is the **current shipping** Help Center. It is implementation, not architec
 | `articles/index.ts` | TECH (registry) | Article registry + types | Keep; expand category list to match new IA |
 | `articles/getting-started.ts` | USER | Welcome, roles, navigation | Keep; rewrite leads so eCIgn is one of many subsystems, not the headline |
 | `articles/signing-documents.ts` | USER | eCIgn signing tasks | Move under category `signatures-ecign` |
-| `articles/compliance-audit.ts` | USER | Audit & compliance tasks | Split: CES-related → `audit-reporting`; eCIgn-specific stays |
+| `articles/compliance-audit.ts` | USER | Audit & compliance tasks | Split: CES-related â†’ `audit-reporting`; eCIgn-specific stays |
 | `articles/workflows-events.ts` | USER | Workflow & event handling | Move under `workflows-evidence` |
 | `articles/forms-templates.ts` | USER | Forms library tasks | Move under `forms-library` |
 | `articles/developer-ecign.ts` | TECH | Developer reference for eCIgn | Move under `developer-reference` (eCIgn subsection) |
@@ -103,7 +103,7 @@ This is the **current shipping** Help Center. It is implementation, not architec
 
 ---
 
-## 4. Component-level / system documentation — `Builder/Documentations/`
+## 4. Component-level / system documentation â€” `Builder/Documentations/`
 
 | File | Class | Purpose | Recommended Home |
 |---|---|---|---|
@@ -120,7 +120,7 @@ This is the **current shipping** Help Center. It is implementation, not architec
 | `App_Component_Documentation/Developer_Maintenance_Guide.md` | TECH | Maintenance | `Developer-Reference/Maintenance-Guide.md` |
 | `App_Component_Documentation/aws-phase1-component-mapping.md` | TECH | AWS migration mapping | `Developer-Reference/Infrastructure/AWS-Mapping.md` |
 | `App_Component_Documentation/Brad_System_Architecture.md` | CONCEPT | Brad subsystem architecture | `Architecture/Brad/` |
-| `Survey-Simulation/01-...→06-...` | OPS + CONCEPT | Survey simulation roadmap | `Architecture/Survey-Simulation/` |
+| `Survey-Simulation/01-...â†’06-...` | OPS + CONCEPT | Survey simulation roadmap | `Architecture/Survey-Simulation/` |
 | `iAdministrator-Manual.md` | USER | iAdministrator end-user guide | Source for `End-User-Manuals/Administrator/` |
 | `iAdministrator-Operator Guide.md` | USER | iAdministrator operator guide | Source for `End-User-Manuals/Administrator/` |
 | `MASTER_CONTROL_INVENTORY.md` (+ JSON) | TECH | Master control inventory | `Developer-Reference/Master-Control-Inventory.md` |
@@ -131,7 +131,7 @@ This is the **current shipping** Help Center. It is implementation, not architec
 | `RegulatoryPlannerOverview.txt` | CONCEPT | Regulatory planner | `Architecture/Regulatory-Planner/Overview.md` |
 | `PP_AMENDMENT_REGISTER.md` | OPS | Amendment register | `Compliance-Rationale/Amendment-Register.md` |
 | `Brad_QA_*` (3 files) | OPS | Brad QA reports | `Architecture/Brad/QA/` |
-| `Brad2-01..17-*` | CONCEPT + OPS | Brad 2.0 architecture sprint set | `Architecture/Brad/2.0/` |
+| `Brad2-01..17-*` | CONCEPT + OPS | Brad.pi architecture sprint set | `Architecture/Brad/2.0/` |
 | `Brad2-README.md`, `Brad-README.md`, `BizRisk-README.md`, `README.md` | INDEX | READMEs | Link from `Architecture/Brad/` |
 | `01..10-*` (Executive Security, Threat Model, etc.) | LEGAL + CONCEPT | Security & compliance documents | `Compliance-Rationale/Security/` |
 | `CO-CA-001.md`, `EN-CM-001.md`, `EN-LC-001.md`, `EN-TG-001.md`, `RM-EP-001.md`, `RM-OS-001..004.md` | OPS | Policy source docs | Stay in `Builder/Compliance/` (policies are not KB articles); link from KB |
@@ -139,7 +139,7 @@ This is the **current shipping** Help Center. It is implementation, not architec
 | `AUDIT_REPORT.md` | OPS | Internal audit report | `Compliance-Rationale/Internal-Audits/` |
 | `AWS_Phase1_Foundation_Build_Plan.md` | TECH | AWS build plan | `Developer-Reference/Infrastructure/AWS-Build-Plan.md` |
 
-> **Duplication risk:** Several Brad/Brad2 documents and the security/threat-model series exist in **two roots** (`Builder/Documentations/` and `Builder/Brad/`, `Business Risk & Analytics Director Brad2.0/`). The Knowledge Base must point at **one canonical copy** per document and mark the others as superseded. See `03-Conceptual-Documentation-Map.md` § "Brad lineage".
+> **Duplication risk:** Several Brad/Brad2 documents and the security/threat-model series exist in **two roots** (`Builder/Documentations/` and `Builder/Brad/`, `Business Risk & Analytics Director Brad.pi/`). The Knowledge Base must point at **one canonical copy** per document and mark the others as superseded. See `03-Conceptual-Documentation-Map.md` Â§ "Brad lineage".
 
 ---
 
@@ -155,7 +155,7 @@ This is the **current shipping** Help Center. It is implementation, not architec
 | `Builder/Brad/FinalUpgradeBrad421.txt` | CONCEPT | Brad upgrade notes | `Architecture/Brad/Upgrade-Notes/` |
 | `Builder/Compliance/Documents/` | OPS | Compliance source documents | Stays; cross-linked from KB |
 | `Builder/Compliance/ChatGPTmandatedEvents.md` | DUP | Same as `Documentations/ChatGPTmandatedEvents.md` | Keep canonical at `Documentations/`; remove or link from `Compliance/` |
-| `Builder/iAdministrator/` (empty) | — | Empty | Drop |
+| `Builder/iAdministrator/` (empty) | â€” | Empty | Drop |
 | `Builder/Forns/`, `Builder/PolicyandForms/`, `Builder/Policies/`, `Builder/Journey/`, `Builder/Main/`, `Builder/Taxonomy_Policies/`, `Builder/Framework`, `Builder/ci-ion/` | UIUX/legacy | Source mocks, screenshots, taxonomy | `Architecture/UIUX/Legacy-Mocks/` (preserve for reference; not KB) |
 | `Builder/Documentations/Survey-Simulation/Medicare ... .docx` | OPS | Binary roadmap | Keep in source folder; link only |
 | `Builder/Compliance-Execution-Sprints/UIUX` (file, not folder) | UIUX | Single UIUX index | Move into `UIUX/CES/` after confirming structure |
@@ -163,7 +163,7 @@ This is the **current shipping** Help Center. It is implementation, not architec
 
 ---
 
-## 6. Root-level documentation — `documentation/`
+## 6. Root-level documentation â€” `documentation/`
 
 | File | Class | Purpose | Recommended Home |
 |---|---|---|---|
@@ -199,7 +199,7 @@ This is the **current shipping** Help Center. It is implementation, not architec
 
 ---
 
-## 9. Summary — counts
+## 9. Summary â€” counts
 
 | Class | Count (approx) |
 |---|---|
@@ -212,3 +212,4 @@ This is the **current shipping** Help Center. It is implementation, not architec
 | Outdated candidates | 6 |
 
 These counts drive the article-plan and rehoming work in `02..07`.
+

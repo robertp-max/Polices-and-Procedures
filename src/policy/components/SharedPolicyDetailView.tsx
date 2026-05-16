@@ -382,12 +382,30 @@ function DSimpleTable({ headers, rows }: { headers: string[]; rows: (string | Re
 // These helpers render markdown-bodied sections using the same
 // brand-aligned chrome as the GV-GB-001 specimen tabs.
 
+const METADATA_FIELD_KEYWORDS = [
+  'policy id', 'policy title', 'domain', 'subdomain', 'effective date',
+  'review date', 'next review', 'classification tier', 'status',
+  'review cycle', 'access tier', 'policy owner', 'approved by',
+  'version', 'supersedes', 'last reviewed',
+];
+
+function isMetadataTableSection(section: { title: string; body: string }): boolean {
+  const titleLower = section.title.toLowerCase().replace(/\\/g, '');
+  if (titleLower.includes('policy header')) return true;
+
+  const body = (section.body ?? '').trim();
+  if (!body.startsWith('|')) return false;
+  const lines = body.split('\n').filter(l => l.trim().startsWith('|'));
+  if (lines.length < 4) return false;
+  const bodyLower = body.toLowerCase();
+  const matchCount = METADATA_FIELD_KEYWORDS.filter(kw => bodyLower.includes(kw)).length;
+  return matchCount >= 4;
+}
+
 /** Map a raw section.order (from the generated content) to one of the
  *  seven shell tabs. Mirrors the mapping used in PolicyDetailPage. */
 function mapOrderToTab(order: number): string {
   if (order === 1) return '__skip__';
-  // Order 5 is the canonical "4. Policy Statement" section in extracted_full markdown.
-  // Route it to its own tab so it gets the numbered 4.x rendering treatment.
   if (order === 5) return 'statements';
   if (order >= 2 && order <= 6) return 'overview';
   if (order >= 7 && order <= 18) return 'procedures';
@@ -518,11 +536,9 @@ function GenericSectionPanel({ section }: { section: import('@/policy/types').Po
 }
 
 // ── SECTION CARD WRAPPER ──────────────────────────────────────
-// Fully transparent container — no background, no border.
-// Shown one at a time via sectionIdx-based rendering.
 function SCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full max-w-[1000px] break-inside-avoid">
+    <div className="w-full max-w-[1100px] break-inside-avoid bg-white shadow-sm rounded-xl p-6 mb-6">
       {children}
     </div>
   );
@@ -1160,12 +1176,6 @@ function TabAppendices({ policy }: { policy: SharedPolicy }) {
             ))}
           </div>
           <div className="mt-6 flex flex-col gap-2">
-            <button
-              onClick={() => window.open('https://sign.dropbox.com', '_blank', 'noopener,noreferrer')}
-              className="flex items-center gap-2 text-blue-600 font-montserrat font-semibold text-[12px] hover:underline transition-all"
-            >
-              <ExternalLink size={14} /> Sign on Dropbox
-            </button>
             <button onClick={() => printForm(APPENDIX_FORM_MAP[activeApp])} className="flex items-center gap-2 text-[#524048] font-montserrat font-semibold text-[12px] hover:text-[#1F1C1B] transition-colors">
               <Printer size={14} /> Print Form
             </button>
@@ -1545,13 +1555,13 @@ export function SharedPolicyDetailView({
     for (let i = 0; i < all.length; i++) {
       const s = all[i];
       if (mapOrderToTab(s.order) === '__skip__') continue;
+      if (isMetadataTableSection(s)) continue;
       if (isEmptyBody(s.body)) {
-        // Look ahead for a subsection with deeper level inside same tab.
         const next = all[i + 1];
         const sameTabDeeper = next
           && mapOrderToTab(next.order) === mapOrderToTab(s.order)
           && next.level > s.level;
-        if (sameTabDeeper) continue; // drop empty parent
+        if (sameTabDeeper) continue;
       }
       keep.add(i);
     }
@@ -2058,7 +2068,7 @@ export function SharedPolicyDetailView({
 
       {/* ══ TAB BAR ════════════════════════════════════════════ */}
       <nav
-        className="no-print bg-white border-b border-[#f1efec] shrink-0 overflow-x-auto custom-scrollbar"
+        className="no-print bg-white border-b border-[#E5E4E3] shrink-0 overflow-x-auto custom-scrollbar"
         role="tablist"
         aria-label="Policy sections"
       >
@@ -2072,17 +2082,17 @@ export function SharedPolicyDetailView({
                 role="tab"
                 aria-selected={active}
                 onClick={() => handleTabClick(tab.id)}
-                className={`flex items-center gap-2 px-4 py-[14px] font-semibold group border-b-[3px] transition-all duration-200 ${
+                className={`flex items-center gap-2 px-5 py-3 font-semibold group border-b-[3px] transition-all duration-200 ${
                   active
                     ? 'text-[#C74601] border-[#C74601]'
                     : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
                 }`}
               >
                 <Icon
-                  size={17}
-                  className={active ? 'text-[#C74601]' : 'text-[#007970] opacity-70 group-hover:opacity-100'}
+                  size={14}
+                  className={active ? 'text-[#C74601]' : 'text-[#524048] opacity-70 group-hover:opacity-100'}
                 />
-                <span className="font-montserrat text-[11px] tracking-[0.1em] whitespace-nowrap uppercase">
+                <span className="font-montserrat text-[13px] whitespace-nowrap">
                   {tab.label}
                 </span>
               </button>
@@ -2094,7 +2104,7 @@ export function SharedPolicyDetailView({
       {/* ══ MAIN CONTENT — section-by-section carousel ══════════ */}
       <main
         ref={mainPanelRef}
-        className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar bg-white policy-content flex flex-col"
+        className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar bg-[#FAFBF8] policy-content flex flex-col"
         role="tabpanel"
         style={{ touchAction: 'pan-y' }}
         onTouchStart={handleTouchStart}
@@ -2105,8 +2115,8 @@ export function SharedPolicyDetailView({
         <div className="flex flex-col">
           <div
             key={`section-${activeSectionGlobalIdx}-${slidePhase === 'enter' ? 'in' : 'out'}`}
-            className={`max-w-[1200px] w-full px-6 pt-10 pb-8 md:px-10 lg:px-12 ${slideClass} ${
-              flashAnchorRef ? 'ring-2 ring-[#ea580c]/50 rounded-xl transition-all duration-500' : ''
+            className={`max-w-[1100px] w-full mx-auto px-6 pt-8 pb-12 md:px-8 lg:px-10 ${slideClass} ${
+              flashAnchorRef ? 'ring-2 ring-[#007970]/40 rounded-xl transition-all duration-500' : ''
             }`}
           >
             {useGenericContent ? (

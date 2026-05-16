@@ -206,6 +206,8 @@ function AppRoutes() {
                     <Route path="/library" element={<FeatureRouteGuard featureId="policyLibrary.view"><LibraryPage /></FeatureRouteGuard>} />
                     <Route path="/library/:policyId" element={<FeatureRouteGuard featureId="policyLibrary.view"><PolicyDetailPage /></FeatureRouteGuard>} />
                     <Route path="/policies/:policyId" element={<FeatureRouteGuard featureId="policyLibrary.view"><PolicyDetailPage /></FeatureRouteGuard>} />
+                    {/* /policies as alias for the policy library list (consistent entry point) */}
+                    <Route path="/policies" element={<Navigate to="/library" replace />} />
                     {/* Unified Policy Lifecycle Workspace (replaces /drafts /review /publish) */}
                     <Route path="/policy-lifecycle" element={<FeatureRouteGuard featureId="policyLifecycle.view"><PolicyLifecyclePage /></FeatureRouteGuard>} />
                     <Route path="/policy-lifecycle/:policyId" element={<FeatureRouteGuard featureId="policyLifecycle.view"><PolicyLifecyclePage /></FeatureRouteGuard>} />
