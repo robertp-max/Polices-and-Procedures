@@ -1,0 +1,738 @@
+Execution mode: LOCKED — ADD “ACHC HH EVIDENCE” VIEW USING policy_hh_section_map.csv
+
+
+
+Do not wire anchors yet.
+
+Do not redesign the IBM policy viewer.
+
+Do not touch print/download behavior.
+
+Do not modify policy content.
+
+Do not regenerate HH mappings.
+
+Do not touch BRAD.
+
+Do not alter existing ACHC Matrix/Crosswalk logic except navigation/view integration.
+
+
+
+Goal:
+
+Add a third ACHC surveyor view named:
+
+
+
+ACHC HH Evidence
+
+
+
+This becomes the DEFAULT landing view under:
+
+Framework → ACHC Survey Alignment
+
+
+
+Source of truth:
+
+C:\AI\Git\training\HomeHealth\Policies_and_Procedures\Builder\Documentations\Policy-HH-Map\policy_hh_section_map.csv
+
+
+
+Purpose:
+
+This is the SURVEYOR EVIDENCE VIEW.
+
+
+
+It should show:
+
+HH Standard
+
+→ exact mapped policy section
+
+→ supporting content
+
+→ confidence
+
+→ evidence relationship
+
+
+
+This is NOT another matrix.
+
+This is the operational evidence explorer.
+
+
+
+==================================================
+
+VIEW ORDER
+
+==================================================
+
+
+
+Tabs order:
+
+
+
+1. ACHC HH Evidence (DEFAULT)
+
+2. ACHC Standard Matrix
+
+3. ACHC Crosswalk
+
+
+
+Persist selected tab in URL/query state if already supported.
+
+
+
+==================================================
+
+DATA MODEL
+
+==================================================
+
+
+
+Use:
+
+policy_hh_section_map.csv
+
+
+
+Expected fields:
+
+- policy_id
+
+- policy_title
+
+- hh_standard
+
+- section_id
+
+- section_title
+
+- supporting_content
+
+- match_type
+
+- confidence
+
+- notes
+
+
+
+==================================================
+
+LAYOUT
+
+==================================================
+
+
+
+Use same overall ACHC survey page shell/layout.
+
+
+
+Do NOT create a giant spreadsheet feel.
+
+
+
+Use grouped evidence cards/table hybrid.
+
+
+
+Primary grouping:
+
+HH Standard
+
+
+
+Within each HH Standard:
+
+show all mapped policies/sections.
+
+
+
+==================================================
+
+ROW STRUCTURE
+
+==================================================
+
+
+
+Each mapped entry should show:
+
+
+
+LEFT:
+
+- HH standard pill
+
+- confidence badge
+
+- match_type badge
+
+
+
+CENTER:
+
+- policy_id
+
+- policy_title
+
+- section_title
+
+
+
+RIGHT:
+
+- supporting_content preview
+
+  (truncate cleanly to ~2–3 lines)
+
+
+
+BOTTOM META:
+
+- section_id
+
+- notes if present
+
+
+
+==================================================
+
+FILTERS
+
+==================================================
+
+
+
+Reuse existing ACHC filter bar styling.
+
+
+
+Add filters:
+
+- HH Standard
+
+- Policy ID
+
+- Confidence
+
+- Match Type
+
+- Governance Domain
+
+- Search
+
+
+
+Search must support:
+
+- hh_standard
+
+- policy_id
+
+- section_title
+
+- supporting_content
+
+
+
+==================================================
+
+VISUAL RULES
+
+==================================================
+
+
+
+Keep current Care Indeed white/teal/orange styling.
+
+
+
+No glassmorphism.
+
+No nested cards.
+
+No heavy shadows.
+
+No giant borders.
+
+
+
+Confidence colors:
+
+- HIGH = teal
+
+- MEDIUM = orange
+
+- LOW = red
+
+
+
+Match type subtle pills:
+
+- EXACT_HH_TEXT
+
+- ACHC_CONTEXT
+
+- CORRIDOR_CONTEXT
+
+- POLICY_CONTEXT
+
+
+
+==================================================
+
+INTERACTION RULES
+
+==================================================
+
+
+
+NOT YET:
+
+Do NOT wire actual scrolling anchors yet.
+
+
+
+FOR NOW:
+
+clicking a row/policy should:
+
+- open existing policy modal/viewer
+
+- optionally preselect the correct section tab if possible
+
+- show temporary:
+
+  “Anchor wiring pending”
+
+
+
+Do not implement fake scrolling.
+
+
+
+==================================================
+
+DEFAULT VIEW REQUIREMENT
+
+==================================================
+
+
+
+When user opens:
+
+ACHC Survey Alignment
+
+
+
+Default tab must be:
+
+ACHC HH Evidence
+
+
+
+Reason:
+
+This becomes the primary surveyor navigation layer.
+
+
+
+Matrix and Crosswalk become secondary analytical views.
+
+
+
+==================================================
+
+VALIDATION
+
+==================================================
+
+
+
+Validate:
+
+- CSV loads successfully
+
+- all HH standards render
+
+- no duplicate rendering loops
+
+- no console errors
+
+- filters work
+
+- modal opens correctly
+
+- existing ACHC Matrix unchanged
+
+- existing ACHC Crosswalk unchanged
+
+- IBM Framework views untouched
+
+
+
+==================================================
+
+OUTPUT
+
+==================================================
+
+
+
+Provide:
+
+- files changed
+
+- CSV ingestion approach
+
+- component structure
+
+- validation results
+
+- known limitations
+
+- confirmation that anchor wiring was NOT implemented yet
+
+Execution mode: LOCKED — REFINE ACHC HH EVIDENCE VIEW
+
+
+
+Do not redesign the page.
+
+Do not touch IBM policy viewer.
+
+Do not touch print/download.
+
+Do not wire anchors yet.
+
+Do not modify CSV generation.
+
+Do not change mapping logic.
+
+
+
+Goal:
+
+Polish the ACHC HH Evidence view into a clean surveyor-facing evidence explorer.
+
+
+
+==================================================
+
+1. FIX METADATA / CODE BLEEDING
+
+==================================================
+
+
+
+Current issue:
+
+Internal mapping/debug metadata is visually bleeding into the UI and reducing readability.
+
+
+
+Examples:
+
+- section_id strings
+
+- relocation notes
+
+- FinalFix references
+
+- internal remediation notes
+
+- long inline diagnostics
+
+
+
+Action:
+
+Move technical lineage metadata into:
+
+- collapsible “Technical Details” area
+
+OR
+
+- subtle expandable info drawer
+
+
+
+Default visible UI should remain clean and surveyor-readable.
+
+
+
+Keep visible by default:
+
+- HH standard
+
+- confidence
+
+- match type
+
+- policy_id
+
+- policy_title
+
+- section_title
+
+- supporting_content preview
+
+
+
+Hide by default:
+
+- internal fix notes
+
+- relocation diagnostics
+
+- remediation text
+
+- raw section ids
+
+- parser/debug metadata
+
+
+
+==================================================
+
+2. ADD TITLE 22 + 42 CFR / MEDICARE COP
+
+==================================================
+
+
+
+Add regulatory citation layer to each mapped evidence row.
+
+
+
+Show:
+
+- CA Title 22 citations
+
+- Medicare CoP / 42 CFR citations
+
+
+
+Preferred placement:
+
+right-side regulatory metadata cluster
+
+OR
+
+bottom metadata row
+
+
+
+Use subtle pills/chips:
+
+- teal = 42 CFR
+
+- orange = Title 22
+
+
+
+Data source priority:
+
+1. existing corridorAlignment mappings
+
+2. ACHC matrix/crosswalk metadata
+
+3. existing policy regulatory references
+
+
+
+Do not invent citations.
+
+
+
+==================================================
+
+3. IMPROVE SUPPORTING CONTENT READABILITY
+
+==================================================
+
+
+
+Current supporting content feels dense.
+
+
+
+Improve:
+
+- line-height
+
+- spacing
+
+- truncation
+
+- paragraph flow
+
+
+
+Requirements:
+
+- preserve exact text
+
+- no content rewriting
+
+- no HTML-ish rendering
+
+- avoid giant single-line paragraphs
+
+
+
+Target:
+
+Surveyor should rapidly scan evidence.
+
+
+
+==================================================
+
+4. IMPROVE GROUP VISUAL HIERARCHY
+
+==================================================
+
+
+
+HH Standard group headers should feel stronger.
+
+
+
+Add:
+
+- mapped section count
+
+- optional collapse/expand
+
+- sticky group header if simple
+
+
+
+Keep minimal and clean.
+
+
+
+==================================================
+
+5. CLICK TARGET PREPARATION
+
+==================================================
+
+
+
+Prepare the layout for future anchor wiring.
+
+
+
+Each row should visually imply:
+
+“click to open supporting section”
+
+
+
+But:
+
+DO NOT implement scrolling anchors yet.
+
+
+
+==================================================
+
+6. VALIDATION
+
+==================================================
+
+
+
+Validate:
+
+- no metadata bleed in primary UI
+
+- no console errors
+
+- citations render correctly
+
+- HH grouping preserved
+
+- filters still work
+
+- existing Matrix/Crosswalk unaffected
+
+- modal still opens correctly
+
+
+
+==================================================
+
+OUTPUT
+
+==================================================
+
+
+
+Provide:
+
+- files changed
+
+- citation source approach
+
+- metadata visibility approach
+
+- validation summary
+
+- confirmation that anchor wiring was NOT implemented
+
+  const [evidenceSearch, setEvidenceSearch] = useState('');
+  /** HH standard group key → collapsed (rows hidden). */
+  const [evidenceHhCollapsed, setEvidenceHhCollapsed] = useState<Record<string, boolean>>({});
+  /** Per-row technical details expanded. */
+          <div className="space-y-4">
+            {evidenceGroups.map((group) => (
+              <section key={group.hhStandard} className="rounded-xl border border-[#dbeafe] bg-white">
+                <div className="flex items-center justify-between border-b border-[#e2e8f0] bg-[#f8fafc] px-3 py-2">
+                            <p className="text-[10px] leading-normal text-slate-500">
+                              Matrix: policy lists this HH standard.
+                              ACHC matrix row includes this HH standard for this policy.
+                            </p>
+                            <span className="text-[10px] text-slate-500">
+                              +{fedExtra + t22Extra} more in technical details
+                              {fedExtra > 0 ? `+${fedExtra} Medicare CoP / 42 CFR` : ''}
+                              {fedExtra > 0 && t22Extra > 0 ? ' · ' : ''}
+                          ) : null}
+                          {(fedExtra > 0 || cites.medicareCop.length > chipLimit) && cites.medicareCop.length ? (
+                          {cites.medicareCop.length ? (
+                            <div>
+Refinement is implemented in src/policy/pages/AchcSurveyAlignmentPage.tsx only (no IBM viewer, print/download, CSV, mapping logic, or anchor wiring).
+
+Files changed
+src/policy/pages/AchcSurveyAlignmentPage.tsx — evidence tab UI + helpers (getEvidenceRegulatoryCitations, extractCitationsFromSectionBody, evidenceRowKey, etc.).
+Citation source approach
+Strict waterfall per row (same policy-level sources for all rows on that policy; section text only when tiers 1–2 yield nothing):
+
+corridorAlignment[policyId].crosswalk — if either title22 or cop has any non-empty entries, that tier wins (both lists taken from corridor only).
+Else achcSurveyByPolicyId[policyId] — title22 and medicareCop from ACHC matrix metadata.
+Else getPolicyContent → mapped sectionId body — parses existing markdown table cells and - [label](url) lines; only lines classifying as Title 22 (22 CCR, TITLE 22) or federal (42 CFR, 1904., 1910.). No synthetic citation strings.
+Primary row UI: up to 5 teal (42 CFR / CoP) and 5 orange (Title 22) chips; overflow called out and full lists repeated under Technical details (with citation_source).
+
+Metadata visibility approach
+Default row surface: confidence, match type, policyId, titles, supporting preview, regulatory chips, matrix alignment line when true, and a short “click row to open…” affordance.
+Technical details (collapsed by default): section_id, full notes, citation_source, and full citation lists. Internal / long notes no longer appear in the main footer.
+Validation summary
+npx tsc --noEmit completes with exit code 0 (no TS errors for this change set).
+Lint on the edited file: clean.
+Matrix / Crosswalk blocks are unchanged below the evidence branch; filters and modal wiring for evidence still use openViewerFromEvidence as before.
+Browser smoke was not run here (would need a live dev server on the expected port).
+Anchor wiring
+Not implemented: highlightedAnchorRef / selectedAchcStandard are still cleared for evidence opens; toast copy remains “Anchor wiring pending” (existing behavior). No scroll-to-section behavior was added.

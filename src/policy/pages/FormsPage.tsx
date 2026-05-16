@@ -104,12 +104,14 @@ export function FormsPage() {
         .glass-interactive-forms { background-color: transparent !important; transition: border-color 300ms ease, box-shadow 300ms ease; }
         .glass-interactive-forms:hover { box-shadow: 0 0 15px rgba(255,255,255,0.05); }
         html[data-theme="care-indeed-light"] .glass-interactive-forms {
-          background-color: #FAFBF8 !important;
-          border-color: #E5E4E3 !important;
+          /* Wave 7 T3: light-theme-scoped CSS now uses canonical --ci-* tokens that already resolve
+             to these values in the care-indeed-light scope (see src/index.css). */
+          background-color: var(--ci-surface-2) !important;
+          border-color: var(--ci-border) !important;
         }
         html[data-theme="care-indeed-light"] .glass-interactive-forms:hover {
-          background-color: #FFFFFF !important;
-          border-color: #C74601 !important;
+          background-color: var(--ci-surface) !important;
+          border-color: var(--ci-primary-500) !important;
           box-shadow: none !important;
         }
         @keyframes shimmerForms { 0% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
@@ -125,8 +127,9 @@ export function FormsPage() {
       `}</style>
 
       <div className="h-full w-full font-roboto text-ci-text-primary bg-ci-bg flex flex-col overflow-hidden">
-        {/* HEADER */}
-        <div className="px-10 pt-10 pb-4 flex items-center justify-between shrink-0">
+        {/* HEADER — Wave 8 mobile-ops fix: responsive horizontal padding so the
+           desktop-first `px-10` does not overflow on 390px viewports. */}
+        <div className="px-4 sm:px-6 md:px-10 pt-10 pb-4 flex items-center justify-between shrink-0">
           <div className="flex flex-col">
             <h1 className="font-montserrat text-3xl font-light text-ci-text-primary flex items-center gap-4">
               <Layers className="text-[#a855f7]" size={36} strokeWidth={1.5}/> Enterprise Forms Library

@@ -138,10 +138,13 @@ export function PmDashboardPage(): ReactElement {
           <h1 className="text-2xl font-outfit text-white mt-1">Sprint Dashboard</h1>
         </div>
         <div className="flex items-center gap-2">
+          {/* Wave 8 mobile-ops fix: enforce WCAG AA 44x44 touch targets on
+             sprint prev/next controls (was px-2 py-1, ~24x24). */}
           <button
             type="button"
             onClick={() => setSprintId(neighbourSprint(sprintId, -1).id)}
-            className="px-2 py-1 rounded border border-white/10 text-sm hover:bg-white/5"
+            className="px-2 py-1 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded border border-white/10 text-sm hover:bg-white/5"
+            aria-label="Previous sprint"
           >
             ←
           </button>
@@ -149,7 +152,8 @@ export function PmDashboardPage(): ReactElement {
           <button
             type="button"
             onClick={() => setSprintId(neighbourSprint(sprintId, 1).id)}
-            className="px-2 py-1 rounded border border-white/10 text-sm hover:bg-white/5"
+            className="px-2 py-1 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded border border-white/10 text-sm hover:bg-white/5"
+            aria-label="Next sprint"
           >
             →
           </button>

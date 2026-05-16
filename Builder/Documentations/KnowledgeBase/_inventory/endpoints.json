@@ -1,0 +1,92 @@
+[
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "DELETE",
+        "Endpoint":  "/sessions/:threadId"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/audit/recent"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/health"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/operational/gaps"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/operational/lifecycle"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/operational/summary"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\access\\pep.ts",
+        "Method":  "GET",
+        "Endpoint":  "/protected"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/references"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/references/:id"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/regulatory/policy/:policyId"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/regulatory/updates"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/regulatory/updates/:id"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/sessions"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "GET",
+        "Endpoint":  "/sessions/:threadId"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "POST",
+        "Endpoint":  "/chat"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "POST",
+        "Endpoint":  "/index/rebuild"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "POST",
+        "Endpoint":  "/query"
+    },
+    {
+        "File":  "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\server\\ia\\routes.ts",
+        "Method":  "POST",
+        "Endpoint":  "/sessions/:threadId/resolve"
+    }
+]

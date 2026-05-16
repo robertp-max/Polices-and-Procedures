@@ -126,6 +126,13 @@ const HEX_SCAN_EXEMPT = new RegExp(
     '^src/policy/autogen/.*$',
     '^scripts/.*$',
     '^server/.*$',
+    // Wave 7 T1: legacy `*.old.tsx` reference files are orphan code retained
+    // for historical reference per Lead 16 C10. They are NOT mounted by any
+    // route and not on the migration runway. Exempt from hex/rgb and
+    // glass-stack-budget scans so they do not count against the active
+    // design-system surface. To re-include a legacy file, rename it off the
+    // `.old.tsx` suffix.
+    '.*\\.old\\.tsx$',
   ].join('|'),
 );
 

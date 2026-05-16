@@ -25,7 +25,7 @@ import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { CesEvidenceHierarchyPanel } from '@/policy/components/evidence/CesEvidenceHierarchyPanel';
 import { resolveEvidenceDataUrl } from '@/policy/evidence/demoEvidenceRuntimeCache';
 import { useDataFreshness } from '@/policy/utils/useDataFreshness';
-import { StalenessBanner, AriaLiveRegion } from '@/policy/components/ui';
+import { StalenessBanner, AriaLiveRegion, LoadingState, EmptyState } from '@/policy/components/ui';
 import {
   type EvidenceAuditEvent,
   type EvidenceMode,
@@ -892,7 +892,7 @@ export function EvidenceCenterPage() {
           {/* Table */}
           <div className="flex-1 overflow-auto px-6 pt-4">
             {loading && files.length === 0 ? (
-              <div className="text-sm text-slate-300 py-12 text-center">Loading evidence…</div>
+              <LoadingState variant="block" label="Loading evidence…" />
             ) : filtered.length === 0 ? (
               <EvidenceCenterEmptyState eventId={eventId} onUpload={onUploadClick} />
             ) : (
@@ -1093,20 +1093,29 @@ export function EvidenceCenterPage() {
 // ── Empty state ────────────────────────────────────────────────
 export function EvidenceCenterEmptyState({ eventId, onUpload }: { eventId: string; onUpload: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-16 px-6">
-      <FolderOpen size={42} className="text-cyan-300/75 mb-3" />
-      <h3 className="text-base font-semibold text-slate-100">No evidence uploaded for this event yet.</h3>
-      <p className="text-sm text-slate-300 mt-1 max-w-md">
-        Event <code className="text-slate-100">{eventId}</code> has no files in the
-        compliance store. Upload the first artifact to start the audit chain.
-      </p>
-      <button
-        onClick={onUpload}
-        className="mt-4 px-4 py-2 text-sm rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 inline-flex items-center gap-2"
-      >
-        <Upload size={14} /> Upload evidence
-      </button>
-    </div>
+    <EmptyState
+      icon={<FolderOpen size={42} />}
+      title="No evidence uploaded for this event yet."
+      description={
+        <>
+          Event <code style={{ color: 'var(--ci-text-primary)' }}>{eventId}</code> has no files in
+          the compliance store. Upload the first artifact to start the audit chain.
+        </>
+      }
+      action={
+        <button
+          onClick={onUpload}
+          className="px-4 py-2 text-sm rounded inline-flex items-center gap-2"
+          style={{
+            background: 'var(--ci-surface-2)',
+            border: '1px solid var(--ci-border)',
+            color: 'var(--ci-link)',
+          }}
+        >
+          <Upload size={14} /> Upload evidence
+        </button>
+      }
+    />
   );
 }
 

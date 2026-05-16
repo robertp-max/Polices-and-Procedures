@@ -1,0 +1,88 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "seed": {
+    "eventId": "qapi_meeting-20260507-08",
+    "taskId": "qapi_meeting-20260507-08-29",
+    "workflowId": "QA-WF-03",
+    "policyId": "QA-PG-001",
+    "formId": "QA-FM-021",
+    "formInstanceId": "qapi_meeting-20260507-08-QA-FM-021-001",
+    "evidenceId": "EV-moxe4fyj-39jy",
+    "certificateArtifactId": "EV-moxe4fyn-c45d",
+    "requirementId": "qapi_meeting-20260507-08-29::FORM_COMPLETION::QA-FM-021"
+  },
+  "results": [
+    {
+      "item": "Completed form artifact review",
+      "status": "FAIL",
+      "route": "/artifacts/qapi_meeting-20260507-08-QA-FM-021-001?event_id=qapi_meeting-20260507-08&task_id=qapi_meeting-20260507-08-29&form_id=QA-FM-021&form_instance_id=qapi_meeting-20260507-08-QA-FM-021-001&type=form_instance",
+      "artifactId": "qapi_meeting-20260507-08-QA-FM-021-001",
+      "screenshot": "Builder/_system/screenshots/browser-acceptance-delta/Completed-form-artifact-review-fail.png",
+      "blocker": "Form instance iframe render not found in artifact viewer",
+      "fileFixed": "src/policy/pages/ArtifactViewerPage.tsx"
+    },
+    {
+      "item": "Uploaded evidence artifact review",
+      "status": "FAIL",
+      "route": "/artifacts/EV-moxe4fyj-39jy?event_id=qapi_meeting-20260507-08&task_id=qapi_meeting-20260507-08-29&form_id=QA-FM-021&form_instance_id=qapi_meeting-20260507-08-QA-FM-021-001&evidence_id=EV-moxe4fyj-39jy&type=evidence",
+      "artifactId": "EV-moxe4fyj-39jy",
+      "screenshot": "Builder/_system/screenshots/browser-acceptance-delta/Uploaded-evidence-artifact-review-fail.png",
+      "blocker": "Evidence image preview did not render",
+      "fileFixed": "src/policy/pages/ArtifactViewerPage.tsx"
+    },
+    {
+      "item": "Evidence package review",
+      "status": "PASS",
+      "route": "/artifacts/qapi_meeting-20260507-08-29?event_id=qapi_meeting-20260507-08&task_id=qapi_meeting-20260507-08-29&form_id=QA-FM-021&form_instance_id=qapi_meeting-20260507-08-QA-FM-021-001&type=evidence_package",
+      "artifactId": "qapi_meeting-20260507-08-29",
+      "screenshot": "Builder/_system/screenshots/browser-acceptance-delta/Evidence-package-review.png",
+      "blocker": "",
+      "fileFixed": "src/policy/pages/ArtifactViewerPage.tsx; src/policy/components/evidence/CesEvidenceHierarchyPanel.tsx"
+    },
+    {
+      "item": "Evidence Center artifact link review",
+      "status": "PASS",
+      "route": "/evidence?event_id=qapi_meeting-20260507-08&task_id=qapi_meeting-20260507-08-29&evidence_id=EV-moxe4fyj-39jy&form_id=QA-FM-021&form_instance_id=qapi_meeting-20260507-08-QA-FM-021-001",
+      "artifactId": "EV-moxe4fyj-39jy",
+      "screenshot": "Builder/_system/screenshots/browser-acceptance-delta/Evidence-Center-artifact-link-review.png",
+      "blocker": "",
+      "fileFixed": "src/policy/pages/EvidenceCenterPage.tsx"
+    },
+    {
+      "item": "Task row/details artifact link review",
+      "status": "PASS",
+      "route": "/calendar/event/qapi_meeting-20260507-08/task/qapi_meeting-20260507-08-29",
+      "artifactId": "EV-moxe4fyj-39jy",
+      "screenshot": "Builder/_system/screenshots/browser-acceptance-delta/Task-row-details-artifact-link-review.png",
+      "blocker": "",
+      "fileFixed": "src/policy/pages/MobileIncidentExecutionPage.tsx; src/policy/components/regulatory/WorkflowExecutionPanel.tsx"
+    },
+    {
+      "item": "Audit Mode artifact link review",
+      "status": "PASS",
+      "route": "/audit?event=qapi_meeting-20260507-08",
+      "artifactId": "EV-moxe4fyj-39jy",
+      "screenshot": "Builder/_system/screenshots/browser-acceptance-delta/Audit-Mode-artifact-link-review.png",
+      "blocker": "",
+      "fileFixed": "src/policy/pages/AuditModePage.tsx"
+    },
+    {
+      "item": "Audit trail lifecycle artifact review",
+      "status": "PASS",
+      "route": "/audit?event=qapi_meeting-20260507-08",
+      "artifactId": "EV-moxe4fyj-39jy",
+      "screenshot": "Builder/_system/screenshots/browser-acceptance-delta/Audit-trail-lifecycle-artifact-review.png",
+      "blocker": "",
+      "fileFixed": "src/policy/pages/AuditModePage.tsx; src/policy/components/regulatory/WorkflowExecutionPanel.tsx"
+    },
+    {
+      "item": "eCIgn browser flow",
+      "status": "PASS",
+      "route": "/forms/QA-FM-021?event_id=qapi_meeting-20260507-08&task_id=qapi_meeting-20260507-08-29&form_id=QA-FM-021&form_instance_id=qapi_meeting-20260507-08-QA-FM-021-001&workflow_id=QA-WF-03&requirement_id=qapi_meeting-20260507-08-29%3A%3AFORM_COMPLETION%3A%3AQA-FM-021",
+      "artifactId": "EV-moxe4kdn-0ci9",
+      "screenshot": "Builder/_system/screenshots/browser-acceptance-delta/eCIgn-browser-flow.png",
+      "blocker": "",
+      "fileFixed": "src/policy/components/FormSigningWorkspace.tsx; src/policy/ecign/api.ts"
+    }
+  ]
+}

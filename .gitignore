@@ -26,9 +26,6 @@ tmp-*.log
 # PM local persistence (JSON files; regenerated from in-memory store)
 data/pm/
 
-# Local/generated Builder exports and working documentation dumps
-Builder/
-Builder/**
 
 # Trash/archive folder
 Bin-(thrash)/

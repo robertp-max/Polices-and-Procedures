@@ -38,8 +38,12 @@ export function GlobalTaskDrawer(): ReactElement | null {
   if (!taskId) return null;
   if (pageHasInlinePanel(location.pathname)) return null;
 
+  // Wave 8 mobile-ops fix: width was fixed `w-[420px]` which exceeded a 390px
+  // viewport. Use `min(100vw, 420px)` via Tailwind arbitrary value so the drawer
+  // becomes a full-bleed sheet on phones while preserving the 420px sidebar on
+  // wider screens. No behavior change, no protected files touched.
   return (
-    <div className="fixed top-0 right-0 h-full w-[420px] z-50 shadow-2xl border-l border-white/10 bg-[#0f1420] overflow-y-auto">
+    <div className="fixed top-0 right-0 h-full w-[min(100vw,420px)] z-50 shadow-2xl border-l border-white/10 bg-[#0f1420] overflow-y-auto">
       <TaskDetailRightPanel taskId={taskId} onClose={closeTask} />
     </div>
   );

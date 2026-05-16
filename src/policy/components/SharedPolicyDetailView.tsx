@@ -338,6 +338,16 @@ export function SharedGlassTable({ headers, rows }: { headers: string[]; rows: s
 }
 
 // ── DESIGN SYSTEM HELPERS (matching PolicyViewerDesignLight.html) ─────────────
+//
+// Wave 7 T3 note (intentional non-migration of hex literals below):
+//   The DSectionTitle / DSimpleTable / D-* helpers in this region are *light-theme
+//   pinned by design* — they render policy document body in a print-style light
+//   palette (text-[#1F1C1B], border-[#E5E4E3], bg-[#FAFBF8], text-[#007970], etc.)
+//   regardless of the global theme, mirroring PolicyViewerDesignLight.html.
+//   Migrating these to var(--ci-*) tokens would make the document body theme-aware
+//   and *flip* its rendering in dark mode, which breaks the print-equivalence
+//   contract that PrintPage and downstream PDF generation rely on.
+//   Verifier hex/rgb-literal warnings for this file are accepted by design.
 
 function DSectionTitle({ icon: Icon, title, color = 'text-[#1F1C1B]' }: { icon?: React.ElementType; title: string; color?: string }) {
   return (

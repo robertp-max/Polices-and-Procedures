@@ -1,0 +1,267 @@
+{
+  "module": {
+    "id": "M1",
+    "name": "Organizational Orientation (Compressed)",
+    "version": "1.0.0",
+    "type": "onboarding-awareness",
+    "durationMinutes": {
+      "min": 20,
+      "target": 28,
+      "max": 30
+    },
+    "targetRoles": [
+      "RN",
+      "LVN",
+      "CNA",
+      "HHA",
+      "Admin",
+      "DON",
+      "Compliance",
+      "HR",
+      "IT"
+    ],
+    "stateModel": [
+      "NotStarted",
+      "InProgress",
+      "CompletedPass",
+      "CompletedFail"
+    ],
+    "passThresholdPercent": 80,
+    "maxAttempts": 3,
+    "requiresPolicyAcknowledgment": true
+  },
+  "sections": [
+    {
+      "id": "M1-S00",
+      "type": "intro",
+      "title": "Welcome and Why This Matters",
+      "durationMinutes": 2,
+      "lessons": [],
+      "content": [
+        "Purpose of onboarding: establish safe, compliant day-one behavior.",
+        "Why this matters: patient safety, workforce accountability, and regulatory readiness."
+      ]
+    },
+    {
+      "id": "M1-S01",
+      "type": "content",
+      "title": "Section A - Organization",
+      "durationMinutes": 5,
+      "lessons": [1, 2, 3],
+      "content": [
+        "Mission, vision, and values guide care decisions.",
+        "Reporting lines define who to contact by issue type.",
+        "Scope of services defines what is authorized."
+      ],
+      "examples": [
+        "HHA confirms task is in scope before proceeding.",
+        "LVN escalates schedule conflict through supervisor."
+      ],
+      "completionPrompt": "I understand reporting lines and scope of services."
+    },
+    {
+      "id": "M1-S02",
+      "type": "content",
+      "title": "Section B - Ethics and Compliance Awareness",
+      "durationMinutes": 8,
+      "lessons": [4, 5, 6, 7, 8, 9],
+      "content": [
+        "Code of conduct defines expected professional behavior.",
+        "Compliance program supports prevention, detection, and response.",
+        "Use hotline or supervisor reporting pathways.",
+        "Non-retaliation protects good-faith reporting.",
+        "Grievance and disciplinary processes are structured and documented."
+      ],
+      "examples": [
+        "CNA reports documentation concern via approved channel.",
+        "RN reports potential policy deviation without retaliation fear."
+      ],
+      "completionPrompt": "I know how to report concerns and understand non-retaliation protections."
+    },
+    {
+      "id": "M1-S03",
+      "type": "content",
+      "title": "Section C - Workforce Rules and Expectations",
+      "durationMinutes": 4,
+      "lessons": [10, 13],
+      "content": [
+        "Timekeeping and attendance records must be accurate.",
+        "Visit verification must reflect real service delivery.",
+        "Policy acknowledgment and training completion are mandatory."
+      ],
+      "examples": [
+        "HHA uses approved correction process for missed clock action.",
+        "RN completes acknowledgment before independent assignment."
+      ],
+      "completionPrompt": "I understand timekeeping and training completion expectations."
+    },
+    {
+      "id": "M1-S04",
+      "type": "content",
+      "title": "Section D - IT and Security Basics",
+      "durationMinutes": 4,
+      "lessons": [11, 12],
+      "content": [
+        "Agency systems are for authorized business use.",
+        "Follow policy for email, mobile device, and social media use.",
+        "Protect passwords and devices; report suspicious activity quickly."
+      ],
+      "examples": [
+        "Staff reports suspicious password reset email to IT.",
+        "Clinician reports lost device immediately per policy."
+      ],
+      "completionPrompt": "I can identify basic security risks and reporting steps."
+    },
+    {
+      "id": "M1-S05",
+      "type": "summary",
+      "title": "Summary and Accountability",
+      "durationMinutes": 2,
+      "lessons": [],
+      "content": [
+        "Know structure, scope, and reporting pathways.",
+        "Follow ethics, workforce standards, and security basics.",
+        "Completion is required for onboarding and access."
+      ]
+    }
+  ],
+  "assessment": {
+    "id": "M1-QZ",
+    "questionCount": 6,
+    "shuffleQuestions": true,
+    "questions": [
+      {
+        "id": "M1-Q1",
+        "type": "mcq",
+        "prompt": "Why are mission, vision, and values included in onboarding?",
+        "options": [
+          "Optional background information",
+          "Shared standard for decisions and patient service behavior",
+          "Replacement for policy requirements",
+          "Applies only to leadership"
+        ],
+        "correctIndex": 1,
+        "rationale": "They align day-to-day decisions across all roles."
+      },
+      {
+        "id": "M1-Q2",
+        "type": "scenario-mcq",
+        "prompt": "A family asks an HHA to do a task outside documented scope. What should happen first?",
+        "options": [
+          "Perform the task",
+          "Ask coworker for informal approval",
+          "Verify scope with supervisor or clinical lead",
+          "Ignore the request"
+        ],
+        "correctIndex": 2,
+        "rationale": "Out-of-scope requests must be validated through proper escalation."
+      },
+      {
+        "id": "M1-Q3",
+        "type": "scenario-mcq",
+        "prompt": "You suspect a policy violation. What is the best action?",
+        "options": [
+          "Wait and monitor",
+          "Report through supervisor or compliance hotline",
+          "Post in staff chat",
+          "Confront publicly"
+        ],
+        "correctIndex": 1,
+        "rationale": "Prompt policy-based reporting is required."
+      },
+      {
+        "id": "M1-Q4",
+        "type": "mcq",
+        "prompt": "Which statement about non-retaliation is correct?",
+        "options": [
+          "Only anonymous reports are protected",
+          "Only clinical staff are covered",
+          "Good-faith reporting is protected from retaliation",
+          "No investigation can occur"
+        ],
+        "correctIndex": 2,
+        "rationale": "Protection applies to good-faith reporters across roles."
+      },
+      {
+        "id": "M1-Q5",
+        "type": "scenario-mcq",
+        "prompt": "You receive an urgent password reset email from an unknown sender. Best next step?",
+        "options": [
+          "Click the link immediately",
+          "Forward to coworkers",
+          "Report to IT or security and follow guidance",
+          "Delete and do nothing"
+        ],
+        "correctIndex": 2,
+        "rationale": "Potential phishing attempts must be reported for containment."
+      },
+      {
+        "id": "M1-Q6",
+        "type": "mcq",
+        "prompt": "What is required before unrestricted system and scheduling access?",
+        "options": [
+          "Optional reading completion",
+          "Module 1 completion and passing assessment",
+          "Supervisor verbal reminder",
+          "Completion of unrelated advanced modules"
+        ],
+        "correctIndex": 1,
+        "rationale": "Module 1 pass status is a mandatory onboarding gate."
+      }
+    ]
+  },
+  "enforcement": {
+    "rules": [
+      {
+        "id": "M1-GATE-ONBOARDING",
+        "if": "moduleStatus != CompletedPass",
+        "then": "blockOnboardingCompletion"
+      },
+      {
+        "id": "M1-GATE-ACCESS",
+        "if": "moduleStatus != CompletedPass",
+        "then": "blockSystemAccess"
+      },
+      {
+        "id": "M1-GATE-SCHEDULING",
+        "if": "moduleStatus != CompletedPass",
+        "then": "blockSchedulingAndPatientAssignment"
+      }
+    ],
+    "checkpoints": [
+      "identityProvisioning",
+      "onboardingFinalization",
+      "schedulerAssignmentAction"
+    ]
+  },
+  "evidence": {
+    "requiredFields": [
+      "training_module_id",
+      "module_version",
+      "user_id",
+      "completion_status",
+      "score",
+      "completion_timestamp",
+      "policy_acknowledgment",
+      "evidence_type"
+    ],
+    "recordTemplate": {
+      "training_module_id": "M1",
+      "module_version": "1.0.0",
+      "user_id": "<workforce_user_id>",
+      "completion_status": "CompletedPass",
+      "score": 100,
+      "completion_timestamp": "2026-04-29T00:00:00Z",
+      "policy_acknowledgment": true,
+      "evidence_type": "TRAINING_COMPLETION"
+    }
+  },
+  "events": [
+    "TrainingAssigned",
+    "SectionCompleted",
+    "AssessmentSubmitted",
+    "ModuleCompleted",
+    "GateDecisionReturned",
+    "EvidenceWritten"
+  ]
+}

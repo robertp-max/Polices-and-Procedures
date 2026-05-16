@@ -1,0 +1,692 @@
+# iStaffing — Requirements (Step 1 Review / v2.0)
+
+**Document Status:** Step 1 — Documentation Review and Update Only. This document supersedes the prior requirements document that used stale "Brad Workforce AI" product framing, "Client Profile" terminology, and pre-iStaffing naming conventions. No application source code is modified in Step 1.
+
+**Version:** 2.0  
+**Module:** iStaffing inside CIHH-App  
+**Agency Context:** Care Indeed Home Health (Bay Area) — San Mateo County, parts of Alameda and Contra Costa  
+**Step 1 produced:** Documentation rewrite and implementation planning only.
+
+---
+
+## 1. iStaffing Scope
+
+iStaffing is the staffing, scheduling, clinician-patient matching, training readiness, credential readiness, and staffing automation module inside CIHH-App.
+
+### Module Boundary
+
+iStaffing covers:
+- Clinician Profile management
+- Patient Profile management
+- Clinician-Patient Connection management
+- Calendar surface for shift visibility (open, filled, pending coverage, cancelled)
+- Training readiness tracking
+- Credential readiness tracking
+- Future AI-assisted staffing recommendations (Step 3 — planned only)
+- Future AI-assisted staffing support via multi-model orchestration (Step 3 — planned only)
+
+### Agency Operational Context
+
+| Parameter | Value |
+|-----------|-------|
+| Agency | Care Indeed Home Health (Bay Area) |
+| Active Census | ~150 patients across 60-day episodes |
+| Weekly Visit Volume | ~1,200 visits/week |
+| Clinician Pool | 400+ clinicians and caregivers |
+| Service Area | San Mateo County, parts of Alameda and Contra Costa |
+| Scheduling System | AlayaCare (EVV-compliant) |
+| Payer Mix | Medicare, Medi-Cal, Private Insurance |
+| Scheduling Staff | VCCs (Virtual Care Coordinators) |
+
+### Weighted Caseload Formula
+
+```
+Weighted Caseload = (L3-L4 × 1.0) + (L2 × 0.75) + (L1 × 0.5)
+Hard cap: 40 points per ACCM
+Near Full band: 36–39 points → flagged for review before new patient intake
+At Cap: 40 points → no new patients assigned
+```
+
+---
+
+## 2. Naming Requirements
+
+All iStaffing implementation (documentation, source code, routes, UI labels, API paths) must comply with the following naming requirements.
+
+### Required Terms
+
+| Term | Context |
+|------|---------|
+| iStaffing | The staffing module inside CIHH-App |
+| CIHH-App | The whole application |
+| Clinician Profile | The clinician profile feature |
+| Patient Profile | The patient profile feature |
+| Calendar | The iStaffing operational calendar at /staffing-calendar |
+| Patient | Person receiving home health or home care services |
+| Clinician | Licensed or certified care worker eligible for patient assignment |
+| Clinician-Patient Connection | The junction entity between clinician and patient |
+| future AI-assisted staffing support | The Step 3 automation layer |
+| future AI-assisted staffing recommendations | Step 3 AI recommendation outputs |
+
+### Forbidden Terms
+
+The following terms must NOT appear anywhere in iStaffing documentation, source code, routes, or UI labels:
+
+| Forbidden | Replace With |
+|-----------|-------------|
+| Brad Workforce AI | iStaffing (present) or future AI-assisted staffing support (future) |
+| Staffing Helper | iStaffing |
+| Brad System | iStaffing or CIHH-App as appropriate |
+| Brad Platform | CIHH-App |
+| Brad App | CIHH-App |
+| Client Profile | Patient Profile |
+| Client (user-facing) | Patient |
+| CareAssignment | Clinician-Patient Connection |
+| /clients | /patients |
+| /clients/:clientId | /patients/:patientId |
+| autonomous scheduling | (forbidden) |
+| automated staffing decision | (forbidden) |
+| iStaffing automatically assigns clinicians | (forbidden) |
+| active AI matching | (forbidden) |
+| production scheduling automation | (forbidden) |
+| Phase 1 matching engine | (forbidden) |
+
+### Brad Reference Rule
+
+Brad may be referenced only as a future CIHH-App compliance orchestration integration. Allowed pattern: "Brad may later integrate with iStaffing as the CIHH-App compliance orchestration agent, but Brad is not the name of iStaffing or CIHH-App." Brad must not be described as making staffing decisions.
+
+---
+
+## 3. Step 1 Documentation/Planning Requirements
+
+Step 1 is review, documentation update, and implementation planning only. Step 1 does not modify application source code.
+
+### Step 1 Requirements
+
+| # | Requirement |
+|---|-------------|
+| R1.1 | Rewrite iStaffing Architecture file to remove all forbidden naming terms |
+| R1.2 | Rewrite iStaffing Requirements file to remove all forbidden naming terms |
+| R1.3 | Document the approved multi-model architecture (iStaffing Prime / Scheduler / Validator) |
+| R1.4 | Document all proposal lifecycle states |
+| R1.5 | Document all 14 required validation checks |
+| R1.6 | Document Step 2 Calendar acceptance criteria |
+| R1.7 | Document Step 3 automation scope as planned-only |
+| R1.8 | Verify no forbidden naming terms remain in the two iStaffing documentation files |
+| R1.9 | Confirm required routes appear in documentation: /clinicians, /clinicians/:clinicianId, /patients, /patients/:patientId, /staffing-calendar |
+| R1.10 | Confirm /calendar does NOT appear as an iStaffing route in documentation |
+
+### Step 1 Explicit Exclusions
+
+Step 1 EXCLUDES all of the following. None may be performed in Step 1:
+- Source code changes
+- Route creation
+- Component creation
+- Data file creation or modification
+- API work
+- Server-side work
+- Live model calls (Ollama or any other)
+- Production scheduling writes
+- Git commits
+
+---
+
+## 4. Step 2 Calendar Requirements
+
+Step 2 implements the read-only Calendar foundation for open shifts, filled shifts, pending coverage needs, and cancelled shifts.
+
+### Step 2 Route Requirements
+
+| Route | Requirement |
+|-------|-------------|
+| /clinicians | Must be implemented in Step 2 |
+| /clinicians/:clinicianId | Must be implemented in Step 2 |
+| /patients | Must be implemented in Step 2 |
+| /patients/:patientId | Must be implemented in Step 2 |
+| /staffing-calendar | Must be implemented in Step 2 (Calendar surface) |
+
+> The `/calendar` route belongs to the existing CIHH-App compliance calendar and must NOT be touched by iStaffing in any step.
+
+### Step 2 Nav Requirements
+
+| Nav Entry | Route | Requirement |
+|-----------|-------|-------------|
+| Clinician Profiles | /clinicians | Must appear in iStaffing nav |
+| Patient Profiles | /patients | Must appear in iStaffing nav |
+| Calendar | /staffing-calendar | Must appear in iStaffing nav |
+
+### Step 2 Calendar Display Requirements
+
+| # | Requirement |
+|---|-------------|
+| C2.1 | Calendar displays open shifts |
+| C2.2 | Calendar displays filled shifts |
+| C2.3 | Calendar displays pending coverage needs |
+| C2.4 | Calendar displays cancelled shifts |
+| C2.5 | Open shifts show no assigned clinician |
+| C2.6 | Filled shifts show assigned clinician with link to Clinician Profile |
+| C2.7 | Each shift links to the corresponding Patient Profile |
+| C2.8 | Calendar supports filter by shift status |
+| C2.9 | Calendar supports filter by discipline |
+| C2.10 | Calendar supports filter by date |
+| C2.11 | A synthetic/demo data banner is visible in the Calendar during early implementation |
+| C2.12 | No create, fill, assign, edit, delete, or cancel buttons appear |
+| C2.13 | No API calls to production systems |
+| C2.14 | No production writes of any kind |
+| C2.15 | No matching engine |
+| C2.16 | No AI recommendation execution |
+
+### Step 2 Exclusions
+
+Step 2 EXCLUDES the following:
+- Creating shifts
+- Filling shifts
+- Assigning clinicians
+- Editing shifts
+- Cancelling shifts
+- Deleting shifts
+- Sending notifications
+- Matching engine of any kind
+- AI recommendations of any kind
+- API integration
+- Server-side persistence
+- Production scheduling writes
+
+---
+
+## 5. Step 3 Automation Requirements
+
+**PLANNED — NOT IMPLEMENTED**
+
+Step 3 implements the broader iStaffing automation layer, including proposal-first staffing automation, AI-assisted recommendations, deterministic validation, approval gates, audit trail, rollback tracking, notification gating, and multi-model orchestration.
+
+Step 3 must remain planned architecture unless explicitly approved for implementation in a separate, dedicated session.
+
+### Step 3 High-Level Requirements
+
+| # | Requirement |
+|---|-------------|
+| S3.1 | Implement iStaffing Prime as the orchestrator/high-risk reviewer model role |
+| S3.2 | Implement iStaffing Scheduler as the routine scheduling proposal worker model role |
+| S3.3 | Implement iStaffing Validator as the compliance/validation checker model role |
+| S3.4 | Implement the full proposal lifecycle state machine (9 states) |
+| S3.5 | Implement all 14 required validation checks |
+| S3.6 | Implement human approval gates before any production schedule record is written |
+| S3.7 | Implement append-only audit log for all iStaffing actions |
+| S3.8 | Implement rollback capability for executed proposals |
+| S3.9 | Implement notification gating (notify only after execution success) |
+| S3.10 | Implement Layer 3 bias monitoring (disparate impact check) |
+| S3.11 | Include ADS-compliant disclaimer on all AI-generated recommendation outputs |
+| S3.12 | No model role may approve its own proposal |
+| S3.13 | No model role may directly write production schedule records |
+
+---
+
+## 6. Profile Requirements
+
+### 6.1 Clinician Profile Requirements
+
+| # | Requirement |
+|---|-------------|
+| CP.1 | Clinician Profile includes: identity (name, contact, photo), employment type, status |
+| CP.2 | Clinician Profile includes: primary discipline (RN, LVN, PT, OT, MSW, HHA, CNA) and secondary disciplines |
+| CP.3 | Clinician Profile includes: credentials with expiration tracking (license, CPR, TB, background check, COVID, specialty certs, driver license, auto insurance) |
+| CP.4 | Clinician Profile includes: competencies/skills with proficiency level and verification date |
+| CP.5 | Clinician Profile includes: computed compliance status (all credentials valid, any expiring, any expired) |
+| CP.6 | Clinician Profile includes: accommodation fields as hard constraints (religious restrictions, ADA accommodations, pregnancy accommodation, FMLA leave) |
+| CP.7 | Clinician Profile includes: availability (recurring weekly pattern, date-specific overrides) |
+| CP.8 | Clinician Profile includes: service area (home base city, coordinates, preferred radius, max radius, named zones) |
+| CP.9 | Clinician Profile includes: languages spoken (bias-audited — must not create disparate mileage burden) |
+| CP.10 | Clinician Profile includes: preferences and restrictions (directional and general) |
+| CP.11 | Clinician Profile includes: assignment history (read-only tab) |
+| CP.12 | Clinician Profile includes: audit trail (read-only tab, append-only log) |
+| CP.13 | Demographic fields (race, sex, age) are stored for bias audit only — never used in matching logic |
+| CP.14 | No real PHI (real names, real addresses, real license numbers) in early mock implementation |
+
+### 6.2 Patient Profile Requirements
+
+| # | Requirement |
+|---|-------------|
+| PP.1 | Patient Profile includes: display name (synthetic in early implementation), patient type, status |
+| PP.2 | Patient Profile includes: location data (city, zone, coordinates, parking difficulty, access notes) |
+| PP.3 | Patient Profile includes: acuity level (L1_essential, L2_enhanced, L3_specialized, L4_critical) |
+| PP.4 | Patient Profile includes: clinical requirements (primary discipline needed, required competencies, required credentials) |
+| PP.5 | Patient Profile includes: visit frequency data (raw physician order string, parsed visit plan) |
+| PP.6 | Patient Profile includes: episode data (certification period, current week, authorization limit, payer type) |
+| PP.7 | Patient Profile includes: weighted caseload points (computed from acuity level) |
+| PP.8 | Patient Profile includes: preferences (preferred clinicians, preferred language, continuity priority) |
+| PP.9 | Patient Profile includes: restrictions (blocked clinicians, soft avoidances, environmental restrictions) |
+| PP.10 | Patient Profile includes: assignment history (read-only tab) |
+| PP.11 | Patient Profile includes: audit trail (read-only tab) |
+| PP.12 | Patient Profile includes: cancellation history with source classification (patient-initiated, caregiver-initiated, agency-initiated) and preventability flag |
+| PP.13 | No real PHI (real names, real diagnoses, real full addresses) in early mock implementation |
+
+### 6.3 Clinician-Patient Connection Requirements
+
+| # | Requirement |
+|---|-------------|
+| CON.1 | Clinician-Patient Connection is a separate junction entity — it must NEVER be embedded in either the Clinician Profile or the Patient Profile |
+| CON.2 | Unique constraint: one connection record per (clinicianId, patientId) pair |
+| CON.3 | Connection status values: eligible, preferred, restricted, blocked, assigned, pendingApproval, inactive |
+| CON.4 | Connection stores: match score, match factor breakdown, distance, drive time, prior assignment count, last worked date, continuity flag |
+| CON.5 | Connection stores: approval status, approvedBy (with role), approvedAt, approval rationale |
+| CON.6 | Status changes tracked via AuditLog entries on the same connection record — not via duplicate records |
+| CON.7 | Hard blocks (severity=hard) cannot be overridden by any user |
+| CON.8 | Soft restrictions (severity=soft) can be overridden with documented rationale |
+
+---
+
+## 7. Calendar Data Requirements
+
+### 7.1 Shift Need Data
+
+| Field | Type | Requirement |
+|-------|------|-------------|
+| id | UUID | Required |
+| patientId | UUID (FK) | Required — links to Patient Profile |
+| requiredDiscipline | enum | Required |
+| visitDate | date | Required |
+| visitWindow | {startTime, endTime} | Required |
+| shiftType | enum | Required (recurring, prn, soc, discharge, supervisory, respite, liveIn) |
+| priority | enum | Required (critical, high, medium, low) |
+| status | enum | Required (open, filled, pending, cancelled) |
+| cancellationSource | enum (nullable) | Required if cancelled (patient_initiated, caregiver_initiated, agency_initiated) |
+| cancellationReason | text (nullable) | Required if cancelled |
+| cancellationPreventable | boolean (nullable) | Required if cancelled |
+| acuityLevel | enum | Inherited from Patient |
+| missedVisitSensitivity | enum | Inherited from Patient |
+
+### 7.2 Shift Assignment Data (for Filled Shifts)
+
+| Field | Type | Requirement |
+|-------|------|-------------|
+| id | UUID | Required |
+| shiftNeedId | UUID (FK) | Required |
+| clinicianId | UUID (FK) | Required — links to Clinician Profile |
+| patientId | UUID (FK) | Required (denormalized) |
+| connectionId | UUID (FK) | Required — links to Clinician-Patient Connection |
+| status | enum | Required (proposed, pendingApproval, approved, clinicianNotified, clinicianConfirmed, completed, missed, cancelled) |
+| approvedBy | UUID | Required for any assignment past pendingApproval |
+| approvedAt | timestamp | Required for any assignment past pendingApproval |
+| approvalRationale | text | Required for any assignment past pendingApproval |
+
+### 7.3 Calendar Filters
+
+The Calendar must support filtering by:
+- Shift status (open / filled / pending / cancelled)
+- Discipline (RN, LVN, PT, OT, MSW, HHA, CNA, etc.)
+- Date (single date or date range)
+
+---
+
+## 8. Validation Requirements
+
+### 8.1 The 14 Required Validation Checks
+
+Every staffing proposal in Step 3 must pass all 14 checks. iStaffing Validator is responsible.
+
+| # | Check | Type | Blocking? |
+|---|-------|------|-----------|
+| 1 | Availability check | Hard constraint | Yes — blocks if unavailable |
+| 2 | Credential check | Hard constraint | Yes — blocks if invalid/expired |
+| 3 | License check | Hard constraint | Yes — blocks if expired |
+| 4 | Competency check | Hard or soft | Hard if isRequired=true; soft otherwise |
+| 5 | Required training check | Hard constraint | Yes — blocks if training not current |
+| 6 | Patient restriction check | Hard constraint | Yes — blocks if hard restriction active |
+| 7 | Facility restriction check | Hard constraint | Yes — blocks if facility restriction active |
+| 8 | Conflict check | Hard constraint | Yes — blocks if conflict detected |
+| 9 | Overtime check | Hard constraint | Yes — blocks if CA OT threshold exceeded |
+| 10 | Rest-period check | Hard constraint | Yes — blocks if rest period violated |
+| 11 | Continuity-of-care check | Soft | No — scored; logged if continuity break |
+| 12 | Fairness/workload balancing check | Soft | No — scored; flagged if severe disparity |
+| 13 | Approval requirement check | Meta | Determines if human gate is required |
+| 14 | Audit readiness check | Meta | Blocks if required audit fields missing |
+
+### 8.2 Validation Outcome States
+
+| Outcome | Meaning |
+|---------|---------|
+| validation_failed | At least one hard constraint check failed; proposal is blocked |
+| validation_passed | All hard constraints passed; soft scores calculated; proposal ready for approval gate |
+
+### 8.3 Credential Expiry Enforcement Rules
+
+- `valid` → `expiringSoon` at 30 days before expiration (configurable threshold)
+- `expiringSoon` → `expired` at expiration date
+- `expired` → clinician is ineligible for any assignment requiring this credential
+- No human may override an expired required credential (per 42 CFR §484.115)
+- System BLOCKS, does not warn. There is no "assign anyway" option for expired credentials.
+
+---
+
+## 9. Approval Requirements
+
+### 9.1 Human-in-the-Loop Requirements
+
+All staffing proposals must pass through a human approval gate before any production schedule record is written. This requirement is non-negotiable and applies in Step 3.
+
+| Condition | Required Approver |
+|-----------|-----------------|
+| First-time clinician-patient connection | ACCM / Clinical Manager |
+| Override of iStaffing Scheduler recommendation | Clinical Manager (§484.115 qualified) |
+| High-acuity (L3-L4) patient — new assignment | Clinical Manager |
+| Bias-flagged proposal | Clinical Manager (must review and document) |
+| Expanded radius (>25 miles) | Scheduler or Clinical Manager |
+| PRN or overtime authorization | Clinical Manager or Admin |
+| Expired required credential | BLOCKED — no approval possible |
+
+### 9.2 Approval Documentation Requirements
+
+| # | Requirement |
+|---|-------------|
+| A.1 | approvedBy field must be populated with the UUID of the approving human |
+| A.2 | approvedAt timestamp must be recorded |
+| A.3 | approvalRationale text must be provided for all flagged or override approvals |
+| A.4 | Approver must hold qualifying credentials per 42 CFR §484.115 for clinical approvals |
+| A.5 | Approver role must be logged in the audit entry at time of approval |
+| A.6 | The review must be meaningful — the approver must have access to match score, match factor breakdown, bias flags, accommodation check results, and any risk flags |
+
+### 9.3 Meaningful Review Requirement
+
+Per FEHA ADS regulations and 42 CFR §484, human review must be meaningful — not a rubber stamp. The system must present the following to the approver at review time:
+
+- Ranked candidates (if applicable)
+- Match scores and factor breakdowns
+- Bias check summary
+- Accommodation conflict check results
+- Risk flags
+- Applicable citation card
+
+### 9.4 Approval Actions Requiring Supervisor/Admin Level
+
+| Action | Required Approver |
+|--------|------------------|
+| Remove a hard restriction/block | Admin (safety concern — requires investigation) |
+| Authorize PRN/overtime assignment | Clinical Manager or Admin |
+| Approve expanded radius (>25 miles) | Scheduler or Clinical Manager |
+| Override bias-flagged assignment | Clinical Manager (must document bias concern evaluation) |
+
+---
+
+## 10. Audit and Rollback Requirements
+
+### 10.1 Audit Log Requirements
+
+| # | Requirement |
+|---|-------------|
+| AL.1 | Audit log is append-only and immutable — no UPDATE or DELETE operations permitted |
+| AL.2 | All profile creations are logged |
+| AL.3 | All profile field changes are logged (previous value, new value, changedBy) |
+| AL.4 | All credential status changes are logged |
+| AL.5 | All restriction additions and removals are logged |
+| AL.6 | All connection status changes are logged |
+| AL.7 | All proposal creations are logged (full proposal JSON) |
+| AL.8 | All validation outcomes are logged (all 14 check results) |
+| AL.9 | All human approvals are logged (approvedBy role and rationale) |
+| AL.10 | All proposal executions are logged |
+| AL.11 | All rollbacks are logged (reason, initiator) |
+| AL.12 | All bias flags are logged (affected group, deviation %) |
+| AL.13 | All accommodation enforcements are logged |
+| AL.14 | Every ShiftAssignment includes a citation card in the audit entry |
+
+### 10.2 Rollback Requirements
+
+| # | Requirement |
+|---|-------------|
+| RB.1 | Any executed proposal must be capable of rollback |
+| RB.2 | Rollback transitions proposal to `rolled_back` lifecycle state |
+| RB.3 | Rollback creates a new audit log entry (does not modify the original) |
+| RB.4 | Rollback audit entry must include: original execution reference, rollback reason, initiator, timestamp |
+| RB.5 | If rollback occurs after clinician notification, a corrective notification must be sent and logged |
+
+### 10.3 Citation Card Requirements
+
+Per the defensibility framework, every ShiftAssignment must include a citation card. The citation card must contain:
+
+- Result description (who was assigned to what)
+- Rule applied (which layer of the decision flow)
+- Match score
+- Hard constraints passed (list)
+- Scoring factor breakdown
+- Bias check summary
+- Confidence level
+- Disclaimer: "AI-assisted recommendation. Assignment subject to clinical manager review and approval per 42 CFR §484 and agency policy. This tool does not make final staffing decisions."
+
+---
+
+## 11. Model-Routing Requirements for Step 3
+
+**PLANNED FOR STEP 3 — NOT ACTIVE IN STEP 1 OR STEP 2**
+
+iStaffing is multi-model by design. Multi-model is not optional.
+
+### 11.1 iStaffing Prime Routing Requirements
+
+| # | Requirement |
+|---|-------------|
+| MP.1 | iStaffing Prime is the orchestrator — it coordinates iStaffing Scheduler and iStaffing Validator |
+| MP.2 | iStaffing Prime interprets high-level staffing requests |
+| MP.3 | iStaffing Prime classifies risk level of each staffing action |
+| MP.4 | iStaffing Prime prepares user-facing summaries and narratives |
+| MP.5 | iStaffing Prime escalates high-risk actions for human approval |
+| MP.6 | iStaffing Prime does NOT directly write production schedule records |
+| MP.7 | Recommended model: qwen3:30b on demand (not kept hot) |
+
+### 11.2 iStaffing Scheduler Routing Requirements
+
+| # | Requirement |
+|---|-------------|
+| MS.1 | iStaffing Scheduler is the routine proposal worker |
+| MS.2 | iStaffing Scheduler drafts coverage options for open shift needs |
+| MS.3 | iStaffing Scheduler produces proposals; it does NOT validate or approve them |
+| MS.4 | iStaffing Scheduler does NOT write production schedule records |
+| MS.5 | Recommended model: qwen3:8b |
+
+### 11.3 iStaffing Validator Routing Requirements
+
+| # | Requirement |
+|---|-------------|
+| MV.1 | iStaffing Validator runs all 14 required checks on every proposal |
+| MV.2 | iStaffing Validator blocks proposals that fail hard constraints |
+| MV.3 | iStaffing Validator checks ADS/FEHA guardrails before recommendation workflows activate |
+| MV.4 | iStaffing Validator does NOT produce proposals; it only validates them |
+| MV.5 | iStaffing Validator does NOT approve its own validation output |
+| MV.6 | iStaffing Validator does NOT write production schedule records |
+| MV.7 | Recommended model: qwen3:8b (routine); qwen3:30b (high-risk); qwen2.5-coder:14b (schema/API validation) |
+
+### 11.4 Model-on-Demand Requirements
+
+| # | Requirement |
+|---|-------------|
+| MOD.1 | Do NOT keep all large models hot simultaneously |
+| MOD.2 | qwen3:8b handles all routine scheduling and validation support |
+| MOD.3 | qwen2.5-coder:14b handles API/schema/tool work if needed |
+| MOD.4 | qwen3:30b is loaded on demand for high-risk or complex review only |
+| MOD.5 | qwen3:30b spins down after task completion |
+
+---
+
+## 12. ADS / FEHA Future-Readiness Requirements
+
+Future AI-assisted staffing recommendations may be treated as Automated Decision System (ADS) decision-support activity under California FEHA. The system must preserve the data fields, terminology, and audit-ready structure needed for future ADS compliance, but early implementation must not perform active matching, autonomous scheduling, or production staffing decisions.
+
+### 12.1 ADS Compliance Requirements
+
+| # | Requirement |
+|---|-------------|
+| ADS.1 | All AI-generated recommendation outputs must carry the required disclaimer |
+| ADS.2 | Accommodation fields (religious, ADA, pregnancy, FMLA) are hard constraints — no override |
+| ADS.3 | Disparate impact monitoring (Layer 3 bias check) must run before any human review |
+| ADS.4 | Bias flags must be surfaced to the human approver before approval |
+| ADS.5 | Every assignment audit entry must document the bias check result |
+| ADS.6 | Override documentation is required when a human deviates from the AI recommendation |
+| ADS.7 | Clinician demographic fields (race, sex, age) are stored for bias audit only — never used in matching |
+| ADS.8 | Language match factor must be monitored for disparate mileage burden |
+| ADS.9 | Feedback score factor must be bias-audited before use in matching |
+| ADS.10 | Monthly disparate impact reports must be generated (Step 3) |
+| ADS.11 | Clinician appeal process must be documented and implemented (Step 3) |
+
+### 12.2 Required Disclaimer Text
+
+All iStaffing AI-generated recommendation outputs must include this disclaimer verbatim:
+
+> "AI-assisted recommendation. Assignment subject to clinical manager review and approval per 42 CFR §484 and agency policy. This tool does not make final staffing decisions."
+
+### 12.3 Regulatory Framework (All Apply Simultaneously)
+
+| Regulation | Authority | iStaffing Impact |
+|------------|-----------|----------------|
+| CA FEHA ADS Regulations | CA Civil Rights Council | Applies to scheduling decisions about US-based clinicians |
+| 42 CFR Part 484 (CoP) | CMS Federal | Clinical manager must approve; system cannot make final assignment |
+| Title VII / ADA / ADEA | EEOC | Disparate impact rules apply to US-based workforce scheduling |
+| CA Labor Law | State | Daily OT after 8hrs, weekly after 40hrs must be modeled |
+
+### 12.4 Terminology Requirements for ADS
+
+**Use:**
+- "future AI-assisted staffing recommendations"
+- "future AI-assisted staffing support"
+- "decision-support"
+- "human approval gates"
+- "validation before execution"
+
+**Do NOT Use:**
+- "automated staffing decision"
+- "autonomous scheduling"
+- "iStaffing automatically assigns clinicians"
+- "active AI matching"
+- "production scheduling automation"
+
+---
+
+## 13. Out-of-Scope Items Per Step
+
+### Step 1 Out-of-Scope
+
+| Item | Status |
+|------|--------|
+| Source code changes | OUT OF SCOPE — Step 1 |
+| Route creation | OUT OF SCOPE — Step 1 |
+| Component creation | OUT OF SCOPE — Step 1 |
+| Data file creation | OUT OF SCOPE — Step 1 |
+| API work | OUT OF SCOPE — Step 1 |
+| Server-side work | OUT OF SCOPE — Step 1 |
+| Live model calls | OUT OF SCOPE — Step 1 |
+| Production scheduling writes | OUT OF SCOPE — Step 1 |
+| Git commits | OUT OF SCOPE — Step 1 |
+
+### Step 2 Out-of-Scope
+
+| Item | Status |
+|------|--------|
+| Creating shifts | OUT OF SCOPE — Step 2 |
+| Filling shifts | OUT OF SCOPE — Step 2 |
+| Assigning clinicians | OUT OF SCOPE — Step 2 |
+| Editing shifts | OUT OF SCOPE — Step 2 |
+| Cancelling shifts | OUT OF SCOPE — Step 2 |
+| Deleting shifts | OUT OF SCOPE — Step 2 |
+| Sending notifications | OUT OF SCOPE — Step 2 |
+| Matching engine of any kind | OUT OF SCOPE — Step 2 |
+| AI recommendations of any kind | OUT OF SCOPE — Step 2 |
+| API integration | OUT OF SCOPE — Step 2 |
+| Server-side persistence | OUT OF SCOPE — Step 2 |
+| Production scheduling writes | OUT OF SCOPE — Step 2 |
+| Multi-model activation | OUT OF SCOPE — Step 2 |
+
+### Step 3 Out-of-Scope (Until Explicitly Approved)
+
+| Item | Status |
+|------|--------|
+| AlayaCare direct API integration | Deferred — Step 3+ |
+| WellSky integration | Deferred — Home Health phase |
+| Clinician mobile app | OUT OF SCOPE — separate initiative |
+| Patient/family portal | OUT OF SCOPE — separate initiative |
+| Predictive demand modeling | Deferred — Step 3+ |
+| Reinforcement learning | Deferred — Step 3+ |
+| Voice interface | OUT OF SCOPE — separate initiative |
+
+---
+
+## 14. Acceptance Criteria for Step 2 Calendar
+
+The following acceptance criteria define "done" for the Step 2 Calendar foundation. All criteria must be met before Step 2 is considered complete.
+
+- [ ] `/staffing-calendar` route is implemented
+- [ ] Calendar nav entry is implemented (nav label: "Calendar", route: `/staffing-calendar`)
+- [ ] Calendar displays open shifts
+- [ ] Calendar displays filled shifts
+- [ ] Calendar displays pending coverage needs
+- [ ] Calendar displays cancelled shifts
+- [ ] Open shifts have no assigned clinician displayed
+- [ ] Filled shifts have an assigned clinician link (links to Clinician Profile)
+- [ ] Each shift links to Patient Profile
+- [ ] Assigned shifts link to Clinician Profile
+- [ ] Calendar supports filter by status
+- [ ] Calendar supports filter by discipline
+- [ ] Calendar supports filter by date
+- [ ] Synthetic/demo data banner appears in Calendar view
+- [ ] No create/fill/assign/edit/delete buttons appear anywhere in the Calendar
+- [ ] No API calls to production systems
+- [ ] No production writes of any kind
+- [ ] No matching engine of any kind
+- [ ] No AI recommendation execution of any kind
+
+---
+
+## Appendix A: Escalation Triggers (Consequence Engine — Step 3 Design)
+
+These triggers define when iStaffing must surface alerts to human operators. They are documented here for Step 3 planning and must not be activated in Steps 1 or 2.
+
+| Trigger | Action | Source |
+|---------|--------|--------|
+| Preventable cancellation rate > 30%/week | Escalate to CEO with root cause | QA/PI Playbook |
+| Patient with 3+ cancellations/week | ACCM notification, at-risk flag | QA/PI Playbook |
+| Uncoded cancellations not corrected in 24hr | Escalate to Care Management Director | QA/PI Playbook |
+| Visit delivery < 95% | Red flag, weekly brief required | ACCM Tracker V2 |
+| Caregiver no-call/no-show | Route to CG Success Supervisor (NEVER ACCM) | Role Separation Policy |
+| Weighted caseload hits 40 | Hard cap, no new patients | Facility/B2B Playbook |
+| Caseload 36-39 | Flagged Near Full, review before new assignment | Facility/B2B Playbook |
+
+---
+
+## Appendix B: Cancellation Classification System
+
+Per the QA/PI Playbook, every cancellation must be classified:
+
+| Source Category | Description |
+|----------------|-------------|
+| patient_initiated | Patient/family cancels (hospitalization, travel, etc.) |
+| caregiver_initiated | Clinician calls in sick, no-show, personal emergency |
+| agency_initiated | Scheduling error, reassignment, compliance hold |
+
+**Required Cancellation Fields:**
+- `cancellationSource` (required — no "quick cancel" without source)
+- `cancellationReason` (required — reason code text)
+- `cancellationPreventable` (required — boolean + rationale)
+
+**Key Metrics:**
+```
+Preventable Cancellation Rate = (Preventable Cancellations / Total Cancellations) × 100
+Recovery Rate = (Rescheduled or Replaced Shifts / Total Cancellations) × 100
+Visit Delivery Rate = Delivered Hours / Authorized Hours (target: ≥95%)
+```
+
+---
+
+## Appendix C: PHI / No-PHI Requirements Summary
+
+| Requirement | Step 1 | Step 2 | Step 3 |
+|-------------|--------|--------|--------|
+| No real patient names in mock data | Required | Required | N/A — production data |
+| No real addresses in mock data | Required | Required | N/A |
+| No diagnosis text in mock data | Required | Required | N/A |
+| No demographic fields used for matching | Required | Required | Required (audit only) |
+| Synthetic/demo data banner visible | N/A | Required | Required until production PHI approved |
+| Production-grade PHI controls | Not applicable | Not applicable | Required before PHI exposure |
+| Proper access control for PHI | Not applicable | Not applicable | Required |
+| Audit logging of PHI access | Not applicable | Not applicable | Required |
+| Encrypted storage for PHI | Not applicable | Not applicable | Required |
+
+---
+
+*End of iStaffing Requirements (Step 1 Review / v2.0)*

@@ -1,0 +1,606 @@
+[
+  {
+    "policyId": "OP-FM-001",
+    "policyTitle": "Office Operations & Facility Management",
+    "domain": "OP",
+    "summary": "Establishes standards for office operations, facility maintenance, and workspace safety.",
+    "corridorPolicyNo": "1-021",
+    "corridorPolicyTitle": "Patient & Staff Safety Program",
+    "achcStandards": [
+      "HH1-8A",
+      "HH1-8A.01"
+    ],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "O"
+    ],
+    "realEvidenceArtifacts": [
+      "Workspace safety inspection checklist with completion records",
+      "Facility maintenance schedule and work order logs",
+      "Staff safety incident reports tied to office environment",
+      "Emergency exit plan and posted safety documentation"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "MEDIUM",
+    "justification": "Corridor row 1-021 'Patient & Staff Safety Program' (HH1-8A, HH1-8A.01) covers the physical safety environment for both patients and staff under the emergency preparedness and safety framework. OP-FM-001 governs office operations, facility maintenance, AND workspace safety \u2014 the safety component aligns with 1-021, but office operations (facility maintenance schedules, utility management, workspace standards) are purely administrative functions not addressed by the safety program row. PARTIAL with MEDIUM confidence: 1-021 is the structural parent for the workspace safety component; office and facility management governance is an administrative operational layer beyond the Corridor's safety program scope.",
+    "flags": []
+  },
+  {
+    "policyId": "OP-FM-002",
+    "policyTitle": "Branch Office & Satellite Operations",
+    "domain": "OP",
+    "summary": "Establishes standards for operating and overseeing branch offices or satellite locations.",
+    "corridorPolicyNo": "1-001",
+    "corridorPolicyTitle": "Organizational Structure",
+    "achcStandards": [
+      "HH1-1A",
+      "HH1-3A"
+    ],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Branch office authorization documentation and ACHC/licensing for each location",
+      "Organizational chart showing branch location reporting lines",
+      "Branch compliance monitoring records and supervisory visit logs",
+      "Satellite location policy attestations and oversight documentation"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "MEDIUM",
+    "justification": "Corridor row 1-001 'Organizational Structure' (HH1-1A, HH1-3A) requires that the agency's organizational structure be defined including accountability relationships. Branch offices and satellite locations are components of the organizational structure and must be incorporated into ACHC organizational documentation. PARTIAL because 1-001 requires the structure be documented \u2014 OP-FM-002 governs the specific operational standards for running and overseeing satellite locations, including compliance verification, local supervision, and location-specific policies, which exceed the structural documentation requirement.",
+    "flags": []
+  },
+  {
+    "policyId": "OP-FM-003",
+    "policyTitle": "Vendor & Supplier Management",
+    "domain": "OP",
+    "summary": "Defines standards for vendor selection, qualification, monitoring, and performance evaluation.",
+    "corridorPolicyNo": "",
+    "corridorPolicyTitle": "",
+    "achcStandards": [],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [],
+    "realEvidenceArtifacts": [],
+    "mappingSource": "NONE",
+    "mappingType": "NONE",
+    "confidence": "HIGH",
+    "justification": "No Corridor row in pages 7\u201331 governs general vendor selection, qualification, monitoring, and performance evaluation as an operational program. The Corridor's 2-033 (Business Associates) governs PHI contractual vendor controls \u2014 already mapped in the CO domain for BA management and in the IT domain for vendor security assessment. OP-FM-003 governs the broader vendor management lifecycle (supplier qualification, performance evaluation, contract management) for medical supply vendors, equipment vendors, and service vendors that are not PHI handlers. This is procurement governance in the Modern Operational Governance Layer.",
+    "flags": [
+      "MODERN_OPERATIONAL_GOVERNANCE_LAYER"
+    ]
+  },
+  {
+    "policyId": "OP-FM-004",
+    "policyTitle": "Mail & Correspondence Management",
+    "domain": "OP",
+    "summary": "Establishes standards for handling agency mail, correspondence, and official communications.",
+    "corridorPolicyNo": "",
+    "corridorPolicyTitle": "",
+    "achcStandards": [],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [],
+    "realEvidenceArtifacts": [],
+    "mappingSource": "NONE",
+    "mappingType": "NONE",
+    "confidence": "HIGH",
+    "justification": "No Corridor row in pages 7\u201331 governs mail and correspondence handling as an administrative function. While HIPAA requires that PHI-containing correspondence be handled securely (covered by CO-HP-001 and CO-DC-001), mail and correspondence management as an operational standard \u2014 incoming mail routing, correspondence retention, official communication protocols \u2014 is purely administrative governance with no Corridor crosswalk equivalent.",
+    "flags": [
+      "MODERN_OPERATIONAL_GOVERNANCE_LAYER"
+    ]
+  },
+  {
+    "policyId": "OP-FM-005",
+    "policyTitle": "Emergency Operations & Business Continuity",
+    "domain": "OP",
+    "summary": "Establishes the agency's emergency preparedness, response, and business continuity plan per 42 CFR 484.102.",
+    "corridorPolicyNo": "1-011",
+    "corridorPolicyTitle": "Emergency Management",
+    "achcStandards": [
+      "HH1-8A",
+      "HH1-8A.01",
+      "HH1-8A.02",
+      "HH1-8B"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.102"
+    ],
+    "title22": [
+      "22 CCR \u00a774753"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I",
+      "O"
+    ],
+    "realEvidenceArtifacts": [
+      "Written emergency operations plan with all required 42 CFR \u00a7484.102 elements",
+      "Annual emergency management exercise records with after-action reports",
+      "Business continuity plan with recovery time objectives",
+      "Emergency management committee meeting minutes and plan review records"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "DIRECT",
+    "confidence": "HIGH",
+    "justification": "Corridor row 1-011 'Emergency Management' (HH1-8A, HH1-8A.01, HH1-8A.02, HH1-8B) explicitly implements the CMS Emergency Preparedness requirement (42 CFR \u00a7484.102) for home health agencies. OP-FM-005 is the enterprise emergency operations and business continuity plan \u2014 an exact match to the Corridor row. The policy explicitly cites 42 CFR \u00a7484.102, confirming direct regulatory alignment. Evidence: P, D, I, O. Note: EMERGENCY_MANAGEMENT_SEMANTIC_CLUSTER with OP-SL-006 and OP-SL-007 \u2014 all reference 1-011 as their regulatory parent.",
+    "flags": [
+      "EMERGENCY_MANAGEMENT_SEMANTIC_CLUSTER_PARENT"
+    ]
+  },
+  {
+    "policyId": "OP-IM-001",
+    "policyTitle": "Referral & Intake Management",
+    "domain": "OP",
+    "summary": "Establishes standards for referral receipt, screening, eligibility determination, and timely intake processing.",
+    "corridorPolicyNo": "1-004",
+    "corridorPolicyTitle": "Referral Disclosure and Care Decisions",
+    "achcStandards": [
+      "HH1-2A.01",
+      "HH1-2A.02"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.50"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Referral source disclosure documentation and financial relationship attestations",
+      "Intake screening checklist with eligibility determination criteria",
+      "Referral-to-admission timeliness tracking records",
+      "Referral source communication logs"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "HIGH",
+    "justification": "Corridor row 1-004 'Referral Disclosure and Care Decisions' (HH1-2A.01, HH1-2A.02) covers the disclosure of referral sources and financial relationships, and non-steering provisions \u2014 the regulatory aspect of referral management. OP-IM-001 governs the full referral-to-intake workflow including receipt, screening, eligibility determination, and timeliness standards. PARTIAL because 1-004 covers the referral disclosure obligation precisely, but the operational intake workflow \u2014 screening criteria, intake processing timelines, eligibility verification procedures \u2014 is a clinical operations program beyond the disclosure row's scope.",
+    "flags": []
+  },
+  {
+    "policyId": "OP-IM-002",
+    "policyTitle": "Patient Acceptance & Admission Criteria",
+    "domain": "OP",
+    "summary": "Defines clinical and operational criteria for patient acceptance including non-discrimination requirements and service capability assessment.",
+    "corridorPolicyNo": "1-007; 2-007",
+    "corridorPolicyTitle": "Patient Access to Care; Patient Nondiscrimination and ADA",
+    "achcStandards": [
+      "HH1-1A",
+      "HH1-5B",
+      "HH1-5B.01"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.50(a)"
+    ],
+    "title22": [
+      "22 CCR \u00a774709"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Patient acceptance criteria documentation with clinical capability assessment protocol",
+      "Non-discrimination policy acknowledgment and patient rights notice",
+      "Denial-of-service documentation with reason codes",
+      "ADA accommodation request records"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "HIGH",
+    "justification": "Corridor row 1-007 'Patient Access to Care' (HH1-1A, HH1-5B) covers patient access rights and non-discrimination in care access. Row 2-007 'Patient Nondiscrimination and ADA' (HH1-5B, HH1-5B.01) covers ADA compliance and non-discrimination requirements in service delivery. OP-IM-002 governs admission criteria including both the non-discrimination requirement (covered by 1-007 and 2-007) and the clinical service capability assessment (agency's ability to meet the specific patient's clinical needs). PARTIAL because the non-discrimination and access components align directly with the Corridor rows, but clinical service capability assessment criteria \u2014 determining whether the agency can safely and effectively serve a patient's specific clinical needs \u2014 is a clinical governance function beyond the Corridor rows' scope.",
+    "flags": []
+  },
+  {
+    "policyId": "OP-IM-003",
+    "policyTitle": "Service Area Definition & Coverage",
+    "domain": "OP",
+    "summary": "Defines the agency's geographic service area boundaries and standards for ensuring coverage throughout the defined area.",
+    "corridorPolicyNo": "1-005",
+    "corridorPolicyTitle": "Service Area/Community Health Needs",
+    "achcStandards": [
+      "HH1-1A"
+    ],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D"
+    ],
+    "realEvidenceArtifacts": [
+      "Service area map with defined geographic boundaries",
+      "ACHC licensure documentation showing authorized service area",
+      "Coverage gap analysis documentation",
+      "Service area expansion/contraction notification records"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "DIRECT",
+    "confidence": "HIGH",
+    "justification": "Corridor row 1-005 'Service Area/Community Health Needs' (HH1-1A) covers the definition and documentation of the agency's geographic service area \u2014 the primary content of OP-IM-003. The Corridor requires the agency to define its service area and demonstrate coverage capacity. OP-IM-003 governs service area boundary definition and coverage standards \u2014 an exact match to the service area component of 1-005. Note: the Corridor row's 'Community Health Needs' component extends beyond OP-IM-003's scope (geographic boundaries focus), but the primary service area definition element aligns directly. DIRECT for the primary regulatory obligation.",
+    "flags": []
+  },
+  {
+    "policyId": "OP-PA-001",
+    "policyTitle": "Patient Complaint & Grievance Resolution",
+    "domain": "OP",
+    "summary": "Defines the process for receiving, investigating, and resolving patient complaints with documentation and trending requirements.",
+    "corridorPolicyNo": "1-023",
+    "corridorPolicyTitle": "Complaint Management",
+    "achcStandards": [
+      "HH1-6A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.110(e)"
+    ],
+    "title22": [
+      "22 CCR \u00a774710"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Complaint/grievance log with complaint type, date received, and resolution date",
+      "Complaint investigation records with root cause documentation",
+      "Complaint trending report with corrective action records",
+      "Patient notification of complaint resolution documentation"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "DIRECT",
+    "confidence": "HIGH",
+    "justification": "Corridor row 1-023 'Complaint Management' (HH1-6A) implements 42 CFR \u00a7484.110(e) which requires home health agencies to have a process for receiving, investigating, and resolving patient complaints. OP-PA-001 governs the complaint and grievance resolution process \u2014 an exact match to the Corridor row. Evidence: P, D, I.",
+    "flags": []
+  },
+  {
+    "policyId": "OP-PA-002",
+    "policyTitle": "Patient Identification & Verification",
+    "domain": "OP",
+    "summary": "Establishes standards for verifying patient identity at each visit to prevent service delivery errors.",
+    "corridorPolicyNo": "",
+    "corridorPolicyTitle": "",
+    "achcStandards": [],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [],
+    "realEvidenceArtifacts": [],
+    "mappingSource": "NONE",
+    "mappingType": "NONE",
+    "confidence": "HIGH",
+    "justification": "No Corridor row in pages 7\u201331 specifically governs patient identification and verification at the point of care (visit-level identity verification to prevent service delivery errors). While HIPAA requires patient identity verification for PHI access (mapped in the CO domain) and patient rights require that patients be treated with dignity and accuracy, the operational patient ID verification protocol at each home visit \u2014 confirming the correct patient before service delivery \u2014 is a patient safety program without a specific Corridor crosswalk row. Modern patient safety governance concept.",
+    "flags": [
+      "MODERN_OPERATIONAL_GOVERNANCE_LAYER"
+    ]
+  },
+  {
+    "policyId": "OP-PA-003",
+    "policyTitle": "Interpreter & Language Access Services",
+    "domain": "OP",
+    "summary": "Defines standards for providing language access services to patients with limited English proficiency.",
+    "corridorPolicyNo": "2-031",
+    "corridorPolicyTitle": "Interpreter Services",
+    "achcStandards": [
+      "HH2-3A.01"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.50"
+    ],
+    "title22": [
+      "22 CCR \u00a774734"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Interpreter services policy with qualified interpreter standards",
+      "Language access service records by patient and visit type",
+      "Qualified medical interpreter credential documentation",
+      "Dual-language or translated patient materials inventory"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "DIRECT",
+    "confidence": "HIGH",
+    "justification": "Corridor row 2-031 'Interpreter Services' (HH2-3A.01) directly governs the provision of interpreter services for patients with limited English proficiency \u2014 an exact match to OP-PA-003's scope. The Corridor requires that language access services be available and that qualified interpreters are used. OP-PA-003 operationalizes this exact requirement. Evidence: P, D, I.",
+    "flags": [
+      "REQUIRES_SME_REVIEW"
+    ]
+  },
+  {
+    "policyId": "OP-PA-004",
+    "policyTitle": "Cultural Competency in Service Delivery",
+    "domain": "OP",
+    "summary": "Establishes standards for culturally sensitive and respectful service delivery across diverse patient populations.",
+    "corridorPolicyNo": "2-031; 2-007",
+    "corridorPolicyTitle": "Interpreter Services; Patient Nondiscrimination and ADA",
+    "achcStandards": [
+      "HH2-3A.01",
+      "HH1-5B",
+      "HH1-5B.01"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.50(a)"
+    ],
+    "title22": [
+      "22 CCR \u00a774734"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Cultural competency training completion records for all clinical staff",
+      "Patient population demographic assessment and service gap analysis",
+      "Culturally adapted care plan documentation",
+      "Community cultural liaison partnerships and referral records"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "HIGH",
+    "justification": "Corridor row 2-031 'Interpreter Services' (HH2-3A.01) covers language access as a component of culturally competent care. Row 2-007 'Patient Nondiscrimination and ADA' (HH1-5B, HH1-5B.01) establishes non-discrimination in service delivery across protected characteristics including national origin and ethnicity. OP-PA-004 governs cultural competency broadly \u2014 training, culturally adapted care approaches, and equitable service delivery. PARTIAL because the language access and non-discrimination components align with the Corridor rows, but a formal cultural competency program (clinical staff training, culturally adapted care plans, community liaison partnerships) extends beyond the interpreter services and non-discrimination rows' scope. Note: cross-domain overlap with HR training domain for workforce cultural competency education.",
+    "flags": [
+      "CROSS_DOMAIN_OVERLAP_HR",
+      "REQUIRES_SME_REVIEW"
+    ]
+  },
+  {
+    "policyId": "OP-PA-005",
+    "policyTitle": "Patient Property & Belongings",
+    "domain": "OP",
+    "summary": "Establishes protocols for respecting and safeguarding patient property during home health visits.",
+    "corridorPolicyNo": "2-006",
+    "corridorPolicyTitle": "Patient Rights and Responsibilities",
+    "achcStandards": [
+      "HH1-5A",
+      "HH1-5A.01"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.50"
+    ],
+    "title22": [
+      "22 CCR \u00a774729"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Patient rights notice covering property respect and privacy",
+      "Property damage incident reports with resolution documentation",
+      "Staff training records on patient property protocols",
+      "Patient acknowledgment of rights including property protections"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "MEDIUM",
+    "justification": "Corridor row 2-006 'Patient Rights and Responsibilities' (HH1-5A, HH1-5A.01) implements 42 CFR \u00a7484.50, which establishes the patient's rights to privacy and dignity \u2014 implicitly covering respect for patient property in the home setting. OP-PA-005 operationalizes the property protection component of patient rights into specific visit protocols. PARTIAL with MEDIUM confidence because the patient rights row establishes the obligation to respect patient property, but the specific visit protocols \u2014 documenting the patient's environment at each visit, handling personal items, reporting property concerns \u2014 are operational governance beyond the rights notification row's scope.",
+    "flags": []
+  },
+  {
+    "policyId": "OP-SL-001",
+    "policyTitle": "Scheduling & Visit Management",
+    "domain": "OP",
+    "summary": "Defines scheduling standards including timeliness, frequency compliance, and patient notification requirements.",
+    "corridorPolicyNo": "",
+    "corridorPolicyTitle": "",
+    "achcStandards": [],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [],
+    "realEvidenceArtifacts": [],
+    "mappingSource": "NONE",
+    "mappingType": "NONE",
+    "confidence": "HIGH",
+    "justification": "No Corridor row in pages 7\u201331 governs visit scheduling management as an operational program. While visit frequency requirements are embedded in clinical protocol rows (e.g., nursing visit frequencies under CoP), scheduling workflow governance \u2014 timeliness standards, frequency compliance monitoring, patient notification of scheduling changes, visit confirmation protocols \u2014 is an operational workflow management function without a Corridor crosswalk equivalent. Forcing this to any clinical protocol row would collapse scheduling operations governance into clinical service delivery, a categorical error.",
+    "flags": [
+      "MODERN_OPERATIONAL_GOVERNANCE_LAYER"
+    ]
+  },
+  {
+    "policyId": "OP-SL-002",
+    "policyTitle": "After-Hours & On-Call Services",
+    "domain": "OP",
+    "summary": "Establishes 24/7 availability requirements, on-call staffing, and after-hours clinical response protocols per CMS CoP.",
+    "corridorPolicyNo": "4-015",
+    "corridorPolicyTitle": "On-Call/Weekend Staffing",
+    "achcStandards": [
+      "HH2-11A.01",
+      "HH2-12A.01"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.80",
+      "42 CFR \u00a7484.75"
+    ],
+    "title22": [
+      "22 CCR \u00a774705",
+      "22 CCR \u00a774706"
+    ],
+    "surveyEvidenceMethods": [
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "On-call staffing schedule with qualified clinical coverage documentation",
+      "After-hours call log with response time and clinical action records",
+      "On-call protocol documentation including triage criteria and escalation procedures",
+      "24/7 availability attestation and contact directory"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "HIGH",
+    "justification": "Support strengthened to Corridor Section 4 row 15 (On-Call/Weekend Staffing). Existing OP-SL-002 policy content, triage protocol, and after-hours call logs directly support this row. This is a row-normalization fix to existing policy support, not a new mapping expansion.",
+    "flags": []
+  },
+  {
+    "policyId": "OP-SL-003",
+    "policyTitle": "Vehicle & Transportation Safety",
+    "domain": "OP",
+    "summary": "Establishes standards for staff vehicle use, mileage documentation, insurance requirements, and transportation safety.",
+    "corridorPolicyNo": "",
+    "corridorPolicyTitle": "",
+    "achcStandards": [],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [],
+    "realEvidenceArtifacts": [],
+    "mappingSource": "NONE",
+    "mappingType": "NONE",
+    "confidence": "HIGH",
+    "justification": "No Corridor row in pages 7\u201331 governs staff vehicle use, mileage documentation, auto insurance requirements, or transportation safety. Vehicle and driver safety is an operational risk management governance function \u2014 covered in some organizations under OSHA general duty or risk management policy, but without a home health ACHC or CoP crosswalk row. Note: operational overlap with RM domain risk management governance, but RM did not tag transportation safety to a specific Corridor row either.",
+    "flags": [
+      "MODERN_OPERATIONAL_GOVERNANCE_LAYER"
+    ]
+  },
+  {
+    "policyId": "OP-SL-004",
+    "policyTitle": "Equipment & Supply Management",
+    "domain": "OP",
+    "summary": "Defines procedures for procurement, maintenance, calibration, and replacement of medical equipment and supplies.",
+    "corridorPolicyNo": "1-013",
+    "corridorPolicyTitle": "Hazardous Material and Waste Management",
+    "achcStandards": [
+      "HH1-8A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.70"
+    ],
+    "title22": [
+      "22 CCR \u00a774720"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "O"
+    ],
+    "realEvidenceArtifacts": [
+      "Medical equipment inventory with calibration and maintenance records",
+      "Equipment procurement standards and qualification criteria",
+      "Equipment failure and replacement documentation",
+      "Biohazardous supply disposal records"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "MEDIUM",
+    "justification": "Corridor row 1-013 'Hazardous Material and Waste Management' (HH1-8A) covers the management of hazardous materials and waste in the clinical setting \u2014 the closest Corridor row touching medical supplies governance (specifically the handling and disposal of medical supplies that involve infection risk or hazardous materials). OP-SL-004 governs the full medical equipment and supply management lifecycle: procurement, maintenance, calibration, and replacement. PARTIAL with MEDIUM confidence: the hazardous material row covers the disposal/handling element precisely, but equipment calibration, preventive maintenance programs, procurement standards, and replacement criteria are clinical operational governance beyond the Corridor's waste management row. A dedicated equipment management row may exist in Section 4 of the Corridor that was not confirmed from the pages 7\u201331 reading relevant to this domain.",
+    "flags": []
+  },
+  {
+    "policyId": "OP-SL-005",
+    "policyTitle": "Communication & Documentation Systems",
+    "domain": "OP",
+    "summary": "Defines requirements for communication systems supporting clinical operations including EMR, telephony, and secure messaging.",
+    "corridorPolicyNo": "2-010; 2-009",
+    "corridorPolicyTitle": "Interface of Patient Data and Management Systems; Fostering Internal Communication",
+    "achcStandards": [
+      "HH2-5A"
+    ],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "D",
+      "I",
+      "O"
+    ],
+    "realEvidenceArtifacts": [
+      "EMR system governance documentation with clinical communication requirements",
+      "Secure messaging policy with encryption and PHI handling requirements",
+      "After-hours communication system availability documentation",
+      "Internal communication standards and staff acknowledgment records"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "MEDIUM",
+    "justification": "Corridor row 2-010 'Interface of Patient Data and Management Systems' (HH2-5A) covers the interface between patient data and management information systems \u2014 the EMR clinical data component. Row 2-009 'Fostering Internal Communication' covers internal communication standards. OP-SL-005 governs clinical communication systems broadly \u2014 EMR requirements, telephony, and secure messaging. PARTIAL because the EMR interface and internal communication rows structurally cover the clinical data and communication requirements, but the communication system governance framework (secure messaging protocols, telephony standards, clinical escalation paths) is an IT operational governance function extending beyond the Corridor's data interface and communication rows. Note: cross-domain overlap with IT-SA-001 (EHR System Management) \u2014 different governance layer (clinical communication requirements vs. IT system administration).",
+    "flags": [
+      "CROSS_DOMAIN_OVERLAP_IT-SA-001"
+    ]
+  },
+  {
+    "policyId": "OP-SL-006",
+    "policyTitle": "Service Delivery During Public Health Emergencies",
+    "domain": "OP",
+    "summary": "Defines clinical and operational protocols for maintaining services during public health emergencies including pandemic response.",
+    "corridorPolicyNo": "1-011; 1-012",
+    "corridorPolicyTitle": "Emergency Management; Disaster Planning",
+    "achcStandards": [
+      "HH1-8A",
+      "HH1-8A.01",
+      "HH1-8A.02",
+      "HH1-8B"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.102"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Public health emergency response plan with pandemic-specific protocols",
+      "PPE stockpile documentation and replenishment records",
+      "Staff vaccination and health screening records during PHE",
+      "PHE service modification records (telehealth conversions, visit reductions)"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "HIGH",
+    "justification": "Corridor rows 1-011 'Emergency Management' and 1-012 'Disaster Planning' (HH1-8A family, 42 CFR \u00a7484.102) constitute the emergency management framework under which public health emergency protocols operate. OP-SL-006 governs clinical and operational protocols specific to public health emergencies \u2014 pandemic response, PPE management, clinical visit modifications, staff health screening. PARTIAL because 1-011 and 1-012 are the correct regulatory parents, but pandemic-specific clinical protocols (pathogen-specific PPE standards, cohorting practices, vaccination tracking, telehealth conversion protocols) substantially extend beyond the Corridor's general emergency management framework. Note: EMERGENCY_MANAGEMENT_SEMANTIC_CLUSTER with OP-FM-005 (parent) and OP-SL-007.",
+    "flags": [
+      "EMERGENCY_MANAGEMENT_SEMANTIC_CLUSTER",
+      "CROSS_DOMAIN_OVERLAP_RM-EP-002"
+    ]
+  },
+  {
+    "policyId": "OP-SL-007",
+    "policyTitle": "Inclement Weather & Hazardous Conditions",
+    "domain": "OP",
+    "summary": "Defines protocols for managing service delivery during inclement weather, natural disasters, and hazardous conditions.",
+    "corridorPolicyNo": "1-011",
+    "corridorPolicyTitle": "Emergency Management",
+    "achcStandards": [
+      "HH1-8A",
+      "HH1-8A.01"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.102"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Inclement weather response protocol with service suspension and alternative visit criteria",
+      "Staff safety assessment records for hazardous weather conditions",
+      "Patient notification records during weather-related service disruptions",
+      "Visit rescheduling and continuity records during adverse weather"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "HIGH",
+    "justification": "Corridor row 1-011 'Emergency Management' (HH1-8A, HH1-8A.01, 42 CFR \u00a7484.102) covers emergency preparedness including natural disasters and hazardous conditions as emergency management scenarios. OP-SL-007 governs the operational protocols for service delivery during inclement weather \u2014 visit suspension criteria, staff safety assessments, patient notification, and continuity measures. PARTIAL because 1-011 establishes the emergency management regulatory parent, but the operational protocols for inclement weather (visit-by-visit decision-making criteria, patient notification workflows, rescheduling management) are clinical operations procedures beyond the emergency management plan's governance scope. Note: EMERGENCY_MANAGEMENT_SEMANTIC_CLUSTER with OP-FM-005 (parent) and OP-SL-006.",
+    "flags": [
+      "EMERGENCY_MANAGEMENT_SEMANTIC_CLUSTER"
+    ]
+  }
+]

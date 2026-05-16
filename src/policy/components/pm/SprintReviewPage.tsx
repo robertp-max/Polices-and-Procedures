@@ -17,6 +17,7 @@ import {
   sprintWindowsForYear,
 } from '@/policy/pm/sprintWindows';
 import { isPersonalTask, type Task } from '@/policy/pm/types';
+import { EmptyState } from '@/policy/components/ui';
 
 function ownerOf(t: Task): string | undefined {
   if (isPersonalTask(t)) return t.owner_user_id;
@@ -132,7 +133,7 @@ export function SprintReviewPage(): ReactElement {
           Per-Assignee Delivery
         </h2>
         {stats.length === 0 ? (
-          <p className="text-sm text-white/40">No tasks pinned to this sprint.</p>
+          <EmptyState title="No tasks pinned to this sprint." className="!py-4" />
         ) : (
           <table className="w-full text-sm">
             <thead className="text-xs uppercase text-white/50">

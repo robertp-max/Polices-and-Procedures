@@ -1,0 +1,590 @@
+[
+  {
+    "policyId": "FN-BC-001",
+    "policyTitle": "Medicare Billing & Claims Submission",
+    "domain": "FN",
+    "summary": "Establishes standards for accurate, timely, and compliant Medicare claims submission per CMS billing requirements.",
+    "corridorPolicyNo": "3-002",
+    "corridorPolicyTitle": "Billing and Claims Submission",
+    "achcStandards": [
+      "HH5-1A",
+      "HH5-1A.01"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.40",
+      "42 CFR \u00a7484.45"
+    ],
+    "title22": [
+      "22 CCR \u00a774716"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Medicare claims submission policy with timeliness and accuracy standards",
+      "Claims submission log with submission dates and claim status records",
+      "OASIS submission compliance records",
+      "Internal billing accuracy audit results with error rate documentation"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "DIRECT",
+    "confidence": "HIGH",
+    "justification": "Corridor Section 3 'Billing and Claims Submission' directly governs Medicare billing and claims standards under the ACHC financial compliance framework (HH5-1A, HH5-1A.01). FN-BC-001 establishes the claims submission standards \u2014 accurate, timely, compliant Medicare billing \u2014 an exact match to the Corridor billing row. The CoP citations (42 CFR \u00a7484.40, \u00a7484.45) confirm direct regulatory alignment. Evidence: P, D, I.",
+    "flags": []
+  },
+  {
+    "policyId": "FN-BC-002",
+    "policyTitle": "Claims Denial Management & Appeals",
+    "domain": "FN",
+    "summary": "Establishes the process for tracking, analyzing, appealing, and preventing claims denials.",
+    "corridorPolicyNo": "3-002",
+    "corridorPolicyTitle": "Billing and Claims Submission",
+    "achcStandards": [
+      "HH5-1A",
+      "HH5-1A.01"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.40"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D"
+    ],
+    "realEvidenceArtifacts": [
+      "Claims denial log with denial reason codes and volume tracking",
+      "Appeal submission records with win/loss outcome documentation",
+      "Denial root cause analysis reports with corrective action plans",
+      "Denial trend report with prevention strategy documentation"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "HIGH",
+    "justification": "Corridor Section 3 billing row covers claims submission compliance as the regulatory parent. FN-BC-002 governs the denial management cycle \u2014 tracking denials, filing appeals, conducting root cause analysis, and implementing prevention strategies. PARTIAL because the billing row establishes the submission compliance obligation, but denial management as a program (denial analytics, appeal workflows, prevention strategies, appeal outcome tracking) is an operational revenue cycle function extending beyond the billing submission row's scope.",
+    "flags": []
+  },
+  {
+    "policyId": "FN-BC-003",
+    "policyTitle": "Patient Billing & Financial Responsibility",
+    "domain": "FN",
+    "summary": "Establishes standards for patient billing, advance beneficiary notices, and collection of patient financial responsibilities.",
+    "corridorPolicyNo": "3-001",
+    "corridorPolicyTitle": "Financial Assessment and Eligibility",
+    "achcStandards": [
+      "HH5-1A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.50(c)",
+      "42 CFR \u00a7489.20"
+    ],
+    "title22": [
+      "22 CCR \u00a774716",
+      "22 CCR \u00a774734"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Advance Beneficiary Notice (ABN) issuance records by patient and date",
+      "Patient financial responsibility disclosure documentation",
+      "Patient billing statement samples and collection workflow documentation",
+      "Financial hardship assessment records"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "DIRECT",
+    "confidence": "HIGH",
+    "justification": "Corridor Section 3 'Financial Assessment and Eligibility' governs patient financial responsibility disclosures, eligibility determination, and billing obligations. FN-BC-003 governs patient billing standards including Advance Beneficiary Notices (ABNs), financial responsibility collection, and patient billing communication \u2014 an exact match to the financial assessment and patient billing components of the Corridor row. ABN requirements are explicitly required by 42 CFR \u00a7489.20. Evidence: P, D, I.",
+    "flags": []
+  },
+  {
+    "policyId": "FN-BC-004",
+    "policyTitle": "Overpayment Identification & Refund",
+    "domain": "FN",
+    "summary": "Defines the process for identifying, reporting, and refunding overpayments within the CMS 60-day repayment requirement.",
+    "corridorPolicyNo": "2-041",
+    "corridorPolicyTitle": "Corporate Compliance Plan",
+    "achcStandards": [
+      "HH5-1A",
+      "HH5-1A.01"
+    ],
+    "cop": [
+      "42 CFR \u00a7401.305",
+      "42 CFR \u00a7484.11"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D"
+    ],
+    "realEvidenceArtifacts": [
+      "Overpayment identification log with discovery date and repayment timeline",
+      "CMS/MAC voluntary refund submission records",
+      "60-day repayment calculation and compliance records",
+      "Internal billing audit records identifying overpayments"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "DIRECT",
+    "confidence": "HIGH",
+    "justification": "The CMS 60-day overpayment repayment rule (42 CFR \u00a7401.305, ACA \u00a76402) requires Medicare providers to identify, report, and refund overpayments within 60 days of identification. Corridor row 2-041 'Corporate Compliance Plan' (HH5-1A) governs the corporate compliance program under which overpayment obligations operate \u2014 the compliance program is the organizational mechanism for fulfilling this regulatory obligation. DIRECT because the 60-day overpayment obligation is an explicit federal law requirement that the compliance program must implement. Note: cross-domain overlap with CO-FW-001 (FWA prevention) \u2014 both under the compliance program umbrella; FN-BC-004 is the operational billing layer, CO-FW-001 is the program governance layer.",
+    "flags": [
+      "CROSS_DOMAIN_OVERLAP_CO-FW-001"
+    ]
+  },
+  {
+    "policyId": "FN-BC-005",
+    "policyTitle": "Pre-Claim Review Compliance",
+    "domain": "FN",
+    "summary": "Defines procedures for complying with CMS Pre-Claim Review demonstration programs when applicable.",
+    "corridorPolicyNo": "3-002",
+    "corridorPolicyTitle": "Billing and Claims Submission",
+    "achcStandards": [
+      "HH5-1A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.40"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D"
+    ],
+    "realEvidenceArtifacts": [
+      "PCR submission documentation when applicable by jurisdiction",
+      "PCR affirmation records with submission timelines",
+      "PCR denial and resubmission records",
+      "PCR applicability determination records by payer and geography"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "MEDIUM",
+    "justification": "Corridor Section 3 billing row is the structural parent for Medicare billing compliance including pre-authorization requirements. FN-BC-005 governs compliance with CMS Pre-Claim Review (PCR), a demonstration program piloted in certain states that requires prior affirmation before Medicare payment. PARTIAL with MEDIUM confidence because the Corridor's billing row covers general claims submission, but PCR is a CMS demonstration program that applies conditionally by geography and time period \u2014 not a standing regulatory requirement with a permanent Corridor row. The PCR requirement post-dates the Corridor's general billing framework and is jurisdictionally variable.",
+    "flags": [
+      "POST_CORRIDOR_CMS_PROGRAM"
+    ]
+  },
+  {
+    "policyId": "FN-BC-006",
+    "policyTitle": "Request for Anticipated Payment (RAP) Management",
+    "domain": "FN",
+    "summary": "Defines procedures for RAP submission, monitoring, and reconciliation per current CMS payment rules.",
+    "corridorPolicyNo": "3-002",
+    "corridorPolicyTitle": "Billing and Claims Submission",
+    "achcStandards": [
+      "HH5-1A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.40"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D"
+    ],
+    "realEvidenceArtifacts": [
+      "RAP submission records with submission dates and amounts",
+      "RAP reconciliation against final claims documentation",
+      "No-RAP transition records (if applicable under PDGM phase-in)",
+      "RAP monitoring and aging report documentation"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "MEDIUM",
+    "justification": "Corridor Section 3 billing row covers Medicare billing and claims processes as the structural parent. RAP (Request for Anticipated Payment) was a CMS Medicare home health billing mechanism that allowed initial payment before episode completion. Under PDGM (effective January 2020), RAPs transitioned to a modified form and were eventually replaced. PARTIAL with MEDIUM confidence: the Corridor's billing row is the correct parent, but RAP management as a specific billing mechanism \u2014 particularly in its PDGM-era modified form \u2014 represents a post-Corridor payment model operational requirement that may have no dedicated Corridor row.",
+    "flags": [
+      "POST_CORRIDOR_PDGM_PAYMENT_MODEL"
+    ]
+  },
+  {
+    "policyId": "FN-BC-007",
+    "policyTitle": "Payment & Reimbursement Reconciliation",
+    "domain": "FN",
+    "summary": "Mandates regular reconciliation of expected versus actual payments with investigation of discrepancies.",
+    "corridorPolicyNo": "3-002",
+    "corridorPolicyTitle": "Billing and Claims Submission",
+    "achcStandards": [
+      "HH5-1A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.40"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D"
+    ],
+    "realEvidenceArtifacts": [
+      "Monthly payment reconciliation reports comparing expected vs. received payments",
+      "Discrepancy investigation records with resolution documentation",
+      "Remittance advice review records",
+      "Payment variance escalation and correction records"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "MEDIUM",
+    "justification": "Corridor Section 3 billing row is the structural parent for payment reconciliation as a component of billing compliance. FN-BC-007 mandates regular reconciliation of expected versus actual payments and investigation of discrepancies. PARTIAL because billing accuracy and payment reconciliation are implied by the billing compliance row, but the specific reconciliation process \u2014 frequency, methodology, escalation thresholds, discrepancy investigation \u2014 is an operational revenue cycle function beyond the Corridor row's explicit scope.",
+    "flags": []
+  },
+  {
+    "policyId": "FN-CM-001",
+    "policyTitle": "PDGM Classification & Coding Accuracy",
+    "domain": "FN",
+    "summary": "Defines requirements for accurate PDGM classification including clinical grouping, functional level, and comorbidity adjustment verification.",
+    "corridorPolicyNo": "3-002",
+    "corridorPolicyTitle": "Billing and Claims Submission",
+    "achcStandards": [
+      "HH5-1A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.40"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D"
+    ],
+    "realEvidenceArtifacts": [
+      "PDGM classification accuracy audit records with grouper validation",
+      "Clinical grouping and comorbidity adjustment verification documentation",
+      "PDGM coding accuracy training records for clinical coding staff",
+      "PDGM claim scrubbing and pre-submission validation records"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "MEDIUM",
+    "justification": "Corridor Section 3 billing row provides the general billing compliance parent for PDGM classification. PDGM (Patient-Driven Groupings Model) is the CMS home health prospective payment model effective January 2020. The Corridor's billing row covers claims accuracy generally, but PDGM-specific classification requirements \u2014 clinical grouping, functional impairment level scoring, comorbidity adjustment, and HIPPS code accuracy \u2014 are post-2019 CMS payment model specifics that likely have no dedicated Corridor crosswalk row. PARTIAL because the billing accuracy obligation is established in the Corridor, but PDGM classification governance is a Modern Regulatory Requirement (new payment model) that extends beyond the Corridor's pre-PDGM billing framework.",
+    "flags": [
+      "POST_CORRIDOR_PDGM_PAYMENT_MODEL",
+      "MODERN_REGULATORY_REQUIREMENT"
+    ]
+  },
+  {
+    "policyId": "FN-CM-002",
+    "policyTitle": "ICD-10 Coding Standards & Accuracy",
+    "domain": "FN",
+    "summary": "Establishes coding standards requiring diagnosis codes to be supported by clinical documentation and assigned by qualified personnel.",
+    "corridorPolicyNo": "3-002; 4-047",
+    "corridorPolicyTitle": "Billing and Claims Submission; Contents of Clinical Record",
+    "achcStandards": [
+      "HH5-1A",
+      "HH4-1A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.40",
+      "42 CFR \u00a7484.110"
+    ],
+    "title22": [
+      "22 CCR \u00a774726"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "ICD-10 coding policy with documentation support requirements",
+      "Coding accuracy audit records with error rate by coder",
+      "Qualified coder credential documentation",
+      "Coding query process documentation with clinical validation records"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "HIGH",
+    "justification": "Corridor Section 3 billing row requires diagnosis code accuracy for claims, and row 4-047 'Contents of Clinical Record' (HH4-1A) requires that clinical documentation support the diagnoses included in the record. FN-CM-002 governs ICD-10 coding standards \u2014 documentation support requirements and qualified coder assignment. PARTIAL because both rows establish the documentation and billing accuracy obligations, but the specific coding standards program (coder qualification requirements, coding query processes, documentation-to-code validation workflows) is an operational coding governance function extending beyond the rows' scope. Note: strong cross-domain link to clinical documentation in CL domain.",
+    "flags": [
+      "CROSS_DOMAIN_OVERLAP_CL"
+    ]
+  },
+  {
+    "policyId": "FN-CM-003",
+    "policyTitle": "Medical Necessity Documentation",
+    "domain": "FN",
+    "summary": "Defines documentation requirements to support medical necessity for all services billed to Medicare and other payers.",
+    "corridorPolicyNo": "3-002; 4-047",
+    "corridorPolicyTitle": "Billing and Claims Submission; Contents of Clinical Record",
+    "achcStandards": [
+      "HH5-1A",
+      "HH4-1A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.40",
+      "42 CFR \u00a7484.60"
+    ],
+    "title22": [
+      "22 CCR \u00a774726"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Medical necessity criteria documentation by service type",
+      "Physician order and certification records demonstrating medical necessity",
+      "OASIS assessment records supporting skilled care needs",
+      "Clinical documentation audits confirming medical necessity support"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "DIRECT",
+    "confidence": "HIGH",
+    "justification": "Medical necessity documentation is a core Medicare CoP requirement: services billed to Medicare must be supported by clinical documentation demonstrating medical necessity. Corridor Section 3 billing row requires accurate, compliant claims submission (which requires medical necessity support), and row 4-047 'Contents of Clinical Record' requires that clinical records document the necessity of care provided. FN-CM-003's scope \u2014 documentation requirements supporting medical necessity for all billed services \u2014 directly implements both Corridor rows. Evidence: P, D, I.",
+    "flags": []
+  },
+  {
+    "policyId": "FN-CM-004",
+    "policyTitle": "Episode Management & Authorization",
+    "domain": "FN",
+    "summary": "Establishes procedures for managing certification periods, authorizations, and episode transitions.",
+    "corridorPolicyNo": "3-002",
+    "corridorPolicyTitle": "Billing and Claims Submission",
+    "achcStandards": [
+      "HH5-1A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.60"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D"
+    ],
+    "realEvidenceArtifacts": [
+      "Certification period tracking records with physician signature dates",
+      "Episode transition documentation with recertification timing records",
+      "Authorization management log by payer and episode",
+      "Billing hold records for incomplete certifications"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "HIGH",
+    "justification": "Corridor Section 3 billing row covers claims submission compliance, under which episode certification and authorization management operates. The CoP (42 CFR \u00a7484.60) requires physician certification and recertification for Medicare home health. FN-CM-004 governs episode management including certification period tracking, authorization management, and episode transitions. PARTIAL because the billing row establishes the certification obligation, but episode management as an operational program \u2014 tracking certification expirations, managing authorization by payer, handling episode transitions and recertifications \u2014 is an operational revenue cycle function extending beyond the billing submission row's scope. Note: under PDGM, episode structure changed from 60-day episodes to 30-day periods \u2014 another post-Corridor payment model change.",
+    "flags": [
+      "POST_CORRIDOR_PDGM_PAYMENT_MODEL"
+    ]
+  },
+  {
+    "policyId": "FN-CM-005",
+    "policyTitle": "LUPA Prevention & Monitoring",
+    "domain": "FN",
+    "summary": "Defines monitoring and intervention protocols to minimize Low Utilization Payment Adjustments through visit management.",
+    "corridorPolicyNo": "",
+    "corridorPolicyTitle": "",
+    "achcStandards": [],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [],
+    "realEvidenceArtifacts": [],
+    "mappingSource": "NONE",
+    "mappingType": "NONE",
+    "confidence": "HIGH",
+    "justification": "LUPA (Low Utilization Payment Adjustment) is a PDGM payment model concept introduced in 2020: when a home health episode period falls below the minimum visit threshold for the clinical grouping, the payment is reduced to a per-visit rate. LUPA prevention and monitoring is a pure revenue cycle operational function specific to the PDGM payment model. No Corridor row in pages 7\u201331 governs LUPA thresholds, visit volume monitoring, or PDGM payment adjustment prevention \u2014 this concept did not exist in any regulatory framework prior to PDGM's 2020 implementation. Modern Regulatory Requirement \u2014 Post-Corridor PDGM Payment Model Layer.",
+    "flags": [
+      "POST_CORRIDOR_PDGM_PAYMENT_MODEL",
+      "MODERN_REGULATORY_REQUIREMENT"
+    ]
+  },
+  {
+    "policyId": "FN-FP-001",
+    "policyTitle": "Payer Contract Management",
+    "domain": "FN",
+    "summary": "Establishes standards for negotiating, monitoring, and managing contracts with Medicare Advantage and commercial payers.",
+    "corridorPolicyNo": "1-018",
+    "corridorPolicyTitle": "Managed Care Contracting",
+    "achcStandards": [
+      "HH1-1A"
+    ],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D"
+    ],
+    "realEvidenceArtifacts": [
+      "Active payer contract inventory with contract terms and effective dates",
+      "Medicare Advantage contract compliance review records",
+      "Commercial payer contract negotiation records",
+      "Payer contract performance monitoring reports"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "HIGH",
+    "justification": "Corridor row 1-018 'Managed Care Contracting' (HH1-1A) covers the agency's managed care contracting activities. FN-FP-001 governs payer contract management for Medicare Advantage and commercial payers \u2014 directly related to managed care contracting. PARTIAL because 1-018 establishes the contracting governance requirement, but payer contract management as a program \u2014 contract negotiation strategy, rate analysis, performance monitoring, contract compliance reviews \u2014 is an operational finance and strategy function beyond the Corridor row's scope.",
+    "flags": []
+  },
+  {
+    "policyId": "FN-FP-002",
+    "policyTitle": "Charge Capture & Fee Schedule Management",
+    "domain": "FN",
+    "summary": "Defines processes for maintaining accurate charge descriptions, fee schedules, and charge capture procedures.",
+    "corridorPolicyNo": "3-002",
+    "corridorPolicyTitle": "Billing and Claims Submission",
+    "achcStandards": [
+      "HH5-1A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.40"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D"
+    ],
+    "realEvidenceArtifacts": [
+      "Fee schedule documentation with effective dates and update history",
+      "Charge master documentation with charge code descriptions",
+      "Charge capture compliance audit records",
+      "Fee schedule review and update records"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "MEDIUM",
+    "justification": "Corridor Section 3 billing row covers claims submission accuracy, under which charge capture standards operate. FN-FP-002 governs charge description accuracy, fee schedule maintenance, and charge capture procedures. PARTIAL with MEDIUM confidence because the billing row requires accurate claims (which requires accurate charge codes), but charge master management, fee schedule updates, and charge capture workflow governance are operational revenue cycle functions extending beyond the billing submission row's scope.",
+    "flags": []
+  },
+  {
+    "policyId": "FN-FP-003",
+    "policyTitle": "Revenue Cycle Performance Monitoring",
+    "domain": "FN",
+    "summary": "Establishes key revenue cycle metrics, monitoring frequency, and escalation thresholds for financial performance management.",
+    "corridorPolicyNo": "",
+    "corridorPolicyTitle": "",
+    "achcStandards": [],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [],
+    "realEvidenceArtifacts": [],
+    "mappingSource": "NONE",
+    "mappingType": "NONE",
+    "confidence": "HIGH",
+    "justification": "No Corridor row in pages 7\u201331 governs revenue cycle performance monitoring as an operational program. Revenue cycle KPIs (days in A/R, denial rates, collection rates, clean claim rates), monitoring dashboards, and financial performance escalation thresholds are operational finance governance tools. While the QAPI program (1-015/1-016) requires performance monitoring, revenue cycle metrics specifically belong to financial operations governance, not clinical quality assurance. Modern Operational Governance Layer.",
+    "flags": [
+      "MODERN_OPERATIONAL_GOVERNANCE_LAYER"
+    ]
+  },
+  {
+    "policyId": "FN-FP-004",
+    "policyTitle": "Bad Debt & Charity Care",
+    "domain": "FN",
+    "summary": "Establishes criteria and procedures for classifying and managing bad debt and charity care write-offs.",
+    "corridorPolicyNo": "3-001",
+    "corridorPolicyTitle": "Financial Assessment and Eligibility",
+    "achcStandards": [
+      "HH5-1A"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.50(c)"
+    ],
+    "title22": [
+      "22 CCR \u00a774716"
+    ],
+    "surveyEvidenceMethods": [
+      "P",
+      "D"
+    ],
+    "realEvidenceArtifacts": [
+      "Charity care eligibility criteria and application documentation",
+      "Charity care approval records with financial hardship documentation",
+      "Bad debt classification and write-off records with approval authorization",
+      "Charity care program patient notification documentation"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "MEDIUM",
+    "justification": "Corridor Section 3 'Financial Assessment and Eligibility' covers patient financial responsibility including eligibility for financial assistance programs. FN-FP-004 governs bad debt and charity care classification and write-off procedures. PARTIAL with MEDIUM confidence: the financial assessment row covers patient financial responsibility and eligibility, under which charity care eligibility operates. However, bad debt classification criteria, write-off authorization thresholds, and charity care program governance are operational finance functions extending beyond the Corridor's eligibility assessment row.",
+    "flags": []
+  },
+  {
+    "policyId": "FN-FP-005",
+    "policyTitle": "Annual Budget & Financial Planning",
+    "domain": "FN",
+    "summary": "Mandates annual budget development, governing body approval, and ongoing variance monitoring.",
+    "corridorPolicyNo": "3-001",
+    "corridorPolicyTitle": "Annual Operating Budget",
+    "achcStandards": [
+      "HH3-1A",
+      "HH3-1C"
+    ],
+    "cop": [
+      "42 CFR ?484.105(h)"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "FN-FM-001 Annual Operating Budget package with fiscal year assumptions and line-item allocations",
+      "GV-FM-005 Governing Body meeting minutes documenting budget review and approval vote",
+      "Quarterly budget-to-actual variance reports with corrective action commentary",
+      "Finance Committee budget review minutes and recommendation memo to Governing Body"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "DIRECT",
+    "confidence": "HIGH",
+    "justification": "Corridor Section 3 row 1 identifies Annual Operating Budget with ACHC standards HH3-1A and HH3-1C and CoP 42 CFR ?484.105(h). FN-FP-005 directly governs annual budget development, Governing Body review/approval, and variance monitoring. Existing support chain is already present in forms/workflows (FN-FM-001 + GV-FM-005 minutes + variance reporting), so this is a support-strengthening normalization of an existing policy rather than creation of a new policy.",
+    "flags": [
+      "CROSS_DOMAIN_OVERLAP_GV-GB-001",
+      "EVIDENCE_CHAIN_STRENGTHENED"
+    ]
+  },
+  {
+    "policyId": "FN-FP-006",
+    "policyTitle": "Supply & Equipment Cost Management",
+    "domain": "FN",
+    "summary": "Defines procurement standards, cost controls, and inventory management for medical supplies and equipment.",
+    "corridorPolicyNo": "",
+    "corridorPolicyTitle": "",
+    "achcStandards": [],
+    "cop": [],
+    "title22": [],
+    "surveyEvidenceMethods": [],
+    "realEvidenceArtifacts": [],
+    "mappingSource": "NONE",
+    "mappingType": "NONE",
+    "confidence": "HIGH",
+    "justification": "No Corridor row in pages 7\u201331 governs supply and equipment cost management from a financial perspective. The OP domain (OP-SL-004) governs equipment and supply management from the clinical operations perspective (procurement, maintenance, calibration). FN-FP-006 governs the same subject from the financial cost control perspective \u2014 cost management, inventory valuation, procurement cost controls. This represents a DUPLICATE_SEMANTIC_FAMILY with OP-SL-004 across domains: same physical assets, different governance layers (operations vs. finance). Neither the OP nor FN perspective maps to a specific Corridor row for equipment cost governance.",
+    "flags": [
+      "DUPLICATE_SEMANTIC_FAMILY_OP-SL-004",
+      "MODERN_OPERATIONAL_GOVERNANCE_LAYER"
+    ]
+  },
+  {
+    "policyId": "FN-FP-007",
+    "policyTitle": "Financial Compliance & Fraud Monitoring Controls",
+    "domain": "FN",
+    "summary": "Defines financial monitoring controls including billing pattern analysis, outlier detection, internal financial audits, and escalation procedures for suspected fraudulent or aberrant billing activity.",
+    "corridorPolicyNo": "2-041",
+    "corridorPolicyTitle": "Corporate Compliance Plan",
+    "achcStandards": [
+      "HH5-1A",
+      "HH5-1A.01"
+    ],
+    "cop": [
+      "42 CFR \u00a7484.11"
+    ],
+    "title22": [],
+    "surveyEvidenceMethods": [
+      "P",
+      "D",
+      "I"
+    ],
+    "realEvidenceArtifacts": [
+      "Billing pattern analysis reports with outlier identification records",
+      "Internal financial audit records with findings and corrective actions",
+      "Aberrant billing escalation records with compliance team notification",
+      "Financial compliance monitoring dashboard and trend reports"
+    ],
+    "mappingSource": "PRINT",
+    "mappingType": "PARTIAL",
+    "confidence": "HIGH",
+    "justification": "Corridor row 2-041 'Corporate Compliance Plan' (HH5-1A, HH5-1A.01) governs the enterprise compliance program under which financial fraud monitoring and FWA detection operate. FN-FP-007 governs the financial operations-side of fraud monitoring \u2014 billing pattern analysis, financial outlier detection, and internal financial audits. PARTIAL because 2-041 is the correct regulatory parent (the compliance plan requires fraud monitoring), but the specific financial controls (billing analytics tools, statistical outlier thresholds, financial audit methodology) are an operational financial compliance function extending beyond the compliance program row's scope. Note: cross-domain DUPLICATE_SEMANTIC_FAMILY with CO-FW-001 (FWA Prevention) and CO-FW-101 \u2014 same regulatory obligation, different operational lenses (CO = program governance; FN = financial control layer).",
+    "flags": [
+      "CROSS_DOMAIN_OVERLAP_CO-FW-001",
+      "CROSS_DOMAIN_OVERLAP_CO-FW-101"
+    ]
+  }
+]

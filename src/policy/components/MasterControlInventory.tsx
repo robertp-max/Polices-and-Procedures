@@ -91,7 +91,10 @@ function StatCard({
   value,
   hint,
   color,
-  isLight,
+  // Wave 7 T3: isLight prop retained for backward call-site compatibility but no longer needed
+  // internally — surface + tone now flow through canonical var(--ci-*) tokens that resolve
+  // per-theme in src/index.css.
+  isLight: _isLight,
 }: {
   label: string;
   value: number;
@@ -119,7 +122,8 @@ function StatCard({
       className="rounded-xl border px-3 py-2.5"
       style={{
         borderColor,
-        background: isLight ? '#FFFFFF' : 'rgba(255,255,255,0.02)',
+        // Wave 7 T3: canonical surface token (resolves to #FFFFFF in light, rgba(255,255,255,0.02) in dark via theme vars).
+        background: 'var(--ci-surface-2)',
       }}
     >
       <p className="text-[9px] font-montserrat font-bold uppercase tracking-[0.14em]" style={{ color: tone }}>
@@ -312,13 +316,15 @@ export function MasterControlInventory() {
         </header>
 
         <section className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-9 gap-2.5">
-          <StatCard label="Total Controls" value={summary.total} color="#007970" isLight={isLight} />
-          <StatCard label="High Risk" value={summary.high} color="#EF4444" isLight={isLight} />
-          <StatCard label="Material Risk" value={summary.material} color="#F59E0B" isLight={isLight} />
-          <StatCard label="Low Risk" value={summary.low} color="#06B6D4" isLight={isLight} />
-          <StatCard label="Active" value={summary.active} color="#10B981" isLight={isLight} />
-          <StatCard label="Deficient" value={summary.deficient} color="#EF4444" isLight={isLight} />
-          <StatCard label="Unknown" value={summary.unknown} color="#F59E0B" isLight={isLight} />
+          {/* Wave 7 T3: StatCard color props migrated from raw hex to canonical --ci-* tokens.
+             StatCard.toneMap passthrough preserves legacy navy / dark-red (no canonical token). */}
+          <StatCard label="Total Controls" value={summary.total} color="var(--ci-secondary-500)" isLight={isLight} />
+          <StatCard label="High Risk" value={summary.high} color="var(--ci-error-300)" isLight={isLight} />
+          <StatCard label="Material Risk" value={summary.material} color="var(--ci-primary-500)" isLight={isLight} />
+          <StatCard label="Low Risk" value={summary.low} color="var(--ci-secondary-500)" isLight={isLight} />
+          <StatCard label="Active" value={summary.active} color="var(--ci-success-300)" isLight={isLight} />
+          <StatCard label="Deficient" value={summary.deficient} color="var(--ci-error-300)" isLight={isLight} />
+          <StatCard label="Unknown" value={summary.unknown} color="var(--ci-primary-500)" isLight={isLight} />
           <StatCard label="Linked Exec Units" value={cesLinkage.linkedActive} color="#1A3778" isLight={isLight} />
           <StatCard label="Blocked by Controls" value={cesLinkage.blockedByControls} color="#B0271F" isLight={isLight} />
         </section>

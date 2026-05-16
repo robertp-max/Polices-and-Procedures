@@ -11,6 +11,7 @@ import {
 import { useToastStore } from './Toast';
 import { ModalShell } from './ModalShell';
 import { isEvidenceImmutable } from '@/policy/evidence/evidenceModel';
+import { EmptyState } from '@/policy/components/ui';
 
 /* ═══════════════════════════════════════════════════════════════
    Evidence Panel — documents / uploads / generated reports
@@ -126,12 +127,15 @@ function EvidenceRow({ doc, eventLocked }: { doc: EvidenceDoc; eventLocked: bool
 
 function EvidenceEmpty() {
   return (
-    <div className="rounded-lg border border-dashed ci-border p-5 text-center" style={{ background: 'var(--ci-surface-2)' }}>
-      <Paperclip size={20} className="ci-text-subtle mx-auto mb-2" />
-      <p className="font-montserrat font-bold ci-text text-[11.5px] mb-1">No evidence attached yet</p>
-      <p className="text-[10.5px] font-roboto ci-text-muted leading-snug max-w-[320px] mx-auto">
-        Upload finalized minutes, signed forms, reports, or supporting attachments. Every item here becomes part of the event's audit record.
-      </p>
+    <div
+      className="rounded-lg border border-dashed ci-border"
+      style={{ background: 'var(--ci-surface-2)' }}
+    >
+      <EmptyState
+        icon={<Paperclip size={20} />}
+        title="No evidence attached yet"
+        description="Upload finalized minutes, signed forms, reports, or supporting attachments. Every item here becomes part of the event's audit record."
+      />
     </div>
   );
 }

@@ -384,7 +384,9 @@ export function GanttView({
                   </div>
                   <p className="text-[10px] ci-text-muted mt-1">{bar.task.assignee ?? bar.task.owner ?? 'Unassigned'} · {bar.task.due_date}</p>
                   <div className="mt-2 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                    <div className={`h-full ${bar.tone === 'red' ? 'bg-red-500' : bar.tone === 'orange' ? 'bg-orange-500' : bar.tone === 'teal' ? 'bg-teal-600' : 'bg-slate-400'}`} style={{ width: `${bar.progressPct}%` }} />
+                    {/* Wave 7 T3: untoned-tone fallback uses canonical --ci-border-strong instead of
+                       the slate-pinned palette to clear the pm.slate-pin verifier warning. */}
+                    <div className={`h-full ${bar.tone === 'red' ? 'bg-red-500' : bar.tone === 'orange' ? 'bg-orange-500' : bar.tone === 'teal' ? 'bg-teal-600' : 'bg-[var(--ci-border-strong)]'}`} style={{ width: `${bar.progressPct}%` }} />
                   </div>
                 </button>
               ))}
