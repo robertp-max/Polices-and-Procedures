@@ -111,7 +111,7 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
       data-robert-diagnostics=""
       style={{
         position: 'fixed',
-        bottom: 16,
+        bottom: typeof window !== 'undefined' && window.innerWidth < 768 ? 92 : 16,
         left: 16,
         zIndex: 9998,
         width: isOpen ? 340 : 'auto',
@@ -301,7 +301,7 @@ export function MyTasksPage({
   return (
     <div className="h-full flex flex-col" style={{ background: CES_TOKENS.canvas }}>
       <header
-        className="px-6 py-4 flex items-baseline gap-4 flex-wrap"
+        className="px-3 sm:px-6 py-4 flex items-baseline gap-4 flex-wrap ci-sticky-operational border-b"
         style={{ background: CES_TOKENS.white, borderBottom: `1px solid ${CES_TOKENS.border}` }}
       >
         <div>
@@ -364,7 +364,7 @@ export function MyTasksPage({
                 key={k}
                 type="button"
                 onClick={() => setFilter(k)}
-                className="text-[11.5px] font-semibold px-3 py-1.5 min-h-[44px] rounded-md"
+                className="text-[11.5px] font-semibold px-3 py-1.5 min-h-[44px] rounded-md ci-subtle-hover"
                 style={{
                   background: active ? CES_TOKENS.navy : CES_TOKENS.canvas,
                   color:      active ? 'white'         : CES_TOKENS.ink,
@@ -426,7 +426,7 @@ export function MyTasksPage({
               return (
                 <li
                   key={t.id}
-                  className="rounded-lg p-4 flex items-start gap-4 transition-colors hover:bg-[#f8fafc]"
+                  className="rounded-lg p-4 flex items-start gap-4 ci-subtle-hover hover:bg-[var(--ci-surface-2)]"
                   style={{ background: CES_TOKENS.white, border: `1px solid ${CES_TOKENS.border}` }}
                 >
                   <button

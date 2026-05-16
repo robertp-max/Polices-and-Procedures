@@ -901,6 +901,38 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-glass-panel {
   backdrop-filter: blur(14px) saturate(120%);
 }
 
+/* Wave 10 convergence: consistent premium operational surfaces */
+.ci-operational-card {
+  background: color-mix(in srgb, var(--ci-surface-2) 82%, transparent);
+  color: var(--ci-text-primary);
+  border: 1px solid var(--ci-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--ci-shadow-sm);
+  transition: border-color 140ms ease, box-shadow 180ms ease, background-color 140ms ease, transform 140ms ease;
+}
+.ci-operational-card:hover {
+  border-color: var(--ci-border-strong);
+  box-shadow: var(--ci-shadow-md);
+}
+.ci-operational-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.ci-sticky-operational {
+  position: sticky;
+  top: 0;
+  z-index: 24;
+  background: color-mix(in srgb, var(--ci-surface) 88%, transparent);
+  border-color: var(--ci-border);
+  -webkit-backdrop-filter: blur(8px) saturate(112%);
+  backdrop-filter: blur(8px) saturate(112%);
+}
+.ci-subtle-hover {
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
 /* Sentiment badge utilities */
 .ci-badge {
   display: inline-flex;

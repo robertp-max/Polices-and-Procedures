@@ -439,7 +439,7 @@ export function DashboardPage() {
             Operational triage across critical deadlines, active work, and evidence queues.
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="ci-operational-toolbar">
           <ToolbarButton icon={<Filter size={14} />} label="Filter" />
           <ToolbarButton label="Sort by: Priority" />
         </div>
@@ -536,8 +536,8 @@ function KpiCard({ label, value, trend, tone = 'default', alert, onClick, emphas
     danger: 'text-red-500',
   }[tone];
   const shellClass = isLight
-    ? `bg-white ${emphasize ? 'border-[#C74601]/30' : 'border-slate-200'} shadow-[0_8px_24px_rgba(15,23,42,0.05)]`
-    : `bg-white/5 ${emphasize ? 'border-[#FFC107]/30' : 'border-white/10'}`;
+    ? `ci-operational-card ${emphasize ? 'border-[#C74601]/30' : 'border-slate-200'}`
+    : `ci-operational-card ${emphasize ? 'border-[#FFC107]/30' : 'border-white/10'}`;
 
   const content = (
     <>
@@ -564,7 +564,7 @@ function KpiCard({ label, value, trend, tone = 'default', alert, onClick, emphas
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-2xl border px-4 py-3 min-h-[98px] text-left transition cursor-pointer hover:-translate-y-[1px] hover:shadow-[0_10px_24px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
+      className={`rounded-2xl border px-4 py-3 min-h-[98px] text-left cursor-pointer ci-subtle-hover hover:shadow-[0_10px_24px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
     >
       {content}
     </button>
@@ -654,7 +654,7 @@ function ToolbarButton({ icon, label }: { icon?: React.ReactNode; label: string 
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-xl border text-[13px] font-medium transition ${className}`}
+      className={`inline-flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-xl border text-[13px] font-medium ci-subtle-hover ${className}`}
     >
       {icon}
       {label}
@@ -684,28 +684,28 @@ function BoardColumn({
     critical: {
       icon: AlertTriangle,
       accent: 'text-red-500',
-      shell: isLight ? 'bg-transparent border-transparent shadow-none p-0' : 'bg-white/5 border-white/10',
+      shell: 'ci-operational-card p-3',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
     warning: {
       icon: Clock,
       accent: 'text-amber-500',
-      shell: isLight ? 'bg-transparent border-transparent shadow-none p-0' : 'bg-white/5 border-white/10',
+      shell: 'ci-operational-card p-3',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
     progress: {
       icon: Activity,
       accent: 'text-blue-500',
-      shell: isLight ? 'bg-transparent border-transparent shadow-none p-0' : 'bg-white/5 border-white/10',
+      shell: 'ci-operational-card p-3',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
     pending: {
       icon: FileText,
       accent: 'text-slate-500',
-      shell: isLight ? 'bg-transparent border-transparent shadow-none p-0' : 'bg-white/5 border-white/10',
+      shell: 'ci-operational-card p-3',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
@@ -714,7 +714,7 @@ function BoardColumn({
   const Icon = column.icon;
 
   return (
-    <section className={`rounded-2xl border ${isLight ? 'p-0' : 'p-3'} flex flex-col min-h-0 ${column.shell}`}>
+    <section className={`rounded-2xl border flex flex-col min-h-0 ${column.shell}`}>
       <header className="flex items-center justify-between px-1 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <Icon size={16} className={column.accent} />
@@ -783,7 +783,7 @@ function TaskCard({
         }
         onClick();
       }}
-      className={`w-full rounded-2xl border p-4 text-left transition group cursor-pointer hover:-translate-y-[1px] hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
+      className={`w-full rounded-2xl border p-4 text-left group cursor-pointer ci-subtle-hover hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -825,7 +825,7 @@ function EmptyBoardState({ label, onClick }: { label: string; onClick: () => voi
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-2xl border border-dashed p-6 flex flex-col items-center justify-center text-center min-h-[220px] transition cursor-pointer hover:-translate-y-[1px] hover:shadow-[0_10px_22px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
+      className={`rounded-2xl border border-dashed p-6 flex flex-col items-center justify-center text-center min-h-[220px] cursor-pointer ci-subtle-hover hover:shadow-[0_10px_22px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
     >
       <CheckCircle2 size={28} className="text-emerald-500" />
       <div className={`text-[14px] font-semibold mt-3 ${titleClass}`}>All clear</div>

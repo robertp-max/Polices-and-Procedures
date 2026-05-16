@@ -17,11 +17,11 @@ import { currentSprint, neighbourSprint, sprintForDate } from '@/policy/pm/sprin
 import type { PmTaskStatus, Task } from '@/policy/pm/types';
 
 const STATUS_COLOR: Record<PmTaskStatus, string> = {
-  todo: '#94a3b8',
-  in_progress: '#38bdf8',
-  in_review: '#fbbf24',
-  blocked: '#ec4899',
-  done: '#34d399',
+  todo: 'var(--ci-text-subtle)',
+  in_progress: 'var(--ci-info-fg)',
+  in_review: 'var(--ci-warning-fg)',
+  blocked: 'var(--ci-danger-fg)',
+  done: 'var(--ci-success-fg)',
 };
 
 const STATUS_LABEL: Record<PmTaskStatus, string> = {
@@ -129,13 +129,13 @@ export function PmDashboardPage(): ReactElement {
   const maxThroughput = Math.max(1, ...throughput.map(b => b.completed));
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <header className="mb-6 flex items-end justify-between">
+    <div className="p-3 sm:p-6 max-w-6xl mx-auto">
+      <header className="mb-4 sm:mb-6 flex items-end justify-between gap-3 flex-wrap">
         <div>
-          <div className="text-[10px] font-montserrat font-bold uppercase tracking-[0.22em] text-white/55">
+          <div className="text-[10px] font-montserrat font-bold uppercase tracking-[0.22em] ci-text-subtle">
             PM Reporting
           </div>
-          <h1 className="text-2xl font-outfit text-white mt-1">Sprint Dashboard</h1>
+          <h1 className="text-2xl font-outfit ci-text mt-1">Sprint Dashboard</h1>
         </div>
         <div className="flex items-center gap-2">
           {/* Wave 8 mobile-ops fix: enforce WCAG AA 44x44 touch targets on
@@ -143,16 +143,16 @@ export function PmDashboardPage(): ReactElement {
           <button
             type="button"
             onClick={() => setSprintId(neighbourSprint(sprintId, -1).id)}
-            className="px-2 py-1 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded border border-white/10 text-sm hover:bg-white/5"
+            className="px-2 py-1 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded border border-white/10 text-sm hover:bg-white/5 ci-subtle-hover"
             aria-label="Previous sprint"
           >
             ←
           </button>
-          <span className="font-mono text-sm text-white/85">{sprintWindow.id}</span>
+          <span className="font-mono text-sm ci-text">{sprintWindow.id}</span>
           <button
             type="button"
             onClick={() => setSprintId(neighbourSprint(sprintId, 1).id)}
-            className="px-2 py-1 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded border border-white/10 text-sm hover:bg-white/5"
+            className="px-2 py-1 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded border border-white/10 text-sm hover:bg-white/5 ci-subtle-hover"
             aria-label="Next sprint"
           >
             →
@@ -161,16 +161,16 @@ export function PmDashboardPage(): ReactElement {
       </header>
 
       {/* Burndown */}
-      <section className="rounded-lg border border-white/10 bg-white/[0.02] p-4 mb-6">
-        <h2 className="text-sm font-montserrat font-bold uppercase tracking-[0.22em] text-white/65 mb-2">
+      <section className="rounded-lg ci-operational-card p-4 mb-6">
+        <h2 className="text-sm font-montserrat font-bold uppercase tracking-[0.22em] ci-text-muted mb-2">
           Burndown · {totalForBurndown.toFixed(0)} pts committed
         </h2>
         <Burndown points={burndown} />
       </section>
 
       {/* Throughput */}
-      <section className="rounded-lg border border-white/10 bg-white/[0.02] p-4 mb-6">
-        <h2 className="text-sm font-montserrat font-bold uppercase tracking-[0.22em] text-white/65 mb-2">
+      <section className="rounded-lg ci-operational-card p-4 mb-6">
+        <h2 className="text-sm font-montserrat font-bold uppercase tracking-[0.22em] ci-text-muted mb-2">
           Throughput · last {throughput.length} sprints
         </h2>
         <div className="flex items-end gap-3 h-40">
@@ -181,16 +181,16 @@ export function PmDashboardPage(): ReactElement {
                 style={{ height: `${(b.completed / maxThroughput) * 100}%`, minHeight: 2 }}
                 title={`${b.sprintId}: ${b.completed} pts`}
               />
-              <div className="text-[10px] font-mono text-white/55">{b.sprintId.split('-')[1]}</div>
-              <div className="text-[10px] text-white/75">{b.completed}</div>
+              <div className="text-[10px] font-mono ci-text-muted">{b.sprintId.split('-')[1]}</div>
+              <div className="text-[10px] ci-text">{b.completed}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* Status mix */}
-      <section className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
-        <h2 className="text-sm font-montserrat font-bold uppercase tracking-[0.22em] text-white/65 mb-3">
+      <section className="rounded-lg ci-operational-card p-4">
+        <h2 className="text-sm font-montserrat font-bold uppercase tracking-[0.22em] ci-text-muted mb-3">
           Status Mix · {sprintWindow.id}
         </h2>
         <StatusMix counts={statusMix} />
@@ -200,7 +200,7 @@ export function PmDashboardPage(): ReactElement {
 }
 
 function Burndown({ points }: { points: DayPoint[] }): ReactElement {
-  if (points.length === 0) return <div className="text-white/55 text-sm">No data.</div>;
+  if (points.length === 0) return <div className="ci-text-muted text-sm">No data.</div>;
   const W = 720, H = 200, PAD = 28;
   const max = Math.max(1, ...points.map(p => Math.max(p.ideal, p.remaining)));
   const x = (i: number) => PAD + (i / Math.max(1, points.length - 1)) * (W - PAD * 2);
@@ -223,7 +223,7 @@ function Burndown({ points }: { points: DayPoint[] }): ReactElement {
 
 function StatusMix({ counts }: { counts: Record<PmTaskStatus, number> }): ReactElement {
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  if (total === 0) return <div className="text-white/55 text-sm">No tasks in sprint.</div>;
+  if (total === 0) return <div className="ci-text-muted text-sm">No tasks in sprint.</div>;
   return (
     <div>
       <div className="flex h-3 rounded overflow-hidden">
@@ -239,8 +239,8 @@ function StatusMix({ counts }: { counts: Record<PmTaskStatus, number> }): ReactE
         {(Object.keys(counts) as PmTaskStatus[]).map(k => (
           <li key={k} className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded" style={{ background: STATUS_COLOR[k] }} />
-            <span className="text-white/65">{STATUS_LABEL[k]}</span>
-            <span className="ml-auto font-mono text-white/85">{counts[k]}</span>
+            <span className="ci-text-muted">{STATUS_LABEL[k]}</span>
+            <span className="ml-auto font-mono ci-text">{counts[k]}</span>
           </li>
         ))}
       </ul>

@@ -319,7 +319,7 @@ export function AuditModePage() {
       {/* ─────────────────────────────────────────────────────────
           REGION 1 — Command header
           ───────────────────────────────────────────────────────── */}
-      <header className="px-6 md:px-10 pt-5 pb-3 flex flex-col gap-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      <header className="px-3 sm:px-6 md:px-10 pt-5 pb-3 flex flex-col gap-3 border-b ci-sticky-operational" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
         {/* Title row */}
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
@@ -349,7 +349,7 @@ export function AuditModePage() {
             />
             <button
               onClick={handleSurveyRollup}
-              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border transition"
+              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border transition ci-subtle-hover"
               style={{ background: `${TEAL_PRIMARY}1A`, color: TEAL_PRIMARY, borderColor: `${TEAL_PRIMARY}55` }}
               title="Survey rollup packet for current filter"
             >
@@ -357,13 +357,13 @@ export function AuditModePage() {
             </button>
             <button
               onClick={() => handleExportBundle('md')}
-              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06]"
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] ci-subtle-hover"
             >
               <Download size={11} /> Bundle
             </button>
             <button
               onClick={() => handleExportBundle('json')}
-              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06]"
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] ci-subtle-hover"
             >
               <FileJson size={11} /> JSON
             </button>
@@ -380,7 +380,7 @@ export function AuditModePage() {
                 key={qf}
                 type="button"
                 onClick={() => setQuickFilterAndURL(qf)}
-                className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] px-2.5 py-2 min-h-[44px] rounded-md border transition whitespace-nowrap"
+                className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] px-2.5 py-2 min-h-[44px] rounded-md border transition whitespace-nowrap ci-subtle-hover"
                 style={{
                   color:       active ? color : 'rgba(255,255,255,0.60)',
                   borderColor: active ? `${color}77` : 'rgba(255,255,255,0.10)',
@@ -482,7 +482,7 @@ export function AuditModePage() {
       {/* ─────────────────────────────────────────────────────────
           REGION 3 (left) + REGION 4 (right)
           ───────────────────────────────────────────────────────── */}
-      <div className="flex-1 grid grid-cols-12 gap-0 min-h-0 overflow-hidden px-6 md:px-10 py-4 gap-4">
+      <div className="flex-1 grid grid-cols-12 gap-0 min-h-0 overflow-hidden px-3 sm:px-6 md:px-10 py-4 gap-4">
 
         {/* REGION 3 — Queue */}
         <section className="col-span-5 flex flex-col min-h-0 gap-2">

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle2, Compass, ChevronDown, ChevronUp, X } from 'lucide-react';
 
@@ -40,7 +40,14 @@ function setDismissed(value: boolean): void {
 export function GuidedUatWidget() {
   const location = useLocation();
   const [dismissed, setDismissedState] = useState<boolean>(() => isDismissed());
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() =>
+    /^\/(audit|evidence|calendar)(\/|$)/.test(location.pathname),
+  );
+  const isDenseRoute = /^\/(audit|evidence|calendar)(\/|$)/.test(location.pathname);
+
+  useEffect(() => {
+    if (isDenseRoute) setCollapsed(true);
+  }, [isDenseRoute]);
 
   const { completedCount, activeStepId } = useMemo(() => {
     let active: string | null = null;
@@ -58,11 +65,11 @@ export function GuidedUatWidget() {
 
   return (
     <aside
-      className="fixed right-3 bottom-20 md:bottom-6 z-40 w-[min(92vw,340px)] rounded-xl border"
+      className={`fixed right-3 bottom-24 md:bottom-6 z-40 w-[min(92vw,340px)] rounded-xl border ci-subtle-hover ${isDenseRoute ? 'opacity-[0.96]' : ''}`}
       style={{
         background: 'var(--ci-surface)',
         borderColor: 'var(--ci-border)',
-        boxShadow: '0 12px 28px rgba(15,23,42,0.24)',
+        boxShadow: isDenseRoute ? '0 10px 24px rgba(15,23,42,0.18)' : '0 12px 28px rgba(15,23,42,0.24)',
       }}
       aria-label="Guided UAT checklist"
     >
@@ -106,7 +113,7 @@ export function GuidedUatWidget() {
               <Link
                 key={step.id}
                 to={step.to}
-                className="ci-touch-target rounded-md border px-2.5 py-2 text-[12px] flex items-center gap-2 transition-colors"
+                className="ci-touch-target rounded-md border px-2.5 py-2 text-[12px] flex items-center gap-2 transition-colors ci-subtle-hover"
                 style={{
                   borderColor: active ? 'var(--ci-link)' : 'var(--ci-border)',
                   background: active ? 'var(--ci-surface-2)' : 'transparent',

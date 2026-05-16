@@ -742,7 +742,7 @@ export function EvidenceCenterPage() {
         {/* Left column */}
         <div className="col-span-12 xl:col-span-9 flex flex-col overflow-hidden">
           {/* Filter bar */}
-          <div className="px-3 sm:px-6 py-3 flex flex-wrap items-center gap-3 border-b border-cyan-300/15 bg-slate-950/30 sticky top-0 z-20">
+          <div className="px-3 sm:px-6 py-3 flex flex-wrap items-center gap-3 border-b border-cyan-300/15 bg-slate-950/30 sticky top-0 z-20 ci-sticky-operational">
             <div className="flex items-center gap-2">
               <label className="text-xs uppercase tracking-wider text-slate-300">Event ID</label>
               <input
@@ -756,7 +756,7 @@ export function EvidenceCenterPage() {
               />
               <button
                 onClick={onSelectEvent}
-                className="px-3 py-1 text-sm min-h-[44px] rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100"
+                className="px-3 py-1 text-sm min-h-[44px] rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 ci-subtle-hover"
               >
                 Load
               </button>
@@ -862,14 +862,14 @@ export function EvidenceCenterPage() {
               <button
                 onClick={() => load(eventId)}
                 disabled={loading}
-                className="px-2 py-1 text-sm min-h-[44px] rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 disabled:opacity-50 inline-flex items-center gap-1"
+                className="px-2 py-1 text-sm min-h-[44px] rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 disabled:opacity-50 inline-flex items-center gap-1 ci-subtle-hover"
               >
                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
               </button>
               <button
                 onClick={onUploadClick}
                 disabled={uploading}
-                className="px-3 py-1 text-sm min-h-[44px] rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 disabled:opacity-50 inline-flex items-center gap-1"
+                className="px-3 py-1 text-sm min-h-[44px] rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 disabled:opacity-50 inline-flex items-center gap-1 ci-subtle-hover"
               >
                 <Upload size={14} /> {uploading ? 'Uploading…' : 'Upload evidence'}
               </button>
