@@ -137,6 +137,41 @@ An agent **cannot** reliably confirm:
 
 ---
 
+### Option F — UI/UX Migration Starter Pack (added per operator callout)
+
+**Why:** The operator correctly noted that pure UI/UX migration (Lead 1/2/3/13 work) was under-scoped in the original breakdown. This option delivers visible UI/UX progress without touching any P0/P1 critical path, and proves the single-orchestrator + Grok-subagent UI/UX pattern works.
+
+**Scope (~3 lowest-risk Track U items per `05_UIUX_MIGRATION_TRACK.md`):**
+1. **U-13 — Glass-stack cleanup** — fix `CommandCenterLayout.tsx` (5 layers → ≤3), `ModalShell.tsx` (4 → ≤3). Leave `TaxonomyPage.old.tsx` (Lead 16 C10 non-production) for U-15 gating.
+2. **U-15 — StagingM01 gating behind `feature.devSurface`** — Lead 16 C10 binding arbitration; small route + nav change.
+3. **U-06 starter — inline-style sweep on 3 specific non-Protected surfaces** — pick 3 highest-WARN-density surfaces from current `verify:ui` output (excluding eCign/print/generated paths). Token migration only; no structural change.
+
+**Out of scope (do NOT do in this session):**
+- CES theme.ts → tokens (U-01) — must serialize with Wave 1 P0-CES-001 for clean baseline
+- GVGB primitives (U-02) — frozen file, needs sign-off
+- FormSigningWorkspace mobile re-styling (U-08) — Protected
+- Persona-conditioned homes (U-12) — touches CommandCenterLayout, serializes with shell work
+
+**Agent allocation:**
+- 1 Claude Opus 4.7 orchestrator
+- 2 Grok 4.3 subagents in parallel: one for U-13 + U-15, one for U-06 starter (3 surfaces — split into a third Grok subagent if surfaces are big enough)
+
+**Validation:**
+- `tsc -b --noEmit`
+- `npm run build`
+- `npm run verify:ui` — WARN count should DECREASE in `tokens.hex-literal` + `glass.stack-budget` categories; zero new FAILs
+- Visual diff on touched surfaces (orchestrator-only sanity check)
+
+**Estimated duration:** ~60–90 minutes (Phase 2 pattern).
+
+**Output artifacts:**
+- Code changes (CommandCenterLayout glass-stack cleanup, ModalShell cleanup, StagingM01 gating, 3 surface token migrations)
+- `_MVP_Review_(claude47opus)/EXEC_OUTPUTS/UIUX_STARTER_PACK_REPORT.md` — before/after WARN counts, surfaces touched, intentional deferrals
+
+**Risk:** Low. No Protected Subsystem touch. All changes are additive token swaps + a feature-flag gate.
+
+---
+
 ### Option E — Documentation cleanup (lowest leverage, but bounded and safe)
 
 **Why:** Three small but real documentation hygiene items the MVP plan needs before further execution:
@@ -165,9 +200,11 @@ Stabilization Phase 2 proved 4–5 effective agents in ~70 minutes is the sweet 
 | Combo | Duration | Output | Why |
 |---|---|---|---|
 | **A + E** (primitives build + doc cleanup) | ~90 min | 4 primitives + 3 doc deliverables | A and E touch no overlapping files; perfect parallel run |
+| **A + F** (primitives + UI/UX starter pack) | ~90–120 min | 4 primitives + 3 UI/UX items shipped | **NEW recommended combo per operator UI/UX callout** — primitives + visible UI/UX progress, all non-Protected |
 | **A + D** (primitives + Trainer perms) | ~90 min | 4 primitives + PERMS-001 shipped | No file overlap; PERMS-001 is small enough to add |
 | **C + D** (audit/artifact pair + Trainer perms) | ~3 hours | 3 Wave 2/Wave 4 packages shipped | Concentrated MVP package velocity |
 | **A + C + D** (max throughput, agent-rich session) | ~3–4 hours | 4 primitives + 3 packages | Approaches Phase 2 ceiling; manageable if orchestrator stays disciplined on serialization rules |
+| **A + F + D** (max throughput with UI/UX) | ~3 hours | 4 primitives + 3 UI/UX items + PERMS-001 | Aligns primitives, UI/UX, and a small P1 package — Phase 2-scale session |
 
 ---
 
@@ -181,18 +218,19 @@ Stabilization Phase 2 proved 4–5 effective agents in ~70 minutes is the sweet 
 
 ---
 
-## 4. Strong Recommendation
+## 4. Strong Recommendation (updated per UI/UX callout)
 
-**For the next session: Option A + Option E (primitives + doc cleanup).**
+**For the next session: Option A + Option F (primitives + UI/UX starter pack).**
 
 Rationale:
 - Highest-leverage agent-doable work (4 primitives unblock 80%+ of mobile/Wave 1 work)
+- **Plus visible UI/UX progress** (glass-stack cleanup + StagingM01 gating + 3 surface token sweeps)
 - Zero Protected Subsystem touch
-- Bounded scope (~90 minutes)
-- Matches the Phase 2 successful pattern (4 parallel subagents + orchestrator + 70 minutes)
-- Doc cleanup removes blockers from the MVP plan itself
+- Bounded scope (~90–120 minutes; still within Phase 2 ceiling of 4–8 effective subagents)
+- Matches the Phase 2 successful pattern (1 orchestrator + 4–6 subagents)
+- Proves the single-orchestrator + Grok-for-UI/UX pattern works before scaling it to Waves 1–5
 - Real, visible, mergeable artifacts at end of session
-- Validation gates are all lightweight (no Compliance Lock regression needed — primitives are additive)
+- Validation gates are all lightweight (no Compliance Lock regression — all additive)
 
 **For the session after that: Option B (Wave 0 reality check).**
 
@@ -201,12 +239,13 @@ Rationale:
 - Borderline agent-doable; better as operator-shadowed
 - Once done, every subsequent wave has a real baseline to regress against
 
-**For the session after that: Option C (AUDIT-001 + ARTIFACT-001).**
+**For the session after that: Option C + Option E (AUDIT-001 + ARTIFACT-001 + doc cleanup).**
 
 Rationale:
 - Highest-velocity Wave 2 progress without TASK-001 or EVIDENCE-001 complexity
 - Low-risk (dual-write + fallback paths)
 - Each package ships with its own Browser Test 5 gate
+- Doc cleanup (PART II duplication, signerTaskFactory.ts resolution, 30-day roadmap) clears process debt
 
 ---
 

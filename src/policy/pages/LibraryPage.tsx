@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShellStore } from '../stores/uiStore';
-import { remapForLight } from '../utils/lightColorRemap';
 import {
   Shield, Search, FileText, Building2, Users,
   DollarSign, Monitor, BarChart3, Scale, Heart, Cpu, Briefcase,
@@ -307,7 +306,32 @@ export function LibraryPage() {
   const navigate = useNavigate();
   const theme = useShellStore(s => s.theme);
   const isLight = theme === 'care-indeed-light';
-  const mapColor = (c: string) => remapForLight(c, isLight);
+  /* U-14 (Wave 5A): inline replacement for the deleted utils/lightColorRemap.ts.
+   * Dark theme: returns the original hex unchanged (legacy behavior).
+   * Light theme: substitutes the canonical `var(--ci-*)` token so the accent
+   * surface picks up the Care Indeed light palette via CSS, mirroring the
+   * LIGHT_COLOR_MAP table from the removed band-aid module.
+   * mixAlpha translates the prior `${hex}40` alpha-concat pattern into
+   * `color-mix()` when the resolved color is a CSS variable. */
+  const LIGHT_TOKEN_FOR_LEGACY_HEX: Record<string, string> = {
+    '#facc15': 'var(--ci-primary-500)',
+    '#ffc107': 'var(--ci-primary-500)',
+    '#f59e0b': 'var(--ci-primary-500)',
+    '#10b981': 'var(--ci-success-300)',
+    '#06b6d4': 'var(--ci-secondary-500)',
+    '#ffffff': 'var(--ci-text-primary)',
+  };
+  const mapColor = (c: string): string => {
+    if (!isLight) return c;
+    return LIGHT_TOKEN_FOR_LEGACY_HEX[c.toLowerCase()] ?? c;
+  };
+  const mixAlpha = (color: string, pct: number): string => {
+    if (color.startsWith('var(')) {
+      return `color-mix(in srgb, ${color} ${pct}%, transparent)`;
+    }
+    const a = Math.round((pct / 100) * 255).toString(16).padStart(2, '0').toUpperCase();
+    return `${color}${a}`;
+  };
   const [libraryView, setLibraryView] = useState<'IBM' | 'ACHC'>('IBM');
   const [selectedDomain, setSelectedDomain] = useState('ALL');
   const [selectedSubdomain, setSelectedSubdomain] = useState<string>('ALL');
@@ -602,7 +626,7 @@ export function LibraryPage() {
                     onClick={() => handleDomainSelect(d.code)}
                     className="glass-interactive-lib w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[9px] font-bold border-[0.77px] font-montserrat tracking-wider uppercase transition-colors text-left"
                     style={isActive
-                      ? { borderColor: `${dColor}60`, color: dColor, backgroundColor: `${dColor}10` }
+                      ? { borderColor: mixAlpha(dColor, 38), color: dColor, backgroundColor: mixAlpha(dColor, 6) }
                       : isLight ? { borderColor: 'transparent', color: '#747470' } : { borderColor: 'transparent', color: 'rgba(255,255,255,0.4)' }}>
                     <Icon size={13} style={{ color: isActive ? dColor : undefined }}/> {d.name}
                   </button>
@@ -685,7 +709,7 @@ export function LibraryPage() {
                         onClick={() => navigate(`/library/${policy.policyId}`)}
                         className={`glass-interactive-lib glass-panel-lib border-[0.77px] p-5 rounded-2xl flex flex-col ${libraryView === 'ACHC' ? 'h-auto min-h-[220px]' : 'h-[210px]'} hover:border-[#FFC107]/40 transition-colors group cursor-pointer text-left ${isLight ? 'border-[#E5E4E3]' : 'border-white/10'}`}>
                         <span className="inline-block text-[11px] font-mono font-bold tracking-widest border-[0.77px] px-2 py-1 rounded mb-3 w-max"
-                          style={{ color, borderColor: `${color}40` }}>
+                          style={{ color, borderColor: mixAlpha(color, 25) }}>
                           {policy.policyId}
                         </span>
                         <h3 className={`text-[15px] font-medium text-ci-text-primary ${libraryView === 'ACHC' ? 'line-clamp-2' : 'line-clamp-3'} mb-auto leading-snug group-hover:text-ci-text-primary transition-colors`}>

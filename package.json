@@ -22,7 +22,7 @@
     "compile:workflows": "tsx scripts/compileWorkflows.ts",
     "verify:alignment": "tsx scripts/verifyAlignment.ts",
     "verify:pm-unified": "tsx scripts/verifyUnifiedTaskProjection.ts",
-    "verify:task-identity": "tsx scripts/verifyTaskIdentity.ts",
+    "verify:task-identity": "tsx --tsconfig tsconfig.app.json scripts/verifyTaskIdentity.ts",
     "verify:calendar-keys": "node scripts/checkCalendarTaskKeys.mjs",
     "verify:ui": "tsx --tsconfig tsconfig.app.json scripts/verifyUiDesignSystem.ts",
     "verify:brad-scenario": "tsx --tsconfig tsconfig.app.json scripts/verifyBradScenarioActionLayer.ts",

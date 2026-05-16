@@ -8,7 +8,6 @@ import {
   FileCheck, LayoutList
 } from 'lucide-react';
 import { useShellStore } from '../stores/uiStore';
-import { remapForLight } from '../utils/lightColorRemap';
 import { printForm } from '../utils/printForm';
 import { EmptyState, SearchField } from '@/policy/components/ui';
 
@@ -17,24 +16,24 @@ import { EmptyState, SearchField } from '@/policy/components/ui';
 // ══════════════════════════════════════════════════════════════
 
 const DOMAINS = [
-  { code: 'GV', name: 'GOVERNANCE', icon: Building2, color: '#FFC107' },
-  { code: 'CL', name: 'CLINICAL OPS', icon: Heart, color: '#ef4444' },
-  { code: 'QA', name: 'QAPI', icon: BarChart3, color: '#06b6d4' },
-  { code: 'HR', name: 'HUMAN RESOURCES', icon: Users, color: '#8b5cf6' },
-  { code: 'CO', name: 'COMPLIANCE', icon: Shield, color: '#3b82f6' },
-  { code: 'FN', name: 'FINANCE', icon: DollarSign, color: '#10b981' },
-  { code: 'OP', name: 'OPERATIONS', icon: Briefcase, color: '#f97316' },
-  { code: 'IT', name: 'IT & SECURITY', icon: Monitor, color: '#6366f1' },
-  { code: 'RM', name: 'RISK MGMT', icon: AlertTriangle, color: '#eab308' },
-  { code: 'EN', name: 'ENTERPRISE CTRL', icon: Cpu, color: '#ec4899' },
+  { code: 'GV', name: 'GOVERNANCE', icon: Building2, accentToken: 'var(--ci-primary-500)' },
+  { code: 'CL', name: 'CLINICAL OPS', icon: Heart, accentToken: '#ef4444' /* U-14: legacy hex preserved — no canonical token */ },
+  { code: 'QA', name: 'QAPI', icon: BarChart3, accentToken: 'var(--ci-secondary-500)' },
+  { code: 'HR', name: 'HUMAN RESOURCES', icon: Users, accentToken: '#8b5cf6' /* U-14: legacy hex preserved — no canonical token */ },
+  { code: 'CO', name: 'COMPLIANCE', icon: Shield, accentToken: '#3b82f6' /* U-14: legacy hex preserved — no canonical token */ },
+  { code: 'FN', name: 'FINANCE', icon: DollarSign, accentToken: 'var(--ci-success-300)' },
+  { code: 'OP', name: 'OPERATIONS', icon: Briefcase, accentToken: '#f97316' /* U-14: legacy hex preserved — no canonical token */ },
+  { code: 'IT', name: 'IT & SECURITY', icon: Monitor, accentToken: '#6366f1' /* U-14: legacy hex preserved — no canonical token */ },
+  { code: 'RM', name: 'RISK MGMT', icon: AlertTriangle, accentToken: '#9A6700' /* U-14: #eab308→#9A6700; no --ci-warning-500 yet, TODO token follow-on */ },
+  { code: 'EN', name: 'ENTERPRISE CTRL', icon: Cpu, accentToken: '#ec4899' /* U-14: legacy hex preserved — no canonical token */ },
 ];
 
 const CLASSIFICATION_FILTERS = [
-  { id: 'master_template', name: 'Master Template', color: '#3b82f6', icon: Copy },
-  { id: 'audit_critical', name: 'Audit Critical', color: '#ef4444', icon: FileCheck },
-  { id: 'shared_enterprise', name: 'Shared Enterprise', color: '#10b981', icon: Share2 },
-  { id: 'high_risk', name: 'High Risk', color: '#f97316', icon: Flame },
-  { id: 'digital_candidate', name: 'Digital Candidate', color: '#a855f7', icon: Monitor },
+  { id: 'master_template', name: 'Master Template', accentToken: '#3b82f6' /* U-14: legacy hex preserved — no canonical token */ , icon: Copy },
+  { id: 'audit_critical', name: 'Audit Critical', accentToken: '#ef4444' /* U-14: legacy hex preserved — no canonical token */ , icon: FileCheck },
+  { id: 'shared_enterprise', name: 'Shared Enterprise', accentToken: 'var(--ci-success-300)', icon: Share2 },
+  { id: 'high_risk', name: 'High Risk', accentToken: '#f97316' /* U-14: legacy hex preserved — no canonical token */ , icon: Flame },
+  { id: 'digital_candidate', name: 'Digital Candidate', accentToken: '#a855f7' /* U-14: legacy hex preserved — no canonical token */ , icon: Monitor },
 ];
 
 import { FORMS_DATASET } from '../data/formsLibraryDataset';
@@ -76,7 +75,6 @@ export function FormsPage() {
   const navigate = useNavigate();
   const theme = useShellStore(s => s.theme);
   const isLight = theme === 'care-indeed-light';
-  const mapColor = (c: string) => remapForLight(c, isLight);
   const [selectedDomain, setSelectedDomain] = useState('ALL');
   const [activeClassifications, setActiveClassifications] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
@@ -190,12 +188,12 @@ export function FormsPage() {
             {DOMAINS.map(d => {
               const isActive = selectedDomain === d.code;
               const Icon = d.icon;
-              const dColor = mapColor(d.color);
+              const dColor = d.accentToken;
               return (
                 <button key={d.code} onClick={() => setSelectedDomain(d.code)}
                   className="flex-shrink-0 glass-interactive-forms px-5 py-2 rounded-full font-montserrat text-[9px] font-bold tracking-widest uppercase flex items-center gap-2 transition-colors border-[0.77px]"
                   style={isActive
-                    ? { borderColor: `${dColor}60`, color: dColor, backgroundColor: `${dColor}10` }
+                    ? { borderColor: `color-mix(in srgb, ${dColor} 60%, transparent)`, color: dColor, backgroundColor: `color-mix(in srgb, ${dColor} 10%, transparent)` }
                     : isLight ? { borderColor: 'transparent', color: '#747470' } : { borderColor: 'transparent', color: 'rgba(255,255,255,0.4)' }}>
                   <Icon size={13} style={{ color: isActive ? dColor : undefined }}/> {d.name}
                 </button>
@@ -216,7 +214,7 @@ export function FormsPage() {
           {CLASSIFICATION_FILTERS.map(c => {
             const isActive = activeClassifications.has(c.id);
             const Icon = c.icon;
-            const cColor = mapColor(c.color);
+            const cColor = c.accentToken;
             return (
               <button key={c.id} onClick={() => toggleClassification(c.id)}
                 className="flex-shrink-0 glass-interactive-forms flex items-center gap-1.5 px-3 py-1.5 rounded-full font-montserrat font-bold text-[8px] uppercase tracking-widest transition-colors border-[0.77px]"
@@ -237,7 +235,7 @@ export function FormsPage() {
           <div className="forms-grid-7 animate-fadeUpForms">
             {visibleForms.map(form => {
               const domain = DOMAINS.find(d => d.code === form.domainCode);
-              const color = mapColor(domain?.color || '#ffffff');
+              const color = domain?.accentToken || 'var(--ci-neutral-600)';
               const typeColorClass = getFormTypeColor(form.type);
               return (
                 <div key={form.id}
@@ -261,10 +259,10 @@ export function FormsPage() {
                           const cls = CLASSIFICATION_FILTERS.find(c => c.id === cId);
                           if (!cls) return null;
                           const Icon = cls.icon;
-                          const clsColor = mapColor(cls.color);
+                          const clsColor = cls.accentToken;
                           return (
                             <div key={cId} className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border w-max"
-                              style={{borderColor:`${clsColor}30`,backgroundColor:`${clsColor}10`,color:clsColor}}>
+                              style={{borderColor:`color-mix(in srgb, ${clsColor} 30%, transparent)`,backgroundColor:`color-mix(in srgb, ${clsColor} 10%, transparent)`,color:clsColor}}>
                               <Icon size={10}/> {cls.name}
                             </div>
                           );

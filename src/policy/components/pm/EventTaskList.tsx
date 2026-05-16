@@ -15,6 +15,7 @@ import { useProjectedTasks } from '@/policy/pm/taskProjection';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { PM_TASK_STATUS_LABEL } from '@/policy/pm/ecignStatusMap';
 import { EntityLink } from './EntityLink';
+import { selectCanonicalTasksForEvent } from '@/policy/ces/services/canonicalEventTaskFilter';
 
 interface Props {
   eventId: string;
@@ -30,8 +31,15 @@ export function EventTaskList({ eventId, onSelectTask }: Props): ReactElement {
     return anyTask.form_refs ?? anyTask.form_ids ?? [];
   };
 
+  /* MVP-P1-CALENDAR-001 (Wave 4) — use the canonical event-task selector
+   * instead of the previous inline `.filter(t => event_id === eventId)`.
+   * Behavior change vs. legacy: now also drops PM "personal" tasks and
+   * onboarding/orientation/training-marked tasks (per
+   * `EXECUTION_EXCLUDE_RE`), matching what Kanban/Gantt/Sprint views in
+   * PmViews already do. This is the intended unification per the MVP plan
+   * (Wave 4 §calendar/sprint/kanban/task sync). */
   const linked = useMemo(
-    () => tasks.filter(t => (t as { event_id?: string }).event_id === eventId),
+    () => selectCanonicalTasksForEvent(tasks, eventId),
     [tasks, eventId],
   );
 

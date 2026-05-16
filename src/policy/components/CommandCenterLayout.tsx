@@ -139,11 +139,24 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'demo', to: '/demo', label: 'Demo', icon: PlayCircle, featureId: 'demo.view' },
 ];
 
+/**
+ * Mobile primary tab bar (5 slots).
+ *
+ * Wave 2 — MVP plan §1 mobile nav slot update:
+ *   Workflows → Evidence
+ * Rationale: Field operators rely on Evidence Center for daily incident /
+ * evidence capture; Workflows surface is desktop-led. The Evidence slot
+ * keeps the 5-slot grid intact (parity with prior layout) and the route
+ * (`/evidence`) is feature-flag gated by `evidence.view` in App.tsx, so
+ * users without permission silently lose the tab — no broken nav target.
+ *
+ * Workflows remains reachable from desktop nav and from /more menu (deep link).
+ */
 const MOBILE_PRIMARY_TABS: Array<{ id: string; to: string; label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = [
   { id: 'dashboard', to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'calendar', to: '/calendar', label: 'Calendar', icon: CalendarDays },
   { id: 'tasks', to: '/my-tasks', label: 'Tasks', icon: ListChecks },
-  { id: 'workflows', to: '/workflows', label: 'Workflows', icon: ClipboardCheck },
+  { id: 'evidence', to: '/evidence', label: 'Evidence', icon: FolderOpen },
   { id: 'more', to: '/help', label: 'More', icon: UserCheck },
 ];
 
@@ -386,11 +399,12 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                 }),
 
             /* ── Glass surface ──
-               Light  : Care Indeed single sheet of glass — exactly
-                        bg-white/[0.0777] + backdrop-blur-3xl + the
-                        design-system shadow (from CI Design System.pdf).
-                        Opens snap to solid paper at 100% for policy/form
-                        detail views.
+               Light  : Care Indeed single sheet of paper. Solid white
+                        surface, 1px #E5E4E3 hairline, almost-invisible
+                        outer shadow. (No glass/blur on the light Layer 1;
+                        per Lead 1 light-mode rule + Lead 16 C1 glass-stack
+                        budget — Layer 1 must not stack blur on top of
+                        Layer 0.)
                Dark   : CI-ION maroon glass at 30.44% (7.77% reduction
                         from 33%); full opacity in detail mode. */
             ...(isVisualLight
@@ -668,11 +682,15 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     <div
                       className="absolute inset-0 cursor-pointer"
                       style={{
+                        // Stabilization U-13 / MVP §C1 (Lead 16 C1) — full-screen
+                        // menu scrim sits over the already-blurred shell. Stacking
+                        // a second backdrop-filter on this overlay would push the
+                        // file past the max-3 glass-layer budget; the 0.65 dark
+                        // opacity (and solid white on light) dims sufficiently
+                        // on its own.
                         background: isVisualLight
                           ? '#FFFFFF'
                           : 'rgba(10,2,2,0.65)',
-                        backdropFilter: isVisualLight ? 'none' : 'blur(20px) saturate(130%)',
-                        WebkitBackdropFilter: isVisualLight ? 'none' : 'blur(20px) saturate(130%)',
                       }}
                       onClick={() => {
                         setIsMenuOpen(false);
@@ -1056,8 +1074,12 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                   {!hideChrome && isMobile && (
                     <nav
                       aria-label="Primary mobile navigation"
-                      className="absolute inset-x-0 bottom-0 z-30 border-t backdrop-blur-md"
+                      className="absolute inset-x-0 bottom-0 z-30 border-t"
                       style={{
+                        // Stabilization U-13 / MVP §C1 — removed redundant
+                        // `backdrop-blur-md`: the bar background is already
+                        // 0.95 / 0.92 opaque, so frosting adds zero perceptible
+                        // contrast and stacks on the shell glass.
                         borderColor: isVisualLight ? 'rgba(31,28,27,0.12)' : 'rgba(255,255,255,0.12)',
                         background: isVisualLight ? 'rgba(255,255,255,0.95)' : 'rgba(10,2,2,0.92)',
                         paddingBottom: 'max(8px, env(safe-area-inset-bottom))',

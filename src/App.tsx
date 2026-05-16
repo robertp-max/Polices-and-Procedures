@@ -5,6 +5,7 @@ import { initializeApp } from '@/policy/utils/appInitializer'
 import { ProtectedRoute } from '@/auth/ProtectedRoute'
 import { useAuth } from '@/auth/AuthProvider'
 import { FeatureRouteGuard } from '@/policy/security/features/FeatureRouteGuard'
+import { RoleGate } from '@/policy/auth/RoleGate'
 
 // ── Lazy-loaded page routes (code-split per route) ──────────────
 const DashboardPage     = lazy(() => import('@/policy/pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
@@ -99,6 +100,23 @@ const SprintPlanPage   = lazy(() => import('@/policy/components/pm/SprintPlanPag
 const SprintReviewPage = lazy(() => import('@/policy/components/pm/SprintReviewPage').then(m => ({ default: m.SprintReviewPage })))
 const ApprovalsQueuePage = lazy(() => import('@/policy/components/pm/ApprovalsQueuePage').then(m => ({ default: m.ApprovalsQueuePage })))
 const PmDashboardPage  = lazy(() => import('@/policy/components/pm/PmDashboardPage').then(m => ({ default: m.PmDashboardPage })))
+
+/**
+ * U-15 — StagingM01 gating (Wave 2).
+ *
+ * The Marites cinematic prototype (`/journey/staging/m01`) is a staged
+ * preview module not intended for general operator visibility outside
+ * controlled rollouts. Gate the route + the JourneyHomePage catalog
+ * card behind a build-time env flag.
+ *
+ * Env: VITE_STAGING_M01=true → enabled (default OFF in production).
+ * Mirrored consumer-side in `JourneyHomePage.tsx`'s STAGING_MODULES filter
+ * so the card disappears when the route is unavailable (no broken nav).
+ *
+ * The lazy import (`StagingM01Page`) remains in source so the chunk is
+ * tree-shaken when disabled and trivially restored by flipping the env.
+ */
+const STAGING_M01_ENABLED = import.meta.env.VITE_STAGING_M01 === 'true';
 
 function AppLoader() {
   return (
@@ -195,22 +213,27 @@ function AppRoutes() {
                     <Routes>
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<FeatureRouteGuard featureId="dashboard.view"><DashboardPage /></FeatureRouteGuard>} />
-                    <Route path="/calendar" element={<FeatureRouteGuard featureId="calendar.view"><MasterCalendarPage /></FeatureRouteGuard>} />
-                    <Route path="/calendar/event/:eventId" element={<FeatureRouteGuard featureId="mobileIncidentExecution.view"><MobileIncidentExecutionPage stage="event" /></FeatureRouteGuard>} />
-                    <Route path="/calendar/event/:eventId/workflow" element={<FeatureRouteGuard featureId="mobileIncidentExecution.view"><MobileIncidentExecutionPage stage="workflow" /></FeatureRouteGuard>} />
-                    <Route path="/calendar/event/:eventId/task/:taskId" element={<FeatureRouteGuard featureId="mobileIncidentExecution.view"><MobileIncidentExecutionPage stage="task" /></FeatureRouteGuard>} />
-                    <Route path="/calendar/event/:eventId/evidence/:taskId" element={<FeatureRouteGuard featureId="mobileIncidentExecution.view"><MobileIncidentExecutionPage stage="evidence" /></FeatureRouteGuard>} />
-                    <Route path="/calendar/event/:eventId/approval" element={<FeatureRouteGuard featureId="mobileIncidentExecution.view"><MobileIncidentExecutionPage stage="approval" /></FeatureRouteGuard>} />
-                    <Route path="/audit" element={<FeatureRouteGuard featureId="audit.view"><AuditModePage /></FeatureRouteGuard>} />
-                    <Route path="/evidence" element={<FeatureRouteGuard featureId="evidence.view"><EvidenceCenterPage /></FeatureRouteGuard>} />
+                    {/* MVP-P1-PERMS-001 (Wave 4) — Trainer-blocked compliance execution surface.
+                        RoleGate runs BEFORE FeatureRouteGuard so a Trainer hitting these
+                        routes sees the Trainer-flavored AccessDenied (with a Journey link),
+                        not the generic feature-permission denial. Behind feature flag
+                        `trainer_route_blocking` — flip OFF to instantly revert. */}
+                    <Route path="/calendar" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="calendar.view"><MasterCalendarPage /></FeatureRouteGuard></RoleGate>} />
+                    <Route path="/calendar/event/:eventId" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="mobileIncidentExecution.view"><MobileIncidentExecutionPage stage="event" /></FeatureRouteGuard></RoleGate>} />
+                    <Route path="/calendar/event/:eventId/workflow" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="mobileIncidentExecution.view"><MobileIncidentExecutionPage stage="workflow" /></FeatureRouteGuard></RoleGate>} />
+                    <Route path="/calendar/event/:eventId/task/:taskId" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="mobileIncidentExecution.view"><MobileIncidentExecutionPage stage="task" /></FeatureRouteGuard></RoleGate>} />
+                    <Route path="/calendar/event/:eventId/evidence/:taskId" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="mobileIncidentExecution.view"><MobileIncidentExecutionPage stage="evidence" /></FeatureRouteGuard></RoleGate>} />
+                    <Route path="/calendar/event/:eventId/approval" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="mobileIncidentExecution.view"><MobileIncidentExecutionPage stage="approval" /></FeatureRouteGuard></RoleGate>} />
+                    <Route path="/audit" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="audit.view"><AuditModePage /></FeatureRouteGuard></RoleGate>} />
+                    <Route path="/evidence" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="evidence.view"><EvidenceCenterPage /></FeatureRouteGuard></RoleGate>} />
                     <Route path="/library" element={<FeatureRouteGuard featureId="policyLibrary.view"><LibraryPage /></FeatureRouteGuard>} />
                     <Route path="/library/:policyId" element={<FeatureRouteGuard featureId="policyLibrary.view"><PolicyDetailPage /></FeatureRouteGuard>} />
                     <Route path="/policies/:policyId" element={<FeatureRouteGuard featureId="policyLibrary.view"><PolicyDetailPage /></FeatureRouteGuard>} />
                     {/* /policies as alias for the policy library list (consistent entry point) */}
                     <Route path="/policies" element={<Navigate to="/library" replace />} />
                     {/* Unified Policy Lifecycle Workspace (replaces /drafts /review /publish) */}
-                    <Route path="/policy-lifecycle" element={<FeatureRouteGuard featureId="policyLifecycle.view"><PolicyLifecyclePage /></FeatureRouteGuard>} />
-                    <Route path="/policy-lifecycle/:policyId" element={<FeatureRouteGuard featureId="policyLifecycle.view"><PolicyLifecyclePage /></FeatureRouteGuard>} />
+                    <Route path="/policy-lifecycle" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="policyLifecycle.view"><PolicyLifecyclePage /></FeatureRouteGuard></RoleGate>} />
+                    <Route path="/policy-lifecycle/:policyId" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="policyLifecycle.view"><PolicyLifecyclePage /></FeatureRouteGuard></RoleGate>} />
                     {/* Old route redirects (one release cycle) */}
                     <Route path="/drafts"  element={<Navigate to="/policy-lifecycle?stage=DRAFT" replace />} />
                     <Route path="/drafts/:policyId" element={<Navigate to="/policy-lifecycle" replace />} />
@@ -225,9 +248,9 @@ function AppRoutes() {
                     <Route path="/viewer/:referenceId" element={<GenericReferenceViewer />} />
                     <Route path="/events/:referenceId" element={<GenericReferenceViewer />} />
                     <Route path="/tasks/:referenceId" element={<GenericReferenceViewer />} />
-                    <Route path="/governance" element={<GovernancePage />} />
+                    <Route path="/governance" element={<RoleGate denyTrainer><GovernancePage /></RoleGate>} />
                     <Route path="/demo" element={<FeatureRouteGuard featureId="demo.view"><DemoPage /></FeatureRouteGuard>} />
-                    <Route path="/iadministrator" element={<FeatureRouteGuard featureId="brad.view"><IAdministratorPage /></FeatureRouteGuard>} />
+                    <Route path="/iadministrator" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="brad.view"><IAdministratorPage /></FeatureRouteGuard></RoleGate>} />
                     <Route path="/admin" element={<Navigate to="/admin/user-groups" replace />} />
                     <Route path="/admin/user-groups" element={<AdminRouteGuard><UserGroupsPage /></AdminRouteGuard>} />
                     <Route path="/admin/roles" element={<AdminRouteGuard><AdminRolesPage /></AdminRouteGuard>} />
@@ -237,8 +260,8 @@ function AppRoutes() {
                     <Route path="/security/identity/user-groups" element={<Navigate to="/admin/user-groups" replace />} />
                     <Route path="/security/identity/permission-catalog" element={<Navigate to="/admin/permissions" replace />} />
                     <Route path="/security/identity/user-assignments" element={<Navigate to="/admin/users" replace />} />
-                    <Route path="/workflows/*" element={<FeatureRouteGuard featureId="workflows.view"><WorkflowLibraryApp /></FeatureRouteGuard>} />
-                    <Route path="/compliance/master-controls" element={<FeatureRouteGuard featureId="masterControlInventory.view"><MasterControlInventoryPage /></FeatureRouteGuard>} />
+                    <Route path="/workflows/*" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="workflows.view"><WorkflowLibraryApp /></FeatureRouteGuard></RoleGate>} />
+                    <Route path="/compliance/master-controls" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="masterControlInventory.view"><MasterControlInventoryPage /></FeatureRouteGuard></RoleGate>} />
                     <Route path="/hubstaff"   element={<FeatureRouteGuard featureId="hubstaff.view"><HubstaffStagingPage /></FeatureRouteGuard>} />
 
                     {/* Onboarding & Competency Journey */}
@@ -249,8 +272,10 @@ function AppRoutes() {
                     <Route path="/journey/supervisor"         element={<FeatureRouteGuard featureId="journey.view"><SupervisorPage /></FeatureRouteGuard>} />
                     <Route path="/journey/admin"              element={<FeatureRouteGuard featureId="journey.view"><AdminPage /></FeatureRouteGuard>} />
                     <Route path="/journey/guide"              element={<FeatureRouteGuard featureId="journey.view"><UserGuidePage /></FeatureRouteGuard>} />
-                    {/* Staging — cinematic prototype modules */}
-                    <Route path="/journey/staging/m01"        element={<FeatureRouteGuard featureId="journey.view"><StagingM01Page /></FeatureRouteGuard>} />
+                    {/* Staging — cinematic prototype modules (U-15 env-gated) */}
+                    {STAGING_M01_ENABLED && (
+                      <Route path="/journey/staging/m01"        element={<FeatureRouteGuard featureId="journey.view"><StagingM01Page /></FeatureRouteGuard>} />
+                    )}
 
                     {/* Onboarding V2 — audit-grade activation engine */}
                     <Route path="/onboarding-v2" element={<FeatureRouteGuard featureId="onboardingV2.view"><OnboardingV2Layout /></FeatureRouteGuard>}>

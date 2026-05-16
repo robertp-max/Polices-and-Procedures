@@ -6,11 +6,13 @@ import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
 import { useAutogenStore } from '@/policy/stores/autogenStore';
 import { useRegulatoryExecutionStore, type EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
-import { resolveEvidenceDataUrl, dataUrlToBlobUrlForHtml } from '@/policy/evidence/demoEvidenceRuntimeCache';
+import { resolveEvidenceDataUrl, dataUrlToBlobUrlForHtml, prefetchDemoEvidenceFromIdb } from '@/policy/evidence/demoEvidenceRuntimeCache';
+import { getFlag as getPmFlag } from '@/policy/pm/featureFlags';
 import {
   formInstanceLinkAliases,
   resolveFormInstanceFromArtifactCandidates,
 } from '@/policy/compliance-execution/cesFormInstanceId';
+import { resolveFormInstanceFromArtifact } from '@/policy/artifacts/artifactToFormInstance';
 import { isEvidenceImmutable } from '@/policy/evidence/evidenceModel';
 
 type ArtifactKind = 'form_instance' | 'evidence' | 'signature' | 'audit_packet' | 'evidence_package' | 'metadata_only' | 'unknown';
@@ -186,6 +188,46 @@ export function ArtifactViewerPage() {
     [store.taskAuditByEventId],
   );
 
+  /* ─── MVP-P0-ECIGN-002 — IDB prefetch on mount (Wave 3) ───────────────
+   * The Wave 2 evidence cache writes large blobs to IndexedDB (memory +
+   * localStorage cap to ~4 MB; IDB is the only durable channel for big
+   * signed-package HTML). The synchronous `resolveEvidenceDataUrl` used
+   * throughout this page only checks memory + localStorage; on a cold tab
+   * reload, IDB-only blobs would render as missing artifacts.
+   *
+   * To preserve the "stored snapshot is byte-stable + retrievable" invariant
+   * across full page reloads, we proactively warm the memory cache from IDB
+   * for every evidence row visible to this page. The set is bounded by the
+   * already-deduplicated `evidence` array; we stringify the id list to
+   * suppress no-op re-runs while the page is mounted.
+   *
+   * Gated on `signed_snapshot_capture` flag for instant rollback.
+   * Per MVP plan L1208 ("ECIGN-002 — cache version bump; old browsers
+   * re-init; no data loss") the IDB schema is governed by the Wave 2
+   * `EVIDENCE_BLOB_DB_VERSION` constant; this prefetch is read-only and
+   * does not create or migrate stores.
+   *
+   * Post-Wave-5A defect fix (DEFECT_ARTIFACT_RETRIEVAL_INVESTIGATION_REPORT):
+   * after the prefetch resolves we bump `memCacheVersion` so the
+   * `immutableFormArtifactUrl` useMemo below re-runs and the sync
+   * `resolveEvidenceDataUrl` re-reads the now-warm memCache. Without this
+   * bump, IDB-only blobs (e.g. > 4 MB packets after localStorage eviction)
+   * hydrated into memCache invisibly to React and the viewer rendered the
+   * amber "Signed artifact not available in this session" banner forever. */
+  const evidenceIdsKey = useMemo(() => evidence.map(d => d.id).sort().join('|'), [evidence]);
+  const [memCacheVersion, setMemCacheVersion] = useState(0);
+  useEffect(() => {
+    if (!getPmFlag('signed_snapshot_capture')) return;
+    if (!evidenceIdsKey) return;
+    const ids = evidenceIdsKey.split('|').filter(Boolean);
+    if (ids.length === 0) return;
+    let cancelled = false;
+    prefetchDemoEvidenceFromIdb(ids)
+      .then(() => { if (!cancelled) setMemCacheVersion(v => v + 1); })
+      .catch(() => { /* IDB best-effort; sync layer still works */ });
+    return () => { cancelled = true; };
+  }, [evidenceIdsKey]);
+
   const resolved = useMemo(() => {
     const primaryId = decodeURIComponent(artifactId).trim();
     const candidates = [primaryId, qEvidenceId, qFormInstanceId].filter((value): value is string => Boolean(value));
@@ -199,9 +241,12 @@ export function ArtifactViewerPage() {
       return { kind: 'evidence_package' as const, eventId: qEventId, taskId: normalizedTaskId };
     }
 
-    const formByPrimary =
-      resolveFormInstanceFromArtifactCandidates(primaryId, formInstances)
-      ?? formInstances.find(item => item.id === primaryId);
+    const formByPrimary = resolveFormInstanceFromArtifact({
+      primaryArtifactId: primaryId,
+      queryFormInstanceId: qFormInstanceId,
+      formInstances,
+      evidence,
+    }).formInstance;
     if (formByPrimary) {
       return { kind: 'form_instance' as const, formInstance: formByPrimary };
     }
@@ -522,7 +567,14 @@ export function ArtifactViewerPage() {
       immutableFormArtifactUrl: packetUrl || formOnlyUrl,
       fullPacketUrl: packetUrl,
     };
-  }, [resolved, evidence]);
+    // memCacheVersion is intentionally a dep without being referenced in the
+    // body: it's a re-run tick bumped by the IDB prefetch effect above after
+    // memCache is warmed, so the sync `resolveEvidenceDataUrl` calls hit the
+    // newly hydrated bytes. Removing it re-introduces the rendering bug where
+    // IDB-only blobs (e.g. >4 MB packets after localStorage eviction) appear
+    // permanently unavailable in the viewer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolved, evidence, memCacheVersion]);
 
   const formInstanceIsTerminal = resolved.kind === 'form_instance'
     && ['COMPLETED', 'SIGNED', 'LOCKED'].includes(resolved.formInstance.status);

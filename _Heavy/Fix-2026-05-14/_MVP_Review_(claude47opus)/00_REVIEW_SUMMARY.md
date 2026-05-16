@@ -170,5 +170,12 @@ The remaining waves are then a multi-week program of owner-led patches under Com
 - **02_MVP_PACKAGE_BREAKDOWN_HONEST.md** — per-P0/P1 package honest estimates + agent-doable vs human-bound classification
 - **03_REALISTIC_MVP_TIMELINE.md** — wave-by-wave realistic timeline with grounding rationale
 - **04_NEXT_EXECUTION_PROPOSAL.md** — concrete "what to do next" with options ranked by safety + value
+- **05_UIUX_MIGRATION_TRACK.md** — explicit enumeration of the pure UI/UX migration work (Track U) that §02 originally hid inside vague wave labels; integrated into the existing waves under single-orchestrator allocation
+
+## 8. Addendum (post-operator-callout) — UI/UX Track Now Explicit
+
+The operator correctly flagged that the original §02 breakdown under-scoped the pure UI/UX migration work from Leads 1, 2, 3, 13. That work is now broken out into **Track U** (17 items, ~26 agent-days), integrated into Waves 1–5 under the same single-orchestrator allocation that worked for Phase 1 + Phase 2.
+
+**Net calendar impact:** +1.5–2 working weeks on a 4-agent allocation. **Recommendation:** Do NOT spawn a parallel UI/UX team — file collisions on CesCard/CommandCenterLayout/theme.ts, shared sign-off gates (eCign, CES architecture), and visual-regression baseline integrity all argue against it. See `05_UIUX_MIGRATION_TRACK.md` §5 for the full rationale + §4 for per-wave subagent allocation (Claude Sonnet for logic, Grok 4.3 for UI/UX pattern application).
 
 **Status:** Review complete. No source changes made. Ready for operator decision on which option in `04_NEXT_EXECUTION_PROPOSAL.md` to execute.

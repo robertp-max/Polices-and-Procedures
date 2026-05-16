@@ -43,6 +43,8 @@ import {
   type EsignEvidenceResponse,
 } from '@/policy/ecign/hhcEvidence';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
+import { useEnforcementStore } from '@/policy/stores/enforcementStore';
+import { getFlag as getPmFlag } from '@/policy/pm/featureFlags';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { buildSignerRosterHtml, type RosterSignerEntry } from '@/policy/ecign/buildSignerRosterHtml';
 import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
@@ -915,6 +917,12 @@ export function eCIgnWorkspace({
   const cesFinalizeCommittedKeyRef = useRef<string | null>(null);
   /** Synchronous guard so React Strict double-invoke cannot interleave two finalize batches. */
   const cesFinalizeSyncLockRef = useRef(false);
+  /* MVP-P1-ECIGN-003 / 004 (Wave 4) — lock-gate error surface. When either the
+   * role re-check (ECIGN-003) or the required-fields completeness gate
+   * (ECIGN-004) blocks the LOCKED status transition, this state holds the
+   * human-readable reason so the operator sees an inline banner. Cleared when
+   * the user re-attempts finalize. */
+  const [lockGateError, setLockGateError] = useState<{ code: 'role_mismatch' | 'missing_required'; message: string } | null>(null);
   const canonicalFormInstanceId = useMemo(() => {
     if (!hhcEventId) return formInstanceId;
     if (isCanonicalCesFormInstanceId(formInstanceId, hhcEventId, formId)) return formInstanceId;
@@ -1606,8 +1614,137 @@ export function eCIgnWorkspace({
         .flatMap(alias => exec.generatedFormInstancesByEventId[alias] ?? [])
         .find(item => item.id === canonicalFormInstanceId);
       if (linkedInstance) {
-        exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'SIGNED');
-        exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'LOCKED');
+        /* ─────────────────────────────────────────────────────────────────
+         * MVP-P1-ECIGN-003 (Wave 4) — server/call-site role re-check.
+         *
+         * Defends against role elevation/change between sign-start and
+         * lock-time. We compare the role captured for THIS signer at
+         * sign-start (`signer.role`) against the CURRENT authenticated
+         * actor's role (`useEnforcementStore.getState().actor.role`).
+         *
+         * Mismatch → BLOCK the LOCKED transition (we still emit SIGNED
+         * because the physical eCign packet is signed; LOCKED is the
+         * immutable-audit step that we refuse). Surface inline banner +
+         * audit row + console log for compliance review. The unfinalized
+         * SIGNED state lets compliance re-sign with the correct role.
+         *
+         * Behind feature flag `signer_role_recheck_before_lock` (default
+         * ON; flip OFF to revert to legacy unchecked behavior).
+         * ───────────────────────────────────────────────────────────── */
+        let roleMismatch: { signerRole: string; currentRole: string } | null = null;
+        if (getPmFlag('signer_role_recheck_before_lock')) {
+          const currentActorRole = (useEnforcementStore.getState().actor.role ?? '').trim();
+          const signerRoleAtSignStart = (signer.role ?? '').trim();
+          if (
+            currentActorRole
+            && signerRoleAtSignStart
+            && currentActorRole.toLowerCase() !== signerRoleAtSignStart.toLowerCase()
+          ) {
+            roleMismatch = { signerRole: signerRoleAtSignStart, currentRole: currentActorRole };
+          }
+        }
+
+        /* ─────────────────────────────────────────────────────────────────
+         * MVP-P1-ECIGN-004 (Wave 4) — required-fields completeness gate.
+         *
+         * Walks every form input in the document marked `aria-required="true"`
+         * (Wave 3 A11Y-001 added these attributes on the canonical Field
+         * renderer) and confirms a non-empty value. Missing required fields
+         * → BLOCK the LOCKED transition + emit audit + surface inline
+         * banner naming the first few missing labels.
+         *
+         * Defensive: when zero `aria-required` fields are found in the DOM
+         * (form unmounted, non-Field-renderer surface), the gate is a
+         * NO-OP — we never block based on absence of evidence.
+         *
+         * Behind feature flag `required_fields_lock_gate` (default ON;
+         * flip OFF to revert to legacy unchecked behavior).
+         * ───────────────────────────────────────────────────────────── */
+        const missingRequired: string[] = [];
+        if (getPmFlag('required_fields_lock_gate') && typeof document !== 'undefined') {
+          const required = Array.from(
+            document.querySelectorAll<HTMLElement>('[aria-required="true"][data-field-id]'),
+          );
+          for (const el of required) {
+            const fieldId = el.getAttribute('data-field-id') ?? '';
+            const labelText = (() => {
+              const id = el.id;
+              if (id) {
+                const lbl = document.querySelector<HTMLLabelElement>(`label[for="${CSS.escape(id)}"]`);
+                if (lbl?.textContent) return lbl.textContent.trim();
+              }
+              const fieldset = el.closest('fieldset');
+              if (fieldset) {
+                const legend = fieldset.querySelector('legend');
+                if (legend?.textContent) return legend.textContent.trim();
+              }
+              return fieldId || 'Required field';
+            })();
+            const tag = el.tagName.toLowerCase();
+            let filled = false;
+            if (tag === 'input') {
+              const inp = el as HTMLInputElement;
+              if (inp.type === 'checkbox' || inp.type === 'radio') {
+                filled = inp.checked;
+              } else {
+                filled = !!inp.value && inp.value.trim().length > 0;
+              }
+            } else if (tag === 'textarea') {
+              const ta = el as HTMLTextAreaElement;
+              filled = !!ta.value && ta.value.trim().length > 0;
+            } else if (tag === 'select') {
+              const sel = el as HTMLSelectElement;
+              filled = !!sel.value && sel.value.trim().length > 0;
+            } else {
+              const txt = (el.textContent ?? '').trim();
+              filled = txt.length > 0;
+            }
+            if (!filled) missingRequired.push(labelText.replace(/\s*\*?\s*$/, ''));
+          }
+        }
+
+        if (roleMismatch || missingRequired.length > 0) {
+          if (roleMismatch) {
+            const msg = `Lock refused: actor role "${roleMismatch.currentRole}" no longer matches signer role "${roleMismatch.signerRole}" captured at sign start. Re-sign with the correct role.`;
+            setLockGateError({ code: 'role_mismatch', message: msg });
+            exec.appendTaskAuditEvent(hhcEventId, 'task', parentTaskId, 'FORM_LOCK_BLOCKED_ROLE_MISMATCH', {
+              reason: msg,
+              before: { signerRole: roleMismatch.signerRole },
+              after:  { currentActorRole: roleMismatch.currentRole, canonicalFormInstanceId },
+            });
+            appendExecutionAudit('FORM_LOCK_BLOCKED_ROLE_MISMATCH', msg, {
+              signerRoleAtSignStart: roleMismatch.signerRole,
+              currentActorRole: roleMismatch.currentRole,
+              canonicalFormInstanceId,
+            });
+            console.warn('[ECIGN-003] Lock blocked: role mismatch', roleMismatch);
+          } else if (missingRequired.length > 0) {
+            const head = missingRequired.slice(0, 3).join(', ');
+            const tail = missingRequired.length > 3 ? ` (and ${missingRequired.length - 3} more)` : '';
+            const msg = `Lock refused: ${missingRequired.length} required field(s) missing — ${head}${tail}. Complete the form and re-attempt.`;
+            setLockGateError({ code: 'missing_required', message: msg });
+            exec.appendTaskAuditEvent(hhcEventId, 'task', parentTaskId, 'FORM_LOCK_BLOCKED_REQUIRED_FIELDS', {
+              reason: msg,
+              after: { missingFieldCount: missingRequired.length, missingFieldLabels: missingRequired, canonicalFormInstanceId },
+            });
+            appendExecutionAudit('FORM_LOCK_BLOCKED_REQUIRED_FIELDS', msg, {
+              missingFieldCount: missingRequired.length,
+              missingFieldLabels: missingRequired,
+              canonicalFormInstanceId,
+            });
+            console.warn('[ECIGN-004] Lock blocked: required fields missing', missingRequired);
+          }
+          /* Mark SIGNED so the eCign packet artifact stays consistent with
+           * the physical sign event, but DO NOT mark LOCKED. The instance
+           * remains mutable so compliance can fix the issue and re-attempt. */
+          exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'SIGNED');
+        } else {
+          /* Both gates passed — proceed with the canonical SIGNED → LOCKED
+           * transition. Clear any stale lock-gate error from a prior attempt. */
+          setLockGateError(null);
+          exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'SIGNED');
+          exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'LOCKED');
+        }
       }
       exec.attemptCompleteTask(hhcEventId, parentTaskId);
     }
@@ -2342,6 +2479,42 @@ export function eCIgnWorkspace({
           }
         })()}
       </div>
+
+      {/* MVP-P1-ECIGN-003 / 004 (Wave 4) — Lock-gate refusal banner.
+          Renders ONLY when the role re-check or required-fields gate
+          blocked the LOCKED transition (form instance stays SIGNED until
+          the issue is corrected). role="alert" + aria-live="assertive" so
+          screen readers announce immediately. */}
+      {lockGateError && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="shrink-0 px-5 md:px-8 py-3 flex items-start gap-3"
+          style={{
+            background: '#FEF2F2',
+            borderTop: `1px solid #FCA5A5`,
+            color: '#7F1D1D',
+          }}
+        >
+          <Lock size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+          <div className="flex-1 min-w-0">
+            <div className="font-roboto text-[12px] font-semibold mb-0.5">
+              {lockGateError.code === 'role_mismatch'
+                ? 'Lock blocked — signer role changed'
+                : 'Lock blocked — required fields missing'}
+            </div>
+            <div className="font-roboto text-[11px] leading-snug">{lockGateError.message}</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setLockGateError(null)}
+            className="shrink-0 px-2 py-1 rounded text-[10px] font-roboto font-semibold uppercase tracking-wider"
+            style={{ background: 'white', border: '1px solid #FCA5A5', color: '#7F1D1D' }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* ── Footer ────────────────────────────────────────────────── */}
       <div className="shrink-0 bg-white" style={{ borderTop: `1px solid ${BORDER}` }}>

@@ -240,3 +240,78 @@ export function findApprovedUser(email: string, sfOrgId: string): ApprovedUser |
 export function getApprovedUserCount(): number {
   return loadApprovedUsers().filter(u => u.status === 'active').length;
 }
+
+export interface AllowlistAuditUser {
+  email: string;
+  sfOrgId?: string;
+}
+export interface AllowlistAuditResult {
+  totalChecked: number;
+  matchedActive: number;
+  matchedInactive: number;
+  notOnAllowlist: number;
+  missingOrgId: number;
+  allowlistUnavailable: boolean;
+}
+
+/**
+ * Audit-only reconciliation: given a list of "existing users" (e.g. from
+ * Cognito / Dynamo), compare each against the loaded allowlist and emit
+ * structured log events for mismatches. NEVER mutates user state. NEVER
+ * disables users. Per MVP plan L1208 — "audit existing users against CSV
+ * — never auto-disable".
+ *
+ * Returns a summary so callers can persist a report if needed; does not
+ * mutate anything.
+ */
+export function auditAllowlistCoverage(existingUsers: AllowlistAuditUser[]): AllowlistAuditResult {
+  if (!isAllowlistAvailable()) {
+    log.info('auth.allowlist_audit.unavailable', {});
+    return { totalChecked: 0, matchedActive: 0, matchedInactive: 0, notOnAllowlist: 0, missingOrgId: 0, allowlistUnavailable: true };
+  }
+
+  const users = loadApprovedUsers();
+  let totalChecked = 0;
+  let matchedActive = 0;
+  let matchedInactive = 0;
+  let notOnAllowlist = 0;
+  let missingOrgId = 0;
+
+  for (const u of existingUsers) {
+    totalChecked++;
+    const email = normalizeEmail(u.email);
+    const sfOrgId = u.sfOrgId ? normalizeSfOrgId(u.sfOrgId) : '';
+
+    if (!sfOrgId) {
+      missingOrgId++;
+      log.info('auth.allowlist_audit.missing_org_id', { email });
+      continue;
+    }
+
+    const match = users.find(
+      au => au.email === email && au.sfOrgId === sfOrgId
+    );
+
+    if (!match) {
+      notOnAllowlist++;
+      log.info('auth.allowlist_audit.not_on_allowlist', { email });
+    } else if (match.status === 'inactive') {
+      matchedInactive++;
+      log.info('auth.allowlist_audit.matched_inactive', { email });
+    } else {
+      matchedActive++;
+      // no per-row log for active (noise)
+    }
+  }
+
+  const result: AllowlistAuditResult = {
+    totalChecked,
+    matchedActive,
+    matchedInactive,
+    notOnAllowlist,
+    missingOrgId,
+    allowlistUnavailable: false,
+  };
+  log.info('auth.allowlist_audit.summary', result);
+  return result;
+}

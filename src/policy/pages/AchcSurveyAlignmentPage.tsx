@@ -513,11 +513,33 @@ export function AchcSurveyAlignmentPage() {
 
       <div className="flex-1 overflow-auto px-6 py-4">
         {mode === 'EVIDENCE' ? (
-          <div className="space-y-4">
-            {evidenceGroups.map((group) => {
+          /* MVP-P1-A11Y-004 (Wave 4) — tree ARIA on the ACHC evidence hierarchy.
+             Outer container = role="tree". Each HH-standard section is a
+             level-1 treeitem with aria-expanded; its rows are level-2
+             treeitems inside a role="group". aria-level / aria-posinset /
+             aria-setsize provide positional context for screen readers
+             without changing visible layout or keyboard focus model.
+             Full roving-tabindex keyboard nav is tracked separately (A11Y-006
+             targets PolicyLinkSelector first; tree-roving is a follow-on). */
+          <div
+            className="space-y-4"
+            role="tree"
+            aria-label="ACHC evidence hierarchy by HH standard"
+            aria-orientation="vertical"
+          >
+            {evidenceGroups.map((group, groupIdx) => {
               const groupCollapsed = !!evidenceHhCollapsed[group.hhStandard];
               return (
-              <section key={group.hhStandard} className="rounded-xl border border-[#bae6fd] bg-white shadow-sm">
+              <section
+                key={group.hhStandard}
+                className="rounded-xl border border-[#bae6fd] bg-white shadow-sm"
+                role="treeitem"
+                aria-expanded={!groupCollapsed}
+                aria-level={1}
+                aria-posinset={groupIdx + 1}
+                aria-setsize={evidenceGroups.length}
+                aria-label={`HH standard ${group.hhStandard}, ${group.rows.length} mapped section${group.rows.length === 1 ? '' : 's'}`}
+              >
                 <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-[#e2e8f0] bg-[#ecfeff] px-3 py-2.5">
                   <button
                     type="button"
@@ -544,8 +566,8 @@ export function AchcSurveyAlignmentPage() {
                   </button>
                 </div>
                 {!groupCollapsed && (
-                <div className="divide-y divide-[#e2e8f0]">
-                  {group.rows.map((row) => {
+                <div className="divide-y divide-[#e2e8f0]" role="group">
+                  {group.rows.map((row, rowIdx) => {
                     const rowKey = evidenceRowKey(row);
                     const techOpen = !!evidenceTechOpen[rowKey];
                     const cites = getEvidenceRegulatoryCitations(row);
@@ -561,6 +583,12 @@ export function AchcSurveyAlignmentPage() {
                     <div
                       key={rowKey}
                       className="border-l-2 border-transparent px-3 py-3 transition-colors hover:border-[#0f766e]/40 hover:bg-[#f8fafc]"
+                      role="treeitem"
+                      aria-level={2}
+                      aria-posinset={rowIdx + 1}
+                      aria-setsize={group.rows.length}
+                      aria-expanded={techOpen}
+                      aria-label={`${row.policyId} — ${row.sectionTitle}`}
                     >
                     <button
                       type="button"

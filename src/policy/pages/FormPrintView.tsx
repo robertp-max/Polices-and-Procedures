@@ -4,7 +4,30 @@ import { ChevronLeft, Printer } from 'lucide-react';
 import { buildFormContent } from '@/policy/data/formsLibraryContent';
 import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
 import { FormBody } from '@/policy/components/FormViewer';
+import { PrintFrame } from '@/policy/components/ui/print';
 
+/**
+ * MVP-P1-PRINT-001 (Wave 5A) — FormPrintView migrated to <PrintFrame>.
+ *
+ * PrintFrame now owns:
+ *   - the canonical Care Indeed print header (logo + title + meta)
+ *   - the canonical @page rule + baseline @media print resets
+ *   - the auto-print timer with iframe-suppression guard
+ *
+ * This file retains:
+ *   - the screen-only toolbar (Close + Save buttons)
+ *   - the .screen-shell / .form-frame paper-card screen preview
+ *   - FormPrintView-specific @media print overrides (table layout: fixed,
+ *     word-break, .form-frame paper-card strip-down) which PrintFrame does
+ *     not emit
+ *   - the document.title management
+ *
+ * Rollback: flip `print_unified_chrome` feature flag OFF — PrintFrame becomes
+ * a transparent passthrough rendering only {children}, and this page falls
+ * back to its prior visual (no unified header/footer chrome). FormPrintView-
+ * specific overrides below remain in effect either way, so table fidelity is
+ * unaffected by the flag.
+ */
 export function FormPrintView() {
   const { formId } = useParams<{ formId: string }>();
 
@@ -18,13 +41,7 @@ export function FormPrintView() {
     if (!content) return;
     const prev = document.title;
     document.title = `${content.id} — ${content.title}`;
-    // When embedded in the hidden print iframe (window !== window.top), the
-    // parent frame drives the print dialog via printForm(). Skip the
-    // auto-print to avoid double dialogs.
-    const isEmbedded = typeof window !== 'undefined' && window.top !== window.self;
-    const timer = isEmbedded ? 0 : window.setTimeout(() => window.print(), 700);
     return () => {
-      if (timer) window.clearTimeout(timer);
       document.title = prev;
     };
   }, [content]);
@@ -43,10 +60,8 @@ export function FormPrintView() {
   return (
     <div className="min-h-screen bg-[#F2F2F0] font-roboto text-[#1F1C1B]">
       <style>{`
-        @page { size: Letter ${content.orientation === 'landscape' ? 'landscape' : 'portrait'}; margin: 0.5in; }
-
         @media print {
-          html, body { background: #FFFFFF !important; margin: 0 !important; padding: 0 !important; }
+          html, body { margin: 0 !important; padding: 0 !important; }
           .screen-shell { background: #FFFFFF !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
           .form-frame {
             box-shadow: none !important;
@@ -58,18 +73,11 @@ export function FormPrintView() {
             width: 100% !important;
             background: #FFFFFF !important;
           }
-          .no-print { display: none !important; }
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            transition: none !important;
-          }
-          /* Tables — fixed layout prevents right-edge truncation */
+          * { transition: none !important; }
           .form-frame table {
             table-layout: fixed !important;
             width: 100% !important;
             max-width: 100% !important;
-            border-collapse: collapse !important;
           }
           .form-frame table th,
           .form-frame table td {
@@ -78,8 +86,6 @@ export function FormPrintView() {
             white-space: normal !important;
           }
           .avoid-break { break-inside: avoid; page-break-inside: avoid; }
-          thead { display: table-header-group; }
-          tr, td, th { break-inside: avoid; page-break-inside: avoid; }
         }
       `}</style>
 
@@ -100,7 +106,18 @@ export function FormPrintView() {
 
       <div className="screen-shell mx-auto px-4 py-8 md:px-8 md:py-12 pt-24" style={{ maxWidth: paperWidth }}>
         <div className="form-frame bg-white border border-[#E5E4E3] rounded-[12px] shadow-sm px-8 py-10 md:px-12 md:py-14">
-          <FormBody content={content} />
+          <PrintFrame
+            documentTitle={content.title}
+            documentId={content.id}
+            documentVersion={content.version}
+            documentDate={content.effectiveDate}
+            documentKind="FORM"
+            orientation={content.orientation === 'landscape' ? 'landscape' : 'portrait'}
+            contentScopeSelector=".form-frame"
+            autoPrint
+          >
+            <FormBody content={content} />
+          </PrintFrame>
         </div>
       </div>
     </div>

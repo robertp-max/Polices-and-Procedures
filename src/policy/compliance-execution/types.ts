@@ -110,6 +110,26 @@ export interface EventExecutionAuditEvent {
   recordVersion: number;
   prevHash?: string;
   currentHash?: string;
+
+  /* ─── MVP-P1-AUDIT-001 — top-level target dual-write (one release) ──
+   * Per MVP plan L1208 ("AUDIT-001: dual-write `after.*` + top-level one
+   * release"), audit consumers expect `targetKind` / `targetId` at the top
+   * level of each audit row in addition to whatever lives under `after.*`.
+   *
+   * Wave 2 strategy:
+   *   - Both fields are OPTIONAL so existing rows (persisted v4) remain valid.
+   *   - `appendTaskAuditEvent` derives sane defaults from `entityType` /
+   *     `entityId` (or from `opts.after.targetKind` / `opts.after.targetId`
+   *     when present, e.g. SIGNATURE_REQUESTED) and writes BOTH places.
+   *   - The hash chain is INTENTIONALLY NOT changed in this release: the
+   *     canonicalization in `appendExecutionAudit` continues to omit these
+   *     new fields so existing chains stay verifiable. Hash-schema bump to
+   *     include them is a separate ticket (AUDIT-001 v2 — deferred).
+   *   - Callers can still pass `after.targetKind` / `after.targetId` directly;
+   *     when they do, the top-level fields mirror those values exactly.
+   */
+  targetKind?: string;
+  targetId?: string;
 }
 
 export type FormInstanceStatus =
@@ -135,4 +155,31 @@ export interface EventFormInstance {
   sequence: number;
   createdAt: string;
   updatedAt?: string;
+
+  /* ─── MVP-P0-ECIGN-001 — supersede chain (Wave 3) ─────────────────
+   * Form-instance supersede metadata. Written ONLY by the
+   * `supersedeFormInstance` store action in regulatoryExecutionStore.ts
+   * (single orchestrator-owned mutation path).
+   *
+   * Invariants:
+   *   - A canonical (head-of-chain) instance: status !== 'SUPERSEDED'
+   *     AND supersededBy === undefined.
+   *   - A superseded instance: status === 'SUPERSEDED', supersededBy
+   *     points to the row that replaced it, supersededAt set to ISO
+   *     timestamp. Original row is NEVER deleted (audit defensibility).
+   *   - The replacement row (newly created) has supersedes pointing
+   *     back to the original row's id.
+   *
+   * Per MVP plan L1208 ("ECIGN-001 — legacy artifact fallback resolver
+   * retained one release"): callers should prefer canonical-successor
+   * resolution via `src/policy/compliance-execution/supersedeChain.ts`
+   * helpers, falling back to legacy heuristics for rows missing chain
+   * metadata.
+   */
+  /** Id of the instance this one replaces (filled when this row is a successor). */
+  supersedes?: string;
+  /** Id of the instance that replaced this one (filled when this row was superseded). */
+  supersededBy?: string;
+  /** ISO timestamp when this row was superseded. */
+  supersededAt?: string;
 }

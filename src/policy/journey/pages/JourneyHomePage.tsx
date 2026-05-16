@@ -12,7 +12,19 @@ import { BookOpen, GraduationCap, FlaskConical, Play, Clock, ChevronRight } from
 import type { JourneyModule } from '@/policy/journey/types/journey';
 
 /* ─── Staging module catalogue ─────────────────────────────────────────── */
-const STAGING_MODULES = [
+
+/**
+ * U-15 — StagingM01 gating (Wave 2).
+ *
+ * Must mirror the env-gate in `src/App.tsx`. When the env flag is OFF the
+ * staging card is filtered out of the catalog so operators never see a
+ * link that lands on a 404 (the route is also removed at build time).
+ *
+ * VITE_STAGING_M01=true → catalog includes STAGING-M01.
+ */
+const STAGING_M01_ENABLED = import.meta.env.VITE_STAGING_M01 === 'true';
+
+const STAGING_MODULES_ALL = [
   {
     id: 'STAGING-M01',
     title: "Marites' Journey",
@@ -26,6 +38,11 @@ const STAGING_MODULES = [
     structure: ['Pre-Assessment Hook (3Q)', '17 narrative content slides', '6 story challenges + debriefs', 'Final Assessment (5Q)', 'Summary & Certificate'],
   },
 ];
+
+const STAGING_MODULES = STAGING_MODULES_ALL.filter(m => {
+  if (m.id === 'STAGING-M01') return STAGING_M01_ENABLED;
+  return true;
+});
 
 type PhaseId = 'PRE_DAY_1' | 'GAO' | 'ROLE' | 'SUPERVISED' | 'CLEARED' | 'ANN' | 'DRILL';
 type JourneyCategory =

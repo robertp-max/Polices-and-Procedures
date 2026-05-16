@@ -16,6 +16,7 @@ import { SprintScopeToolbar } from '@/policy/components/pm/SprintScopeToolbar';
 import { useExecutionEnforcement } from '../../hooks/useExecutionEnforcement';
 import { ExecutionUnitCard } from './ExecutionUnitCard';
 import { WorkflowDrawer } from '../details/WorkflowDrawer';
+import { AriaLiveRegion } from '@/policy/components/ui';
 
 interface DragState {
   unit: ExecutionUnit;
@@ -131,6 +132,7 @@ export function SprintExecutionBoard() {
           </div>
         </div>
       )}
+      <AriaLiveRegion politeness="assertive" message={flash ? `Enforcement: ${flash.text}` : ''} />
 
       {/* ── Board (6 columns, horizontal scroll) ───────── */}
       <div className="overflow-x-auto pb-3">

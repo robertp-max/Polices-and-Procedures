@@ -1,10 +1,10 @@
 import type { Shift } from '../types-calendar';
 
 const STATUS_STYLES: Record<Shift['status'], React.CSSProperties> = {
-  open:             { background: 'rgba(234,179,8,0.12)',   color: '#a16207', border: '1px solid rgba(234,179,8,0.3)' },
-  filled:           { background: 'rgba(34,197,94,0.12)',   color: '#15803d', border: '1px solid rgba(34,197,94,0.3)' },
-  pending_coverage: { background: 'rgba(249,115,22,0.12)',  color: '#c2410c', border: '1px solid rgba(249,115,22,0.3)' },
-  cancelled:        { background: 'rgba(107,114,128,0.12)', color: '#4b5563', border: '1px solid rgba(107,114,128,0.3)' },
+  open:             { background: 'rgba(234,179,8,0.12)',   color: 'var(--ci-warning-fg)', border: '1px solid rgba(234,179,8,0.3)' },
+  filled:           { background: 'rgba(34,197,94,0.12)',   color: 'var(--ci-success-fg)', border: '1px solid rgba(34,197,94,0.3)' },
+  pending_coverage: { background: 'rgba(249,115,22,0.12)',  color: 'var(--ci-warning-fg)', border: '1px solid rgba(249,115,22,0.3)' },
+  cancelled:        { background: 'rgba(107,114,128,0.12)', color: 'var(--ci-text-muted)', border: '1px solid rgba(107,114,128,0.3)' },
 };
 
 const STATUS_LABELS: Record<Shift['status'], string> = {

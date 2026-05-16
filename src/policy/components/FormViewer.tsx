@@ -520,6 +520,22 @@ function Field({ f, sig = false, fieldId }: { f: FormField; sig?: boolean; field
   const labelCls = LABEL_CLS + (sig ? ' min-h-[2.6em]' : '');
   const inputCls = sig ? SIG_INPUT_CLS : INPUT_CLS;
 
+  /* ─── MVP-P0-A11Y-001 — label / control association (Wave 3) ──────────
+   * Each control gets a stable id derived from its fieldId so the wrapping
+   * <label> can use htmlFor (programmatic association for screen readers).
+   * Help text gets a stable id and is referenced via aria-describedby.
+   * Required fields get aria-required="true" in addition to the visible
+   * asterisk. Radio groups are rendered with <fieldset>/<legend> below.
+   * Signature buttons keep their existing aria-label and add
+   * aria-labelledby to expose the visible question label too.
+   *
+   * data-field-id is preserved for the existing form persistence layer
+   * (the focusin/change listeners in FormViewer query by data-field-id).
+   */
+  const inputId = fieldId ? `f-${fieldId}` : undefined;
+  const helpId = (inputId && f.help) ? `${inputId}-help` : undefined;
+  const ariaRequired = f.required ? true : undefined;
+
   const renderSignatureField = () => {
     if (!enabled) return <div className={SIG_DASHED_CLS} />;
     const fId    = fieldId ?? 'sig-unknown';
@@ -558,25 +574,89 @@ function Field({ f, sig = false, fieldId }: { f: FormField; sig?: boolean; field
     );
   };
 
+  // Radio is a GROUP — render with <fieldset>/<legend> for proper a11y semantics.
+  if (f.type === 'radio') {
+    const radioGroupName = inputId ?? f.label;
+    return (
+      <fieldset className={`${colSpan} flex flex-col border-0 m-0 p-0`}>
+        <legend className={labelCls}>
+          {f.label}
+          {f.required && <span className="text-[#C74601] ml-1">*</span>}
+        </legend>
+        <div className="flex gap-4 flex-wrap mt-1">
+          {f.options?.map(o => (
+            <label key={o} className="flex items-center gap-2 text-[12px]">
+              <input
+                type="radio"
+                name={radioGroupName}
+                value={o}
+                data-field-id={fieldId}
+                aria-required={ariaRequired}
+                aria-describedby={helpId}
+                className="w-4 h-4 accent-[#007970]"
+              />{' '}
+              {o}
+            </label>
+          ))}
+        </div>
+        {f.help && (
+          <p id={helpId} className="font-roboto text-[10px] text-[#747470] italic mt-1">
+            {f.help}
+          </p>
+        )}
+      </fieldset>
+    );
+  }
+
+  // Signature — visible label kept as a styled span so it can be referenced
+  // by aria-labelledby on the eCign button (the button also has its own
+  // aria-label in renderSignatureField for direct discoverability).
+  if (f.type === 'signature') {
+    const labelId = inputId ? `${inputId}-label` : undefined;
+    return (
+      <div className={`${colSpan} flex flex-col`}>
+        <span id={labelId} className={labelCls}>
+          {f.label}
+          {f.required && <span className="text-[#C74601] ml-1">*</span>}
+        </span>
+        <div aria-labelledby={labelId}>{renderSignatureField()}</div>
+        {f.help && (
+          <p id={helpId} className="font-roboto text-[10px] text-[#747470] italic mt-1">
+            {f.help}
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={`${colSpan} flex flex-col`}>
-      <label className={labelCls}>
+      <label htmlFor={inputId} className={labelCls}>
         {f.label}
         {f.required && <span className="text-[#C74601] ml-1">*</span>}
       </label>
 
       {f.type === 'textarea' ? (
         <textarea
+          id={inputId}
           rows={3}
           placeholder={f.placeholder}
           data-field-id={fieldId}
+          aria-required={ariaRequired}
+          aria-describedby={helpId}
           className={
             INPUT_CLS +
             ' h-auto min-h-[70px] resize-y pt-2 leading-relaxed'
           }
         />
       ) : f.type === 'select' ? (
-        <select className={INPUT_CLS} data-field-id={fieldId}>
+        <select
+          id={inputId}
+          className={INPUT_CLS}
+          data-field-id={fieldId}
+          aria-required={ariaRequired}
+          aria-describedby={helpId}
+        >
           <option value="">— Select —</option>
           {f.options?.map(o => (
             <option key={o} value={o}>
@@ -586,38 +666,28 @@ function Field({ f, sig = false, fieldId }: { f: FormField; sig?: boolean; field
         </select>
       ) : f.type === 'checkbox' ? (
         <input
+          id={inputId}
           type="checkbox"
           data-field-id={fieldId}
+          aria-required={ariaRequired}
+          aria-describedby={helpId}
           className="w-5 h-5 accent-[#007970] mt-1"
         />
-      ) : f.type === 'radio' ? (
-        <div className="flex gap-4 flex-wrap mt-1">
-          {f.options?.map(o => (
-            <label key={o} className="flex items-center gap-2 text-[12px]">
-              <input
-                type="radio"
-                name={f.label}
-                data-field-id={fieldId}
-                className="w-4 h-4 accent-[#007970]"
-              />{' '}
-              {o}
-            </label>
-          ))}
-        </div>
-      ) : f.type === 'signature' ? (
-        renderSignatureField()
       ) : (
         <input
           ref={textInputRef}
+          id={inputId}
           type={f.type}
           placeholder={f.placeholder}
           data-field-id={fieldId}
+          aria-required={ariaRequired}
+          aria-describedby={helpId}
           className={inputCls}
         />
       )}
 
       {f.help && (
-        <p className="font-roboto text-[10px] text-[#747470] italic mt-1">
+        <p id={helpId} className="font-roboto text-[10px] text-[#747470] italic mt-1">
           {f.help}
         </p>
       )}
@@ -1379,11 +1449,37 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
       }
     });
 
-    // Replace unsigned eCIgn sign-buttons with blank placeholders — prevents logo injection into print output
+    /* MVP-P1-A11Y-005 (Wave 4) — preserve ARIA semantics on sign-button placeholders.
+     *
+     * The eCIgn sign-button is replaced with a blank <div> in the printable
+     * snapshot to prevent localhost logo injection. Previously this stripped
+     * ALL accessibility metadata from that slot, leaving screen readers with
+     * an anonymous decorative div. We now carry the button's accessible name
+     * onto the placeholder via role="img" + aria-label so AT users still
+     * understand "a signature field belongs here" when consuming the saved
+     * artifact HTML. The visible layout (height/border) is unchanged — this
+     * is ARIA preservation only, NOT Wave 5 print-fidelity work. */
     Array.from(clone.querySelectorAll('button')).forEach(btn => {
       if (btn.querySelector('img[alt="Sign with eCign"]')) {
         const ph = document.createElement('div');
         ph.setAttribute('style', 'height:56px;border:1px solid #E5E4E3;border-radius:6px;background:transparent;');
+        const ariaLabel = (
+          btn.getAttribute('aria-label')
+            ?? btn.getAttribute('title')
+            ?? (() => {
+              const labelledBy = btn.getAttribute('aria-labelledby');
+              if (labelledBy) {
+                const ids = labelledBy.split(/\s+/).filter(Boolean);
+                const texts = ids
+                  .map(id => clone.querySelector(`#${CSS.escape(id)}`)?.textContent?.trim())
+                  .filter((t): t is string => !!t);
+                if (texts.length > 0) return texts.join(' ');
+              }
+              return '';
+            })()
+        ) || 'Signature placeholder';
+        ph.setAttribute('role', 'img');
+        ph.setAttribute('aria-label', ariaLabel);
         btn.replaceWith(ph);
       }
     });
@@ -1597,17 +1693,29 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
           </div>
         </div>
 
-        {/* Submission status banner */}
+        {/* Submission status banner — MVP-P0-A11Y-001: announce save outcomes
+            to screen readers via role+aria-live. Success uses polite (status),
+            error uses assertive (alert) so it interrupts. */}
         {(submitMsg || submitErr) && (
           <div className={`no-print mx-auto ${maxW} px-6 md:px-10`}>
             {submitMsg && (
-              <div className="rounded-[8px] border border-emerald-300 bg-emerald-50 text-emerald-800 px-3 py-2 text-[12px] flex items-center justify-between">
+              <div
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                className="rounded-[8px] border border-emerald-300 bg-emerald-50 text-emerald-800 px-3 py-2 text-[12px] flex items-center justify-between"
+              >
                 <span>{submitMsg}</span>
                 <button onClick={() => setSubmitMsg(null)} className="text-emerald-700 hover:text-emerald-900" title="Dismiss" aria-label="Dismiss">{'×'}</button>
               </div>
             )}
             {submitErr && (
-              <div className="rounded-[8px] border border-rose-300 bg-rose-50 text-rose-800 px-3 py-2 text-[12px] flex items-center justify-between">
+              <div
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
+                className="rounded-[8px] border border-rose-300 bg-rose-50 text-rose-800 px-3 py-2 text-[12px] flex items-center justify-between"
+              >
                 <span>{submitErr}</span>
                 <button onClick={() => setSubmitErr(null)} className="text-rose-700 hover:text-rose-900" title="Dismiss" aria-label="Dismiss">{'×'}</button>
               </div>

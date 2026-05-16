@@ -47,8 +47,6 @@ export function ModalShell({
           maxWidth: 'calc(100vw - 32px)',
           background: 'linear-gradient(160deg, rgba(66,8,8,0.82) 0%, rgba(15,3,3,0.88) 100%)',
           border: '1px solid rgba(255,255,255,0.12)',
-          backdropFilter: 'blur(20px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
           boxShadow: '0 80px 160px -40px rgba(0,0,0,0.9), 0 30px 60px -15px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)',
         }}
       >
@@ -132,8 +130,6 @@ export function DrawerShell({
           transition: 'transform 360ms cubic-bezier(0.22, 1, 0.36, 1)',
           background: 'linear-gradient(160deg, rgba(66,8,8,0.85) 0%, rgba(15,3,3,0.92) 100%)',
           borderLeft: '1px solid rgba(255,255,255,0.12)',
-          backdropFilter: 'blur(24px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(160%)',
           boxShadow: '-40px 0 120px -40px rgba(0,0,0,0.9)',
         }}
       >

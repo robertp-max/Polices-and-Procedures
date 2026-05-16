@@ -1,0 +1,2 @@
+email,fullName,sfOrgId,role,department,status,notes
+demo@example.com,Demo User,DEMO-ORG-001,Trainer,Demo,active,Example only

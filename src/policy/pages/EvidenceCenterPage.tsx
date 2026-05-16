@@ -25,7 +25,7 @@ import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { CesEvidenceHierarchyPanel } from '@/policy/components/evidence/CesEvidenceHierarchyPanel';
 import { resolveEvidenceDataUrl } from '@/policy/evidence/demoEvidenceRuntimeCache';
 import { useDataFreshness } from '@/policy/utils/useDataFreshness';
-import { StalenessBanner } from '@/policy/components/ui/StalenessBanner';
+import { StalenessBanner, AriaLiveRegion } from '@/policy/components/ui';
 import {
   type EvidenceAuditEvent,
   type EvidenceMode,
@@ -887,6 +887,7 @@ export function EvidenceCenterPage() {
               )}
             </div>
           )}
+          <AriaLiveRegion politeness="polite" message={(uploadMsg ?? error) || ''} />
 
           {/* Table */}
           <div className="flex-1 overflow-auto px-6 pt-4">

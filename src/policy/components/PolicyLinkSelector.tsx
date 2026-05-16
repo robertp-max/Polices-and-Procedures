@@ -21,6 +21,7 @@ import {
   validatePolicyLinks,
   emitPolicyLinkAudit,
 } from '@/policy/services/policyLinkService';
+import { useRovingTabIndex } from '@/policy/hooks/useRovingTabIndex';
 
 const NAVY        = '#1A3778';
 const NAVY_SOFT   = '#EEF1FA';
@@ -80,6 +81,22 @@ export function PolicyLinkSelector({
     () => searchPolicies(query, { exclude: value, limit: 20 }),
     [query, value],
   );
+
+  /* MVP-P1-A11Y-006 (Wave 4) — roving tabindex for the listbox options.
+   * The result row is `role="listbox"` with `role="option"` children, but
+   * those children are native <button>s — so without roving tabindex,
+   * Tab cycles through every option (APG antipattern). The hook gives us:
+   *   - exactly one option has tabIndex={0}; others have tabIndex={-1}
+   *   - ↑/↓ moves focus among options (vertical orientation)
+   *   - Home/End jumps to first/last
+   *   - focus wraps at the edges (loop=true)
+   * Click + Tab into the listbox continues to work via getItemProps.onFocus. */
+  const roving = useRovingTabIndex({
+    itemCount: results.length,
+    orientation: 'vertical',
+    homeEnd: true,
+    loop: true,
+  });
 
   const validation = validatePolicyLinks(value);
   const showError  = required && touched && !validation.ok;
@@ -233,12 +250,18 @@ export function PolicyLinkSelector({
               No matching policies. Try a different keyword.
             </div>
           ) : (
-            results.map(m => (
+            results.map((m, idx) => {
+              const itemProps = roving.getItemProps(idx);
+              return (
               <button
                 key={m.id}
                 type="button"
-                onClick={() => addPolicy(m)}
-                className="w-full text-left px-3 py-2 flex items-center gap-3 hover:bg-[#F4F6FB] transition-colors"
+                onClick={() => { itemProps.onFocus(); addPolicy(m); }}
+                onFocus={itemProps.onFocus}
+                onKeyDown={itemProps.onKeyDown}
+                tabIndex={itemProps.tabIndex}
+                ref={itemProps.ref as React.Ref<HTMLButtonElement>}
+                className="w-full text-left px-3 py-2 flex items-center gap-3 hover:bg-[#F4F6FB] transition-colors focus:bg-[#F4F6FB] focus:outline-none"
                 role="option"
                 aria-selected={false}
               >
@@ -255,7 +278,8 @@ export function PolicyLinkSelector({
                   {m.domainCode} · {m.version}
                 </span>
               </button>
-            ))
+              );
+            })
           )}
         </div>
       )}

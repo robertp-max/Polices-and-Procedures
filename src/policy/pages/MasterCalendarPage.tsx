@@ -27,6 +27,7 @@ import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { useCalendarSyncStore, type BulkSyncSummary } from '@/policy/stores/calendarSyncStore';
 import { SurfaceCard, EmptyState } from '@/policy/components/ui';
 import { RightDrawer } from '@/policy/components/ui/RightDrawer';
+import { AriaLiveRegion } from '@/policy/components/ui';
 
 export type PmView = 'calendar' | 'sprint' | 'kanban' | 'gantt';
 
@@ -584,6 +585,7 @@ function TimelineHeader({
             )}
           </div>
         )}
+        <AriaLiveRegion politeness="polite" message={lastBulkSync ? `Last bulk sync: Created ${lastBulkSync.created} · Updated ${lastBulkSync.updated} · Skipped ${lastBulkSync.skipped} · Failed ${lastBulkSync.failed}` : ''} visuallyHidden />
       </div>
     </div>
   );

@@ -71,8 +71,8 @@ const SHARED_REG_ITEMS = [
   { id: 'title22',  shortName: 'Title 22',    color: '#facc15', icon: Landmark },
   { id: '42cfr',   shortName: '42 CFR §484',  color: '#00e59b', icon: Scale },
   { id: 'cms',     shortName: 'CMS State Ops', color: '#ec4899', icon: FileCheck },
-  { id: 'hipaa',   shortName: 'HIPAA',        color: '#3b82f6', icon: Lock },
-  { id: 'osha',    shortName: 'OSHA',         color: '#f59e0b', icon: Shield },
+  { id: 'hipaa',   shortName: 'HIPAA',        color: 'var(--ci-info-fg)', icon: Lock },
+  { id: 'osha',    shortName: 'OSHA',         color: 'var(--ci-warning-fg)', icon: Shield },
   { id: 'oig',     shortName: 'OIG',          color: '#8b5cf6', icon: ShieldCheck },
   { id: 'fca',     shortName: 'FCA',          color: '#a855f7', icon: Gavel },
 ];
@@ -583,13 +583,13 @@ function AchcAlignmentPanel({
   );
 
   return (
-    <div id="achc-context-panel" className="mt-8 border-t border-[#e2e8f0] pt-6">
-      <h3 className="font-montserrat font-semibold text-[13px] text-[#007970] tracking-[0.15em] uppercase mb-5 flex items-center gap-2">
-        <ShieldCheck size={14} className="text-[#007970]" /> ACHC Survey Alignment
+    <div id="achc-context-panel" className="mt-8 border-t border-[var(--ci-border)] pt-6">
+      <h3 className="font-montserrat font-semibold text-[13px] text-[var(--ci-accent)] tracking-[0.15em] uppercase mb-5 flex items-center gap-2">
+        <ShieldCheck size={14} className="text-[var(--ci-accent)]" /> ACHC Survey Alignment
       </h3>
       <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-5">
         <div>
-          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">Mapping Type</dt>
+          <dt className="font-montserrat font-semibold text-[10px] text-[var(--ci-text-muted)] tracking-[0.16em] uppercase mb-1">Mapping Type</dt>
           <dd>
             <span className={`inline-flex items-center px-2.5 py-1 rounded-full border font-montserrat font-semibold text-[11px] tracking-wide ${badgeClass}`}>
               {achc.mappingType}
@@ -597,22 +597,22 @@ function AchcAlignmentPanel({
           </dd>
         </div>
         <div>
-          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">Evidence Codes</dt>
-          <dd className="font-roboto text-[14px] text-[#1F1C1B]">{achc.evidenceCodes.join(', ') || '—'}</dd>
+          <dt className="font-montserrat font-semibold text-[10px] text-[var(--ci-text-muted)] tracking-[0.16em] uppercase mb-1">Evidence Codes</dt>
+          <dd className="font-roboto text-[14px] text-[var(--ci-text-primary)]">{achc.evidenceCodes.join(', ') || '—'}</dd>
         </div>
         <div>
-          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">Corridor Row</dt>
-          <dd className="font-roboto text-[14px] text-[#1F1C1B]">{achc.corridorPolicyNo || '—'}</dd>
+          <dt className="font-montserrat font-semibold text-[10px] text-[var(--ci-text-muted)] tracking-[0.16em] uppercase mb-1">Corridor Row</dt>
+          <dd className="font-roboto text-[14px] text-[var(--ci-text-primary)]">{achc.corridorPolicyNo || '—'}</dd>
         </div>
         <div>
-          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">Corridor Title</dt>
-          <dd className="font-roboto text-[13px] text-[#52404B]">{achc.corridorPolicyTitle || '—'}</dd>
+          <dt className="font-montserrat font-semibold text-[10px] text-[var(--ci-text-muted)] tracking-[0.16em] uppercase mb-1">Corridor Title</dt>
+          <dd className="font-roboto text-[13px] text-[var(--ci-text-muted)]">{achc.corridorPolicyTitle || '—'}</dd>
         </div>
       </dl>
 
       {filteredStandards.length > 0 && (
         <div className="mt-5">
-          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-2">ACHC Standards</dt>
+          <dt className="font-montserrat font-semibold text-[10px] text-[var(--ci-text-muted)] tracking-[0.16em] uppercase mb-2">ACHC Standards</dt>
           <div className="flex flex-wrap gap-1.5 mt-1">
             {filteredStandards.map((s) => {
               const hasTarget = standardTargets.has(s);
@@ -623,7 +623,7 @@ function AchcAlignmentPanel({
                       ? 'border-[#ea580c] bg-[#ea580c]/15 text-[#ea580c]'
                       : hhFilter && s.startsWith(hhFilter)
                       ? 'border-[#ea580c]/40 bg-[#ea580c]/10 text-[#ea580c]'
-                      : 'border-[#007970]/30 bg-[#007970]/08 text-[#007970] hover:bg-[#007970]/15'
+                      : 'border-[var(--ci-accent)]/30 bg-[var(--ci-accent)]/08 text-[var(--ci-accent)] hover:bg-[var(--ci-accent)]/15'
                   }`
                 : 'inline-flex items-center px-2.5 py-1 rounded-full border font-montserrat font-semibold text-[11px] border-slate-300 bg-slate-100 text-slate-500 cursor-not-allowed';
               if (!hasTarget) {
@@ -651,7 +651,7 @@ function AchcAlignmentPanel({
 
       {validatedSupportRefs.length > 0 && (
         <div className="mt-5">
-          <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-2">Support References</dt>
+          <dt className="font-montserrat font-semibold text-[10px] text-[var(--ci-text-muted)] tracking-[0.16em] uppercase mb-2">Support References</dt>
           <div className="flex flex-wrap gap-2">
             {validatedSupportRefs.map((ref) => (
               <span
@@ -659,7 +659,7 @@ function AchcAlignmentPanel({
                 className={`inline-flex items-center px-2.5 py-1 rounded-full border font-montserrat font-semibold text-[10px] ${
                   highlightedAnchor && highlightedAnchor === ref.pageRef
                     ? 'border-[#ea580c] bg-[#ea580c]/15 text-[#ea580c]'
-                    : 'border-[#007970]/30 bg-[#007970]/08 text-[#007970]'
+                    : 'border-[var(--ci-accent)]/30 bg-[var(--ci-accent)]/08 text-[var(--ci-accent)]'
                 }`}
               >
                 {ref.pageRef}
@@ -678,14 +678,14 @@ function AchcAlignmentPanel({
         <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mt-5">
           {achc.title22.length > 0 && (
             <div>
-              <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">CA Title 22</dt>
-              <dd className="font-roboto text-[13px] text-[#1F1C1B]">{achc.title22.join('; ')}</dd>
+              <dt className="font-montserrat font-semibold text-[10px] text-[var(--ci-text-muted)] tracking-[0.16em] uppercase mb-1">CA Title 22</dt>
+              <dd className="font-roboto text-[13px] text-[var(--ci-text-primary)]">{achc.title22.join('; ')}</dd>
             </div>
           )}
           {achc.medicareCop.length > 0 && (
             <div>
-              <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">Medicare CoP</dt>
-              <dd className="font-roboto text-[13px] text-[#1F1C1B]">{achc.medicareCop.join('; ')}</dd>
+              <dt className="font-montserrat font-semibold text-[10px] text-[var(--ci-text-muted)] tracking-[0.16em] uppercase mb-1">Medicare CoP</dt>
+              <dd className="font-roboto text-[13px] text-[var(--ci-text-primary)]">{achc.medicareCop.join('; ')}</dd>
             </div>
           )}
         </dl>
@@ -693,7 +693,7 @@ function AchcAlignmentPanel({
 
       {achc.surveyNotes && (
         <div className="mt-5 rounded-lg bg-[#f0fdfa] border border-[#99f6e4] px-4 py-3">
-          <dt className="font-montserrat font-semibold text-[10px] text-[#0f766e] tracking-[0.16em] uppercase mb-1.5">Survey Notes</dt>
+          <dt className="font-montserrat font-semibold text-[10px] text-[var(--ci-info-fg)] tracking-[0.16em] uppercase mb-1.5">Survey Notes</dt>
           <dd className="font-roboto text-[13px] text-[#374151] leading-relaxed">{achc.surveyNotes}</dd>
         </div>
       )}
@@ -733,10 +733,10 @@ function TabOverview({
   // ── SECTION 0: Policy header + metadata ──
   if (sectionIdx === 0) return (
     <SCard>
-      <h1 className="font-montserrat font-semibold text-[28px] md:text-[32px] leading-tight text-[#1F1C1B] mb-1">
+      <h1 className="font-montserrat font-semibold text-[28px] md:text-[32px] leading-tight text-[var(--ci-text-primary)] mb-1">
         {policy.title}
       </h1>
-      <p className="font-montserrat font-medium text-[11px] text-[#007970] tracking-[0.22em] uppercase mb-8">
+      <p className="font-montserrat font-medium text-[11px] text-[var(--ci-accent)] tracking-[0.22em] uppercase mb-8">
         Policy ID: {policy.policyId}
       </p>
       <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-7">
@@ -753,8 +753,8 @@ function TabOverview({
           ['Next Review Date',    policy.nextReviewDate],
         ] as [string, string][]).map(([k, v]) => (
           <div key={k} className="flex flex-col">
-            <dt className="font-montserrat font-semibold text-[10px] text-[#52404B] tracking-[0.16em] uppercase mb-1">{k}</dt>
-            <dd className="font-roboto text-[14px] text-[#1F1C1B]">{v}</dd>
+            <dt className="font-montserrat font-semibold text-[10px] text-[var(--ci-text-muted)] tracking-[0.16em] uppercase mb-1">{k}</dt>
+            <dd className="font-roboto text-[14px] text-[var(--ci-text-primary)]">{v}</dd>
           </div>
         ))}
       </dl>
@@ -952,7 +952,7 @@ function TabCompliance({ policy, sectionIdx = 0 }: { policy: SharedPolicy; secti
   if (sectionIdx === 0) return (
     <SCard>
       <DSectionTitle icon={CheckSquare} title="8. Compliance & Audit" />
-      <h3 className="font-montserrat font-semibold text-[15px] text-[#1F1C1B] mb-6">8.1 How Compliance Is Measured</h3>
+      <h3 className="font-montserrat font-semibold text-[15px] text-[var(--ci-text-primary)] mb-6">8.1 How Compliance Is Measured</h3>
       <DSimpleTable
         headers={['Compliance Indicator', 'Measurement Method', 'Acceptable Standard']}
         rows={isGV ? GV_COMPLIANCE_81 : [
@@ -968,7 +968,7 @@ function TabCompliance({ policy, sectionIdx = 0 }: { policy: SharedPolicy; secti
   if (sectionIdx === 1) return (
     <SCard>
       <DSectionTitle icon={Search} title="8.2 Surveyor Expectations" />
-      <p className="text-[15px] text-[#1F1C1B] mb-8 font-roboto leading-relaxed">
+      <p className="text-[15px] text-[var(--ci-text-primary)] mb-8 font-roboto leading-relaxed">
         CMS surveyors conducting a standard survey under SOM Appendix B will specifically verify:
       </p>
       <div className="flex flex-col space-y-6 pt-2">
@@ -979,8 +979,8 @@ function TabCompliance({ policy, sectionIdx = 0 }: { policy: SharedPolicy; secti
           'Compliance monitoring is active and documented quarterly.',
         ]).map((text, i) => (
           <div key={i} className="flex items-start">
-            <div className="text-[#007970] font-semibold font-montserrat w-10 flex-shrink-0 text-[14px] pt-[2px]">{i + 1}.</div>
-            <p className="text-[#1F1C1B] font-roboto leading-relaxed text-[15px]">{text}</p>
+            <div className="text-[var(--ci-accent)] font-semibold font-montserrat w-10 flex-shrink-0 text-[14px] pt-[2px]">{i + 1}.</div>
+            <p className="text-[var(--ci-text-primary)] font-roboto leading-relaxed text-[15px]">{text}</p>
           </div>
         ))}
       </div>
@@ -996,10 +996,10 @@ function TabCompliance({ policy, sectionIdx = 0 }: { policy: SharedPolicy; secti
           ['Staff acknowledgments incomplete.', 'Surveyor will cite failure to ensure staff awareness.', 'Automated tracking with escalation for non-compliance within 7 days.'],
           ['Regulatory cross-references outdated.', 'Policy may not reflect current requirements.', 'Compliance Officer monitors regulatory changes and updates mappings proactively.'],
         ]).map((item, i) => (
-          <div key={i} className="border-l-[3px] border-[#C74601] pl-5 py-2">
-            <p className="font-semibold font-montserrat text-[#1F1C1B] text-[13px] uppercase tracking-[0.1em] mb-2">{item[0]}</p>
-            <p className="text-[14px] font-roboto text-[#524048] mb-2"><strong>Risk:</strong> {item[1]}</p>
-            <p className="text-[14px] font-roboto text-[#007970]"><strong>Mitigation:</strong> {item[2]}</p>
+          <div key={i} className="border-l-[3px] border-[var(--ci-cta)] pl-5 py-2">
+            <p className="font-semibold font-montserrat text-[var(--ci-text-primary)] text-[13px] uppercase tracking-[0.1em] mb-2">{item[0]}</p>
+            <p className="text-[14px] font-roboto text-[var(--ci-text-muted)] mb-2"><strong>Risk:</strong> {item[1]}</p>
+            <p className="text-[14px] font-roboto text-[var(--ci-accent)]"><strong>Mitigation:</strong> {item[2]}</p>
           </div>
         ))}
       </div>
@@ -2188,15 +2188,15 @@ export function SharedPolicyDetailView({
           />
 
           {/* Panel */}
-          <div className="policy-help-modal-panel relative bg-white rounded-[18px] shadow-2xl border border-[#E5E4E3] max-w-[520px] w-full max-h-[92vh] flex flex-col overflow-hidden">
+          <div className="policy-help-modal-panel relative bg-[var(--ci-surface)] rounded-[18px] shadow-2xl border border-[var(--ci-border)] max-w-[520px] w-full max-h-[92vh] flex flex-col overflow-hidden">
 
             {/* Header */}
-            <div className="flex items-center justify-between px-7 py-5 border-b border-[#E5E4E3]">
+            <div className="flex items-center justify-between px-7 py-5 border-b border-[var(--ci-border)]">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-[#E5FEFF] flex items-center justify-center shrink-0">
-                  <HelpCircle size={19} className="text-[#007970]" />
+                  <HelpCircle size={19} className="text-[var(--ci-accent)]" />
                 </div>
-                <h2 id="help-modal-title" className="font-montserrat font-semibold text-[15px] text-[#1F1C1B]">
+                <h2 id="help-modal-title" className="font-montserrat font-semibold text-[15px] text-[var(--ci-text-primary)]">
                   How to Navigate This Document
                 </h2>
               </div>
@@ -2204,7 +2204,7 @@ export function SharedPolicyDetailView({
                 ref={helpCloseRef}
                 onClick={closeHelp}
                 aria-label="Close navigation help"
-                className="w-8 h-8 rounded-full flex items-center justify-center text-[#747470] hover:bg-[#F2F2F0] hover:text-[#1F1C1B] transition-all focus-visible:ring-2 focus-visible:ring-[#007970]"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--ci-text-muted)] hover:bg-[#F2F2F0] hover:text-[var(--ci-text-primary)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--ci-accent)]"
               >
                 <span className="text-[22px] leading-none select-none" aria-hidden="true">×</span>
               </button>
@@ -2212,9 +2212,9 @@ export function SharedPolicyDetailView({
 
             {/* Body */}
             <div className="px-7 py-6 space-y-5 overflow-y-auto flex-1">
-              <p className="text-[14px] text-[#524048] font-roboto leading-relaxed">
+              <p className="text-[14px] text-[var(--ci-text-muted)] font-roboto leading-relaxed">
                 This document is presented as a{' '}
-                <strong className="text-[#1F1C1B] font-semibold">guided carousel</strong> — each section
+                <strong className="text-[var(--ci-text-primary)] font-semibold">guided carousel</strong> — each section
                 is shown one at a time for focused, uncluttered review. Navigate forward and backward
                 using any of the methods below.
               </p>
@@ -2249,16 +2249,16 @@ export function SharedPolicyDetailView({
                 ] as const).map(item => (
                   <div key={item.label} className="flex items-start gap-4">
                     <div
-                      className="w-10 h-10 rounded-[10px] bg-[#F2F8F7] border border-[#E5FEFF] flex items-center justify-center shrink-0 font-montserrat font-bold text-[#007970] text-[14px] select-none"
+                      className="w-10 h-10 rounded-[10px] bg-[#F2F8F7] border border-[#E5FEFF] flex items-center justify-center shrink-0 font-montserrat font-bold text-[var(--ci-accent)] text-[14px] select-none"
                       aria-hidden="true"
                     >
                       {item.symbol}
                     </div>
                     <div className="min-w-0 pt-1">
-                      <p className="font-montserrat font-semibold text-[13px] text-[#1F1C1B] mb-0.5 leading-snug">
+                      <p className="font-montserrat font-semibold text-[13px] text-[var(--ci-text-primary)] mb-0.5 leading-snug">
                         {item.label}
                       </p>
-                      <p className="font-roboto text-[13px] text-[#524048] leading-relaxed">
+                      <p className="font-roboto text-[13px] text-[var(--ci-text-muted)] leading-relaxed">
                         {item.desc}
                       </p>
                     </div>
@@ -2268,19 +2268,19 @@ export function SharedPolicyDetailView({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-7 py-4 border-t border-[#E5E4E3] bg-[#FAFBF8] shrink-0">
+            <div className="flex items-center justify-between px-7 py-4 border-t border-[var(--ci-border)] bg-[var(--ci-bg)] shrink-0">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={doNotShowAgain}
                   onChange={e => setDoNotShowAgain(e.target.checked)}
-                  className="w-4 h-4 rounded border-[#D1D1D1] accent-[#007970] cursor-pointer"
+                  className="w-4 h-4 rounded border-[#D1D1D1] accent-[var(--ci-accent)] cursor-pointer"
                 />
-                <span className="text-[12px] text-[#747470] font-roboto">Do not show again</span>
+                <span className="text-[12px] text-[var(--ci-text-muted)] font-roboto">Do not show again</span>
               </label>
               <button
                 onClick={closeHelp}
-                className="px-5 py-2 bg-[#007970] text-white font-montserrat font-semibold text-[12px] uppercase tracking-wider rounded-full hover:bg-[#005E57] transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#007970]"
+                className="px-5 py-2 bg-[var(--ci-accent)] text-white font-montserrat font-semibold text-[12px] uppercase tracking-wider rounded-full hover:bg-[#005E57] transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ci-accent)]"
               >
                 Got it
               </button>

@@ -10,7 +10,6 @@ import {
   X,
 } from 'lucide-react';
 import { useShellStore } from '@/policy/stores/uiStore';
-import { remapForLight } from '@/policy/utils/lightColorRemap';
 import {
   loadMasterControlInventorySeed,
   MASTER_CONTROL_CATEGORIES,
@@ -37,30 +36,54 @@ function formatControlCode(id: number): string {
   return `CTRL-${String(id).padStart(3, '0')}`;
 }
 
-function riskTone(risk: ControlRisk, isLight: boolean) {
+function riskTone(risk: ControlRisk) {
   if (risk === 'HIGH') {
-    const c = remapForLight('#EF4444', isLight);
-    return { color: c, background: `${c}1A`, border: `1px solid ${c}44` };
+    // U-14: canonical error token replaces remapForLight('#EF4444')
+    return {
+      color: 'var(--ci-error-300)',
+      background: 'color-mix(in srgb, var(--ci-error-300) 10%, transparent)',
+      border: '1px solid color-mix(in srgb, var(--ci-error-300) 27%, transparent)',
+    };
   }
   if (risk === 'MATERIAL') {
-    const c = remapForLight('#F59E0B', isLight);
-    return { color: c, background: `${c}1A`, border: `1px solid ${c}44` };
+    // U-14: canonical primary CTA token replaces remapForLight('#F59E0B')
+    return {
+      color: 'var(--ci-primary-500)',
+      background: 'color-mix(in srgb, var(--ci-primary-500) 10%, transparent)',
+      border: '1px solid color-mix(in srgb, var(--ci-primary-500) 27%, transparent)',
+    };
   }
-  const c = remapForLight('#06B6D4', isLight);
-  return { color: c, background: `${c}18`, border: `1px solid ${c}44` };
+  // U-14: canonical secondary token replaces remapForLight('#06B6D4')
+  return {
+    color: 'var(--ci-secondary-500)',
+    background: 'color-mix(in srgb, var(--ci-secondary-500) 9%, transparent)',
+    border: '1px solid color-mix(in srgb, var(--ci-secondary-500) 27%, transparent)',
+  };
 }
 
-function statusTone(status: ControlStatus, isLight: boolean) {
+function statusTone(status: ControlStatus) {
   if (status === 'deficient') {
-    const c = remapForLight('#EF4444', isLight);
-    return { color: c, background: `${c}1A`, border: `1px solid ${c}44` };
+    // U-14: canonical error token replaces remapForLight('#EF4444')
+    return {
+      color: 'var(--ci-error-300)',
+      background: 'color-mix(in srgb, var(--ci-error-300) 10%, transparent)',
+      border: '1px solid color-mix(in srgb, var(--ci-error-300) 27%, transparent)',
+    };
   }
   if (status === 'active') {
-    const c = remapForLight('#10B981', isLight);
-    return { color: c, background: `${c}1A`, border: `1px solid ${c}44` };
+    // U-14: canonical success token replaces remapForLight('#10B981')
+    return {
+      color: 'var(--ci-success-300)',
+      background: 'color-mix(in srgb, var(--ci-success-300) 10%, transparent)',
+      border: '1px solid color-mix(in srgb, var(--ci-success-300) 27%, transparent)',
+    };
   }
-  const c = remapForLight('#F59E0B', isLight);
-  return { color: c, background: `${c}18`, border: `1px solid ${c}44` };
+  // U-14: canonical primary CTA token replaces remapForLight('#F59E0B')
+  return {
+    color: 'var(--ci-primary-500)',
+    background: 'color-mix(in srgb, var(--ci-primary-500) 9%, transparent)',
+    border: '1px solid color-mix(in srgb, var(--ci-primary-500) 27%, transparent)',
+  };
 }
 
 function StatCard({
@@ -76,12 +99,26 @@ function StatCard({
   color: string;
   isLight: boolean;
 }) {
-  const tone = remapForLight(color, isLight);
+  // U-14: static token map replaces remapForLight(color, isLight) — all callers pass known hexes
+  const toneMap: Record<string, string> = {
+    '#007970': 'var(--ci-secondary-500)',
+    '#EF4444': 'var(--ci-error-300)',
+    '#F59E0B': 'var(--ci-primary-500)',
+    '#06B6D4': 'var(--ci-secondary-500)',
+    '#10B981': 'var(--ci-success-300)',
+    '#1A3778': '#1A3778', // U-14: preserved legacy navy (no canonical token)
+    '#B0271F': '#B0271F', // U-14: preserved legacy dark red (no canonical token)
+  };
+  const tone = toneMap[color] ?? color;
+  // U-14: border uses color-mix for var(--ci-*) tones to preserve alpha effect
+  const borderColor = tone.startsWith('var(')
+    ? `color-mix(in srgb, ${tone} 27%, transparent)`
+    : `${tone}44`;
   return (
     <div
       className="rounded-xl border px-3 py-2.5"
       style={{
-        borderColor: `${tone}44`,
+        borderColor,
         background: isLight ? '#FFFFFF' : 'rgba(255,255,255,0.02)',
       }}
     >
@@ -99,13 +136,13 @@ function StatCard({
 function ControlBadge({
   value,
   type,
-  isLight,
+  isLight: _isLight, // eslint-disable-line @typescript-eslint/no-unused-vars -- U-14: retained for API stability after remap removal
 }: {
   value: ControlRisk | ControlStatus;
   type: 'risk' | 'status';
   isLight: boolean;
 }) {
-  const tone = type === 'risk' ? riskTone(value as ControlRisk, isLight) : statusTone(value as ControlStatus, isLight);
+  const tone = type === 'risk' ? riskTone(value as ControlRisk) : statusTone(value as ControlStatus);
   return (
     <span
       className="inline-flex items-center rounded-md px-2 py-0.5 text-[9px] font-montserrat font-bold uppercase tracking-[0.1em]"
@@ -254,10 +291,10 @@ export function MasterControlInventory() {
         <header className="flex items-end justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex h-1.5 w-1.5 rounded-full" style={{ background: remapForLight('#007970', isLight) }} />
+              <span className="inline-flex h-1.5 w-1.5 rounded-full" style={{ background: 'var(--ci-secondary-500)' }} />
               <span
                 className="text-[10px] font-montserrat font-bold uppercase tracking-[0.24em]"
-                style={{ color: remapForLight('#007970', isLight) }}
+                style={{ color: 'var(--ci-secondary-500)' }}
               >
                 Compliance Command Center
               </span>
@@ -358,9 +395,9 @@ export function MasterControlInventory() {
               onClick={() => setHighRiskOnly(prev => !prev)}
               className="rounded-lg border px-2.5 py-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.12em]"
               style={{
-                borderColor: highRiskOnly ? remapForLight('#EF4444', isLight) : isLight ? '#D9D9D9' : 'rgba(255,255,255,0.14)',
-                background: highRiskOnly ? `${remapForLight('#EF4444', isLight)}18` : 'transparent',
-                color: highRiskOnly ? remapForLight('#EF4444', isLight) : undefined,
+                borderColor: highRiskOnly ? 'var(--ci-error-300)' : isLight ? '#D9D9D9' : 'rgba(255,255,255,0.14)',
+                background: highRiskOnly ? 'color-mix(in srgb, var(--ci-error-300) 9%, transparent)' : 'transparent',
+                color: highRiskOnly ? 'var(--ci-error-300)' : undefined,
               }}
             >
               High Risk Only
@@ -371,9 +408,9 @@ export function MasterControlInventory() {
               onClick={() => setGroupByCategory(prev => !prev)}
               className="rounded-lg border px-2.5 py-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
               style={{
-                borderColor: groupByCategory ? remapForLight('#007970', isLight) : isLight ? '#D9D9D9' : 'rgba(255,255,255,0.14)',
-                background: groupByCategory ? `${remapForLight('#007970', isLight)}15` : 'transparent',
-                color: groupByCategory ? remapForLight('#007970', isLight) : undefined,
+                borderColor: groupByCategory ? 'var(--ci-secondary-500)' : isLight ? '#D9D9D9' : 'rgba(255,255,255,0.14)',
+                background: groupByCategory ? 'color-mix(in srgb, var(--ci-secondary-500) 8%, transparent)' : 'transparent',
+                color: groupByCategory ? 'var(--ci-secondary-500)' : undefined,
               }}
             >
               <SlidersHorizontal size={12} />
@@ -395,8 +432,8 @@ export function MasterControlInventory() {
             </div>
           ) : error ? (
             <div className="h-full w-full flex items-center justify-center px-6">
-              <div className="rounded-xl border p-5 text-center max-w-xl" style={{ borderColor: remapForLight('#EF4444', isLight) }}>
-                <AlertTriangle size={20} className="mx-auto mb-2" style={{ color: remapForLight('#EF4444', isLight) }} />
+              <div className="rounded-xl border p-5 text-center max-w-xl" style={{ borderColor: 'var(--ci-error-300)' }}>
+                <AlertTriangle size={20} className="mx-auto mb-2" style={{ color: 'var(--ci-error-300)' }} />
                 <p className={`text-[12px] ${bodyText}`}>{error}</p>
                 <p className={`text-[10px] mt-1 ${mutedText}`}>
                   Expected dataset at <span className="font-mono">{'/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'}</span>
@@ -558,7 +595,7 @@ function SortHeader({
   currentField,
   direction,
   onSort,
-  isLight,
+  isLight: _isLight, // eslint-disable-line @typescript-eslint/no-unused-vars -- U-14: retained for API stability after remap removal
 }: {
   label: string;
   field: SortField;
@@ -574,7 +611,7 @@ function SortHeader({
         type="button"
         onClick={() => onSort(field)}
         className="inline-flex items-center gap-1 text-[9px] font-montserrat font-bold uppercase tracking-[0.13em]"
-        style={{ color: active ? remapForLight('#007970', isLight) : undefined }}
+        style={{ color: active ? 'var(--ci-secondary-500)' : undefined }}
       >
         {label}
         {active ? (direction === 'asc' ? <ChevronUp size={11} /> : <ChevronDown size={11} />) : null}
@@ -647,7 +684,7 @@ function ControlTable({
                   <div className="font-montserrat font-semibold leading-snug">
                     {control.controlName}
                     {control.highRiskIfMissing ? (
-                      <span className="ml-2 inline-flex items-center gap-1 text-[9px] font-montserrat font-bold uppercase tracking-[0.1em]" style={{ color: remapForLight('#EF4444', isLight) }}>
+                      <span className="ml-2 inline-flex items-center gap-1 text-[9px] font-montserrat font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--ci-error-300)' }}>
                         <ShieldX size={10} /> High impact
                       </span>
                     ) : null}

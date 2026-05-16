@@ -264,3 +264,32 @@ If the operator wants to make one focused agent-led session valuable without sli
 The Phase 2 model (4–5 effective agents, 1 orchestrator + 3 subagents, ~70 minutes) is the right template for any of A, B, C, D individually. Combining more than one in a single session is feasible but starts to risk merge conflicts on shared files.
 
 See `04_NEXT_EXECUTION_PROPOSAL.md` for the recommendation.
+
+---
+
+## 5. Track U Integration (Added Per Operator Callout)
+
+The wave calendars in §1 above counted only named P0/P1 packages. Adding **Track U — Pure UI/UX Migration** (17 items, ~26 agent-days; see `05_UIUX_MIGRATION_TRACK.md`) into the same waves under single-orchestrator allocation produces this revised calendar:
+
+| Wave | Calendar (was) | + Track U items absorbed | Calendar (with Track U) |
+|---|---|---|---|
+| Wave 0 | 1 week | — | 1 week |
+| Wave 1 | 1.5 weeks | U-01 (CES theme), partial U-06 (inline-style), U-13 (glass-stack), partial U-16 (typography), partial U-07 (mobile) | **2 weeks** |
+| Wave 2 | 2–3 weeks | U-02 (GVGB), U-03 (SharedPolicyDetailView), U-04 (Library), U-10 (RightDrawer width), U-15 (StagingM01 gating), U-17 (LoadingState adoption), partial U-06, partial U-07 | **2.5–3 weeks** |
+| Wave 3 | 3–4 weeks | U-08 (Mobile FormSigningWorkspace — Protected, post-sign-off) | **3–4 weeks (unchanged; absorbed)** |
+| Wave 4 | 2–3 weeks | U-05 (OnboardingV2), U-09 (DataGrid virtualization), U-11 (right-click), U-12 (persona homes) | **2.5–3.5 weeks** |
+| Wave 5 | 1 week | U-14 (lightColorRemap removal) | **1.5 weeks** |
+| Wave 6 | 3–5 days | — (baselines only) | **3–5 days** |
+| **Total Waves 0–6** | **~10–13 weeks** | | **~12–15 weeks** |
+
+**Net calendar delta: +1.5–2 working weeks. NOT 2× the calendar.** UI/UX work parallelizes well on disjoint surfaces — Grok 4.3 subagents take non-Protected pages while the orchestrator serializes on Protected/frozen files. Phase 1 + Phase 2 ran this exact pattern successfully.
+
+**Scenario B (4-agent allocation, current reality) revised totals:**
+- Sub-total Waves 0–6 with Track U: **~12–15 working weeks (~3–3.5 months)**
+- Including Wave 7 human-bound cohort: **~18–25 calendar weeks (~4.5–6 months)**
+
+**Scenario C (8+-agent allocation) revised totals:**
+- Sub-total Waves 0–6 with Track U: **~10–12 working weeks (~2.5 months)**
+- Including Wave 7: **~16–22 calendar weeks (~4–5 months)**
+
+The serialization ceiling still dominates. Adding UI/UX to the scope did not move the calendar much because the agents that would otherwise idle (waiting on eCign sign-off, etc.) get redirected to UI/UX migration on disjoint surfaces.

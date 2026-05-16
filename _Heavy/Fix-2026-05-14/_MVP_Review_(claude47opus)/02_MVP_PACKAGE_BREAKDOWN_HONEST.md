@@ -443,3 +443,19 @@ These are referenced as canonical in Wave 1/Wave 2 but **do not exist in `src/po
 **This is why the MVP plan is conditional on humans, not on agents.** Once the human-bound items are scheduled and owner sign-offs are in place, an agent can execute the ~81 agent-days of work. Until then, agents are bottlenecked.
 
 See `03_REALISTIC_MVP_TIMELINE.md` for the calendar mapping and `04_NEXT_EXECUTION_PROPOSAL.md` for what to actually do next.
+
+---
+
+## F. Track U — UI/UX Migration (Added Per Operator Callout)
+
+**Important correction:** The breakdown above counts only named P0/P1 packages. The pure UI/UX migration work described in Leads 1, 2, 3, 13 (token sweeps, CesCard→SurfaceCard, glass-stack cleanup, mobile re-styling per Lead 2's 12 rules, desktop hardening per Lead 3, 2,313+ inline-style migration, etc.) adds **~26 agent-days** beyond the ~81 above.
+
+**New aggregate Waves 0–6 total: ~107 agent-days** (single-agent equivalent).
+
+**Calendar impact under 4-agent allocation: +1.5–2 working weeks only.** UI/UX work parallelizes well on disjoint surfaces within each wave.
+
+See `05_UIUX_MIGRATION_TRACK.md` for:
+- 17 enumerated UI/UX items (U-01 through U-17) with per-item estimates
+- Wave-by-wave integration (which UI/UX items land in which wave)
+- Per-wave subagent allocation under single-orchestrator (Claude Opus 4.7) model
+- Why parallel UI/UX team is the wrong shape vs single orchestrator + Grok 4.3 subagents for UI/UX pattern application

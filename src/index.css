@@ -723,6 +723,73 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] {
   --ci-shadow-md:     0 8px 22px rgba(0,0,0,0.45);
   --ci-shadow-lg:     0 22px 48px -16px rgba(0,0,0,0.65);
 }
+
+/* ───────────────────────────────────────────────────────────────
+   CES SUB-BRAND PALETTE — --ces-* tokens (mirror of theme.ts)
+   ───────────────────────────────────────────────────────────────
+   DESIGN AUTHORITY: Lead 16 C14 amendment (2026-05-16).
+
+   CES retains NAVY as its approved sub-brand identity. These CSS
+   custom properties are a deliberate, justified parallel namespace
+   for the CES vertical only — they do NOT replace --ci-* tokens
+   for the broader Care Indeed system. CES-only surfaces may consume
+   --ces-* directly; React consumers go through useCesTokens() in
+   src/policy/ces/theme.ts which sources the same hex values from
+   named CES_*_LIGHT / CES_*_DARK constants.
+
+   REMAP CONTRACT (sync with src/policy/ces/theme.ts):
+     • To remap navy → teal: change --ces-navy / --ces-navy-deep /
+       --ces-navy-soft below AND the matching CES_NAVY_*_LIGHT
+       constants in src/policy/ces/theme.ts. Two-file change is
+       deliberate — allows audit trail + atomic review and prevents
+       silent dialect drift between JS and CSS consumers.
+   ─────────────────────────────────────────────────────────────── */
+:root {
+  /* CES light defaults — values mirror CES_*_LIGHT in theme.ts */
+  --ces-navy:         #1F4A8A;
+  --ces-navy-deep:    #143366;
+  --ces-navy-soft:    #EAF1FF;
+  --ces-orange:       #C74601;
+  --ces-orange-soft:  #FFF1EA;
+  --ces-ink:          #1E293B;
+  --ces-muted:        #64748B;
+  --ces-border:       #E2E8F0;
+  --ces-border-soft:  #EEF2F7;
+  --ces-paper:        #FFFFFF;
+  --ces-canvas:       #F8FAFC;
+  --ces-white:        #FFFFFF;
+  --ces-green:        #0F766E;
+  --ces-green-soft:   #E6F7F4;
+  --ces-amber:        #B45309;
+  --ces-amber-soft:   #FFF5E8;
+  --ces-red:          #B91C1C;
+  --ces-red-soft:     #FEECEC;
+}
+
+/* CES dark variant — mirrors CES_*_DARK in theme.ts.
+   Per Lead 16 C14: navy reads as teal in dark for AAA contrast
+   against the dark surface; teal stays available as accent. */
+html[data-theme="care-indeed-light"][data-ci-mode="dark"] {
+  --ces-navy:         #7ADEDF;
+  --ces-navy-deep:    #C4F4F5;
+  --ces-navy-soft:    rgba(122,222,223,0.14);
+  --ces-orange:       #FFC107;
+  --ces-orange-soft:  rgba(255,193,7,0.16);
+  --ces-ink:          #F1F5F4;
+  --ces-muted:        #B7C7C5;
+  --ces-border:       rgba(122,222,223,0.24);
+  --ces-border-soft:  rgba(122,222,223,0.14);
+  --ces-paper:        #15282A;
+  --ces-canvas:       #11242A;
+  --ces-white:        #15282A;
+  --ces-green:        #7AE2A8;
+  --ces-green-soft:   rgba(122,226,168,0.16);
+  --ces-amber:        #FFD64D;
+  --ces-amber-soft:   rgba(255,214,77,0.16);
+  --ces-red:          #FF7A7A;
+  --ces-red-soft:     rgba(255,122,122,0.16);
+}
+
 html[data-theme="care-indeed-light"][data-ci-mode="dark"] body {
   background: var(--ci-bg);
   color: var(--ci-text-primary);

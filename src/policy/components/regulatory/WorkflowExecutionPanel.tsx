@@ -51,6 +51,24 @@ import { FormViewer } from '@/policy/components/FormViewer';
 import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { PermissionGate } from '@/policy/security/features/PermissionGate';
+import { usePmFlag } from '@/policy/pm/featureFlags';
+
+/**
+ * MVP-P0-TASK-001 — Composite Form + Signers view-only collapse.
+ *
+ * When a SIGNATURE_REQUIRED requirement renders more than this many signer
+ * rows in the InlineTaskActionPanel drawer, the list collapses to the first
+ * N rows behind a "Show all" affordance. Purely a presentation change —
+ * task projection, signer counts, and rollup math are untouched (see
+ * Wave 2 exploration §A/§D: `weightedCompletionPercentage` / `completionScore`
+ * inputs are not affected).
+ *
+ * Gated by `flag.composite_form_signers` (default ON). Flip OFF via
+ * `window.__pm.setFlag('composite_form_signers', false)` for instant rollback
+ * per MVP plan L1208 ("flag.composite-form-signers — flip off for instant
+ * rollback").
+ */
+const COMPOSITE_SIGNER_COLLAPSE_THRESHOLD = 3;
 
 /* ═══════════════════════════════════════════════════════════════
    WorkflowExecutionPanel
@@ -1248,20 +1266,25 @@ function buildTaskLinkedFormRoute({
   task: EventExecutionDataflow['tasks'][number];
   requirement?: CesExecutionRequirement;
 }): string {
-  if (formInstanceId) {
-    return buildArtifactRoute(formInstanceId, {
-      eventId: dataflow.eventId,
-      taskId: task.id,
-      formId,
-      formInstanceId,
-      evidenceId: requirement?.evidence_id,
-      type: 'form_instance',
-    });
-  }
+  // MVP-P0-CES-001: every navigation that opens a form for *editing* must
+  // land on FormViewer with `?form_instance_id=...` so that:
+  //   (a) Browser Test 6 (deep-link hydration restores saved field values)
+  //       passes — FormViewer already reads `searchParams.get('form_instance_id')`
+  //       on mount (see FormViewer.tsx:969–985);
+  //   (b) refresh / share-link / restore-from-history are all canonical.
+  //
+  // Terminal-state artifact viewing (signed_locked, supersede chain) is the
+  // separate concern of `buildArtifactRoute(...)` and is invoked directly by
+  // callers that explicitly detect `instanceTerminal` (e.g. WorkflowExecutionPanel
+  // openInNewTab block — `if (instanceTerminal && formInstanceId) buildArtifactRoute(...)`).
+  // We do NOT short-circuit to /artifacts/ here, because that would prevent the
+  // editable, in-progress form flow from reaching FormViewer with a stable canonical
+  // form_instance_id in the URL.
   const params = new URLSearchParams();
   params.set('event_id', dataflow.eventId);
   params.set('task_id', task.id);
   params.set('form_id', formId);
+  if (formInstanceId) params.set('form_instance_id', formInstanceId);
   if (task.policyIds[0]) params.set('policy_id', task.policyIds[0]);
   if (task.workflowId) params.set('workflow_id', task.workflowId);
   if (requirement?.requirement_id) params.set('requirement_id', requirement.requirement_id);
@@ -1480,6 +1503,58 @@ function InlineTaskActionPanel({
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [formMarkedComplete, setFormMarkedComplete] = useState(false);
   const [formInstanceId, setFormInstanceId] = useState<string | null>(null);
+  // MVP-P0-TASK-001 — composite signers expand/collapse UI state
+  const [signersExpanded, setSignersExpanded] = useState(false);
+  const compositeSignersFlag = usePmFlag('composite_form_signers');
+
+  /* ─── MVP-P0-A11Y-002 — drawer/dialog semantics (Wave 3) ───────────────
+   * The panel is a modal-style right-side drawer. Wave 3 adds the missing
+   * dialog semantics:
+   *   - role="dialog" + aria-modal="true" on the panel container
+   *   - aria-labelledby pointing to the action-title heading id
+   *   - Escape key closes the drawer (matches the visual close-on-backdrop)
+   *   - Focus is captured on mount (records previously-focused element)
+   *     and restored on close so keyboard users return to their trigger
+   *   - Initial focus moves to the close button so screen readers announce
+   *     the dialog and a keyboard user can dismiss without tabbing
+   *
+   * Note: this slice deliberately does NOT introduce a full focus trap.
+   * A trap helper is a separate ticket (continuation A11Y-006). The other
+   * Wave 3 dialog semantics still materially improve AT navigation today.
+   */
+  const dialogTitleId = `inline-task-action-title-${task?.id ?? 'panel'}`;
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    previouslyFocusedRef.current = (typeof document !== 'undefined'
+      ? (document.activeElement as HTMLElement | null)
+      : null);
+    const focusFrame = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
+      ? window.requestAnimationFrame(() => closeButtonRef.current?.focus())
+      : 0;
+    return () => {
+      if (focusFrame && typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+        window.cancelAnimationFrame(focusFrame);
+      }
+      const prev = previouslyFocusedRef.current;
+      if (prev && typeof prev.focus === 'function' && document.body.contains(prev)) {
+        try { prev.focus(); } catch { /* non-fatal */ }
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleKeydown(ev: KeyboardEvent) {
+      if (ev.key === 'Escape' || ev.key === 'Esc') {
+        ev.stopPropagation();
+        onClose();
+      }
+    }
+    if (typeof window === 'undefined') return;
+    window.addEventListener('keydown', handleKeydown, true);
+    return () => window.removeEventListener('keydown', handleKeydown, true);
+  }, [onClose]);
 
   const isFormType = requirement?.type === 'FORM_COMPLETION';
   const formId = requirement ? (requirement.form_id || (task?.formIds[0] ?? '')) : '';
@@ -1786,6 +1861,18 @@ function InlineTaskActionPanel({
       )].sort((a, b) => (a.requestedAt || '').localeCompare(b.requestedAt || '') || a.id.localeCompare(b.id))
     : [];
 
+  // MVP-P0-TASK-001 — composite Form+Signers view-only collapse derivation.
+  // Pure presentation slice; signer order, counts, and rollup math unchanged.
+  const compositeCollapseActive = compositeSignersFlag
+    && signatureApprovalRows.length > COMPOSITE_SIGNER_COLLAPSE_THRESHOLD
+    && !signersExpanded;
+  const visibleSignatureApprovalRows = compositeCollapseActive
+    ? signatureApprovalRows.slice(0, COMPOSITE_SIGNER_COLLAPSE_THRESHOLD)
+    : signatureApprovalRows;
+  const hiddenSignerCount = signatureApprovalRows.length - visibleSignatureApprovalRows.length;
+  const showSignersToggle = compositeSignersFlag
+    && signatureApprovalRows.length > COMPOSITE_SIGNER_COLLAPSE_THRESHOLD;
+
   const taskApprovalsForPackage = dataflow.approvals.filter(a =>
     a.eventId === dataflow.eventId
     && (a.note?.includes(task.id) || task.formIds.some(fid => fid === a.targetId)),
@@ -1796,18 +1883,23 @@ function InlineTaskActionPanel({
 
   return (
     <div className="fixed inset-0 z-[70] flex justify-end" onClick={onClose}>
-      <div className="flex-1 bg-black/50" />
+      {/* Backdrop is decorative; clicks are captured by the parent's onClick. */}
+      <div className="flex-1 bg-black/50" aria-hidden="true" />
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={dialogTitleId}
         className={`${drawerWidth} max-w-full h-full border-l border-cyan-300/25 bg-[#0d1a2d] flex flex-col`}
         onClick={e => e.stopPropagation()}
       >
         {/* ── Header ── */}
         <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3 border-b border-white/10 flex-shrink-0">
           <div className="min-w-0">
-            <h4 className="text-sm font-semibold text-white truncate">{actionTitle}</h4>
+            <h4 id={dialogTitleId} className="text-sm font-semibold text-white truncate">{actionTitle}</h4>
             <p className="text-[10.5px] text-cyan-200/70 mt-0.5 truncate">{task.title}</p>
           </div>
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={onClose}
             aria-label="Close drawer"
@@ -1951,27 +2043,43 @@ function InlineTaskActionPanel({
                   {signatureApprovalRows.length === 0 ? (
                     <p className="text-white/55">No signature requests are registered for this task yet. Use the action button to request signatures; assigned approvers will appear here with status.</p>
                   ) : (
-                    <ul className="space-y-2">
-                      {signatureApprovalRows.map((a, idx) => (
-                        <li key={a.id} className="rounded border border-white/10 bg-black/30 px-2 py-1.5">
-                          <div className="text-white/90">
-                            Signer {idx + 1} <span className="text-white/45">(sequential order)</span>
-                          </div>
-                          <div className="mt-0.5 text-white/70">{a.targetLabel || 'Signature request'}</div>
-                          <div className="mt-0.5 text-white/50">
-                            Role / assignment: <span className="text-white/85">{a.approver || a.requestedBy || 'Unassigned'}</span>
-                          </div>
-                          <div className="mt-0.5 text-white/50">
-                            Status: <span className="text-teal-200">{a.status}</span>
-                            {a.decidedAt && <> · Decided: {new Date(a.decidedAt).toLocaleString()}</>}
-                          </div>
-                          <div className="mt-1 font-mono text-[10px] text-white/40 break-all">{a.id}</div>
-                          {idx > 0 && a.status !== 'approved' && signatureApprovalRows[idx - 1]?.status !== 'approved' && (
-                            <p className="mt-1 text-amber-200/90 text-[10px]">Waiting on prior signer before this slot activates.</p>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
+                    <>
+                      <ul className="space-y-2">
+                        {visibleSignatureApprovalRows.map((a, idx) => (
+                          <li key={a.id} className="rounded border border-white/10 bg-black/30 px-2 py-1.5">
+                            <div className="text-white/90">
+                              Signer {idx + 1} <span className="text-white/45">(sequential order)</span>
+                            </div>
+                            <div className="mt-0.5 text-white/70">{a.targetLabel || 'Signature request'}</div>
+                            <div className="mt-0.5 text-white/50">
+                              Role / assignment: <span className="text-white/85">{a.approver || a.requestedBy || 'Unassigned'}</span>
+                            </div>
+                            <div className="mt-0.5 text-white/50">
+                              Status: <span className="text-teal-200">{a.status}</span>
+                              {a.decidedAt && <> · Decided: {new Date(a.decidedAt).toLocaleString()}</>}
+                            </div>
+                            <div className="mt-1 font-mono text-[10px] text-white/40 break-all">{a.id}</div>
+                            {idx > 0 && a.status !== 'approved' && signatureApprovalRows[idx - 1]?.status !== 'approved' && (
+                              <p className="mt-1 text-amber-200/90 text-[10px]">Waiting on prior signer before this slot activates.</p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                      {showSignersToggle && (
+                        <button
+                          type="button"
+                          onClick={() => setSignersExpanded(prev => !prev)}
+                          className="mt-2 inline-flex items-center gap-1 rounded border border-teal-300/35 bg-teal-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-teal-200 hover:bg-teal-400/15"
+                          aria-expanded={signersExpanded}
+                          aria-controls={`signer-list-${task.id}`}
+                          title="MVP-P0-TASK-001 composite Form + Signers collapse"
+                        >
+                          {signersExpanded
+                            ? `Collapse signers (showing all ${signatureApprovalRows.length})`
+                            : `Show all ${signatureApprovalRows.length} signers (+${hiddenSignerCount} more, view-only)`}
+                        </button>
+                      )}
+                    </>
                   )}
                   <p className="mt-2 text-white/45">
                     Reassignment / escalation: use Approvals for this event or create a new signature request from this drawer after updating assignees in your org workflow (demo).

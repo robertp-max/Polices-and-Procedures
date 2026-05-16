@@ -5,7 +5,16 @@ import { UtilityButton } from './UtilityButton';
 export interface RightDrawerProps {
   open: boolean;
   onClose: () => void;
-  width?: 'sm' | 'md' | 'lg';
+  /**
+   * Visual width tier. Default 'md'.
+   * - sm: 420px — compact detail
+   * - md: 520px — standard
+   * - lg: 640px — workflow / PM panels
+   * - xl: 800px — dense planner / multi-column detail (Wave 2)
+   *
+   * Inline mode ignores this and uses 100% of the host.
+   */
+  width?: 'sm' | 'md' | 'lg' | 'xl';
   eyebrow?: string;
   title?: ReactNode;
   headerActions?: ReactNode;
@@ -15,7 +24,7 @@ export interface RightDrawerProps {
   inline?: boolean;
 }
 
-const WIDTH = { sm: 420, md: 520, lg: 640 } as const;
+const WIDTH = { sm: 420, md: 520, lg: 640, xl: 800 } as const;
 
 /** Right-side detail drawer — single primitive used by Event/Workflow/Task panels. */
 export function RightDrawer({

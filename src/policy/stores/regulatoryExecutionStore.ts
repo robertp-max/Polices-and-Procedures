@@ -354,6 +354,25 @@ interface RegulatoryExecutionState {
     workflowId?: string;
   }) => EventFormInstance | null;
   setFormInstanceStatus: (eventId: string, instanceId: string, status: FormInstanceStatus) => void;
+  /**
+   * MVP-P0-ECIGN-001 — supersede an existing form instance.
+   *
+   * Marks the old instance `status='SUPERSEDED'` with `supersededAt` and
+   * `supersededBy`, creates a NEW canonical instance with `supersedes`
+   * back-pointer and `sequence = oldSeq + 1`, emits TWO audit rows for chain
+   * reconstruction, and returns the new instance id (or empty string on
+   * failure / locked event / unknown instance).
+   *
+   * Old row is NEVER deleted (audit defensibility).
+   *
+   * Use `src/policy/compliance-execution/supersedeChain.ts` helpers to
+   * traverse the chain in consumers (artifactToFormInstance, etc.).
+   */
+  supersedeFormInstance: (
+    eventId: string,
+    instanceId: string,
+    opts?: { reason?: string },
+  ) => string;
   appendTaskAuditEvent: (
     eventId: string,
     entityType: EventExecutionAuditEvent['entityType'],
@@ -1806,9 +1825,23 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           return null;
         }
         const folder = resolveEventFolder(eventId);
-        const existing = collectByEventAliases(state.generatedFormInstancesByEventId, eventId, item => item.id)
-          .filter(i => i.formId === formId && i.status !== 'SUPERSEDED');
-        const sequence = existing.length + 1;
+        /* MVP-P0-ECIGN-001 (Wave 3) — sequence allocation must include ALL
+         * rows for the form (including SUPERSEDED), matching the rule used
+         * by `getOrCreateFormInstance` below (line ~1888 — `allForForm`).
+         *
+         * Pre-Wave-3 this filter dropped SUPERSEDED rows, which would have
+         * caused DUPLICATE canonical ids the moment ECIGN-001 ships its
+         * first supersede: old row had sequence N, supersede creates a new
+         * row at sequence N+1, then the next `generateFormInstance` call
+         * would also compute sequence N+1 from a count of {N+1 active row}
+         * and collide.
+         *
+         * Counting every row (`.filter(i => i.formId === formId)`) makes the
+         * two code paths converge and prevents the collision.
+         */
+        const allForForm = collectByEventAliases(state.generatedFormInstancesByEventId, eventId, item => item.id)
+          .filter(i => i.formId === formId);
+        const sequence = allForForm.length + 1;
         const instance: EventFormInstance = {
           id: `${eventId}-${formId}-${String(sequence).padStart(3, '0')}`,
           eventId,
@@ -2017,8 +2050,153 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         });
       },
 
+      /* ─── MVP-P0-ECIGN-001 — supersede a form instance (Wave 3) ──────────
+       *
+       * Atomic mutation: marks the old row SUPERSEDED + writes back-pointer,
+       * creates a new canonical successor with `supersedes` forward-pointer
+       * and `sequence = oldSeq + 1`, and emits TWO audit rows (one keyed on
+       * old id, one on new id) so the chain is reconstructible from audits
+       * alone.
+       *
+       * Old row is preserved (audit defensibility).
+       *
+       * Returns the new instance id on success, empty string on failure
+       * (event locked, certified, instance not found, instance already
+       * superseded).
+       *
+       * Pattern mirrors `supersedeEvidence` above (line ~1099) for
+       * consistency. New id allocation follows `getOrCreateFormInstance`'s
+       * rule (`allForForm.length + 1`) — also matched by the Wave 3 fix to
+       * `generateFormInstance` so the two paths can never collide.
+       *
+       * Hash chain in `appendExecutionAudit` is unchanged (canonicalization
+       * blob excludes the new top-level targetKind/targetId from Wave 2
+       * AUDIT-001).
+       */
+      supersedeFormInstance: (eventId, instanceId, opts) => {
+        const enf = useEnforcementStore.getState();
+        const canonicalEventId = resolveCanonicalEventId(eventId);
+        const state = get();
+
+        if ((enf.isLocked(eventId) || enf.isLocked(canonicalEventId) || !!state.certifications[eventId] || !!state.certifications[canonicalEventId]) && !canBypassCertification(false)) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'form', targetId: instanceId, reason: 'supersedeFormInstance blocked for locked/certified event.' });
+          return '';
+        }
+
+        const allInstances = collectByEventAliases(state.generatedFormInstancesByEventId, eventId, item => item.id);
+        const current = allInstances.find(i => i.id === instanceId);
+        if (!current) {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'form', targetId: instanceId, reason: 'supersedeFormInstance: instance not found.' });
+          return '';
+        }
+        if (current.status === 'SUPERSEDED') {
+          enf.log({ action: 'mutation.blocked', eventId, targetKind: 'form', targetId: instanceId, reason: 'supersedeFormInstance: instance already superseded.' });
+          return '';
+        }
+
+        const folder = resolveEventFolder(eventId);
+        const allForForm = allInstances.filter(i => i.formId === current.formId);
+        const newSequence = allForForm.length + 1;
+        const newId = formatCesFormInstanceId(eventId, current.formId, newSequence);
+        const now = nowISO();
+        const reason = opts?.reason;
+
+        const newInstance: EventFormInstance = {
+          id: newId,
+          eventId,
+          formId: current.formId,
+          taskId: current.taskId,
+          requirementId: current.requirementId,
+          policyIds: current.policyIds,
+          workflowId: current.workflowId,
+          folderPath: folder.paths.formsCompletedDir,
+          status: 'IN_PROGRESS',
+          sequence: newSequence,
+          createdAt: now,
+          supersedes: current.id,
+        };
+
+        set(prev => {
+          const instances = prev.generatedFormInstancesByEventId[eventId] ?? [];
+          const updatedExisting = instances.map(i =>
+            i.id === instanceId
+              ? { ...i, status: 'SUPERSEDED' as FormInstanceStatus, supersededAt: now, supersededBy: newId, updatedAt: now }
+              : i,
+          );
+          // Insert new instance at the head (same convention as generate/getOrCreate).
+          const withNew = [newInstance, ...updatedExisting];
+
+          const auditChainAfterOld = appendExecutionAudit(prev.taskAuditByEventId[eventId] ?? [], {
+            auditId: nextAuditId(),
+            eventId,
+            entityType: 'formInstance',
+            entityId: instanceId,
+            action: 'FORM_INSTANCE_SUPERSEDED',
+            actorId: enf.actor.userId,
+            actorRole: enf.actor.role,
+            timestamp: now,
+            before: { instanceId, status: current.status, sequence: current.sequence },
+            after: { instanceId, status: 'SUPERSEDED' as FormInstanceStatus, supersededBy: newId, supersededAt: now },
+            reason,
+          });
+          const auditChainAfterNew = appendExecutionAudit(auditChainAfterOld, {
+            auditId: nextAuditId(),
+            eventId,
+            entityType: 'formInstance',
+            entityId: newId,
+            action: 'FORM_INSTANCE_CREATED_AS_SUPERSEDE',
+            actorId: enf.actor.userId,
+            actorRole: enf.actor.role,
+            timestamp: now,
+            after: { ...newInstance, supersedes: instanceId },
+            reason,
+          });
+
+          return {
+            generatedFormInstancesByEventId: {
+              ...prev.generatedFormInstancesByEventId,
+              [eventId]: withNew,
+            },
+            taskAuditByEventId: {
+              ...prev.taskAuditByEventId,
+              [eventId]: auditChainAfterNew,
+            },
+          };
+        });
+
+        enf.log({
+          action: 'form.status.changed',
+          eventId,
+          targetKind: 'formInstance',
+          targetId: instanceId,
+          before: { instanceId, status: current.status },
+          after: { instanceId, status: 'SUPERSEDED', supersededBy: newId, newInstanceId: newId, sequence: newSequence, reason: 'supersedeFormInstance' },
+        });
+
+        return newId;
+      },
+
       appendTaskAuditEvent: (eventId, entityType, entityId, action, opts) => {
         const enf = useEnforcementStore.getState();
+        /* ─── MVP-P1-AUDIT-001 — derive top-level targetKind/targetId ─────
+         * Dual-write strategy (one release per MVP plan L1208): prefer values
+         * already present in opts.after (e.g. SIGNATURE_REQUESTED nests
+         * `after.targetKind` / `after.targetId`), otherwise default to the
+         * row-level `entityType` / `entityId`. Existing `after.*` writes are
+         * preserved verbatim; consumers can read either location during the
+         * dual-write window. The hash chain canonicalization in
+         * `appendExecutionAudit` intentionally does NOT include these new
+         * fields so existing chains remain verifiable. */
+        let derivedTargetKind: string | undefined;
+        let derivedTargetId: string | undefined;
+        if (opts?.after && typeof opts.after === 'object' && opts.after !== null) {
+          const afterObj = opts.after as { targetKind?: unknown; targetId?: unknown };
+          if (typeof afterObj.targetKind === 'string') derivedTargetKind = afterObj.targetKind;
+          if (typeof afterObj.targetId === 'string') derivedTargetId = afterObj.targetId;
+        }
+        const topLevelTargetKind = derivedTargetKind ?? entityType;
+        const topLevelTargetId = derivedTargetId ?? entityId;
+
         set(prev => ({
           taskAuditByEventId: {
             ...prev.taskAuditByEventId,
@@ -2034,6 +2212,8 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
               before: opts?.before,
               after: opts?.after,
               reason: opts?.reason,
+              targetKind: topLevelTargetKind,
+              targetId: topLevelTargetId,
             }),
           },
         }));

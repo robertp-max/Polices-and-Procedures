@@ -47,19 +47,17 @@ import { EmptyState as UiEmptyState, SurfaceCard } from '@/policy/components/ui'
 
 const EMPTY_MSG = 'No CES tasks available for this view.';
 const STATUS_ORDER: PmTaskStatus[] = ['todo', 'in_progress', 'in_review', 'blocked', 'done'];
-const EXECUTION_EXCLUDE_RE = /(onboarding|orientation|training)/i;
 
-const isExecutionTask = (task: Task): boolean => {
-  if (task.source === 'personal') return false;
-  const text = `${task.title} ${task.event_title ?? ''} ${task.workflow_title ?? ''}`;
-  return !EXECUTION_EXCLUDE_RE.test(text);
-};
-
-const bySelectedEvent = (tasks: Task[], selectedEventId?: string | null): Task[] => {
-  const executionTasks = tasks.filter(isExecutionTask);
-  if (!selectedEventId) return executionTasks;
-  return executionTasks.filter(t => t.event_id === selectedEventId);
-};
+/* MVP-P1-CALENDAR-001 (Wave 4) — task-selection helpers consolidated into
+ * `canonicalEventTaskFilter.ts`. The previous inline `EXECUTION_EXCLUDE_RE`,
+ * `isExecutionTask`, and `bySelectedEvent` definitions now live in the
+ * canonical module so all PM call sites (PmViews, EventTaskList, future
+ * migrations) read from a single source of truth. The regex literal was
+ * lifted byte-identical; behavior is unchanged.
+ *
+ * NOTE: no re-export here — the canonical module is the public surface.
+ * react-refresh requires component files to export only components. */
+import { selectExecutionTasksForEvent as bySelectedEvent } from '@/policy/ces/services/canonicalEventTaskFilter';
 
 /* ─── Drag-rules matrix (PM-Kanban-and-My-Tasks.md §3.3) ───────────── */
 function isDropAllowed(
