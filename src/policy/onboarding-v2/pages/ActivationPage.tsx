@@ -1,11 +1,25 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Sparkles, AlertCircle, CheckCircle2, Clock3, RotateCcw, X } from 'lucide-react';
 import { useOnboardingV2Store } from '../store/onboardingV2Store';
 import type { RoleId, TriggerPayload, TriggerType } from '../types';
 import { ROLES } from '../catalog/roles';
 import { selectTemplate } from '../catalog/templates';
 import { reconcile } from '../engine/reconciler';
+import { useFormDraft } from '@/policy/utils/useFormDraft';
+
+// Stabilization R-06: discard drafts older than 24h on rehydrate. Activation
+// drafts older than a day are almost always stale (the workforce list, role
+// catalog, or trigger window has likely shifted), so we clear them and let
+// the user start fresh rather than silently restoring something potentially
+// invalid.
+const ACTIVATION_DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
+
+interface ActivationDraft {
+  subjectId: string;
+  trigger: TriggerType;
+  roleIds: RoleId[];
+}
 
 function ReconcilePctBar({ suppressed, total }: { suppressed: number; total: number }) {
   const pct = Math.round((suppressed / Math.max(1, total)) * 100);
@@ -26,14 +40,56 @@ const TRIGGERS: { id: TriggerType; label: string; hint: string }[] = [
   { id: 'VENDOR_ONBOARD',       label: 'Vendor Onboard',       hint: 'Onboard a Business Associate or 1099 vendor' },
 ];
 
+// Stable seed for the draft hook — never mutated; new actual data flows via setDraft.
+const DRAFT_SEED: ActivationDraft = {
+  subjectId: '',
+  trigger: 'NEW_HIRE',
+  roleIds: ['RN'],
+};
+
 export function ActivationPage() {
   const navigate = useNavigate();
   const snap = useOnboardingV2Store(s => s.snap);
   const ingest = useOnboardingV2Store(s => s.ingest);
 
-  const [subjectId, setSubjectId] = useState<string>(snap.workforce[0]?.id ?? '');
-  const [trigger, setTrigger] = useState<TriggerType>('NEW_HIRE');
-  const [roleIds, setRoleIds] = useState<RoleId[]>(['RN']);
+  // Stabilization R-03 + R-06 + R-08:
+  //   R-03 — persist in-progress activation selections across refresh / tab
+  //          background so subject + trigger + role choices aren't lost.
+  //   R-06 — `staleAfterMs` discards drafts older than 24h and exposes
+  //          `isStale` so the UI can show a "we cleared an old draft" notice.
+  //   R-08 — `markStep()` checkpoints at logical boundaries (here: once the
+  //          reconciliation preview successfully computes) and surfaces
+  //          `lastStep` on rehydrate so the UI can confirm what was resumed.
+  const { draft, setDraft, clearDraft, isStale, lastStep, markStep } =
+    useFormDraft<ActivationDraft>({
+      key: 'onboardingV2.activation',
+      version: 1,
+      initial: DRAFT_SEED,
+      staleAfterMs: ACTIVATION_DRAFT_TTL_MS,
+    });
+
+  const [staleNoticeDismissed, setStaleNoticeDismissed] = useState(false);
+  const [resumeNoticeDismissed, setResumeNoticeDismissed] = useState(false);
+  const lastCheckpointRef = useRef<string | undefined>(lastStep);
+
+  // Resolve a sane subjectId default once we have rehydrated AND there is no
+  // saved selection AND workforce data is available. Avoid overwriting a
+  // genuine restored selection.
+  const effectiveSubjectId = useMemo(() => {
+    if (draft.subjectId) return draft.subjectId;
+    return snap.workforce[0]?.id ?? '';
+  }, [draft.subjectId, snap.workforce]);
+
+  const subjectId = effectiveSubjectId;
+  const trigger = draft.trigger;
+  const roleIds = draft.roleIds;
+
+  const setSubjectId = (next: string) =>
+    setDraft(prev => ({ ...prev, subjectId: next }));
+  const setTrigger = (next: TriggerType) =>
+    setDraft(prev => ({ ...prev, trigger: next }));
+  const setRoleIds = (updater: (prev: RoleId[]) => RoleId[]) =>
+    setDraft(prev => ({ ...prev, roleIds: updater(prev.roleIds) }));
 
   const subject = snap.workforce.find(w => w.id === subjectId) ?? snap.vendors.find(v => v.id === subjectId);
   const subjectIsVendor = !!snap.vendors.find(v => v.id === subjectId);
@@ -54,6 +110,33 @@ export function ActivationPage() {
     return buckets;
   }, [subjectId, roleIds, trigger, snap, subjectIsVendor]);
 
+  // R-08: checkpoint the draft once the preview has meaningfully computed
+  // (i.e. there is at least one bucket with requirements). This is the
+  // last "logical step boundary" before the user clicks Activate, so a
+  // crash/refresh after this point should resume with both the data AND
+  // the signal that the user had reached the review stage. Idempotent on
+  // step name — markStep is a no-op-equivalent if called repeatedly with
+  // the same name while nothing else has changed.
+  useEffect(() => {
+    if (subjectIsVendor) {
+      if (subjectId && lastCheckpointRef.current !== 'vendor:ready') {
+        markStep('vendor:ready');
+        lastCheckpointRef.current = 'vendor:ready';
+      }
+      return;
+    }
+    const meaningful =
+      !!preview && preview.some(b => b.total > 0) && roleIds.length > 0;
+    if (meaningful && lastCheckpointRef.current !== 'preview:computed') {
+      markStep('preview:computed');
+      lastCheckpointRef.current = 'preview:computed';
+    }
+  }, [preview, roleIds.length, subjectIsVendor, subjectId, markStep]);
+
+  const showStaleNotice = isStale && !staleNoticeDismissed;
+  const showResumeNotice =
+    !!lastStep && !isStale && !resumeNoticeDismissed;
+
   function handleActivate() {
     let payload: TriggerPayload;
     const now = new Date().toISOString();
@@ -72,6 +155,7 @@ export function ActivationPage() {
       payload = { type: 'NEW_HIRE', subjectId, roleIds, branchId, effectiveDate: now };
     }
     ingest(payload);
+    clearDraft();
     navigate('/onboarding-v2/dashboard');
   }
 
@@ -84,6 +168,52 @@ export function ActivationPage() {
           Activation ingests a deterministic trigger (NEW_HIRE, ROLE_CHANGE, ANNUAL_REVALIDATION, POLICY_VERSION_UPDATE, VENDOR_ONBOARD) and emits a single execution batch with reconciled requirements.
         </p>
       </header>
+
+      {/* Stabilization R-06: long-idle session recovery notice */}
+      {showStaleNotice && (
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-md border border-[#FEC84B] bg-[#FFFAEB] px-3 py-2 text-[12px] text-[#92400E]"
+        >
+          <Clock3 size={14} className="mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <strong className="font-semibold">Older draft cleared.</strong>{' '}
+            We discarded a saved selection more than 24 hours old. You're starting fresh — confirm the subject, trigger, and roles before activating.
+          </div>
+          <button
+            type="button"
+            onClick={() => setStaleNoticeDismissed(true)}
+            className="shrink-0 rounded p-1 text-[#92400E] hover:bg-[#FEF3C7]"
+            aria-label="Dismiss notice"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      )}
+
+      {/* Stabilization R-08: resumed-from-checkpoint notice */}
+      {showResumeNotice && (
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-md border border-[#A7D8F5] bg-[#EFF8FF] px-3 py-2 text-[12px] text-[#1F4F7A]"
+        >
+          <RotateCcw size={14} className="mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <strong className="font-semibold">Resumed from your last session.</strong>{' '}
+            Your in-progress selections were restored
+            {lastStep ? <> (checkpoint <code className="font-mono text-[11px]">{lastStep}</code>)</> : null}.
+            Review the values below before activating.
+          </div>
+          <button
+            type="button"
+            onClick={() => setResumeNoticeDismissed(true)}
+            className="shrink-0 rounded p-1 text-[#1F4F7A] hover:bg-[#DBEAFE]"
+            aria-label="Dismiss notice"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      )}
 
       <section className="grid grid-cols-12 gap-5">
         {/* Subject + trigger */}
@@ -155,7 +285,7 @@ export function ActivationPage() {
                         checked={active}
                         onChange={(e) => {
                           if (e.target.checked) setRoleIds(prev => [...prev, r.id]);
-                          else setRoleIds(prev => prev.filter(x => x !== r.id));
+                          else setRoleIds(prev => prev.filter((x: RoleId) => x !== r.id));
                         }}
                       />
                       <span className="font-medium">{r.name}</span>

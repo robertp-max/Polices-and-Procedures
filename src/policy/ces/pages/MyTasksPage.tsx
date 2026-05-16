@@ -5,6 +5,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { useCallback, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useObligations } from '@/policy/ces/obligations';
 import { CES_TOKENS } from '@/policy/ces/theme';
 import {
@@ -16,6 +17,8 @@ import type { CesRole } from '@/policy/ces/cesRoles';
 import { useCesReviewMode, isRobertUser } from '@/policy/ces/cesReviewMode';
 import { useAuth } from '@/auth/AuthProvider';
 import type { MergedExecutionUnit } from '@/policy/compliance-execution/complianceExecutionTypes';
+import { useDataFreshness } from '@/policy/utils/useDataFreshness';
+import { StalenessBanner } from '@/policy/components/ui/StalenessBanner';
 
 type TaskFilter = 'all' | 'open' | 'awaiting_signature' | 'blocked' | 'overdue';
 
@@ -200,8 +203,38 @@ export function MyTasksPage({
   currentUserName = 'You',
 }: Props = {}) {
   const obligations = useObligations();
-  const [filter, setFilter] = useState<TaskFilter>('open');
+
+  // Stabilization N-07 / Fix 1: URL-back the filter so /my-tasks?filter=overdue
+  // (and any of the 5 valid filter ids) is a working deep link. Falls back to
+  // 'open' for missing or unrecognized values. The setter also writes the URL
+  // (replace:true) so in-app filter clicks stay shareable/bookmarkable.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialFilter = useMemo<TaskFilter>(() => {
+    const raw = searchParams.get('filter');
+    return raw && raw in FILTER_LABEL ? (raw as TaskFilter) : 'open';
+  // Intentional: read once on mount; subsequent URL changes flow through setFilter.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const [filter, setFilterState] = useState<TaskFilter>(initialFilter);
+  const setFilter = useCallback((next: TaskFilter) => {
+    setFilterState(next);
+    setSearchParams(prev => {
+      const merged = new URLSearchParams(prev);
+      if (next === 'open') merged.delete('filter');
+      else merged.set('filter', next);
+      return merged;
+    }, { replace: true });
+  }, [setSearchParams]);
+
   const [diagOpen, setDiagOpen] = useState(false);
+
+  // Stabilization R-05: client-side staleness detection. Threshold 5 min
+  // matches the cadence at which task state most plausibly drifts (a
+  // teammate signs, an evidence upload completes elsewhere). No fetch
+  // logic is added — the obligations store is in-process and reading from
+  // it is already live; the notice exists to prompt the user to consider
+  // whether they want to reload the page if they think they've been away.
+  const freshness = useDataFreshness({ stalenessThresholdMs: 5 * 60 * 1000 });
 
   /* ── Auth context for Robert review mode check ── */
   const { user } = useAuth();
@@ -344,6 +377,19 @@ export function MyTasksPage({
       </header>
 
       <main className="flex-1 overflow-y-auto p-6">
+        {freshness.isPotentiallyStale && (
+          <div className="mb-4">
+            <StalenessBanner
+              lastVisibleAt={freshness.lastVisibleAt}
+              onRefresh={() => {
+                freshness.acknowledge();
+                window.location.reload();
+              }}
+              onDismiss={freshness.acknowledge}
+              message="Tasks may have been signed, escalated, or completed by teammates while you were away."
+            />
+          </div>
+        )}
         {taskWithRoles.length === 0 ? (
           <div
             className="rounded-lg p-8 text-center text-[13px]"

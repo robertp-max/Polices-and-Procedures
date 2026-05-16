@@ -25,7 +25,6 @@ import { PermissionGate } from '@/policy/security/features/PermissionGate';
 import { ThemeModeToggle } from '@/policy/components/ui/ThemeModeToggle';
 import { ContextualKnowledgeBulb } from '@/policy/components/help/ContextualKnowledgeBulb';
 import { useNavStore } from '@/policy/stores/navStore';
-import { isNavExcludedRoute, hasActiveInputFocus } from '@/policy/utils/navExclusions';
 import { GlobalTaskDrawer } from '@/policy/components/pm/GlobalTaskDrawer';
 import { GuidedTourGate, restartGuidedTour } from '@/policy/components/onboarding/GuidedTourGate';
 import { CesRoleReviewSwitcher } from '@/policy/ces/components/review/CesRoleReviewSwitcher';
@@ -309,12 +308,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
     document.documentElement.dataset.ciMode = ciMode;
   }, [ciMode]);
 
-  // ── Stable refs so event-handler closures always see current values ──────
-  const locationRef  = useRef(location.pathname);
-  const isMenuOpenRef = useRef(isMenuOpen);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => { locationRef.current  = location.pathname; }, [location.pathname]);
-  useEffect(() => { isMenuOpenRef.current = isMenuOpen; },      [isMenuOpen]);
 
   useEffect(() => {
     setIsAccountMenuOpen(false);
@@ -364,68 +358,12 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
     }
   }, [location.pathname]);
 
-  // ── Keyboard: Left arrow = Back, Right arrow = Forward ────────────────────
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore when menu is open, route is excluded, or user is typing
-      if (isMenuOpenRef.current)                       return;
-      if (isNavExcludedRoute(locationRef.current))     return;
-      if (hasActiveInputFocus())                       return;
-      // Ignore modifier combos (browser shortcuts, text editing)
-      if (e.metaKey || e.altKey || e.ctrlKey)          return;
-
-      if (e.key === 'ArrowLeft') {
-        const target = useNavStore.getState().initiateBack();
-        if (target) { e.preventDefault(); navigate(target); }
-      } else if (e.key === 'ArrowRight') {
-        const target = useNavStore.getState().initiateForward();
-        if (target) { e.preventDefault(); navigate(target); }
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
-
-  // ── Swipe: right = Back, left = Forward ───────────────────────────────────
-  useEffect(() => {
-    let startX = 0;
-    let startY = 0;
-
-    const onTouchStart = (e: TouchEvent) => {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-    };
-
-    const onTouchEnd = (e: TouchEvent) => {
-      if (isMenuOpenRef.current)                   return;
-      if (isNavExcludedRoute(locationRef.current)) return;
-      if (hasActiveInputFocus())                   return;
-
-      const deltaX = e.changedTouches[0].clientX - startX;
-      const deltaY = e.changedTouches[0].clientY - startY;
-
-      // Must be primarily horizontal and exceed minimum distance
-      if (Math.abs(deltaX) <= Math.abs(deltaY)) return;
-      if (Math.abs(deltaX) < 60)                return;
-
-      if (deltaX > 0) {
-        // Swipe right → go back
-        const target = useNavStore.getState().initiateBack();
-        if (target) navigate(target);
-      } else {
-        // Swipe left → go forward
-        const target = useNavStore.getState().initiateForward();
-        if (target) navigate(target);
-      }
-    };
-
-    document.addEventListener('touchstart', onTouchStart, { passive: true });
-    document.addEventListener('touchend',   onTouchEnd,   { passive: true });
-    return () => {
-      document.removeEventListener('touchstart', onTouchStart);
-      document.removeEventListener('touchend',   onTouchEnd);
-    };
-  }, [navigate]);
+  // Global keyboard ArrowLeft/ArrowRight + touch-swipe navigation removed
+  // (Stabilization N-01/N-02; MVP plan §6 / L840–L841). Browser back/forward
+  // buttons remain the canonical navigation primitive. Per-surface arrow-key
+  // navigation (e.g. LMS module player) is owned locally by those surfaces,
+  // not by the global shell. `useNavStore` is still used by the route tracker
+  // above for the shell breadcrumb history.
 
   return (
     <>

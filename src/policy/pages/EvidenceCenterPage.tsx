@@ -11,7 +11,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import {
   FolderOpen, Download, Upload, RefreshCw, FileText, ShieldCheck,
   Search, AlertCircle, CheckCircle2, Clock, ExternalLink, Info, X, History,
@@ -24,6 +24,8 @@ import { isCesTask } from '@/policy/pm/types';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { CesEvidenceHierarchyPanel } from '@/policy/components/evidence/CesEvidenceHierarchyPanel';
 import { resolveEvidenceDataUrl } from '@/policy/evidence/demoEvidenceRuntimeCache';
+import { useDataFreshness } from '@/policy/utils/useDataFreshness';
+import { StalenessBanner } from '@/policy/components/ui/StalenessBanner';
 import {
   type EvidenceAuditEvent,
   type EvidenceMode,
@@ -206,6 +208,18 @@ export function EvidenceCenterPage() {
   const qTaskId = (query.get('task_id') || '').trim();
   const qRequirementId = (query.get('requirement_id') || '').trim();
   const qFormInstanceId = (query.get('form_instance_id') || '').trim();
+  // Stabilization N-07 / Fix 3: URL-back the hierarchy/files toggle so
+  // `/evidence?view=files` is a working deep link. Identity/fetch logic
+  // untouched (Protected-adjacent — see N-07 audit §5).
+  const qCenterView = query.get('view') === 'files' ? 'files' : 'hierarchy';
+  const [, setSearchParams] = useSearchParams();
+
+  // Stabilization R-05: client-side staleness notice. Threshold 3 min — the
+  // Evidence list drifts faster than the CES task list (uploads + signature
+  // events arrive often during active drills). Pure UI advisory; we do NOT
+  // re-architect the fetch or identity logic for this Protected-adjacent
+  // surface. Refresh action simply re-runs the existing mount path.
+  const freshness = useDataFreshness({ stalenessThresholdMs: 3 * 60 * 1000 });
 
   const [eventId,    setEventId]    = useState(qEventId || DEFAULT_EVENT);
   const [eventInput, setEventInput] = useState(qEventId || DEFAULT_EVENT);
@@ -225,7 +239,16 @@ export function EvidenceCenterPage() {
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [effectiveMode, setEffectiveMode] = useState<EvidenceMode>(REQUESTED_MODE);
-  const [centerView, setCenterView] = useState<'hierarchy' | 'files'>('hierarchy');
+  const [centerView, setCenterViewState] = useState<'hierarchy' | 'files'>(qCenterView);
+  const setCenterView = useCallback((next: 'hierarchy' | 'files') => {
+    setCenterViewState(next);
+    setSearchParams(prev => {
+      const merged = new URLSearchParams(prev);
+      if (next === 'hierarchy') merged.delete('view');
+      else merged.set('view', next);
+      return merged;
+    }, { replace: true });
+  }, [setSearchParams]);
   const isDemoMode = effectiveMode === 'DEMO_LOCAL';
   const store = useRegulatoryExecutionStore();
   const projectedTasks = useProjectedTasks('full');
@@ -667,6 +690,19 @@ export function EvidenceCenterPage() {
                 event={eventId} · task={qTaskId || filterTaskId || '—'} · form={qFormId || filterFormId || '—'} · requirement={qRequirementId || '—'}
               </div>
             </div>
+          </div>
+        )}
+        {freshness.isPotentiallyStale && (
+          <div className="mt-3">
+            <StalenessBanner
+              lastVisibleAt={freshness.lastVisibleAt}
+              onRefresh={() => {
+                freshness.acknowledge();
+                window.location.reload();
+              }}
+              onDismiss={freshness.acknowledge}
+              message="Evidence may have been uploaded, signed, or superseded while you were away."
+            />
           </div>
         )}
       </div>

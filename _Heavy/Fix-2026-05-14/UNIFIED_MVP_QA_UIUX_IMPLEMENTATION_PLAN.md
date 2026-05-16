@@ -747,6 +747,280 @@ Protect at all costs — these are the parts that make the product defensible:
 - OnboardingV2 gate / reconciliation engine
 - Policy governance, lifecycle, autogen, compliance mapping
 - Journey regulatory mapping (achcLessons, trainingContent, module player structure)
+
+---
+
+## PART II — ACTIONABLE IMPLEMENTATION HARDENING (Derived from 16-Agent Convergence Review)
+
+This section converts the key independent findings from the 16-agent review into concrete, trackable implementation tasks, validation gates, and rollout protections. It is designed to support the Unified MVP reaching 90–100% success probability.
+
+All items below are **in addition to** the existing MVP plan content. They focus on hardening, risk reduction, and operational survivability.
+
+### 1. Runtime Survivability Hardening
+
+**Tasks:**
+- Implement robust form draft persistence with automatic rehydration on browser refresh for all major forms (eCign, Onboarding V2 gates, CES task forms).
+- Add `visibilitychange` + `beforeunload` listeners to save in-progress work on interruption.
+- Build offline queue + retry logic for evidence uploads (IndexedDB preferred).
+- Add session recovery UI for users returning after app backgrounding or tab reload.
+
+**Validation Gates:**
+- Refresh test at 30%, 60%, 90% completion on 5 major forms.
+- Interruption test (app background + return) on eCign signing and evidence capture.
+- Weak network simulation during evidence upload.
+
+**Owner:** Frontend Engineering + QA  
+**Rollback Implication:** If persistence logic introduces data corruption, immediately disable auto-save and revert to manual save only.
+
+### 2. Mobile Operational UAT
+
+**Tasks:**
+- Execute dedicated real-device UAT on iOS Safari and Android Chrome for core flows: Evidence capture, eCign signing, CES task completion, Onboarding V2 gate progression.
+- Test under throttled (3G/LTE) and intermittent network conditions.
+- Validate one-handed usability, 48px+ touch targets, and thumb-zone placement.
+- Test interruption/resume behavior (call, background, low battery, screen lock).
+
+**Validation Requirements:**
+- Minimum 80% pass rate on core flows under degraded conditions.
+- Documented test cases with screenshots and failure notes.
+- Real field clinicians (not just QA) participate in at least one session.
+
+**Owner:** QA + Mobile Engineering  
+**Rollback Implication:** Any mobile flow with >30% failure rate in UAT triggers immediate scope reduction for that flow.
+
+### 3. eCign + Evidence Center Protection Layer
+
+**Tasks:**
+- Formally designate eCign signing + print pipeline as Protected Subsystem (any change requires explicit approval from Architecture + Compliance).
+- Formally designate Evidence Center (capture, storage, retrieval) as Protected Subsystem.
+- Implement mandatory post-sign and post-upload integrity verification (hash + metadata check).
+- Add automated audit artifact retrieval test as part of every release gate touching these systems.
+
+**Validation Gates:**
+- Signer-chain integrity test passes after any change.
+- Evidence retrieval test (including >4MB blobs) passes after refresh.
+- Documented rollback trigger if integrity check fails.
+
+**Owner:** Architecture + Compliance + Engineering  
+**Rollback Implication:** Any failure in integrity or retrieval triggers immediate rollback of the affected wave and freeze on further changes to the subsystem.
+
+### 4. Design-System Enforcement
+
+**Tasks:**
+- Implement ESLint rules to block raw hex/rgb values and non-`--ci-*` tokens in new or modified code.
+- Add visual regression requirement (Playwright or manual baseline) to PR checklist for any change touching `ui/` components or major surfaces.
+- Enforce max-2 glass layers (Layer 3 only for elevated modals in portal) via lint rule or review checklist.
+- Begin deprecation of parallel component families (CesCard, local TabButton, etc.) in favor of `ui/` primitives.
+
+**Validation Requirements:**
+- Lint rule active in CI before any new wave.
+- 100% of new PRs touching design system pass visual regression gate.
+
+**Owner:** Engineering + Design Systems  
+**Rollback Implication:** Persistent drift (multiple PRs violating rules) triggers temporary freeze on new UI work until enforcement is effective.
+
+### 5. Rollback + Blast Radius Governance
+
+**Tasks:**
+- Create and document explicit Rollback Trigger Matrix (what conditions trigger rollback).
+- Assign named rollback owners for each major subsystem (eCign, Evidence, CES, Navigation, Design System).
+- Execute at least one full rollback drill on a non-critical surface before any protected system is touched.
+- Define clear subsystem isolation boundaries so a rollback in one area does not cascade.
+
+**Validation Requirements:**
+- Rollback drill completed and documented with timestamps and results.
+- Rollback playbook reviewed and signed off by at least one Engineering Lead and one Compliance stakeholder.
+
+**Owner:** DevOps + Architecture + Engineering Leads  
+**Rollback Implication:** If a rollback drill fails or owners are not clearly assigned, the affected wave cannot proceed.
+
+### 6. Navigation + Input Safety
+
+**Tasks:**
+- Remove global swipe navigation (touch handlers) outside explicitly scoped contexts (e.g., Journey LMS only).
+- Remove global left/right arrow key navigation from `CommandCenterLayout.tsx`.
+- Restore predictable browser history behavior (no more random jumps on Back button).
+- Validate modal/drawer escape behavior (Esc key + browser back) across all major surfaces.
+- Audit and clean unsafe global keyboard bindings.
+
+**Validation Requirements:**
+- Browser Back/Forward tested and passing on 8+ key flows.
+- No more global gesture hijacking in production code.
+- Mobile gesture safety verified (no accidental triggers).
+
+**Owner:** Frontend Engineering  
+**Rollback Implication:** If navigation instability persists after this wave, pause all further UI changes until fixed.
+
+### 7. Go/No-Go Governance
+
+**Tasks:**
+- Define explicit P0 runtime gates that must pass before any wider UAT exposure.
+- Define P0 mobile survivability gates (real device + degraded network).
+- Define P0 eCign and Evidence integrity gates.
+- Create clear deployment hold conditions if any P0 gate fails.
+
+**Validation Requirements:**
+- All P0 gates documented with pass/fail criteria.
+- Gates reviewed and approved by Engineering, QA, and Compliance.
+
+**Owner:** QA + Engineering + Compliance  
+**Rollback Implication:** Failure to pass any P0 gate = automatic hold on further rollout waves.
+
+### 8. Ownership + Validation
+
+**Tasks:**
+- Assign named owner (person or role) to every major actionable item above.
+- Define clear validation requirement and success criteria for each item.
+- Document rollback implication if the item fails validation.
+- Add all items to a single tracked backlog (Notion, Linear, or GitHub Project) with wave assignment.
+
+**Validation Requirements:**
+- Every item has an owner and validation step documented before work begins.
+
+---
+
+## PART II — ACTIONABLE IMPLEMENTATION HARDENING (Derived from 16-Agent Convergence Review)
+
+This section converts the key independent findings from the 16-agent review into concrete, trackable implementation tasks, validation gates, rollout protections, and operational rules. The goal is to support the Unified MVP reaching 90–100% success probability.
+
+All items are in addition to the existing MVP plan content and focus on hardening, risk reduction, and operational survivability.
+
+### 1. Runtime Survivability Hardening
+
+**Tasks:**
+- Implement robust form draft persistence with automatic rehydration on browser refresh for all major forms (eCign, Onboarding V2, CES tasks).
+- Add `visibilitychange` + `beforeunload` listeners to preserve in-progress work on interruption (app backgrounding, tab switching).
+- Build basic offline queue + retry logic for evidence uploads (IndexedDB preferred over localStorage for blobs >4MB).
+- Add lightweight state staleness detection on CES and Evidence data fetches.
+
+**Validation Gates:**
+- Refresh test at 30%, 60%, 90% completion on 5 major forms.
+- Interruption test (app background + return) on eCign signing and evidence capture.
+- Weak network simulation during evidence upload.
+
+**Owner:** Frontend Engineering + QA  
+**Rollback Implication:** If persistence logic introduces data corruption, immediately disable auto-save and revert to manual save only.
+
+### 2. Mobile Operational UAT
+
+**Tasks:**
+- Execute dedicated real-device UAT on iOS Safari and Android Chrome for core flows: Evidence capture, eCign signing, CES task completion, Onboarding V2 gate progression.
+- Test under throttled (3G/LTE) and intermittent network conditions.
+- Validate one-handed usability and touch target sizes (≥48px) on primary CTAs.
+- Test interruption/resume behavior (call, backgrounding, low battery, screen lock).
+
+**Validation Requirements:**
+- Minimum 80% pass rate on core flows under degraded conditions.
+- Documented test cases with screenshots and failure notes.
+- Real field clinicians (not just QA) participate in at least one session.
+
+**Owner:** QA + Mobile Engineering  
+**Rollback Implication:** Any mobile flow with >30% failure rate in UAT triggers immediate scope reduction for that flow.
+
+### 3. eCign + Evidence Center Protection Layer
+
+**Tasks:**
+- Formally designate eCign signing + print pipeline as Protected Subsystem (any change requires explicit approval from Architecture + Compliance).
+- Formally designate Evidence Center (capture, storage, retrieval) as Protected Subsystem.
+- Implement mandatory post-sign and post-upload integrity verification (hash + metadata check).
+- Add automated audit artifact retrieval test as part of every release gate touching these systems.
+
+**Validation Gates:**
+- Signer-chain integrity test passes after any change.
+- Evidence retrieval test (including >4MB blobs) passes after refresh.
+- Documented rollback trigger if integrity check fails.
+
+**Owner:** Architecture + Compliance + Engineering  
+**Rollback Implication:** Any failure in integrity or retrieval triggers immediate rollback of the affected wave and freeze on further changes to the subsystem.
+
+### 4. Design-System Enforcement
+
+**Tasks:**
+- Implement ESLint rules to block raw hex/rgb values and non-`--ci-*` tokens in new or modified code.
+- Add visual regression requirement (Playwright or manual baseline) to PR checklist for any change touching `ui/` components or major surfaces.
+- Enforce max-2 glass layers (Layer 3 only for elevated modals in portal) via lint rule or review checklist.
+- Begin deprecation of parallel component families (CesCard, local TabButton, etc.) in favor of `ui/` primitives.
+
+**Validation Requirements:**
+- Lint rule active in CI before any new wave.
+- 100% of new PRs touching design system pass visual regression gate.
+
+**Owner:** Engineering + Design Systems  
+**Rollback Implication:** Persistent drift (multiple PRs violating rules) triggers temporary freeze on new UI work until enforcement is effective.
+
+### 5. Rollback + Blast Radius Governance
+
+**Tasks:**
+- Create and document explicit Rollback Trigger Matrix (what conditions trigger rollback).
+- Assign named rollback owners for each major subsystem (eCign, Evidence, CES, Navigation, Design System).
+- Execute at least one full rollback drill on a non-critical surface before any protected system is touched.
+- Define clear subsystem isolation boundaries so a rollback in one area does not cascade.
+
+**Validation Requirements:**
+- Rollback drill completed and documented with timestamps and results.
+- Rollback playbook reviewed and signed off by at least one Engineering Lead and one Compliance stakeholder.
+
+**Owner:** DevOps + Architecture + Engineering Leads  
+**Rollback Implication:** If a rollback drill fails or owners are not clearly assigned, the affected wave cannot proceed.
+
+### 6. Navigation + Input Safety
+
+**Tasks:**
+- Remove global swipe navigation (touch handlers) outside explicitly scoped contexts (e.g., Journey LMS only).
+- Remove global left/right arrow key navigation from `CommandCenterLayout.tsx`.
+- Restore predictable browser history behavior (no more random jumps on Back button).
+- Validate modal/drawer escape behavior (Esc key + browser back) across all major surfaces.
+- Audit and clean unsafe global keyboard bindings.
+
+**Validation Requirements:**
+- Browser Back/Forward tested and passing on 8+ key flows.
+- No more global gesture hijacking in production code.
+- Mobile gesture safety verified (no accidental triggers).
+
+**Owner:** Frontend Engineering  
+**Rollback Implication:** If navigation instability persists after this wave, pause all further UI changes until fixed.
+
+### 7. Go/No-Go Governance
+
+**Tasks:**
+- Define explicit P0 runtime gates that must pass before any wider UAT exposure.
+- Define P0 mobile survivability gates (real device + degraded network).
+- Define P0 eCign and Evidence integrity gates.
+- Create clear deployment hold conditions if any P0 gate fails.
+
+**Validation Requirements:**
+- All P0 gates documented with pass/fail criteria.
+- Gates reviewed and approved by Engineering, QA, and Compliance.
+
+**Owner:** QA + Engineering + Compliance  
+**Rollback Implication:** Failure to pass any P0 gate = automatic hold on further rollout waves.
+
+### 8. Ownership + Validation
+
+**Tasks:**
+- Assign named owner (person or role) to every major actionable item above.
+- Define clear validation requirement and success criteria for each item.
+- Document rollback implication if the item fails validation.
+- Add all items to a single tracked backlog (Notion, Linear, or GitHub Project) with wave assignment.
+
+**Validation Requirements:**
+- Every item has an owner and validation step documented before work begins.
+
+**Owner:** All Leads + Primary Orchestration Lead  
+**Rollback Implication:** Items without clear ownership or validation cannot be considered complete.
+
+---
+
+**End of PART II**
+
+**Owner:** All Leads + Primary Orchestration Lead  
+**Rollback Implication:** Items without clear ownership or validation cannot be considered complete.
+
+---
+
+**End of PART II — Actionable Implementation Hardening**
+
+This section must be treated as mandatory hardening work that directly supports the Unified MVP reaching 90–100% success probability. All items are in addition to the existing content of the plan.
 - Feature gating / permission system (FeatureRouteGuard, PermissionGate, `server/access/*`, `approvedUsers`)
 
 ---

@@ -79,6 +79,30 @@ export function MobileIncidentExecutionPage({ stage }: MobileIncidentExecutionPa
     );
   }
 
+  // Stabilization N-07 / Fix 2: when the event is valid but the requested
+  // taskId resolves to nothing, show a graceful "Task not found" card
+  // instead of rendering a blank content area. This was silently failing
+  // before — invalid or expired task deep links produced a white void.
+  if ((stage === 'task' || stage === 'evidence') && !task) {
+    return (
+      <div className="ci-page-container h-full overflow-y-auto">
+        <div className="ci-card p-4">
+          <h1 className="text-lg font-semibold">Task not found</h1>
+          <p className="text-sm ci-text-muted mt-2">
+            Task <code className="font-mono text-xs">{taskId || '(missing)'}</code> was not found in this event. It may have been removed, completed, or the link may be stale.
+          </p>
+          <button
+            type="button"
+            className="mt-4 ci-touch-target px-4 rounded-xl ci-btn-primary"
+            onClick={() => navigate(`/calendar/event/${encodeURIComponent(eventId)}`)}
+          >
+            Back to event
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="ci-page-container h-full overflow-y-auto pb-28">
       {stage === 'event' ? (
