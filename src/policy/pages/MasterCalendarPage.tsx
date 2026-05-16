@@ -27,6 +27,7 @@ import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { useCalendarSyncStore, type BulkSyncSummary } from '@/policy/stores/calendarSyncStore';
 import { SurfaceCard, EmptyState } from '@/policy/components/ui';
 import { RightDrawer } from '@/policy/components/ui/RightDrawer';
+import { BottomSheetDrawer } from '@/policy/components/ui/BottomSheetDrawer';
 import { AriaLiveRegion } from '@/policy/components/ui';
 
 export type PmView = 'calendar' | 'sprint' | 'kanban' | 'gantt';
@@ -381,6 +382,65 @@ export function MasterCalendarPage() {
               Open Details
             </button>
           </div>
+          {isMobileLayout ? (
+            <BottomSheetDrawer
+              open={detailsOpen}
+              onClose={() => setDetailsOpen(false)}
+              height="lg"
+              disableSwipeDismiss={false}
+            >
+              <div className="h-full min-h-0">
+                {view === 'calendar' ? (
+                  activeTaskId ? (
+                    <TaskDetailRightPanel
+                      taskId={activeTaskId}
+                      onClose={() => {
+                        setActiveTaskId(null);
+                        setDetailsOpen(false);
+                      }}
+                    />
+                  ) : (
+                    <WorkflowExecutionPanel
+                      event={activeInstance}
+                      onClear={activeInstance ? clearSelection : undefined}
+                      today={today}
+                      onSelectTask={(taskId) => selectTask(taskId)}
+                    />
+                  )
+                ) : view === 'sprint' ? (
+                  activeTaskId ? (
+                    <TaskDetailRightPanel
+                      taskId={activeTaskId}
+                      onClose={() => {
+                        setActiveTaskId(null);
+                        setDetailsOpen(false);
+                      }}
+                    />
+                  ) : (
+                    <SprintTaskPanel
+                      event={
+                        activeInstance && sprintInstances.some(e => e.id === activeInstance.id)
+                          ? activeInstance
+                          : sprintInstances[0] ?? null
+                      }
+                      onClear={activeInstance ? clearSelection : undefined}
+                      today={today}
+                    />
+                  )
+                ) : activeTaskId ? (
+                  <TaskDetailRightPanel
+                    taskId={activeTaskId}
+                    onClose={() => {
+                      setActiveTaskId(null);
+                      setDetailsOpen(false);
+                    }}
+                  />
+                ) : (
+                  <EmptyRightPanel label="Select a task to see details." />
+                )}
+              </div>
+            </BottomSheetDrawer>
+          ) : (
           <RightDrawer
             open={detailsOpen}
             onClose={() => setDetailsOpen(false)}
@@ -437,6 +497,7 @@ export function MasterCalendarPage() {
               )}
             </div>
           </RightDrawer>
+          )}
         </>
       )}
 

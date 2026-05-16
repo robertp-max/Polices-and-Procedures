@@ -201,7 +201,7 @@ function PanelHeader({
             onClick={onToggleWatch}
             aria-label={isWatching ? 'Unwatch task' : 'Watch task'}
             title={isWatching ? 'Unwatch' : 'Watch'}
-            className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors bg-transparent ${
+            className={`min-h-[44px] min-w-[44px] rounded-md flex items-center justify-center transition-colors bg-transparent ${
               isWatching ? 'ci-link' : `${tokens.mutedText} hover:text-white`
             }`}
           >
@@ -213,7 +213,7 @@ function PanelHeader({
             type="button"
             onClick={onClose}
             aria-label="Close panel"
-            className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors bg-transparent ${tokens.mutedText}`}
+            className={`min-h-[44px] min-w-[44px] rounded-md flex items-center justify-center transition-colors bg-transparent ${tokens.mutedText}`}
           >
             <X size={14} />
           </button>
@@ -475,7 +475,13 @@ function SectionEcign({
               return (
                 <li key={fid} className="flex items-center gap-2">
                   <EntityLink kind="form" id={fid} />
-                  <button type="button" onClick={() => handleOpen(fid)} className={`hover:opacity-85 ${tokens.mutedText}`} title="Open form">
+                  <button
+                    type="button"
+                    onClick={() => handleOpen(fid)}
+                    className={`hover:opacity-85 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-md ${tokens.mutedText}`}
+                    title="Open form"
+                    aria-label={`Open form ${fid}`}
+                  >
                     <ExternalLink size={10} />
                   </button>
                   <span className={`text-[10px] ${tokens.mutedText}`}>· {label}</span>

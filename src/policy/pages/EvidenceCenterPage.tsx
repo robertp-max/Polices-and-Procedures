@@ -23,7 +23,7 @@ import { useProjectedTasks } from '@/policy/pm/taskProjection';
 import { isCesTask } from '@/policy/pm/types';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { CesEvidenceHierarchyPanel } from '@/policy/components/evidence/CesEvidenceHierarchyPanel';
-import { resolveEvidenceDataUrl } from '@/policy/evidence/demoEvidenceRuntimeCache';
+import { prefetchDemoEvidenceFromIdb, resolveEvidenceDataUrl } from '@/policy/evidence/demoEvidenceRuntimeCache';
 import { useDataFreshness } from '@/policy/utils/useDataFreshness';
 import { StalenessBanner, AriaLiveRegion, LoadingState, EmptyState } from '@/policy/components/ui';
 import {
@@ -237,6 +237,7 @@ export function EvidenceCenterPage() {
   const [selected, setSelected] = useState<EvidenceFile | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
+  const [memCacheVersion, setMemCacheVersion] = useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [effectiveMode, setEffectiveMode] = useState<EvidenceMode>(REQUESTED_MODE);
   const [centerView, setCenterViewState] = useState<'hierarchy' | 'files'>(qCenterView);
@@ -315,6 +316,9 @@ export function EvidenceCenterPage() {
     });
     return out;
   }, [cesTasks, hierarchyEvents, resolveEventAliases, store.evidence]);
+  const normalizedEvidenceIds = useMemo(() => (
+    Object.values(normalizedEvidenceByEvent).flatMap(items => items.map(item => item.id))
+  ), [normalizedEvidenceByEvent]);
   const normalizedAuditByEvent = useMemo(() => {
     const out: Record<string, typeof store.taskAuditByEventId[string]> = {};
     const candidateEventIds = new Set<string>([
@@ -332,6 +336,18 @@ export function EvidenceCenterPage() {
     });
     return out;
   }, [cesTasks, hierarchyEvents, resolveEventAliases, store.taskAuditByEventId]);
+
+  useEffect(() => {
+    if (!isDemoMode || normalizedEvidenceIds.length === 0) return;
+    let active = true;
+    prefetchDemoEvidenceFromIdb(normalizedEvidenceIds).then(() => {
+      if (!active) return;
+      // Force a re-render after async IDB warm-up so rows that were IDB-only
+      // resolve without needing a manual page refresh.
+      setMemCacheVersion(v => v + 1);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [isDemoMode, normalizedEvidenceIds]);
 
   const load = useCallback(async (id: string) => {
     if (isDemoMode) {
@@ -429,7 +445,7 @@ export function EvidenceCenterPage() {
     const eid = filterEvidenceId.trim().toLowerCase();
     if (eid) result = result.filter((f) => f.evidence_id.toLowerCase().includes(eid));
     return result;
-  }, [files, search, filterEventId, filterFormId, filterPolicyId, filterWorkflowId, filterTaskId, filterEvidenceId]);
+  }, [files, search, filterEventId, filterFormId, filterPolicyId, filterWorkflowId, filterTaskId, filterEvidenceId, memCacheVersion]);
 
   useEffect(() => {
     const eid = filterEvidenceId.trim();
@@ -663,14 +679,14 @@ export function EvidenceCenterPage() {
           <button
             type="button"
             onClick={() => setCenterView('hierarchy')}
-            className={`rounded border px-2.5 py-1 text-xs ${centerView === 'hierarchy' ? 'border-cyan-300/60 bg-cyan-300/20 text-cyan-100' : 'border-cyan-300/25 bg-slate-900/45 text-slate-300'}`}
+            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'hierarchy' ? 'border-cyan-300/60 bg-cyan-300/20 text-cyan-100' : 'border-cyan-300/25 bg-slate-900/45 text-slate-300'}`}
           >
             CES hierarchy
           </button>
           <button
             type="button"
             onClick={() => setCenterView('files')}
-            className={`rounded border px-2.5 py-1 text-xs ${centerView === 'files' ? 'border-cyan-300/60 bg-cyan-300/20 text-cyan-100' : 'border-cyan-300/25 bg-slate-900/45 text-slate-300'}`}
+            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'files' ? 'border-cyan-300/60 bg-cyan-300/20 text-cyan-100' : 'border-cyan-300/25 bg-slate-900/45 text-slate-300'}`}
           >
             File ledger
           </button>
@@ -726,7 +742,7 @@ export function EvidenceCenterPage() {
         {/* Left column */}
         <div className="col-span-12 xl:col-span-9 flex flex-col overflow-hidden">
           {/* Filter bar */}
-          <div className="px-6 py-3 flex flex-wrap items-center gap-3 border-b border-cyan-300/15 bg-slate-950/30">
+          <div className="px-3 sm:px-6 py-3 flex flex-wrap items-center gap-3 border-b border-cyan-300/15 bg-slate-950/30 sticky top-0 z-20">
             <div className="flex items-center gap-2">
               <label className="text-xs uppercase tracking-wider text-slate-300">Event ID</label>
               <input
@@ -740,7 +756,7 @@ export function EvidenceCenterPage() {
               />
               <button
                 onClick={onSelectEvent}
-                className="px-3 py-1 text-sm rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100"
+                className="px-3 py-1 text-sm min-h-[44px] rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100"
               >
                 Load
               </button>
@@ -846,14 +862,14 @@ export function EvidenceCenterPage() {
               <button
                 onClick={() => load(eventId)}
                 disabled={loading}
-                className="px-2 py-1 text-sm rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 disabled:opacity-50 inline-flex items-center gap-1"
+                className="px-2 py-1 text-sm min-h-[44px] rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 disabled:opacity-50 inline-flex items-center gap-1"
               >
                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
               </button>
               <button
                 onClick={onUploadClick}
                 disabled={uploading}
-                className="px-3 py-1 text-sm rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 disabled:opacity-50 inline-flex items-center gap-1"
+                className="px-3 py-1 text-sm min-h-[44px] rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 disabled:opacity-50 inline-flex items-center gap-1"
               >
                 <Upload size={14} /> {uploading ? 'Uploading…' : 'Upload evidence'}
               </button>
@@ -1131,7 +1147,7 @@ function DetailDrawer({
     <div className="fixed inset-0 z-50 flex" onClick={onClose}>
       <div className="flex-1 bg-black/40" />
       <div
-        className="w-[420px] max-w-full bg-slate-950 border-l border-cyan-300/20 h-full overflow-auto p-5"
+        className="w-[min(100vw,420px)] max-w-full bg-slate-950 border-l border-cyan-300/20 h-full overflow-auto p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">

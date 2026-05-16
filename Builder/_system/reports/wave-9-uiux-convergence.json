@@ -1,0 +1,166 @@
+{
+  "startedAt": "2026-05-16T22:05:03.276Z",
+  "entries": [
+    {
+      "scenario": "desktop-dark",
+      "route": "/dashboard",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-dark-_dashboard.png",
+      "at": "2026-05-16T22:05:05.974Z"
+    },
+    {
+      "scenario": "desktop-light",
+      "route": "/dashboard",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-light-_dashboard.png",
+      "toggled": true,
+      "at": "2026-05-16T22:05:07.251Z"
+    },
+    {
+      "scenario": "desktop-dark",
+      "route": "/my-tasks",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-dark-_my-tasks.png",
+      "at": "2026-05-16T22:05:10.477Z"
+    },
+    {
+      "scenario": "desktop-light",
+      "route": "/my-tasks",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-light-_my-tasks.png",
+      "toggled": true,
+      "at": "2026-05-16T22:05:11.537Z"
+    },
+    {
+      "scenario": "desktop-dark",
+      "route": "/evidence",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-dark-_evidence.png",
+      "at": "2026-05-16T22:05:14.858Z"
+    },
+    {
+      "scenario": "desktop-light",
+      "route": "/evidence",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-light-_evidence.png",
+      "toggled": true,
+      "at": "2026-05-16T22:05:15.829Z"
+    },
+    {
+      "scenario": "desktop-dark",
+      "route": "/calendar",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-dark-_calendar.png",
+      "at": "2026-05-16T22:05:18.803Z"
+    },
+    {
+      "scenario": "desktop-light",
+      "route": "/calendar",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-light-_calendar.png",
+      "toggled": true,
+      "at": "2026-05-16T22:05:19.817Z"
+    },
+    {
+      "scenario": "desktop-dark",
+      "route": "/forms",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-dark-_forms.png",
+      "at": "2026-05-16T22:05:23.054Z"
+    },
+    {
+      "scenario": "desktop-light",
+      "route": "/forms",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-light-_forms.png",
+      "toggled": true,
+      "at": "2026-05-16T22:05:25.233Z"
+    },
+    {
+      "scenario": "desktop-dark",
+      "route": "/audit",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-dark-_audit.png",
+      "at": "2026-05-16T22:05:29.260Z"
+    },
+    {
+      "scenario": "desktop-light",
+      "route": "/audit",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-light-_audit.png",
+      "toggled": true,
+      "at": "2026-05-16T22:05:30.291Z"
+    },
+    {
+      "scenario": "desktop-dark",
+      "route": "/pm/dashboard",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-dark-_pm_dashboard.png",
+      "at": "2026-05-16T22:05:33.431Z"
+    },
+    {
+      "scenario": "desktop-light",
+      "route": "/pm/dashboard",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\desktop-light-_pm_dashboard.png",
+      "toggled": true,
+      "at": "2026-05-16T22:05:34.515Z"
+    },
+    {
+      "scenario": "mobile",
+      "route": "/dashboard",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\mobile-_dashboard.png",
+      "viewport": "390x844",
+      "at": "2026-05-16T22:05:38.048Z"
+    },
+    {
+      "scenario": "mobile",
+      "route": "/my-tasks",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\mobile-_my-tasks.png",
+      "viewport": "390x844",
+      "at": "2026-05-16T22:05:40.432Z"
+    },
+    {
+      "scenario": "mobile",
+      "route": "/evidence",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\mobile-_evidence.png",
+      "viewport": "390x844",
+      "at": "2026-05-16T22:05:42.975Z"
+    },
+    {
+      "scenario": "mobile",
+      "route": "/calendar?view=sprint",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\mobile-_calendar_view_sprint.png",
+      "viewport": "390x844",
+      "at": "2026-05-16T22:05:45.600Z"
+    },
+    {
+      "scenario": "mobile",
+      "route": "/forms",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\mobile-_forms.png",
+      "viewport": "390x844",
+      "at": "2026-05-16T22:05:48.196Z"
+    },
+    {
+      "scenario": "mobile",
+      "route": "/audit",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\mobile-_audit.png",
+      "viewport": "390x844",
+      "at": "2026-05-16T22:05:50.725Z"
+    },
+    {
+      "scenario": "guided-uat",
+      "step": 1,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\guided-uat-step-1.png",
+      "at": "2026-05-16T22:05:54.379Z"
+    },
+    {
+      "scenario": "guided-uat",
+      "step": 2,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\guided-uat-step-2.png",
+      "at": "2026-05-16T22:05:55.177Z"
+    },
+    {
+      "scenario": "evidence-flow",
+      "step": "after-upload",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\evidence-after-upload.png",
+      "at": "2026-05-16T22:06:00.823Z"
+    },
+    {
+      "scenario": "signer-role",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\signer-role-form-surface.png",
+      "at": "2026-05-16T22:06:03.696Z"
+    },
+    {
+      "scenario": "calendar-task-flow",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-9-uiux-convergence\\calendar-task-workflow.png",
+      "at": "2026-05-16T22:06:06.644Z"
+    }
+  ]
+}

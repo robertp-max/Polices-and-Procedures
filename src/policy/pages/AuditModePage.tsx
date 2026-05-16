@@ -349,7 +349,7 @@ export function AuditModePage() {
             />
             <button
               onClick={handleSurveyRollup}
-              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border transition"
+              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border transition"
               style={{ background: `${TEAL_PRIMARY}1A`, color: TEAL_PRIMARY, borderColor: `${TEAL_PRIMARY}55` }}
               title="Survey rollup packet for current filter"
             >
@@ -357,13 +357,13 @@ export function AuditModePage() {
             </button>
             <button
               onClick={() => handleExportBundle('md')}
-              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06]"
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06]"
             >
               <Download size={11} /> Bundle
             </button>
             <button
               onClick={() => handleExportBundle('json')}
-              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06]"
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06]"
             >
               <FileJson size={11} /> JSON
             </button>
@@ -371,7 +371,7 @@ export function AuditModePage() {
         </div>
 
         {/* Quick filter chips */}
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto pb-1 custom-scrollbar-x">
           {(Object.keys(QUICK_FILTER_LABELS) as QuickFilter[]).map(qf => {
             const active = quickFilter === qf;
             const color  = quickFilterColor(qf);
@@ -380,7 +380,7 @@ export function AuditModePage() {
                 key={qf}
                 type="button"
                 onClick={() => setQuickFilterAndURL(qf)}
-                className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] px-2.5 py-1 rounded-md border transition whitespace-nowrap"
+                className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] px-2.5 py-2 min-h-[44px] rounded-md border transition whitespace-nowrap"
                 style={{
                   color:       active ? color : 'rgba(255,255,255,0.60)',
                   borderColor: active ? `${color}77` : 'rgba(255,255,255,0.10)',
@@ -397,7 +397,7 @@ export function AuditModePage() {
             );
           })}
           {/* Aggregate summary far right */}
-          <div className="ml-auto flex items-center gap-2 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.14em]">
+          <div className="ml-auto hidden md:flex items-center gap-2 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.14em]">
             <span style={{ color: TEAL_PRIMARY }}>{aggregate.summary.complianceRate}% compliant</span>
             <span className="text-white/30">·</span>
             <span style={{ color: AUDIT_STATE_COLOR['certified-locked'] }}>{aggregate.summary.certified} certified</span>
@@ -418,7 +418,7 @@ export function AuditModePage() {
       {/* ─────────────────────────────────────────────────────────
           REGION 2 — Audit health strip (6 tiles)
           ───────────────────────────────────────────────────────── */}
-      <div className="px-6 md:px-10 py-3 grid grid-cols-6 gap-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      <div className="px-3 md:px-10 py-3 grid grid-cols-2 md:grid-cols-6 gap-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
         <HealthTile
           label="Audit Ready"
           count={healthCounts['audit-ready']}
@@ -585,7 +585,7 @@ function HealthTile({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-xl border px-3 py-2.5 text-left transition hover:brightness-110 flex flex-col gap-1"
+      className="rounded-xl border px-3 py-2.5 min-h-[44px] text-left transition hover:brightness-110 flex flex-col gap-1"
       style={{
         background:  active ? `${color}1C` : warn ? `${color}10` : `${color}0A`,
         borderColor: active ? `${color}AA` : warn ? `${color}66` : `${color}3A`,

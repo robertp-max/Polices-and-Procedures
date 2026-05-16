@@ -27,6 +27,7 @@ import { ContextualKnowledgeBulb } from '@/policy/components/help/ContextualKnow
 import { useNavStore } from '@/policy/stores/navStore';
 import { GlobalTaskDrawer } from '@/policy/components/pm/GlobalTaskDrawer';
 import { GuidedTourGate, restartGuidedTour } from '@/policy/components/onboarding/GuidedTourGate';
+import { GuidedUatWidget } from '@/policy/components/onboarding/GuidedUatWidget';
 import { CesRoleReviewSwitcher } from '@/policy/ces/components/review/CesRoleReviewSwitcher';
 
 function BradRobotIcon({ size = 24, strokeWidth = 1.5, className }: { size?: number; strokeWidth?: number; className?: string }) {
@@ -1119,6 +1120,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
           </div>
         </div>
       </div>
+      <GuidedUatWidget />
       <GuidedTourGate />
     </>
   );

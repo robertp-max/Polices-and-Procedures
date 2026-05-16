@@ -5,7 +5,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { useCallback, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useObligations } from '@/policy/ces/obligations';
 import { CES_TOKENS } from '@/policy/ces/theme';
 import {
@@ -19,6 +19,7 @@ import { useAuth } from '@/auth/AuthProvider';
 import type { MergedExecutionUnit } from '@/policy/compliance-execution/complianceExecutionTypes';
 import { useDataFreshness } from '@/policy/utils/useDataFreshness';
 import { StalenessBanner } from '@/policy/components/ui/StalenessBanner';
+import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 
 type TaskFilter = 'all' | 'open' | 'awaiting_signature' | 'blocked' | 'overdue';
 
@@ -202,6 +203,8 @@ export function MyTasksPage({
   currentUserId   = 'demo-user',
   currentUserName = 'You',
 }: Props = {}) {
+  const navigate = useNavigate();
+  const openTask = useSelectedTaskStore(s => s.openTask);
   const obligations = useObligations();
 
   // Stabilization N-07 / Fix 1: URL-back the filter so /my-tasks?filter=overdue
@@ -361,7 +364,7 @@ export function MyTasksPage({
                 key={k}
                 type="button"
                 onClick={() => setFilter(k)}
-                className="text-[11.5px] font-semibold px-3 py-1.5 rounded-md"
+                className="text-[11.5px] font-semibold px-3 py-1.5 min-h-[44px] rounded-md"
                 style={{
                   background: active ? CES_TOKENS.navy : CES_TOKENS.canvas,
                   color:      active ? 'white'         : CES_TOKENS.ink,
@@ -423,10 +426,21 @@ export function MyTasksPage({
               return (
                 <li
                   key={t.id}
-                  className="rounded-lg p-4 flex items-start gap-4"
+                  className="rounded-lg p-4 flex items-start gap-4 transition-colors hover:bg-[#f8fafc]"
                   style={{ background: CES_TOKENS.white, border: `1px solid ${CES_TOKENS.border}` }}
                 >
-                  <div className="flex-1 min-w-0">
+                  <button
+                    type="button"
+                    className="flex-1 min-w-0 text-left rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A5F]"
+                    onClick={() => {
+                      // Mobile-ops convergence: My Tasks rows are now actionable.
+                      // We open the canonical PM task drawer and route users to
+                      // calendar workspace context where execution detail is visible.
+                      openTask(t.id, 'sprint');
+                      navigate('/calendar?view=sprint');
+                    }}
+                    aria-label={`Open task details for ${t.title}`}
+                  >
                     <div className="text-[10px] font-bold uppercase tracking-[0.16em] flex items-center gap-2" style={{ color: CES_TOKENS.muted }}>
                       {t.sourceType ?? 'OBLIGATION'} · {t.domain}
                       {assigned && (
@@ -455,7 +469,7 @@ export function MyTasksPage({
                         Due {new Date(t.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
-                  </div>
+                  </button>
                   {typeof t.escalationTimer === 'number' && (
                     <EscalationTimer hours={t.escalationTimer} />
                   )}

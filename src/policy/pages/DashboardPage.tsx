@@ -430,7 +430,7 @@ export function DashboardPage() {
         onClickNotReady={() => goAudit()}
       />
 
-      <section className="flex items-center justify-between gap-3 flex-wrap">
+      <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap">
         <div>
           <h2 className={`text-[26px] font-semibold tracking-[-0.02em] ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
             Action Board
@@ -654,7 +654,7 @@ function ToolbarButton({ icon, label }: { icon?: React.ReactNode; label: string 
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-[13px] font-medium transition ${className}`}
+      className={`inline-flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-xl border text-[13px] font-medium transition ${className}`}
     >
       {icon}
       {label}
