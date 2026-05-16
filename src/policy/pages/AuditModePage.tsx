@@ -418,7 +418,7 @@ export function AuditModePage() {
       {/* ─────────────────────────────────────────────────────────
           REGION 2 — Audit health strip (6 tiles)
           ───────────────────────────────────────────────────────── */}
-      <div className="px-3 md:px-10 py-3 grid grid-cols-2 md:grid-cols-6 gap-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      <div className="px-3 md:px-10 py-3 grid grid-cols-2 md:grid-cols-6 gap-2 border-b ci-shell-command-group mx-3 md:mx-10" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
         <HealthTile
           label="Audit Ready"
           count={healthCounts['audit-ready']}

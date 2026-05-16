@@ -301,7 +301,7 @@ export function MyTasksPage({
   return (
     <div className="h-full flex flex-col" style={{ background: CES_TOKENS.canvas }}>
       <header
-        className="px-3 sm:px-6 py-4 flex items-baseline gap-4 flex-wrap ci-sticky-operational border-b"
+        className="px-3 sm:px-6 py-4 flex items-baseline gap-4 flex-wrap ci-sticky-operational border-b ci-shell-command-group mx-3 sm:mx-6 mt-2 rounded-xl"
         style={{ background: CES_TOKENS.white, borderBottom: `1px solid ${CES_TOKENS.border}` }}
       >
         <div>

@@ -932,6 +932,39 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-glass-panel {
 .ci-subtle-hover {
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
+.ci-shell-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 26;
+  border-bottom: 1px solid var(--ci-border);
+  background: color-mix(in srgb, var(--ci-surface) 92%, transparent);
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+}
+.ci-shell-nav-icon-btn {
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 999px;
+}
+.ci-shell-subnav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 8px 0 4px;
+}
+.ci-shell-subnav-chip {
+  min-height: 32px;
+  border-radius: 10px;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.ci-shell-command-group {
+  border: 1px solid var(--ci-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ci-surface-2) 80%, transparent);
+  box-shadow: var(--ci-shadow-sm);
+}
 
 /* Sentiment badge utilities */
 .ci-badge {

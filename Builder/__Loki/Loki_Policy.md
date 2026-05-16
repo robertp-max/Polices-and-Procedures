@@ -110,3 +110,22 @@ audit defensibility
 runtime stability
 workflow clarity
 controlled expansion
+
+DO NOT LET THE SCOPE RE-EXPAND AGAIN
+
+The revised docs are good because they:
+
+constrained reality
+constrained ownership
+constrained timelines
+constrained parallelism
+
+That discipline is the whole value.
+
+If the team starts adding:
+
+“while we’re here”
+“quick redesign”
+“full mobile hardening tonight”
+“just one more subsystem”
+“let’s fully modernize shell”

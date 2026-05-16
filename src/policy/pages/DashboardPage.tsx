@@ -430,7 +430,7 @@ export function DashboardPage() {
         onClickNotReady={() => goAudit()}
       />
 
-      <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap">
+      <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap ci-shell-command-group rounded-xl px-3 py-2">
         <div>
           <h2 className={`text-[26px] font-semibold tracking-[-0.02em] ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
             Action Board

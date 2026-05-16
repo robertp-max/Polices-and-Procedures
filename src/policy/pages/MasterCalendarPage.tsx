@@ -528,7 +528,7 @@ function PmTab({
       role="tab"
       aria-selected={active ? 'true' : 'false'}
       onClick={onClick}
-      className="ci-touch-target whitespace-nowrap text-[11px] font-outfit px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors"
+      className="ci-touch-target whitespace-nowrap text-[11px] font-outfit px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors ci-subtle-hover"
       style={isLight
         ? { background: active ? 'rgba(0,0,0,0.07)' : 'transparent', color: active ? '#1F1C1B' : '#747470' }
         : { background: active ? 'rgba(255,255,255,0.08)' : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.65)' }
@@ -556,7 +556,7 @@ function TimelineHeader({
   onViewChange: (v: PmView) => void;
 }) {
   return (
-    <div className="ci-toolbar-wrap justify-between items-end">
+    <div className="ci-toolbar-wrap justify-between items-end ci-shell-command-group rounded-xl px-3 py-2">
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL_PRIMARY }} />
@@ -592,7 +592,7 @@ function TimelineHeader({
 
         {/* View switcher: Calendar | Sprint | Kanban | Gantt */}
         <div
-          className="flex max-w-full items-center gap-1 overflow-x-auto rounded-lg border border-white/10 p-0.5"
+          className="flex max-w-full items-center gap-1 overflow-x-auto rounded-lg border border-white/10 p-0.5 ci-operational-card"
           role="tablist"
           aria-label="PM view"
         >
@@ -614,11 +614,11 @@ function TimelineHeader({
           </PmTab>
         </div>
 
-        <div className="flex items-center gap-1 rounded-lg border border-white/10 p-0.5">
+        <div className="flex items-center gap-1 rounded-lg border border-white/10 p-0.5 ci-operational-card">
           <NavBtn onClick={onPrev} ariaLabel="Previous month"><ChevronLeft size={14} /></NavBtn>
           <button
             onClick={onToday}
-            className="ci-touch-target text-[11px] font-outfit text-white/90 px-3 py-1 rounded-md hover:bg-white/[0.05] transition-colors flex items-center gap-1.5 whitespace-nowrap"
+            className="ci-touch-target text-[11px] font-outfit text-white/90 px-3 py-1 rounded-md hover:bg-white/[0.05] transition-colors flex items-center gap-1.5 whitespace-nowrap ci-subtle-hover"
             title={`Today · ${today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
           >
             <CalendarDays size={11} className="text-white/65" />
@@ -631,7 +631,7 @@ function TimelineHeader({
           type="button"
           onClick={onSyncAll}
           disabled={syncAllPending}
-          className="ci-touch-target inline-flex items-center gap-2 rounded-lg border border-[#0D9488]/40 bg-[#0D9488]/12 px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#5EEAD4] hover:bg-[#0D9488]/18 disabled:opacity-60 whitespace-nowrap"
+          className="ci-touch-target inline-flex items-center gap-2 rounded-lg border border-[#0D9488]/40 bg-[#0D9488]/12 px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#5EEAD4] hover:bg-[#0D9488]/18 disabled:opacity-60 whitespace-nowrap ci-subtle-hover"
           title="Sync all in-scope compliance events to Google Calendar"
         >
           <CloudUpload size={12} className={syncAllPending ? 'animate-pulse' : ''} />
@@ -659,7 +659,7 @@ function NavBtn({
     <button
       onClick={onClick}
       aria-label={ariaLabel}
-      className="ci-touch-target w-9 h-9 rounded-md flex items-center justify-center text-white/65 hover:text-white hover:bg-white/[0.05]"
+      className="ci-touch-target w-9 h-9 rounded-md flex items-center justify-center text-white/65 hover:text-white hover:bg-white/[0.05] ci-subtle-hover"
     >
       {children}
     </button>

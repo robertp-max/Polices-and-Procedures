@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-05-16T22:43:49.807Z",
+  "startedAt": "2026-05-16T23:08:58.683Z",
   "tests": [
     {
       "testId": "test-1",
@@ -13,7 +13,7 @@
       "pageErrorCount": 0,
       "networkFailureCount": 0,
       "networkFailureSamples": [],
-      "recordedAt": "2026-05-16T22:43:54.075Z"
+      "recordedAt": "2026-05-16T23:09:02.900Z"
     },
     {
       "testId": "test-2",
@@ -25,7 +25,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "Full DON-Asst→DON multi-signer walk is operator UAT, not Wave-6 automation",
-      "recordedAt": "2026-05-16T22:43:58.072Z"
+      "recordedAt": "2026-05-16T23:09:06.898Z"
     },
     {
       "testId": "test-3",
@@ -36,7 +36,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "Deep byte-stable retrieval validated by artifact-retrieval-defect.spec.mjs s3/s4/s7/s8a stages",
-      "recordedAt": "2026-05-16T22:44:01.908Z"
+      "recordedAt": "2026-05-16T23:09:10.914Z"
     },
     {
       "testId": "test-4",
@@ -48,7 +48,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "IDB refresh persistence validated by artifact-retrieval-defect.spec.mjs s8a (IDB-intact recovery)",
-      "recordedAt": "2026-05-16T22:44:06.061Z"
+      "recordedAt": "2026-05-16T23:09:15.141Z"
     },
     {
       "testId": "test-5",
@@ -59,7 +59,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "Deterministic resolveFormInstanceFromArtifact (Wave 4) used by ArtifactViewerPage on every navigation",
-      "recordedAt": "2026-05-16T22:44:10.510Z"
+      "recordedAt": "2026-05-16T23:09:19.606Z"
     },
     {
       "testId": "test-6",
@@ -70,7 +70,7 @@
       "hardBlockingErrors": [],
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
-      "recordedAt": "2026-05-16T22:44:14.564Z"
+      "recordedAt": "2026-05-16T23:09:23.616Z"
     },
     {
       "testId": "test-7",
@@ -94,7 +94,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "eCign-branding-bleed visual check is operator UAT per BROWSER_TEST_7_PRINT_UNIFIED_CHROME.md",
-      "recordedAt": "2026-05-16T22:44:26.459Z"
+      "recordedAt": "2026-05-16T23:09:36.576Z"
     },
     {
       "testId": "test-8",
@@ -126,7 +126,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "Cross-surface task-count parity enforced by verify:pm-unified (5283/5283 sprint=kanban=gantt)",
-      "recordedAt": "2026-05-16T22:44:40.602Z"
+      "recordedAt": "2026-05-16T23:09:51.756Z"
     },
     {
       "testId": "test-9",
@@ -138,7 +138,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "Trainer-role boundary walk is operator UAT",
-      "recordedAt": "2026-05-16T22:44:43.638Z"
+      "recordedAt": "2026-05-16T23:09:54.986Z"
     }
   ]
 }

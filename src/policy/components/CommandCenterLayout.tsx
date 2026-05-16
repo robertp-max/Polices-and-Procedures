@@ -778,7 +778,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                 <div className={`flex-1 flex flex-col relative z-10 w-full overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isMenuOpen ? 'blur-[12px] opacity-30 scale-[0.98]' : ''} ${isMobile ? 'pb-16' : ''}`}>
 
                   {!hideChrome && (
-                    <header className="w-full px-2 sm:px-4 md:px-6 lg:px-8 pt-2 sm:pt-4 md:pt-5 pb-1 shrink-0 relative z-20">
+                    <header className="w-full px-2 sm:px-4 md:px-6 lg:px-8 pt-2 sm:pt-4 md:pt-5 pb-1 shrink-0 relative z-20 ci-shell-topbar">
                       {/* ── Main nav row: Logo · Nav icons · Right controls ── */}
                       <div className="ci-toolbar-wrap justify-between">
                         {/* Left: Logo + horizontal nav icons */}
@@ -800,7 +800,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
 
                           {/* Horizontal nav icons — desktop (item-20 gradient pill expand) */}
                           {!isMobile && (
-                            <nav className="flex items-center gap-1 ml-2" aria-label="Main navigation">
+                            <nav className="flex items-center gap-1 ml-2 ci-shell-command-group p-1" aria-label="Main navigation">
                               {VISIBLE_NAV.map(item => {
                                 const isActive = currentNav.id === item.id;
                                 const isExpanded = expandedNavId === item.id;
@@ -817,7 +817,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                                       aria-label={item.label}
                                       title={item.label}
                                       aria-current={isActive ? 'page' : undefined}
-                                      className="flex items-center justify-center"
+                                      className="flex items-center justify-center ci-shell-nav-icon-btn ci-subtle-hover"
                                       style={{
                                         width: 38,
                                         height: 38,
@@ -855,7 +855,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                             <button
                               onClick={() => { setIsMenuOpen(!isMenuOpen); setActiveSubMenu(null); }}
                               aria-label="Open navigation menu"
-                              className={`glass-interactive flex items-center justify-center w-11 h-11 rounded-full ${isVisualLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'} border border-transparent`}
+                              className={`glass-interactive ci-subtle-hover flex items-center justify-center w-11 h-11 rounded-full ${isVisualLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'} border border-transparent`}
                             >
                               <Menu size={22} />
                             </button>
@@ -866,7 +866,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         <div className="flex items-center gap-2 sm:gap-3 md:gap-4 ml-auto">
                           {!hideGlobalSearch && (
                             <div
-                              className={`hidden lg:flex items-center bg-transparent border rounded-full px-4 py-2 w-[clamp(180px,18vw,300px)] transition-all ${
+                              className={`hidden lg:flex items-center bg-transparent border rounded-full px-4 py-2 w-[clamp(180px,18vw,300px)] transition-all ci-shell-command-group ${
                                 isVisualLight
                                   ? 'border-slate-300 focus-within:border-[#007970]/60'
                                   : 'border-white/10 focus-within:border-[#FFC107]/50'
@@ -895,7 +895,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                               aria-label={`Account: ${accountDisplayName}`}
                               aria-haspopup="menu"
                               onClick={() => setIsAccountMenuOpen(v => !v)}
-                              className="glass-interactive flex items-center justify-center w-11 h-11 sm:w-10 sm:h-10 rounded-full text-white font-bold text-sm cursor-pointer relative border border-transparent"
+                              className="glass-interactive ci-subtle-hover flex items-center justify-center w-11 h-11 sm:w-10 sm:h-10 rounded-full text-white font-bold text-sm cursor-pointer relative border border-transparent"
                               style={{
                                 background: isVisualLight
                                   ? '#007970'
@@ -918,7 +918,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                               <div
                                 role="menu"
                                 aria-label="Account menu"
-                                className="absolute right-0 mt-2 w-[220px] rounded-xl overflow-hidden"
+                                className="absolute right-0 mt-2 w-[220px] rounded-xl overflow-hidden ci-shell-command-group"
                                 style={{
                                   background: isVisualLight ? '#FFFFFF' : 'rgba(23,19,19,0.96)',
                                   border: isVisualLight ? '1px solid #E5E4E3' : '1px solid rgba(255,255,255,0.12)',
@@ -1025,7 +1025,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         return (
                           <nav
                             aria-label={`${hi.label} sub-navigation`}
-                            className="flex items-center gap-1.5 flex-nowrap overflow-x-auto custom-scrollbar-x pt-2 pb-1 justify-start"
+                            className="ci-shell-subnav custom-scrollbar-x justify-start"
                           >
                             {hi.subItems.map(sub => {
                               const subPath = sub.to.split('?')[0];
@@ -1035,7 +1035,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                                   key={sub.to}
                                   type="button"
                                   onClick={() => navigate(sub.to)}
-                                  className="font-heading"
+                                  className="font-heading ci-shell-subnav-chip"
                                   style={{
                                     fontSize: 9,
                                     fontWeight: 700,
@@ -1068,14 +1068,16 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
 
                   <main data-shell-main="" className="flex-1 w-full h-full relative overflow-hidden">
                     <div data-shell-scroll="" className="absolute inset-0 overflow-y-auto custom-scrollbar">
-                      {children}
+                      <div className={`${isMobile ? 'pb-[calc(96px+env(safe-area-inset-bottom))]' : 'pb-4'}`}>
+                        {children}
+                      </div>
                     </div>
                     <GlobalTaskDrawer />
                   </main>
                   {!hideChrome && isMobile && (
                     <nav
                       aria-label="Primary mobile navigation"
-                      className="absolute inset-x-0 bottom-0 z-30 border-t"
+                      className="absolute inset-x-0 bottom-0 z-30 border-t ci-shell-command-group"
                       style={{
                         // Stabilization U-13 / MVP §C1 — removed redundant
                         // `backdrop-blur-md`: the bar background is already
@@ -1095,7 +1097,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                               key={item.id}
                               type="button"
                               onClick={() => navigate(item.to)}
-                              className="ci-touch-target flex flex-col items-center justify-center gap-0.5 rounded-md px-1 text-[9px] font-montserrat font-bold uppercase tracking-[0.08em]"
+                              className="ci-touch-target ci-subtle-hover flex flex-col items-center justify-center gap-0.5 rounded-md px-1 text-[9px] font-montserrat font-bold uppercase tracking-[0.08em]"
                               style={{
                                 color: active
                                   ? activeColor

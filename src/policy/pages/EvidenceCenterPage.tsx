@@ -742,7 +742,7 @@ export function EvidenceCenterPage() {
         {/* Left column */}
         <div className="col-span-12 xl:col-span-9 flex flex-col overflow-hidden">
           {/* Filter bar */}
-          <div className="px-3 sm:px-6 py-3 flex flex-wrap items-center gap-3 border-b border-cyan-300/15 bg-slate-950/30 sticky top-0 z-20 ci-sticky-operational">
+          <div className="px-3 sm:px-6 py-3 flex flex-wrap items-center gap-3 border-b border-cyan-300/15 bg-slate-950/30 sticky top-0 z-20 ci-sticky-operational ci-shell-command-group mx-3 sm:mx-6 mt-2 rounded-xl">
             <div className="flex items-center gap-2">
               <label className="text-xs uppercase tracking-wider text-slate-300">Event ID</label>
               <input

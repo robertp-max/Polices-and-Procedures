@@ -39,15 +39,24 @@ function setDismissed(value: boolean): void {
 
 export function GuidedUatWidget() {
   const location = useLocation();
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < 768,
+  );
   const [dismissed, setDismissedState] = useState<boolean>(() => isDismissed());
   const [collapsed, setCollapsed] = useState(() =>
-    /^\/(audit|evidence|calendar)(\/|$)/.test(location.pathname),
+    /^\/(audit|evidence|calendar)(\/|$)/.test(location.pathname) || isMobile,
   );
   const isDenseRoute = /^\/(audit|evidence|calendar)(\/|$)/.test(location.pathname);
 
   useEffect(() => {
-    if (isDenseRoute) setCollapsed(true);
-  }, [isDenseRoute]);
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    if (isDenseRoute || isMobile) setCollapsed(true);
+  }, [isDenseRoute, isMobile]);
 
   const { completedCount, activeStepId } = useMemo(() => {
     let active: string | null = null;
@@ -65,7 +74,7 @@ export function GuidedUatWidget() {
 
   return (
     <aside
-      className={`fixed right-3 bottom-24 md:bottom-6 z-40 w-[min(92vw,340px)] rounded-xl border ci-subtle-hover ${isDenseRoute ? 'opacity-[0.96]' : ''}`}
+      className={`fixed right-2 md:right-3 bottom-24 md:bottom-6 z-30 w-[min(92vw,340px)] rounded-xl border ci-subtle-hover ${isDenseRoute ? 'opacity-[0.96]' : ''}`}
       style={{
         background: 'var(--ci-surface)',
         borderColor: 'var(--ci-border)',
