@@ -403,18 +403,25 @@ export function DashboardPage() {
   }, []);
 
   return (
-    <div className={`h-full w-full flex flex-col px-3 sm:px-5 md:px-8 py-3 sm:py-5 gap-3 sm:gap-5 overflow-x-hidden overflow-y-auto md:overflow-hidden animate-in fade-in duration-500 ${isLight ? '' : 'bg-gradient-to-b from-white/5 to-white/[0.02]'}`}>
-      <DashboardHero />
+    <div className={`h-full w-full flex flex-col px-3 sm:px-5 md:px-8 py-3 sm:py-5 gap-4 sm:gap-5 overflow-x-hidden overflow-y-auto md:overflow-hidden animate-in fade-in duration-500 ${isLight ? '' : 'bg-gradient-to-b from-white/5 to-white/[0.02]'}`}>
+      <div className="ci-premium-hero px-4 sm:px-6 py-4 sm:py-6">
+        <DashboardHero
+          criticalCount={criticalAndOverdue.length}
+          atRiskCount={critical.atRisk.length}
+          auditReadyCount={readiness.auditReady}
+          totalCount={instances.length}
+        />
+      </div>
 
       {isMobile ? (
-        <section className="grid grid-cols-1 gap-2">
+        <section className="grid grid-cols-1 gap-3">
           {mobilePrimaryKpis.map((kpi, idx) => (
             <KpiCard key={kpi.label} {...kpi} emphasize={idx < 2 || kpi.label === 'Missing Evidence'} />
           ))}
           {kpiByLabel.get('Audit Open') ? <KpiCard {...(kpiByLabel.get('Audit Open') as KpiCardData)} /> : null}
         </section>
       ) : (
-        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 sm:gap-3">
+        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
           {kpis.map(kpi => (
             <KpiCard key={kpi.label} {...kpi} />
           ))}
@@ -430,12 +437,18 @@ export function DashboardPage() {
         onClickNotReady={() => goAudit()}
       />
 
-      <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap ci-shell-command-group rounded-xl px-3 py-2">
+      <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap ci-shell-command-group ci-command-rail ci-maturity-section rounded-xl px-3 py-2">
         <div>
-          <h2 className={`text-[26px] font-semibold tracking-[-0.02em] ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
+          <h2 
+            className={`font-semibold ${isLight ? 'text-slate-800' : 'text-slate-50'}`}
+            style={{ fontSize: 'var(--ci-font-size-display-section, 26px)', letterSpacing: 'var(--ci-letter-spacing-snug, -0.02em)' }}
+          >
             Action Board
           </h2>
-          <p className={`text-[13px] ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
+          <p 
+            className={`${isLight ? 'text-slate-500' : 'text-white/70'}`}
+            style={{ fontSize: 'var(--ci-font-size-body-sm, 13px)' }}
+          >
             Operational triage across critical deadlines, active work, and evidence queues.
           </p>
         </div>
@@ -445,7 +458,7 @@ export function DashboardPage() {
         </div>
       </section>
 
-      <div className={`flex-1 min-h-0 pb-2 ${isMobile ? '' : '-mx-3 sm:mx-0 px-3 sm:px-0'} ${isMobile ? 'overflow-x-hidden' : 'overflow-x-auto'}`}>
+      <div className={`flex-1 min-h-0 pb-2 ${isMobile ? '' : '-mx-3 sm:mx-0 px-3 sm:px-0'} ${isMobile ? 'overflow-x-hidden' : 'overflow-x-auto'} ci-premium-panel p-3 sm:p-4`}>
         <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'} gap-3 sm:gap-4 lg:min-w-0 ${isMobile ? 'min-w-0' : 'min-w-[88vw] sm:min-w-[680px]'} h-full`}>
           <BoardColumn
             title="Critical & Overdue"
@@ -491,33 +504,106 @@ export function DashboardPage() {
   );
 }
 
-function DashboardHero() {
+function DashboardHero({
+  criticalCount,
+  atRiskCount,
+  auditReadyCount,
+  totalCount,
+}: {
+  criticalCount: number;
+  atRiskCount: number;
+  auditReadyCount: number;
+  totalCount: number;
+}) {
   const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   return (
-    <section className="flex items-end justify-between gap-3 flex-wrap">
+    <section className="flex items-start sm:items-end justify-between gap-4 flex-wrap">
       <div className="min-w-0">
-        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.26em] text-orange-500">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <span 
+            className="font-semibold uppercase text-orange-500"
+            style={{ 
+              fontSize: 'var(--ci-font-size-eyebrow, 10px)', 
+              letterSpacing: 'var(--ci-letter-spacing-eyebrow-strong, 0.26em)' 
+            }}
+          >
             Command Center
           </span>
           <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-slate-300" />
-          <span className={`text-[12px] font-medium ${isLight ? 'text-slate-500' : 'text-white/60'}`}>
+          <span 
+            className={`font-medium ${isLight ? 'text-slate-500' : 'text-white/60'}`}
+            style={{ 
+              fontSize: 'var(--ci-font-size-eyebrow, 10px)', 
+              letterSpacing: 'var(--ci-letter-spacing-eyebrow-strong, 0.26em)' 
+            }}
+          >
             What needs action now
           </span>
         </div>
-        <h1 className={`text-[22px] sm:text-[28px] md:text-[34px] font-semibold tracking-[-0.03em] leading-tight sm:leading-none ${isLight ? 'text-slate-900' : 'text-slate-50'}`}>
+        <h1 
+          className={`font-semibold leading-tight sm:leading-none ${isLight ? 'text-slate-900' : 'text-slate-50'}`}
+          style={{ 
+            fontSize: 'var(--ci-font-size-display-hero, 42px)', 
+            letterSpacing: 'var(--ci-letter-spacing-tight, -0.03em)' 
+          }}
+        >
           What needs action now
         </h1>
+        <p 
+          className={`mt-2 ${isLight ? 'text-slate-600' : 'text-white/72'}`}
+          style={{ fontSize: 'var(--ci-font-size-body-sm, 13px)' }}
+        >
+          Executive operational narrative for compliance execution, evidence readiness, and escalation control.
+        </p>
       </div>
-      <div className="text-right shrink-0">
-        <div className={`text-[10px] font-semibold uppercase tracking-[0.2em] ${isLight ? 'text-slate-400' : 'text-white/50'}`}>
+      <div className="w-full sm:w-auto shrink-0">
+        <div className="grid grid-cols-2 gap-2 sm:min-w-[220px]">
+          <HeroStat label="Critical" value={criticalCount} tone="danger" />
+          <HeroStat label="At Risk" value={atRiskCount} tone="warning" />
+          <HeroStat label="Audit Ready" value={auditReadyCount} tone="success" />
+          <HeroStat label="In Scope" value={totalCount} tone="default" />
+        </div>
+      </div>
+      <div className="text-left sm:text-right shrink-0">
+        <div 
+          className={`font-semibold uppercase ${isLight ? 'text-slate-400' : 'text-white/50'}`}
+          style={{ fontSize: 'var(--ci-font-size-eyebrow, 10px)', letterSpacing: 'var(--ci-letter-spacing-uppercase-md, 0.14em)' }}
+        >
           Today
         </div>
-        <div className={`text-[12px] sm:text-[14px] font-medium mt-1 ${isLight ? 'text-slate-700' : 'text-white/90'}`}>
+        <div 
+          className={`font-medium mt-1 ${isLight ? 'text-slate-700' : 'text-white/90'}`}
+          style={{ fontSize: 'var(--ci-font-size-body-sm, 13px)' }}
+        >
           {TODAY_ANCHOR.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </div>
       </div>
+      <div className={`w-full mt-2 px-3 py-2 flex items-center justify-between gap-3 flex-wrap ci-command-rail ci-maturity-section ${isLight ? 'text-slate-600' : 'text-white/68'}`}>
+        <span className="ci-maturity-eyebrow">Operational Storyline</span>
+        <span className="text-[12px]">Prioritize critical controls, clear risk queues, and lock evidence-ready workflows.</span>
+      </div>
     </section>
+  );
+}
+
+function HeroStat({ label, value, tone }: { label: string; value: number; tone: 'default' | 'success' | 'warning' | 'danger' }) {
+  const styles = {
+    default: 'bg-slate-100 text-slate-700 border-slate-200',
+    success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    warning: 'bg-amber-50 text-amber-700 border-amber-200',
+    danger: 'bg-rose-50 text-rose-700 border-rose-200',
+  }[tone];
+  return (
+    <div className={`rounded-xl border px-3 py-2 ci-hero-stat ${styles}`}>
+      <div 
+        className="font-semibold uppercase"
+        style={{ fontSize: 'var(--ci-font-size-eyebrow, 9px)', letterSpacing: 'var(--ci-letter-spacing-uppercase-sm, 0.08em)' }}
+      >{label}</div>
+      <div 
+        className="leading-none font-semibold mt-1"
+        style={{ fontSize: 'var(--ci-font-size-stat-value, 18px)' }}
+      >{value}</div>
+    </div>
   );
 }
 
@@ -536,8 +622,8 @@ function KpiCard({ label, value, trend, tone = 'default', alert, onClick, emphas
     danger: 'text-red-500',
   }[tone];
   const shellClass = isLight
-    ? `ci-operational-card ${emphasize ? 'border-[#C74601]/30' : 'border-slate-200'}`
-    : `ci-operational-card ${emphasize ? 'border-[#FFC107]/30' : 'border-white/10'}`;
+    ? `ci-operational-card ${emphasize ? 'border-[#C74601]/35 bg-gradient-to-b from-white to-orange-50/25' : 'border-slate-200 bg-gradient-to-b from-white to-slate-50/60'}`
+    : `ci-operational-card ${emphasize ? 'border-[#FFC107]/35 bg-gradient-to-b from-white/10 to-white/[0.03]' : 'border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.03]'}`;
 
   const content = (
     <>
@@ -548,7 +634,10 @@ function KpiCard({ label, value, trend, tone = 'default', alert, onClick, emphas
         {alert ? <AlertTriangle size={14} className="text-red-500" /> : null}
       </div>
       <div className="flex items-end gap-2">
-        <span className={`text-[32px] leading-none font-semibold tracking-[-0.03em] ${valueClass}`}>
+        <span 
+          className={`leading-none font-semibold ${valueClass}`}
+          style={{ fontSize: 'var(--ci-font-size-kpi-value, 36px)', letterSpacing: 'var(--ci-letter-spacing-tight, -0.03em)' }}
+        >
           {value}
         </span>
         {trend ? <span className={`text-[11px] font-semibold pb-1 ${trendClass}`}>{trend}</span> : null}
@@ -557,14 +646,22 @@ function KpiCard({ label, value, trend, tone = 'default', alert, onClick, emphas
   );
 
   if (!onClick) {
-    return <div className={`rounded-2xl border px-4 py-3 min-h-[98px] ${shellClass}`}>{content}</div>;
+    return (
+  <div 
+    className={`rounded-2xl border px-4 py-3 ${shellClass}`}
+    style={{ minHeight: 'var(--ci-dimension-surface-kpi-card-min-height, 116px)' }}
+  >
+    {content}
+  </div>
+);
   }
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-2xl border px-4 py-3 min-h-[98px] text-left cursor-pointer ci-subtle-hover hover:shadow-[0_10px_24px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
+      className={`rounded-2xl border px-4 py-3 text-left cursor-pointer ci-subtle-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
+      style={{ minHeight: 'var(--ci-dimension-surface-kpi-card-min-height, 116px)', boxShadow: 'var(--ci-shadow-elevation-md)' }}
     >
       {content}
     </button>
@@ -605,7 +702,7 @@ function AgencyReadinessBanner({
     : (isLight ? 'bg-red-100 text-red-700' : 'bg-white/10 text-red-200');
 
   return (
-    <div className={`rounded-2xl border px-4 py-3 flex items-center gap-4 flex-wrap ${shellClass}`}>
+    <div className={`rounded-2xl border px-4 py-3 flex items-center gap-4 flex-wrap ci-command-rail ${shellClass}`}>
       <span className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconShellClass}`}>
         <Icon size={18} />
       </span>
@@ -641,7 +738,10 @@ function BannerChip({ label, value, tone }: { label: string; value: number; tone
   return (
     <div className={`px-3 py-2 rounded-xl border text-right ${chipClass}`}>
       <div className="text-[9px] font-semibold uppercase tracking-[0.16em]">{label}</div>
-      <div className="text-[18px] leading-none font-semibold mt-1">{value}</div>
+      <div 
+        className="leading-none font-semibold mt-1"
+        style={{ fontSize: 'var(--ci-font-size-stat-value, 18px)' }}
+      >{value}</div>
     </div>
   );
 }
@@ -684,28 +784,28 @@ function BoardColumn({
     critical: {
       icon: AlertTriangle,
       accent: 'text-red-500',
-      shell: 'ci-operational-card p-3',
+      shell: 'ci-operational-card p-3 bg-gradient-to-b from-rose-50/55 to-transparent dark:from-rose-500/8',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
     warning: {
       icon: Clock,
       accent: 'text-amber-500',
-      shell: 'ci-operational-card p-3',
+      shell: 'ci-operational-card p-3 bg-gradient-to-b from-amber-50/50 to-transparent dark:from-amber-500/8',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
     progress: {
       icon: Activity,
       accent: 'text-blue-500',
-      shell: 'ci-operational-card p-3',
+      shell: 'ci-operational-card p-3 bg-gradient-to-b from-sky-50/50 to-transparent dark:from-sky-500/8',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
     pending: {
       icon: FileText,
       accent: 'text-slate-500',
-      shell: 'ci-operational-card p-3',
+      shell: 'ci-operational-card p-3 bg-gradient-to-b from-slate-100/50 to-transparent dark:from-white/5',
       badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
       title: isLight ? 'text-slate-700' : 'text-slate-50',
     },
@@ -718,7 +818,10 @@ function BoardColumn({
       <header className="flex items-center justify-between px-1 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <Icon size={16} className={column.accent} />
-          <h3 className={`text-[18px] font-semibold truncate ${column.title}`}>{title}</h3>
+          <h3 
+            className={`font-semibold truncate ${column.title}`}
+            style={{ fontSize: 'var(--ci-font-size-stat-value, 18px)' }}
+          >{title}</h3>
         </div>
         <span className={`min-w-[28px] h-7 px-2 rounded-full flex items-center justify-center text-[12px] font-semibold ${column.badge}`}>
           {count}
@@ -783,7 +886,8 @@ function TaskCard({
         }
         onClick();
       }}
-      className={`w-full rounded-2xl border p-4 text-left group cursor-pointer ci-subtle-hover hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
+      className={`w-full rounded-2xl border p-4 text-left group cursor-pointer ci-subtle-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
+      style={{ boxShadow: 'var(--ci-shadow-elevation-interactive)' }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

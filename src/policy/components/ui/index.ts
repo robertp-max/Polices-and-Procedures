@@ -33,3 +33,11 @@ export { LoadingState } from './LoadingState';
 export type { LoadingStateProps } from './LoadingState';
 export { AriaLiveRegion } from './AriaLiveRegion';
 export type { AriaLiveRegionProps } from './AriaLiveRegion';
+
+// Phase 2 Canonical Shell Primitives
+export { ShellFrame } from './ShellFrame';
+export { ShellTopbar } from './ShellTopbar';
+export { ShellNavRail } from './ShellNavRail';
+export type { NavItem } from './ShellNavRail';
+export { ShellContentFrame } from './ShellContentFrame';
+export { ShellCommandGroup } from './ShellCommandGroup';

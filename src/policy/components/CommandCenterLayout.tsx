@@ -23,6 +23,13 @@ import { useUserAssignmentsStore } from '@/policy/security/identity/userAssignme
 import { RolloutPhaseBadge } from '@/policy/security/features/RolloutPhaseBadge';
 import { PermissionGate } from '@/policy/security/features/PermissionGate';
 import { ThemeModeToggle } from '@/policy/components/ui/ThemeModeToggle';
+import { 
+  ShellFrame, 
+  ShellTopbar, 
+  ShellNavRail, 
+  ShellContentFrame, 
+  ShellCommandGroup 
+} from '@/policy/components/ui';
 import { ContextualKnowledgeBulb } from '@/policy/components/help/ContextualKnowledgeBulb';
 import { useNavStore } from '@/policy/stores/navStore';
 import { GlobalTaskDrawer } from '@/policy/components/pm/GlobalTaskDrawer';
@@ -380,7 +387,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   // above for the shell breadcrumb history.
 
   return (
-    <>
+    <ShellFrame>
       {/* ── 1. Premium background (TravelightBG) — fills viewport ── */}
       <TravelightBG isLight={isVisualLight} />
 
@@ -1124,6 +1131,6 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
       </div>
       <GuidedUatWidget />
       <GuidedTourGate />
-    </>
+    </ShellFrame>
   );
 }
