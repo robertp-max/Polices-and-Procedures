@@ -16,6 +16,13 @@ import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecution
 import { ToastHost } from '@/policy/components/regulatory/Toast';
 import { AUDIT_STATE_LABEL, evaluateAudit, isReadyToClose, type AuditEvaluation, type AuditState } from '@/policy/audit/auditState';
 import { useComplianceExecution, selectAuditReadinessRollup, selectAwaitingSignatureUnits } from '@/policy/compliance-execution';
+import {
+  ShellContentFrame,
+  ActionButton,
+  UtilityButton,
+  CiStatusBadge,
+  EmptyState,
+} from '@/policy/components/ui';
 
 type KpiCardData = {
   label: string;
@@ -403,7 +410,8 @@ export function DashboardPage() {
   }, []);
 
   return (
-    <div className={`h-full w-full flex flex-col px-3 sm:px-5 md:px-8 py-3 sm:py-5 gap-4 sm:gap-5 overflow-x-hidden overflow-y-auto md:overflow-hidden animate-in fade-in duration-500 ${isLight ? '' : 'bg-gradient-to-b from-white/5 to-white/[0.02]'}`}>
+    <ShellContentFrame scrollable className="animate-in fade-in duration-500" data-surface="dashboard">
+      <div className="flex flex-col gap-4 sm:gap-5">
       <div className="ci-premium-hero px-4 sm:px-6 py-4 sm:py-6">
         <DashboardHero
           criticalCount={criticalAndOverdue.length}
@@ -439,27 +447,21 @@ export function DashboardPage() {
 
       <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap ci-shell-command-group ci-command-rail ci-maturity-section rounded-xl px-3 py-2">
         <div>
-          <h2 
-            className={`font-semibold ${isLight ? 'text-slate-800' : 'text-slate-50'}`}
-            style={{ fontSize: 'var(--ci-font-size-display-section, 26px)', letterSpacing: 'var(--ci-letter-spacing-snug, -0.02em)' }}
-          >
+          <h2 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
             Action Board
           </h2>
-          <p 
-            className={`${isLight ? 'text-slate-500' : 'text-white/70'}`}
-            style={{ fontSize: 'var(--ci-font-size-body-sm, 13px)' }}
-          >
+          <p className={`ci-text-body-sm ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
             Operational triage across critical deadlines, active work, and evidence queues.
           </p>
         </div>
         <div className="ci-operational-toolbar">
-          <ToolbarButton icon={<Filter size={14} />} label="Filter" />
-          <ToolbarButton label="Sort by: Priority" />
+          <UtilityButton ariaLabel="Filter board"><Filter size={14} aria-hidden="true" /><span className="ml-2">Filter</span></UtilityButton>
+          <UtilityButton ariaLabel="Sort by priority"><span>Sort by: Priority</span></UtilityButton>
         </div>
       </section>
 
       <div className={`flex-1 min-h-0 pb-2 ${isMobile ? '' : '-mx-3 sm:mx-0 px-3 sm:px-0'} ${isMobile ? 'overflow-x-hidden' : 'overflow-x-auto'} ci-premium-panel p-3 sm:p-4`}>
-        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'} gap-3 sm:gap-4 lg:min-w-0 ${isMobile ? 'min-w-0' : 'min-w-[88vw] sm:min-w-[680px]'} h-full`}>
+        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'} gap-3 sm:gap-4 lg:min-w-0 ${isMobile ? 'min-w-0' : 'ci-min-w-board-scroll'} h-full`}>
           <BoardColumn
             title="Critical & Overdue"
             count={criticalAndOverdue.length}
@@ -500,7 +502,8 @@ export function DashboardPage() {
       </div>
 
       <ToastHost />
-    </div>
+      </div>
+    </ShellContentFrame>
   );
 }
 
@@ -520,44 +523,23 @@ function DashboardHero({
     <section className="flex items-start sm:items-end justify-between gap-4 flex-wrap">
       <div className="min-w-0">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <span 
-            className="font-semibold uppercase text-orange-500"
-            style={{ 
-              fontSize: 'var(--ci-font-size-eyebrow, 10px)', 
-              letterSpacing: 'var(--ci-letter-spacing-eyebrow-strong, 0.26em)' 
-            }}
-          >
+          <span className="font-semibold uppercase text-orange-500 ci-text-eyebrow-strong">
             Command Center
           </span>
           <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-slate-300" />
-          <span 
-            className={`font-medium ${isLight ? 'text-slate-500' : 'text-white/60'}`}
-            style={{ 
-              fontSize: 'var(--ci-font-size-eyebrow, 10px)', 
-              letterSpacing: 'var(--ci-letter-spacing-eyebrow-strong, 0.26em)' 
-            }}
-          >
+          <span className={`font-medium ci-text-eyebrow-strong ${isLight ? 'text-slate-500' : 'text-white/60'}`}>
             What needs action now
           </span>
         </div>
-        <h1 
-          className={`font-semibold leading-tight sm:leading-none ${isLight ? 'text-slate-900' : 'text-slate-50'}`}
-          style={{ 
-            fontSize: 'var(--ci-font-size-display-hero, 42px)', 
-            letterSpacing: 'var(--ci-letter-spacing-tight, -0.03em)' 
-          }}
-        >
+        <h1 className={`font-semibold leading-tight sm:leading-none ci-text-display-hero ${isLight ? 'text-slate-900' : 'text-slate-50'}`}>
           What needs action now
         </h1>
-        <p 
-          className={`mt-2 ${isLight ? 'text-slate-600' : 'text-white/72'}`}
-          style={{ fontSize: 'var(--ci-font-size-body-sm, 13px)' }}
-        >
+        <p className={`mt-2 ci-text-body-sm ${isLight ? 'text-slate-600' : 'text-white/72'}`}>
           Executive operational narrative for compliance execution, evidence readiness, and escalation control.
         </p>
       </div>
       <div className="w-full sm:w-auto shrink-0">
-        <div className="grid grid-cols-2 gap-2 sm:min-w-[220px]">
+        <div className="grid grid-cols-2 gap-2 ci-min-w-hero-stat-sm">
           <HeroStat label="Critical" value={criticalCount} tone="danger" />
           <HeroStat label="At Risk" value={atRiskCount} tone="warning" />
           <HeroStat label="Audit Ready" value={auditReadyCount} tone="success" />
@@ -565,22 +547,16 @@ function DashboardHero({
         </div>
       </div>
       <div className="text-left sm:text-right shrink-0">
-        <div 
-          className={`font-semibold uppercase ${isLight ? 'text-slate-400' : 'text-white/50'}`}
-          style={{ fontSize: 'var(--ci-font-size-eyebrow, 10px)', letterSpacing: 'var(--ci-letter-spacing-uppercase-md, 0.14em)' }}
-        >
+        <div className={`font-semibold uppercase ci-text-eyebrow-md ${isLight ? 'text-slate-400' : 'text-white/50'}`}>
           Today
         </div>
-        <div 
-          className={`font-medium mt-1 ${isLight ? 'text-slate-700' : 'text-white/90'}`}
-          style={{ fontSize: 'var(--ci-font-size-body-sm, 13px)' }}
-        >
+        <div className={`font-medium mt-1 ci-text-body-sm ${isLight ? 'text-slate-700' : 'text-white/90'}`}>
           {TODAY_ANCHOR.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </div>
       </div>
       <div className={`w-full mt-2 px-3 py-2 flex items-center justify-between gap-3 flex-wrap ci-command-rail ci-maturity-section ${isLight ? 'text-slate-600' : 'text-white/68'}`}>
-        <span className="ci-maturity-eyebrow">Operational Storyline</span>
-        <span className="text-[12px]">Prioritize critical controls, clear risk queues, and lock evidence-ready workflows.</span>
+        <span className={`ci-maturity-eyebrow`}>Operational Storyline</span>
+        <span className="ci-text-body-xs">Prioritize critical controls, clear risk queues, and lock evidence-ready workflows.</span>
       </div>
     </section>
   );
@@ -595,14 +571,8 @@ function HeroStat({ label, value, tone }: { label: string; value: number; tone: 
   }[tone];
   return (
     <div className={`rounded-xl border px-3 py-2 ci-hero-stat ${styles}`}>
-      <div 
-        className="font-semibold uppercase"
-        style={{ fontSize: 'var(--ci-font-size-eyebrow, 9px)', letterSpacing: 'var(--ci-letter-spacing-uppercase-sm, 0.08em)' }}
-      >{label}</div>
-      <div 
-        className="leading-none font-semibold mt-1"
-        style={{ fontSize: 'var(--ci-font-size-stat-value, 18px)' }}
-      >{value}</div>
+      <div className="font-semibold uppercase ci-text-eyebrow-sm">{label}</div>
+      <div className="leading-none font-semibold mt-1 ci-text-stat">{value}</div>
     </div>
   );
 }
@@ -621,47 +591,45 @@ function KpiCard({ label, value, trend, tone = 'default', alert, onClick, emphas
     warning: 'text-amber-500',
     danger: 'text-red-500',
   }[tone];
-  const shellClass = isLight
-    ? `ci-operational-card ${emphasize ? 'border-[#C74601]/35 bg-gradient-to-b from-white to-orange-50/25' : 'border-slate-200 bg-gradient-to-b from-white to-slate-50/60'}`
-    : `ci-operational-card ${emphasize ? 'border-[#FFC107]/35 bg-gradient-to-b from-white/10 to-white/[0.03]' : 'border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.03]'}`;
+  const baseClass = 'ci-kpi-card ci-operational-card rounded-2xl border px-4 py-3';
+  const emphasizeAttr = emphasize ? 'true' : 'false';
 
   const content = (
     <>
       <div className="flex items-center justify-between gap-2 mb-2">
-        <span className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${isLight ? 'text-slate-400' : 'text-white/55'}`}>
+        <span className={`font-semibold uppercase ci-text-eyebrow ${isLight ? 'text-slate-400' : 'text-white/55'}`}>
           {label}
         </span>
-        {alert ? <AlertTriangle size={14} className="text-red-500" /> : null}
+        {alert ? <AlertTriangle size={14} className="text-red-500" aria-hidden="true" /> : null}
       </div>
       <div className="flex items-end gap-2">
-        <span 
-          className={`leading-none font-semibold ${valueClass}`}
-          style={{ fontSize: 'var(--ci-font-size-kpi-value, 36px)', letterSpacing: 'var(--ci-letter-spacing-tight, -0.03em)' }}
-        >
+        <span className={`leading-none font-semibold ci-text-kpi ${valueClass}`}>
           {value}
         </span>
-        {trend ? <span className={`text-[11px] font-semibold pb-1 ${trendClass}`}>{trend}</span> : null}
+        {trend ? (
+          <span className={`font-semibold pb-1 ci-text-meta ${trendClass}`}>{trend}</span>
+        ) : null}
       </div>
     </>
   );
 
   if (!onClick) {
     return (
-  <div 
-    className={`rounded-2xl border px-4 py-3 ${shellClass}`}
-    style={{ minHeight: 'var(--ci-dimension-surface-kpi-card-min-height, 116px)' }}
-  >
-    {content}
-  </div>
-);
+      <div
+        className={`${baseClass} ci-min-h-kpi`}
+        data-emphasize={emphasizeAttr}
+      >
+        {content}
+      </div>
+    );
   }
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-2xl border px-4 py-3 text-left cursor-pointer ci-subtle-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
-      style={{ minHeight: 'var(--ci-dimension-surface-kpi-card-min-height, 116px)', boxShadow: 'var(--ci-shadow-elevation-md)' }}
+      data-emphasize={emphasizeAttr}
+      className={`${baseClass} ci-min-h-kpi ci-shadow-elev-md text-left cursor-pointer ci-subtle-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60`}
     >
       {content}
     </button>
@@ -697,33 +665,26 @@ function AgencyReadinessBanner({
     : (isLight ? 'text-red-700' : 'text-white/80');
   const accentClass = ready ? 'text-emerald-600' : 'text-red-600';
   const iconShellClass = ready ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600';
-  const buttonClass = ready
-    ? 'bg-emerald-100 text-emerald-700'
-    : (isLight ? 'bg-red-100 text-red-700' : 'bg-white/10 text-red-200');
 
   return (
     <div className={`rounded-2xl border px-4 py-3 flex items-center gap-4 flex-wrap ci-command-rail ${shellClass}`}>
       <span className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconShellClass}`}>
         <Icon size={18} />
       </span>
-      <div className="flex-1 min-w-[240px]">
-        <div className={`text-[12px] font-semibold uppercase tracking-[0.14em] ${accentClass}`}>
+      <div className="flex-1 min-w-0">
+        <div className={`font-semibold uppercase ci-text-eyebrow-md ${accentClass}`}>
           {status}
         </div>
-        <p className={`text-[13px] mt-1 ${bodyClass}`}>{supporting}</p>
+        <p className={`mt-1 ci-text-body-sm ${bodyClass}`}>{supporting}</p>
       </div>
       <div className="flex items-center gap-3 ml-auto flex-wrap">
         {atRisk > 0 ? <BannerChip label="At Risk" value={atRisk} tone="warning" /> : null}
         {graceWindow > 0 ? <BannerChip label="Grace" value={graceWindow} tone="warning" /> : null}
         {certifiedWithException > 0 ? <BannerChip label="Cert w/ Exc" value={certifiedWithException} tone="default" /> : null}
         {!ready ? (
-          <button
-            type="button"
-            onClick={onClickNotReady}
-            className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition ${buttonClass}`}
-          >
+          <ActionButton variant="danger" size="sm" onClick={onClickNotReady}>
             View Readiness Report
-          </button>
+          </ActionButton>
         ) : null}
       </div>
     </div>
@@ -731,34 +692,12 @@ function AgencyReadinessBanner({
 }
 
 function BannerChip({ label, value, tone }: { label: string; value: number; tone: 'default' | 'warning' }) {
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
-  const chipClass = tone === 'warning'
-    ? (isLight ? 'bg-orange-50 border-orange-200 text-orange-600' : 'bg-orange-500/10 border-orange-400/30 text-orange-300')
-    : (isLight ? 'bg-violet-50 border-violet-200 text-violet-600' : 'bg-violet-500/10 border-violet-400/30 text-violet-300');
   return (
-    <div className={`px-3 py-2 rounded-xl border text-right ${chipClass}`}>
-      <div className="text-[9px] font-semibold uppercase tracking-[0.16em]">{label}</div>
-      <div 
-        className="leading-none font-semibold mt-1"
-        style={{ fontSize: 'var(--ci-font-size-stat-value, 18px)' }}
-      >{value}</div>
-    </div>
-  );
-}
-
-function ToolbarButton({ icon, label }: { icon?: React.ReactNode; label: string }) {
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
-  const className = isLight
-    ? 'bg-white border-slate-200 text-slate-600'
-    : 'bg-white/5 border-white/10 text-white/85';
-  return (
-    <button
-      type="button"
-      className={`inline-flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-xl border text-[13px] font-medium ci-subtle-hover ${className}`}
-    >
-      {icon}
-      {label}
-    </button>
+    <CiStatusBadge tone={tone === 'warning' ? 'warning' : 'neutral'}>
+      <span className="font-semibold uppercase ci-text-eyebrow-sm">{label}</span>
+      <span className="mx-1" aria-hidden="true">·</span>
+      <span className="font-semibold ci-text-stat">{value}</span>
+    </CiStatusBadge>
   );
 }
 
@@ -818,12 +757,9 @@ function BoardColumn({
       <header className="flex items-center justify-between px-1 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <Icon size={16} className={column.accent} />
-          <h3 
-            className={`font-semibold truncate ${column.title}`}
-            style={{ fontSize: 'var(--ci-font-size-stat-value, 18px)' }}
-          >{title}</h3>
+          <h3 className={`font-semibold truncate ci-text-stat ${column.title}`}>{title}</h3>
         </div>
-        <span className={`min-w-[28px] h-7 px-2 rounded-full flex items-center justify-center text-[12px] font-semibold ${column.badge}`}>
+        <span className={`ci-min-w-count-badge h-7 px-2 rounded-full flex items-center justify-center font-semibold ci-text-body-xs ${column.badge}`}>
           {count}
         </span>
       </header>
@@ -860,7 +796,7 @@ function TaskCard({
   const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const dueLabel = getDueLabel(event, today);
   const shellClass = isLight
-    ? 'bg-white border-slate-200 shadow-[0_10px_24px_rgba(15,23,42,0.04)]'
+    ? 'bg-white border-slate-200'
     : 'bg-white/5 border-white/10';
   const labelClass = isLight ? 'text-slate-400' : 'text-white/50';
   const titleClass = isLight ? 'text-slate-800' : 'text-slate-50';
@@ -886,34 +822,33 @@ function TaskCard({
         }
         onClick();
       }}
-      className={`w-full rounded-2xl border p-4 text-left group cursor-pointer ci-subtle-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
-      style={{ boxShadow: 'var(--ci-shadow-elevation-interactive)' }}
+      className={`w-full rounded-2xl border p-4 text-left group cursor-pointer ci-subtle-hover ci-shadow-elev-interactive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className={`text-[10px] font-semibold uppercase tracking-[0.14em] mb-1 ${labelClass}`}>
+          <div className={`font-semibold uppercase mb-1 ci-text-eyebrow-md ${labelClass}`}>
             {event.domain}
           </div>
-          <h4 className={`text-[15px] font-semibold leading-tight ${titleClass}`}>
+          <h4 className={`font-semibold leading-tight ci-text-card-title ${titleClass}`}>
             {event.title}
           </h4>
         </div>
-        <MoreHorizontal size={16} className={isLight ? 'text-slate-300' : 'text-white/35'} />
+        <MoreHorizontal size={16} className={isLight ? 'text-slate-300' : 'text-white/35'} aria-hidden="true" />
       </div>
 
       <div className={`flex items-center justify-between mt-4 pt-3 border-t ${dividerClass}`}>
         <div className="flex items-center gap-2 min-w-0">
-          <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0 border ${avatarClass}`}>
+          <span className={`w-7 h-7 rounded-full flex items-center justify-center font-semibold shrink-0 border ci-text-meta ${avatarClass}`}>
             {getInitials(event.owner)}
           </span>
-          <span className={`text-[12px] font-medium truncate ${ownerClass}`}>{event.owner}</span>
+          <span className={`font-medium truncate ci-text-body-xs ${ownerClass}`}>{event.owner}</span>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className={`text-[10px] font-semibold uppercase tracking-[0.08em] px-2 py-1 rounded-lg border ${badgeClass}`}>
+          <span className={`font-semibold uppercase px-2 py-1 rounded-lg border ci-text-eyebrow-sm ${badgeClass}`}>
             {dueLabel}
           </span>
-          <ArrowRight size={14} className={isLight ? 'text-slate-400' : 'text-white/50'} />
+          <ArrowRight size={14} className={isLight ? 'text-slate-400' : 'text-white/50'} aria-hidden="true" />
         </div>
       </div>
     </button>
@@ -921,20 +856,18 @@ function TaskCard({
 }
 
 function EmptyBoardState({ label, onClick }: { label: string; onClick: () => void }) {
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
-  const shellClass = isLight ? 'bg-white border-slate-300' : 'bg-white/5 border-white/15';
-  const titleClass = isLight ? 'text-slate-700' : 'text-slate-50';
-  const bodyClass = isLight ? 'text-slate-500' : 'text-white/65';
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-2xl border border-dashed p-6 flex flex-col items-center justify-center text-center min-h-[220px] cursor-pointer ci-subtle-hover hover:shadow-[0_10px_22px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
-    >
-      <CheckCircle2 size={28} className="text-emerald-500" />
-      <div className={`text-[14px] font-semibold mt-3 ${titleClass}`}>All clear</div>
-      <p className={`text-[12px] mt-1 ${bodyClass}`}>No {label.toLowerCase()} items in the current queue.</p>
-    </button>
+    <EmptyState
+      icon={<CheckCircle2 size={28} className="text-emerald-500" aria-hidden="true" />}
+      title="All clear"
+      description={`No ${label.toLowerCase()} items in the current queue.`}
+      action={
+        <ActionButton variant="ghost" size="sm" onClick={onClick}>
+          Go to My Tasks
+        </ActionButton>
+      }
+      className="ci-empty-board-state"
+    />
   );
 }
 

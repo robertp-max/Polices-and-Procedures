@@ -24,21 +24,23 @@ export type InstanceState =
   | 'on-track'
   | 'complete';
 
-/* Flat palette — dark shell readable, light shell acceptable. */
+/* State palette — derived from --ci-* semantic tokens so colours
+   automatically follow CI-ION dark / Care Indeed light / dark variants.
+   ACTION_COLOR and TEAL_PRIMARY remain canonical accent tokens below. */
 export const STATE_COLOR: Record<InstanceState, string> = {
-  overdue:   '#EF4444',
-  blocked:   '#EF4444',
-  'due-soon':'#F59E0B',
-  'on-track':'#14B8A6',
-  complete:  '#14B8A6',
+  overdue:   'var(--ci-danger-fg)',
+  blocked:   'var(--ci-danger-fg)',
+  'due-soon':'var(--ci-warning-fg)',
+  'on-track':'var(--ci-state-on-track, var(--ci-accent))',
+  complete:  'var(--ci-state-on-track, var(--ci-accent))',
 };
 
 export const STATE_SOFT: Record<InstanceState, string> = {
-  overdue:   'rgba(239,68,68,0.16)',
-  blocked:   'rgba(239,68,68,0.16)',
-  'due-soon':'rgba(245,158,11,0.18)',
-  'on-track':'rgba(20,184,166,0.16)',
-  complete:  'rgba(20,184,166,0.16)',
+  overdue:   'var(--ci-danger-bg)',
+  blocked:   'var(--ci-danger-bg)',
+  'due-soon':'var(--ci-warning-bg)',
+  'on-track':'var(--ci-state-on-track-bg, rgba(var(--ci-accent-rgb), 0.16))',
+  complete:  'var(--ci-state-on-track-bg, rgba(var(--ci-accent-rgb), 0.16))',
 };
 
 export const STATE_LABEL: Record<InstanceState, string> = {
@@ -49,8 +51,12 @@ export const STATE_LABEL: Record<InstanceState, string> = {
   complete:  'Complete',
 };
 
-/* Teal / orange primary tokens — local to the redesign so we are
-   not bound to the legacy gold ci.teal/ci.orange aliases. */
+/* Teal / orange primary accents — typed hex constants.
+   Phase 3 NOTE: These remain hex (not CSS vars) because numerous consumers
+   build alpha-variant strings via template literal (`${TEAL_PRIMARY}55`) for
+   border + background tints. Hex literals are the contract those consumers
+   depend on. The semantic tokens `--ci-state-on-track` and `--ci-action`
+   mirror these values in src/index.css so direct-CSS authors stay in sync. */
 export const TEAL_PRIMARY = '#14B8A6';
 export const ACTION_COLOR = '#F97316';
 

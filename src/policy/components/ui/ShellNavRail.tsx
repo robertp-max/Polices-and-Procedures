@@ -1,13 +1,12 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { ShellCommandGroup } from './ShellCommandGroup';
-import { useCiModeStore } from '@/policy/stores/ciModeStore';
 
 export interface NavItem {
   id: string;
   to: string;
   label: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
   featureId?: string;
   subItems?: Array<{ to: string; label: string }>;
 }
@@ -23,40 +22,57 @@ interface ShellNavRailProps {
  * Desktop/laptop vertical navigation rail.
  * Groups navigation into logical command clusters using ShellCommandGroup.
  *
+ * Surface colors flow through `--ci-color-shell-navrail-bg` /
+ * `--ci-color-border-subtle` declared per (data-theme, data-ci-mode) in
+ * src/index.css — no JS-side theme branching.
+ *
  * Must only be rendered on >=1024px (controlled by parent).
  */
 export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }) => {
   const location = useLocation();
-  const { mode } = useCiModeStore();
-  const isLight = mode === 'light';
 
   const isActive = (to: string) => location.pathname === to || location.pathname.startsWith(to + '/');
 
+  // Phase 2 §4 — three semantic command groups per
+  // Phase2_Exit_Criteria_Checklist.md: Primary Operations, Compliance
+  // Execution (CES), Administration / Knowledge.
+  const primaryItems = items.slice(0, 6);
+  const cesItems = items.slice(6, 10);
+  const otherItems = items.slice(10);
+
+  // Shared per-link styling. Active state uses the canonical --ci-accent
+  // token (auto-resolves to brand teal in CI-light, gold in CI-ION dark)
+  // via inline style rather than Tailwind arbitrary values, because
+  // `bg-[var(...)]/10` cannot be parsed when the var has a comma-list
+  // fallback (`--ci-accent-rgb: 255, 193, 7`).
+  const linkClass = 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors';
+  const linkStyle = (active: boolean): React.CSSProperties => active
+    ? { background: 'rgba(var(--ci-accent-rgb), 0.1)', color: 'var(--ci-accent)', fontWeight: 500 }
+    : { color: 'var(--ci-text-muted)' };
+
   return (
-    <nav 
-      className="hidden lg:flex w-64 flex-col border-r py-4 overflow-y-auto"
+    <nav
+      data-shell-navrail
+      className="hidden lg:flex flex-col border-r py-4 overflow-y-auto flex-shrink-0"
+      // eslint-disable-next-line react/forbid-dom-props -- canonical shell-navrail surface; values resolve from --ci-color-* tokens
       style={{
-        background: isLight 
-          ? 'var(--ci-color-glass-light-main, rgba(255,255,255,0.85))' 
-          : 'var(--ci-color-glass-dark-main, rgba(66,8,8,0.42))',
-        borderColor: 'var(--ci-border, rgba(255,255,255,0.08))',
-        backdropFilter: 'blur(12px)',
+        width: 'var(--ci-shell-navrail-width)',
+        background: 'var(--ci-color-shell-navrail-bg)',
+        borderColor: 'var(--ci-color-border-subtle)',
+        backdropFilter: 'var(--ci-color-glass-blur)',
+        WebkitBackdropFilter: 'var(--ci-color-glass-blur)',
       }}
       aria-label="Primary navigation"
     >
-      <div className="px-3 space-y-6">
-        {/* We will group items in the parent for now.
-            For a full implementation, items would be passed pre-grouped. */}
-        <ShellCommandGroup title="Operations">
-          {items.slice(0, 5).map((item) => (
+      <div className="px-3 space-y-4">
+        <ShellCommandGroup title="Primary Operations">
+          {primaryItems.map((item) => (
             <Link
               key={item.id}
               to={item.to}
               onClick={() => onItemClick?.(item)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors
-                ${isActive(item.to) 
-                  ? 'bg-[var(--ci-accent-rgb,255,193,7)]/10 text-[var(--ci-accent)] font-medium' 
-                  : 'hover:bg-white/5 text-[var(--ci-text-muted)]'}`}
+              className={`${linkClass} hover:bg-white/5`}
+              style={linkStyle(isActive(item.to))}
             >
               <item.icon size={18} />
               <span>{item.label}</span>
@@ -64,7 +80,39 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
           ))}
         </ShellCommandGroup>
 
-        {/* Additional groups can be added here when we refactor the NAV_ITEMS structure */}
+        {cesItems.length > 0 && (
+          <ShellCommandGroup title="Compliance Execution">
+            {cesItems.map((item) => (
+              <Link
+                key={item.id}
+                to={item.to}
+                onClick={() => onItemClick?.(item)}
+                className={`${linkClass} hover:bg-white/5`}
+                style={linkStyle(isActive(item.to))}
+              >
+                <item.icon size={18} />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </ShellCommandGroup>
+        )}
+
+        {otherItems.length > 0 && (
+          <ShellCommandGroup title="Administration / Knowledge">
+            {otherItems.map((item) => (
+              <Link
+                key={item.id}
+                to={item.to}
+                onClick={() => onItemClick?.(item)}
+                className={`${linkClass} hover:bg-white/5`}
+                style={linkStyle(isActive(item.to))}
+              >
+                <item.icon size={18} />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </ShellCommandGroup>
+        )}
       </div>
     </nav>
   );

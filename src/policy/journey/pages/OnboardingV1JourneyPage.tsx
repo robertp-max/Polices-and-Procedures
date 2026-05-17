@@ -104,13 +104,28 @@ const styles = `
 
   :root {
     --primary: #C74601;
+    --primary-dark: #a63a01;
     --secondary: #007970;
+    --secondary-dark: #005f58;
+    --secondary-darker: #005a53;
+    --secondary-soft: #F0FAFA;
+    --secondary-tint: #E5FEFF;
     --text-main: #1F1C1B;
     --text-muted: #52404B;
     --bg-light: #FAFBF8;
     --border-light: #E5E4E3;
     --success: #008540;
+    --success-dark: #006b34;
+    --success-soft: #E5F4EE;
+    --success-tint: #f0faf4;
     --danger: #D70101;
+    --danger-dark: #b80000;
+    --danger-soft: #FBE6E6;
+    --danger-tint: #fff5f5;
+    --primary-tint: #FFF7F3;
+    --secondary-hover: #d1f6f7;
+    --cert-ink: #1B2A47;
+    --cert-ink-hover: #142033;
   }
 
   .font-heading { font-family: 'Montserrat', sans-serif; }
@@ -1402,11 +1417,11 @@ type NavigateFn = (view: RouteView, params?: RouteParams) => void;
 
 function NativeAudioPlayer({ isPlaying, onPlayPause, duration }: { isPlaying: boolean; onPlayPause: () => void; duration: string }) {
   return (
-    <div className="my-8 flex items-center space-x-4 border-l-2 border-[#C74601] py-2 pl-4">
+    <div className="my-8 flex items-center space-x-4 border-l-2 border-[var(--primary)] py-2 pl-4">
       <button
         type="button"
         onClick={onPlayPause}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E4E3] text-[#007970] transition-colors hover:bg-[#FAFBF8]"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border-light)] text-[var(--secondary)] transition-colors hover:bg-[var(--bg-light)]"
       >
         {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-1 h-4 w-4 fill-current" />}
       </button>
@@ -1416,10 +1431,10 @@ function NativeAudioPlayer({ isPlaying, onPlayPause, duration }: { isPlaying: bo
             <span /><span /><span /><span />
           </div>
         ) : (
-          <div className="h-[2px] w-full bg-[#E5E4E3]" />
+          <div className="h-[2px] w-full bg-[var(--border-light)]" />
         )}
       </div>
-      <span className="w-10 text-xs font-medium text-[#52404B]">{duration}</span>
+      <span className="w-10 text-xs font-medium text-[var(--text-muted)]">{duration}</span>
       <Volume2 className="h-4 w-4 text-gray-400" />
     </div>
   );
@@ -1445,32 +1460,32 @@ function LearnerDashboard({
 
   return (
     <div className="animate-in fade-in duration-300">
-      <h1 className="mb-2 font-heading text-3xl font-medium text-[#1F1C1B]">My Learning</h1>
-      <p className="mb-8 text-[#52404B]">Required compliance and clinical training.</p>
+      <h1 className="mb-2 font-heading text-3xl font-medium text-[var(--text-main)]">My Learning</h1>
+      <p className="mb-8 text-[var(--text-muted)]">Required compliance and clinical training.</p>
 
       {/* ── Category Tabs ── */}
-      <div className="mb-10 flex border-b border-[#E5E4E3]">
+      <div className="mb-10 flex border-b border-[var(--border-light)]">
         <button
           type="button"
           onClick={() => setActiveCategory('onboarding')}
-          className={`mr-8 pb-3 text-sm font-semibold uppercase tracking-widest transition-colors ${activeCategory === 'onboarding' ? 'border-b-2 border-[#C74601] text-[#C74601]' : 'text-[#52404B] hover:text-[#1F1C1B]'}`}
+          className={`mr-8 pb-3 text-sm font-semibold uppercase tracking-widest transition-colors ${activeCategory === 'onboarding' ? 'border-b-2 border-[var(--primary)] text-[var(--primary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
         >
-          Onboarding <span className="ml-1 rounded bg-[#FAFBF8] px-1.5 py-0.5 text-[10px] font-bold text-[#52404B]">{onboardingTopics.length}</span>
+          Onboarding <span className="ml-1 rounded bg-[var(--bg-light)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--text-muted)]">{onboardingTopics.length}</span>
         </button>
         <button
           type="button"
           onClick={() => setActiveCategory('annual')}
-          className={`pb-3 text-sm font-semibold uppercase tracking-widest transition-colors ${activeCategory === 'annual' ? 'border-b-2 border-[#007970] text-[#007970]' : 'text-[#52404B] hover:text-[#1F1C1B]'}`}
+          className={`pb-3 text-sm font-semibold uppercase tracking-widest transition-colors ${activeCategory === 'annual' ? 'border-b-2 border-[var(--secondary)] text-[var(--secondary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
         >
-          Annual Training — ACHC <span className="ml-1 rounded bg-[#FAFBF8] px-1.5 py-0.5 text-[10px] font-bold text-[#52404B]">{annualTopics.length}</span>
+          Annual Training — ACHC <span className="ml-1 rounded bg-[var(--bg-light)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--text-muted)]">{annualTopics.length}</span>
         </button>
       </div>
 
       {/* ── Annual Training context strip ── */}
       {activeCategory === 'annual' && (
-        <div className="mb-8 border-l-2 border-[#007970] bg-[#F0FAFA] px-5 py-4">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#007970]">ACHC Required — Field Worker Edition</p>
-          <p className="mt-1 text-sm text-[#52404B]">
+        <div className="mb-8 border-l-2 border-[var(--secondary)] bg-[var(--secondary-soft)] px-5 py-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--secondary)]">ACHC Required — Field Worker Edition</p>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
             12 modules · On hire + annually · 80% passing threshold · All modules include TTS narration and scenario-based challenges.
           </p>
         </div>
@@ -1480,30 +1495,30 @@ function LearnerDashboard({
       {activeCategory === 'onboarding' && (
         <div className="mb-10 p-1">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-heading text-xl font-medium text-[#1F1C1B]">Badge Rewards</h2>
-            <div className="text-xs font-semibold uppercase tracking-widest text-[#52404B]">
+            <h2 className="font-heading text-xl font-medium text-[var(--text-main)]">Badge Rewards</h2>
+            <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
               {unlockedCount}/{rewards.length} unlocked
             </div>
           </div>
-          <p className="mb-4 text-sm text-[#52404B]">
-            Completed trainings: <span className="font-semibold text-[#1F1C1B]">{completedCount}</span>.
+          <p className="mb-4 text-sm text-[var(--text-muted)]">
+            Completed trainings: <span className="font-semibold text-[var(--text-main)]">{completedCount}</span>.
             Cosmetic rewards unlock automatically as you complete modules.
           </p>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {rewards.map(reward => (
               <div
                 key={reward.id}
-                className={`border p-4 transition-colors ${reward.unlocked ? 'border-[#008540] bg-[#E5F4EE]' : 'border-[#E5E4E3] bg-[#FAFBF8]'}`}
+                className={`border p-4 transition-colors ${reward.unlocked ? 'border-[var(--success)] bg-[var(--success-soft)]' : 'border-[var(--border-light)] bg-[var(--bg-light)]'}`}
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <span className={`text-[10px] font-bold uppercase tracking-widest ${reward.unlocked ? 'text-[#008540]' : 'text-[#52404B]'}`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-widest ${reward.unlocked ? 'text-[var(--success)]' : 'text-[var(--text-muted)]'}`}>
                     {reward.unlocked ? 'Unlocked' : 'Locked'}
                   </span>
-                  <span className="font-mono text-[10px] text-[#52404B]">{reward.unlockAtCompletions} complete</span>
+                  <span className="font-mono text-[10px] text-[var(--text-muted)]">{reward.unlockAtCompletions} complete</span>
                 </div>
-                <h3 className="mb-1 font-heading text-base font-medium text-[#1F1C1B]">{reward.badgeLabel}</h3>
-                <p className="mb-2 text-xs font-semibold text-[#007970]">{reward.cosmeticName}</p>
-                <p className="text-xs text-[#52404B]">{reward.flavorText}</p>
+                <h3 className="mb-1 font-heading text-base font-medium text-[var(--text-main)]">{reward.badgeLabel}</h3>
+                <p className="mb-2 text-xs font-semibold text-[var(--secondary)]">{reward.cosmeticName}</p>
+                <p className="text-xs text-[var(--text-muted)]">{reward.flavorText}</p>
               </div>
             ))}
           </div>
@@ -1518,40 +1533,40 @@ function LearnerDashboard({
             <div
               key={topic.topic_id}
               onClick={() => topic.status !== 'LOCKED' && navigate('module-overview', { topicId: topic.topic_id })}
-              className={`-mx-6 flex cursor-pointer flex-col border-b border-[#E5E4E3] px-6 py-8 transition-colors ${topic.status === 'LOCKED' ? 'cursor-not-allowed opacity-50' : isAnnual ? 'hover:bg-[#F0FAFA]' : 'hover:bg-[#FAFBF8]'}`}
+              className={`-mx-6 flex cursor-pointer flex-col border-b border-[var(--border-light)] px-6 py-8 transition-colors ${topic.status === 'LOCKED' ? 'cursor-not-allowed opacity-50' : isAnnual ? 'hover:bg-[var(--secondary-soft)]' : 'hover:bg-[var(--bg-light)]'}`}
             >
               <div className="flex flex-col items-start gap-8 md:flex-row">
                 <div className="flex-1">
                   <div className="mb-3 flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${topic.status === 'LOCKED' ? 'text-[#52404B]' : isAnnual ? 'text-[#007970]' : 'text-[#007970]'}`}>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${topic.status === 'LOCKED' ? 'text-[var(--text-muted)]' : isAnnual ? 'text-[var(--secondary)]' : 'text-[var(--secondary)]'}`}>
                         {topic.status}
                       </span>
                       {isAnnual && (
-                        <span className="flex items-center gap-1 rounded border border-[#007970] bg-[#E5FEFF] px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[#007970]">
+                        <span className="flex items-center gap-1 rounded border border-[var(--secondary)] bg-[var(--secondary-tint)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[var(--secondary)]">
                           <Mic className="h-2.5 w-2.5" /> TTS
                         </span>
                       )}
                     </div>
-                    <span className="font-mono text-xs font-medium text-[#52404B]">{topic.topic_id}</span>
+                    <span className="font-mono text-xs font-medium text-[var(--text-muted)]">{topic.topic_id}</span>
                   </div>
-                  <h3 className="mb-3 font-heading text-2xl font-medium text-[#1F1C1B] transition-colors">{topic.title}</h3>
-                  <p className="mb-5 max-w-3xl text-sm leading-relaxed text-[#52404B]">{topic.description}</p>
+                  <h3 className="mb-3 font-heading text-2xl font-medium text-[var(--text-main)] transition-colors">{topic.title}</h3>
+                  <p className="mb-5 max-w-3xl text-sm leading-relaxed text-[var(--text-muted)]">{topic.description}</p>
                   <div className="mb-4 flex flex-wrap gap-2">
                     {displayRoles(topic.required_roles).map(role => (
-                      <span key={`${topic.topic_id}-${role}`} className="rounded border border-[#E5E4E3] bg-white px-2 py-1 text-[10px] font-semibold tracking-widest text-[#52404B]">
+                      <span key={`${topic.topic_id}-${role}`} className="rounded border border-[var(--border-light)] bg-white px-2 py-1 text-[10px] font-semibold tracking-widest text-[var(--text-muted)]">
                         {role}
                       </span>
                     ))}
                   </div>
-                  <div className="flex items-center space-x-6 text-xs font-medium uppercase tracking-wide text-[#52404B]">
+                  <div className="flex items-center space-x-6 text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
                     <span className="flex items-center"><FileText className="mr-2 h-3.5 w-3.5" /> {db.lessons.filter(l => l.topic_id === topic.topic_id).length} Lesson(s)</span>
                     <span className="flex items-center"><CheckSquare className="mr-2 h-3.5 w-3.5" /> Final Test</span>
-                    {isAnnual && <span className="flex items-center text-[#007970]"><Volume2 className="mr-2 h-3.5 w-3.5" /> Narration</span>}
+                    {isAnnual && <span className="flex items-center text-[var(--secondary)]"><Volume2 className="mr-2 h-3.5 w-3.5" /> Narration</span>}
                   </div>
                 </div>
                 {topic.image_url && (
-                  <div className={`hidden h-36 w-56 shrink-0 overflow-hidden rounded-2xl border md:block ${isAnnual ? 'border-[#007970]/20' : 'border-[#E5E4E3]'} ${topic.status === 'LOCKED' ? 'grayscale' : ''}`}>
+                  <div className={`hidden h-36 w-56 shrink-0 overflow-hidden rounded-2xl border md:block ${isAnnual ? 'border-[var(--secondary)]/20' : 'border-[var(--border-light)]'} ${topic.status === 'LOCKED' ? 'grayscale' : ''}`}>
                     <img src={topic.image_url} alt={topic.title} className="h-full w-full object-cover object-center transition-transform duration-500 hover:scale-105" />
                   </div>
                 )}
@@ -1571,49 +1586,49 @@ function LearnerModuleOverview({ db, params, navigate }: { db: DemoDB; params: R
 
   return (
     <div className="animate-in fade-in duration-300 max-w-4xl">
-      <button type="button" onClick={() => navigate('dashboard')} className="mb-8 flex items-center text-sm font-medium text-[#52404B] transition-colors hover:text-[#1F1C1B]">
+      <button type="button" onClick={() => navigate('dashboard')} className="mb-8 flex items-center text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
         <ChevronLeft className="mr-1 h-4 w-4" /> BACK TO DASHBOARD
       </button>
 
       {topic.image_url && (
-        <div className="mb-10 h-80 w-full overflow-hidden rounded-2xl border border-[#E5E4E3] bg-[#FAFBF8]">
+        <div className="mb-10 h-80 w-full overflow-hidden rounded-2xl border border-[var(--border-light)] bg-[var(--bg-light)]">
           <img src={topic.image_url} alt={topic.title} className="h-full w-full object-cover object-center" />
         </div>
       )}
 
       <div className="mb-12">
         <div className="mb-4 flex items-center space-x-3">
-          <span className="rounded-sm bg-[#E5FEFF] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[#007970]">MODULE OVERVIEW</span>
-          <span className="font-mono text-xs font-medium text-[#52404B]">{topic.topic_id}</span>
+          <span className="rounded-sm bg-[var(--secondary-tint)] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--secondary)]">MODULE OVERVIEW</span>
+          <span className="font-mono text-xs font-medium text-[var(--text-muted)]">{topic.topic_id}</span>
         </div>
-        <h1 className="mb-4 font-heading text-4xl font-medium text-[#1F1C1B]">{topic.title}</h1>
-        <p className="mb-6 text-lg leading-relaxed text-[#52404B]">{topic.description}</p>
+        <h1 className="mb-4 font-heading text-4xl font-medium text-[var(--text-main)]">{topic.title}</h1>
+        <p className="mb-6 text-lg leading-relaxed text-[var(--text-muted)]">{topic.description}</p>
 
-        <div className="inline-flex space-x-6 border border-[#E5E4E3] bg-[#FAFBF8] p-4 font-mono text-xs text-[#52404B]">
+        <div className="inline-flex space-x-6 border border-[var(--border-light)] bg-[var(--bg-light)] p-4 font-mono text-xs text-[var(--text-muted)]">
           <span>Policy: {topic.policy_ids.join(', ') || 'N/A'}</span>
           <span>Workflow: {topic.workflow_ids.join(', ') || 'N/A'}</span>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {displayRoles(topic.required_roles).map(role => (
-            <span key={`${topic.topic_id}-overview-${role}`} className="rounded border border-[#E5E4E3] bg-white px-2 py-1 text-[10px] font-semibold tracking-widest text-[#52404B]">
+            <span key={`${topic.topic_id}-overview-${role}`} className="rounded border border-[var(--border-light)] bg-white px-2 py-1 text-[10px] font-semibold tracking-widest text-[var(--text-muted)]">
               {role}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="mb-12 border-t border-[#E5E4E3] pt-10">
-        <h2 className="mb-6 font-heading text-2xl font-medium text-[#1F1C1B]">Curriculum Outline</h2>
+      <div className="mb-12 border-t border-[var(--border-light)] pt-10">
+        <h2 className="mb-6 font-heading text-2xl font-medium text-[var(--text-main)]">Curriculum Outline</h2>
 
         <div className="space-y-4">
           {topicLessons.map((lesson, idx) => (
-            <div key={lesson.lesson_id} className="flex items-center border border-[#E5E4E3] bg-[#FAFBF8] p-6 transition-colors hover:border-[#007970]">
-              <div className="mr-6 flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E4E3] bg-white font-heading font-medium text-[#007970]">
+            <div key={lesson.lesson_id} className="flex items-center border border-[var(--border-light)] bg-[var(--bg-light)] p-6 transition-colors hover:border-[var(--secondary)]">
+              <div className="mr-6 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border-light)] bg-white font-heading font-medium text-[var(--secondary)]">
                 {idx + 1}
               </div>
               <div className="flex-1">
-                <h3 className="mb-1 font-heading text-lg font-medium text-[#1F1C1B]">{lesson.title}</h3>
-                <p className="flex items-center text-sm text-[#52404B]">
+                <h3 className="mb-1 font-heading text-lg font-medium text-[var(--text-main)]">{lesson.title}</h3>
+                <p className="flex items-center text-sm text-[var(--text-muted)]">
                   <FileText className="mr-2 h-4 w-4 text-gray-400" />
                   Includes Summary, {lesson.cards.length - 2} Content Part(s), and Challenge
                 </p>
@@ -1621,13 +1636,13 @@ function LearnerModuleOverview({ db, params, navigate }: { db: DemoDB; params: R
             </div>
           ))}
 
-          <div className="flex items-center border border-[#E5E4E3] bg-white p-6 opacity-80">
-            <div className="mr-6 flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E4E3] bg-[#FAFBF8] text-[#C74601]">
+          <div className="flex items-center border border-[var(--border-light)] bg-white p-6 opacity-80">
+            <div className="mr-6 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border-light)] bg-[var(--bg-light)] text-[var(--primary)]">
               <CheckSquare className="h-5 w-5" />
             </div>
             <div className="flex-1">
-              <h3 className="mb-1 font-heading text-lg font-medium text-[#1F1C1B]">Final Evaluation</h3>
-              <p className="text-sm text-[#52404B]">Multiple-choice knowledge check</p>
+              <h3 className="mb-1 font-heading text-lg font-medium text-[var(--text-main)]">Final Evaluation</h3>
+              <p className="text-sm text-[var(--text-muted)]">Multiple-choice knowledge check</p>
             </div>
           </div>
         </div>
@@ -1636,7 +1651,7 @@ function LearnerModuleOverview({ db, params, navigate }: { db: DemoDB; params: R
       <button
         type="button"
         onClick={() => navigate('lesson', { topicId: topic.topic_id, lessonIndex: 0, cardIndex: 0 })}
-        className="flex w-full items-center justify-center bg-[#C74601] px-10 py-4 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[#a63a01] md:w-auto"
+        className="flex w-full items-center justify-center bg-[var(--primary)] px-10 py-4 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[var(--primary-dark)] md:w-auto"
       >
         START MODULE <ChevronRight className="ml-2 h-5 w-5" />
       </button>
@@ -1654,11 +1669,11 @@ function LearnerLesson({ db, params, navigate }: { db: DemoDB; params: RoutePara
   if (!topicLessons || topicLessons.length === 0) {
     return (
       <div className="animate-in fade-in duration-300 max-w-3xl">
-        <button type="button" onClick={() => navigate('dashboard')} className="mb-8 flex items-center text-sm font-medium text-[#52404B] transition-colors hover:text-[#1F1C1B]">
+        <button type="button" onClick={() => navigate('dashboard')} className="mb-8 flex items-center text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
           <ChevronLeft className="mr-1 h-4 w-4" /> EXIT
         </button>
-        <div className="border border-[#E5E4E3] bg-[#FAFBF8] p-8 text-center">
-          <p className="text-[#52404B]">This topic does not have any lesson content loaded in the current demo database.</p>
+        <div className="border border-[var(--border-light)] bg-[var(--bg-light)] p-8 text-center">
+          <p className="text-[var(--text-muted)]">This topic does not have any lesson content loaded in the current demo database.</p>
         </div>
       </div>
     );
@@ -1733,21 +1748,21 @@ function LearnerLesson({ db, params, navigate }: { db: DemoDB; params: RoutePara
   if (isSplash) {
     return (
       <div className="animate-in fade-in duration-300 max-w-3xl">
-        <button type="button" onClick={() => navigate('dashboard')} className="mb-8 flex items-center text-sm font-medium text-[#52404B] transition-colors hover:text-[#1F1C1B]">
+        <button type="button" onClick={() => navigate('dashboard')} className="mb-8 flex items-center text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
           <ChevronLeft className="mr-1 h-4 w-4" /> EXIT
         </button>
         {card.image_url && (
-          <div className="mb-10 w-full overflow-hidden rounded-2xl border border-[#E5E4E3] bg-[#FAFBF8]">
+          <div className="mb-10 w-full overflow-hidden rounded-2xl border border-[var(--border-light)] bg-[var(--bg-light)]">
             <img src={card.image_url} alt={card.title} className="h-80 w-full object-cover object-center" />
           </div>
         )}
-        <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-[#007970]">Annual Training</p>
-        <h1 className="mb-6 font-heading text-5xl font-medium leading-tight text-[#1F1C1B]">{card.title}</h1>
-        <p className="mb-12 whitespace-pre-wrap text-lg leading-relaxed text-[#52404B]">{card.content}</p>
+        <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-[var(--secondary)]">Annual Training</p>
+        <h1 className="mb-6 font-heading text-5xl font-medium leading-tight text-[var(--text-main)]">{card.title}</h1>
+        <p className="mb-12 whitespace-pre-wrap text-lg leading-relaxed text-[var(--text-muted)]">{card.content}</p>
         <button
           type="button"
           onClick={handleNext}
-          className="flex items-center bg-[#C74601] px-10 py-4 text-base font-medium tracking-wider text-white transition-colors hover:bg-[#a63a01]"
+          className="flex items-center bg-[var(--primary)] px-10 py-4 text-base font-medium tracking-wider text-white transition-colors hover:bg-[var(--primary-dark)]"
         >
           BEGIN MODULE <ChevronRight className="ml-2 h-5 w-5" />
         </button>
@@ -1757,58 +1772,58 @@ function LearnerLesson({ db, params, navigate }: { db: DemoDB; params: RoutePara
 
   return (
     <div className="animate-in fade-in duration-300 max-w-3xl">
-      <button type="button" onClick={() => navigate('dashboard')} className="mb-8 flex items-center text-sm font-medium text-[#52404B] transition-colors hover:text-[#1F1C1B]">
+      <button type="button" onClick={() => navigate('dashboard')} className="mb-8 flex items-center text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
         <ChevronLeft className="mr-1 h-4 w-4" /> EXIT
       </button>
 
-      <div className="mb-4 h-1 w-full bg-[#E5E4E3]">
-        <div className="h-full bg-[#007970] transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+      <div className="mb-4 h-1 w-full bg-[var(--border-light)]">
+        <div className="h-full bg-[var(--secondary)] transition-all duration-500" style={{ width: `${progressPercent}%` }} />
       </div>
-      <div className="mb-16 flex justify-between text-[10px] font-bold uppercase tracking-widest text-[#52404B]">
+      <div className="mb-16 flex justify-between text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
         <span>{lesson.title}</span>
         <span>Part {cardIndex + 1} of {lesson.cards.length}</span>
       </div>
 
       <div className="mb-12">
         {card.image_url && (
-          <div className="mb-10 w-full overflow-hidden rounded-2xl border border-[#E5E4E3] bg-[#FAFBF8]">
+          <div className="mb-10 w-full overflow-hidden rounded-2xl border border-[var(--border-light)] bg-[var(--bg-light)]">
             <img src={card.image_url} alt={card.title} className="h-72 w-full object-cover object-center" />
           </div>
         )}
 
-        <span className="mb-4 block text-[10px] font-bold uppercase tracking-widest text-[#007970]">
+        <span className="mb-4 block text-[10px] font-bold uppercase tracking-widest text-[var(--secondary)]">
           {card.type === 'challenge' ? (isMcq ? 'CHALLENGE — MCQ' : 'CHALLENGE') : card.type}
         </span>
-        <h2 className="mb-4 font-heading text-4xl font-medium text-[#1F1C1B]">{card.title}</h2>
+        <h2 className="mb-4 font-heading text-4xl font-medium text-[var(--text-main)]">{card.title}</h2>
 
         <NativeAudioPlayer isPlaying={isPlaying} onPlayPause={() => setIsPlaying(!isPlaying)} duration={card.estimated_duration} />
 
-        <div className="whitespace-pre-wrap text-lg leading-relaxed text-[#1F1C1B]">{card.content}</div>
+        <div className="whitespace-pre-wrap text-lg leading-relaxed text-[var(--text-main)]">{card.content}</div>
 
         {isMcq && (
-          <div className="mt-10 border-t border-dashed border-[#E5E4E3] pt-8">
-            <p className="mb-5 text-sm font-bold uppercase tracking-wider text-[#1F1C1B]">Select the best answer:</p>
+          <div className="mt-10 border-t border-dashed border-[var(--border-light)] pt-8">
+            <p className="mb-5 text-sm font-bold uppercase tracking-wider text-[var(--text-main)]">Select the best answer:</p>
             <div className="flex flex-col gap-3">
               {card.options!.map(opt => {
                 const isSelected = selectedOption === opt.id;
                 const isAnswered = showFeedback;
-                let borderColor = 'border-[#E5E4E3]';
+                let borderColor = 'border-[var(--border-light)]';
                 let bg = 'bg-white';
-                if (isAnswered && isSelected && opt.isCorrect) { borderColor = 'border-[#008540]'; bg = 'bg-[#f0faf4]'; }
-                else if (isAnswered && isSelected && !opt.isCorrect) { borderColor = 'border-[#D70101]'; bg = 'bg-[#fff5f5]'; }
-                else if (isAnswered && opt.isCorrect) { borderColor = 'border-[#008540]'; bg = 'bg-[#f0faf4]'; }
+                if (isAnswered && isSelected && opt.isCorrect) { borderColor = 'border-[var(--success)]'; bg = 'bg-[var(--success-tint)]'; }
+                else if (isAnswered && isSelected && !opt.isCorrect) { borderColor = 'border-[var(--danger)]'; bg = 'bg-[var(--danger-tint)]'; }
+                else if (isAnswered && opt.isCorrect) { borderColor = 'border-[var(--success)]'; bg = 'bg-[var(--success-tint)]'; }
                 return (
                   <button
                     key={opt.id}
                     type="button"
                     disabled={isAnswered}
                     onClick={() => setSelectedOption(opt.id)}
-                    className={`flex items-start gap-4 border ${borderColor} ${bg} p-4 text-left transition-all hover:border-[#007970] disabled:cursor-default`}
+                    className={`flex items-start gap-4 border ${borderColor} ${bg} p-4 text-left transition-all hover:border-[var(--secondary)] disabled:cursor-default`}
                   >
-                    <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${isSelected ? 'border-[#C74601] bg-[#C74601] text-white' : 'border-[#E5E4E3] text-[#52404B]'}`}>
+                    <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${isSelected ? 'border-[var(--primary)] bg-[var(--primary)] text-white' : 'border-[var(--border-light)] text-[var(--text-muted)]'}`}>
                       {opt.id}
                     </span>
-                    <span className="text-base text-[#1F1C1B]">{opt.label}</span>
+                    <span className="text-base text-[var(--text-main)]">{opt.label}</span>
                   </button>
                 );
               })}
@@ -1818,20 +1833,20 @@ function LearnerLesson({ db, params, navigate }: { db: DemoDB; params: RoutePara
               <button
                 type="button"
                 onClick={handleSubmitMcq}
-                className="mt-6 bg-[#007970] px-7 py-3 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[#005f58]"
+                className="mt-6 bg-[var(--secondary)] px-7 py-3 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[var(--secondary-dark)]"
               >
                 SUBMIT ANSWER
               </button>
             )}
 
             {showFeedback && selectedOpt && (
-              <div className={`mt-6 border-l-4 p-5 ${selectedOpt.isCorrect ? 'border-[#008540] bg-[#f0faf4]' : 'border-[#D70101] bg-[#fff5f5]'}`}>
-                <p className={`mb-1 text-xs font-bold uppercase tracking-wider ${selectedOpt.isCorrect ? 'text-[#008540]' : 'text-[#D70101]'}`}>
+              <div className={`mt-6 border-l-4 p-5 ${selectedOpt.isCorrect ? 'border-[var(--success)] bg-[var(--success-tint)]' : 'border-[var(--danger)] bg-[var(--danger-tint)]'}`}>
+                <p className={`mb-1 text-xs font-bold uppercase tracking-wider ${selectedOpt.isCorrect ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>
                   {selectedOpt.isCorrect ? '✓ Correct' : '✗ Incorrect'}
                 </p>
-                <p className="text-sm leading-relaxed text-[#1F1C1B]">{selectedOpt.rationale}</p>
+                <p className="text-sm leading-relaxed text-[var(--text-main)]">{selectedOpt.rationale}</p>
                 {!selectedOpt.isCorrect && (
-                  <p className="mt-3 text-sm text-[#52404B]">
+                  <p className="mt-3 text-sm text-[var(--text-muted)]">
                     <strong>Correct answer:</strong> {card.options!.find(o => o.isCorrect)?.id} — {card.options!.find(o => o.isCorrect)?.label}
                   </p>
                 )}
@@ -1841,25 +1856,25 @@ function LearnerLesson({ db, params, navigate }: { db: DemoDB; params: RoutePara
         )}
 
         {!isMcq && card.type === 'challenge' && (
-          <div className="mt-12 border-t border-dashed border-[#E5E4E3] pt-10">
-            <label className="mb-4 block text-sm font-medium uppercase tracking-wider text-[#1F1C1B]">Your Response (Required)</label>
+          <div className="mt-12 border-t border-dashed border-[var(--border-light)] pt-10">
+            <label className="mb-4 block text-sm font-medium uppercase tracking-wider text-[var(--text-main)]">Your Response (Required)</label>
             <textarea
               rows={5}
               value={challengeResponse}
               onChange={(e) => setChallengeResponse(e.target.value)}
-              className="w-full border border-[#E5E4E3] bg-[#FAFBF8] p-5 text-base outline-none transition-colors focus:border-[#C74601]"
+              className="w-full border border-[var(--border-light)] bg-[var(--bg-light)] p-5 text-base outline-none transition-colors focus:border-[var(--primary)]"
               placeholder="Analyze the scenario and type your action steps here..."
             />
           </div>
         )}
       </div>
 
-      <div className="mt-20 flex items-center justify-between border-t border-[#E5E4E3] pt-8">
+      <div className="mt-20 flex items-center justify-between border-t border-[var(--border-light)] pt-8">
         <button
           type="button"
           disabled={cardIndex === 0}
           onClick={() => { setSelectedOption(null); setShowFeedback(false); navigate('lesson', { ...params, cardIndex: cardIndex - 1 }); }}
-          className="text-sm font-medium text-[#52404B] hover:text-[#1F1C1B] disabled:cursor-not-allowed disabled:opacity-30"
+          className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] disabled:cursor-not-allowed disabled:opacity-30"
         >
           PREVIOUS
         </button>
@@ -1867,7 +1882,7 @@ function LearnerLesson({ db, params, navigate }: { db: DemoDB; params: RoutePara
           type="button"
           onClick={handleNext}
           disabled={!canProceed}
-          className="flex items-center bg-[#C74601] px-8 py-3 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[#a63a01] disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center bg-[var(--primary)] px-8 py-3 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[var(--primary-dark)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {nextLabel} <ChevronRight className="ml-2 h-4 w-4" />
         </button>
@@ -1884,11 +1899,11 @@ function LearnerTest({ db, params, navigate }: { db: DemoDB; params: RouteParams
   if (!test) {
     return (
       <div className="animate-in fade-in duration-300 max-w-3xl">
-        <button type="button" onClick={() => navigate('dashboard')} className="mb-8 flex items-center text-sm font-medium text-[#52404B] transition-colors hover:text-[#1F1C1B]">
+        <button type="button" onClick={() => navigate('dashboard')} className="mb-8 flex items-center text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
           <ChevronLeft className="mr-1 h-4 w-4" /> EXIT
         </button>
-        <div className="border border-[#E5E4E3] bg-[#FAFBF8] p-8 text-center">
-          <p className="text-[#52404B]">This topic does not have a test loaded in the current demo database.</p>
+        <div className="border border-[var(--border-light)] bg-[var(--bg-light)] p-8 text-center">
+          <p className="text-[var(--text-muted)]">This topic does not have a test loaded in the current demo database.</p>
         </div>
       </div>
     );
@@ -1911,21 +1926,21 @@ function LearnerTest({ db, params, navigate }: { db: DemoDB; params: RouteParams
 
   return (
     <div className="animate-in fade-in duration-300 max-w-3xl">
-      <div className="mb-10 border-b border-[#E5E4E3] pb-8">
-        <h2 className="mb-2 font-heading text-3xl font-medium text-[#1F1C1B]">Final Knowledge Check</h2>
-        <p className="text-[#52404B]">Answer all {test.questions.length} questions. Passing score: {test.passing_score}%.</p>
+      <div className="mb-10 border-b border-[var(--border-light)] pb-8">
+        <h2 className="mb-2 font-heading text-3xl font-medium text-[var(--text-main)]">Final Knowledge Check</h2>
+        <p className="text-[var(--text-muted)]">Answer all {test.questions.length} questions. Passing score: {test.passing_score}%.</p>
       </div>
 
       <div className="flex flex-col gap-12 mb-16">
         {test.questions.map((q, qIdx) => (
-          <div key={q.question_id} className="border border-[#E5E4E3] bg-[#FAFBF8] p-6">
-            <p className="mb-5 text-[11px] font-bold uppercase tracking-widest text-[#52404B]">Question {qIdx + 1} of {test.questions.length}</p>
-            <p className="mb-6 font-heading text-lg font-medium leading-relaxed text-[#1F1C1B]">{q.prompt}</p>
+          <div key={q.question_id} className="border border-[var(--border-light)] bg-[var(--bg-light)] p-6">
+            <p className="mb-5 text-[11px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Question {qIdx + 1} of {test.questions.length}</p>
+            <p className="mb-6 font-heading text-lg font-medium leading-relaxed text-[var(--text-main)]">{q.prompt}</p>
             <div className="flex flex-col gap-3">
               {q.choices.map((choice, idx) => (
                 <label
                   key={`${q.question_id}_${idx}`}
-                  className={`flex cursor-pointer items-start border p-4 transition-colors ${answers[q.question_id] === idx ? 'border-[#007970] bg-[#E5FEFF]' : 'border-[#E5E4E3] bg-white hover:border-[#007970]'}`}
+                  className={`flex cursor-pointer items-start border p-4 transition-colors ${answers[q.question_id] === idx ? 'border-[var(--secondary)] bg-[var(--secondary-tint)]' : 'border-[var(--border-light)] bg-white hover:border-[var(--secondary)]'}`}
                 >
                   <input
                     type="radio"
@@ -1933,9 +1948,9 @@ function LearnerTest({ db, params, navigate }: { db: DemoDB; params: RouteParams
                     value={idx}
                     checked={answers[q.question_id] === idx}
                     onChange={() => setAnswers(prev => ({ ...prev, [q.question_id]: idx }))}
-                    className="mt-1 h-4 w-4 shrink-0 text-[#007970]"
+                    className="mt-1 h-4 w-4 shrink-0 text-[var(--secondary)]"
                   />
-                  <span className="ml-4 text-base text-[#1F1C1B]">{choice}</span>
+                  <span className="ml-4 text-base text-[var(--text-main)]">{choice}</span>
                 </label>
               ))}
             </div>
@@ -1943,13 +1958,13 @@ function LearnerTest({ db, params, navigate }: { db: DemoDB; params: RouteParams
         ))}
       </div>
 
-      <div className="flex items-center justify-between border-t border-[#E5E4E3] pt-8">
-        <p className="text-sm text-[#52404B]">{Object.keys(answers).length} of {test.questions.length} answered</p>
+      <div className="flex items-center justify-between border-t border-[var(--border-light)] pt-8">
+        <p className="text-sm text-[var(--text-muted)]">{Object.keys(answers).length} of {test.questions.length} answered</p>
         <button
           type="button"
           onClick={handleSubmit}
           disabled={!allAnswered}
-          className="bg-[#007970] px-10 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[#005a53] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-[var(--secondary)] px-10 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[var(--secondary-darker)] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           SUBMIT ANSWERS
         </button>
@@ -1980,49 +1995,49 @@ function LearnerComplete({
 
   return (
     <div className="animate-in fade-in duration-300 max-w-2xl py-12">
-      <div className={`mb-8 flex h-20 w-20 items-center justify-center rounded-full ${params.passed ? 'bg-[#E5F4EE] text-[#008540]' : 'bg-[#FBE6E6] text-[#D70101]'}`}>
+      <div className={`mb-8 flex h-20 w-20 items-center justify-center rounded-full ${params.passed ? 'bg-[var(--success-soft)] text-[var(--success)]' : 'bg-[var(--danger-soft)] text-[var(--danger)]'}`}>
         {params.passed ? <CheckCircle className="h-10 w-10" /> : <AlertCircle className="h-10 w-10" />}
       </div>
 
-      <h1 className="mb-4 font-heading text-4xl font-medium text-[#1F1C1B]">
+      <h1 className="mb-4 font-heading text-4xl font-medium text-[var(--text-main)]">
         {params.passed ? 'Topic Completed' : 'Review Required'}
       </h1>
 
-      <p className="mb-10 text-lg leading-relaxed text-[#52404B]">
+      <p className="mb-10 text-lg leading-relaxed text-[var(--text-muted)]">
         {params.passed
           ? 'You achieved a passing score. Your completion status has been recorded to your compliance file and the audit log has been updated.'
           : 'You did not meet the required passing score. Please review the rationale below and retake the assessment.'}
       </p>
 
       {!params.passed && (
-        <div className="mb-12 border-l-4 border-[#D70101] py-2 pl-6">
-          <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#1F1C1B]">Rationale</h3>
-          <p className="text-base text-[#52404B]">{params.rationale}</p>
+        <div className="mb-12 border-l-4 border-[var(--danger)] py-2 pl-6">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-[var(--text-main)]">Rationale</h3>
+          <p className="text-base text-[var(--text-muted)]">{params.rationale}</p>
         </div>
       )}
 
       {params.passed && (
-        <div className="mb-10 border border-[#E5E4E3] bg-[#FAFBF8] p-5">
+        <div className="mb-10 border border-[var(--border-light)] bg-[var(--bg-light)] p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="font-heading text-lg font-medium text-[#1F1C1B]">Badge Progress</h3>
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#52404B]">
+            <h3 className="font-heading text-lg font-medium text-[var(--text-main)]">Badge Progress</h3>
+            <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
               {unlockedRewards.length}/{rewards.length} unlocked
             </span>
           </div>
 
           {nextReward ? (
-            <p className="mb-4 text-sm text-[#52404B]">
-              Next unlock: <span className="font-semibold text-[#1F1C1B]">{nextReward.badgeLabel}</span> at {nextReward.unlockAtCompletions} completed trainings.
+            <p className="mb-4 text-sm text-[var(--text-muted)]">
+              Next unlock: <span className="font-semibold text-[var(--text-main)]">{nextReward.badgeLabel}</span> at {nextReward.unlockAtCompletions} completed trainings.
             </p>
           ) : (
-            <p className="mb-4 text-sm text-[#008540]">All configured cosmetic rewards are unlocked.</p>
+            <p className="mb-4 text-sm text-[var(--success)]">All configured cosmetic rewards are unlocked.</p>
           )}
 
           <div className="flex flex-wrap gap-2">
             {rewards.slice(0, 6).map(reward => (
               <span
                 key={reward.id}
-                className={`border px-3 py-1 text-[11px] font-semibold tracking-wide ${reward.unlocked ? 'border-[#008540] bg-[#E5F4EE] text-[#006b34]' : 'border-[#E5E4E3] bg-white text-[#52404B]'}`}
+                className={`border px-3 py-1 text-[11px] font-semibold tracking-wide ${reward.unlocked ? 'border-[var(--success)] bg-[var(--success-soft)] text-[var(--success-dark)]' : 'border-[var(--border-light)] bg-white text-[var(--text-muted)]'}`}
               >
                 {reward.badgeLabel}
               </span>
@@ -2031,12 +2046,12 @@ function LearnerComplete({
         </div>
       )}
 
-      <div className="flex space-x-6 border-t border-[#E5E4E3] pt-10">
-        <button type="button" onClick={() => navigate('dashboard')} className="border border-[#E5E4E3] px-8 py-3 text-sm font-medium text-[#1F1C1B] transition-colors hover:bg-[#FAFBF8]">
+      <div className="flex space-x-6 border-t border-[var(--border-light)] pt-10">
+        <button type="button" onClick={() => navigate('dashboard')} className="border border-[var(--border-light)] px-8 py-3 text-sm font-medium text-[var(--text-main)] transition-colors hover:bg-[var(--bg-light)]">
           RETURN TO DASHBOARD
         </button>
         {!params.passed && (
-          <button type="button" onClick={() => navigate('test', { topicId: params.topicId })} className="bg-[#C74601] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[#a63a01]">
+          <button type="button" onClick={() => navigate('test', { topicId: params.topicId })} className="bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary-dark)]">
             RETAKE TEST
           </button>
         )}
@@ -2076,46 +2091,46 @@ function LearnerResults({
   return (
     <div className="animate-in fade-in duration-300 max-w-2xl py-12">
       {/* Score badge */}
-      <div className={`mb-8 inline-flex items-center gap-3 rounded-full px-6 py-3 text-sm font-bold tracking-widest uppercase ${passed ? 'bg-[#E5F4EE] text-[#006b34]' : 'bg-[#FBE6E6] text-[#b80000]'}`}>
+      <div className={`mb-8 inline-flex items-center gap-3 rounded-full px-6 py-3 text-sm font-bold tracking-widest uppercase ${passed ? 'bg-[var(--success-soft)] text-[var(--success-dark)]' : 'bg-[var(--danger-soft)] text-[var(--danger-dark)]'}`}>
         {passed ? <CheckCircle className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
         {passed ? 'Assessment Passed' : 'Assessment Not Yet Passed'}
       </div>
 
-      <h1 className="mb-3 font-heading text-5xl font-medium text-[#1F1C1B]">
+      <h1 className="mb-3 font-heading text-5xl font-medium text-[var(--text-main)]">
         {score}%
       </h1>
-      <p className="mb-1 text-xl text-[#52404B]">
+      <p className="mb-1 text-xl text-[var(--text-muted)]">
         {correct} of {totalMcq} questions correct
       </p>
-      <p className="mb-10 text-sm text-[#52404B]">
-        Passing score: <span className="font-semibold text-[#1F1C1B]">80%</span>
+      <p className="mb-10 text-sm text-[var(--text-muted)]">
+        Passing score: <span className="font-semibold text-[var(--text-main)]">80%</span>
         {topic && <> &nbsp;·&nbsp; {topic.title}</>}
       </p>
 
-      <div className={`mb-10 border-l-4 p-6 ${passed ? 'border-[#008540] bg-[#F0FAF4]' : 'border-[#C74601] bg-[#FFF7F3]'}`}>
+      <div className={`mb-10 border-l-4 p-6 ${passed ? 'border-[var(--success)] bg-[var(--success-tint)]' : 'border-[var(--primary)] bg-[var(--primary-tint)]'}`}>
         {passed ? (
           <>
-            <p className="mb-1 text-sm font-bold uppercase tracking-wider text-[#006b34]">Well done!</p>
-            <p className="text-base text-[#1F1C1B]">
+            <p className="mb-1 text-sm font-bold uppercase tracking-wider text-[var(--success-dark)]">Well done!</p>
+            <p className="text-base text-[var(--text-main)]">
               You have demonstrated competency in this module. Your completion has been recorded to your compliance file.
               Proceed to download your Certificate of Completion.
             </p>
           </>
         ) : (
           <>
-            <p className="mb-1 text-sm font-bold uppercase tracking-wider text-[#b80000]">Review Required</p>
-            <p className="text-base text-[#1F1C1B]">
+            <p className="mb-1 text-sm font-bold uppercase tracking-wider text-[var(--danger-dark)]">Review Required</p>
+            <p className="text-base text-[var(--text-main)]">
               You did not reach the 80% passing threshold. Review the lesson content and the debrief explanations, then retake the final assessment. There is no limit on retake attempts.
             </p>
           </>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-4 border-t border-[#E5E4E3] pt-10">
+      <div className="flex flex-wrap gap-4 border-t border-[var(--border-light)] pt-10">
         <button
           type="button"
           onClick={() => navigate('dashboard')}
-          className="border border-[#E5E4E3] px-8 py-3 text-sm font-medium text-[#1F1C1B] transition-colors hover:bg-[#FAFBF8]"
+          className="border border-[var(--border-light)] px-8 py-3 text-sm font-medium text-[var(--text-main)] transition-colors hover:bg-[var(--bg-light)]"
         >
           RETURN TO DASHBOARD
         </button>
@@ -2123,7 +2138,7 @@ function LearnerResults({
           <button
             type="button"
             onClick={() => navigate('lesson', { topicId: params.topicId, lessonIndex: l5Index, cardIndex: 0, finalCorrect: 0, finalTotal: 0 })}
-            className="bg-[#C74601] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[#a63a01]"
+            className="bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary-dark)]"
           >
             RETAKE FINAL ASSESSMENT
           </button>
@@ -2132,7 +2147,7 @@ function LearnerResults({
           <button
             type="button"
             onClick={() => navigate('certificate', { topicId: params.topicId, passed: true, finalCorrect: correct, finalTotal: totalMcq })}
-            className="bg-[#007970] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[#005a53]"
+            className="bg-[var(--secondary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--secondary-darker)]"
           >
             GET MY CERTIFICATE
           </button>
@@ -2175,12 +2190,12 @@ function LearnerCertificate({
   if (!confirmed) {
     return (
       <div className="animate-in fade-in duration-300 max-w-lg py-16">
-        <button type="button" onClick={() => navigate('results', params)} className="mb-10 flex items-center text-sm font-medium text-[#52404B] transition-colors hover:text-[#1F1C1B]">
+        <button type="button" onClick={() => navigate('results', params)} className="mb-10 flex items-center text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
           <ChevronLeft className="mr-1 h-4 w-4" /> BACK TO RESULTS
         </button>
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#007970]">Certificate of Completion</p>
-        <h2 className="mb-8 font-heading text-4xl font-medium text-[#1F1C1B]">Enter Your Full Name</h2>
-        <p className="mb-8 text-base text-[#52404B]">
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--secondary)]">Certificate of Completion</p>
+        <h2 className="mb-8 font-heading text-4xl font-medium text-[var(--text-main)]">Enter Your Full Name</h2>
+        <p className="mb-8 text-base text-[var(--text-muted)]">
           Your name will appear on the certificate exactly as you enter it below.
         </p>
         <input
@@ -2189,13 +2204,13 @@ function LearnerCertificate({
           onChange={e => setNameInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') handleConfirmName(); }}
           placeholder="e.g. Maria Santos, RN"
-          className="mb-6 w-full border border-[#E5E4E3] bg-white p-4 text-lg text-[#1F1C1B] outline-none transition-colors focus:border-[#007970]"
+          className="mb-6 w-full border border-[var(--border-light)] bg-white p-4 text-lg text-[var(--text-main)] outline-none transition-colors focus:border-[var(--secondary)]"
         />
         <button
           type="button"
           onClick={handleConfirmName}
           disabled={nameInput.trim().length < 2}
-          className="bg-[#007970] px-10 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[#005a53] disabled:cursor-not-allowed disabled:opacity-50"
+          className="bg-[var(--secondary)] px-10 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[var(--secondary-darker)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           GENERATE CERTIFICATE
         </button>
@@ -2208,13 +2223,13 @@ function LearnerCertificate({
   return (
     <div className="animate-in fade-in duration-300 py-10">
       <div className="mb-8 flex flex-wrap items-center gap-4 print:hidden">
-        <button type="button" onClick={() => navigate('dashboard')} className="flex items-center text-sm font-medium text-[#52404B] transition-colors hover:text-[#1F1C1B]">
+        <button type="button" onClick={() => navigate('dashboard')} className="flex items-center text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
           <ChevronLeft className="mr-1 h-4 w-4" /> DASHBOARD
         </button>
         <button
           type="button"
           onClick={() => window.print()}
-          className="ml-auto flex items-center gap-2 bg-[#1B2A47] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#142033]"
+          className="ml-auto flex items-center gap-2 bg-[var(--cert-ink)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--cert-ink-hover)]"
         >
           <FileCheck className="h-4 w-4" /> PRINT / SAVE PDF
         </button>
@@ -2223,96 +2238,96 @@ function LearnerCertificate({
       {/* ── Certificate ──────────────────────────────────────────────────── */}
       <div
         id="certificate"
-        className="relative mx-auto max-w-3xl border-[6px] border-[#1B2A47] bg-white px-16 py-14 shadow-2xl print:shadow-none print:border-[3px]"
+        className="relative mx-auto max-w-3xl border-[6px] border-[var(--cert-ink)] bg-white px-16 py-14 shadow-2xl print:shadow-none print:border-[3px]"
         style={{ fontFamily: 'Georgia, serif' }}
       >
         {/* Inner decorative border */}
-        <div className="pointer-events-none absolute inset-3 border border-[#C74601] opacity-60" />
+        <div className="pointer-events-none absolute inset-3 border border-[var(--primary)] opacity-60" />
 
         {/* Corner ornaments */}
         {['top-5 left-5', 'top-5 right-5', 'bottom-5 left-5', 'bottom-5 right-5'].map(pos => (
-          <div key={pos} className={`absolute ${pos} h-6 w-6 text-[#C74601] opacity-50 text-2xl leading-none select-none`}>✦</div>
+          <div key={pos} className={`absolute ${pos} h-6 w-6 text-[var(--primary)] opacity-50 text-2xl leading-none select-none`}>✦</div>
         ))}
 
         {/* Agency header */}
         <div className="mb-8 text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#52404B]" style={{ fontFamily: 'Calibri, sans-serif' }}>
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--text-muted)]" style={{ fontFamily: 'Calibri, sans-serif' }}>
             CareIndeed Home Health Services
           </p>
-          <div className="mx-auto mt-3 h-px w-24 bg-[#C74601]" />
+          <div className="mx-auto mt-3 h-px w-24 bg-[var(--primary)]" />
         </div>
 
         {/* Main title */}
         <div className="mb-8 text-center">
-          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.35em] text-[#007970]" style={{ fontFamily: 'Calibri, sans-serif' }}>
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.35em] text-[var(--secondary)]" style={{ fontFamily: 'Calibri, sans-serif' }}>
             Certificate
           </p>
-          <h1 className="font-heading text-5xl font-light tracking-wide text-[#1B2A47]">
+          <h1 className="font-heading text-5xl font-light tracking-wide text-[var(--cert-ink)]">
             of Completion
           </h1>
         </div>
 
         {/* Awarding line */}
-        <p className="mb-6 text-center text-base italic text-[#52404B]">This is to certify that</p>
+        <p className="mb-6 text-center text-base italic text-[var(--text-muted)]">This is to certify that</p>
 
         {/* Learner name */}
         <div className="mb-2 text-center">
           <span
-            className="inline-block border-b-2 border-[#1B2A47] pb-1 text-4xl font-medium text-[#1B2A47]"
+            className="inline-block border-b-2 border-[var(--cert-ink)] pb-1 text-4xl font-medium text-[var(--cert-ink)]"
             style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.02em' }}
           >
             {displayName}
           </span>
         </div>
 
-        <p className="mb-8 text-center text-base italic text-[#52404B]">has successfully completed the required annual training module</p>
+        <p className="mb-8 text-center text-base italic text-[var(--text-muted)]">has successfully completed the required annual training module</p>
 
         {/* Module name */}
         <div className="mb-2 text-center">
-          <span className="text-xl font-bold text-[#C74601]" style={{ fontFamily: 'Calibri, sans-serif' }}>
+          <span className="text-xl font-bold text-[var(--primary)]" style={{ fontFamily: 'Calibri, sans-serif' }}>
             {topic?.title ?? params.topicId}
           </span>
         </div>
-        <p className="mb-10 text-center text-sm font-semibold uppercase tracking-widest text-[#52404B]" style={{ fontFamily: 'Calibri, sans-serif' }}>
+        <p className="mb-10 text-center text-sm font-semibold uppercase tracking-widest text-[var(--text-muted)]" style={{ fontFamily: 'Calibri, sans-serif' }}>
           ACHC Annual Required Training
         </p>
 
         {/* Score & date row */}
-        <div className="mb-12 flex items-center justify-center gap-12 text-center text-sm text-[#52404B]" style={{ fontFamily: 'Calibri, sans-serif' }}>
+        <div className="mb-12 flex items-center justify-center gap-12 text-center text-sm text-[var(--text-muted)]" style={{ fontFamily: 'Calibri, sans-serif' }}>
           <div>
             <p className="text-[9px] font-bold uppercase tracking-widest">Final Score</p>
-            <p className="mt-1 text-2xl font-bold text-[#007970]">{score}%</p>
+            <p className="mt-1 text-2xl font-bold text-[var(--secondary)]">{score}%</p>
           </div>
-          <div className="h-10 w-px bg-[#E5E4E3]" />
+          <div className="h-10 w-px bg-[var(--border-light)]" />
           <div>
             <p className="text-[9px] font-bold uppercase tracking-widest">Date Completed</p>
-            <p className="mt-1 text-base font-medium text-[#1B2A47]">{today}</p>
+            <p className="mt-1 text-base font-medium text-[var(--cert-ink)]">{today}</p>
           </div>
-          <div className="h-10 w-px bg-[#E5E4E3]" />
+          <div className="h-10 w-px bg-[var(--border-light)]" />
           <div>
             <p className="text-[9px] font-bold uppercase tracking-widest">Accreditation</p>
-            <p className="mt-1 text-base font-medium text-[#1B2A47]">ACHC Compliant</p>
+            <p className="mt-1 text-base font-medium text-[var(--cert-ink)]">ACHC Compliant</p>
           </div>
         </div>
 
         {/* Signature lines */}
         <div className="flex items-end justify-around text-center" style={{ fontFamily: 'Calibri, sans-serif' }}>
           <div>
-            <div className="mb-1 h-px w-40 bg-[#1B2A47]" />
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#52404B]">Administrator</p>
-            <p className="text-[9px] text-[#52404B]">CareIndeed Home Health Services</p>
+            <div className="mb-1 h-px w-40 bg-[var(--cert-ink)]" />
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Administrator</p>
+            <p className="text-[9px] text-[var(--text-muted)]">CareIndeed Home Health Services</p>
           </div>
           <div>
-            <div className="mb-1 h-px w-40 bg-[#1B2A47]" />
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#52404B]">Director of Education</p>
-            <p className="text-[9px] text-[#52404B]">Training & Compliance</p>
+            <div className="mb-1 h-px w-40 bg-[var(--cert-ink)]" />
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Director of Education</p>
+            <p className="text-[9px] text-[var(--text-muted)]">Training & Compliance</p>
           </div>
         </div>
 
         {/* Footer */}
         <div className="mt-10 text-center">
-          <div className="mx-auto mb-3 h-px w-24 bg-[#C74601]" />
-          <p className="text-[8px] uppercase tracking-[0.2em] text-[#52404B]">
+          <div className="mx-auto mb-3 h-px w-24 bg-[var(--primary)]" />
+          <p className="text-[8px] uppercase tracking-[0.2em] text-[var(--text-muted)]">
             This certificate confirms satisfactory completion of ACHC-required annual staff training. &nbsp;|&nbsp; Record ID: {params.topicId}-{Date.now().toString(36).toUpperCase()}
           </p>
         </div>
@@ -2396,21 +2411,21 @@ function AdminDashboard({ db }: { db: DemoDB }) {
 
   return (
     <div className="animate-in fade-in duration-300">
-      <div className="mb-12 flex items-end justify-between border-b border-[#E5E4E3] pb-6">
+      <div className="mb-12 flex items-end justify-between border-b border-[var(--border-light)] pb-6">
         <div>
-          <h1 className="mb-2 font-heading text-3xl font-medium text-[#1F1C1B]">Training Engine Engine Admin</h1>
-          <p className="text-[#52404B]">Manage curriculum structure and automated narration.</p>
+          <h1 className="mb-2 font-heading text-3xl font-medium text-[var(--text-main)]">Training Engine Engine Admin</h1>
+          <p className="text-[var(--text-muted)]">Manage curriculum structure and automated narration.</p>
         </div>
-        <button type="button" className="flex items-center bg-[#007970] px-6 py-2.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[#005a53]">
+        <button type="button" className="flex items-center bg-[var(--secondary)] px-6 py-2.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-[var(--secondary-darker)]">
           <Plus className="mr-2 h-4 w-4" /> NEW TOPIC
         </button>
       </div>
 
       <div className="mb-12">
-        <div className="mb-8 border border-[#E5E4E3] bg-[#FAFBF8] p-5">
+        <div className="mb-8 border border-[var(--border-light)] bg-[var(--bg-light)] p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-heading text-lg font-medium text-[#1F1C1B]">Required Training Coverage (Placeholders)</h3>
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#52404B]">
+            <h3 className="font-heading text-lg font-medium text-[var(--text-main)]">Required Training Coverage (Placeholders)</h3>
+            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
               {roleFilteredTopics.length} Training Item(s)
             </span>
           </div>
@@ -2423,8 +2438,8 @@ function AdminDashboard({ db }: { db: DemoDB }) {
                 onClick={() => setRoleFilter(role)}
                 className={`rounded border px-3 py-1.5 text-[11px] font-semibold tracking-wider transition-colors ${
                   roleFilter === role
-                    ? 'border-[#007970] bg-[#E5FEFF] text-[#005a53]'
-                    : 'border-[#E5E4E3] bg-white text-[#52404B] hover:border-[#007970]'
+                    ? 'border-[var(--secondary)] bg-[var(--secondary-tint)] text-[var(--secondary-darker)]'
+                    : 'border-[var(--border-light)] bg-white text-[var(--text-muted)] hover:border-[var(--secondary)]'
                 }`}
               >
                 {role === 'ALL' ? 'ALL ROLES' : role}
@@ -2432,24 +2447,24 @@ function AdminDashboard({ db }: { db: DemoDB }) {
             ))}
           </div>
 
-          <div className="max-h-72 overflow-y-auto border border-[#E5E4E3] bg-white">
+          <div className="max-h-72 overflow-y-auto border border-[var(--border-light)] bg-white">
             <table className="w-full border-collapse text-left text-xs">
-              <thead className="sticky top-0 bg-[#FAFBF8] text-[#52404B]">
+              <thead className="sticky top-0 bg-[var(--bg-light)] text-[var(--text-muted)]">
                 <tr>
-                  <th className="border-b border-[#E5E4E3] px-3 py-2 font-semibold">Training ID</th>
-                  <th className="border-b border-[#E5E4E3] px-3 py-2 font-semibold">Title</th>
-                  <th className="border-b border-[#E5E4E3] px-3 py-2 font-semibold">Required Roles</th>
+                  <th className="border-b border-[var(--border-light)] px-3 py-2 font-semibold">Training ID</th>
+                  <th className="border-b border-[var(--border-light)] px-3 py-2 font-semibold">Title</th>
+                  <th className="border-b border-[var(--border-light)] px-3 py-2 font-semibold">Required Roles</th>
                 </tr>
               </thead>
               <tbody>
                 {roleFilteredTopics.map(topic => (
                   <tr key={topic.topic_id}>
-                    <td className="border-b border-[#E5E4E3] px-3 py-2 font-mono text-[#1F1C1B]">{topic.topic_id}</td>
-                    <td className="border-b border-[#E5E4E3] px-3 py-2 text-[#1F1C1B]">{topic.title}</td>
-                    <td className="border-b border-[#E5E4E3] px-3 py-2 text-[#52404B]">
+                    <td className="border-b border-[var(--border-light)] px-3 py-2 font-mono text-[var(--text-main)]">{topic.topic_id}</td>
+                    <td className="border-b border-[var(--border-light)] px-3 py-2 text-[var(--text-main)]">{topic.title}</td>
+                    <td className="border-b border-[var(--border-light)] px-3 py-2 text-[var(--text-muted)]">
                       <div className="flex flex-wrap gap-1.5">
                         {displayRoles(topic.required_roles).map(role => (
-                          <span key={`${topic.topic_id}-admin-${role}`} className="rounded border border-[#E5E4E3] bg-[#FAFBF8] px-2 py-0.5 text-[10px] font-semibold tracking-widest text-[#52404B]">
+                          <span key={`${topic.topic_id}-admin-${role}`} className="rounded border border-[var(--border-light)] bg-[var(--bg-light)] px-2 py-0.5 text-[10px] font-semibold tracking-widest text-[var(--text-muted)]">
                             {role}
                           </span>
                         ))}
@@ -2465,73 +2480,73 @@ function AdminDashboard({ db }: { db: DemoDB }) {
         <div className="mb-6 flex items-start justify-between">
           <div>
             <div className="mb-3 flex items-center space-x-3">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#008540]">PUBLISHED</span>
-              <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#52404B]">ID: {topic.topic_id}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--success)]">PUBLISHED</span>
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">ID: {topic.topic_id}</span>
             </div>
-            <h2 className="mb-2 font-heading text-2xl font-medium text-[#1F1C1B]">{topic.title}</h2>
-            <div className="mt-4 flex space-x-6 font-mono text-xs text-[#52404B]">
-              <span className="border border-[#E5E4E3] bg-[#FAFBF8] px-2 py-1">Policy: {topic.policy_ids[0]}</span>
-              <span className="border border-[#E5E4E3] bg-[#FAFBF8] px-2 py-1">Workflow: {topic.workflow_ids[0]}</span>
+            <h2 className="mb-2 font-heading text-2xl font-medium text-[var(--text-main)]">{topic.title}</h2>
+            <div className="mt-4 flex space-x-6 font-mono text-xs text-[var(--text-muted)]">
+              <span className="border border-[var(--border-light)] bg-[var(--bg-light)] px-2 py-1">Policy: {topic.policy_ids[0]}</span>
+              <span className="border border-[var(--border-light)] bg-[var(--bg-light)] px-2 py-1">Workflow: {topic.workflow_ids[0]}</span>
             </div>
           </div>
-          <button type="button" className="border border-[#E5E4E3] p-2 text-[#52404B] transition-colors hover:text-[#C74601]">
+          <button type="button" className="border border-[var(--border-light)] p-2 text-[var(--text-muted)] transition-colors hover:text-[var(--primary)]">
             <Edit2 className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="mt-8 border border-[#E5E4E3] bg-[#FAFBF8] p-6">
-          <div className="mb-8 border border-[#E5E4E3] bg-white p-5">
+        <div className="mt-8 border border-[var(--border-light)] bg-[var(--bg-light)] p-6">
+          <div className="mb-8 border border-[var(--border-light)] bg-white p-5">
             <div className="mb-4 flex items-center justify-between gap-4">
               <div>
-                <h4 className="font-heading text-base font-medium text-[#1F1C1B]">Mass Upload Conversion</h4>
-                <p className="text-xs text-[#52404B]">Accepted CSV columns: A Project, B Title, C app.location, D Narration.</p>
+                <h4 className="font-heading text-base font-medium text-[var(--text-main)]">Mass Upload Conversion</h4>
+                <p className="text-xs text-[var(--text-muted)]">Accepted CSV columns: A Project, B Title, C app.location, D Narration.</p>
               </div>
-              <label className="flex cursor-pointer items-center border border-[#007970] bg-[#E5FEFF] px-4 py-2 text-xs font-semibold tracking-wide text-[#005a53] transition-colors hover:bg-[#d1f6f7]">
+              <label className="flex cursor-pointer items-center border border-[var(--secondary)] bg-[var(--secondary-tint)] px-4 py-2 text-xs font-semibold tracking-wide text-[var(--secondary-darker)] transition-colors hover:bg-[var(--secondary-hover)]">
                 <Upload className="mr-2 h-4 w-4" /> UPLOAD CSV
                 <input type="file" accept=".csv,text/csv" className="hidden" onChange={handleCsvUpload} />
               </label>
             </div>
 
-            <div className="rounded border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-4 font-mono text-[11px] text-[#52404B]">
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#1F1C1B]">Template</p>
+            <div className="rounded border border-dashed border-[var(--border-light)] bg-[var(--bg-light)] p-4 font-mono text-[11px] text-[var(--text-muted)]">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--text-main)]">Template</p>
               <p>Project,Title,app.location,Narration</p>
               <p>GAO-013,Hand Hygiene Intro,/training-audio/GAO-013/les_1/c_1.wav,"Welcome to Lesson 1..."</p>
             </div>
 
             {uploadFileName && (
-              <p className="mt-3 text-xs text-[#52404B]">Selected file: <span className="font-semibold text-[#1F1C1B]">{uploadFileName}</span></p>
+              <p className="mt-3 text-xs text-[var(--text-muted)]">Selected file: <span className="font-semibold text-[var(--text-main)]">{uploadFileName}</span></p>
             )}
 
             {uploadError && (
-              <div className="mt-3 border-l-4 border-[#D70101] bg-[#FBE6E6] p-3 text-xs text-[#1F1C1B]">
+              <div className="mt-3 border-l-4 border-[var(--danger)] bg-[var(--danger-soft)] p-3 text-xs text-[var(--text-main)]">
                 {uploadError}
               </div>
             )}
 
             {uploadRows.length > 0 && (
-              <div className="mt-4 overflow-x-auto border border-[#E5E4E3]">
+              <div className="mt-4 overflow-x-auto border border-[var(--border-light)]">
                 <table className="w-full min-w-[680px] border-collapse text-left text-xs">
-                  <thead className="bg-[#FAFBF8] text-[#52404B]">
+                  <thead className="bg-[var(--bg-light)] text-[var(--text-muted)]">
                     <tr>
-                      <th className="border-b border-[#E5E4E3] px-3 py-2 font-semibold">Project</th>
-                      <th className="border-b border-[#E5E4E3] px-3 py-2 font-semibold">Title</th>
-                      <th className="border-b border-[#E5E4E3] px-3 py-2 font-semibold">app.location</th>
-                      <th className="border-b border-[#E5E4E3] px-3 py-2 font-semibold">Narration</th>
+                      <th className="border-b border-[var(--border-light)] px-3 py-2 font-semibold">Project</th>
+                      <th className="border-b border-[var(--border-light)] px-3 py-2 font-semibold">Title</th>
+                      <th className="border-b border-[var(--border-light)] px-3 py-2 font-semibold">app.location</th>
+                      <th className="border-b border-[var(--border-light)] px-3 py-2 font-semibold">Narration</th>
                     </tr>
                   </thead>
                   <tbody>
                     {uploadRows.slice(0, 5).map((row, idx) => (
                       <tr key={`${row.project}-${row.title}-${String(idx)}`}>
-                        <td className="border-b border-[#E5E4E3] px-3 py-2 text-[#1F1C1B]">{row.project}</td>
-                        <td className="border-b border-[#E5E4E3] px-3 py-2 text-[#1F1C1B]">{row.title}</td>
-                        <td className="max-w-[240px] truncate border-b border-[#E5E4E3] px-3 py-2 font-mono text-[#52404B]">{row.appLocation}</td>
-                        <td className="max-w-[360px] truncate border-b border-[#E5E4E3] px-3 py-2 text-[#52404B]">{row.narration}</td>
+                        <td className="border-b border-[var(--border-light)] px-3 py-2 text-[var(--text-main)]">{row.project}</td>
+                        <td className="border-b border-[var(--border-light)] px-3 py-2 text-[var(--text-main)]">{row.title}</td>
+                        <td className="max-w-[240px] truncate border-b border-[var(--border-light)] px-3 py-2 font-mono text-[var(--text-muted)]">{row.appLocation}</td>
+                        <td className="max-w-[360px] truncate border-b border-[var(--border-light)] px-3 py-2 text-[var(--text-muted)]">{row.narration}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
                 {uploadRows.length > 5 && (
-                  <div className="bg-[#FAFBF8] px-3 py-2 text-[11px] text-[#52404B]">
+                  <div className="bg-[var(--bg-light)] px-3 py-2 text-[11px] text-[var(--text-muted)]">
                     Showing 5 of {uploadRows.length} rows.
                   </div>
                 )}
@@ -2540,12 +2555,12 @@ function AdminDashboard({ db }: { db: DemoDB }) {
           </div>
 
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="font-heading text-lg font-medium text-[#1F1C1B]">Narration Pipeline</h3>
+            <h3 className="font-heading text-lg font-medium text-[var(--text-main)]">Narration Pipeline</h3>
             <button
               type="button"
               onClick={runQwenTTSPipeline}
               disabled={isGeneratingTTS}
-              className="flex items-center border border-[#1F1C1B] bg-white px-5 py-2 text-sm font-medium tracking-wide text-[#1F1C1B] transition-colors hover:border-[#C74601] hover:text-[#C74601] disabled:opacity-50"
+              className="flex items-center border border-[var(--text-main)] bg-white px-5 py-2 text-sm font-medium tracking-wide text-[var(--text-main)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:opacity-50"
             >
               {isGeneratingTTS ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mic className="mr-2 h-4 w-4" />}
               {isGeneratingTTS ? 'GENERATING QWENTTS...' : 'SYNC AUDIO (QWEN TTS)'}
@@ -2553,7 +2568,7 @@ function AdminDashboard({ db }: { db: DemoDB }) {
           </div>
 
           {logs.length > 0 && (
-            <div className="h-40 space-y-2 overflow-y-auto bg-[#1F1C1B] p-4 font-mono text-xs text-[#E5FEFF]">
+            <div className="h-40 space-y-2 overflow-y-auto bg-[var(--text-main)] p-4 font-mono text-xs text-[var(--secondary-tint)]">
               {logs.map((log, i) => (
                 <div key={String(i)} className="opacity-80">{'>'} {log}</div>
               ))}
@@ -2563,43 +2578,43 @@ function AdminDashboard({ db }: { db: DemoDB }) {
         </div>
       </div>
 
-      <h3 className="mb-6 font-heading text-xl font-medium text-[#1F1C1B]">Topic Structure</h3>
-      <div className="border-t border-[#E5E4E3]">
+      <h3 className="mb-6 font-heading text-xl font-medium text-[var(--text-main)]">Topic Structure</h3>
+      <div className="border-t border-[var(--border-light)]">
         {lessons[0].cards.map((card, idx) => {
           const isRequired = card.type === 'summary' || card.type === 'challenge';
           return (
-            <div key={card.card_id} className="flex items-start justify-between border-b border-[#E5E4E3] py-8">
+            <div key={card.card_id} className="flex items-start justify-between border-b border-[var(--border-light)] py-8">
               <div className="w-3/4 pr-8">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#007970]">CARD {idx + 1} • {card.type}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--secondary)]">CARD {idx + 1} • {card.type}</span>
                   {isRequired ? (
-                    <span className="rounded-sm border border-[#E5E4E3] bg-gray-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-gray-400">Required (Cannot Delete)</span>
+                    <span className="rounded-sm border border-[var(--border-light)] bg-gray-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-gray-400">Required (Cannot Delete)</span>
                   ) : (
-                    <button type="button" className="text-[10px] font-bold uppercase tracking-widest text-[#D70101] hover:underline">REMOVE CONTENT</button>
+                    <button type="button" className="text-[10px] font-bold uppercase tracking-widest text-[var(--danger)] hover:underline">REMOVE CONTENT</button>
                   )}
                 </div>
-                <h4 className="mb-2 font-heading text-lg font-medium text-[#1F1C1B]">{card.title}</h4>
-                <p className="mb-4 line-clamp-2 text-sm text-[#52404B]">{card.content}</p>
+                <h4 className="mb-2 font-heading text-lg font-medium text-[var(--text-main)]">{card.title}</h4>
+                <p className="mb-4 line-clamp-2 text-sm text-[var(--text-muted)]">{card.content}</p>
 
-                <div className="border border-[#E5E4E3] border-l-2 border-l-[#C74601] bg-[#FAFBF8] p-4">
-                  <p className="mb-2 flex items-center text-[10px] font-bold uppercase tracking-widest text-[#52404B]"><FileCheck className="mr-1 h-3 w-3" /> Narration Script</p>
-                  <p className="text-xs italic text-[#1F1C1B]">"{card.narration_script}"</p>
+                <div className="border border-[var(--border-light)] border-l-2 border-l-[var(--primary)] bg-[var(--bg-light)] p-4">
+                  <p className="mb-2 flex items-center text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]"><FileCheck className="mr-1 h-3 w-3" /> Narration Script</p>
+                  <p className="text-xs italic text-[var(--text-main)]">"{card.narration_script}"</p>
                 </div>
               </div>
 
               <div className="flex w-1/4 flex-col items-end space-y-4 text-right">
                 <div>
-                  <div className="flex items-center justify-end text-xs font-medium tracking-wide text-[#008540]">
+                  <div className="flex items-center justify-end text-xs font-medium tracking-wide text-[var(--success)]">
                     <Volume2 className="mr-2 h-4 w-4" /> AUDIO LINKED
                   </div>
-                  <div className="mt-2 max-w-full truncate border border-[#E5E4E3] bg-[#FAFBF8] px-2 py-1 font-mono text-[10px] text-[#52404B]">
+                  <div className="mt-2 max-w-full truncate border border-[var(--border-light)] bg-[var(--bg-light)] px-2 py-1 font-mono text-[10px] text-[var(--text-muted)]">
                     {card.audio_path}
                   </div>
                 </div>
 
                 {card.image_url && (
                   <div>
-                    <div className="flex items-center justify-end text-xs font-medium tracking-wide text-[#007970]">
+                    <div className="flex items-center justify-end text-xs font-medium tracking-wide text-[var(--secondary)]">
                       <ImageIcon className="mr-2 h-4 w-4" /> IMAGE ATTACHED
                     </div>
                   </div>
@@ -2609,18 +2624,18 @@ function AdminDashboard({ db }: { db: DemoDB }) {
           );
         })}
 
-        <div className="flex justify-center border-b border-[#E5E4E3] py-6">
-          <button type="button" className="flex items-center border border-transparent bg-[#E5FEFF] px-6 py-2 text-sm font-medium text-[#007970] transition-colors hover:border-[#007970] hover:text-[#005a53]">
+        <div className="flex justify-center border-b border-[var(--border-light)] py-6">
+          <button type="button" className="flex items-center border border-transparent bg-[var(--secondary-tint)] px-6 py-2 text-sm font-medium text-[var(--secondary)] transition-colors hover:border-[var(--secondary)] hover:text-[var(--secondary-darker)]">
             <Plus className="mr-2 h-4 w-4" /> ADD CONTENT CARD
           </button>
         </div>
 
-        <div className="flex items-start justify-between border-b border-[#E5E4E3] py-8">
+        <div className="flex items-start justify-between border-b border-[var(--border-light)] py-8">
           <div>
-            <span className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[#D70101]">FINAL EVALUATION</span>
-            <h4 className="font-heading text-lg font-medium text-[#1F1C1B]">Final Knowledge Check</h4>
+            <span className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[var(--danger)]">FINAL EVALUATION</span>
+            <h4 className="font-heading text-lg font-medium text-[var(--text-main)]">Final Knowledge Check</h4>
           </div>
-          <div className="flex items-center text-xs font-medium tracking-wide text-[#52404B]">
+          <div className="flex items-center text-xs font-medium tracking-wide text-[var(--text-muted)]">
             <BookOpen className="mr-2 h-4 w-4" /> 1 QUESTION
           </div>
         </div>
@@ -2649,22 +2664,22 @@ export function OnboardingV1JourneyPage() {
   return (
     <>
       <style>{styles}</style>
-      <div className="min-h-screen bg-white selection:bg-[#E5FEFF] selection:text-[#007970]">
+      <div className="min-h-screen bg-white selection:bg-[var(--secondary-tint)] selection:text-[var(--secondary)]">
         <main className="w-full p-8 pb-32 md:p-12 lg:p-16">
           {route.view === 'dashboard' && (
             <div className="mb-12 flex justify-end">
-              <div className="flex rounded border border-[#E5E4E3] bg-[#FAFBF8] p-1 text-xs font-medium">
+              <div className="flex rounded border border-[var(--border-light)] bg-[var(--bg-light)] p-1 text-xs font-medium">
                 <button
                   type="button"
                   onClick={() => { setMode('learner'); navigate('dashboard'); }}
-                  className={`rounded-sm px-4 py-1.5 transition-colors ${mode === 'learner' ? 'border border-[#E5E4E3] bg-white text-[#007970]' : 'text-[#52404B] hover:text-[#1F1C1B]'}`}
+                  className={`rounded-sm px-4 py-1.5 transition-colors ${mode === 'learner' ? 'border border-[var(--border-light)] bg-white text-[var(--secondary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
                 >
                   Learner Mode
                 </button>
                 <button
                   type="button"
                   onClick={() => { setMode('admin'); navigate('dashboard'); }}
-                  className={`rounded-sm px-4 py-1.5 transition-colors ${mode === 'admin' ? 'border border-[#E5E4E3] bg-white text-[#C74601]' : 'text-[#52404B] hover:text-[#1F1C1B]'}`}
+                  className={`rounded-sm px-4 py-1.5 transition-colors ${mode === 'admin' ? 'border border-[var(--border-light)] bg-white text-[var(--primary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
                 >
                   Admin Mode
                 </button>

@@ -26,18 +26,18 @@ import { EmptyState, SearchField } from '@/policy/components/ui';
 // ══════════════════════════════════════════════════════════════
 
 const REGULATORY_ITEMS = [
-  { id: 'title22', name: 'Title 22 (California)', shortName: 'Title 22', color: '#facc15', icon: Landmark },
-  { id: '42cfr', name: '42 CFR Part 484', shortName: '42 CFR §484', color: '#FFC107', icon: Scale },
-  { id: 'cms', name: 'CMS State Operations', shortName: 'CMS State Ops', color: '#ec4899', icon: FileCheck },
-  { id: 'hipaa', name: 'HIPAA Privacy & Security', shortName: 'HIPAA', color: '#3b82f6', icon: Lock },
-  { id: 'osha', name: 'OSHA / Cal-OSHA', shortName: 'OSHA', color: '#f59e0b', icon: Shield },
-  { id: 'oig', name: 'OIG Compliance Guidance', shortName: 'OIG', color: '#8b5cf6', icon: ShieldCheck },
-  { id: 'fca', name: 'False Claims Act', shortName: 'FCA', color: '#a855f7', icon: Gavel },
+  { id: 'title22', name: 'Title 22 (California)', shortName: 'Title 22', color: 'var(--ci-reg-title22)', icon: Landmark },
+  { id: '42cfr', name: '42 CFR Part 484', shortName: '42 CFR §484', color: 'var(--ci-reg-42cfr)', icon: Scale },
+  { id: 'cms', name: 'CMS State Operations', shortName: 'CMS State Ops', color: 'var(--ci-reg-cms)', icon: FileCheck },
+  { id: 'hipaa', name: 'HIPAA Privacy & Security', shortName: 'HIPAA', color: 'var(--ci-reg-hipaa)', icon: Lock },
+  { id: 'osha', name: 'OSHA / Cal-OSHA', shortName: 'OSHA', color: 'var(--ci-reg-osha)', icon: Shield },
+  { id: 'oig', name: 'OIG Compliance Guidance', shortName: 'OIG', color: 'var(--ci-reg-oig)', icon: ShieldCheck },
+  { id: 'fca', name: 'False Claims Act', shortName: 'FCA', color: 'var(--ci-reg-fca)', icon: Gavel },
 ];
 
 const DOMAINS = [
   {
-    code: 'GV', name: 'GOVERNANCE', fullName: 'GV — Governance & Administration', icon: Building2, color: '#FFC107',
+    code: 'GV', name: 'GOVERNANCE', fullName: 'GV — Governance & Administration', icon: Building2, color: 'var(--ci-domain-gv)',
     subdomains: [
       { code: 'GB', name: 'Governing Body', icon: Users },
       { code: 'OG', name: 'Organization', icon: Network },
@@ -46,7 +46,7 @@ const DOMAINS = [
     ]
   },
   {
-    code: 'CL', name: 'CLINICAL OPS', fullName: 'CL — Clinical Operations', icon: Heart, color: '#ef4444',
+    code: 'CL', name: 'CLINICAL OPS', fullName: 'CL — Clinical Operations', icon: Heart, color: 'var(--ci-domain-cl)',
     subdomains: [
       { code: 'CP', name: 'Care Planning', icon: ClipboardList },
       { code: 'OA', name: 'OASIS', icon: FileDigit },
@@ -57,7 +57,7 @@ const DOMAINS = [
     ]
   },
   {
-    code: 'QA', name: 'QAPI', fullName: 'QA — Quality Assessment & Performance Improvement', icon: BarChart3, color: '#06b6d4',
+    code: 'QA', name: 'QAPI', fullName: 'QA — Quality Assessment & Performance Improvement', icon: BarChart3, color: 'var(--ci-domain-qa)',
     subdomains: [
       { code: 'PG', name: 'QAPI Program', icon: Scale },
       { code: 'SM', name: 'Star Monitoring', icon: Eye },
@@ -66,7 +66,7 @@ const DOMAINS = [
     ]
   },
   {
-    code: 'HR', name: 'HUMAN RES.', fullName: 'HR — Human Resources', icon: Users, color: '#8b5cf6',
+    code: 'HR', name: 'HUMAN RES.', fullName: 'HR — Human Resources', icon: Users, color: 'var(--ci-domain-hr)',
     subdomains: [
       { code: 'TA', name: 'Talent Acquisition', icon: UserPlus },
       { code: 'TD', name: 'Training & Dev', icon: GraduationCap },
@@ -76,7 +76,7 @@ const DOMAINS = [
     ]
   },
   {
-    code: 'CO', name: 'COMPLIANCE', fullName: 'CO — Compliance & Regulatory', icon: Shield, color: '#3b82f6',
+    code: 'CO', name: 'COMPLIANCE', fullName: 'CO — Compliance & Regulatory', icon: Shield, color: 'var(--ci-domain-co)',
     subdomains: [
       { code: 'CP', name: 'Compliance Program', icon: ShieldCheck },
       { code: 'HP', name: 'HIPAA & Privacy', icon: Lock },
@@ -87,7 +87,7 @@ const DOMAINS = [
     ]
   },
   {
-    code: 'FN', name: 'FINANCE', fullName: 'FN — Finance & Revenue Cycle', icon: DollarSign, color: '#10b981',
+    code: 'FN', name: 'FINANCE', fullName: 'FN — Finance & Revenue Cycle', icon: DollarSign, color: 'var(--ci-domain-fn)',
     subdomains: [
       { code: 'FP', name: 'Financial Planning', icon: PieChart },
       { code: 'BC', name: 'Billing & Claims', icon: Receipt },
@@ -95,7 +95,7 @@ const DOMAINS = [
     ]
   },
   {
-    code: 'OP', name: 'OPERATIONS', fullName: 'OP — Operations & Facilities', icon: Briefcase, color: '#f97316',
+    code: 'OP', name: 'OPERATIONS', fullName: 'OP — Operations & Facilities', icon: Briefcase, color: 'var(--ci-domain-op)',
     subdomains: [
       { code: 'IM', name: 'Intake Mgmt', icon: LogIn },
       { code: 'SL', name: 'Service Logistics', icon: Truck },
@@ -104,7 +104,7 @@ const DOMAINS = [
     ]
   },
   {
-    code: 'IT', name: 'IT & SECURITY', fullName: 'IT — Information Technology & Security', icon: Monitor, color: '#6366f1',
+    code: 'IT', name: 'IT & SECURITY', fullName: 'IT — Information Technology & Security', icon: Monitor, color: 'var(--ci-domain-it)',
     subdomains: [
       { code: 'SC', name: 'Security Controls', icon: Key },
       { code: 'DR', name: 'Data & Recovery', icon: DatabaseBackup },
@@ -113,7 +113,7 @@ const DOMAINS = [
     ]
   },
   {
-    code: 'RM', name: 'RISK MGMT', fullName: 'RM — Risk Management & Safety', icon: AlertTriangle, color: '#eab308',
+    code: 'RM', name: 'RISK MGMT', fullName: 'RM — Risk Management & Safety', icon: AlertTriangle, color: 'var(--ci-domain-rm)',
     subdomains: [
       { code: 'ER', name: 'Enterprise Risk', icon: BarChart2 },
       { code: 'SS', name: 'Staff Safety', icon: UserCheck },
@@ -123,7 +123,7 @@ const DOMAINS = [
     ]
   },
   {
-    code: 'EN', name: 'ENTERPRISE', fullName: 'EN — Enterprise Governance & Control', icon: Cpu, color: '#ec4899',
+    code: 'EN', name: 'ENTERPRISE', fullName: 'EN — Enterprise Governance & Control', icon: Cpu, color: 'var(--ci-domain-en)',
     subdomains: [
       { code: 'TG', name: 'Taxonomy Gov', icon: FolderTree },
       { code: 'LC', name: 'Lifecycle Control', icon: RefreshCw },
@@ -445,20 +445,22 @@ export function LibraryPage() {
         <div className="px-10 pt-10 pb-4 flex items-center justify-between shrink-0">
           <div className="flex flex-col">
             <h1 className="font-montserrat text-3xl font-light text-ci-text-primary flex items-center gap-4">
-              <Library className="text-[#FFC107]" size={36} strokeWidth={1.5}/> Enterprise Policy Library
+              <Library className="ci-text-gold" size={36} strokeWidth={1.5}/> Enterprise Policy Library
             </h1>
             <div className="flex items-center gap-3 mt-4 ml-1">
-              <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] border-[#FFC107]/40 flex items-center gap-2 relative overflow-hidden">
+              <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] ci-border-gold-soft flex items-center gap-2 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FFC107]/20 to-transparent -translate-x-full"
+                  // eslint-disable-next-line react/forbid-dom-props -- @keyframes animation reference cannot live in a stylesheet utility
                   style={{animation:'shimmerLib 2.5s infinite'}}/>
-                <FileText size={12} className="text-[#FFC107] animate-pulse"/>
+                <FileText size={12} className="ci-text-gold animate-pulse"/>
                 <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-ci-text-primary">{renderedPolicies.length} POLICIES</span>
               </div>
-              <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] border-[#a855f7]/40 flex items-center gap-2 relative overflow-hidden cursor-pointer"
+              <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] ci-border-fca-soft flex items-center gap-2 relative overflow-hidden cursor-pointer"
                 onClick={() => navigate('/forms')}>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#a855f7]/20 to-transparent -translate-x-full"
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#A855F7]/20 to-transparent -translate-x-full"
+                  // eslint-disable-next-line react/forbid-dom-props -- @keyframes animation reference cannot live in a stylesheet utility
                   style={{animation:'shimmerLib 3s infinite 0.5s'}}/>
-                <Layers size={12} className="text-[#a855f7] animate-pulse"/>
+                <Layers size={12} className="ci-text-fca animate-pulse"/>
                 <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-ci-text-primary">361 FORMS</span>
               </div>
             </div>
@@ -475,10 +477,10 @@ export function LibraryPage() {
 
             {/* Policies / Forms toggle */}
             <div className="flex items-center p-1 rounded-full border border-ci-border">
-              <button className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-[#FFC107] text-[#FFC107] font-montserrat">
+              <button type="button" className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-ci-gold ci-text-gold font-montserrat">
                 Policies
               </button>
-              <button onClick={() => navigate('/forms')}
+              <button type="button" onClick={() => navigate('/forms')}
                 className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-transparent text-ci-text-subtle hover:text-ci-text-primary transition-colors font-montserrat">
                 Forms
               </button>
@@ -490,21 +492,23 @@ export function LibraryPage() {
         <div className="px-10 pb-5 shrink-0">
           <div className="flex rounded-xl overflow-hidden border border-ci-border">
             <button
+              type="button"
               onClick={() => setLibraryView('IBM')}
               className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 text-[11px] font-bold tracking-widest uppercase font-montserrat transition-colors ${
                 libraryView === 'IBM'
-                  ? 'bg-[#007970] text-white'
-                  : isLight ? 'bg-white text-[#747470] hover:text-[#007970]' : 'text-ci-text-subtle hover:text-[#007970]'
+                  ? 'ci-bg-brand-teal text-white'
+                  : isLight ? 'bg-white ci-text-brand-grey ci-hover-text-teal' : 'text-ci-text-subtle ci-hover-text-teal'
               }`}
             >
               <Library size={15} /> IBM Framework View
             </button>
             <button
+              type="button"
               onClick={() => setLibraryView('ACHC')}
               className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 text-[11px] font-bold tracking-widest uppercase font-montserrat transition-colors ${
                 libraryView === 'ACHC'
-                  ? 'bg-[#ea580c] text-white'
-                  : isLight ? 'bg-white text-[#747470] hover:text-[#ea580c]' : 'text-ci-text-subtle hover:text-[#ea580c]'
+                  ? 'ci-bg-brand-coral text-white'
+                  : isLight ? 'bg-white ci-text-brand-grey ci-hover-text-coral' : 'text-ci-text-subtle ci-hover-text-coral'
               }`}
             >
               <ShieldCheck size={15} /> ACHC Survey View
@@ -514,17 +518,17 @@ export function LibraryPage() {
 
         {/* ACHC HORIZONTAL FILTER BAR */}
         {libraryView === 'ACHC' && (
-          <div className="px-8 py-3 bg-[#f0fdfa] border-b border-[#99f6e4] shrink-0">
+          <div className="px-8 py-3 ci-bg-achc border-b ci-border-achc shrink-0">
             <div className="flex items-center gap-1.5 mb-2.5">
-              <ShieldCheck size={12} className="text-[#0f766e]" />
-              <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-[#0f766e] uppercase">ACHC Survey Filters</span>
-              <span className="ml-auto text-[9px] font-mono text-[#0f766e]">{renderedPolicies.length} policies</span>
+              <ShieldCheck size={12} className="ci-text-achc" />
+              <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] ci-text-achc uppercase">ACHC Survey Filters</span>
+              <span className="ml-auto text-[9px] font-mono ci-text-achc">{renderedPolicies.length} policies</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <select
                 value={selectedDomain}
                 onChange={(e) => handleDomainSelect(e.target.value)}
-                className="rounded-lg border border-[#99f6e4] bg-white px-2.5 py-1.5 text-[10px] font-montserrat text-[#0f766e] focus:outline-none focus:border-[#0f766e]"
+                className="rounded-lg border ci-border-achc bg-white px-2.5 py-1.5 text-[10px] font-montserrat ci-text-achc ci-focus-achc"
               >
                 <option value="ALL">Governance: ALL</option>
                 {DOMAINS.map((d) => <option key={d.code} value={d.code}>{d.code} — {d.name}</option>)}
@@ -532,7 +536,7 @@ export function LibraryPage() {
               <select
                 value={achcMappingFilter}
                 onChange={(e) => setAchcMappingFilter(e.target.value as 'ALL' | AchcMappingType)}
-                className="rounded-lg border border-[#cbd5e1] bg-white px-2.5 py-1.5 text-[10px] font-montserrat focus:outline-none focus:border-[#0f766e]"
+                className="rounded-lg border ci-border-achc-soft bg-white px-2.5 py-1.5 text-[10px] font-montserrat ci-focus-achc"
               >
                 <option value="ALL">Status: ALL</option>
                 <option value="DIRECT">DIRECT</option>
@@ -543,7 +547,7 @@ export function LibraryPage() {
               <select
                 value={achcEvidenceFilter}
                 onChange={(e) => setAchcEvidenceFilter(e.target.value as 'ALL' | 'P' | 'D' | 'I' | 'O' | 'S')}
-                className="rounded-lg border border-[#cbd5e1] bg-white px-2.5 py-1.5 text-[10px] font-montserrat focus:outline-none focus:border-[#0f766e]"
+                className="rounded-lg border ci-border-achc-soft bg-white px-2.5 py-1.5 text-[10px] font-montserrat ci-focus-achc"
               >
                 <option value="ALL">Evidence: ALL</option>
                 <option value="P">P — Policy</option>
@@ -555,7 +559,7 @@ export function LibraryPage() {
               <select
                 value={achcTitle22Filter}
                 onChange={(e) => setAchcTitle22Filter(e.target.value)}
-                className="rounded-lg border border-[#cbd5e1] bg-white px-2.5 py-1.5 text-[10px] font-montserrat focus:outline-none focus:border-[#0f766e]"
+                className="rounded-lg border ci-border-achc-soft bg-white px-2.5 py-1.5 text-[10px] font-montserrat ci-focus-achc"
               >
                 <option value="ALL">CA Title 22: ALL</option>
                 {achcTitle22Prefixes.map((prefix) => <option key={prefix} value={prefix}>{prefix}</option>)}
@@ -563,7 +567,7 @@ export function LibraryPage() {
               <select
                 value={achcStandardFilter}
                 onChange={(e) => setAchcStandardFilter(e.target.value)}
-                className="rounded-lg border border-[#cbd5e1] bg-white px-2.5 py-1.5 text-[10px] font-montserrat focus:outline-none focus:border-[#0f766e]"
+                className="rounded-lg border ci-border-achc-soft bg-white px-2.5 py-1.5 text-[10px] font-montserrat ci-focus-achc"
               >
                 <option value="ALL">ACHC HH Standards: ALL</option>
                 {achcStandardPrefixes.map((prefix) => <option key={prefix} value={prefix}>{prefix}</option>)}
@@ -571,7 +575,7 @@ export function LibraryPage() {
               <select
                 value={achcCopFilter}
                 onChange={(e) => setAchcCopFilter(e.target.value)}
-                className="rounded-lg border border-[#cbd5e1] bg-white px-2.5 py-1.5 text-[10px] font-montserrat focus:outline-none focus:border-[#0f766e]"
+                className="rounded-lg border ci-border-achc-soft bg-white px-2.5 py-1.5 text-[10px] font-montserrat ci-focus-achc"
               >
                 <option value="ALL">Medicare CoP: ALL</option>
                 {achcCopPrefixes.map((prefix) => <option key={prefix} value={prefix}>{prefix}</option>)}

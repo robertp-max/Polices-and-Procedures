@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+﻿import { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ShieldCheck, ShieldAlert, AlertOctagon, Download, FileJson,
@@ -44,22 +44,22 @@ import {
 } from '@/policy/compliance-execution';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 
-/* ═══════════════════════════════════════════════════════════════
-   AUDIT — Compliance Validation + Survey Readiness
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   AUDIT â€” Compliance Validation + Survey Readiness
    ----------------------------------------------------------------
    Four regions in one canvas:
 
-     REGION 1  Command header — title, filter chips, search, export
-     REGION 2  Audit health strip — 6 tiles, clickable
+     REGION 1  Command header â€” title, filter chips, search, export
+     REGION 2  Audit health strip â€” 6 tiles, clickable
      REGION 3  Queue (grouped | matrix toggle)
-     REGION 4  Detail panel — 7 tabs (Summary, Missing Items,
+     REGION 4  Detail panel â€” 7 tabs (Summary, Missing Items,
                Evidence, Approvals, Timeline, Dependencies, Audit Trail)
 
    Design rules: exact state labels, exact badge language, serious
-   and premium — no playful decoration, no guesswork.
-   ═══════════════════════════════════════════════════════════════ */
+   and premium â€” no playful decoration, no guesswork.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ─── Types ────────────────────────────────────────────────── */
+/* â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 /** Named quick-filter presets shown as filter chips. */
 type QuickFilter =
@@ -94,7 +94,12 @@ const QUICK_FILTER_LABELS: Record<QuickFilter, string> = {
   'survey-critical': 'Survey Critical',
 };
 
-/** Named grouping sections for the queue. */
+/** Named grouping sections for the queue.
+ *
+ * Phase 3 NOTE: colours are hex (not CSS vars) because per-chip styling
+ * concatenates alpha via template literal (`${color}77`, `${color}18`). Hex
+ * is the contract those tinting consumers require. Values mirror
+ * --ci-danger-fg / --ci-warning-fg + ACTION_COLOR for visual parity. */
 const QUEUE_GROUPS: Array<{
   id:     string;
   label:  string;
@@ -102,15 +107,15 @@ const QUEUE_GROUPS: Array<{
   color:  string;
 }> = [
   { id: 'immediate',        label: 'Needs Immediate Review', states: ['overdue', 'blocked', 'not-certifiable'],        color: '#EF4444' },
-  { id: 'missing-evidence', label: 'Missing Evidence',       states: ['complete-missing-evidence'],                    color: '#F59E0B' },
-  { id: 'pending-approval', label: 'Pending Approval',       states: ['complete-pending-approval'],                    color: '#F59E0B' },
+  { id: 'missing-evidence', label: 'Missing Evidence',       states: ['complete-missing-evidence'],                    color: 'var(--ci-warning-fg)' },
+  { id: 'pending-approval', label: 'Pending Approval',       states: ['complete-pending-approval'],                    color: 'var(--ci-warning-fg)' },
   { id: 'ready',            label: 'Ready to Certify',       states: ['audit-ready'],                                  color: ACTION_COLOR },
   { id: 'certified',        label: 'Certified & Locked',     states: ['certified-locked'],                             color: AUDIT_STATE_COLOR['certified-locked'] },
 ];
 
-/* ═══════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    MAIN PAGE COMPONENT
-   ═══════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 export function AuditModePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -139,7 +144,7 @@ export function AuditModePage() {
   const getEventTrail = (eventId: string) =>
     auditLog.filter(entry => getEventAliases(eventId).includes(entry.eventId));
 
-  /* ── Classify every instance ── */
+  /* â”€â”€ Classify every instance â”€â”€ */
   const auditByEvent = useMemo(() => {
     const out: Record<string, AuditState> = {};
     for (const ev of allEvents) out[ev.id] = classifyAuditState(ev, today, exec);
@@ -147,14 +152,14 @@ export function AuditModePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allEvents, today, exec.completions, exec.certifications, exec.stepStates, exec.formStates, exec.approvals, exec.minutesStates]);
 
-  /* ── System totals (region 2 health strip counts always use all events) ── */
+  /* â”€â”€ System totals (region 2 health strip counts always use all events) â”€â”€ */
   const healthCounts: AuditStateCounts = useMemo(() => {
     const c = emptyCounts();
     for (const ev of allEvents) c[auditByEvent[ev.id]] += 1;
     return c;
   }, [allEvents, auditByEvent]);
 
-  /* ── Risk scoring ── */
+  /* â”€â”€ Risk scoring â”€â”€ */
   const batch = useEnforcementBatch(allEvents);
   const risks: Record<string, RiskScore> = useMemo(() => {
     const out: Record<string, RiskScore> = {};
@@ -167,7 +172,7 @@ export function AuditModePage() {
   const agencySummary = useMemo(() => summarizeAgencyRisk(Object.values(risks)), [risks]);
   const auditLog = useEnforcementStore(s => s.auditLog);
 
-  /* ── Filter state ── */
+  /* â”€â”€ Filter state â”€â”€ */
   const urlState = searchParams.get('state') as AuditState | null;
   const [quickFilter, setQuickFilter] = useState<QuickFilter>(
     urlState ? (stateToQuickFilter(urlState) ?? 'all') : 'all',
@@ -183,7 +188,7 @@ export function AuditModePage() {
     if (urlState) setQuickFilter(stateToQuickFilter(urlState) ?? 'all');
   }, [urlState]);
 
-  /* ── Map quick filter → aggregate filter inputs ── */
+  /* â”€â”€ Map quick filter â†’ aggregate filter inputs â”€â”€ */
   const aggregateFilters: AuditAggregateFilters = useMemo(
     () => quickFilterToAggregateFilters(quickFilter, searchTerm, regulationFilter, dateRange, today),
     [quickFilter, searchTerm, regulationFilter, dateRange, today],
@@ -228,7 +233,7 @@ export function AuditModePage() {
     setDateRange(presetRange(preset, today));
   };
 
-  /* ── Exports ── */
+  /* â”€â”€ Exports â”€â”€ */
   const handleExportBundle = (fmt: 'md' | 'json') => {
     const bundle = buildAuditBundle({
       summary: agencySummary,
@@ -240,7 +245,7 @@ export function AuditModePage() {
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
     if (fmt === 'json') downloadBlob(`audit-bundle-${stamp}.json`, JSON.stringify(bundle, null, 2), 'application/json');
     else                downloadBlob(`audit-bundle-${stamp}.md`,   bundleToMarkdown(bundle), 'text/markdown');
-    useToastStore.getState().push('success', 'Audit bundle exported', `${allEvents.length} instances · ${fmt.toUpperCase()}`);
+    useToastStore.getState().push('success', 'Audit bundle exported', `${allEvents.length} instances Â· ${fmt.toUpperCase()}`);
   };
 
   const handleSurveyRollup = () => {
@@ -259,13 +264,13 @@ export function AuditModePage() {
     });
     const descBits: string[] = [];
     if (quickFilter !== 'all')            descBits.push(QUICK_FILTER_LABELS[quickFilter]);
-    if (dateRange.startISO || dateRange.endISO) descBits.push(`${dateRange.startISO || '…'}→${dateRange.endISO || '…'}`);
+    if (dateRange.startISO || dateRange.endISO) descBits.push(`${dateRange.startISO || 'â€¦'}â†’${dateRange.endISO || 'â€¦'}`);
     if (regulationFilter)                 descBits.push(`regulation~${regulationFilter}`);
 
     const hdr: SurveyRollupHeader = {
       title:             'Survey Audit Rollup',
-      subtitle:          'Deterministic, per-instance compliance packets — Workflow Audit Packet format',
-      filterDescription: descBits.join(' · ') || 'All instances',
+      subtitle:          'Deterministic, per-instance compliance packets â€” Workflow Audit Packet format',
+      filterDescription: descBits.join(' Â· ') || 'All instances',
       total:             aggregate.summary.total,
       certified:         aggregate.summary.certified,
       auditReady:        aggregate.summary.readyToCertify,
@@ -275,7 +280,7 @@ export function AuditModePage() {
     const md = rollupToSurveyMarkdown(hdr, packets, filtered);
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
     downloadBlob(`survey-rollup-${stamp}.md`, md, 'text/markdown');
-    useToastStore.getState().push('success', 'Survey rollup exported', `${packets.length} instances · Markdown`);
+    useToastStore.getState().push('success', 'Survey rollup exported', `${packets.length} instances Â· Markdown`);
   };
 
   const handleExportInstance = (ev: RegulatoryEvent) => {
@@ -292,7 +297,7 @@ export function AuditModePage() {
     const packet = buildSurveyPacket(inst);
     const stamp  = new Date().toISOString().slice(0, 10);
     downloadBlob(`audit-packet-${ev.id}-${stamp}.html`, packetToSurveyHtml(packet),     'text/html;charset=utf-8');
-    useToastStore.getState().push('success', 'Survey packet exported', `${ev.id} · HTML`);
+    useToastStore.getState().push('success', 'Survey packet exported', `${ev.id} Â· HTML`);
   };
 
   const handleExportInstanceMd = (ev: RegulatoryEvent) => {
@@ -309,17 +314,17 @@ export function AuditModePage() {
     const packet = buildSurveyPacket(inst);
     const stamp  = new Date().toISOString().slice(0, 10);
     downloadBlob(`audit-packet-${ev.id}-${stamp}.md`, packetToSurveyMarkdown(packet), 'text/markdown');
-    useToastStore.getState().push('success', 'Survey packet exported', `${ev.id} · Markdown`);
+    useToastStore.getState().push('success', 'Survey packet exported', `${ev.id} Â· Markdown`);
   };
 
-  /* ── Layout ── */
+  /* â”€â”€ Layout â”€â”€ */
   return (
     <div className="h-full w-full flex flex-col font-sans animate-in fade-in duration-500 overflow-hidden relative z-10 gap-0">
 
-      {/* ─────────────────────────────────────────────────────────
-          REGION 1 — Command header
-          ───────────────────────────────────────────────────────── */}
-      <header className="px-3 sm:px-6 md:px-10 pt-5 pb-3 flex flex-col gap-3 border-b ci-sticky-operational" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          REGION 1 â€” Command header
+          â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <header className="px-3 sm:px-6 md:px-10 pt-5 pb-3 flex flex-col gap-3 border-b ci-sticky-operational ci-premium-hero ci-command-rail mx-3 sm:mx-6 md:mx-10 mt-2 rounded-xl" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         {/* Title row */}
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
@@ -329,7 +334,7 @@ export function AuditModePage() {
                 Audit
               </span>
             </div>
-            <h1 className="font-outfit font-light text-white leading-tight" style={{ fontSize: 22, letterSpacing: '-0.01em' }}>
+            <h1 className="font-outfit font-light text-white leading-tight" style={{ fontSize: 30, letterSpacing: '-0.02em' }}>
               Compliance validation and survey readiness
             </h1>
             <div className="mt-1.5 flex items-center gap-3">
@@ -338,7 +343,7 @@ export function AuditModePage() {
               <HelpContextLink slug="survey-packet" label="Survey packet" variant="pill" />
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="ci-maturity-toolbar">
             <CommandSearch value={searchTerm} onChange={setSearchTerm} />
             <DateRangeFilter
               dateRange={dateRange}
@@ -382,9 +387,9 @@ export function AuditModePage() {
                 onClick={() => setQuickFilterAndURL(qf)}
                 className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] px-2.5 py-2 min-h-[44px] rounded-md border transition whitespace-nowrap ci-subtle-hover"
                 style={{
-                  color:       active ? color : 'rgba(255,255,255,0.60)',
-                  borderColor: active ? `${color}77` : 'rgba(255,255,255,0.10)',
-                  background:  active ? `${color}18` : 'rgba(255,255,255,0.02)',
+                  color:       active ? color : 'var(--ci-text-on-surface-muted)',
+                  borderColor: active ? `${color}77` : 'var(--ci-overlay-border-strong)',
+                  background:  active ? `${color}18` : 'var(--ci-overlay-faint)',
                 }}
               >
                 {QUICK_FILTER_LABELS[qf]}
@@ -399,26 +404,30 @@ export function AuditModePage() {
           {/* Aggregate summary far right */}
           <div className="ml-auto hidden md:flex items-center gap-2 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.14em]">
             <span style={{ color: TEAL_PRIMARY }}>{aggregate.summary.complianceRate}% compliant</span>
-            <span className="text-white/30">·</span>
+            <span className="text-white/30">Â·</span>
             <span style={{ color: AUDIT_STATE_COLOR['certified-locked'] }}>{aggregate.summary.certified} certified</span>
-            <span className="text-white/30">·</span>
+            <span className="text-white/30">Â·</span>
             <span style={{ color: ACTION_COLOR }}>{aggregate.summary.readyToCertify} ready to certify</span>
-            <span className="text-white/30">·</span>
+            <span className="text-white/30">Â·</span>
             <span className="text-white/50">{aggregate.summary.total} in view</span>
           </div>
         </div>
+        <div className="px-3 py-2 flex items-center justify-between gap-3 flex-wrap text-[11px] ci-command-rail ci-maturity-section text-white/75">
+          <span className="ci-maturity-eyebrow">Audit Storyline</span>
+          <span>Advance from not-certifiable to audit-ready with transparent readiness state transitions.</span>
+        </div>
       </header>
 
-      {/* ─────────────────────────────────────────────────────────
-          CES Sprint Audit Snapshot — bridges the merged execution
+      {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          CES Sprint Audit Snapshot â€” bridges the merged execution
           layer into Audit Mode (read-only).
-          ───────────────────────────────────────────────────────── */}
+          â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <CesSprintAuditStrip onOpenSprint={() => navigate('/calendar?view=sprint')} />
 
-      {/* ─────────────────────────────────────────────────────────
-          REGION 2 — Audit health strip (6 tiles)
-          ───────────────────────────────────────────────────────── */}
-      <div className="px-3 md:px-10 py-3 grid grid-cols-2 md:grid-cols-6 gap-2 border-b ci-shell-command-group mx-3 md:mx-10" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          REGION 2 â€” Audit health strip (6 tiles)
+          â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="px-3 md:px-10 py-3 grid grid-cols-2 md:grid-cols-6 gap-2 border-b ci-shell-command-group ci-premium-panel ci-command-rail ci-maturity-section mx-3 md:mx-10" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         <HealthTile
           label="Audit Ready"
           count={healthCounts['audit-ready']}
@@ -479,12 +488,12 @@ export function AuditModePage() {
         />
       </div>
 
-      {/* ─────────────────────────────────────────────────────────
+      {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           REGION 3 (left) + REGION 4 (right)
-          ───────────────────────────────────────────────────────── */}
+          â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="flex-1 grid grid-cols-12 gap-0 min-h-0 overflow-hidden px-3 sm:px-6 md:px-10 py-4 gap-4">
 
-        {/* REGION 3 — Queue */}
+        {/* REGION 3 â€” Queue */}
         <section className="col-span-5 flex flex-col min-h-0 gap-2">
           {/* Queue toolbar */}
           <div className="flex items-center justify-between gap-2">
@@ -512,7 +521,7 @@ export function AuditModePage() {
 
           <div
             className="flex-1 min-h-0 rounded-xl border overflow-hidden flex flex-col"
-            style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.015)' }}
+            style={{ borderColor: 'var(--ci-overlay-border-strong)', background: 'var(--ci-overlay-faint)' }}
           >
             {filtered.length === 0 ? (
               <div className="flex-1 flex items-center justify-center text-[11px] font-roboto text-white/40">
@@ -540,7 +549,7 @@ export function AuditModePage() {
           </div>
         </section>
 
-        {/* REGION 4 — Detail panel */}
+        {/* REGION 4 â€” Detail panel */}
         <section className="col-span-7 flex flex-col min-h-0">
           {activeEvent ? (
             <AuditDetailPanel
@@ -557,9 +566,9 @@ export function AuditModePage() {
           ) : (
             <div
               className="flex-1 flex flex-col items-center justify-center rounded-xl border text-center gap-2"
-              style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+              style={{ borderColor: 'var(--ci-overlay-border-strong)' }}
             >
-              <ShieldCheck size={24} style={{ color: 'rgba(255,255,255,0.15)' }} />
+              <ShieldCheck size={24} style={{ color: 'var(--ci-text-on-surface-quiet)' }} />
               <p className="text-[11px] font-roboto text-white/40">Select an instance to audit.</p>
             </div>
           )}
@@ -571,9 +580,9 @@ export function AuditModePage() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   REGION 2 — Health tile
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   REGION 2 â€” Health tile
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function HealthTile({
   label, count, color, icon, active, onClick, subtitle, warn, actionTint, lockIcon,
 }: {
@@ -610,9 +619,9 @@ function HealthTile({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   REGION 3 — Grouped Queue
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   REGION 3 â€” Grouped Queue
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function GroupedQueue({
   events, auditByEvent, risks, activeId, quickFilter, onSelect,
 }: {
@@ -670,7 +679,7 @@ function QueueSection({
   activeId: string | null; onSelect: (id: string) => void;
 }) {
   return (
-    <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+    <div className="border-b" style={{ borderColor: 'var(--ci-overlay-soft)' }}>
       <div
         className="flex items-center justify-between px-3 py-1.5 border-b"
         style={{ borderColor: `${color}22`, background: `${color}0C` }}
@@ -720,7 +729,7 @@ function QueueRow({
         type="button"
         onClick={onClick}
         className="w-full text-left grid grid-cols-[3px_1fr_auto] gap-0 items-stretch cursor-pointer transition-colors"
-        style={{ background: active ? 'rgba(255,255,255,0.04)' : 'transparent' }}
+        style={{ background: active ? 'var(--ci-overlay-soft)' : 'transparent' }}
       >
         <span className="w-[3px] self-stretch" style={{ background: color }} />
         <div className="flex items-start gap-2 py-2 px-3 min-w-0">
@@ -754,7 +763,7 @@ function QueueRow({
             {/* ID + Owner */}
             <p className="text-[9px] font-roboto text-white/45 truncate mt-0.5">
               <span className="font-mono-jb">{event.id.replace(/^EVT-/, '')}</span>
-              <span className="mx-1 text-white/25">·</span>
+              <span className="mx-1 text-white/25">Â·</span>
               <span>{event.owner}</span>
             </p>
           </div>
@@ -774,9 +783,9 @@ function QueueRow({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   REGION 3 — Matrix view (compact table for power users)
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   REGION 3 â€” Matrix view (compact table for power users)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function MatrixView({
   events, auditByEvent, risks, activeId, exec, onSelect,
 }: {
@@ -791,7 +800,7 @@ function MatrixView({
     <div className="flex-1 min-h-0 overflow-auto custom-scrollbar">
       <table className="w-full text-[10.5px] font-roboto">
         <thead>
-          <tr className="border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <tr className="border-b" style={{ borderColor: 'var(--ci-overlay-border-strong)' }}>
             {['Workflow', 'Domain', 'Owner', 'Due', 'Audit State', 'Risk', 'Certified'].map(h => (
               <th
                 key={h}
@@ -812,14 +821,14 @@ function MatrixView({
             const today  = TODAY_ANCHOR;
             const n      = daysUntil(ev.date, today);
             const dueStr = n < 0 ? `${Math.abs(n)}d over` : n === 0 ? 'Today' : `${n}d`;
-            const dueColor = n < 0 ? '#F87171' : n <= 7 ? '#FBBF24' : 'rgba(255,255,255,0.55)';
+            const dueColor = n < 0 ? 'var(--ci-danger-fg)' : n <= 7 ? 'var(--ci-warning-fg)' : 'var(--ci-text-on-surface-muted)';
             return (
               <tr
                 key={ev.id}
                 className="border-b cursor-pointer transition-colors"
                 style={{
-                  borderColor: 'rgba(255,255,255,0.05)',
-                  background: activeId === ev.id ? 'rgba(255,255,255,0.04)' : 'transparent',
+                  borderColor: 'var(--ci-overlay-soft)',
+                  background: activeId === ev.id ? 'var(--ci-overlay-soft)' : 'transparent',
                 }}
                 onClick={() => onSelect(ev.id)}
               >
@@ -841,7 +850,7 @@ function MatrixView({
                   <span className="text-[9.5px] font-montserrat font-bold" style={{ color }}>{rsk}</span>
                 </td>
                 <td className="px-2 py-2 text-center">
-                  {cert ? <Lock size={10} style={{ color: AUDIT_STATE_COLOR['certified-locked'] }} /> : <span className="text-white/25">—</span>}
+                  {cert ? <Lock size={10} style={{ color: AUDIT_STATE_COLOR['certified-locked'] }} /> : <span className="text-white/25">â€”</span>}
                 </td>
               </tr>
             );
@@ -852,9 +861,9 @@ function MatrixView({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   REGION 4 — Audit Detail Panel (7 tabs)
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   REGION 4 â€” Audit Detail Panel (7 tabs)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function AuditDetailPanel({
   event, today, auditState, allEvents, detailTab, onTabChange,
   onOpenInTimeline, onExportPdf, onExportMd,
@@ -911,10 +920,10 @@ function AuditDetailPanel({
   return (
     <div
       className="flex-1 min-h-0 flex flex-col rounded-xl border overflow-hidden"
-      style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.015)' }}
+      style={{ borderColor: 'var(--ci-overlay-border-strong)', background: 'var(--ci-overlay-faint)' }}
     >
-      {/* ── Detail header ── */}
-      <header className="px-4 py-3 border-b flex flex-col gap-1.5" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      {/* â”€â”€ Detail header â”€â”€ */}
+      <header className="px-4 py-3 border-b flex flex-col gap-1.5" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[9px] font-montserrat font-bold uppercase tracking-[0.12em] px-2 py-0.5 rounded"
             style={{ color: dom.color, background: dom.soft, border: `1px solid ${dom.border}` }}>
@@ -935,18 +944,18 @@ function AuditDetailPanel({
         </h2>
         <div className="text-[10px] font-roboto text-white/50 flex items-center gap-1.5 flex-wrap">
           <span className="font-mono-jb">{event.id}</span>
-          <span>·</span>
+          <span>Â·</span>
           <span>{formatEventDate(event.date)}</span>
-          <span>·</span>
+          <span>Â·</span>
           <span>{event.owner} ({event.ownerRole})</span>
           {event.complianceFlags?.citation && (
-            <><span>·</span><span style={{ color }}>{event.complianceFlags.citation}</span></>
+            <><span>Â·</span><span style={{ color }}>{event.complianceFlags.citation}</span></>
           )}
         </div>
       </header>
 
-      {/* ── Tab bar ── */}
-      <nav className="flex items-stretch border-b overflow-x-auto" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      {/* â”€â”€ Tab bar â”€â”€ */}
+      <nav className="flex items-stretch border-b overflow-x-auto" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         {TABS.map(t => {
           const active = detailTab === t.id;
           const hasIssue =
@@ -961,7 +970,7 @@ function AuditDetailPanel({
               className="flex items-center gap-1.5 px-3 py-2 whitespace-nowrap text-[10px] font-montserrat font-bold uppercase tracking-[0.13em] border-b-2 transition"
               style={{
                 borderColor: active ? TEAL_PRIMARY : 'transparent',
-                color:       active ? TEAL_PRIMARY : hasIssue ? '#F87171' : 'rgba(255,255,255,0.50)',
+                color:       active ? TEAL_PRIMARY : hasIssue ? 'var(--ci-danger-fg)' : 'var(--ci-text-on-surface-muted)',
                 background:  active ? `${TEAL_PRIMARY}0C` : 'transparent',
               }}
             >
@@ -975,7 +984,7 @@ function AuditDetailPanel({
         })}
       </nav>
 
-      {/* ── Tab body ── */}
+      {/* â”€â”€ Tab body â”€â”€ */}
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
         {detailTab === 'summary'       && <SummaryTab       event={event} today={today} instance={instance} checklist={checklist} cert={cert} />}
         {detailTab === 'missing-items' && <MissingItemsTab  instance={instance} checklist={checklist} onNavigateToTimeline={onOpenInTimeline} />}
@@ -986,8 +995,8 @@ function AuditDetailPanel({
         {detailTab === 'audit-trail'   && <AuditTrailTab    instance={instance} />}
       </div>
 
-      {/* ── Footer: export + certify/revoke ── */}
-      <footer className="px-4 py-2.5 border-t flex items-center justify-between gap-2" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      {/* â”€â”€ Footer: export + certify/revoke â”€â”€ */}
+      <footer className="px-4 py-2.5 border-t flex items-center justify-between gap-2" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         <div className="flex items-center gap-1.5">
           <button type="button" onClick={onExportPdf}
             className="rounded-md px-2.5 py-1.5 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] border border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.06] flex items-center gap-1.5">
@@ -1002,7 +1011,7 @@ function AuditDetailPanel({
           <div className="flex items-center gap-2">
             <span className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] flex items-center gap-1.5"
               style={{ color: AUDIT_STATE_COLOR['certified-locked'] }}>
-              <Lock size={10} /> Certified · Locked
+              <Lock size={10} /> Certified Â· Locked
             </span>
             <button type="button" onClick={onRevoke}
               className="rounded-md px-2.5 py-1.5 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] border border-white/12 text-white/60 hover:text-white hover:bg-white/[0.05] flex items-center gap-1">
@@ -1016,9 +1025,9 @@ function AuditDetailPanel({
             disabled={!checklist.allPassed}
             className="rounded-md px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed transition"
             style={{
-              background: checklist.allPassed ? ACTION_COLOR : 'rgba(255,255,255,0.04)',
-              color:      checklist.allPassed ? '#0A0202' : 'rgba(255,255,255,0.45)',
-              border:     checklist.allPassed ? `1px solid ${ACTION_COLOR}` : '1px solid rgba(255,255,255,0.08)',
+              background: checklist.allPassed ? ACTION_COLOR : 'var(--ci-overlay-soft)',
+              color:      checklist.allPassed ? '#0A0202' : 'var(--ci-text-on-surface-faint)',
+              border:     checklist.allPassed ? `1px solid ${ACTION_COLOR}` : '1px solid var(--ci-overlay-border-strong)',
             }}
           >
             <Lock size={10} />
@@ -1030,9 +1039,9 @@ function AuditDetailPanel({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   TAB: Summary — pass/fail checklist with exact spec labels
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TAB: Summary â€” pass/fail checklist with exact spec labels
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function SummaryTab({
   event, today: _today, instance, checklist, cert,
 }: {
@@ -1088,7 +1097,7 @@ function SummaryTab({
 
   const passedCount = rows.filter(r => r.passed).length;
   const allPassed   = passedCount === rows.length;
-  const bannerColor = allPassed || cert ? TEAL_PRIMARY : '#F87171';
+  const bannerColor = allPassed || cert ? TEAL_PRIMARY : 'var(--ci-danger-fg)';
 
   return (
     <div className="p-4 flex flex-col gap-4">
@@ -1105,13 +1114,13 @@ function SummaryTab({
           </div>
           <p className="text-[11px] font-roboto text-white/75 mt-0.5">
             {passedCount} of {rows.length} validation checks passed
-            {checklist.slaDaysPastDue > 0 && ` · ${checklist.slaDaysPastDue}d past due`}
+            {checklist.slaDaysPastDue > 0 && ` Â· ${checklist.slaDaysPastDue}d past due`}
           </p>
           {cert && (
             <p className="text-[10px] font-roboto text-white/55 mt-1 truncate">
               Certified by <span className="text-white font-semibold">{cert.certifiedBy}</span>
               {cert.certifierRole ? ` (${cert.certifierRole})` : ''}
-              {' · '}
+              {' Â· '}
               {new Date(cert.certifiedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </p>
           )}
@@ -1136,19 +1145,19 @@ function SummaryTab({
               className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5"
               style={{
                 background: row.passed ? 'rgba(20,184,166,0.16)' : 'rgba(239,68,68,0.16)',
-                color:      row.passed ? TEAL_PRIMARY : '#F87171',
+                color:      row.passed ? TEAL_PRIMARY : 'var(--ci-danger-fg)',
               }}
             >
               {row.passed ? <Check size={11} /> : <X size={10} />}
             </span>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-montserrat font-bold"
-                style={{ color: row.passed ? 'rgba(255,255,255,0.90)' : '#FCA5A5' }}>
+                style={{ color: row.passed ? 'var(--ci-text-on-surface-strong)' : 'var(--ci-danger-fg)' }}>
                 {row.label}
               </p>
               {row.detail && (
                 <p className="text-[10px] font-roboto mt-0.5"
-                  style={{ color: row.passed ? 'rgba(255,255,255,0.50)' : 'rgba(252,165,165,0.70)' }}>
+                  style={{ color: row.passed ? 'var(--ci-text-on-surface-muted)' : 'var(--ci-danger-fg)' }}>
                   {row.passed ? row.detail : row.detail}
                 </p>
               )}
@@ -1160,9 +1169,9 @@ function SummaryTab({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   TAB: Missing Items — only failures, with type + why + action
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TAB: Missing Items â€” only failures, with type + why + action
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function MissingItemsTab({
   instance, checklist, onNavigateToTimeline,
 }: {
@@ -1245,9 +1254,9 @@ function MissingItemsTab({
   }
 
   const TYPE_COLORS: Record<string, string> = {
-    'Missing Form':         '#F59E0B',
-    'Missing Evidence':     '#F59E0B',
-    'Missing Minutes':      '#F59E0B',
+    'Missing Form':         'var(--ci-warning-fg)',
+    'Missing Evidence':     'var(--ci-warning-fg)',
+    'Missing Minutes':      'var(--ci-warning-fg)',
     'Missing Approval':     '#F97316',
     'SLA Violation':        '#EF4444',
     'Dependency Block':     '#EF4444',
@@ -1260,7 +1269,7 @@ function MissingItemsTab({
         {items.length} item{items.length === 1 ? '' : 's'} requiring action
       </div>
       {items.map((item, idx) => {
-        const c = TYPE_COLORS[item.type] ?? '#F87171';
+        const c = TYPE_COLORS[item.type] ?? 'var(--ci-danger-fg)';
         return (
           <div
             key={idx}
@@ -1284,7 +1293,7 @@ function MissingItemsTab({
                   {item.action}
                 </button>
               ) : (
-                <span className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.40)' }}>
+                <span className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--ci-text-on-surface-faint)' }}>
                   {item.action}
                 </span>
               )}
@@ -1298,9 +1307,9 @@ function MissingItemsTab({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   TAB: Evidence — Artifact | Required | Status | Files | Last Updated | Action
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TAB: Evidence â€” Artifact | Required | Status | Files | Last Updated | Action
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function EvidenceTab({
   event, instance,
 }: {
@@ -1320,10 +1329,10 @@ function EvidenceTab({
         {forms.length === 0 ? (
           <p className="text-[10.5px] font-roboto text-white/40">No required forms for this workflow.</p>
         ) : (
-          <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--ci-overlay-border-strong)' }}>
             <table className="w-full text-[10.5px] font-roboto">
               <thead>
-                <tr className="border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
+                <tr className="border-b" style={{ borderColor: 'var(--ci-overlay-border)', background: 'var(--ci-overlay-faint)' }}>
                   {['Artifact', 'Required', 'Status', 'Files', 'Last Updated'].map(h => (
                     <th key={h} className="px-3 py-2 text-left font-montserrat font-bold text-white/40 text-[9px] uppercase tracking-[0.14em]">{h}</th>
                   ))}
@@ -1332,9 +1341,9 @@ function EvidenceTab({
               <tbody>
                 {forms.map(f => {
                   const lastDoc = f.documents.sort((a, b) => (b.uploadedAt ?? '').localeCompare(a.uploadedAt ?? ''))[0];
-                  const statusColor = f.status === 'complete' ? TEAL_PRIMARY : f.status === 'in-progress' ? '#F59E0B' : '#F87171';
+                  const statusColor = f.status === 'complete' ? TEAL_PRIMARY : f.status === 'in-progress' ? 'var(--ci-warning-fg)' : 'var(--ci-danger-fg)';
                   return (
-                    <tr key={f.id} className="border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                    <tr key={f.id} className="border-b" style={{ borderColor: 'var(--ci-overlay-soft)' }}>
                       <td className="px-3 py-2">
                         <div className="font-montserrat font-bold text-white/85 text-[11px]">{f.label}</div>
                         {f.formRef && <div className="font-mono-jb text-white/40 text-[9px]">{f.formRef}</div>}
@@ -1348,12 +1357,12 @@ function EvidenceTab({
                       </td>
                       <td className="px-3 py-2">
                         <span className="font-montserrat font-bold text-[10.5px]"
-                          style={{ color: f.documents.length > 0 ? TEAL_PRIMARY : '#F87171' }}>
+                          style={{ color: f.documents.length > 0 ? TEAL_PRIMARY : 'var(--ci-danger-fg)' }}>
                           {f.documents.length}
                         </span>
                       </td>
                       <td className="px-3 py-2 text-white/45">
-                        {lastDoc?.uploadedAt ? new Date(lastDoc.uploadedAt).toLocaleDateString() : '—'}
+                        {lastDoc?.uploadedAt ? new Date(lastDoc.uploadedAt).toLocaleDateString() : 'â€”'}
                       </td>
                     </tr>
                   );
@@ -1372,10 +1381,10 @@ function EvidenceTab({
         {docs.length === 0 ? (
           <p className="text-[10.5px] font-roboto text-white/40">No evidence files uploaded.</p>
         ) : (
-          <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--ci-overlay-border-strong)' }}>
             <table className="w-full text-[10.5px] font-roboto">
               <thead>
-                <tr className="border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
+                <tr className="border-b" style={{ borderColor: 'var(--ci-overlay-border)', background: 'var(--ci-overlay-faint)' }}>
                   {['Artifact', 'Kind', 'Uploaded', 'By', 'Size', 'Action'].map(h => (
                     <th key={h} className="px-3 py-2 text-left font-montserrat font-bold text-white/40 text-[9px] uppercase tracking-[0.14em]">{h}</th>
                   ))}
@@ -1383,7 +1392,7 @@ function EvidenceTab({
               </thead>
               <tbody>
                 {docs.map(d => (
-                  <tr key={d.id} className="border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                  <tr key={d.id} className="border-b" style={{ borderColor: 'var(--ci-overlay-soft)' }}>
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-1.5">
                         <FileWarning size={11} style={{ color: TEAL_PRIMARY, flexShrink: 0 }} />
@@ -1443,9 +1452,9 @@ function EvidenceTab({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   TAB: Approvals — Approval Role | Scope | Required | Status | Approver | Timestamp | Action
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TAB: Approvals â€” Approval Role | Scope | Required | Status | Approver | Timestamp | Action
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function ApprovalsTab({ instance }: { instance: ReturnType<typeof useWorkflowInstance> }) {
   const approvals = instance?.approvals ?? [];
 
@@ -1459,10 +1468,10 @@ function ApprovalsTab({ instance }: { instance: ReturnType<typeof useWorkflowIns
 
   return (
     <div className="p-4">
-      <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--ci-overlay-border-strong)' }}>
         <table className="w-full text-[10.5px] font-roboto">
           <thead>
-            <tr className="border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
+            <tr className="border-b" style={{ borderColor: 'var(--ci-overlay-border)', background: 'var(--ci-overlay-faint)' }}>
               {['Approval Role', 'Scope', 'Required', 'Status', 'Approver', 'Timestamp'].map(h => (
                 <th key={h} className="px-3 py-2 text-left font-montserrat font-bold text-white/40 text-[9px] uppercase tracking-[0.14em] whitespace-nowrap">{h}</th>
               ))}
@@ -1473,15 +1482,15 @@ function ApprovalsTab({ instance }: { instance: ReturnType<typeof useWorkflowIns
               const statusColor =
                 a.status === 'approved' ? TEAL_PRIMARY
                 : a.status === 'rejected' ? '#EF4444'
-                : '#F59E0B';
+                : 'var(--ci-warning-fg)';
               return (
-                <tr key={`${a.ruleId ?? i}`} className="border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                <tr key={`${a.ruleId ?? i}`} className="border-b" style={{ borderColor: 'var(--ci-overlay-soft)' }}>
                   <td className="px-3 py-2 font-montserrat font-bold text-white/85 text-[10.5px] whitespace-nowrap">
-                    {a.approverRole ?? '—'}
+                    {a.approverRole ?? 'â€”'}
                   </td>
                   <td className="px-3 py-2 text-white/60">{a.targetLabel} ({a.targetKind})</td>
                   <td className="px-3 py-2">
-                    <span style={{ color: a.required ? '#F87171' : 'rgba(255,255,255,0.45)' }}>
+                    <span style={{ color: a.required ? 'var(--ci-danger-fg)' : 'var(--ci-text-on-surface-faint)' }}>
                       {a.required ? 'Yes' : 'No'}
                     </span>
                   </td>
@@ -1491,9 +1500,9 @@ function ApprovalsTab({ instance }: { instance: ReturnType<typeof useWorkflowIns
                       {a.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-white/65">{a.approver ?? '—'}</td>
+                  <td className="px-3 py-2 text-white/65">{a.approver ?? 'â€”'}</td>
                   <td className="px-3 py-2 text-white/45">
-                    {a.decidedAt ? new Date(a.decidedAt).toLocaleDateString() : '—'}
+                    {a.decidedAt ? new Date(a.decidedAt).toLocaleDateString() : 'â€”'}
                   </td>
                 </tr>
               );
@@ -1525,7 +1534,7 @@ function artifactRouteForAuditEntry(entry: {
   }
 
   // Fallback path: execution-trail entries store artifact IDs in `after`.
-  // entityType maps to 'task' / 'approval' — not directly to artifact types —
+  // entityType maps to 'task' / 'approval' â€” not directly to artifact types â€”
   // so we inspect the action string and after object to derive the artifact route.
   const after = entry.after as Record<string, unknown> | undefined;
   if (!after) return null;
@@ -1584,9 +1593,9 @@ function artifactRouteForAuditEntry(entry: {
   return null;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   TAB: Timeline — chronological event log with exact labels
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TAB: Timeline â€” chronological event log with exact labels
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function TimelineTab({ instance }: { instance: ReturnType<typeof useWorkflowInstance> }) {
   const trail = instance?.auditTrail ?? [];
 
@@ -1619,7 +1628,7 @@ function TimelineTab({ instance }: { instance: ReturnType<typeof useWorkflowInst
     'mutation.blocked':'#EF4444',
     'escalation.raised':'#EF4444',
     'approval.decided':TEAL_PRIMARY,
-    'approval.requested':'#F59E0B',
+    'approval.requested':'var(--ci-warning-fg)',
   };
 
   if (!trail.length) {
@@ -1634,7 +1643,7 @@ function TimelineTab({ instance }: { instance: ReturnType<typeof useWorkflowInst
     <div className="p-4 flex flex-col gap-0">
       {trail.map((entry, idx) => {
         const label = ACTION_LABEL[entry.action] ?? entry.action;
-        const color = ACTION_COLOR_MAP[entry.action] ?? 'rgba(255,255,255,0.50)';
+        const color = ACTION_COLOR_MAP[entry.action] ?? 'var(--ci-text-on-surface-muted)';
         const isLast = idx === trail.length - 1;
         const artifactRoute = artifactRouteForAuditEntry({ ...entry, action: entry.action, after: (entry as { after?: unknown }).after });
         return (
@@ -1655,8 +1664,8 @@ function TimelineTab({ instance }: { instance: ReturnType<typeof useWorkflowInst
               </p>
               <p className="text-[10px] font-roboto text-white/55 mt-0.5">
                 {entry.actor && <span className="text-white/70">{entry.actor}</span>}
-                {entry.targetKind && <span className="text-white/40"> · {entry.targetKind}{entry.targetId ? `:${entry.targetId}` : ''}</span>}
-                {entry.reason && <span className="text-white/55"> · {entry.reason}</span>}
+                {entry.targetKind && <span className="text-white/40"> Â· {entry.targetKind}{entry.targetId ? `:${entry.targetId}` : ''}</span>}
+                {entry.reason && <span className="text-white/55"> Â· {entry.reason}</span>}
                 {artifactRoute && (
                   <a
                     href={artifactRoute}
@@ -1677,9 +1686,9 @@ function TimelineTab({ instance }: { instance: ReturnType<typeof useWorkflowInst
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   TAB: Dependencies — Upstream + Downstream
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TAB: Dependencies â€” Upstream + Downstream
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function DependenciesTab({
   instance, allEvents,
 }: {
@@ -1690,12 +1699,12 @@ function DependenciesTab({
   const deps = instance?.dependencies;
 
   if (!deps) {
-    return <div className="p-4 text-[10.5px] font-roboto text-white/40">Loading dependencies…</div>;
+    return <div className="p-4 text-[10.5px] font-roboto text-white/40">Loading dependenciesâ€¦</div>;
   }
 
   const postureColor =
     deps.posture === 'hard-block' ? '#EF4444'
-    : deps.posture === 'soft-gap'  ? '#F59E0B'
+    : deps.posture === 'soft-gap'  ? 'var(--ci-warning-fg)'
     : TEAL_PRIMARY;
 
   if (!deps.upstream.length && !deps.downstream.length) {
@@ -1735,10 +1744,10 @@ function DependenciesTab({
           <div className="text-[9.5px] font-montserrat font-bold text-white/45 uppercase tracking-[0.16em] mb-2">
             Upstream Dependencies ({deps.upstream.length})
           </div>
-          <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--ci-overlay-border-strong)' }}>
             <table className="w-full text-[10.5px] font-roboto">
               <thead>
-                <tr className="border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
+                <tr className="border-b" style={{ borderColor: 'var(--ci-overlay-border)', background: 'var(--ci-overlay-faint)' }}>
                   {['Workflow', 'Status', 'Satisfied', 'Impact'].map(h => (
                     <th key={h} className="px-3 py-2 text-left font-montserrat font-bold text-white/40 text-[9px] uppercase tracking-[0.14em]">{h}</th>
                   ))}
@@ -1749,11 +1758,11 @@ function DependenciesTab({
                   const satisfied = u.isComplete;
                   const certified = u.isCertified;
                   const blocks    = u.required && !u.isComplete;
-                  const rc = !satisfied ? '#EF4444' : certified ? TEAL_PRIMARY : '#F59E0B';
-                  const satisfiedLabel = !satisfied ? 'Incomplete' : certified ? 'Satisfied' : 'Complete — Not Certified';
+                  const rc = !satisfied ? '#EF4444' : certified ? TEAL_PRIMARY : 'var(--ci-warning-fg)';
+                  const satisfiedLabel = !satisfied ? 'Incomplete' : certified ? 'Satisfied' : 'Complete â€” Not Certified';
                   const impactLabel    = blocks ? 'Blocking Certification' : !certified ? 'Downstream Risk' : 'Satisfied';
                   return (
-                    <tr key={u.eventId} className="border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                    <tr key={u.eventId} className="border-b" style={{ borderColor: 'var(--ci-overlay-soft)' }}>
                       <td className="px-3 py-2">
                         <div className="font-montserrat font-bold text-white/85 text-[10.5px] truncate">{u.title}</div>
                         <div className="font-mono-jb text-white/40 text-[9px]">{u.eventId.replace(/^EVT-/, '')}</div>
@@ -1770,7 +1779,7 @@ function DependenciesTab({
                       </td>
                       <td className="px-3 py-2">
                         <span className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.10em]"
-                          style={{ color: blocks ? '#EF4444' : !certified ? '#F59E0B' : TEAL_PRIMARY }}>
+                          style={{ color: blocks ? '#EF4444' : !certified ? 'var(--ci-warning-fg)' : TEAL_PRIMARY }}>
                           {impactLabel}
                         </span>
                       </td>
@@ -1794,14 +1803,14 @@ function DependenciesTab({
               <li
                 key={`${d.eventId}-${d.relation}`}
                 className="flex items-center justify-between gap-3 rounded-md border px-3 py-2"
-                style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
+                style={{ borderColor: 'var(--ci-overlay-border)', background: 'var(--ci-overlay-faint)' }}
               >
                 <div className="min-w-0">
                   <p className="font-montserrat font-bold text-white/80 text-[10.5px] truncate">{d.title}</p>
-                  <p className="font-mono-jb text-white/40 text-[9px]">{d.eventId.replace(/^EVT-/, '')} · {d.date}</p>
+                  <p className="font-mono-jb text-white/40 text-[9px]">{d.eventId.replace(/^EVT-/, '')} Â· {d.date}</p>
                 </div>
                 <span className="text-[9px] font-montserrat font-bold uppercase tracking-[0.12em] px-1.5 py-0.5 rounded shrink-0"
-                  style={{ color: 'rgba(255,255,255,0.55)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                  style={{ color: 'var(--ci-text-on-surface-muted)', background: 'var(--ci-overlay-border)', border: '1px solid var(--ci-overlay-border-strong)' }}>
                   {d.relation}
                 </span>
               </li>
@@ -1813,9 +1822,9 @@ function DependenciesTab({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   TAB: Audit Trail — plain, timestamped, no decoration
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TAB: Audit Trail â€” plain, timestamped, no decoration
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function AuditTrailTab({ instance }: { instance: ReturnType<typeof useWorkflowInstance> }) {
   const trail = instance?.auditTrail ?? [];
 
@@ -1865,11 +1874,11 @@ function AuditTrailTab({ instance }: { instance: ReturnType<typeof useWorkflowIn
                 })}
               </span>
               <div className="min-w-0">
-                <span className="font-montserrat font-bold text-white/85">{entry.actor ?? '—'}</span>
-                <span className="text-white/40 mx-1">—</span>
+                <span className="font-montserrat font-bold text-white/85">{entry.actor ?? 'â€”'}</span>
+                <span className="text-white/40 mx-1">â€”</span>
                 <span className="text-white/75">{label}</span>
-                {entry.reason && <span className="text-white/45 ml-1">— {entry.reason}</span>}
-                {entry.targetKind && <span className="text-white/35 ml-1 font-mono-jb text-[9px]">· {entry.targetKind}</span>}
+                {entry.reason && <span className="text-white/45 ml-1">â€” {entry.reason}</span>}
+                {entry.targetKind && <span className="text-white/35 ml-1 font-mono-jb text-[9px]">Â· {entry.targetKind}</span>}
                 {artifactRoute && (
                   <a
                     href={artifactRoute}
@@ -1890,18 +1899,18 @@ function AuditTrailTab({ instance }: { instance: ReturnType<typeof useWorkflowIn
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    Utility components
-   ═══════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 function CommandSearch({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="flex items-center rounded-md border bg-white/[0.03] px-2.5 py-1.5 w-52"
-      style={{ borderColor: 'rgba(255,255,255,0.10)' }}>
+      style={{ borderColor: 'var(--ci-overlay-border-strong)' }}>
       <Search size={12} className="text-white/40 mr-2 shrink-0" />
       <input
         type="text" value={value} onChange={e => onChange(e.target.value)}
-        placeholder="Search id, title, owner…"
+        placeholder="Search id, title, ownerâ€¦"
         className="flex-1 bg-transparent outline-none text-[11px] font-roboto text-white placeholder-white/30 min-w-0"
       />
       {value && (
@@ -1933,17 +1942,17 @@ function DateRangeFilter({
         onClick={() => setOpen(o => !o)}
         className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border transition"
         style={{
-          borderColor: hasActive ? `${TEAL_PRIMARY}66` : 'rgba(255,255,255,0.10)',
-          background:  hasActive ? `${TEAL_PRIMARY}14` : 'rgba(255,255,255,0.03)',
-          color:       hasActive ? TEAL_PRIMARY : 'rgba(255,255,255,0.70)',
+          borderColor: hasActive ? `${TEAL_PRIMARY}66` : 'var(--ci-overlay-border-strong)',
+          background:  hasActive ? `${TEAL_PRIMARY}14` : 'var(--ci-overlay-faint)',
+          color:       hasActive ? TEAL_PRIMARY : 'var(--ci-text-on-surface-soft)',
         }}
       >
-        <Filter size={11} /> Filters {hasActive && '•'}
+        <Filter size={11} /> Filters {hasActive && 'â€¢'}
       </button>
       {open && (
         <div
           className="absolute right-0 top-full mt-1.5 z-50 rounded-xl border p-4 flex flex-col gap-3 w-72 shadow-2xl"
-          style={{ background: '#0D1117', borderColor: 'rgba(255,255,255,0.12)' }}
+          style={{ background: 'var(--ci-bg)', borderColor: 'var(--ci-overlay-border-strong)' }}
         >
           <div className="text-[9.5px] font-montserrat font-bold text-white/45 uppercase tracking-[0.16em]">Date Range</div>
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -1958,7 +1967,7 @@ function DateRangeFilter({
             <input type="date" value={dateRange.startISO}
               onChange={e => setDateRange(r => ({ ...r, startISO: e.target.value }))}
               className="flex-1 bg-white/[0.05] border border-white/10 rounded px-2 py-1 text-[10px] font-roboto text-white/80" />
-            <span className="text-white/35 text-[10px]">→</span>
+            <span className="text-white/35 text-[10px]">â†’</span>
             <input type="date" value={dateRange.endISO}
               onChange={e => setDateRange(r => ({ ...r, endISO: e.target.value }))}
               className="flex-1 bg-white/[0.05] border border-white/10 rounded px-2 py-1 text-[10px] font-roboto text-white/80" />
@@ -1966,7 +1975,7 @@ function DateRangeFilter({
           <div className="text-[9.5px] font-montserrat font-bold text-white/45 uppercase tracking-[0.16em] mt-1">Regulation</div>
           <input type="text" value={regulationFilter}
             onChange={e => setRegulationFilter(e.target.value)}
-            placeholder="e.g. 42 CFR § 484"
+            placeholder="e.g. 42 CFR Â§ 484"
             className="bg-white/[0.05] border border-white/10 rounded px-2 py-1.5 text-[10.5px] font-roboto text-white/80" />
           {hasActive && (
             <button type="button"
@@ -1991,9 +2000,9 @@ function ViewToggleBtn({
       title={title}
       className="w-7 h-7 rounded-md flex items-center justify-center border transition"
       style={{
-        borderColor: active ? `${TEAL_PRIMARY}66` : 'rgba(255,255,255,0.10)',
-        background:  active ? `${TEAL_PRIMARY}14` : 'rgba(255,255,255,0.03)',
-        color:       active ? TEAL_PRIMARY : 'rgba(255,255,255,0.45)',
+        borderColor: active ? `${TEAL_PRIMARY}66` : 'var(--ci-overlay-border-strong)',
+        background:  active ? `${TEAL_PRIMARY}14` : 'var(--ci-overlay-faint)',
+        color:       active ? TEAL_PRIMARY : 'var(--ci-text-on-surface-faint)',
       }}
     >
       {icon}
@@ -2001,9 +2010,9 @@ function ViewToggleBtn({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    Pure helper functions (no React)
-   ═══════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 function stateToQuickFilter(state: AuditState): QuickFilter | null {
   const map: Partial<Record<AuditState, QuickFilter>> = {
@@ -2080,8 +2089,8 @@ function quickFilterColor(qf: QuickFilter): string {
     case 'all':              return TEAL_PRIMARY;
     case 'july-readiness':   return '#38BDF8';
     case 'not-certifiable':  return '#EF4444';
-    case 'missing-evidence': return '#F59E0B';
-    case 'pending-approval': return '#F59E0B';
+    case 'missing-evidence': return 'var(--ci-warning-fg)';
+    case 'pending-approval': return 'var(--ci-warning-fg)';
     case 'overdue':          return '#EF4444';
     case 'ready-to-certify': return ACTION_COLOR;
     case 'certified':        return AUDIT_STATE_COLOR['certified-locked'];
@@ -2115,13 +2124,13 @@ function quickFilterCount(
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   CesSprintAuditStrip — bridge surface in Audit Mode
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CesSprintAuditStrip â€” bridge surface in Audit Mode
    --------------------------------------------------------------
    Reads CES audit-readiness rollup and critical units from the
    shared compliance-execution layer. Click jumps to the sprint
    view of the unified calendar.
-   ═══════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function CesSprintAuditStrip({ onOpenSprint }: { onOpenSprint: () => void }) {
   const snap     = useComplianceExecution();
   const rollup   = useMemo(() => selectAuditReadinessRollup(snap), [snap]);
@@ -2129,10 +2138,10 @@ function CesSprintAuditStrip({ onOpenSprint }: { onOpenSprint: () => void }) {
   return (
     <div
       className="px-6 md:px-10 py-2 flex items-center gap-5 border-b text-[11px] font-roboto"
-      style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.015)' }}
+      style={{ borderColor: 'var(--ci-overlay-border)', background: 'var(--ci-overlay-faint)' }}
     >
       <span className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.2em]" style={{ color: TEAL_PRIMARY }}>
-        Sprint {snap.activeSprint.label} · CES Audit
+        Sprint {snap.activeSprint.label} Â· CES Audit
       </span>
       <span className="text-white/70">Not Ready: <strong className="text-white">{rollup.notReady}</strong></span>
       <span className="text-white/70">Partial: <strong className="text-white">{rollup.partial}</strong></span>
@@ -2144,7 +2153,7 @@ function CesSprintAuditStrip({ onOpenSprint }: { onOpenSprint: () => void }) {
         onClick={onOpenSprint}
         className="ml-auto px-2.5 py-1 rounded-md border border-white/10 hover:bg-white/[0.05] text-white/75 hover:text-white"
       >
-        Open Sprint View →
+        Open Sprint View â†’
       </button>
     </div>
   );

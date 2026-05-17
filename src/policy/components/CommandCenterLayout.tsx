@@ -6,24 +6,21 @@ import {
   LayoutDashboard, ClipboardCheck, Network, FileEdit,
   PlayCircle,
   CalendarDays,
-  HelpCircle, Search, ChevronLeft, Menu,
+  HelpCircle,
   ShieldCheck, Zap,
   ArrowUpCircle, FolderOpen, UserCheck, Sparkles,
   ListChecks, LogOut, Compass, Trash2,
   Users, Heart,
 } from 'lucide-react';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
-import TravelightBG from '@/components/TravelightBG';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { useCiModeStore } from '@/policy/stores/ciModeStore';
 import { useAuth } from '@/auth/AuthProvider';
 import { evaluateAdminAccess } from '@/policy/security/identity';
 import { canViewNavItem as canViewNavItemFn } from '@/policy/security/features/featureAccess';
 import { useUserAssignmentsStore } from '@/policy/security/identity/userAssignmentsStore';
-import { RolloutPhaseBadge } from '@/policy/security/features/RolloutPhaseBadge';
 import { PermissionGate } from '@/policy/security/features/PermissionGate';
-import { ThemeModeToggle } from '@/policy/components/ui/ThemeModeToggle';
-import { ShellFrame } from '@/policy/components/ui';
+import { ShellFrame, ShellNavRail, ShellTopbar, ShellContentFrame, ShellMobileDrawer } from '@/policy/components/ui';
 import { ContextualKnowledgeBulb } from '@/policy/components/help/ContextualKnowledgeBulb';
 import { useNavStore } from '@/policy/stores/navStore';
 import { GlobalTaskDrawer } from '@/policy/components/pm/GlobalTaskDrawer';
@@ -70,7 +67,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard', to: '/dashboard', label: 'Command Center', subItems: [{ to: '/dashboard', label: 'Overview' }], icon: LayoutDashboard, featureId: 'dashboard.view' },
+  { id: 'dashboard', to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, featureId: 'dashboard.view' },
   { id: 'clinician-profiles', to: '/clinicians', label: 'Clinician Profiles', icon: Users, featureId: 'clinicians.view' },
   { id: 'patient-profiles', to: '/patients', label: 'Patient Profiles', icon: Heart, featureId: 'patients.view' },
   { id: 'staffing-calendar', to: '/staffing-calendar', label: 'Calendar', icon: CalendarDays, featureId: 'staffing.calendar.view' },
@@ -176,26 +173,11 @@ function useIsMobile(): boolean {
   return mobile;
 }
 
-function resolveActiveNav(pathname: string, navItems: NavItem[]): NavItem {
-  for (const item of navItems) {
-    if (item.subItems) {
-      for (const sub of item.subItems) {
-        const subPath = sub.to.split('?')[0].split('#')[0];
-        if (pathname === subPath || pathname.startsWith(subPath + '/')) return item;
-      }
-    }
-     const itemPath = item.to.split('?')[0].split('#')[0];
-     if (pathname === itemPath || pathname.startsWith(itemPath + '/')) return item;
-  }
-  return navItems[0];
-}
-
 export function CommandCenterLayout({ children }: PropsWithChildren) {
   const [launching] = useState(false);
   const [splashExit] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
-  const [activeSubMenu, setActiveSubMenu] = useState<NavItem | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -233,7 +215,6 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   const theme = useShellStore(s => s.theme);
   const toggleTheme = useShellStore(s => s.toggleTheme);
   const isCareIndeed = theme === 'care-indeed-light';
-  const isLight = isCareIndeed;
   const ciMode = useCiModeStore(s => s.mode);
   // When brand is Care Indeed, ALWAYS render the flat light backdrop —
   // never the maroon TravelightBG. The orthogonal `ciMode` only affects
@@ -296,9 +277,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
     /^\/gv-policy\/.+/.test(location.pathname) ||
     /^\/forms\/.+/.test(location.pathname);
   const hideChrome = detailMode || pathIsDetail;
-  const hideGlobalSearch = /^\/(library|help|iadministrator)(?:\/|$)/.test(location.pathname);
 
-  const currentNav = resolveActiveNav(location.pathname, allNavItems);
   const isMobileTabActive = (to: string) => {
     const tabPath = to.split('?')[0].split('#')[0];
     return location.pathname === tabPath || location.pathname.startsWith(`${tabPath}/`);
@@ -307,7 +286,11 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   // ── Nav icons click-to-expand sub-navigation ───────────────────────────────
   const [expandedNavId, setExpandedNavId] = useState<string | null>(null);
 
-  const VISIBLE_NAV = allNavItems.filter(item => item.id !== 'onboarding-v2' && item.id !== 'dashboard');
+  // Phase 3 — Dashboard restored to nav (was previously hidden on the
+  // assumption that the brand logo + '/' redirect made it implicitly
+  // reachable; this surface is now the reference Phase 3 surface and
+  // must be a first-class, keyboard-reachable nav target).
+  const VISIBLE_NAV = allNavItems.filter(item => item.id !== 'onboarding-v2');
   const activeDropdownNavId = useMemo(() => {
     if (!expandedNavId) return null;
     const expandedItem = VISIBLE_NAV.find(item => item.id === expandedNavId);
@@ -382,70 +365,193 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
 
   return (
     <ShellFrame>
-      {/* ── 1. Premium background (TravelightBG) — fills viewport ── */}
-      <TravelightBG isLight={isVisualLight} />
+      {/* ═══════════════════════════════════════════════════════════
+          Phase 2 Canonical Shell
+          ShellFrame (backdrop + 4-sided inset)
+            └─ ShellContentFrame (glass canvas, in-flow)
+                 ├─ ShellTopbar  (top bar)
+                 └─ Body
+                      ├─ ShellNavRail  (desktop left rail, ShellCommandGroup inside)
+                      └─ Main content region
+         ═══════════════════════════════════════════════════════════ */}
+      <ShellContentFrame
+        scrollable={false}
+        detail={hideChrome}
+        className={`flex flex-col ${isMobile ? 'rounded-none' : ''} ${isVisualLight ? 'text-slate-800' : 'text-[var(--ci-text)]'}`}
+      >
+        {/* Inner flex column: topbar stacked above body */}
+        <div className="flex h-full w-full flex-col min-h-0">
 
-      {/* ── 2. Single premium glass canvas — near-fullscreen ── */}
-      <div data-shell-outer="" className={`fixed inset-0 ${isVisualLight ? 'text-slate-800' : 'text-[#E0E0E0]'}`} style={{ zIndex: 1 }}>
-        <div
-          data-shell-card=""
-          className={`absolute overflow-hidden ${isMobile ? 'inset-0 rounded-none' : 'rounded-3xl md:rounded-[2rem]'}`}
-          style={{
-            ...(isMobile
-              ? {}
-              : {
-                  top:    'clamp(16px, 1.6vw, 28px)',
-                  bottom: 'clamp(16px, 1.6vw, 28px)',
-                  left:   'clamp(16px, 1.6vw, 28px)',
-                  right:  'clamp(16px, 1.6vw, 28px)',
-                }),
+          {/* ── Phase 2: ShellTopbar ──────────────────────────────── */}
+          {!hideChrome && !showSplash && (
+            <ShellTopbar
+              onMenuClick={() => { setIsMenuOpen(!isMenuOpen); }}
+              showMobileMenu={isMobile}
+              logo={
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  aria-label={`Switch to ${isCareIndeed ? 'CI-ION Dark' : 'Care Indeed Light'} theme`}
+                  className="cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
+                >
+                  <img
+                    src={logo}
+                    alt="Care Indeed — theme toggle"
+                    className={`h-8 md:h-11 w-auto object-contain ${isCareIndeed ? '' : 'drop-shadow-md'}`}
+                    style={isCareIndeed ? undefined : { filter: 'brightness(0) invert(1)', opacity: 0.95 }}
+                  />
+                </button>
+              }
+            >
+              <ContextualKnowledgeBulb />
+              {/* Account menu */}
+              <div className="relative shrink-0" ref={accountMenuRef}>
+                <button
+                  type="button"
+                  aria-label={`Account: ${accountDisplayName}`}
+                  aria-haspopup="menu"
+                  data-on-brand=""
+                  onClick={() => setIsAccountMenuOpen(v => !v)}
+                  className="glass-interactive ci-subtle-hover flex items-center justify-center w-11 h-11 sm:w-10 sm:h-10 rounded-full text-white font-bold text-sm cursor-pointer relative border border-transparent"
+                  style={{
+                    background: isVisualLight
+                      ? 'var(--ci-secondary-500)'
+                      : isCareIndeedDark
+                        ? 'var(--ci-shell-account-avatar-bg-ci-light-dark)'
+                        : 'var(--ci-color-shell-account-avatar-bg)',
+                  }}
+                >
+                  {accountInitials}
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full"
+                    style={{ background: 'var(--ci-accent)' }}
+                  />
+                </button>
 
-            /* ── Glass surface ──
-               Light  : Care Indeed single sheet of paper. Solid white
-                        surface, 1px #E5E4E3 hairline, almost-invisible
-                        outer shadow. (No glass/blur on the light Layer 1;
-                        per Lead 1 light-mode rule + Lead 16 C1 glass-stack
-                        budget — Layer 1 must not stack blur on top of
-                        Layer 0.)
-               Dark   : CI-ION maroon glass at 30.44% (7.77% reduction
-                        from 33%); full opacity in detail mode. */
-            ...(isVisualLight
-              ? {
-                  // Care Indeed light mode — one-card canvas matching
-                  // the Workflow Library aesthetic. Solid white surface,
-                  // 1px #E5E4E3 hairline, almost-invisible outer shadow
-                  // for subtle elevation against the #FAFBF8 gutter.
-                  background: '#FFFFFF',
-                  border: '1px solid #E5E4E3',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-                }
-              : isCareIndeedDark
-                ? {
-                    background: 'linear-gradient(160deg, rgba(27,49,51,0.78) 0%, rgba(14,27,28,0.78) 100%)',
-                    backdropFilter: 'blur(20px) saturate(120%)',
-                    WebkitBackdropFilter: 'blur(20px) saturate(120%)',
-                    border: '1px solid rgba(122,222,223,0.18)',
-                    boxShadow: '0 22px 48px -16px rgba(0,0,0,0.65), inset 0 1px 0 rgba(122,222,223,0.06)',
-                  }
-              : {
-                  background: hideChrome
-                    ? 'linear-gradient(160deg, rgba(66,8,8,1) 0%, rgba(10,2,2,1) 100%)'
-                    : 'linear-gradient(160deg, rgba(66,8,8,0.3044) 0%, rgba(10,2,2,0.3044) 100%)',
-                  backdropFilter: 'blur(22px) saturate(145%)',
-                  WebkitBackdropFilter: 'blur(22px) saturate(145%)',
-                  border: '1px solid rgba(255,255,255,0.09)',
-                  boxShadow:
-                    '0 40px 120px -30px rgba(0,0,0,0.85), 0 18px 48px -18px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07), inset 0 0 0 1px rgba(255,255,255,0.015)',
-                }),
-          }}
-        >
+                {isAccountMenuOpen && (
+                  <div
+                    role="menu"
+                    aria-label="Account menu"
+                    className="absolute right-0 mt-2 w-[220px] rounded-xl overflow-hidden ci-shell-command-group"
+                    style={{
+                      background: isVisualLight
+                        ? 'var(--ci-shell-account-menu-bg-light)'
+                        : 'var(--ci-shell-account-menu-bg-dark)',
+                      border: isVisualLight ? '1px solid var(--ci-neutral-200)' : '1px solid var(--ci-overlay-border-strong)',
+                      boxShadow: 'var(--ci-color-shell-overlay-shadow)',
+                    }}
+                  >
+                    <div
+                      className="px-3.5 py-3 border-b"
+                      style={{ borderColor: isVisualLight ? 'var(--ci-neutral-200)' : 'var(--ci-overlay-border-strong)' }}
+                    >
+                      <p className={`text-[13px] font-semibold ${isVisualLight ? 'text-slate-900' : 'text-white'}`}>
+                        {accountDisplayName}
+                      </p>
+                      <p className={`text-[11px] mt-0.5 ${isVisualLight ? 'text-slate-500' : 'text-white/65'}`}>
+                        {accountRole}
+                      </p>
+                    </div>
 
-          {/* ── 3. Content wrapper ── */}
-          <div className="flex w-full h-full relative">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleMyTasksClick}
+                      className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
+                        isVisualLight
+                          ? 'text-slate-700 hover:bg-slate-100'
+                          : 'text-white/85 hover:bg-white/10'
+                      }`}
+                    >
+                      <ListChecks size={16} />
+                      My Tasks
+                    </button>
+
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { setIsAccountMenuOpen(false); restartGuidedTour(); }}
+                      className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
+                        isVisualLight
+                          ? 'text-slate-700 hover:bg-slate-100'
+                          : 'text-white/85 hover:bg-white/10'
+                      }`}
+                    >
+                      <Compass size={16} />
+                      Restart Guided Tour
+                    </button>
+
+                    {/* Robert-only CES review role switcher */}
+                    <CesRoleReviewSwitcher
+                      userEmail={user?.email}
+                      userId={user?.id}
+                      isLight={isVisualLight}
+                    />
+
+                    {/* Nuclear reset — gated by system.replay permission */}
+                    {user?.id === 'demo-user-careindeed' && (
+                      <PermissionGate permissionId="system.replay">
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            if (window.confirm('RESET ALL?\n\nThis deletes every signed form, uploaded evidence, task completion, form instance, approval, and certification.\n\nCannot be undone.')) {
+                              useRegulatoryExecutionStore.getState().resetAll();
+                              window.location.reload();
+                            }
+                          }}
+                          className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
+                            isVisualLight
+                              ? 'text-red-700 hover:bg-red-50'
+                              : 'text-red-400 hover:bg-red-500/15'
+                          }`}
+                        >
+                          <Trash2 size={16} />
+                          Reset All Data
+                        </button>
+                      </PermissionGate>
+                    )}
+
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { void handleLogoutClick(); }}
+                      className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
+                        isVisualLight
+                          ? 'text-[var(--ci-primary-500)] hover:bg-orange-50'
+                          : 'text-[var(--ci-gold)] hover:bg-white/10'
+                      }`}
+                    >
+                      <LogOut size={16} />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </ShellTopbar>
+          )}
+
+          {/* ── Phase 2 Body: ShellNavRail + content ─────────────── */}
+          <div className="flex flex-1 min-h-0 overflow-hidden relative">
+
+            {/* Desktop: Phase 2 ShellNavRail with ShellCommandGroup grouping */}
+            {!isMobile && !hideChrome && !showSplash && (
+              <ShellNavRail
+                items={VISIBLE_NAV}
+                onItemClick={(item) => {
+                  setExpandedNavId(item.subItems?.length ? item.id : null);
+                  navigate(item.to);
+                }}
+              />
+            )}
+
+            {/* ── Main content region ────────────────────────────── */}
+            <div className="flex-1 flex flex-col overflow-hidden relative min-w-0">
 
             {showSplash ? (
               /* ══════════════════════════════════════════
-                 4. SPLASH VIEW — CI-ION Premium
+                 SPLASH VIEW — CI-ION Premium
                  ══════════════════════════════════════════ */
               <div
                 className="absolute inset-0 z-[60] flex items-center justify-center animate-in fade-in duration-700 p-8 md:p-20"
@@ -453,7 +559,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                   transition: 'opacity 700ms cubic-bezier(.22,1,.36,1)',
                   opacity: splashExit ? 0 : 1,
                   pointerEvents: splashExit ? ('none' as const) : ('auto' as const),
-                  background: '#FFFFFF',
+                  background: 'var(--ci-bg, #FFFFFF)',
                 }}
               >
                 {/* Splash inner card — brand-aligned enterprise panel.
@@ -468,8 +574,8 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     minHeight: 580,
                     padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem)',
                     borderRadius: '24px',
-                    background: '#FFFFFF',
-                    border: '1px solid #E5E4E3',
+                    background: 'var(--ci-bg, #FFFFFF)',
+                    border: '1px solid var(--ci-neutral-200)',
                   }}
                 >
                   <div className="w-full flex flex-col items-center gap-8 relative z-10">
@@ -502,15 +608,15 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         letterSpacing: '.25em',
                         border: `1px solid ${
                           launching
-                            ? '#C74601'
-                            : '#D1D1D1'
+                            ? 'var(--ci-primary-500)'
+                            : 'var(--ci-neutral-300)'
                         }`,
                         background: launching
-                          ? '#FFEEE5'
-                          : '#FFFFFF',
+                          ? 'var(--ci-primary-200)'
+                          : 'var(--ci-bg, #FFFFFF)',
                         color: launching
-                          ? '#C74601'
-                          : '#52404B',
+                          ? 'var(--ci-primary-500)'
+                          : 'var(--ci-neutral-500)',
                         transition: 'all .3s ease',
                       }}
                     >
@@ -523,7 +629,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                             width: '100%',
                             borderRadius: '50%',
                             opacity: 0.75,
-                            background: launching ? '#C74601' : '#007970',
+                            background: launching ? 'var(--ci-primary-500)' : 'var(--ci-secondary-500)',
                             animation: 'splashPing 1s cubic-bezier(0,0,.2,1) infinite',
                           }}
                         />
@@ -534,7 +640,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                             borderRadius: '50%',
                             height: 6,
                             width: 6,
-                            background: launching ? '#C74601' : '#007970',
+                            background: launching ? 'var(--ci-primary-500)' : 'var(--ci-secondary-500)',
                           }}
                         />
                       </span>
@@ -551,12 +657,12 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                           fontWeight: 500,
                           lineHeight: 1.15,
                           letterSpacing: '-0.01em',
-                          color: '#1F1C1B',
+                          color: 'var(--ci-neutral-600)',
                         }}
                       >
                         Enterprise Policy
                         <br />
-                        <span style={{ fontWeight: 600, color: '#C74601' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--ci-primary-500)' }}>
                           Architecture
                         </span>
                       </h1>
@@ -566,7 +672,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                           fontSize: 10,
                           letterSpacing: '.35em',
                           fontWeight: 500,
-                          color: '#747474',
+                          color: 'var(--ci-neutral-400)',
                         }}
                       >
                         Policy Command Workspace
@@ -581,7 +687,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         fontSize: 13,
                         lineHeight: 1.55,
                         fontWeight: 400,
-                        color: '#52404B',
+                        color: 'var(--ci-neutral-500)',
                       }}
                     >
                       Launch the Care Indeed policy environment and access your compliance workspace.
@@ -602,19 +708,19 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                           textTransform: 'uppercase',
                           letterSpacing: '.18em',
                           fontSize: '.82rem',
-                          color: '#FFFFFF',
+                          color: 'var(--ci-color-on-primary)',
                           cursor: launching ? 'wait' : 'pointer',
-                          background: launching ? '#421700' : '#C74601',
+                          background: launching ? 'var(--ci-primary-600)' : 'var(--ci-primary-500)',
                           border: 'none',
                           outline: 'none',
                           overflow: 'hidden',
                           transition: 'background-color .2s ease',
                         }}
                         onMouseEnter={e => {
-                          if (!launching) e.currentTarget.style.background = '#421700';
+                          if (!launching) e.currentTarget.style.background = 'var(--ci-primary-600)';
                         }}
                         onMouseLeave={e => {
-                          if (!launching) e.currentTarget.style.background = '#C74601';
+                          if (!launching) e.currentTarget.style.background = 'var(--ci-primary-500)';
                         }}
                       >
                         Login
@@ -632,10 +738,10 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                           textTransform: 'uppercase',
                           letterSpacing: '.18em',
                           fontSize: '.82rem',
-                          color: '#C74601',
+                          color: 'var(--ci-primary-500)',
                           cursor: 'pointer',
                           background: 'transparent',
-                          border: '1px solid rgba(199,70,1,0.45)',
+                          border: '1px solid var(--ci-color-cta-primary-border-soft)',
                           outline: 'none',
                         }}
                       >
@@ -652,7 +758,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         <div
                           key={label}
                           className="flex flex-col items-center gap-1.5 font-heading"
-                          style={{ color: '#52404B' }}
+                          style={{ color: 'var(--ci-neutral-500)' }}
                         >
                           <Icon size={14} strokeWidth={1.75} aria-hidden="true" />
                           <span className="font-semibold uppercase" style={{ fontSize: 9, letterSpacing: '.18em' }}>{label}</span>
@@ -666,7 +772,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         fontSize: 10,
                         letterSpacing: '.1em',
                         fontWeight: 400,
-                        color: isVisualLight ? '#747474' : 'rgba(255,255,255,0.55)',
+                        color: isVisualLight ? 'var(--ci-neutral-400)' : 'var(--ci-text-on-surface-muted)',
                       }}
                     >
                       © 2026 CareIndeed · Policy Command Center
@@ -677,395 +783,77 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
             ) : (
               <>
                 {/* ══════════════════════════════════════════
-                    FULL-SCREEN MODAL MENU
+                    MOBILE NAVIGATION DRAWER
+                    Phase 2 §6 — canonical primitive replaces the
+                    legacy full-screen modal. ShellMobileDrawer wraps
+                    BottomSheetDrawer which provides role="dialog",
+                    aria-modal, Escape-to-close, scrim-tap close, and
+                    swipe-down dismiss. Items with subItems render as
+                    a flat grouped sublist for narrow viewports.
                    ══════════════════════════════════════════ */}
-                {isMenuOpen && (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center animate-in fade-in duration-500">
-                    <div
-                      className="absolute inset-0 cursor-pointer"
-                      style={{
-                        // Stabilization U-13 / MVP §C1 (Lead 16 C1) — full-screen
-                        // menu scrim sits over the already-blurred shell. Stacking
-                        // a second backdrop-filter on this overlay would push the
-                        // file past the max-3 glass-layer budget; the 0.65 dark
-                        // opacity (and solid white on light) dims sufficiently
-                        // on its own.
-                        background: isVisualLight
-                          ? '#FFFFFF'
-                          : 'rgba(10,2,2,0.65)',
-                      }}
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        setActiveSubMenu(null);
-                      }}
-                    />
-                    <div className="relative z-10 w-full max-w-5xl px-4 sm:px-8 flex justify-center items-center pointer-events-none">
-                      <div className="pointer-events-auto w-full max-h-[90vh] overflow-y-auto custom-scrollbar">
-                        {!activeSubMenu ? (
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 sm:gap-x-12 gap-y-10 sm:gap-y-16 md:gap-y-20 animate-in zoom-in-95 duration-500">
-                            {VISIBLE_NAV.map((item) => {
-                              const isActive = currentNav.id === item.id;
-                              return (
-                                <button
-                                  key={item.id}
-                                  onClick={() => {
-                                    if (item.subItems) {
-                                      setActiveSubMenu(item);
-                                    } else {
-                                      navigate(item.to);
-                                      setIsMenuOpen(false);
-                                    }
-                                  }}
-                                  className="flex flex-col items-center justify-center gap-3 sm:gap-6 group outline-none min-h-[44px]"
-                                >
-                                  <span style={isActive ? { color: isCareIndeed ? '#007970' : '#FFC107' } : undefined}>
-                                    <item.icon
-                                      size={36}
-                                      strokeWidth={1}
-                                      className={`icon-interactive group-hover:scale-110 sm:[&]:!w-12 sm:[&]:!h-12 ${isActive ? '!opacity-100' : isVisualLight ? 'text-slate-700' : 'text-white'}`}
-                                    />
-                                  </span>
-                                  <span
-                                    className={`icon-interactive text-xs sm:text-lg font-light uppercase tracking-[0.18em] sm:tracking-[0.2em] text-center inline-flex items-center justify-center ${isActive ? '!opacity-100' : isVisualLight ? 'text-slate-700' : 'text-white'}`}
-                                    style={isActive ? { color: isCareIndeed ? '#007970' : '#FFC107' } : undefined}
-                                  >
-                                    {item.label}
-                                    {item.featureId && <RolloutPhaseBadge featureId={item.featureId} />}
-                                  </span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center animate-in slide-in-from-right-8 fade-in duration-500">
-                            <button
-                              onClick={() => setActiveSubMenu(null)}
-                              className={`mb-16 flex items-center gap-3 ${isVisualLight ? 'hover:text-slate-900' : 'hover:text-white'} transition-colors uppercase tracking-[0.2em] font-bold text-sm`}
-                              style={{ color: isCareIndeed ? '#007970' : '#FFC107' }}
-                            >
-                              <ChevronLeft size={18} /> Back to Main Menu
-                            </button>
-                            <h3 className={`text-2xl font-light ${isVisualLight ? 'text-slate-700' : 'text-white/40'} uppercase tracking-[0.3em] mb-12 flex items-center gap-4`}>
-                              <activeSubMenu.icon size={28} strokeWidth={1} />
-                              {activeSubMenu.label}
-                            </h3>
-                            <div className="flex flex-col gap-8 items-center">
-                              {activeSubMenu.subItems!.map((sub, idx) => (
-                                <button
-                                  key={idx}
-                                  onClick={() => {
-                                    navigate(sub.to);
-                                    setIsMenuOpen(false);
-                                    setActiveSubMenu(null);
-                                  }}
-                                  className="group text-5xl md:text-6xl font-light outline-none"
-                                >
-                                  <span className={`icon-interactive uppercase tracking-[0.1em] ${isVisualLight ? 'text-slate-900' : 'text-white'} block group-hover:scale-105`}>
-                                    {sub.label}
-                                  </span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                <ShellMobileDrawer
+                  open={isMenuOpen}
+                  onClose={() => setIsMenuOpen(false)}
+                  items={VISIBLE_NAV}
+                  currentPath={location.pathname}
+                  onItemClick={(item) => {
+                    navigate(item.to);
+                    setIsMenuOpen(false);
+                  }}
+                  eyebrow={isCareIndeed ? 'Care Indeed' : 'CI-ION'}
+                  title="Navigate"
+                />
 
                 {/* ══════════════════════════════════════════
                     MAIN APP CONTENT
                    ══════════════════════════════════════════ */}
                 <div className={`flex-1 flex flex-col relative z-10 w-full overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isMenuOpen ? 'blur-[12px] opacity-30 scale-[0.98]' : ''} ${isMobile ? 'pb-16' : ''}`}>
 
-                  {!hideChrome && (
-                    <header className="w-full px-2 sm:px-4 md:px-6 lg:px-8 pt-2 sm:pt-4 md:pt-5 pb-1 shrink-0 relative z-20 ci-shell-topbar">
-                      {/* ── Main nav row: Logo · Nav icons · Right controls ── */}
-                      <div className="ci-toolbar-wrap justify-between">
-                        {/* Left: Logo + horizontal nav icons */}
-                        <div className="flex items-center gap-3 min-w-0">
-                          {/* Logo — theme toggle, +33% larger */}
-                          <button
-                            type="button"
-                            onClick={toggleTheme}
-                            aria-label={`Switch to ${isCareIndeed ? 'CI-ION Dark' : 'Care Indeed Light'} theme`}
-                            className="cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
-                          >
-                            <img
-                              src={logo}
-                              alt="Care Indeed — theme toggle"
-                              className={`h-8 md:h-11 w-auto object-contain ${isCareIndeed ? '' : 'drop-shadow-md'}`}
-                              style={isCareIndeed ? undefined : { filter: 'brightness(0) invert(1)', opacity: 0.95 }}
-                            />
-                          </button>
-
-                          {/* Horizontal nav icons — desktop (item-20 gradient pill expand) */}
-                          {!isMobile && (
-                            <nav className="flex items-center gap-1 ml-2 ci-shell-command-group p-1" aria-label="Main navigation">
-                              {VISIBLE_NAV.map(item => {
-                                const isActive = currentNav.id === item.id;
-                                const isExpanded = expandedNavId === item.id;
-                                return (
-                                  <div
-                                    key={item.id}
-                                  >
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setExpandedNavId(item.subItems?.length ? item.id : null);
-                                        navigate(item.to);
-                                      }}
-                                      aria-label={item.label}
-                                      title={item.label}
-                                      aria-current={isActive ? 'page' : undefined}
-                                      className="flex items-center justify-center ci-shell-nav-icon-btn ci-subtle-hover"
-                                      style={{
-                                        width: 38,
-                                        height: 38,
-                                        padding: 0,
-                                        borderRadius: 19,
-                                        transition: 'background-color 0.08s ease, color 0.08s ease, box-shadow 0.08s ease',
-                                        background: isExpanded || isActive
-                                          ? isVisualLight
-                                            ? 'linear-gradient(135deg,#007970,#00b4aa)'
-                                            : 'linear-gradient(135deg,#b8860b,#FFC107)'
-                                          : 'transparent',
-                                        border: isActive
-                                          ? `1px solid ${isCareIndeed ? 'rgba(0,121,112,0.35)' : 'rgba(255,193,7,0.3)'}`
-                                          : '1px solid transparent',
-                                        color: isExpanded || isActive
-                                          ? isVisualLight ? '#fff' : '#0a0202'
-                                          : isVisualLight ? '#374151' : 'rgba(255,255,255,0.65)',
-                                        boxShadow: isExpanded
-                                          ? isCareIndeed
-                                            ? '0 4px 14px rgba(0,121,112,0.3)'
-                                            : '0 4px 14px rgba(255,193,7,0.22)'
-                                          : 'none',
-                                      }}
-                                    >
-                                      <item.icon size={17} strokeWidth={1.5} />
-                                    </button>
-                                  </div>
-                                );
-                              })}
-                            </nav>
-                          )}
-
-                          {/* Hamburger — mobile only */}
-                          {isMobile && (
+                  {/* Sub-nav strip — canonical desktop-only sub-item row */}
+                  {!hideChrome && !isMobile && activeDropdownNavId && (() => {
+                    const hi = VISIBLE_NAV.find(i => i.id === activeDropdownNavId);
+                    if (!hi?.subItems?.length) return null;
+                    return (
+                      <nav
+                        aria-label={`${hi.label} sub-navigation`}
+                        className="ci-shell-subnav custom-scrollbar-x justify-start"
+                      >
+                        {hi.subItems.map(sub => {
+                          const subPath = sub.to.split('?')[0];
+                          const isSubActive = location.pathname === subPath || location.pathname.startsWith(subPath + '/');
+                          return (
                             <button
-                              onClick={() => { setIsMenuOpen(!isMenuOpen); setActiveSubMenu(null); }}
-                              aria-label="Open navigation menu"
-                              className={`glass-interactive ci-subtle-hover flex items-center justify-center w-11 h-11 rounded-full ${isVisualLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'} border border-transparent`}
-                            >
-                              <Menu size={22} />
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Right: Search + Help + Account */}
-                        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 ml-auto">
-                          {!hideGlobalSearch && (
-                            <div
-                              className={`hidden lg:flex items-center bg-transparent border rounded-full px-4 py-2 w-[clamp(180px,18vw,300px)] transition-all ci-shell-command-group ${
-                                isVisualLight
-                                  ? 'border-slate-300 focus-within:border-[#007970]/60'
-                                  : 'border-white/10 focus-within:border-[#FFC107]/50'
-                              }`}
-                            >
-                              <Search size={14} className={`${isVisualLight ? 'text-slate-400' : 'text-white/30'} mr-3 shrink-0`} aria-hidden="true" />
-                              <label htmlFor="ci-global-search" className="sr-only">
-                                Search policies
-                              </label>
-                              <input
-                                id="ci-global-search"
-                                type="text"
-                                placeholder="Search policies..."
-                                className={`bg-transparent border-none outline-none ${isVisualLight ? 'text-slate-900 placeholder-slate-500' : 'text-white placeholder-white/40'} text-xs w-full font-light`}
-                              />
-                            </div>
-                          )}
-                          {/* Care Indeed Light/Dark mode toggle.
-                              SEPARATE from the logo brand toggle.
-                              Only renders when brand = Care Indeed. */}
-                          {isLight && <ThemeModeToggle />}
-                            <ContextualKnowledgeBulb />
-                          <div className="relative shrink-0" ref={accountMenuRef}>
-                            <button
+                              key={sub.to}
                               type="button"
-                              aria-label={`Account: ${accountDisplayName}`}
-                              aria-haspopup="menu"
-                              onClick={() => setIsAccountMenuOpen(v => !v)}
-                              className="glass-interactive ci-subtle-hover flex items-center justify-center w-11 h-11 sm:w-10 sm:h-10 rounded-full text-white font-bold text-sm cursor-pointer relative border border-transparent"
+                              onClick={() => navigate(sub.to)}
+                              className="font-heading ci-shell-subnav-chip"
                               style={{
-                                background: isVisualLight
-                                  ? '#007970'
-                                  : isCareIndeedDark
-                                    ? '#1B4549'
-                                  : 'linear-gradient(135deg, rgba(93,14,14,0.9), rgba(49,7,7,0.9))',
+                                fontSize: 9,
+                                fontWeight: 700,
+                                letterSpacing: '0.2em',
+                                textTransform: 'uppercase',
+                                padding: '4px 10px',
+                                borderRadius: 10,
+                                whiteSpace: 'nowrap',
+                                background: isSubActive
+                                  ? 'rgba(var(--ci-accent-rgb), 0.13)'
+                                  : 'var(--ci-overlay-faint)',
+                                color: isSubActive
+                                  ? 'var(--ci-accent)'
+                                  : (isVisualLight ? 'var(--ci-neutral-500)' : 'var(--ci-text-on-surface-muted)'),
+                                border: `1px solid ${isSubActive
+                                  ? 'rgba(var(--ci-accent-rgb), 0.28)'
+                                  : 'transparent'}`,
+                                transition: 'all 0.15s ease',
                               }}
                             >
-                              {accountInitials}
-                              <span
-                                aria-hidden="true"
-                                className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full"
-                                style={{
-                                  background: isCareIndeed ? '#C74600' : '#FFC107',
-                                }}
-                              />
+                              {sub.label}
                             </button>
-
-                            {isAccountMenuOpen && (
-                              <div
-                                role="menu"
-                                aria-label="Account menu"
-                                className="absolute right-0 mt-2 w-[220px] rounded-xl overflow-hidden ci-shell-command-group"
-                                style={{
-                                  background: isVisualLight ? '#FFFFFF' : 'rgba(23,19,19,0.96)',
-                                  border: isVisualLight ? '1px solid #E5E4E3' : '1px solid rgba(255,255,255,0.12)',
-                                  boxShadow: isVisualLight
-                                    ? '0 12px 28px rgba(0,0,0,0.12)'
-                                    : '0 16px 36px rgba(0,0,0,0.45)',
-                                }}
-                              >
-                                <div
-                                  className="px-3.5 py-3 border-b"
-                                  style={{ borderColor: isVisualLight ? '#E5E4E3' : 'rgba(255,255,255,0.11)' }}
-                                >
-                                  <p className={`text-[13px] font-semibold ${isVisualLight ? 'text-slate-900' : 'text-white'}`}>
-                                    {accountDisplayName}
-                                  </p>
-                                  <p className={`text-[11px] mt-0.5 ${isVisualLight ? 'text-slate-500' : 'text-white/65'}`}>
-                                    {accountRole}
-                                  </p>
-                                </div>
-
-                                <button
-                                  type="button"
-                                  role="menuitem"
-                                  onClick={handleMyTasksClick}
-                                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
-                                    isVisualLight
-                                      ? 'text-slate-700 hover:bg-slate-100'
-                                      : 'text-white/85 hover:bg-white/10'
-                                  }`}
-                                >
-                                  <ListChecks size={16} />
-                                  My Tasks
-                                </button>
-
-                                <button
-                                  type="button"
-                                  role="menuitem"
-                                  onClick={() => { setIsAccountMenuOpen(false); restartGuidedTour(); }}
-                                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
-                                    isVisualLight
-                                      ? 'text-slate-700 hover:bg-slate-100'
-                                      : 'text-white/85 hover:bg-white/10'
-                                  }`}
-                                >
-                                  <Compass size={16} />
-                                  Restart Guided Tour
-                                </button>
-
-                                {/* Robert-only CES review role switcher — renders null for all other users */}
-                                <CesRoleReviewSwitcher
-                                  userEmail={user?.email}
-                                  userId={user?.id}
-                                  isLight={isVisualLight}
-                                />
-
-                                {/* Nuclear reset — gated by system.replay permission
-                                    AND by the protected TJ Padilla user id (defense in depth) */}
-                                {user?.id === 'demo-user-careindeed' && (
-                                  <PermissionGate permissionId="system.replay">
-                                    <button
-                                      type="button"
-                                      role="menuitem"
-                                      onClick={() => {
-                                        if (window.confirm('RESET ALL?\n\nThis deletes every signed form, uploaded evidence, task completion, form instance, approval, and certification.\n\nCannot be undone.')) {
-                                          useRegulatoryExecutionStore.getState().resetAll();
-                                          window.location.reload();
-                                        }
-                                      }}
-                                      className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
-                                        isVisualLight
-                                          ? 'text-red-700 hover:bg-red-50'
-                                          : 'text-red-400 hover:bg-red-500/15'
-                                      }`}
-                                    >
-                                      <Trash2 size={16} />
-                                      Reset All Data
-                                    </button>
-                                  </PermissionGate>
-                                )}
-
-                                <button
-                                  type="button"
-                                  role="menuitem"
-                                  onClick={() => { void handleLogoutClick(); }}
-                                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
-                                    isVisualLight
-                                      ? 'text-[#C74600] hover:bg-orange-50'
-                                      : 'text-[#FFC107] hover:bg-white/10'
-                                  }`}
-                                >
-                                  <LogOut size={16} />
-                                  Logout
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Dropdown sub-items — one horizontal row below the clicked nav icon */}
-                      {!isMobile && activeDropdownNavId && (() => {
-                        const hi = VISIBLE_NAV.find(i => i.id === activeDropdownNavId);
-                        if (!hi?.subItems?.length) return null;
-                        return (
-                          <nav
-                            aria-label={`${hi.label} sub-navigation`}
-                            className="ci-shell-subnav custom-scrollbar-x justify-start"
-                          >
-                            {hi.subItems.map(sub => {
-                              const subPath = sub.to.split('?')[0];
-                              const isSubActive = location.pathname === subPath || location.pathname.startsWith(subPath + '/');
-                              return (
-                                <button
-                                  key={sub.to}
-                                  type="button"
-                                  onClick={() => navigate(sub.to)}
-                                  className="font-heading ci-shell-subnav-chip"
-                                  style={{
-                                    fontSize: 9,
-                                    fontWeight: 700,
-                                    letterSpacing: '0.2em',
-                                    textTransform: 'uppercase',
-                                    padding: '4px 10px',
-                                    borderRadius: 10,
-                                    whiteSpace: 'nowrap',
-                                    background: isSubActive
-                                      ? (isCareIndeed ? 'rgba(0,121,112,0.13)' : 'rgba(255,193,7,0.14)')
-                                      : (isVisualLight ? 'rgba(0,0,0,0.035)' : 'rgba(255,255,255,0.055)'),
-                                    color: isSubActive
-                                      ? (isCareIndeed ? '#007970' : '#FFC107')
-                                      : (isVisualLight ? '#52404B' : 'rgba(255,255,255,0.6)'),
-                                    border: `1px solid ${isSubActive
-                                      ? (isCareIndeed ? 'rgba(0,121,112,0.28)' : 'rgba(255,193,7,0.28)')
-                                      : 'transparent'}`,
-                                    transition: 'all 0.15s ease',
-                                  }}
-                                >
-                                  {sub.label}
-                                </button>
-                              );
-                            })}
-                          </nav>
-                        );
-                      })()}
-                    </header>
-                  )}
+                          );
+                        })}
+                      </nav>
+                    );
+                  })()}
 
                   <main data-shell-main="" className="flex-1 w-full h-full relative overflow-hidden">
                     <div data-shell-scroll="" className="absolute inset-0 overflow-y-auto custom-scrollbar">
@@ -1084,15 +872,14 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         // `backdrop-blur-md`: the bar background is already
                         // 0.95 / 0.92 opaque, so frosting adds zero perceptible
                         // contrast and stacks on the shell glass.
-                        borderColor: isVisualLight ? 'rgba(31,28,27,0.12)' : 'rgba(255,255,255,0.12)',
-                        background: isVisualLight ? 'rgba(255,255,255,0.95)' : 'rgba(10,2,2,0.92)',
+                        borderColor: 'var(--ci-overlay-border-strong)',
+                        background: 'var(--ci-color-shell-mobile-tabbar-bg)',
                         paddingBottom: 'max(8px, env(safe-area-inset-bottom))',
                       }}
                     >
                       <div className="grid grid-cols-5 gap-0 px-1 pt-1">
                         {MOBILE_PRIMARY_TABS.map(item => {
                           const active = isMobileTabActive(item.to);
-                          const activeColor = isCareIndeed ? '#007970' : '#FFC107';
                           return (
                             <button
                               key={item.id}
@@ -1101,10 +888,10 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                               className="ci-touch-target ci-subtle-hover flex flex-col items-center justify-center gap-0.5 rounded-md px-1 text-[9px] font-montserrat font-bold uppercase tracking-[0.08em]"
                               style={{
                                 color: active
-                                  ? activeColor
-                                  : isVisualLight ? '#52404B' : 'rgba(255,255,255,0.65)',
+                                  ? isVisualLight ? 'var(--ci-secondary-600)' : 'var(--ci-accent)'
+                                  : isVisualLight ? 'var(--ci-neutral-500)' : 'var(--ci-text-on-surface-soft)',
                                 background: active
-                                  ? (isCareIndeed ? 'rgba(0,121,112,0.14)' : 'rgba(255,193,7,0.14)')
+                                  ? 'rgba(var(--ci-accent-rgb), 0.14)'
                                   : 'transparent',
                               }}
                             >
@@ -1123,6 +910,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
           </div>
         </div>
       </div>
+      </ShellContentFrame>
       <GuidedUatWidget />
       <GuidedTourGate />
     </ShellFrame>

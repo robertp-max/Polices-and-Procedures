@@ -3,8 +3,15 @@ import React from 'react';
 interface ShellContentFrameProps {
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
   /** Whether this frame should allow scrolling */
   scrollable?: boolean;
+  /**
+   * Detail-mode rendering — when true the surface uses the opaque
+   * `--ci-color-glass-main-detail` variant (drawer/detail page context).
+   * Default false keeps the translucent canonical glass surface.
+   */
+  detail?: boolean;
 }
 
 /**
@@ -16,28 +23,46 @@ interface ShellContentFrameProps {
  * Responsibilities:
  * - Provides the final 4-sided breathing room on desktop
  * - Acts as the scroll container for page content
- * - Enforces that no child glass element goes full-bleed against the shell boundary
+ * - Owns the canonical painted glass surface via `--ci-color-glass-*` tokens
+ *   (added in Phase 2 visibility-fix pass) — `background`, `backdrop-filter`,
+ *   `border-color`, and `box-shadow` all resolve through CSS custom
+ *   properties so theme switches (data-theme + data-ci-mode) flip the
+ *   surface without any JavaScript-side branching.
  *
- * This is the component that actually delivers the "constrained page view contract".
+ * This is the component that actually delivers the "constrained page view
+ * contract" AND the "painted glass contract".
  */
 export const ShellContentFrame: React.FC<ShellContentFrameProps> = ({
   children,
   className = '',
+  style,
   scrollable = true,
+  detail = false,
 }) => {
   return (
     <div
+      data-shell-content-frame
       className={`
-        relative z-10 flex w-full flex-1 flex-col
+        relative z-10 flex w-full flex-1 flex-col border
         overflow-hidden rounded-[var(--ci-glass-layer1-border-radius-desktop,2rem)]
         ${scrollable ? 'overflow-y-auto' : ''}
         ${className}
       `}
-      // The padding here + ShellFrame padding creates the full 4-sided effect
+      // Canonical glass surface — all values resolve through --ci-color-glass-*
+      // tokens declared in src/index.css per (data-theme, data-ci-mode).
+      // Consumers MAY pass `style` to add layout-only properties (e.g.
+      // grid-template-rows) — but the glass contract values must not be
+      // overridden in production code paths.
+      // eslint-disable-next-line react/forbid-dom-props -- canonical shell-glass surface; values must reach the painted layer
       style={{
-        background: 'var(--ci-color-glass-light-main, var(--glass-main))',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background: detail
+          ? 'var(--ci-color-glass-main-detail, var(--ci-color-glass-main))'
+          : 'var(--ci-color-glass-main)',
+        backdropFilter: 'var(--ci-color-glass-blur)',
+        WebkitBackdropFilter: 'var(--ci-color-glass-blur)',
+        borderColor: 'var(--ci-color-glass-border)',
+        boxShadow: 'var(--ci-color-glass-shadow)',
+        ...style,
       }}
     >
       {children}

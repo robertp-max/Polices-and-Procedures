@@ -29,18 +29,18 @@ const ROLE_LABELS: CesRole[] = [
   'Systems',
 ];
 
-export function CesRoleReviewSwitcher({ userEmail, userId, isLight = true }: Props) {
+export function CesRoleReviewSwitcher({ userEmail, userId, isLight: _isLight = true }: Props) {
   const allowed = isRobertUser(userEmail, userId);
   const { isEnabled, reviewRole, setReviewRole } = useCesReviewMode(userEmail, userId);
 
   if (!allowed || !isEnabled) return null;
 
-  const textColor     = isLight ? '#374151' : 'rgba(255,255,255,0.85)';
-  const mutedColor    = isLight ? '#6B7280' : 'rgba(255,255,255,0.45)';
-  const borderColor   = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.11)';
-  const selectBg      = isLight ? '#F9FAFB' : 'rgba(255,255,255,0.07)';
-  const selectBorder  = isLight ? '#D1D5DB' : 'rgba(255,255,255,0.18)';
-  const badgeBg       = '#1E3A5F';
+  const textColor     = 'var(--ces-ink)';
+  const mutedColor    = 'var(--ces-muted)';
+  const borderColor   = 'var(--ces-border)';
+  const selectBg      = 'var(--ces-canvas)';
+  const selectBorder  = 'var(--ces-border)';
+  const badgeBg       = 'var(--ces-navy-deep)';
 
   return (
     <div
@@ -72,7 +72,7 @@ export function CesRoleReviewSwitcher({ userEmail, userId, isLight = true }: Pro
             title="Clear review role"
             style={{
               fontSize: 9,
-              color: '#C74601',
+              color: 'var(--ces-orange)',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
@@ -133,7 +133,7 @@ export function CesRoleReviewSwitcher({ userEmail, userId, isLight = true }: Pro
               width: 6,
               height: 6,
               borderRadius: '50%',
-              background: '#FFC107',
+              background: 'var(--ces-orange)',
               flexShrink: 0,
               animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite',
             }}
@@ -142,7 +142,7 @@ export function CesRoleReviewSwitcher({ userEmail, userId, isLight = true }: Pro
             style={{
               fontSize: 10,
               fontWeight: 600,
-              color: '#F9FAFB',
+              color: 'var(--ces-white)',
               letterSpacing: '0.05em',
             }}
           >

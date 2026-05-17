@@ -41,3 +41,5 @@ export { ShellNavRail } from './ShellNavRail';
 export type { NavItem } from './ShellNavRail';
 export { ShellContentFrame } from './ShellContentFrame';
 export { ShellCommandGroup } from './ShellCommandGroup';
+export { ShellMobileDrawer } from './ShellMobileDrawer';
+export type { ShellMobileDrawerProps } from './ShellMobileDrawer';

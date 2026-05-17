@@ -40,22 +40,29 @@ export function PhaseRail({ progress, active, onSelect }: Props) {
         return (
           <button
             key={p.id}
+            type="button"
             onClick={() => onSelect(p.id)}
+            aria-pressed={isActive ? 'true' : 'false'}
             className={`glass-interactive group relative flex items-center gap-3 text-left rounded-xl px-4 py-3 border transition-all ${
-              isActive ? 'border-[#FFC107]/60 bg-[#FFC107]/5' : 'border-white/10 hover:border-white/25'
+              isActive ? 'ci-rail-active' : 'ci-rail-resting'
             }`}
           >
-            <span className={`w-8 h-8 rounded-full flex items-center justify-center ${done ? 'text-[#34D399]' : 'text-[#FFC107]'}`}
-                  style={{ background: done ? 'rgba(52,211,153,0.10)' : 'rgba(var(--ci-accent-rgb),0.10)' }}>
+            <span
+              className={`w-8 h-8 rounded-full flex items-center justify-center ci-bg-gold-soft ${done ? 'ci-text-success' : 'ci-text-gold'}`}
+              aria-hidden="true"
+            >
               {p.icon}
             </span>
             <div className="flex-1 min-w-0">
-              <div className="font-montserrat font-bold uppercase tracking-widest text-[10px] text-white/70">{p.label}</div>
-              <div className="mt-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                <div className="h-full rounded-full transition-all"
-                     style={{ width: `${Math.min(100, Math.round(p1 * 100))}%`, background: done ? '#34D399' : 'var(--ci-gold)' }} />
+              <div className="font-montserrat font-bold uppercase tracking-widest ci-text-eyebrow-sm ci-text-on-rail">{p.label}</div>
+              <div className="mt-1 h-1.5 rounded-full ci-progress-track overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${done ? 'ci-progress-fill-done' : 'ci-progress-fill-go'}`}
+                  // eslint-disable-next-line react/forbid-dom-props -- dynamic % width cannot live in a stylesheet
+                  style={{ width: `${Math.min(100, Math.round(p1 * 100))}%` }}
+                />
               </div>
-              <div className="text-[9px] text-white/40 mt-1">{Math.round(p1 * 100)}%</div>
+              <div className="ci-text-body-xs ci-text-on-rail-mute mt-1">{Math.round(p1 * 100)}%</div>
             </div>
           </button>
         );

@@ -140,17 +140,23 @@ interface PromoteResponse {
 }
 
 // ── Helpers ────────────────────────────────────────────────────
-const STATUS_COLOR: Record<string, string> = {
-  PENDING_UPLOAD: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-  UPLOADED:       'bg-sky-500/15 text-sky-300 border-sky-500/30',
-  VALIDATING:     'bg-sky-500/15 text-sky-300 border-sky-500/30',
-  VALIDATED:      'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
-  EVIDENCE_LOCKED:'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-  PROMOTED:       'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-  REJECTED:       'bg-rose-500/15 text-rose-300 border-rose-500/30',
-  SUPERSEDED:     'bg-violet-500/15 text-violet-300 border-violet-500/30',
-  EXPORTED:       'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
-  RETAINED:       'bg-slate-500/15 text-slate-300 border-slate-500/30',
+// Phase 3 Pass 2 (2026-05-17): per-status colour rebuilt against
+// semantic ci-status-pill--* utility classes (declared in
+// src/index.css). The pill classes resolve to --ci-success/warning/
+// danger/info/--ci-overlay-* tokens and are theme-aware across
+// CI-ION + Care Indeed light + Care Indeed dark. No raw Tailwind
+// color utilities (bg-amber-500/15 etc.) remain in this file.
+const STATUS_PILL: Record<string, string> = {
+  PENDING_UPLOAD: 'ci-status-pill--warn',
+  UPLOADED:       'ci-status-pill--info',
+  VALIDATING:     'ci-status-pill--info',
+  VALIDATED:      'ci-status-pill--info',
+  EVIDENCE_LOCKED:'ci-status-pill--success',
+  PROMOTED:       'ci-status-pill--success',
+  REJECTED:       'ci-status-pill--danger',
+  SUPERSEDED:     'ci-status-pill--muted',
+  EXPORTED:       'ci-status-pill--accent',
+  RETAINED:       'ci-status-pill--muted',
 };
 
 function formatBytes(n: number | null | undefined): string {
@@ -647,13 +653,13 @@ export function EvidenceCenterPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[var(--ci-bg,#070d18)] text-[var(--ci-text-primary,#e2e8f0)]">
+    <div className="flex flex-col h-full">
       {/* ── Header ─────────────────────────────────────────────── */}
-      <div className="px-6 pt-5 pb-4 border-b border-[var(--ci-border,rgba(103,232,249,0.2))] bg-[var(--ci-surface-muted,rgba(15,23,42,0.35))] backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <FolderOpen size={22} className="text-cyan-300" />
-          <h1 className="text-xl font-semibold tracking-tight text-[var(--ci-text-primary,#f8fafc)]">Evidence Center</h1>
-          <span className="ml-2 text-xs text-[var(--ci-text-muted,#cbd5e1)]">
+      <div className="px-6 pt-5 pb-4 border-b border-[var(--ci-color-border-subtle)] ci-bg-overlay-faint backdrop-blur-sm ci-premium-hero">
+        <div className="flex items-center gap-3 flex-wrap">
+          <FolderOpen size={22} className="text-[var(--ci-accent)]" />
+          <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-[var(--ci-text-primary)]">Evidence Command Center</h1>
+          <span className="ml-2 text-xs text-[var(--ci-text-muted)]">
             Evidence mode: {toEvidenceModeLabel(effectiveMode)}
           </span>
           <div className="ml-auto">
@@ -665,44 +671,49 @@ export function EvidenceCenterPage() {
                   window.location.reload();
                 }
               }}
-              className="rounded border border-red-400/50 bg-red-500/15 px-3 py-1 text-xs font-semibold text-red-300 hover:bg-red-500/25"
+              className="rounded px-3 py-1 text-xs font-semibold ci-status-pill--danger hover:opacity-90"
             >
               Clear All Evidence
             </button>
           </div>
         </div>
-        <p className="mt-1 text-sm text-[var(--ci-text-muted,#cbd5e1)] max-w-3xl">
-          Every file is bound to a <span className="text-[var(--ci-text-primary,#f8fafc)] font-semibold">policy / workflow / event</span> triplet
+        <p className="mt-1 text-sm text-[var(--ci-text-muted)] max-w-3xl">
+          Every file is bound to a <span className="text-[var(--ci-text-primary)] font-semibold">policy / workflow / event</span> triplet
           and read through the API — never directly from S3.
         </p>
+        <div className="mt-3 px-3 py-2 flex items-center gap-2 flex-wrap text-[11px] ci-command-rail ci-maturity-section ci-text-surface-soft">
+          <span className="rounded-md border border-[var(--ci-overlay-active-border)] px-2 py-1 ci-bg-overlay-soft">Chain of custody visible</span>
+          <span className="rounded-md border border-[var(--ci-overlay-active-border)] px-2 py-1 ci-bg-overlay-soft">Immutable evidence timeline</span>
+          <span className="rounded-md border border-[var(--ci-overlay-active-border)] px-2 py-1 ci-bg-overlay-soft">Survey packet ready context</span>
+        </div>
         <div className="mt-3 flex items-center gap-2">
           <button
             type="button"
             onClick={() => setCenterView('hierarchy')}
-            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'hierarchy' ? 'border-cyan-300/60 bg-cyan-300/20 text-cyan-100' : 'border-cyan-300/25 bg-slate-900/45 text-slate-300'}`}
+            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'hierarchy' ? 'border-[var(--ci-accent)] ci-bg-overlay-strong text-[var(--ci-text-primary)]' : 'border-[var(--ci-overlay-border-strong)] ci-bg-overlay-soft ci-text-surface-soft'}`}
           >
             CES hierarchy
           </button>
           <button
             type="button"
             onClick={() => setCenterView('files')}
-            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'files' ? 'border-cyan-300/60 bg-cyan-300/20 text-cyan-100' : 'border-cyan-300/25 bg-slate-900/45 text-slate-300'}`}
+            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'files' ? 'border-[var(--ci-accent)] ci-bg-overlay-strong text-[var(--ci-text-primary)]' : 'border-[var(--ci-overlay-border-strong)] ci-bg-overlay-soft ci-text-surface-soft'}`}
           >
             File ledger
           </button>
         </div>
         {isDemoMode && (
-          <div className="mt-3 flex items-start gap-2 rounded border border-cyan-400/35 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-100">
+          <div className="mt-3 flex items-start gap-2 rounded border border-[var(--ci-info-bdr)] ci-bg-info-soft px-3 py-2 text-sm ci-text-info">
             <Info size={16} className="mt-0.5 flex-shrink-0" />
             <span>DEMO_LOCAL: Evidence metadata is stored locally for this demo environment.</span>
           </div>
         )}
         {(qTaskId || qRequirementId) && (
-          <div className="mt-3 flex items-start gap-2 rounded border border-[#2D8C83] bg-[#0F4A45] px-3 py-2 text-sm text-[#A7F3D0] select-none">
-            <Info size={16} className="mt-0.5 flex-shrink-0 text-[#6EE7B7]" />
+          <div className="mt-3 flex items-start gap-2 rounded border ci-border-success ci-bg-success-soft px-3 py-2 text-sm ci-text-success select-none">
+            <Info size={16} className="mt-0.5 flex-shrink-0 ci-text-success" />
             <div>
-              <div className="font-medium text-[#D1FAE5]">You are uploading evidence for this task requirement.</div>
-              <div className="text-xs text-[#6EE7B7] mt-1 font-mono">
+              <div className="font-medium ci-text-success">You are uploading evidence for this task requirement.</div>
+              <div className="text-xs ci-text-success mt-1 font-mono">
                 event={eventId} · task={qTaskId || filterTaskId || '—'} · form={qFormId || filterFormId || '—'} · requirement={qRequirementId || '—'}
               </div>
             </div>
@@ -742,9 +753,9 @@ export function EvidenceCenterPage() {
         {/* Left column */}
         <div className="col-span-12 xl:col-span-9 flex flex-col overflow-hidden">
           {/* Filter bar */}
-          <div className="px-3 sm:px-6 py-3 flex flex-wrap items-center gap-3 border-b border-cyan-300/15 bg-slate-950/30 sticky top-0 z-20 ci-sticky-operational ci-shell-command-group mx-3 sm:mx-6 mt-2 rounded-xl">
+          <div className="px-3 sm:px-6 py-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-[var(--ci-color-border-subtle)] ci-bg-overlay-faint sticky top-0 z-20 ci-sticky-operational ci-shell-command-group ci-premium-panel ci-command-rail mx-3 sm:mx-6 mt-2 rounded-xl">
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-300">Event ID</label>
+              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Event ID</label>
               <input
                 title="Event ID filter"
                 aria-label="Event ID"
@@ -752,84 +763,84 @@ export function EvidenceCenterPage() {
                 onChange={(e) => setEventInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && onSelectEvent()}
                 placeholder="EVT-..."
-                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-48 text-slate-100 focus:outline-none focus:border-cyan-300/75"
+                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-48 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
               />
               <button
                 onClick={onSelectEvent}
-                className="px-3 py-1 text-sm min-h-[44px] rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 ci-subtle-hover"
+                className="px-3 py-1 text-sm min-h-[44px] rounded ci-bg-overlay-strong hover:bg-[var(--ci-overlay-active-bg)] border border-[var(--ci-overlay-border-strong)] text-[var(--ci-text-primary)] ci-subtle-hover"
               >
                 Load
               </button>
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[10px] ci-text-surface-faint">
                 Accepts regulatory IDs and form-generated IDs (EVT-FORM-FI...)
               </span>
             </div>
 
             {/* Narrow client-side filters — applied to the already-loaded files */}
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-300">Event</label>
+              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Event</label>
               <input
                 title="Filter by Event ID"
                 aria-label="Filter by Event ID"
                 value={filterEventId}
                 onChange={(e) => setFilterEventId(e.target.value)}
                 placeholder="EVT-... / EVT-FORM-FI..."
-                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-44 text-slate-100 focus:outline-none focus:border-cyan-300/75"
+                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-44 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-300">Form</label>
+              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Form</label>
               <input
                 title="Filter by Form ID"
                 aria-label="Filter by Form ID"
                 value={filterFormId}
                 onChange={(e) => setFilterFormId(e.target.value)}
                 placeholder="GV-FM-017…"
-                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-32 text-slate-100 focus:outline-none focus:border-cyan-300/75"
+                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-32 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-300">Policy</label>
+              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Policy</label>
               <input
                 title="Filter by Policy ID"
                 aria-label="Filter by Policy ID"
                 value={filterPolicyId}
                 onChange={(e) => setFilterPolicyId(e.target.value)}
                 placeholder="GV-OG-005…"
-                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-32 text-slate-100 focus:outline-none focus:border-cyan-300/75"
+                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-32 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-300">Workflow</label>
+              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Workflow</label>
               <input
                 title="Filter by Workflow ID"
                 aria-label="Filter by Workflow ID"
                 value={filterWorkflowId}
                 onChange={(e) => setFilterWorkflowId(e.target.value)}
                 placeholder="WF-..."
-                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-32 text-slate-100 focus:outline-none focus:border-cyan-300/75"
+                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-32 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-300">Task</label>
+              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Task</label>
               <input
                 title="Filter by Task ID"
                 aria-label="Filter by Task ID"
                 value={filterTaskId}
                 onChange={(e) => setFilterTaskId(e.target.value)}
                 placeholder="TASK-..."
-                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-32 text-slate-100 focus:outline-none focus:border-cyan-300/75"
+                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-32 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider text-slate-300">Evidence ID</label>
+              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Evidence ID</label>
               <input
                 title="Filter by Evidence ID"
                 aria-label="Filter by Evidence ID"
                 value={filterEvidenceId}
                 onChange={(e) => setFilterEvidenceId(e.target.value)}
                 placeholder="EVD-…"
-                className="bg-slate-900/85 border border-cyan-300/25 rounded px-2 py-1 text-sm w-36 text-slate-100 focus:outline-none focus:border-cyan-300/75"
+                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-36 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
               />
             </div>
             {(filterEventId || filterFormId || filterPolicyId || filterWorkflowId || filterTaskId || filterEvidenceId) && (
@@ -842,34 +853,34 @@ export function EvidenceCenterPage() {
                   setFilterTaskId('');
                   setFilterEvidenceId('');
                 }}
-                className="text-xs px-2 py-1 rounded bg-slate-800/70 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-200"
+                className="text-xs px-2 py-1 rounded ci-bg-overlay-soft hover:bg-[var(--ci-overlay-active-bg)] border border-[var(--ci-overlay-border-strong)] ci-text-surface-soft"
                 title="Clear filters"
               >
                 ✕ Clear filters
               </button>
             )}
 
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="ci-maturity-toolbar ml-auto">
               <div className="relative">
-                <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-cyan-200/70" />
+                <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 ci-text-surface-soft" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Filter files…"
-                  className="bg-slate-900/85 border border-cyan-300/25 rounded pl-7 pr-2 py-1 text-sm w-56 text-slate-100 focus:outline-none focus:border-cyan-300/75"
+                  className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded pl-7 pr-2 py-1 text-sm w-56 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
                 />
               </div>
               <button
                 onClick={() => load(eventId)}
                 disabled={loading}
-                className="px-2 py-1 text-sm min-h-[44px] rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 disabled:opacity-50 inline-flex items-center gap-1 ci-subtle-hover"
+                className="px-2 py-1 text-sm min-h-[44px] rounded ci-bg-overlay-strong hover:bg-[var(--ci-overlay-active-bg)] border border-[var(--ci-overlay-border-strong)] text-[var(--ci-text-primary)] disabled:opacity-50 inline-flex items-center gap-1 ci-subtle-hover"
               >
                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
               </button>
               <button
                 onClick={onUploadClick}
                 disabled={uploading}
-                className="px-3 py-1 text-sm min-h-[44px] rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 disabled:opacity-50 inline-flex items-center gap-1 ci-subtle-hover"
+                className="px-3 py-1 text-sm min-h-[44px] rounded ci-status-pill--accent hover:opacity-90 disabled:opacity-50 inline-flex items-center gap-1 ci-subtle-hover"
               >
                 <Upload size={14} /> {uploading ? 'Uploading…' : 'Upload evidence'}
               </button>
@@ -888,17 +899,17 @@ export function EvidenceCenterPage() {
           {(error || uploadMsg) && (
             <div className="px-6 pt-3 space-y-2">
               {error && (
-                <div className="flex items-start gap-2 text-sm text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded px-3 py-2">
+                <div className="flex items-start gap-2 text-sm ci-text-danger ci-bg-danger-soft border border-[var(--ci-danger-bdr)] rounded px-3 py-2">
                   <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
                   <div className="flex-1 break-all">{error}</div>
-                  <button title="Dismiss error" aria-label="Dismiss error" onClick={() => setError(null)} className="text-rose-300/60 hover:text-rose-300"><X size={14} /></button>
+                  <button title="Dismiss error" aria-label="Dismiss error" onClick={() => setError(null)} className="ci-text-danger hover:opacity-90"><X size={14} /></button>
                 </div>
               )}
               {uploadMsg && (
-                <div className="flex items-start gap-2 text-sm text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded px-3 py-2">
+                <div className="flex items-start gap-2 text-sm ci-text-success ci-bg-success-soft border border-[var(--ci-success-fg)] rounded px-3 py-2">
                   <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" />
                   <div className="flex-1 break-all">{uploadMsg}</div>
-                  <button title="Dismiss" aria-label="Dismiss" onClick={() => setUploadMsg(null)} className="text-emerald-300/60 hover:text-emerald-300"><X size={14} /></button>
+                  <button title="Dismiss" aria-label="Dismiss" onClick={() => setUploadMsg(null)} className="ci-text-success hover:opacity-90"><X size={14} /></button>
                 </div>
               )}
             </div>
@@ -912,8 +923,8 @@ export function EvidenceCenterPage() {
             ) : filtered.length === 0 ? (
               <EvidenceCenterEmptyState eventId={eventId} onUpload={onUploadClick} />
             ) : (
-              <table className="w-full text-sm border-separate border-spacing-y-1">
-                <thead className="text-xs uppercase tracking-wider text-slate-300">
+              <table className="w-full text-sm border-separate border-spacing-y-[6px]">
+                <thead className="text-xs uppercase tracking-wider ci-text-surface-soft">
                   <tr>
                     <th className="text-left px-3 py-2">Filename</th>
                     <th className="text-left px-3 py-2">Policy / Workflow / Event</th>
@@ -929,12 +940,12 @@ export function EvidenceCenterPage() {
                   {filtered.map((f) => (
                     <tr
                       key={f.evidence_id}
-                      className="bg-slate-900/75 hover:bg-slate-800/90 cursor-pointer border border-cyan-300/15 select-none"
+                      className="ci-bg-overlay-soft hover:bg-[var(--ci-overlay-strong)] cursor-pointer border border-[var(--ci-overlay-border)] select-none ci-premium-panel hover:shadow-[0_14px_28px_rgba(2,8,20,0.42)]"
                       onClick={() => setSelected(f)}
                     >
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <FileText size={14} className="text-cyan-200/80" />
+                          <FileText size={14} className="text-[var(--ci-accent)]" />
                           <Link
                             to={buildArtifactRoute(f.evidence_id, {
                               eventId: f.event_id,
@@ -945,34 +956,34 @@ export function EvidenceCenterPage() {
                             })}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-slate-50 underline decoration-dotted"
+                            className="text-[var(--ci-text-primary)] underline decoration-dotted"
                           >
                             {f.filename}
                           </Link>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-xs text-slate-300">
+                      <td className="px-3 py-2 text-xs ci-text-surface-soft">
                         <div><Link to={`/library/${encodeURIComponent(f.policy_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.policy_id}</Link></div>
                         <div><Link to={`/workflows/${encodeURIComponent(f.workflow_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.workflow_id}</Link></div>
-                        <div className="text-slate-100"><Link to={`/calendar/event/${encodeURIComponent(f.event_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.event_id}</Link></div>
+                        <div className="text-[var(--ci-text-primary)]"><Link to={`/calendar/event/${encodeURIComponent(f.event_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.event_id}</Link></div>
                       </td>
-                      <td className="px-3 py-2 text-xs text-slate-300">
+                      <td className="px-3 py-2 text-xs ci-text-surface-soft">
                         <div>{f.form_id ? <Link to={`/forms/${encodeURIComponent(f.form_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.form_id}</Link> : '—'}</div>
                         <div>{f.task_id ? <Link to={`/calendar/event/${encodeURIComponent(f.event_id)}/task/${encodeURIComponent(f.task_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.task_id}</Link> : '—'}</div>
                       </td>
                       <td className="px-3 py-2">
-                        <span className={`text-xs px-2 py-0.5 rounded border ${STATUS_COLOR[f.status] || 'bg-slate-500/15 text-slate-300 border-slate-500/30'}`}>
+                        <span className={`ci-status-pill ${STATUS_PILL[f.status] || 'ci-status-pill--muted'}`}>
                           {f.status}
                         </span>
                         {f.signature_status && f.signature_status !== 'NONE' && (
-                          <span className="ml-1 text-[10px] text-emerald-300 inline-flex items-center gap-0.5">
+                          <span className="ml-1 text-[10px] ci-text-success inline-flex items-center gap-0.5">
                             <ShieldCheck size={10} /> {f.signature_status}
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-xs text-slate-300">{f.source_system || '—'}</td>
-                      <td className="px-3 py-2 text-xs text-slate-300">{formatTs(f.created_at)}</td>
-                      <td className="px-3 py-2 text-xs text-slate-300 text-right">{formatBytes(f.size_bytes)}</td>
+                      <td className="px-3 py-2 text-xs ci-text-surface-soft">{f.source_system || '—'}</td>
+                      <td className="px-3 py-2 text-xs ci-text-surface-soft">{formatTs(f.created_at)}</td>
+                      <td className="px-3 py-2 text-xs ci-text-surface-soft text-right">{formatBytes(f.size_bytes)}</td>
                       <td className="px-3 py-2 text-right">
                         <div className="inline-flex gap-2">
                           <Link
@@ -986,14 +997,14 @@ export function EvidenceCenterPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-xs px-2 py-1 rounded bg-teal-500/20 hover:bg-teal-500/30 border border-teal-300/35 text-teal-100 inline-flex items-center gap-1"
+                            className="text-xs px-2 py-1 rounded ci-status-pill--accent inline-flex items-center gap-1"
                             title="Open artifact viewer"
                           >
                             <ExternalLink size={12} /> View Artifact
                           </Link>
                           <button
                             onClick={(e) => { e.stopPropagation(); onDownload(f); }}
-                            className="text-xs px-2 py-1 rounded bg-slate-800/80 hover:bg-slate-700/90 border border-cyan-300/25 text-slate-100 inline-flex items-center gap-1"
+                            className="text-xs px-2 py-1 rounded ci-bg-overlay-strong hover:bg-[var(--ci-overlay-active-bg)] border border-[var(--ci-overlay-border-strong)] text-[var(--ci-text-primary)] inline-flex items-center gap-1"
                             title="Get presigned download URL"
                           >
                             <Download size={12} /> Download
@@ -1008,29 +1019,29 @@ export function EvidenceCenterPage() {
           </div>
 
           {/* Audit panel */}
-          <div className="border-t border-cyan-300/15 px-6 py-4 max-h-72 overflow-auto bg-slate-950/25">
+          <div className="border-t border-[var(--ci-color-border-subtle)] px-6 py-4 max-h-72 overflow-auto ci-bg-overlay-faint">
             <div className="flex items-center gap-2 mb-2">
-              <History size={16} className="text-cyan-200/80" />
-              <h2 className="text-sm font-semibold tracking-tight text-slate-100">Audit log — event {eventId}</h2>
-              <span className="text-xs text-slate-400">({audit.length} entries)</span>
+              <History size={16} className="text-[var(--ci-accent)]" />
+              <h2 className="text-sm font-semibold tracking-tight text-[var(--ci-text-primary)]">Audit log — event {eventId}</h2>
+              <span className="text-xs ci-text-surface-faint">({audit.length} entries)</span>
             </div>
             {audit.length === 0 ? (
-              <div className="text-xs text-slate-400">No audit entries yet for this event.</div>
+              <div className="text-xs ci-text-surface-faint">No audit entries yet for this event.</div>
             ) : (
               <ul className="space-y-1.5">
                 {audit.map((a, i) => (
-                  <li key={`${a.ts}-${i}`} className="text-xs flex flex-wrap items-center gap-2 bg-slate-900/70 border border-cyan-300/15 rounded px-2 py-1.5">
-                    <Clock size={11} className="text-slate-400 flex-shrink-0" />
-                    <span className="text-slate-300">{formatTs(a.ts)}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-cyan-200 bg-cyan-300/10 border border-cyan-300/35 rounded px-1.5 py-0.5">
+                  <li key={`${a.ts}-${i}`} className="text-xs flex flex-wrap items-center gap-2 ci-bg-overlay-soft border border-[var(--ci-overlay-border)] rounded px-2 py-1.5">
+                    <Clock size={11} className="ci-text-surface-faint flex-shrink-0" />
+                    <span className="ci-text-surface-soft">{formatTs(a.ts)}</span>
+                    <span className="text-[10px] uppercase tracking-wider ci-status-pill--accent">
                       {a.action}
                     </span>
-                    <span className="text-slate-100">{a.actor || 'system'}</span>
-                    {a.source_system && <span className="text-slate-400">· {a.source_system}</span>}
-                    {a.evidence_id && <span className="text-slate-400">· {a.evidence_id}</span>}
+                    <span className="text-[var(--ci-text-primary)]">{a.actor || 'system'}</span>
+                    {a.source_system && <span className="ci-text-surface-faint">· {a.source_system}</span>}
+                    {a.evidence_id && <span className="ci-text-surface-faint">· {a.evidence_id}</span>}
                     {(a.before_status || a.after_status) && (
-                      <span className="text-slate-400">
-                        {a.before_status || '·'} → <span className="text-slate-100">{a.after_status || '·'}</span>
+                      <span className="ci-text-surface-faint">
+                        {a.before_status || '·'} → <span className="text-[var(--ci-text-primary)]">{a.after_status || '·'}</span>
                       </span>
                     )}
                   </li>
@@ -1041,14 +1052,14 @@ export function EvidenceCenterPage() {
         </div>
 
         {/* Right contextual guidance */}
-        <aside className="hidden xl:flex xl:col-span-3 flex-col border-l border-cyan-300/15 bg-slate-950/45 overflow-auto">
+        <aside className="hidden xl:flex xl:col-span-3 flex-col border-l border-[var(--ci-color-border-subtle)] ci-bg-overlay-soft overflow-auto">
           <div className="p-5 space-y-5">
             <div>
               <div className="flex items-center gap-2">
-                <Info size={16} className="text-cyan-300" />
-                <h3 className="text-sm font-semibold tracking-tight text-slate-100">What is "evidence"?</h3>
+                <Info size={16} className="text-[var(--ci-accent)]" />
+                <h3 className="text-sm font-semibold tracking-tight text-[var(--ci-text-primary)]">What is "evidence"?</h3>
               </div>
-              <p className="mt-1.5 text-xs text-slate-300 leading-relaxed">
+              <p className="mt-1.5 text-xs ci-text-surface-soft leading-relaxed">
                 Any file that proves a regulated activity happened — QAPI minutes, signed forms,
                 competency checklists, training rosters, OASIS lock confirmations.
               </p>
@@ -1056,23 +1067,23 @@ export function EvidenceCenterPage() {
 
             <div>
               <div className="flex items-center gap-2">
-                <ShieldCheck size={16} className="text-cyan-300" />
-                <h3 className="text-sm font-semibold tracking-tight text-slate-100">Why the triplet?</h3>
+                <ShieldCheck size={16} className="text-[var(--ci-accent)]" />
+                <h3 className="text-sm font-semibold tracking-tight text-[var(--ci-text-primary)]">Why the triplet?</h3>
               </div>
-              <p className="mt-1.5 text-xs text-slate-300 leading-relaxed">
-                Every artifact is bound to a <code className="text-slate-100">policy_id</code>,
-                {' '}<code className="text-slate-100">workflow_id</code>, and
-                {' '}<code className="text-slate-100">event_id</code>. A surveyor can pull a single
+              <p className="mt-1.5 text-xs ci-text-surface-soft leading-relaxed">
+                Every artifact is bound to a <code className="text-[var(--ci-text-primary)]">policy_id</code>,
+                {' '}<code className="text-[var(--ci-text-primary)]">workflow_id</code>, and
+                {' '}<code className="text-[var(--ci-text-primary)]">event_id</code>. A surveyor can pull a single
                 event packet and reconstruct the entire chain of custody.
               </p>
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <History size={16} className="text-cyan-300" />
-                <h3 className="text-sm font-semibold tracking-tight text-slate-100">Audit log</h3>
+                <History size={16} className="text-[var(--ci-accent)]" />
+                <h3 className="text-sm font-semibold tracking-tight text-[var(--ci-text-primary)]">Audit log</h3>
               </div>
-              <p className="mt-1.5 text-xs text-slate-300 leading-relaxed">
+              <p className="mt-1.5 text-xs ci-text-surface-soft leading-relaxed">
                 Append-only entries record who initiated each upload, every status transition, and
                 every download URL we mint. Nothing in this view is editable.
               </p>
@@ -1080,19 +1091,19 @@ export function EvidenceCenterPage() {
 
             <div>
               <div className="flex items-center gap-2">
-                <Upload size={16} className="text-cyan-300" />
-                <h3 className="text-sm font-semibold tracking-tight text-slate-100">What to do next</h3>
+                <Upload size={16} className="text-[var(--ci-accent)]" />
+                <h3 className="text-sm font-semibold tracking-tight text-[var(--ci-text-primary)]">What to do next</h3>
               </div>
-              <ol className="mt-1.5 text-xs text-slate-300 leading-relaxed list-decimal pl-4 space-y-1">
+              <ol className="mt-1.5 text-xs ci-text-surface-soft leading-relaxed list-decimal pl-4 space-y-1">
                 <li>Pick the event you're documenting (top-left).</li>
-                <li>Click <span className="text-cyan-200">Upload evidence</span> and choose a file.</li>
+                <li>Click <span className="text-[var(--ci-accent)]">Upload evidence</span> and choose a file.</li>
                 <li>Verify the new row appears with status <code>EVIDENCE_LOCKED</code>.</li>
-                <li>Use <span className="text-slate-100">Download</span> to obtain a short-lived presigned URL.</li>
+                <li>Use <span className="text-[var(--ci-text-primary)]">Download</span> to obtain a short-lived presigned URL.</li>
               </ol>
             </div>
 
-            <div className="text-[10px] text-slate-400 leading-relaxed border-t border-cyan-300/15 pt-3">
-              API: <code className="break-all text-slate-200">{API_BASE}</code>
+            <div className="text-[10px] ci-text-surface-faint leading-relaxed border-t border-[var(--ci-color-border-subtle)] pt-3">
+              API: <code className="break-all text-[var(--ci-text-primary)]">{API_BASE}</code>
             </div>
           </div>
         </aside>
@@ -1147,18 +1158,18 @@ function DetailDrawer({
     <div className="fixed inset-0 z-50 flex" onClick={onClose}>
       <div className="flex-1 bg-black/40" />
       <div
-        className="w-[min(100vw,420px)] max-w-full bg-slate-950 border-l border-cyan-300/20 h-full overflow-auto p-5"
+        className="w-[min(100vw,420px)] max-w-full bg-[var(--ci-color-glass-main-detail)] border-l border-[var(--ci-color-glass-border)] h-full overflow-auto p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <FileText size={16} className="text-cyan-300" />
-              <h3 className="text-sm font-semibold text-slate-100">File metadata</h3>
+              <FileText size={16} className="text-[var(--ci-accent)]" />
+              <h3 className="text-sm font-semibold text-[var(--ci-text-primary)]">File metadata</h3>
             </div>
-            <p className="mt-1 text-base text-slate-50 break-all">{file.filename}</p>
+            <p className="mt-1 text-base text-[var(--ci-text-primary)] break-all">{file.filename}</p>
           </div>
-          <button title="Close" aria-label="Close panel" onClick={onClose} className="text-slate-400 hover:text-slate-100"><X size={16} /></button>
+          <button title="Close" aria-label="Close panel" onClick={onClose} className="ci-text-surface-faint hover:text-[var(--ci-text-primary)]"><X size={16} /></button>
         </div>
 
         <dl className="mt-5 space-y-2 text-xs">
@@ -1188,14 +1199,14 @@ function DetailDrawer({
             evidenceId: file.evidence_id,
             type: file.kind,
           }), '_blank', 'noopener,noreferrer')}
-          className="mt-5 w-full px-3 py-2 text-sm rounded bg-teal-300/15 hover:bg-teal-300/25 border border-teal-300/45 text-teal-200 inline-flex items-center justify-center gap-2"
+          className="mt-5 w-full px-3 py-2 text-sm rounded ci-status-pill--accent inline-flex items-center justify-center gap-2"
         >
           <ExternalLink size={14} /> View in Artifact Viewer
         </button>
 
         <button
           onClick={() => onDownload(file)}
-          className="mt-2 w-full px-3 py-2 text-sm rounded bg-cyan-300/15 hover:bg-cyan-300/25 border border-cyan-300/45 text-cyan-200 inline-flex items-center justify-center gap-2"
+          className="mt-2 w-full px-3 py-2 text-sm rounded ci-status-pill--accent inline-flex items-center justify-center gap-2"
         >
           <ExternalLink size={14} /> Open presigned download
         </button>
@@ -1207,8 +1218,8 @@ function DetailDrawer({
 function Field({ k, v }: { k: string; v: string }) {
   return (
     <>
-      <dt className="text-slate-400 inline-block w-2/5">{k}</dt>
-      <dd className="text-slate-100 inline-block w-3/5 text-right break-all border-b border-cyan-300/15 pb-1.5">{v}</dd>
+      <dt className="ci-text-surface-faint inline-block w-2/5">{k}</dt>
+      <dd className="text-[var(--ci-text-primary)] inline-block w-3/5 text-right break-all border-b border-[var(--ci-color-border-subtle)] pb-1.5">{v}</dd>
     </>
   );
 }

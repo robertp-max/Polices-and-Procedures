@@ -377,7 +377,7 @@ export function MasterCalendarPage() {
               onClick={() => setDetailsOpen(true)}
               disabled={!hasDetailContext}
               className="ci-touch-target rounded-md border px-3 py-1.5 text-[11px] font-montserrat font-bold uppercase tracking-[0.14em] text-white/85 disabled:opacity-45"
-              style={{ borderColor: 'rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)' }}
+              style={{ borderColor: 'var(--ci-overlay-active-border)', background: 'var(--ci-overlay-border)' }}
             >
               Open Details
             </button>
@@ -530,8 +530,8 @@ function PmTab({
       onClick={onClick}
       className="ci-touch-target whitespace-nowrap text-[11px] font-outfit px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors ci-subtle-hover"
       style={isLight
-        ? { background: active ? 'rgba(0,0,0,0.07)' : 'transparent', color: active ? '#1F1C1B' : '#747470' }
-        : { background: active ? 'rgba(255,255,255,0.08)' : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.65)' }
+        ? { background: active ? 'var(--ci-overlay-strong)' : 'transparent', color: active ? 'var(--ci-text-primary)' : 'var(--ci-text-subtle)' }
+        : { background: active ? 'var(--ci-overlay-strong)' : 'transparent', color: active ? 'var(--ci-text-primary)' : 'var(--ci-text-muted-2)' }
       }
     >
       {children}
@@ -556,7 +556,7 @@ function TimelineHeader({
   onViewChange: (v: PmView) => void;
 }) {
   return (
-    <div className="ci-toolbar-wrap justify-between items-end ci-shell-command-group rounded-xl px-3 py-2">
+    <div className="ci-toolbar-wrap justify-between items-end ci-shell-command-group ci-premium-hero ci-command-rail ci-maturity-section rounded-xl px-3 py-3">
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL_PRIMARY }} />
@@ -575,7 +575,7 @@ function TimelineHeader({
         </div>
         <h1
           className="font-outfit font-light text-white leading-tight"
-          style={{ fontSize: 24, letterSpacing: '-0.01em' }}
+          style={{ fontSize: 32, letterSpacing: '-0.018em' }}
         >
           {view === 'sprint'
             ? 'Sprint execution · Mon–Fri 2-week window'
@@ -585,9 +585,12 @@ function TimelineHeader({
                 ? 'Project Gantt · CES projected tasks'
                 : `Regulatory events · ${monthLabel}`}
         </h1>
+        <p className="text-[12px] mt-1 ci-maturity-caption text-white/70">
+          Orchestrate deadlines, sprint execution, and survey readiness from one cinematic timeline surface.
+        </p>
       </div>
 
-      <div className="ci-toolbar-wrap justify-end">
+      <div className="ci-toolbar-wrap ci-maturity-toolbar justify-end">
         {view === 'calendar' && <StateLegend rollup={rollup} />}
 
         {/* View switcher: Calendar | Sprint | Kanban | Gantt */}
@@ -631,7 +634,12 @@ function TimelineHeader({
           type="button"
           onClick={onSyncAll}
           disabled={syncAllPending}
-          className="ci-touch-target inline-flex items-center gap-2 rounded-lg border border-[#0D9488]/40 bg-[#0D9488]/12 px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#5EEAD4] hover:bg-[#0D9488]/18 disabled:opacity-60 whitespace-nowrap ci-subtle-hover"
+          className="ci-touch-target inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] disabled:opacity-60 whitespace-nowrap ci-subtle-hover"
+          style={{
+            borderColor: 'rgba(var(--ci-accent-rgb), 0.40)',
+            background:  'rgba(var(--ci-accent-rgb), 0.12)',
+            color:       'var(--ci-state-on-track)',
+          }}
           title="Sync all in-scope compliance events to Google Calendar"
         >
           <CloudUpload size={12} className={syncAllPending ? 'animate-pulse' : ''} />
@@ -642,7 +650,7 @@ function TimelineHeader({
           <div className="text-[10px] font-roboto text-white/70 leading-snug">
             {`Created ${lastBulkSync.created} · Updated ${lastBulkSync.updated} · Skipped ${lastBulkSync.skipped} · Failed ${lastBulkSync.failed}`}
             {lastBulkSync.failedEventIds.length > 0 && (
-              <div className="text-[#FCA5A5]">{`Failed IDs: ${lastBulkSync.failedEventIds.join(', ')}`}</div>
+              <div style={{ color: 'var(--ci-danger-fg)' }}>{`Failed IDs: ${lastBulkSync.failedEventIds.join(', ')}`}</div>
             )}
           </div>
         )}
@@ -776,7 +784,7 @@ function JulyReadinessBanner({ today }: { today: Date }) {
               type="button"
               onClick={runCommit}
               className="rounded-md px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] flex items-center gap-1.5 transition"
-              style={{ background: ACTION_COLOR, color: '#0A0202', border: `1px solid ${ACTION_COLOR}` }}
+              style={{ background: ACTION_COLOR, color: 'var(--ci-bg)', border: `1px solid ${ACTION_COLOR}` }}
             >
               <Zap size={11} />
               Commit · {preview.totals.totalEmitted} events
@@ -804,8 +812,8 @@ function PreviewMatrix({ preview }: { preview: SchedulingPreview }) {
     preview.matrix.find(m => m.domain === d && m.cadence === c)?.count ?? 0;
 
   return (
-    <div className="rounded-lg border bg-white/[0.02] overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-      <div className="flex items-center justify-between px-3 py-1.5 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+    <div className="rounded-lg border bg-white/[0.02] overflow-hidden" style={{ borderColor: 'var(--ci-overlay-border-strong)' }}>
+      <div className="flex items-center justify-between px-3 py-1.5 border-b" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         <span className="text-[9.5px] font-montserrat font-bold text-white/60 uppercase tracking-[0.14em]">
           Schedule preview · {preview.rangeStart} → {preview.rangeEnd}
         </span>
@@ -830,12 +838,12 @@ function PreviewMatrix({ preview }: { preview: SchedulingPreview }) {
             {domains.map(d => {
               const rowTotal = cadences.reduce((acc, c) => acc + get(d, c), 0);
               return (
-                <tr key={d} className="border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+                <tr key={d} className="border-t" style={{ borderColor: 'var(--ci-overlay-soft)' }}>
                   <td className="px-3 py-1.5 text-white/80 font-semibold">{d}</td>
                   {cadences.map(c => {
                     const v = get(d, c);
                     return (
-                      <td key={c} className="px-2 py-1.5 text-right" style={{ color: v > 0 ? TEAL_PRIMARY : 'rgba(255,255,255,0.30)' }}>
+                      <td key={c} className="px-2 py-1.5 text-right" style={{ color: v > 0 ? TEAL_PRIMARY : 'var(--ci-text-on-surface-faint)' }}>
                         {v || '—'}
                       </td>
                     );
@@ -885,8 +893,8 @@ function MobileAgendaList({
             onClick={() => onSelect(event)}
             className="w-full rounded-lg border px-3 py-2.5 text-left transition-colors"
             style={{
-              borderColor: isActive ? 'rgba(20,184,166,0.7)' : 'rgba(255,255,255,0.18)',
-              background: isActive ? 'rgba(20,184,166,0.16)' : 'rgba(255,255,255,0.04)',
+              borderColor: isActive ? 'var(--ci-state-on-track)' : 'var(--ci-overlay-active-border)',
+              background: isActive ? 'var(--ci-state-on-track-bg)' : 'var(--ci-overlay-soft)',
             }}
           >
             <p className="text-[11px] font-montserrat font-bold uppercase tracking-[0.14em] text-white/60">{dateLabel}</p>

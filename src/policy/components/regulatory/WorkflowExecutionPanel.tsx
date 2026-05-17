@@ -2529,7 +2529,7 @@ function AuditViewPanel({ event, today }: { event: RegulatoryEvent; today: Date 
   } = instance;
 
   /* Summary banner color + label. */
-  const bannerColor = cl.allPassed || isCertified ? TEAL_PRIMARY : '#F87171';
+  const bannerColor = cl.allPassed || isCertified ? TEAL_PRIMARY : 'var(--ci-danger-fg)';
   const bannerLabel = isCertified
     ? 'Certified & Locked'
     : cl.allPassed
@@ -2773,8 +2773,8 @@ function DependenciesSection({
   }
 
   const postureColor =
-    deps.posture === 'hard-block' ? '#F87171'
-    : deps.posture === 'soft-gap' ? '#F59E0B'
+    deps.posture === 'hard-block' ? 'var(--ci-danger-fg)'
+    : deps.posture === 'soft-gap' ? 'var(--ci-warning-fg)'
     : TEAL_PRIMARY;
 
   return (
@@ -2806,7 +2806,7 @@ function DependenciesSection({
             {deps.upstream.map(u => {
               const ok = u.isComplete;
               const certified = u.isCertified;
-              const color = !ok ? '#F87171' : certified ? TEAL_PRIMARY : '#F59E0B';
+              const color = !ok ? 'var(--ci-danger-fg)' : certified ? TEAL_PRIMARY : 'var(--ci-warning-fg)';
               return (
                 <li
                   key={u.eventId}
@@ -2971,7 +2971,7 @@ function GroupChecklist({
           </h4>
           <span
             className="ml-1 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.14em]"
-            style={{ color: allPassed ? TEAL_PRIMARY : '#F87171' }}
+            style={{ color: allPassed ? TEAL_PRIMARY : 'var(--ci-danger-fg)' }}
           >
             {passedCount}/{items.length}
           </span>
@@ -2994,7 +2994,7 @@ function GroupChecklist({
               className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5"
               style={{
                 background: item.passed ? 'rgba(20,184,166,0.18)' : 'rgba(239,68,68,0.18)',
-                color:      item.passed ? TEAL_PRIMARY : '#F87171',
+                color:      item.passed ? TEAL_PRIMARY : 'var(--ci-danger-fg)',
               }}
             >
               {item.passed ? <Check size={11} /> : <AlertCircle size={10} />}
@@ -3185,7 +3185,7 @@ function CertifyActionBar({ event, today }: { event: RegulatoryEvent; today: Dat
         className="shrink-0 rounded-md px-3 py-2 text-[10.5px] font-montserrat font-bold uppercase tracking-[0.16em] flex items-center gap-1.5 disabled:opacity-35 disabled:cursor-not-allowed transition"
         style={{
           background: canCertify ? ACTION_COLOR : 'rgba(255,255,255,0.05)',
-          color: canCertify ? '#0A0202' : 'rgba(255,255,255,0.55)',
+          color: canCertify ? 'var(--ci-cta-text)' : 'rgba(255,255,255,0.55)',
           border: canCertify ? `1px solid ${ACTION_COLOR}` : '1px solid rgba(255,255,255,0.10)',
         }}
       >
@@ -3348,7 +3348,7 @@ function CalendarEventView({
   const guests = useMemo(() => buildCalendarGuests(event), [event]);
   const resources = useMemo(() => buildCalendarResources(event), [event]);
 
-  const slaColor = sla.tone === 'red' ? '#DC2626' : sla.tone === 'amber' ? '#D97706' : '#059669';
+  const slaColor = sla.tone === 'red' ? 'var(--ci-danger-fg)' : sla.tone === 'amber' ? 'var(--ci-warning-fg)' : 'var(--ci-state-on-track)';
   const stateColor = STATE_COLOR[state];
   const riskLabel = (() => {
     const risk = event.complianceFlags?.auditRisk;
@@ -3358,8 +3358,8 @@ function CalendarEventView({
     return 'Low';
   })();
   const riskColor =
-    riskLabel === 'Critical' || riskLabel === 'High' ? '#DC2626'
-    : riskLabel === 'Medium' ? '#D97706'
+    riskLabel === 'Critical' || riskLabel === 'High' ? 'var(--ci-danger-fg)'
+    : riskLabel === 'Medium' ? 'var(--ci-warning-fg)'
     : '#059669';
   const guestCounts = guests.reduce((acc, guest) => {
     if (guest.response === 'Yes' || guest.response === 'Organizer') acc.yes += 1;

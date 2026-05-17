@@ -19,6 +19,7 @@ import { useAuth } from '@/auth/AuthProvider';
 import type { MergedExecutionUnit } from '@/policy/compliance-execution/complianceExecutionTypes';
 import { useDataFreshness } from '@/policy/utils/useDataFreshness';
 import { StalenessBanner } from '@/policy/components/ui/StalenessBanner';
+import { ActionButton, CiStatusBadge, EmptyState } from '@/policy/components/ui';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 
 type TaskFilter = 'all' | 'open' | 'awaiting_signature' | 'blocked' | 'overdue';
@@ -297,33 +298,33 @@ export function MyTasksPage({
     () => filtered.map(backfillRoles),
     [filtered],
   );
+  const taskStats = useMemo(() => ({
+    all: myTasks.length,
+    open: myTasks.filter(t => t.complianceState !== 'completed').length,
+    overdue: myTasks.filter(t => (t.escalationTimer ?? 0) < 0 && t.complianceState !== 'completed').length,
+  }), [myTasks]);
 
   return (
-    <div className="h-full flex flex-col" style={{ background: CES_TOKENS.canvas }}>
+    <div className="h-full flex flex-col ci-bg-ces-canvas">
       <header
-        className="px-3 sm:px-6 py-4 flex items-baseline gap-4 flex-wrap ci-sticky-operational border-b ci-shell-command-group mx-3 sm:mx-6 mt-2 rounded-xl"
-        style={{ background: CES_TOKENS.white, borderBottom: `1px solid ${CES_TOKENS.border}` }}
+        className="px-3 sm:px-6 py-4 flex items-center gap-4 flex-wrap ci-sticky-operational border-b ci-shell-command-group ci-premium-panel ci-command-rail mx-3 sm:mx-6 mt-2 rounded-xl ci-bg-ces-white ci-border-ces"
       >
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: CES_TOKENS.muted }}>
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em] ci-text-ces-muted">
             Execution
           </div>
-          <h1 className="text-[18px] font-bold" style={{ color: CES_TOKENS.navy }}>
+          <h1 className="text-[18px] font-bold ci-text-ces-navy">
             My Tasks
           </h1>
         </div>
-        <span className="text-[12px]" style={{ color: CES_TOKENS.muted }}>
+        <span className="text-[12px] ci-text-ces-muted">
           {currentUserName} · {myTasks.length} total
         </span>
         {reviewEnabled && reviewRole && (
-          <span
-            aria-live="polite"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-[0.14em]"
-            style={{ background: '#1E3A5F', color: '#FFC107' }}
-          >
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#FFC107', display: 'inline-block' }} />
+          <CiStatusBadge tone="warning" className="uppercase tracking-wider">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-current mr-1.5 align-middle" aria-hidden="true" />
             Reviewing as: {reviewRole}
-          </span>
+          </CiStatusBadge>
         )}
         {/* Robert-only: quick role summary chips */}
         {isRobert && reviewEnabled && (
@@ -336,15 +337,16 @@ export function MyTasksPage({
                   type="button"
                   onClick={() => handleRoleChipClick(role)}
                   title={`${count} tasks visible to ${role}`}
-                  aria-pressed={reviewRole === role}
+                  aria-pressed={reviewRole === role ? 'true' : 'false'}
+                  // eslint-disable-next-line react/forbid-dom-props -- dense diagnostic chip (Robert-only); palette routes through CES_TOKENS so no raw hex remains
                   style={{
                     fontSize: 9,
                     fontWeight: 700,
                     padding: '2px 7px',
                     borderRadius: 4,
-                    background: reviewRole === role ? '#1E3A5F' : '#F1F5F9',
-                    color:      reviewRole === role ? '#FFC107'  : '#374151',
-                    border:     `1px solid ${reviewRole === role ? '#1E3A5F' : '#E2E8F0'}`,
+                    background: reviewRole === role ? CES_TOKENS.navyDeep : CES_TOKENS.canvas,
+                    color:      reviewRole === role ? CES_TOKENS.orange   : CES_TOKENS.ink,
+                    border:     `1px solid ${reviewRole === role ? CES_TOKENS.navyDeep : CES_TOKENS.border}`,
                     letterSpacing: '0.06em',
                     cursor: 'pointer',
                     transition: 'background-color 120ms ease, color 120ms ease, border-color 120ms ease',
@@ -356,30 +358,45 @@ export function MyTasksPage({
             })}
           </div>
         )}
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto ci-maturity-toolbar">
           {(Object.keys(FILTER_LABEL) as TaskFilter[]).map(k => {
             const active = filter === k;
             return (
-              <button
+              <ActionButton
                 key={k}
-                type="button"
+                variant={active ? 'secondary' : 'ghost'}
+                size="sm"
                 onClick={() => setFilter(k)}
-                className="text-[11.5px] font-semibold px-3 py-1.5 min-h-[44px] rounded-md ci-subtle-hover"
-                style={{
-                  background: active ? CES_TOKENS.navy : CES_TOKENS.canvas,
-                  color:      active ? 'white'         : CES_TOKENS.ink,
-                  border:     `1px solid ${active ? CES_TOKENS.navy : CES_TOKENS.border}`,
-                }}
-                aria-pressed={active}
+                aria-pressed={active ? 'true' : 'false'}
               >
                 {FILTER_LABEL[k]}
-              </button>
+              </ActionButton>
             );
           })}
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-6">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <section className="ci-premium-hero ci-command-rail ci-maturity-section p-4 mb-4">
+          <div className="flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] font-bold ci-text-ces-muted">
+                Operational Queue
+              </div>
+              <h2 className="text-[24px] font-bold mt-0.5 tracking-[-0.015em] ci-text-ces-navy">
+                Task Command View
+              </h2>
+              <p className="text-[12px] mt-1 ci-text-ces-muted">
+                Clear execution path from triage to completion with role-aware queue confidence.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <CiStatusBadge tone="neutral">Total {taskStats.all}</CiStatusBadge>
+              <CiStatusBadge tone="info">Open {taskStats.open}</CiStatusBadge>
+              <CiStatusBadge tone="danger">Overdue {taskStats.overdue}</CiStatusBadge>
+            </div>
+          </div>
+        </section>
         {freshness.isPotentiallyStale && (
           <div className="mb-4">
             <StalenessBanner
@@ -394,39 +411,27 @@ export function MyTasksPage({
           </div>
         )}
         {taskWithRoles.length === 0 ? (
-          <div
-            className="rounded-lg p-8 text-center text-[13px]"
-            style={{ background: CES_TOKENS.white, border: `1px solid ${CES_TOKENS.border}`, color: CES_TOKENS.muted }}
-          >
-            <p className="font-semibold text-[14px]" style={{ color: CES_TOKENS.ink }}>
-              No tasks match this filter.
-            </p>
-            <p className="mt-2">
-              {reviewEnabled && reviewRole
+          <EmptyState
+            title="No tasks match this filter."
+            description={
+              reviewEnabled && reviewRole
                 ? `No tasks are visible to "${reviewRole}" with the "${filter}" filter. Try switching to "All".`
-                : 'Try All, Overdue, or Awaiting Signature.'}
-            </p>
-            <button
-              type="button"
-              onClick={() => setFilter('all')}
-              className="mt-4 px-4 py-2 rounded-md text-[12px] font-semibold"
-              style={{
-                background: CES_TOKENS.navy,
-                color: '#fff',
-                border: `1px solid ${CES_TOKENS.navy}`,
-              }}
-            >
-              View all tasks
-            </button>
-          </div>
+                : 'Try All, Overdue, or Awaiting Signature.'
+            }
+            action={
+              <ActionButton variant="cta" size="sm" onClick={() => setFilter('all')}>
+                View all tasks
+              </ActionButton>
+            }
+          />
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {taskWithRoles.map(t => {
               const assigned = (t as UnitWithRoles).assignedRole;
               return (
                 <li
                   key={t.id}
-                  className="rounded-lg p-4 flex items-start gap-4 ci-subtle-hover hover:bg-[var(--ci-surface-2)]"
+                  className="rounded-xl p-4 flex items-start gap-4 ci-subtle-hover ci-premium-panel hover:bg-[var(--ci-surface-2)]"
                   style={{ background: CES_TOKENS.white, border: `1px solid ${CES_TOKENS.border}` }}
                 >
                   <button

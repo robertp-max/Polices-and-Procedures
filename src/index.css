@@ -59,6 +59,261 @@
      ============================================================ */
   --ci-glass-layer1-inset-desktop: clamp(16px, 1.6vw, 28px);
   --ci-glass-layer1-border-radius-desktop: 2rem;
+  /* Phase 2 — ShellNavRail width token (replaces raw Tailwind w-64). */
+  --ci-shell-navrail-width: 16rem;
+  /* Phase 2 — Account-menu surfaces (replaces final raw hex pair in CCL).
+     Avatar dark = CI-light brand dark-mode neutral; menu overlay dark
+     = near-opaque on deep-maroon. Light theme uses bg + neutral-200. */
+  --ci-shell-account-avatar-bg-ci-light-dark: #1B4549;
+  --ci-shell-account-menu-bg-light: #FFFFFF;
+  --ci-shell-account-menu-bg-dark: rgba(23, 19, 19, 0.96);
+
+  /* ============================================================
+     PHASE 3 — DASHBOARD / OPERATIONAL SURFACE TOKENS
+     Typography scale, letter-spacing, dimension, and elevation
+     tokens consumed by KPI cards, hero stats, board columns,
+     and task cards on the Command Center / Dashboard surface.
+     Previously these were referenced only as inline-style
+     var(...) fallbacks; they are now first-class tokens so the
+     contract is governed centrally.
+     ============================================================ */
+  /* Typography — display + KPI scale */
+  --ci-font-size-display-hero: 42px;
+  --ci-font-size-display-section: 26px;
+  --ci-font-size-kpi-value: 36px;
+  --ci-font-size-stat-value: 18px;
+  --ci-font-size-card-title: 15px;
+  --ci-font-size-body-sm: 13px;
+  --ci-font-size-body-xs: 12px;
+  --ci-font-size-meta: 11px;
+  --ci-font-size-eyebrow: 10px;
+  --ci-font-size-eyebrow-xs: 9px;
+  /* Letter-spacing scale */
+  --ci-letter-spacing-tight: -0.03em;
+  --ci-letter-spacing-snug: -0.02em;
+  --ci-letter-spacing-uppercase-sm: 0.08em;
+  --ci-letter-spacing-uppercase-md: 0.14em;
+  --ci-letter-spacing-uppercase-lg: 0.16em;
+  --ci-letter-spacing-eyebrow-strong: 0.26em;
+  /* Dimension — surface min-heights, touch targets */
+  --ci-dimension-surface-kpi-card-min-height: 116px;
+  --ci-dimension-surface-empty-state-min-height: 220px;
+  --ci-dimension-touch-target-min: 44px;
+  /* Elevation ladder for operational surfaces */
+  --ci-shadow-elevation-sm: 0 2px 6px rgba(15, 23, 42, 0.04);
+  --ci-shadow-elevation-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --ci-shadow-elevation-interactive: 0 10px 24px rgba(15, 23, 42, 0.06);
+  --ci-shadow-elevation-interactive-hover: 0 14px 30px rgba(15, 23, 42, 0.10);
+  /* Phase 3 (2026-05-16) — operational micro-dimensions.
+     `count-badge-min` replaces the historic `min-w-[28px]` literal
+     on BoardColumn count badges. `board-column-min-mobile` /
+     `board-column-min-desktop` replace the `min-w-[88vw]` /
+     `sm:min-w-[680px]` literals on the horizontal board scroller.
+     `hero-stat-grid-min` replaces `sm:min-w-[220px]` on the hero
+     stat grid. */
+  --ci-dimension-count-badge-min: 28px;
+  --ci-dimension-board-column-min-mobile: 88vw;
+  --ci-dimension-board-column-min-desktop: 680px;
+  --ci-dimension-hero-stat-grid-min: 220px;
+}
+
+/* ============================================================
+   Phase 3 (2026-05-16) — Typography + elevation utility classes.
+   These thin wrappers let JSX express the design contract as a
+   single className instead of an inline style={{}} block. They
+   eliminate ~25 inline-style sites on DashboardPage.tsx (and the
+   matching `react/forbid-dom-props` lint warnings) without
+   reintroducing arbitrary Tailwind bracket values. Every utility
+   here MUST resolve only to a `--ci-*` token — never a literal.
+   ============================================================ */
+@layer utilities {
+  .ci-text-eyebrow      { font-size: var(--ci-font-size-eyebrow); letter-spacing: var(--ci-letter-spacing-uppercase-lg); }
+  .ci-text-eyebrow-md   { font-size: var(--ci-font-size-eyebrow); letter-spacing: var(--ci-letter-spacing-uppercase-md); }
+  .ci-text-eyebrow-sm   { font-size: var(--ci-font-size-eyebrow-xs); letter-spacing: var(--ci-letter-spacing-uppercase-sm); }
+  .ci-text-eyebrow-strong { font-size: var(--ci-font-size-eyebrow); letter-spacing: var(--ci-letter-spacing-eyebrow-strong); }
+  .ci-text-meta         { font-size: var(--ci-font-size-meta); }
+  .ci-text-body-xs      { font-size: var(--ci-font-size-body-xs); }
+  .ci-text-body-sm      { font-size: var(--ci-font-size-body-sm); }
+  .ci-text-card-title   { font-size: var(--ci-font-size-card-title); }
+  .ci-text-stat         { font-size: var(--ci-font-size-stat-value); }
+  .ci-text-kpi          { font-size: var(--ci-font-size-kpi-value); letter-spacing: var(--ci-letter-spacing-tight); }
+  .ci-text-display-hero    { font-size: var(--ci-font-size-display-hero); letter-spacing: var(--ci-letter-spacing-tight); }
+  .ci-text-display-section { font-size: var(--ci-font-size-display-section); letter-spacing: var(--ci-letter-spacing-snug); }
+
+  .ci-min-h-kpi         { min-height: var(--ci-dimension-surface-kpi-card-min-height); }
+  .ci-min-h-empty       { min-height: var(--ci-dimension-surface-empty-state-min-height); }
+  .ci-min-w-count-badge { min-width: var(--ci-dimension-count-badge-min); }
+  .ci-min-w-hero-stat-sm { /* applied >= 640px */ }
+  @media (min-width: 640px) {
+    .ci-min-w-hero-stat-sm { min-width: var(--ci-dimension-hero-stat-grid-min); }
+  }
+  .ci-min-w-board-scroll { min-width: var(--ci-dimension-board-column-min-mobile); }
+  @media (min-width: 640px) {
+    .ci-min-w-board-scroll { min-width: var(--ci-dimension-board-column-min-desktop); }
+  }
+
+  .ci-shadow-elev-md          { box-shadow: var(--ci-shadow-elevation-md); }
+  .ci-shadow-elev-interactive { box-shadow: var(--ci-shadow-elevation-interactive); }
+
+  /* ------------------------------------------------------------
+     Phase 3 Pass 3 (2026-05-16) — CES + Taxonomy + Onboarding.
+     Status / sentiment classes that resolve to the existing
+     --ci-success-* / --ci-danger-* / --ci-warning-* token
+     families. Used by Journey rails, ModuleCard, MyTasksPage,
+     and Taxonomy header chips to remove raw hex literals
+     (#FFC107, #34D399, #DC2626, #FF7A7A, etc.) without
+     reintroducing arbitrary Tailwind brackets.
+     ------------------------------------------------------------ */
+  .ci-text-success      { color: var(--ci-success-fg); }
+  .ci-text-danger       { color: var(--ci-danger-fg); }
+  .ci-text-warning      { color: var(--ci-warning-fg); }
+  .ci-text-info         { color: var(--ci-info-fg); }
+  .ci-text-gold         { color: var(--ci-gold); }
+  .ci-text-gold-soft    { color: rgba(var(--ci-accent-rgb), 0.90); }
+  .ci-bg-success-soft   { background-color: var(--ci-success-bg); }
+  .ci-bg-danger-soft    { background-color: var(--ci-danger-bg); }
+  .ci-bg-warning-soft   { background-color: var(--ci-warning-bg); }
+  .ci-bg-info-soft      { background-color: var(--ci-info-bg); }
+  .ci-bg-gold-soft      { background-color: rgba(var(--ci-accent-rgb), 0.10); }
+  .ci-border-success    { border-color: var(--ci-success-fg); }
+  .ci-border-danger     { border-color: var(--ci-danger-fg); }
+  .ci-border-warning    { border-color: var(--ci-warning-fg); }
+  .ci-border-info       { border-color: var(--ci-info-fg); }
+  .ci-border-gold-soft  { border-color: rgba(var(--ci-accent-rgb), 0.40); }
+
+  /* Phase 3 Pass 2 (2026-05-17) — evidence-status pill utilities.
+     Replace per-status raw Tailwind utilities in EvidenceCenterPage
+     (bg-amber-500/15 text-amber-300 border-amber-500/30 etc.) with
+     a single semantic class derived from the existing --ci-*-bg/fg/bdr
+     token families. Theme-aware automatically across CI-ION + Care
+     Indeed light + Care Indeed dark. */
+  .ci-status-pill {
+    display: inline-flex;
+    align-items: center;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  .ci-status-pill--warn    { background: var(--ci-warning-bg); color: var(--ci-warning-fg); border-color: var(--ci-warning-bdr); }
+  .ci-status-pill--info    { background: var(--ci-info-bg);    color: var(--ci-info-fg);    border-color: var(--ci-info-bdr); }
+  .ci-status-pill--success { background: var(--ci-success-bg); color: var(--ci-success-fg); border-color: var(--ci-success-bdr); }
+  .ci-status-pill--danger  { background: var(--ci-danger-bg);  color: var(--ci-danger-fg);  border-color: var(--ci-danger-bdr); }
+  .ci-status-pill--accent  { background: rgba(var(--ci-accent-rgb), 0.12); color: var(--ci-accent); border-color: rgba(var(--ci-accent-rgb), 0.40); }
+  .ci-status-pill--muted   { background: var(--ci-overlay-soft); color: var(--ci-text-on-surface-soft); border-color: var(--ci-overlay-border-strong); }
+
+  /* Surface text helpers (theme-aware via overlay-text tokens). */
+  .ci-text-surface-strong  { color: var(--ci-text-on-surface-strong); }
+  .ci-text-surface-soft    { color: var(--ci-text-on-surface-soft); }
+  .ci-text-surface-muted   { color: var(--ci-text-on-surface-muted); }
+  .ci-text-surface-faint   { color: var(--ci-text-on-surface-faint); }
+  .ci-text-surface-ghost   { color: var(--ci-text-on-surface-ghost); }
+  .ci-text-surface-quiet   { color: var(--ci-text-on-surface-quiet); }
+  /* Generic surface tints (theme-aware). */
+  .ci-bg-overlay-faint     { background-color: var(--ci-overlay-faint); }
+  .ci-bg-overlay-soft      { background-color: var(--ci-overlay-soft); }
+  .ci-bg-overlay-strong    { background-color: var(--ci-overlay-strong); }
+  .ci-border-overlay       { border-color: var(--ci-overlay-border); }
+  .ci-border-overlay-strong{ border-color: var(--ci-overlay-border-strong); }
+
+  /* Journey rail / module card composite states.
+     `ci-rail-active`   = selected phase tile (gold tint + border).
+     `ci-rail-resting`  = inactive phase tile (white-10 border, hover-25).
+     `ci-progress-*`    = thin progress bar inside phase tile.
+     `ci-module-*-edge` = 3px left-edge accent on ModuleCard. */
+  .ci-rail-active        { border-color: rgba(var(--ci-accent-rgb), 0.6); background-color: rgba(var(--ci-accent-rgb), 0.05); }
+  .ci-rail-resting       { border-color: rgba(255, 255, 255, 0.10); }
+  .ci-rail-resting:hover { border-color: rgba(255, 255, 255, 0.25); }
+  .ci-progress-track     { background-color: rgba(255, 255, 255, 0.05); }
+  .ci-progress-fill-done { background-color: var(--ci-success-fg); }
+  .ci-progress-fill-go   { background-color: var(--ci-gold); }
+  .ci-module-edge-done   { border-left: 3px solid var(--ci-success-fg); }
+  .ci-module-edge-fail   { border-left: 3px solid var(--ci-danger-fg); }
+  .ci-module-edge-todo   { border-left: 3px solid rgba(var(--ci-accent-rgb), 0.33); }
+  .ci-text-on-rail-mute  { color: rgba(255, 255, 255, 0.40); }
+  .ci-text-on-rail-soft  { color: rgba(255, 255, 255, 0.55); }
+  .ci-text-on-rail       { color: rgba(255, 255, 255, 0.70); }
+}
+
+/* Taxonomy domain palette — fixed brand-encoded accents per
+   compliance domain. Sourced from the legacy DOMAINS array in
+   LibraryPage / FrameworkPage; centralized here so a future
+   palette pass (eg. WCAG audit) edits one file, not 40. */
+:root {
+  --ci-domain-gv:    #FFC107;
+  --ci-domain-cl:    #EF4444;
+  --ci-domain-qa:    #06B6D4;
+  --ci-domain-hr:    #8B5CF6;
+  --ci-domain-co:    #3B82F6;
+  --ci-domain-fn:    #10B981;
+  --ci-domain-op:    #F97316;
+  --ci-domain-it:    #6366F1;
+  --ci-domain-rm:    #EAB308;
+  --ci-domain-en:    #EC4899;
+
+  /* Regulatory framework accents — same pattern. */
+  --ci-reg-title22:  #FACC15;
+  --ci-reg-42cfr:    #FFC107;
+  --ci-reg-cms:      #EC4899;
+  --ci-reg-hipaa:    #3B82F6;
+  --ci-reg-osha:     #F59E0B;
+  --ci-reg-oig:      #8B5CF6;
+  --ci-reg-fca:      #A855F7;
+
+  /* Taxonomy ACHC view — teal survey palette. Used by the ACHC
+     horizontal filter bar on LibraryPage. Splits surface (bg) from
+     interactive borders (border + border-soft) and foreground/icon
+     color (fg). Light-mode-only at present; dark mode can be added
+     here without touching consumers. */
+  --ci-achc-bg:          #F0FDFA;
+  --ci-achc-border:      #99F6E4;
+  --ci-achc-border-soft: #CBD5E1;
+  --ci-achc-fg:          #0F766E;
+
+  /* LibraryPage view-switch brand colors. `teal` = IBM Framework
+     active, `coral` = ACHC Survey active, `grey` = inactive label. */
+  --ci-brand-teal:   #007970;
+  --ci-brand-coral:  #EA580C;
+  --ci-brand-grey:   #747470;
+}
+
+@layer utilities {
+  /* Taxonomy ACHC filter bar + view-switch utilities. */
+  .ci-bg-achc            { background-color: var(--ci-achc-bg); }
+  .ci-border-achc        { border-color: var(--ci-achc-border); }
+  .ci-border-achc-soft   { border-color: var(--ci-achc-border-soft); }
+  .ci-text-achc          { color: var(--ci-achc-fg); }
+  .ci-focus-achc:focus   { outline: none; border-color: var(--ci-achc-fg); }
+  .ci-bg-brand-teal      { background-color: var(--ci-brand-teal); }
+  .ci-bg-brand-coral     { background-color: var(--ci-brand-coral); }
+  .ci-text-brand-teal    { color: var(--ci-brand-teal); }
+  .ci-text-brand-coral   { color: var(--ci-brand-coral); }
+  .ci-text-brand-grey    { color: var(--ci-brand-grey); }
+  .ci-hover-text-teal:hover  { color: var(--ci-brand-teal); }
+  .ci-hover-text-coral:hover { color: var(--ci-brand-coral); }
+
+  /* Regulatory FCA purple — used by the "FORMS" navigation chip in
+     LibraryPage header. Resolves to the same --ci-reg-fca token the
+     left-rail FCA filter button uses, so brand audits stay coherent. */
+  .ci-text-fca           { color: var(--ci-reg-fca); }
+  .ci-border-fca-soft    { border-color: color-mix(in srgb, var(--ci-reg-fca) 40%, transparent); }
+
+  /* CES sub-brand convenience classes — bind to the existing
+     --ces-* CSS variables that live in the CES SUB-BRAND PALETTE
+     block. JSX that previously did style={{ color: CES_TOKENS.muted }}
+     can now use className="ci-text-ces-muted" and stay both
+     theme-aware AND inline-style-free. */
+  .ci-text-ces-ink       { color: var(--ces-ink); }
+  .ci-text-ces-muted     { color: var(--ces-muted); }
+  .ci-text-ces-navy      { color: var(--ces-navy); }
+  .ci-bg-ces-canvas      { background-color: var(--ces-canvas); }
+  .ci-bg-ces-white       { background-color: var(--ces-white, #FFFFFF); }
+  .ci-bg-ces-navy        { background-color: var(--ces-navy); }
+  .ci-bg-ces-navy-soft   { background-color: var(--ces-navy-soft); }
+  .ci-border-ces         { border-color: var(--ces-border); }
+  .ci-border-ces-navy    { border-color: var(--ces-navy); }
 }
 
 @layer base {
@@ -609,6 +864,13 @@ html[data-theme="care-indeed-light"] [data-shell-main] h2.text-white {
   --ci-info-bg:      #E5FEFF;
   --ci-info-fg:      #007970;
   --ci-info-bdr:     #7ADEDF;
+
+  /* Phase 3 — execution-timeline / board state tokens (theme-aware).
+     on-track = teal, action = orange. Distinct from --ci-accent because
+     --ci-accent varies (gold on CI-ION, teal on Care Indeed). */
+  --ci-state-on-track:    #0F766E;
+  --ci-state-on-track-bg: rgba(15,118,110,0.12);
+  --ci-action:            #C74601;
 }
 
 /* ── Semantic tokens — CI-ION dark (legacy default) ────────── */
@@ -631,6 +893,65 @@ html[data-theme="care-indeed-light"] [data-shell-main] h2.text-white {
   --ci-shadow-sm:     0 1px 2px rgba(0,0,0,0.45);
   --ci-shadow-md:     0 8px 22px rgba(0,0,0,0.45);
   --ci-shadow-lg:     var(--shadow-glass);
+
+  /* Phase 3 — CI-ION dark on-track/action overrides (gold accent kept
+     for --ci-accent; on-track stays teal so timeline state colour is
+     stable across themes). */
+  --ci-state-on-track:    #14B8A6;
+  --ci-state-on-track-bg: rgba(20,184,166,0.16);
+  --ci-action:            #F97316;
+
+  /* ============================================================
+     CANONICAL SHELL-GLASS CONTRACT (Phase 2 — Visibility Fix)
+     Single source of truth for the painted glass surface inside
+     ShellContentFrame / ShellTopbar / ShellNavRail. Brand-mode
+     specific values are overridden in the data-theme blocks below.
+     Documented in Phase2_Visibility_Fix_Plan.md.
+     ============================================================ */
+  --ci-color-glass-main:        linear-gradient(160deg, rgba(66,8,8,0.3044) 0%, rgba(10,2,2,0.3044) 100%);
+  --ci-color-glass-main-detail: linear-gradient(160deg, rgba(66,8,8,1) 0%, rgba(10,2,2,1) 100%);
+  --ci-color-glass-border:      rgba(255,255,255,0.09);
+  --ci-color-glass-blur:        blur(22px) saturate(145%);
+  --ci-color-glass-shadow:      0 40px 120px -30px rgba(0,0,0,0.85), 0 18px 48px -18px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07), inset 0 0 0 1px rgba(255,255,255,0.015);
+  --ci-color-shell-topbar-bg:   rgba(66,8,8,0.42);
+  --ci-color-shell-navrail-bg:  rgba(66,8,8,0.42);
+  --ci-color-border-subtle:     rgba(255,255,255,0.09);
+  /* Back-compat aliases for any historical references */
+  --ci-color-glass-light-main:  var(--ci-color-glass-main);
+  --ci-color-glass-dark-main:   var(--ci-color-glass-main);
+  --ci-color-border-subtle-light: var(--ci-color-border-subtle);
+  --ci-color-border-subtle-dark:  var(--ci-color-border-subtle);
+
+  /* ============================================================
+     CANONICAL OVERLAY TOKENS (Phase 3 Pass 2 — 2026-05-17)
+     Glass-on-glass tints used by operational headers, command
+     rails, table rows, and tab strips. Eliminates raw
+     rgba(255,255,255,0.0X) literals in operational surfaces.
+     Per-theme values below override these for Care Indeed light
+     (which inverts to black-on-white tints) and Care Indeed dark.
+     ============================================================ */
+  --ci-overlay-faint:         rgba(255,255,255,0.02);   /* ~table row, container fill */
+  --ci-overlay-soft:          rgba(255,255,255,0.04);   /* active row, hover surface */
+  --ci-overlay-strong:        rgba(255,255,255,0.08);   /* selected tab, raised glass */
+  --ci-overlay-border:        rgba(255,255,255,0.06);   /* command-rail hairline */
+  --ci-overlay-border-strong: rgba(255,255,255,0.10);   /* chip border, panel hairline */
+  --ci-overlay-active-bg:     rgba(255,255,255,0.14);   /* active selection fill */
+  --ci-overlay-active-border: rgba(255,255,255,0.20);   /* active selection border */
+  --ci-text-on-surface-strong: rgba(255,255,255,0.85);  /* prose-on-glass strong */
+  --ci-text-on-surface-soft:   rgba(255,255,255,0.65);  /* prose-on-glass body */
+  --ci-text-on-surface-muted:  rgba(255,255,255,0.55);  /* prose-on-glass dim */
+  --ci-text-on-surface-faint:  rgba(255,255,255,0.40);  /* metadata-on-glass */
+  --ci-text-on-surface-ghost:  rgba(255,255,255,0.30);  /* zero-value metadata */
+  --ci-text-on-surface-quiet:  rgba(255,255,255,0.15);  /* empty-state glyph */
+
+  /* Phase 2 closure (2026-05-17) — shell chrome + CTA tokens used
+     by CommandCenterLayout (account avatar, mobile tab bar,
+     overlay panel shadow, primary CTA border, on-primary text). */
+  --ci-color-shell-account-avatar-bg:    linear-gradient(135deg, rgba(93,14,14,0.9), rgba(49,7,7,0.9));
+  --ci-color-shell-mobile-tabbar-bg:     rgba(10,2,2,0.92);
+  --ci-color-shell-overlay-shadow:       0 16px 36px rgba(0,0,0,0.45);
+  --ci-color-cta-primary-border-soft:    rgba(199,70,1,0.45);
+  --ci-color-on-primary:                 #FFFFFF;
 }
 
 /* ── Semantic tokens — Care Indeed LIGHT ───────────────────── */
@@ -653,6 +974,45 @@ html[data-theme="care-indeed-light"] {
   --ci-shadow-sm:     0 1px 2px rgba(31,28,27,0.06);
   --ci-shadow-md:     0 4px 12px rgba(31,28,27,0.08);
   --ci-shadow-lg:     0 12px 32px rgba(31,28,27,0.10);
+
+  /* Care Indeed LIGHT — shell-glass contract overrides.
+     Solid white surface, no backdrop blur, minimal shadow. */
+  --ci-color-glass-main:        #FFFFFF;
+  --ci-color-glass-main-detail: #FFFFFF;
+  --ci-color-glass-border:      var(--ci-neutral-200, #E5E4E3);
+  --ci-color-glass-blur:        none;
+  --ci-color-glass-shadow:      0 1px 2px rgba(0,0,0,0.04);
+  --ci-color-shell-topbar-bg:   #FFFFFF;
+  --ci-color-shell-navrail-bg:  #FFFFFF;
+  --ci-color-border-subtle:     #E5E4E3;
+  --ci-color-glass-light-main:  var(--ci-color-glass-main);
+  --ci-color-glass-dark-main:   var(--ci-color-glass-main);
+  --ci-color-border-subtle-light: var(--ci-color-border-subtle);
+  --ci-color-border-subtle-dark:  var(--ci-color-border-subtle);
+
+  /* Overlay tokens — Care Indeed LIGHT. On a near-white canvas
+     the glass-on-glass tint must invert to black-on-white so the
+     same primitives produce a visible-but-subtle separation. */
+  --ci-overlay-faint:         rgba(31,28,27,0.025);
+  --ci-overlay-soft:          rgba(31,28,27,0.05);
+  --ci-overlay-strong:        rgba(31,28,27,0.09);
+  --ci-overlay-border:        rgba(31,28,27,0.08);
+  --ci-overlay-border-strong: rgba(31,28,27,0.14);
+  --ci-overlay-active-bg:     rgba(0,121,112,0.10);
+  --ci-overlay-active-border: rgba(0,121,112,0.32);
+  --ci-text-on-surface-strong: #1F1C1B;
+  --ci-text-on-surface-soft:   #2B2826;
+  --ci-text-on-surface-muted:  #52404B;
+  --ci-text-on-surface-faint:  #747474;
+  --ci-text-on-surface-ghost:  #9A9A99;
+  --ci-text-on-surface-quiet:  #C6C6C5;
+
+  /* Phase 2 closure (2026-05-17) — shell chrome + CTA tokens. */
+  --ci-color-shell-account-avatar-bg:    var(--ci-secondary-500);
+  --ci-color-shell-mobile-tabbar-bg:     rgba(255,255,255,0.95);
+  --ci-color-shell-overlay-shadow:       0 12px 28px rgba(0,0,0,0.12);
+  --ci-color-cta-primary-border-soft:    rgba(199,70,1,0.45);
+  --ci-color-on-primary:                 #FFFFFF;
 }
 
 /* ── Semantic tokens — Care Indeed DARK (NEW) ──────────────── */
@@ -689,6 +1049,11 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] {
   --ci-info-bg:      rgba(0,121,112,0.20);
   --ci-info-fg:      #7ADEDF;
   --ci-info-bdr:     rgba(0,121,112,0.50);
+
+  /* Phase 3 timeline / board state tokens — Care Indeed dark. */
+  --ci-state-on-track:    #7ADEDF;
+  --ci-state-on-track-bg: rgba(122,222,223,0.16);
+  --ci-action:            #FFC107;
 
   /* Legacy CI token remaps so existing call-sites auto-shift */
   --ci-gold:          #7ADEDF;
@@ -729,6 +1094,45 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] {
   --ci-shadow-sm:     0 1px 2px rgba(0,0,0,0.45);
   --ci-shadow-md:     0 8px 22px rgba(0,0,0,0.45);
   --ci-shadow-lg:     0 22px 48px -16px rgba(0,0,0,0.65);
+
+  /* Care Indeed DARK — shell-glass contract overrides.
+     Teal-charcoal glass with moderate blur, teal hairline, lifted shadow. */
+  --ci-color-glass-main:        linear-gradient(160deg, rgba(27,49,51,0.78) 0%, rgba(14,27,28,0.78) 100%);
+  --ci-color-glass-main-detail: linear-gradient(160deg, rgba(27,49,51,0.96) 0%, rgba(14,27,28,0.96) 100%);
+  --ci-color-glass-border:      rgba(122,222,223,0.18);
+  --ci-color-glass-blur:        blur(20px) saturate(120%);
+  --ci-color-glass-shadow:      0 22px 48px -16px rgba(0,0,0,0.65), inset 0 1px 0 rgba(122,222,223,0.06);
+  --ci-color-shell-topbar-bg:   rgba(20,40,42,0.78);
+  --ci-color-shell-navrail-bg:  rgba(20,40,42,0.78);
+  --ci-color-border-subtle:     rgba(122,222,223,0.18);
+  --ci-color-glass-light-main:  var(--ci-color-glass-main);
+  --ci-color-glass-dark-main:   var(--ci-color-glass-main);
+  --ci-color-border-subtle-light: var(--ci-color-border-subtle);
+  --ci-color-border-subtle-dark:  var(--ci-color-border-subtle);
+
+  /* Overlay tokens — Care Indeed DARK. Teal-charcoal canvas
+     uses teal-tinted whites so the glass-on-glass tint reads
+     against the cooler base. */
+  --ci-overlay-faint:         rgba(122,222,223,0.04);
+  --ci-overlay-soft:          rgba(122,222,223,0.06);
+  --ci-overlay-strong:        rgba(122,222,223,0.10);
+  --ci-overlay-border:        rgba(122,222,223,0.10);
+  --ci-overlay-border-strong: rgba(122,222,223,0.18);
+  --ci-overlay-active-bg:     rgba(122,222,223,0.16);
+  --ci-overlay-active-border: rgba(122,222,223,0.32);
+  --ci-text-on-surface-strong: rgba(241,245,244,0.92);
+  --ci-text-on-surface-soft:   rgba(241,245,244,0.78);
+  --ci-text-on-surface-muted:  rgba(241,245,244,0.60);
+  --ci-text-on-surface-faint:  rgba(241,245,244,0.45);
+  --ci-text-on-surface-ghost:  rgba(241,245,244,0.30);
+  --ci-text-on-surface-quiet:  rgba(241,245,244,0.18);
+
+  /* Phase 2 closure (2026-05-17) — shell chrome + CTA tokens. */
+  --ci-color-shell-account-avatar-bg:    var(--ci-shell-account-avatar-bg-ci-light-dark, #1B4549);
+  --ci-color-shell-mobile-tabbar-bg:     rgba(10,2,2,0.92);
+  --ci-color-shell-overlay-shadow:       0 16px 36px rgba(0,0,0,0.45);
+  --ci-color-cta-primary-border-soft:    rgba(122,222,223,0.45);
+  --ci-color-on-primary:                 #0A0202;
 }
 
 /* ───────────────────────────────────────────────────────────────

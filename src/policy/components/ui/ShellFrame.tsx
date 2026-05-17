@@ -27,10 +27,10 @@ export const ShellFrame: React.FC<ShellFrameProps> = ({ children, className = ''
   const isLight = mode === 'light';
 
   return (
-    <div className={`relative min-h-screen w-full overflow-hidden ${className}`}>
+    <div className={`relative h-screen w-full overflow-hidden ${className}`}>
       {/* Layer 0 - Atmospheric Backdrop */}
       <div className="fixed inset-0 z-0">
-        <TravelightBG />
+        <TravelightBG isLight={isLight} />
         {/* Light mode subtle gutter for glassmorphism magnification */}
         {isLight && (
           <div 
