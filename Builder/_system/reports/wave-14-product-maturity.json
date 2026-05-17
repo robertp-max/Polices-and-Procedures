@@ -1,0 +1,397 @@
+{
+  "startedAt": "2026-05-16T23:51:16.329Z",
+  "entries": [
+    {
+      "scenario": "wave-14-product-maturity",
+      "route": "/dashboard",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\maturity-desktop-care-indeed-light-light-_dashboard.png",
+      "viewport": "desktop",
+      "at": "2026-05-16T23:51:19.066Z"
+    },
+    {
+      "scenario": "wave-14-product-maturity",
+      "route": "/dashboard",
+      "theme": "ci-ion-dark-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\maturity-desktop-ci-ion-dark-light-_dashboard.png",
+      "viewport": "desktop",
+      "toggled": true,
+      "at": "2026-05-16T23:51:20.332Z"
+    },
+    {
+      "scenario": "wave-14-product-maturity",
+      "route": "/evidence",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\maturity-desktop-care-indeed-light-light-_evidence.png",
+      "viewport": "desktop",
+      "at": "2026-05-16T23:51:23.732Z"
+    },
+    {
+      "scenario": "wave-14-product-maturity",
+      "route": "/evidence",
+      "theme": "ci-ion-dark-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\maturity-desktop-ci-ion-dark-light-_evidence.png",
+      "viewport": "desktop",
+      "toggled": true,
+      "at": "2026-05-16T23:51:24.830Z"
+    },
+    {
+      "scenario": "wave-14-product-maturity",
+      "route": "/calendar?view=sprint",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\maturity-desktop-care-indeed-light-light-_calendar_view_sprint.png",
+      "viewport": "desktop",
+      "at": "2026-05-16T23:51:27.828Z"
+    },
+    {
+      "scenario": "wave-14-product-maturity",
+      "route": "/calendar?view=sprint",
+      "theme": "ci-ion-dark-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\maturity-desktop-ci-ion-dark-light-_calendar_view_sprint.png",
+      "viewport": "desktop",
+      "toggled": true,
+      "at": "2026-05-16T23:51:28.829Z"
+    },
+    {
+      "scenario": "wave-14-product-maturity",
+      "route": "/audit",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\maturity-desktop-care-indeed-light-light-_audit.png",
+      "viewport": "desktop",
+      "at": "2026-05-16T23:51:31.785Z"
+    },
+    {
+      "scenario": "wave-14-product-maturity",
+      "route": "/audit",
+      "theme": "ci-ion-dark-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\maturity-desktop-ci-ion-dark-light-_audit.png",
+      "viewport": "desktop",
+      "toggled": true,
+      "at": "2026-05-16T23:51:33.002Z"
+    },
+    {
+      "scenario": "wave-14-product-maturity",
+      "route": "/my-tasks",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\maturity-desktop-care-indeed-light-light-_my-tasks.png",
+      "viewport": "desktop",
+      "at": "2026-05-16T23:51:35.945Z"
+    },
+    {
+      "scenario": "wave-14-product-maturity",
+      "route": "/my-tasks",
+      "theme": "ci-ion-dark-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\maturity-desktop-ci-ion-dark-light-_my-tasks.png",
+      "viewport": "desktop",
+      "toggled": true,
+      "at": "2026-05-16T23:51:36.866Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/dashboard",
+      "viewport": "1536x960",
+      "viewportLabel": "desktop",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-desktop-care-indeed-light-light-_dashboard.png",
+      "at": "2026-05-16T23:51:40.249Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/evidence",
+      "viewport": "1536x960",
+      "viewportLabel": "desktop",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-desktop-care-indeed-light-light-_evidence.png",
+      "at": "2026-05-16T23:51:42.920Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/audit",
+      "viewport": "1536x960",
+      "viewportLabel": "desktop",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-desktop-care-indeed-light-light-_audit.png",
+      "at": "2026-05-16T23:51:45.765Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/calendar?view=sprint",
+      "viewport": "1536x960",
+      "viewportLabel": "desktop",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-desktop-care-indeed-light-light-_calendar_view_sprint.png",
+      "at": "2026-05-16T23:51:48.132Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/my-tasks",
+      "viewport": "1536x960",
+      "viewportLabel": "desktop",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-desktop-care-indeed-light-light-_my-tasks.png",
+      "at": "2026-05-16T23:51:50.406Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/dashboard",
+      "viewport": "1280x800",
+      "viewportLabel": "laptop",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-laptop-care-indeed-light-light-_dashboard.png",
+      "at": "2026-05-16T23:51:52.740Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/evidence",
+      "viewport": "1280x800",
+      "viewportLabel": "laptop",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-laptop-care-indeed-light-light-_evidence.png",
+      "at": "2026-05-16T23:51:55.057Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/audit",
+      "viewport": "1280x800",
+      "viewportLabel": "laptop",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-laptop-care-indeed-light-light-_audit.png",
+      "at": "2026-05-16T23:51:57.482Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/calendar?view=sprint",
+      "viewport": "1280x800",
+      "viewportLabel": "laptop",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-laptop-care-indeed-light-light-_calendar_view_sprint.png",
+      "at": "2026-05-16T23:51:59.944Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/my-tasks",
+      "viewport": "1280x800",
+      "viewportLabel": "laptop",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-laptop-care-indeed-light-light-_my-tasks.png",
+      "at": "2026-05-16T23:52:02.361Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/dashboard",
+      "viewport": "834x1112",
+      "viewportLabel": "tablet",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-tablet-care-indeed-light-light-_dashboard.png",
+      "at": "2026-05-16T23:52:05.038Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/evidence",
+      "viewport": "834x1112",
+      "viewportLabel": "tablet",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-tablet-care-indeed-light-light-_evidence.png",
+      "at": "2026-05-16T23:52:07.527Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/audit",
+      "viewport": "834x1112",
+      "viewportLabel": "tablet",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-tablet-care-indeed-light-light-_audit.png",
+      "at": "2026-05-16T23:52:09.997Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/calendar?view=sprint",
+      "viewport": "834x1112",
+      "viewportLabel": "tablet",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-tablet-care-indeed-light-light-_calendar_view_sprint.png",
+      "at": "2026-05-16T23:52:12.437Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/my-tasks",
+      "viewport": "834x1112",
+      "viewportLabel": "tablet",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-tablet-care-indeed-light-light-_my-tasks.png",
+      "at": "2026-05-16T23:52:14.805Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/dashboard",
+      "viewport": "390x844",
+      "viewportLabel": "mobile",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-mobile-care-indeed-light-light-_dashboard.png",
+      "at": "2026-05-16T23:52:17.225Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/evidence",
+      "viewport": "390x844",
+      "viewportLabel": "mobile",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-mobile-care-indeed-light-light-_evidence.png",
+      "at": "2026-05-16T23:52:19.749Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/audit",
+      "viewport": "390x844",
+      "viewportLabel": "mobile",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-mobile-care-indeed-light-light-_audit.png",
+      "at": "2026-05-16T23:52:22.284Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/calendar?view=sprint",
+      "viewport": "390x844",
+      "viewportLabel": "mobile",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-mobile-care-indeed-light-light-_calendar_view_sprint.png",
+      "at": "2026-05-16T23:52:24.860Z"
+    },
+    {
+      "scenario": "responsive-harmony",
+      "route": "/my-tasks",
+      "viewport": "390x844",
+      "viewportLabel": "mobile",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\responsive-mobile-care-indeed-light-light-_my-tasks.png",
+      "at": "2026-05-16T23:52:27.243Z"
+    },
+    {
+      "scenario": "desktop-regression",
+      "route": "/dashboard",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\desktop-regression-care-indeed-light-light-_dashboard.png",
+      "viewport": "1536x960",
+      "at": "2026-05-16T23:52:30.227Z"
+    },
+    {
+      "scenario": "desktop-regression",
+      "route": "/evidence",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\desktop-regression-care-indeed-light-light-_evidence.png",
+      "viewport": "1536x960",
+      "at": "2026-05-16T23:52:33.295Z"
+    },
+    {
+      "scenario": "desktop-regression",
+      "route": "/audit",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\desktop-regression-care-indeed-light-light-_audit.png",
+      "viewport": "1536x960",
+      "at": "2026-05-16T23:52:36.433Z"
+    },
+    {
+      "scenario": "desktop-regression",
+      "route": "/calendar?view=sprint",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\desktop-regression-care-indeed-light-light-_calendar_view_sprint.png",
+      "viewport": "1536x960",
+      "at": "2026-05-16T23:52:39.296Z"
+    },
+    {
+      "scenario": "desktop-regression",
+      "route": "/my-tasks",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\desktop-regression-care-indeed-light-light-_my-tasks.png",
+      "viewport": "1536x960",
+      "at": "2026-05-16T23:52:42.014Z"
+    },
+    {
+      "scenario": "mobile-regression",
+      "route": "/dashboard",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\mobile-regression-care-indeed-light-light-_dashboard.png",
+      "viewport": "390x844",
+      "at": "2026-05-16T23:52:45.158Z"
+    },
+    {
+      "scenario": "mobile-regression",
+      "route": "/evidence",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\mobile-regression-care-indeed-light-light-_evidence.png",
+      "viewport": "390x844",
+      "at": "2026-05-16T23:52:48.294Z"
+    },
+    {
+      "scenario": "mobile-regression",
+      "route": "/audit",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\mobile-regression-care-indeed-light-light-_audit.png",
+      "viewport": "390x844",
+      "at": "2026-05-16T23:52:51.549Z"
+    },
+    {
+      "scenario": "mobile-regression",
+      "route": "/calendar?view=sprint",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\mobile-regression-care-indeed-light-light-_calendar_view_sprint.png",
+      "viewport": "390x844",
+      "at": "2026-05-16T23:52:54.494Z"
+    },
+    {
+      "scenario": "mobile-regression",
+      "route": "/my-tasks",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\mobile-regression-care-indeed-light-light-_my-tasks.png",
+      "viewport": "390x844",
+      "at": "2026-05-16T23:52:57.294Z"
+    },
+    {
+      "scenario": "executive-walkthrough",
+      "route": "/dashboard",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\executive-walkthrough-care-indeed-light-light-_dashboard.png",
+      "at": "2026-05-16T23:53:01.841Z"
+    },
+    {
+      "scenario": "executive-walkthrough",
+      "route": "/audit",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\executive-walkthrough-care-indeed-light-light-_audit.png",
+      "at": "2026-05-16T23:53:05.811Z"
+    },
+    {
+      "scenario": "executive-walkthrough",
+      "route": "/evidence",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\executive-walkthrough-care-indeed-light-light-_evidence.png",
+      "at": "2026-05-16T23:53:08.673Z"
+    },
+    {
+      "scenario": "executive-walkthrough",
+      "route": "/calendar?view=sprint",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\executive-walkthrough-care-indeed-light-light-_calendar_view_sprint.png",
+      "at": "2026-05-16T23:53:12.375Z"
+    },
+    {
+      "scenario": "executive-walkthrough",
+      "route": "/my-tasks",
+      "theme": "care-indeed-light-light",
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\executive-walkthrough-care-indeed-light-light-_my-tasks.png",
+      "at": "2026-05-16T23:53:15.631Z"
+    },
+    {
+      "scenario": "guided-uat-walkthrough",
+      "step": 1,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\guided-uat-wave14-step-1.png",
+      "at": "2026-05-16T23:53:21.080Z"
+    },
+    {
+      "scenario": "guided-uat-walkthrough",
+      "step": 2,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\screenshots\\wave-14-product-maturity\\guided-uat-wave14-step-2.png",
+      "at": "2026-05-16T23:53:22.054Z"
+    }
+  ]
+}

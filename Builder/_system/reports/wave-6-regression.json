@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-05-16T23:08:58.683Z",
+  "startedAt": "2026-05-16T23:31:59.078Z",
   "tests": [
     {
       "testId": "test-1",
@@ -7,13 +7,13 @@
       "passed": true,
       "finalUrl": "http://localhost:5173/dashboard",
       "pageTitle": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
-      "bodyTextSnippet": "Search policies\nTP\nCOMMAND CENTER\nWhat needs action now\nWhat needs action now\nTODAY\nSunday, May 10\nACTIVE SPRINT\nSprint 9\n9 due within 48h\nSPRINT %\n0%\n112 blockers\nAUDIT READY\n0/253\n0/100\nACTION IN PROGRESS\n145\n0 ready to close\nMISSING EVIDENCE\n0\n0 pending approval\nCRITICAL ACTIONS\n101\n7 at risk\nAUDIT OPEN\n1041\n33 awaiting sig\nAGENCY READINESS - NOT READY\n\n89 overdue · 12 blocked. Immediate action needed to avoid compliance risk.\n\nAT RISK\n7\nView Readiness Report\nAction Board\n\nOperational triage across critical deadlines, active work, and evidence queues.\n\nFilter\nSort by: Priority\nCritical & Ov",
+      "bodyTextSnippet": "Search policies\nTP\nCOMMAND CENTER\nWhat needs action now\nWhat needs action now\n\nPremium operational command surface for compliance execution, evidence readiness, and escalation control.\n\nCRITICAL\n101\nAT RISK\n7\nAUDIT READY\n0\nIN SCOPE\n253\nTODAY\nSunday, May 10\nACTIVE SPRINT\nSprint 9\n9 due within 48h\nSPRINT %\n0%\n112 blockers\nAUDIT READY\n0/253\n0/100\nACTION IN PROGRESS\n145\n0 ready to close\nMISSING EVIDENCE\n0\n0 pending approval\nCRITICAL ACTIONS\n101\n7 at risk\nAUDIT OPEN\n1041\n33 awaiting sig\nAGENCY READINESS - NOT READY\n\n89 overdue · 12 blocked. Immediate action needed to avoid compliance risk.\n\nAT RISK",
       "hardBlockingErrors": [],
       "consoleErrorCount": 0,
       "pageErrorCount": 0,
       "networkFailureCount": 0,
       "networkFailureSamples": [],
-      "recordedAt": "2026-05-16T23:09:02.900Z"
+      "recordedAt": "2026-05-16T23:32:03.202Z"
     },
     {
       "testId": "test-2",
@@ -25,7 +25,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "Full DON-Asst→DON multi-signer walk is operator UAT, not Wave-6 automation",
-      "recordedAt": "2026-05-16T23:09:06.898Z"
+      "recordedAt": "2026-05-16T23:32:07.220Z"
     },
     {
       "testId": "test-3",
@@ -36,7 +36,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "Deep byte-stable retrieval validated by artifact-retrieval-defect.spec.mjs s3/s4/s7/s8a stages",
-      "recordedAt": "2026-05-16T23:09:10.914Z"
+      "recordedAt": "2026-05-16T23:32:10.979Z"
     },
     {
       "testId": "test-4",
@@ -48,7 +48,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "IDB refresh persistence validated by artifact-retrieval-defect.spec.mjs s8a (IDB-intact recovery)",
-      "recordedAt": "2026-05-16T23:09:15.141Z"
+      "recordedAt": "2026-05-16T23:32:15.145Z"
     },
     {
       "testId": "test-5",
@@ -59,7 +59,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "Deterministic resolveFormInstanceFromArtifact (Wave 4) used by ArtifactViewerPage on every navigation",
-      "recordedAt": "2026-05-16T23:09:19.606Z"
+      "recordedAt": "2026-05-16T23:32:19.501Z"
     },
     {
       "testId": "test-6",
@@ -70,7 +70,7 @@
       "hardBlockingErrors": [],
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
-      "recordedAt": "2026-05-16T23:09:23.616Z"
+      "recordedAt": "2026-05-16T23:32:23.475Z"
     },
     {
       "testId": "test-7",
@@ -94,7 +94,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "eCign-branding-bleed visual check is operator UAT per BROWSER_TEST_7_PRINT_UNIFIED_CHROME.md",
-      "recordedAt": "2026-05-16T23:09:36.576Z"
+      "recordedAt": "2026-05-16T23:32:35.116Z"
     },
     {
       "testId": "test-8",
@@ -126,7 +126,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "Cross-surface task-count parity enforced by verify:pm-unified (5283/5283 sprint=kanban=gantt)",
-      "recordedAt": "2026-05-16T23:09:51.756Z"
+      "recordedAt": "2026-05-16T23:32:49.454Z"
     },
     {
       "testId": "test-9",
@@ -138,7 +138,7 @@
       "consoleErrorCount": 0,
       "networkFailureCount": 0,
       "note": "Trainer-role boundary walk is operator UAT",
-      "recordedAt": "2026-05-16T23:09:54.986Z"
+      "recordedAt": "2026-05-16T23:32:52.292Z"
     }
   ]
 }

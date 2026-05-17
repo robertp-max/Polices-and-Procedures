@@ -16,7 +16,7 @@
       {
         "outputDir": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/uat-results",
         "repeatEach": 1,
-        "retries": 0,
+        "retries": 1,
         "metadata": {},
         "id": "chromium",
         "name": "chromium",
@@ -25,7 +25,7 @@
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
         ],
-        "timeout": 30000
+        "timeout": 120000
       }
     ],
     "quiet": false,
@@ -62,25 +62,25 @@
   },
   "suites": [
     {
-      "title": "ces-q2-2026-complete-uat.spec.ts",
-      "file": "ces-q2-2026-complete-uat.spec.ts",
+      "title": "phase2-shell-visual.spec.mjs",
+      "file": "phase2-shell-visual.spec.mjs",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "01 — Auth & Role Switching",
-          "file": "ces-q2-2026-complete-uat.spec.ts",
-          "line": 218,
+          "title": "Phase 2 — Shell visual regression",
+          "file": "phase2-shell-visual.spec.mjs",
+          "line": 134,
           "column": 6,
           "specs": [
             {
-              "title": "01-01: Demo auth bypass grants access to /ces/dashboard",
+              "title": "desktop-1200 — shell framing + theme parity",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -89,250 +89,18 @@
                   "status": "skipped"
                 }
               ],
-              "id": "9f65b2bccc8c9ef24f6a-f2ce5b276b09fa2867ed",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 220,
-              "column": 3
-            },
-            {
-              "title": "01-02: Role switcher is present and CES roles are available",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-83439975d3433301c15b",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 260,
-              "column": 3
-            },
-            {
-              "title": "01-03: DON Assistant role — cannot sign (enforcement check)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-4b7e8138575e007f4ff8",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 299,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "02 — Sprint Board",
-          "file": "ces-q2-2026-complete-uat.spec.ts",
-          "line": 340,
-          "column": 6,
-          "specs": [
-            {
-              "title": "02-01: Sprint Board loads and shows Q2 sprints",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-041665d896f0498d42ac",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 342,
-              "column": 3
-            },
-            {
-              "title": "02-02: Sprint Board right panel opens for a task",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-68e8a095724529415ed2",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 417,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "03 — Calendar",
-          "file": "ces-q2-2026-complete-uat.spec.ts",
-          "line": 487,
-          "column": 6,
-          "specs": [
-            {
-              "title": "03-01: Master Calendar loads in sprint mode with Q2 events",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-fa79cfb305c19f64fa66",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 489,
-              "column": 3
-            },
-            {
-              "title": "03-02: Calendar event click opens event detail",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-0dcf1967cf60d9547aee",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 553,
-              "column": 3
-            },
-            {
-              "title": "03-03: Direct event URL loads MobileIncidentExecutionPage",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-cf49e70808609e421ef8",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 595,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "04 — CES Dashboard & Gantt",
-          "file": "ces-q2-2026-complete-uat.spec.ts",
-          "line": 662,
-          "column": 6,
-          "specs": [
-            {
-              "title": "04-01: CES Dashboard renders metrics",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-191fd7df55ba56f7b22f",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 664,
-              "column": 3
-            },
-            {
-              "title": "04-02: Master Calendar Gantt view loads",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-702dc86a373935d7012e",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 699,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "05 — Q2 2026 Events (Per-Event)",
-          "file": "ces-q2-2026-complete-uat.spec.ts",
-          "line": 741,
-          "column": 6,
-          "specs": [
-            {
-              "title": "05-qapi_meeting-2026051: QAPI Committee Meeting — event page loads",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-f0a69f3d7419bcb42104",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 759,
+              "id": "d076b9140248b9b6b5e9-db87119a36695c28c21c",
+              "file": "phase2-shell-visual.spec.mjs",
+              "line": 144,
               "column": 5
             },
             {
-              "title": "05-governing_body_meeti: Governing Body Meeting — event page loads",
+              "title": "desktop-1440 — shell framing + theme parity",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -341,18 +109,18 @@
                   "status": "skipped"
                 }
               ],
-              "id": "9f65b2bccc8c9ef24f6a-cd9717a02b9b4cf830d7",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 759,
+              "id": "d076b9140248b9b6b5e9-052ac0e164e05680b80e",
+              "file": "phase2-shell-visual.spec.mjs",
+              "line": 144,
               "column": 5
             },
             {
-              "title": "05-claims_submission-20: Claims Submission Cycle — event page loads",
+              "title": "desktop-1600 — shell framing + theme parity",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -361,18 +129,18 @@
                   "status": "skipped"
                 }
               ],
-              "id": "9f65b2bccc8c9ef24f6a-48eaeb3a3dc52fc8925c",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 759,
+              "id": "d076b9140248b9b6b5e9-2521292c899f81e80a2f",
+              "file": "phase2-shell-visual.spec.mjs",
+              "line": 144,
               "column": 5
             },
             {
-              "title": "05-system_activity_revi: System Activity Review — event page loads",
+              "title": "tablet-768 — shell responsive transition",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -381,186 +149,18 @@
                   "status": "skipped"
                 }
               ],
-              "id": "9f65b2bccc8c9ef24f6a-824cecc0b58a1c614cdd",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 759,
-              "column": 5
-            },
-            {
-              "title": "05-sentinel_event_rca-2: Sentinel Event RCA — event page loads",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-a4c068d63b4b564eede0",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 759,
-              "column": 5
-            },
-            {
-              "title": "05-episode_review-20260: 30-Day Episode Review — event page loads",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-56dc3fe8e19dec601101",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 759,
-              "column": 5
-            },
-            {
-              "title": "05-physician_signatures: Physician Signatures — event page loads",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-1f5de75d4cfcbd3b19fd",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 759,
-              "column": 5
-            },
-            {
-              "title": "05-hipaa_training-20260: HIPAA Training — event page loads",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-44315231f6049aa05a0b",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 759,
-              "column": 5
-            },
-            {
-              "title": "05-qapi_meeting-2026060: QAPI Committee Meeting (June) — event page loads",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-8706184df02961c162ed",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 759,
-              "column": 5
-            },
-            {
-              "title": "05-risk_management_comm: Risk Management Committee — event page loads",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-1d801c379fc0a1ae3e4e",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 759,
-              "column": 5
-            },
-            {
-              "title": "05-policy_review_annual: Annual Policy Review — event page loads",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-67adbb426db77fd3b164",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 759,
-              "column": 5
-            }
-          ]
-        },
-        {
-          "title": "06 — Forms",
-          "file": "ces-q2-2026-complete-uat.spec.ts",
-          "line": 904,
-          "column": 6,
-          "specs": [
-            {
-              "title": "06-01: Form opens from task with correct form instance ID (not blank)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-57a321cc26e072c90121",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 906,
+              "id": "d076b9140248b9b6b5e9-ff44c14fb1b611fc4f01",
+              "file": "phase2-shell-visual.spec.mjs",
+              "line": 193,
               "column": 3
             },
             {
-              "title": "06-02: Forms page loads form by ID without blank render",
+              "title": "mobile-390 — bottom nav + nav drawer",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -569,18 +169,18 @@
                   "status": "skipped"
                 }
               ],
-              "id": "9f65b2bccc8c9ef24f6a-e0a134fd52cc4f88b343",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1035,
+              "id": "d076b9140248b9b6b5e9-a9637574e921b7203441",
+              "file": "phase2-shell-visual.spec.mjs",
+              "line": 213,
               "column": 3
             },
             {
-              "title": "06-03: Form save persists content after page refresh",
+              "title": "reduced-motion shell at 1440",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -589,46 +189,18 @@
                   "status": "skipped"
                 }
               ],
-              "id": "9f65b2bccc8c9ef24f6a-0378a7a274d08bdf3d27",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1100,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "07 — eCIgn Signatures",
-          "file": "ces-q2-2026-complete-uat.spec.ts",
-          "line": 1189,
-          "column": 6,
-          "specs": [
-            {
-              "title": "07-01: eCIgn signature flow initiates from form viewer",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-2dd66cebd5d398956752",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1191,
+              "id": "d076b9140248b9b6b5e9-1b7fd8bb5e70f1c072e2",
+              "file": "phase2-shell-visual.spec.mjs",
+              "line": 262,
               "column": 3
             },
             {
-              "title": "07-02: Signed artifact does not render blank/white",
+              "title": "splash view (best-effort)",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -637,18 +209,18 @@
                   "status": "skipped"
                 }
               ],
-              "id": "9f65b2bccc8c9ef24f6a-30e9ac83c5fb1de6b90f",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1261,
+              "id": "d076b9140248b9b6b5e9-e5a86c8ba7d4b49e494f",
+              "file": "phase2-shell-visual.spec.mjs",
+              "line": 287,
               "column": 3
             },
             {
-              "title": "07-03: Same signer cannot sign twice — duplicate signature check",
+              "title": "axe scan — shell at desktop + mobile",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -657,46 +229,18 @@
                   "status": "skipped"
                 }
               ],
-              "id": "9f65b2bccc8c9ef24f6a-63868770986b9f94680f",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1298,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "08 — Evidence Center",
-          "file": "ces-q2-2026-complete-uat.spec.ts",
-          "line": 1343,
-          "column": 6,
-          "specs": [
-            {
-              "title": "08-01: Evidence Center page loads",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-3017554798c3a9fd6539",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1345,
+              "id": "d076b9140248b9b6b5e9-ff8ce3725342109b1ae8",
+              "file": "phase2-shell-visual.spec.mjs",
+              "line": 307,
               "column": 3
             },
             {
-              "title": "08-02: Evidence upload creates evidence ID",
+              "title": "mobile nav drawer — ARIA + Escape contract (390)",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -705,302 +249,9 @@
                   "status": "skipped"
                 }
               ],
-              "id": "9f65b2bccc8c9ef24f6a-568feea41837fa7d3d30",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1409,
-              "column": 3
-            },
-            {
-              "title": "08-03: Evidence opens own file, not latest form artifact",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-5e88ee2607a02a0fc6b3",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1519,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "09 — Audit Mode",
-          "file": "ces-q2-2026-complete-uat.spec.ts",
-          "line": 1568,
-          "column": 6,
-          "specs": [
-            {
-              "title": "09-01: Audit Mode page loads with audit trail",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-04cf2ed73e20ecb18245",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1570,
-              "column": 3
-            },
-            {
-              "title": "09-02: Audit trail entries link to actual artifacts (not metadata-only)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-89df052ad35f5f90e57c",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1634,
-              "column": 3
-            },
-            {
-              "title": "09-03: Certify/Lock shows package contents before locking",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-61a100b7f7db3f1aad51",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1703,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "10 — My Tasks",
-          "file": "ces-q2-2026-complete-uat.spec.ts",
-          "line": 1759,
-          "column": 6,
-          "specs": [
-            {
-              "title": "10-01: My Tasks page loads with Q2 tasks",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "9f65b2bccc8c9ef24f6a-366e2f9113b80543989b",
-              "file": "ces-q2-2026-complete-uat.spec.ts",
-              "line": 1761,
-              "column": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "ces-q2-2026-fix-verification.spec.ts",
-      "file": "ces-q2-2026-fix-verification.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
-        {
-          "title": "DEFECT-Q2-001 FIX — ExecutionUnitCard data-testid",
-          "file": "ces-q2-2026-fix-verification.spec.ts",
-          "line": 58,
-          "column": 6,
-          "specs": [
-            {
-              "title": "Sprint Board task cards are selectable via [data-testid=\"execution-unit-card\"]",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "f57cf6721b0b04766be5-ab3368cf69f308070f8e",
-              "file": "ces-q2-2026-fix-verification.spec.ts",
-              "line": 59,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "DEFECT-Q2-002 FIX — Calendar event chips data-testid",
-          "file": "ces-q2-2026-fix-verification.spec.ts",
-          "line": 101,
-          "column": 6,
-          "specs": [
-            {
-              "title": "Compliance Calendar event chips are selectable via [data-testid=\"calendar-event\"]",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "f57cf6721b0b04766be5-db4132f63c425ac985a0",
-              "file": "ces-q2-2026-fix-verification.spec.ts",
-              "line": 102,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "DEFECT-Q2-003 FIX — Form URL includes form_instance_id",
-          "file": "ces-q2-2026-fix-verification.spec.ts",
-          "line": 150,
-          "column": 6,
-          "specs": [
-            {
-              "title": "Navigating to a form with event context includes form_instance_id in URL",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "f57cf6721b0b04766be5-783504ef41c48643400f",
-              "file": "ces-q2-2026-fix-verification.spec.ts",
-              "line": 151,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "DEFECT-Q2-004 FIX — Form field values persist after browser refresh",
-          "file": "ces-q2-2026-fix-verification.spec.ts",
-          "line": 197,
-          "column": 6,
-          "specs": [
-            {
-              "title": "Filling a form field, refreshing, and reopening shows the saved value",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "f57cf6721b0b04766be5-55ac419f8d7e9b9052bd",
-              "file": "ces-q2-2026-fix-verification.spec.ts",
-              "line": 198,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "DEFECT-Q2-005 FIX — eCIgn sign button has visible text and data-testid",
-          "file": "ces-q2-2026-fix-verification.spec.ts",
-          "line": 264,
-          "column": 6,
-          "specs": [
-            {
-              "title": "Form signature fields render a \"Sign\" button with data-testid=\"ecign-sign-btn\"",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "f57cf6721b0b04766be5-6279e926d177783c08dd",
-              "file": "ces-q2-2026-fix-verification.spec.ts",
-              "line": 265,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "DEFECT-Q2-006 FIX — Audit trail has \"View Artifact\" links",
-          "file": "ces-q2-2026-fix-verification.spec.ts",
-          "line": 323,
-          "column": 6,
-          "specs": [
-            {
-              "title": "Completing a form action creates an audit entry with a View Artifact link",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "f57cf6721b0b04766be5-6d1d26c57bd8572568de",
-              "file": "ces-q2-2026-fix-verification.spec.ts",
-              "line": 324,
+              "id": "d076b9140248b9b6b5e9-3f9568c14e8c9534dff4",
+              "file": "phase2-shell-visual.spec.mjs",
+              "line": 370,
               "column": 3
             }
           ]
@@ -1010,10 +261,10 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-05-12T17:25:47.268Z",
-    "duration": 114.04500000000007,
+    "startTime": "2026-05-17T04:18:42.893Z",
+    "duration": 219.02600000000007,
     "expected": 0,
-    "skipped": 40,
+    "skipped": 9,
     "unexpected": 0,
     "flaky": 0
   }
