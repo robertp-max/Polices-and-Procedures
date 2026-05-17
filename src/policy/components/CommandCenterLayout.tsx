@@ -23,13 +23,7 @@ import { useUserAssignmentsStore } from '@/policy/security/identity/userAssignme
 import { RolloutPhaseBadge } from '@/policy/security/features/RolloutPhaseBadge';
 import { PermissionGate } from '@/policy/security/features/PermissionGate';
 import { ThemeModeToggle } from '@/policy/components/ui/ThemeModeToggle';
-import { 
-  ShellFrame, 
-  ShellTopbar, 
-  ShellNavRail, 
-  ShellContentFrame, 
-  ShellCommandGroup 
-} from '@/policy/components/ui';
+import { ShellFrame } from '@/policy/components/ui';
 import { ContextualKnowledgeBulb } from '@/policy/components/help/ContextualKnowledgeBulb';
 import { useNavStore } from '@/policy/stores/navStore';
 import { GlobalTaskDrawer } from '@/policy/components/pm/GlobalTaskDrawer';

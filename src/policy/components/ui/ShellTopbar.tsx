@@ -25,7 +25,8 @@ export const ShellTopbar: React.FC<ShellTopbarProps> = ({
   onMenuClick,
   showMobileMenu = false,
 }) => {
-  const { isLight } = useCiModeStore();
+  const { mode } = useCiModeStore();
+  const isLight = mode === 'light';
 
   return (
     <div 

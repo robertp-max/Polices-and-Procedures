@@ -23,7 +23,8 @@ interface ShellFrameProps {
  * which sits inside this component.
  */
 export const ShellFrame: React.FC<ShellFrameProps> = ({ children, className = '' }) => {
-  const { isLight } = useCiModeStore();
+  const { mode } = useCiModeStore();
+  const isLight = mode === 'light';
 
   return (
     <div className={`relative min-h-screen w-full overflow-hidden ${className}`}>

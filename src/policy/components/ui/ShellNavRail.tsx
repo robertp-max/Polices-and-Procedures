@@ -27,7 +27,8 @@ interface ShellNavRailProps {
  */
 export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }) => {
   const location = useLocation();
-  const { isLight } = useCiModeStore();
+  const { mode } = useCiModeStore();
+  const isLight = mode === 'light';
 
   const isActive = (to: string) => location.pathname === to || location.pathname.startsWith(to + '/');
 
