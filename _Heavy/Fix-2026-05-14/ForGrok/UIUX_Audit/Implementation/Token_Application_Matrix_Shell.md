@@ -126,6 +126,64 @@ These will be proposed as minor additions to `tokens/tokens.json` if needed duri
 
 ---
 
-**End of Token Application Matrix (Shell)**
+**End of original Token Application Matrix (Shell) — v1.0**
 
-Next artifact will be produced immediately.
+---
+
+## Appendix A — Phase 2 Closure & Visibility Fix Token Additions (v1.4 — 2026-05-17)
+
+This appendix supersedes the placeholders in §2.5 and adds the canonical token rows declared in `src/index.css` across all three theme blocks (`:root` = CI-ION dark, `html[data-theme="care-indeed-light"]` = CI light, `html[data-theme="care-indeed-light"][data-ci-mode="dark"]` = CI dark). Closes Appendix C item C2 of `Phase2_Exit_Criteria_Checklist.md` v1.4.
+
+### A.1 Canonical Glass Contract (Visibility Fix — 2026-05-17)
+
+| Token                            | Purpose                                                | Primary Consumer(s)                                       |
+|----------------------------------|--------------------------------------------------------|-----------------------------------------------------------|
+| `--ci-color-glass-main`          | Painted glass background of Layer 1 surfaces           | `ShellContentFrame`, `ShellTopbar`, `ShellNavRail`        |
+| `--ci-color-glass-main-detail`   | Detail-mode glass background (drawer / panel variant)  | `ShellContentFrame` (when `detail` prop is set)           |
+| `--ci-color-glass-border`        | Edge definition for Layer 1 glass surfaces             | All Shell primitives                                      |
+| `--ci-color-glass-blur`          | `backdrop-filter` blur radius for Layer 1              | All Shell primitives                                      |
+| `--ci-color-glass-shadow`        | Drop-shadow / elevation for Layer 1                    | All Shell primitives                                      |
+| `--ci-color-shell-topbar-bg`     | Topbar painted background (resolves to glass-main)     | `ShellTopbar`                                             |
+| `--ci-color-shell-navrail-bg`    | Nav rail painted background                            | `ShellNavRail`                                            |
+| `--ci-color-border-subtle`       | Subtle divider/border (replaces `border-subtle-*-dark/light` antipattern) | All Shell primitives                  |
+
+### A.2 Account Menu (CCL closure — 2026-05-17)
+
+| Token                                       | Purpose                                                    | Per-Theme Value |
+|---------------------------------------------|------------------------------------------------------------|-----------------|
+| `--ci-color-shell-account-avatar-bg`        | Account avatar background gradient/fill                    | CI-ION dark: `linear-gradient(135deg, rgba(93,14,14,0.9), rgba(49,7,7,0.9))` · Care Indeed light: `var(--ci-secondary-500)` · Care Indeed dark: `var(--ci-shell-account-avatar-bg-ci-light-dark, #1B4549)` |
+| `--ci-color-shell-overlay-shadow`           | Drop shadow for account menu / floating overlays           | CI-ION dark + Care Indeed dark: `0 16px 36px rgba(0,0,0,0.45)` · Care Indeed light: `0 12px 28px rgba(0,0,0,0.12)` |
+| `--ci-shell-account-menu-bg-light` / `-dark`| Account menu surface background (pre-existing v1.3)        | Light: `#FFFFFF` mix · Dark: `rgba(31,28,27,0.95)` |
+| `--ci-overlay-border-strong`                | Account menu separator + outer border                      | (Phase 3 overlay family — themed) |
+
+### A.3 Mobile Tab Bar (CCL closure — 2026-05-17)
+
+| Token                                  | Purpose                                              | Per-Theme Value |
+|----------------------------------------|------------------------------------------------------|-----------------|
+| `--ci-color-shell-mobile-tabbar-bg`    | Bottom mobile tab bar painted background             | CI-ION dark + Care Indeed dark: `rgba(10,2,2,0.92)` · Care Indeed light: `rgba(255,255,255,0.95)` |
+| `--ci-overlay-border-strong`           | Top border of mobile tab bar                         | (Phase 3 overlay family — themed) |
+| `--ci-text-on-surface-soft`            | Inactive mobile tab label color                      | (Phase 3 on-surface family — themed) |
+
+### A.4 CTA Primary Register (CCL closure — 2026-05-17)
+
+| Token                                  | Purpose                                              | Per-Theme Value |
+|----------------------------------------|------------------------------------------------------|-----------------|
+| `--ci-color-cta-primary-border-soft`   | Soft border ring on primary CTAs (register/topbar)   | CI-ION dark + Care Indeed light: `rgba(199,70,1,0.45)` · Care Indeed dark: `rgba(122,222,223,0.45)` |
+| `--ci-color-on-primary`                | Foreground text/icon color on primary CTA fills      | CI-ION dark + Care Indeed light: `#FFFFFF` · Care Indeed dark: `#0A0202` |
+
+### A.5 Sub-nav Chips & Footer (CCL closure — 2026-05-17)
+
+| Token                          | Purpose                                                              |
+|--------------------------------|----------------------------------------------------------------------|
+| `--ci-overlay-faint`           | Sub-nav chip background (collapsed from light/dark ternary)          |
+| `--ci-text-on-surface-muted`   | Sub-nav chip text + footer muted text                                |
+
+### A.6 Enforcement & Verification
+
+- All tokens above are declared in **all three** theme blocks of `src/index.css` and resolve via cascade, eliminating JS-side `useCiModeStore` branching for these decisions.
+- `CommandCenterLayout.tsx`: post-closure grep for raw brand hex / `rgba(255,255,255,…)` / `rgba(0,0,0,0.X)` / `rgba(31,28,27,…)` / `rgba(199,70,1,…)` / `rgba(93,14,14,…)` / `rgba(49,7,7,…)` / `rgba(10,2,2,…)` returns **zero** matches outside three defensive `var(--ci-bg, #FFFFFF)` fallbacks.
+- `tsc --noEmit --project tsconfig.app.json` exit 0; `npm run build` exit 0 (2026-05-17).
+
+---
+
+**End of Token Application Matrix (Shell) — v1.4**
