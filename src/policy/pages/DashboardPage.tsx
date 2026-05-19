@@ -23,6 +23,8 @@ import {
   CiStatusBadge,
   EmptyState,
 } from '@/policy/components/ui';
+import { PlannerViewToggle, type ViewMode } from '@/policy/components/dashboard/PlannerViewToggle';
+import { MyPlannerView } from '@/policy/components/dashboard/MyPlannerView';
 
 type KpiCardData = {
   label: string;
@@ -48,6 +50,9 @@ export function DashboardPage() {
   const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const [viewportWidth, setViewportWidth] = useState(() => (typeof window === 'undefined' ? 1920 : window.innerWidth));
   const isMobile = viewportWidth < 768;
+
+  // My Planner toggle (default preserves current Agency View behavior exactly)
+  const [viewMode, setViewMode] = useState<ViewMode>('agency');
 
   const generatedEvents = useAutogenStore(s => s.generatedEvents);
   const triggeredEvents = useAutogenStore(s => s.triggeredEvents);
@@ -418,6 +423,8 @@ export function DashboardPage() {
           atRiskCount={critical.atRisk.length}
           auditReadyCount={readiness.auditReady}
           totalCount={instances.length}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
         />
       </div>
 
@@ -445,21 +452,24 @@ export function DashboardPage() {
         onClickNotReady={() => goAudit()}
       />
 
+      {/* Events (Project Events) — Agency operational board */}
       <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap ci-shell-command-group ci-command-rail ci-maturity-section rounded-xl px-3 py-2">
         <div>
           <h2 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
-            Action Board
+            Events
           </h2>
           <p className={`ci-text-body-sm ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
-            Operational triage across critical deadlines, active work, and evidence queues.
+            Project events and regulatory deadlines requiring action.
           </p>
         </div>
+
         <div className="ci-operational-toolbar">
           <UtilityButton ariaLabel="Filter board"><Filter size={14} aria-hidden="true" /><span className="ml-2">Filter</span></UtilityButton>
           <UtilityButton ariaLabel="Sort by priority"><span>Sort by: Priority</span></UtilityButton>
         </div>
       </section>
 
+      {/* Main Events Board (always visible) */}
       <div className={`flex-1 min-h-0 pb-2 ${isMobile ? '' : '-mx-3 sm:mx-0 px-3 sm:px-0'} ${isMobile ? 'overflow-x-hidden' : 'overflow-x-auto'} ci-premium-panel p-3 sm:p-4`}>
         <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'} gap-3 sm:gap-4 lg:min-w-0 ${isMobile ? 'min-w-0' : 'ci-min-w-board-scroll'} h-full`}>
           <BoardColumn
@@ -501,6 +511,19 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {/* My Planner Section — Tasks assigned to me (always visible below Events) */}
+      <div className="mt-6 pt-4 border-t border-white/10">
+        <div className="mb-3">
+          <h2 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
+            My Planner
+          </h2>
+          <p className={`ci-text-body-sm ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
+            Tasks assigned to me • Personal + CES obligations
+          </p>
+        </div>
+        <MyPlannerView showHeader={false} />
+      </div>
+
       <ToastHost />
       </div>
     </ShellContentFrame>
@@ -512,11 +535,15 @@ function DashboardHero({
   atRiskCount,
   auditReadyCount,
   totalCount,
+  viewMode,
+  setViewMode,
 }: {
   criticalCount: number;
   atRiskCount: number;
   auditReadyCount: number;
   totalCount: number;
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
 }) {
   const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   return (
@@ -546,12 +573,17 @@ function DashboardHero({
           <HeroStat label="In Scope" value={totalCount} tone="default" />
         </div>
       </div>
-      <div className="text-left sm:text-right shrink-0">
+      <div className="text-left sm:text-right shrink-0 flex flex-col items-end gap-2">
         <div className={`font-semibold uppercase ci-text-eyebrow-md ${isLight ? 'text-slate-400' : 'text-white/50'}`}>
           Today
         </div>
-        <div className={`font-medium mt-1 ci-text-body-sm ${isLight ? 'text-slate-700' : 'text-white/90'}`}>
+        <div className={`font-medium ci-text-body-sm ${isLight ? 'text-slate-700' : 'text-white/90'}`}>
           {TODAY_ANCHOR.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+        </div>
+
+        {/* Toggle moved to top right of Command Center header (as per screenshot) */}
+        <div className="mt-1">
+          <PlannerViewToggle value={viewMode} onChange={setViewMode} />
         </div>
       </div>
       <div className={`w-full mt-2 px-3 py-2 flex items-center justify-between gap-3 flex-wrap ci-command-rail ci-maturity-section ${isLight ? 'text-slate-600' : 'text-white/68'}`}>

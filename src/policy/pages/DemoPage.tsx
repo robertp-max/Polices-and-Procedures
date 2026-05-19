@@ -6,11 +6,12 @@ import {
   DollarSign, Monitor, BarChart3, Scale, Heart, Cpu, Briefcase,
   GitBranch, Landmark, ShieldCheck, Gavel, ChevronLeft, Printer, LayoutList, Lock, FileCheck, Layers,
   Settings, RefreshCw, CheckCircle2, Play, BookOpen, List, CheckSquare, Archive,
-  Bell, HelpCircle, Clock, Sparkles, Cloud
+  Bell, HelpCircle, Clock, Sparkles, Cloud, Rocket
 } from 'lucide-react';
 import ciLogoWhite from '@/assets/ci-logo-white.png';
 import { ExecutivePresentation } from './DemoPhase2';
 import { InfrastructurePresentation } from './DemoPhase3';
+import { FrontendDeploymentPresentation } from './DemoPhase4';
 
 // ══════════════════════════════════════════════════════════════
 // SHARED DATA
@@ -1974,11 +1975,11 @@ function DemoLibraryView({ onBack, onSelectPolicy }: { onBack: () => void; onSel
 
 
 // ══════════════════════════════════════════════════════════════
-// MAIN DEMO PAGE — Two-phase system
+// MAIN DEMO PAGE — Multi-phase system
 // ══════════════════════════════════════════════════════════════
 
 type DemoView = 'cover' | 'library' | 'detail';
-type DemoPhase = '1' | '2' | '3';
+type DemoPhase = '1' | '2' | '3' | '4';
 
 export function DemoPage() {
   const [phase, setPhase] = useState<DemoPhase>('1');
@@ -1993,6 +1994,7 @@ export function DemoPage() {
   const switchToPhase1 = useCallback(() => setPhase('1'), []);
   const switchToPhase2 = useCallback(() => setPhase('2'), []);
   const switchToPhase3 = useCallback(() => setPhase('3'), []);
+  const switchToPhase4 = useCallback(() => setPhase('4'), []);
 
   return (
     <div className="h-full overflow-hidden flex flex-col">
@@ -2044,6 +2046,21 @@ export function DemoPage() {
           <Cloud size={11} />
           Phase 3 — Infrastructure &amp; AWS
         </button>
+
+        <div className="w-px h-4 mx-1" style={{ background: 'var(--ci-hairline)' }} />
+
+        <button
+          onClick={switchToPhase4}
+          className="flex items-center gap-2 px-4 py-1.5 rounded-lg font-montserrat text-[10px] font-bold tracking-[0.18em] uppercase transition-all"
+          style={{
+            background: phase === '4' ? 'rgba(0,121,112,0.09)' : 'transparent',
+            color: phase === '4' ? '#007970' : 'var(--ci-text-muted)',
+            border: phase === '4' ? '1px solid rgba(0,121,112,0.28)' : '1px solid transparent',
+          }}
+        >
+          <Rocket size={11} />
+          Phase 4 — Last 14 Days
+        </button>
       </div>
 
       {/* ── Phase 1: Live System Demo ── */}
@@ -2074,6 +2091,13 @@ export function DemoPage() {
       {phase === '3' && (
         <div className="flex-1 min-h-0 overflow-hidden">
           <InfrastructurePresentation onBack={switchToPhase1} />
+        </div>
+      )}
+
+      {/* ── Phase 4: Frontend Safe Deployment ── */}
+      {phase === '4' && (
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <FrontendDeploymentPresentation onBack={switchToPhase1} />
         </div>
       )}
 

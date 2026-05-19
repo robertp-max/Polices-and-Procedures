@@ -69,7 +69,8 @@ function isSectionId(value: string | undefined): value is SectionId {
   return Boolean(value && SECTION_ORDER.includes(value as SectionId));
 }
 
-const APP_AWS_URL = 'https://dovdry3t4njek.cloudfront.net';
+const APP_PRODUCTION_URL = 'https://dovdry3t4njek.cloudfront.net';
+const APP_STAGING_URL = 'https://d14dlrdifuuet5.cloudfront.net';
 
 function PanelHeader({ kicker, title }: { kicker: string; title?: string }) {
   return (
@@ -343,32 +344,64 @@ function ExecutiveOverviewSection() {
       <section className="rounded-lg border border-[#007970]/30 bg-[#F0FDFA]">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-[#0F766E]">Live Application URL</div>
-            <div className="mt-1 text-sm font-semibold text-[#0F172A]">Care Indeed Compliance Platform (AWS demo environment)</div>
-            <div className="mt-1 text-xs text-[#0F766E] font-mono break-all">{APP_AWS_URL}</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-[#0F766E]">System URLs</div>
+            <div className="mt-1 text-sm font-semibold text-[#0F172A]">Care Indeed Compliance Platform environments</div>
+            <div className="mt-2 space-y-2 text-xs">
+              <div>
+                <div className="font-semibold text-[#0F172A]">Production (active login)</div>
+                <a
+                  href={APP_PRODUCTION_URL}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="font-mono text-[#0F766E] break-all hover:underline"
+                >
+                  {APP_PRODUCTION_URL}
+                </a>
+              </div>
+              <div>
+                <div className="font-semibold text-[#0F172A]">Staging (AWS demo environment)</div>
+                <a
+                  href={APP_STAGING_URL}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="font-mono text-[#0F766E] break-all hover:underline"
+                >
+                  {APP_STAGING_URL}
+                </a>
+              </div>
+            </div>
           </div>
-          <a
-            href={APP_AWS_URL}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold bg-[#007970] text-white hover:bg-[#0F766E] transition self-start md:self-auto"
-          >
-            Open App <ExternalLink size={13} />
-          </a>
+          <div className="flex flex-col sm:flex-row gap-2 self-start md:self-auto">
+            <a
+              href={APP_PRODUCTION_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold bg-[#007970] text-white hover:bg-[#0F766E] transition"
+            >
+              Open Production <ExternalLink size={13} />
+            </a>
+            <a
+              href={APP_STAGING_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold bg-white text-[#0F766E] border border-[#0F766E]/30 hover:bg-[#F0FDFA] transition"
+            >
+              Open Staging <ExternalLink size={13} />
+            </a>
+          </div>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <MetricCard label="Platform Type" value="Compliance System" tone="teal" />
         <MetricCard label="Core Journey" value="40 Modules" tone="orange" />
         <MetricCard label="Engine Mode" value="Enforcement First" tone="teal" />
-        <MetricCard label="Evidence Style" value="Audit Trace" tone="slate" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <VisualCard
           title="What this system is"
-          body="A compliance enforcement engine that gates work based on policy, workflow state, and evidence quality."
+          body="A compliance enforcement engine that gates work based on policy and workflow state."
           accent="teal"
         />
         <VisualCard
@@ -378,7 +411,7 @@ function ExecutiveOverviewSection() {
         />
         <VisualCard
           title="Why it matters"
-          body="Execution, controls, and evidence are linked so leaders can verify readiness quickly and consistently."
+          body="Execution and controls stay aligned so leaders can verify readiness quickly and consistently."
         />
       </div>
 
@@ -387,7 +420,7 @@ function ExecutiveOverviewSection() {
           <Cell accent="orange">
             <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-[#9A3412]">Current demo environment</div>
             <div className="mt-1 text-sm font-semibold text-[#0F172A]">Validation sandbox</div>
-            <p className="mt-1 text-xs text-[#7C2D12] leading-5">Built to validate workflows, gates, and evidence behavior in a controlled cloud demo state.</p>
+            <p className="mt-1 text-xs text-[#7C2D12] leading-5">Built to validate workflows and gates in a controlled cloud demo state.</p>
           </Cell>
           <Cell accent="teal">
             <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-[#0F766E]">Production target environment</div>
