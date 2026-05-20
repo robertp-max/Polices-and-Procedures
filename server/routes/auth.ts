@@ -81,21 +81,35 @@ authRouter.post('/validate-allowlist-csv', (req, res) => {
   });
 });
 
-// ─── Legacy email-invite registration routes — CLOSED ────────────────────────
-// These endpoints previously sent SES invite emails with one-time setup tokens.
-// They are permanently disabled. Direct-link setup tokens and magic links are
-// no longer issued. Existing active accounts are unaffected; login remains open.
+// ─── Legacy email-invite registration routes — TEMPORARILY DISABLED ──────────
+// These endpoints rely on email verification/invite delivery. Keep them blocked
+// until this app is added to the company AWS account with approved SES setup.
 
 authRouter.post('/register-request', (_req, res) => {
-  res.status(410).json({ error: { code: 'gone', message: 'This registration method is no longer available.' } });
+  res.status(503).json({
+    error: {
+      code: 'auth_error',
+      message: 'Email verification workflow is temporarily disabled. Please use direct registration.',
+    },
+  });
 });
 
 authRouter.post('/resend-setup-link', (_req, res) => {
-  res.status(410).json({ error: { code: 'gone', message: 'This registration method is no longer available.' } });
+  res.status(503).json({
+    error: {
+      code: 'auth_error',
+      message: 'Email verification workflow is temporarily disabled. Please use direct registration.',
+    },
+  });
 });
 
 authRouter.post('/setup-account', (_req, res) => {
-  res.status(410).json({ error: { code: 'gone', message: 'This registration method is no longer available.' } });
+  res.status(503).json({
+    error: {
+      code: 'auth_error',
+      message: 'Email verification workflow is temporarily disabled. Please use direct registration.',
+    },
+  });
 });
 
 // ─── Login, session, and account management (unchanged) ──────────────────────
@@ -114,6 +128,22 @@ authRouter.post('/respond-challenge', asyncHandler(async (req, res) => {
   const session      = String(req.body?.session     || '');
   const newPassword  = String(req.body?.newPassword || '');
   const result       = await service.respondToNewPasswordChallenge(email, session, newPassword);
+  res.json(result);
+}));
+
+authRouter.post('/forgot-password', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const email = String(req.body?.email || '');
+  const result = await service.forgotPassword(email);
+  res.json(result);
+}));
+
+authRouter.post('/reset-password', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const email = String(req.body?.email || '');
+  const code = String(req.body?.code || '');
+  const newPassword = String(req.body?.newPassword || '');
+  const result = await service.resetPassword(email, code, newPassword);
   res.json(result);
 }));
 

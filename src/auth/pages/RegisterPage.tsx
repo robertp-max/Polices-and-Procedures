@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthApi, type VerifyRegistrationResponse } from '../api';
+import { AuthApi, AuthApiError, type VerifyRegistrationResponse } from '../api';
 import { AuthCard, useAuthTheme } from '../components/AuthCard';
 
 type AvailabilityState = 'checking' | 'available' | 'unavailable';
@@ -9,6 +9,7 @@ type Phase = 'verify' | 'setup';
 const GENERIC_VERIFY_FAILURE = 'Registration verification failed. Please contact your administrator.';
 const GENERIC_SETUP_FAILURE  = 'Registration verification failed. Please contact your administrator.';
 const UNAVAILABLE_MESSAGE    = 'Registration is temporarily unavailable. Please contact your administrator.';
+const ALREADY_REGISTERED_NOTICE = 'Account already registered. Please change your password to continue.';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -51,7 +52,14 @@ export function RegisterPage() {
       setFirstName(nameParts[0] || '');
       setLastName(nameParts.slice(1).join(' ') || '');
       setPhase('setup');
-    } catch {
+    } catch (err) {
+      if (err instanceof AuthApiError && err.code === 'duplicate') {
+        navigate(`/forgot-password?email=${encodeURIComponent(email.trim().toLowerCase())}`, {
+          replace: true,
+          state: { notice: ALREADY_REGISTERED_NOTICE },
+        });
+        return;
+      }
       // Always show the generic message — never echo internal error details.
       setError(GENERIC_VERIFY_FAILURE);
     } finally {
@@ -86,7 +94,14 @@ export function RegisterPage() {
         password,
       );
       navigate('/login', { replace: true, state: { notice: 'Account created successfully. Please sign in.' } });
-    } catch {
+    } catch (err) {
+      if (err instanceof AuthApiError && err.code === 'duplicate') {
+        navigate(`/forgot-password?email=${encodeURIComponent(email.trim().toLowerCase())}`, {
+          replace: true,
+          state: { notice: ALREADY_REGISTERED_NOTICE },
+        });
+        return;
+      }
       setError(GENERIC_SETUP_FAILURE);
     } finally {
       setLoading(false);

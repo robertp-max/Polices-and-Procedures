@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useRef, useMemo, type PropsWithChildren } from 'react';
-import ciIonLogo from '@/assets/ci-ion-logo.png';
+import ciIonLogo from '@/assets/ci-logo-white.png';
 import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -405,7 +405,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
             >
               <ContextualKnowledgeBulb />
               {/* Account menu */}
-              <div className="relative shrink-0" ref={accountMenuRef}>
+              <div className="relative shrink-0 z-40" ref={accountMenuRef}>
                 <button
                   type="button"
                   aria-label={`Account: ${accountDisplayName}`}
@@ -433,7 +433,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                   <div
                     role="menu"
                     aria-label="Account menu"
-                    className="absolute right-0 mt-2 w-[220px] rounded-xl overflow-hidden ci-shell-command-group"
+                    className="absolute right-0 mt-2 z-50 w-[220px] rounded-xl overflow-hidden ci-shell-command-group"
                     style={{
                       background: isVisualLight
                         ? 'var(--ci-shell-account-menu-bg-light)'

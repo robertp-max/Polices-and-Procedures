@@ -65,6 +65,18 @@ interface ApiErrorPayload {
   };
 }
 
+export class AuthApiError extends Error {
+  code?: string;
+  status: number;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = 'AuthApiError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
 const BASE = (import.meta.env.VITE_AUTH_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || '/api/auth';
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -91,7 +103,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     const maybe = payload as ApiErrorPayload;
     const message = maybe.error?.message || 'Request failed. Please try again.';
-    throw new Error(message);
+    throw new AuthApiError(message, res.status, maybe.error?.code);
   }
 
   return payload as T;

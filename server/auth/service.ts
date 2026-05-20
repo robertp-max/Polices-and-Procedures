@@ -5,7 +5,9 @@ import {
   AdminGetUserCommand,
   AdminSetUserPasswordCommand,
   AdminUpdateUserAttributesCommand,
+  ConfirmForgotPasswordCommand,
   CognitoIdentityProviderClient,
+  ForgotPasswordCommand,
   GetUserCommand,
   GlobalSignOutCommand,
   InitiateAuthCommand,
@@ -480,6 +482,48 @@ export class DemoAuthService {
     };
   }
 
+  async forgotPassword(emailRaw: string): Promise<{ message: string }> {
+    const email = this.normalizeEmail(emailRaw);
+    if (!email || !email.includes('@')) {
+      throw new ApiError('validation_error', 'Please enter a valid email address.', 400);
+    }
+
+    try {
+      await this.cognito.send(new ForgotPasswordCommand({
+        ClientId: this.cfg.clientId,
+        Username: email,
+      }));
+    } catch (err) {
+      // Keep behavior non-enumerating; callers receive a generic success message.
+      log.warn('auth.forgot_password.failed', { email, err: (err as Error).message });
+    }
+
+    return { message: 'If the account exists, a reset code has been sent.' };
+  }
+
+  async resetPassword(emailRaw: string, codeRaw: string, newPasswordRaw: string): Promise<{ message: string }> {
+    const email = this.normalizeEmail(emailRaw);
+    const code = String(codeRaw || '').trim();
+    const newPassword = String(newPasswordRaw || '');
+
+    if (!email || !email.includes('@')) {
+      throw new ApiError('validation_error', 'Please enter a valid email address.', 400);
+    }
+    if (!code) {
+      throw new ApiError('validation_error', 'Reset code is required.', 400);
+    }
+    this.validatePassword(newPassword);
+
+    await this.cognito.send(new ConfirmForgotPasswordCommand({
+      ClientId: this.cfg.clientId,
+      Username: email,
+      ConfirmationCode: code,
+      Password: newPassword,
+    }));
+
+    return { message: 'Password reset successfully.' };
+  }
+
   async verifyRegistration(emailRaw: string, sfOrgIdRaw: string): Promise<{
     verified: true;
     approvedUser: { fullName: string; role: string; department: string };
@@ -507,7 +551,7 @@ export class DemoAuthService {
     const existingReg = await this.getRegistration(email);
     if (existingReg?.status === 'active') {
       log.warn('auth.verify_registration.already_registered', { email });
-      throw new ApiError('auth_error', 'Registration verification failed. Please contact your administrator.', 403);
+      throw new ApiError('duplicate', 'Account already registered. Please change your password.', 409);
     }
 
     const approved = findApprovedUser(email, sfOrgId);
@@ -556,7 +600,7 @@ export class DemoAuthService {
     const existing = await this.getRegistration(email);
     if (existing?.status === 'active') {
       log.warn('auth.setup_account_direct.duplicate', { email });
-      throw new ApiError('auth_error', 'Registration verification failed. Please contact your administrator.', 403);
+      throw new ApiError('duplicate', 'Account already registered. Please change your password.', 409);
     }
 
     const firstName = String(input.firstName || '').trim();

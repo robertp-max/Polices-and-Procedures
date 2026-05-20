@@ -38,9 +38,16 @@
     "check:ecign-demo-local": "tsx --tsconfig tsconfig.app.json scripts/checkEcignDemoLocal.ts",
     "validate:aws-ces-mapping": "tsx scripts/validateAwsCesMapping.ts",
     "push-hubstaff": "tsx scripts/pushToHubstaff.ts",
+    "seed:deeb": "tsx scripts/seedDeeb.ts",
     "forms:build": "tsx scripts/formsSystemBuild.ts",
     "cdk:auth:synth": "npm --prefix infra/demo-auth-cdk run synth",
-    "cdk:auth:deploy": "npm --prefix infra/demo-auth-cdk run deploy"
+    "cdk:auth:deploy": "npm --prefix infra/demo-auth-cdk run deploy",
+    "cdk:frontend:install": "npm --prefix infra/frontend-cdk install",
+    "cdk:frontend:synth": "npm --prefix infra/frontend-cdk run synth",
+    "cdk:frontend:deploy:staging": "npm --prefix infra/frontend-cdk run deploy:staging",
+    "cdk:frontend:deploy:prod": "npm --prefix infra/frontend-cdk run deploy:prod",
+    "cdk:frontend:diff:staging": "npm --prefix infra/frontend-cdk run diff:staging",
+    "cdk:frontend:diff:prod": "npm --prefix infra/frontend-cdk run diff:prod"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.922.0",

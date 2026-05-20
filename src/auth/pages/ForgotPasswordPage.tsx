@@ -1,14 +1,17 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthApi } from '../api';
 import { AuthCard, useAuthTheme } from '../components/AuthCard';
 
 export function ForgotPasswordPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const t = useAuthTheme();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const notice = (location.state as { notice?: string } | null)?.notice;
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -30,6 +33,7 @@ export function ForgotPasswordPage() {
       title="Reset Password"
       subtitle="Enter your email and we'll send a reset code to your inbox."
     >
+      {notice && <p className={`mb-3 text-sm ${t.accentClass}`}>{notice}</p>}
       <form className="space-y-4" onSubmit={onSubmit}>
         <label className={t.labelClass}>
           Email
