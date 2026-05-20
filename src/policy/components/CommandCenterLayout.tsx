@@ -1,4 +1,5 @@
-﻿import { useState, useEffect, useRef, useMemo, type PropsWithChildren } from 'react';
+﻿import { useState, useEffect, useRef, useMemo, useCallback, type PropsWithChildren } from 'react';
+import { createPortal } from 'react-dom';
 import ciIonLogo from '@/assets/ci-logo-white.png';
 import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -161,6 +162,9 @@ const MOBILE_PRIMARY_TABS: Array<{ id: string; to: string; label: string; icon: 
 
 // ── Viewport detection (mobile vs. desktop) ──────────────
 const MOBILE_BP = 1024;
+const ACCOUNT_MENU_WIDTH = 220;
+const ACCOUNT_MENU_VIEWPORT_PADDING = 8;
+const ACCOUNT_MENU_VERTICAL_OFFSET = 8;
 const LOCAL_DEMO_AUTH_BYPASS = import.meta.env.VITE_LOCAL_DEMO_AUTH_BYPASS === 'true';
 
 function useIsMobile(): boolean {
@@ -307,6 +311,30 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   }, [ciMode]);
 
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
+  const accountMenuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const accountMenuPopoverRef = useRef<HTMLDivElement | null>(null);
+  const [accountMenuPosition, setAccountMenuPosition] = useState({ top: 0, left: 0 });
+
+  const updateAccountMenuPosition = useCallback(() => {
+    if (!accountMenuButtonRef.current) return;
+    const rect = accountMenuButtonRef.current.getBoundingClientRect();
+    const left = Math.min(
+      Math.max(rect.right - ACCOUNT_MENU_WIDTH, ACCOUNT_MENU_VIEWPORT_PADDING),
+      window.innerWidth - ACCOUNT_MENU_WIDTH - ACCOUNT_MENU_VIEWPORT_PADDING,
+    );
+
+    setAccountMenuPosition({
+      top: rect.bottom + ACCOUNT_MENU_VERTICAL_OFFSET,
+      left,
+    });
+  }, []);
+
+  const handleAccountMenuToggle = useCallback(() => {
+    if (!isAccountMenuOpen) {
+      updateAccountMenuPosition();
+    }
+    setIsAccountMenuOpen(v => !v);
+  }, [isAccountMenuOpen, updateAccountMenuPosition]);
 
   useEffect(() => {
     setIsAccountMenuOpen(false);
@@ -315,10 +343,20 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!isAccountMenuOpen) return;
 
+    updateAccountMenuPosition();
+
+    const handleReposition = () => {
+      updateAccountMenuPosition();
+    };
+
+    window.addEventListener('resize', handleReposition);
+    window.addEventListener('scroll', handleReposition, true);
+
     const handlePointerDown = (event: MouseEvent) => {
-      if (!accountMenuRef.current?.contains(event.target as Node)) {
-        setIsAccountMenuOpen(false);
-      }
+      const target = event.target as Node;
+      if (accountMenuRef.current?.contains(target)) return;
+      if (accountMenuPopoverRef.current?.contains(target)) return;
+      setIsAccountMenuOpen(false);
     };
 
     const handleEscape = (event: KeyboardEvent) => {
@@ -330,10 +368,12 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
     document.addEventListener('mousedown', handlePointerDown);
     document.addEventListener('keydown', handleEscape);
     return () => {
+      window.removeEventListener('resize', handleReposition);
+      window.removeEventListener('scroll', handleReposition, true);
       document.removeEventListener('mousedown', handlePointerDown);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isAccountMenuOpen]);
+  }, [isAccountMenuOpen, updateAccountMenuPosition]);
 
   const handleMyTasksClick = () => {
     setIsAccountMenuOpen(false);
@@ -407,11 +447,12 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
               {/* Account menu */}
               <div className="relative shrink-0 z-40" ref={accountMenuRef}>
                 <button
+                  ref={accountMenuButtonRef}
                   type="button"
                   aria-label={`Account: ${accountDisplayName}`}
                   aria-haspopup="menu"
                   data-on-brand=""
-                  onClick={() => setIsAccountMenuOpen(v => !v)}
+                  onClick={handleAccountMenuToggle}
                   className="glass-interactive ci-subtle-hover flex items-center justify-center w-11 h-11 sm:w-10 sm:h-10 rounded-full text-white font-bold text-sm cursor-pointer relative border border-transparent"
                   style={{
                     background: isVisualLight
@@ -428,107 +469,114 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     style={{ background: 'var(--ci-accent)' }}
                   />
                 </button>
-
-                {isAccountMenuOpen && (
-                  <div
-                    role="menu"
-                    aria-label="Account menu"
-                    className="absolute right-0 mt-2 z-50 w-[220px] rounded-xl overflow-hidden ci-shell-command-group"
-                    style={{
-                      background: isVisualLight
-                        ? 'var(--ci-shell-account-menu-bg-light)'
-                        : 'var(--ci-shell-account-menu-bg-dark)',
-                      border: isVisualLight ? '1px solid var(--ci-neutral-200)' : '1px solid var(--ci-overlay-border-strong)',
-                      boxShadow: 'var(--ci-color-shell-overlay-shadow)',
-                    }}
-                  >
-                    <div
-                      className="px-3.5 py-3 border-b"
-                      style={{ borderColor: isVisualLight ? 'var(--ci-neutral-200)' : 'var(--ci-overlay-border-strong)' }}
-                    >
-                      <p className={`text-[13px] font-semibold ${isVisualLight ? 'text-slate-900' : 'text-white'}`}>
-                        {accountDisplayName}
-                      </p>
-                      <p className={`text-[11px] mt-0.5 ${isVisualLight ? 'text-slate-500' : 'text-white/65'}`}>
-                        {accountRole}
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={handleMyTasksClick}
-                      className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
-                        isVisualLight
-                          ? 'text-slate-700 hover:bg-slate-100'
-                          : 'text-white/85 hover:bg-white/10'
-                      }`}
-                    >
-                      <ListChecks size={16} />
-                      My Tasks
-                    </button>
-
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => { setIsAccountMenuOpen(false); restartGuidedTour(); }}
-                      className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
-                        isVisualLight
-                          ? 'text-slate-700 hover:bg-slate-100'
-                          : 'text-white/85 hover:bg-white/10'
-                      }`}
-                    >
-                      <Compass size={16} />
-                      Restart Guided Tour
-                    </button>
-
-                    {/* Robert-only CES review role switcher */}
-                    <CesRoleReviewSwitcher
-                      userEmail={user?.email}
-                      userId={user?.id}
-                      isLight={isVisualLight}
-                    />
-
-                    {/* Nuclear reset — gated by system.replay permission */}
-                    {user?.id === 'demo-user-careindeed' && (
-                      <PermissionGate permissionId="system.replay">
-                        <button
-                          type="button"
-                          role="menuitem"
-                          onClick={() => {
-                            if (window.confirm('RESET ALL?\n\nThis deletes every signed form, uploaded evidence, task completion, form instance, approval, and certification.\n\nCannot be undone.')) {
-                              useRegulatoryExecutionStore.getState().resetAll();
-                              window.location.reload();
-                            }
-                          }}
-                          className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
-                            isVisualLight
-                              ? 'text-red-700 hover:bg-red-50'
-                              : 'text-red-400 hover:bg-red-500/15'
-                          }`}
-                        >
-                          <Trash2 size={16} />
-                          Reset All Data
-                        </button>
-                      </PermissionGate>
-                    )}
-
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => { void handleLogoutClick(); }}
-                      className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
-                        isVisualLight
-                          ? 'text-[var(--ci-primary-500)] hover:bg-orange-50'
-                          : 'text-[var(--ci-gold)] hover:bg-white/10'
-                      }`}
-                    >
-                      <LogOut size={16} />
-                      Logout
-                    </button>
-                  </div>
-                )}
               </div>
+              {isAccountMenuOpen && typeof document !== 'undefined' && createPortal(
+                <div
+                  ref={accountMenuPopoverRef}
+                  role="menu"
+                  aria-label="Account menu"
+                  className="w-[220px] rounded-xl overflow-hidden ci-shell-command-group"
+                  style={{
+                    position: 'fixed',
+                    top: accountMenuPosition.top,
+                    left: accountMenuPosition.left,
+                    zIndex: 2147483000,
+                    maxHeight: 'min(70vh, 520px)',
+                    overflowY: 'auto',
+                    background: isVisualLight
+                      ? 'var(--ci-shell-account-menu-bg-light)'
+                      : 'var(--ci-shell-account-menu-bg-dark)',
+                    border: isVisualLight ? '1px solid var(--ci-neutral-200)' : '1px solid var(--ci-overlay-border-strong)',
+                    boxShadow: 'var(--ci-color-shell-overlay-shadow)',
+                  }}
+                >
+                  <div
+                    className="px-3.5 py-3 border-b"
+                    style={{ borderColor: isVisualLight ? 'var(--ci-neutral-200)' : 'var(--ci-overlay-border-strong)' }}
+                  >
+                    <p className={`text-[13px] font-semibold ${isVisualLight ? 'text-slate-900' : 'text-white'}`}>
+                      {accountDisplayName}
+                    </p>
+                    <p className={`text-[11px] mt-0.5 ${isVisualLight ? 'text-slate-500' : 'text-white/65'}`}>
+                      {accountRole}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleMyTasksClick}
+                    className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
+                      isVisualLight
+                        ? 'text-slate-700 hover:bg-slate-100'
+                        : 'text-white/85 hover:bg-white/10'
+                    }`}
+                  >
+                    <ListChecks size={16} />
+                    My Tasks
+                  </button>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => { setIsAccountMenuOpen(false); restartGuidedTour(); }}
+                    className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
+                      isVisualLight
+                        ? 'text-slate-700 hover:bg-slate-100'
+                        : 'text-white/85 hover:bg-white/10'
+                    }`}
+                  >
+                    <Compass size={16} />
+                    Restart Guided Tour
+                  </button>
+
+                  {/* Robert-only CES review role switcher */}
+                  <CesRoleReviewSwitcher
+                    userEmail={user?.email}
+                    userId={user?.id}
+                    isLight={isVisualLight}
+                  />
+
+                  {/* Nuclear reset — gated by system.replay permission */}
+                  {user?.id === 'demo-user-careindeed' && (
+                    <PermissionGate permissionId="system.replay">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          if (window.confirm('RESET ALL?\n\nThis deletes every signed form, uploaded evidence, task completion, form instance, approval, and certification.\n\nCannot be undone.')) {
+                            useRegulatoryExecutionStore.getState().resetAll();
+                            window.location.reload();
+                          }
+                        }}
+                        className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
+                          isVisualLight
+                            ? 'text-red-700 hover:bg-red-50'
+                            : 'text-red-400 hover:bg-red-500/15'
+                        }`}
+                      >
+                        <Trash2 size={16} />
+                        Reset All Data
+                      </button>
+                    </PermissionGate>
+                  )}
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => { void handleLogoutClick(); }}
+                    className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
+                      isVisualLight
+                        ? 'text-[var(--ci-primary-500)] hover:bg-orange-50'
+                        : 'text-[var(--ci-gold)] hover:bg-white/10'
+                    }`}
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>,
+                document.body,
+              )}
             </ShellTopbar>
           )}
 
