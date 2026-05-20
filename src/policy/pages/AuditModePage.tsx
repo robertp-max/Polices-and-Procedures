@@ -362,13 +362,13 @@ export function AuditModePage() {
             </button>
             <button
               onClick={() => handleExportBundle('md')}
-              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] ci-subtle-hover"
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border ci-border-overlay ci-bg-overlay-faint text-white/80 ci-bg-overlay-soft-hover ci-subtle-hover"
             >
               <Download size={11} /> Bundle
             </button>
             <button
               onClick={() => handleExportBundle('json')}
-              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] ci-subtle-hover"
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 min-h-[44px] text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] border ci-border-overlay ci-bg-overlay-faint text-white/80 ci-bg-overlay-soft-hover ci-subtle-hover"
             >
               <FileJson size={11} /> JSON
             </button>
@@ -999,11 +999,11 @@ function AuditDetailPanel({
       <footer className="px-4 py-2.5 border-t flex items-center justify-between gap-2" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         <div className="flex items-center gap-1.5">
           <button type="button" onClick={onExportPdf}
-            className="rounded-md px-2.5 py-1.5 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] border border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.06] flex items-center gap-1.5">
+            className="rounded-md px-2.5 py-1.5 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] border ci-border-overlay ci-bg-overlay-faint text-white/70 ci-bg-overlay-soft-hover flex items-center gap-1.5">
             <Download size={10} /> Print / PDF
           </button>
           <button type="button" onClick={onExportMd}
-            className="rounded-md px-2.5 py-1.5 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] border border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.06] flex items-center gap-1.5">
+            className="rounded-md px-2.5 py-1.5 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] border ci-border-overlay ci-bg-overlay-faint text-white/70 ci-bg-overlay-soft-hover flex items-center gap-1.5">
             <FileText size={10} /> Markdown
           </button>
         </div>
@@ -1014,7 +1014,7 @@ function AuditDetailPanel({
               <Lock size={10} /> Certified Â· Locked
             </span>
             <button type="button" onClick={onRevoke}
-              className="rounded-md px-2.5 py-1.5 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] border border-white/12 text-white/60 hover:text-white hover:bg-white/[0.05] flex items-center gap-1">
+              className="rounded-md px-2.5 py-1.5 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.13em] border ci-border-overlay-strong text-white/60 hover:text-white ci-bg-overlay-soft-hover flex items-center gap-1">
               <Unlock size={10} /> Revoke
             </button>
           </div>
@@ -1905,7 +1905,7 @@ function AuditTrailTab({ instance }: { instance: ReturnType<typeof useWorkflowIn
 
 function CommandSearch({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="flex items-center rounded-md border bg-white/[0.03] px-2.5 py-1.5 w-52"
+    <div className="flex items-center rounded-md border ci-bg-overlay-faint px-2.5 py-1.5 w-52"
       style={{ borderColor: 'var(--ci-overlay-border-strong)' }}>
       <Search size={12} className="text-white/40 mr-2 shrink-0" />
       <input
@@ -1958,7 +1958,7 @@ function DateRangeFilter({
           <div className="flex items-center gap-1.5 flex-wrap">
             {(['last-30', 'last-90', 'qtd', 'ytd'] as const).map(p => (
               <button key={p} type="button" onClick={() => onPreset(p)}
-                className="text-[9px] font-montserrat font-bold uppercase tracking-[0.12em] px-2 py-1 rounded border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.05]">
+                className="text-[9px] font-montserrat font-bold uppercase tracking-[0.12em] px-2 py-1 rounded border ci-border-overlay text-white/60 hover:text-white ci-bg-overlay-soft-hover">
                 {p === 'last-30' ? '30d' : p === 'last-90' ? '90d' : p.toUpperCase()}
               </button>
             ))}
@@ -1966,21 +1966,21 @@ function DateRangeFilter({
           <div className="flex items-center gap-2">
             <input type="date" value={dateRange.startISO}
               onChange={e => setDateRange(r => ({ ...r, startISO: e.target.value }))}
-              className="flex-1 bg-white/[0.05] border border-white/10 rounded px-2 py-1 text-[10px] font-roboto text-white/80" />
+              className="flex-1 ci-bg-overlay-soft border ci-border-overlay rounded px-2 py-1 text-[10px] font-roboto text-white/80" />
             <span className="text-white/35 text-[10px]">â†’</span>
             <input type="date" value={dateRange.endISO}
               onChange={e => setDateRange(r => ({ ...r, endISO: e.target.value }))}
-              className="flex-1 bg-white/[0.05] border border-white/10 rounded px-2 py-1 text-[10px] font-roboto text-white/80" />
+              className="flex-1 ci-bg-overlay-soft border ci-border-overlay rounded px-2 py-1 text-[10px] font-roboto text-white/80" />
           </div>
           <div className="text-[9.5px] font-montserrat font-bold text-white/45 uppercase tracking-[0.16em] mt-1">Regulation</div>
           <input type="text" value={regulationFilter}
             onChange={e => setRegulationFilter(e.target.value)}
             placeholder="e.g. 42 CFR Â§ 484"
-            className="bg-white/[0.05] border border-white/10 rounded px-2 py-1.5 text-[10.5px] font-roboto text-white/80" />
+            className="ci-bg-overlay-soft border ci-border-overlay rounded px-2 py-1.5 text-[10.5px] font-roboto text-white/80" />
           {hasActive && (
             <button type="button"
               onClick={() => { onPreset('clear'); setRegulationFilter(''); }}
-              className="self-start text-[9.5px] font-montserrat font-bold uppercase tracking-[0.14em] text-white/45 hover:text-white/80 border border-white/10 px-2 py-1 rounded">
+              className="self-start text-[9.5px] font-montserrat font-bold uppercase tracking-[0.14em] text-white/45 hover:text-white/80 border ci-border-overlay px-2 py-1 rounded">
               Clear all
             </button>
           )}
@@ -2151,7 +2151,7 @@ function CesSprintAuditStrip({ onOpenSprint }: { onOpenSprint: () => void }) {
       <button
         type="button"
         onClick={onOpenSprint}
-        className="ml-auto px-2.5 py-1 rounded-md border border-white/10 hover:bg-white/[0.05] text-white/75 hover:text-white"
+        className="ml-auto px-2.5 py-1 rounded-md border ci-border-overlay ci-bg-overlay-soft-hover text-white/75 hover:text-white"
       >
         Open Sprint View â†’
       </button>

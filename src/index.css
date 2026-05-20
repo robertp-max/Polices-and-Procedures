@@ -217,6 +217,12 @@
   .ci-bg-overlay-strong    { background-color: var(--ci-overlay-strong); }
   .ci-border-overlay       { border-color: var(--ci-overlay-border); }
   .ci-border-overlay-strong{ border-color: var(--ci-overlay-border-strong); }
+  /* Hover variants of the overlay surface tints (added 2026-05-18 Phase 4 closure).
+     Use as a direct replacement for `hover:bg-white/[0.0X]` arbitrary Tailwind. */
+  .ci-bg-overlay-faint-hover:hover  { background-color: var(--ci-overlay-faint); }
+  .ci-bg-overlay-soft-hover:hover   { background-color: var(--ci-overlay-soft); }
+  .ci-bg-overlay-strong-hover:hover { background-color: var(--ci-overlay-strong); }
+  .ci-border-overlay-hover:hover    { border-color: var(--ci-overlay-border-strong); }
 
   /* Journey rail / module card composite states.
      `ci-rail-active`   = selected phase tile (gold tint + border).

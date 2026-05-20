@@ -621,7 +621,7 @@ function TimelineHeader({
           <NavBtn onClick={onPrev} ariaLabel="Previous month"><ChevronLeft size={14} /></NavBtn>
           <button
             onClick={onToday}
-            className="ci-touch-target text-[11px] font-outfit text-white/90 px-3 py-1 rounded-md hover:bg-white/[0.05] transition-colors flex items-center gap-1.5 whitespace-nowrap ci-subtle-hover"
+            className="ci-touch-target text-[11px] font-outfit text-white/90 px-3 py-1 rounded-md ci-bg-overlay-soft-hover transition-colors flex items-center gap-1.5 whitespace-nowrap ci-subtle-hover"
             title={`Today · ${today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
           >
             <CalendarDays size={11} className="text-white/65" />
@@ -667,7 +667,7 @@ function NavBtn({
     <button
       onClick={onClick}
       aria-label={ariaLabel}
-      className="ci-touch-target w-9 h-9 rounded-md flex items-center justify-center text-white/65 hover:text-white hover:bg-white/[0.05] ci-subtle-hover"
+      className="ci-touch-target w-9 h-9 rounded-md flex items-center justify-center text-white/65 hover:text-white ci-bg-overlay-soft-hover ci-subtle-hover"
     >
       {children}
     </button>
@@ -812,7 +812,7 @@ function PreviewMatrix({ preview }: { preview: SchedulingPreview }) {
     preview.matrix.find(m => m.domain === d && m.cadence === c)?.count ?? 0;
 
   return (
-    <div className="rounded-lg border bg-white/[0.02] overflow-hidden" style={{ borderColor: 'var(--ci-overlay-border-strong)' }}>
+    <div className="rounded-lg border ci-bg-overlay-faint overflow-hidden" style={{ borderColor: 'var(--ci-overlay-border-strong)' }}>
       <div className="flex items-center justify-between px-3 py-1.5 border-b" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         <span className="text-[9.5px] font-montserrat font-bold text-white/60 uppercase tracking-[0.14em]">
           Schedule preview · {preview.rangeStart} → {preview.rangeEnd}

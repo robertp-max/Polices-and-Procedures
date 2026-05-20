@@ -56,6 +56,17 @@
 - [ ] CTA orange uses canonical `#C74601` only (per MVP §C2)
 - [ ] Touch targets ≥48 px on primary CTAs, ≥44 px floor elsewhere
 
+### Phase 4 Closure Checklist (added 2026-05-18, refined 2026-05-19)
+
+Required for any PR touching `src/policy/**/*.{ts,tsx}`:
+
+- [ ] `npm run lint` is green. **No new `no-restricted-syntax` ERRORS** for the Phase 4 design-system guardrails (raw `rgba(255,255,255,...)`, `rgba(0,0,0,...)`, or `*-white/[...]` Tailwind utilities). See `eslint.config.js` `DESIGN_SYSTEM_GUARDRAIL_RULES` and `_Heavy/Fix-2026-05-14/ForGrok/UIUX_Audit/Implementation/Phases_234_Catchup_Reality_Report.md` §4–§6.
+- [ ] **WARN count for the same selectors does NOT increase** on touched files (see `Phases_234_Catchup_Reality_Report.md` Appendix A baseline of 326 / 57 files). PRs that reduce the WARN count on a touched file should note the delta.
+- [ ] If a guardrail violation is intentional and unavoidable (legitimate runtime alpha composition, sub-brand source-of-truth, etc.), the line carries a `// eslint-disable-next-line no-restricted-syntax -- <justification>` comment.
+- [ ] No new arbitrary Tailwind opacity utilities (`bg-white/[0.0X]`, `text-white/[0.X]`, `border-white/1X`). Use canonical utilities: `ci-bg-overlay-faint|soft|strong`, `ci-border-overlay|overlay-strong`, `ci-text-surface-strong|soft|muted|faint|ghost|quiet` (declared in `src/index.css`).
+- [ ] Operational surface PRs (Evidence / Audit / Calendar / My Tasks / CES) compose inside `<ShellContentFrame>` or document a justified exception in the PR description.
+- [ ] If the change is visible on the Audit drawer (`WorkflowExecutionPanel.tsx`), the PR description states whether the change is an addition, a token migration, or a runtime-composition exception.
+
 If a `verify:ui` warning is acceptable for this PR (e.g. brand-owned exempt file), explain here:
 
 ## Rollback Plan

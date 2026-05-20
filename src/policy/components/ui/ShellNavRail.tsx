@@ -36,9 +36,12 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
   // Phase 2 §4 — three semantic command groups per
   // Phase2_Exit_Criteria_Checklist.md: Primary Operations, Compliance
   // Execution (CES), Administration / Knowledge.
-  const primaryItems = items.slice(0, 6);
-  const cesItems = items.slice(6, 10);
-  const otherItems = items.slice(10);
+  // FIXED: robust id-based grouping instead of brittle index slices (prevents duplicate/misplaced items after nav changes)
+  const primaryIds = ['dashboard', 'clinician-profiles', 'patient-profiles', 'staffing-calendar', 'iadmin']
+  const cesIds = ['ces', 'taxonomy', 'onboarding', 'lifecycle', 'evidence']
+  const primaryItems = items.filter(i => primaryIds.includes(i.id))
+  const cesItems = items.filter(i => cesIds.includes(i.id))
+  const otherItems = items.filter(i => !primaryIds.includes(i.id) && !cesIds.includes(i.id))
 
   // Shared per-link styling. Active state uses the canonical --ci-accent
   // token (auto-resolves to brand teal in CI-light, gold in CI-ION dark)

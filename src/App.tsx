@@ -42,6 +42,7 @@ const SetupAccountPage = lazy(() => import('@/auth/pages/SetupAccountPage').then
 const ForgotPasswordPage = lazy(() => import('@/auth/pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })))
 const ResetPasswordPage = lazy(() => import('@/auth/pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })))
 const SetNewPasswordPage = lazy(() => import('@/auth/pages/SetNewPasswordPage').then(m => ({ default: m.SetNewPasswordPage })))
+const UIStagingPage = lazy(() => import('@/ui-staging/UIStagingPage').then(m => ({ default: m.UIStagingPage })))
 const UserGroupsPage = lazy(() => import('@/policy/security/identity/UserGroupsPage').then(m => ({ default: m.UserGroupsPage })))
 const PermissionCatalogPage = lazy(() => import('@/policy/security/identity/PermissionCatalogPage').then(m => ({ default: m.PermissionCatalogPage })))
 const UserAssignmentsPage = lazy(() => import('@/policy/security/identity/UserAssignmentsPage').then(m => ({ default: m.UserAssignmentsPage })))
@@ -191,6 +192,9 @@ function AppRoutes() {
         <Route path="/forgot-password" element={<PublicAuthRoute><ForgotPasswordPage /></PublicAuthRoute>} />
         <Route path="/reset-password" element={<PublicAuthRoute><ResetPasswordPage /></PublicAuthRoute>} />
         <Route path="/set-new-password" element={<PublicAuthRoute><SetNewPasswordPage /></PublicAuthRoute>} />
+
+        {/* V3 Visual Lab — Option A (clean foundation) */}
+        <Route path="/ui-staging" element={<UIStagingPage />} />
 
         {/* Hidden executive proposal — accessed via Brad iAdministrator corner trigger */}
         <Route

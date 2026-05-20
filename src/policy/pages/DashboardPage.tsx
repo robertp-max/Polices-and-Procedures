@@ -452,77 +452,95 @@ export function DashboardPage() {
         onClickNotReady={() => goAudit()}
       />
 
-      {/* Events (Project Events) — Agency operational board */}
-      <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap ci-shell-command-group ci-command-rail ci-maturity-section rounded-xl px-3 py-2">
-        <div>
-          <h2 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
-            Events
-          </h2>
-          <p className={`ci-text-body-sm ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
-            Project events and regulatory deadlines requiring action.
-          </p>
-        </div>
+      {/* ── VIEW MODE SWITCH: Agency Board vs My Planner Dashboard ── */}
+      {viewMode === 'agency' ? (
+        <>
+          {/* Events (Project Events) — Agency operational board */}
+          <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap ci-shell-command-group ci-command-rail ci-maturity-section rounded-xl px-3 py-2">
+            <div>
+              <h2 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
+                Events
+              </h2>
+              <p className={`ci-text-body-sm ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
+                Project events and regulatory deadlines requiring action.
+              </p>
+            </div>
 
-        <div className="ci-operational-toolbar">
-          <UtilityButton ariaLabel="Filter board"><Filter size={14} aria-hidden="true" /><span className="ml-2">Filter</span></UtilityButton>
-          <UtilityButton ariaLabel="Sort by priority"><span>Sort by: Priority</span></UtilityButton>
-        </div>
-      </section>
+            <div className="ci-operational-toolbar">
+              <UtilityButton ariaLabel="Filter board"><Filter size={14} aria-hidden="true" /><span className="ml-2">Filter</span></UtilityButton>
+              <UtilityButton ariaLabel="Sort by priority"><span>Sort by: Priority</span></UtilityButton>
+            </div>
+          </section>
 
-      {/* Main Events Board (always visible) */}
-      <div className={`flex-1 min-h-0 pb-2 ${isMobile ? '' : '-mx-3 sm:mx-0 px-3 sm:px-0'} ${isMobile ? 'overflow-x-hidden' : 'overflow-x-auto'} ci-premium-panel p-3 sm:p-4`}>
-        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'} gap-3 sm:gap-4 lg:min-w-0 ${isMobile ? 'min-w-0' : 'ci-min-w-board-scroll'} h-full`}>
-          <BoardColumn
-            title="Critical & Overdue"
-            count={criticalAndOverdue.length}
-            tone="critical"
-            items={criticalAndOverdue}
-            today={today}
-            onOpen={goInstance}
-            onFallback={goTaskFallback}
-          />
-          <BoardColumn
-            title="At Risk"
-            count={critical.atRisk.length}
-            tone="warning"
-            items={critical.atRisk}
-            today={today}
-            onOpen={goInstance}
-            onFallback={goTaskFallback}
-          />
-          <BoardColumn
-            title="In Progress"
-            count={pipeline.inProgress.length}
-            tone="progress"
-            items={pipeline.inProgress}
-            today={today}
-            onOpen={goInstance}
-            onFallback={goTaskFallback}
-          />
-          <BoardColumn
-            title="Awaiting Action / Evidence"
-            count={awaitingBoardItems.length}
-            tone="pending"
-            items={awaitingBoardItems.map(item => ({ ...item.event, id: item.id }))}
-            today={today}
-            onOpen={openAwaitingActionItem}
-            onFallback={goTaskFallback}
-          />
-        </div>
-      </div>
+          {/* Main Events Board */}
+          <div className={`flex-1 min-h-0 pb-2 ${isMobile ? '' : '-mx-3 sm:mx-0 px-3 sm:px-0'} ${isMobile ? 'overflow-x-hidden' : 'overflow-x-auto'} ci-premium-panel p-3 sm:p-4`}>
+            <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'} gap-3 sm:gap-4 lg:min-w-0 ${isMobile ? 'min-w-0' : 'ci-min-w-board-scroll'} h-full`}>
+              <BoardColumn
+                title="Critical & Overdue"
+                count={criticalAndOverdue.length}
+                tone="critical"
+                items={criticalAndOverdue}
+                today={today}
+                onOpen={goInstance}
+                onFallback={goTaskFallback}
+              />
+              <BoardColumn
+                title="At Risk"
+                count={critical.atRisk.length}
+                tone="warning"
+                items={critical.atRisk}
+                today={today}
+                onOpen={goInstance}
+                onFallback={goTaskFallback}
+              />
+              <BoardColumn
+                title="In Progress"
+                count={pipeline.inProgress.length}
+                tone="progress"
+                items={pipeline.inProgress}
+                today={today}
+                onOpen={goInstance}
+                onFallback={goTaskFallback}
+              />
+              <BoardColumn
+                title="Awaiting Action / Evidence"
+                count={awaitingBoardItems.length}
+                tone="pending"
+                items={awaitingBoardItems.map(item => ({ ...item.event, id: item.id }))}
+                today={today}
+                onOpen={openAwaitingActionItem}
+                onFallback={goTaskFallback}
+              />
+            </div>
+          </div>
 
-      {/* My Planner Section — Tasks assigned to me (always visible below Events) */}
-      <div className="mt-6 pt-4 border-t border-white/10">
-        <div className="mb-3">
-          <h2 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
-            My Planner
-          </h2>
-          <p className={`ci-text-body-sm ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
-            Tasks assigned to me • Personal + CES obligations
-          </p>
+          {/* My Planner — compact summary always visible in Agency mode */}
+          <div className="mt-6 pt-4 border-t border-white/10">
+            <div className="mb-3">
+              <h2 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
+                My Planner
+              </h2>
+              <p className={`ci-text-body-sm ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
+                Tasks assigned to me • Personal + CES obligations
+              </p>
+            </div>
+            <MyPlannerView showHeader={false} />
+          </div>
+        </>
+      ) : (
+        /* ── FULL MY PLANNER DASHBOARD VIEW (when toggle is on Planner) ── */
+        <div className="mt-2">
+          <div className="mb-4">
+            <h2 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
+              My Planner
+            </h2>
+            <p className={`ci-text-body-sm ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
+              Your personal workload • CES obligations assigned to you + private tasks
+            </p>
+          </div>
+          <MyPlannerView showHeader={true} />
         </div>
-        <MyPlannerView showHeader={false} />
-      </div>
+      )}
 
       <ToastHost />
       </div>

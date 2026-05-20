@@ -332,7 +332,7 @@ export function RobertCesReviewLayer({ userEmail, userId, eventTasks = [], event
         borderRadius: 12,
         overflow: 'hidden',
         border: '1px solid var(--ces-navy-deep)',
-        boxShadow: '0 20px 48px rgba(0,0,0,0.25)',
+        boxShadow: 'var(--ci-shadow-md)',
         background: 'var(--ces-paper)',
         fontFamily: 'system-ui, sans-serif',
       }}

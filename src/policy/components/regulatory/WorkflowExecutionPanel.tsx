@@ -180,13 +180,13 @@ function ActivePanel({
       className="h-full w-full flex flex-col min-h-0 rounded-xl border overflow-hidden"
       style={{
         borderColor: `${stateColor}55`,
-        background: isLight ? 'var(--ci-surface-2)' : 'rgba(255,255,255,0.015)',
+        background: isLight ? 'var(--ci-surface-2)' : 'var(--ci-overlay-faint)',
       }}
     >
       {/* ── Header: instance projection ── */}
       <header
         className="px-4 py-3 flex flex-col gap-2 border-b"
-        style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+        style={{ borderColor: 'var(--ci-overlay-border)' }}
       >
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-wrap">
@@ -213,7 +213,7 @@ function ActivePanel({
             <button
               onClick={onClear}
               aria-label="Clear selection"
-              className="w-6 h-6 rounded-md flex items-center justify-center text-white/45 hover:text-white hover:bg-white/[0.05]"
+              className="w-6 h-6 rounded-md flex items-center justify-center text-white/45 hover:text-white hover:ci-bg-overlay-soft"
             >
               <X size={12} />
             </button>
@@ -357,7 +357,7 @@ function ActivePanel({
       {/* ── Footer: Certify / Locked receipt / Future-Locked notice ── */}
       <footer
         className="px-4 py-3 border-t"
-        style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+        style={{ borderColor: 'var(--ci-overlay-border)' }}
       >
         {isFutureLocked ? (
           <FutureLockedFooter />
@@ -451,7 +451,7 @@ function EventRecordPanel({ event }: { event: RegulatoryEvent }) {
   return (
     <div className="p-5 flex flex-col gap-5">
       {/* Record header */}
-      <div className="rounded-lg border p-3 bg-white/[0.02]" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="rounded-lg border p-3 ci-bg-overlay-faint" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         <div className="flex items-center gap-2 mb-1">
           <FolderOpen size={12} style={{ color: TEAL_PRIMARY }} />
           <span
@@ -497,8 +497,8 @@ function EventRecordPanel({ event }: { event: RegulatoryEvent }) {
               onChange={e => setDraft(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') submitNote(); }}
               placeholder="Add a note for the audit record…"
-              className="flex-1 rounded-md border bg-white/[0.03] px-2.5 py-1.5 text-[11px] font-roboto text-white placeholder-white/35 focus:outline-none focus:border-white/30"
-              style={{ borderColor: 'rgba(255,255,255,0.10)' }}
+              className="flex-1 rounded-md border ci-bg-overlay-faint px-2.5 py-1.5 text-[11px] font-roboto text-white placeholder-white/35 focus:outline-none focus:border-white/30"
+              style={{ borderColor: 'var(--ci-overlay-border-strong)' }}
             />
             <button
               type="button"
@@ -519,7 +519,7 @@ function EventRecordPanel({ event }: { event: RegulatoryEvent }) {
               <li
                 key={n.id}
                 className="rounded-md border p-2.5"
-                style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}
+                style={{ borderColor: 'var(--ci-overlay-border)', background: 'var(--ci-overlay-faint)' }}
               >
                 <div className="flex items-center justify-between text-[9.5px] text-white/50 mb-1">
                   <span className="flex items-center gap-1.5">
@@ -774,7 +774,7 @@ function EventTasksTab({
 
   return (
     <div className="p-4 flex flex-col gap-3">
-      <div className="rounded-md border p-2.5" style={{ borderColor: 'rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.02)' }}>
+      <div className="rounded-md border p-2.5" style={{ borderColor: 'var(--ci-overlay-border-strong)', background: 'var(--ci-overlay-faint)' }}>
         <div className="flex flex-wrap items-center gap-2">
           <input
             value={searchTerm}
@@ -826,11 +826,11 @@ function EventTasksTab({
           </button>
         </div>
       </div>
-      <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
+      <div className="rounded-md border p-3" style={{ borderColor: 'var(--ci-overlay-border)', background: 'var(--ci-overlay-faint)' }}>
         <div className="text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-white/60 mb-2">Generate task</div>
         <div className="grid grid-cols-1 gap-2">
           <div className="flex gap-2">
-            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Manual task title" className="flex-1 rounded border px-2 py-1 text-[11px] bg-white/[0.03]" />
+            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Manual task title" className="flex-1 rounded border px-2 py-1 text-[11px] ci-bg-overlay-faint" />
             <button
               type="button"
               onClick={() => {
@@ -851,14 +851,14 @@ function EventTasksTab({
             </button>
           </div>
           <div className="flex gap-2">
-            <select value={formTaskId} onChange={e => setFormTaskId(e.target.value)} className="flex-1 rounded border px-2 py-1 text-[11px] bg-white/[0.03]">
+            <select value={formTaskId} onChange={e => setFormTaskId(e.target.value)} className="flex-1 rounded border px-2 py-1 text-[11px] ci-bg-overlay-faint">
               <option value="">Generate from required form…</option>
               {dataflow.requiredForms.map(form => <option key={form.id} value={form.formId ?? form.id}>{form.label}</option>)}
             </select>
             <button type="button" onClick={() => formTaskId && store.generateTaskFromForm(dataflow.eventId, formTaskId)} className="rounded border px-2 py-1 text-[10px] uppercase tracking-[0.12em]">Generate</button>
           </div>
           <div className="flex gap-2">
-            <select value={stepTaskId} onChange={e => setStepTaskId(e.target.value)} className="flex-1 rounded border px-2 py-1 text-[11px] bg-white/[0.03]">
+            <select value={stepTaskId} onChange={e => setStepTaskId(e.target.value)} className="flex-1 rounded border px-2 py-1 text-[11px] ci-bg-overlay-faint">
               <option value="">Generate from workflow step…</option>
               {event.processFlow.map(step => <option key={step.id} value={step.id}>{step.label}</option>)}
             </select>
@@ -901,7 +901,7 @@ function EventTasksTab({
             key={task.id}
             ref={node => { taskRefs.current[task.id] = node; }}
             className="rounded-md border p-3"
-            style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+            style={{ borderColor: 'var(--ci-overlay-border)' }}
           >
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -1088,7 +1088,7 @@ function EventTasksTab({
       </ul>
 
       {deletedTasks.length > 0 && (
-        <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+        <div className="rounded-md border p-3" style={{ borderColor: 'var(--ci-overlay-border)' }}>
           <div className="text-[10px] uppercase tracking-[0.12em] text-white/60 mb-2">Deleted tasks</div>
           {deletedTasks.map(task => (
             <div key={task.id} className="flex items-center justify-between text-[11px] py-1">
@@ -1385,7 +1385,7 @@ function TaskRequirementRow({
     <div
       ref={onRegister}
       className="rounded border bg-black/20 px-2 py-1.5 text-[10px]"
-      style={{ borderColor: highlight ? 'rgba(20,184,166,0.6)' : 'rgba(255,255,255,0.10)' }}
+      style={{ borderColor: highlight ? `${TEAL_PRIMARY}99` : 'var(--ci-overlay-border-strong)' }}
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-white/90">{requirement.title}</p>
@@ -2263,7 +2263,7 @@ export const _RequiredFormsTab = ({
         const status = store.effectiveFormStatus(event, form.id);
         const linkedTasks = dataflow.tasks.filter(task => task.formIds.includes(formId) && !task.isDeleted);
         return (
-          <div key={form.id} className="rounded-md border p-3 flex items-center justify-between gap-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div key={form.id} className="rounded-md border p-3 flex items-center justify-between gap-3" style={{ borderColor: 'var(--ci-overlay-border)' }}>
             <div>
               <div className="text-[12px] font-semibold">{form.label}</div>
               <div className="text-[10px] text-white/60">{formId} · {status}</div>
@@ -2332,7 +2332,7 @@ export const _ApprovalsTab = ({
       </div>
       {dataflow.approvals.length === 0 && <EmptyHint label="No approval requests for this event." />}
       {dataflow.approvals.map(approval => (
-        <div key={approval.id} className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+        <div key={approval.id} className="rounded-md border p-3" style={{ borderColor: 'var(--ci-overlay-border)' }}>
           <div className="text-[12px] font-semibold">{approval.targetLabel}</div>
           <div className="text-[10px] text-white/60">{approval.targetKind} · {approval.status}</div>
           <div className="mt-1 text-[10px] text-white/50">
@@ -2361,14 +2361,14 @@ export const _ApprovalsTab = ({
 function TechnicalDetailsTab({ dataflow }: { dataflow: EventExecutionDataflow }) {
   return (
     <div className="p-4 space-y-2 text-[11px]">
-      <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="rounded-md border p-3" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         <div className="text-[10px] uppercase tracking-[0.12em] text-white/60">Event Instance</div>
         <div className="font-mono mt-1">{dataflow.eventId}</div>
         <div className="text-white/70 mt-1">Source Event: <span className="font-mono">{dataflow.sourceEventId}</span></div>
         <div className="text-white/70 mt-1">Status: {dataflow.eventInstance.status} · {dataflow.eventInstance.lockState}</div>
         <div className="text-white/70 mt-2">Folder: <span className="font-mono">{dataflow.folder.folderPath}</span></div>
       </div>
-      <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="rounded-md border p-3" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         <div className="text-[10px] uppercase tracking-[0.12em] text-white/60">Task Source IDs</div>
         {dataflow.tasks.map(task => (
           <div key={task.id} className="font-mono text-[10px] mt-1">
@@ -2376,14 +2376,14 @@ function TechnicalDetailsTab({ dataflow }: { dataflow: EventExecutionDataflow })
           </div>
         ))}
       </div>
-      <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="rounded-md border p-3" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         <div className="text-[10px] uppercase tracking-[0.12em] text-white/60">Generated Form Instances</div>
         {dataflow.generatedFormInstances.length === 0 && <div className="text-white/50 mt-1">None yet.</div>}
         {dataflow.generatedFormInstances.map(inst => (
           <div key={inst.id} className="font-mono text-[10px] mt-1">{inst.id} · {inst.formId} · {inst.folderPath}</div>
         ))}
       </div>
-      <div className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="rounded-md border p-3" style={{ borderColor: 'var(--ci-overlay-border)' }}>
         <div className="text-[10px] uppercase tracking-[0.12em] text-white/60">Event Audit Trail</div>
         {dataflow.auditTrail.length === 0 && <div className="text-white/50 mt-1">No task/form mutations yet.</div>}
         {dataflow.auditTrail.slice(0, 30).map(row => (
@@ -2411,7 +2411,7 @@ export const _EvidenceByTaskTab = ({
       {dataflow.tasks.filter(task => !task.isDeleted).map(task => {
         const taskEvidence = dataflow.evidence.filter(evidence => evidenceTaskIdMatchesTask(task, evidence.taskId));
         return (
-          <div key={task.id} className="rounded-md border p-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div key={task.id} className="rounded-md border p-3" style={{ borderColor: 'var(--ci-overlay-border)' }}>
             <div className="text-[12px] font-semibold">{task.title}</div>
             <div className="text-[10px] text-white/60">{task.id} · {taskEvidence.length} evidence</div>
             {taskEvidence.length === 0 && <div className="text-[10px] text-white/45 mt-1">No evidence linked.</div>}
@@ -2483,7 +2483,7 @@ function EventAuditTrailTab({ dataflow }: { dataflow: EventExecutionDataflow }) 
     <div className="p-4 space-y-2">
       {ordered.length === 0 && <EmptyHint label="No event/task/form/evidence actions yet." />}
       {ordered.map(row => (
-        <div key={row.auditId} className="rounded-md border p-2 text-[10px] font-mono" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+        <div key={row.auditId} className="rounded-md border p-2 text-[10px] font-mono" style={{ borderColor: 'var(--ci-overlay-border)' }}>
           <div>
             {row.timestamp} · {row.entityType}:{row.entityId} · {row.action}
             {artifactRouteForRow(row) && (
@@ -2639,7 +2639,7 @@ function AuditViewPanel({ event, today }: { event: RegulatoryEvent; today: Date 
       {/* ── EXPORT ACTIONS (survey-ready packet) ── */}
       <div
         className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2"
-        style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}
+        style={{ borderColor: 'var(--ci-overlay-border)', background: 'var(--ci-overlay-faint)' }}
       >
         <div className="min-w-0">
           <div className="text-[9.5px] font-montserrat font-bold text-white/55 uppercase tracking-[0.16em]">
@@ -2662,7 +2662,7 @@ function AuditViewPanel({ event, today }: { event: RegulatoryEvent; today: Date 
           <button
             type="button"
             onClick={onExportMarkdown}
-            className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[10px] font-montserrat font-bold text-white/80 hover:bg-white/[0.06] uppercase tracking-[0.14em]"
+            className="flex items-center gap-1.5 rounded-md border border-white/10 ci-bg-overlay-faint px-2.5 py-1.5 text-[10px] font-montserrat font-bold text-white/80 ci-bg-overlay-soft-hover uppercase tracking-[0.14em]"
             title="Download regulator-friendly Markdown"
           >
             <FileText size={11} /> Markdown
@@ -2854,8 +2854,8 @@ function DependenciesSection({
                 key={`${d.eventId}-${d.relation}`}
                 className="flex items-baseline justify-between gap-2 px-2.5 py-1.5 rounded-md border"
                 style={{
-                  borderColor: 'rgba(255,255,255,0.08)',
-                  background:  'rgba(255,255,255,0.02)',
+                  borderColor: 'var(--ci-overlay-border)',
+                  background:  'var(--ci-overlay-faint)',
                 }}
               >
                 <div className="min-w-0 flex-1">
@@ -2869,9 +2869,9 @@ function DependenciesSection({
                 <span
                   className="text-[9px] font-montserrat font-bold uppercase tracking-[0.14em] px-1.5 py-0.5 rounded-sm"
                   style={{
-                    color: 'rgba(255,255,255,0.7)',
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    color: 'var(--ci-text-on-surface-soft)',
+                    background: 'var(--ci-overlay-soft)',
+                    border: '1px solid var(--ci-overlay-border)',
                   }}
                 >
                   {d.relation}
@@ -3003,7 +3003,7 @@ function GroupChecklist({
               <div className="flex items-baseline justify-between gap-2">
                 <p
                   className="text-[11px] font-montserrat font-bold truncate"
-                  style={{ color: item.passed ? 'rgba(255,255,255,0.92)' : '#FCA5A5' }}
+                  style={{ color: item.passed ? 'var(--ci-text-on-surface-strong)' : 'var(--ci-danger-fg)' }}
                 >
                   {item.label}
                 </p>
@@ -3184,9 +3184,9 @@ function CertifyActionBar({ event, today }: { event: RegulatoryEvent; today: Dat
         disabled={!canCertify}
         className="shrink-0 rounded-md px-3 py-2 text-[10.5px] font-montserrat font-bold uppercase tracking-[0.16em] flex items-center gap-1.5 disabled:opacity-35 disabled:cursor-not-allowed transition"
         style={{
-          background: canCertify ? ACTION_COLOR : 'rgba(255,255,255,0.05)',
-          color: canCertify ? 'var(--ci-cta-text)' : 'rgba(255,255,255,0.55)',
-          border: canCertify ? `1px solid ${ACTION_COLOR}` : '1px solid rgba(255,255,255,0.10)',
+          background: canCertify ? ACTION_COLOR : 'var(--ci-overlay-soft)',
+          color: canCertify ? 'var(--ci-cta-text)' : 'var(--ci-text-on-surface-quiet)',
+          border: canCertify ? `1px solid ${ACTION_COLOR}` : '1px solid var(--ci-overlay-border-strong)',
         }}
       >
         <Lock size={11} />
@@ -3223,7 +3223,7 @@ function CertifiedReceipt({
       <button
         type="button"
         onClick={onRevoke}
-        className="shrink-0 rounded-md px-2.5 py-1.5 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.14em] flex items-center gap-1 border border-white/15 text-white/70 hover:text-white hover:bg-white/[0.05]"
+        className="shrink-0 rounded-md px-2.5 py-1.5 text-[9.5px] font-montserrat font-bold uppercase tracking-[0.14em] flex items-center gap-1 border border-white/15 text-white/70 hover:text-white hover:ci-bg-overlay-soft"
       >
         <Unlock size={10} />
         Revoke
@@ -3252,7 +3252,7 @@ function SectionHeader({
         <button
           type="button"
           onClick={action.onClick}
-          className="flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-[10px] font-montserrat font-bold text-white/75 hover:text-white hover:bg-white/[0.05] uppercase tracking-[0.12em]"
+          className="flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-[10px] font-montserrat font-bold text-white/75 hover:text-white hover:ci-bg-overlay-soft uppercase tracking-[0.12em]"
         >
           {action.icon}
           {action.label}
@@ -3266,7 +3266,7 @@ function EmptyHint({ label }: { label: string }) {
   return (
     <div
       className="rounded-md border p-3 text-center text-[10.5px] font-roboto text-white/50"
-      style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.015)' }}
+      style={{ borderColor: 'var(--ci-overlay-border)', background: 'var(--ci-overlay-faint)' }}
     >
       {label}
     </div>
@@ -3281,7 +3281,7 @@ function ProjectionCell({
       <span className="text-[9px] text-white/45">{label}</span>
       <span
         className="flex items-center gap-1 text-[11px] font-outfit font-light truncate"
-        style={{ color: color || 'rgba(255,255,255,0.9)', letterSpacing: '-0.005em' }}
+        style={{ color: color || 'var(--ci-text-on-surface-strong)', letterSpacing: '-0.005em' }}
       >
         {icon}
         {value}
@@ -3295,7 +3295,7 @@ function EmptyPanel() {
   return (
     <aside
       className="h-full w-full flex flex-col items-center justify-center rounded-xl border text-center p-6"
-      style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+      style={{ borderColor: 'var(--ci-overlay-border)' }}
     >
       <Workflow size={22} className="text-white/35 mb-2" />
       <p className="font-montserrat font-bold text-white/70 text-[11.5px] uppercase tracking-[0.18em]">

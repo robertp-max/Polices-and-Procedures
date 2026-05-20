@@ -297,7 +297,16 @@ export function useComplianceExecution(
     const activeSprintForUnits  = buildSprintWindow(today, 0);
     const sprintStartMs = new Date(activeSprintForUnits.startDate).getTime();
     const sprintEndMs   = new Date(activeSprintForUnits.endDate).getTime() + 24 * 60 * 60 * 1000 - 1;
-    const executionUnits: MergedExecutionUnit[] = hasRegulatoryEvents
+
+    /* ── DEMO BOOST (DON robertp@careindeed.com) ─────────────────────────────
+       Force EVERY CES execution unit to be owned by the primary demo DON
+       (TJ Padilla). This instantly populates "My Planner" with a rich,
+       realistic set of compliance tasks for the user.
+       Non-destructive overlay only — source regulatory + engine data is untouched. */
+    const DON_DEMO_USER_ID = 'demo-user-careindeed';
+    const DON_DEMO_NAME = 'TJ Padilla (DON)';
+
+    const rawExecutionUnits: MergedExecutionUnit[] = hasRegulatoryEvents
       ? eventPackages.flatMap(pkg =>
           pkg.cesExecutionUnits.map(unit => ({
             ...unit,
@@ -318,6 +327,22 @@ export function useComplianceExecution(
             sprintId: u.sprintId ?? (inActiveSprint ? activeSprintForUnits.id : undefined),
           };
         });
+
+    const executionUnits: MergedExecutionUnit[] = rawExecutionUnits.map(unit => ({
+      ...unit,
+      owner: {
+        ...unit.owner,
+        userId: DON_DEMO_USER_ID,
+        name: DON_DEMO_NAME,
+      },
+      ownership: {
+        ...(unit.ownership ?? {}),
+        primaryOwnerUserId: DON_DEMO_USER_ID,
+        assignedUserIds: Array.from(
+          new Set([...(unit.ownership?.assignedUserIds ?? []), DON_DEMO_USER_ID]),
+        ),
+      },
+    }));
 
     /* ── Sprint windows ── */
     const activeSprint  = buildSprintWindow(today,  0);

@@ -1,5 +1,5 @@
 import { type PropsWithChildren } from 'react';
-import ciIonLogo from '@/assets/ci-ion-logo.png';
+import ciIonLogo from '@/assets/ci-logo-white.png';
 import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useShellStore } from '@/policy/stores/uiStore';
 
