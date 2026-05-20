@@ -36,6 +36,7 @@ interface DemoAuthConfig {
   setupTokenTtlMinutes: number;
   autoApprovedDomain: string;
   autoApprovedEmails: string[];
+  adminManualPasswordEmails: string[];
 }
 
 interface RegisterResult {
@@ -524,6 +525,83 @@ export class DemoAuthService {
     return { message: 'Password reset successfully.' };
   }
 
+  async adminSetUserPassword(
+    actorAccessToken: string,
+    targetEmailRaw: string,
+    newPasswordRaw: string,
+  ): Promise<{ message: string }> {
+    const accessToken = String(actorAccessToken || '').trim();
+    if (!accessToken) {
+      throw new ApiError('auth_error', 'Not authenticated.', 401);
+    }
+
+    const actor = await this.getCurrentUser(accessToken);
+    const actorEmail = this.normalizeEmail(actor.email);
+    const targetEmail = this.normalizeEmail(targetEmailRaw);
+
+    if (!this.cfg.adminManualPasswordEmails.includes(actorEmail)) {
+      log.warn('auth.admin_set_password.forbidden', {
+        actorEmail,
+        targetEmail,
+      });
+      throw new ApiError('forbidden', 'You do not have permission to manually change user passwords.', 403);
+    }
+
+    if (!targetEmail || !targetEmail.includes('@')) {
+      throw new ApiError('validation_error', 'Please enter a valid user email address.', 400);
+    }
+
+    const newPassword = String(newPasswordRaw || '');
+    this.validatePassword(newPassword);
+
+    try {
+      await this.cognito.send(new AdminGetUserCommand({
+        UserPoolId: this.cfg.userPoolId,
+        Username: targetEmail,
+      }));
+    } catch (err) {
+      const name = (err as { name?: string })?.name;
+      if (name === 'UserNotFoundException' || name === 'ResourceNotFoundException') {
+        throw new ApiError('validation_error', 'Target user was not found.', 404);
+      }
+      throw err;
+    }
+
+    await this.cognito.send(new AdminSetUserPasswordCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: targetEmail,
+      Password: newPassword,
+      Permanent: true,
+    }));
+
+    await this.cognito.send(new AdminEnableUserCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: targetEmail,
+    }));
+
+    const now = this.nowIso();
+    const registration = await this.getRegistration(targetEmail);
+    if (registration) {
+      await this.dynamo.send(new UpdateCommand({
+        TableName: this.cfg.tableName,
+        Key: this.registrationKey(targetEmail),
+        UpdateExpression: 'SET #status = :active, updatedAt = :updatedAt',
+        ExpressionAttributeNames: { '#status': 'status' },
+        ExpressionAttributeValues: {
+          ':active': 'active' as RegistrationStatus,
+          ':updatedAt': now,
+        },
+      }));
+    }
+
+    log.info('auth.admin_set_password.success', {
+      actorEmail,
+      targetEmail,
+    });
+
+    return { message: 'Password updated successfully.' };
+  }
+
   async verifyRegistration(emailRaw: string, sfOrgIdRaw: string): Promise<{
     verified: true;
     approvedUser: { fullName: string; role: string; department: string };
@@ -674,6 +752,12 @@ export function buildDemoAuthServiceFromEnv(envLike: NodeJS.ProcessEnv): DemoAut
     .split(',')
     .map(email => email.trim().toLowerCase())
     .filter(Boolean);
+  const adminManualPasswordEmails = String(
+    envLike.ADMIN_MANUAL_PASSWORD_EMAILS || 'robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com',
+  )
+    .split(',')
+    .map(email => email.trim().toLowerCase())
+    .filter(Boolean);
 
   if (!region || !userPoolId || !clientId || !fromEmail || !tableName) {
     throw new ApiError('internal_error', 'Auth environment is not configured.', 500);
@@ -689,5 +773,6 @@ export function buildDemoAuthServiceFromEnv(envLike: NodeJS.ProcessEnv): DemoAut
     setupTokenTtlMinutes,
     autoApprovedDomain,
     autoApprovedEmails,
+    adminManualPasswordEmails,
   });
 }

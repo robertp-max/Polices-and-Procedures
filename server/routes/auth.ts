@@ -147,6 +147,16 @@ authRouter.post('/reset-password', asyncHandler(async (req, res) => {
   res.json(result);
 }));
 
+authRouter.post('/admin/manual-password-reset', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  const email = String(req.body?.email || '');
+  const newPassword = String(req.body?.newPassword || '');
+  const result = await service.adminSetUserPassword(accessToken, email, newPassword);
+  res.json(result);
+}));
+
 authRouter.post('/refresh', asyncHandler(async (req, res) => {
   const service      = buildDemoAuthServiceFromEnv(process.env);
   const refreshToken = String(req.body?.refreshToken || '');

@@ -197,4 +197,12 @@ export const AuthApi = {
       body: JSON.stringify({ email, code, newPassword }),
     });
   },
+
+  adminManualPasswordReset(accessToken: string, email: string, newPassword: string): Promise<{ message: string }> {
+    return call('/admin/manual-password-reset', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify({ email, newPassword }),
+    });
+  },
 };

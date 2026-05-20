@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { Plus, Pencil, Trash2, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
+import { AuthApi, AuthApiError } from '@/auth/api';
 import { authorizeForAuthUser } from './authorize';
 import { resolveUserIdFromAuth } from './demoUsers';
 import {
@@ -59,7 +60,13 @@ function Modal({
       <div className="w-full max-w-lg mx-4 bg-white rounded-xl shadow-xl border border-slate-200">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <h2 className="text-sm font-bold text-slate-800">{title}</h2>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close dialog"
+            title="Close"
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
             <X size={16} />
           </button>
         </div>
@@ -99,6 +106,7 @@ function SelectInput({ value, onChange, options }: { value: string; onChange: (v
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
+      title="Select option"
       className="border border-slate-300 rounded-md px-3 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/40 focus:border-[#0f766e]"
     >
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -293,12 +301,117 @@ function DeleteUserModal({ userId, onClose, currentUserId }: { userId: string; o
   );
 }
 
+// ─── Manual Password Modal ───────────────────────────────────────────────────
+
+function ManualPasswordModal({ userId, onClose, currentUserId }: { userId: string; onClose: () => void; currentUserId: string }) {
+  const users = useUserAssignmentsStore(s => s.users);
+  const { getAccessToken } = useAuth();
+  const targetUser = users.find(u => u.id === userId);
+
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  if (!targetUser) return null;
+
+  const isSelf = targetUser.id === currentUserId;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (isSelf) {
+      setError('Use the standard account reset flow for your own password.');
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      setError('Your admin session is not available. Please sign in again.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await AuthApi.adminManualPasswordReset(accessToken, targetUser.email, newPassword);
+      setSuccess(true);
+      setTimeout(onClose, 900);
+    } catch (err) {
+      if (err instanceof AuthApiError) {
+        setError(err.message);
+      } else {
+        setError('Unable to update password right now. Please try again.');
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal title={`Manual Password Change — ${targetUser.name}`} onClose={onClose}>
+      {success ? (
+        <div className="flex items-center gap-2 text-emerald-700 text-sm">
+          <CheckCircle size={16} /> Password updated successfully.
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="rounded-md bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-600">
+            Target: <span className="font-semibold text-slate-800">{targetUser.email}</span>
+          </div>
+
+          <Field label="New Password" required>
+            <TextInput value={newPassword} onChange={setNewPassword} type="password" placeholder="At least 8 characters" />
+          </Field>
+
+          <Field label="Confirm Password" required>
+            <TextInput value={confirmPassword} onChange={setConfirmPassword} type="password" placeholder="Re-enter password" />
+          </Field>
+
+          <div className="text-xs text-slate-500">
+            Manual reset updates the user password immediately. Share it via a secure channel.
+          </div>
+
+          {error && (
+            <div className="flex items-start gap-2 rounded-md bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
+              <AlertCircle size={14} className="shrink-0 mt-0.5" /> {error}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={onClose} className="px-4 py-1.5 text-sm rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50">Cancel</button>
+            <button
+              type="submit"
+              disabled={saving}
+              className={`px-4 py-1.5 text-sm rounded-md text-white font-semibold ${saving ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#0f766e] hover:bg-[#0d6461]'}`}
+            >
+              {saving ? 'Saving...' : 'Update Password'}
+            </button>
+          </div>
+        </form>
+      )}
+    </Modal>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 type ModalState =
   | { type: 'add' }
   | { type: 'edit'; userId: string }
   | { type: 'delete'; userId: string }
+  | { type: 'password'; userId: string }
   | null;
 
 const PROTECTED = new Set(['demo-user-careindeed']);
@@ -457,6 +570,15 @@ export function UserAssignmentsPage() {
                         >
                           <Trash2 size={11} /> Delete
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => setModal({ type: 'password', userId: u.id })}
+                          disabled={isSelf}
+                          title={isSelf ? 'Use self-service reset for your own account' : `Manual password change for ${u.name}`}
+                          className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded border transition-colors ${isSelf ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-amber-200 text-amber-700 hover:bg-amber-50'}`}
+                        >
+                          Password
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -475,6 +597,7 @@ export function UserAssignmentsPage() {
       {modal?.type === 'add' && <AddUserModal onClose={() => setModal(null)} />}
       {modal?.type === 'edit' && <EditUserModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
       {modal?.type === 'delete' && <DeleteUserModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
+      {modal?.type === 'password' && <ManualPasswordModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
     </div>
   );
 }
