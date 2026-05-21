@@ -1,0 +1,36 @@
+{
+  "version": "53.0.0",
+  "files": {
+    "31140ce5921f80123008765a60e2192cf1e46ada6affd18ba12754bca501e093": {
+      "displayName": "CiPolicyFrontend-staging/Custom::CrossRegionExportWriterCustomResourceProvider Code",
+      "source": {
+        "path": "asset.31140ce5921f80123008765a60e2192cf1e46ada6affd18ba12754bca501e093",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-us-east-2-4f3e2d48": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2",
+          "objectKey": "31140ce5921f80123008765a60e2192cf1e46ada6affd18ba12754bca501e093.zip",
+          "region": "us-east-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-2"
+        }
+      }
+    },
+    "a50b312d4adc18ef5ba903d03c35a16266ad93293bac3f6456244653797be1cc": {
+      "displayName": "CiPolicyFrontend-staging Template",
+      "source": {
+        "path": "CiPolicyFrontend-staging.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-us-east-2-3e25f935": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2",
+          "objectKey": "a50b312d4adc18ef5ba903d03c35a16266ad93293bac3f6456244653797be1cc.json",
+          "region": "us-east-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-2"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

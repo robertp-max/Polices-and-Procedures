@@ -103,4 +103,24 @@ This report feeds directly into:
 - `Responsive_Parity_Validation.md`
 - `Legacy_Cleanup_and_Migration_Guardrails.md`
 
-**Status:** Report complete. Proceeding to next deliverable.
+**Status (2026-05-18 honesty correction):** This report is a **narrative-only audit** authored without underlying screenshot or automated comparison evidence. Pass/Fail verdicts in §4 above are author observations, not validated outcomes. See `Phase4_Current_Reality_Report.md` §2.3 for the honest baseline. Code-level remediation for the worst remaining surfaces (`AuditModePage.tsx`, `WorkflowExecutionPanel.tsx`, `MasterCalendarPage.tsx`) lands in this Phase 4 session via Packages B-1/B-2/B-3. Cross-surface visual + interaction parity validation against the Dashboard benchmark **requires Design Lead human review on a freshly-built dev server** and is tracked as P3-SO-01 + P4-CS-01.
+
+---
+
+## Appendix Z — Phase 4 Closure Evidence Annex (2026-05-18)
+
+| Surface / item | Pre-session reality | Action taken this session | Post-session state | Remaining human work |
+|---|---|---|---|---|
+| `MasterCalendarPage.tsx` raw Tailwind opacity | 3 hits at L624 / L670 / L815 | Replaced with `ci-bg-overlay-faint` + `ci-bg-overlay-soft-hover` utilities (Package B-1) | ✅ 0 design-system lint errors | Visual diff vs Dashboard benchmark by Design Lead |
+| `AuditModePage.tsx` raw `white/[0.0X]` + status hex | 35 hits across lookup tables + inline styles | 11 multi-site replacements to `ci-border-overlay` + `ci-bg-overlay-*` + sentiment tokens (Package B-2) | ✅ 0 design-system lint errors | Visual diff vs Dashboard benchmark by Design Lead |
+| `WorkflowExecutionPanel.tsx` (Audit drawer) raw inline rgba | 91 hits across 3,934 lines | Idempotent migration script (`scripts/phase4-migrate-workflow-execution-panel.cjs`, 37 sites) + 10 ternary/property-name multi-replace fixes (Package B-3) | ✅ 0 design-system lint errors; runtime alpha composition (`${stateColor}55`, `${TEAL_PRIMARY}99`, `${accent}1a/22`, `${auditStateColor}18`) preserved as documented design intent | Visual diff vs Dashboard benchmark by Design Lead |
+| `RobertCesReviewLayer.tsx` cosmetic `boxShadow` rgba | 1 hit at L335 | Replaced `0 20px 48px rgba(0,0,0,0.25)` → `var(--ci-shadow-md)` (Package B-4) | ✅ 0 design-system lint errors | None (token-clean) |
+| Cross-surface visual diff vs Dashboard benchmark at 1440 | Author narrative only | None (out of scope for code session) | ⏳ Pending | Design Lead — side-by-side review on dev server (tracked P4-CS-01) |
+| Token family used as benchmark | `--ci-overlay-*` + `--ci-text-on-surface-*` + `--ci-shadow-*` + sentiment tokens (`--ci-danger-fg`, `--ci-warning-fg`, `--ci-state-on-track`, `--ci-action`, `--ci-cta-text`, `--ci-text-muted-2`) | Hover variants added: `.ci-bg-overlay-{faint,soft,strong}-hover` + `.ci-border-overlay-hover` (src/index.css line 220–224) | ✅ Token coverage sufficient for all observed Phase 3 v2.2 attested file patterns | — |
+
+**Verification commands (re-runnable):**
+- `npx eslint src/policy/pages/EvidenceCenterPage.tsx src/policy/pages/MasterCalendarPage.tsx src/policy/pages/AuditModePage.tsx src/policy/components/regulatory/WorkflowExecutionPanel.tsx src/policy/ces/components/calendar/ComplianceCalendar.tsx src/policy/ces/components/review/RobertCesReviewLayer.tsx src/policy/ces/components/review/CesRoleReviewSwitcher.tsx --format json` → all 7 files report 0 `no-restricted-syntax` errors.
+- `npx tsc --noEmit --project tsconfig.app.json` → exit 0.
+- `npm run build` → exit 0 (built in 3.70s).
+
+**Honest scope of this annex:** confirms code-level token discipline only. It does **not** confirm visual/interaction parity with Dashboard — that remains P4-CS-01 deferred to Design Lead.

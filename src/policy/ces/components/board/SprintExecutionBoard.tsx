@@ -136,7 +136,7 @@ export function SprintExecutionBoard() {
 
       {/* ── Board (6 columns, horizontal scroll) ───────── */}
       <div className="overflow-x-auto pb-3">
-        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(6, minmax(280px, 1fr))', minWidth: 1700 }}>
+        <div key={units.length + (overCol || 'none')} className="grid gap-4 v3-subview-animate" style={{ gridTemplateColumns: 'repeat(6, minmax(280px, 1fr))', minWidth: 1700 }}>
           {COMPLIANCE_STATE_ORDER.map(state => {
             const tint = columnTint[state];
             const isOver = overCol === state;

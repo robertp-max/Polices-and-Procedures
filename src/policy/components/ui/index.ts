@@ -21,7 +21,13 @@ export { CiStatusBadge } from './CiStatusBadge';
 export { SearchField } from './SearchField';
 export { Tabs } from './Tabs';
 export { RightDrawer } from './RightDrawer';
+export type { RightDrawerProps } from './RightDrawer';
 export { BottomSheetDrawer } from './BottomSheetDrawer';
+export type { BottomSheetDrawerProps } from './BottomSheetDrawer';
+
+// Premium V3 Veil Glass expensive modal (new Agent 11 creation)
+export { VeilModal } from './VeilModal';
+export type { VeilModalProps } from './VeilModal';
 export { DataGrid } from './DataGrid';
 export { EmptyState } from './EmptyState';
 export { SignaturePad, clearSignaturePadDraft } from './SignaturePad';

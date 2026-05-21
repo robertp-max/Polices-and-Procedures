@@ -38,13 +38,22 @@ export function GlobalTaskDrawer(): ReactElement | null {
   if (!taskId) return null;
   if (pageHasInlinePanel(location.pathname)) return null;
 
-  // Wave 8 mobile-ops fix: width was fixed `w-[420px]` which exceeded a 390px
-  // viewport. Use `min(100vw, 420px)` via Tailwind arbitrary value so the drawer
-  // becomes a full-bleed sheet on phones while preserving the 420px sidebar on
-  // wider screens. No behavior change, no protected files touched.
+  // Wave 8 + V3 Transition Polish: expensive-feeling overlay with backdrop fade + panel slide/scale/blur
   return (
-    <div className="fixed top-0 right-0 h-full w-[min(100vw,420px)] z-50 shadow-2xl border-l border-white/10 bg-[#0f1420] overflow-y-auto">
-      <TaskDetailRightPanel taskId={taskId} onClose={closeTask} />
+    <div className="fixed inset-0 z-[65] flex justify-end" role="presentation">
+      {/* V3 expensive backdrop */}
+      <div
+        className="absolute inset-0 v3-backdrop"
+        style={{ background: 'rgba(5,6,10,0.68)', backdropFilter: 'blur(6px)', transition: 'opacity 0.62s var(--v3-ease)' }}
+        onClick={closeTask}
+      />
+      {/* Panel — V3 slide + blur on mount */}
+      <div
+        className="relative h-full w-[min(100vw,420px)] shadow-2xl border-l border-white/10 bg-[#0f1420] overflow-y-auto v3-drawer-panel"
+        style={{ transition: 'transform 0.62s var(--v3-ease), opacity 0.62s var(--v3-ease)' }}
+      >
+        <TaskDetailRightPanel taskId={taskId} onClose={closeTask} />
+      </div>
     </div>
   );
 }

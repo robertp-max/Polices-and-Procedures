@@ -55,15 +55,15 @@ export function WorkflowDrawer({ unit, allUnits, onClose, onUpdate }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      {/* Backdrop */}
+      {/* Backdrop — V3 buttery */}
       <div
-        className="flex-1 bg-black/30 backdrop-blur-sm"
+        className="flex-1 bg-black/30 backdrop-blur-sm v3-backdrop"
         onClick={onClose}
         aria-label="Close drawer"
       />
-      {/* Panel */}
+      {/* Panel — luxurious CES drawer post-declutter */}
       <aside
-        className="w-[560px] flex flex-col shadow-2xl"
+        className="w-[560px] flex flex-col shadow-2xl v3-drawer-panel"
         style={{ background: CES_TOKENS.white, borderLeft: `1px solid ${CES_TOKENS.border}` }}
       >
         {/* Header */}
@@ -86,15 +86,15 @@ export function WorkflowDrawer({ unit, allUnits, onClose, onUpdate }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 hover:bg-gray-100"
+            className="rounded-md p-1.5 hover:bg-gray-100 v3-micro"
             aria-label="Close"
           >
             <X size={18} style={{ color: CES_TOKENS.muted }} />
           </button>
         </header>
 
-        {/* Body — scrollable */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Body — scrollable — V3 subview polish for expensive feel */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 v3-subview-animate">
           {/* Meta */}
           <section className="space-y-2">
             <KV label="Workflow"   value={wf?.title ?? unit.workflowId} />
@@ -185,7 +185,7 @@ function ChildTasksPanel({
           ({siblings.filter(s => s.complianceState === 'completed').length}/{siblings.length})
         </span>
       </h3>
-      <ul className="space-y-1.5">
+      <ul className="space-y-1.5 v3-stagger">
         {siblings.map(s => {
           const isDone = s.complianceState === 'completed';
           const isCurr = s.id === currentUnitId;

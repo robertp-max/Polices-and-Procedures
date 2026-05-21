@@ -53,6 +53,34 @@
   --ease-standard: cubic-bezier(.22,1,.36,1);
   --ease-drift:    cubic-bezier(.45,0,.55,1);
 
+  /* ===============================================================
+     V3 VEIL GLASS TOKENS (hoisted for production drawer/modal reuse)
+     Premium matte slate-navy dark glass for CES right panels & future
+     declutter. Matches the living spec in ui-staging/DashboardPage.tsx
+     and V3-Veil-Glass-Design-System-Implementation-Specs.md exactly.
+     Sacred 0.33 border contract. Expensive, luxurious feel.
+  =============================================================== */
+  --v3-base-bg: #05060A;
+  --v3-bg-gradient: radial-gradient(circle at 50% 0%, #121724 0%, #05060A 100%);
+  --v3-glass-card: linear-gradient(135deg, rgba(32, 41, 56, 0.88) 0%, rgba(16, 20, 28, 0.45) 60%, rgba(8, 10, 13, 0.98) 100%);
+  --v3-glass-blur: blur(32px) saturate(140%);
+  --v3-glass-shadow: 30px 10px 80px rgba(0, 0, 0, 0.9);
+  --v3-border: rgba(255, 255, 255, 0.33);
+  --v3-border-hover: rgba(255, 255, 255, 0.45);
+  --v3-border-subtle: rgba(255, 255, 255, 0.12);
+  --v3-teal: #007970;
+  --v3-teal-light: #00D1C1;
+  --v3-orange: #E07B2C;
+  --v3-orange-light: #FFA059;
+  --v3-text-primary: #FFFFFF;
+  --v3-text-secondary: #94A3B8;
+  --v3-text-tertiary: #64748B;
+  --v3-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --v3-duration: 0.7s;
+  --v3-duration-fast: 0.4s;
+  --v3-veil-blur: 32px;
+  --v3-veil-saturate: 1.4;
+
   /* ============================================================
      CANONICAL SHELL TOKENS (Phase 2)
      4-sided constrained page view for glassmorphism magnification
@@ -1316,6 +1344,111 @@ html[data-theme="ci-ion-dark"] .ci-glass-panel,
 html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-glass-panel {
   -webkit-backdrop-filter: blur(14px) saturate(120%);
   backdrop-filter: blur(14px) saturate(120%);
+}
+
+/* ===============================================================
+   V3 VEIL GLASS PREMIUM PANEL — EXPENSIVE DARK DRAWER / MODAL
+   Used by RightDrawer, BottomSheetDrawer (glassVariant="v3-veil"),
+   and new VeilModal. Delivers the luxurious single-glass matte
+   slate-carbon experience with sacred 0.33 borders, 32px blur,
+   0.7s signature cubic-bezier motion. For CES declutter + future.
+================================================================ */
+.v3-veil-glass-panel {
+  background: var(--v3-glass-card);
+  color: var(--v3-text-primary);
+  border: 1px solid var(--v3-border);
+  border-radius: 20px; /* slightly tighter than main card for panels */
+  box-shadow: var(--v3-glass-shadow);
+  -webkit-backdrop-filter: var(--v3-glass-blur);
+  backdrop-filter: var(--v3-glass-blur);
+  overflow: hidden; /* clean edges on glass */
+  transition: transform var(--v3-duration) var(--v3-ease), 
+              opacity var(--v3-duration) var(--v3-ease),
+              box-shadow 280ms var(--v3-ease);
+}
+
+/* Right-edge cast refinement for drawers */
+.v3-veil-glass-panel.right-drawer {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 12px 0 80px -20px rgba(0,0,0,0.85), var(--v3-glass-shadow);
+}
+
+/* Bottom sheet variant */
+.v3-veil-glass-panel.bottom-sheet {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 -12px 80px -20px rgba(0,0,0,0.85), var(--v3-glass-shadow);
+}
+
+/* Subtle luminous top-edge catchlight for expensive premium feel */
+.v3-veil-glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hover elevation — only raises border to 0.45 per spec */
+.v3-veil-glass-panel:hover {
+  border-color: var(--v3-border-hover);
+}
+
+/* Header typography refinements for V3 (eyebrow + title) */
+.v3-veil-glass-panel .v3-drawer-header {
+  font-feature-settings: "tnum", "ss01";
+}
+
+/* Premium close button micro-interaction (used inside drawers/modals) */
+.v3-veil-close {
+  transition: all 160ms var(--v3-ease);
+  border-radius: 8px;
+}
+.v3-veil-close:hover {
+  background: rgba(0, 209, 193, 0.12);
+  color: var(--v3-teal-light);
+  transform: scale(1.05);
+}
+.v3-veil-close:active {
+  transform: scale(0.96);
+}
+
+/* V3 drawer slide animations (0.7s premium feel) */
+@keyframes v3-drawer-slide-in-right {
+  from { transform: translateX(28px) scale(0.985); opacity: 0; }
+  to   { transform: translateX(0) scale(1); opacity: 1; }
+}
+@keyframes v3-drawer-slide-in-bottom {
+  from { transform: translateY(48px) scale(0.985); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes v3-modal-enter {
+  from { transform: scale(0.96) translateY(12px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  .v3-veil-glass-panel,
+  .v3-veil-glass-panel.right-drawer,
+  .v3-veil-glass-panel.bottom-sheet {
+    transition: opacity 220ms ease;
+  }
+  @keyframes v3-drawer-slide-in-right {
+    from { opacity: 0; transform: none; }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes v3-drawer-slide-in-bottom {
+    from { opacity: 0; transform: none; }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes v3-modal-enter {
+    from { opacity: 0; transform: none; }
+    to   { opacity: 1; transform: none; }
+  }
 }
 
 /* Wave 10 convergence: consistent premium operational surfaces */
@@ -2642,6 +2775,197 @@ html.ci-theme-transitioning *::after {
   to   { opacity: 1; transform: scale(1)    translateY(0);    }
 }
 .policy-help-modal-panel { animation: help-modal-in 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+/* ══════════════════════════════════════════════════════════════
+   V3 VEIL GLASS — GEMINI / CLAUDEX5 EXPENSIVE BUTTERY TRANSITIONS
+   For all CES drawers, modals, subviews post-declutter.
+   Matches ui-staging V3 spec exactly: 0.7s / 0.55s premium cubic, blur+scale+translate,
+   micro-interactions, stagger, reduced-motion safe.
+   Use: v3-page-animate on primary drawer/panel mount, v3-subview-animate on inner
+   tab/section changes, .v3-micro on interactive children.
+   ══════════════════════════════════════════════════════════════ */
+:root {
+  --v3-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --v3-duration: 0.70s;
+  --v3-duration-fast: 0.40s;
+  --v3-duration-sub: 0.55s;
+  --v3-duration-drawer: 0.62s;
+  --v3-duration-modal: 0.58s;
+
+  /* V3 Veil Glass visual tokens (Gemini/ClaudeX5) — enables v3-veil drawers/modals in CES */
+  --v3-base-bg: #05060A;
+  --v3-bg-gradient: radial-gradient(circle at 50% 0%, #121724 0%, #05060A 100%);
+  --v3-glass-card: linear-gradient(135deg, rgba(32, 41, 56, 0.88) 0%, rgba(16, 20, 28, 0.45) 60%, rgba(8, 10, 13, 0.98) 100%);
+  --v3-glass-blur: blur(32px) saturate(140%);
+  --v3-glass-shadow: 30px 10px 80px rgba(0, 0, 0, 0.9);
+  --v3-border: rgba(255, 255, 255, 0.33);
+  --v3-border-hover: rgba(255, 255, 255, 0.45);
+  --v3-border-subtle: rgba(255, 255, 255, 0.12);
+  --v3-teal: #007970;
+  --v3-teal-light: #00D1C1;
+  --v3-orange: #E07B2C;
+  --v3-orange-light: #FFA059;
+  --v3-text-primary: #FFFFFF;
+  --v3-text-secondary: #94A3B8;
+  --v3-text-tertiary: #64748B;
+}
+
+@keyframes v3PageIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.982) translateY(8px);
+    filter: blur(4.5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes v3SubViewIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+/* V3 expensive exit (for controlled closing via .v3-*-exiting + JS transition, or animation) */
+@keyframes v3DrawerOut {
+  0% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+  100% { opacity: 0; transform: translateX(32px) scale(0.982); filter: blur(3px); }
+}
+@keyframes v3SheetOut {
+  0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  100% { opacity: 0; transform: translateY(60px) scale(0.982); filter: blur(3px); }
+}
+@keyframes v3ModalOut {
+  0% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+  100% { opacity: 0; transform: scale(0.96) translateY(14px); filter: blur(3px); }
+}
+
+@keyframes v3DrawerIn {
+  0% {
+    opacity: 0;
+    transform: translateX(28px) scale(0.985);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes v3DrawerInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-24px) scale(0.986);
+    filter: blur(2.5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes v3ModalIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(16px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes v3BackdropIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Core reusable classes for CES post-declutter polish */
+.v3-page-animate {
+  animation: v3PageIn var(--v3-duration) var(--v3-ease) both;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+}
+
+.v3-subview-animate {
+  animation: v3SubViewIn var(--v3-duration-sub) var(--v3-ease) both;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+}
+
+.v3-drawer-panel {
+  animation: v3DrawerIn var(--v3-duration-drawer) var(--v3-ease) both;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+}
+
+.v3-drawer-panel-left {
+  animation: v3DrawerInLeft var(--v3-duration-drawer) var(--v3-ease) both;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+}
+
+.v3-modal-panel {
+  animation: v3ModalIn var(--v3-duration-modal) var(--v3-ease) both;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+}
+
+.v3-backdrop {
+  animation: v3BackdropIn 320ms var(--v3-ease) both;
+}
+
+/* Luxury micro-interactions (apply to buttons, cards, chips inside drawers/modals) */
+.v3-micro {
+  transition: transform 160ms var(--v3-ease), box-shadow 220ms var(--v3-ease), border-color 160ms var(--v3-ease), background-color 160ms var(--v3-ease);
+  will-change: transform;
+}
+.v3-micro:hover {
+  transform: translateY(-1px);
+}
+.v3-micro:active {
+  transform: scale(0.985) translateY(0);
+  transition-duration: 80ms;
+}
+
+/* Stagger children inside v3 content (for lists in drawers) */
+.v3-stagger > * {
+  animation: v3SubViewIn 0.42s var(--v3-ease) both;
+}
+.v3-stagger > *:nth-child(1) { animation-delay: 0.03s; }
+.v3-stagger > *:nth-child(2) { animation-delay: 0.07s; }
+.v3-stagger > *:nth-child(3) { animation-delay: 0.11s; }
+.v3-stagger > *:nth-child(4) { animation-delay: 0.15s; }
+.v3-stagger > *:nth-child(5) { animation-delay: 0.19s; }
+
+/* Reduced motion respect — inherited by all above via media query */
+@media (prefers-reduced-motion: reduce) {
+  .v3-page-animate,
+  .v3-subview-animate,
+  .v3-drawer-panel,
+  .v3-drawer-panel-left,
+  .v3-modal-panel,
+  .v3-backdrop,
+  .v3-micro,
+  .v3-stagger > * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
 
 /* ══════════════════════════════════════════════════════════════
    CARE INDEED DARK MODE — utility reset

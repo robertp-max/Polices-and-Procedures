@@ -74,4 +74,19 @@ This plan identifies and prioritizes remaining accessibility edge cases across a
 
 All fixes must be complete and re-tested before `Phase4_Final_Readiness_Package.md` sign-off.
 
-**Status:** Plan complete. Proceeding to next deliverable.
+**Status (2026-05-18 honesty correction):** This is a **plan, not an execution report**. None of the H1/H2/H3/M1/M2/M3 items above have been independently re-verified by axe-core, NVDA, VoiceOver, or manual keyboard testing in this session. The `BottomSheetDrawer` full WAI focus-trap (referenced by H1) remains the Phase 2 Appendix B item 1 deferred enhancement (tracked P3-SO-03). See `Phase4_Current_Reality_Report.md` §2.3 + §3 deferred-items table for the honest baseline. All accessibility validation work in this plan **requires Accessibility Lead human execution on a real device matrix** and is tracked as P3-SO-02 + P4-A11Y-01..03.
+
+---
+
+## Appendix Z — Phase 4 Closure Evidence Annex (2026-05-18)
+
+| Item | Code-state status (2026-05-18) | Verification evidence | Human work still required |
+|---|---|---|---|
+| H1 — BottomSheetDrawer focus trap | ⏳ Pending (P3-SO-03; primitive-level enhancement) | None this session | UI Primitives team to land full WAI focus-trap |
+| H2 — Surface-level skip-link parity with Dashboard | ⏳ Pending | None this session | Accessibility Lead audit; tracked P4-A11Y-01 |
+| H3 — Color-contrast on overlay tokens vs new sentiment tokens | 🟡 Code-side prerequisite met — `--ci-text-on-surface-strong/soft/muted/faint/ghost/quiet` declared in all three theme blocks; all attested files migrated to these tokens (Packages B-1..B-4) | `npx eslint` on 7 attested files: 0 design-system errors | Axe-core scan on dev server to validate computed contrast; tracked P4-A11Y-02 |
+| M1 — Reduced-motion gating per surface | ⏳ Pending | Shell-level `ShellFrame` guard remains the only validated reduced-motion implementation | Per-surface gating; tracked P4-MT-02 |
+| M2 — Keyboard nav across CES role switcher | ⏳ Pending | None this session | NVDA + keyboard-only walkthrough; tracked P4-A11Y-03 |
+| M3 — ARIA labelling consistency Audit Mode drawer | ⏳ Pending | None this session | Accessibility Lead audit |
+
+**Honest scope of this annex:** confirms only that the Phase 4 code remediation in Packages B-1..B-4 did not regress any accessibility primitive. It does **not** validate any accessibility outcome end-to-end. All H/M items above still require Accessibility Lead execution.

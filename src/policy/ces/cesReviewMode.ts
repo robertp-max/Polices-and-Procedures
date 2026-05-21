@@ -13,9 +13,9 @@
    - Does NOT create fake production audit entries (unless marked
      ROBERT_REVIEW_MODE).
    - Persists selected review role in localStorage for Robert only.
-   - All code is isolated in this file + RobertCesReviewLayer /
-     CesRoleReviewSwitcher. Delete those three files to remove the
-     feature entirely — zero CES logic depends on them.
+   - All code is isolated in this file + CesRoleReviewSwitcher.
+     (RobertCesReviewLayer debug overlay was removed as dead code.)
+     Delete this file + CesRoleReviewSwitcher to remove the feature entirely.
    ═══════════════════════════════════════════════════════════════ */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -150,38 +150,3 @@ export function useCesReviewMode(
   };
 }
 
-/* ─── Role-based task visibility filter ─────────────────── */
-
-/**
- * Returns true when a task is visible to the given CES role.
- * Used by My Tasks, Sprint Board, Event Drawer, etc. when Robert is
- * simulating a role.
- *
- * The filter checks: assignedRole, canCompleteRoles, canReviewRoles,
- * canApproveRoles, and signerRole (for signer tasks).
- */
-export function taskVisibleToRole(
-  task: {
-    assignedRole?:     string;
-    accountableRole?:  string;
-    reviewerRole?:     string;
-    approverRole?:     string;
-    canCompleteRoles?: readonly string[];
-    canReviewRoles?:   readonly string[];
-    canApproveRoles?:  readonly string[];
-    signerRole?:       string;
-    ownerRole?:        string;
-  },
-  role: CesRole,
-): boolean {
-  if (task.assignedRole    === role)                       return true;
-  if (task.accountableRole === role)                       return true;
-  if (task.reviewerRole    === role)                       return true;
-  if (task.approverRole    === role)                       return true;
-  if (task.signerRole      === role)                       return true;
-  if (task.ownerRole       === role)                       return true;
-  if (task.canCompleteRoles?.includes(role))               return true;
-  if (task.canReviewRoles?.includes(role))                 return true;
-  if (task.canApproveRoles?.includes(role))                return true;
-  return false;
-}

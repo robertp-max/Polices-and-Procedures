@@ -63,4 +63,20 @@ For each surface, the following must match Dashboard behavior:
 - Manual review against approved Top Picks mocks
 - Side-by-side comparison screenshots with Dashboard
 
-**Status:** Validation complete. Fixes identified. Proceeding to next deliverable.
+**Status (2026-05-18 honesty correction):** The per-surface Pass/Strong/Minor verdicts in §4 above are **author observations, not Playwright-validated outcomes**. No regression suite was run at the listed breakpoints during the authoring of this report. See `Phase4_Current_Reality_Report.md` §2.3 for the honest baseline. Responsive parity validation **requires Playwright regression runs at 375/768/1024/1440/1600 across all six surfaces on a freshly-built dev server** and is tracked as P3-SO-01 + P4-RP-01. Procedure documented in `Phase2_Exit_Criteria_Checklist.md` Appendix A.
+
+---
+
+## Appendix Z — Phase 4 Closure Evidence Annex (2026-05-18)
+
+| Surface | Code-state risk-of-regression (Phase 4 token migrations) | Verification evidence | Human work still required |
+|---|---|---|---|
+| Dashboard (benchmark) | Untouched this session | n/a | Reference surface — no action |
+| Evidence Center | Untouched this session | Pre-existing 0 raw matches | Playwright regression at 375/768/1024/1440/1600 |
+| Master Calendar | 3 token-only swaps (no layout impact) | `tsc --noEmit` exit 0; build exit 0 | Playwright regression at 375/768/1024/1440/1600 |
+| Audit Mode | 11 token-only swaps (no layout impact) | `tsc --noEmit` exit 0; build exit 0 | Playwright regression at 375/768/1024/1440/1600 |
+| Workflow Execution drawer | 47 token-only swaps (no layout impact, `style.borderColor` / `style.background` literals only) | `tsc --noEmit` exit 0; build exit 0 | Playwright regression at 375/768/1024/1440/1600 |
+| My Tasks | Untouched this session | n/a | Playwright regression at 375/768/1024/1440/1600 |
+| CES Review Layer | 1 `boxShadow` token swap (visually equivalent within design tolerance) | `tsc --noEmit` exit 0; build exit 0 | Playwright regression at 375/768/1024/1440/1600 |
+
+**Honest scope of this annex:** code changes in this session are token-only and do not alter geometry/layout/flex/grid; therefore the risk of new responsive regressions is low but **not zero**. The Playwright regression suite has **not** been re-baselined and must be run by Engineering / QA. Tracked P4-RP-01.

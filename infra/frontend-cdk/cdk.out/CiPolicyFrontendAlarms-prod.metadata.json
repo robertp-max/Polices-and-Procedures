@@ -1,0 +1,189 @@
+{
+  "/CiPolicyFrontendAlarms-prod": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:49 (:)",
+        "...node internals..."
+      ]
+    },
+    {
+      "type": "aws:cdk:stack-tags",
+      "data": [
+        {
+          "key": "app",
+          "value": "ci-policy-app"
+        },
+        {
+          "key": "component",
+          "value": "frontend-alarms"
+        },
+        {
+          "key": "environment",
+          "value": "prod"
+        },
+        {
+          "key": "managedBy",
+          "value": "cdk"
+        }
+      ]
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/AlarmTopicArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AlarmTopicArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new FrontendAlarmsStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-alarms-stack.ts:96:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:49 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/RegionNote": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "RegionNote"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new FrontendAlarmsStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-alarms-stack.ts:100:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:49 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/Custom::CrossRegionExportReaderCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/AlarmTopic/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AlarmTopicD01E77F9"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Topic2 in aws-cdk-lib...",
+        "new FrontendAlarmsStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-alarms-stack.ts:34:28)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:49 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/HighErrorRate4xx/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HighErrorRate4xx369E1B03"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Alarm2 in aws-cdk-lib...",
+        "new FrontendAlarmsStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-alarms-stack.ts:52:26)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:49 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/HighErrorRate5xx/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HighErrorRate5xx41B84796"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Alarm2 in aws-cdk-lib...",
+        "new FrontendAlarmsStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-alarms-stack.ts:75:26)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:49 (:)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/Custom::CrossRegionExportReaderCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCrossRegionExportReaderCustomResourceProviderRole10531BBD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/Custom::CrossRegionExportReaderCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCrossRegionExportReaderCustomResourceProviderHandler46647B68"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/CiPolicyFrontendAlarms-prod/ExportsReader/Resource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsReader8B249524"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ]
+}

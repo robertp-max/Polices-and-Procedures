@@ -462,12 +462,12 @@ function FormMaximizedModal({
       role="dialog"
       aria-modal="true"
       aria-label="Form workspace"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 backdrop-blur-sm v3-backdrop"
       onClick={onMinimize}
       onKeyDown={(e) => { if (e.key === 'Escape') onMinimize(); }}
     >
       <div
-        className="relative w-[80vw] max-w-[1200px] h-[88vh] bg-white rounded-xl shadow-2xl border border-[#E5E4E3] overflow-hidden flex flex-col"
+        className="relative w-[80vw] max-w-[1200px] h-[88vh] bg-white rounded-xl shadow-2xl border border-[#E5E4E3] overflow-hidden flex flex-col v3-modal-panel"
         onClick={(e) => e.stopPropagation()}
       >
         <header className="px-5 py-3 flex items-center justify-between gap-3 border-b border-[#E5E4E3] bg-[#FAFBF8]">
@@ -478,7 +478,7 @@ function FormMaximizedModal({
             <button
               type="button"
               onClick={onMinimize}
-              className="text-[#747470] hover:text-[#1A3778] p-1.5 rounded"
+              className="text-[#747470] hover:text-[#1A3778] p-1.5 rounded v3-micro"
               title="Minimize"
               aria-label="Minimize"
             >
@@ -487,7 +487,7 @@ function FormMaximizedModal({
             <button
               type="button"
               onClick={onClose}
-              className="text-[#747470] hover:text-[#1F1C1B] p-1.5 rounded"
+              className="text-[#747470] hover:text-[#1F1C1B] p-1.5 rounded v3-micro"
               title="Close form"
               aria-label="Close form"
             >

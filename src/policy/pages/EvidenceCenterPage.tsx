@@ -1156,9 +1156,9 @@ function DetailDrawer({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex" onClick={onClose}>
-      <div className="flex-1 bg-black/40" />
+      <div className="flex-1 bg-black/40 v3-backdrop" />
       <div
-        className="w-[min(100vw,420px)] max-w-full bg-[var(--ci-color-glass-main-detail)] border-l border-[var(--ci-color-glass-border)] h-full overflow-auto p-5"
+        className="w-[min(100vw,420px)] max-w-full bg-[var(--ci-color-glass-main-detail)] border-l border-[var(--ci-color-glass-border)] h-full overflow-auto p-5 v3-drawer-panel"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
@@ -1169,7 +1169,7 @@ function DetailDrawer({
             </div>
             <p className="mt-1 text-base text-[var(--ci-text-primary)] break-all">{file.filename}</p>
           </div>
-          <button title="Close" aria-label="Close panel" onClick={onClose} className="ci-text-surface-faint hover:text-[var(--ci-text-primary)]"><X size={16} /></button>
+          <button title="Close" aria-label="Close panel" onClick={onClose} className="ci-text-surface-faint hover:text-[var(--ci-text-primary)] v3-micro"><X size={16} /></button>
         </div>
 
         <dl className="mt-5 space-y-2 text-xs">

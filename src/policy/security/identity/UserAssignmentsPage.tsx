@@ -345,7 +345,7 @@ function ManualPasswordModal({ userId, onClose, currentUserId }: { userId: strin
 
     setSaving(true);
     try {
-      await AuthApi.adminManualPasswordReset(accessToken, targetUser.email, newPassword);
+      await AuthApi.adminManualPasswordReset(accessToken, targetUser!.email, newPassword);
       setSuccess(true);
       setTimeout(onClose, 900);
     } catch (err) {

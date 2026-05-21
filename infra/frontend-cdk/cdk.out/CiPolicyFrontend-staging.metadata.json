@@ -1,0 +1,336 @@
+{
+  "/CiPolicyFrontend-staging": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    },
+    {
+      "type": "aws:cdk:stack-tags",
+      "data": [
+        {
+          "key": "app",
+          "value": "ci-policy-app"
+        },
+        {
+          "key": "component",
+          "value": "frontend"
+        },
+        {
+          "key": "environment",
+          "value": "staging"
+        },
+        {
+          "key": "managedBy",
+          "value": "cdk"
+        }
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/DistributionId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DistributionId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:322:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/DistributionDomainName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DistributionDomainName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:327:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/BucketName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BucketName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:332:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/DeployRoleArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DeployRoleArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:337:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/Region": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Region"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:342:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/Custom::CrossRegionExportWriterCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/CiPolicyFrontend-staging/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/AccessLogsBucket/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AccessLogsBucket83982689"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:28:28)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/AssetsBucket/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetsBucket5CB76180"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:51:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/OAC/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "OAC5B452445"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new S3OriginAccessControl2 in aws-cdk-lib...",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:83:21)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/SecurityHeadersPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SecurityHeadersPolicyE1741D63"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new ResponseHeadersPolicy2 in aws-cdk-lib...",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:98:39)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/ImmutableCachePolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ImmutableCachePolicy3D6B0A97"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new CachePolicy2 in aws-cdk-lib...",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:163:38)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/Distribution/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Distribution830FAC52"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Distribution2 in aws-cdk-lib...",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:189:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/GithubActionsDeployRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "GithubActionsDeployRole3AEBE7B4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Role2 in aws-cdk-lib...",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:272:28)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/Custom::CrossRegionExportWriterCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCrossRegionExportWriterCustomResourceProviderRoleC951B1E1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/Custom::CrossRegionExportWriterCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCrossRegionExportWriterCustomResourceProviderHandlerD8786E8A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/AccessLogsBucket/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AccessLogsBucketPolicy7F77476F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:28:28)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/AssetsBucket/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetsBucketPolicyFFACF6C4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:51:30)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/GithubActionsDeployRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "GithubActionsDeployRoleDefaultPolicy656FD013"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:286:20)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/ExportsWriteruseast10F67B507/Resource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsWriteruseast10F67B507DDE2E818"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals, source-map-support...",
+        "(no user code in 9007199254740991 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ]
+}

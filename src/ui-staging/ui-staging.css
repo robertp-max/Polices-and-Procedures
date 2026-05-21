@@ -29,29 +29,30 @@
   --v3-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --v3-duration: 0.7s;
   --v3-duration-fast: 0.4s;
+  --v3-duration-sub: 0.55s;
   --v3-watermark-opacity: 0.33;
 
-  /* Legacy fallbacks kept for compatibility */
-  --v3-base-bg-soft: #121832;
-  --v3-main-card-bg: #161a22;
-  --v3-main-card-bg-rgb: 22, 26, 34;
-  --v3-main-card-border: rgba(241, 243, 247, 0.33);
-  --v3-surface-1: #1c2029;
-  --v3-surface-2: #222831;
-  --v3-surface-3: #282e38;
-  --v3-veil-bg: rgba(18, 22, 30, 0.86);
-  --v3-veil-bg-strong: rgba(16, 20, 28, 0.92);
-  --v3-veil-border: rgba(241, 243, 247, 0.33);
-  --v3-veil-border-luminous: rgba(241, 243, 247, 0.33);
-  --v3-veil-blur: 22px;
-  --v3-veil-saturate: 1.18;
-  --v3-veil-glow-teal: 0 0 0 1px rgba(0, 121, 112, 0.2), 0 0 42px -20px rgba(0, 121, 112, 0.28);
-  --v3-veil-shadow: 0 32px 90px -18px rgba(0, 0, 0, 0.72), -14px 0 44px -14px rgba(0, 0, 0, 0.48);
+  /* Legacy fallbacks updated to exact claudex5 / Gemini V3 Veil Glass palette (no deviations) */
+  --v3-base-bg-soft: #05060A;
+  --v3-main-card-bg: #05060A;
+  --v3-main-card-bg-rgb: 5, 6, 10;
+  --v3-main-card-border: rgba(255, 255, 255, 0.33);
+  --v3-surface-1: rgba(255, 255, 255, 0.015);
+  --v3-surface-2: rgba(255, 255, 255, 0.015);
+  --v3-surface-3: rgba(255, 255, 255, 0.04);
+  --v3-veil-bg: rgba(32, 41, 56, 0.88);
+  --v3-veil-bg-strong: rgba(16, 20, 28, 0.45);
+  --v3-veil-border: rgba(255, 255, 255, 0.33);
+  --v3-veil-border-luminous: rgba(255, 255, 255, 0.33);
+  --v3-veil-blur: 32px;
+  --v3-veil-saturate: 1.4;
+  --v3-veil-glow-teal: 0 0 0 1px rgba(0, 209, 193, 0.22), 0 0 42px -20px rgba(0, 209, 193, 0.28);
+  --v3-veil-shadow: 30px 10px 80px rgba(0, 0, 0, 0.9);
   --v3-accent-teal: #007970;
-  --v3-accent-orange: #e07b2c;
-  --v3-accent-teal-rgb: 0, 121, 112;
+  --v3-accent-orange: #E07B2C;
+  --v3-accent-teal-rgb: 0, 209, 193;
   --v3-accent-orange-rgb: 224, 123, 44;
-  --v3-broken-line: rgba(241, 243, 247, 0.11);
+  --v3-broken-line: rgba(255, 255, 255, 0.12);
   --v3-shadow-rgb: 0, 0, 0;
 }
 
@@ -861,7 +862,7 @@
 }
 .v3-nav-section-title {
   font-weight: 700;
-  color: #64748B;
+  color: var(--v3-text-tertiary);
   letter-spacing: 1.5px;
 }
 .v3-nav-logo {
@@ -1012,7 +1013,8 @@
 
 .v3-surface-card {
   border-color: var(--v3-main-card-border);
-  background: linear-gradient(150deg, rgba(var(--v3-main-card-bg-rgb), 0.82), rgba(var(--v3-main-card-bg-rgb), 0.62));
+  background: linear-gradient(135deg, rgba(32, 41, 56, 0.72) 0%, rgba(16, 20, 28, 0.48) 55%, rgba(5, 6, 10, 0.96) 100%);
+  backdrop-filter: blur(20px) saturate(130%);
 }
 
 .v3-home-layout {
@@ -1147,7 +1149,7 @@
 }
 
 .v3-status {
-  border-color: rgba(241, 243, 247, 0.33);
+  border-color: rgba(255, 255, 255, 0.33);
 }
 
 .v3-calendar-shell {
@@ -1313,12 +1315,12 @@
 @keyframes v3PageIn {
   0% {
     opacity: 0;
-    transform: scale(0.98);
-    filter: blur(3px);
+    transform: scale(0.982) translateY(7px);
+    filter: blur(4px);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
     filter: blur(0px);
   }
 }
@@ -1339,12 +1341,12 @@
 @keyframes v3SubViewIn {
   0% {
     opacity: 0;
-    transform: translateY(8px);
-    filter: blur(2px);
+    transform: translateY(10px) scale(0.985);
+    filter: blur(2.5px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     filter: blur(0px);
   }
 }
@@ -1356,10 +1358,14 @@
 
 .v3-page-animate {
   animation: v3PageIn var(--v3-duration) var(--v3-ease) both;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
 }
 
 .v3-subview-animate {
-  animation: v3SubViewIn 0.5s var(--v3-ease) both;
+  animation: v3SubViewIn var(--v3-duration-sub) var(--v3-ease) both;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
 }
 
 .v3-stagger > * {
@@ -1503,6 +1509,47 @@
   width: 100%;
   font-size: 14px;
 }
+.v3-input-wrapper input::placeholder {
+  color: var(--v3-text-tertiary);
+  opacity: 0.85;
+}
+.v3-input-wrapper select {
+  background: transparent;
+  border: none;
+  color: var(--v3-text-primary);
+  outline: none;
+  font-size: 14px;
+  cursor: pointer;
+  /* Force dark dropdown styling — without this, native <option> menus render */
+  /* OS-white-on-white in the V3 dark canvas and become invisible. */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 22px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--v3-text-secondary) 50%),
+    linear-gradient(135deg, var(--v3-text-secondary) 50%, transparent 50%);
+  background-position:
+    calc(100% - 12px) calc(50% - 2px),
+    calc(100% - 7px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* Native option list must explicitly opt into the dark glass palette */
+/* (Chromium honors background-color/color on <option>; Firefox respects color). */
+.v3-input-wrapper select option,
+select.v3-input-wrapper option,
+.v3-staging-page select option,
+[data-v3-ui-staging-root="true"] select option {
+  background-color: #0B0F18;
+  color: var(--v3-text-primary);
+}
+.v3-input-wrapper select option:checked,
+[data-v3-ui-staging-root="true"] select option:checked {
+  background-color: rgba(0, 209, 193, 0.16);
+  color: var(--v3-text-primary);
+}
 
 .v3-btn-primary {
   width: 100%;
@@ -1572,12 +1619,16 @@
    ============================================================ */
 
 .v3-card {
-  background: rgba(255, 255, 255, 0.018);
+  /* FULL DARK #05060A + MAJESTIC VEIL GLASS — forced everywhere for landing Batch cards + all inner panels.
+     No light cards. Matches PDF + real app screenshots exactly (deep dark base + luminous subtle glass). */
+  background: linear-gradient(135deg, rgba(32, 41, 56, 0.72) 0%, rgba(16, 20, 28, 0.48) 55%, rgba(5, 6, 10, 0.96) 100%);
   border: 1px solid var(--v3-border-subtle);
   border-radius: 12px;
   padding: 12px 14px;
   transition: transform 0.2s var(--v3-ease), box-shadow 0.2s var(--v3-ease), border-color 0.2s;
   color: var(--v3-text-primary);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
 }
 .v3-card:hover {
   border-color: var(--v3-border-hover);
@@ -1585,43 +1636,47 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
 }
 
-/* Evidence / readiness banner — Veil Glass compliant (no red; teal dominant per ClaudeX2 spec) */
+/* Evidence / readiness banner — FULL DARK #05060A + MAJESTIC GLASS (no light cards ever) */
 .v3-evidence-banner {
-  background: rgba(255, 255, 255, 0.015);
+  background: linear-gradient(135deg, rgba(32, 41, 56, 0.68) 0%, rgba(16, 20, 28, 0.44) 55%, rgba(5, 6, 10, 0.94) 100%);
   border: 1px solid var(--v3-border);
   border-radius: 12px;
   padding: 14px 18px;
   color: var(--v3-text-secondary);
+  backdrop-filter: blur(20px) saturate(130%);
 }
 
-/* Action board column header styling for rich kanban */
+/* Action board column header styling for rich kanban — FULL DARK #05060A GLASS (no light) */
 .v3-board-col {
-  background: rgba(255, 255, 255, 0.012);
+  background: linear-gradient(135deg, rgba(32, 41, 56, 0.65) 0%, rgba(16, 20, 28, 0.42) 55%, rgba(5, 6, 10, 0.95) 100%);
   border: 1px solid var(--v3-border-subtle);
   border-radius: 14px;
   padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  backdrop-filter: blur(18px) saturate(125%);
 }
 .v3-board-item {
-  background: rgba(255, 255, 255, 0.025);
+  background: linear-gradient(135deg, rgba(255,255,255,0.065) 0%, rgba(255,255,255,0.028) 100%);
   border: 1px solid var(--v3-border-subtle);
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 12px;
   line-height: 1.3;
   transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 .v3-board-item:hover {
   border-color: var(--v3-teal-light);
-  background: rgba(0, 209, 193, 0.04);
+  background: linear-gradient(135deg, rgba(0,209,193,0.09) 0%, rgba(255,255,255,0.04) 100%);
+  box-shadow: 0 4px 14px rgba(0,209,193,0.15);
 }
 
 /* Small stat pills in command header matching screenshot */
 .v3-stat-pill {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--v3-glass3);
+  border: 1px solid var(--v3-border);
   border-radius: 9999px;
   padding: 4px 12px;
   font-size: 10px;
@@ -1630,10 +1685,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  color: var(--v3-text-secondary);
 }
-.v3-stat-pill.critical { border-color: rgba(248, 113, 113, 0.4); color: #f87171; }
-.v3-stat-pill.warning { border-color: rgba(251, 191, 36, 0.4); color: #fbbf24; }
-.v3-stat-pill.success { border-color: rgba(52, 211, 153, 0.4); color: #34d399; }
+/* Enforced V3 palette: teal dominance only, red/amber/green eliminated per claudex5 / Gemini spec */
+.v3-stat-pill.critical { border-color: rgba(0, 209, 193, 0.55); color: #00D1C1; }
+.v3-stat-pill.warning { border-color: rgba(0, 209, 193, 0.35); color: var(--v3-text-secondary); }
+.v3-stat-pill.success { border-color: rgba(0, 209, 193, 0.35); color: #00D1C1; }
 .v3-stat-pill.default { color: var(--v3-text-secondary); }
 
 /* ============================================================
@@ -1678,3 +1735,423 @@
 .v3-badge:hover {
   background: rgba(0,209,193,0.14);
 }
+
+/* ========================================================
+   ULTIMATE DARK GLASS FORCE — Agent 20 final lock
+   EVERYTHING in /ui-staging + all previews + landing + modals
+   MUST be #05060A base + majestic glass. No exceptions.
+   ======================================================== */
+.v3-staging-page,
+.v3-canvas,
+[data-v3-ui-staging-root],
+html[data-v3-ui-staging-root],
+body[data-v3-ui-staging-root] {
+  background-color: #05060A !important;
+}
+.v3-staging-page .v3-card,
+.v3-staging-page .v3-invisible-glare,
+.v3-staging-page .v3-board-col,
+.v3-staging-page .v3-evidence-banner {
+  background: linear-gradient(135deg, rgba(32, 41, 56, 0.72) 0%, rgba(16, 20, 28, 0.48) 55%, rgba(5, 6, 10, 0.96) 100%) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+.fixed.inset-0.z-50 {
+  background-color: rgba(5,6,10,0.96) !important;
+}
+/* Ensure all preview inner surfaces respect full dark glass */
+.v3-shell-card, .v3-shell-main, .v3-page-animate {
+  background-color: transparent !important;
+}
+
+/* ============================================================
+   PREMIUM LANDING PAGE BEAUTIFICATION — Agent 03
+   Expensive feel for the main /ui-staging card grids:
+   - Subtle scale + luminous teal glow on hover
+   - Refined dark glass with deeper saturation & luminous edge
+   - Elegant micro-animations (lift, glow pulse, arrow sweep)
+   - Better spacing / premium typography ready for grid use
+   ============================================================ */
+
+.v3-landing-preview-card {
+  /* Base premium glass already from .v3-card, but override for high-end selector cards */
+  border-radius: 16px !important;
+  padding: 22px 24px !important;
+  /* Slightly richer glass for cards on landing */
+  background: linear-gradient(145deg, rgba(32, 41, 56, 0.78) 0%, rgba(16, 20, 28, 0.52) 50%, rgba(5, 6, 10, 0.98) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  transition: 
+    transform 420ms cubic-bezier(0.23, 1.0, 0.32, 1),
+    box-shadow 420ms cubic-bezier(0.23, 1.0, 0.32, 1),
+    border-color 280ms cubic-bezier(0.23, 1.0, 0.32, 1),
+    background 280ms ease !important;
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.55), 
+              0 4px 12px -4px rgba(0, 0, 0, 0.35),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle premium inner highlight line for expensive card feel */
+.v3-landing-preview-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.18), transparent);
+  opacity: 0.6;
+  transition: opacity 300ms ease;
+  z-index: 1;
+}
+
+.v3-landing-preview-card:hover::before {
+  opacity: 1;
+}
+
+/* PREMIUM HOVER: subtle scale + elegant teal glow + lift */
+.v3-landing-preview-card:hover {
+  transform: translateY(-7px) scale(1.018) !important;
+  border-color: rgba(0, 209, 193, 0.35) !important;
+  background: linear-gradient(145deg, rgba(32, 41, 56, 0.82) 0%, rgba(16, 20, 28, 0.56) 48%, rgba(5, 6, 10, 0.99) 100%) !important;
+  box-shadow: 
+    0 28px 70px -18px rgba(0, 0, 0, 0.65),
+    0 12px 28px -8px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(0, 209, 193, 0.22),
+    0 0 44px -8px rgba(0, 209, 193, 0.18),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Micro-animation: the CTA arrow sweeps elegantly */
+.v3-landing-preview-card .preview-cta-arrow {
+  display: inline-block;
+  transition: transform 280ms cubic-bezier(0.23, 1.0, 0.32, 1);
+  will-change: transform;
+}
+
+.v3-landing-preview-card:hover .preview-cta-arrow {
+  transform: translateX(4px);
+}
+
+/* Subtle glow pulse micro-animation on the teal accent text (OPEN PREVIEW) */
+.v3-landing-preview-card .preview-cta {
+  transition: color 200ms ease, text-shadow 380ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.v3-landing-preview-card:hover .preview-cta {
+  color: var(--v3-teal-light);
+  text-shadow: 0 0 8px rgba(0, 209, 193, 0.35);
+}
+
+/* Elegant focus ring for keyboard premium accessibility */
+.v3-landing-preview-card:focus-visible {
+  outline: none;
+  box-shadow: 
+    0 28px 70px -18px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(0, 209, 193, 0.45),
+    0 0 0 4px rgba(0, 209, 193, 0.12) !important;
+}
+
+/* Make the title typography more refined on these cards */
+.v3-landing-preview-card .landing-card-title {
+  font-feature-settings: "tnum", "ss01";
+  letter-spacing: -0.5px;
+  /* Strengthen contrast against the matte glass card — spec rule:
+     landing titles must be instantly readable on every card. */
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 2px 8px rgba(0, 0, 0, 0.55),
+    0 0 1px rgba(0, 0, 0, 0.9) !important;
+  transition: letter-spacing 280ms cubic-bezier(0.23, 1.0, 0.32, 1),
+              text-shadow 280ms ease;
+}
+
+.v3-landing-preview-card:hover .landing-card-title {
+  letter-spacing: -0.65px;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 2px 10px rgba(0, 0, 0, 0.65),
+    0 0 14px rgba(0, 209, 193, 0.22) !important;
+}
+
+/* Premium container sections (the large rounded glass frames around grids) */
+.v3-landing-section {
+  border-radius: 28px !important;
+  transition: box-shadow 400ms cubic-bezier(0.23, 1.0, 0.32, 1), 
+              border-color 300ms ease;
+  box-shadow: 0 30px 80px -25px rgba(0, 0, 0, 0.6), 
+              inset 0 1px 0 rgba(255,255,255,0.03) !important;
+}
+
+.v3-landing-section:hover {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 36px 90px -22px rgba(0, 0, 0, 0.7), 
+              0 0 0 1px rgba(255, 255, 255, 0.04),
+              inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* Refined grid spacing for expensive breathing room */
+.v3-landing-grid {
+  gap: 1.35rem !important;
+}
+
+.v3-landing-grid-dense {
+  gap: 1.1rem !important;
+}
+
+/* Remove any residual meta/cta noise on hover for pure luxury */
+.v3-landing-preview-card .landing-card-meta {
+  opacity: 0.72;
+  transition: opacity 220ms ease;
+}
+
+.v3-landing-preview-card:hover .landing-card-meta {
+  opacity: 0.85;
+}
+
+/* ============================================================
+   MAKE VITE / BUNDLER ERROR OVERLAYS ALWAYS READABLE
+   When running /ui-staging (dark glass + many high-z fixed panels),
+   the default Vite <vite-error-overlay> can be hard to read or
+   get buried. Force it to the absolute top with bright contrast.
+   This directly solves "I CANT ERROR" — you can now actually see
+   the red box + stack trace when something throws.
+============================================================ */
+vite-error-overlay,
+#vite-error-overlay,
+vite-error-overlay * {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+}
+
+/* Vite renders the actual dialog as a child div with inline styles */
+#vite-error-overlay,
+vite-error-overlay > div,
+vite-error-overlay dialog,
+vite-error-overlay [role="dialog"] {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  background: #1a1a1a !important;
+  color: #fff !important;
+  border: 4px solid #ff3b30 !important;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.92) !important;
+  padding: 16px 20px !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+}
+
+#vite-error-overlay pre,
+#vite-error-overlay code,
+vite-error-overlay pre,
+vite-error-overlay code {
+  color: #fff !important;
+  background: #111 !important;
+  font-size: 12.5px !important;
+  line-height: 1.5 !important;
+  white-space: pre-wrap !important;
+}
+
+#vite-error-overlay .message,
+vite-error-overlay .message {
+  color: #ff6b6b !important;
+  font-weight: 600 !important;
+}
+
+/* ============================================================
+   V3 VEIL GLASS — GLOBAL POLISH (Spec §6.2, §11, §12)
+   Source of truth: docs/UIUX/V3-Veil-Glass-Design-System-Implementation-Specs.md
+   All rules scoped to the staging root so they cannot bleed into
+   the legacy app shell at other routes.
+============================================================ */
+
+/* §12.2 Text selection — brand teal at 0.2 over the dark glass */
+[data-v3-ui-staging-root] ::selection,
+.v3-staging-page ::selection {
+  background: rgba(0, 209, 193, 0.20);
+  color: #FFFFFF;
+}
+
+/* §12.2 Focus rings — sharp 1px teal-light, 2px offset (never default browser blue) */
+[data-v3-ui-staging-root] :focus-visible,
+.v3-staging-page :focus-visible {
+  outline: 1px solid var(--v3-teal-light);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* §12.1 Custom thin auto-hiding scrollbars across all staging surfaces.
+   Track invisible. Thumb 4px × rgba(255,255,255,0.1). */
+[data-v3-ui-staging-root] *::-webkit-scrollbar,
+.v3-staging-page *::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+[data-v3-ui-staging-root] *::-webkit-scrollbar-track,
+.v3-staging-page *::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-v3-ui-staging-root] *::-webkit-scrollbar-thumb,
+.v3-staging-page *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 4px;
+}
+[data-v3-ui-staging-root] *::-webkit-scrollbar-thumb:hover,
+.v3-staging-page *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+[data-v3-ui-staging-root] *,
+.v3-staging-page * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.10) transparent;
+}
+
+/* §6.2 Command Center / My Personal Workspace neon orange light-tube
+   text-shadow. Apply via className="v3-neon-orange" — the single
+   sanctioned escape from the Teal monochrome rule. */
+.v3-neon-orange {
+  color: var(--v3-orange-light) !important;
+  text-shadow:
+    0 0 10px rgba(255, 160, 89, 0.95),
+    0 0 20px rgba(255, 160, 89, 0.45);
+}
+
+/* ============================================================
+   §11 MULTIPAGE TRANSITION SYSTEM
+   Same-document & cross-document View Transitions for the
+   staging shell. All animations fall back to a simple opacity
+   crossfade when the user requests reduced motion (§11.6).
+============================================================ */
+
+/* §11.1 Opt-in for cross-document navigations */
+@view-transition {
+  navigation: auto;
+}
+
+/* §11.3 Pattern A — Global Route Navigation (Fade-Drift on main-content).
+   The shell (sidebar, header, watermark, canvas) is held static via
+   their own view-transition-name reservations below; only the inner
+   content drifts in/out. */
+.v3-main-content {
+  view-transition-name: main-content;
+  contain: layout style;
+}
+.v3-app-sidebar {
+  view-transition-name: app-sidebar;
+}
+.v3-app-header {
+  view-transition-name: app-header;
+}
+.v3-watermark-lock {
+  view-transition-name: app-watermark;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes v3-vt-fade-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+  @keyframes v3-vt-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes v3-vt-drift-down {
+    from { transform: translateY(0); }
+    to   { transform: translateY(10px); }
+  }
+  @keyframes v3-vt-drift-up {
+    from { transform: translateY(10px); }
+    to   { transform: translateY(0); }
+  }
+
+  ::view-transition-old(main-content) {
+    animation:
+      v3-vt-fade-out 0.20s cubic-bezier(0.4, 0, 1, 1) both,
+      v3-vt-drift-down 0.20s cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  ::view-transition-new(main-content) {
+    animation:
+      v3-vt-fade-in 0.30s cubic-bezier(0, 0, 0.2, 1) both,
+      v3-vt-drift-up 0.30s cubic-bezier(0, 0, 0.2, 1) both;
+  }
+
+  /* §11.3 Shell persistence — header and sidebar must NOT animate.
+     Holding them at zero-duration prevents the cross-fade flash that
+     otherwise breaks the single-glass illusion during a route change. */
+  ::view-transition-old(app-sidebar),
+  ::view-transition-new(app-sidebar),
+  ::view-transition-old(app-header),
+  ::view-transition-new(app-header),
+  ::view-transition-old(app-watermark),
+  ::view-transition-new(app-watermark) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  /* §11.3 Pattern C — Same-document crossfade (Agency ↔ Planner etc).
+     Snappy 200ms default for the root group when no element-specific
+     name is in play. */
+  ::view-transition-group(root) {
+    animation-duration: 0.20s;
+  }
+
+  /* §11.4 Distortion prevention — clip rather than stretch when the
+     bounding box animates between two different aspect ratios. */
+  ::view-transition-old(main-content),
+  ::view-transition-new(main-content) {
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    overflow: clip;
+  }
+}
+
+/* §11.6 Reduced-motion fallback — opacity-only crossfade, 150ms */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes v3-vt-rm-fade-out { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes v3-vt-rm-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.15s !important;
+    animation-timing-function: linear !important;
+  }
+  ::view-transition-old(main-content) {
+    animation-name: v3-vt-rm-fade-out !important;
+  }
+  ::view-transition-new(main-content) {
+    animation-name: v3-vt-rm-fade-in !important;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── V3 STAGING APP UTILITIES ─────────────────────────────── */
+.animate-butter-shift {
+  animation: v3ButterShift 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes v3ButterShift {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.btn-smooth-hover {
+  transition: background 0.33s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.33s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.33s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.33s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.btn-smooth-hover:hover { opacity: 0.85; }
+
+/* Staging shell scrollbar hiding */
+.v3-staging-shell,
+.v3-staging-shell * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.v3-staging-shell *::-webkit-scrollbar { display: none; }

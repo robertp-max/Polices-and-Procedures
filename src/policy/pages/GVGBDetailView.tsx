@@ -42,7 +42,17 @@ const DEFINITIONS = [
   { term: 'QAPI', definition: 'Quality Assessment and Performance Improvement — the structured program required by 42 CFR § 484.65 for ongoing quality monitoring and improvement.' },
 ];
 
-const PROCEDURES: Record<string, any[]> = {
+type ProcedureRow = [string, string, string, string];
+type ProcedureSection = { title: string; rows: ProcedureRow[] };
+type ProcedureMap = {
+  '6.1': ProcedureRow[];
+  '6.2': ProcedureSection[];
+  '6.3': ProcedureRow[];
+  '6.4': ProcedureRow[];
+  '6.5': ProcedureRow[];
+};
+
+const PROCEDURES: ProcedureMap = {
   '6.1': [
     ['6.1.1', 'Agency Owner / Corporate Entity', 'Formally establish the Governing Body through articles of incorporation, operating agreement, partnership agreement, or equivalent legal instrument for Care Indeed Home Health Care, Inc. The establishing document must identify: (a) the legal form of the Governing Body; (b) the minimum and maximum number of members; (c) the quorum requirement; (d) the terms of appointment or election.', 'Prior to initial Medicare certification and maintained continuously thereafter.'],
     ['6.1.2', 'Governing Body Chair', 'Maintain a current roster of all Governing Body members including: full legal name, title/role, date of appointment, term expiration date, voting status, and contact information.', 'Updated within 7 calendar days of any membership change.'],
@@ -369,7 +379,7 @@ const ViewPolicyStatements = () => (
 );
 
 const ViewProcedures = () => {
-  const [activeSub, setActiveSub] = useState('6.2');
+  const [activeSub, setActiveSub] = useState('6.1');
 
   const tabs = PROCEDURE_SUBTABS;
 
@@ -400,7 +410,7 @@ const ViewProcedures = () => {
               <AlertTriangle className="mr-3 flex-shrink-0" size={24} />
               <p>The Governing Body of Care Indeed Home Health Care, Inc. shall fulfill the following responsibilities directly and shall <strong>not delegate ultimate accountability</strong> for any of these functions.</p>
             </div>
-            {(PROCEDURES['6.2'] as Array<{ title: string; rows: string[][] }>).map((section, idx) => (
+            {PROCEDURES['6.2'].map((section, idx) => (
               <Card key={idx}>
                 <h3 className="font-montserrat font-bold text-lg text-gray-800 mb-4 pb-2 border-b border-gray-200">{section.title}</h3>
                 <SimpleTable headers={['Step', 'Responsible Party', 'Action', 'Timeframe']} rows={section.rows} />
@@ -674,7 +684,11 @@ const NAV_TABS = [
 
 type TabId = typeof NAV_TABS[number]['id'];
 
-export function GVGBDetailView() {
+type GVGBDetailViewProps = {
+  onBackToLibrary?: () => void;
+};
+
+export function GVGBDetailView({ onBackToLibrary }: GVGBDetailViewProps = {}) {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [direction, setDirection] = useState<1 | -1>(1);
   const [contentKey, setContentKey] = useState(0);
@@ -773,7 +787,13 @@ export function GVGBDetailView() {
           {/* Left anchor — back + policy ID */}
           <div className="flex items-center gap-2 px-4 shrink-0 border-r border-[#E5E4E3]">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                if (onBackToLibrary) {
+                  onBackToLibrary();
+                  return;
+                }
+                navigate(-1);
+              }}
               className="flex items-center gap-1 text-xs font-montserrat font-semibold text-[#524048] hover:text-[#1F1C1B] transition-colors whitespace-nowrap"
             >
               <ArrowLeft size={12} /> Library

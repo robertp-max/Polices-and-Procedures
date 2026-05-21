@@ -604,9 +604,9 @@ function RequirementAuditModal({
   const fullAuditUrl = buildTaskLinkedAuditRoute({ dataflow, task, requirement });
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/65 p-3 sm:items-center" onClick={onClose}>
+    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/65 p-3 sm:items-center v3-backdrop" onClick={onClose}>
       <div
-        className="flex max-h-[86vh] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-white/15 bg-[#0d1a2d] shadow-xl"
+        className="flex max-h-[86vh] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-white/15 bg-[#0d1a2d] shadow-xl v3-modal-panel"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
@@ -615,7 +615,7 @@ function RequirementAuditModal({
             <div className="truncate text-xs font-semibold text-white">{requirement.title}</div>
             <div className="mt-0.5 truncate font-mono text-[10px] text-white/50">{requirement.requirement_id}</div>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close" className="flex-shrink-0 text-slate-400 hover:text-white">
+          <button type="button" onClick={onClose} aria-label="Close" className="flex-shrink-0 text-slate-400 hover:text-white v3-micro">
             <X size={16} />
           </button>
         </div>
@@ -623,7 +623,7 @@ function RequirementAuditModal({
           {filtered.length === 0 ? (
             <p className="text-white/50">No audit rows matched this requirement yet.</p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-2 v3-stagger">
               {filtered.map((row, i) => (
                 <li key={row.auditId || `${row.timestamp}-${i}-${row.action}`} className="rounded border border-white/10 bg-black/20 p-2">
                   <div className="text-white/85"><span className="font-semibold">{row.action}</span></div>

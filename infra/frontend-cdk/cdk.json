@@ -1,0 +1,6 @@
+{
+  "app": "node --loader ts-node/esm bin/frontend.ts",
+  "context": {
+    "@aws-cdk/core:newStyleStackSynthesis": true
+  }
+}

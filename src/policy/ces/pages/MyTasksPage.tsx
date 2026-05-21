@@ -425,7 +425,7 @@ export function MyTasksPage({
             }
           />
         ) : (
-          <ul className="space-y-3">
+          <ul key={filter} className="space-y-3 v3-subview-animate">
             {taskWithRoles.map(t => {
               const assigned = (t as UnitWithRoles).assignedRole;
               return (

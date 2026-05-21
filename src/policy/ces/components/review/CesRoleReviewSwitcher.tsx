@@ -5,7 +5,8 @@
    All other users: this component renders null with zero side effects.
 
    Placement: Profile dropdown, below "My Tasks".
-   To remove: delete this file + cesReviewMode.ts + RobertCesReviewLayer.tsx
+   (The debug overlay RobertCesReviewLayer.tsx was removed as unused dead code.)
+   To fully remove review mode: delete this file + cesReviewMode.ts
    ═══════════════════════════════════════════════════════════════ */
 
 import { useCesReviewMode, isRobertUser } from '@/policy/ces/cesReviewMode';

@@ -31,5 +31,8 @@
     "noUncheckedSideEffectImports": true
   },
   "include": ["src"],
-  "exclude": ["src/policy/pages/TaxonomyPage.old.tsx"]
+  "exclude": [
+    "src/policy/pages/TaxonomyPage.old.tsx",
+    "src/ui-staging/_archive"
+  ]
 }

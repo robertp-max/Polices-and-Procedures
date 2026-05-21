@@ -43,6 +43,7 @@ const ForgotPasswordPage = lazy(() => import('@/auth/pages/ForgotPasswordPage').
 const ResetPasswordPage = lazy(() => import('@/auth/pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })))
 const SetNewPasswordPage = lazy(() => import('@/auth/pages/SetNewPasswordPage').then(m => ({ default: m.SetNewPasswordPage })))
 const UIStagingPage = lazy(() => import('@/ui-staging/UIStagingPage').then(m => ({ default: m.UIStagingPage })))
+const UIStagingV32Page = lazy(() => import('@/ui-staging/UIStagingV32Page').then(m => ({ default: m.UIStagingV32Page })))
 const UserGroupsPage = lazy(() => import('@/policy/security/identity/UserGroupsPage').then(m => ({ default: m.UserGroupsPage })))
 const PermissionCatalogPage = lazy(() => import('@/policy/security/identity/PermissionCatalogPage').then(m => ({ default: m.PermissionCatalogPage })))
 const UserAssignmentsPage = lazy(() => import('@/policy/security/identity/UserAssignmentsPage').then(m => ({ default: m.UserAssignmentsPage })))
@@ -195,6 +196,9 @@ function AppRoutes() {
 
         {/* V3 Visual Lab — Option A (clean foundation) */}
         <Route path="/ui-staging" element={<UIStagingPage />} />
+
+        {/* V3.2 Visual Lab — new shell prototype */}
+        <Route path="/ui-staging/v32" element={<UIStagingV32Page />} />
 
         {/* Hidden executive proposal — accessed via Brad iAdministrator corner trigger */}
         <Route

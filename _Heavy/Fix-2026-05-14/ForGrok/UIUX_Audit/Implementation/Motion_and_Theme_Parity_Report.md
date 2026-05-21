@@ -55,4 +55,18 @@ Validate that motion (including reduced-motion) and light/dark theme parity exis
 - **Motion:** 3/5 surfaces have gaps (Evidence, Audit, Calendar).
 - **Theme:** All surfaces achieve good parity. Minor gradient tweaks needed in Evidence.
 
-**Status:** Report complete. Proceeding to next deliverable.
+**Status (2026-05-18 honesty correction):** The per-surface gap counts in §4 above are **author estimates from a static code review**, not validated through actual reduced-motion / light / dark / CI-mode-orthogonal switching on a running dev server. No before/after screenshots exist. See `Phase4_Current_Reality_Report.md` §2.3 for the honest baseline. Motion + theme parity validation **requires manual browser session with `prefers-reduced-motion: reduce` toggled and all four theme triples exercised** and is tracked as P3-SO-01 + P3-SO-02 + P4-MT-01. The shell-level reduced-motion guard in `ShellFrame` is real (`Phase2_Exit_Criteria_Checklist.md` §6 + Playwright `reduced-motion shell at 1440` test); per-surface reduced-motion gating in operational surfaces is **not yet implemented** and is tracked as P4-MT-02.
+
+---
+
+## Appendix Z — Phase 4 Closure Evidence Annex (2026-05-18)
+
+| Theme triple | Code-state coverage of Phase 4-touched files | Verification evidence | Human work still required |
+|---|---|---|---|
+| CI-ION (dark, default) | `--ci-overlay-*` + `--ci-text-on-surface-*` + `--ci-shadow-*` + sentiment tokens declared (src/index.css L933–945, 996–1008, 1116–1128) | All 7 attested files report 0 design-system lint errors | Manual visual sweep on dev server (P4-MT-01) |
+| Care Indeed light | Same token families declared in light block | `tsc --noEmit` + build exit 0 | Manual visual sweep — verify every Phase 4-touched site reads correctly in light theme |
+| Care Indeed dark | Same token families declared in dark block | `tsc --noEmit` + build exit 0 | Manual visual sweep |
+| prefers-reduced-motion (shell-level) | ✅ Validated pre-Phase 4 — `ShellFrame` guard + Playwright `reduced-motion shell at 1440` test | Existing test in suite | None at shell level |
+| prefers-reduced-motion (per surface) | ❌ Not implemented in any Phase 4-touched surface | n/a | Per-surface gating (P4-MT-02) |
+
+**Honest scope of this annex:** confirms that all Phase 4 code remediations use only token families that are declared across all three theme blocks (no theme-orthogonal regression risk introduced). It does **not** validate actual rendering parity across themes or motion preference — that remains P4-MT-01 (manual visual sweep) and P4-MT-02 (per-surface reduced-motion gating).

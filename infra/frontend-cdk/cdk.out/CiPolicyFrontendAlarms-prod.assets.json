@@ -1,0 +1,36 @@
+{
+  "version": "53.0.0",
+  "files": {
+    "f06f7035054cb2aada184c7c251ec5cb31fb6b5e975284939b9ff097603ea769": {
+      "displayName": "CiPolicyFrontendAlarms-prod/Custom::CrossRegionExportReaderCustomResourceProvider Code",
+      "source": {
+        "path": "asset.f06f7035054cb2aada184c7c251ec5cb31fb6b5e975284939b9ff097603ea769",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "069857851156-us-east-1-67d843f9": {
+          "bucketName": "cdk-hnb659fds-assets-069857851156-us-east-1",
+          "objectKey": "f06f7035054cb2aada184c7c251ec5cb31fb6b5e975284939b9ff097603ea769.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::069857851156:role/cdk-hnb659fds-file-publishing-role-069857851156-us-east-1"
+        }
+      }
+    },
+    "02734d95778d1ae6b22435e4c7ef143538eca6c5cd73faa39baa9a17457ef431": {
+      "displayName": "CiPolicyFrontendAlarms-prod Template",
+      "source": {
+        "path": "CiPolicyFrontendAlarms-prod.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "069857851156-us-east-1-6c372c91": {
+          "bucketName": "cdk-hnb659fds-assets-069857851156-us-east-1",
+          "objectKey": "02734d95778d1ae6b22435e4c7ef143538eca6c5cd73faa39baa9a17457ef431.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::069857851156:role/cdk-hnb659fds-file-publishing-role-069857851156-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}
