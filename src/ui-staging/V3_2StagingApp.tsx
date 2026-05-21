@@ -1,410 +1,299 @@
-// V3.2 Staging App — Self-contained prototype shell
-// Route: /ui-staging/v3.2
-import React, { useLayoutEffect, useState } from 'react';
+﻿// V3.2 Staging App — Base design refresh
+// Route: /ui-staging/v32
+import { useEffect, useState } from 'react';
 import {
-  AlertTriangle, Activity, ShieldCheck, CheckCircle2,
-  FileText, Filter, MoreHorizontal, ArrowRight, Clock, ShieldX,
-  LayoutDashboard, Users, Calendar, Settings, FileSearch, HelpCircle,
+  AlertTriangle, ShieldCheck,
+  FileText, ShieldX,
+  LayoutDashboard, Users, Calendar, FileSearch, HelpCircle,
   Menu, Search, X, User, Bell, Bot, Network, UserPlus, FolderOpen,
-  ArrowUpCircle, Folder, PlayCircle, Shield, CheckSquare, SearchIcon, ChevronDown, ChevronRight, ArrowLeft, Info, LayoutList, Archive
+  ArrowUpCircle, Shield, CheckSquare, ChevronDown, ChevronRight
 } from 'lucide-react';
 
+// Safe alias for Search icon to prevent import mismatches
+const SearchIcon = Search;
+
 // ============================================================
-// V3.2 PREMIUM GLASS TOKENS
+// TYPES & CONTEXT SHIMS
+// ============================================================
+interface KpiCardData {
+  label: string;
+  value: string;
+  trend?: string;
+  tone?: 'default' | 'positive' | 'warning' | 'danger';
+  alert?: boolean;
+  onClick?: () => void;
+}
+
+
+
+// ============================================================
+// V3 PREMIUM GLASS TOKENS & STYLES
 // ============================================================
 const V3 = {
-  baseBg: '#05060A',
+  baseBg: '#05060A', 
   bgGradient: 'radial-gradient(circle at 50% 0%, #121724 0%, #05060A 100%)',
+  
   glass1: 'transparent',
-  glass2: 'rgba(255, 255, 255, 0.04)',
+  glass2: 'rgba(255, 255, 255, 0.04)', 
   glass3: 'rgba(255, 255, 255, 0.015)',
+  
   teal: '#007970',
-  tealLight: '#00D1C1',
-  orangeLight: '#FFA059',
-  textPrimary: '#FFFFFF',
-  textSecondary: '#94A3B8',
-  textTertiary: '#64748B',
+  tealLight: '#00D1C1', 
+  orange: '#E07B2C',
+  orangeLight: '#FFA059', 
+  
+  textPrimary: '#FFFFFF', 
+  textSecondary: '#94A3B8', 
+  textTertiary: '#64748B', 
+  
   borderDefault: 'rgba(255, 255, 255, 0.15)',
-  borderHighlight: 'rgba(255, 255, 255, 0.33)',
+  borderHighlight: 'rgba(255, 255, 255, 0.33)', 
+  glowSubtle: 'none',
 } as const;
 
 // ============================================================
-// GLOBAL STYLESHEET INJECTOR (V3.2 PHYSICS & MPA TRANSITIONS)
+// GLOBAL STYLESHEET INJECTOR
 // ============================================================
 const GlobalStylesheetInjector = () => (
   <style dangerouslySetInnerHTML={{__html: `
-    @view-transition { navigation: auto; }
+    /* Hide scrollbars globally but preserve functionality */
+    .no-scrollbar::-webkit-scrollbar { display: none !important; }
+    .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+    
+    *::-webkit-scrollbar { display: none !important; }
+    * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
 
-    .no-scrollbar::-webkit-scrollbar { width: 4px; display: none; }
-    .no-scrollbar:hover::-webkit-scrollbar { display: block; }
-    .no-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .no-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.10); border-radius: 4px; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    ::selection { background: rgba(0,209,193,0.20); color: #fff; }
-    :focus-visible { outline: 1px solid #00D1C1 !important; outline-offset: 2px !important; }
-
-    /* MPA Locks & Transitions Base */
-    .v3-app-sidebar { view-transition-name: app-sidebar; animation: none; }
-    .v3-app-header { view-transition-name: app-header; animation: none; }
-    .v3-main-content { view-transition-name: main-content; }
-    .v3-auth-screen { view-transition-name: auth-screen; }
-
-    /* LINEAR / CLEAN / SMOOTH - View Transition Variables */
-    :root {
-      --duration-exit: 120ms;
-      --duration-enter: 180ms;
-      --duration-move: 300ms;
-    }
-
-    @keyframes vt-fade {
-      from { opacity: 0; filter: blur(2px); }
-      to { opacity: 1; filter: blur(0px); }
-    }
-
-    /* Pattern A: Main Content Drift */
-    @keyframes drift-down { to { transform: translateY(12px); } }
-    @keyframes drift-up { from { transform: translateY(12px); } to { transform: translateY(0); } }
-    ::view-transition-old(main-content) {
-      animation: var(--duration-exit) linear both vt-fade reverse, var(--duration-exit) linear both drift-down;
-      height: 100%; object-fit: cover; object-position: top center; overflow: clip;
-    }
-    ::view-transition-new(main-content) {
-      animation: var(--duration-enter) linear var(--duration-exit) both vt-fade, var(--duration-enter) linear var(--duration-exit) both drift-up;
-      height: 100%; object-fit: cover; object-position: top center; overflow: clip;
-    }
-
-    /* Pattern B & C: Policy Detail Crossfade & Slides */
-    ::view-transition-old(policy-content) {
-      animation: var(--duration-exit) linear vt-fade reverse;
-      height: 100%; object-fit: cover; object-position: top center; overflow: clip;
-    }
-    ::view-transition-new(policy-content) {
-      animation: var(--duration-enter) linear var(--duration-exit) both vt-fade;
-      height: 100%; object-fit: cover; object-position: top center; overflow: clip;
-    }
-
-    @keyframes vt-slide { from { translate: var(--slide-offset); } to { translate: 0; } }
-
-    [data-vt-direction="forward"]::view-transition-old(main-content),
-    [data-vt-direction="forward"]::view-transition-old(policy-content) {
-      --slide-offset: -60px;
-      animation: var(--duration-exit) linear both vt-fade reverse, var(--duration-move) linear both vt-slide reverse;
-    }
-    [data-vt-direction="forward"]::view-transition-new(main-content),
-    [data-vt-direction="forward"]::view-transition-new(policy-content) {
-      --slide-offset: 60px;
-      animation: var(--duration-enter) linear var(--duration-exit) both vt-fade, var(--duration-move) linear both vt-slide;
-    }
-    [data-vt-direction="back"]::view-transition-old(main-content),
-    [data-vt-direction="back"]::view-transition-old(policy-content) {
-      --slide-offset: 60px;
-      animation: var(--duration-exit) linear both vt-fade reverse, var(--duration-move) linear both vt-slide reverse;
-    }
-    [data-vt-direction="back"]::view-transition-new(main-content),
-    [data-vt-direction="back"]::view-transition-new(policy-content) {
-      --slide-offset: -60px;
-      animation: var(--duration-enter) linear var(--duration-exit) both vt-fade, var(--duration-move) linear both vt-slide;
-    }
-
-    /* Sticky Nav Anchor for Details View */
-    ::view-transition-group(policy-nav-header) { animation: none; z-index: 100; }
-    ::view-transition-old(policy-nav-header) { display: none; }
-    ::view-transition-new(policy-nav-header) { animation: none; }
-
-    @media (prefers-reduced-motion: reduce) {
-      ::view-transition-old(*), ::view-transition-new(*), ::view-transition-group(*) {
-        animation-duration: 0s !important; animation-delay: 0s !important;
-      }
-    }
-
-    /* Mount Animations */
-    .animate-butter-shift { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    /* Hardware accelerated fade in animations */
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(12px); filter: blur(2px); }
       to { opacity: 1; transform: translateY(0); filter: blur(0); }
     }
+    .animate-butter-shift {
+      animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
 
-    /* The Invisible Glare Component Pattern */
+    @keyframes slideDownIn {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-down {
+      animation: slideDownIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Glare hover animation effect */
     .v3-invisible-glare {
-      background: transparent; border: 1px solid transparent; border-radius: 12px;
-      transition: background 0.777s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.777s cubic-bezier(0.16, 1, 0.3, 1), transform 0.777s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      transition: background 0.5s cubic-bezier(0.16, 1, 0.3, 1), 
+                  border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
       will-change: transform, background-color, border-color;
     }
     .v3-invisible-glare:hover {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.005) 100%) !important;
-      border-color: rgba(255, 255, 255, 0.33) !important; transform: translateY(-2px);
-      transition: background 0.33s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.33s cubic-bezier(0.16, 1, 0.3, 1), transform 0.33s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.005) 100%) !important;
+      border-color: rgba(0, 242, 224, 0.3) !important; 
+      transform: translateY(-2px);
     }
 
-    .btn-smooth-hover { transition: all 0.777s cubic-bezier(0.16, 1, 0.3, 1) !important; }
-    .btn-smooth-hover:hover { transition: all 0.33s cubic-bezier(0.16, 1, 0.3, 1) !important; }
+    /* Generic UI button timings */
+    .btn-smooth-hover {
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .btn-smooth-hover:hover {
+      background: rgba(0, 209, 193, 0.08) !important;
+      border-color: rgba(0, 209, 193, 0.3) !important;
+    }
 
-    /* Command Center Orange Neon */
+    /* Command Center Neon Highlights */
     .v3-neon-orange {
-      color: #FFA059 !important; text-shadow: 0 0 10px rgba(255, 160, 89, 0.95), 0 0 20px rgba(255, 160, 89, 0.45) !important;
+      color: #FFA059 !important;
+      text-shadow: 0 0 10px rgba(255, 160, 89, 0.45) !important;
     }
+    .v3-neon-teal {
+      color: #00D1C1 !important;
+      text-shadow: 0 0 10px rgba(0, 209, 193, 0.45) !important;
+    }
+
+    /* Selection & Focus */
+    ::selection { background: rgba(0,209,193,0.20); color: #fff; }
+    :focus-visible { outline: 1px solid #00D1C1 !important; outline-offset: 2px !important; }
   `}} />
 );
 
-// ============================================================
-// DATA CONSTANTS (Including GV-GB-001 Policy Data)
-// ============================================================
-const POLICY_META = {
-  id: 'GV-GB-001', title: 'Governing Body Authority & Responsibilities', domain: 'GV — Governance',
-  tier: 'REQUIRED', version: '6.0', effective: '2025-07-10', approvedBy: 'Governing Body Chair',
-  lastReviewed: '2025-07-10', nextReviewDate: '2026-07-10', supersedes: 'N/A (Initial Version)'
-};
-const DEFINITIONS = [
-  { term: 'Governing Body', def: 'The individual(s), board of directors, trustees, partnership, corporation, or other legally constituted authority that has ultimate responsibility for the management and operation of Care Indeed Home Health Care, Inc., as defined by 42 CFR § 484.2 and § 484.105.' },
-  { term: 'Administrator', def: 'The individual appointed by the Governing Body who is responsible for managing the agency\'s day-to-day operations and who meets all qualifications specified in agency policy GV-OG-002 and applicable California state law.' },
-  { term: 'Clinical Manager', def: 'The registered nurse (or qualified individual per California state law) designated by the Governing Body to oversee clinical services including patient care delivery, clinical staff supervision, and OASIS compliance.' },
-  { term: 'Fiduciary Duty', def: 'The legal obligation of Governing Body members to act in good faith, with due diligence, and in the best interest of the agency and the patients it serves.' },
-  { term: 'QAPI', def: 'Quality Assessment and Performance Improvement — the structured program required by 42 CFR § 484.65 for ongoing quality monitoring and improvement.' }
-];
-const PROCEDURES: Record<string, string[][]> = {
-  '6.1': [
-    ['6.1.1', 'Agency Owner', 'Formally establish the Governing Body through articles of incorporation, operating agreement, or equivalent legal instrument. Document legal form, minimum members, and quorum.', 'Prior to initial Medicare certification'],
-    ['6.1.2', 'Governing Body Chair', 'Maintain a current roster of all Governing Body members including: full legal name, title/role, date of appointment, term expiration date, and voting status.', 'Updated within 7 calendar days of change'],
-    ['6.1.3', 'Compliance Officer', 'Verify that no Governing Body member appears on the OIG List of Excluded Individuals/Entities (LEIE) or the System for Award Management (SAM) database.', 'At appointment and monthly thereafter'],
-  ],
-  '6.2': [
-    ['6.2.1', 'Governing Body', 'Assume and maintain full legal authority for the overall operation, management, and fiscal viability of Care Indeed Home Health Care, Inc.', 'Continuous'],
-    ['6.2.2', 'Governing Body', 'Appoint a qualified Administrator and document the appointment in Governing Body minutes. Conduct annual performance evaluations.', 'Prior to operation; annually thereafter'],
-    ['6.2.3', 'Governing Body', 'Approve all REQUIRED-tier policies prior to implementation and ensure a defined policy review cycle exists per policies GV-PM-001 and GV-PM-002.', 'Prior to implementation of policy'],
-  ],
-  '6.3': [
-    ['6.3.1', 'Governing Body Chair', 'Schedule and convene regular Governing Body meetings no fewer than 4 times per calendar year (quarterly). Schedule must be distributed by Dec 15.', 'Quarterly'],
-    ['6.3.2', 'Designated Secretary', 'Prepare and distribute the meeting agenda to all members no fewer than 7 calendar days before meeting. Record formal minutes per GV-GB-002.', '7 days before each meeting'],
-  ]
-};
-const COMPLIANCE_81 = [
-  ['Governing Body is legally established and documented.', 'Review of establishing documents (articles, bylaws).', 'Current, complete, and on file at all times.'],
-  ['Governing Body meets at least quarterly.', 'Review of meeting minutes with dates and attendance.', '4 or more meetings per year with quorum.'],
-  ['Key personnel are appointed and documented.', 'Review of Governing Body minutes; personnel files.', 'Current appointments documented; no vacancies > 30 days.'],
-  ['Conflict of Interest disclosures are current.', 'Review of Appendix B forms for each member.', '100% completion rate; no lapsed disclosures.'],
-];
-const COMPLIANCE_83 = [
-  ['No documented evidence that a Governing Body exists or functions.', 'Condition-level deficiency under 42 CFR § 484.105. Potential termination.', 'Maintain establishing documents, current roster, and quarterly minutes.'],
-  ['Governing Body "rubber stamps" reports without documented discussion.', 'Surveyors will cite passive governance as failure to exercise oversight.', 'Minutes must document specific discussion points, questions, and directives.'],
-];
-const POLICY_STATEMENTS = [
-  'The Governing Body shall be responsible for ensuring that Care Indeed Home Health Care, Inc. operates in compliance with all applicable federal, state, and local laws, regulations, and licensure requirements at all times.',
-  'The Governing Body shall appoint a qualified Administrator who is authorized to act on behalf of the Governing Body in the day-to-day management of the agency.',
-  'The Governing Body shall ensure the appointment and ongoing oversight of a qualified Clinical Manager (Director of Nursing) responsible for all clinical services.',
-  'The Governing Body shall approve and oversee the agency\'s: Scope of services, Organizational structure, Strategic plan, Policy framework, QAPI program, Corporate compliance program, and Annual budget.',
-  'The Governing Body shall not delegate its ultimate accountability for regulatory compliance, patient safety, or fiscal integrity. Delegation of specific authority shall comply with policy GV-OG-005.'
-];
 
 // ============================================================
-// STUB DATA & VIEWS (placeholder screens for non-policy routes)
+// REAL MOCK DATA 
 // ============================================================
 interface TaskItem {
-  id: string; domain: string; code: string; title: string; dueDate: string; overdue: boolean; status: string;
+  id: string; domain: string; code: string; title: string; dueDate: string; overdue: boolean; status: 'open' | 'overdue' | 'pending' | 'completed';
 }
 
 const INITIAL_PLANNED_TASKS: TaskItem[] = [
   { id: 't-1', domain: 'CLINICAL', code: 'QA-WP-11', title: 'Distribute agenda & pre-read packet', dueDate: 'May 20', overdue: false, status: 'open' },
-  { id: 't-2', domain: 'CLINICAL', code: 'CL-WP-25', title: 'Review aggregate quality trends', dueDate: 'May 18', overdue: true, status: 'overdue' },
-  { id: 't-3', domain: 'CLINICAL', code: 'CC-WP-22', title: 'Review compliance/billing audit results', dueDate: 'May 19', overdue: true, status: 'overdue' },
-  { id: 't-4', domain: 'CLINICAL', code: 'DM-WP-18', title: 'Review HO audit results', dueDate: 'May 21', overdue: false, status: 'open' },
-  { id: 't-5', domain: 'CLINICAL', code: 'DM-WP-15', title: 'Review data/safety audit results', dueDate: 'May 22', overdue: false, status: 'open' },
-  { id: 't-6', domain: 'IT', code: 'IT-WP-21', title: 'Review IT/security audit results', dueDate: 'May 23', overdue: false, status: 'open' },
-  { id: 't-7', domain: 'CLINICAL', code: 'QA-WP-12', title: 'Review OAPS-layer KPI indicators', dueDate: 'May 24', overdue: false, status: 'open' },
-  { id: 't-8', domain: 'CLINICAL', code: 'QA-WP-04', title: 'Review PIP execution logs', dueDate: 'May 25', overdue: false, status: 'open' },
-  { id: 't-9', domain: 'GOVERNANCE', code: 'GV-WP-01', title: 'Package report for Governing Body', dueDate: 'May 26', overdue: false, status: 'open' },
+  { id: 't-2', domain: 'CLINICAL', code: 'CL-WP-25', title: 'Review aggregate quality trends from CL-WP-25, 27', dueDate: 'May 18', overdue: true, status: 'overdue' },
+  { id: 't-3', domain: 'CLINICAL', code: 'CC-WP-22', title: 'Review compliance/billing audit results from CC-WP-22, 30', dueDate: 'May 19', overdue: true, status: 'overdue' },
+  { id: 't-4', domain: 'CLINICAL', code: 'DM-WP-18', title: 'Review HO audit results from DM-WP-18, 21', dueDate: 'May 21', overdue: false, status: 'open' },
+  { id: 't-5', domain: 'CLINICAL', code: 'DM-WP-15', title: 'Review data/safety audit results from DM-WP-15, 20', dueDate: 'May 22', overdue: false, status: 'open' },
+  { id: 't-6', domain: 'CLINICAL', code: 'IT-WP-21', title: 'Review IT/security audit results from IT-WP-21, 25', dueDate: 'May 23', overdue: false, status: 'open' },
 ];
 
-const StubView = ({ icon: Icon, label }: { icon: React.ComponentType<{size?: number; color?: string}>; label: string }) => (
-  <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px', color: V3.textTertiary }}>
-    <Icon size={36} color={V3.textTertiary} />
-    <span style={{ fontSize: '14px', fontWeight: 500 }}>{label} — under construction</span>
-  </div>
-);
+const INTRO_CHATS = [
+  { sender: 'Brad', msg: 'Hello! I am Brad, your CareIndeed Clinical Copilot. Ask me anything about home health guidelines, taxonomy, or current CES protocols.' },
+];
 
-const DashboardWorkspace = ({ setIsPlannerView, isMobile: _isMobile }: { setIsPlannerView: (v: boolean) => void; isMobile: boolean }) => (
-  <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingTop: '24px', paddingBottom: '32px' }}>
-    <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '16px' }}>
-      <span className="v3-neon-orange" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '8px' }}>AGENCY OPERATIONS</span>
-      <h1 style={{ fontSize: '28px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px', background: 'linear-gradient(180deg, #FFFFFF 0%, #A8B0C0 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Dashboard</h1>
-    </div>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px' }}>
-      {[
-        { label: 'READINESS SCORE', value: '82%', color: V3.tealLight },
-        { label: 'OPEN OBLIGATIONS', value: '47', color: V3.textPrimary },
-        { label: 'THIS WEEK TASKS', value: `${INITIAL_PLANNED_TASKS.length}`, color: V3.textPrimary },
-        { label: 'EVIDENCE LINK RATE', value: '91%', color: V3.tealLight },
-      ].map(stat => (
-        <div key={stat.label} className="v3-invisible-glare" style={{ padding: '16px 18px', border: `1px solid ${V3.borderDefault}` }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.6px', textTransform: 'uppercase', color: V3.textTertiary }}>{stat.label}</div>
-          <div style={{ fontSize: '26px', marginTop: '6px', fontWeight: 600, color: stat.color }}>{stat.value}</div>
-        </div>
-      ))}
-    </div>
-    <div className="v3-invisible-glare" style={{ border: `1px solid ${V3.borderDefault}`, padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <h3 style={{ margin: 0, fontSize: '15px', color: V3.textPrimary }}>Priority Queue</h3>
-        <button onClick={() => setIsPlannerView(true)} className="btn-smooth-hover" style={{ background: 'transparent', border: `1px solid ${V3.borderHighlight}`, borderRadius: '8px', color: V3.textSecondary, padding: '6px 10px', fontSize: '11px', cursor: 'pointer' }}>Open My Planner</button>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {INITIAL_PLANNED_TASKS.slice(0, 5).map(task => (
-          <div key={task.id} className="v3-invisible-glare" style={{ border: task.overdue ? `1px solid rgba(0,209,193,0.33)` : `1px solid rgba(255,255,255,0.08)`, borderRadius: '10px', padding: '12px 14px', display: 'grid', gridTemplateColumns: '110px 1fr 80px', gap: '10px', alignItems: 'center' }}>
-            <div><div style={{ fontSize: '10px', color: V3.textTertiary, textTransform: 'uppercase' }}>{task.domain}</div><div style={{ fontSize: '12px', fontFamily: 'monospace', color: V3.textSecondary }}>{task.code}</div></div>
-            <div style={{ fontSize: '13px', color: V3.textPrimary }}>{task.title}</div>
-            <div style={{ textAlign: 'right', fontSize: '11px', color: task.overdue ? V3.tealLight : V3.textTertiary }}>{task.dueDate}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
-const PlannerWorkspace = ({ tasks, isMobile: _isMobile }: { tasks: TaskItem[]; isMobile: boolean }) => (
-  <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingTop: '24px', paddingBottom: '32px' }}>
-    <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '16px' }}>
-      <span className="v3-neon-orange" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '8px' }}>MY WORKSPACE</span>
-      <h1 style={{ fontSize: '28px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px', background: 'linear-gradient(180deg, #FFFFFF 0%, #A8B0C0 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>My Planner</h1>
-    </div>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      {tasks.map(task => (
-        <div key={task.id} className="v3-invisible-glare" style={{ border: `1px solid rgba(255,255,255,0.08)`, borderRadius: '10px', padding: '14px 16px', display: 'grid', gridTemplateColumns: '110px 1fr 100px 80px', gap: '10px', alignItems: 'center' }}>
-          <div><div style={{ fontSize: '10px', color: V3.textTertiary, textTransform: 'uppercase' }}>{task.domain}</div><div style={{ fontSize: '12px', fontFamily: 'monospace', color: V3.textSecondary }}>{task.code}</div></div>
-          <div style={{ fontSize: '13px', color: V3.textPrimary }}>{task.title}</div>
-          <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', padding: '3px 8px', borderRadius: '6px', background: task.overdue ? 'rgba(255,100,100,0.1)' : 'rgba(0,209,193,0.08)', color: task.overdue ? '#FF6464' : V3.tealLight }}>{task.status}</span>
-          <div style={{ textAlign: 'right', fontSize: '11px', color: V3.textTertiary }}>{task.dueDate}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const ClinicianProfilesView = () => <StubView icon={Users} label="Clinician Profiles" />;
-const PatientProfilesView = () => <StubView icon={Activity} label="Patient Profiles" />;
-const CalendarView = () => <StubView icon={Calendar} label="Calendar" />;
-
-// ============================================================
-// LOGIN SCREEN (OUTSIDE SHELL)
-// ============================================================
-const LoginScreen = ({ onLogin }: { onLogin: () => void }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [focused, setFocused] = useState<string | null>(null);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (document.startViewTransition) document.startViewTransition(() => onLogin());
-    else onLogin();
-  };
-
-  return (
-    <div className="v3-auth-screen" style={{ minHeight: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', system-ui, sans-serif", position: 'relative', zIndex: 10 }}>
-      <div style={{ width: '100%', maxWidth: '420px', background: 'linear-gradient(135deg, rgba(32,41,56,0.88) 0%, rgba(16,20,28,0.45) 60%, rgba(8,10,13,0.98) 100%)', backdropFilter: 'blur(32px) saturate(140%)', borderRadius: '24px', border: 'none', boxShadow: '30px 10px 80px rgba(0,0,0,0.9)', padding: '48px 40px', display: 'flex', flexDirection: 'column', gap: '32px', zIndex: 2 }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `linear-gradient(135deg, #007970, #007970aa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '16px', fontWeight: 'bold', color: '#fff' }}>CI</div>
-          <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: V3.textTertiary, marginBottom: '8px' }}>CARE INDEED COMPLIANCE</div>
-          <h1 style={{ fontSize: '28px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px', background: 'linear-gradient(180deg, #FFFFFF 0%, #A8B0C0 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Sign In</h1>
-        </div>
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div>
-            <label style={{ fontSize: '13px', fontWeight: 500, color: V3.textSecondary, display: 'block', marginBottom: '8px' }}>Email Address</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} onFocus={() => setFocused('email')} onBlur={() => setFocused(null)} placeholder="admin@careindeed.com" style={{ width: '100%', padding: '14px 16px', fontSize: '14px', background: V3.glass3, border: focused === 'email' ? `2px solid ${V3.tealLight}` : `1px solid ${V3.borderDefault}`, borderRadius: '12px', color: V3.textPrimary, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.33s' }} />
-          </div>
-          <div>
-            <label style={{ fontSize: '13px', fontWeight: 500, color: V3.textSecondary, display: 'block', marginBottom: '8px' }}>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} onFocus={() => setFocused('password')} onBlur={() => setFocused(null)} placeholder="••••••••" style={{ width: '100%', padding: '14px 16px', fontSize: '14px', background: V3.glass3, border: focused === 'password' ? `2px solid ${V3.tealLight}` : `1px solid ${V3.borderDefault}`, borderRadius: '12px', color: V3.textPrimary, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.33s' }} />
-          </div>
-          <button type="submit" className="btn-smooth-hover" style={{ width: '100%', height: '48px', borderRadius: '12px', border: 'none', background: V3.tealLight, color: '#000000', fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', cursor: 'pointer' }}>Enter Workspace</button>
-        </form>
-      </div>
-    </div>
-  );
-};
 
 // ============================================================
 // SHELL FRAME & NAVIGATION
 // ============================================================
-const ShellContentFrame = ({ children, isMobile, activeSection, isNavOpen, setIsNavOpen, isPlannerView, setIsPlannerView, onLogout, handleNav }: {
-  children: React.ReactNode;
-  isMobile: boolean;
-  activeSection: string;
-  isNavOpen: boolean;
-  setIsNavOpen: (v: boolean) => void;
-  isPlannerView: boolean;
-  setIsPlannerView: (v: boolean) => void;
-  onLogout: () => void;
-  handleNav: (id: string, direction?: 'forward' | 'back') => void;
-}) => {
+const ShellContentFrame = ({ children, className, isMobile, activeSection, setActiveSection, isNavOpen, setIsNavOpen, isPlannerView, setIsPlannerView }: any) => {
+
   const navSections = [
     {
       title: 'PRIMARY OPERATIONS',
       items: [
         { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { id: 'profiles', icon: Users, label: 'Profiles', submenu: [ { id: 'clinicians', label: 'Clinician Profiles' }, { id: 'patients', label: 'Patient Profiles' } ] },
+        { id: 'calendar', icon: Calendar, label: 'Scheduling & Visits' },
+        { id: 'brad', icon: Bot, label: 'Brad AI Copilot' },
+        { id: 'ces', icon: ShieldCheck, label: 'Compliance Execution (CES)' },
       ]
     },
     {
       title: 'COMPLIANCE EXECUTION',
       items: [
-        { id: 'policy', icon: FileText, label: 'Policy Library' },
-        { id: 'forms', icon: FolderOpen, label: 'Forms & Evidence' },
+        { id: 'taxonomy', icon: Network, label: 'Taxonomy' },
+        { id: 'onboarding', icon: UserPlus, label: 'Onboarding' },
+        { id: 'policy', icon: FileText, label: 'Policy Lifecycle' },
+        { id: 'evidence', icon: FolderOpen, label: 'Evidence Center' },
+      ]
+    },
+    {
+      title: 'ADMINISTRATION & KNOWLEDGE',
+      items: [
+        { id: 'hubstaff', icon: ArrowUpCircle, label: 'Hubstaff' },
+        { id: 'help-center', icon: HelpCircle, label: 'Help Center' },
+        { id: 'admin', icon: Shield, label: 'Admin' },
       ]
     }
   ];
 
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({ profiles: true });
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({ profiles: true, evidence: true });
   const toggleSubmenu = (menuId: string) => setExpandedMenus(prev => ({ ...prev, [menuId]: !prev[menuId] }));
 
+  const handleNav = (id: string) => {
+    setActiveSection(id);
+    if (isMobile) {
+      setIsNavOpen(false);
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', width: '100%', boxSizing: 'border-box', color: V3.textPrimary, fontFamily: "'Inter', system-ui, sans-serif", padding: isMobile ? '0' : '20px', overflow: 'hidden', position: 'relative', backgroundImage: `linear-gradient(to right, rgba(255, 255, 255, 0.012) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.012) 1px, transparent 1px), radial-gradient(circle at 50% 0%, #121724 0%, #05060A 100%)`, backgroundSize: '24px 24px, 24px 24px, 100% 100%', backgroundBlendMode: 'screen, screen, normal' }}>
+    <div style={{ 
+      display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', width: '100%', boxSizing: 'border-box',
+      color: V3.textPrimary, fontFamily: "'Inter', system-ui, sans-serif", padding: isMobile ? '0' : '20px', overflow: 'hidden', position: 'relative',
+      backgroundImage: `
+        linear-gradient(to right, rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+        radial-gradient(circle at 50% 0%, #121724 0%, #05060A 100%)
+      `,
+      backgroundSize: '24px 24px, 24px 24px, 100% 100%', backgroundBlendMode: 'screen, screen, normal'
+    }}>
       <GlobalStylesheetInjector />
-      <div style={{ position: 'fixed', bottom: '-8vh', left: '-8vw', width: '55vmin', height: '55vmin', backgroundImage: `url('/ci-angel.webp')`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'bottom left', opacity: 0.33, pointerEvents: 'none', zIndex: 1 }} />
-
-      <div style={{ display: 'flex', flexDirection: 'column', width: isMobile ? '100%' : '77.7%', minWidth: isMobile ? '100%' : 'min(980px, 95vw)', maxWidth: '100%', height: isMobile ? '100vh' : '92vh', margin: 'auto', border: 'none', borderRadius: isMobile ? '0' : '24px', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(32, 41, 56, 0.88) 0%, rgba(16, 20, 28, 0.45) 60%, rgba(8, 10, 13, 0.98) 100%)', backdropFilter: 'blur(32px) saturate(140%)', WebkitBackdropFilter: 'blur(32px) saturate(140%)', boxShadow: isMobile ? 'none' : '30px 10px 80px rgba(0, 0, 0, 0.9)', position: 'relative', zIndex: 2 }}>
-
-        <header className="v3-app-header" style={{ height: '72px', flexShrink: 0, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', zIndex: 20, borderBottom: `1px solid ${V3.borderDefault}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1 }}>
-            <button onClick={() => setIsNavOpen(!isNavOpen)} className="btn-smooth-hover" style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px', color: V3.textSecondary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Menu size={24} />
+      
+      {/* Decorative Brand Accent Background glow */}
+      <div style={{
+        position: 'absolute', top: '10%', right: '15%', width: '350px', height: '350px',
+        background: 'radial-gradient(circle, rgba(0, 121, 112, 0.15) 0%, transparent 70%)',
+        pointerEvents: 'none', zIndex: 1
+      }} />
+      
+      {/* Main Glass Card Frame */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', width: isMobile ? '100%' : '90%', minWidth: isMobile ? '100%' : 'min(1200px, 95vw)', maxWidth: '100%',
+        height: isMobile ? '100vh' : '90vh', margin: 'auto', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: isMobile ? '0' : '20px', overflow: 'hidden',
+        background: 'linear-gradient(135deg, rgba(16, 22, 34, 0.95) 0%, rgba(8, 12, 19, 0.98) 100%)', 
+        backdropFilter: 'blur(32px) saturate(120%)', WebkitBackdropFilter: 'blur(32px) saturate(120%)',
+        boxShadow: isMobile ? 'none' : '0 30px 60px rgba(0, 0, 0, 0.8)', position: 'relative', zIndex: 2 
+      }}>
+        
+        {/* INTEGRATED APPLICATION TOP BAR */}
+        <header style={{ 
+          height: '64px', flexShrink: 0, borderBottom: '1px solid rgba(255, 255, 255, 0.06)', background: 'rgba(255, 255, 255, 0.01)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '0 16px' : '0 24px', zIndex: 20
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+            <button 
+              onClick={() => setIsNavOpen(!isNavOpen)} className="btn-smooth-hover"
+              style={{ background: 'transparent', border: '1px solid rgba(255, 255, 255, 0.15)', cursor: 'pointer', padding: '8px', borderRadius: '8px', color: V3.textSecondary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Menu size={18} />
             </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: V3.glass3, border: `1px solid ${V3.borderDefault}`, borderRadius: '20px', padding: '10px 16px', width: isMobile ? '100%' : '320px' }}>
-              <Search size={16} color={V3.textTertiary} />
-              <input placeholder="Search operations, policies..." style={{ background: 'transparent', border: 'none', color: V3.textPrimary, outline: 'none', width: '100%', fontSize: '13px' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '6px 14px', width: isMobile ? '140px' : '260px', transition: 'all 0.3s' }}>
+              <Search size={14} color={V3.textTertiary} />
+              <input placeholder="Search policies..." style={{ background: 'transparent', border: 'none', color: V3.textPrimary, outline: 'none', width: '100%', fontSize: '12px' }} />
             </div>
           </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {activeSection === 'dashboard' && (
-              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '20px', border: `1px solid rgba(255,255,255,0.08)` }}>
-                <button onClick={() => setIsPlannerView(false)} className="btn-smooth-hover" style={{ padding: '6px 14px', fontSize: '11px', fontWeight: 600, borderRadius: '16px', border: 'none', cursor: 'pointer', background: !isPlannerView ? V3.tealLight : 'transparent', color: !isPlannerView ? '#000000' : V3.textSecondary }}>Agency View</button>
-                <button onClick={() => setIsPlannerView(true)} className="btn-smooth-hover" style={{ padding: '6px 14px', fontSize: '11px', fontWeight: 600, borderRadius: '16px', border: 'none', cursor: 'pointer', background: isPlannerView ? V3.tealLight : 'transparent', color: isPlannerView ? '#000000' : V3.textSecondary }}>My Planner</button>
+              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '3px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <button 
+                  onClick={() => setIsPlannerView(false)}
+                  style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 600, borderRadius: '16px', border: 'none', cursor: 'pointer', transition: '0.2s', background: !isPlannerView ? V3.tealLight : 'transparent', color: !isPlannerView ? '#020617' : V3.textSecondary }}
+                >Agency View</button>
+                <button 
+                  onClick={() => setIsPlannerView(true)}
+                  style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 600, borderRadius: '16px', border: 'none', cursor: 'pointer', transition: '0.2s', background: isPlannerView ? V3.tealLight : 'transparent', color: isPlannerView ? '#020617' : V3.textSecondary }}
+                >My Planner</button>
               </div>
             )}
-            {!isMobile && <span style={{ fontSize: '16px', fontWeight: 600, letterSpacing: '-0.3px', color: V3.textPrimary }}>CareIndeed</span>}
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `linear-gradient(135deg, ${V3.teal}, ${V3.tealLight}80)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', color: '#000' }}>CI</div>
+            {!isMobile && <span style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '-0.3px', color: V3.textPrimary }}>CareIndeed</span>}
+            <div style={{ width: '30px', height: '30px', borderRadius: '6px', background: `linear-gradient(135deg, ${V3.teal}, #00b4a6)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', color: '#fff' }}>CI</div>
           </div>
         </header>
 
+        {/* SIDEBAR & DYNAMIC CONTAINER PANEL */}
         <div style={{ flex: 1, position: 'relative', display: 'flex', overflow: 'hidden' }}>
-          <nav className="v3-app-sidebar no-scrollbar" style={{ width: isNavOpen ? '260px' : '0px', minWidth: isNavOpen ? (isMobile ? '100%' : '260px') : '0px', opacity: isNavOpen ? 1 : 0, transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease', background: 'transparent', borderRight: `1px solid ${V3.borderDefault}`, zIndex: 50, display: 'flex', flexDirection: 'column', overflowY: 'auto', position: isMobile && isNavOpen ? 'absolute' : 'relative', height: '100%', top: 0, left: 0 }}>
-            <div style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1px', color: V3.textTertiary }}>MENU</span>
-              <button onClick={() => setIsNavOpen(false)} style={{ background: 'transparent', border: 'none', color: V3.textTertiary, cursor: 'pointer' }}><X size={20} /></button>
+          
+          <nav className="no-scrollbar" style={{
+            width: isNavOpen ? '240px' : '0px', minWidth: isNavOpen ? (isMobile ? '100%' : '240px') : '0px', opacity: isNavOpen ? 1 : 0,
+            transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease',
+            background: 'rgba(10, 15, 26, 0.95)', borderRight: '1px solid rgba(255,255,255,0.06)', zIndex: 50, display: 'flex', flexDirection: 'column', overflowY: 'auto',
+            position: isMobile && isNavOpen ? 'absolute' : 'relative', top: 0, bottom: 0, left: 0, height: '100%', willChange: 'width, opacity',
+          }}>
+            <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: V3.textTertiary }}>NAVIGATION</span>
+              <button onClick={() => setIsNavOpen(false)} style={{ background: 'transparent', border: 'none', color: V3.textTertiary, cursor: 'pointer' }}><X size={16} /></button>
             </div>
-
-            <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '0 12px 16px' }}>
+            
+            <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '12px 8px' }}>
               {navSections.map((section, idx) => (
-                <div key={idx} style={{ marginBottom: '24px' }}>
-                  <div style={{ padding: '0 12px', marginBottom: '8px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: V3.textTertiary }}>{section.title}</div>
+                <div key={idx} style={{ marginBottom: '16px' }}>
+                  <div style={{ padding: '0 12px', marginBottom: '6px', fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: V3.textTertiary }}>{section.title}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     {section.items.map((item, i) => (
                       <div key={i}>
-                        <button onClick={() => item.submenu ? toggleSubmenu(item.id) : handleNav(item.id, 'crossfade' as any)} className="btn-smooth-hover" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '10px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', textAlign: 'left', background: activeSection === item.id ? 'rgba(0, 209, 193, 0.1)' : 'transparent', color: activeSection === item.id ? V3.textPrimary : V3.textSecondary }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><item.icon size={18} color={activeSection === item.id ? V3.tealLight : V3.textTertiary} /><span style={{ fontSize: '13px', fontWeight: activeSection === item.id ? 600 : 500 }}>{item.label}</span></div>
-                          {item.submenu && (expandedMenus[item.id] ? <ChevronDown size={14} color={V3.textTertiary} /> : <ChevronRight size={14} color={V3.textTertiary} />)}
+                        <button 
+                          onClick={() => item.submenu ? toggleSubmenu(item.id) : handleNav(item.id)}
+                          style={{ 
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '8px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', textAlign: 'left',
+                            background: activeSection === item.id ? 'rgba(0, 209, 193, 0.08)' : 'transparent', 
+                            color: activeSection === item.id ? V3.textPrimary : V3.textSecondary,
+                            transition: '0.2s'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <item.icon size={16} color={activeSection === item.id ? V3.tealLight : V3.textTertiary} />
+                            <span style={{ fontSize: '12.5px', fontWeight: activeSection === item.id ? 600 : 500 }}>{item.label}</span>
+                          </div>
+                          {item.submenu && (expandedMenus[item.id] ? <ChevronDown size={12} color={V3.textTertiary} /> : <ChevronRight size={12} color={V3.textTertiary} />)}
                         </button>
                         {item.submenu && expandedMenus[item.id] && (
-                          <div style={{ paddingLeft: '24px', marginTop: '4px', borderLeft: '1px solid rgba(255,255,255,0.06)', marginLeft: '21px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <div style={{ paddingLeft: '16px', marginTop: '2px', borderLeft: '1px solid rgba(255,255,255,0.06)', marginLeft: '18px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                             {item.submenu.map((sub, sIdx) => (
-                              <button key={sIdx} onClick={() => handleNav(sub.id, 'crossfade' as any)} className="btn-smooth-hover" style={{ display: 'block', width: '100%', padding: '8px 12px', fontSize: '12px', color: activeSection === sub.id ? V3.textPrimary : V3.textSecondary, background: activeSection === sub.id ? 'rgba(0, 209, 193, 0.08)' : 'transparent', border: 'none', textAlign: 'left', borderRadius: '6px', cursor: 'pointer' }}>{sub.label}</button>
+                              <button key={sIdx} onClick={() => handleNav(sub.id)} style={{ display: 'block', width: '100%', padding: '6px 12px', fontSize: '11.5px', color: activeSection === sub.id ? V3.textPrimary : V3.textSecondary, background: activeSection === sub.id ? 'rgba(0, 209, 193, 0.05)' : 'transparent', border: 'none', textAlign: 'left', borderRadius: '4px', cursor: 'pointer', transition: '0.2s' }}>
+                                {sub.label}
+                              </button>
                             ))}
                           </div>
                         )}
@@ -414,16 +303,29 @@ const ShellContentFrame = ({ children, isMobile, activeSection, isNavOpen, setIs
                 </div>
               ))}
             </div>
-            <div style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: V3.glass2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><User size={18} color={V3.textSecondary} /></div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}><span style={{ fontSize: '13px', fontWeight: 600, color: V3.textPrimary }}>Admin</span><span onClick={() => { if(document.startViewTransition) document.startViewTransition(() => onLogout()); else onLogout(); }} style={{ fontSize: '11px', color: V3.textTertiary, cursor: 'pointer' }}>Logout</span></div>
+            
+            <div style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.01)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <User size={15} color={V3.textSecondary} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: V3.textPrimary }}>Manager User</span>
+                  <span style={{ fontSize: '10px', color: V3.textTertiary }}>Active Session</span>
+                </div>
+              </div>
+              <button style={{ position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                <Bell size={16} color={V3.textSecondary} />
+                <span style={{ position: 'absolute', top: 0, right: 0, width: '6px', height: '6px', background: V3.tealLight, borderRadius: '50%' }} />
+              </button>
             </div>
           </nav>
 
-          {/* MAIN CONTENT WRAPPER - VIEW TRANSITION ANCHOR */}
-          <div className="v3-main-content no-scrollbar" style={{ flex: 1, padding: isMobile ? '20px' : '0 40px', overflowY: 'auto', overflowX: 'hidden' }}>
+          {/* DYNAMIC CONTENT SPACE */}
+          <div className={`no-scrollbar ${className}`} style={{ flex: 1, padding: isMobile ? '16px' : '24px 32px 32px 32px', overflowY: 'auto', overflowX: 'hidden', background: 'transparent' }}>
             {children}
           </div>
+
         </div>
       </div>
     </div>
@@ -431,273 +333,514 @@ const ShellContentFrame = ({ children, isMobile, activeSection, isNavOpen, setIs
 };
 
 // ============================================================
-// CORE WORKSPACE VIEWS
+// CORE CARDS & COMPONENTS
 // ============================================================
-const PolicyLibraryView = ({ navigate }: { navigate: (id: string, dir?: 'forward' | 'back') => void }) => (
-  <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingTop: '24px', paddingBottom: '32px' }}>
-    <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '16px' }}>
-      <span className="v3-neon-orange" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '8px' }}>COMPLIANCE EXECUTION</span>
-      <h1 style={{ fontSize: '28px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px', background: 'linear-gradient(180deg, #FFFFFF 0%, #A8B0C0 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Policy Library</h1>
-    </div>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-      {[
-        { id: 'GV-GB-001', title: 'Governing Body Authority & Responsibilities', domain: 'Governance', owner: 'Board Secretary' },
-        { id: 'POL-CL-002', title: 'Plan of Care Development', domain: 'Clinical', owner: 'S. Caldwell' },
-      ].map((policy) => (
-        <div key={policy.id} onClick={() => navigate('policy-detail', 'forward')} className="v3-invisible-glare" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', border: `1px solid rgba(255,255,255,0.15)`, cursor: 'pointer' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ fontSize: '10px', fontWeight: 700, fontFamily: 'monospace', color: V3.textTertiary }}>{policy.id}</span>
-            <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', padding: '4px 10px', borderRadius: '6px', background: 'rgba(0, 209, 193, 0.1)', color: V3.tealLight }}>APPROVED</span>
-          </div>
-          <h4 style={{ fontSize: '15px', fontWeight: 600, color: V3.textPrimary, margin: 0 }}>{policy.title}</h4>
-          <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: V3.tealLight, letterSpacing: '0.4px' }}>{policy.domain}</span>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `1px solid ${V3.borderDefault}`, paddingTop: '12px', marginTop: '4px' }}>
-            <span style={{ fontSize: '12px', color: V3.textTertiary }}>Owner: {policy.owner}</span>
-            <ArrowRight size={14} color={V3.textTertiary} />
-          </div>
-        </div>
-      ))}
-    </div>
+const ActionButton = ({ children, onClick, variant }: any) => (
+  <button onClick={onClick} className="btn-smooth-hover" style={{ padding: '8px 16px', background: variant === 'danger' ? 'rgba(0, 209, 193, 0.1)' : 'transparent', color: variant === 'danger' ? V3.tealLight : V3.textSecondary, border: `1px solid rgba(0, 209, 193, 0.3)`, borderRadius: '8px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', backdropFilter: 'blur(8px)', transition: '0.2s' }}>{children}</button>
+);
+
+const EmptyState = ({ title, description, icon }: any) => (
+  <div style={{ padding: '40px', textAlign: 'center', color: V3.textTertiary, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(255, 255, 255, 0.01)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+    {icon}
+    <div style={{ fontWeight: 500, color: V3.textPrimary, fontSize: '14px' }}>{title}</div>
+    <div style={{ fontSize: '12px', opacity: 0.8 }}>{description}</div>
   </div>
 );
 
-// ============================================================
-// GVGB DETAIL VIEW
-// ============================================================
-const GVGBDetailView = ({ navigate }: { navigate: (id: string, dir?: 'forward' | 'back') => void }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+function HeroStat({ label, value }: any) {
+  return (
+    <div style={{ padding: '12px 18px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', minWidth: '100px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', color: V3.textTertiary, letterSpacing: '0.5px' }}>{label}</div>
+      <div style={{ fontSize: '20px', fontWeight: 600, color: V3.tealLight, lineHeight: 1, letterSpacing: '-0.5px' }}>{value}</div>
+    </div>
+  );
+}
 
-  const navigateToTab = (tabId: string) => {
-    if (tabId === activeTab) return;
-    if (document.startViewTransition) {
-      document.startViewTransition(() => setActiveTab(tabId));
-    } else {
-      setActiveTab(tabId);
-    }
-  };
+function KpiCard({ label, value, trend, alert }: KpiCardData) {
+  return (
+    <div className="v3-invisible-glare" style={{ padding: '14px 16px', textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '6px', minHeight: '92px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.6px', color: V3.textTertiary }}>{label}</span>
+        {alert && <AlertTriangle size={12} color={V3.orangeLight} className="v3-neon-orange" />}
+      </div>
+      <div>
+        <span style={{ fontSize: '22px', fontWeight: 600, color: V3.textPrimary, lineHeight: 1, letterSpacing: '-0.5px' }}>{value}</span>
+      </div>
+      {trend && <div style={{ fontSize: '11px', fontWeight: 500, color: V3.tealLight }}>{trend}</div>}
+    </div>
+  );
+}
+
+// ============================================================
+// WORKSPACE VIEWS
+// ============================================================
+
+// --- THE DASHBOARD VIEW ---
+const DashboardWorkspace = ({ setIsPlannerView, isMobile }: any) => {
+  const kpis: KpiCardData[] = [
+    { label: 'Active Sprint', value: 'Sprint 9', trend: `2 due within 48h` },
+    { label: 'Sprint %', value: `88%`, trend: `0 blockers` },
+    { label: 'Audit Ready', value: `0/445`, trend: `92/100 Readiness` },
+    { label: 'Action In Progress', value: `317`, trend: `0 ready to close` },
+    { label: 'Missing Evidence', value: `0`, trend: `0 pending approval` },
+    { label: 'Critical Actions', value: `121`, trend: `0 at risk`, alert: true },
+    { label: 'Audit Open', value: `1041`, trend: `0 awaiting sig` },
+  ];
 
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      {/* Sticky Header with view-transition-name locking */}
-      <div style={{ viewTransitionName: 'policy-nav-header', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '16px', borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '16px', paddingTop: '24px' }}>
-        <button onClick={() => navigate('policy', 'back')} className="btn-smooth-hover" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: V3.textSecondary, cursor: 'pointer', padding: 0, fontSize: '12px', fontWeight: 600 }}>
-          <ArrowLeft size={14} /> Back to Library
-        </button>
-        <div>
-          <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: V3.tealLight, letterSpacing: '0.6px', display: 'block', marginBottom: '8px' }}>{POLICY_META.domain}</span>
-          <h1 style={{ fontSize: '24px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px', background: 'linear-gradient(180deg, #FFFFFF 0%, #A8B0C0 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{POLICY_META.title}</h1>
-        </div>
+    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ background: 'transparent', border: 'none', borderRadius: '16px', boxShadow: 'none' }}>
+        <section style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '24px', flexWrap: 'wrap' }}>
+          <div style={{ minWidth: '280px', flex: '1 1 300px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
+              <span className="v3-neon-orange" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Command Center</span>
+              <span style={{ fontSize: '12px', fontWeight: 500, color: V3.textSecondary }}>System Operations Monitoring</span>
+            </div>
+            <h1 style={{ fontSize: '26px', fontWeight: 600, lineHeight: 1.2, margin: 0, letterSpacing: '-0.5px', background: 'linear-gradient(180deg, #FFFFFF 0%, #A8B0C0 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              System-Wide Readiness Status
+            </h1>
+            <p style={{ fontSize: '13px', color: V3.textSecondary, marginTop: '8px', lineHeight: 1.5, maxWidth: '600px' }}>
+              Executive operational narrative for compliance execution, evidence readiness, and escalation control. Prioritize critical controls and lock evidence-ready workflows.
+            </p>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '10px', flex: '1 1 auto' }}>
+            <HeroStat label="Critical" value={121} />
+            <HeroStat label="At Risk" value={0} />
+            <HeroStat label="Audit Ready" value={0} />
+            <HeroStat label="In Scope" value={445} />
+          </div>
 
-        {/* Main Tabs */}
-        <div className="no-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', borderTop: `1px solid ${V3.glass2}`, paddingTop: '16px' }}>
-          {[
-            { id: 'overview', label: 'Overview & Definitions', icon: Info },
-            { id: 'statements', label: 'Policy Statements', icon: Shield },
-            { id: 'procedures', label: 'Procedures', icon: Settings },
-            { id: 'documentation', label: 'Documentation', icon: FileText },
-            { id: 'compliance', label: 'Compliance & Audit', icon: CheckSquare },
-            { id: 'references', label: 'References & Admin', icon: Archive },
-            { id: 'appendices', label: 'Appendices (Forms)', icon: LayoutList },
-          ].map((tab) => (
-            <button key={tab.id} onClick={() => navigateToTab(tab.id)} className="btn-smooth-hover" style={{
-              display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', fontSize: '12px', fontWeight: 600, borderRadius: '8px', cursor: 'pointer', whiteSpace: 'nowrap',
-              background: activeTab === tab.id ? 'rgba(255,255,255,0.04)' : 'transparent',
-              border: activeTab === tab.id ? `1px solid rgba(255,255,255,0.15)` : '1px solid transparent',
-              color: activeTab === tab.id ? V3.textPrimary : V3.textTertiary,
-            }}>
-              <tab.icon size={14} color={activeTab === tab.id ? V3.tealLight : V3.textTertiary} /> {tab.label}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', borderLeft: isMobile ? 'none' : `1px solid ${V3.borderDefault}`, paddingLeft: isMobile ? '0' : '20px', width: isMobile ? '100%' : 'auto' }}>
+            <span style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', color: V3.textTertiary, letterSpacing: '0.4px' }}>Today</span>
+            <span style={{ fontWeight: 500, color: V3.textSecondary, fontSize: '13px' }}>Wed, May 20, 2026</span>
+            <div style={{ marginTop: '4px' }}><span style={{ fontSize: '10px', fontWeight: 600, padding: '4px 8px', background: 'rgba(0, 209, 193, 0.1)', border: '1px solid rgba(0, 209, 193, 0.3)', borderRadius: '20px', color: V3.tealLight, letterSpacing: '0.5px' }}>AGENCY VIEW</span></div>
+          </div>
+        </section>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+        {kpis.map(kpi => <KpiCard key={kpi.label} {...kpi} />)}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', padding: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', marginTop: '12px' }}>
+        <span style={{ width: '36px', height: '36px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 209, 193, 0.15)', border: '1px solid rgba(0,209,193,0.3)' }}><ShieldX size={18} color={V3.tealLight} /></span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.6px', color: V3.tealLight }}>Agency Readiness — Action Required</div>
+          <p style={{ fontSize: '12.5px', color: V3.textSecondary, marginTop: '2px', margin: 0 }}>121 Overdue · 0 Blockers. Immediate signature or uploads needed.</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: 'auto' }}>
+          <ActionButton variant="danger" onClick={() => setIsPlannerView(true)}>Go to My Planner</ActionButton>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MY PLANNER VIEW ---
+const PlannerWorkspace = ({ tasks, isMobile }: any) => {
+  return (
+    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <CheckSquare size={14} color={V3.orangeLight} style={{ filter: 'drop-shadow(0 0 4px rgba(255, 160, 89, 0.45))' }} />
+          <span className="v3-neon-orange" style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>My Personal Workspace</span>
+        </div>
+        <h1 style={{ fontSize: '26px', fontWeight: 600, color: V3.textPrimary, margin: 0, letterSpacing: '-0.5px' }}>My Planner</h1>
+        <p style={{ fontSize: '12.5px', color: V3.textSecondary, marginTop: '4px' }}>Your personal workbook — CES obligations assigned to you & private tasks.</p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px' }}>
+        <div className="v3-invisible-glare" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <span style={{ fontSize: '9px', fontWeight: 600, color: V3.textTertiary, textTransform: 'uppercase' }}>MY OPEN CES</span>
+          <span style={{ fontSize: '20px', fontWeight: 600, color: V3.textPrimary }}>9</span>
+        </div>
+        <div className="v3-invisible-glare" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <span style={{ fontSize: '9px', fontWeight: 600, color: V3.textTertiary, textTransform: 'uppercase' }}>OVERDUE</span>
+          <span style={{ fontSize: '20px', fontWeight: 600, color: V3.tealLight }}>2</span>
+        </div>
+        <div className="v3-invisible-glare" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <span style={{ fontSize: '9px', fontWeight: 600, color: V3.textTertiary, textTransform: 'uppercase' }}>COMPLETED OBLIGATIONS</span>
+          <span style={{ fontSize: '20px', fontWeight: 600, color: V3.tealLight }}>0</span>
+        </div>
+        <div className="v3-invisible-glare" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <span style={{ fontSize: '9px', fontWeight: 600, color: V3.textTertiary, textTransform: 'uppercase' }}>TOTAL TASKS</span>
+          <span style={{ fontSize: '20px', fontWeight: 600, color: V3.textPrimary }}>9</span>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderTop: `1px solid ${V3.borderDefault}`, paddingTop: '12px' }}>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {['all', 'open', 'overdue', 'this-week'].map(tab => (
+            <button key={tab} style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', background: tab === 'all' ? 'rgba(0, 209, 193, 0.1)' : 'rgba(255,255,255,0.02)', border: `1px solid ${tab === 'all' ? V3.tealLight : 'rgba(255,255,255,0.1)'}`, color: tab === 'all' ? V3.textPrimary : V3.textSecondary, textTransform: 'capitalize' }}>
+              {tab.replace('-', ' ')}
             </button>
           ))}
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: V3.glass3, border: `1px solid ${V3.borderDefault}`, borderRadius: '20px', padding: '6px 12px', width: isMobile ? '100%' : '240px' }}>
+          <SearchIcon size={12} color={V3.textTertiary} />
+          <input placeholder="Search planner..." style={{ background: 'transparent', border: 'none', color: V3.textPrimary, outline: 'none', fontSize: '11.5px', width: '100%' }} />
+        </div>
       </div>
 
-      {/* Scrollable Content Area with Crossfade transition */}
-      <div className="no-scrollbar" style={{ viewTransitionName: 'policy-content', flex: 1, overflowY: 'auto', paddingTop: '24px', paddingBottom: '32px' }}>
-
-        {activeTab === 'overview' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div className="v3-invisible-glare" style={{ padding: '24px', border: `1px solid ${V3.borderDefault}`, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-              {[ { l: 'Policy ID', v: POLICY_META.id }, { l: 'Tier', v: POLICY_META.tier }, { l: 'Version', v: POLICY_META.version }, { l: 'Effective', v: POLICY_META.effective }, { l: 'Last Reviewed', v: POLICY_META.lastReviewed }, { l: 'Next Review', v: POLICY_META.nextReviewDate } ].map(m => (
-                <div key={m.l} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}><span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: V3.textTertiary }}>{m.l}</span><span style={{ fontSize: '13px', fontWeight: 500, color: V3.textPrimary }}>{m.v}</span></div>
-              ))}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '12px' }}>
+        {tasks.slice(0, 6).map((task: any) => (
+          <div key={task.id} className="v3-invisible-glare" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', border: task.overdue ? `1px solid rgba(0, 209, 193, 0.25)` : `1px solid rgba(255, 255, 255, 0.08)`, background: task.overdue ? 'rgba(0, 209, 193, 0.02)' : 'transparent' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '9px', fontWeight: 700, color: V3.tealLight }}>{task.domain}</span>
+              <span style={{ fontSize: '10.5px', color: V3.textTertiary, fontFamily: 'monospace' }}>{task.code}</span>
             </div>
-            <div>
-              <h2 style={{ fontSize: '14px', fontWeight: 600, color: V3.tealLight, textTransform: 'uppercase', letterSpacing: '0.6px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}><Shield size={18} /> Purpose <span style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} /></h2>
-              <p style={{ fontSize: '14px', color: V3.textSecondary, lineHeight: 1.6, margin: 0 }}>This policy establishes the authority, composition, functions, and oversight responsibilities of the Governing Body of Care Indeed Home Health Care, Inc. The Governing Body is the ultimate authority accountable for the operation, management, fiscal viability, and regulatory compliance of the home health agency. This policy ensures the agency satisfies the requirements set forth in <strong>42 CFR § 484.105</strong>.</p>
-            </div>
-            <div>
-              <h2 style={{ fontSize: '14px', fontWeight: 600, color: V3.tealLight, textTransform: 'uppercase', letterSpacing: '0.6px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}><Info size={18} /> Key Definitions <span style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} /></h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                {DEFINITIONS.map((def) => (
-                  <div key={def.term} className="v3-invisible-glare" style={{ padding: '16px', border: `1px solid rgba(255,255,255,0.08)` }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: V3.textPrimary, display: 'block', marginBottom: '6px' }}>{def.term}</span>
-                    <span style={{ fontSize: '13px', color: V3.textSecondary, lineHeight: 1.5 }}>{def.def}</span>
-                  </div>
-                ))}
-              </div>
+            <h4 style={{ fontSize: '13px', fontWeight: 500, color: V3.textPrimary, margin: 0, minHeight: '36px', lineHeight: 1.4 }}>{task.title}</h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `1px solid rgba(255,255,255,0.08)`, paddingTop: '8px', marginTop: '2px' }}>
+              <span style={{ fontSize: '11px', color: V3.textSecondary }}>Due {task.dueDate}</span>
+              <button style={{ padding: '4px 10px', borderRadius: '4px', background: 'rgba(0, 209, 193, 0.1)', border: `1px solid ${V3.tealLight}`, color: V3.tealLight, fontSize: '10.5px', fontWeight: 600, cursor: 'pointer' }}>Execute</button>
             </div>
           </div>
-        )}
-
-        {activeTab === 'statements' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-            {POLICY_STATEMENTS.map((stmt, idx) => (
-              <div key={idx} style={{ padding: '20px 0', borderBottom: `1px solid rgba(255,255,255,0.06)`, display: 'flex', gap: '20px' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,209,193,0.1)', color: V3.tealLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, flexShrink: 0 }}>4.{idx + 1}</div>
-                <span style={{ fontSize: '14px', fontWeight: 500, color: V3.textPrimary, lineHeight: 1.6 }}>{stmt.substring(4)}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'procedures' && (
-          <ProcedureSubTabs />
-        )}
-
-        {activeTab === 'compliance' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            <div>
-              <h2 style={{ fontSize: '14px', fontWeight: 600, color: V3.tealLight, textTransform: 'uppercase', letterSpacing: '0.6px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}><CheckSquare size={18} /> How Compliance Is Measured <span style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} /></h2>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', padding: '12px 16px', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
-                  {['Compliance Indicator', 'Measurement Method', 'Acceptable Standard'].map(h => <span key={h} style={{ flex: 1, fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: V3.textTertiary }}>{h}</span>)}
-                </div>
-                {COMPLIANCE_81.map((row, i) => (
-                  <div key={i} className="v3-invisible-glare" style={{ display: 'flex', padding: '14px 16px', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    {row.map((c, j) => <span key={j} style={{ flex: 1, fontSize: '13px', color: j === 0 ? V3.textPrimary : V3.textSecondary }}>{c}</span>)}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h2 style={{ fontSize: '14px', fontWeight: 600, color: V3.orangeLight, textTransform: 'uppercase', letterSpacing: '0.6px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}><AlertTriangle size={18} /> Common Failure Points <span style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} /></h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
-                {COMPLIANCE_83.map((item, i) => (
-                  <div key={i} className="v3-invisible-glare" style={{ padding: '16px 20px', border: `1px solid rgba(255,160,89,0.2)` }}>
-                    <p style={{ fontWeight: 600, color: V3.orangeLight, fontSize: '14px', margin: '0 0 8px 0' }}>{item[0]}</p>
-                    <p style={{ fontSize: '13px', color: V3.textSecondary, margin: '0 0 8px 0' }}><strong style={{color: V3.textPrimary}}>Risk:</strong> {item[1]}</p>
-                    <p style={{ fontSize: '13px', color: V3.textSecondary, margin: 0 }}><strong style={{color: V3.textPrimary}}>Mitigation:</strong> {item[2]}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {(activeTab === 'documentation' || activeTab === 'references' || activeTab === 'appendices') && (
-          <StubView icon={FileText} label={activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} />
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Sub-component to manage Procedure Tab transitions cleanly
-const ProcedureSubTabs = () => {
-  const [activeSub, setActiveSub] = useState('6.1');
-  const handleSubNav = (id: string) => {
-    if (id === activeSub) return;
-    if (document.startViewTransition) document.startViewTransition(() => setActiveSub(id));
-    else setActiveSub(id);
-  };
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div className="no-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto' }}>
-        {[ { id: '6.1', l: '6.1 Establishment' }, { id: '6.2', l: '6.2 Core Responsibilities' }, { id: '6.3', l: '6.3 Meetings' } ].map((tab) => (
-          <button key={tab.id} onClick={() => handleSubNav(tab.id)} className="btn-smooth-hover" style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 600, borderRadius: '8px', cursor: 'pointer', background: activeSub === tab.id ? 'rgba(0,209,193,0.1)' : 'transparent', border: activeSub === tab.id ? `1px solid ${V3.tealLight}` : '1px solid transparent', color: activeSub === tab.id ? V3.textPrimary : V3.textSecondary }}>{tab.l}</button>
         ))}
       </div>
-      <div style={{ viewTransitionName: 'procedures-content' }}>
-        {(activeSub === '6.1' || activeSub === '6.2') && (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', padding: '12px 16px', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
-              {['Step', 'Responsible', 'Action', 'Timeframe'].map(h => <span key={h} style={{ flex: h === 'Action' ? 3 : 1, fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: V3.textTertiary }}>{h}</span>)}
+    </div>
+  );
+};
+
+// --- KANBAN BOARD (SPRINT execution) ---
+const SprintBoardWorkspace = () => {
+  const [activeTask, setActiveTask] = useState<string>('Distribute agenda & pre-read packet');
+
+  const columns = [
+    { id: 'overdue', title: 'OVERDUE (18)', count: 18, items: [
+      { id: '1', title: 'Verify pre-input completeness across all 4 sectors', policy: 'C2 QAPI Review', date: '2026-05-18' },
+      { id: '2', title: 'Evidence for QAPI completeness review verification', policy: 'C2 QAPI Review', date: '2026-05-18' },
+      { id: '3', title: 'Distribute agenda & pre-read packet', policy: 'C2 QAPI Review', date: '2026-05-20' },
+      { id: '4', title: 'Review aggregate quality trends from CL-WP-25', policy: 'C2 QAPI Review', date: '2026-05-19' },
+    ]},
+    { id: 'at_risk', title: 'AT RISK (0)', count: 0, items: [] },
+    { id: 'in_progress', title: 'IN PROGRESS (4)', count: 4, items: [
+      { id: '5', title: 'Audit Plan of Care documentation', policy: 'POC Standard Audit', date: '2026-05-22' },
+      { id: '6', title: 'Safety review & upload drill log to hubstaff', policy: 'Safety drill execution', date: '2026-05-24' }
+    ]},
+    { id: 'awaiting', title: 'AWAITING SIG (1)', count: 1, items: [
+      { id: '7', title: 'Quarterly compliance board report signature', policy: 'Governance Board Exec', date: '2026-05-21' }
+    ]},
+  ];
+
+  return (
+    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px' }}>
+      <div style={{ borderBottom: `1px solid rgba(255,255,255,0.08)`, paddingBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <span style={{ fontSize: '10px', fontWeight: 700, color: V3.tealLight, letterSpacing: '1px' }}>CES SPRINT WINDOW</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+          <h1 style={{ fontSize: '22px', fontWeight: 600, color: V3.textPrimary, margin: 0, letterSpacing: '-0.5px' }}>Sprint execution • Mon-Fri 2-week window</h1>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: V3.textSecondary, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={12}/> Calendar</button>
+            <button style={{ padding: '6px 12px', background: 'rgba(0,209,193,0.1)', border: '1px solid rgba(0,209,193,0.3)', borderRadius: '6px', color: V3.textPrimary, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}><LayoutDashboard size={12}/> Sprint Board</button>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '16px', flex: 1, overflow: 'hidden', minHeight: '400px', flexDirection: 'row', flexWrap: 'wrap' }}>
+        {/* Kanban Board */}
+        <div style={{ display: 'flex', gap: '12px', flex: '3 1 600px', overflowX: 'auto', paddingBottom: '8px' }} className="no-scrollbar">
+          {columns.map(col => (
+            <div key={col.id} style={{ minWidth: '220px', flex: 1, display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.005)', borderRadius: '12px', padding: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: '10px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: V3.textSecondary, letterSpacing: '0.5px' }}>{col.title}</span>
+                <span style={{ fontSize: '10.5px', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '10px', color: V3.textTertiary }}>{col.count}</span>
+              </div>
+              <div className="no-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, overflowY: 'auto' }}>
+                {col.items.length === 0 ? (
+                   <div style={{ textAlign: 'center', padding: '30px 0', color: V3.textTertiary, fontSize: '11px', fontStyle: 'italic' }}>No active tasks</div>
+                ) : (
+                  col.items.map(task => (
+                    <div 
+                      key={task.id} 
+                      onClick={() => setActiveTask(task.title)}
+                      className="v3-invisible-glare" 
+                      style={{ 
+                        padding: '12px', 
+                        background: activeTask === task.title ? 'rgba(0, 209, 193, 0.05)' : 'rgba(255,255,255,0.01)', 
+                        border: activeTask === task.title ? '1px solid rgba(0,209,193,0.4)' : '1px solid rgba(255,255,255,0.08)', 
+                        cursor: 'pointer' 
+                      }}
+                    >
+                      <h4 style={{ fontSize: '12px', fontWeight: 500, color: V3.textPrimary, margin: 0, lineHeight: 1.3 }}>{task.title}</h4>
+                      <div style={{ fontSize: '10.5px', color: V3.tealLight, fontWeight: 500, marginTop: '4px' }}>{task.policy}</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                        <span style={{ fontSize: '10px', color: V3.textTertiary }}>Assigned</span>
+                        <span style={{ fontSize: '10px', color: V3.textTertiary }}>{task.date}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-            {PROCEDURES[activeSub].map((row, i) => (
-              <div key={i} className="v3-invisible-glare" style={{ display: 'flex', padding: '14px 16px', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                {row.map((c, j) => <span key={j} style={{ flex: j === 2 ? 3 : 1, fontSize: '13px', color: j === 0 ? V3.tealLight : V3.textSecondary, lineHeight: 1.4 }}>{c}</span>)}
+          ))}
+        </div>
+
+        {/* Task Detail Sidebar */}
+        <div style={{ flex: '1 1 300px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+            <div>
+              <div style={{ fontSize: '9px', color: V3.tealLight, fontWeight: 700, letterSpacing: '0.5px', marginBottom: '4px' }}>SELECTED EXECUTIONS</div>
+              <h2 style={{ fontSize: '16px', fontWeight: 600, color: V3.textPrimary, margin: '0 0 2px 0' }}>{activeTask}</h2>
+              <div style={{ fontSize: '11px', color: V3.textSecondary }}>Standard compliance schedule · May 2026</div>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px', marginBottom: '14px' }}>
+            <span style={{ fontSize: '11px', color: V3.textSecondary }}>FORMS <span style={{ color: V3.textPrimary, fontWeight: 600 }}>4 / 12</span></span>
+            <span style={{ fontSize: '11px', color: V3.textSecondary }}>AWAITING SIG <span style={{ color: V3.tealLight, fontWeight: 600 }}>2</span></span>
+          </div>
+
+          <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.5px' }}>TASK CHECKPOINTS</div>
+            {[
+              { label: 'Submit pre-audit roster log', complete: true },
+              { label: 'Generate clinician schedule match map', complete: true },
+              { label: 'Distribute agenda & pre-read packet', complete: false },
+              { label: 'Document quality review committee decisions', complete: false },
+            ].map((t, i) => (
+              <div key={i} style={{ padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)', background: 'rgba(255,255,255,0.005)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '14px', height: '14px', borderRadius: '50%', border: t.complete ? 'none' : '1px solid rgba(255,255,255,0.3)', background: t.complete ? V3.tealLight : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {t.complete && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#020617' }} />}
+                  </div>
+                  <span style={{ fontSize: '12px', color: t.complete ? V3.textSecondary : V3.textPrimary }}>{t.label}</span>
+                </div>
               </div>
             ))}
           </div>
-        )}
-        {activeSub === '6.3' && (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', padding: '12px 16px', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
-              {['Step', 'Responsible', 'Action', 'Timeframe'].map(h => <span key={h} style={{ flex: h === 'Action' ? 3 : 1, fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: V3.textTertiary }}>{h}</span>)}
-            </div>
-            {PROCEDURES['6.3'].map((row, i) => (
-              <div key={i} className="v3-invisible-glare" style={{ display: 'flex', padding: '14px 16px', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                {row.map((c, j) => <span key={j} style={{ flex: j === 2 ? 3 : 1, fontSize: '13px', color: j === 0 ? V3.tealLight : V3.textSecondary, lineHeight: 1.4 }}>{c}</span>)}
-              </div>
-            ))}
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
 };
 
+// --- EVIDENCE CENTER ---
+const EvidenceCenterWorkspace = () => {
+  return (
+    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px' }}>
+      <div style={{ borderBottom: `1px solid rgba(255,255,255,0.08)`, paddingBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FolderOpen size={18} className="v3-neon-orange" />
+            <h1 className="v3-neon-orange" style={{ fontSize: '22px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px' }}>Evidence Command Center</h1>
+            <span style={{ padding: '3px 8px', background: 'rgba(0,209,193,0.1)', border: '1px solid rgba(0,209,193,0.3)', color: V3.tealLight, fontSize: '9px', fontWeight: 600, borderRadius: '4px' }}>LIVE_SECURE</span>
+          </div>
+          <p style={{ fontSize: '12px', color: V3.textSecondary, margin: '4px 0 10px 0' }}>Every file is bound to a policy / workflow / event triplet and read through secure audit APIs.</p>
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {['Secure Timeline', 'Audit Ready Ledger', 'Compliance Chain of Custody'].map((tag, i) => (
+              <span key={i} style={{ fontSize: '10.5px', padding: '4px 10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: V3.textSecondary }}>{tag}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ flex: '3 1 500px', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px' }}>
+          <h3 style={{ fontSize: '13px', fontWeight: 600, color: V3.textPrimary, marginBottom: '2px' }}>CES Evidence Hierarchy</h3>
+          <p style={{ fontSize: '11px', color: V3.textTertiary, marginBottom: '14px' }}>Year → Quarter → Month → Active Event Tasks → Execution Signature Logs.</p>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' }}>
+            {['YEAR', 'QUARTER', 'MONTH', 'TASK STATUS'].map((lbl, i) => (
+              <div key={i}>
+                <div style={{ fontSize: '9px', fontWeight: 600, color: V3.tealLight, marginBottom: '4px', letterSpacing: '0.5px' }}>{lbl}</div>
+                <div style={{ padding: '6px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', color: V3.textPrimary, fontSize: '11.5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {i===0 ? '2026' : i===1 ? 'Q2' : i===2 ? 'May' : 'All'} <ChevronDown size={12} color={V3.textTertiary}/>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {[
+              { title: 'Monthly OIG/SAM Exclusion Checks', id: 'hr_oig_sam_exclusion_check', forms: 2, pct: '100%' },
+              { title: 'Q2 QAPI Review Audit Bundle', id: 'qapi_meeting_20260507-00', forms: 10, pct: '85%' },
+              { title: 'Plan of Care (POC) Audit Report', id: 'plan_of_care_audit', forms: 6, pct: '40%' },
+              { title: 'OASIS Quality Accuracy Auditing', id: 'oasis_accuracy_audit', forms: 8, pct: '0%' }
+            ].map((item, idx) => (
+              <div key={idx} className="v3-invisible-glare" style={{ padding: '12px', borderLeft: `3px solid ${item.pct === '100%' ? V3.tealLight : V3.orangeLight}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: '13px', color: V3.textPrimary, fontWeight: 500 }}>{item.title}</div>
+                    <div style={{ fontSize: '10.5px', color: V3.textSecondary, fontFamily: 'monospace', marginTop: '2px' }}>ID: {item.id}</div>
+                    <div style={{ fontSize: '11px', color: V3.textTertiary, marginTop: '2px' }}>Required documents: {item.forms} logs</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '11.5px', color: V3.tealLight, fontWeight: 600 }}>{item.pct} Done</div>
+                    <div style={{ fontSize: '10px', color: V3.textTertiary, marginTop: '2px' }}>Awaiting Sig: {Math.max(0, 10 - item.forms)}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ flex: '1 1 200px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px' }}>
+          <h3 style={{ fontSize: '13px', fontWeight: 600, color: V3.textPrimary, marginBottom: '8px' }}>Contextual Ledger Guidance</h3>
+          <p style={{ fontSize: '11.5px', color: V3.textSecondary, lineHeight: 1.5, marginBottom: '12px' }}>
+            Under Medicare CoPs, all evidence files are stored cryptographically and stamped with clinician IDs. Direct database alteration is inhibited to retain strict compliance audits.
+          </p>
+          <div style={{ padding: '10px', background: 'rgba(0,209,193,0.05)', borderRadius: '6px', border: '1px solid rgba(0,209,193,0.2)', fontSize: '11px', color: V3.tealLight }}>
+            Integrity Status: SECURE & VERIFIED
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- BRAD COPILOT ---
+const BradCopilotWorkspace = ({ chatInput, setChatInput, chatLog, setChatLog }: any) => {
+  return (
+    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px' }}>
+      <div style={{ borderBottom: `1px solid rgba(255,255,255,0.08)`, paddingBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <Bot size={18} color={V3.tealLight} className="v3-neon-teal" />
+          <h1 style={{ fontSize: '20px', fontWeight: 600, color: V3.textPrimary, margin: 0 }}>Brad Clinical Admin Advisor</h1>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', fontSize: '10px', fontWeight: 700, color: V3.textTertiary, letterSpacing: '0.5px' }}>
+          <span>CMS COMPLIANCE TAXONOMY INTERNAL CORPUS</span>
+          <span>•</span>
+          <span>GROUNDED CLINICAL ADVISORIES</span>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ flex: '2 1 450px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '14px', left: '14px' }}><Bot size={16} color={V3.textTertiary}/></div>
+            <input 
+              value={chatInput} 
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && chatInput.trim()) {
+                  setChatLog((prev: any) => [...prev, { sender: 'You', msg: chatInput }]);
+                  const currInput = chatInput; setChatInput('');
+                  setTimeout(() => {
+                    setChatLog((prev: any) => [...prev, { sender: 'Brad', msg: `Aligning vectors for "${currInput}" under CMS standard clinical policy protocol... I recommend reviewing Section QAPI-9.2 for home hazard evaluations and verifying that all clinician credentials have been updated this quarter.` }]);
+                  }, 800);
+                }
+              }}
+              placeholder="Ask Brad: Run pre-survey audit, list QAPI gaps, etc..."
+              style={{ width: '100%', padding: '12px 14px 12px 40px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: V3.textPrimary, fontSize: '13px', outline: 'none' }}
+            />
+            <button 
+              onClick={() => {
+                if (chatInput.trim()) {
+                  setChatLog((prev: any) => [...prev, { sender: 'You', msg: chatInput }]);
+                  const currInput = chatInput; setChatInput('');
+                  setTimeout(() => {
+                    setChatLog((prev: any) => [...prev, { sender: 'Brad', msg: `Searching policy logs for "${currInput}"... 1 actionable hazard rule discovered. Please ensure all clinicians execute standard patient checklists prior to initial home evaluation visit.` }]);
+                  }, 800);
+                }
+              }}
+              style={{ position: 'absolute', top: '8px', right: '8px', padding: '4px 12px', background: 'rgba(0,209,193,0.15)', border: '1px solid rgba(0,209,193,0.3)', color: V3.tealLight, borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
+            >RUN</button>
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {['Identify clinical gaps in QAPI', 'Show missing documents for Governing Body review', 'Check standard home health regulations'].map((p, i) => (
+              <span 
+                key={i} 
+                onClick={() => setChatInput(p)}
+                style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', fontSize: '11px', color: V3.textSecondary, cursor: 'pointer', transition: '0.2s' }}
+                onMouseEnter={(e) => e.currentTarget.style.borderColor = V3.tealLight}
+                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}
+              >{p}</span>
+            ))}
+          </div>
+
+          <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', minHeight: '220px', maxHeight: '350px' }}>
+            {chatLog.map((chat: any, idx: number) => (
+              <div key={idx} className="animate-butter-shift" style={{ alignSelf: chat.sender === 'You' ? 'flex-end' : 'flex-start', background: chat.sender === 'You' ? 'rgba(0, 209, 193, 0.08)' : 'rgba(255,255,255,0.02)', padding: '12px 14px', borderRadius: '12px', maxWidth: '85%', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: V3.tealLight, display: 'block', marginBottom: '2px' }}>{chat.sender}</span>
+                <p style={{ fontSize: '12.5px', color: V3.textPrimary, margin: 0, lineHeight: 1.4 }}>{chat.msg}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ flex: '1 1 240px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '9px', fontWeight: 700, color: V3.textTertiary, letterSpacing: '0.5px' }}>REFERENCE PANELS</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: V3.textPrimary, marginTop: '2px' }}>CMS CoP Section 484.65</div>
+            </div>
+          </div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center', color: V3.textTertiary }}>
+            <FileText size={24} style={{ marginBottom: '10px', opacity: 0.5 }} />
+            <p style={{ fontSize: '11.5px', lineHeight: 1.4, margin: 0 }}>
+              Brad dynamically displays the specific state or federal regulation matched to your query. Type a command to fetch relevant logs.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 // ============================================================
-// MAIN APPLICATION ENTRY POINT
+// MAIN APPLICATION
 // ============================================================
 export default function V3_2StagingApp() {
-  const [viewportWidth, setViewportWidth] = useState(() => typeof window === 'undefined' ? 1920 : window.innerWidth);
+  const [viewportWidth, setViewportWidth] = useState(() => typeof window === 'undefined' ? 1200 : window.innerWidth);
   const isMobile = viewportWidth < 768;
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeSection, setActiveSection] = useState('dashboard');
+
+  const [activeSection, setActiveSection] = useState<string>('dashboard');
   const [isNavOpen, setIsNavOpen] = useState(true);
   const [isPlannerView, setIsPlannerView] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLog, setChatLog] = useState(INTRO_CHATS);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const onResize = () => setViewportWidth(window.innerWidth);
     window.addEventListener('resize', onResize);
+    
+    // Automatically close nav on smaller viewports initially
+    if (window.innerWidth < 1024) {
+      setIsNavOpen(false);
+    }
+    
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  if (!isAuthenticated) return <><GlobalStylesheetInjector /><LoginScreen onLogin={() => setIsAuthenticated(true)} /></>;
-
-  const navigate = (id: string, direction?: 'forward' | 'back') => {
-    if (activeSection === id) return;
-    const update = () => setActiveSection(id);
-    if (document.startViewTransition) {
-      if (direction) document.documentElement.dataset.vtDirection = direction;
-      const transition = document.startViewTransition(update);
-      transition.finished.then(() => { delete document.documentElement.dataset.vtDirection; });
-    } else {
-      update();
-    }
-    if (isMobile) setIsNavOpen(false);
-  };
-
-  const renderContent = () => {
+  const renderWorkspace = () => {
     switch (activeSection) {
-      case 'dashboard': return isPlannerView
-        ? <PlannerWorkspace tasks={INITIAL_PLANNED_TASKS} isMobile={isMobile} />
-        : <DashboardWorkspace setIsPlannerView={setIsPlannerView} isMobile={isMobile} />;
-      case 'clinicians': return <ClinicianProfilesView />;
-      case 'patients': return <PatientProfilesView />;
-      case 'calendar': return <CalendarView />;
-      case 'policy': return <PolicyLibraryView navigate={navigate} />;
-      case 'policy-detail': return <GVGBDetailView navigate={navigate} />;
-      default: return (
-        <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingTop: '20px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 600 }}>{activeSection.toUpperCase()}</h1>
-          <p style={{ color: V3.textSecondary }}>Route not found or under construction.</p>
-        </div>
-      );
+      case 'dashboard':
+        return isPlannerView 
+          ? <PlannerWorkspace tasks={INITIAL_PLANNED_TASKS} isMobile={isMobile} />
+          : <DashboardWorkspace setIsPlannerView={setIsPlannerView} isMobile={isMobile} />;
+      case 'ces':
+        return <SprintBoardWorkspace />;
+      case 'evidence':
+        return <EvidenceCenterWorkspace />;
+      case 'brad':
+        return <BradCopilotWorkspace chatInput={chatInput} setChatInput={setChatInput} chatLog={chatLog} setChatLog={setChatLog} />;
+      default:
+        return (
+          <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '12px' }}>
+              <h1 style={{ fontSize: '20px', fontWeight: 600, margin: 0 }}>{activeSection.toUpperCase()} Workspace</h1>
+            </div>
+            <EmptyState title="Under Active Sprint Construction" description={`The workspace panel for "${activeSection}" is currently being indexed into the system schedule.`} icon={<FileSearch size={28} color={V3.tealLight} />} />
+          </div>
+        );
     }
   };
 
   return (
-    <ShellContentFrame
-      isMobile={isMobile}
-      activeSection={activeSection}
-      isNavOpen={isNavOpen} setIsNavOpen={setIsNavOpen}
-      isPlannerView={isPlannerView} setIsPlannerView={setIsPlannerView}
-      onLogout={() => setIsAuthenticated(false)}
-      handleNav={navigate}
+    <ShellContentFrame 
+      isMobile={isMobile} 
+      activeSection={activeSection} 
+      setActiveSection={setActiveSection} 
+      isNavOpen={isNavOpen}
+      setIsNavOpen={setIsNavOpen}
+      isPlannerView={isPlannerView}
+      setIsPlannerView={setIsPlannerView}
     >
-      {renderContent()}
+      {renderWorkspace()}
     </ShellContentFrame>
   );
 }

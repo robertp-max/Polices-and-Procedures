@@ -220,19 +220,6 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ]
 
-function performRouteTransition(next: () => void) {
-  const doc = document as Document & {
-    startViewTransition?: (updateCallback: () => void) => void
-  }
-
-  if (typeof doc.startViewTransition === 'function') {
-    doc.startViewTransition(next)
-    return
-  }
-
-  next()
-}
-
 function HeaderBlock({
   icon: Icon,
   micro,
@@ -284,7 +271,6 @@ export default function V3StagingApp() {
   const [isNavOpen, setIsNavOpen] = useState(true)
   const [viewportWidth, setViewportWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1920)
   const isMobile = viewportWidth < 768
-  const showPlannerToggle = activeSection === 'dashboard' || activeSection === 'my-planner'
 
   useEffect(() => {
     const handler = () => setViewportWidth(window.innerWidth)
@@ -293,7 +279,7 @@ export default function V3StagingApp() {
   }, [])
 
   const navigate = (section: SectionId) => {
-    performRouteTransition(() => setActiveSection(section))
+    setActiveSection(section)
   }
 
   return (
@@ -304,12 +290,14 @@ export default function V3StagingApp() {
         inset: 0,
         zIndex: 9000,
         backgroundImage:
-          'radial-gradient(circle at 50% 0%, #121724 0%, #05060A 100%), linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px)',
-        backgroundSize: 'auto, 24px 24px, 24px 24px',
+          'radial-gradient(circle 44vmin at 103% 107%, rgba(4,5,10,0.96) 0%, rgba(4,5,10,0.55) 40%, transparent 70%), linear-gradient(to right, rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.012) 1px, transparent 1px), radial-gradient(circle at 50% 0%, #080C14 0%, #03040A 100%)',
+        backgroundSize: '100% 100%, 32px 32px, 32px 32px, 100% 100%',
+        backgroundBlendMode: 'normal, screen, screen, normal',
         fontFamily: "'Inter', system-ui, sans-serif",
         WebkitFontSmoothing: 'antialiased',
         display: 'flex',
         overflow: 'hidden',
+        padding: '24px',
         color: '#FFFFFF',
       }}
     >
@@ -320,14 +308,32 @@ export default function V3StagingApp() {
         aria-hidden
         style={{
           position: 'fixed',
-          bottom: '-8vh',
-          left: '-8vw',
-          width: '55vmin',
-          height: '55vmin',
-          opacity: 0.33,
+          bottom: '-12vh',
+          right: '-12vw',
+          width: '100vmin',
+          height: '100vmin',
+          opacity: 0.81,
           zIndex: 1,
           pointerEvents: 'none',
           objectFit: 'contain',
+        }}
+      />
+
+      {/* Decorative ring — conic highlight peaking at top-left, decays with angular distance */}
+      <div
+        aria-hidden
+        style={{
+          position: 'fixed',
+          bottom: '-6vh',
+          right: '-6vw',
+          width: '86vmin',
+          height: '86vmin',
+          borderRadius: '50%',
+          background: 'conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.02) 0deg, transparent 50deg, transparent 225deg, rgba(255,255,255,0.04) 265deg, rgba(255,255,255,0.28) 315deg, rgba(255,255,255,0.04) 355deg, rgba(255,255,255,0.02) 360deg)',
+          WebkitMaskImage: 'radial-gradient(circle, transparent 46.5%, rgba(0,0,0,0.5) 48%, black 49.5%, rgba(0,0,0,0.5) 51%, transparent 52.5%)',
+          maskImage: 'radial-gradient(circle, transparent 46.5%, rgba(0,0,0,0.5) 48%, black 49.5%, rgba(0,0,0,0.5) 51%, transparent 52.5%)',
+          zIndex: 2,
+          pointerEvents: 'none',
         }}
       />
 
@@ -345,14 +351,17 @@ export default function V3StagingApp() {
         <div
           className="v3-main-content"
           style={{
-            width: '77.7%',
-            minWidth: isMobile ? '95vw' : 'min(980px, 95vw)',
+            width: '87.7%',
+            minWidth: isMobile ? '95vw' : 'min(1060px, 95vw)',
             maxWidth: '100%',
             height: '92vh',
-            background: 'linear-gradient(135deg, rgba(32, 41, 56, 0.88) 0%, rgba(16, 20, 28, 0.45) 60%, rgba(8, 10, 13, 0.98) 100%)',
-            backdropFilter: 'blur(32px) saturate(140%)',
-            boxShadow: '30px 10px 80px rgba(0,0,0,0.9)',
+            margin: '32px',
+            background: 'linear-gradient(135deg, rgba(20, 28, 44, 0.78) 0%, rgba(12, 16, 26, 0.55) 50%, rgba(6, 8, 14, 0.88) 100%)',
+            backdropFilter: 'blur(48px) saturate(200%) brightness(1.08) contrast(1.05)',
+            WebkitBackdropFilter: 'blur(48px) saturate(200%) brightness(1.08) contrast(1.05)',
+            boxShadow: '0 40px 120px rgba(0,0,0,0.9), 0 15px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.35)',
             borderRadius: isMobile ? 0 : 24,
+            border: '1px solid rgba(255,255,255,0.13)',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
@@ -365,103 +374,57 @@ export default function V3StagingApp() {
               flexShrink: 0,
               display: 'flex',
               alignItems: 'center',
-              padding: '0 16px',
+              padding: '10px 20px 0 20px',
               gap: 14,
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            <button
-              type="button"
-              onClick={() => setIsNavOpen(v => !v)}
-              className="btn-smooth-hover"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: V3.textSecondary, padding: 4 }}
-            >
-              <Menu size={18} />
-            </button>
-
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '6px 14px',
-                background: V3.glass3,
-                border: `1px solid ${V3.borderDefault}`,
-                borderRadius: 20,
-                width: isMobile ? '42vw' : 330,
-                minWidth: isMobile ? 140 : 220,
-              }}
-            >
-              <Search size={14} color={V3.textTertiary} />
-              <input
-                placeholder="Search operations, policies..."
-                style={{ background: 'transparent', border: 'none', color: V3.textPrimary, outline: 'none', fontSize: 13, width: '100%' }}
-              />
+            {/* Left: Burger (top left, no border) */}
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setIsNavOpen(v => !v)}
+                className="btn-smooth-hover"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: V3.textSecondary,
+                  padding: '6px 10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                aria-label="Toggle navigation"
+              >
+                <Menu size={18} />
+              </button>
             </div>
 
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-              {showPlannerToggle && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    background: 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${V3.borderDefault}`,
-                    borderRadius: 999,
-                    padding: 3,
-                  }}
-                >
-                  <button
-                    type="button"
-                    className="btn-smooth-hover"
-                    onClick={() => navigate('dashboard')}
-                    style={{
-                      border: 'none',
-                      cursor: 'pointer',
-                      borderRadius: 999,
-                      padding: '6px 12px',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      background: activeSection === 'dashboard' ? 'rgba(0,209,193,0.95)' : 'transparent',
-                      color: activeSection === 'dashboard' ? '#001713' : V3.textSecondary,
-                    }}
-                  >
-                    Agency View
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-smooth-hover"
-                    onClick={() => navigate('my-planner')}
-                    style={{
-                      border: 'none',
-                      cursor: 'pointer',
-                      borderRadius: 999,
-                      padding: '6px 12px',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      background: activeSection === 'my-planner' ? 'rgba(0,209,193,0.95)' : 'transparent',
-                      color: activeSection === 'my-planner' ? '#001713' : V3.textSecondary,
-                    }}
-                  >
-                    My Planner
-                  </button>
-                </div>
-              )}
-
+            {/* Center: Logo (middle of top bar) */}
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <img
                 src={ciLogoWhite}
                 alt="CareIndeed"
                 style={{
-                  width: isMobile ? 96 : showPlannerToggle ? 132 : 146,
-                  maxHeight: 44,
+                  width: isMobile ? 92 : 142,
+                  maxHeight: 42,
                   height: 'auto',
                   display: 'block',
                   objectFit: 'contain',
                   opacity: 0.95,
-                  flexShrink: 0,
                 }}
               />
+            </div>
+
+            {/* Right: Search (aligned) */}
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', background: V3.glass3, border: `1px solid ${V3.borderDefault}`, borderRadius: 20, width: isMobile ? '42vw' : 300, minWidth: isMobile ? 120 : 200 }}>
+                <Search size={14} color={V3.textTertiary} />
+                <input
+                  placeholder="Search operations, policies..."
+                  style={{ background: 'transparent', border: 'none', color: V3.textPrimary, outline: 'none', fontSize: 13, width: '100%' }}
+                />
+              </div>
             </div>
           </header>
 
@@ -483,14 +446,6 @@ export default function V3StagingApp() {
               <div style={{ width: 260, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ padding: '14px 16px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 10, fontWeight: 700, color: V3.textTertiary, letterSpacing: '1px', textTransform: 'uppercase' }}>Menu</span>
-                  <button
-                    type="button"
-                    onClick={() => setIsNavOpen(false)}
-                    className="btn-smooth-hover"
-                    style={{ border: 'none', background: 'transparent', color: V3.textSecondary, cursor: 'pointer', padding: 4 }}
-                  >
-                    <X size={16} />
-                  </button>
                 </div>
 
                 <nav style={{ flex: 1, overflowY: 'auto', padding: '0 12px 12px' }}>
@@ -1033,7 +988,7 @@ function ReportsPage() {
         <div style={{ padding: 20, background: V3.glass2, borderRadius: 14, border: `1px solid ${V3.borderDefault}` }}>
           <h3 style={{ color: V3.textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>6-Sprint Compliance Trend</h3>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, height: 180 }}>
-            {[...sprints].reverse().map((sp, i) => {
+            {[...sprints].reverse().map((sp) => {
               const h = (sp.completionPct / 100) * 160
               return (
                 <div key={sp.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -1154,7 +1109,7 @@ function ArtifactViewerPage() {
                 <span style={{ color: V3.textTertiary, fontSize: 11 }}>{art.event}</span>
               </div>
             </div>
-            <div style={{ display: 'flex', align: 'center', gap: 12, marginLeft: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 16 }}>
               {art.uploadDate && <span style={{ color: V3.textTertiary, fontSize: 11 }}>{art.uploadDate}</span>}
               <span style={{ fontSize: 11, fontWeight: 600, color: statusColor(art.status) }}>{statusLabel(art.status)}</span>
             </div>
@@ -1412,7 +1367,7 @@ function PageContent({
 
 function DashboardPage({ navigate }: { navigate: (id: SectionId) => void }) {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <HeaderBlock
         icon={LayoutDashboard}
         micro="AGENCY OPERATIONS"
@@ -1527,7 +1482,7 @@ function MyPlannerPage() {
   const queued = TASKS.filter(task => !task.overdue).slice(3)
 
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <HeaderBlock
         icon={CheckSquare}
         micro="MY PERSONAL WORKSPACE"
@@ -1584,7 +1539,7 @@ function MyPlannerPage() {
 
 function CliniciansPage() {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <HeaderBlock
         icon={Users}
         micro="PHASE 1 • READ-ONLY"
@@ -1631,7 +1586,7 @@ function CliniciansPage() {
 
 function PatientsPage() {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <HeaderBlock
         icon={Activity}
         micro="STEP 2 READ-ONLY"
@@ -1684,7 +1639,7 @@ function CalendarPage() {
   }
 
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <HeaderBlock icon={Calendar} micro="SCHEDULING & COVERAGE" title="Calendar" subtitle="Operational schedule for field visits, committee cycles, and deadline anchors." />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -1771,7 +1726,7 @@ function BradPage() {
   ]
 
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <HeaderBlock icon={Bot} micro="AI INTELLIGENCE" title="Brad AI Copilot" subtitle="Run compliance queries, generate remediation drafts, and simulate board-ready summaries." />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -1882,7 +1837,7 @@ function PolicyLibraryPage({ navigate }: { navigate: (id: SectionId) => void }) 
   ]
 
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <HeaderBlock icon={Shield} micro="COMPLIANCE EXECUTION" title="Policy Library" subtitle="Enterprise registry of policies with lifecycle state and ownership accountability." />
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -1988,7 +1943,7 @@ function PolicyLibraryPage({ navigate }: { navigate: (id: SectionId) => void }) 
 
 function PolicyDetailPage({ navigate }: { navigate: (id: SectionId) => void }) {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column' }}>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
       <GVGBDetailView onBackToLibrary={() => navigate('library')} />
     </div>
   )
@@ -2053,7 +2008,7 @@ function FormsLibraryPage() {
   ]
 
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <HeaderBlock icon={CheckCircle2} micro="eCIGN FORMS" title="Enterprise Forms Library" subtitle="Digital forms for compliance workflow execution and signing." />
 
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -2121,7 +2076,7 @@ function EvidencePage() {
   ]
 
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <HeaderBlock icon={FolderOpen} micro="EVIDENCE MANAGEMENT" title="Evidence Center" subtitle="Centralized artifact vault with chain-of-custody context and route linkage." />
 
       <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 16 }}>
@@ -2179,7 +2134,7 @@ function OnboardingPage({ isMobile }: { isMobile: boolean }) {
   ]
 
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <HeaderBlock
         icon={User}
         micro="WORKFORCE ENABLEMENT"
@@ -2252,7 +2207,7 @@ function OnboardingPage({ isMobile }: { isMobile: boolean }) {
 
 function DomainLibraryPage() {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <HeaderBlock
         icon={Network}
         micro="REGULATORY FRAMEWORK"
@@ -2367,7 +2322,7 @@ function DomainLibraryPage() {
 
 function ReferringPhysiciansPage() {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <HeaderBlock icon={Users} micro="PHYSICIAN NETWORK" title="Referring Physicians" subtitle="Physician referral network registry with order tracking and credentialing status." />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
@@ -2427,7 +2382,7 @@ function ReferringPhysiciansPage() {
 
 function VisitSchedulePage({ isMobile }: { isMobile: boolean }) {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <HeaderBlock icon={Calendar} micro="SCHEDULING & VISITS" title="Visit Schedule" subtitle="Daily and weekly home health visit assignments across all zones and disciplines." />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
@@ -2548,7 +2503,7 @@ function VisitSchedulePage({ isMobile }: { isMobile: boolean }) {
 
 function MissedVisitsPage({ isMobile }: { isMobile: boolean }) {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <HeaderBlock icon={AlertTriangle} micro="VISIT COMPLIANCE" title="Missed Visits" subtitle="Missed and cancelled visit tracking with reason codes and follow-up documentation status." />
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '16px' }}>
@@ -2622,7 +2577,7 @@ function MissedVisitsPage({ isMobile }: { isMobile: boolean }) {
 
 function HubstaffPage({ isMobile }: { isMobile: boolean }) {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <HeaderBlock icon={ArrowUpCircle} micro="WORKFORCE ANALYTICS" title="Hubstaff Integration" subtitle="Time tracking, productivity metrics, and workforce utilization insights." />
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(6, 1fr)', gap: '16px' }}>
@@ -2682,7 +2637,7 @@ function HubstaffPage({ isMobile }: { isMobile: boolean }) {
 
 function UserGuidesPage({ isMobile }: { isMobile: boolean }) {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <HeaderBlock icon={Folder} micro="SYSTEM DOCUMENTATION" title="User Guides" subtitle="Comprehensive system documentation and operational guides for all modules." />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: V3.glass3, border: `1px solid ${V3.borderDefault}`, borderRadius: '20px', padding: '10px 16px', maxWidth: '400px' }}>
@@ -2719,7 +2674,7 @@ function UserGuidesPage({ isMobile }: { isMobile: boolean }) {
 
 function SopLibraryPage() {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <HeaderBlock icon={FileText} micro="OPERATIONAL PROCEDURES" title="SOP Library" subtitle="Standard Operating Procedures for all clinical, administrative, and compliance workflows." />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
@@ -2781,7 +2736,7 @@ function SopLibraryPage() {
 
 function TrainingMaterialsPage({ isMobile }: { isMobile: boolean }) {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <HeaderBlock icon={PlayCircle} micro="LEARNING & DEVELOPMENT" title="Training Materials" subtitle="Courses, modules, and certifications for clinical and administrative staff." />
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '16px' }}>
@@ -2853,7 +2808,7 @@ function TrainingMaterialsPage({ isMobile }: { isMobile: boolean }) {
 
 function HelpCenterPage({ isMobile }: { isMobile: boolean }) {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <HeaderBlock icon={HelpCircle} micro="SUPPORT" title="Help Center" subtitle="Frequently asked questions, support resources, and contact information." />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: V3.glass3, border: `1px solid ${V3.borderDefault}`, borderRadius: '20px', padding: '14px 20px', maxWidth: '500px' }}>
@@ -2910,7 +2865,7 @@ function HelpCenterPage({ isMobile }: { isMobile: boolean }) {
 
 function DemoPage({ isMobile }: { isMobile: boolean }) {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <HeaderBlock icon={PlayCircle} micro="SANDBOX" title="Demo Environment" subtitle="Interactive sandbox with synthetic data. Explore all system features without affecting production." />
 
       <div style={{ padding: '20px 24px', background: 'rgba(0, 209, 193, 0.08)', border: `1px solid rgba(0, 209, 193, 0.33)`, borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -2958,7 +2913,7 @@ function DemoPage({ isMobile }: { isMobile: boolean }) {
 
 function AuditTrailPage() {
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <HeaderBlock icon={FileSearch} micro="CHAIN OF CUSTODY" title="Audit Trail" subtitle="Immutable chronological record of all evidence actions, access events, and chain-of-custody transfers." />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>

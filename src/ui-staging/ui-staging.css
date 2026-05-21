@@ -2132,13 +2132,6 @@ vite-error-overlay .message {
 }
 
 /* ── V3 STAGING APP UTILITIES ─────────────────────────────── */
-.animate-butter-shift {
-  animation: v3ButterShift 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-@keyframes v3ButterShift {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 
 .btn-smooth-hover {
   transition: background 0.33s cubic-bezier(0.16, 1, 0.3, 1),
