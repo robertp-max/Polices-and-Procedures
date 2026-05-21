@@ -26,7 +26,6 @@ import {
   ShieldCheck,
   User,
   Users,
-  X,
 } from 'lucide-react'
 import ciLogoWhite from '../assets/ci-logo-white.png'
 import { GVGBDetailView } from '@/policy/pages/GVGBDetailView'
