@@ -74,10 +74,9 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'staffing-calendar', to: '/staffing-calendar', label: 'Calendar', icon: CalendarDays, featureId: 'staffing.calendar.view' },
   { id: 'iadmin', to: '/iadministrator', label: 'Brad', icon: BradRobotIcon, featureId: 'brad.view' },
   {
-    id: 'ces', to: '/ces/dashboard', label: 'Compliance Execution (CES)',
+    id: 'ces', to: '/ces/calendar', label: 'Compliance Execution (CES)',
     subItems: [
-      { to: '/ces/dashboard',         label: 'Dashboard' },
-      { to: '/calendar?view=sprint',  label: 'Calendar (Calendar/Sprint)' },
+      { to: '/ces/calendar',          label: 'Calendar' },
       { to: '/ces/board',             label: 'Sprint Board' },
       { to: '/workflows',             label: 'Workflows' },
       { to: '/compliance/master-controls', label: 'Master Controls' },

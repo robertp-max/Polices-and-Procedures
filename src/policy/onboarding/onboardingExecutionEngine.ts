@@ -3,7 +3,7 @@
    --------------------------------------------------------------
    Single source of truth for compliance EXECUTION UNITS.
 
-   Replaces the prior CES mock seed. Every CES dashboard, calendar
+   Replaces the prior CES mock seed. Every CES calendar, board
    tile, audit-readiness count, blocker, and signature workflow is
    derived from this engine.
 

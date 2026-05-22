@@ -1,7 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    CesLayout — internal CES module shell
-   Sub-sidebar (Dashboard / Board / Calendar / Workloads / Reports)
-   + Top context bar (Active Sprint, Search, Profile, Escalations).
+   Top context bar (Active Sprint, Search, Profile, Escalations).
    Renders inside the global CommandCenterLayout.
    ═══════════════════════════════════════════════════════════════ */
 

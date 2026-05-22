@@ -44,6 +44,7 @@ const ResetPasswordPage = lazy(() => import('@/auth/pages/ResetPasswordPage').th
 const SetNewPasswordPage = lazy(() => import('@/auth/pages/SetNewPasswordPage').then(m => ({ default: m.SetNewPasswordPage })))
 const UIStagingPage = lazy(() => import('@/ui-staging/UIStagingPage').then(m => ({ default: m.UIStagingPage })))
 const UIStagingV32Page = lazy(() => import('@/ui-staging/UIStagingV32Page').then(m => ({ default: m.UIStagingV32Page })))
+const V3CESSeedPreview = lazy(() => import('@/ui-staging/ces/V3CESSeedPreview').then(m => ({ default: m.V3CESSeedPreview })))
 const UserGroupsPage = lazy(() => import('@/policy/security/identity/UserGroupsPage').then(m => ({ default: m.UserGroupsPage })))
 const PermissionCatalogPage = lazy(() => import('@/policy/security/identity/PermissionCatalogPage').then(m => ({ default: m.PermissionCatalogPage })))
 const UserAssignmentsPage = lazy(() => import('@/policy/security/identity/UserAssignmentsPage').then(m => ({ default: m.UserAssignmentsPage })))
@@ -92,7 +93,7 @@ const StaffingCalendarPage = lazy(() =>
 );
 
 // ── CES (Compliance Execution Sprint System) ─────────────────────
-const CesDashboardPage = lazy(() => import('@/policy/ces/pages/CesDashboardPage').then(m => ({ default: m.CesDashboardPage })))
+const CesCalendarPage  = lazy(() => import('@/policy/ces/pages/CesCalendarPage').then(m => ({ default: m.CesCalendarPage })))
 const CesBoardPage     = lazy(() => import('@/policy/ces/pages/CesBoardPage').then(m => ({ default: m.CesBoardPage })))
 const CesWorkloadsPage = lazy(() => import('@/policy/ces/pages/CesWorkloadsPage').then(m => ({ default: m.CesWorkloadsPage })))
 const CesReportsPage   = lazy(() => import('@/policy/ces/pages/CesReportsPage').then(m => ({ default: m.CesReportsPage })))
@@ -200,6 +201,9 @@ function AppRoutes() {
         {/* V3.2 Visual Lab — new shell prototype */}
         <Route path="/ui-staging/v32" element={<UIStagingV32Page />} />
 
+        {/* V3 CES High-Fidelity Seed Preview (first output of the seeding effort) */}
+        <Route path="/ui-staging/ces-seed" element={<V3CESSeedPreview />} />
+
         {/* Hidden executive proposal — accessed via Brad iAdministrator corner trigger */}
         <Route
           path="/brad-proposal"
@@ -301,11 +305,9 @@ function AppRoutes() {
                     <Route path="/system-documentation/:sectionId" element={<FeatureRouteGuard featureId="systemDocumentation.view"><SystemDocumentationPage /></FeatureRouteGuard>} />
 
                     {/* Compliance Execution Sprint System */}
-                    <Route path="/ces"           element={<Navigate to="/ces/dashboard" replace />} />
-                    <Route path="/ces/dashboard" element={<FeatureRouteGuard featureId="ces.view"><CesDashboardPage /></FeatureRouteGuard>} />
+                    <Route path="/ces"           element={<Navigate to="/ces/calendar" replace />} />
+                    <Route path="/ces/calendar"  element={<FeatureRouteGuard featureId="ces.view"><CesCalendarPage /></FeatureRouteGuard>} />
                     <Route path="/ces/board"     element={<FeatureRouteGuard featureId="ces.view"><CesBoardPage /></FeatureRouteGuard>} />
-                    {/* Sprint calendar is merged into the unified Master Calendar (toggle: view=sprint). */}
-                    <Route path="/ces/calendar"  element={<Navigate to="/calendar?view=sprint" replace />} />
                     <Route path="/ces/workloads" element={<FeatureRouteGuard featureId="ces.view"><CesWorkloadsPage /></FeatureRouteGuard>} />
                     <Route path="/ces/reports"   element={<FeatureRouteGuard featureId="ces.view"><CesReportsPage /></FeatureRouteGuard>} />
                     {/* My Tasks — execution-layer view of TASK obligations for current user. */}

@@ -1,6 +1,5 @@
-import { CesLayout } from '../layouts/CesLayout';
-import { ComplianceCalendar } from '../components/calendar/ComplianceCalendar';
+import { MasterCalendarPage } from '@/policy/pages/MasterCalendarPage';
 
 export function CesCalendarPage() {
-  return <CesLayout><ComplianceCalendar /></CesLayout>;
+  return <MasterCalendarPage />;
 }

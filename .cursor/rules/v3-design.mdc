@@ -1,0 +1,30 @@
+---
+description: V3 Veil Glass design rules for all UI work in the harness and staging surfaces
+globs: src/ui-staging/**/*.tsx, src/ui-staging/**/*.ts
+alwaysApply: true
+---
+
+# V3 Design — Mandatory Rules
+
+## Flat, Clean, Professional
+
+- **Everything must be flat.** No 3D transforms (translateY, translateZ, perspective), no drop-shadows that simulate depth, no embossed effects. The glass illusion is achieved through opacity and blur, not fake elevation.
+- **Do not box content for the sake of boxing it.** A border around an element must serve a clear structural purpose (grouping related but distinct sections, delineating interactive targets). If the content reads fine without the border, remove the border. Numbers, labels, and metadata do NOT need individual containers.
+- **Remove redundant lists.** If information is already conveyed by the parent context (e.g., an event title already implies its workflow), do not re-list it in a child panel. Every rendered element must earn its space.
+- **White space is the primary organizer.** Use spacing, alignment, and typography weight to create hierarchy — not borders, backgrounds, or containers.
+
+## Specifics
+
+- KPI/metric values: render inline as `value + label` pairs separated by gap. No bordered boxes around individual stats.
+- Drawer metadata: render as simple `label: value` text rows. No cards, no bordered containers, no background fills.
+- Process steps in drawers: only show if they add information beyond what the parent title already communicates. If redundant, omit entirely.
+- Hover states: use opacity/color transitions only. No translateY, no scale, no box-shadow changes.
+- The `.v3-invisible-glare` class in the harness provides hover sheen via background opacity change. Do NOT add transform-based hover effects on top of it.
+
+## Anti-Patterns (Never Do)
+
+- Wrapping a single number in a bordered card
+- Adding `border: 1px solid ...` to a container that only holds one text element
+- Nesting boxes inside boxes (card inside card)
+- Using background fills (glass2, glass3) on containers that don't need visual separation from siblings
+- Showing the same data in both a summary and a detail panel

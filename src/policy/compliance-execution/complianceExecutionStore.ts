@@ -31,6 +31,7 @@ import {
 
 import { regulatoryEventToComplianceEvent } from './complianceExecutionAdapters';
 import { buildEventExecutionDataflow } from './useEventExecutionDataflow';
+import { useSeededSnapshot } from './seededMode';
 import {
   regulatoryEventOverlapsSprint,
   type SprintWindow,
@@ -246,6 +247,7 @@ function filterRegulatoryEventsForScope(
 export function useComplianceExecution(
   scope: ComplianceExecutionScope = DEFAULT_COMPLIANCE_SCOPE,
 ): ComplianceExecutionSnapshot {
+  const seededSnapshot = useSeededSnapshot();
   const today = TODAY_ANCHOR;
 
   const generated = useAutogenStore(s => s.generatedEvents);
@@ -261,6 +263,7 @@ export function useComplianceExecution(
         : `s:${scope.window.id}`;
 
   return useMemo(() => {
+    if (seededSnapshot) return seededSnapshot;
     /* ── Regulatory events kept ONLY as event-layer metadata ── */
     const regEventsAll: RegulatoryEvent[] = [
       ...REGULATORY_EVENTS, ...generated, ...triggered,
@@ -383,7 +386,7 @@ export function useComplianceExecution(
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    scopeKey,
+    seededSnapshot, scopeKey,
     today, generated, triggered, engine,
     store.formStates, store.stepStates, store.minutesStates,
     store.approvals, store.completions, store.certifications,

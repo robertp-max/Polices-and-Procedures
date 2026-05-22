@@ -1384,14 +1384,10 @@
 
 .v3-invisible-glare {
   background: transparent;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  transition: background 0.33s var(--v3-ease),
-              border-color 0.33s var(--v3-ease);
+  transition: background 0.2s var(--v3-ease);
 }
 .v3-invisible-glare:hover {
-  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.005) 100%);
-  border-color: var(--v3-border);
+  background: rgba(255,255,255,0.03);
 }
 
 /* V3 Card base (used across previews for consistent matte glass panels) */
@@ -1749,7 +1745,6 @@ body[data-v3-ui-staging-root] {
   background-color: #05060A !important;
 }
 .v3-staging-page .v3-card,
-.v3-staging-page .v3-invisible-glare,
 .v3-staging-page .v3-board-col,
 .v3-staging-page .v3-evidence-banner {
   background: linear-gradient(135deg, rgba(32, 41, 56, 0.72) 0%, rgba(16, 20, 28, 0.48) 55%, rgba(5, 6, 10, 0.96) 100%) !important;
@@ -2038,6 +2033,21 @@ vite-error-overlay .message {
 .v3-main-content {
   view-transition-name: main-content;
   contain: layout style;
+  position: relative;
+}
+
+/* Dedicated outer shadow layer so it doesn't fight with backdrop-filter, overflow, or view transitions */
+.v3-main-content::before {
+  content: '';
+  position: absolute;
+  inset: -48px;
+  z-index: -1;
+  border-radius: 32px;
+  pointer-events: none;
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.75),
+    0 28px 85px rgba(0, 0, 0, 0.65),
+    0 52px 160px rgba(0, 0, 0, 0.55);
 }
 .v3-app-sidebar {
   view-transition-name: app-sidebar;
