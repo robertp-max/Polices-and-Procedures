@@ -50,6 +50,7 @@ const PermissionCatalogPage = lazy(() => import('@/policy/security/identity/Perm
 const UserAssignmentsPage = lazy(() => import('@/policy/security/identity/UserAssignmentsPage').then(m => ({ default: m.UserAssignmentsPage })))
 const AdminRolesPage = lazy(() => import('@/policy/security/identity/AdminRolesPage').then(m => ({ default: m.AdminRolesPage })))
 const AdminRouteGuard = lazy(() => import('@/policy/security/identity/AdminRouteGuard').then(m => ({ default: m.AdminRouteGuard })))
+const PageAccessRouteGuard = lazy(() => import('@/policy/security/identity/PageAccessRouteGuard').then(m => ({ default: m.PageAccessRouteGuard })))
 
 // ── Onboarding & Competency Journey ─────────────────────────────
 const JourneyHomePage    = lazy(() => import('@/policy/journey/pages/JourneyHomePage').then(m => ({ default: m.JourneyHomePage })))
@@ -264,10 +265,10 @@ function AppRoutes() {
                     <Route path="/demo" element={<FeatureRouteGuard featureId="demo.view"><DemoPage /></FeatureRouteGuard>} />
                     <Route path="/iadministrator" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="brad.view"><IAdministratorPage /></FeatureRouteGuard></RoleGate>} />
                     <Route path="/admin" element={<Navigate to="/admin/user-groups" replace />} />
-                    <Route path="/admin/user-groups" element={<AdminRouteGuard><UserGroupsPage /></AdminRouteGuard>} />
-                    <Route path="/admin/roles" element={<AdminRouteGuard><AdminRolesPage /></AdminRouteGuard>} />
-                    <Route path="/admin/permissions" element={<AdminRouteGuard><PermissionCatalogPage /></AdminRouteGuard>} />
-                    <Route path="/admin/users" element={<AdminRouteGuard><UserAssignmentsPage /></AdminRouteGuard>} />
+                    <Route path="/admin/user-groups" element={<AdminRouteGuard><PageAccessRouteGuard pageId="page.user-groups"><UserGroupsPage /></PageAccessRouteGuard></AdminRouteGuard>} />
+                    <Route path="/admin/roles" element={<AdminRouteGuard><PageAccessRouteGuard pageId="page.admin-roles"><AdminRolesPage /></PageAccessRouteGuard></AdminRouteGuard>} />
+                    <Route path="/admin/permissions" element={<AdminRouteGuard><PageAccessRouteGuard pageId="page.admin-permissions"><PermissionCatalogPage /></PageAccessRouteGuard></AdminRouteGuard>} />
+                    <Route path="/admin/users" element={<AdminRouteGuard><PageAccessRouteGuard pageId="page.user-assignments"><UserAssignmentsPage /></PageAccessRouteGuard></AdminRouteGuard>} />
                     <Route path="/security/identity" element={<Navigate to="/security/identity/user-groups" replace />} />
                     <Route path="/security/identity/user-groups" element={<Navigate to="/admin/user-groups" replace />} />
                     <Route path="/security/identity/permission-catalog" element={<Navigate to="/admin/permissions" replace />} />

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
-import { Plus, Pencil, Trash2, X, AlertCircle, CheckCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, AlertCircle, CheckCircle, ShieldCheck, Lock } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
 import { AuthApi, AuthApiError } from '@/auth/api';
 import { authorizeForAuthUser } from './authorize';
@@ -13,6 +13,8 @@ import {
 } from './userAssignmentsStore';
 import type { PermissionId } from './types';
 import { USER_GROUPS, USER_GROUP_BY_ID } from './userGroups';
+import { PageAccessMatrix } from './PageAccessMatrix';
+import { canManagePageAccess, canWritePage } from './pageAccess';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `px-3 py-1.5 rounded-md text-xs font-semibold border transition-colors ${
@@ -414,6 +416,8 @@ type ModalState =
   | { type: 'password'; userId: string }
   | null;
 
+type TabId = 'assignments' | 'page-access';
+
 const PROTECTED = new Set(['demo-user-careindeed']);
 
 export function UserAssignmentsPage() {
@@ -421,11 +425,21 @@ export function UserAssignmentsPage() {
   const [previewPermission, setPreviewPermission] = useState<PermissionId>('policy.approve');
   const [previewResourceId, setPreviewResourceId] = useState('demo-resource');
   const [modal, setModal] = useState<ModalState>(null);
+  const [tab, setTab] = useState<TabId>('assignments');
 
   const { users, assignments } = useUserAssignmentsStore(useShallow(s => ({ users: s.users, assignments: s.assignments })));
 
   const currentUserId = resolveUserIdFromAuth(user);
   const currentUser = users.find(u => u.id === currentUserId);
+
+  // Page View Access write permission gates User Management mutations.
+  // Robert + Marites always pass (canWritePage short-circuits via
+  // canManagePageAccess for the seeded manager identities). Other
+  // users without explicit `write` on `page.user-assignments` see
+  // disabled buttons with a tooltip explaining how to request access.
+  const canWriteUserManagement = canWritePage(user, 'page.user-assignments');
+  const canManageAccess = canManagePageAccess(user);
+  const writeDisabledTitle = 'You do not have Read + Write access for User Management. Request it from robertp@careindeed.com or maritesa@careindeed.com.';
 
   const preview = useMemo(() => authorizeForAuthUser(user, previewPermission, {
     kind: previewPermission.startsWith('policy.') ? 'policy' : previewPermission.startsWith('form.') ? 'form' : 'ceu',
@@ -454,7 +468,7 @@ export function UserAssignmentsPage() {
       <div className="max-w-6xl mx-auto px-6 py-6 space-y-4">
 
         <header className="flex flex-wrap items-center gap-3">
-          <h1 className="text-lg font-bold">Phase A Identity Admin — User Assignments</h1>
+          <h1 className="text-lg font-bold">Phase A Identity Admin — User Management</h1>
           <div className="ml-auto flex items-center gap-2">
             <NavLink to="/admin/user-groups" className={navClass}>User Groups</NavLink>
             <NavLink to="/admin/roles" className={navClass}>Roles</NavLink>
@@ -465,139 +479,222 @@ export function UserAssignmentsPage() {
 
         <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm">
           <div className="font-semibold">Current session user</div>
-          <div className="text-slate-600 mt-1 flex items-center gap-2">
+          <div className="text-slate-600 mt-1 flex items-center gap-2 flex-wrap">
             {currentUser?.name ?? 'Unknown'} ({currentUser?.email ?? 'n/a'})
             <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${STATUS_BADGE[currentUser?.status ?? 'active']}`}>
               {currentUser?.status ?? 'unknown'}
             </span>
+            {canWriteUserManagement
+              ? <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200"><ShieldCheck size={10}/> UM write</span>
+              : <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-500 border border-slate-200"><Lock size={10}/> UM read-only</span>}
+            {canManageAccess && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-sky-50 text-sky-700 border border-sky-200"><ShieldCheck size={10}/> page-access manager</span>
+            )}
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white p-3 space-y-2">
-          <div className="font-semibold text-sm">Authorization preview</div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-            <label className="flex flex-col gap-1">
-              Permission
-              <select
-                value={previewPermission}
-                onChange={event => setPreviewPermission(event.target.value as PermissionId)}
-                className="border border-slate-300 rounded px-2 py-1.5"
-              >
-                {PREVIEW_PERMISSIONS.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </label>
-            <label className="flex flex-col gap-1 md:col-span-2">
-              Resource Id
-              <input
-                value={previewResourceId}
-                onChange={event => setPreviewResourceId(event.target.value)}
-                className="border border-slate-300 rounded px-2 py-1.5"
-                placeholder="demo-policy-001"
-              />
-            </label>
-          </div>
-          <div className={`rounded-md border px-3 py-2 text-sm ${preview.allow ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'}`}>
-            {preview.allow ? '✅ ALLOW' : '🚫 DENY'} — {preview.reasonCode} — {preview.reason}
-          </div>
+        {/* Tab navigation: User Assignments | Page View Access */}
+        <div role="tablist" className="flex items-center gap-1 border-b border-slate-200">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'assignments'}
+            onClick={() => setTab('assignments')}
+            className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
+              tab === 'assignments'
+                ? 'text-[#0f766e] border-[#0f766e]'
+                : 'text-slate-500 border-transparent hover:text-slate-700'
+            }`}
+          >
+            User Assignments
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'page-access'}
+            onClick={() => setTab('page-access')}
+            className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
+              tab === 'page-access'
+                ? 'text-[#0f766e] border-[#0f766e]'
+                : 'text-slate-500 border-transparent hover:text-slate-700'
+            }`}
+          >
+            Page View Access
+          </button>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
-            <div className="text-sm font-semibold text-slate-700">Users ({rows.length})</div>
-            <button
-              type="button"
-              onClick={() => setModal({ type: 'add' })}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-[#0f766e] text-white hover:bg-[#0d6461] transition-colors"
-            >
-              <Plus size={13} /> Add User
-            </button>
-          </div>
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-600 border-b border-slate-100">
-              <tr>
-                <th className="text-left px-4 py-2.5 font-semibold">User</th>
-                <th className="text-left px-4 py-2.5 font-semibold">Group / Role</th>
-                <th className="text-left px-4 py-2.5 font-semibold">Status</th>
-                <th className="text-left px-4 py-2.5 font-semibold">Scope</th>
-                <th className="text-left px-4 py-2.5 font-semibold">Effective</th>
-                <th className="text-left px-4 py-2.5 font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(({ user: u, assignment, group }) => {
-                const isProtected = PROTECTED.has(u.id);
-                const isSelf = u.id === currentUserId;
-                return (
-                  <tr key={u.id} className="border-t border-slate-100 hover:bg-slate-50/60 transition-colors">
-                    <td className="px-4 py-2.5">
-                      <div className="font-medium text-slate-800">{u.name}</div>
-                      <div className="text-xs text-slate-500 mt-0.5">{u.email}</div>
-                      {u.source === 'manual-provisioned' && (
-                        <span className="text-[10px] text-slate-400 font-mono">manual-provisioned</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5 text-slate-700">{group?.name ?? '—'}</td>
-                    <td className="px-4 py-2.5">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${STATUS_BADGE[u.status] ?? STATUS_BADGE.active}`}>
-                        {u.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2.5 text-xs font-mono text-slate-500">
-                      {assignment
-                        ? `org:${assignment.scope.organizationId}${assignment.scope.branchId ? ` branch:${assignment.scope.branchId}` : ''}`
-                        : '—'}
-                    </td>
-                    <td className="px-4 py-2.5 text-xs text-slate-500">
-                      {assignment?.effectiveFrom ? assignment.effectiveFrom.slice(0, 10) : '—'}
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setModal({ type: 'edit', userId: u.id })}
-                          disabled={isProtected}
-                          title={isProtected ? 'Protected — cannot edit' : `Edit ${u.name}`}
-                          className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded border transition-colors ${isProtected ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-600 hover:bg-slate-100'}`}
-                        >
-                          <Pencil size={11} /> Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setModal({ type: 'delete', userId: u.id })}
-                          disabled={isProtected || isSelf}
-                          title={isProtected ? 'Protected — cannot remove' : isSelf ? 'Cannot remove your own account' : `Remove ${u.name}`}
-                          className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded border transition-colors ${isProtected || isSelf ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-rose-200 text-rose-600 hover:bg-rose-50'}`}
-                        >
-                          <Trash2 size={11} /> Delete
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setModal({ type: 'password', userId: u.id })}
-                          disabled={isSelf}
-                          title={isSelf ? 'Use self-service reset for your own account' : `Manual password change for ${u.name}`}
-                          className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded border transition-colors ${isSelf ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-amber-200 text-amber-700 hover:bg-amber-50'}`}
-                        >
-                          Password
-                        </button>
-                      </div>
-                    </td>
+        {tab === 'assignments' && (
+          <>
+            <div className="rounded-lg border border-slate-200 bg-white p-3 space-y-2">
+              <div className="font-semibold text-sm">Authorization preview</div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                <label className="flex flex-col gap-1">
+                  Permission
+                  <select
+                    value={previewPermission}
+                    onChange={event => setPreviewPermission(event.target.value as PermissionId)}
+                    className="border border-slate-300 rounded px-2 py-1.5"
+                  >
+                    {PREVIEW_PERMISSIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1 md:col-span-2">
+                  Resource Id
+                  <input
+                    value={previewResourceId}
+                    onChange={event => setPreviewResourceId(event.target.value)}
+                    className="border border-slate-300 rounded px-2 py-1.5"
+                    placeholder="demo-policy-001"
+                  />
+                </label>
+              </div>
+              <div className={`rounded-md border px-3 py-2 text-sm ${preview.allow ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'}`}>
+                {preview.allow ? 'ALLOW' : 'DENY'} — {preview.reasonCode} — {preview.reason}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
+                <div className="text-sm font-semibold text-slate-700">Users ({rows.length})</div>
+                <button
+                  type="button"
+                  onClick={() => setModal({ type: 'add' })}
+                  disabled={!canWriteUserManagement}
+                  title={canWriteUserManagement ? 'Add a new user' : writeDisabledTitle}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                    canWriteUserManagement
+                      ? 'bg-[#0f766e] text-white hover:bg-[#0d6461]'
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                  }`}
+                >
+                  <Plus size={13} /> Add User
+                </button>
+              </div>
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 text-slate-600 border-b border-slate-100">
+                  <tr>
+                    <th className="text-left px-4 py-2.5 font-semibold">User</th>
+                    <th className="text-left px-4 py-2.5 font-semibold">Group / Role</th>
+                    <th className="text-left px-4 py-2.5 font-semibold">Status</th>
+                    <th className="text-left px-4 py-2.5 font-semibold">Scope</th>
+                    <th className="text-left px-4 py-2.5 font-semibold">Effective</th>
+                    <th className="text-left px-4 py-2.5 font-semibold">Actions</th>
                   </tr>
-                );
-              })}
-              {rows.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">No user assignments found.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody>
+                  {rows.map(({ user: u, assignment, group }) => {
+                    const isProtected = PROTECTED.has(u.id);
+                    const isSelf = u.id === currentUserId;
+                    const editDisabled = isProtected || !canWriteUserManagement;
+                    const deleteDisabled = isProtected || isSelf || !canWriteUserManagement;
+                    const passwordDisabled = isSelf || !canWriteUserManagement;
+                    return (
+                      <tr key={u.id} className="border-t border-slate-100 hover:bg-slate-50/60 transition-colors">
+                        <td className="px-4 py-2.5">
+                          <div className="font-medium text-slate-800">{u.name}</div>
+                          <div className="text-xs text-slate-500 mt-0.5">{u.email}</div>
+                          {u.source === 'manual-provisioned' && (
+                            <span className="text-[10px] text-slate-400 font-mono">manual-provisioned</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2.5 text-slate-700">{group?.name ?? '—'}</td>
+                        <td className="px-4 py-2.5">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${STATUS_BADGE[u.status] ?? STATUS_BADGE.active}`}>
+                            {u.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-xs font-mono text-slate-500">
+                          {assignment
+                            ? `org:${assignment.scope.organizationId}${assignment.scope.branchId ? ` branch:${assignment.scope.branchId}` : ''}`
+                            : '—'}
+                        </td>
+                        <td className="px-4 py-2.5 text-xs text-slate-500">
+                          {assignment?.effectiveFrom ? assignment.effectiveFrom.slice(0, 10) : '—'}
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setModal({ type: 'edit', userId: u.id })}
+                              disabled={editDisabled}
+                              title={
+                                isProtected
+                                  ? 'Protected — cannot edit'
+                                  : !canWriteUserManagement
+                                    ? writeDisabledTitle
+                                    : `Edit ${u.name}`
+                              }
+                              className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded border transition-colors ${editDisabled ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-600 hover:bg-slate-100'}`}
+                            >
+                              <Pencil size={11} /> Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setModal({ type: 'delete', userId: u.id })}
+                              disabled={deleteDisabled}
+                              title={
+                                isProtected
+                                  ? 'Protected — cannot remove'
+                                  : isSelf
+                                    ? 'Cannot remove your own account'
+                                    : !canWriteUserManagement
+                                      ? writeDisabledTitle
+                                      : `Remove ${u.name}`
+                              }
+                              className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded border transition-colors ${deleteDisabled ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-rose-200 text-rose-600 hover:bg-rose-50'}`}
+                            >
+                              <Trash2 size={11} /> Delete
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setModal({ type: 'password', userId: u.id })}
+                              disabled={passwordDisabled}
+                              title={
+                                isSelf
+                                  ? 'Use self-service reset for your own account'
+                                  : !canWriteUserManagement
+                                    ? writeDisabledTitle
+                                    : `Manual password change for ${u.name}`
+                              }
+                              className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded border transition-colors ${passwordDisabled ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-amber-200 text-amber-700 hover:bg-amber-50'}`}
+                            >
+                              Password
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {rows.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">No user assignments found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {tab === 'page-access' && (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-slate-200 bg-white p-3">
+              <div className="text-sm font-semibold text-slate-700">Page View Access</div>
+              <p className="text-xs text-slate-500 mt-1">
+                Salesforce-style access matrix. Toggle component visibility and pick a per-page
+                access level for each user. <strong>Read + Write</strong> implies <strong>Read</strong>.
+                Role-based action permissions still apply on top.
+              </p>
+            </div>
+            <PageAccessMatrix initialTargetUserId={currentUserId} />
+          </div>
+        )}
       </div>
 
-      {modal?.type === 'add' && <AddUserModal onClose={() => setModal(null)} />}
-      {modal?.type === 'edit' && <EditUserModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
-      {modal?.type === 'delete' && <DeleteUserModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
-      {modal?.type === 'password' && <ManualPasswordModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
+      {modal?.type === 'add' && canWriteUserManagement && <AddUserModal onClose={() => setModal(null)} />}
+      {modal?.type === 'edit' && canWriteUserManagement && <EditUserModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
+      {modal?.type === 'delete' && canWriteUserManagement && <DeleteUserModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
+      {modal?.type === 'password' && canWriteUserManagement && <ManualPasswordModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
     </div>
   );
 }

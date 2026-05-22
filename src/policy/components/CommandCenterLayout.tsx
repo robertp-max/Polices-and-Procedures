@@ -20,6 +20,9 @@ import { useAuth } from '@/auth/AuthProvider';
 import { evaluateAdminAccess } from '@/policy/security/identity';
 import { canViewNavItem as canViewNavItemFn } from '@/policy/security/features/featureAccess';
 import { useUserAssignmentsStore } from '@/policy/security/identity/userAssignmentsStore';
+import { canViewPage } from '@/policy/security/identity/pageAccess';
+import { usePageAccessStore } from '@/policy/security/identity/pageAccessStore';
+import type { PageId } from '@/policy/security/identity/pageAccessTypes';
 import { PermissionGate } from '@/policy/security/features/PermissionGate';
 import { ShellFrame, ShellNavRail, ShellTopbar, ShellContentFrame, ShellMobileDrawer } from '@/policy/components/ui';
 import { ContextualKnowledgeBulb } from '@/policy/components/help/ContextualKnowledgeBulb';
@@ -52,6 +55,12 @@ function BradRobotIcon({ size = 24, strokeWidth = 1.5, className }: { size?: num
 interface NavSubItem {
   to: string;
   label: string;
+  /**
+   * Optional page-view-access id. When set, the sub-item is hidden
+   * from users without read access to the page. Lets the page-access
+   * matrix drive sidebar visibility per sub-route.
+   */
+  pageId?: PageId;
 }
 interface NavItem {
   id: string;
@@ -65,6 +74,13 @@ interface NavItem {
    * Items without a featureId are visible to all authenticated users.
    */
   featureId?: string;
+  /**
+   * Optional page-view-access id. When set, the item is also hidden
+   * for users without read access to that page (in addition to the
+   * featureId check). Page access acts as an extra curtain on top of
+   * the existing role-based gate.
+   */
+  pageId?: PageId;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -194,24 +210,43 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
         to: '/admin/user-groups',
         label: 'Admin',
         subItems: [
-          { to: '/admin/user-groups', label: 'User Groups' },
-          { to: '/admin/roles', label: 'Roles' },
-          { to: '/admin/permissions', label: 'Permissions' },
-          { to: '/admin/users', label: 'User Assignments' },
+          { to: '/admin/user-groups', label: 'User Groups',       pageId: 'page.user-groups' },
+          { to: '/admin/roles',       label: 'Roles',             pageId: 'page.admin-roles' },
+          { to: '/admin/permissions', label: 'Permissions',       pageId: 'page.admin-permissions' },
+          { to: '/admin/users',       label: 'User Management',   pageId: 'page.user-assignments' },
         ],
         icon: ShieldCheck,
         featureId: 'admin.permissions.view',
       }
     : null;
-  // Subscribe to assignment changes so nav re-renders when admins
-  // add / remove role assignments from the User Groups page.
+  // Subscribe to assignment + page-access changes so nav re-renders
+  // when admins add / remove role assignments OR change page-view
+  // access from the matrix.
   const _assignmentsRev = useUserAssignmentsStore(s => s.assignments);
   const _usersRev = useUserAssignmentsStore(s => s.users);
+  const _pageAccessRev = usePageAccessStore(s => s.access);
   const fullNavItems = adminNavItem ? [...NAV_ITEMS, adminNavItem] : NAV_ITEMS;
   const allNavItems = useMemo(
-    () => fullNavItems.filter(item => !item.featureId || canViewNavItemFn(user, item.featureId)),
+    () =>
+      fullNavItems
+        // Top-level featureId + pageId gating.
+        .filter(item => !item.featureId || canViewNavItemFn(user, item.featureId))
+        .filter(item => !item.pageId || canViewPage(user, item.pageId))
+        // Filter sub-items by their own page access. Drop the parent
+        // entirely if it originally had sub-items but every one was
+        // filtered out — the parent would render with nothing to click.
+        .map(item => {
+          if (!item.subItems?.length) return item;
+          const visibleSubs = item.subItems.filter(s => !s.pageId || canViewPage(user, s.pageId));
+          return { ...item, subItems: visibleSubs, _origHadSubs: true } as NavItem & { _origHadSubs?: boolean };
+        })
+        .filter(item => {
+          const withMeta = item as NavItem & { _origHadSubs?: boolean };
+          if (withMeta._origHadSubs && (!item.subItems || item.subItems.length === 0)) return false;
+          return true;
+        }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, _assignmentsRev, _usersRev, adminAccess.allowed],
+    [user, _assignmentsRev, _usersRev, _pageAccessRev, adminAccess.allowed],
   );
 
   const detailMode = useShellStore(s => s.detailMode);
