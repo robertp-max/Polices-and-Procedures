@@ -1,0 +1,136 @@
+# _route-map.txt
+# Route Map: Major Routes → Page Components
+# Generated from analysis of src/App.tsx (primary routing file) + discovered page modules.
+# Date: 2026-05-19 (analysis context)
+# All protected routes (except standalone prints/auth) are wrapped in ProtectedRoute + CommandCenterLayout + FeatureRouteGuard (+ optional RoleGate).
+
+## Public / Auth Routes (outside shell)
+- `/` → EntryRoute (redirect to /dashboard or /login based on auth)
+- `/login` → LoginPage (auth/pages/LoginPage.tsx)
+- `/register` → RegisterPage (auth/pages/RegisterPage.tsx)
+- `/check-email` → CheckEmailPage (auth/pages/CheckEmailPage.tsx)
+- `/setup-account` → SetupAccountPage (auth/pages/SetupAccountPage.tsx)
+- `/forgot-password` → ForgotPasswordPage (auth/pages/ForgotPasswordPage.tsx)
+- `/reset-password` → ResetPasswordPage (auth/pages/ResetPasswordPage.tsx)
+- `/set-new-password` → SetNewPasswordPage (auth/pages/SetNewPasswordPage.tsx)
+
+## Standalone / Print Routes (outside main layout)
+- `/print/GV-GB-001/appendix/:appendixId` → GVGBAppendixPrint (policy/pages/GVGBAppendixPrint.tsx)
+- `/print/GV-GB-001` → GVGBPrintDocument (policy/pages/GVGBPrintDocument.tsx)
+- `/print/:policyId` → PrintPage (policy/pages/PrintPage.tsx)
+- `/surveyor/policy/:policyId` → SurveyorPolicyViewerPage (policy/pages/SurveyorPolicyViewerPage.tsx)
+- `/forms/:formId/print` → FormPrintView (policy/pages/FormPrintView.tsx)
+
+## UI Lab
+- `/ui-staging` → UIStagingPage (ui-staging/UIStagingPage.tsx)
+
+## Protected Routes (inside CommandCenterLayout shell)
+### Core Operations & Library
+- `/dashboard` → DashboardPage (policy/pages/DashboardPage.tsx)
+- `/library` → LibraryPage (policy/pages/LibraryPage.tsx)
+- `/library/:policyId` → PolicyDetailPage (policy/pages/PolicyDetailPage.tsx)
+- `/policies/:policyId` → PolicyDetailPage (policy/pages/PolicyDetailPage.tsx)  [alias]
+- `/policies` → redirect to /library
+- `/taxonomy` → TaxonomyPage (policy/pages/TaxonomyPage.tsx)
+- `/framework` → FrameworkPage (policy/pages/FrameworkPage.tsx)
+- `/framework/achc-survey` → AchcSurveyAlignmentPage (policy/pages/AchcSurveyAlignmentPage.tsx)
+- `/governance` → GovernancePage (policy/pages/GovernancePage.tsx)
+- `/audit` → AuditModePage (policy/pages/AuditModePage.tsx)
+- `/evidence` → EvidenceCenterPage (policy/pages/EvidenceCenterPage.tsx)
+- `/forms` → FormsPage (policy/pages/FormsPage.tsx)
+- `/forms/:formId` → FormViewer (policy/components/FormViewer.tsx)  [via lazy]
+
+### Calendar & Execution Timeline (unified)
+- `/calendar` → MasterCalendarPage (policy/pages/MasterCalendarPage.tsx)
+- `/calendar/event/:eventId` → MobileIncidentExecutionPage (policy/pages/MobileIncidentExecutionPage.tsx) [stage="event"]
+- `/calendar/event/:eventId/workflow` → MobileIncidentExecutionPage [stage="workflow"]
+- `/calendar/event/:eventId/task/:taskId` → MobileIncidentExecutionPage [stage="task"]
+- `/calendar/event/:eventId/evidence/:taskId` → MobileIncidentExecutionPage [stage="evidence"]
+- `/calendar/event/:eventId/approval` → MobileIncidentExecutionPage [stage="approval"]
+
+### Policy Lifecycle & Special Workspaces
+- `/policy-lifecycle` → PolicyLifecyclePage (policy/pages/PolicyLifecyclePage.tsx)
+- `/policy-lifecycle/:policyId` → PolicyLifecyclePage (policy/pages/PolicyLifecyclePage.tsx)
+- Legacy redirects: /drafts, /review, /publish → /policy-lifecycle (with query params)
+
+### iAdministrator / Executive
+- `/iadministrator` → IAdministratorPage (policy/pages/iAdministrator/index.tsx)
+- `/brad-proposal` → BradProposalPage (policy/pages/BradProposal/index.tsx)  [Feature + guarded]
+- `/demo` → DemoPage (policy/pages/DemoPage.tsx)
+- `/hubstaff` → HubstaffStagingPage (policy/pages/HubstaffStagingPage.tsx)
+
+### Workflows & Master Control
+- `/workflows/*` → WorkflowLibraryApp (policy/workflows/WorkflowLibraryApp.tsx)
+- `/compliance/master-controls` → MasterControlInventoryPage (policy/pages/MasterControlInventoryPage.tsx)
+- `/artifacts/:artifactId` → ArtifactViewerPage (policy/pages/ArtifactViewerPage.tsx)
+- `/viewer/:referenceId` → GenericReferenceViewer (policy/pages/GenericReferenceViewer.tsx)
+- `/events/:referenceId` → GenericReferenceViewer
+- `/tasks/:referenceId` → GenericReferenceViewer
+
+### Help & Documentation
+- `/help/*` → HelpCenterPage (policy/help/HelpCenterPage.tsx)
+- `/system-documentation` → redirect to /system-documentation/executive-overview
+- `/system-documentation/:sectionId` → SystemDocumentationPage (policy/pages/SystemDocumentationPage.tsx)
+
+### CES (Compliance Execution Sprints)
+- `/ces` → redirect to /ces/dashboard
+- `/ces/dashboard` → CesDashboardPage (policy/ces/pages/CesDashboardPage.tsx)
+- `/ces/board` → CesBoardPage (policy/ces/pages/CesBoardPage.tsx)
+- `/ces/workloads` → CesWorkloadsPage (policy/ces/pages/CesWorkloadsPage.tsx)
+- `/ces/reports` → CesReportsPage (policy/ces/pages/CesReportsPage.tsx)
+- `/ces/my-tasks` → redirect to /my-tasks
+- `/my-tasks` → MyTasksPage (policy/ces/pages/MyTasksPage.tsx)
+
+### PM Layer (Project Management overlays)
+- `/pm` → redirect to /pm/my-tasks
+- `/pm/my-tasks` → MyTasksPmPage (policy/components/pm/MyTasksPmPage.tsx)
+- `/pm/sprint-plan` → SprintPlanPage (policy/components/pm/SprintPlanPage.tsx)
+- `/pm/sprint-review` → SprintReviewPage (policy/components/pm/SprintReviewPage.tsx)
+- `/pm/approvals` → ApprovalsQueuePage (policy/components/pm/ApprovalsQueuePage.tsx)
+- `/pm/dashboard` → PmDashboardPage (policy/components/pm/PmDashboardPage.tsx)
+
+### Staffing / Clinician & Patient Profiles
+- `/clinicians` → ClinicianListPage (policy/staffing/pages/ClinicianListPage.tsx)
+- `/clinicians/:clinicianId` → ClinicianDetailPage (policy/staffing/pages/ClinicianDetailPage.tsx)
+- `/patients` → PatientListPage (policy/staffing/pages/PatientListPage.tsx)
+- `/patients/:patientId` → PatientDetailPage (policy/staffing/pages/PatientDetailPage.tsx)
+- `/staffing-calendar` → StaffingCalendarPage (policy/staffing/pages/StaffingCalendarPage.tsx)
+
+### Journey / Onboarding / Competency
+- `/journey` → JourneyHomePage (policy/journey/pages/JourneyHomePage.tsx)
+- `/journey/v1-journey` → OnboardingV1JourneyPage (policy/journey/pages/OnboardingV1JourneyPage.tsx)
+- `/journey/appendix-f` → AppendixFPage (policy/journey/pages/AppendixFPage.tsx)
+- `/journey/module/:moduleId` → ModulePlayerPage (policy/journey/pages/ModulePlayerPage.tsx)
+- `/journey/supervisor` → SupervisorPage (policy/journey/pages/SupervisorPage.tsx)
+- `/journey/admin` → AdminPage (policy/journey/pages/AdminPage.tsx)
+- `/journey/guide` → UserGuidePage (policy/journey/pages/UserGuidePage.tsx)
+- `/journey/staging/m01` → StagingM01Page (env-gated: VITE_STAGING_M01) (policy/journey/pages/StagingM01Page.tsx)
+
+### Onboarding V2 (audit-grade engine, nested under layout)
+- `/onboarding-v2` → OnboardingV2Layout (policy/onboarding-v2/pages/OnboardingV2Layout.tsx) [index redirects]
+  - `/onboarding-v2/dashboard` → OnboardingV2Dashboard (policy/onboarding-v2/pages/DashboardPage.tsx)
+  - `/onboarding-v2/activate` → OnboardingV2Activation (policy/onboarding-v2/pages/ActivationPage.tsx)
+  - `/onboarding-v2/batches` → OnboardingV2BatchList (policy/onboarding-v2/pages/BatchListPage.tsx)
+  - `/onboarding-v2/batches/:batchId` → OnboardingV2BatchView (policy/onboarding-v2/pages/BatchViewPage.tsx)
+  - `/onboarding-v2/audit` → OnboardingV2Audit (policy/onboarding-v2/pages/AuditReadinessPage.tsx)
+  - `/onboarding-v2/governance` → OnboardingV2Governance (policy/onboarding-v2/pages/GovernancePage.tsx)
+
+### Admin / Security / Identity (AdminRouteGuard protected)
+- `/admin` → redirect to /admin/user-groups
+- `/admin/user-groups` → UserGroupsPage (policy/security/identity/UserGroupsPage.tsx)
+- `/admin/roles` → AdminRolesPage (policy/security/identity/AdminRolesPage.tsx)
+- `/admin/permissions` → PermissionCatalogPage (policy/security/identity/PermissionCatalogPage.tsx)
+- `/admin/users` → UserAssignmentsPage (policy/security/identity/UserAssignmentsPage.tsx)
+
+### Legacy / Aliases
+- Various redirects for old routes (/drafts, /review, /publish, /ces/calendar, /ces/my-tasks, security/identity aliases)
+
+## Notes
+- All main feature routes use `<FeatureRouteGuard featureId="...">` for permission gating.
+- Many use `<RoleGate denyTrainer>` to restrict trainers.
+- Heavy use of lazy() + Suspense for code-splitting (see top of App.tsx).
+- MobileIncidentExecutionPage handles multiple sub-routes via `stage` prop.
+- Onboarding V2 uses nested <Route> inside OnboardingV2Layout.
+- CommandCenterLayout (src/policy/components/CommandCenterLayout.tsx) provides the shared shell/sidebar/header for most pages.
+
+# End of _route-map.txt

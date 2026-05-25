@@ -1307,80 +1307,18 @@
 }
 
 /* ================================================================
-   CLAUDEX2 CSS-ONLY TRANSITION SYSTEM (from ClaudeX2 reworked delivery)
-   Appended to support honest, zero-dependency page & subview animations
-   in the ui-staging lab. Matches the visual contract promised earlier.
+   Legacy per-page animation classes are intentionally disabled.
+   Transition orchestration is now driven only by the View Transition API
+   to avoid duplicate animation layers, jank, and visual thrash.
    ================================================================ */
 
-@keyframes v3PageIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.982) translateY(7px);
-    filter: blur(4px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0px);
-  }
-}
-
-@keyframes v3PageOut {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-    filter: blur(0px);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.98);
-    filter: blur(2px);
-  }
-}
-
-@keyframes v3SubViewIn {
-  0% {
-    opacity: 0;
-    transform: translateY(10px) scale(0.985);
-    filter: blur(2.5px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0px);
-  }
-}
-
-@keyframes v3FadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-.v3-page-animate {
-  animation: v3PageIn var(--v3-duration) var(--v3-ease) both;
-  will-change: transform, opacity, filter;
-  backface-visibility: hidden;
-}
-
-.v3-subview-animate {
-  animation: v3SubViewIn var(--v3-duration-sub) var(--v3-ease) both;
-  will-change: transform, opacity, filter;
-  backface-visibility: hidden;
-}
-
+.v3-page-animate,
+.v3-subview-animate,
 .v3-stagger > * {
-  animation: v3FadeIn 0.4s var(--v3-ease) both;
+  animation: none !important;
+  transform: none !important;
+  filter: none !important;
 }
-.v3-stagger > *:nth-child(1) { animation-delay: 0.05s; }
-.v3-stagger > *:nth-child(2) { animation-delay: 0.1s; }
-.v3-stagger > *:nth-child(3) { animation-delay: 0.15s; }
-.v3-stagger > *:nth-child(4) { animation-delay: 0.2s; }
-.v3-stagger > *:nth-child(5) { animation-delay: 0.25s; }
-.v3-stagger > *:nth-child(6) { animation-delay: 0.3s; }
-.v3-stagger > *:nth-child(7) { animation-delay: 0.35s; }
-.v3-stagger > *:nth-child(8) { animation-delay: 0.4s; }
-.v3-stagger > *:nth-child(9) { animation-delay: 0.45s; }
-.v3-stagger > *:nth-child(10) { animation-delay: 0.5s; }
 
 .v3-invisible-glare {
   background: transparent;
@@ -2015,10 +1953,9 @@ vite-error-overlay .message {
 }
 
 /* ============================================================
-   §11 MULTIPAGE TRANSITION SYSTEM
-   Same-document & cross-document View Transitions for the
-   staging shell. All animations fall back to a simple opacity
-   crossfade when the user requests reduced motion (§11.6).
+   PREMIUM MULTIPAGE TRANSITION SYSTEM
+   Source of truth: MPA-style View Transition behavior
+   (shell remains stable; content animates with directional intent).
 ============================================================ */
 
 /* §11.1 Opt-in for cross-document navigations */
@@ -2026,10 +1963,6 @@ vite-error-overlay .message {
   navigation: auto;
 }
 
-/* §11.3 Pattern A — Global Route Navigation (Fade-Drift on main-content).
-   The shell (sidebar, header, watermark, canvas) is held static via
-   their own view-transition-name reservations below; only the inner
-   content drifts in/out. */
 .v3-main-content {
   view-transition-name: main-content;
   contain: layout style;
@@ -2062,35 +1995,59 @@ vite-error-overlay .message {
 @media (prefers-reduced-motion: no-preference) {
   @keyframes v3-vt-fade-out {
     from { opacity: 1; }
-    to   { opacity: 0; }
+    to { opacity: 0; }
   }
   @keyframes v3-vt-fade-in {
     from { opacity: 0; }
-    to   { opacity: 1; }
+    to { opacity: 1; }
   }
-  @keyframes v3-vt-drift-down {
-    from { transform: translateY(0); }
-    to   { transform: translateY(10px); }
+  @keyframes v3-vt-enter-forward {
+    from { transform: translateY(18px) scale(1.01); }
+    to { transform: translateY(0) scale(1); }
   }
-  @keyframes v3-vt-drift-up {
-    from { transform: translateY(10px); }
-    to   { transform: translateY(0); }
+  @keyframes v3-vt-exit-forward {
+    from { transform: translateY(0) scale(1); }
+    to { transform: translateY(-10px) scale(0.992); }
   }
-
-  ::view-transition-old(main-content) {
-    animation:
-      v3-vt-fade-out 0.20s cubic-bezier(0.4, 0, 1, 1) both,
-      v3-vt-drift-down 0.20s cubic-bezier(0.4, 0, 1, 1) both;
+  @keyframes v3-vt-enter-back {
+    from { transform: translateY(-12px) scale(1.008); }
+    to { transform: translateY(0) scale(1); }
   }
-  ::view-transition-new(main-content) {
-    animation:
-      v3-vt-fade-in 0.30s cubic-bezier(0, 0, 0.2, 1) both,
-      v3-vt-drift-up 0.30s cubic-bezier(0, 0, 0.2, 1) both;
+  @keyframes v3-vt-exit-back {
+    from { transform: translateY(0) scale(1); }
+    to { transform: translateY(10px) scale(0.992); }
   }
 
-  /* §11.3 Shell persistence — header and sidebar must NOT animate.
-     Holding them at zero-duration prevents the cross-fade flash that
-     otherwise breaks the single-glass illusion during a route change. */
+  ::view-transition-group(main-content) {
+    animation-duration: 0.42s;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  html[data-v3-vt-direction="forward"] ::view-transition-old(main-content),
+  html[data-v3-vt-direction="none"] ::view-transition-old(main-content) {
+    animation:
+      v3-vt-fade-out 0.24s cubic-bezier(0.4, 0, 1, 1) both,
+      v3-vt-exit-forward 0.24s cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  html[data-v3-vt-direction="forward"] ::view-transition-new(main-content),
+  html[data-v3-vt-direction="none"] ::view-transition-new(main-content) {
+    animation:
+      v3-vt-fade-in 0.34s cubic-bezier(0, 0, 0.2, 1) 0.06s both,
+      v3-vt-enter-forward 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  html[data-v3-vt-direction="back"] ::view-transition-old(main-content) {
+    animation:
+      v3-vt-fade-out 0.24s cubic-bezier(0.4, 0, 1, 1) both,
+      v3-vt-exit-back 0.24s cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  html[data-v3-vt-direction="back"] ::view-transition-new(main-content) {
+    animation:
+      v3-vt-fade-in 0.34s cubic-bezier(0, 0, 0.2, 1) 0.06s both,
+      v3-vt-enter-back 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Keep app chrome static and persistent through transitions. */
   ::view-transition-old(app-sidebar),
   ::view-transition-new(app-sidebar),
   ::view-transition-old(app-header),
@@ -2101,15 +2058,6 @@ vite-error-overlay .message {
     mix-blend-mode: normal;
   }
 
-  /* §11.3 Pattern C — Same-document crossfade (Agency ↔ Planner etc).
-     Snappy 200ms default for the root group when no element-specific
-     name is in play. */
-  ::view-transition-group(root) {
-    animation-duration: 0.20s;
-  }
-
-  /* §11.4 Distortion prevention — clip rather than stretch when the
-     bounding box animates between two different aspect ratios. */
   ::view-transition-old(main-content),
   ::view-transition-new(main-content) {
     height: 100%;
@@ -2119,10 +2067,10 @@ vite-error-overlay .message {
   }
 }
 
-/* §11.6 Reduced-motion fallback — opacity-only crossfade, 150ms */
+/* Reduced motion: short opacity-only crossfade. */
 @media (prefers-reduced-motion: reduce) {
   @keyframes v3-vt-rm-fade-out { from { opacity: 1; } to { opacity: 0; } }
-  @keyframes v3-vt-rm-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes v3-vt-rm-fade-in { from { opacity: 0; } to { opacity: 1; } }
 
   ::view-transition-old(*),
   ::view-transition-new(*) {

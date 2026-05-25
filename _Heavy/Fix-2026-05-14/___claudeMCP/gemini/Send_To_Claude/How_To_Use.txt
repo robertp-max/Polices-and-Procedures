@@ -1,0 +1,16 @@
+HOW TO USE THIS FOLDER WITH CLAUDE
+
+1. Open a new chat with Claude.
+2. Paste the entire content of "Claude_Master_Instructions.md" as your first message.
+3. Attach the PDF: APP_Screenshots.pdf (contains 36 reference screenshots).
+4. You can also tell Claude to use the files in this folder as reference.
+
+All key documents are in this folder:
+- Claude_Master_Instructions.md → Start with this
+- V3_Veil_Glass_Design_Specs.md → Design rules
+- V3_Nav_Wiring_Template.md → Navigation wiring (required)
+- V3_Implementation_Specs.md → Migration plan
+- V3_Dashboard_Reference.tsx → The full V3 code (visual truth)
+- README.md → Overview
+
+Do not modify the files in this folder unless necessary.

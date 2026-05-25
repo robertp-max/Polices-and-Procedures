@@ -1,0 +1,15 @@
+src/policy/autogen/types.ts
+src/policy/ces/types.ts
+src/policy/compliance-execution/types.ts
+src/policy/enforcement/types.ts
+src/policy/journey/data/trainingContent.types.ts
+src/policy/lifecycle/types.ts
+src/policy/onboarding-v2/types.ts
+src/policy/pm/pmOverlayStore.types.ts
+src/policy/pm/types.ts
+src/policy/security/features/types.ts
+src/policy/security/identity/types.ts
+src/policy/security/types.ts
+src/policy/staffing/types.ts
+src/policy/staffing/types-calendar.ts
+src/policy/types/types.ts

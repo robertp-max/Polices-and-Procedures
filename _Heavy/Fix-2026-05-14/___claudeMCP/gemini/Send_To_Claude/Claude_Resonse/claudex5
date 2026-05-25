@@ -1,0 +1,2045 @@
+
+6:10 AM
+k thanks please do the rest of the pageviews been working over 24 hours pls go ful auto mode thanks
+
+6:33 AM
+
+I got you. Full auto — no questions, no pauses. Here's every remaining page view, built WH-compliant.
+
+3. V3EvidenceCenterPreview.tsx (Completing from where I left off)
+// V3EvidenceCenterPreview.tsx — V3 Veil Glass Evidence Center
+// Folder-only hierarchy: Year → Quarter → Month → Event → Task → Evidence
+// Completion % on every folder icon. Triplet enforcement. No loose evidence.
+// Form uploaded FIRST before supporting evidence. Google Drive style.
+
+import React, { useState } from 'react';
+
+const V3 = {
+  glass2: 'rgba(255, 255, 255, 0.04)',
+  teal: '#007970',
+  tealLight: '#00D1C1',
+  orange: '#E07B2C',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
+  borderDefault: 'rgba(255, 255, 255, 0.33)',
+} as const;
+
+type ViewMode = 'hierarchy' | 'audit-ready' | 'orphans';
+
+interface EvidenceFile {
+  id: string;
+  name: string;
+  artifactType: 'signed_form' | 'supporting_doc' | 'photo' | 'auto_generated';
+  status: 'verified' | 'pending' | 'missing';
+  triplet: { policyId: string; workflowId: string; eventId: string };
+  uploadedBy: string;
+  uploadedAt: string;
+  size: string;
+  hash: string | null;
+}
+
+interface FolderNode {
+  id: string;
+  label: string;
+  depth: 'year' | 'quarter' | 'month' | 'event' | 'task';
+  completionPct: number;
+  totalItems: number;
+  children?: FolderNode[];
+  files?: EvidenceFile[];
+}
+
+const TREE: FolderNode[] = [
+  { id: 'Y-2026', label: '2026', depth: 'year', completionPct: 78, totalItems: 42, children: [
+    { id: 'Q2-2026', label: 'Q2 (Apr–Jun)', depth: 'quarter', completionPct: 72, totalItems: 28, children: [
+      { id: 'M-05', label: 'May 2026', depth: 'month', completionPct: 72, totalItems: 22, children: [
+        { id: 'EVT-001', label: 'QAPI Quarterly Meeting', depth: 'event', completionPct: 75, totalItems: 12, children: [
+          { id: 'T-QA-WP-11', label: 'QA-WP-11 · Distribute agenda & pre-read', depth: 'task', completionPct: 100, totalItems: 2, files: [
+            { id: 'EV-001', name: 'QAPI Meeting Minutes (signed)', artifactType: 'signed_form', status: 'verified', triplet: { policyId: 'QA-PG-001', workflowId: 'WF-QAPI-Q2', eventId: 'RE-001' }, uploadedBy: 'J. Smith', uploadedAt: '2026-05-18', size: '2.4 MB', hash: 'sha256:a7f3c2..d41f' },
+            { id: 'EV-002', name: 'Agenda packet + distribution receipt', artifactType: 'supporting_doc', status: 'verified', triplet: { policyId: 'QA-PG-001', workflowId: 'WF-QAPI-Q2', eventId: 'RE-001' }, uploadedBy: 'J. Smith', uploadedAt: '2026-05-18', size: '1.1 MB', hash: 'sha256:b9e4d1..8a2c' },
+          ]},
+          { id: 'T-CL-WP-25', label: 'CL-WP-25 · Review aggregate quality trends', depth: 'task', completionPct: 50, totalItems: 2, files: [
+            { id: 'EV-003', name: 'Quality trend analysis Q1–Q2', artifactType: 'signed_form', status: 'verified', triplet: { policyId: 'CL-PG-003', workflowId: 'WF-QAPI-Q2', eventId: 'RE-001' }, uploadedBy: 'E. Vance', uploadedAt: '2026-05-17', size: '3.2 MB', hash: 'sha256:c1f5a8..6e9d' },
+            { id: 'EV-004', name: 'Supporting benchmark data', artifactType: 'supporting_doc', status: 'missing', triplet: { policyId: 'CL-PG-003', workflowId: 'WF-QAPI-Q2', eventId: 'RE-001' }, uploadedBy: '—', uploadedAt: '—', size: '—', hash: null },
+          ]},
+          { id: 'T-CC-WP-22', label: 'CC-WP-22 · Review compliance audit results', depth: 'task', completionPct: 0, totalItems: 1, files: [
+            { id: 'EV-005', name: 'Compliance audit form', artifactType: 'signed_form', status: 'missing', triplet: { policyId: 'CC-PG-002', workflowId: 'WF-QAPI-Q2', eventId: 'RE-001' }, uploadedBy: '—', uploadedAt: '—', size: '—', hash: null },
+          ]},
+          { id: 'T-DM-WP-18', label: 'DM-WP-18 · Review HO audit results', depth: 'task', completionPct: 100, totalItems: 1, files: [
+            { id: 'EV-006', name: 'HO audit summary report', artifactType: 'signed_form', status: 'verified', triplet: { policyId: 'DM-PG-001', workflowId: 'WF-QAPI-Q2', eventId: 'RE-001' }, uploadedBy: 'M. Sterling', uploadedAt: '2026-05-19', size: '1.8 MB', hash: 'sha256:d2a6b9..3f1e' },
+          ]},
+          { id: 'T-DM-WP-15', label: 'DM-WP-15 · Data/safety audit review', depth: 'task', completionPct: 100, totalItems: 2, files: [
+            { id: 'EV-007', name: 'Data/safety audit cross-analysis', artifactType: 'signed_form', status: 'verified', triplet: { policyId: 'DM-PG-001', workflowId: 'WF-QAPI-Q2', eventId: 'RE-001' }, uploadedBy: 'J. Smith', uploadedAt: '2026-05-20', size: '2.0 MB', hash: 'sha256:e3b7c0..4a2d' },
+            { id: 'EV-008', name: 'Safety incident log extract', artifactType: 'supporting_doc', status: 'verified', triplet: { policyId: 'SF-PG-001', workflowId: 'WF-QAPI-Q2', eventId: 'RE-001' }, uploadedBy: 'J. Smith', uploadedAt: '2026-05-20', size: '890 KB', hash: 'sha256:f4c8d1..5b3e' },
+          ]},
+          { id: 'T-IT-WP-21', label: 'IT-WP-21 · IT/security audit review', depth: 'task', completionPct: 100, totalItems: 1, files: [
+            { id: 'EV-009', name: 'IT security assessment report', artifactType: 'signed_form', status: 'pending', triplet: { policyId: 'IT-PG-001', workflowId: 'WF-QAPI-Q2', eventId: 'RE-001' }, uploadedBy: 'T. Lee', uploadedAt: '2026-05-19', size: '1.4 MB', hash: null },
+          ]},
+        ]},
+        { id: 'EVT-002', label: 'Fire Drill Log Upload', depth: 'event', completionPct: 100, totalItems: 3, children: [
+          { id: 'T-SF-WP-01', label: 'SF-WP-01 · Fire drill documentation', depth: 'task', completionPct: 100, totalItems: 3, files: [
+            { id: 'EV-010', name: 'Fire drill sign-off sheet (signed)', artifactType: 'signed_form', status: 'verified', triplet: { policyId: 'SF-PG-001', workflowId: 'WF-FD-05', eventId: 'RE-002' }, uploadedBy: 'M. Doe', uploadedAt: '2026-05-16', size: '1.5 MB', hash: 'sha256:a1b2c3..7890' },
+            { id: 'EV-011', name: 'Evacuation route photo', artifactType: 'photo', status: 'verified', triplet: { policyId: 'SF-PG-001', workflowId: 'WF-FD-05', eventId: 'RE-002' }, uploadedBy: 'M. Doe', uploadedAt: '2026-05-16', size: '4.2 MB', hash: 'sha256:d4e5f6..1234' },
+            { id: 'EV-012', name: 'Drill timing report (auto)', artifactType: 'auto_generated', status: 'verified', triplet: { policyId: 'SF-PG-001', workflowId: 'WF-FD-05', eventId: 'RE-002' }, uploadedBy: 'System', uploadedAt: '2026-05-16', size: '340 KB', hash: 'sha256:g7h8i9..5678' },
+          ]},
+        ]},
+        { id: 'EVT-003', label: 'Annual Policy Review', depth: 'event', completionPct: 33, totalItems: 3, children: [
+          { id: 'T-GV-WP-01', label: 'GV-WP-01 · Package Governing Body report', depth: 'task', completionPct: 33, totalItems: 3, files: [
+            { id: 'EV-013', name: 'Policy review checklist (signed)', artifactType: 'signed_form', status: 'pending', triplet: { policyId: 'GV-PG-001', workflowId: 'WF-APR-26', eventId: 'RE-003' }, uploadedBy: 'Admin', uploadedAt: '2026-05-19', size: '890 KB', hash: null },
+            { id: 'EV-014', name: 'Updated policy comparison matrix', artifactType: 'supporting_doc', status: 'missing', triplet: { policyId: 'GV-PG-001', workflowId: 'WF-APR-26', eventId: 'RE-003' }, uploadedBy: '—', uploadedAt: '—', size: '—', hash: null },
+            { id: 'EV-015', name: 'Board resolution document', artifactType: 'signed_form', status: 'missing', triplet: { policyId: 'GV-PG-001', workflowId: 'WF-APR-26', eventId: 'RE-003' }, uploadedBy: '—', uploadedAt: '—', size: '—', hash: null },
+          ]},
+        ]},
+        { id: 'EVT-006', label: 'Emergency Plan Review', depth: 'event', completionPct: 10, totalItems: 4, children: [
+          { id: 'T-SF-WP-03', label: 'SF-WP-03 · Emergency evacuation drill doc', depth: 'task', completionPct: 25, totalItems: 4, files: [
+            { id: 'EV-016', name: 'Emergency plan update form', artifactType: 'signed_form', status: 'missing', triplet: { policyId: 'SF-PG-002', workflowId: 'WF-EP-26', eventId: 'RE-006' }, uploadedBy: '—', uploadedAt: '—', size: '—', hash: null },
+            { id: 'EV-017', name: 'Drill execution photos', artifactType: 'photo', status: 'missing', triplet: { policyId: 'SF-PG-002', workflowId: 'WF-EP-26', eventId: 'RE-006' }, uploadedBy: '—', uploadedAt: '—', size: '—', hash: null },
+            { id: 'EV-018', name: 'Staff notification records', artifactType: 'supporting_doc', status: 'missing', triplet: { policyId: 'SF-PG-002', workflowId: 'WF-EP-26', eventId: 'RE-006' }, uploadedBy: '—', uploadedAt: '—', size: '—', hash: null },
+            { id: 'EV-019', name: 'After-action report', artifactType: 'supporting_doc', status: 'pending', triplet: { policyId: 'SF-PG-002', workflowId: 'WF-EP-26', eventId: 'RE-006' }, uploadedBy: 'R. Kim', uploadedAt: '2026-05-20', size: '560 KB', hash: null },
+          ]},
+        ]},
+      ]},
+      { id: 'M-04', label: 'April 2026', depth: 'month', completionPct: 95, totalItems: 6, children: [] },
+    ]},
+    { id: 'Q1-2026', label: 'Q1 (Jan–Mar)', depth: 'quarter', completionPct: 97, totalItems: 14, children: [] },
+  ]},
+];
+
+// Folder icon with completion percentage ring
+const FolderIcon = ({ pct, depth }: { pct: number; depth: string }) => {
+  const size = depth === 'year' ? 36 : depth === 'quarter' ? 32 : depth === 'month' ? 28 : 24;
+  const strokeWidth = 2.5;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (pct / 100) * circumference;
+  const color = pct === 100 ? '#4ADE80' : pct >= 75 ? V3.tealLight : pct >= 50 ? '#FBBF24' : '#F87171';
+
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={strokeWidth} />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
+          strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+        />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.35, color: V3.textTertiary }}>
+        📁
+      </div>
+    </div>
+  );
+};
+
+const FileIcon = ({ type }: { type: EvidenceFile['artifactType'] }) => {
+  const icons = { signed_form: '📋', supporting_doc: '📄', photo: '📷', auto_generated: '⚙️' };
+  return <span style={{ fontSize: 14 }}>{icons[type]}</span>;
+};
+
+const statusBadge = (s: EvidenceFile['status']) => {
+  const map = {
+    verified: { bg: 'rgba(0, 209, 193, 0.12)', color: V3.tealLight, label: '✓ VERIFIED' },
+    pending: { bg: 'rgba(251, 191, 36, 0.12)', color: '#FBBF24', label: 'PENDING' },
+    missing: { bg: 'rgba(248, 113, 113, 0.12)', color: '#F87171', label: 'MISSING' },
+  };
+  return map[s];
+};
+
+export default function V3EvidenceCenterPreview() {
+  const [viewMode, setViewMode] = useState<ViewMode>('hierarchy');
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['Y-2026', 'Q2-2026', 'M-05', 'EVT-001']));
+  const [selectedFile, setSelectedFile] = useState<EvidenceFile | null>(null);
+
+  const toggleExpand = (id: string) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  // Recursive folder renderer
+  const renderFolder = (node: FolderNode, indentLevel: number) => {
+    const isExpanded = expandedIds.has(node.id);
+    const hasChildren = (node.children && node.children.length > 0) || (node.files && node.files.length > 0);
+    const indent = indentLevel * 24;
+
+    return (
+      <div key={node.id}>
+        {/* Folder row */}
+        <div
+          onClick={() => hasChildren && toggleExpand(node.id)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '8px 12px', paddingLeft: 12 + indent,
+            cursor: hasChildren ? 'pointer' : 'default',
+            borderRadius: 8,
+            transition: 'background 0.2s ease',
+            background: isExpanded ? 'rgba(255,255,255,0.02)' : 'transparent',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
+          onMouseLeave={e => (e.currentTarget.style.background = isExpanded ? 'rgba(255,255,255,0.02)' : 'transparent')}
+        >
+          {/* Expand arrow */}
+          {hasChildren && (
+            <span style={{ fontSize: 12, color: V3.textTertiary, transform: isExpanded ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.2s ease', display: 'inline-block', width: 12 }}>▸</span>
+          )}
+          {!hasChildren && <span style={{ width: 12 }} />}
+
+          {/* Folder icon with completion ring */}
+          <FolderIcon pct={node.completionPct} depth={node.depth} />
+
+          {/* Label */}
+          <div style={{ flex: 1 }}>
+            <div style={{ color: V3.textPrimary, fontSize: 13, fontWeight: node.depth === 'year' || node.depth === 'quarter' ? 600 : 500 }}>
+              {node.label}
+            </div>
+            <div style={{ color: V3.textTertiary, fontSize: 11, marginTop: 1 }}>
+              {node.totalItems} items
+            </div>
+          </div>
+
+          {/* Completion % badge */}
+          <span style={{
+            fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6,
+            color: node.completionPct === 100 ? '#4ADE80' : node.completionPct >= 75 ? V3.tealLight : node.completionPct >= 50 ? '#FBBF24' : '#F87171',
+            background: node.completionPct === 100 ? 'rgba(74, 222, 128, 0.1)' : node.completionPct >= 75 ? 'rgba(0, 209, 193, 0.1)' : node.completionPct >= 50 ? 'rgba(251, 191, 36, 0.1)' : 'rgba(248, 113, 113, 0.1)',
+          }}>
+            {node.completionPct}%
+          </span>
+        </div>
+
+        {/* Children */}
+        {isExpanded && node.children && node.children.map(child => renderFolder(child, indentLevel + 1))}
+
+        {/* Files (leaf level) */}
+        {isExpanded && node.files && node.files.map(file => {
+          const badge = statusBadge(file.status);
+          return (
+            <div
+              key={file.id}
+              onClick={() => setSelectedFile(file)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '6px 12px', paddingLeft: 12 + indent + 24 + 12,
+                cursor: 'pointer', borderRadius: 6,
+                transition: 'background 0.15s ease',
+                background: selectedFile?.id === file.id ? 'rgba(0, 209, 193, 0.06)' : 'transparent',
+              }}
+              onMouseEnter={e => { if (selectedFile?.id !== file.id) e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+              onMouseLeave={e => { if (selectedFile?.id !== file.id) e.currentTarget.style.background = 'transparent'; }}
+            >
+              <FileIcon type={file.artifactType} />
+              <div style={{ flex: 1 }}>
+                <div style={{ color: file.status === 'missing' ? V3.textTertiary : V3.textSecondary, fontSize: 12, fontWeight: 400, fontStyle: file.status === 'missing' ? 'italic' : 'normal' }}>
+                  {file.name}
+                </div>
+              </div>
+              <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: badge.bg, color: badge.color, fontWeight: 500 }}>
+                {badge.label}
+              </span>
+              {file.size !== '—' && <span style={{ color: V3.textTertiary, fontSize: 10, width: 50, textAlign: 'right' }}>{file.size}</span>}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Stats
+  const allFiles = TREE.flatMap(function collectFiles(n: FolderNode): EvidenceFile[] {
+    return [...(n.files || []), ...(n.children || []).flatMap(collectFiles)];
+  });
+  const stats = {
+    total: allFiles.length,
+    verified: allFiles.filter(f => f.status === 'verified').length,
+    pending: allFiles.filter(f => f.status === 'pending').length,
+    missing: allFiles.filter(f => f.status === 'missing').length,
+  };
+
+  return (
+    <div className="v3-page-animate" style={{ padding: 24, display: 'flex', gap: 20 }}>
+      {/* Left: Hierarchy tree */}
+      <div style={{ flex: 1 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div>
+            <h1 style={{ color: V3.textPrimary, fontSize: 20, fontWeight: 600, margin: 0 }}>Evidence Center</h1>
+            <p style={{ color: V3.textTertiary, fontSize: 12, margin: '4px 0 0' }}>Triplet-enforced: policy_id + workflow_id + event_id</p>
+          </div>
+          <div style={{ display: 'flex', gap: 4, background: V3.glass2, borderRadius: 8, padding: 3 }}>
+            {(['hierarchy', 'audit-ready', 'orphans'] as ViewMode[]).map(m => (
+              <button key={m} onClick={() => setViewMode(m)} style={{
+                padding: '6px 12px', fontSize: 11, borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: viewMode === m ? V3.teal : 'transparent',
+                color: viewMode === m ? '#FFF' : V3.textTertiary,
+                fontWeight: viewMode === m ? 600 : 400, textTransform: 'capitalize',
+              }}>{m.replace('-', ' ')}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+          {[
+            { label: 'Total', value: stats.total, color: V3.textPrimary },
+            { label: 'Verified', value: stats.verified, color: V3.tealLight },
+            { label: 'Pending', value: stats.pending, color: '#FBBF24' },
+            { label: 'Missing', value: stats.missing, color: '#F87171' },
+          ].map((s, i) => (
+            <div key={i} style={{ textAlign: 'center', padding: 12 }}>
+              <div style={{ fontSize: 22, fontWeight: 600, color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: 10, color: V3.textTertiary, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tree */}
+        <div key={viewMode} className="v3-subview-animate" style={{ borderRadius: 12, border: `1px solid ${V3.borderDefault}`, background: V3.glass2, padding: '8px 0' }}>
+          {TREE.map(node => renderFolder(node, 0))}
+        </div>
+      </div>
+
+      {/* Right: Detail panel (when file selected) */}
+      {selectedFile && (
+        <div style={{ width: 320, flexShrink: 0 }}>
+          <div style={{ padding: 20, borderRadius: 12, background: V3.glass2, border: `1px solid ${V3.borderDefault}`, position: 'sticky', top: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <span style={{ fontSize: 11, color: V3.tealLight, fontWeight: 600, letterSpacing: '0.06em' }}>EVIDENCE DETAIL</span>
+              <button onClick={() => setSelectedFile(null)} style={{ background: 'none', border: 'none', color: V3.textTertiary, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+
+            <h3 style={{ color: V3.textPrimary, fontSize: 14, fontWeight: 500, margin: '0 0 16px' }}>{selectedFile.name}</h3>
+
+            {[
+              { l: 'ID', v: selectedFile.id },
+              { l: 'Type', v: selectedFile.artifactType.replace(/_/g, ' ') },
+              { l: 'Status', v: selectedFile.status.toUpperCase() },
+              { l: 'Uploaded By', v: selectedFile.uploadedBy },
+              { l: 'Date', v: selectedFile.uploadedAt },
+              { l: 'Size', v: selectedFile.size },
+            ].map((row, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <span style={{ color: V3.textTertiary, fontSize: 11 }}>{row.l}</span>
+                <span style={{ color: V3.textSecondary, fontSize: 12 }}>{row.v}</span>
+              </div>
+            ))}
+
+            <div style={{ marginTop: 16, padding: 12, borderRadius: 8, background: 'rgba(255,255,255,0.02)' }}>
+              <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.06em', marginBottom: 6 }}>TRIPLET</div>
+              <div style={{ fontSize: 11, color: V3.textSecondary, lineHeight: 1.6 }}>
+                Policy: <span style={{ color: V3.tealLight }}>{selectedFile.triplet.policyId}</span><br />
+                Workflow: <span style={{ color: V3.tealLight }}>{selectedFile.triplet.workflowId}</span><br />
+                Event: <span style={{ color: V3.tealLight }}>{selectedFile.triplet.eventId}</span>
+              </div>
+            </div>
+
+            {selectedFile.hash && (
+              <div style={{ marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(0, 209, 193, 0.06)' }}>
+                <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.06em', marginBottom: 4 }}>AUDIT TRAIL HASH</div>
+                <div style={{ fontSize: 11, color: V3.tealLight, fontFamily: 'monospace', wordBreak: 'break-all' }}>{selectedFile.hash}</div>
+              </div>
+            )}
+
+            {selectedFile.status !== 'missing' && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                <button style={{ flex: 1, padding: '8px 0', fontSize: 12, borderRadius: 6, background: V3.teal, color: '#FFF', border: 'none', cursor: 'pointer' }}>View</button>
+                <button style={{ flex: 1, padding: '8px 0', fontSize: 12, borderRadius: 6, background: V3.glass2, color: V3.textSecondary, border: `1px solid ${V3.borderDefault}`, cursor: 'pointer' }}>Download</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '10px 24px', borderTop: '1px solid rgba(255,255,255,0.06)', color: V3.textTertiary, fontSize: 11, background: 'rgba(5, 6, 10, 0.95)' }}>
+        Visual preview only — real Evidence Center uses buildCesEvidenceHierarchy (FROZEN), triplet enforcement, IndexedDB/AWS presigned URLs, and shared VeilDrawer for file preview.
+      </div>
+    </div>
+  );
+}
+
+4. V3TaxonomyPreview.tsx (Rebuilt — Real Domain Tree + ACHC Mapping)
+// V3TaxonomyPreview.tsx — V3 Veil Glass Taxonomy Browser
+// Real shapes from frameworkSeed.generated + REGULATORY_ITEMS + achcSurveyProjection.
+// Expandable domain → subdomain → policy mapping.
+// Shows ACHC standard alignment + CMS CoP cross-reference.
+
+import React, { useState } from 'react';
+
+const V3 = {
+  glass2: 'rgba(255, 255, 255, 0.04)',
+  teal: '#007970',
+  tealLight: '#00D1C1',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
+  borderDefault: 'rgba(255, 255, 255, 0.33)',
+} as const;
+
+type TaxView = 'domains' | 'achc-alignment' | 'cms-cop';
+
+interface PolicyRef {
+  id: string;
+  title: string;
+  status: 'active' | 'under-review' | 'draft';
+  achcRefs: string[];
+  cmsRefs: string[];
+  evidenceCount: number;
+  formCount: number;
+}
+
+interface Subdomain {
+  id: string;
+  name: string;
+  policies: PolicyRef[];
+}
+
+interface Domain {
+  id: string;
+  code: string;
+  name: string;
+  subdomains: Subdomain[];
+  totalPolicies: number;
+  totalForms: number;
+  completionPct: number;
+}
+
+const DOMAINS: Domain[] = [
+  { id: 'D-CL', code: 'CL', name: 'Clinical Operations', totalPolicies: 28, totalForms: 45, completionPct: 89, subdomains: [
+    { id: 'SD-01', name: 'Patient Assessment', policies: [
+      { id: 'CL-PG-001', title: 'Comprehensive Patient Assessment', status: 'active', achcRefs: ['ACHC-PA-1', 'ACHC-PA-2'], cmsRefs: ['§484.55'], evidenceCount: 8, formCount: 3 },
+      { id: 'CL-PG-002', title: 'OASIS Assessment Process', status: 'active', achcRefs: ['ACHC-PA-3'], cmsRefs: ['§484.55(b)'], evidenceCount: 12, formCount: 2 },
+      { id: 'CL-PG-003', title: 'Clinical Assessment Documentation', status: 'active', achcRefs: ['ACHC-PA-4'], cmsRefs: ['§484.55(c)'], evidenceCount: 6, formCount: 4 },
+    ]},
+    { id: 'SD-02', name: 'Care Planning', policies: [
+      { id: 'CL-PG-010', title: 'Individualized Plan of Care', status: 'active', achcRefs: ['ACHC-CP-1', 'ACHC-CP-2'], cmsRefs: ['§484.60'], evidenceCount: 10, formCount: 3 },
+      { id: 'CL-PG-011', title: 'Care Coordination Protocols', status: 'active', achcRefs: ['ACHC-CP-3'], cmsRefs: ['§484.60(b)'], evidenceCount: 5, formCount: 2 },
+    ]},
+    { id: 'SD-03', name: 'Infection Control', policies: [
+      { id: 'CL-PG-020', title: 'Infection Prevention & Control Program', status: 'active', achcRefs: ['ACHC-IC-1', 'ACHC-IC-2', 'ACHC-IC-3'], cmsRefs: ['§484.70'], evidenceCount: 15, formCount: 5 },
+    ]},
+    { id: 'SD-04', name: 'Quality Improvement', policies: [
+      { id: 'QA-PG-001', title: 'QAPI Program', status: 'active', achcRefs: ['ACHC-QI-1', 'ACHC-QI-2', 'ACHC-QI-3'], cmsRefs: ['§484.65'], evidenceCount: 12, formCount: 4 },
+      { id: 'QA-PG-002', title: 'Performance Improvement Projects', status: 'active', achcRefs: ['ACHC-QI-4'], cmsRefs: ['§484.65(c)'], evidenceCount: 7, formCount: 2 },
+    ]},
+  ]},
+  { id: 'D-GV', code: 'GV', name: 'Governance & Administration', totalPolicies: 12, totalForms: 18, completionPct: 92, subdomains: [
+    { id: 'SD-06', name: 'Corporate Governance', policies: [
+      { id: 'GV-PG-001', title: 'Governing Body Organization', status: 'active', achcRefs: ['ACHC-GB-1', 'ACHC-GB-2'], cmsRefs: ['§484.105'], evidenceCount: 22, formCount: 8 },
+      { id: 'GV-PG-002', title: 'Administrator Qualifications', status: 'active', achcRefs: ['ACHC-GB-3'], cmsRefs: ['§484.105(b)'], evidenceCount: 4, formCount: 2 },
+    ]},
+    { id: 'SD-07', name: 'Administrative Operations', policies: [
+      { id: 'GV-PG-010', title: 'Organizational Chart & Reporting', status: 'active', achcRefs: ['ACHC-AO-1'], cmsRefs: [], evidenceCount: 3, formCount: 1 },
+    ]},
+  ]},
+  { id: 'D-CC', code: 'CC', name: 'Compliance & Ethics', totalPolicies: 15, totalForms: 22, completionPct: 85, subdomains: [
+    { id: 'SD-09', name: 'Regulatory Compliance', policies: [
+      { id: 'CC-PG-001', title: 'Compliance Program', status: 'active', achcRefs: ['ACHC-RC-1'], cmsRefs: ['§484.14'], evidenceCount: 6, formCount: 2 },
+      { id: 'CC-PG-002', title: 'Compliance & Ethics Training', status: 'active', achcRefs: ['ACHC-RC-2'], cmsRefs: [], evidenceCount: 4, formCount: 3 },
+    ]},
+    { id: 'SD-10', name: 'HIPAA / Privacy', policies: [
+      { id: 'HP-PG-001', title: 'HIPAA Privacy & Security Policy', status: 'active', achcRefs: ['ACHC-HP-1', 'ACHC-HP-2'], cmsRefs: [], evidenceCount: 9, formCount: 3 },
+      { id: 'HP-PG-002', title: 'Breach Notification Procedures', status: 'under-review', achcRefs: ['ACHC-HP-3'], cmsRefs: [], evidenceCount: 2, formCount: 2 },
+    ]},
+  ]},
+  { id: 'D-HR', code: 'HR', name: 'Human Resources', totalPolicies: 18, totalForms: 32, completionPct: 78, subdomains: [
+    { id: 'SD-12', name: 'Recruitment & Onboarding', policies: [
+      { id: 'HR-PG-001', title: 'Employee Recruitment Standards', status: 'active', achcRefs: ['ACHC-HR-1'], cmsRefs: ['§484.115'], evidenceCount: 5, formCount: 4 },
+    ]},
+    { id: 'SD-13', name: 'Competency & Training', policies: [
+      { id: 'HR-PG-005', title: 'Annual Competency Assessment', status: 'active', achcRefs: ['ACHC-HR-4', 'ACHC-HR-5'], cmsRefs: ['§484.115(b)'], evidenceCount: 8, formCount: 6 },
+      { id: 'HR-PG-006', title: 'Continuing Education Requirements', status: 'draft', achcRefs: ['ACHC-HR-6'], cmsRefs: [], evidenceCount: 0, formCount: 1 },
+    ]},
+  ]},
+  { id: 'D-SF', code: 'SF', name: 'Safety & Emergency', totalPolicies: 10, totalForms: 16, completionPct: 70, subdomains: [
+    { id: 'SD-16', name: 'Emergency Preparedness', policies: [
+      { id: 'SF-PG-001', title: 'Emergency Preparedness Plan', status: 'active', achcRefs: ['ACHC-EP-1', 'ACHC-EP-2'], cmsRefs: ['§484.102'], evidenceCount: 15, formCount: 6 },
+      { id: 'SF-PG-002', title: 'Emergency Plan Review & Drill', status: 'under-review', achcRefs: ['ACHC-EP-3'], cmsRefs: ['§484.102(d)'], evidenceCount: 1, formCount: 3 },
+    ]},
+  ]},
+  { id: 'D-DM', code: 'DM', name: 'Data & Information', totalPolicies: 8, totalForms: 10, completionPct: 94, subdomains: [
+    { id: 'SD-19', name: 'Records Management', policies: [
+      { id: 'DM-PG-001', title: 'Clinical Records Management', status: 'active', achcRefs: ['ACHC-DM-1'], cmsRefs: ['§484.110'], evidenceCount: 5, formCount: 2 },
+    ]},
+    { id: 'SD-20', name: 'IT Security', policies: [
+      { id: 'IT-PG-001', title: 'Information Technology Security', status: 'active', achcRefs: ['ACHC-IT-1'], cmsRefs: [], evidenceCount: 3, formCount: 2 },
+    ]},
+  ]},
+];
+
+export default function V3TaxonomyPreview() {
+  const [view, setView] = useState<TaxView>('domains');
+  const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set(['D-CL']));
+  const [expandedSubdomains, setExpandedSubdomains] = useState<Set<string>>(new Set(['SD-04']));
+  const [search, setSearch] = useState('');
+
+  const toggleDomain = (id: string) => setExpandedDomains(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleSubdomain = (id: string) => setExpandedSubdomains(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+
+  const totalPolicies = DOMAINS.reduce((s, d) => s + d.totalPolicies, 0);
+  const totalForms = DOMAINS.reduce((s, d) => s + d.totalForms, 0);
+  const totalAchcRefs = DOMAINS.flatMap(d => d.subdomains.flatMap(sd => sd.policies.flatMap(p => p.achcRefs))).length;
+
+  const filteredDomains = search
+    ? DOMAINS.filter(d =>
+        d.name.toLowerCase().includes(search.toLowerCase()) ||
+        d.subdomains.some(sd =>
+          sd.name.toLowerCase().includes(search.toLowerCase()) ||
+          sd.policies.some(p => p.title.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase()))
+        )
+      )
+    : DOMAINS;
+
+  return (
+    <div className="v3-page-animate" style={{ padding: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ color: V3.textPrimary, fontSize: 20, fontWeight: 600, margin: 0 }}>Regulatory Taxonomy</h1>
+          <p style={{ color: V3.textTertiary, fontSize: 12, margin: '6px 0 0' }}>
+            {DOMAINS.length} domains · {totalPolicies} policies · {totalForms} forms · {totalAchcRefs} ACHC refs
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input type="text" placeholder="Search taxonomy..." value={search} onChange={e => setSearch(e.target.value)}
+            style={{ padding: '8px 14px', fontSize: 13, background: V3.glass2, border: `1px solid ${V3.borderDefault}`, borderRadius: 8, color: V3.textPrimary, outline: 'none', width: 220 }}
+          />
+          <div style={{ display: 'flex', gap: 4, background: V3.glass2, borderRadius: 8, padding: 3 }}>
+            {(['domains', 'achc-alignment', 'cms-cop'] as TaxView[]).map(v => (
+              <button key={v} onClick={() => setView(v)} style={{
+                padding: '6px 12px', fontSize: 11, borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: view === v ? V3.teal : 'transparent',
+                color: view === v ? '#FFF' : V3.textTertiary, textTransform: 'capitalize',
+              }}>{v.replace(/-/g, ' ')}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Domain completion overview — no borders, borderless KPI cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${DOMAINS.length}, 1fr)`, gap: 12, marginBottom: 28 }}>
+        {DOMAINS.map(d => (
+          <div key={d.id} style={{ textAlign: 'center', padding: 12, cursor: 'pointer' }} onClick={() => toggleDomain(d.id)}>
+            <div style={{ fontSize: 22, fontWeight: 600, color: d.completionPct >= 90 ? V3.tealLight : d.completionPct >= 75 ? '#FBBF24' : '#F87171' }}>{d.completionPct}%</div>
+            <div style={{ fontSize: 11, color: V3.textTertiary, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{d.code}</div>
+            <div style={{ fontSize: 11, color: V3.textSecondary, marginTop: 2 }}>{d.name}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Interrupted divider */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 24 }}>
+        {Array.from({ length: 16 }).map((_, i) => (
+          <div key={i} style={{ flex: 1, height: 1, background: i % 3 === 1 ? 'transparent' : 'rgba(255, 255, 255, 0.06)' }} />
+        ))}
+      </div>
+
+      {/* Domain tree */}
+      <div key={view} className="v3-subview-animate" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {filteredDomains.map(domain => {
+          const isDomainExpanded = expandedDomains.has(domain.id);
+          return (
+            <div key={domain.id}>
+              {/* Domain row */}
+              <div
+                onClick={() => toggleDomain(domain.id)}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', borderRadius: 10, background: isDomainExpanded ? 'rgba(255,255,255,0.02)' : 'transparent', transition: 'background 0.2s ease' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
+                onMouseLeave={e => (e.currentTarget.style.background = isDomainExpanded ? 'rgba(255,255,255,0.02)' : 'transparent')}
+              >
+                <span style={{ fontSize: 14, color: V3.textTertiary, transform: isDomainExpanded ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.2s ease', display: 'inline-block' }}>▸</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: V3.tealLight, width: 28 }}>{domain.code}</span>
+                <span style={{ color: V3.textPrimary, fontSize: 14, fontWeight: 500, flex: 1 }}>{domain.name}</span>
+                <span style={{ color: V3.textTertiary, fontSize: 11 }}>{domain.totalPolicies}P · {domain.totalForms}F</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: domain.completionPct >= 90 ? V3.tealLight : domain.completionPct >= 75 ? '#FBBF24' : '#F87171', width: 40, textAlign: 'right' }}>{domain.completionPct}%</span>
+              </div>
+
+              {/* Subdomains */}
+              {isDomainExpanded && domain.subdomains.map(sub => {
+                const isSubExpanded = expandedSubdomains.has(sub.id);
+                return (
+                  <div key={sub.id}>
+                    <div
+                      onClick={() => toggleSubdomain(sub.id)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', paddingLeft: 52, cursor: 'pointer', borderRadius: 8, transition: 'background 0.15s ease' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <span style={{ fontSize: 12, color: V3.textTertiary, transform: isSubExpanded ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.2s ease', display: 'inline-block' }}>▸</span>
+                      <span style={{ color: V3.textSecondary, fontSize: 13, flex: 1 }}>{sub.name}</span>
+                      <span style={{ color: V3.textTertiary, fontSize: 11 }}>{sub.policies.length} policies</span>
+                    </div>
+
+                    {/* Policies */}
+                    {isSubExpanded && sub.policies.map(policy => {
+                      const st = policy.status === 'active' ? { bg: 'rgba(0, 209, 193, 0.1)', color: V3.tealLight }
+                        : policy.status === 'under-review' ? { bg: 'rgba(251, 191, 36, 0.1)', color: '#FBBF24' }
+                        : { bg: 'rgba(100, 116, 139, 0.1)', color: V3.textTertiary };
+                      return (
+                        <div key={policy.id} style={{
+                          display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', paddingLeft: 80,
+                          borderRadius: 6, cursor: 'pointer', transition: 'background 0.15s ease',
+                        }}
+                          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <span style={{ fontSize: 11, color: V3.tealLight, fontWeight: 600, width: 80 }}>{policy.id}</span>
+                          <span style={{ color: V3.textPrimary, fontSize: 13, flex: 1 }}>{policy.title}</span>
+                          <div style={{ display: 'flex', gap: 4 }}>
+                            {policy.achcRefs.map(ref => (
+                              <span key={ref} style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: 'rgba(0, 209, 193, 0.08)', color: V3.tealLight }}>{ref}</span>
+                            ))}
+                          </div>
+                          {policy.cmsRefs.length > 0 && (
+                            <span style={{ fontSize: 10, color: V3.textTertiary }}>{policy.cmsRefs.join(', ')}</span>
+                          )}
+                          <span style={{ fontSize: 10, color: V3.textTertiary }}>{policy.evidenceCount}E · {policy.formCount}F</span>
+                          <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: st.bg, color: st.color }}>{policy.status.toUpperCase()}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ marginTop: 32, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', color: V3.textTertiary, fontSize: 11 }}>
+        Visual preview only — real Taxonomy uses frameworkSeed.generated, REGULATORY_ITEMS, achcSurveyProjection.generated, and domain → policy → evidence linking.
+      </div>
+    </div>
+  );
+}
+
+5. V3PolicyLibraryPreview.tsx (Rebuilt — Grid/List + ACHC Badge + Interrupted Dividers)
+// V3PolicyLibraryPreview.tsx — V3 Veil Glass Policy Library
+// Grid/list toggle, domain filtering, ACHC alignment badges.
+// No-border KPI row per V3 spec. Interrupted divider lines.
+
+import React, { useState } from 'react';
+
+const V3 = {
+  glass2: 'rgba(255, 255, 255, 0.04)',
+  teal: '#007970',
+  tealLight: '#00D1C1',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
+  borderDefault: 'rgba(255, 255, 255, 0.33)',
+} as const;
+
+interface Policy {
+  id: string; title: string; domain: string; subdomain: string;
+  status: 'active' | 'under-review' | 'draft' | 'expired';
+  lastReviewed: string; nextReview: string; achcMapped: boolean;
+  achcRefs: string[]; cmsRefs: string[];
+  formCount: number; evidenceCount: number; procedureCount: number;
+}
+
+const POLICIES: Policy[] = [
+  { id: 'QA-PG-001', title: 'Quality Assessment & Performance Improvement (QAPI)', domain: 'Clinical', subdomain: 'Quality', status: 'active', lastReviewed: '2026-03-01', nextReview: '2026-09-01', achcMapped: true, achcRefs: ['ACHC-QI-1', 'ACHC-QI-2', 'ACHC-QI-3'], cmsRefs: ['§484.65'], formCount: 4, evidenceCount: 12, procedureCount: 5 },
+  { id: 'GV-PG-001', title: 'Governing Body Organization & Administration', domain: 'Governance', subdomain: 'Corporate', status: 'active', lastReviewed: '2026-01-15', nextReview: '2027-01-15', achcMapped: true, achcRefs: ['ACHC-GB-1', 'ACHC-GB-2'], cmsRefs: ['§484.105'], formCount: 8, evidenceCount: 22, procedureCount: 3 },
+  { id: 'CL-PG-001', title: 'Comprehensive Patient Assessment', domain: 'Clinical', subdomain: 'Assessment', status: 'active', lastReviewed: '2026-04-10', nextReview: '2026-10-10', achcMapped: true, achcRefs: ['ACHC-PA-1', 'ACHC-PA-2'], cmsRefs: ['§484.55'], formCount: 3, evidenceCount: 8, procedureCount: 4 },
+  { id: 'HR-PG-005', title: 'Annual Competency Assessment', domain: 'Human Resources', subdomain: 'Competency', status: 'active', lastReviewed: '2026-02-01', nextReview: '2026-08-01', achcMapped: true, achcRefs: ['ACHC-HR-4', 'ACHC-HR-5'], cmsRefs: ['§484.115(b)'], formCount: 6, evidenceCount: 8, procedureCount: 2 },
+  { id: 'SF-PG-001', title: 'Emergency Preparedness Plan', domain: 'Safety', subdomain: 'Emergency', status: 'active', lastReviewed: '2026-02-20', nextReview: '2026-08-20', achcMapped: true, achcRefs: ['ACHC-EP-1', 'ACHC-EP-2'], cmsRefs: ['§484.102'], formCount: 6, evidenceCount: 15, procedureCount: 3 },
+  { id: 'CC-PG-001', title: 'Compliance Program', domain: 'Compliance', subdomain: 'Ethics', status: 'active', lastReviewed: '2026-05-01', nextReview: '2026-11-01', achcMapped: true, achcRefs: ['ACHC-RC-1'], cmsRefs: ['§484.14'], formCount: 2, evidenceCount: 6, procedureCount: 2 },
+  { id: 'HP-PG-001', title: 'HIPAA Privacy & Security Policy', domain: 'Compliance', subdomain: 'Privacy', status: 'active', lastReviewed: '2026-03-15', nextReview: '2026-09-15', achcMapped: true, achcRefs: ['ACHC-HP-1', 'ACHC-HP-2'], cmsRefs: [], formCount: 3, evidenceCount: 9, procedureCount: 3 },
+  { id: 'HP-PG-002', title: 'Breach Notification Procedures', domain: 'Compliance', subdomain: 'Privacy', status: 'under-review', lastReviewed: '2025-09-15', nextReview: '2026-05-30', achcMapped: true, achcRefs: ['ACHC-HP-3'], cmsRefs: [], formCount: 2, evidenceCount: 2, procedureCount: 1 },
+  { id: 'IT-PG-001', title: 'Information Technology Security', domain: 'Data', subdomain: 'Security', status: 'draft', lastReviewed: '2025-11-01', nextReview: '2026-05-30', achcMapped: false, achcRefs: [], cmsRefs: [], formCount: 1, evidenceCount: 0, procedureCount: 1 },
+  { id: 'DM-PG-001', title: 'Clinical Records Management', domain: 'Data', subdomain: 'Records', status: 'active', lastReviewed: '2026-04-01', nextReview: '2026-10-01', achcMapped: true, achcRefs: ['ACHC-DM-1'], cmsRefs: ['§484.110'], formCount: 2, evidenceCount: 5, procedureCount: 2 },
+  { id: 'CL-PG-020', title: 'Infection Prevention & Control Program', domain: 'Clinical', subdomain: 'Infection Control', status: 'active', lastReviewed: '2026-04-15', nextReview: '2026-10-15', achcMapped: true, achcRefs: ['ACHC-IC-1', 'ACHC-IC-2', 'ACHC-IC-3'], cmsRefs: ['§484.70'], formCount: 5, evidenceCount: 15, procedureCount: 4 },
+  { id: 'SF-PG-002', title: 'Emergency Plan Review & Drill', domain: 'Safety', subdomain: 'Emergency', status: 'under-review', lastReviewed: '2025-08-20', nextReview: '2026-05-20', achcMapped: true, achcRefs: ['ACHC-EP-3'], cmsRefs: ['§484.102(d)'], formCount: 3, evidenceCount: 1, procedureCount: 2 },
+];
+
+type ViewType = 'grid' | 'list';
+
+const statusStyle = (s: Policy['status']) => ({
+  'active': { bg: 'rgba(0, 209, 193, 0.12)', color: V3.tealLight },
+  'under-review': { bg: 'rgba(251, 191, 36, 0.12)', color: '#FBBF24' },
+  'draft': { bg: 'rgba(100, 116, 139, 0.12)', color: V3.textTertiary },
+  'expired': { bg: 'rgba(248, 113, 113, 0.12)', color: '#F87171' },
+}[s]);
+
+export default function V3PolicyLibraryPreview() {
+  const [view, setView] = useState<ViewType>('grid');
+  const [search, setSearch] = useState('');
+  const [filterDomain, setFilterDomain] = useState<string | null>(null);
+
+  const domains = Array.from(new Set(POLICIES.map(p => p.domain)));
+  const filtered = POLICIES.filter(p =>
+    (!filterDomain || p.domain === filterDomain) &&
+    (!search || p.title.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const stats = {
+    total: POLICIES.length,
+    active: POLICIES.filter(p => p.status === 'active').length,
+    achcMapped: POLICIES.filter(p => p.achcMapped).length,
+    needsReview: POLICIES.filter(p => p.status === 'under-review' || p.status === 'draft').length,
+  };
+
+  return (
+    <div className="v3-page-animate" style={{ padding: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+        <h1 style={{ color: V3.textPrimary, fontSize: 20, fontWeight: 600, margin: 0 }}>Policy Library</h1>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input type="text" placeholder="Search policies..." value={search} onChange={e => setSearch(e.target.value)}
+            style={{ padding: '8px 14px', fontSize: 13, background: V3.glass2, border: `1px solid ${V3.borderDefault}`, borderRadius: 8, color: V3.textPrimary, outline: 'none', width: 220 }}
+          />
+          <div style={{ display: 'flex', gap: 2, background: V3.glass2, borderRadius: 6, padding: 2 }}>
+            {(['grid', 'list'] as ViewType[]).map(v => (
+              <button key={v} onClick={() => setView(v)} style={{
+                padding: '5px 10px', fontSize: 11, borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: view === v ? V3.teal : 'transparent', color: view === v ? '#FFF' : V3.textTertiary,
+              }}>{v === 'grid' ? '▦' : '☰'}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Stats — borderless */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+        {[
+          { label: 'Total Policies', value: stats.total },
+          { label: 'Active', value: stats.active, color: V3.tealLight },
+          { label: 'ACHC Mapped', value: stats.achcMapped, color: V3.tealLight },
+          { label: 'Needs Review', value: stats.needsReview, color: '#FBBF24' },
+        ].map((s, i) => (
+          <div key={i} style={{ textAlign: 'center', padding: 12 }}>
+            <div style={{ fontSize: 24, fontWeight: 600, color: s.color || V3.textPrimary }}>{s.value}</div>
+            <div style={{ fontSize: 10, color: V3.textTertiary, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Domain filter chips */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
+        <button onClick={() => setFilterDomain(null)} style={{
+          padding: '5px 14px', fontSize: 12, borderRadius: 20, border: 'none', cursor: 'pointer',
+          background: !filterDomain ? V3.teal : V3.glass2, color: !filterDomain ? '#FFF' : V3.textTertiary,
+        }}>All ({POLICIES.length})</button>
+        {domains.map(d => (
+          <button key={d} onClick={() => setFilterDomain(d)} style={{
+            padding: '5px 14px', fontSize: 12, borderRadius: 20, border: 'none', cursor: 'pointer',
+            background: filterDomain === d ? V3.teal : V3.glass2, color: filterDomain === d ? '#FFF' : V3.textTertiary,
+          }}>{d} ({POLICIES.filter(p => p.domain === d).length})</button>
+        ))}
+      </div>
+
+      {/* Policies */}
+      <div key={`${view}-${filterDomain}`} className="v3-subview-animate" style={{
+        display: view === 'grid' ? 'grid' : 'flex',
+        gridTemplateColumns: view === 'grid' ? 'repeat(3, 1fr)' : undefined,
+        flexDirection: view === 'list' ? 'column' : undefined,
+        gap: view === 'grid' ? 14 : 6,
+      }}>
+        {filtered.map(policy => {
+          const st = statusStyle(policy.status);
+          return view === 'grid' ? (
+            <div key={policy.id} style={{
+              padding: 20, borderRadius: 12, cursor: 'pointer',
+              background: V3.glass2, border: `1px solid ${V3.borderDefault}`,
+              transition: 'all 0.33s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+              onMouseEnter={e => (e.currentTarget.style.border = `1px solid rgba(0, 209, 193, 0.3)`)}
+              onMouseLeave={e => (e.currentTarget.style.border = `1px solid ${V3.borderDefault}`)}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ fontSize: 11, color: V3.tealLight, fontWeight: 600 }}>{policy.id}</span>
+                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: st.bg, color: st.color }}>{policy.status.toUpperCase()}</span>
+              </div>
+              <h3 style={{ color: V3.textPrimary, fontSize: 14, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.4 }}>{policy.title}</h3>
+              <div style={{ color: V3.textTertiary, fontSize: 11, marginBottom: 10 }}>{policy.domain} → {policy.subdomain}</div>
+              {/* ACHC refs */}
+              {policy.achcRefs.length > 0 && (
+                <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginBottom: 10 }}>
+                  {policy.achcRefs.map(ref => (
+                    <span key={ref} style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: 'rgba(0, 209, 193, 0.08)', color: V3.tealLight }}>{ref}</span>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: V3.textTertiary, fontSize: 11 }}>
+                <span>{policy.procedureCount}WP · {policy.formCount}FM · {policy.evidenceCount}EV</span>
+                {policy.cmsRefs.length > 0 && <span style={{ color: V3.textSecondary }}>{policy.cmsRefs[0]}</span>}
+              </div>
+            </div>
+          ) : (
+            <div key={policy.id} style={{
+              display: 'grid', gridTemplateColumns: '80px 2.5fr 1fr 1fr 1fr 100px',
+              gap: 8, padding: '12px 16px', alignItems: 'center', cursor: 'pointer',
+              borderRadius: 8, transition: 'background 0.15s ease',
+            }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              <span style={{ fontSize: 11, color: V3.tealLight, fontWeight: 600 }}>{policy.id}</span>
+              <div>
+                <div style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500 }}>{policy.title}</div>
+                <div style={{ display: 'flex', gap: 3, marginTop: 3 }}>
+                  {policy.achcRefs.slice(0, 3).map(ref => (
+                    <span key={ref} style={{ fontSize: 8, padding: '1px 4px', borderRadius: 2, background: 'rgba(0, 209, 193, 0.08)', color: V3.tealLight }}>{ref}</span>
+                  ))}
+                </div>
+              </div>
+              <span style={{ color: V3.textSecondary, fontSize: 12 }}>{policy.domain}</span>
+              <span style={{ color: V3.textTertiary, fontSize: 12 }}>Review: {policy.nextReview}</span>
+              <span style={{ color: V3.textTertiary, fontSize: 12 }}>{policy.procedureCount}WP · {policy.formCount}FM · {policy.evidenceCount}EV</span>
+              <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: st.bg, color: st.color, textAlign: 'center' }}>{policy.status.toUpperCase()}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ marginTop: 32, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', color: V3.textTertiary, fontSize: 11 }}>
+        Visual preview only — real Library uses LibraryPage, frameworkSeed.generated, achcSurveyProjection.generated, SharedPolicyDetailView, and policyStore. Policy IDs follow normalization: QA-PG-001, QA-WP-11, QA-FM-001.
+      </div>
+    </div>
+  );
+}
+
+6. V3PolicyDetailPreview.tsx (Rebuilt — Real 4-Tab + ACHC Crosswalk + Procedure Chains)
+// V3PolicyDetailPreview.tsx — V3 Veil Glass Policy Detail
+// SharedPolicyDetailView pattern. QA-PG-001 normalization.
+// 4 tabs: Overview, Statements, Procedures (WP chain), Appendices.
+// ACHC crosswalk in metadata grid. CMS CoP references.
+
+import React, { useState } from 'react';
+
+const V3 = {
+  glass2: 'rgba(255, 255, 255, 0.04)',
+  teal: '#007970',
+  tealLight: '#00D1C1',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
+  borderDefault: 'rgba(255, 255, 255, 0.33)',
+} as const;
+
+const POLICY = {
+  id: 'QA-PG-001',
+  title: 'Quality Assessment & Performance Improvement (QAPI)',
+  domain: 'Clinical',
+  subdomain: 'Quality Assurance',
+  status: 'Active',
+  version: '3.2',
+  effectiveDate: '2026-03-01',
+  nextReview: '2026-09-01',
+  approvedBy: 'Dr. R. Patel, Medical Director',
+  achcStandards: ['ACHC-QI-1', 'ACHC-QI-2', 'ACHC-QI-3'],
+  cmsConditions: ['§484.65', '§484.65(a)', '§484.65(b)', '§484.65(c)'],
+  overview: 'Care Indeed maintains a comprehensive Quality Assessment and Performance Improvement (QAPI) program that is agency-wide, data-driven, and ongoing. The program integrates all quality and performance improvement activities across all services. The Governing Body ensures QAPI program oversight, resource allocation, and corrective action implementation.',
+  statements: [
+    { section: '1.1', text: 'The agency shall maintain a QAPI program that measures, analyzes, and tracks quality indicators including adverse patient events and other aspects of performance.', achcRef: 'ACHC-QI-1' },
+    { section: '1.2', text: 'The program shall include objectives for improving patient safety and reducing medical errors using best available evidence.', achcRef: 'ACHC-QI-1' },
+    { section: '1.3', text: 'Data collection shall address all conditions of participation and ACHC standards as applicable to the services provided.', achcRef: 'ACHC-QI-2' },
+    { section: '2.1', text: 'Performance improvement projects shall be proportional to the scope and complexity of services and shall reflect the full range of patient populations served.', achcRef: 'ACHC-QI-3' },
+    { section: '2.2', text: 'The Governing Body shall ensure adequate resources for the QAPI program and review QAPI activities at least quarterly.', achcRef: 'ACHC-QI-2' },
+  ],
+  procedures: [
+    { code: 'QA-WP-04', title: 'Plan-for-Improvement (PIP) Execution', owner: 'Clinical Lead', formCount: 1, evidenceReq: 2, status: 'active' },
+    { code: 'QA-WP-11', title: 'Quarterly QAPI Meeting Preparation', owner: 'Quality Director', formCount: 2, evidenceReq: 3, status: 'active' },
+    { code: 'QA-WP-12', title: 'OAPS-Layer KPI Analysis', owner: 'Quality Analyst', formCount: 1, evidenceReq: 2, status: 'active' },
+    { code: 'QA-WP-14', title: 'Quality Indicator Tracking', owner: 'Quality Director', formCount: 1, evidenceReq: 1, status: 'active' },
+    { code: 'QA-WP-15', title: 'Trend Analysis & Benchmarking', owner: 'Quality Analyst', formCount: 1, evidenceReq: 2, status: 'active' },
+  ],
+  appendices: [
+    { id: 'A', title: 'QAPI Committee Charter', type: 'form', formId: 'QA-FM-001' },
+    { id: 'B', title: 'Quality Indicator Dashboard Template', type: 'template', formId: 'QA-FM-002' },
+    { id: 'C', title: 'PIP Tracking Worksheet', type: 'form', formId: 'QA-FM-003' },
+    { id: 'D', title: 'ACHC Standard Crosswalk — QI', type: 'reference', formId: null },
+  ],
+};
+
+const TABS = ['Overview', 'Policy Statements', 'Procedures', 'Appendices'] as const;
+type Tab = typeof TABS[number];
+
+export default function V3PolicyDetailPreview() {
+  const [tab, setTab] = useState<Tab>('Overview');
+
+  return (
+    <div className="v3-page-animate" style={{ padding: 24 }}>
+      {/* Breadcrumb */}
+      <div style={{ color: V3.textTertiary, fontSize: 12, marginBottom: 16 }}>
+        <span style={{ cursor: 'pointer' }}>Library</span> <span style={{ margin: '0 6px', opacity: 0.4 }}>→</span>
+        <span style={{ cursor: 'pointer' }}>{POLICY.domain}</span> <span style={{ margin: '0 6px', opacity: 0.4 }}>→</span>
+        <span style={{ color: V3.textSecondary }}>{POLICY.id}</span>
+      </div>
+
+      {/* Header card — interactive, gets border */}
+      <div style={{ padding: 24, marginBottom: 20, borderRadius: 12, background: V3.glass2, border: `1px solid ${V3.borderDefault}` }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 12, color: V3.tealLight, fontWeight: 600 }}>{POLICY.id}</span>
+              <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.12)', color: V3.tealLight }}>{POLICY.status}</span>
+              <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: V3.glass2, color: V3.textTertiary }}>v{POLICY.version}</span>
+            </div>
+            <h1 style={{ color: V3.textPrimary, fontSize: 20, fontWeight: 600, margin: 0 }}>{POLICY.title}</h1>
+            <p style={{ color: V3.textTertiary, fontSize: 12, margin: '6px 0 0' }}>
+              {POLICY.domain} → {POLICY.subdomain} · Approved by {POLICY.approvedBy}
+            </p>
+          </div>
+        </div>
+
+        {/* Metadata grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+          <div>
+            <div style={{ fontSize: 10, color: V3.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Effective</div>
+            <div style={{ fontSize: 14, color: V3.textPrimary, marginTop: 4 }}>{POLICY.effectiveDate}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: V3.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Next Review</div>
+            <div style={{ fontSize: 14, color: V3.textPrimary, marginTop: 4 }}>{POLICY.nextReview}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: V3.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em' }}>ACHC Standards</div>
+            <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
+              {POLICY.achcStandards.map(s => (
+                <span key={s} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.08)', color: V3.tealLight }}>{s}</span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: V3.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em' }}>CMS CoP</div>
+            <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
+              {POLICY.cmsConditions.map(c => (
+                <span key={c} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: V3.glass2, color: V3.textSecondary }}>{c}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 2, marginBottom: 20, borderBottom: `1px solid rgba(255,255,255,0.08)` }}>
+        {TABS.map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{
+            padding: '10px 18px', fontSize: 13, fontWeight: tab === t ? 600 : 400,
+            color: tab === t ? V3.tealLight : V3.textTertiary,
+            background: 'transparent', border: 'none',
+            borderBottom: tab === t ? `2px solid ${V3.tealLight}` : '2px solid transparent',
+            cursor: 'pointer', marginBottom: -1,
+          }}>{t}</button>
+        ))}
+      </div>
+
+      <div key={tab} className="v3-subview-animate">
+        {tab === 'Overview' && (
+          <div style={{ padding: 20, borderRadius: 10, background: V3.glass2 }}>
+            <h3 style={{ color: V3.textTertiary, fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 12px' }}>Policy Overview</h3>
+            <p style={{ color: V3.textSecondary, fontSize: 14, lineHeight: 1.7, margin: 0 }}>{POLICY.overview}</p>
+          </div>
+        )}
+
+        {tab === 'Policy Statements' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {POLICY.statements.map((s, i) => (
+              <div key={i} style={{ padding: 16, borderLeft: `3px solid ${V3.tealLight}`, borderRadius: '0 8px 8px 0', background: V3.glass2 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ color: V3.tealLight, fontSize: 11, fontWeight: 600 }}>§{s.section}</span>
+                  <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: 'rgba(0, 209, 193, 0.08)', color: V3.tealLight }}>{s.achcRef}</span>
+                </div>
+                <p style={{ color: V3.textSecondary, fontSize: 14, lineHeight: 1.6, margin: 0 }}>{s.text}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'Procedures' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ fontSize: 10, color: V3.textTertiary, letterSpacing: '0.06em', marginBottom: 4 }}>
+              PROCEDURE CHAIN — {POLICY.procedures.length} work procedures linked to {POLICY.id}
+            </div>
+            {POLICY.procedures.map((proc, i) => (
+              <div key={proc.code} style={{
+                display: 'flex', alignItems: 'center', gap: 12, padding: 16,
+                borderRadius: 10, background: V3.glass2, border: `1px solid ${V3.borderDefault}`,
+                cursor: 'pointer', transition: 'border-color 0.2s ease',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(0, 209, 193, 0.3)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = V3.borderDefault)}
+              >
+                {/* Chain connector */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20 }}>
+                  {i > 0 && <div style={{ width: 1, height: 8, background: 'rgba(255,255,255,0.1)' }} />}
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: V3.tealLight, flexShrink: 0 }} />
+                  {i < POLICY.procedures.length - 1 && <div style={{ width: 1, height: 8, background: 'rgba(255,255,255,0.1)' }} />}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 12, color: V3.tealLight, fontWeight: 600 }}>{proc.code}</span>
+                    <span style={{ color: V3.textPrimary, fontSize: 14, fontWeight: 500 }}>{proc.title}</span>
+                  </div>
+                  <div style={{ color: V3.textTertiary, fontSize: 11, marginTop: 4 }}>
+                    Owner: {proc.owner} · {proc.formCount} forms · {proc.evidenceReq} evidence required
+                  </div>
+                </div>
+                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.1)', color: V3.tealLight }}>{proc.status.toUpperCase()}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'Appendices' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            {POLICY.appendices.map(app => (
+              <div key={app.id} style={{
+                padding: 18, borderRadius: 12, background: V3.glass2, border: `1px solid ${V3.borderDefault}`, cursor: 'pointer',
+                transition: 'border-color 0.2s ease',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(0, 209, 193, 0.3)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = V3.borderDefault)}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, color: V3.tealLight, fontWeight: 600 }}>Appendix {app.id}</span>
+                  <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: V3.glass2, color: V3.textTertiary }}>{app.type}</span>
+                </div>
+                <div style={{ color: V3.textPrimary, fontSize: 14, fontWeight: 500 }}>{app.title}</div>
+                {app.formId && <div style={{ color: V3.textTertiary, fontSize: 11, marginTop: 6 }}>Form: {app.formId}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginTop: 32, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', color: V3.textTertiary, fontSize: 11 }}>
+        Visual preview only — real detail uses SharedPolicyDetailView, normalized QA-PG-001 → QA-WP-* → QA-FM-* chain, achcSurveyProjection, and PolicyLibraryDocumentView.
+      </div>
+    </div>
+  );
+}
+
+7. V3PatientDetailPreview.tsx (Rebuilt — Real PatientProfile + OASIS + Care Episodes)
+// V3PatientDetailPreview.tsx — V3 Veil Glass Patient Detail
+// Real data shapes: PatientProfile, Diagnosis[], Medication[], InsurancePlan[],
+// CareEpisode[], EmergencyContact[], OASIS assessment references.
+// 5 tabs matching production: Overview, Clinical, Care Episodes, Insurance, Documents.
+
+import React, { useState } from 'react';
+
+const V3 = {
+  glass2: 'rgba(255, 255, 255, 0.04)',
+  teal: '#007970',
+  tealLight: '#00D1C1',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
+  borderDefault: 'rgba(255, 255, 255, 0.33)',
+} as const;
+
+const P = {
+  id: 'PT-2847', mrn: 'MRN-0029847',
+  firstName: 'Margaret', lastName: 'Chen',
+  dob: '1948-03-14', age: 78, gender: 'Female',
+  phone: '(415) 555-0192',
+  address: '482 Sunset Blvd, San Francisco, CA 94122',
+  primaryLang: 'English', secondaryLang: 'Cantonese',
+  advanceDirectives: true, dnrOnFile: true,
+  allergies: ['Penicillin', 'Sulfa drugs', 'Latex'],
+  diagnoses: [
+    { code: 'I50.9', desc: 'Heart failure, unspecified', isPrimary: true, onset: '2024-08-12' },
+    { code: 'E11.9', desc: 'Type 2 diabetes mellitus w/o complications', isPrimary: false, onset: '2019-03-01' },
+    { code: 'M17.11', desc: 'Primary osteoarthritis, right knee', isPrimary: false, onset: '2022-06-15' },
+  ],
+  medications: [
+    { name: 'Lisinopril', dose: '10mg', freq: 'Daily', prescriber: 'Dr. R. Patel', start: '2024-08-15' },
+    { name: 'Metformin', dose: '500mg', freq: 'BID', prescriber: 'Dr. R. Patel', start: '2019-04-01' },
+    { name: 'Furosemide', dose: '40mg', freq: 'Daily', prescriber: 'Dr. R. Patel', start: '2024-08-15' },
+    { name: 'Acetaminophen', dose: '500mg', freq: 'PRN', prescriber: 'Dr. K. Nguyen', start: '2022-07-01' },
+  ],
+  episodes: [
+    { id: 'EP-1142', type: 'Skilled Nursing', start: '2026-04-01', end: null, status: 'active' as const, clinician: 'Dr. Evelyn Vance', visits: 12, oasisComplete: true },
+    { id: 'EP-1098', type: 'Physical Therapy', start: '2026-03-15', end: null, status: 'active' as const, clinician: 'Sophia Caldwell, PT', visits: 8, oasisComplete: true },
+    { id: 'EP-0987', type: 'Skilled Nursing', start: '2025-11-01', end: '2026-01-15', status: 'discharged' as const, clinician: 'Marcus Sterling, RN', visits: 22, oasisComplete: true },
+  ],
+  insurance: [
+    { provider: 'Medicare Part A', policy: '1EG4-TE5-MK72', group: 'N/A', type: 'Medicare', primary: true, verified: true, date: '2026-05-01' },
+    { provider: 'Blue Shield Medigap Plan F', policy: 'BSC-449281', group: 'MG-2200', type: 'Private', primary: false, verified: true, date: '2026-04-28' },
+  ],
+  contacts: [
+    { name: 'David Chen', rel: 'Son', phone: '(415) 555-0288', primary: true },
+    { name: 'Lisa Chen-Park', rel: 'Daughter', phone: '(510) 555-0134', primary: false },
+  ],
+  documents: [
+    { name: 'CMS-485 Home Health Certification', type: 'Certification', date: '2026-04-01', status: 'Active' },
+    { name: 'Plan of Care — EP-1142', type: 'Care Plan', date: '2026-04-01', status: 'Active' },
+    { name: 'OASIS-E Assessment (SOC)', type: 'Assessment', date: '2026-04-01', status: 'Completed' },
+    { name: 'OASIS-E Assessment (Recert)', type: 'Assessment', date: '2026-05-15', status: 'Completed' },
+    { name: 'Advance Directive', type: 'Legal', date: '2025-06-20', status: 'On File' },
+    { name: 'DNR Order', type: 'Legal', date: '2025-06-20', status: 'On File' },
+    { name: 'Discharge Summary — EP-0987', type: 'Discharge', date: '2026-01-15', status: 'Finalized' },
+  ],
+};
+
+const TABS = ['Overview', 'Clinical', 'Care Episodes', 'Insurance & Contacts', 'Documents'] as const;
+type Tab = typeof TABS[number];
+
+export default function V3PatientDetailPreview() {
+  const [tab, setTab] = useState<Tab>('Overview');
+
+  return (
+    <div className="v3-page-animate" style={{ padding: 24 }}>
+      {/* Breadcrumb */}
+      <div style={{ color: V3.textTertiary, fontSize: 12, marginBottom: 16 }}>
+        <span style={{ cursor: 'pointer' }}>Patients</span>
+        <span style={{ margin: '0 6px', opacity: 0.4 }}>→</span>
+        <span style={{ color: V3.textSecondary }}>{P.firstName} {P.lastName}</span>
+      </div>
+
+      {/* Patient header — interactive card, gets border */}
+      <div style={{ padding: 24, marginBottom: 20, borderRadius: 12, background: V3.glass2, border: `1px solid ${V3.borderDefault}` }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h1 style={{ color: V3.textPrimary, fontSize: 22, fontWeight: 600, margin: 0 }}>{P.firstName} {P.lastName}</h1>
+            <p style={{ color: V3.textSecondary, fontSize: 13, margin: '4px 0 0' }}>{P.mrn} · DOB {P.dob} · {P.age}y · {P.gender}</p>
+            <p style={{ color: V3.textTertiary, fontSize: 12, margin: '2px 0 0' }}>{P.address}</p>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {P.advanceDirectives && <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 6, background: 'rgba(0, 209, 193, 0.12)', color: V3.tealLight }}>AD on File</span>}
+            {P.dnrOnFile && <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 6, background: 'rgba(248, 113, 113, 0.12)', color: '#F87171' }}>DNR</span>}
+          </div>
+        </div>
+
+        {/* Quick stats — borderless */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+          {[
+            { l: 'Active Episodes', v: P.episodes.filter(e => e.status === 'active').length },
+            { l: 'Total Visits', v: P.episodes.filter(e => e.status === 'active').reduce((s, e) => s + e.visits, 0) },
+            { l: 'Diagnoses', v: P.diagnoses.length },
+            { l: 'Medications', v: P.medications.length },
+            { l: 'Language', v: P.primaryLang },
+          ].map((s, i) => (
+            <div key={i} style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 20, fontWeight: 600, color: V3.textPrimary }}>{s.v}</div>
+              <div style={{ fontSize: 10, color: V3.textTertiary, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Allergies banner */}
+      <div style={{ padding: '10px 16px', marginBottom: 16, borderRadius: 8, background: 'rgba(251, 146, 60, 0.06)', border: '1px solid rgba(251, 146, 60, 0.15)', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ color: '#FB923C', fontSize: 12, fontWeight: 600 }}>⚠ ALLERGIES</span>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {P.allergies.map(a => (
+            <span key={a} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'rgba(251, 146, 60, 0.1)', color: '#FB923C' }}>{a}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 2, marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        {TABS.map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{
+            padding: '10px 16px', fontSize: 13, fontWeight: tab === t ? 600 : 400,
+            color: tab === t ? V3.tealLight : V3.textTertiary,
+            background: 'transparent', border: 'none',
+            borderBottom: tab === t ? `2px solid ${V3.tealLight}` : '2px solid transparent',
+            cursor: 'pointer', marginBottom: -1,
+          }}>{t}</button>
+        ))}
+      </div>
+
+      <div key={tab} className="v3-subview-animate">
+        {tab === 'Overview' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ padding: 20, borderRadius: 10, background: V3.glass2 }}>
+              <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Primary Diagnosis</div>
+              <div style={{ color: V3.textPrimary, fontSize: 15, fontWeight: 500 }}>{P.diagnoses[0].desc}</div>
+              <div style={{ color: V3.textTertiary, fontSize: 12, marginTop: 4 }}>ICD-10: {P.diagnoses[0].code} · Onset {P.diagnoses[0].onset}</div>
+            </div>
+            <div style={{ padding: 20, borderRadius: 10, background: V3.glass2 }}>
+              <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Active Care</div>
+              {P.episodes.filter(e => e.status === 'active').map(ep => (
+                <div key={ep.id} style={{ marginBottom: 6 }}>
+                  <div style={{ color: V3.textPrimary, fontSize: 13 }}>{ep.type}</div>
+                  <div style={{ color: V3.textTertiary, fontSize: 11 }}>{ep.clinician} · {ep.visits} visits</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: 20, borderRadius: 10, background: V3.glass2, gridColumn: 'span 2' }}>
+              <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Emergency Contacts</div>
+              <div style={{ display: 'flex', gap: 16 }}>
+                {P.contacts.map(c => (
+                  <div key={c.name}>
+                    <div style={{ color: V3.textPrimary, fontSize: 13 }}>{c.name} {c.primary && <span style={{ fontSize: 10, color: V3.tealLight }}>(Primary)</span>}</div>
+                    <div style={{ color: V3.textTertiary, fontSize: 12 }}>{c.rel} · {c.phone}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'Clinical' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div>
+              <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Diagnoses</div>
+              {P.diagnoses.map((d, i) => (
+                <div key={i} style={{ padding: 14, borderRadius: 8, background: V3.glass2, marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500 }}>{d.desc}</div>
+                    <div style={{ color: V3.textTertiary, fontSize: 11, marginTop: 2 }}>ICD-10: {d.code} · Onset {d.onset}</div>
+                  </div>
+                  {d.isPrimary && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.12)', color: V3.tealLight }}>PRIMARY</span>}
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Medications ({P.medications.length})</div>
+              {P.medications.map((m, i) => (
+                <div key={i} style={{ padding: 14, borderRadius: 8, background: V3.glass2, marginBottom: 6 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500 }}>{m.name} {m.dose}</span>
+                    <span style={{ color: V3.textTertiary, fontSize: 12 }}>{m.freq}</span>
+                  </div>
+                  <div style={{ color: V3.textSecondary, fontSize: 11, marginTop: 4 }}>Prescriber: {m.prescriber} · Since {m.start}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === 'Care Episodes' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {P.episodes.map(ep => (
+              <div key={ep.id} style={{
+                padding: 16, borderRadius: 10, background: V3.glass2,
+                borderLeft: `3px solid ${ep.status === 'active' ? V3.tealLight : V3.textTertiary}`,
+                cursor: 'pointer',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ color: V3.textPrimary, fontSize: 14, fontWeight: 500 }}>{ep.type}</div>
+                    <div style={{ color: V3.textSecondary, fontSize: 12, marginTop: 2 }}>{ep.clinician}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    {ep.oasisComplete && <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.08)', color: V3.tealLight }}>OASIS ✓</span>}
+                    <span style={{
+                      fontSize: 10, padding: '3px 10px', borderRadius: 6,
+                      background: ep.status === 'active' ? 'rgba(0, 209, 193, 0.12)' : 'rgba(100, 116, 139, 0.12)',
+                      color: ep.status === 'active' ? V3.tealLight : V3.textTertiary,
+                    }}>{ep.status.toUpperCase()}</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 16, marginTop: 8, color: V3.textTertiary, fontSize: 12 }}>
+                  <span>{ep.id}</span>
+                  <span>{ep.start} → {ep.end || 'Present'}</span>
+                  <span>{ep.visits} visits</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'Insurance & Contacts' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div>
+              <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Insurance Plans</div>
+              {P.insurance.map((ins, i) => (
+                <div key={i} style={{ padding: 16, borderRadius: 8, background: V3.glass2, marginBottom: 6 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: V3.textPrimary, fontSize: 14, fontWeight: 500 }}>{ins.provider}</span>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {ins.primary && <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.12)', color: V3.tealLight }}>PRIMARY</span>}
+                      {ins.verified && <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.08)', color: V3.tealLight }}>✓ VERIFIED</span>}
+                    </div>
+                  </div>
+                  <div style={{ color: V3.textTertiary, fontSize: 11, marginTop: 6, display: 'flex', gap: 16 }}>
+                    <span>Policy: {ins.policy}</span><span>Group: {ins.group}</span><span>{ins.type}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Emergency Contacts</div>
+              {P.contacts.map((c, i) => (
+                <div key={i} style={{ padding: 14, borderRadius: 8, background: V3.glass2, marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
+                  <div>
+                    <span style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500 }}>{c.name}</span>
+                    <div style={{ color: V3.textTertiary, fontSize: 12, marginTop: 2 }}>{c.rel} · {c.phone}</div>
+                  </div>
+                  {c.primary && <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.08)', color: V3.tealLight }}>PRIMARY</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === 'Documents' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {P.documents.map((doc, i) => (
+              <div key={i} style={{
+                padding: 12, borderRadius: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                cursor: 'pointer', transition: 'background 0.15s ease',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                <div>
+                  <div style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500 }}>{doc.name}</div>
+                  <div style={{ color: V3.textTertiary, fontSize: 11, marginTop: 2 }}>{doc.type} · {doc.date}</div>
+                </div>
+                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, color: V3.tealLight, background: 'rgba(0, 209, 193, 0.08)' }}>{doc.status}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginTop: 32, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', color: V3.textTertiary, fontSize: 11 }}>
+        Visual preview only — real Patient Detail uses PatientProfile model, usePatientStore, CareEpisode[], InsurancePlan[], OASIS-E assessment integration, and CMS-485 certification tracking.
+      </div>
+    </div>
+  );
+}
+
+8. V3OnboardingPreview.tsx (Rebuilt — Gate System + KpiTile + StatusPill + AuditTimeline)
+// V3OnboardingPreview.tsx — V3 Veil Glass Onboarding V2
+// Gate-based compliance activation. KpiTile, StatusPill, GateTile, UnitDrawer, AuditTimeline.
+// Hash-chain verification preview. Reconciliation preview panel.
+
+import React, { useState } from 'react';
+
+const V3 = {
+  glass2: 'rgba(255, 255, 255, 0.04)',
+  teal: '#007970',
+  tealLight: '#00D1C1',
+  orange: '#E07B2C',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
+  borderDefault: 'rgba(255, 255, 255, 0.33)',
+} as const;
+
+type GateStatus = 'passed' | 'in-progress' | 'locked' | 'failed';
+type ViewTab = 'pipeline' | 'activation' | 'audit-trail';
+
+interface Gate {
+  num: number; label: string; desc: string; requiredForms: number; requiredSigs: number;
+}
+
+interface OnboardingUnit {
+  id: string; name: string; role: string; startDate: string;
+  currentGate: number; gateStatus: GateStatus; pct: number;
+  formsCompleted: number; formsTotal: number;
+  sigsComplete: boolean;
+  hashChainValid: boolean;
+  lastActivity: string;
+}
+
+const GATES: Gate[] = [
+  { num: 1, label: 'Pre-Employment', desc: 'Background check, offer letter, employment eligibility', requiredForms: 5, requiredSigs: 3 },
+  { num: 2, label: 'Orientation', desc: 'Company orientation, policy acknowledgments, safety training', requiredForms: 12, requiredSigs: 8 },
+  { num: 3, label: 'Competency', desc: 'Skills checkoff, clinical competency, OSHA/HIPAA cert', requiredForms: 8, requiredSigs: 6 },
+  { num: 4, label: 'Field Ready', desc: 'Supervised visit, final sign-off, system access activation', requiredForms: 4, requiredSigs: 4 },
+];
+
+const UNITS: OnboardingUnit[] = [
+  { id: 'OB-001', name: 'Angela Torres', role: 'Home Health Aide', startDate: '2026-05-13', currentGate: 3, gateStatus: 'in-progress', pct: 68, formsCompleted: 17, formsTotal: 29, sigsComplete: false, hashChainValid: true, lastActivity: '2h ago' },
+  { id: 'OB-002', name: 'Kevin Pham', role: 'Registered Nurse', startDate: '2026-05-06', currentGate: 4, gateStatus: 'in-progress', pct: 89, formsCompleted: 26, formsTotal: 29, sigsComplete: false, hashChainValid: true, lastActivity: '30m ago' },
+  { id: 'OB-003', name: 'Destiny Williams', role: 'Physical Therapist', startDate: '2026-05-13', currentGate: 2, gateStatus: 'in-progress', pct: 41, formsCompleted: 12, formsTotal: 29, sigsComplete: false, hashChainValid: true, lastActivity: '4h ago' },
+  { id: 'OB-004', name: 'Roberto Garcia', role: 'Home Health Aide', startDate: '2026-04-29', currentGate: 4, gateStatus: 'passed', pct: 100, formsCompleted: 29, formsTotal: 29, sigsComplete: true, hashChainValid: true, lastActivity: '2d ago' },
+  { id: 'OB-005', name: 'Sarah Kim', role: 'LVN', startDate: '2026-05-20', currentGate: 1, gateStatus: 'in-progress', pct: 12, formsCompleted: 3, formsTotal: 29, sigsComplete: false, hashChainValid: true, lastActivity: '1h ago' },
+  { id: 'OB-006', name: 'James Wright', role: 'Home Health Aide', startDate: '2026-05-18', currentGate: 1, gateStatus: 'failed', pct: 8, formsCompleted: 2, formsTotal: 29, sigsComplete: false, hashChainValid: false, lastActivity: '1d ago' },
+];
+
+const gateColor = (s: GateStatus) => ({ passed: '#4ADE80', 'in-progress': V3.tealLight, locked: V3.textTertiary, failed: '#F87171' }[s]);
+
+const AUDIT_TRAIL = [
+  { time: '2026-05-20 09:14', actor: 'Kevin Pham', action: 'Completed Gate 3 → Competency Assessment signed', hash: 'sha256:4f2a...' },
+  { time: '2026-05-20 08:45', actor: 'Angela Torres', action: 'Uploaded OSHA training certificate', hash: 'sha256:8b1c...' },
+  { time: '2026-05-19 16:30', actor: 'System', action: 'Roberto Garcia — all gates passed, activation complete', hash: 'sha256:d7e3...' },
+  { time: '2026-05-19 14:22', actor: 'Destiny Williams', action: 'Completed 3 orientation acknowledgments', hash: 'sha256:a9f4...' },
+  { time: '2026-05-19 11:00', actor: 'System', action: 'James Wright — background check FAILED, gate 1 blocked', hash: 'sha256:c2b5...' },
+  { time: '2026-05-18 15:00', actor: 'Sarah Kim', action: 'Employment eligibility form submitted', hash: 'sha256:e6d8...' },
+];
+
+export default function V3OnboardingPreview() {
+  const [activeView, setActiveView] = useState<ViewTab>('pipeline');
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+
+  const active = UNITS.filter(u => u.pct < 100 && u.gateStatus !== 'failed').length;
+  const completed = UNITS.filter(u => u.pct === 100).length;
+  const failed = UNITS.filter(u => u.gateStatus === 'failed').length;
+  const avgPct = Math.round(UNITS.reduce((s, u) => s + u.pct, 0) / UNITS.length);
+
+  return (
+    <div className="v3-page-animate" style={{ padding: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+        <div>
+          <h1 style={{ color: V3.textPrimary, fontSize: 20, fontWeight: 600, margin: 0 }}>Onboarding & Activation</h1>
+          <p style={{ color: V3.textTertiary, fontSize: 12, margin: '4px 0 0' }}>{UNITS.length} employees · 4-gate compliance activation · Hash-chain verified</p>
+        </div>
+        <div style={{ display: 'flex', gap: 4, background: V3.glass2, borderRadius: 8, padding: 3 }}>
+          {(['pipeline', 'activation', 'audit-trail'] as ViewTab[]).map(v => (
+            <button key={v} onClick={() => setActiveView(v)} style={{
+              padding: '6px 14px', fontSize: 12, borderRadius: 6, border: 'none', cursor: 'pointer',
+              background: activeView === v ? V3.teal : 'transparent',
+              color: activeView === v ? '#FFF' : V3.textTertiary, textTransform: 'capitalize',
+            }}>{v.replace('-', ' ')}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* KPIs — borderless */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginBottom: 28 }}>
+        {[
+          { label: 'In Pipeline', value: active, color: V3.tealLight },
+          { label: 'Completed', value: completed, color: '#4ADE80' },
+          { label: 'Failed', value: failed, color: '#F87171' },
+          { label: 'Avg Progress', value: `${avgPct}%`, color: V3.textPrimary },
+          { label: 'Sigs Pending', value: UNITS.filter(u => !u.sigsComplete && u.gateStatus !== 'failed').length, color: '#FBBF24' },
+        ].map((k, i) => (
+          <div key={i} style={{ textAlign: 'center', padding: 12 }}>
+            <div style={{ fontSize: 28, fontWeight: 600, color: k.color }}>{k.value}</div>
+            <div style={{ fontSize: 10, color: V3.textTertiary, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div key={activeView} className="v3-subview-animate">
+        {(activeView === 'pipeline' || activeView === 'activation') && (
+          <>
+            {/* Gate pipeline visualization */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+              {GATES.map((gate, gi) => {
+                const unitsAtGate = UNITS.filter(u => u.currentGate === gate.num && u.gateStatus !== 'failed');
+                return (
+                  <React.Fragment key={gate.num}>
+                    <div style={{ flex: 1, padding: 16, borderRadius: 12, background: V3.glass2, border: `1px solid ${V3.borderDefault}` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                        <span style={{ fontSize: 11, color: V3.tealLight, fontWeight: 600 }}>GATE {gate.num}</span>
+                        <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: V3.glass2, color: V3.textTertiary }}>{unitsAtGate.length}</span>
+                      </div>
+                      <div style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500, marginBottom: 4 }}>{gate.label}</div>
+                      <div style={{ color: V3.textTertiary, fontSize: 11, lineHeight: 1.3 }}>{gate.desc}</div>
+                      <div style={{ color: V3.textTertiary, fontSize: 10, marginTop: 8 }}>{gate.requiredForms}F · {gate.requiredSigs}S</div>
+                    </div>
+                    {gi < GATES.length - 1 && (
+                      <div style={{ display: 'flex', alignItems: 'center', color: V3.textTertiary, fontSize: 16 }}>→</div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            {/* Employee cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {UNITS.map(unit => (
+                <div key={unit.id}
+                  onClick={() => setSelectedUnit(selectedUnit === unit.id ? null : unit.id)}
+                  style={{
+                    padding: 16, borderRadius: 10, background: V3.glass2,
+                    border: `1px solid ${unit.gateStatus === 'failed' ? 'rgba(248, 113, 113, 0.2)' : V3.borderDefault}`,
+                    cursor: 'pointer', transition: 'all 0.2s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ flex: 2 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ color: V3.textPrimary, fontSize: 14, fontWeight: 500 }}>{unit.name}</span>
+                        {!unit.hashChainValid && <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(248, 113, 113, 0.12)', color: '#F87171' }}>⚠ CHAIN INVALID</span>}
+                      </div>
+                      <div style={{ color: V3.textTertiary, fontSize: 12, marginTop: 2 }}>{unit.role} · Started {unit.startDate} · {unit.lastActivity}</div>
+                    </div>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ height: 4, flex: 1, borderRadius: 2, background: 'rgba(255,255,255,0.06)' }}>
+                        <div style={{ height: '100%', borderRadius: 2, width: `${unit.pct}%`, background: unit.pct === 100 ? '#4ADE80' : unit.gateStatus === 'failed' ? '#F87171' : V3.tealLight, transition: 'width 0.5s ease' }} />
+                      </div>
+                      <span style={{ color: V3.textSecondary, fontSize: 12, fontWeight: 500, minWidth: 36, textAlign: 'right' }}>{unit.pct}%</span>
+                    </div>
+                    <div style={{ width: 80, textAlign: 'center' }}>
+                      <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 6, background: `${gateColor(unit.gateStatus)}15`, color: gateColor(unit.gateStatus), fontWeight: 500 }}>
+                        G{unit.currentGate}
+                      </span>
+                    </div>
+                    <div style={{ width: 90, textAlign: 'center', color: V3.textTertiary, fontSize: 12 }}>{unit.formsCompleted}/{unit.formsTotal}</div>
+                  </div>
+
+                  {/* Expanded detail (UnitDrawer pattern) */}
+                  {selectedUnit === unit.id && (
+                    <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.04)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                      {GATES.map(gate => {
+                        const isPassed = unit.currentGate > gate.num || (unit.currentGate === gate.num && unit.gateStatus === 'passed');
+                        const isCurrent = unit.currentGate === gate.num && unit.gateStatus !== 'passed';
+                        const isFailed = unit.currentGate === gate.num && unit.gateStatus === 'failed';
+                        return (
+                          <div key={gate.num} style={{
+                            padding: 12, borderRadius: 8,
+                            background: isPassed ? 'rgba(74, 222, 128, 0.06)' : isFailed ? 'rgba(248, 113, 113, 0.06)' : isCurrent ? 'rgba(0, 209, 193, 0.06)' : 'rgba(255,255,255,0.02)',
+                            border: `1px solid ${isPassed ? 'rgba(74, 222, 128, 0.15)' : isFailed ? 'rgba(248, 113, 113, 0.15)' : isCurrent ? 'rgba(0, 209, 193, 0.15)' : 'rgba(255,255,255,0.04)'}`,
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                              <span style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600 }}>GATE {gate.num}</span>
+                              <span style={{ fontSize: 12 }}>{isPassed ? '✓' : isFailed ? '✕' : isCurrent ? '●' : '○'}</span>
+                            </div>
+                            <div style={{ color: V3.textSecondary, fontSize: 12 }}>{gate.label}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {activeView === 'audit-trail' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
+              HASH-CHAIN AUDIT TRAIL — eCign v2
+            </div>
+            {AUDIT_TRAIL.map((entry, i) => (
+              <div key={i} style={{
+                padding: '12px 0 12px 20px',
+                borderLeft: `2px solid ${i === 0 ? V3.tealLight : 'rgba(255,255,255,0.08)'}`,
+                marginLeft: 8,
+                position: 'relative',
+              }}>
+                <div style={{ position: 'absolute', left: -5, top: 15, width: 8, height: 8, borderRadius: '50%', background: i === 0 ? V3.tealLight : 'rgba(255,255,255,0.15)' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ color: V3.textPrimary, fontSize: 13 }}>{entry.action}</div>
+                    <div style={{ color: V3.textTertiary, fontSize: 11, marginTop: 2 }}>{entry.actor} · {entry.time}</div>
+                  </div>
+                  <span style={{ fontSize: 10, fontFamily: 'monospace', color: V3.tealLight, padding: '2px 6px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.06)' }}>{entry.hash}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginTop: 32, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', color: V3.textTertiary, fontSize: 11 }}>
+        Visual preview only — real Onboarding V2 uses KpiTile, StatusPill, GateTile, UnitDrawer, AuditTimeline, reconciliation preview, hash-chain verification (eCign v2), and allowlist CSV validation.
+      </div>
+    </div>
+  );
+}
+
+9. V3AdminPreview.tsx (Rebuilt — RBAC + Allowlist + System Config)
+// V3AdminPreview.tsx — V3 Veil Glass Admin / Settings
+// Real shapes: RBAC, allowlist mode, eCign config, evidence backend.
+// Tabs: Users, Roles, System, Audit Log.
+
+import React, { useState } from 'react';
+
+const V3 = {
+  glass2: 'rgba(255, 255, 255, 0.04)',
+  teal: '#007970',
+  tealLight: '#00D1C1',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
+  borderDefault: 'rgba(255, 255, 255, 0.33)',
+} as const;
+
+type AdminTab = 'users' | 'roles' | 'system' | 'audit-log';
+
+const USERS = [
+  { id: 'U-001', name: 'Dr. R. Patel', email: 'rpatel@careindeed.com', role: 'Administrator', status: 'active', lastLogin: '2026-05-19 14:22', mfaEnabled: true },
+  { id: 'U-002', name: 'J. Smith', email: 'jsmith@careindeed.com', role: 'Compliance Officer', status: 'active', lastLogin: '2026-05-19 09:15', mfaEnabled: true },
+  { id: 'U-003', name: 'Dr. Evelyn Vance', email: 'evance@careindeed.com', role: 'Clinical Lead', status: 'active', lastLogin: '2026-05-18 16:44', mfaEnabled: true },
+  { id: 'U-004', name: 'Marcus Sterling', email: 'msterling@careindeed.com', role: 'Clinician', status: 'active', lastLogin: '2026-05-19 11:30', mfaEnabled: false },
+  { id: 'U-005', name: 'T. Lee', email: 'tlee@careindeed.com', role: 'IT Administrator', status: 'active', lastLogin: '2026-05-19 08:05', mfaEnabled: true },
+  { id: 'U-006', name: 'M. Doe', email: 'mdoe@careindeed.com', role: 'Safety Officer', status: 'inactive', lastLogin: '2026-05-10 12:00', mfaEnabled: false },
+];
+
+const ROLES = [
+  { name: 'Administrator', users: 2, perms: ['Full access', 'User management', 'System config'], canSign: true, canApprove: true, canDelete: true },
+  { name: 'Compliance Officer', users: 3, perms: ['CES', 'Evidence', 'Audit', 'Reports'], canSign: true, canApprove: true, canDelete: false },
+  { name: 'Clinical Lead', users: 4, perms: ['Clinical', 'Staffing', 'CES', 'Calendar'], canSign: true, canApprove: true, canDelete: false },
+  { name: 'Clinician', users: 18, perms: ['Dashboard', 'Calendar', 'Forms', 'My Tasks'], canSign: true, canApprove: false, canDelete: false },
+  { name: 'IT Administrator', users: 2, perms: ['System', 'Users', 'Workflows', 'Logs'], canSign: false, canApprove: false, canDelete: true },
+  { name: 'Read Only', users: 1, perms: ['View only'], canSign: false, canApprove: false, canDelete: false },
+];
+
+const SYSTEM_CONFIG = [
+  { section: 'Authentication', items: [
+    { label: 'Allowlist Mode', value: 'ENABLED (fail-closed)', desc: 'Registration restricted to pre-approved CSV', status: 'active' },
+    { label: 'MFA Requirement', value: 'Required for Admin + Compliance', desc: 'TOTP-based multi-factor authentication', status: 'active' },
+    { label: 'Session Timeout', value: '30 minutes', desc: 'Auto-logout after inactivity', status: 'active' },
+  ]},
+  { section: 'Evidence & Signing', items: [
+    { label: 'Evidence Backend', value: 'AWS (presigned URLs)', desc: 'VITE_EVIDENCE_MODE=BACKEND_LIVE', status: 'active' },
+    { label: 'eCign Hash Chain', value: 'SHA-256 active', desc: 'Non-repudiation audit trail for all signatures', status: 'active' },
+    { label: 'Signature Method', value: 'eCign v2', desc: 'Canvas-based with IP capture', status: 'active' },
+  ]},
+  { section: 'Build & Deployment', items: [
+    { label: 'Build Version', value: '2026.05.20-phase3', desc: 'Last deployment: 2026-05-20 08:00 UTC', status: 'active' },
+    { label: 'Environment', value: 'Production', desc: 'app.careindeed.com', status: 'active' },
+    { label: 'Database', value: 'Supabase (PostgreSQL)', desc: 'US-West-2 region', status: 'active' },
+  ]},
+];
+
+export default function V3AdminPreview() {
+  const [tab, setTab] = useState<AdminTab>('users');
+
+  return (
+    <div className="v3-page-animate" style={{ padding: 24 }}>
+      <h1 style={{ color: V3.textPrimary, fontSize: 20, fontWeight: 600, margin: '0 0 20px' }}>Administration</h1>
+
+      <div style={{ display: 'flex', gap: 2, marginBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        {(['users', 'roles', 'system', 'audit-log'] as AdminTab[]).map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{
+            padding: '10px 18px', fontSize: 13, fontWeight: tab === t ? 600 : 400,
+            color: tab === t ? V3.tealLight : V3.textTertiary,
+            background: 'transparent', border: 'none',
+            borderBottom: tab === t ? `2px solid ${V3.tealLight}` : '2px solid transparent',
+            cursor: 'pointer', marginBottom: -1, textTransform: 'capitalize',
+          }}>{t.replace('-', ' ')}</button>
+        ))}
+      </div>
+
+      <div key={tab} className="v3-subview-animate">
+        {tab === 'users' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 60px 60px 1.5fr', gap: 8, padding: '8px 16px', color: V3.textTertiary, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <span>Name</span><span>Email</span><span>Role</span><span>MFA</span><span>Status</span><span>Last Login</span>
+            </div>
+            {USERS.map(u => (
+              <div key={u.id} style={{
+                display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 60px 60px 1.5fr', gap: 8,
+                padding: '12px 16px', alignItems: 'center', borderRadius: 8,
+                cursor: 'pointer', transition: 'background 0.15s ease',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500 }}>{u.name}</span>
+                <span style={{ color: V3.textSecondary, fontSize: 12 }}>{u.email}</span>
+                <span style={{ color: V3.textSecondary, fontSize: 12 }}>{u.role}</span>
+                <span style={{ fontSize: 12, color: u.mfaEnabled ? V3.tealLight : V3.textTertiary }}>{u.mfaEnabled ? '✓' : '—'}</span>
+                <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, textAlign: 'center',
+                  background: u.status === 'active' ? 'rgba(0, 209, 193, 0.12)' : 'rgba(100, 116, 139, 0.12)',
+                  color: u.status === 'active' ? V3.tealLight : V3.textTertiary,
+                }}>{u.status.toUpperCase()}</span>
+                <span style={{ color: V3.textTertiary, fontSize: 12 }}>{u.lastLogin}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'roles' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            {ROLES.map(r => (
+              <div key={r.name} style={{ padding: 20, borderRadius: 12, background: V3.glass2, border: `1px solid ${V3.borderDefault}`, cursor: 'pointer' }}>
+                <div style={{ color: V3.textPrimary, fontSize: 15, fontWeight: 500, marginBottom: 4 }}>{r.name}</div>
+                <div style={{ color: V3.textTertiary, fontSize: 11, marginBottom: 10 }}>{r.users} users</div>
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10 }}>
+                  {r.perms.map(p => (
+                    <span key={p} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: V3.glass2, color: V3.textSecondary }}>{p}</span>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {r.canSign && <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.08)', color: V3.tealLight }}>Sign</span>}
+                  {r.canApprove && <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.08)', color: V3.tealLight }}>Approve</span>}
+                  {r.canDelete && <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(248, 113, 113, 0.08)', color: '#F87171' }}>Delete</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'system' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {SYSTEM_CONFIG.map(section => (
+              <div key={section.section}>
+                <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>{section.section}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {section.items.map(item => (
+                    <div key={item.label} style={{
+                      padding: 14, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      background: V3.glass2,
+                    }}>
+                      <div>
+                        <div style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500 }}>{item.label}</div>
+                        <div style={{ color: V3.textTertiary, fontSize: 11, marginTop: 2 }}>{item.desc}</div>
+                      </div>
+                      <span style={{ color: V3.tealLight, fontSize: 12, fontWeight: 500 }}>{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'audit-log' && (
+          <div style={{ padding: 24, borderRadius: 10, background: V3.glass2, textAlign: 'center' }}>
+            <div style={{ color: V3.textSecondary, fontSize: 14 }}>System Audit Log</div>
+            <div style={{ color: V3.textTertiary, fontSize: 12, marginTop: 8 }}>Real implementation uses structured system-event audit log with SHA-256 chain verification.</div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginTop: 32, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', color: V3.textTertiary, fontSize: 11 }}>
+        Visual preview only — real Admin uses AdminRouteGuard, RBAC middleware, allowlist CSV validation, eCign v2 config, and Supabase user identity stores.
+      </div>
+    </div>
+  );
+}
+
+10. V3ReportsPreview.tsx (Rebuilt — Sprint Analytics + Evidence Metrics + Export)
+// V3ReportsPreview.tsx — V3 Veil Glass CES Reports & Analytics
+// Sprint history, evidence analytics, audit readiness trending.
+// Borderless KPI row. Export capability.
+
+import React, { useState } from 'react';
+
+const V3 = {
+  glass2: 'rgba(255, 255, 255, 0.04)',
+  teal: '#007970',
+  tealLight: '#00D1C1',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
+  borderDefault: 'rgba(255, 255, 255, 0.33)',
+} as const;
+
+type ReportTab = 'sprint' | 'evidence' | 'compliance' | 'audit-readiness';
+
+const SPRINTS = [
+  { label: 'Sprint 9', period: 'May 12–26', total: 48, done: 35, pct: 72, blockers: 0, evidenceUploaded: 28, auditScore: 92, active: true },
+  { label: 'Sprint 8', period: 'Apr 28–May 11', total: 42, done: 40, pct: 95, blockers: 0, evidenceUploaded: 38, auditScore: 96, active: false },
+  { label: 'Sprint 7', period: 'Apr 14–27', total: 38, done: 38, pct: 100, blockers: 0, evidenceUploaded: 36, auditScore: 100, active: false },
+  { label: 'Sprint 6', period: 'Mar 31–Apr 13', total: 45, done: 41, pct: 91, blockers: 1, evidenceUploaded: 34, auditScore: 89, active: false },
+  { label: 'Sprint 5', period: 'Mar 17–30', total: 36, done: 34, pct: 94, blockers: 0, evidenceUploaded: 30, auditScore: 91, active: false },
+  { label: 'Sprint 4', period: 'Mar 3–16', total: 40, done: 37, pct: 93, blockers: 0, evidenceUploaded: 32, auditScore: 88, active: false },
+];
+
+const EVIDENCE_BY_DOMAIN = [
+  { domain: 'Clinical', verified: 42, pending: 6, missing: 3, total: 51 },
+  { domain: 'Governance', verified: 22, pending: 2, missing: 0, total: 24 },
+  { domain: 'Compliance', verified: 18, pending: 3, missing: 2, total: 23 },
+  { domain: 'HR', verified: 12, pending: 4, missing: 3, total: 19 },
+  { domain: 'Safety', verified: 15, pending: 1, missing: 2, total: 18 },
+  { domain: 'Data/IT', verified: 8, pending: 1, missing: 0, total: 9 },
+];
+
+export default function V3ReportsPreview() {
+  const [reportTab, setReportTab] = useState<ReportTab>('sprint');
+
+  const latestSprint = SPRINTS[0];
+  const totalEvidence = EVIDENCE_BY_DOMAIN.reduce((s, d) => s + d.total, 0);
+  const verifiedEvidence = EVIDENCE_BY_DOMAIN.reduce((s, d) => s + d.verified, 0);
+
+  return (
+    <div className="v3-page-animate" style={{ padding: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h1 style={{ color: V3.textPrimary, fontSize: 20, fontWeight: 600, margin: 0 }}>Reports & Analytics</h1>
+        <button style={{ padding: '8px 16px', fontSize: 12, borderRadius: 8, background: V3.teal, color: '#FFF', border: 'none', cursor: 'pointer', fontWeight: 500 }}>Export PDF</button>
+      </div>
+
+      {/* KPIs — borderless */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+        {[
+          { label: 'Current Sprint', value: `${latestSprint.pct}%`, sub: latestSprint.label },
+          { label: 'Evidence Coverage', value: `${Math.round(verifiedEvidence / totalEvidence * 100)}%`, sub: `${verifiedEvidence}/${totalEvidence} verified` },
+          { label: 'Audit Readiness', value: `${latestSprint.auditScore}%`, sub: 'Composite score' },
+          { label: 'Sprint Velocity', value: `${Math.round(SPRINTS.slice(0, 4).reduce((s, sp) => s + sp.done, 0) / 4)}`, sub: 'Avg tasks/sprint (4wk)' },
+        ].map((k, i) => (
+          <div key={i} style={{ textAlign: 'center', padding: 12 }}>
+            <div style={{ fontSize: 28, fontWeight: 600, color: V3.textPrimary }}>{k.value}</div>
+            <div style={{ fontSize: 10, color: V3.textTertiary, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.label}</div>
+            <div style={{ fontSize: 11, color: V3.textSecondary, marginTop: 2 }}>{k.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: 4, background: V3.glass2, borderRadius: 8, padding: 3, marginBottom: 24, width: 'fit-content' }}>
+        {(['sprint', 'evidence', 'compliance', 'audit-readiness'] as ReportTab[]).map(t => (
+          <button key={t} onClick={() => setReportTab(t)} style={{
+            padding: '6px 14px', fontSize: 12, borderRadius: 6, border: 'none', cursor: 'pointer',
+            background: reportTab === t ? V3.teal : 'transparent',
+            color: reportTab === t ? '#FFF' : V3.textTertiary, textTransform: 'capitalize',
+          }}>{t.replace('-', ' ')}</button>
+        ))}
+      </div>
+
+      <div key={reportTab} className="v3-subview-animate">
+        {reportTab === 'sprint' && (
+          <>
+            {/* Bar chart */}
+            <div style={{ padding: 24, borderRadius: 12, background: V3.glass2, border: `1px solid ${V3.borderDefault}`, marginBottom: 20, display: 'flex', alignItems: 'flex-end', gap: 16, justifyContent: 'center', minHeight: 180 }}>
+              {SPRINTS.map((s, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                  <span style={{ color: V3.textTertiary, fontSize: 10 }}>{s.pct}%</span>
+                  <div style={{
+                    width: 44, height: `${s.pct * 1.4}px`, borderRadius: '6px 6px 0 0',
+                    background: s.active ? `linear-gradient(180deg, ${V3.tealLight}, ${V3.teal})` : 'rgba(255,255,255,0.06)',
+                  }} />
+                  <span style={{ color: V3.textTertiary, fontSize: 10 }}>{s.label.replace('Sprint ', 'S')}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Sprint table */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 70px 70px 70px 70px 70px 80px', gap: 8, padding: '8px 16px', color: V3.textTertiary, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <span>Sprint</span><span>Period</span><span>Tasks</span><span>Done</span><span>Rate</span><span>Evidence</span><span>Audit %</span><span>Status</span>
+              </div>
+              {SPRINTS.map(s => (
+                <div key={s.label} style={{
+                  display: 'grid', gridTemplateColumns: '1fr 1.2fr 70px 70px 70px 70px 70px 80px', gap: 8, padding: '12px 16px',
+                  alignItems: 'center', borderRadius: 8, transition: 'background 0.15s',
+                }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500 }}>{s.label}</span>
+                  <span style={{ color: V3.textSecondary, fontSize: 12 }}>{s.period}</span>
+                  <span style={{ color: V3.textSecondary, fontSize: 13 }}>{s.total}</span>
+                  <span style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500 }}>{s.done}</span>
+                  <span style={{ color: s.pct >= 90 ? V3.tealLight : '#FBBF24', fontSize: 13, fontWeight: 600 }}>{s.pct}%</span>
+                  <span style={{ color: V3.textSecondary, fontSize: 13 }}>{s.evidenceUploaded}</span>
+                  <span style={{ color: s.auditScore >= 90 ? V3.tealLight : '#FBBF24', fontSize: 13, fontWeight: 500 }}>{s.auditScore}%</span>
+                  <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, textAlign: 'center',
+                    background: s.active ? 'rgba(0, 209, 193, 0.12)' : 'rgba(100, 116, 139, 0.08)',
+                    color: s.active ? V3.tealLight : V3.textTertiary,
+                  }}>{s.active ? 'ACTIVE' : 'CLOSED'}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {reportTab === 'evidence' && (
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 100px', gap: 8, padding: '8px 16px', color: V3.textTertiary, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <span>Domain</span><span>Verified</span><span>Pending</span><span>Missing</span><span>Total</span><span>Coverage</span>
+              </div>
+              {EVIDENCE_BY_DOMAIN.map(d => {
+                const coveragePct = Math.round((d.verified / d.total) * 100);
+                return (
+                  <div key={d.domain} style={{
+                    display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 100px', gap: 8, padding: '12px 16px',
+                    alignItems: 'center', borderRadius: 8,
+                  }}>
+                    <span style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500 }}>{d.domain}</span>
+                    <span style={{ color: V3.tealLight, fontSize: 13 }}>{d.verified}</span>
+                    <span style={{ color: '#FBBF24', fontSize: 13 }}>{d.pending}</span>
+                    <span style={{ color: d.missing > 0 ? '#F87171' : V3.textTertiary, fontSize: 13, fontWeight: d.missing > 0 ? 600 : 400 }}>{d.missing}</span>
+                    <span style={{ color: V3.textSecondary, fontSize: 13 }}>{d.total}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ height: 4, flex: 1, borderRadius: 2, background: 'rgba(255,255,255,0.06)' }}>
+                        <div style={{ height: '100%', borderRadius: 2, width: `${coveragePct}%`, background: coveragePct >= 90 ? V3.tealLight : coveragePct >= 75 ? '#FBBF24' : '#F87171' }} />
+                      </div>
+                      <span style={{ color: V3.textTertiary, fontSize: 11, width: 30, textAlign: 'right' }}>{coveragePct}%</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {(reportTab === 'compliance' || reportTab === 'audit-readiness') && (
+          <div style={{ padding: 40, borderRadius: 12, background: V3.glass2, textAlign: 'center' }}>
+            <div style={{ color: V3.textSecondary, fontSize: 14 }}>{reportTab === 'compliance' ? 'Compliance Trending' : 'Audit Readiness History'}</div>
+            <div style={{ color: V3.textTertiary, fontSize: 12, marginTop: 8 }}>
+              Real implementation uses evaluateAudit, regulatoryExecutionStore aggregation, and ACHC survey projection scoring.
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginTop: 32, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', color: V3.textTertiary, fontSize: 11 }}>
+        Visual preview only — real Reports use CesReports, ExecutiveReports, pmViewSprintStore metrics, evidence analytics, and evaluateAudit scoring.
+      </div>
+    </div>
+  );
+}
+
+11. V3ArtifactViewerPreview.tsx (Rebuilt — eCign Hash Chain + Signature Chain + Triplet)
+// V3ArtifactViewerPreview.tsx — V3 Veil Glass Artifact / Signed Packet Viewer
+// eCign v2 hash-chain. Signature chain. Triplet enforcement.
+// Two-column layout: preview frame + metadata sidebar.
+
+import React from 'react';
+
+const V3 = {
+  glass2: 'rgba(255, 255, 255, 0.04)',
+  teal: '#007970',
+  tealLight: '#00D1C1',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
+  borderDefault: 'rgba(255, 255, 255, 0.33)',
+} as const;
+
+const ART = {
+  id: 'ART-20260518-001',
+  formTitle: 'QAPI Meeting Minutes — Q2 2026',
+  formId: 'QA-FM-001',
+  formInstanceId: 'FI-QA-FM-001-001',
+  policyId: 'QA-PG-001',
+  workflowId: 'WF-QAPI-Q2',
+  eventId: 'RE-001',
+  type: 'Signed Document Package',
+  sealedAt: '2026-05-18 14:32:00 UTC',
+  fileSize: '2.4 MB',
+  mime: 'application/pdf',
+  signatures: [
+    { signer: 'J. Smith, Quality Director', role: 'Primary', ts: '2026-05-18 14:30:12 UTC', hash: 'sha256:a7f3c2e9d41f8b2c...', method: 'eCign v2', ip: '10.0.1.42' },
+    { signer: 'Dr. R. Patel, Medical Director', role: 'Co-Signer', ts: '2026-05-18 14:31:48 UTC', hash: 'sha256:b9e4d1f08a2c7e3d...', method: 'eCign v2', ip: '10.0.1.15' },
+    { signer: 'Dr. Evelyn Vance, Clinical Lead', role: 'Approver', ts: '2026-05-18 14:32:00 UTC', hash: 'sha256:c1f5a8b36e9d4f1a...', method: 'eCign v2', ip: '10.0.1.28' },
+  ],
+  trail: [
+    { action: 'Form created (auto-generated from QA-WP-11)', actor: 'System', ts: '2026-05-18 10:00:00 UTC', hash: 'sha256:001...' },
+    { action: 'Form opened for editing', actor: 'J. Smith', ts: '2026-05-18 13:15:22 UTC', hash: 'sha256:002...' },
+    { action: 'Form completed and submitted', actor: 'J. Smith', ts: '2026-05-18 14:28:45 UTC', hash: 'sha256:003...' },
+    { action: 'Signature applied (primary)', actor: 'J. Smith', ts: '2026-05-18 14:30:12 UTC', hash: 'sha256:004...' },
+    { action: 'Routed to co-signer', actor: 'System', ts: '2026-05-18 14:30:13 UTC', hash: 'sha256:005...' },
+    { action: 'Signature applied (co-signer)', actor: 'Dr. R. Patel', ts: '2026-05-18 14:31:48 UTC', hash: 'sha256:006...' },
+    { action: 'Routed to approver', actor: 'System', ts: '2026-05-18 14:31:49 UTC', hash: 'sha256:007...' },
+    { action: 'Signature applied (approver) — PACKAGE SEALED', actor: 'Dr. Evelyn Vance', ts: '2026-05-18 14:32:00 UTC', hash: 'sha256:008...' },
+    { action: 'Evidence record created in Evidence Center', actor: 'System', ts: '2026-05-18 14:32:01 UTC', hash: 'sha256:009...' },
+  ],
+};
+
+export default function V3ArtifactViewerPreview() {
+  return (
+    <div className="v3-page-animate" style={{ padding: 24, display: 'flex', gap: 20, minHeight: 'calc(100vh - 100px)' }}>
+      {/* Left: Document preview */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ color: V3.textTertiary, fontSize: 12, marginBottom: 12 }}>
+          Evidence Center → Artifacts → <span style={{ color: V3.textSecondary }}>{ART.id}</span>
+        </div>
+
+        <div style={{
+          flex: 1, borderRadius: 12, background: V3.glass2, border: `1px solid ${V3.borderDefault}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12, minHeight: 400,
+        }}>
+          <div style={{ fontSize: 48, opacity: 0.3 }}>📄</div>
+          <div style={{ color: V3.textSecondary, fontSize: 14 }}>Signed Document Preview</div>
+          <div style={{ color: V3.textPrimary, fontSize: 15, fontWeight: 500 }}>{ART.formTitle}</div>
+          <div style={{ color: V3.textTertiary, fontSize: 12 }}>{ART.fileSize} · {ART.mime}</div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <button style={{ padding: '6px 16px', fontSize: 12, borderRadius: 6, background: V3.teal, color: '#FFF', border: 'none', cursor: 'pointer' }}>Download</button>
+            <button style={{ padding: '6px 16px', fontSize: 12, borderRadius: 6, background: V3.glass2, color: V3.textSecondary, border: `1px solid ${V3.borderDefault}`, cursor: 'pointer' }}>Print</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Right: Metadata sidebar */}
+      <div style={{ width: 360, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Triplet */}
+        <div style={{ padding: 18, borderRadius: 10, background: 'rgba(0, 209, 193, 0.04)', border: '1px solid rgba(0, 209, 193, 0.1)' }}>
+          <div style={{ fontSize: 10, color: V3.tealLight, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 10 }}>EVIDENCE TRIPLET</div>
+          {[
+            { l: 'Policy', v: ART.policyId },
+            { l: 'Workflow', v: ART.workflowId },
+            { l: 'Event', v: ART.eventId },
+          ].map(r => (
+            <div key={r.l} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
+              <span style={{ color: V3.textTertiary, fontSize: 11 }}>{r.l}</span>
+              <span style={{ color: V3.tealLight, fontSize: 12, fontFamily: 'monospace' }}>{r.v}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Artifact details */}
+        <div style={{ padding: 18, borderRadius: 10, background: V3.glass2, border: `1px solid ${V3.borderDefault}` }}>
+          <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 10 }}>ARTIFACT</div>
+          {[
+            { l: 'ID', v: ART.id },
+            { l: 'Form', v: `${ART.formId} · ${ART.formInstanceId}` },
+            { l: 'Type', v: ART.type },
+            { l: 'Sealed', v: ART.sealedAt },
+          ].map(r => (
+            <div key={r.l} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+              <span style={{ color: V3.textTertiary, fontSize: 11 }}>{r.l}</span>
+              <span style={{ color: V3.textSecondary, fontSize: 12, textAlign: 'right', maxWidth: 200 }}>{r.v}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Signature chain */}
+        <div style={{ padding: 18, borderRadius: 10, background: V3.glass2, border: `1px solid ${V3.borderDefault}` }}>
+          <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 10 }}>
+            SIGNATURE CHAIN ({ART.signatures.length}) — eCign v2
+          </div>
+          {ART.signatures.map((sig, i) => (
+            <div key={i} style={{ padding: '10px 0', borderBottom: i < ART.signatures.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: V3.textPrimary, fontSize: 13, fontWeight: 500 }}>{sig.signer}</span>
+                <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(0, 209, 193, 0.12)', color: V3.tealLight }}>✓ SIGNED</span>
+              </div>
+              <div style={{ color: V3.textTertiary, fontSize: 11, marginTop: 2 }}>{sig.role} · {sig.method}</div>
+              <div style={{ color: V3.textTertiary, fontSize: 10, marginTop: 2, fontFamily: 'monospace' }}>{sig.hash}</div>
+              <div style={{ color: V3.textTertiary, fontSize: 10 }}>{sig.ts} · {sig.ip}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Audit trail */}
+        <div style={{ padding: 18, borderRadius: 10, background: V3.glass2, border: `1px solid ${V3.borderDefault}`, maxHeight: 280, overflowY: 'auto' }}>
+          <div style={{ fontSize: 10, color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 10 }}>AUDIT TRAIL</div>
+          {ART.trail.map((entry, i) => (
+            <div key={i} style={{
+              padding: '8px 0 8px 16px',
+              borderLeft: `2px solid ${i === ART.trail.length - 1 ? V3.tealLight : 'rgba(255,255,255,0.06)'}`,
+              marginLeft: 4,
+            }}>
+              <div style={{ color: V3.textSecondary, fontSize: 12 }}>{entry.action}</div>
+              <div style={{ color: V3.textTertiary, fontSize: 10, marginTop: 2 }}>
+                {entry.actor} · {entry.ts} · <span style={{ fontFamily: 'monospace', color: 'rgba(0, 209, 193, 0.6)' }}>{entry.hash}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '10px 24px', borderTop: '1px solid rgba(255,255,255,0.06)', color: V3.textTertiary, fontSize: 11, background: 'rgba(5, 6, 10, 0.95)' }}>
+        Visual preview only — real viewer uses ArtifactViewerPage, iframe HTML packet rendering, buildArtifactRoute, eCign hash-chain verification, and presigned S3 URL fetching.
+      </div>
+    </div>
+  );
+}
+
+Final Inventory — All Page Views Complete
+#	Component	Status	Key WH Compliance
+1	Dashboard (Agency/Planner)	✅ Existed	V3SubView, borderless KPIs
+2	Clinician List	✅ Existed	Credential counts, FEHA flags
+3	Clinician Detail	✅ Existed	Real Credential[], 5 tabs, FEHA
+4	Patient List	✅ Existed	V3 class system
+5	Patient Detail	🆕 Complete	5 tabs, OASIS, CareEpisode[], real shapes
+6	Calendar	✅ Existed	View tabs, v3-badge
+7	Brad	✅ Existed	Real bubble rules
+8	CES Dashboard	🆕 Complete	Veil Drawer L1/L2, card layers, navy sub-brand, borderless KPIs
+9	CES Board (Kanban)	🆕 Complete	Card Layer 1/2/3, PmTaskStatus columns, domain filters
+10	Evidence Center	🆕 Complete	Folder hierarchy with completion % rings, triplet enforcement, file detail panel
+11	Policy Library	🆕 Complete	Grid/list, ACHC refs, domain chips, procedure/form/evidence counts
+12	Policy Detail	🆕 Complete	4 tabs, ACHC crosswalk, CMS CoP, procedure chain visualization
+13	Taxonomy	🆕 Complete	Domain tree, subdomain expand, ACHC/CMS refs on every policy
+14	Onboarding	🆕 Complete	Gate system, UnitDrawer expand, hash-chain audit trail, StatusPill
+15	Admin	🆕 Complete	Users, RBAC roles, system config (allowlist/eCign/evidence backend)
+16	Reports	🆕 Complete	Sprint history, evidence by domain, bar chart, export
+17	Artifact Viewer	🆕 Complete	eCign signature chain, triplet display, full audit trail
+18	Login	✅ Existed	V3AuthLayout
+19	Register	✅ Existed	V3AuthLayout
+20	Forgot Password	✅ Existed	V3AuthLayout
+21	Shell (WIP x2)	✅ Existed	8 modifications
+
+21 total page views. All WH-compliant. All gaps resolved. Go get some rest.
+
+8m 33s
+·
+6:42 AM
+thanks can u double check realquick the pdf has 36 pages not sure if some are duplicates :D
+
+6:47 AM
+
+Searching files
+Step 1/3
+
+Let me check the WH folder for the PDF you're referring to.
+
+
+
+
+A
+Claude Opus 4.6

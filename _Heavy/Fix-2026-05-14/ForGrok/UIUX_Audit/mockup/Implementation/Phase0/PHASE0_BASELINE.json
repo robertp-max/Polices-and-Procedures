@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "scannedAt": "2026-05-18T06:17:40.370Z",
+    "root": "src/policy",
+    "filesScanned": 497
+  },
+  "legacyImports": {
+    "CesCard": {
+      "count": 0,
+      "fileCount": 0
+    },
+    "CesLayout": {
+      "count": 4,
+      "fileCount": 4
+    },
+    "SCard": {
+      "count": 0,
+      "fileCount": 0
+    },
+    "GenericSectionPanel": {
+      "count": 0,
+      "fileCount": 0
+    },
+    "PmTaskCard": {
+      "count": 2,
+      "fileCount": 2
+    },
+    "StatusBadge (legacy)": {
+      "count": 5,
+      "fileCount": 5
+    },
+    "CesEvidenceHierarchyPanel": {
+      "count": 1,
+      "fileCount": 1
+    },
+    "iAdministrator subtree": {
+      "count": 1,
+      "fileCount": 1
+    }
+  },
+  "legacyClasses": {
+    ".glass-interactive-lib": {
+      "count": 13,
+      "fileCount": 1
+    },
+    ".glass-panel-lib": {
+      "count": 4,
+      "fileCount": 1
+    },
+    "ci-premium-*": {
+      "count": 11,
+      "fileCount": 5
+    }
+  },
+  "shellFrameViolations": {
+    "h-full w-full at root": {
+      "count": 34,
+      "fileCount": 27
+    },
+    "-mx-3 / -mx-4 / -mx-6": {
+      "count": 0,
+      "fileCount": 0
+    },
+    "bg-white container": {
+      "count": 368,
+      "fileCount": 70
+    },
+    "bg-ci-bg fill": {
+      "count": 6,
+      "fileCount": 5
+    }
+  },
+  "rawValues": {
+    "hex literal in code": {
+      "count": 4025,
+      "fileCount": 152
+    },
+    "arbitrary Tailwind value": {
+      "count": 3724,
+      "fileCount": 150
+    }
+  },
+  "backupFiles": {
+    "count": 1,
+    "files": [
+      "src/policy/pages/TaxonomyPage.old.tsx"
+    ]
+  },
+  "dialectTrees": {
+    "ces/ tree files": 30,
+    "onboarding-v2/ tree files": 29,
+    "ecign/ tree files": 10
+  }
+}

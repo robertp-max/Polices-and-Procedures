@@ -1,0 +1,217 @@
+================================================================================
+  PAGE VIEW ACCESS — USER MANUAL
+  Care Indeed Compliance Platform
+  For: Marites Arzaga (maritesa@careindeed.com)
+  Version: 1.0  |  Date: 2026-05-22
+================================================================================
+
+
+OVERVIEW
+--------
+You are one of two administrators (along with Robert) who can control which users
+can view each page in the app. This is called Page View Access. Think of it like
+Salesforce profiles — you assign users a level of access per module/page.
+
+Your access is built in and cannot be removed by anyone. You will always be able
+to open User Management and the Page View Access matrix.
+
+
+YOUR PERSONAL ACCESS SUMMARY
+-----------------------------
+  - Page View Access manager:   YES
+  - User Management (read):     YES
+  - User Management (write):    YES  — you can add, edit, delete, and reset users
+  - All other modules:          READ — you can view but not mutate other sections
+  - Your access resets to these defaults automatically on every page load
+
+
+================================================================================
+PART 1: HOW TO OPEN THE PAGE VIEW ACCESS MATRIX
+================================================================================
+
+  Step 1.  Sign in with maritesa@careindeed.com
+  Step 2.  In the left sidebar, click "Admin"
+  Step 3.  Click "User Management" in the Admin sub-menu
+           (direct URL: /admin/users)
+  Step 4.  At the top of the page you will see two tabs:
+             [ User Assignments ]   [ Page View Access ]
+  Step 5.  Click "Page View Access"
+  Step 6.  Use the "Target user" dropdown to pick which user to edit
+
+
+================================================================================
+PART 2: UNDERSTANDING ACCESS LEVELS
+================================================================================
+
+  NO ACCESS (none)
+    The user cannot open that page at all. If they try to go to the URL directly,
+    they see an "Access restricted" screen. The page is also hidden from their
+    sidebar.
+
+  READ
+    The user can view the page and see its data. They cannot save, edit, delete,
+    sign, or approve anything on that page.
+
+  READ + WRITE
+    The user can view the page AND perform actions (save, edit, delete, etc.),
+    as long as their account role also allows it. Both page access AND role must
+    allow an action for it to go through.
+
+  NOTE: "Read + Write" on a page does not override role-level restrictions.
+  A user still needs the correct role to actually take action. Page access is
+  an extra layer on top — it can only restrict, not grant new role capabilities.
+
+
+================================================================================
+PART 3: THE MATRIX — WHAT YOU SEE
+================================================================================
+
+Pages are organized into component groups (modules). Examples:
+  - Dashboard / Command Center
+  - Policy Library
+  - CES / Compliance Execution
+  - User Management / Identity Admin
+  - (and 8 more groups)
+
+Each group has:
+  [ Visible toggle ]  ON/OFF switch for the whole group
+  [ Bulk selector  ]  Set all pages in the group to No Access / Read / Read+Write
+  [ v Expand arrow ]  Open the group to see and edit individual pages
+
+Each individual page (inside an expanded group) has its own access selector.
+The "Effective" badge next to each page shows the real resolved access,
+accounting for whether the parent component is on or off.
+
+
+================================================================================
+PART 4: HOW TO GRANT ACCESS TO A USER
+================================================================================
+
+  1.  Open the matrix (see Part 1)
+  2.  Select the user from the "Target user" dropdown
+  3.  Find the module group you want to grant access to
+  4.  If the "Visible" toggle is OFF, switch it ON first
+  5.  To set all pages in the group at once:
+        Click the "Bulk" dropdown → pick Read or Read + Write
+  6.  To set one specific page:
+        Click the expand arrow on the group → find the page → change its selector
+  7.  Changes save immediately — no Save button needed
+  8.  The user's sidebar and route access update as soon as they navigate
+
+
+================================================================================
+PART 5: HOW TO REVOKE ACCESS
+================================================================================
+
+  Option A — Hide the whole component group:
+    Turn the "Visible" toggle OFF.
+    Every page in that group becomes inaccessible, even if individual pages
+    were set to Read or Read + Write.
+
+  Option B — Bulk set to No Access:
+    Leave the group Visible but set Bulk → No Access.
+    All individual pages become No Access.
+
+  Option C — Remove one page at a time:
+    Expand the group → change that page's selector to No Access.
+
+
+================================================================================
+PART 6: USER MANAGEMENT WRITE ACCESS
+================================================================================
+
+The "Add User", "Edit", "Delete", and "Password" buttons on the User Assignments
+tab are only enabled for users who have Read + Write access on the
+"User Assignments" page.
+
+To allow another user to manage users:
+  1.  Open Page View Access tab
+  2.  Select that user as the target
+  3.  Expand "User Management / Identity Admin"
+  4.  Set "User Assignments" → Read + Write
+
+To revoke that ability:
+  Set "User Assignments" back to No Access or Read.
+
+
+================================================================================
+PART 7: RESETTING A USER TO DEFAULTS
+================================================================================
+
+At the top-right of the matrix there is a "Reset to defaults" button.
+
+  - For Robert and you (Marites): this restores your full write access.
+  - For any other user: this clears their custom record entirely, which means
+    they fall back to their role-based access for most pages, and No Access
+    for User Management pages.
+
+Use this if a user's access gets into a confusing state and you want a clean start.
+
+
+================================================================================
+PART 8: AUDIT TRAIL
+================================================================================
+
+At the bottom of the matrix, you will see a section called:
+  "Recent page-access changes for this user"
+
+This shows the last few access changes made for the currently selected user,
+including:
+  - When the change was made
+  - Who made it (actor email)
+  - What was changed (component / page, old access → new access)
+
+The full audit log is stored locally in the browser (up to 500 entries).
+
+
+================================================================================
+PART 9: IMPORTANT RULES AND LIMITATIONS
+================================================================================
+
+  1.  YOUR ACCESS CANNOT BE REMOVED
+      Robert and your own access are restored automatically on every page load.
+      Even if someone sets your access to "none" in the matrix, it will reset
+      when you refresh.
+
+  2.  ROBERT'S ACCESS CANNOT BE REMOVED
+      Same protection applies to robertp@careindeed.com.
+
+  3.  ACCESS IS STORED IN THE BROWSER (demo mode)
+      Changes are saved to local storage in the browser. This means:
+        - Changes apply immediately to any user on the same browser session
+        - Changes do NOT sync across different computers or browsers yet
+        - Clearing browser data will reset all access to defaults
+      Full database persistence is planned for a future release.
+
+  4.  PAGE ACCESS DOES NOT BYPASS ROLES
+      Even if you grant a user "Read + Write" on a page, they still need the
+      correct system role to perform actions. Both must be satisfied.
+
+  5.  USER MANAGEMENT PAGES DEFAULT TO NO ACCESS
+      New users have no access to User Management pages unless you explicitly
+      grant it. All other pages default to Read.
+
+
+================================================================================
+PART 10: QUICK REFERENCE — COMMON TASKS
+================================================================================
+
+  TASK                                     HOW
+  ─────────────────────────────────────────────────────────────────────────────
+  Let a user view a module                 Enable toggle + set Bulk → Read
+  Let a user edit/save in a module         Enable toggle + set Bulk → Read+Write
+  Block a user from an entire module       Turn the Visible toggle OFF
+  Let a user manage other users            UM group → User Assignments → Read+Write
+  Undo all changes for a user              Click "Reset to defaults"
+  See who changed what and when            Check the audit section at the bottom
+  ─────────────────────────────────────────────────────────────────────────────
+
+
+================================================================================
+QUESTIONS / SUPPORT
+================================================================================
+
+  For questions about this feature, contact: robertp@careindeed.com
+  Feature implemented: 2026-05-22  |  Commit: 1e0cb99
+
+================================================================================

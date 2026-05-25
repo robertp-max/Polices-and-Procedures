@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="https://careindeed.com/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, viewport-fit=cover" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <title>Care Indeed Home Health Care, Inc. - Policies and Procedures</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <!-- Critical paint-blocking background — prevents flash before app CSS loads.
+         Forces the neutral light-slate canvas the moment the HTML is parsed,
+         eliminating the white/maroon/dark blink during cold loads on slow networks. -->
+    <style>
+      html, body, #root { background-color: #f8fafc !important; min-height: 100vh; margin: 0; padding: 0; }
+      html { color-scheme: light; }
+    </style>
+    <!-- Force CI light mode as the default theme so first paint of the shell
+         never renders maroon. The store reads these attributes if present. -->
+    <script>
+      try {
+        document.documentElement.setAttribute('data-theme', 'care-indeed-light');
+        document.documentElement.setAttribute('data-ci-mode', 'light');
+        // One-time migration: clear any stale dark-mode preference from prior testing
+        // so existing users don't see a stuck CI-ION dark shell.
+        if (!localStorage.getItem('ci-light-default-v2')) {
+          localStorage.setItem('ci-shell-theme', 'care-indeed-light');
+          localStorage.setItem('ci-care-indeed-mode', 'light');
+          localStorage.setItem('ci-light-default-v2', '1');
+        }
+      } catch (e) { /* ignore */ }
+    </script>
+    <script type="module" crossorigin src="/assets/index-DKlYnIGZ.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/jsx-runtime-BnxRlLMJ.js">
+    <link rel="modulepreload" crossorigin href="/assets/chunk-UVKPFVEO-C-VYHAya.js">
+    <link rel="modulepreload" crossorigin href="/assets/createLucideIcon-DfjqEDed.js">
+    <link rel="modulepreload" crossorigin href="/assets/calendar-wAW2MB3f.js">
+    <link rel="modulepreload" crossorigin href="/assets/clipboard-check-Dp9iz20t.js">
+    <link rel="modulepreload" crossorigin href="/assets/external-link-FZNgZMPR.js">
+    <link rel="modulepreload" crossorigin href="/assets/eye-off-xNen2I9o.js">
+    <link rel="modulepreload" crossorigin href="/assets/eye-BjG-0ihn.js">
+    <link rel="modulepreload" crossorigin href="/assets/file-text-CNABNzq7.js">
+    <link rel="modulepreload" crossorigin href="/assets/history-P9S9ikSc.js">
+    <link rel="modulepreload" crossorigin href="/assets/loader-circle-D211vIKn.js">
+    <link rel="modulepreload" crossorigin href="/assets/clock-3-Dp0JA3kG.js">
+    <link rel="modulepreload" crossorigin href="/assets/refresh-cw-CbPZXArW.js">
+    <link rel="modulepreload" crossorigin href="/assets/x-ZYXZtpR8.js">
+    <link rel="modulepreload" crossorigin href="/assets/CiStatusBadge-BzPGARBN.js">
+    <link rel="modulepreload" crossorigin href="/assets/search-K4pkPtqj.js">
+    <link rel="modulepreload" crossorigin href="/assets/DataGrid-DXcDJ_a-.js">
+    <link rel="modulepreload" crossorigin href="/assets/EmptyState-CYNDaDiN.js">
+    <link rel="modulepreload" crossorigin href="/assets/PageHeader-DSkLhNu-.js">
+    <link rel="modulepreload" crossorigin href="/assets/Tabs-BjgWRf78.js">
+    <link rel="modulepreload" crossorigin href="/assets/react-Bawh0HD8.js">
+    <link rel="modulepreload" crossorigin href="/assets/ciModeStore-CvTOnlVR.js">
+    <link rel="modulepreload" crossorigin href="/assets/ui-DNx9O8fF.js">
+    <link rel="modulepreload" crossorigin href="/assets/shield-check-_hizrWGd.js">
+    <link rel="modulepreload" crossorigin href="/assets/users-DZSrPBHj.js">
+    <link rel="modulepreload" crossorigin href="/assets/api-CwTgYtpY.js">
+    <link rel="modulepreload" crossorigin href="/assets/AuthProvider-Bi77WIWc.js">
+    <link rel="modulepreload" crossorigin href="/assets/frameworkSeed.generated-B5Bdnp_5.js">
+    <link rel="modulepreload" crossorigin href="/assets/auditorModeStore-3AZivoo4.js">
+    <link rel="modulepreload" crossorigin href="/assets/policyStore-jznLXScu.js">
+    <link rel="modulepreload" crossorigin href="/assets/middleware-BXKcEzuv.js">
+    <link rel="modulepreload" crossorigin href="/assets/formsLibraryDataset-BRrBn9t9.js">
+    <link rel="modulepreload" crossorigin href="/assets/regulatoryExecutionStore-D7_jC9zj.js">
+    <link rel="modulepreload" crossorigin href="/assets/autogenStore-BPmoneRM.js">
+    <link rel="modulepreload" crossorigin href="/assets/currentUser-DOxtWj2j.js">
+    <link rel="modulepreload" crossorigin href="/assets/sprintWindows-Damn9Q_I.js">
+    <link rel="modulepreload" crossorigin href="/assets/personalStore-DIU_tVFP.js">
+    <link rel="modulepreload" crossorigin href="/assets/pmViewSprintStore-BVP8wr5U.js">
+    <link rel="modulepreload" crossorigin href="/assets/taskProjection-fS3UnRie.js">
+    <link rel="modulepreload" crossorigin href="/assets/selectedTaskStore-CSrHkgx6.js">
+    <link rel="modulepreload" crossorigin href="/assets/types-CRQN_CPk.js">
+    <link rel="modulepreload" crossorigin href="/assets/userGroups-DThiiKn-.js">
+    <link rel="modulepreload" crossorigin href="/assets/userAssignmentsStore-CJRBELgg.js">
+    <link rel="modulepreload" crossorigin href="/assets/AdminRouteGuard-Bb7N-vR8.js">
+    <link rel="modulepreload" crossorigin href="/assets/permissionCatalog-CAs6lgYx.js">
+    <link rel="modulepreload" crossorigin href="/assets/authorize-DrfCgJ56.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DBf1_QNP.css">
+  </head>
+  <body class="light" style="background-color:#f8fafc;">
+    <div id="root"></div>
+  </body>
+</html>
