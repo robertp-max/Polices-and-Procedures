@@ -24,6 +24,7 @@ import type { ExecutionUnit } from '@/policy/ces/types';
 import { useCesDurableExecutionAdapter } from '@/ui-staging/ces/cesDurableExecutionAdapter';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { useRegulatoryExecutionStore, type EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
+import { resolveEvidenceDataUrl } from '@/policy/evidence/demoEvidenceRuntimeCache';
 
 // Safe alias for Search icon to prevent import mismatches
 const SearchIcon = Search;
@@ -783,12 +784,14 @@ const getCompletionRule = (unit: ExecutionUnit) => {
 
 type V3EvidenceSourceMode = 'live-store' | 'local-store' | 'seed' | 'synthetic' | 'mixed';
 type V3ArtifactMode = 'real-artifact' | 'metadata-placeholder' | 'seeded-preview' | 'missing';
+type V3ArtifactActionState = 'real-local-artifact' | 'real-route-only' | 'metadata-placeholder' | 'seeded-preview' | 'missing';
 
 interface V3EvidenceRecord {
   id: string;
   title: string;
   sourceMode: V3EvidenceSourceMode;
   artifactMode: V3ArtifactMode;
+  artifactActionState: V3ArtifactActionState;
   eventId: string;
   taskId: string;
   workflowId: string;
@@ -804,6 +807,14 @@ interface V3EvidenceRecord {
   persistenceMode: string;
   detail: string;
   artifactRoute?: string;
+  artifactDownloadUrl?: string;
+  artifactDownloadMode: 'local-bytes' | 'route-only' | 'blocked';
+  artifactBlockerCode?: string;
+  artifactBlockerLabel?: string;
+  artifactSourceLabel: string;
+  filename?: string;
+  linkedFormInstanceId?: string;
+  artifactType?: string;
   createdAt?: string;
 }
 
@@ -816,19 +827,71 @@ const safeDateParts = (value?: string) => {
 };
 
 const evidenceArtifactMode = (doc: EvidenceDoc): V3ArtifactMode => {
-  if (doc.localDataUrl || doc.objectPath) return 'real-artifact';
+  if (resolveEvidenceDataUrl(doc) || doc.objectPath) return 'real-artifact';
   if (doc.id || doc.name) return 'metadata-placeholder';
   return 'missing';
 };
 
-const evidenceRouteFor = (record: Pick<V3EvidenceRecord, 'id' | 'eventId' | 'taskId' | 'formIds' | 'artifactMode'>) => (
-  record.artifactMode === 'real-artifact'
+const evidenceArtifactActionState = (doc: EvidenceDoc): V3ArtifactActionState => {
+  if (resolveEvidenceDataUrl(doc)) return 'real-local-artifact';
+  if (doc.objectPath) return 'real-route-only';
+  if (doc.id || doc.name) return 'metadata-placeholder';
+  return 'missing';
+};
+
+const artifactBlockerForState = (state: V3ArtifactActionState) => {
+  if (state === 'metadata-placeholder') {
+    return {
+      code: 'BLOCKED_PENDING_PHASE_5A_B_METADATA_ONLY',
+      label: 'Metadata is available, but no artifact file is available for this record',
+    };
+  }
+  if (state === 'seeded-preview') {
+    return {
+      code: 'BLOCKED_PENDING_PHASE_5A_B_SEEDED_PREVIEW',
+      label: 'Seed evidence metadata only; not a file artifact',
+    };
+  }
+  if (state === 'real-route-only') {
+    return {
+      code: 'BLOCKED_PENDING_PHASE_5A_B_DOWNLOAD_BYTES_UNAVAILABLE',
+      label: 'Artifact route available; local bytes may not survive refresh',
+    };
+  }
+  return {
+    code: 'BLOCKED_PENDING_PHASE_5A_B_MISSING_ARTIFACT',
+    label: 'BLOCKED_PENDING_PHASE_5A_B - Artifact file/viewer is not available for this evidence record.',
+  };
+};
+
+const safeArtifactFilename = (record: Pick<V3EvidenceRecord, 'filename' | 'title' | 'id'>) => (
+  (record.filename || record.title || record.id || 'evidence-artifact')
+    .replace(/[/\\?%*:|"<>]/g, '-')
+    .trim() || 'evidence-artifact'
+);
+
+const isDownloadableLocalUrl = (value?: string) => Boolean(value && (/^data:/i.test(value) || /^blob:/i.test(value)));
+
+const downloadLocalEvidenceArtifact = (record: V3EvidenceRecord) => {
+  if (!isDownloadableLocalUrl(record.artifactDownloadUrl)) return;
+  const anchor = document.createElement('a');
+  anchor.href = record.artifactDownloadUrl ?? '';
+  anchor.download = safeArtifactFilename(record);
+  anchor.rel = 'noopener noreferrer';
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+};
+
+const evidenceRouteFor = (record: Pick<V3EvidenceRecord, 'id' | 'eventId' | 'taskId' | 'formIds' | 'linkedFormInstanceId' | 'artifactActionState' | 'artifactType'>) => (
+  (record.artifactActionState === 'real-local-artifact' || record.artifactActionState === 'real-route-only')
     ? buildArtifactRoute(record.id, {
         eventId: record.eventId,
         taskId: record.taskId || undefined,
         formId: record.formIds[0],
+        formInstanceId: record.linkedFormInstanceId,
         evidenceId: record.id,
-        type: 'evidence',
+        type: record.artifactType || 'evidence',
       })
     : undefined
 );
@@ -838,11 +901,16 @@ const toEvidenceRecordFromDoc = (doc: EvidenceDoc): V3EvidenceRecord => {
   const policyIds = doc.policyIds?.length ? doc.policyIds : [doc.policyId].filter(Boolean);
   const formIds = doc.formIds?.length ? doc.formIds : [doc.linkedFormId].filter((value): value is string => Boolean(value));
   const artifactMode = evidenceArtifactMode(doc);
+  const artifactActionState = evidenceArtifactActionState(doc);
+  const localDownloadUrl = resolveEvidenceDataUrl(doc);
+  const blocker = artifactBlockerForState(artifactActionState);
+  const downloadMode = isDownloadableLocalUrl(localDownloadUrl) ? 'local-bytes' : (artifactActionState === 'real-route-only' ? 'route-only' : 'blocked');
   const record: V3EvidenceRecord = {
     id: doc.id,
     title: doc.name || doc.id,
     sourceMode: 'local-store',
     artifactMode,
+    artifactActionState,
     eventId: doc.eventId,
     taskId: doc.taskId,
     workflowId: doc.workflowId,
@@ -852,11 +920,33 @@ const toEvidenceRecordFromDoc = (doc: EvidenceDoc): V3EvidenceRecord => {
     policyIds,
     formIds,
     status: doc.status,
-    artifactStatus: artifactMode === 'real-artifact' ? 'artifact reference available' : 'metadata placeholder only',
+    artifactStatus: artifactActionState === 'real-local-artifact'
+      ? 'Demo-local artifact available'
+      : artifactActionState === 'real-route-only'
+        ? 'Artifact route available; local bytes may not survive refresh'
+        : artifactActionState === 'metadata-placeholder'
+          ? 'Metadata is available, but no artifact file is available for this record'
+          : 'metadata placeholder only',
     auditStatus: (doc.auditEventRefs ?? []).length ? `${(doc.auditEventRefs ?? []).length} app-store audit refs` : 'app-store audit refs not available',
-    blockerState: artifactMode === 'real-artifact' ? 'viewer available through secondary live route' : 'artifact file/viewer not available in V3',
+    blockerState: artifactActionState === 'real-local-artifact'
+      ? 'Demo-local artifact available'
+      : artifactActionState === 'real-route-only'
+        ? 'Artifact route available; local bytes may not survive refresh'
+        : blocker.label,
     persistenceMode: 'local persisted app-store evidence',
     detail: doc.note || 'Evidence metadata read from reg-execution-v2. Backend evidence persistence is not implemented in V3.',
+    artifactDownloadUrl: isDownloadableLocalUrl(localDownloadUrl) ? localDownloadUrl : undefined,
+    artifactDownloadMode: downloadMode,
+    artifactBlockerCode: artifactActionState === 'real-local-artifact' ? undefined : blocker.code,
+    artifactBlockerLabel: artifactActionState === 'real-local-artifact' ? undefined : blocker.label,
+    artifactSourceLabel: artifactActionState === 'real-local-artifact'
+      ? 'demo-local data URL/blob artifact'
+      : artifactActionState === 'real-route-only'
+        ? 'local app-store object path / artifact route'
+        : 'metadata only',
+    filename: doc.name || doc.id,
+    linkedFormInstanceId: doc.linkedFormInstanceId,
+    artifactType: doc.artifactType || doc.kind,
     createdAt: doc.createdAt,
   };
   return { ...record, artifactRoute: evidenceRouteFor(record) };
@@ -873,6 +963,7 @@ const toEvidenceRecordFromUnit = (unit: ExecutionUnit): V3EvidenceRecord => {
     title: unit.title,
     sourceMode: 'seed',
     artifactMode: 'seeded-preview',
+    artifactActionState: 'seeded-preview',
     eventId: unit.parentEventId,
     taskId: unit.id,
     workflowId: unit.workflowId,
@@ -887,6 +978,11 @@ const toEvidenceRecordFromUnit = (unit: ExecutionUnit): V3EvidenceRecord => {
     blockerState: unit.blockedReason?.label || (missingForms.length ? `Missing forms: ${missingForms.join(', ')}` : 'backend artifact validation remains blocked'),
     persistenceMode: 'seeded evidence metadata',
     detail: 'CES seed evidence metadata is shown for read/view parity. It is not a file artifact and is not production evidence certification.',
+    artifactDownloadMode: 'blocked',
+    artifactBlockerCode: 'BLOCKED_PENDING_PHASE_5A_B_SEEDED_PREVIEW',
+    artifactBlockerLabel: 'Seed evidence metadata only; not a file artifact',
+    artifactSourceLabel: 'seed evidence metadata only',
+    filename: `seed-${unit.id}.metadata`,
   };
 };
 
@@ -1407,13 +1503,13 @@ const EvidenceCenterWorkspace = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FolderOpen size={18} className="v3-neon-orange" />
             <h1 className="v3-neon-orange" style={{ fontSize: '22px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px' }}>Evidence Command Center</h1>
-            <span style={{ padding: '3px 8px', background: 'rgba(0,209,193,0.1)', border: '1px solid rgba(0,209,193,0.3)', color: V3.tealLight, fontSize: '9px', fontWeight: 600, borderRadius: '4px' }}>PHASE 5A-A READ / VIEW PARITY</span>
+            <span style={{ padding: '3px 8px', background: 'rgba(0,209,193,0.1)', border: '1px solid rgba(0,209,193,0.3)', color: V3.tealLight, fontSize: '9px', fontWeight: 600, borderRadius: '4px' }}>PHASE 5A-B ARTIFACT VIEWER / LOCAL DOWNLOAD</span>
           </div>
           <p style={{ fontSize: '12px', color: V3.textSecondary, margin: '4px 0 10px 0' }}>
             Reads local app-store metadata and CES seed evidence relationships. Backend persistence not implemented; artifact integrity is not verified in V3.
           </p>
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            {['local persisted app-store evidence', 'metadata placeholder', 'validation/promote blocked'].map((tag, i) => (
+            {['local persisted app-store evidence', 'explicit artifact route only', 'local/demo download only when bytes exist', 'validation/promote blocked'].map((tag, i) => (
               <span key={i} style={{ fontSize: '10.5px', padding: '4px 10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: V3.textSecondary }}>{tag}</span>
             ))}
           </div>
@@ -1485,6 +1581,7 @@ const EvidenceCenterWorkspace = () => {
           data-qa="v3-evidence-detail"
           data-qa-selected-evidence-id={selected?.id ?? ''}
           data-qa-artifact-mode={selected?.artifactMode ?? 'missing'}
+          data-qa-artifact-action-state={selected?.artifactActionState ?? 'missing'}
           style={{ flex: '1.2 1 360px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}
         >
           <div>
@@ -1496,6 +1593,7 @@ const EvidenceCenterWorkspace = () => {
               <DetailField label="Evidence ID">{selected.id}</DetailField>
               <DetailField label="Source">{selected.sourceMode} · {selected.persistenceMode}</DetailField>
               <DetailField label="Artifact">{selected.artifactMode} · {selected.artifactStatus}</DetailField>
+              <DetailField label="Action state">{selected.artifactActionState} · {selected.artifactSourceLabel}</DetailField>
               <DetailField label="Event/task">{selected.eventId} · {selected.taskId}</DetailField>
               <DetailField label="Workflow">{selected.workflowId}</DetailField>
               <DetailField label="Policies">{formatList(selected.policyIds, 'No policy IDs linked')}</DetailField>
@@ -1510,15 +1608,57 @@ const EvidenceCenterWorkspace = () => {
                 data-qa-integrity-mode={selected.artifactMode === 'real-artifact' ? 'local-metadata' : 'not-verified'}
                 style={{ padding: '10px', background: 'rgba(224,123,44,0.06)', borderRadius: '8px', border: '1px solid rgba(224,123,44,0.24)', fontSize: '11px', color: V3.orangeLight, lineHeight: 1.45 }}
               >
-                Artifact integrity not verified in V3. Backend evidence validation remains Phase 5A-B / Phase 4C-B; this is not production evidence certification.
+                Artifact integrity not verified in V3. Local/demo artifact access is not backend persistence or a production S3 download API; this is not production evidence certification.
               </div>
 
-              {selected.artifactRoute ? (
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <OpenLiveRouteButton route={selected.artifactRoute} />
+              {(selected.artifactActionState === 'real-local-artifact' || selected.artifactActionState === 'real-route-only') && selected.artifactRoute ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <ActionButton
+                      data-qa="v3-evidence-open-artifact"
+                      data-qa-artifact-route={selected.artifactRoute}
+                      onClick={() => window.open(selected.artifactRoute, '_blank', 'noopener,noreferrer')}
+                    >
+                      Open Artifact Viewer
+                    </ActionButton>
+                    {selected.artifactDownloadMode === 'local-bytes' ? (
+                      <ActionButton
+                        data-qa="v3-evidence-download-artifact"
+                        data-qa-download-mode="local-bytes"
+                        onClick={() => downloadLocalEvidenceArtifact(selected)}
+                      >
+                        Download Local Artifact
+                      </ActionButton>
+                    ) : (
+                      <button
+                        disabled
+                        data-qa="v3-evidence-download-artifact"
+                        data-qa-download-mode={selected.artifactDownloadMode}
+                        title={selected.artifactBlockerLabel}
+                        style={{ padding: '7px 10px', borderRadius: '7px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.12)', color: V3.textTertiary, fontSize: '11px', fontWeight: 700, cursor: 'not-allowed' }}
+                      >
+                        Download Local Artifact
+                      </button>
+                    )}
+                  </div>
+                  {selected.artifactActionState === 'real-route-only' && selected.artifactBlockerCode && (
+                    <div
+                      data-qa="v3-evidence-artifact-blocker"
+                      data-qa-artifact-blocker-code={selected.artifactBlockerCode}
+                      style={{ fontSize: '10.5px', color: V3.orangeLight, lineHeight: 1.4 }}
+                    >
+                      {selected.artifactBlockerLabel}; download unavailable in demo-local after refresh.
+                    </div>
+                  )}
                 </div>
               ) : (
-                <BlockedInline>BLOCKED_PENDING_PHASE_5A_B — Artifact file/viewer is not available for this evidence record.</BlockedInline>
+                <div
+                  data-qa="v3-evidence-artifact-blocker"
+                  data-qa-artifact-blocker-code={selected.artifactBlockerCode ?? 'BLOCKED_PENDING_PHASE_5A_B_MISSING_ARTIFACT'}
+                  style={{ fontSize: '10.5px', color: V3.orangeLight, lineHeight: 1.4 }}
+                >
+                  {selected.artifactBlockerLabel ?? 'BLOCKED_PENDING_PHASE_5A_B — Artifact file/viewer is not available for this evidence record.'}
+                </div>
               )}
 
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -1531,7 +1671,9 @@ const EvidenceCenterWorkspace = () => {
                 <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>BLOCKED EVIDENCE ACTIONS</div>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <PhaseBlockedButton reason={PHASE_5A_B_ARTIFACT_TRANSFER_BLOCKER} dataQaAction="upload-evidence">Upload evidence</PhaseBlockedButton>
-                  <PhaseBlockedButton reason={PHASE_5A_B_ARTIFACT_TRANSFER_BLOCKER} dataQaAction="download-artifact">Download artifact</PhaseBlockedButton>
+                  {selected.artifactDownloadMode !== 'local-bytes' && (
+                    <PhaseBlockedButton reason={PHASE_5A_B_ARTIFACT_TRANSFER_BLOCKER} dataQaAction="download-artifact">Backend download</PhaseBlockedButton>
+                  )}
                   <PhaseBlockedButton reason={PHASE_5A_B_EVIDENCE_VALIDATION_BLOCKER} dataQaAction="validate-evidence">Validate evidence</PhaseBlockedButton>
                   <PhaseBlockedButton reason={PHASE_5A_B_EVIDENCE_VALIDATION_BLOCKER} dataQaAction="promote-evidence">Promote evidence</PhaseBlockedButton>
                   <PhaseBlockedButton reason={PHASE_4C_B_PRODUCTION_AUDIT_BLOCKER} dataQaAction="certify-evidence">Certify evidence</PhaseBlockedButton>

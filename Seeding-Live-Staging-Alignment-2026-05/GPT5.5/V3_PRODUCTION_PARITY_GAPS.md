@@ -10,7 +10,7 @@ No audited V3 surface is level 5.
 
 Phase 4C-A adds CES durable app-store adapter wiring over the existing local persisted store. This is level 4 durable adapter wired only. Backend persistence, AWS persistence, real evidence upload/validation/promote, legal signature collection, approval decision mutation, certification, and production audit remain Phase 4C-B blockers.
 
-Phase 5A-A adds Evidence Center read/view/detail parity over local app-store evidence metadata and CES seed evidence metadata. This is level 3 read/detail parity only. Backend artifact upload/download, evidence validation/promote, backend evidence persistence, production audit immutability, and evidence certification remain blocked.
+Phase 5A-A adds Evidence Center read/view/detail parity over local app-store evidence metadata and CES seed evidence metadata. Phase 5A-B adds explicit artifact viewer/local download wiring only where existing local/demo artifact references or bytes already exist. This remains level 3 Evidence Center parity only. Backend artifact upload/download, evidence validation/promote, backend evidence persistence, production audit immutability, legal signature, and evidence certification remain blocked.
 
 ## Phase 2 Stabilization Result
 
@@ -73,6 +73,17 @@ Phase 5A-A adds Evidence Center read/view/detail parity over local app-store evi
 - Required validation passes locally after Phase 5A-A: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 5A-A Playwright QA, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA.
 - No V3 surface is level 5 production-shaped complete.
 
+## Phase 5A-B Evidence Center Artifact Viewer / Local Download Result
+
+- V3 Evidence Detail now classifies artifact actions as `real-local-artifact`, `real-route-only`, `metadata-placeholder`, `seeded-preview`, or `missing`.
+- `Open Artifact Viewer` is available only for records with existing local/demo artifact references and is built with `src/policy/artifacts/artifactRoute.ts`.
+- `Download Local Artifact` is available only when existing local data/blob bytes are available through the current demo-local evidence cache.
+- Route-only records disclose that local bytes may not survive refresh and keep local download blocked.
+- Metadata-only and seeded-preview evidence remain blocked; no fake artifact, fake PDF, or metadata-to-file conversion was added.
+- Local/demo artifact access is not backend persistence, and local/demo downloads are not production S3/download APIs.
+- Required validation passes locally after Phase 5A-B: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 5A-B Playwright QA, Phase 5A-A Playwright QA, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA.
+- No V3 surface is level 5 production-shaped complete.
+
 ## Production Parity Gate
 
 A V3 surface is production-shaped complete only when all of these are true:
@@ -101,7 +112,7 @@ The current V3 implementation fails the gate.
 | CES seed adapter | 3 | Renderer seeded adapter only | Not mounted into V3.2 workflows; bypasses live stores | `src/policy/ces/data/V3_CES_SnapshotBuilder.ts`, `src/policy/compliance-execution/seededMode.tsx` |
 | Calendar/event workspace | 0 in V3.2 | Placeholder/missing | V3 does not reuse `MasterCalendarPage` or `WorkflowExecutionPanel` | `src/policy/pages/MasterCalendarPage.tsx` |
 | Tasks / PM | 4 (durable adapter wired in V3 CES only; not level 5) | CES task cards open in-shell detail with local persisted app-store task writes for safe actions | Canonical PM drawer, backend task execution, certification, and production audit remain outside V3 Phase 4C-A | `src/ui-staging/V3_2StagingApp.tsx`, `src/ui-staging/ces/cesDurableExecutionAdapter.ts`, `src/policy/components/pm/TaskDetailRightPanel.tsx` |
-| Evidence | 4 inside CES task detail; 3 in Evidence Center | CES task detail can persist an app-store evidence metadata placeholder; Evidence Center has Phase 5A-A read/detail parity over local-store and seed metadata | Backend artifact upload/download, validation/promote, backend persistence, production audit immutability, and certification remain blocked | `src/ui-staging/V3_2StagingApp.tsx`, `src/ui-staging/ces/cesDurableExecutionAdapter.ts`, `src/policy/pages/EvidenceCenterPage.tsx` |
+| Evidence | 4 inside CES task detail; 3 in Evidence Center | CES task detail can persist an app-store evidence metadata placeholder; Evidence Center has Phase 5A-B read/detail parity plus explicit local/demo artifact route/download wiring where existing references or bytes exist | Backend artifact upload/download, validation/promote, backend persistence, production audit immutability, legal signature, and certification remain blocked | `src/ui-staging/V3_2StagingApp.tsx`, `src/ui-staging/ces/cesDurableExecutionAdapter.ts`, `src/policy/pages/EvidenceCenterPage.tsx`, `src/policy/pages/ArtifactViewerPage.tsx` |
 | Training/Journey | 2 | Content seeded from `ALL_MODULES` with live route handoffs | Gates/evidence/signatures/escalations remain Phase 4 | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/journey/data/modules.ts`, `src/policy/journey/pages/JourneyHomePage.tsx` |
 | Onboarding V2 | 1 | Represented as live route handoff | Activation/batch/audit/governance workflows are not embedded in V3 | `src/policy/onboarding-v2/pages/*` |
 | Reports | 0 | Not represented in V3.2 | `/ces/reports` live route has no V3 path | `src/App.tsx` |
@@ -111,7 +122,7 @@ The current V3 implementation fails the gate.
 ## Top 10 Production Blockers
 
 1. Backend/AWS persistence remains Phase 4C-B.
-2. Backend evidence upload/download/validation/promote and full artifact viewer availability remain Phase 5A-B / Phase 4C-B.
+2. Backend evidence upload/download/validation/promote and production artifact availability remain Phase 4C-B / later Evidence phases; Phase 5A-B only wires local/demo artifact viewer/download where real references or bytes already exist.
 3. Legal durable signature collection remains Phase 4C-B.
 4. Durable approval decision mutation remains Phase 4C-B.
 5. Production audit immutability/hash-chain certification and production certification remain Phase 4C-B.

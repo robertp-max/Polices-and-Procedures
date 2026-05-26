@@ -10,7 +10,21 @@ Phase 1 audit plus Phase 2 route stabilization tracking.
 - Phase 4B after CES evidence/signature local-preview wiring: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally. Vercel commit statuses for 3376eeb were green. GitHub Actions CI and Deploy Frontend → S3 + CloudFront runs on main were failing before Phase 4B implementation.
 - Phase 4C-A after durable app-store adapter wiring: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally.
 - Phase 5A-A after Evidence Center read/detail parity: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 5A-A Playwright QA, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally.
-- Policy/forms/training click paths below reflect Phase 3 content parity. CES event/task interiors now have Phase 4C-A durable app-store adapter wiring for safe task execution state using a local persisted store; Evidence Center now has Phase 5A-A in-shell read/detail parity over local app-store and seed metadata. Backend persistence, legal signature, approval decision, certification, and production audit remain Phase 4C-B blockers.
+- Phase 5A-B after Evidence Center artifact viewer/local download wiring: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 5A-B Playwright QA, Phase 5A-A Playwright QA, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally.
+- Policy/forms/training click paths below reflect Phase 3 content parity. CES event/task interiors now have Phase 4C-A durable app-store adapter wiring for safe task execution state using a local persisted store; Evidence Center now has Phase 5A-B in-shell read/detail parity plus explicit artifact viewer/local download wiring where existing local/demo artifact references or bytes exist. Backend persistence, legal signature, approval decision, certification, and production audit remain Phase 4C-B blockers.
+
+## Phase 5A-B Evidence Center Artifact Viewer / Local Download Click-Path Status
+
+| Click path | Phase 5A-B disposition | Status |
+|---|---|---|
+| Evidence row click | Primary row click stays inside `/ui-staging` and updates `v3-evidence-detail`. | Contained primary V3 surface |
+| Artifact action state | Classifies selected evidence as `real-local-artifact`, `real-route-only`, `metadata-placeholder`, `seeded-preview`, or `missing`. | Truth-based artifact state |
+| Open Artifact Viewer | Available only for real local/demo artifact references and uses `buildArtifactRoute` to open `/artifacts/:artifactId` explicitly. | Secondary handoff |
+| Download Local Artifact | Available only when local data/blob bytes exist; metadata-only and route-only rows do not get fake downloads. | Local/demo only |
+| Metadata/seeded records | Stay blocked with honest artifact blocker wording. | Blocked, no fake artifact |
+| Upload/backend download/validate/promote/certify | Remain blocked with Phase 5A-B / Phase 4C-B reasons. | Blocked, no fake mutation |
+
+Phase 5A-B does not implement backend evidence persistence, AWS persistence, production S3/download APIs, evidence validation/promote, production audit immutability, legal signature, evidence certification, or level 5 production-shaped completion.
 
 ## Phase 5A-A Evidence Center Read / Viewer Click-Path Status
 
@@ -152,7 +166,7 @@ Phase 4A does not implement evidence upload/download/validation, signature colle
 | Brad AI | RUN | Appends canned response after timeout | Prompt chips | Fill input text | Synthetic fallback; no grounded action. |
 | CES Sprint Board | Task card | Local selected title only | Calendar/Sprint Board buttons | No handler | No event/task/workflow interior. |
 | CES selected task sidebar | Checkpoint rows | Non-clickable | Completion dots | Static | Pre-marked completion risk. |
-| Evidence Center | Evidence row/card | Opens in-shell V3 evidence detail and keeps URL under `/ui-staging` | Open live route buttons | Secondary handoffs to live evidence/artifact/policy/form/task routes | Level 3 read/detail parity only; upload/download/validate/promote/certify remain blocked. |
+| Evidence Center | Evidence row/card | Opens in-shell V3 evidence detail and keeps URL under `/ui-staging` | Open Artifact Viewer / Download Local Artifact / Open live route buttons | Artifact route/download only when real local/demo references or bytes exist; policy/form/task live handoffs stay secondary | Level 3 read/detail parity with Phase 5A-B local/demo artifact access only; backend upload/download/validate/promote/certify remain blocked. |
 | Taxonomy | Nav item | Placeholder only | None | None | Level 0. |
 | Onboarding | Nav item | Placeholder only | None | None | Level 0. |
 | Policy Lifecycle | Nav item | Placeholder only | None | None | Level 0. |
@@ -173,7 +187,7 @@ Phase 4A does not implement evidence upload/download/validation, signature colle
 | Calendar event -> workflow | `/calendar?event=...` and mobile `/calendar/event/:eventId/*` | `src/policy/pages/MasterCalendarPage.tsx`, `src/policy/pages/MobileIncidentExecutionPage.tsx`, `src/policy/components/regulatory/WorkflowExecutionPanel.tsx` | V3.2 CES uses local rows only. |
 | My task -> detail drawer | `/my-tasks` or `/pm/my-tasks` -> `TaskDetailRightPanel` | `src/policy/ces/pages/MyTasksPage.tsx`, `src/policy/components/pm/MyTasksPmPage.tsx`, `src/policy/components/pm/TaskDetailRightPanel.tsx` | V3.2 task buttons do not open canonical drawer. |
 | PM planner actions | `/pm/sprint-plan` | `src/policy/components/pm/SprintPlanPage.tsx`, `src/policy/pm/pmOverlayStore.ts` | V3.2 planner does not mutate or show valid blockers. |
-| Evidence -> artifact | `/evidence` -> `/artifacts/:artifactId` | `src/policy/pages/EvidenceCenterPage.tsx`, `src/policy/pages/ArtifactViewerPage.tsx`, `src/policy/artifacts/artifactRoute.ts` | V3 evidence rows are display-only. |
+| Evidence -> artifact | `/evidence` -> `/artifacts/:artifactId` | `src/policy/pages/EvidenceCenterPage.tsx`, `src/policy/pages/ArtifactViewerPage.tsx`, `src/policy/artifacts/artifactRoute.ts` | Phase 5A-B wires explicit V3 artifact route/download controls only where real local/demo artifact references or bytes exist; backend artifact workflows remain blocked. |
 | Onboarding module | `/journey` -> `/journey/module/:moduleId` | `src/policy/journey/pages/JourneyHomePage.tsx`, `src/policy/journey/pages/ModulePlayerPage.tsx`, `src/policy/journey/data/modules.ts` | V3 onboarding is placeholder only. |
 | Onboarding V2 activation/batches/audit | `/onboarding-v2/*` | `src/policy/onboarding-v2/pages/*` | V3 onboarding does not surface audit-grade flows. |
 
