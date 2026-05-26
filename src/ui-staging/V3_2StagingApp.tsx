@@ -441,8 +441,8 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
 // ============================================================
 // CORE CARDS & COMPONENTS
 // ============================================================
-const ActionButton = ({ children, onClick, variant }: any) => (
-  <button onClick={onClick} className="btn-smooth-hover" style={{ padding: '8px 16px', background: variant === 'danger' ? 'rgba(0, 209, 193, 0.1)' : 'transparent', color: variant === 'danger' ? V3.tealLight : V3.textSecondary, border: `1px solid rgba(0, 209, 193, 0.3)`, borderRadius: '8px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', backdropFilter: 'blur(8px)', transition: '0.2s' }}>{children}</button>
+const ActionButton = ({ children, onClick, variant, ...rest }: any) => (
+  <button {...rest} onClick={onClick} className="btn-smooth-hover" style={{ padding: '8px 16px', background: variant === 'danger' ? 'rgba(0, 209, 193, 0.1)' : 'transparent', color: variant === 'danger' ? V3.tealLight : V3.textSecondary, border: `1px solid rgba(0, 209, 193, 0.3)`, borderRadius: '8px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', backdropFilter: 'blur(8px)', transition: '0.2s', ...(rest.style ?? {}) }}>{children}</button>
 );
 
 const OpenLiveRouteButton = ({ route }: { route: string }) => (
@@ -664,11 +664,20 @@ type CesPreviewState = {
   started?: boolean;
   note?: string;
   blocker?: string;
+  evidenceViewed?: boolean;
+  evidenceAttached?: boolean;
+  evidenceReady?: boolean;
+  evidenceBlocker?: string;
+  signaturePrepared?: boolean;
+  signatureAcknowledged?: boolean;
+  approvalPrepared?: boolean;
+  approvalAcknowledged?: boolean;
+  signatureBlocker?: string;
+  history?: string[];
 };
 
-const PHASE_4B_EVIDENCE_BLOCKER = 'BLOCKED_PENDING_PHASE_4B — Evidence/artifact workflow not wired in this phase.';
-const PHASE_4B_SIGNATURE_BLOCKER = 'BLOCKED_PENDING_PHASE_4B — Signature/approval workflow not wired in this phase.';
 const PHASE_4C_DURABLE_BLOCKER = 'BLOCKED_PENDING_PHASE_4C — Durable planner/task execution not wired in this phase.';
+const LOCAL_PREVIEW_ONLY = 'Local preview only — not durable.';
 
 const formatList = (items: readonly string[] | undefined, fallback = 'Not available') => items && items.length ? items.join(', ') : fallback;
 
@@ -686,21 +695,70 @@ const getRelatedPolicyIds = (unit: ExecutionUnit) => {
   return Array.from(ids);
 };
 
+const getMissingFormIds = (unit: ExecutionUnit) => {
+  if (unit.evidenceStatus.missingFormIds.length) return unit.evidenceStatus.missingFormIds;
+  const formIds = getRelatedFormIds(unit);
+  const missingCount = Math.max(0, unit.evidenceStatus.requiredFormsTotal - unit.evidenceStatus.requiredFormsComplete);
+  return formIds.slice(0, missingCount);
+};
+
+const appendPreviewHistory = (preview: CesPreviewState, entry: string): CesPreviewState => ({
+  ...preview,
+  history: [...(preview.history ?? []), `${new Date().toISOString()} — ${entry}`],
+});
+
+const getReadinessMessages = (unit: ExecutionUnit, preview: CesPreviewState) => {
+  const messages: string[] = [];
+  const missingForms = getMissingFormIds(unit);
+  const evidenceSeedIncomplete = unit.evidenceStatus.requiredFormsComplete < unit.evidenceStatus.requiredFormsTotal || missingForms.length > 0 || !unit.evidenceStatus.auditIndexCreated;
+  const signaturesSeedIncomplete = unit.evidenceStatus.signaturesComplete < unit.evidenceStatus.signaturesRequired;
+
+  if (unit.blockedReason) messages.push(`Seeded blocker: ${unit.blockedReason.label}`);
+  if (preview.blocker) messages.push(`Local task blocker: ${preview.blocker}`);
+  if (preview.evidenceBlocker) messages.push(`Evidence blocker: ${preview.evidenceBlocker}`);
+  if (preview.signatureBlocker) messages.push(`Signature/approval blocker: ${preview.signatureBlocker}`);
+
+  if (missingForms.length) messages.push(`Missing required forms: ${missingForms.join(', ')}`);
+  if (evidenceSeedIncomplete && preview.evidenceAttached && preview.evidenceReady) {
+    messages.push('Evidence ready in local preview; durable validation remains Phase 4C.');
+  } else if (evidenceSeedIncomplete) {
+    messages.push('Evidence not ready in local preview; attach and mark preview evidence ready.');
+  } else {
+    messages.push('Seeded evidence package is complete; durable validation remains Phase 4C.');
+  }
+
+  if (signaturesSeedIncomplete && preview.signatureAcknowledged) {
+    messages.push('Signature acknowledged in local preview; durable signature collection remains Phase 4C.');
+  } else if (signaturesSeedIncomplete) {
+    messages.push('Missing signatures remain; acknowledge only in local preview for Phase 4B.');
+  } else {
+    messages.push('Seeded signatures complete; durable signature verification remains Phase 4C.');
+  }
+
+  if (preview.approvalAcknowledged) {
+    messages.push('Approval acknowledged in local preview; durable approval mutation remains Phase 4C.');
+  } else {
+    messages.push('Approval readiness requires local preview acknowledgement; durable approval mutation remains Phase 4C.');
+  }
+
+  messages.push('Durable task completion remains BLOCKED_PENDING_PHASE_4C.');
+  return messages;
+};
+
 const getTaskReadiness = (unit: ExecutionUnit, preview: CesPreviewState) => {
-  if (preview.blocker) return `Local blocker: ${preview.blocker}`;
-  if (unit.blockedReason) return unit.blockedReason.label;
-  if (unit.evidenceStatus.requiredFormsComplete < unit.evidenceStatus.requiredFormsTotal) return PHASE_4B_EVIDENCE_BLOCKER;
-  if (unit.evidenceStatus.signaturesComplete < unit.evidenceStatus.signaturesRequired) return PHASE_4B_SIGNATURE_BLOCKER;
-  if (unit.complianceState !== 'completed') return PHASE_4C_DURABLE_BLOCKER;
-  return 'Seed indicates completed, but V3 staging does not certify production completion.';
+  return getReadinessMessages(unit, preview).join(' ');
 };
 
 const getNextBestAction = (unit: ExecutionUnit, preview: CesPreviewState) => {
   if (!preview.viewed) return 'Mark viewed to acknowledge this local preview detail.';
   if (!preview.started) return 'Mark started to create local-only preview progress.';
   if (preview.blocker) return 'Clear the local blocker when the preview issue is no longer relevant.';
-  if (unit.evidenceStatus.requiredFormsComplete < unit.evidenceStatus.requiredFormsTotal) return 'Review required forms and evidence gaps; upload/validation is blocked until Phase 4B.';
-  if (unit.evidenceStatus.signaturesComplete < unit.evidenceStatus.signaturesRequired) return 'Review pending signers; signature/approval workflow is blocked until Phase 4B.';
+  if (preview.evidenceBlocker) return 'Clear the local evidence blocker when the preview issue is no longer relevant.';
+  if (!preview.evidenceAttached) return 'Attach local preview evidence; no file upload or durable evidence write occurs.';
+  if (!preview.evidenceReady) return 'Mark local preview evidence ready for validation; durable validation remains Phase 4C.';
+  if (preview.signatureBlocker) return 'Clear the local signature/approval blocker when the preview issue is no longer relevant.';
+  if (!preview.signatureAcknowledged && unit.evidenceStatus.signaturesComplete < unit.evidenceStatus.signaturesRequired) return 'Acknowledge local preview signature; durable collection remains Phase 4C.';
+  if (!preview.approvalAcknowledged) return 'Acknowledge local preview approval; durable approval mutation remains Phase 4C.';
   return 'Durable completion is blocked until Phase 4C task execution is wired.';
 };
 
@@ -732,6 +790,140 @@ const PhaseBlockedButton = ({ children, reason, dataQaAction }: { children: stri
     {children}
   </button>
 );
+
+const LinkageRow = ({ id, type }: { id: string; type: 'policy' | 'form' }) => (
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', padding: '6px 0', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+    <div>
+      <div style={{ fontSize: '11px', color: V3.textPrimary, fontFamily: 'monospace' }}>{id}</div>
+      <div style={{ fontSize: '10px', color: V3.textTertiary }}>
+        {type === 'form' ? 'V3 form renderer adapter available in Forms Content Renderer.' : 'V3 policy renderer adapter available in Policy Content Renderer.'}
+      </div>
+    </div>
+    <OpenLiveRouteButton route={type === 'form' ? `/forms/${id}` : `/library/${id}`} />
+  </div>
+);
+
+const CesEvidencePanel = ({
+  unit,
+  preview,
+  onPreviewChange,
+}: {
+  unit: ExecutionUnit;
+  preview: CesPreviewState;
+  onPreviewChange: (next: CesPreviewState) => void;
+}) => {
+  const [draftEvidenceBlocker, setDraftEvidenceBlocker] = useState(preview.evidenceBlocker ?? '');
+  const formIds = getRelatedFormIds(unit);
+  const policyIds = getRelatedPolicyIds(unit);
+  const missingFormIds = getMissingFormIds(unit);
+  const evidenceStatus = preview.evidenceReady ? 'ready for validation in local preview' : preview.evidenceAttached ? 'attached in local preview' : preview.evidenceViewed ? 'viewed in local preview' : 'not viewed in local preview';
+
+  useEffect(() => {
+    setDraftEvidenceBlocker(preview.evidenceBlocker ?? '');
+  }, [unit.id, preview.evidenceBlocker]);
+
+  return (
+    <div data-qa="ces-evidence-panel" data-qa-evidence-task-id={unit.id} style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
+      <div>
+        <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>PHASE 4B EVIDENCE / ARTIFACT LOCAL PREVIEW</div>
+        <div style={{ fontSize: '11px', color: V3.orangeLight, marginTop: '2px' }}>{LOCAL_PREVIEW_ONLY}</div>
+      </div>
+      <DetailField label="Forms">{unit.evidenceStatus.requiredFormsComplete}/{unit.evidenceStatus.requiredFormsTotal} complete</DetailField>
+      <DetailField label="Missing">{formatList(missingFormIds, 'No missing form IDs seeded')}</DetailField>
+      <DetailField label="Audit index">{unit.evidenceStatus.auditIndexCreated ? 'created in seed preview' : 'not created in seed preview'}</DetailField>
+      <DetailField label="Policies">{formatList(policyIds)}</DetailField>
+      <DetailField label="Forms linked">{formatList(formIds, 'No linked form IDs seeded')}</DetailField>
+      <DetailField label="Seed status">{unit.auditReadiness} · {unit.evidenceStatus.auditIndexCreated ? 'audit indexed' : 'audit index pending'}</DetailField>
+      <DetailField label="Local status">{evidenceStatus}</DetailField>
+      <DetailField label="Readiness">{getReadinessMessages(unit, preview).filter(message => /Evidence|Missing required forms|Seeded blocker|Local task blocker|Evidence blocker|Durable task/.test(message)).join(' ')}</DetailField>
+
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <ActionButton data-qa="ces-evidence-action" data-qa-action="view-evidence" onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, evidenceViewed: true }, 'Evidence requirement viewed in local preview only'))}>Mark evidence requirement viewed</ActionButton>
+        <ActionButton data-qa="ces-evidence-action" data-qa-action="attach-preview-evidence" onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, evidenceViewed: true, evidenceAttached: true }, 'Local preview evidence attached; no upload API called'))}>Attach local preview evidence</ActionButton>
+        <ActionButton data-qa="ces-evidence-action" data-qa-action="mark-preview-evidence-ready" onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, evidenceViewed: true, evidenceAttached: true, evidenceReady: true }, 'Evidence marked ready in local preview; durable validation remains Phase 4C'))}>Mark preview evidence ready</ActionButton>
+      </div>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <input
+          value={draftEvidenceBlocker}
+          onChange={e => setDraftEvidenceBlocker(e.target.value)}
+          placeholder="Evidence blocker reason"
+          style={{ flex: '1 1 170px', minWidth: 0, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: V3.textPrimary, padding: '8px', fontSize: '12px', outline: 'none' }}
+        />
+        <ActionButton data-qa="ces-evidence-action" data-qa-action="add-evidence-blocker" onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, evidenceBlocker: draftEvidenceBlocker.trim() || 'Local preview evidence blocker' }, 'Evidence blocker added in local preview only'))}>Add evidence blocker</ActionButton>
+        <ActionButton data-qa="ces-evidence-action" data-qa-action="clear-evidence-blocker" onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, evidenceBlocker: undefined }, 'Evidence blocker cleared in local preview only'))}>Clear evidence blocker</ActionButton>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        {policyIds.slice(0, 3).map(policyId => <LinkageRow key={policyId} id={policyId} type="policy" />)}
+        {formIds.slice(0, 3).map(formId => <LinkageRow key={formId} id={formId} type="form" />)}
+      </div>
+    </div>
+  );
+};
+
+const CesSignatureApprovalPanel = ({
+  unit,
+  preview,
+  onPreviewChange,
+}: {
+  unit: ExecutionUnit;
+  preview: CesPreviewState;
+  onPreviewChange: (next: CesPreviewState) => void;
+}) => {
+  const [draftSignatureBlocker, setDraftSignatureBlocker] = useState(preview.signatureBlocker ?? '');
+  const localSignatureState = preview.signatureAcknowledged ? 'signature acknowledged in local preview' : preview.signaturePrepared ? 'signature request prepared in local preview' : 'not prepared in local preview';
+  const localApprovalState = preview.approvalAcknowledged ? 'approval acknowledged in local preview' : preview.approvalPrepared ? 'approval request prepared in local preview' : 'not prepared in local preview';
+
+  useEffect(() => {
+    setDraftSignatureBlocker(preview.signatureBlocker ?? '');
+  }, [unit.id, preview.signatureBlocker]);
+
+  return (
+    <div data-qa="ces-signature-approval-panel" data-qa-signature-task-id={unit.id} style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
+      <div>
+        <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>PHASE 4B SIGNATURE / APPROVAL LOCAL PREVIEW</div>
+        <div style={{ fontSize: '11px', color: V3.orangeLight, marginTop: '2px' }}>{LOCAL_PREVIEW_ONLY}</div>
+      </div>
+      <DetailField label="Required">{unit.evidenceStatus.signaturesComplete}/{unit.evidenceStatus.signaturesRequired} signatures complete</DetailField>
+      <DetailField label="Owner">{unit.approver.name} · {unit.approverRole ?? unit.approver.role}</DetailField>
+      <DetailField label="Seed state">{unit.complianceState} · {unit.workflowPhase}</DetailField>
+      <DetailField label="Local sig">{localSignatureState}</DetailField>
+      <DetailField label="Local appr">{localApprovalState}</DetailField>
+      <DetailField label="Readiness">{getReadinessMessages(unit, preview).filter(message => /Signature|Approval|Seeded blocker|Local task blocker|signature\/approval blocker|Durable task/.test(message)).join(' ')}</DetailField>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {unit.requiredSigners.length ? unit.requiredSigners.map(signer => (
+          <div key={signer.userId} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 80px', gap: '8px', padding: '7px 0', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '12px', color: V3.textPrimary }}>{signer.name}</div>
+              <div style={{ fontSize: '10.5px', color: V3.textTertiary }}>{signer.role}</div>
+            </div>
+            <div style={{ fontSize: '10.5px', color: signer.status === 'signed' ? V3.tealLight : V3.orangeLight, textAlign: 'right' }}>{signer.status}</div>
+          </div>
+        )) : (
+          <div style={{ fontSize: '11px', color: V3.textTertiary }}>No required signers seeded for this task.</div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <ActionButton data-qa="ces-signature-action" data-qa-action="prepare-signature-request" onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, signaturePrepared: true }, 'Signature request prepared in local preview only'))}>Prepare signature request</ActionButton>
+        <ActionButton data-qa="ces-signature-action" data-qa-action="acknowledge-preview-signature" onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, signaturePrepared: true, signatureAcknowledged: true }, 'Signature acknowledged in local preview; durable collection remains Phase 4C'))}>Acknowledge local preview signature</ActionButton>
+        <ActionButton data-qa="ces-signature-action" data-qa-action="prepare-approval-request" onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, approvalPrepared: true }, 'Approval request prepared in local preview only'))}>Prepare approval request</ActionButton>
+        <ActionButton data-qa="ces-signature-action" data-qa-action="acknowledge-preview-approval" onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, approvalPrepared: true, approvalAcknowledged: true }, 'Approval acknowledged in local preview; durable approval mutation remains Phase 4C'))}>Acknowledge local preview approval</ActionButton>
+      </div>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <input
+          value={draftSignatureBlocker}
+          onChange={e => setDraftSignatureBlocker(e.target.value)}
+          placeholder="Signature/approval blocker reason"
+          style={{ flex: '1 1 170px', minWidth: 0, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: V3.textPrimary, padding: '8px', fontSize: '12px', outline: 'none' }}
+        />
+        <ActionButton data-qa="ces-signature-action" data-qa-action="add-signature-blocker" onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, signatureBlocker: draftSignatureBlocker.trim() || 'Local preview signature/approval blocker' }, 'Signature/approval blocker added in local preview only'))}>Add signature/approval blocker</ActionButton>
+        <ActionButton data-qa="ces-signature-action" data-qa-action="clear-signature-blocker" onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, signatureBlocker: undefined }, 'Signature/approval blocker cleared in local preview only'))}>Clear signature/approval blocker</ActionButton>
+      </div>
+    </div>
+  );
+};
 
 const CesEventWorkspace = ({ unit, eventUnits }: { unit: ExecutionUnit; eventUnits: ExecutionUnit[] }) => {
   const policyIds = getRelatedPolicyIds(unit);
@@ -806,18 +998,24 @@ const CesTaskDetailPanel = ({
         <DetailField label="Evidence">{unit.evidenceStatus.requiredFormsComplete}/{unit.evidenceStatus.requiredFormsTotal} forms complete · missing {unit.evidenceStatus.missingFormIds.length} · audit index {unit.evidenceStatus.auditIndexCreated ? 'created' : 'not created'}</DetailField>
         <DetailField label="Signatures">{unit.evidenceStatus.signaturesComplete}/{unit.evidenceStatus.signaturesRequired} complete · {unit.requiredSigners.map(s => `${s.name}: ${s.status}`).join(', ') || 'none seeded'}</DetailField>
         <DetailField label="Approvals">{unit.approver.name} · {unit.approverRole ?? unit.approver.role}</DetailField>
-        <DetailField label="Readiness">{readiness}</DetailField>
+        <div data-qa="ces-readiness-state">
+          <DetailField label="Readiness">{readiness}</DetailField>
+        </div>
         <DetailField label="Completion">{getCompletionRule(unit)}</DetailField>
         <DetailField label="Next action">{getNextBestAction(unit, preview)}</DetailField>
         <DetailField label="Audit preview">{V3_AUDIT_LOG.filter(row => row.resource.includes(unit.id) || row.resource.toLowerCase().includes(unit.title.toLowerCase().slice(0, 16))).slice(0, 2).map(row => `${row.timestamp}: ${row.action}`).join(' · ') || 'No deterministic audit row found for this seed unit.'}</DetailField>
 
+        <CesEvidencePanel unit={unit} preview={preview} onPreviewChange={onPreviewChange} />
+        <CesSignatureApprovalPanel unit={unit} preview={preview} onPreviewChange={onPreviewChange} />
+
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>SAFE LOCAL PREVIEW ACTIONS</div>
+          <div style={{ fontSize: '11px', color: V3.orangeLight }}>{LOCAL_PREVIEW_ONLY}</div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <ActionButton onClick={() => onPreviewChange({ ...preview, viewed: true })}>Mark viewed</ActionButton>
-            <ActionButton onClick={() => onPreviewChange({ ...preview, viewed: true, started: true })}>Mark started</ActionButton>
-            <ActionButton onClick={() => onPreviewChange({ ...preview, blocker: draftBlocker.trim() || 'Local preview blocker' })}>Add local blocker</ActionButton>
-            <ActionButton onClick={() => onPreviewChange({ ...preview, blocker: undefined })}>Clear local blocker</ActionButton>
+            <ActionButton onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, viewed: true }, 'Task detail viewed in local preview only'))}>Mark viewed</ActionButton>
+            <ActionButton onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, viewed: true, started: true }, 'Task started in local preview only'))}>Mark started</ActionButton>
+            <ActionButton onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, blocker: draftBlocker.trim() || 'Local preview blocker' }, 'Task blocker added in local preview only'))}>Add local blocker</ActionButton>
+            <ActionButton onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, blocker: undefined }, 'Task blocker cleared in local preview only'))}>Clear local blocker</ActionButton>
           </div>
           <textarea
             value={draftNote}
@@ -826,7 +1024,7 @@ const CesTaskDetailPanel = ({
             style={{ minHeight: '68px', resize: 'vertical', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: V3.textPrimary, padding: '8px', fontSize: '12px', outline: 'none' }}
           />
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <ActionButton onClick={() => onPreviewChange({ ...preview, note: draftNote.trim() })}>Add local note</ActionButton>
+            <ActionButton onClick={() => onPreviewChange(appendPreviewHistory({ ...preview, note: draftNote.trim() }, 'Task note saved in local preview only'))}>Add local note</ActionButton>
             <input
               value={draftBlocker}
               onChange={e => setDraftBlocker(e.target.value)}
@@ -839,11 +1037,22 @@ const CesTaskDetailPanel = ({
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>BLOCKED PRODUCTION ACTIONS</div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <PhaseBlockedButton reason={PHASE_4B_EVIDENCE_BLOCKER} dataQaAction="upload-evidence">Upload evidence</PhaseBlockedButton>
-            <PhaseBlockedButton reason={PHASE_4B_SIGNATURE_BLOCKER} dataQaAction="request-signature">Request signature</PhaseBlockedButton>
-            <PhaseBlockedButton reason={PHASE_4B_SIGNATURE_BLOCKER} dataQaAction="approve-task">Approve task</PhaseBlockedButton>
+            <PhaseBlockedButton reason="BLOCKED_PENDING_PHASE_4C — Durable evidence upload not wired in this phase." dataQaAction="upload-evidence">Upload evidence</PhaseBlockedButton>
+            <PhaseBlockedButton reason="BLOCKED_PENDING_PHASE_4C — Durable signature collection not wired in this phase." dataQaAction="request-signature">Request signature</PhaseBlockedButton>
+            <PhaseBlockedButton reason="BLOCKED_PENDING_PHASE_4C — Durable approval mutation not wired in this phase." dataQaAction="approve-task">Approve task</PhaseBlockedButton>
             <PhaseBlockedButton reason={PHASE_4C_DURABLE_BLOCKER} dataQaAction="complete-task">Complete task</PhaseBlockedButton>
           </div>
+        </div>
+
+        <div data-qa="ces-local-preview-history" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>LOCAL PREVIEW SESSION HISTORY — NOT DURABLE AUDIT RECORD</div>
+          {(preview.history ?? []).length ? (
+            (preview.history ?? []).slice(-6).map((entry, index) => (
+              <div key={`${entry}-${index}`} style={{ fontSize: '10.5px', color: V3.textSecondary, lineHeight: 1.4 }}>{entry}</div>
+            ))
+          ) : (
+            <div style={{ fontSize: '10.5px', color: V3.textTertiary }}>No local preview actions recorded for this task.</div>
+          )}
         </div>
 
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
