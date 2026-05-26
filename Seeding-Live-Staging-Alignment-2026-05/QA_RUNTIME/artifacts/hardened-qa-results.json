@@ -1,0 +1,80 @@
+{
+  "passed": [
+    "Card 0: Task Detail ID matches clicked card (ceu-qapi-2026-10-014)",
+    "Card 0: Task Detail visible",
+    "Card 0: All blocked actions remain disabled",
+    "Card 1: Task Detail ID matches clicked card (ceu-inf-2026-10-005)",
+    "Card 1: Task Detail visible",
+    "Card 1: All blocked actions remain disabled",
+    "Card 2: Task Detail ID matches clicked card (ceu-bgchk-2026-10-014)",
+    "Card 2: Task Detail visible",
+    "Card 2: All blocked actions remain disabled",
+    "Card 3: Task Detail ID matches clicked card (ceu-gb-2026-10-001)",
+    "Card 3: Task Detail visible",
+    "Card 3: All blocked actions remain disabled",
+    "Card 4: Task Detail ID matches clicked card (ceu-inc-2026-10-008)",
+    "Card 4: Task Detail visible",
+    "Card 4: All blocked actions remain disabled",
+    "Clicked 5+ cards with data-qa"
+  ],
+  "failed": [],
+  "cardsClicked": [
+    {
+      "index": 0,
+      "clickedId": "ceu-qapi-2026-10-014",
+      "clickedTitle": "Compile QAPI indicator data — Q2 aggregate report",
+      "selectedIdInDetail": "ceu-qapi-2026-10-014",
+      "eventId": "evt-qapi-q2-2026",
+      "detailTitle": "Compile QAPI indicator data — Q2 aggregate report",
+      "taskDetailVisible": true,
+      "allBlocked": true
+    },
+    {
+      "index": 1,
+      "clickedId": "ceu-inf-2026-10-005",
+      "clickedTitle": "Compile monthly infection surveillance data — May 2026",
+      "selectedIdInDetail": "ceu-inf-2026-10-005",
+      "eventId": "evt-infection-surveillance",
+      "detailTitle": "Compile monthly infection surveillance data — May 2026",
+      "taskDetailVisible": true,
+      "allBlocked": true
+    },
+    {
+      "index": 2,
+      "clickedId": "ceu-bgchk-2026-10-014",
+      "clickedTitle": "Resolve outstanding background check results — 2 pending hires",
+      "selectedIdInDetail": "ceu-bgchk-2026-10-014",
+      "eventId": "evt-hr-files-2026-q1",
+      "detailTitle": "Resolve outstanding background check results — 2 pending hir",
+      "taskDetailVisible": true,
+      "allBlocked": true
+    },
+    {
+      "index": 3,
+      "clickedId": "ceu-gb-2026-10-001",
+      "clickedTitle": "Prepare & distribute Q2 Governing Body pre-read packet",
+      "selectedIdInDetail": "ceu-gb-2026-10-001",
+      "eventId": "evt-gb-q2-2026",
+      "detailTitle": "Prepare & distribute Q2 Governing Body pre-read packet",
+      "taskDetailVisible": true,
+      "allBlocked": true
+    },
+    {
+      "index": 4,
+      "clickedId": "ceu-inc-2026-10-008",
+      "clickedTitle": "Approve revised incident reporting & grievance procedure",
+      "selectedIdInDetail": "ceu-inc-2026-10-008",
+      "eventId": "evt-policy-annual-review",
+      "detailTitle": "Approve revised incident reporting & grievance procedure",
+      "taskDetailVisible": true,
+      "allBlocked": true
+    }
+  ],
+  "screenshots": [
+    "hardened-card-0.png",
+    "hardened-card-1.png",
+    "hardened-card-2.png",
+    "hardened-card-3.png",
+    "hardened-card-4.png"
+  ]
+}
