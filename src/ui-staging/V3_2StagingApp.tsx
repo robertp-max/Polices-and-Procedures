@@ -3,7 +3,6 @@
 // V3_SYNTHETIC_FALLBACK: this route is a labeled preview shell until
 // Phase 3 content parity and Phase 4 workflow interiors are wired.
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle, ShieldCheck,
   FileText, ShieldX,
@@ -52,7 +51,69 @@ interface NavItem {
   submenu?: Array<Omit<NavItem, 'icon' | 'submenu'>>
 }
 
+interface LiveRouteHandoff {
+  title: string;
+  route: string;
+  seedingLevel: 'registry seeded' | 'content seeded' | 'renderer seeded' | 'workflow wired' | 'V3_SYNTHETIC_FALLBACK';
+  missing: string;
+}
 
+const LIVE_ROUTE_HANDOFFS: Record<string, LiveRouteHandoff> = {
+  clinicians: {
+    title: 'Clinician Profiles',
+    route: '/clinicians',
+    seedingLevel: 'registry seeded',
+    missing: 'Profile list/detail rendering is not mounted as a V3 staging surface yet.',
+  },
+  patients: {
+    title: 'Patient Profiles',
+    route: '/patients',
+    seedingLevel: 'registry seeded',
+    missing: 'Patient profile list/detail rendering is not mounted as a V3 staging surface yet.',
+  },
+  calendar: {
+    title: 'Scheduling & Visits',
+    route: '/calendar',
+    seedingLevel: 'registry seeded',
+    missing: 'Calendar event intelligence and visit/task workflow interiors are not wired in V3 staging.',
+  },
+  ces: {
+    title: 'Compliance Execution (CES)',
+    route: '/calendar?view=sprint',
+    seedingLevel: 'V3_SYNTHETIC_FALLBACK',
+    missing: 'The in-shell CES board is preview-only. Task interiors, evidence mutation, signatures, approvals, and audit history remain outside this patch.',
+  },
+  taxonomy: {
+    title: 'Taxonomy',
+    route: '/taxonomy',
+    seedingLevel: 'registry seeded',
+    missing: 'Taxonomy hierarchy rendering is not mounted as a V3 staging surface yet.',
+  },
+  evidence: {
+    title: 'Evidence Center',
+    route: '/evidence',
+    seedingLevel: 'V3_SYNTHETIC_FALLBACK',
+    missing: 'Evidence/artifact viewer, chain-of-custody mutations, and approvals are not wired in V3 staging.',
+  },
+  hubstaff: {
+    title: 'Hubstaff',
+    route: '/hubstaff',
+    seedingLevel: 'registry seeded',
+    missing: 'Hubstaff operational surfaces are not mounted as V3 staging renderers yet.',
+  },
+  'help-center': {
+    title: 'Help Center',
+    route: '/help',
+    seedingLevel: 'registry seeded',
+    missing: 'Help-center content rendering is not mounted as a V3 staging surface yet.',
+  },
+  admin: {
+    title: 'Admin',
+    route: '/admin',
+    seedingLevel: 'registry seeded',
+    missing: 'Admin settings and permission workflows are not mounted as V3 staging surfaces yet.',
+  },
+};
 
 // ============================================================
 // V3 PREMIUM GLASS TOKENS & STYLES
@@ -174,8 +235,6 @@ const INTRO_CHATS = [
 // SHELL FRAME & NAVIGATION
 // ============================================================
 const ShellContentFrame = ({ children, className, isMobile, activeSection, setActiveSection, isNavOpen, setIsNavOpen, isPlannerView, setIsPlannerView }: any) => {
-  const navigate = useNavigate();
-
   const navSections: Array<{ title: string; items: NavItem[] }> = [
     {
       title: 'PRIMARY OPERATIONS',
@@ -194,7 +253,7 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
       title: 'COMPLIANCE EXECUTION',
       items: [
         { id: 'taxonomy', icon: Network, label: 'Taxonomy', status: 'LIVE_ROUTE_HANDOFF', route: '/taxonomy' },
-        { id: 'onboarding', icon: UserPlus, label: 'Onboarding', status: 'LIVE_ROUTE_HANDOFF' },
+        { id: 'onboarding', icon: UserPlus, label: 'Onboarding', status: 'V3_RENDERER_ADAPTER' },
         { id: 'policy', icon: FileText, label: 'Policy Lifecycle', status: 'V3_RENDERER_ADAPTER' },
         { id: 'forms', icon: FileSearch, label: 'Forms Library', status: 'V3_RENDERER_ADAPTER' },
         { id: 'evidence', icon: FolderOpen, label: 'Evidence Center', status: 'LIVE_ROUTE_HANDOFF', route: '/evidence' },
@@ -214,11 +273,6 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
   const toggleSubmenu = (menuId: string) => setExpandedMenus(prev => ({ ...prev, [menuId]: !prev[menuId] }));
 
   const handleNav = (item: NavItem | Omit<NavItem, 'icon' | 'submenu'>) => {
-    if (item.route) {
-      navigate(item.route);
-      if (isMobile) setIsNavOpen(false);
-      return;
-    }
     setActiveSection(item.id);
     if (isMobile) {
       setIsNavOpen(false);
@@ -386,6 +440,36 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
 // ============================================================
 const ActionButton = ({ children, onClick, variant }: any) => (
   <button onClick={onClick} className="btn-smooth-hover" style={{ padding: '8px 16px', background: variant === 'danger' ? 'rgba(0, 209, 193, 0.1)' : 'transparent', color: variant === 'danger' ? V3.tealLight : V3.textSecondary, border: `1px solid rgba(0, 209, 193, 0.3)`, borderRadius: '8px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', backdropFilter: 'blur(8px)', transition: '0.2s' }}>{children}</button>
+);
+
+const OpenLiveRouteButton = ({ route }: { route: string }) => (
+  <ActionButton onClick={() => window.open(route, '_blank', 'noopener,noreferrer')}>
+    Open live route
+  </ActionButton>
+);
+
+const HandoffStatusPanel = ({ handoff }: { handoff: LiveRouteHandoff }) => (
+  <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+        <ShieldCheck size={16} color={V3.orangeLight} />
+        <span style={{ fontSize: '10px', fontWeight: 700, color: V3.orangeLight, letterSpacing: '1px' }}>{handoff.seedingLevel}</span>
+        <span style={{ fontSize: '10px', color: V3.textTertiary }}>LIVE_ROUTE_HANDOFF</span>
+      </div>
+      <h1 style={{ fontSize: '22px', fontWeight: 600, margin: 0 }}>{handoff.title}</h1>
+      <p style={{ fontSize: '12.5px', color: V3.textSecondary, margin: '6px 0 0' }}>
+        Primary V3 navigation is contained inside staging. This surface is not fully V3-rendered yet.
+      </p>
+    </div>
+    <EmptyState
+      title="V3 staging surface not wired"
+      description={handoff.missing}
+      icon={<FileSearch size={28} color={V3.tealLight} />}
+    />
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <OpenLiveRouteButton route={handoff.route} />
+    </div>
+  </div>
 );
 
 const PreviewLabel = ({ detail }: { detail: string }) => (
@@ -574,7 +658,6 @@ const PlannerWorkspace = ({ tasks, isMobile }: any) => {
 
 // --- KANBAN BOARD (SPRINT execution) ---
 const SprintBoardWorkspace = () => {
-  const navigate = useNavigate();
   const [activeTask] = useState<string>('Distribute agenda & pre-read packet');
 
   const columns = [
@@ -604,8 +687,8 @@ const SprintBoardWorkspace = () => {
           <h1 style={{ fontSize: '22px', fontWeight: 600, color: V3.textPrimary, margin: 0, letterSpacing: '-0.5px' }}>Sprint execution • Mon-Fri 2-week window</h1>
           <PreviewLabel detail="CES board rows are preview-only; use live route handoff for canonical execution" />
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => navigate('/calendar')} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: V3.textSecondary, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}><Calendar size={12}/> Calendar</button>
-            <button onClick={() => navigate('/calendar?view=sprint')} style={{ padding: '6px 12px', background: 'rgba(0,209,193,0.1)', border: '1px solid rgba(0,209,193,0.3)', borderRadius: '6px', color: V3.textPrimary, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}><LayoutDashboard size={12}/> Sprint Board</button>
+            <OpenLiveRouteButton route="/calendar" />
+            <OpenLiveRouteButton route="/calendar?view=sprint" />
           </div>
         </div>
       </div>
@@ -706,6 +789,7 @@ const EvidenceCenterWorkspace = () => {
             ))}
           </div>
         </div>
+        <OpenLiveRouteButton route="/evidence" />
       </div>
 
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
@@ -856,7 +940,6 @@ const BradCopilotWorkspace = ({ chatInput, setChatInput, chatLog, setChatLog }: 
 
 // --- POLICY CONTENT PARITY ---
 const PolicyContentWorkspace = () => {
-  const navigate = useNavigate();
   const policies = useMemo(
     () => frameworkPolicies.filter(policy => Boolean(getPolicyContent(policy.id))).slice(0, 12),
     [],
@@ -918,8 +1001,8 @@ const PolicyContentWorkspace = () => {
                   ]} />
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <ActionButton onClick={() => navigate(`/library/${selectedPolicy.id}`)}>Open Live Detail</ActionButton>
-                  <ActionButton onClick={() => navigate(`/policies/${selectedPolicy.id}`)}>Open Policy Route</ActionButton>
+                  <OpenLiveRouteButton route={`/library/${selectedPolicy.id}`} />
+                  <OpenLiveRouteButton route={`/policies/${selectedPolicy.id}`} />
                 </div>
               </div>
               <div style={{ background: '#FFFFFF', color: '#1F1C1B', borderRadius: '10px', overflow: 'hidden', maxHeight: '70vh' }}>
@@ -937,7 +1020,6 @@ const PolicyContentWorkspace = () => {
 
 // --- FORM CONTENT PARITY ---
 const FormsContentWorkspace = () => {
-  const navigate = useNavigate();
   const forms = useMemo(() => FORMS_DATASET.slice(0, 14), []);
   const [selectedFormId, setSelectedFormId] = useState(forms[0]?.id ?? 'EN-FM-001');
   const selectedForm = forms.find(form => form.id === selectedFormId) ?? forms[0];
@@ -996,7 +1078,7 @@ const FormsContentWorkspace = () => {
                   ]} />
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <ActionButton onClick={() => navigate(`/forms/${content.id}`)}>Open Live Form</ActionButton>
+                  <OpenLiveRouteButton route={`/forms/${content.id}`} />
                   <ActionButton onClick={() => printForm(content.id)}>Print Form</ActionButton>
                 </div>
               </div>
@@ -1021,7 +1103,6 @@ const FormsContentWorkspace = () => {
 
 // --- TRAINING / JOURNEY CONTENT PARITY ---
 const TrainingContentWorkspace = () => {
-  const navigate = useNavigate();
   const [phase, setPhase] = useState('GAO');
   const modules = useMemo(() => ALL_MODULES.filter(module => module.group === phase).slice(0, 16), [phase]);
   const phaseCounts = useMemo(() => {
@@ -1038,12 +1119,12 @@ const TrainingContentWorkspace = () => {
       <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
           <UserPlus size={16} color={V3.orangeLight} />
-          <span style={{ fontSize: '10px', fontWeight: 700, color: V3.orangeLight, letterSpacing: '1px' }}>LIVE_ROUTE_HANDOFF</span>
+          <span style={{ fontSize: '10px', fontWeight: 700, color: V3.orangeLight, letterSpacing: '1px' }}>content seeded</span>
           <span style={{ fontSize: '10px', color: V3.textTertiary }}>ALL_MODULES / JourneyHomePage / ModulePlayerPage</span>
         </div>
         <h1 style={{ fontSize: '24px', fontWeight: 600, color: V3.textPrimary, margin: 0 }}>Training & Journey Content</h1>
         <p style={{ fontSize: '12.5px', color: V3.textSecondary, margin: '6px 0 0' }}>
-          V3 reads the canonical module catalog and routes module, supervisor, admin, guide, and onboarding-v2 paths to live surfaces.
+          V3 reads the canonical module catalog in-shell. Live journey surfaces remain secondary explicit handoffs.
         </p>
       </div>
 
@@ -1066,11 +1147,11 @@ const TrainingContentWorkspace = () => {
             {group} {phaseCounts[group] ?? 0}
           </button>
         ))}
-        <ActionButton onClick={() => navigate('/journey')}>Open Journey Home</ActionButton>
-        <ActionButton onClick={() => navigate('/journey/supervisor')}>Supervisor</ActionButton>
-        <ActionButton onClick={() => navigate('/journey/admin')}>Admin</ActionButton>
-        <ActionButton onClick={() => navigate('/journey/guide')}>Guide</ActionButton>
-        <ActionButton onClick={() => navigate('/onboarding-v2')}>Onboarding V2</ActionButton>
+        <OpenLiveRouteButton route="/journey" />
+        <OpenLiveRouteButton route="/journey/supervisor" />
+        <OpenLiveRouteButton route="/journey/admin" />
+        <OpenLiveRouteButton route="/journey/guide" />
+        <OpenLiveRouteButton route="/onboarding-v2" />
       </div>
 
       <div className="no-scrollbar" style={{ overflowY: 'auto', flex: 1 }}>
@@ -1087,10 +1168,10 @@ const TrainingContentWorkspace = () => {
               ]} />
             </div>
             <button
-              onClick={() => navigate(`/journey/module/${module.id}`)}
+              onClick={() => window.open(`/journey/module/${module.id}`, '_blank', 'noopener,noreferrer')}
               style={{ padding: '7px 12px', background: 'rgba(0,209,193,0.08)', border: '1px solid rgba(0,209,193,0.24)', color: V3.tealLight, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
             >
-              Open Module
+              Open live route
             </button>
           </div>
         ))}
@@ -1151,6 +1232,9 @@ export default function V3_2StagingApp() {
       case 'onboarding':
         return <TrainingContentWorkspace />;
       default:
+        if (LIVE_ROUTE_HANDOFFS[activeSection]) {
+          return <HandoffStatusPanel handoff={LIVE_ROUTE_HANDOFFS[activeSection]} />;
+        }
         return (
           <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '12px' }}>
