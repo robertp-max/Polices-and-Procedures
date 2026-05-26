@@ -1,0 +1,16 @@
+{
+  "passed": [
+    "Staging shell loaded",
+    "Primary nav \"Dashboard\" stayed in staging",
+    "Primary nav \"CES\" stayed in staging",
+    "Primary nav \"Policy\" stayed in staging",
+    "Primary nav \"Forms\" stayed in staging",
+    "Primary nav \"Onboarding\" stayed in staging",
+    "Mark viewed action executed",
+    "Mark started action executed",
+    "No level 5 claims visible"
+  ],
+  "failed": [],
+  "warnings": [],
+  "screenshots": []
+}
