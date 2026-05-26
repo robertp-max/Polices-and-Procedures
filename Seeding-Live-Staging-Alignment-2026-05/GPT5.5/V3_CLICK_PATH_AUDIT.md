@@ -8,7 +8,22 @@ Phase 1 audit plus Phase 2 route stabilization tracking.
 - Phase 2 after stabilization: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, and `npm run build` pass.
 - Phase 3 after content parity: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, and `npm run build` pass. A final `npx tsc -b --pretty false` also passed after the post-build search-label wording tweak.
 - Phase 4B after CES evidence/signature local-preview wiring: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally. Vercel commit statuses for 3376eeb were green. GitHub Actions CI and Deploy Frontend → S3 + CloudFront runs on main were failing before Phase 4B implementation.
-- Policy/forms/training click paths below reflect Phase 3 content parity. CES event/task interiors now have Phase 4B in-shell local preview wiring for evidence/artifacts/signature/approval interactions; durable execution, certification, backend persistence, and audit-history mutation remain Phase 4C blockers.
+- Phase 4C-A after durable app-store adapter wiring: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally.
+- Policy/forms/training click paths below reflect Phase 3 content parity. CES event/task interiors now have Phase 4C-A durable app-store adapter wiring for safe task execution state using a local persisted store; backend persistence, legal signature, approval decision, certification, and production audit remain Phase 4C-B blockers.
+
+## Phase 4C-A CES Durable Adapter Click-Path Status
+
+| Click path | Phase 4C-A disposition | Status |
+|---|---|---|
+| Durable adapter status | Task Detail shows store name, persistence mode, adapter event/task IDs, app-store evidence/approval counts, and backend blocker language. | `durable app-store adapter` / `local persisted store` |
+| Durable task actions | Persist viewed, started, note, blocker, and clear blocker write to `useRegulatoryExecutionStore` / `reg-execution-v2`. | Local persisted app store |
+| Evidence adapter action | Persist evidence placeholder writes metadata through the existing app-store evidence path only. Real upload/download/validation/promote remains blocked. | Local persisted store plus Phase 4C-B backend blocker |
+| Signature/approval adapter action | Request approval writes an app-store approval request. Legal signature and approval/rejection decisions remain blocked. | Local persisted request only |
+| Completion gate | Reports deterministic blockers and exposes `data-qa-completion-ready`; completion remains disabled unless durable/verified adapter conditions pass. | Deterministic, not production completion |
+| Audit/history status | Adapter actions append app-store audit/history rows; no immutable audit, WORM storage, hash-chain certification, or production certification is claimed. | App-store history only |
+| Phase 4B panels | Evidence and signature/approval local-preview panels remain visible and unchanged for preview-only actions. | Regression intact |
+
+Phase 4C-A does not implement backend persistence, AWS persistence, real evidence upload/download/validation/promote, legal signature capture, approval/rejection decision persistence, certification, or level 5 production-shaped completion.
 
 ## Phase 4B CES Click-Path Status
 

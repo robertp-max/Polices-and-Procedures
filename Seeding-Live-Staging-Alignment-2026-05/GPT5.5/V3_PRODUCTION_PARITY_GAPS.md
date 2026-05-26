@@ -8,7 +8,7 @@ V3 is not production-shaped complete. Phase 2 fixed the broken `/ui-staging` ent
 
 No audited V3 surface is level 5.
 
-Phase 4B adds CES evidence/artifact and signature/approval local-preview interactions, but this remains level 4 preview wiring only. Durable task execution, backend persistence, real evidence upload/validation, durable signature collection, durable approval mutation, certification, and audit-history mutation remain Phase 4C blockers.
+Phase 4C-A adds CES durable app-store adapter wiring over the existing local persisted store. This is level 4 durable adapter wired only. Backend persistence, AWS persistence, real evidence upload/validation/promote, legal signature collection, approval decision mutation, certification, and production audit remain Phase 4C-B blockers.
 
 ## Phase 2 Stabilization Result
 
@@ -49,6 +49,17 @@ Phase 4B adds CES evidence/artifact and signature/approval local-preview interac
 - Required validation passes locally after Phase 4B. Vercel commit statuses for 3376eeb were green. GitHub Actions CI and Deploy Frontend → S3 + CloudFront runs on main were failing before Phase 4B implementation.
 - No V3 surface is level 5 production-shaped complete.
 
+## Phase 4C-A CES Durable Execution Adapter Result
+
+- V3 CES Task Detail now uses a staging-scoped durable app-store adapter backed by `useRegulatoryExecutionStore`, which persists through localStorage key `reg-execution-v2`.
+- Persistence mode is labeled `local-store`; UI copy states `durable app-store adapter`, `local persisted store`, `backend persistence not implemented`, `AWS/backend persistence remains Phase 4C-B`, and `not level 5`.
+- Safe task execution writes are wired for viewed audit row, started task state, note, blocker, and clear blocker.
+- Evidence metadata placeholder and approval request can be written to the local persisted app store; backend evidence upload/validation/promote and legal signature/approval decision persistence remain blocked.
+- Completion gate checks required forms/evidence, signatures, approval, blockers, and app-store audit/history references before enabling durable app-state completion. It does not claim production completion.
+- Audit/history behavior is app-store history only. No immutable audit, WORM storage, hash-chain certification, or production certification is claimed.
+- Required validation passes locally after Phase 4C-A: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA.
+- No V3 surface is level 5 production-shaped complete.
+
 ## Production Parity Gate
 
 A V3 surface is production-shaped complete only when all of these are true:
@@ -73,11 +84,11 @@ The current V3 implementation fails the gate.
 | V3 shell routing | 1 | Registry/list seeded shell only, now honest | Content/workflow parity remains later phase work | `src/ui-staging/V3_2StagingApp.tsx` |
 | Policies | 3 | Renderer seeded through canonical policy content path | Lifecycle workflow/action parity remains Phase 4 | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/data/policyContentMap.ts`, `src/policy/components/PolicyLibraryDocumentView.tsx` |
 | Forms | 3 | Renderer seeded through canonical form content path | Signature/approval workflow state remains Phase 4 | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/components/FormViewer.tsx`, `src/policy/data/formsLibraryContent.ts` |
-| CES board | 4 (local preview only; not durable production execution) | Workflow wired local preview with Phase 4B evidence/signature/approval interactions | Durable execution, backend persistence, certification, and audit-history mutation remain blocked | `src/ui-staging/V3_2StagingApp.tsx` |
+| CES board | 4 (durable adapter wired; not level 5) | Workflow wired with Phase 4C-A durable app-store adapter and Phase 4B local-preview evidence/signature/approval panels | Backend/AWS persistence, legal signature, approval decision, certification, and production audit remain blocked | `src/ui-staging/V3_2StagingApp.tsx`, `src/ui-staging/ces/cesDurableExecutionAdapter.ts` |
 | CES seed adapter | 3 | Renderer seeded adapter only | Not mounted into V3.2 workflows; bypasses live stores | `src/policy/ces/data/V3_CES_SnapshotBuilder.ts`, `src/policy/compliance-execution/seededMode.tsx` |
 | Calendar/event workspace | 0 in V3.2 | Placeholder/missing | V3 does not reuse `MasterCalendarPage` or `WorkflowExecutionPanel` | `src/policy/pages/MasterCalendarPage.tsx` |
-| Tasks / PM | 4 (local preview only; not durable production execution) in V3 CES only | CES task cards open an in-shell local-preview detail panel with evidence/signature/approval preview state | Canonical PM drawer and durable execution remain outside V3 Phase 4B | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/components/pm/TaskDetailRightPanel.tsx` |
-| Evidence | 4 inside CES task detail only; 1 in Evidence Center | CES task detail has local-preview evidence interactions; Evidence Center remains display-only hierarchy | No durable artifact viewer/upload/download/validate/promote/audit path | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/pages/EvidenceCenterPage.tsx` |
+| Tasks / PM | 4 (durable adapter wired in V3 CES only; not level 5) | CES task cards open in-shell detail with local persisted app-store task writes for safe actions | Canonical PM drawer, backend task execution, certification, and production audit remain outside V3 Phase 4C-A | `src/ui-staging/V3_2StagingApp.tsx`, `src/ui-staging/ces/cesDurableExecutionAdapter.ts`, `src/policy/components/pm/TaskDetailRightPanel.tsx` |
+| Evidence | 4 inside CES task detail only; 1 in Evidence Center | CES task detail can persist an app-store evidence metadata placeholder; Evidence Center remains display-only hierarchy | Backend artifact viewer/upload/download/validate/promote/audit path remains Phase 4C-B | `src/ui-staging/V3_2StagingApp.tsx`, `src/ui-staging/ces/cesDurableExecutionAdapter.ts`, `src/policy/pages/EvidenceCenterPage.tsx` |
 | Training/Journey | 2 | Content seeded from `ALL_MODULES` with live route handoffs | Gates/evidence/signatures/escalations remain Phase 4 | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/journey/data/modules.ts`, `src/policy/journey/pages/JourneyHomePage.tsx` |
 | Onboarding V2 | 1 | Represented as live route handoff | Activation/batch/audit/governance workflows are not embedded in V3 | `src/policy/onboarding-v2/pages/*` |
 | Reports | 0 | Not represented in V3.2 | `/ces/reports` live route has no V3 path | `src/App.tsx` |
@@ -86,11 +97,11 @@ The current V3 implementation fails the gate.
 
 ## Top 10 Production Blockers
 
-1. Durable planner/task execution remains Phase 4C.
-2. Durable evidence upload/validation and artifact persistence remain Phase 4C.
-3. Durable signature collection remains Phase 4C.
-4. Durable approval mutation remains Phase 4C.
-5. Audit-history mutation, hash chain, and production certification remain Phase 4C.
+1. Backend/AWS persistence remains Phase 4C-B.
+2. Backend evidence upload/validation/promote and artifact viewer parity remain Phase 4C-B.
+3. Legal durable signature collection remains Phase 4C-B.
+4. Durable approval decision mutation remains Phase 4C-B.
+5. Production audit immutability/hash-chain certification and production certification remain Phase 4C-B.
 6. Policy lifecycle workflow actions remain Phase 4 even though policy content renderer parity is now level 3.
 7. Form signature/approval workflow state remains Phase 4 even though form content renderer parity is now level 3.
 8. Training gates, evidence, signatures, escalations, and deterministic progress remain Phase 4 even though module content is now level 2.

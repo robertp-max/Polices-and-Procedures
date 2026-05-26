@@ -30,14 +30,28 @@ Phase 4B keeps the Phase 4A CES Event Workspace / Task Detail shell and adds loc
 - Durable task completion remains disabled with `BLOCKED_PENDING_PHASE_4C — Durable planner/task execution not wired in this phase.`
 - No V3 surface is level 5 production-shaped complete.
 
+## Phase 4C-A CES Durable Execution Adapter Addendum
+
+Phase 4C-A adds the smallest defensible durable execution bridge available in the repo: a V3 CES durable app-store adapter over the existing `useRegulatoryExecutionStore` local persisted store (`reg-execution-v2`).
+
+- CES Task Detail now shows `ces-durable-adapter-status` with `data-qa-persistence-mode="local-store"` and honest labels: `durable app-store adapter`, `local persisted store`, `backend persistence not implemented`, `AWS/backend persistence remains Phase 4C-B`, and `not level 5`.
+- Safe durable task actions persist to the existing app store: viewed audit row, started task state, note, blocker, clear blocker, evidence metadata placeholder, and approval request.
+- Phase 4B evidence/artifact and signature/approval local-preview panels remain intact and continue to use local React preview state for their preview-only actions.
+- Backend evidence upload/download/validation/promote remains blocked with `BLOCKED_PENDING_PHASE_4C_B — Backend evidence upload/validation/promote is not wired.`
+- Durable legal signature and approval decision persistence remain blocked with `BLOCKED_PENDING_PHASE_4C_B — Durable signature/approval persistence is not wired.`
+- Completion gate is deterministic and remains blocked unless required forms/evidence, signatures, approval, blockers, and app-store audit/history references are satisfied in durable or verified adapter state. No production completion is claimed.
+- Audit/history is app-store history only when adapter actions are written; no immutable audit, WORM storage, hash-chain certification, or production certification is claimed.
+- CES event/task interiors may be counted as level 4 durable adapter wired. No V3 surface is level 5 production-shaped complete.
+
 ## Validation Result
 
 - Phase 1 before Phase 2: `npx tsc -b --pretty false` and `npm run build` failed because `src/ui-staging/UIStagingPage.tsx` imported a default export from empty `src/ui-staging/V3StagingApp.tsx`. `npx tsc --noEmit --skipLibCheck` passed.
 - Phase 2 after stabilization: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, and `npm run build` all pass.
 - Phase 3 after content parity: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, and `npm run build` pass. A final `npx tsc -b --pretty false` also passed after the post-build search-label wording tweak.
 - Phase 4B after CES evidence/signature local-preview wiring: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally. Vercel commit statuses for 3376eeb were green. GitHub Actions CI and Deploy Frontend → S3 + CloudFront runs on main were failing before Phase 4B implementation.
+- Phase 4C-A after durable app-store adapter wiring: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally.
 - Authoritative TypeScript command for build readiness is `npx tsc -b --pretty false` because `npm run build` invokes `tsc -b` before Vite.
-- No V3 surface is production-shaped complete; Phase 3 upgrades content renderer parity only.
+- No V3 surface is production-shaped complete; Phase 4C-A upgrades CES to level 4 durable adapter wired only.
 
 ## Phase 3 Full Content Renderer Parity Addendum
 
@@ -80,7 +94,7 @@ Phase 2 does not upgrade content seeding, live renderer parity, workflow wiring,
 | 1 | 5 | V3 preview/dashboard/planner/evidence displays and stabilized staging entry remain registry/list seeded or preview-only. |
 | 2 | 1 | Training/Journey content is seeded from `ALL_MODULES` with live route handoffs. |
 | 3 | 3 | Policy and form V3 surfaces now reuse/adapt canonical render paths; CES snapshot adapter remains renderer seeded concept only. |
-| 4 | 1 | CES event/task interiors have Phase 4B local workflow preview wiring for evidence, signatures, approvals, readiness, and local session history; durable completion, certification, backend persistence, and audit mutation remain blocked. |
+| 4 | 1 | CES event/task interiors have Phase 4C-A durable app-store adapter wiring over the local persisted store plus Phase 4B local workflow preview panels; durable backend persistence, legal signature, approval decision, certification, and production audit remain blocked. |
 | 5 | 0 | Build/typecheck pass after Phase 2, but no V3 surface satisfies final completion validation. |
 
 ## Truth Matrix
