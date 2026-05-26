@@ -198,8 +198,10 @@ async function run() {
       results.failed.push('Durable completion was not blocked');
     }
 
-    const forbiddenLanguage = /level\s*5 production|production-shaped complete|production complete|durable completion enabled/i;
-    if (!forbiddenLanguage.test(pageText)) {
+    const level5Allowlist = /not level\s*5|no v3 surface is level\s*5|no level\s*5 claim/gi;
+    const overclaimText = pageText.replace(level5Allowlist, '');
+    const forbiddenLanguage = /level\s*5\s+(?:complete|production|production-shaped complete)|production-shaped complete|production complete|durable completion enabled|certified complete/i;
+    if (!forbiddenLanguage.test(overclaimText)) {
       results.passed.push('No level 5 / production-shaped complete language appears');
     } else {
       results.failed.push('Forbidden level 5 / production completion language appears');
