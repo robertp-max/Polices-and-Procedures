@@ -1,0 +1,59 @@
+{
+  "target": "http://localhost:5173/ui-staging",
+  "passed": [
+    "URL remained under /ui-staging after Evidence Center navigation",
+    "Evidence Center workspace visible with source mode seed",
+    "Evidence rows available: 18",
+    "Row 0: detail selected evidence ID matched",
+    "Row 0: artifact mode is valid (seeded-preview)",
+    "Row 0: primary click stayed in V3",
+    "Row 1: detail selected evidence ID matched",
+    "Row 1: artifact mode is valid (seeded-preview)",
+    "Row 1: primary click stayed in V3",
+    "Row 2: detail selected evidence ID matched",
+    "Row 2: artifact mode is valid (seeded-preview)",
+    "Row 2: primary click stayed in V3",
+    "Blocked action visible: upload-evidence",
+    "Blocked action visible: download-artifact",
+    "Blocked action visible: validate-evidence",
+    "Blocked action visible: promote-evidence",
+    "Blocked action visible: certify-evidence",
+    "Honest integrity status visible: not-verified",
+    "Unsupported evidence/security/level-5 wording absent from visible V3 surface",
+    "Honest backend/integrity/certification language visible",
+    "Live route access exists as explicit secondary button",
+    "Final URL remained under /ui-staging"
+  ],
+  "failed": [],
+  "rowsClicked": [
+    {
+      "index": 0,
+      "evidenceId": "seed-ceu-gb-2026-10-001",
+      "eventId": "evt-gb-q2-2026",
+      "taskId": "ceu-gb-2026-10-001",
+      "selectedId": "seed-ceu-gb-2026-10-001",
+      "artifactMode": "seeded-preview"
+    },
+    {
+      "index": 1,
+      "evidenceId": "seed-ceu-qapi-2026-10-014",
+      "eventId": "evt-qapi-q2-2026",
+      "taskId": "ceu-qapi-2026-10-014",
+      "selectedId": "seed-ceu-qapi-2026-10-014",
+      "artifactMode": "seeded-preview"
+    },
+    {
+      "index": 2,
+      "evidenceId": "seed-ceu-ipc-2026-10-007",
+      "eventId": "evt-ipc-tb-2026",
+      "taskId": "ceu-ipc-2026-10-007",
+      "selectedId": "seed-ceu-ipc-2026-10-007",
+      "artifactMode": "seeded-preview"
+    }
+  ],
+  "screenshots": [
+    "phase5a-evidence-center.png",
+    "phase5a-evidence-detail.png",
+    "phase5a-evidence-blockers.png"
+  ]
+}

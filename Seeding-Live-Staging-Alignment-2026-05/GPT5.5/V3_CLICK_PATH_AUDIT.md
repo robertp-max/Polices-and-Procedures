@@ -9,7 +9,23 @@ Phase 1 audit plus Phase 2 route stabilization tracking.
 - Phase 3 after content parity: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, and `npm run build` pass. A final `npx tsc -b --pretty false` also passed after the post-build search-label wording tweak.
 - Phase 4B after CES evidence/signature local-preview wiring: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally. Vercel commit statuses for 3376eeb were green. GitHub Actions CI and Deploy Frontend → S3 + CloudFront runs on main were failing before Phase 4B implementation.
 - Phase 4C-A after durable app-store adapter wiring: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally.
-- Policy/forms/training click paths below reflect Phase 3 content parity. CES event/task interiors now have Phase 4C-A durable app-store adapter wiring for safe task execution state using a local persisted store; backend persistence, legal signature, approval decision, certification, and production audit remain Phase 4C-B blockers.
+- Phase 5A-A after Evidence Center read/detail parity: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 5A-A Playwright QA, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally.
+- Policy/forms/training click paths below reflect Phase 3 content parity. CES event/task interiors now have Phase 4C-A durable app-store adapter wiring for safe task execution state using a local persisted store; Evidence Center now has Phase 5A-A in-shell read/detail parity over local app-store and seed metadata. Backend persistence, legal signature, approval decision, certification, and production audit remain Phase 4C-B blockers.
+
+## Phase 5A-A Evidence Center Read / Viewer Click-Path Status
+
+| Click path | Phase 5A-A disposition | Status |
+|---|---|---|
+| Evidence Center nav | Opens contained V3 Evidence Center workspace with `data-qa="v3-evidence-center"`. | Contained primary V3 surface |
+| Evidence source summary | Shows evidence count, local-store count, seed metadata count, placeholder count, real artifact reference count, audit/history row count, and source mode. | Read/detail parity |
+| Evidence row click | Primary row click stays inside `/ui-staging` and updates `v3-evidence-detail` with selected evidence ID. | In-shell detail |
+| Evidence detail | Shows event/task/source IDs, workflow ID, related policies/forms, status, artifact mode, audit/index status, blocker state, and persistence mode. | Metadata detail |
+| Artifact handling | Metadata placeholders and seeded preview rows are not presented as real artifacts; missing artifact/viewer state is blocked. | Honest artifact mode |
+| Related policy/form/task access | Uses explicit secondary `Open live route` buttons only. | Secondary handoff |
+| Upload/download/validate/promote/certify | All remain blocked with Phase 5A-B / Phase 4C-B reasons. | Blocked, no fake mutation |
+| Integrity wording | States artifact integrity is not verified in V3 and this is not production evidence certification. | No level 5 claim |
+
+Phase 5A-A does not implement backend evidence persistence, AWS persistence, artifact upload/download, evidence validation/promote, production audit immutability, evidence certification, or level 5 production-shaped completion.
 
 ## Phase 4C-A CES Durable Adapter Click-Path Status
 
@@ -83,8 +99,8 @@ Phase 4A does not implement evidence upload/download/validation, signature colle
 | CES task cards | No longer clickable as task detail; show `BLOCKED_PENDING_PHASE_4` explanation. | Blocked, no dead click |
 | CES Calendar button | Routes to `/calendar`. | `LIVE_ROUTE_HANDOFF` |
 | CES Sprint Board button | Routes to `/calendar?view=sprint`. | `LIVE_ROUTE_HANDOFF` |
-| Evidence nav | Routes to `/evidence`. | `LIVE_ROUTE_HANDOFF` |
-| Evidence preview rows | Non-clickable and labeled `BLOCKED_PENDING_PHASE_4`. | Blocked, no dead click |
+| Evidence nav | Superseded in Phase 5A-A by contained V3 Evidence Center workspace. | Contained primary V3 surface |
+| Evidence preview rows | Superseded in Phase 5A-A by clickable V3 evidence rows that update in-shell detail. | Read/detail parity |
 | Policy Lifecycle nav | Shows explicit `BLOCKED_PENDING_PHASE_3` blocker. | Blocked pending content parity |
 | Clinician/Patient submenu | Routes to `/clinicians` and `/patients`. | `LIVE_ROUTE_HANDOFF` |
 | Scheduling & Visits nav | Routes to `/calendar`. | `LIVE_ROUTE_HANDOFF` |
@@ -109,7 +125,7 @@ Phase 4A does not implement evidence upload/download/validation, signature colle
 |---:|---|---|---|---|---|
 | 1 | CES Sprint Board | Task card click | Open task detail with evidence/forms/signatures/approvals/audit | Resolved in Phase 2 to non-clickable blocker; workflow still Phase 4 | `src/ui-staging/V3_2StagingApp.tsx` |
 | 2 | My Planner | `Execute` on task card | Open canonical task detail or valid disabled/blocker reason | Resolved in Phase 2 to disabled `BLOCKED_PENDING_PHASE_4`; workflow still Phase 4 | `src/ui-staging/V3_2StagingApp.tsx` |
-| 3 | Evidence Center | Evidence row click | Open artifact/evidence viewer with audit metadata | Resolved in Phase 2 to handoff/blocker; workflow still Phase 4 | `src/ui-staging/V3_2StagingApp.tsx` |
+| 3 | Evidence Center | Evidence row click | Open artifact/evidence viewer with audit metadata | Resolved in Phase 5A-A to in-shell metadata detail; artifact file/viewer and backend workflows remain blocked | `src/ui-staging/V3_2StagingApp.tsx` |
 | 4 | CES Seed Preview | Execution unit card | Open event/task/workflow detail | Explicit seed preview with Phase 4 blocker | `src/ui-staging/ces/V3CESSeedPreview.tsx` |
 | 5 | Policy Lifecycle | Nav/detail path | Open policy lifecycle or library/detail renderer | Resolved in Phase 3 with `PolicyLibraryDocumentView` and live route handoffs | `src/ui-staging/V3_2StagingApp.tsx` |
 | 6 | Forms | Nav/detail path | Open form list and full form body renderer | Resolved in Phase 3 with `buildFormContent` + `FormBody` and live route handoffs | `src/ui-staging/V3_2StagingApp.tsx` |
@@ -136,7 +152,7 @@ Phase 4A does not implement evidence upload/download/validation, signature colle
 | Brad AI | RUN | Appends canned response after timeout | Prompt chips | Fill input text | Synthetic fallback; no grounded action. |
 | CES Sprint Board | Task card | Local selected title only | Calendar/Sprint Board buttons | No handler | No event/task/workflow interior. |
 | CES selected task sidebar | Checkpoint rows | Non-clickable | Completion dots | Static | Pre-marked completion risk. |
-| Evidence Center | Filter boxes | Non-clickable | Evidence hierarchy rows | Non-clickable | No artifact viewer path. |
+| Evidence Center | Evidence row/card | Opens in-shell V3 evidence detail and keeps URL under `/ui-staging` | Open live route buttons | Secondary handoffs to live evidence/artifact/policy/form/task routes | Level 3 read/detail parity only; upload/download/validate/promote/certify remain blocked. |
 | Taxonomy | Nav item | Placeholder only | None | None | Level 0. |
 | Onboarding | Nav item | Placeholder only | None | None | Level 0. |
 | Policy Lifecycle | Nav item | Placeholder only | None | None | Level 0. |

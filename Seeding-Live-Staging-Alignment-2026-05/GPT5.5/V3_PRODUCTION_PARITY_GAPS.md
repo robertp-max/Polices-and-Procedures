@@ -10,6 +10,8 @@ No audited V3 surface is level 5.
 
 Phase 4C-A adds CES durable app-store adapter wiring over the existing local persisted store. This is level 4 durable adapter wired only. Backend persistence, AWS persistence, real evidence upload/validation/promote, legal signature collection, approval decision mutation, certification, and production audit remain Phase 4C-B blockers.
 
+Phase 5A-A adds Evidence Center read/view/detail parity over local app-store evidence metadata and CES seed evidence metadata. This is level 3 read/detail parity only. Backend artifact upload/download, evidence validation/promote, backend evidence persistence, production audit immutability, and evidence certification remain blocked.
+
 ## Phase 2 Stabilization Result
 
 - `/ui-staging` no longer fails typecheck/build; it safely renders the current V3.2 staging shell through `src/ui-staging/V3StagingApp.tsx`.
@@ -60,6 +62,17 @@ Phase 4C-A adds CES durable app-store adapter wiring over the existing local per
 - Required validation passes locally after Phase 4C-A: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA.
 - No V3 surface is level 5 production-shaped complete.
 
+## Phase 5A-A Evidence Center Read / Viewer Result
+
+- V3 Evidence Center now opens an in-shell workspace with `data-qa="v3-evidence-center"` and a source mode label for local-store, seed, mixed, or synthetic data.
+- Evidence rows are built from existing `useRegulatoryExecutionStore` evidence metadata first, then CES seed evidence metadata.
+- Primary evidence row clicks stay inside `/ui-staging` and update an in-shell detail panel with selected evidence ID, event/task IDs, workflow ID, related policy/form IDs, status, artifact mode, audit/index status, blocker state, and persistence mode.
+- Metadata placeholders and seeded preview rows are not presented as real artifacts. Missing artifact/viewer state is explicitly blocked.
+- Upload, download, validate, promote, and certify actions remain blocked with Phase 5A-B / Phase 4C-B reasons.
+- Unsupported secure-audit, cryptographic-storage, verified-integrity, production-audit, and evidence-certification wording was softened.
+- Required validation passes locally after Phase 5A-A: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 5A-A Playwright QA, Phase 4C-A Playwright QA, Phase 4B Playwright QA, and Phase 4A hardened selector QA.
+- No V3 surface is level 5 production-shaped complete.
+
 ## Production Parity Gate
 
 A V3 surface is production-shaped complete only when all of these are true:
@@ -88,7 +101,7 @@ The current V3 implementation fails the gate.
 | CES seed adapter | 3 | Renderer seeded adapter only | Not mounted into V3.2 workflows; bypasses live stores | `src/policy/ces/data/V3_CES_SnapshotBuilder.ts`, `src/policy/compliance-execution/seededMode.tsx` |
 | Calendar/event workspace | 0 in V3.2 | Placeholder/missing | V3 does not reuse `MasterCalendarPage` or `WorkflowExecutionPanel` | `src/policy/pages/MasterCalendarPage.tsx` |
 | Tasks / PM | 4 (durable adapter wired in V3 CES only; not level 5) | CES task cards open in-shell detail with local persisted app-store task writes for safe actions | Canonical PM drawer, backend task execution, certification, and production audit remain outside V3 Phase 4C-A | `src/ui-staging/V3_2StagingApp.tsx`, `src/ui-staging/ces/cesDurableExecutionAdapter.ts`, `src/policy/components/pm/TaskDetailRightPanel.tsx` |
-| Evidence | 4 inside CES task detail only; 1 in Evidence Center | CES task detail can persist an app-store evidence metadata placeholder; Evidence Center remains display-only hierarchy | Backend artifact viewer/upload/download/validate/promote/audit path remains Phase 4C-B | `src/ui-staging/V3_2StagingApp.tsx`, `src/ui-staging/ces/cesDurableExecutionAdapter.ts`, `src/policy/pages/EvidenceCenterPage.tsx` |
+| Evidence | 4 inside CES task detail; 3 in Evidence Center | CES task detail can persist an app-store evidence metadata placeholder; Evidence Center has Phase 5A-A read/detail parity over local-store and seed metadata | Backend artifact upload/download, validation/promote, backend persistence, production audit immutability, and certification remain blocked | `src/ui-staging/V3_2StagingApp.tsx`, `src/ui-staging/ces/cesDurableExecutionAdapter.ts`, `src/policy/pages/EvidenceCenterPage.tsx` |
 | Training/Journey | 2 | Content seeded from `ALL_MODULES` with live route handoffs | Gates/evidence/signatures/escalations remain Phase 4 | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/journey/data/modules.ts`, `src/policy/journey/pages/JourneyHomePage.tsx` |
 | Onboarding V2 | 1 | Represented as live route handoff | Activation/batch/audit/governance workflows are not embedded in V3 | `src/policy/onboarding-v2/pages/*` |
 | Reports | 0 | Not represented in V3.2 | `/ces/reports` live route has no V3 path | `src/App.tsx` |
@@ -98,7 +111,7 @@ The current V3 implementation fails the gate.
 ## Top 10 Production Blockers
 
 1. Backend/AWS persistence remains Phase 4C-B.
-2. Backend evidence upload/validation/promote and artifact viewer parity remain Phase 4C-B.
+2. Backend evidence upload/download/validation/promote and full artifact viewer availability remain Phase 5A-B / Phase 4C-B.
 3. Legal durable signature collection remains Phase 4C-B.
 4. Durable approval decision mutation remains Phase 4C-B.
 5. Production audit immutability/hash-chain certification and production certification remain Phase 4C-B.

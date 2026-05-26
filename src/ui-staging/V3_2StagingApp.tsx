@@ -22,6 +22,8 @@ import { V3_ExecutionUnitsSeed, V3_SprintContextSeed } from '@/policy/ces/data/V
 import { V3_AUDIT_LOG, V3_FORMS } from '@/policy/ces/data/V3_AppSeedPrimitives';
 import type { ExecutionUnit } from '@/policy/ces/types';
 import { useCesDurableExecutionAdapter } from '@/ui-staging/ces/cesDurableExecutionAdapter';
+import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
+import { useRegulatoryExecutionStore, type EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
 
 // Safe alias for Search icon to prevent import mismatches
 const SearchIcon = Search;
@@ -681,6 +683,10 @@ const PHASE_4C_DURABLE_BLOCKER = 'BLOCKED_PENDING_PHASE_4C — Durable planner/t
 const PHASE_4C_B_EVIDENCE_BLOCKER = 'BLOCKED_PENDING_PHASE_4C_B — Backend evidence upload/validation/promote is not wired.';
 const PHASE_4C_B_SIGNATURE_BLOCKER = 'BLOCKED_PENDING_PHASE_4C_B — Durable signature/approval persistence is not wired.';
 const LOCAL_PREVIEW_ONLY = 'Local preview only — not durable.';
+const PHASE_5A_B_ARTIFACT_TRANSFER_BLOCKER = 'BLOCKED_PENDING_PHASE_5A_B — Backend artifact upload/download is not wired.';
+const PHASE_5A_B_EVIDENCE_VALIDATION_BLOCKER = 'BLOCKED_PENDING_PHASE_5A_B — Evidence validation/promote workflow is not wired.';
+const PHASE_4C_B_EVIDENCE_PERSISTENCE_BLOCKER = 'BLOCKED_PENDING_PHASE_4C_B — Backend evidence persistence is not wired.';
+const PHASE_4C_B_PRODUCTION_AUDIT_BLOCKER = 'BLOCKED_PENDING_PHASE_4C_B — Production audit immutability is not wired.';
 
 const formatList = (items: readonly string[] | undefined, fallback = 'Not available') => items && items.length ? items.join(', ') : fallback;
 
@@ -773,6 +779,122 @@ const getCompletionRule = (unit: ExecutionUnit) => {
     evidence.auditIndexCreated ? 'audit index exists' : 'audit index not created',
     unit.blockedReason ? `blocker unresolved: ${unit.blockedReason.label}` : 'no seeded blocker',
   ].join(' · ');
+};
+
+type V3EvidenceSourceMode = 'live-store' | 'local-store' | 'seed' | 'synthetic' | 'mixed';
+type V3ArtifactMode = 'real-artifact' | 'metadata-placeholder' | 'seeded-preview' | 'missing';
+
+interface V3EvidenceRecord {
+  id: string;
+  title: string;
+  sourceMode: V3EvidenceSourceMode;
+  artifactMode: V3ArtifactMode;
+  eventId: string;
+  taskId: string;
+  workflowId: string;
+  year: string;
+  quarter: string;
+  month: string;
+  policyIds: string[];
+  formIds: string[];
+  status: string;
+  artifactStatus: string;
+  auditStatus: string;
+  blockerState: string;
+  persistenceMode: string;
+  detail: string;
+  artifactRoute?: string;
+  createdAt?: string;
+}
+
+const safeDateParts = (value?: string) => {
+  const date = value ? new Date(value) : new Date('2026-05-01T00:00:00.000Z');
+  const usable = Number.isNaN(date.getTime()) ? new Date('2026-05-01T00:00:00.000Z') : date;
+  const month = usable.toLocaleString('en-US', { month: 'short' });
+  const quarter = `Q${Math.floor(usable.getMonth() / 3) + 1}`;
+  return { year: String(usable.getFullYear()), quarter, month };
+};
+
+const evidenceArtifactMode = (doc: EvidenceDoc): V3ArtifactMode => {
+  if (doc.localDataUrl || doc.objectPath) return 'real-artifact';
+  if (doc.id || doc.name) return 'metadata-placeholder';
+  return 'missing';
+};
+
+const evidenceRouteFor = (record: Pick<V3EvidenceRecord, 'id' | 'eventId' | 'taskId' | 'formIds' | 'artifactMode'>) => (
+  record.artifactMode === 'real-artifact'
+    ? buildArtifactRoute(record.id, {
+        eventId: record.eventId,
+        taskId: record.taskId || undefined,
+        formId: record.formIds[0],
+        evidenceId: record.id,
+        type: 'evidence',
+      })
+    : undefined
+);
+
+const toEvidenceRecordFromDoc = (doc: EvidenceDoc): V3EvidenceRecord => {
+  const dates = safeDateParts(doc.createdAt || doc.uploadedAt);
+  const policyIds = doc.policyIds?.length ? doc.policyIds : [doc.policyId].filter(Boolean);
+  const formIds = doc.formIds?.length ? doc.formIds : [doc.linkedFormId].filter((value): value is string => Boolean(value));
+  const artifactMode = evidenceArtifactMode(doc);
+  const record: V3EvidenceRecord = {
+    id: doc.id,
+    title: doc.name || doc.id,
+    sourceMode: 'local-store',
+    artifactMode,
+    eventId: doc.eventId,
+    taskId: doc.taskId,
+    workflowId: doc.workflowId,
+    year: dates.year,
+    quarter: dates.quarter,
+    month: dates.month,
+    policyIds,
+    formIds,
+    status: doc.status,
+    artifactStatus: artifactMode === 'real-artifact' ? 'artifact reference available' : 'metadata placeholder only',
+    auditStatus: (doc.auditEventRefs ?? []).length ? `${(doc.auditEventRefs ?? []).length} app-store audit refs` : 'app-store audit refs not available',
+    blockerState: artifactMode === 'real-artifact' ? 'viewer available through secondary live route' : 'artifact file/viewer not available in V3',
+    persistenceMode: 'local persisted app-store evidence',
+    detail: doc.note || 'Evidence metadata read from reg-execution-v2. Backend evidence persistence is not implemented in V3.',
+    createdAt: doc.createdAt,
+  };
+  return { ...record, artifactRoute: evidenceRouteFor(record) };
+};
+
+const toEvidenceRecordFromUnit = (unit: ExecutionUnit): V3EvidenceRecord => {
+  const dates = safeDateParts(unit.dueDate);
+  const policyIds = getRelatedPolicyIds(unit);
+  const formIds = getRelatedFormIds(unit);
+  const missingForms = getMissingFormIds(unit);
+  const complete = unit.evidenceStatus.requiredFormsComplete >= unit.evidenceStatus.requiredFormsTotal && missingForms.length === 0;
+  return {
+    id: `seed-${unit.id}`,
+    title: unit.title,
+    sourceMode: 'seed',
+    artifactMode: 'seeded-preview',
+    eventId: unit.parentEventId,
+    taskId: unit.id,
+    workflowId: unit.workflowId,
+    year: dates.year,
+    quarter: dates.quarter,
+    month: dates.month,
+    policyIds,
+    formIds,
+    status: complete ? 'seed metadata complete' : 'seed metadata incomplete',
+    artifactStatus: 'seeded evidence metadata only',
+    auditStatus: unit.evidenceStatus.auditIndexCreated ? 'seed audit index present' : 'seed audit index missing',
+    blockerState: unit.blockedReason?.label || (missingForms.length ? `Missing forms: ${missingForms.join(', ')}` : 'backend artifact validation remains blocked'),
+    persistenceMode: 'seeded evidence metadata',
+    detail: 'CES seed evidence metadata is shown for read/view parity. It is not a file artifact and is not production evidence certification.',
+  };
+};
+
+const getEvidenceSourceMode = (records: V3EvidenceRecord[]): V3EvidenceSourceMode => {
+  const modes = new Set(records.map(record => record.sourceMode));
+  if (modes.size === 0) return 'synthetic';
+  if (modes.size > 1) return 'mixed';
+  return modes.values().next().value ?? 'synthetic';
 };
 
 const DetailField = ({ label, children }: { label: string; children: any }) => (
@@ -1242,18 +1364,56 @@ const SprintBoardWorkspace = () => {
 
 // --- EVIDENCE CENTER ---
 const EvidenceCenterWorkspace = () => {
+  const evidenceByEventId = useRegulatoryExecutionStore(state => state.evidence);
+  const taskAuditByEventId = useRegulatoryExecutionStore(state => state.taskAuditByEventId);
+  const storeRecords = useMemo(
+    () => Object.values(evidenceByEventId).flat().map(toEvidenceRecordFromDoc),
+    [evidenceByEventId],
+  );
+  const seedRecords = useMemo(
+    () => V3_ExecutionUnitsSeed.slice(0, 18).map(toEvidenceRecordFromUnit),
+    [],
+  );
+  const records = useMemo(() => {
+    const byId = new Map<string, V3EvidenceRecord>();
+    storeRecords.forEach(record => byId.set(record.id, record));
+    seedRecords.forEach(record => {
+      if (!byId.has(record.id)) byId.set(record.id, record);
+    });
+    return Array.from(byId.values());
+  }, [seedRecords, storeRecords]);
+  const sourceMode = getEvidenceSourceMode(records);
+  const [selectedEvidenceId, setSelectedEvidenceId] = useState(records[0]?.id ?? '');
+  const selected = records.find(record => record.id === selectedEvidenceId) ?? records[0];
+  const auditRowCount = useMemo(() => Object.values(taskAuditByEventId).flat().length, [taskAuditByEventId]);
+  const localStoreCount = records.filter(record => record.sourceMode === 'local-store').length;
+  const seedCount = records.filter(record => record.sourceMode === 'seed').length;
+  const placeholderCount = records.filter(record => record.artifactMode === 'metadata-placeholder').length;
+  const realArtifactCount = records.filter(record => record.artifactMode === 'real-artifact').length;
+
+  useEffect(() => {
+    if (!selectedEvidenceId && records[0]) setSelectedEvidenceId(records[0].id);
+  }, [records, selectedEvidenceId]);
+
   return (
-    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px' }}>
+    <div
+      data-qa="v3-evidence-center"
+      data-qa-evidence-source-mode={sourceMode}
+      className="animate-butter-shift"
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px' }}
+    >
       <div style={{ borderBottom: `1px solid rgba(255,255,255,0.08)`, paddingBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FolderOpen size={18} className="v3-neon-orange" />
             <h1 className="v3-neon-orange" style={{ fontSize: '22px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px' }}>Evidence Command Center</h1>
-            <span style={{ padding: '3px 8px', background: 'rgba(0,209,193,0.1)', border: '1px solid rgba(0,209,193,0.3)', color: V3.tealLight, fontSize: '9px', fontWeight: 600, borderRadius: '4px' }}>V3_SYNTHETIC_FALLBACK</span>
+            <span style={{ padding: '3px 8px', background: 'rgba(0,209,193,0.1)', border: '1px solid rgba(0,209,193,0.3)', color: V3.tealLight, fontSize: '9px', fontWeight: 600, borderRadius: '4px' }}>PHASE 5A-A READ / VIEW PARITY</span>
           </div>
-          <p style={{ fontSize: '12px', color: V3.textSecondary, margin: '4px 0 10px 0' }}>Every file is bound to a policy / workflow / event triplet and read through secure audit APIs.</p>
+          <p style={{ fontSize: '12px', color: V3.textSecondary, margin: '4px 0 10px 0' }}>
+            Reads local app-store metadata and CES seed evidence relationships. Backend persistence not implemented; artifact integrity is not verified in V3.
+          </p>
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            {['Secure Timeline', 'Audit Ready Ledger', 'Compliance Chain of Custody'].map((tag, i) => (
+            {['local persisted app-store evidence', 'metadata placeholder', 'validation/promote blocked'].map((tag, i) => (
               <span key={i} style={{ fontSize: '10.5px', padding: '4px 10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: V3.textSecondary }}>{tag}</span>
             ))}
           </div>
@@ -1261,55 +1421,136 @@ const EvidenceCenterWorkspace = () => {
         <OpenLiveRouteButton route="/evidence" />
       </div>
 
-      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-        <div style={{ flex: '3 1 500px', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px' }}>
-          <h3 style={{ fontSize: '13px', fontWeight: 600, color: V3.textPrimary, marginBottom: '2px' }}>CES Evidence Hierarchy</h3>
-          <p style={{ fontSize: '11px', color: V3.textTertiary, marginBottom: '14px' }}>Year → Quarter → Month → Active Event Tasks → Execution Signature Logs.</p>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' }}>
-            {['YEAR', 'QUARTER', 'MONTH', 'TASK STATUS'].map((lbl, i) => (
-              <div key={i}>
-                <div style={{ fontSize: '9px', fontWeight: 600, color: V3.tealLight, marginBottom: '4px', letterSpacing: '0.5px' }}>{lbl}</div>
-                <div style={{ padding: '6px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', color: V3.textPrimary, fontSize: '11.5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  {i===0 ? '2026' : i===1 ? 'Q2' : i===2 ? 'May' : 'All'} <ChevronDown size={12} color={V3.textTertiary}/>
-                </div>
-              </div>
-            ))}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+        <HeroStat label="Evidence records" value={records.length} />
+        <HeroStat label="Local store" value={localStoreCount} />
+        <HeroStat label="Seeded metadata" value={seedCount} />
+        <HeroStat label="Placeholders" value={placeholderCount} />
+        <HeroStat label="Real artifact refs" value={realArtifactCount} />
+        <HeroStat label="Audit/history rows" value={auditRowCount} />
+      </div>
+
+      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', minHeight: 0 }}>
+        <div style={{ flex: '2.2 1 520px', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', gap: '12px' }}>
+          <div>
+            <h3 style={{ fontSize: '13px', fontWeight: 600, color: V3.textPrimary, margin: 0 }}>Evidence relationship index</h3>
+            <p style={{ fontSize: '11px', color: V3.textTertiary, margin: '4px 0 0' }}>Year / quarter / month grouped from metadata dates; primary row clicks stay inside V3.</p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {[
-              { title: 'Monthly OIG/SAM Exclusion Checks', id: 'hr_oig_sam_exclusion_check', forms: 2, pct: '100%' },
-              { title: 'Q2 QAPI Review Audit Bundle', id: 'qapi_meeting_20260507-00', forms: 10, pct: '85%' },
-              { title: 'Plan of Care (POC) Audit Report', id: 'plan_of_care_audit', forms: 6, pct: '40%' },
-              { title: 'OASIS Quality Accuracy Auditing', id: 'oasis_accuracy_audit', forms: 8, pct: '0%' }
-            ].map((item, idx) => (
-              <div key={idx} style={{ padding: '12px 0', borderTop: idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontSize: '13px', color: V3.textPrimary, fontWeight: 500 }}>{item.title}</div>
-                    <div style={{ fontSize: '10.5px', color: V3.textSecondary, fontFamily: 'monospace', marginTop: '2px' }}>ID: {item.id}</div>
-                    <div style={{ fontSize: '11px', color: V3.textTertiary, marginTop: '2px' }}>Required documents: {item.forms} logs</div>
+          {records.length === 0 ? (
+            <EmptyState
+              title="No evidence metadata available"
+              description="No app-store or seed evidence records were found. This is an honest empty state; backend evidence persistence remains blocked."
+              icon={<FolderOpen size={28} color={V3.tealLight} />}
+            />
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {records.map(record => (
+                <button
+                  key={record.id}
+                  type="button"
+                  data-qa="v3-evidence-row"
+                  data-qa-evidence-id={record.id}
+                  data-qa-event-id={record.eventId}
+                  data-qa-task-id={record.taskId}
+                  onClick={() => setSelectedEvidenceId(record.id)}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '12px',
+                    background: selected?.id === record.id ? 'rgba(0, 209, 193, 0.05)' : 'rgba(255,255,255,0.01)',
+                    border: selected?.id === record.id ? '1px solid rgba(0,209,193,0.35)' : '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'flex-start' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: '13px', color: V3.textPrimary, fontWeight: 600, lineHeight: 1.35 }}>{record.title}</div>
+                      <div style={{ fontSize: '10.5px', color: V3.textSecondary, fontFamily: 'monospace', marginTop: '3px', overflowWrap: 'anywhere' }}>{record.id}</div>
+                    </div>
+                    <span style={{ fontSize: '10px', color: record.sourceMode === 'local-store' ? V3.tealLight : V3.orangeLight, whiteSpace: 'nowrap' }}>{record.sourceMode}</span>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '11.5px', color: V3.tealLight, fontWeight: 600 }}>{item.pct} Done</div>
-                    <div style={{ fontSize: '10px', color: V3.textTertiary, marginTop: '2px' }}>Awaiting Sig: {Math.max(0, 10 - item.forms)}</div>
+                  <MetadataLine items={[record.year, record.quarter, record.month, record.eventId, record.taskId]} />
+                  <div style={{ marginTop: '6px', fontSize: '10.5px', color: V3.textTertiary }}>
+                    {record.status} · {record.artifactStatus} · {record.persistenceMode}
                   </div>
-                </div>
-                <BlockedInline>BLOCKED_PENDING_PHASE_4 — evidence/artifact viewer is not wired in this preview.</BlockedInline>
-              </div>
-            ))}
-          </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div style={{ flex: '1 1 200px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px' }}>
-          <h3 style={{ fontSize: '13px', fontWeight: 600, color: V3.textPrimary, marginBottom: '8px' }}>Contextual Ledger Guidance</h3>
-          <p style={{ fontSize: '11.5px', color: V3.textSecondary, lineHeight: 1.5, marginBottom: '12px' }}>
-            Under Medicare CoPs, all evidence files are stored cryptographically and stamped with clinician IDs. Direct database alteration is inhibited to retain strict compliance audits.
-          </p>
-          <div style={{ padding: '10px', background: 'rgba(0,209,193,0.05)', borderRadius: '6px', border: '1px solid rgba(0,209,193,0.2)', fontSize: '11px', color: V3.tealLight }}>
-            Integrity Status: SECURE & VERIFIED
+        <div
+          data-qa="v3-evidence-detail"
+          data-qa-selected-evidence-id={selected?.id ?? ''}
+          data-qa-artifact-mode={selected?.artifactMode ?? 'missing'}
+          style={{ flex: '1.2 1 360px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}
+        >
+          <div>
+            <h3 style={{ fontSize: '13px', fontWeight: 600, color: V3.textPrimary, margin: 0 }}>Evidence detail</h3>
+            <p style={{ fontSize: '11px', color: V3.textTertiary, margin: '4px 0 0' }}>Metadata is not presented as an artifact. Unsupported actions remain blocked.</p>
           </div>
+          {selected ? (
+            <>
+              <DetailField label="Evidence ID">{selected.id}</DetailField>
+              <DetailField label="Source">{selected.sourceMode} · {selected.persistenceMode}</DetailField>
+              <DetailField label="Artifact">{selected.artifactMode} · {selected.artifactStatus}</DetailField>
+              <DetailField label="Event/task">{selected.eventId} · {selected.taskId}</DetailField>
+              <DetailField label="Workflow">{selected.workflowId}</DetailField>
+              <DetailField label="Policies">{formatList(selected.policyIds, 'No policy IDs linked')}</DetailField>
+              <DetailField label="Forms">{formatList(selected.formIds, 'No form IDs linked')}</DetailField>
+              <DetailField label="Status">{selected.status}</DetailField>
+              <DetailField label="Audit/index">{selected.auditStatus}</DetailField>
+              <DetailField label="Blocker">{selected.blockerState}</DetailField>
+              <DetailField label="Detail">{selected.detail}</DetailField>
+
+              <div
+                data-qa="v3-evidence-integrity-status"
+                data-qa-integrity-mode={selected.artifactMode === 'real-artifact' ? 'local-metadata' : 'not-verified'}
+                style={{ padding: '10px', background: 'rgba(224,123,44,0.06)', borderRadius: '8px', border: '1px solid rgba(224,123,44,0.24)', fontSize: '11px', color: V3.orangeLight, lineHeight: 1.45 }}
+              >
+                Artifact integrity not verified in V3. Backend evidence validation remains Phase 5A-B / Phase 4C-B; this is not production evidence certification.
+              </div>
+
+              {selected.artifactRoute ? (
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <OpenLiveRouteButton route={selected.artifactRoute} />
+                </div>
+              ) : (
+                <BlockedInline>BLOCKED_PENDING_PHASE_5A_B — Artifact file/viewer is not available for this evidence record.</BlockedInline>
+              )}
+
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {selected.policyIds.slice(0, 2).map(policyId => <OpenLiveRouteButton key={policyId} route={`/library/${policyId}`} />)}
+                {selected.formIds.slice(0, 2).map(formId => <OpenLiveRouteButton key={formId} route={`/forms/${formId}`} />)}
+                <OpenLiveRouteButton route={`/calendar?view=sprint&task=${selected.taskId}`} />
+              </div>
+
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>BLOCKED EVIDENCE ACTIONS</div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <PhaseBlockedButton reason={PHASE_5A_B_ARTIFACT_TRANSFER_BLOCKER} dataQaAction="upload-evidence">Upload evidence</PhaseBlockedButton>
+                  <PhaseBlockedButton reason={PHASE_5A_B_ARTIFACT_TRANSFER_BLOCKER} dataQaAction="download-artifact">Download artifact</PhaseBlockedButton>
+                  <PhaseBlockedButton reason={PHASE_5A_B_EVIDENCE_VALIDATION_BLOCKER} dataQaAction="validate-evidence">Validate evidence</PhaseBlockedButton>
+                  <PhaseBlockedButton reason={PHASE_5A_B_EVIDENCE_VALIDATION_BLOCKER} dataQaAction="promote-evidence">Promote evidence</PhaseBlockedButton>
+                  <PhaseBlockedButton reason={PHASE_4C_B_PRODUCTION_AUDIT_BLOCKER} dataQaAction="certify-evidence">Certify evidence</PhaseBlockedButton>
+                </div>
+                <div data-qa="v3-evidence-blocked-action" data-qa-action="upload-evidence" style={{ fontSize: '10.5px', color: V3.orangeLight }}>{PHASE_5A_B_ARTIFACT_TRANSFER_BLOCKER}</div>
+                <div data-qa="v3-evidence-blocked-action" data-qa-action="download-artifact" style={{ fontSize: '10.5px', color: V3.orangeLight }}>{PHASE_5A_B_ARTIFACT_TRANSFER_BLOCKER}</div>
+                <div data-qa="v3-evidence-blocked-action" data-qa-action="validate-evidence" style={{ fontSize: '10.5px', color: V3.orangeLight }}>{PHASE_5A_B_EVIDENCE_VALIDATION_BLOCKER}</div>
+                <div data-qa="v3-evidence-blocked-action" data-qa-action="promote-evidence" style={{ fontSize: '10.5px', color: V3.orangeLight }}>{PHASE_5A_B_EVIDENCE_VALIDATION_BLOCKER}</div>
+                <div data-qa="v3-evidence-blocked-action" data-qa-action="certify-evidence" style={{ fontSize: '10.5px', color: V3.orangeLight }}>{PHASE_4C_B_PRODUCTION_AUDIT_BLOCKER}</div>
+                <div style={{ fontSize: '10.5px', color: V3.textTertiary }}>{PHASE_4C_B_EVIDENCE_PERSISTENCE_BLOCKER}</div>
+              </div>
+            </>
+          ) : (
+            <EmptyState
+              title="No evidence selected"
+              description="Select an evidence row to inspect metadata and blocked actions."
+              icon={<FileSearch size={28} color={V3.tealLight} />}
+            />
+          )}
         </div>
       </div>
     </div>
