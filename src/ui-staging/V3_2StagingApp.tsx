@@ -721,10 +721,12 @@ const DetailField = ({ label, children }: { label: string; children: any }) => (
   </div>
 );
 
-const PhaseBlockedButton = ({ children, reason }: { children: string; reason: string }) => (
+const PhaseBlockedButton = ({ children, reason, dataQaAction }: { children: string; reason: string; dataQaAction?: string }) => (
   <button
     disabled
     title={reason}
+    data-qa="blocked-production-action"
+    {...(dataQaAction ? { 'data-qa-action': dataQaAction } : {})}
     style={{ padding: '7px 10px', borderRadius: '7px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.12)', color: V3.textTertiary, fontSize: '11px', fontWeight: 700, cursor: 'not-allowed' }}
   >
     {children}
@@ -738,7 +740,7 @@ const CesEventWorkspace = ({ unit, eventUnits }: { unit: ExecutionUnit; eventUni
   const formsTotal = unit.evidenceStatus.requiredFormsTotal;
 
   return (
-    <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div data-qa="ces-event-workspace" data-qa-event-id={unit.parentEventId} style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
       <div>
         <div style={{ fontSize: '9px', color: V3.tealLight, fontWeight: 700, letterSpacing: '0.8px' }}>EVENT WORKSPACE · workflow wired preview</div>
         <h2 style={{ fontSize: '16px', color: V3.textPrimary, margin: '4px 0 2px' }}>{unit.parentEventId}</h2>
@@ -781,7 +783,7 @@ const CesTaskDetailPanel = ({
   }, [unit.id, preview.note, preview.blocker]);
 
   return (
-    <div style={{ flex: '1 1 340px', minWidth: '300px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '100%', overflow: 'hidden' }}>
+    <div data-qa="ces-task-detail-panel" data-qa-selected-task-id={unit.id} style={{ flex: '1 1 340px', minWidth: '300px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '100%', overflow: 'hidden' }}>
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '9px', color: V3.tealLight, fontWeight: 700, letterSpacing: '0.8px' }}>TASK DETAIL · workflow wired preview</span>
@@ -837,10 +839,10 @@ const CesTaskDetailPanel = ({
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>BLOCKED PRODUCTION ACTIONS</div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <PhaseBlockedButton reason={PHASE_4B_EVIDENCE_BLOCKER}>Upload evidence</PhaseBlockedButton>
-            <PhaseBlockedButton reason={PHASE_4B_SIGNATURE_BLOCKER}>Request signature</PhaseBlockedButton>
-            <PhaseBlockedButton reason={PHASE_4B_SIGNATURE_BLOCKER}>Approve task</PhaseBlockedButton>
-            <PhaseBlockedButton reason={PHASE_4C_DURABLE_BLOCKER}>Complete task</PhaseBlockedButton>
+            <PhaseBlockedButton reason={PHASE_4B_EVIDENCE_BLOCKER} dataQaAction="upload-evidence">Upload evidence</PhaseBlockedButton>
+            <PhaseBlockedButton reason={PHASE_4B_SIGNATURE_BLOCKER} dataQaAction="request-signature">Request signature</PhaseBlockedButton>
+            <PhaseBlockedButton reason={PHASE_4B_SIGNATURE_BLOCKER} dataQaAction="approve-task">Approve task</PhaseBlockedButton>
+            <PhaseBlockedButton reason={PHASE_4C_DURABLE_BLOCKER} dataQaAction="complete-task">Complete task</PhaseBlockedButton>
           </div>
         </div>
 
@@ -907,6 +909,9 @@ const SprintBoardWorkspace = () => {
                   col.items.map(unit => (
                     <button
                       key={unit.id}
+                      data-qa="ces-task-card"
+                      data-qa-task-id={unit.id}
+                      data-qa-task-title={unit.title}
                       onClick={() => setSelectedTaskId(unit.id)}
                       style={{ 
                         width: '100%',
