@@ -21,6 +21,7 @@ import { ALL_MODULES } from '@/policy/journey/data/modules';
 import { V3_ExecutionUnitsSeed, V3_SprintContextSeed } from '@/policy/ces/data/V3_CES_SeedData';
 import { V3_AUDIT_LOG, V3_FORMS } from '@/policy/ces/data/V3_AppSeedPrimitives';
 import type { ExecutionUnit } from '@/policy/ces/types';
+import { useCesDurableExecutionAdapter } from '@/ui-staging/ces/cesDurableExecutionAdapter';
 
 // Safe alias for Search icon to prevent import mismatches
 const SearchIcon = Search;
@@ -677,6 +678,8 @@ type CesPreviewState = {
 };
 
 const PHASE_4C_DURABLE_BLOCKER = 'BLOCKED_PENDING_PHASE_4C — Durable planner/task execution not wired in this phase.';
+const PHASE_4C_B_EVIDENCE_BLOCKER = 'BLOCKED_PENDING_PHASE_4C_B — Backend evidence upload/validation/promote is not wired.';
+const PHASE_4C_B_SIGNATURE_BLOCKER = 'BLOCKED_PENDING_PHASE_4C_B — Durable signature/approval persistence is not wired.';
 const LOCAL_PREVIEW_ONLY = 'Local preview only — not durable.';
 
 const formatList = (items: readonly string[] | undefined, fallback = 'Not available') => items && items.length ? items.join(', ') : fallback;
@@ -789,6 +792,71 @@ const PhaseBlockedButton = ({ children, reason, dataQaAction }: { children: stri
   >
     {children}
   </button>
+);
+
+const CesDurableAdapterPanel = ({
+  adapter,
+  draftNote,
+  draftBlocker,
+}: {
+  adapter: ReturnType<typeof useCesDurableExecutionAdapter>;
+  draftNote: string;
+  draftBlocker: string;
+}) => (
+  <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
+    <div>
+      <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>PHASE 4C-A DURABLE EXECUTION ADAPTER</div>
+      <div style={{ fontSize: '11px', color: V3.tealLight, marginTop: '2px' }}>durable app-store adapter · local persisted store · backend persistence not implemented · not level 5</div>
+    </div>
+    <div
+      data-qa="ces-durable-adapter-status"
+      data-qa-persistence-mode={adapter.status.persistenceMode}
+      style={{ display: 'grid', gap: '6px' }}
+    >
+      <DetailField label="Store">{adapter.status.storeName} · {adapter.status.durableLabel}</DetailField>
+      <DetailField label="Backend">{adapter.status.backendLabel}</DetailField>
+      <DetailField label="Adapter IDs">{adapter.status.adapterEventId ?? 'not materialized'} · {adapter.status.adapterTaskId ?? 'task not materialized'}</DetailField>
+      <DetailField label="Persisted">{adapter.status.persistedTaskStatus ?? 'not started in app-store'} · evidence refs {adapter.status.persistedEvidenceCount} · approval requests {adapter.status.persistedApprovalCount}</DetailField>
+    </div>
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <ActionButton data-qa="ces-durable-action" data-qa-action="persist-viewed" onClick={adapter.actions.persistViewed}>Persist viewed</ActionButton>
+      <ActionButton data-qa="ces-durable-action" data-qa-action="persist-started" onClick={adapter.actions.persistStarted}>Persist started</ActionButton>
+      <ActionButton data-qa="ces-durable-action" data-qa-action="persist-note" onClick={() => adapter.actions.persistNote(draftNote)}>Persist note</ActionButton>
+      <ActionButton data-qa="ces-durable-action" data-qa-action="persist-blocker" onClick={() => adapter.actions.persistBlocker(draftBlocker)}>Persist blocker</ActionButton>
+      <ActionButton data-qa="ces-durable-action" data-qa-action="clear-persisted-blocker" onClick={adapter.actions.clearPersistedBlocker}>Clear persisted blocker</ActionButton>
+    </div>
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <ActionButton data-qa="ces-durable-action" data-qa-action="persist-evidence-placeholder" onClick={adapter.actions.persistEvidencePlaceholder}>Persist evidence placeholder</ActionButton>
+      <ActionButton data-qa="ces-durable-action" data-qa-action="request-approval" onClick={adapter.actions.requestApprovalInStore}>Request approval in app-store</ActionButton>
+    </div>
+    <div
+      data-qa="ces-completion-gate"
+      data-qa-completion-ready={adapter.completionGate.ready ? 'true' : 'false'}
+      style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
+    >
+      <DetailField label="Gate">{adapter.completionGate.message}</DetailField>
+      {adapter.completionGate.blockers.length ? adapter.completionGate.blockers.map(blocker => (
+        <div
+          key={blocker.code}
+          data-qa="ces-durable-blocker"
+          data-qa-blocker-code={blocker.code}
+          style={{ fontSize: '10.5px', color: V3.orangeLight, lineHeight: 1.4 }}
+        >
+          {blocker.label}
+        </div>
+      )) : (
+        <div style={{ fontSize: '10.5px', color: V3.tealLight }}>Ready for durable app-state completion only; backend persistence not implemented.</div>
+      )}
+    </div>
+    <div
+      data-qa="ces-audit-history-status"
+      data-qa-audit-mode={adapter.status.auditMode}
+      style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}
+    >
+      <DetailField label="Audit">{adapter.status.auditMode} · {adapter.status.auditEventCount} app-store audit/history rows</DetailField>
+      <div style={{ fontSize: '10.5px', color: V3.textTertiary }}>Phase 4C-A writes app-store history only; hash-chain certification, WORM storage, and production certification are not claimed.</div>
+    </div>
+  </div>
 );
 
 const LinkageRow = ({ id, type }: { id: string; type: 'policy' | 'form' }) => (
@@ -968,6 +1036,7 @@ const CesTaskDetailPanel = ({
   const formIds = getRelatedFormIds(unit);
   const policyIds = getRelatedPolicyIds(unit);
   const readiness = getTaskReadiness(unit, preview);
+  const durableAdapter = useCesDurableExecutionAdapter(unit);
 
   useEffect(() => {
     setDraftNote(preview.note ?? '');
@@ -1005,6 +1074,7 @@ const CesTaskDetailPanel = ({
         <DetailField label="Next action">{getNextBestAction(unit, preview)}</DetailField>
         <DetailField label="Audit preview">{V3_AUDIT_LOG.filter(row => row.resource.includes(unit.id) || row.resource.toLowerCase().includes(unit.title.toLowerCase().slice(0, 16))).slice(0, 2).map(row => `${row.timestamp}: ${row.action}`).join(' · ') || 'No deterministic audit row found for this seed unit.'}</DetailField>
 
+        <CesDurableAdapterPanel adapter={durableAdapter} draftNote={draftNote} draftBlocker={draftBlocker} />
         <CesEvidencePanel unit={unit} preview={preview} onPreviewChange={onPreviewChange} />
         <CesSignatureApprovalPanel unit={unit} preview={preview} onPreviewChange={onPreviewChange} />
 
@@ -1037,10 +1107,18 @@ const CesTaskDetailPanel = ({
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>BLOCKED PRODUCTION ACTIONS</div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <PhaseBlockedButton reason="BLOCKED_PENDING_PHASE_4C — Durable evidence upload not wired in this phase." dataQaAction="upload-evidence">Upload evidence</PhaseBlockedButton>
-            <PhaseBlockedButton reason="BLOCKED_PENDING_PHASE_4C — Durable signature collection not wired in this phase." dataQaAction="request-signature">Request signature</PhaseBlockedButton>
-            <PhaseBlockedButton reason="BLOCKED_PENDING_PHASE_4C — Durable approval mutation not wired in this phase." dataQaAction="approve-task">Approve task</PhaseBlockedButton>
-            <PhaseBlockedButton reason={PHASE_4C_DURABLE_BLOCKER} dataQaAction="complete-task">Complete task</PhaseBlockedButton>
+            <PhaseBlockedButton reason={PHASE_4C_B_EVIDENCE_BLOCKER} dataQaAction="upload-evidence">Upload evidence</PhaseBlockedButton>
+            <PhaseBlockedButton reason={PHASE_4C_B_SIGNATURE_BLOCKER} dataQaAction="request-signature">Request signature</PhaseBlockedButton>
+            <PhaseBlockedButton reason={PHASE_4C_B_SIGNATURE_BLOCKER} dataQaAction="approve-task">Approve task</PhaseBlockedButton>
+            {durableAdapter.completionGate.ready ? (
+              <ActionButton data-qa="ces-durable-action" data-qa-action="complete-durable-app-state" onClick={durableAdapter.actions.attemptDurableCompletion}>Complete in durable app-state</ActionButton>
+            ) : (
+              <PhaseBlockedButton reason={PHASE_4C_DURABLE_BLOCKER} dataQaAction="complete-task">Complete task</PhaseBlockedButton>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            <div style={{ fontSize: '10.5px', color: V3.orangeLight }}>{PHASE_4C_B_EVIDENCE_BLOCKER}</div>
+            <div style={{ fontSize: '10.5px', color: V3.orangeLight }}>{PHASE_4C_B_SIGNATURE_BLOCKER}</div>
           </div>
         </div>
 

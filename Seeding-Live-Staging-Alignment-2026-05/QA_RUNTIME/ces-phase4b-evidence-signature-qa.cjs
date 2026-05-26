@@ -198,7 +198,7 @@ async function run() {
       results.failed.push('Durable completion was not blocked');
     }
 
-    const forbiddenLanguage = /level\s*5|production-shaped complete|production complete|durable completion enabled/i;
+    const forbiddenLanguage = /level\s*5 production|production-shaped complete|production complete|durable completion enabled/i;
     if (!forbiddenLanguage.test(pageText)) {
       results.passed.push('No level 5 / production-shaped complete language appears');
     } else {

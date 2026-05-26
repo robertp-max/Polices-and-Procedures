@@ -1,0 +1,16 @@
+﻿PWD:
+C:\AI\Git\training\HomeHealth\Policies_and_Procedures
+
+git status --short:
+ M .gitignore
+ M package.json
+ M server/index.ts
+?? _Heavy/Fix-2026-05-14/ForGrok/UIUX_Audit/mockup/v3/nul
+?? docs/cineforge/
+?? nul
+?? server/cineforge/
+
+git diff --name-only:
+.gitignore
+package.json
+server/index.ts
