@@ -1,6 +1,9 @@
 ﻿// V3.2 Staging App — Base design refresh
 // Route: /ui-staging/v32
-import { useEffect, useState } from 'react';
+// V3_SYNTHETIC_FALLBACK: this route is a labeled preview shell until
+// Phase 3 content parity and Phase 4 workflow interiors are wired.
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle, ShieldCheck,
   FileText, ShieldX,
@@ -8,6 +11,14 @@ import {
   Menu, Search, X, User, Bell, Bot, Network, UserPlus, FolderOpen,
   ArrowUpCircle, Shield, CheckSquare, ChevronDown, ChevronRight
 } from 'lucide-react';
+import { PolicyLibraryDocumentView } from '@/policy/components/PolicyLibraryDocumentView';
+import { FormBody } from '@/policy/components/FormViewer';
+import { frameworkPolicies } from '@/policy/data/frameworkSeed.generated';
+import { getPolicyBody, getPolicyContent } from '@/policy/data/policyContentMap';
+import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
+import { buildFormContent } from '@/policy/data/formsLibraryContent';
+import { printForm } from '@/policy/utils/printForm';
+import { ALL_MODULES } from '@/policy/journey/data/modules';
 
 // Safe alias for Search icon to prevent import mismatches
 const SearchIcon = Search;
@@ -22,6 +33,23 @@ interface KpiCardData {
   tone?: 'default' | 'positive' | 'warning' | 'danger';
   alert?: boolean;
   onClick?: () => void;
+}
+
+type NavStatus =
+  | 'LIVE_ROUTE_HANDOFF'
+  | 'V3_RENDERER_ADAPTER'
+  | 'V3_SYNTHETIC_FALLBACK'
+  | 'BLOCKED_PENDING_PHASE_3'
+  | 'BLOCKED_PENDING_PHASE_4';
+
+interface NavItem {
+  id: string;
+  icon: any;
+  label: string;
+  status: NavStatus;
+  route?: string;
+  blocker?: string;
+  submenu?: Array<Omit<NavItem, 'icon' | 'submenu'>>
 }
 
 
@@ -63,18 +91,18 @@ const GlobalStylesheetInjector = () => (
     *::-webkit-scrollbar { display: none !important; }
     * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
 
-    /* Hardware accelerated fade in animations */
+    /* Fade-only preview animation: no transform/depth effects in V3 */
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(12px); filter: blur(2px); }
-      to { opacity: 1; transform: translateY(0); filter: blur(0); }
+      from { opacity: 0; filter: blur(2px); }
+      to { opacity: 1; filter: blur(0); }
     }
     .animate-butter-shift {
       animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     @keyframes slideDownIn {
-      from { opacity: 0; transform: translateY(-12px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     .animate-slide-down {
       animation: slideDownIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -86,14 +114,12 @@ const GlobalStylesheetInjector = () => (
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 12px;
       transition: background 0.5s cubic-bezier(0.16, 1, 0.3, 1), 
-                  border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
-      will-change: transform, background-color, border-color;
+                  border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      will-change: background-color, border-color;
     }
     .v3-invisible-glare:hover {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.005) 100%) !important;
       border-color: rgba(0, 242, 224, 0.3) !important; 
-      transform: translateY(-2px);
     }
 
     /* Generic UI button timings */
@@ -123,7 +149,8 @@ const GlobalStylesheetInjector = () => (
 
 
 // ============================================================
-// REAL MOCK DATA 
+// V3_SYNTHETIC_FALLBACK preview data. These records are intentionally not
+// production parity and must not be used for completion claims.
 // ============================================================
 interface TaskItem {
   id: string; domain: string; code: string; title: string; dueDate: string; overdue: boolean; status: 'open' | 'overdue' | 'pending' | 'completed';
@@ -139,7 +166,7 @@ const INITIAL_PLANNED_TASKS: TaskItem[] = [
 ];
 
 const INTRO_CHATS = [
-  { sender: 'Brad', msg: 'Hello! I am Brad, your CareIndeed Clinical Copilot. Ask me anything about home health guidelines, taxonomy, or current CES protocols.' },
+  { sender: 'Brad', msg: 'V3_SYNTHETIC_FALLBACK: this copilot preview returns canned responses until the live grounded action layer is wired.' },
 ];
 
 
@@ -147,33 +174,38 @@ const INTRO_CHATS = [
 // SHELL FRAME & NAVIGATION
 // ============================================================
 const ShellContentFrame = ({ children, className, isMobile, activeSection, setActiveSection, isNavOpen, setIsNavOpen, isPlannerView, setIsPlannerView }: any) => {
+  const navigate = useNavigate();
 
-  const navSections = [
+  const navSections: Array<{ title: string; items: NavItem[] }> = [
     {
       title: 'PRIMARY OPERATIONS',
       items: [
-        { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { id: 'profiles', icon: Users, label: 'Profiles', submenu: [ { id: 'clinicians', label: 'Clinician Profiles' }, { id: 'patients', label: 'Patient Profiles' } ] },
-        { id: 'calendar', icon: Calendar, label: 'Scheduling & Visits' },
-        { id: 'brad', icon: Bot, label: 'Brad AI Copilot' },
-        { id: 'ces', icon: ShieldCheck, label: 'Compliance Execution (CES)' },
+        { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', status: 'V3_SYNTHETIC_FALLBACK' },
+        { id: 'profiles', icon: Users, label: 'Profiles', status: 'LIVE_ROUTE_HANDOFF', submenu: [
+          { id: 'clinicians', label: 'Clinician Profiles', status: 'LIVE_ROUTE_HANDOFF', route: '/clinicians' },
+          { id: 'patients', label: 'Patient Profiles', status: 'LIVE_ROUTE_HANDOFF', route: '/patients' },
+        ] },
+        { id: 'calendar', icon: Calendar, label: 'Scheduling & Visits', status: 'LIVE_ROUTE_HANDOFF', route: '/calendar' },
+        { id: 'brad', icon: Bot, label: 'Brad AI Copilot', status: 'V3_SYNTHETIC_FALLBACK' },
+        { id: 'ces', icon: ShieldCheck, label: 'Compliance Execution (CES)', status: 'LIVE_ROUTE_HANDOFF', route: '/calendar?view=sprint' },
       ]
     },
     {
       title: 'COMPLIANCE EXECUTION',
       items: [
-        { id: 'taxonomy', icon: Network, label: 'Taxonomy' },
-        { id: 'onboarding', icon: UserPlus, label: 'Onboarding' },
-        { id: 'policy', icon: FileText, label: 'Policy Lifecycle' },
-        { id: 'evidence', icon: FolderOpen, label: 'Evidence Center' },
+        { id: 'taxonomy', icon: Network, label: 'Taxonomy', status: 'LIVE_ROUTE_HANDOFF', route: '/taxonomy' },
+        { id: 'onboarding', icon: UserPlus, label: 'Onboarding', status: 'LIVE_ROUTE_HANDOFF' },
+        { id: 'policy', icon: FileText, label: 'Policy Lifecycle', status: 'V3_RENDERER_ADAPTER' },
+        { id: 'forms', icon: FileSearch, label: 'Forms Library', status: 'V3_RENDERER_ADAPTER' },
+        { id: 'evidence', icon: FolderOpen, label: 'Evidence Center', status: 'LIVE_ROUTE_HANDOFF', route: '/evidence' },
       ]
     },
     {
       title: 'ADMINISTRATION & KNOWLEDGE',
       items: [
-        { id: 'hubstaff', icon: ArrowUpCircle, label: 'Hubstaff' },
-        { id: 'help-center', icon: HelpCircle, label: 'Help Center' },
-        { id: 'admin', icon: Shield, label: 'Admin' },
+        { id: 'hubstaff', icon: ArrowUpCircle, label: 'Hubstaff', status: 'LIVE_ROUTE_HANDOFF', route: '/hubstaff' },
+        { id: 'help-center', icon: HelpCircle, label: 'Help Center', status: 'LIVE_ROUTE_HANDOFF', route: '/help' },
+        { id: 'admin', icon: Shield, label: 'Admin', status: 'LIVE_ROUTE_HANDOFF', route: '/admin' },
       ]
     }
   ];
@@ -181,10 +213,25 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({ profiles: true, evidence: true });
   const toggleSubmenu = (menuId: string) => setExpandedMenus(prev => ({ ...prev, [menuId]: !prev[menuId] }));
 
-  const handleNav = (id: string) => {
-    setActiveSection(id);
+  const handleNav = (item: NavItem | Omit<NavItem, 'icon' | 'submenu'>) => {
+    if (item.route) {
+      navigate(item.route);
+      if (isMobile) setIsNavOpen(false);
+      return;
+    }
+    setActiveSection(item.id);
     if (isMobile) {
       setIsNavOpen(false);
+    }
+  };
+
+  const statusLabel = (status: NavStatus) => {
+    switch (status) {
+      case 'LIVE_ROUTE_HANDOFF': return 'LIVE ROUTE';
+      case 'V3_RENDERER_ADAPTER': return 'RENDERER';
+      case 'V3_SYNTHETIC_FALLBACK': return 'PREVIEW DATA';
+      case 'BLOCKED_PENDING_PHASE_3': return 'PHASE 3';
+      case 'BLOCKED_PENDING_PHASE_4': return 'PHASE 4';
     }
   };
 
@@ -214,7 +261,7 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
         height: isMobile ? '100vh' : '90vh', margin: 'auto', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: isMobile ? '0' : '20px', overflow: 'hidden',
         background: 'linear-gradient(135deg, rgba(16, 22, 34, 0.95) 0%, rgba(8, 12, 19, 0.98) 100%)', 
         backdropFilter: 'blur(32px) saturate(120%)', WebkitBackdropFilter: 'blur(32px) saturate(120%)',
-        boxShadow: isMobile ? 'none' : '0 30px 60px rgba(0, 0, 0, 0.8)', position: 'relative', zIndex: 2 
+        boxShadow: 'none', position: 'relative', zIndex: 2 
       }}>
         
         {/* INTEGRATED APPLICATION TOP BAR */}
@@ -230,7 +277,7 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '6px 14px', width: isMobile ? '140px' : '260px', transition: 'all 0.3s' }}>
               <Search size={14} color={V3.textTertiary} />
-              <input placeholder="Search policies..." style={{ background: 'transparent', border: 'none', color: V3.textPrimary, outline: 'none', width: '100%', fontSize: '12px' }} />
+              <input readOnly aria-label="Search blocked outside Phase 3" title="BLOCKED_PENDING_PHASE_4 — global search is outside Phase 3 content renderer parity." placeholder="Search blocked outside Phase 3" style={{ background: 'transparent', border: 'none', color: V3.textPrimary, outline: 'none', width: '100%', fontSize: '12px', cursor: 'default' }} />
             </div>
           </div>
 
@@ -274,7 +321,7 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
                     {section.items.map((item, i) => (
                       <div key={i}>
                         <button 
-                          onClick={() => item.submenu ? toggleSubmenu(item.id) : handleNav(item.id)}
+                          onClick={() => item.submenu ? toggleSubmenu(item.id) : handleNav(item)}
                           style={{ 
                             display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '8px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', textAlign: 'left',
                             background: activeSection === item.id ? 'rgba(0, 209, 193, 0.08)' : 'transparent', 
@@ -285,14 +332,16 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <item.icon size={16} color={activeSection === item.id ? V3.tealLight : V3.textTertiary} />
                             <span style={{ fontSize: '12.5px', fontWeight: activeSection === item.id ? 600 : 500 }}>{item.label}</span>
+                            {!item.submenu && <span style={{ fontSize: '8px', color: V3.textTertiary, letterSpacing: '0.4px' }}>{statusLabel(item.status)}</span>}
                           </div>
                           {item.submenu && (expandedMenus[item.id] ? <ChevronDown size={12} color={V3.textTertiary} /> : <ChevronRight size={12} color={V3.textTertiary} />)}
                         </button>
                         {item.submenu && expandedMenus[item.id] && (
                           <div style={{ paddingLeft: '16px', marginTop: '2px', borderLeft: '1px solid rgba(255,255,255,0.06)', marginLeft: '18px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                             {item.submenu.map((sub, sIdx) => (
-                              <button key={sIdx} onClick={() => handleNav(sub.id)} style={{ display: 'block', width: '100%', padding: '6px 12px', fontSize: '11.5px', color: activeSection === sub.id ? V3.textPrimary : V3.textSecondary, background: activeSection === sub.id ? 'rgba(0, 209, 193, 0.05)' : 'transparent', border: 'none', textAlign: 'left', borderRadius: '4px', cursor: 'pointer', transition: '0.2s' }}>
-                                {sub.label}
+                              <button key={sIdx} onClick={() => handleNav(sub)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', width: '100%', padding: '6px 12px', fontSize: '11.5px', color: activeSection === sub.id ? V3.textPrimary : V3.textSecondary, background: activeSection === sub.id ? 'rgba(0, 209, 193, 0.05)' : 'transparent', border: 'none', textAlign: 'left', borderRadius: '4px', cursor: 'pointer', transition: '0.2s' }}>
+                                <span>{sub.label}</span>
+                                <span style={{ fontSize: '8px', color: V3.textTertiary, letterSpacing: '0.4px' }}>{statusLabel(sub.status)}</span>
                               </button>
                             ))}
                           </div>
@@ -314,7 +363,7 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
                   <span style={{ fontSize: '10px', color: V3.textTertiary }}>Active Session</span>
                 </div>
               </div>
-              <button style={{ position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+              <button disabled aria-label="Notifications blocked in Phase 2" title="BLOCKED_PENDING_PHASE_4 — notification actions are outside Phase 2." style={{ position: 'relative', background: 'transparent', border: 'none', cursor: 'not-allowed', opacity: 0.55 }}>
                 <Bell size={16} color={V3.textSecondary} />
                 <span style={{ position: 'absolute', top: 0, right: 0, width: '6px', height: '6px', background: V3.tealLight, borderRadius: '50%' }} />
               </button>
@@ -337,6 +386,24 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
 // ============================================================
 const ActionButton = ({ children, onClick, variant }: any) => (
   <button onClick={onClick} className="btn-smooth-hover" style={{ padding: '8px 16px', background: variant === 'danger' ? 'rgba(0, 209, 193, 0.1)' : 'transparent', color: variant === 'danger' ? V3.tealLight : V3.textSecondary, border: `1px solid rgba(0, 209, 193, 0.3)`, borderRadius: '8px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', backdropFilter: 'blur(8px)', transition: '0.2s' }}>{children}</button>
+);
+
+const PreviewLabel = ({ detail }: { detail: string }) => (
+  <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.7px', color: V3.tealLight }}>
+    V3_SYNTHETIC_FALLBACK — {detail}
+  </span>
+);
+
+const BlockedInline = ({ children }: { children: string }) => (
+  <span style={{ fontSize: '10.5px', color: V3.textTertiary }}>{children}</span>
+);
+
+const MetadataLine = ({ items }: { items: Array<string | number | undefined | null> }) => (
+  <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', fontSize: '11px', color: V3.textSecondary }}>
+    {items.filter(Boolean).map((item, index) => (
+      <span key={`${item}-${index}`}>{item}</span>
+    ))}
+  </div>
 );
 
 const EmptyState = ({ title, description, icon }: any) => (
@@ -395,6 +462,7 @@ const DashboardWorkspace = ({ setIsPlannerView, isMobile }: any) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
               <span className="v3-neon-orange" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Command Center</span>
               <span style={{ fontSize: '12px', fontWeight: 500, color: V3.textSecondary }}>System Operations Monitoring</span>
+              <PreviewLabel detail="dashboard metrics are preview-only until live dashboard parity is wired" />
             </div>
             <h1 style={{ fontSize: '26px', fontWeight: 600, lineHeight: 1.2, margin: 0, letterSpacing: '-0.5px', background: 'linear-gradient(180deg, #FFFFFF 0%, #A8B0C0 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               System-Wide Readiness Status
@@ -447,7 +515,8 @@ const PlannerWorkspace = ({ tasks, isMobile }: any) => {
           <span className="v3-neon-orange" style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>My Personal Workspace</span>
         </div>
         <h1 style={{ fontSize: '26px', fontWeight: 600, color: V3.textPrimary, margin: 0, letterSpacing: '-0.5px' }}>My Planner</h1>
-        <p style={{ fontSize: '12.5px', color: V3.textSecondary, marginTop: '4px' }}>Your personal workbook — CES obligations assigned to you & private tasks.</p>
+        <p style={{ fontSize: '12.5px', color: V3.textSecondary, marginTop: '4px' }}>Your personal workbook preview — CES task execution remains blocked until Phase 4.</p>
+        <PreviewLabel detail="planner tasks are local preview rows" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px' }}>
@@ -472,14 +541,14 @@ const PlannerWorkspace = ({ tasks, isMobile }: any) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderTop: `1px solid ${V3.borderDefault}`, paddingTop: '12px' }}>
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
           {['all', 'open', 'overdue', 'this-week'].map(tab => (
-            <button key={tab} style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', background: tab === 'all' ? 'rgba(0, 209, 193, 0.1)' : 'rgba(255,255,255,0.02)', border: `1px solid ${tab === 'all' ? V3.tealLight : 'rgba(255,255,255,0.1)'}`, color: tab === 'all' ? V3.textPrimary : V3.textSecondary, textTransform: 'capitalize' }}>
+            <button key={tab} disabled title="BLOCKED_PENDING_PHASE_4 — planner filters will use canonical task projection later." style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 600, borderRadius: '6px', cursor: 'not-allowed', opacity: tab === 'all' ? 1 : 0.55, background: tab === 'all' ? 'rgba(0, 209, 193, 0.1)' : 'rgba(255,255,255,0.02)', border: `1px solid ${tab === 'all' ? V3.tealLight : 'rgba(255,255,255,0.1)'}`, color: tab === 'all' ? V3.textPrimary : V3.textSecondary, textTransform: 'capitalize' }}>
               {tab.replace('-', ' ')}
             </button>
           ))}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: V3.glass3, border: `1px solid ${V3.borderDefault}`, borderRadius: '20px', padding: '6px 12px', width: isMobile ? '100%' : '240px' }}>
           <SearchIcon size={12} color={V3.textTertiary} />
-          <input placeholder="Search planner..." style={{ background: 'transparent', border: 'none', color: V3.textPrimary, outline: 'none', fontSize: '11.5px', width: '100%' }} />
+          <input readOnly aria-label="Planner search blocked in Phase 2" title="BLOCKED_PENDING_PHASE_4 — planner search requires canonical task projection." placeholder="Search blocked in Phase 2" style={{ background: 'transparent', border: 'none', color: V3.textPrimary, outline: 'none', fontSize: '11.5px', width: '100%', cursor: 'default' }} />
         </div>
       </div>
 
@@ -493,8 +562,9 @@ const PlannerWorkspace = ({ tasks, isMobile }: any) => {
             <h4 style={{ fontSize: '13px', fontWeight: 500, color: V3.textPrimary, margin: 0, minHeight: '36px', lineHeight: 1.4 }}>{task.title}</h4>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `1px solid rgba(255,255,255,0.08)`, paddingTop: '8px', marginTop: '2px' }}>
               <span style={{ fontSize: '11px', color: V3.textSecondary }}>Due {task.dueDate}</span>
-              <button style={{ padding: '4px 10px', borderRadius: '4px', background: 'rgba(0, 209, 193, 0.1)', border: `1px solid ${V3.tealLight}`, color: V3.tealLight, fontSize: '10.5px', fontWeight: 600, cursor: 'pointer' }}>Execute</button>
+              <button disabled title="BLOCKED_PENDING_PHASE_4 — CES task workflow interiors are not wired in Phase 2." style={{ padding: '4px 10px', borderRadius: '4px', background: 'rgba(0, 209, 193, 0.06)', border: `1px solid rgba(0,209,193,0.18)`, color: V3.textTertiary, fontSize: '10.5px', fontWeight: 600, cursor: 'not-allowed' }}>Blocked</button>
             </div>
+            <BlockedInline>BLOCKED_PENDING_PHASE_4 — task detail/actions will be wired later.</BlockedInline>
           </div>
         ))}
       </div>
@@ -504,7 +574,8 @@ const PlannerWorkspace = ({ tasks, isMobile }: any) => {
 
 // --- KANBAN BOARD (SPRINT execution) ---
 const SprintBoardWorkspace = () => {
-  const [activeTask, setActiveTask] = useState<string>('Distribute agenda & pre-read packet');
+  const navigate = useNavigate();
+  const [activeTask] = useState<string>('Distribute agenda & pre-read packet');
 
   const columns = [
     { id: 'overdue', title: 'OVERDUE (18)', count: 18, items: [
@@ -531,9 +602,10 @@ const SprintBoardWorkspace = () => {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
           <h1 style={{ fontSize: '22px', fontWeight: 600, color: V3.textPrimary, margin: 0, letterSpacing: '-0.5px' }}>Sprint execution • Mon-Fri 2-week window</h1>
+          <PreviewLabel detail="CES board rows are preview-only; use live route handoff for canonical execution" />
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: V3.textSecondary, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={12}/> Calendar</button>
-            <button style={{ padding: '6px 12px', background: 'rgba(0,209,193,0.1)', border: '1px solid rgba(0,209,193,0.3)', borderRadius: '6px', color: V3.textPrimary, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}><LayoutDashboard size={12}/> Sprint Board</button>
+            <button onClick={() => navigate('/calendar')} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: V3.textSecondary, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}><Calendar size={12}/> Calendar</button>
+            <button onClick={() => navigate('/calendar?view=sprint')} style={{ padding: '6px 12px', background: 'rgba(0,209,193,0.1)', border: '1px solid rgba(0,209,193,0.3)', borderRadius: '6px', color: V3.textPrimary, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}><LayoutDashboard size={12}/> Sprint Board</button>
           </div>
         </div>
       </div>
@@ -552,15 +624,14 @@ const SprintBoardWorkspace = () => {
                    <div style={{ textAlign: 'center', padding: '30px 0', color: V3.textTertiary, fontSize: '11px', fontStyle: 'italic' }}>No active tasks</div>
                 ) : (
                   col.items.map(task => (
-                    <div 
+                    <div
                       key={task.id} 
-                      onClick={() => setActiveTask(task.title)}
-                      className="v3-invisible-glare" 
                       style={{ 
                         padding: '12px', 
                         background: activeTask === task.title ? 'rgba(0, 209, 193, 0.05)' : 'rgba(255,255,255,0.01)', 
                         border: activeTask === task.title ? '1px solid rgba(0,209,193,0.4)' : '1px solid rgba(255,255,255,0.08)', 
-                        cursor: 'pointer' 
+                        borderRadius: '10px',
+                        cursor: 'default'
                       }}
                     >
                       <h4 style={{ fontSize: '12px', fontWeight: 500, color: V3.textPrimary, margin: 0, lineHeight: 1.3 }}>{task.title}</h4>
@@ -569,6 +640,7 @@ const SprintBoardWorkspace = () => {
                         <span style={{ fontSize: '10px', color: V3.textTertiary }}>Assigned</span>
                         <span style={{ fontSize: '10px', color: V3.textTertiary }}>{task.date}</span>
                       </div>
+                      <div style={{ marginTop: '6px' }}><BlockedInline>BLOCKED_PENDING_PHASE_4 — open task detail in canonical CES/PM route.</BlockedInline></div>
                     </div>
                   ))
                 )}
@@ -625,7 +697,7 @@ const EvidenceCenterWorkspace = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FolderOpen size={18} className="v3-neon-orange" />
             <h1 className="v3-neon-orange" style={{ fontSize: '22px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px' }}>Evidence Command Center</h1>
-            <span style={{ padding: '3px 8px', background: 'rgba(0,209,193,0.1)', border: '1px solid rgba(0,209,193,0.3)', color: V3.tealLight, fontSize: '9px', fontWeight: 600, borderRadius: '4px' }}>LIVE_SECURE</span>
+            <span style={{ padding: '3px 8px', background: 'rgba(0,209,193,0.1)', border: '1px solid rgba(0,209,193,0.3)', color: V3.tealLight, fontSize: '9px', fontWeight: 600, borderRadius: '4px' }}>V3_SYNTHETIC_FALLBACK</span>
           </div>
           <p style={{ fontSize: '12px', color: V3.textSecondary, margin: '4px 0 10px 0' }}>Every file is bound to a policy / workflow / event triplet and read through secure audit APIs.</p>
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -659,7 +731,7 @@ const EvidenceCenterWorkspace = () => {
               { title: 'Plan of Care (POC) Audit Report', id: 'plan_of_care_audit', forms: 6, pct: '40%' },
               { title: 'OASIS Quality Accuracy Auditing', id: 'oasis_accuracy_audit', forms: 8, pct: '0%' }
             ].map((item, idx) => (
-              <div key={idx} className="v3-invisible-glare" style={{ padding: '12px', borderLeft: `3px solid ${item.pct === '100%' ? V3.tealLight : V3.orangeLight}` }}>
+              <div key={idx} style={{ padding: '12px 0', borderTop: idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontSize: '13px', color: V3.textPrimary, fontWeight: 500 }}>{item.title}</div>
@@ -671,6 +743,7 @@ const EvidenceCenterWorkspace = () => {
                     <div style={{ fontSize: '10px', color: V3.textTertiary, marginTop: '2px' }}>Awaiting Sig: {Math.max(0, 10 - item.forms)}</div>
                   </div>
                 </div>
+                <BlockedInline>BLOCKED_PENDING_PHASE_4 — evidence/artifact viewer is not wired in this preview.</BlockedInline>
               </div>
             ))}
           </div>
@@ -698,11 +771,12 @@ const BradCopilotWorkspace = ({ chatInput, setChatInput, chatLog, setChatLog }: 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
           <Bot size={18} color={V3.tealLight} className="v3-neon-teal" />
           <h1 style={{ fontSize: '20px', fontWeight: 600, color: V3.textPrimary, margin: 0 }}>Brad Clinical Admin Advisor</h1>
+          <PreviewLabel detail="canned copilot preview; no live grounded action layer in Phase 2" />
         </div>
         <div style={{ display: 'flex', gap: '12px', fontSize: '10px', fontWeight: 700, color: V3.textTertiary, letterSpacing: '0.5px' }}>
-          <span>CMS COMPLIANCE TAXONOMY INTERNAL CORPUS</span>
+          <span>V3_SYNTHETIC_FALLBACK CORPUS PREVIEW</span>
           <span>•</span>
-          <span>GROUNDED CLINICAL ADVISORIES</span>
+          <span>BLOCKED_PENDING_PHASE_4 LIVE ADVISORIES</span>
         </div>
       </div>
 
@@ -718,7 +792,7 @@ const BradCopilotWorkspace = ({ chatInput, setChatInput, chatLog, setChatLog }: 
                   setChatLog((prev: any) => [...prev, { sender: 'You', msg: chatInput }]);
                   const currInput = chatInput; setChatInput('');
                   setTimeout(() => {
-                    setChatLog((prev: any) => [...prev, { sender: 'Brad', msg: `Aligning vectors for "${currInput}" under CMS standard clinical policy protocol... I recommend reviewing Section QAPI-9.2 for home hazard evaluations and verifying that all clinician credentials have been updated this quarter.` }]);
+                    setChatLog((prev: any) => [...prev, { sender: 'Brad', msg: `V3_SYNTHETIC_FALLBACK: canned response for "${currInput}". Live grounded policy/action retrieval is blocked until a later phase.` }]);
                   }, 800);
                 }
               }}
@@ -731,12 +805,12 @@ const BradCopilotWorkspace = ({ chatInput, setChatInput, chatLog, setChatLog }: 
                   setChatLog((prev: any) => [...prev, { sender: 'You', msg: chatInput }]);
                   const currInput = chatInput; setChatInput('');
                   setTimeout(() => {
-                    setChatLog((prev: any) => [...prev, { sender: 'Brad', msg: `Searching policy logs for "${currInput}"... 1 actionable hazard rule discovered. Please ensure all clinicians execute standard patient checklists prior to initial home evaluation visit.` }]);
+                    setChatLog((prev: any) => [...prev, { sender: 'Brad', msg: `V3_SYNTHETIC_FALLBACK: canned response for "${currInput}". No live policy logs were searched in Phase 2.` }]);
                   }, 800);
                 }
               }}
               style={{ position: 'absolute', top: '8px', right: '8px', padding: '4px 12px', background: 'rgba(0,209,193,0.15)', border: '1px solid rgba(0,209,193,0.3)', color: V3.tealLight, borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
-            >RUN</button>
+            >PREVIEW</button>
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -771,11 +845,258 @@ const BradCopilotWorkspace = ({ chatInput, setChatInput, chatLog, setChatLog }: 
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center', color: V3.textTertiary }}>
             <FileText size={24} style={{ marginBottom: '10px', opacity: 0.5 }} />
             <p style={{ fontSize: '11.5px', lineHeight: 1.4, margin: 0 }}>
-              Brad dynamically displays the specific state or federal regulation matched to your query. Type a command to fetch relevant logs.
+              BLOCKED_PENDING_PHASE_4 — live reference retrieval and action execution are not wired in this phase.
             </p>
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+// --- POLICY CONTENT PARITY ---
+const PolicyContentWorkspace = () => {
+  const navigate = useNavigate();
+  const policies = useMemo(
+    () => frameworkPolicies.filter(policy => Boolean(getPolicyContent(policy.id))).slice(0, 12),
+    [],
+  );
+  const [selectedPolicyId, setSelectedPolicyId] = useState(policies[0]?.id ?? 'GV-GB-001');
+  const selectedPolicy = policies.find(policy => policy.id === selectedPolicyId) ?? policies[0];
+  const content = selectedPolicy ? getPolicyContent(selectedPolicy.id) : null;
+  const body = selectedPolicy ? getPolicyBody(selectedPolicy.id) : null;
+
+  return (
+    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
+      <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+          <FileText size={16} color={V3.orangeLight} />
+          <span style={{ fontSize: '10px', fontWeight: 700, color: V3.orangeLight, letterSpacing: '1px' }}>V3_RENDERER_ADAPTER</span>
+          <span style={{ fontSize: '10px', color: V3.textTertiary }}>policyContentMap / getPolicyContent / getPolicyBody / PolicyLibraryDocumentView</span>
+        </div>
+        <h1 style={{ fontSize: '24px', fontWeight: 600, color: V3.textPrimary, margin: 0 }}>Policy Content Renderer</h1>
+        <p style={{ fontSize: '12.5px', color: V3.textSecondary, margin: '6px 0 0' }}>
+          Policy cards use registry metadata, and detail renders through the canonical policy document path.
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 0.8fr) minmax(0, 1.7fr)', gap: '16px', minHeight: 0, flex: 1 }}>
+        <div className="no-scrollbar" style={{ overflowY: 'auto', borderRight: `1px solid ${V3.borderDefault}`, paddingRight: '12px' }}>
+          {policies.map(policy => (
+            <button
+              key={policy.id}
+              onClick={() => setSelectedPolicyId(policy.id)}
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                padding: '12px 0',
+                border: 'none',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                background: 'transparent',
+                color: selectedPolicyId === policy.id ? V3.textPrimary : V3.textSecondary,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ fontSize: '10px', fontWeight: 700, color: V3.tealLight, letterSpacing: '0.5px' }}>{policy.id}</div>
+              <div style={{ fontSize: '12.5px', lineHeight: 1.35, marginTop: '3px' }}>{policy.title}</div>
+              <MetadataLine items={[policy.domainCode, policy.subdomainCode, policy.tier]} />
+            </button>
+          ))}
+        </div>
+
+        <div className="no-scrollbar" style={{ overflowY: 'auto', minWidth: 0 }}>
+          {selectedPolicy && content ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ fontSize: '10px', color: V3.tealLight, fontWeight: 700, letterSpacing: '0.6px' }}>{selectedPolicy.id}</div>
+                  <h2 style={{ margin: '3px 0', fontSize: '19px', color: V3.textPrimary }}>{selectedPolicy.title}</h2>
+                  <MetadataLine items={[
+                    `${content.sections.length} real body sections`,
+                    body ? `${body.length.toLocaleString()} body characters` : undefined,
+                    `Owner: ${selectedPolicy.ownerSteward}`,
+                  ]} />
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <ActionButton onClick={() => navigate(`/library/${selectedPolicy.id}`)}>Open Live Detail</ActionButton>
+                  <ActionButton onClick={() => navigate(`/policies/${selectedPolicy.id}`)}>Open Policy Route</ActionButton>
+                </div>
+              </div>
+              <div style={{ background: '#FFFFFF', color: '#1F1C1B', borderRadius: '10px', overflow: 'hidden', maxHeight: '70vh' }}>
+                <PolicyLibraryDocumentView policyId={selectedPolicy.id} embedded />
+              </div>
+            </div>
+          ) : (
+            <EmptyState title="Policy Content Missing" description="No canonical policy content resolved for this policy ID." icon={<FileSearch size={28} color={V3.tealLight} />} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- FORM CONTENT PARITY ---
+const FormsContentWorkspace = () => {
+  const navigate = useNavigate();
+  const forms = useMemo(() => FORMS_DATASET.slice(0, 14), []);
+  const [selectedFormId, setSelectedFormId] = useState(forms[0]?.id ?? 'EN-FM-001');
+  const selectedForm = forms.find(form => form.id === selectedFormId) ?? forms[0];
+  const content = useMemo(() => selectedForm ? buildFormContent(selectedForm as FormRecord) : null, [selectedForm]);
+
+  return (
+    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
+      <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+          <FileSearch size={16} color={V3.orangeLight} />
+          <span style={{ fontSize: '10px', fontWeight: 700, color: V3.orangeLight, letterSpacing: '1px' }}>V3_RENDERER_ADAPTER</span>
+          <span style={{ fontSize: '10px', color: V3.textTertiary }}>FORMS_DATASET / buildFormContent / FormBody / FormPrintView</span>
+        </div>
+        <h1 style={{ fontSize: '24px', fontWeight: 600, color: V3.textPrimary, margin: 0 }}>Forms Content Renderer</h1>
+        <p style={{ fontSize: '12.5px', color: V3.textSecondary, margin: '6px 0 0' }}>
+          Form detail renders real sections, fields, orientation metadata, signatures, linked policies, and print/open handoffs.
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 0.8fr) minmax(0, 1.7fr)', gap: '16px', minHeight: 0, flex: 1 }}>
+        <div className="no-scrollbar" style={{ overflowY: 'auto', borderRight: `1px solid ${V3.borderDefault}`, paddingRight: '12px' }}>
+          {forms.map(form => (
+            <button
+              key={form.id}
+              onClick={() => setSelectedFormId(form.id)}
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                padding: '12px 0',
+                border: 'none',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                background: 'transparent',
+                color: selectedFormId === form.id ? V3.textPrimary : V3.textSecondary,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ fontSize: '10px', fontWeight: 700, color: V3.tealLight, letterSpacing: '0.5px' }}>{form.id}</div>
+              <div style={{ fontSize: '12.5px', lineHeight: 1.35, marginTop: '3px' }}>{form.name}</div>
+              <MetadataLine items={[form.domainCode, form.type, form.usage]} />
+            </button>
+          ))}
+        </div>
+
+        <div className="no-scrollbar" style={{ overflowY: 'auto', minWidth: 0 }}>
+          {selectedForm && content ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ fontSize: '10px', color: V3.tealLight, fontWeight: 700, letterSpacing: '0.6px' }}>{content.id}</div>
+                  <h2 style={{ margin: '3px 0', fontSize: '19px', color: V3.textPrimary }}>{content.title}</h2>
+                  <MetadataLine items={[
+                    `${content.sections.length} sections`,
+                    `${content.orientation} orientation`,
+                    `${content.signatures?.length ?? 0} signature role(s)`,
+                    `${content.policies.length} linked policy reference(s)`,
+                  ]} />
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <ActionButton onClick={() => navigate(`/forms/${content.id}`)}>Open Live Form</ActionButton>
+                  <ActionButton onClick={() => printForm(content.id)}>Print Form</ActionButton>
+                </div>
+              </div>
+              <div style={{ background: '#FFFFFF', color: '#1F1C1B', borderRadius: '10px', padding: '22px', maxHeight: '70vh', overflow: 'auto' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#007970', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Purpose</div>
+                  <p style={{ fontSize: '13px', lineHeight: 1.5, margin: '5px 0 10px' }}>{content.purpose}</p>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#C74601', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Instructions</div>
+                  <p style={{ fontSize: '13px', lineHeight: 1.5, margin: '5px 0 0' }}>{content.instructions}</p>
+                </div>
+                <FormBody content={content} isEmbedded />
+              </div>
+            </div>
+          ) : (
+            <EmptyState title="Form Content Missing" description="No canonical form content resolved for this form ID." icon={<FileSearch size={28} color={V3.tealLight} />} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- TRAINING / JOURNEY CONTENT PARITY ---
+const TrainingContentWorkspace = () => {
+  const navigate = useNavigate();
+  const [phase, setPhase] = useState('GAO');
+  const modules = useMemo(() => ALL_MODULES.filter(module => module.group === phase).slice(0, 16), [phase]);
+  const phaseCounts = useMemo(() => {
+    return ALL_MODULES.reduce<Record<string, number>>((acc, module) => {
+      acc[module.group] = (acc[module.group] ?? 0) + 1;
+      return acc;
+    }, {});
+  }, []);
+
+  const formatRoles = (roles: (typeof ALL_MODULES)[number]['roles']) => roles === 'ALL' ? 'ALL' : roles.join(', ');
+
+  return (
+    <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
+      <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+          <UserPlus size={16} color={V3.orangeLight} />
+          <span style={{ fontSize: '10px', fontWeight: 700, color: V3.orangeLight, letterSpacing: '1px' }}>LIVE_ROUTE_HANDOFF</span>
+          <span style={{ fontSize: '10px', color: V3.textTertiary }}>ALL_MODULES / JourneyHomePage / ModulePlayerPage</span>
+        </div>
+        <h1 style={{ fontSize: '24px', fontWeight: 600, color: V3.textPrimary, margin: 0 }}>Training & Journey Content</h1>
+        <p style={{ fontSize: '12.5px', color: V3.textSecondary, margin: '6px 0 0' }}>
+          V3 reads the canonical module catalog and routes module, supervisor, admin, guide, and onboarding-v2 paths to live surfaces.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {['GAO', 'ROLE', 'ANN', 'DRILL', 'SUPERVISED'].map(group => (
+          <button
+            key={group}
+            onClick={() => setPhase(group)}
+            style={{
+              padding: '7px 12px',
+              borderRadius: '8px',
+              border: `1px solid ${phase === group ? V3.tealLight : 'rgba(255,255,255,0.12)'}`,
+              background: phase === group ? 'rgba(0,209,193,0.08)' : 'transparent',
+              color: phase === group ? V3.textPrimary : V3.textSecondary,
+              cursor: 'pointer',
+              fontSize: '11px',
+              fontWeight: 700,
+            }}
+          >
+            {group} {phaseCounts[group] ?? 0}
+          </button>
+        ))}
+        <ActionButton onClick={() => navigate('/journey')}>Open Journey Home</ActionButton>
+        <ActionButton onClick={() => navigate('/journey/supervisor')}>Supervisor</ActionButton>
+        <ActionButton onClick={() => navigate('/journey/admin')}>Admin</ActionButton>
+        <ActionButton onClick={() => navigate('/journey/guide')}>Guide</ActionButton>
+        <ActionButton onClick={() => navigate('/onboarding-v2')}>Onboarding V2</ActionButton>
+      </div>
+
+      <div className="no-scrollbar" style={{ overflowY: 'auto', flex: 1 }}>
+        {modules.map(module => (
+          <div key={module.id} style={{ padding: '13px 0', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: '12px', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '10px', color: V3.tealLight, fontWeight: 700, letterSpacing: '0.6px' }}>{module.id}</div>
+              <div style={{ fontSize: '14px', color: V3.textPrimary, marginTop: '2px' }}>{module.title}</div>
+              <MetadataLine items={[
+                `Roles: ${formatRoles(module.roles)}`,
+                `Method: ${module.method}`,
+                module.week ? `Week ${module.week}` : undefined,
+                module.policyRefs.length ? `Policies: ${module.policyRefs.slice(0, 3).join(', ')}` : undefined,
+              ]} />
+            </div>
+            <button
+              onClick={() => navigate(`/journey/module/${module.id}`)}
+              style={{ padding: '7px 12px', background: 'rgba(0,209,193,0.08)', border: '1px solid rgba(0,209,193,0.24)', color: V3.tealLight, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+            >
+              Open Module
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <BlockedInline>BLOCKED_PENDING_PHASE_4 — gates, evidence, signatures, escalations, and deterministic progress state remain live-route/workflow concerns, not Phase 3 completion.</BlockedInline>
     </div>
   );
 };
@@ -807,6 +1128,11 @@ export default function V3_2StagingApp() {
   }, []);
 
   const renderWorkspace = () => {
+    const phase3Blockers: Record<string, string> = {
+      policy: 'BLOCKED_PENDING_PHASE_3 — Full policy body rendering will be wired through policyContentMap/getPolicyContent/getPolicyBody.',
+    };
+    const phase4Blocker = 'BLOCKED_PENDING_PHASE_4 — Workflow interiors and action behavior are outside Phase 2.';
+
     switch (activeSection) {
       case 'dashboard':
         return isPlannerView 
@@ -818,13 +1144,19 @@ export default function V3_2StagingApp() {
         return <EvidenceCenterWorkspace />;
       case 'brad':
         return <BradCopilotWorkspace chatInput={chatInput} setChatInput={setChatInput} chatLog={chatLog} setChatLog={setChatLog} />;
+      case 'policy':
+        return <PolicyContentWorkspace />;
+      case 'forms':
+        return <FormsContentWorkspace />;
+      case 'onboarding':
+        return <TrainingContentWorkspace />;
       default:
         return (
           <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ borderBottom: `1px solid ${V3.borderDefault}`, paddingBottom: '12px' }}>
               <h1 style={{ fontSize: '20px', fontWeight: 600, margin: 0 }}>{activeSection.toUpperCase()} Workspace</h1>
             </div>
-            <EmptyState title="Under Active Sprint Construction" description={`The workspace panel for "${activeSection}" is currently being indexed into the system schedule.`} icon={<FileSearch size={28} color={V3.tealLight} />} />
+            <EmptyState title="Explicit Phase Blocker" description={phase3Blockers[activeSection] ?? phase4Blocker} icon={<FileSearch size={28} color={V3.tealLight} />} />
           </div>
         );
     }

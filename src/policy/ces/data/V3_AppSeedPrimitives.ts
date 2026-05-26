@@ -2,6 +2,9 @@
  * V3_AppSeedPrimitives.ts
  * Single source of truth for all seeded data across the V3 staging app.
  * Every page imports from here to ensure cross-surface consistency.
+ *
+ * V3_SYNTHETIC_FALLBACK: these are preview seed primitives only. They are
+ * registry/list seeded data and do not prove full content or workflow parity.
  */
 
 /* ── Date Anchors ── */

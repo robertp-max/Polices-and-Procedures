@@ -10,6 +10,9 @@
    This bridges the gap between V3_CES_SeedData (ExecutionUnit[] +
    sprint context) and the shape that production components actually
    consume. Called by the SeededModeProvider's buildSnapshot prop.
+
+   V3_SYNTHETIC_FALLBACK: the adapted snapshot is preview-only. It bypasses
+   canonical live stores and is not workflow-action parity.
    ═══════════════════════════════════════════════════════════════ */
 
 import type { ComplianceExecutionSnapshot } from '@/policy/compliance-execution/complianceExecutionStore';

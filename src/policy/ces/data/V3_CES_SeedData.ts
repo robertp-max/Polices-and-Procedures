@@ -17,6 +17,9 @@
  *
  * Generated from the V3 Seeding 30-Agent blueprint + hardened V2 gaps analysis.
  * Location: src/policy/ces/data/V3_CES_SeedData.ts
+ *
+ * V3_SYNTHETIC_FALLBACK: this file seeds preview CES data. It is not canonical
+ * REGULATORY_EVENTS/store state and does not prove workflow action parity.
  */
 
 import type {

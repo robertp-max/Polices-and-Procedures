@@ -10,6 +10,9 @@
  *  - Current sprint Execution Units as glass cards (mimics board columns)
  *
  * This is the first consumable output of the seeding effort.
+ *
+ * V3_SYNTHETIC_FALLBACK: this route is seed-preview only. Cards do not open
+ * task/workflow interiors in Phase 2.
  */
 
 import { useState } from 'react';
@@ -60,7 +63,6 @@ function ExecutionUnitCard({ unit }: { unit: ExecutionUnit }) {
       borderRadius: 12,
       padding: 16,
       marginBottom: 12,
-      transition: 'transform .1s ease, box-shadow .1s ease',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: c.fg, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -93,6 +95,9 @@ function ExecutionUnitCard({ unit }: { unit: ExecutionUnit }) {
           Blocked: {unit.blockedReason.label}
         </div>
       )}
+      <div style={{ marginTop: 10, fontSize: 10.5, color: V3.textTertiary }}>
+        BLOCKED_PENDING_PHASE_4 — task/workflow interiors are not wired in this seed preview.
+      </div>
     </div>
   );
 }
@@ -113,12 +118,12 @@ export function V3CESSeedPreview() {
       <div style={{ maxWidth: 1180, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 11, letterSpacing: '2px', color: V3.textTertiary, marginBottom: 4 }}>V3 SEEDING — FIRST DROP</div>
+          <div style={{ fontSize: 11, letterSpacing: '2px', color: V3.textTertiary, marginBottom: 4 }}>V3_SYNTHETIC_FALLBACK — CES SEED PREVIEW ONLY</div>
           <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, letterSpacing: '-0.5px' }}>
             CES Seed Preview — {sprint.activeSprintLabel}
           </h1>
           <p style={{ color: V3.textSecondary, marginTop: 6 }}>
-            High-fidelity data generated from the 30-agent V3 seeding blueprint. Toggle between internal and surveyor views.
+            Seeded data preview generated from the V3 seeding blueprint. It does not prove workflow wiring or production parity.
           </p>
         </div>
 
@@ -210,7 +215,7 @@ export function V3CESSeedPreview() {
         </div>
 
         <div style={{ marginTop: 32, fontSize: 11, color: V3.textTertiary, borderTop: `1px solid ${V3.borderDefault}`, paddingTop: 16 }}>
-          Seed module: <code>src/policy/ces/data/V3_CES_SeedData.ts</code> — generated {new Date().toISOString().slice(0,10)}
+          V3_SYNTHETIC_FALLBACK seed module: <code>src/policy/ces/data/V3_CES_SeedData.ts</code>
         </div>
       </div>
     </div>

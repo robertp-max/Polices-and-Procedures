@@ -12,6 +12,9 @@
 
    This module is tree-shaken from production builds because the
    provider is only mounted inside /ui-staging routes.
+
+   V3_SYNTHETIC_FALLBACK: seeded mode is a preview injection path only and
+   must not be reported as production-shaped completion.
    ═══════════════════════════════════════════════════════════════ */
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
