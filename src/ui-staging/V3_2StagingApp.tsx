@@ -18,6 +18,9 @@ import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDatase
 import { buildFormContent } from '@/policy/data/formsLibraryContent';
 import { printForm } from '@/policy/utils/printForm';
 import { ALL_MODULES } from '@/policy/journey/data/modules';
+import { V3_ExecutionUnitsSeed, V3_SprintContextSeed } from '@/policy/ces/data/V3_CES_SeedData';
+import { V3_AUDIT_LOG, V3_FORMS } from '@/policy/ces/data/V3_AppSeedPrimitives';
+import type { ExecutionUnit } from '@/policy/ces/types';
 
 // Safe alias for Search icon to prevent import mismatches
 const SearchIcon = Search;
@@ -656,25 +659,221 @@ const PlannerWorkspace = ({ tasks, isMobile }: any) => {
   );
 };
 
+type CesPreviewState = {
+  viewed?: boolean;
+  started?: boolean;
+  note?: string;
+  blocker?: string;
+};
+
+const PHASE_4B_EVIDENCE_BLOCKER = 'BLOCKED_PENDING_PHASE_4B — Evidence/artifact workflow not wired in this phase.';
+const PHASE_4B_SIGNATURE_BLOCKER = 'BLOCKED_PENDING_PHASE_4B — Signature/approval workflow not wired in this phase.';
+const PHASE_4C_DURABLE_BLOCKER = 'BLOCKED_PENDING_PHASE_4C — Durable planner/task execution not wired in this phase.';
+
+const formatList = (items: readonly string[] | undefined, fallback = 'Not available') => items && items.length ? items.join(', ') : fallback;
+
+const getRelatedFormIds = (unit: ExecutionUnit) => {
+  const ids = new Set<string>([...(unit.sourceFormIds ?? []), ...unit.evidenceStatus.missingFormIds]);
+  return Array.from(ids);
+};
+
+const getRelatedPolicyIds = (unit: ExecutionUnit) => {
+  const ids = new Set<string>(unit.sourcePolicyIds ?? []);
+  getRelatedFormIds(unit).forEach(formId => {
+    const seededForm = V3_FORMS.find(form => form.id === formId);
+    if (seededForm?.requiredBy) ids.add(seededForm.requiredBy);
+  });
+  return Array.from(ids);
+};
+
+const getTaskReadiness = (unit: ExecutionUnit, preview: CesPreviewState) => {
+  if (preview.blocker) return `Local blocker: ${preview.blocker}`;
+  if (unit.blockedReason) return unit.blockedReason.label;
+  if (unit.evidenceStatus.requiredFormsComplete < unit.evidenceStatus.requiredFormsTotal) return PHASE_4B_EVIDENCE_BLOCKER;
+  if (unit.evidenceStatus.signaturesComplete < unit.evidenceStatus.signaturesRequired) return PHASE_4B_SIGNATURE_BLOCKER;
+  if (unit.complianceState !== 'completed') return PHASE_4C_DURABLE_BLOCKER;
+  return 'Seed indicates completed, but V3 staging does not certify production completion.';
+};
+
+const getNextBestAction = (unit: ExecutionUnit, preview: CesPreviewState) => {
+  if (!preview.viewed) return 'Mark viewed to acknowledge this local preview detail.';
+  if (!preview.started) return 'Mark started to create local-only preview progress.';
+  if (preview.blocker) return 'Clear the local blocker when the preview issue is no longer relevant.';
+  if (unit.evidenceStatus.requiredFormsComplete < unit.evidenceStatus.requiredFormsTotal) return 'Review required forms and evidence gaps; upload/validation is blocked until Phase 4B.';
+  if (unit.evidenceStatus.signaturesComplete < unit.evidenceStatus.signaturesRequired) return 'Review pending signers; signature/approval workflow is blocked until Phase 4B.';
+  return 'Durable completion is blocked until Phase 4C task execution is wired.';
+};
+
+const getCompletionRule = (unit: ExecutionUnit) => {
+  const evidence = unit.evidenceStatus;
+  return [
+    `${evidence.requiredFormsComplete}/${evidence.requiredFormsTotal} required forms complete`,
+    `${evidence.signaturesComplete}/${evidence.signaturesRequired} signatures complete`,
+    evidence.auditIndexCreated ? 'audit index exists' : 'audit index not created',
+    unit.blockedReason ? `blocker unresolved: ${unit.blockedReason.label}` : 'no seeded blocker',
+  ].join(' · ');
+};
+
+const DetailField = ({ label, children }: { label: string; children: any }) => (
+  <div style={{ display: 'grid', gridTemplateColumns: '118px minmax(0, 1fr)', gap: '10px', alignItems: 'baseline' }}>
+    <span style={{ fontSize: '9px', color: V3.textTertiary, textTransform: 'uppercase', letterSpacing: '0.6px', fontWeight: 700 }}>{label}</span>
+    <span style={{ fontSize: '12px', color: V3.textSecondary, lineHeight: 1.45, minWidth: 0 }}>{children}</span>
+  </div>
+);
+
+const PhaseBlockedButton = ({ children, reason }: { children: string; reason: string }) => (
+  <button
+    disabled
+    title={reason}
+    style={{ padding: '7px 10px', borderRadius: '7px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.12)', color: V3.textTertiary, fontSize: '11px', fontWeight: 700, cursor: 'not-allowed' }}
+  >
+    {children}
+  </button>
+);
+
+const CesEventWorkspace = ({ unit, eventUnits }: { unit: ExecutionUnit; eventUnits: ExecutionUnit[] }) => {
+  const policyIds = getRelatedPolicyIds(unit);
+  const formIds = getRelatedFormIds(unit);
+  const formsComplete = unit.evidenceStatus.requiredFormsComplete;
+  const formsTotal = unit.evidenceStatus.requiredFormsTotal;
+
+  return (
+    <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div>
+        <div style={{ fontSize: '9px', color: V3.tealLight, fontWeight: 700, letterSpacing: '0.8px' }}>EVENT WORKSPACE · workflow wired preview</div>
+        <h2 style={{ fontSize: '16px', color: V3.textPrimary, margin: '4px 0 2px' }}>{unit.parentEventId}</h2>
+        <p style={{ fontSize: '11.5px', color: V3.textSecondary, margin: 0 }}>
+          In-shell Phase 4A event context derived from the selected CES seed execution unit. This is not durable production execution.
+        </p>
+      </div>
+      <DetailField label="Why exists">{unit.sourceType ?? 'REGULATORY_EVENT'} · {unit.obligationKind ?? 'SPRINT_TASK'} · {unit.domain}</DetailField>
+      <DetailField label="Workflow">{unit.workflowId} · {unit.workflowPhase}</DetailField>
+      <DetailField label="Due timing">{unit.dueDate} · {unit.escalationTimer != null ? `${unit.escalationTimer} hour(s) to escalation` : 'no escalation timer'}</DetailField>
+      <DetailField label="Related tasks">{eventUnits.length} seeded task(s) for this event in V3 preview</DetailField>
+      <DetailField label="Policies">{formatList(policyIds)}</DetailField>
+      <DetailField label="Forms">{formatList(formIds, `${formsComplete}/${formsTotal} forms complete; no form IDs available`)}</DetailField>
+      <DetailField label="Audit preview">{V3_AUDIT_LOG.find(row => row.resource.includes(unit.id) || row.resource.toLowerCase().includes(unit.title.toLowerCase().slice(0, 16)))?.action ?? 'No deterministic audit row found for this seed unit.'}</DetailField>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <OpenLiveRouteButton route={`/calendar?view=sprint&event=${unit.parentEventId}`} />
+      </div>
+    </div>
+  );
+};
+
+const CesTaskDetailPanel = ({
+  unit,
+  preview,
+  onPreviewChange,
+}: {
+  unit: ExecutionUnit;
+  preview: CesPreviewState;
+  onPreviewChange: (next: CesPreviewState) => void;
+}) => {
+  const [draftNote, setDraftNote] = useState(preview.note ?? '');
+  const [draftBlocker, setDraftBlocker] = useState(preview.blocker ?? '');
+  const formIds = getRelatedFormIds(unit);
+  const policyIds = getRelatedPolicyIds(unit);
+  const readiness = getTaskReadiness(unit, preview);
+
+  useEffect(() => {
+    setDraftNote(preview.note ?? '');
+    setDraftBlocker(preview.blocker ?? '');
+  }, [unit.id, preview.note, preview.blocker]);
+
+  return (
+    <div style={{ flex: '1 1 340px', minWidth: '300px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '100%', overflow: 'hidden' }}>
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '9px', color: V3.tealLight, fontWeight: 700, letterSpacing: '0.8px' }}>TASK DETAIL · workflow wired preview</span>
+          {preview.viewed && <span style={{ fontSize: '9px', color: V3.textTertiary }}>viewed</span>}
+          {preview.started && <span style={{ fontSize: '9px', color: V3.textTertiary }}>started</span>}
+        </div>
+        <h2 style={{ fontSize: '17px', fontWeight: 600, color: V3.textPrimary, margin: '5px 0 2px' }}>{unit.title}</h2>
+        <div style={{ fontSize: '11px', color: V3.textTertiary, fontFamily: 'monospace' }}>{unit.id}</div>
+      </div>
+
+      <div className="no-scrollbar" style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0 }}>
+        <DetailField label="Why exists">{unit.sourceType ?? 'REGULATORY_EVENT'} obligation for {unit.domain} compliance execution.</DetailField>
+        <DetailField label="Source event">{unit.parentEventId}</DetailField>
+        <DetailField label="Owner">{unit.owner.name} · {unit.owner.role}</DetailField>
+        <DetailField label="Status">{unit.complianceState} · audit readiness {unit.auditReadiness}</DetailField>
+        <DetailField label="Due">{unit.dueDate} · {unit.escalationTimer != null ? `${unit.escalationTimer} hour(s) to escalation` : 'no seeded escalation timing'}</DetailField>
+        <DetailField label="Workflow">{unit.workflowId}</DetailField>
+        <DetailField label="Policies">{formatList(policyIds)}</DetailField>
+        <DetailField label="Forms">{formatList(formIds, 'No concrete form IDs available; see evidence totals.')}</DetailField>
+        <DetailField label="Evidence">{unit.evidenceStatus.requiredFormsComplete}/{unit.evidenceStatus.requiredFormsTotal} forms complete · missing {unit.evidenceStatus.missingFormIds.length} · audit index {unit.evidenceStatus.auditIndexCreated ? 'created' : 'not created'}</DetailField>
+        <DetailField label="Signatures">{unit.evidenceStatus.signaturesComplete}/{unit.evidenceStatus.signaturesRequired} complete · {unit.requiredSigners.map(s => `${s.name}: ${s.status}`).join(', ') || 'none seeded'}</DetailField>
+        <DetailField label="Approvals">{unit.approver.name} · {unit.approverRole ?? unit.approver.role}</DetailField>
+        <DetailField label="Readiness">{readiness}</DetailField>
+        <DetailField label="Completion">{getCompletionRule(unit)}</DetailField>
+        <DetailField label="Next action">{getNextBestAction(unit, preview)}</DetailField>
+        <DetailField label="Audit preview">{V3_AUDIT_LOG.filter(row => row.resource.includes(unit.id) || row.resource.toLowerCase().includes(unit.title.toLowerCase().slice(0, 16))).slice(0, 2).map(row => `${row.timestamp}: ${row.action}`).join(' · ') || 'No deterministic audit row found for this seed unit.'}</DetailField>
+
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>SAFE LOCAL PREVIEW ACTIONS</div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <ActionButton onClick={() => onPreviewChange({ ...preview, viewed: true })}>Mark viewed</ActionButton>
+            <ActionButton onClick={() => onPreviewChange({ ...preview, viewed: true, started: true })}>Mark started</ActionButton>
+            <ActionButton onClick={() => onPreviewChange({ ...preview, blocker: draftBlocker.trim() || 'Local preview blocker' })}>Add local blocker</ActionButton>
+            <ActionButton onClick={() => onPreviewChange({ ...preview, blocker: undefined })}>Clear local blocker</ActionButton>
+          </div>
+          <textarea
+            value={draftNote}
+            onChange={e => setDraftNote(e.target.value)}
+            placeholder="Local preview note"
+            style={{ minHeight: '68px', resize: 'vertical', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: V3.textPrimary, padding: '8px', fontSize: '12px', outline: 'none' }}
+          />
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <ActionButton onClick={() => onPreviewChange({ ...preview, note: draftNote.trim() })}>Add local note</ActionButton>
+            <input
+              value={draftBlocker}
+              onChange={e => setDraftBlocker(e.target.value)}
+              placeholder="Local blocker reason"
+              style={{ flex: '1 1 170px', minWidth: 0, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: V3.textPrimary, padding: '8px', fontSize: '12px', outline: 'none' }}
+            />
+          </div>
+        </div>
+
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>BLOCKED PRODUCTION ACTIONS</div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <PhaseBlockedButton reason={PHASE_4B_EVIDENCE_BLOCKER}>Upload evidence</PhaseBlockedButton>
+            <PhaseBlockedButton reason={PHASE_4B_SIGNATURE_BLOCKER}>Request signature</PhaseBlockedButton>
+            <PhaseBlockedButton reason={PHASE_4B_SIGNATURE_BLOCKER}>Approve task</PhaseBlockedButton>
+            <PhaseBlockedButton reason={PHASE_4C_DURABLE_BLOCKER}>Complete task</PhaseBlockedButton>
+          </div>
+        </div>
+
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 700, letterSpacing: '0.5px' }}>SECONDARY LIVE ROUTE HANDOFFS</div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {policyIds.slice(0, 3).map(policyId => <OpenLiveRouteButton key={policyId} route={`/library/${policyId}`} />)}
+            {formIds.slice(0, 3).map(formId => <OpenLiveRouteButton key={formId} route={`/forms/${formId}`} />)}
+            <OpenLiveRouteButton route={`/calendar?view=sprint&task=${unit.id}`} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- KANBAN BOARD (SPRINT execution) ---
 const SprintBoardWorkspace = () => {
-  const [activeTask] = useState<string>('Distribute agenda & pre-read packet');
-
+  const activeSprintId = V3_SprintContextSeed.activeSprint.id;
+  const seededUnits = useMemo(
+    () => V3_ExecutionUnitsSeed.filter(unit => unit.sprintId === activeSprintId).slice(0, 18),
+    [activeSprintId],
+  );
+  const [selectedTaskId, setSelectedTaskId] = useState<string>(seededUnits[0]?.id ?? '');
+  const [previewByTask, setPreviewByTask] = useState<Record<string, CesPreviewState>>({});
+  const selectedUnit = seededUnits.find(unit => unit.id === selectedTaskId) ?? seededUnits[0];
+  const selectedPreview = selectedUnit ? (previewByTask[selectedUnit.id] ?? {}) : {};
+  const eventUnits = selectedUnit ? seededUnits.filter(unit => unit.parentEventId === selectedUnit.parentEventId) : [];
   const columns = [
-    { id: 'overdue', title: 'OVERDUE (18)', count: 18, items: [
-      { id: '1', title: 'Verify pre-input completeness across all 4 sectors', policy: 'C2 QAPI Review', date: '2026-05-18' },
-      { id: '2', title: 'Evidence for QAPI completeness review verification', policy: 'C2 QAPI Review', date: '2026-05-18' },
-      { id: '3', title: 'Distribute agenda & pre-read packet', policy: 'C2 QAPI Review', date: '2026-05-20' },
-      { id: '4', title: 'Review aggregate quality trends from CL-WP-25', policy: 'C2 QAPI Review', date: '2026-05-19' },
-    ]},
-    { id: 'at_risk', title: 'AT RISK (0)', count: 0, items: [] },
-    { id: 'in_progress', title: 'IN PROGRESS (4)', count: 4, items: [
-      { id: '5', title: 'Audit Plan of Care documentation', policy: 'POC Standard Audit', date: '2026-05-22' },
-      { id: '6', title: 'Safety review & upload drill log to hubstaff', policy: 'Safety drill execution', date: '2026-05-24' }
-    ]},
-    { id: 'awaiting', title: 'AWAITING SIG (1)', count: 1, items: [
-      { id: '7', title: 'Quarterly compliance board report signature', policy: 'Governance Board Exec', date: '2026-05-21' }
-    ]},
+    { id: 'blocked', title: 'BLOCKED', items: seededUnits.filter(unit => unit.complianceState === 'blocked') },
+    { id: 'awaiting_signature', title: 'AWAITING SIG', items: seededUnits.filter(unit => unit.complianceState === 'awaiting_signature') },
+    { id: 'in_progress', title: 'IN PROGRESS', items: seededUnits.filter(unit => unit.complianceState === 'in_progress') },
+    { id: 'ready', title: 'READY / UPCOMING', items: seededUnits.filter(unit => unit.complianceState === 'ready' || unit.complianceState === 'upcoming') },
   ];
 
   return (
@@ -685,7 +884,7 @@ const SprintBoardWorkspace = () => {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
           <h1 style={{ fontSize: '22px', fontWeight: 600, color: V3.textPrimary, margin: 0, letterSpacing: '-0.5px' }}>Sprint execution • Mon-Fri 2-week window</h1>
-          <PreviewLabel detail="CES board rows are preview-only; use live route handoff for canonical execution" />
+          <PreviewLabel detail="Phase 4A event/task interiors are in-shell local preview only" />
           <div style={{ display: 'flex', gap: '8px' }}>
             <OpenLiveRouteButton route="/calendar" />
             <OpenLiveRouteButton route="/calendar?view=sprint" />
@@ -694,37 +893,39 @@ const SprintBoardWorkspace = () => {
       </div>
 
       <div style={{ display: 'flex', gap: '16px', flex: 1, overflow: 'hidden', minHeight: '400px', flexDirection: 'row', flexWrap: 'wrap' }}>
-        {/* Kanban Board */}
         <div style={{ display: 'flex', gap: '12px', flex: '3 1 600px', overflowX: 'auto', paddingBottom: '8px' }} className="no-scrollbar">
           {columns.map(col => (
             <div key={col.id} style={{ minWidth: '220px', flex: 1, display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.005)', borderRadius: '12px', padding: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: '10px' }}>
                 <span style={{ fontSize: '10px', fontWeight: 700, color: V3.textSecondary, letterSpacing: '0.5px' }}>{col.title}</span>
-                <span style={{ fontSize: '10.5px', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '10px', color: V3.textTertiary }}>{col.count}</span>
+                <span style={{ fontSize: '10.5px', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '10px', color: V3.textTertiary }}>{col.items.length}</span>
               </div>
               <div className="no-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, overflowY: 'auto' }}>
                 {col.items.length === 0 ? (
                    <div style={{ textAlign: 'center', padding: '30px 0', color: V3.textTertiary, fontSize: '11px', fontStyle: 'italic' }}>No active tasks</div>
                 ) : (
-                  col.items.map(task => (
-                    <div
-                      key={task.id} 
+                  col.items.map(unit => (
+                    <button
+                      key={unit.id}
+                      onClick={() => setSelectedTaskId(unit.id)}
                       style={{ 
+                        width: '100%',
+                        textAlign: 'left',
                         padding: '12px', 
-                        background: activeTask === task.title ? 'rgba(0, 209, 193, 0.05)' : 'rgba(255,255,255,0.01)', 
-                        border: activeTask === task.title ? '1px solid rgba(0,209,193,0.4)' : '1px solid rgba(255,255,255,0.08)', 
+                        background: selectedUnit?.id === unit.id ? 'rgba(0, 209, 193, 0.05)' : 'rgba(255,255,255,0.01)', 
+                        border: selectedUnit?.id === unit.id ? '1px solid rgba(0,209,193,0.4)' : '1px solid rgba(255,255,255,0.08)', 
                         borderRadius: '10px',
-                        cursor: 'default'
+                        cursor: 'pointer'
                       }}
                     >
-                      <h4 style={{ fontSize: '12px', fontWeight: 500, color: V3.textPrimary, margin: 0, lineHeight: 1.3 }}>{task.title}</h4>
-                      <div style={{ fontSize: '10.5px', color: V3.tealLight, fontWeight: 500, marginTop: '4px' }}>{task.policy}</div>
+                      <h4 style={{ fontSize: '12px', fontWeight: 500, color: V3.textPrimary, margin: 0, lineHeight: 1.3 }}>{unit.title}</h4>
+                      <div style={{ fontSize: '10.5px', color: V3.tealLight, fontWeight: 500, marginTop: '4px' }}>{unit.workflowId}</div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                        <span style={{ fontSize: '10px', color: V3.textTertiary }}>Assigned</span>
-                        <span style={{ fontSize: '10px', color: V3.textTertiary }}>{task.date}</span>
+                        <span style={{ fontSize: '10px', color: V3.textTertiary }}>{unit.owner.initials} · {unit.owner.role}</span>
+                        <span style={{ fontSize: '10px', color: V3.textTertiary }}>{unit.dueDate}</span>
                       </div>
-                      <div style={{ marginTop: '6px' }}><BlockedInline>BLOCKED_PENDING_PHASE_4 — open task detail in canonical CES/PM route.</BlockedInline></div>
-                    </div>
+                      <div style={{ marginTop: '6px' }}><BlockedInline>Phase 4A — click opens in-shell task detail preview.</BlockedInline></div>
+                    </button>
                   ))
                 )}
               </div>
@@ -732,40 +933,16 @@ const SprintBoardWorkspace = () => {
           ))}
         </div>
 
-        {/* Task Detail Sidebar */}
-        <div style={{ flex: '1 1 300px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
-            <div>
-              <div style={{ fontSize: '9px', color: V3.tealLight, fontWeight: 700, letterSpacing: '0.5px', marginBottom: '4px' }}>SELECTED EXECUTIONS</div>
-              <h2 style={{ fontSize: '16px', fontWeight: 600, color: V3.textPrimary, margin: '0 0 2px 0' }}>{activeTask}</h2>
-              <div style={{ fontSize: '11px', color: V3.textSecondary }}>Standard compliance schedule · May 2026</div>
-            </div>
+        {selectedUnit && (
+          <div style={{ flex: '1.4 1 420px', minWidth: '320px', display: 'flex', flexDirection: 'column', gap: '12px', overflow: 'hidden' }}>
+            <CesEventWorkspace unit={selectedUnit} eventUnits={eventUnits} />
+            <CesTaskDetailPanel
+              unit={selectedUnit}
+              preview={selectedPreview}
+              onPreviewChange={next => setPreviewByTask(prev => ({ ...prev, [selectedUnit.id]: next }))}
+            />
           </div>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px', marginBottom: '14px' }}>
-            <span style={{ fontSize: '11px', color: V3.textSecondary }}>FORMS <span style={{ color: V3.textPrimary, fontWeight: 600 }}>4 / 12</span></span>
-            <span style={{ fontSize: '11px', color: V3.textSecondary }}>AWAITING SIG <span style={{ color: V3.tealLight, fontWeight: 600 }}>2</span></span>
-          </div>
-
-          <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ fontSize: '10px', color: V3.textTertiary, fontWeight: 600, letterSpacing: '0.5px' }}>TASK CHECKPOINTS</div>
-            {[
-              { label: 'Submit pre-audit roster log', complete: true },
-              { label: 'Generate clinician schedule match map', complete: true },
-              { label: 'Distribute agenda & pre-read packet', complete: false },
-              { label: 'Document quality review committee decisions', complete: false },
-            ].map((t, i) => (
-              <div key={i} style={{ padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)', background: 'rgba(255,255,255,0.005)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '14px', height: '14px', borderRadius: '50%', border: t.complete ? 'none' : '1px solid rgba(255,255,255,0.3)', background: t.complete ? V3.tealLight : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {t.complete && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#020617' }} />}
-                  </div>
-                  <span style={{ fontSize: '12px', color: t.complete ? V3.textSecondary : V3.textPrimary }}>{t.label}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -23,7 +23,17 @@ No audited V3 surface is level 5.
 - Forms V3 surface now exists and renders full form detail through canonical content/render paths: `FORMS_DATASET`, `buildFormContent`, and `FormBody`, with print handoff through `printForm` / `FormPrintView`.
 - Training/Journey V3 surface now reads `ALL_MODULES` and provides live route handoffs to module player, Journey Home, Supervisor, Admin, Guide, and Onboarding V2.
 - Required validation passes after Phase 3: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, and `npm run build`. A final `npx tsc -b --pretty false` also passed after the post-build search-label wording tweak.
-- No CES task/workflow interiors, evidence workflows, signature/approval workflows, or deterministic workflow action state were implemented.
+- No CES task/workflow interiors, evidence workflows, signature/approval workflows, or deterministic workflow action state were implemented in Phase 3. Phase 4A later adds in-shell local-preview CES event/task interiors only.
+
+## Phase 4A CES Event/Task Interior Result
+
+- V3.2 CES task cards now use `V3_ExecutionUnitsSeed` instead of hardcoded local task rows.
+- Clicking a CES task card opens an in-shell Event Workspace and Task Detail panel.
+- Task detail includes context, owner/status, due/escalation timing, workflow, related policy/form IDs, evidence requirements, signature/approval requirements, blocker/readiness state, completion rule, next best action, and seeded audit preview where available.
+- Safe local preview actions are limited to selected task, viewed/started, local note, local blocker, and clear local blocker.
+- Evidence/artifact, signature/approval, durable completion, certification, and audit-history mutation remain blocked and labeled for Phase 4B/4C.
+- Live route access remains secondary explicit `Open live route` only.
+- No V3 surface is level 5 production-shaped complete.
 
 ## Production Parity Gate
 
@@ -49,10 +59,10 @@ The current V3 implementation fails the gate.
 | V3 shell routing | 1 | Registry/list seeded shell only, now honest | Content/workflow parity remains later phase work | `src/ui-staging/V3_2StagingApp.tsx` |
 | Policies | 3 | Renderer seeded through canonical policy content path | Lifecycle workflow/action parity remains Phase 4 | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/data/policyContentMap.ts`, `src/policy/components/PolicyLibraryDocumentView.tsx` |
 | Forms | 3 | Renderer seeded through canonical form content path | Signature/approval workflow state remains Phase 4 | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/components/FormViewer.tsx`, `src/policy/data/formsLibraryContent.ts` |
-| CES board | 1 | Registry/list seeded | Local task selection only | `src/ui-staging/V3_2StagingApp.tsx` |
+| CES board | 4 (local preview only; not durable production execution) | Workflow wired local preview | Evidence/signature/approval/durable execution remain blocked | `src/ui-staging/V3_2StagingApp.tsx` |
 | CES seed adapter | 3 | Renderer seeded adapter only | Not mounted into V3.2 workflows; bypasses live stores | `src/policy/ces/data/V3_CES_SnapshotBuilder.ts`, `src/policy/compliance-execution/seededMode.tsx` |
 | Calendar/event workspace | 0 in V3.2 | Placeholder/missing | V3 does not reuse `MasterCalendarPage` or `WorkflowExecutionPanel` | `src/policy/pages/MasterCalendarPage.tsx` |
-| Tasks / PM | 1 | Task cards only | No canonical task detail/action behavior | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/components/pm/TaskDetailRightPanel.tsx` |
+| Tasks / PM | 4 (local preview only; not durable production execution) in V3 CES only | CES task cards open an in-shell local-preview detail panel | Canonical PM drawer and durable execution remain outside V3 Phase 4A | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/components/pm/TaskDetailRightPanel.tsx` |
 | Evidence | 1 | Display-only hierarchy | No artifact viewer/upload/download/audit path | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/pages/EvidenceCenterPage.tsx` |
 | Training/Journey | 2 | Content seeded from `ALL_MODULES` with live route handoffs | Gates/evidence/signatures/escalations remain Phase 4 | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/journey/data/modules.ts`, `src/policy/journey/pages/JourneyHomePage.tsx` |
 | Onboarding V2 | 1 | Represented as live route handoff | Activation/batch/audit/governance workflows are not embedded in V3 | `src/policy/onboarding-v2/pages/*` |
@@ -62,8 +72,8 @@ The current V3 implementation fails the gate.
 
 ## Top 10 Production Blockers
 
-1. CES tasks do not open canonical task details.
-2. CES event/workflow interiors are not mounted in V3.2.
+1. CES evidence/artifact workflow remains Phase 4B.
+2. CES signature/approval workflow remains Phase 4B.
 3. Evidence rows do not open artifacts and do not support upload/download/validate/promote workflows.
 4. Signatures and approvals are static metadata in seeds/previews, not interactive state.
 5. Completion/status indicators are not proven deterministic in V3.
@@ -130,7 +140,7 @@ Required live parity:
 
 Current V3 gap:
 
-- V3.2 CES board uses hardcoded columns and local task selection.
+- V3.2 CES board now uses `V3_ExecutionUnitsSeed` columns and opens in-shell event/task interiors.
 - `/ui-staging/ces-seed` displays seed cards only.
 - `V3_CES_SnapshotBuilder` adapts seed data to `ComplianceExecutionSnapshot`, but it is not mounted into the V3.2 board and does not wire mutation/action behavior.
 - Live calendar/task paths exist outside V3 through `MasterCalendarPage`, `MobileIncidentExecutionPage`, `WorkflowExecutionPanel`, `MyTasksPage`, PM views, and `TaskDetailRightPanel`.

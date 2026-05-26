@@ -5,6 +5,17 @@ Phase 1 audit plus Phase 2 route stabilization tracking.
 Audit date: 2026-05-25  
 Scope: V3 staging routes and V3-named seed surfaces currently present in the repo. The app contains live canonical routes outside V3, but V3 itself is currently limited to `/ui-staging`, `/ui-staging/v32`, `/ui-staging/ces-seed`, and V3 seed modules.
 
+## Phase 4A CES Event/Task Interiors Addendum
+
+Phase 4A wires the V3.2 CES sprint board to seeded CES execution units and opens an in-shell Event Workspace plus Task Detail panel when a CES event/task card is clicked.
+
+- CES board primary task clicks stay inside `/ui-staging` / `/ui-staging/v32`.
+- CES task detail is `workflow wired` for local preview only: selected task, viewed/started, local note, local blocker, and clear local blocker.
+- CES task detail shows task context, why it exists, source event, owner, status, due/escalation timing, workflow ID, related policy IDs, related form IDs, required evidence, required signatures/approvals, blocker/readiness state, completion rule, next best action, and audit-history preview where seeded data can be matched.
+- Policy/form links from CES remain secondary explicit `Open live route` handoffs; policy/forms renderer parity in their own V3 sections remains level 3.
+- Evidence/artifact workflow, signature/approval workflow, durable planner/task execution, certification, and audit-history mutation remain blocked for Phase 4B/4C.
+- No V3 surface is level 5 production-shaped complete.
+
 ## Validation Result
 
 - Phase 1 before Phase 2: `npx tsc -b --pretty false` and `npm run build` failed because `src/ui-staging/UIStagingPage.tsx` imported a default export from empty `src/ui-staging/V3StagingApp.tsx`. `npx tsc --noEmit --skipLibCheck` passed.
@@ -51,10 +62,10 @@ Phase 2 does not upgrade content seeding, live renderer parity, workflow wiring,
 | Level | Count | Summary |
 |---:|---:|---|
 | 0 | 16 | Remaining V3 placeholders/unrouted seed primitives excluding policy/forms/training content targets upgraded in Phase 3. |
-| 1 | 6 | V3 preview/dashboard/planner/CES/evidence displays and stabilized staging entry remain registry/list seeded or preview-only. |
+| 1 | 5 | V3 preview/dashboard/planner/evidence displays and stabilized staging entry remain registry/list seeded or preview-only. |
 | 2 | 1 | Training/Journey content is seeded from `ALL_MODULES` with live route handoffs. |
 | 3 | 3 | Policy and form V3 surfaces now reuse/adapt canonical render paths; CES snapshot adapter remains renderer seeded concept only. |
-| 4 | 0 | No V3 surface wires full workflow actions, evidence, forms, signatures, approvals, blockers, and audit behavior end-to-end. |
+| 4 | 1 | CES event/task interiors have Phase 4A local workflow preview wiring only; evidence, signatures, approvals, durable completion, certification, and audit mutation remain blocked. |
 | 5 | 0 | Build/typecheck pass after Phase 2, but no V3 surface satisfies final completion validation. |
 
 ## Truth Matrix
@@ -70,7 +81,7 @@ Phase 2 does not upgrade content seeding, live renderer parity, workflow wiring,
 | Patient Profiles | `/ui-staging/v32` section `patients` | `/patients`, `/patients/:patientId` | `src/ui-staging/V3_2StagingApp.tsx` | Empty construction state; `V3_PATIENTS` exists but unused | `src/policy/staffing/pages/PatientListPage.tsx`, `src/policy/staffing/pages/PatientDetailPage.tsx` | No | No | No | No | No | No | Yes, seed exists in `V3_AppSeedPrimitives` but unused/unlabeled | 0 | No patient list, detail, cert period, discipline, visit, or clinician path in V3. | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/ces/data/V3_AppSeedPrimitives.ts` | V3 has only placeholder output. |
 | Scheduling & Visits | `/ui-staging/v32` section `calendar` | `/calendar`, `/staffing-calendar` | `src/ui-staging/V3_2StagingApp.tsx` | Empty construction state; `V3_VISITS` exists but unused | `src/policy/pages/MasterCalendarPage.tsx`, `src/policy/staffing/pages/StaffingCalendarPage.tsx` | No | No | No | No | No | No | Yes, seed exists in `V3_AppSeedPrimitives` but unused/unlabeled | 0 | No calendar grid, event detail, visit detail, or mobile execution path in V3. | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/pages/MasterCalendarPage.tsx` | Live calendar exists, V3 does not reuse it. |
 | Brad AI Copilot | `/ui-staging/v32` section `brad` | `/iadministrator`, `/brad-proposal`, help/reference surfaces | `src/ui-staging/V3_2StagingApp.tsx` | `INTRO_CHATS`, canned timeout responses | `src/policy/pages/iAdministrator.tsx`, `src/policy/pages/BradProposal.tsx`, `src/policy/help/HelpCenterPage.tsx` | No | No | No | Partial, prompt chips fill input and RUN appends canned answer | No | No | Yes, not labeled | 0 | No grounded policy/search/action layer; canned responses can imply false execution. | `src/ui-staging/V3_2StagingApp.tsx` | Synthetic completion claims risk. |
-| CES Sprint Board | `/ui-staging/v32` section `ces` | `/ces/board`, `/calendar?view=sprint`, `/pm/*` | `src/ui-staging/V3_2StagingApp.tsx` | Hardcoded `columns`, local `activeTask`, static checkpoints | `src/policy/ces/pages/CesBoardPage.tsx`, `src/policy/ces/components/board/SprintExecutionBoard.tsx`, `src/policy/pages/MasterCalendarPage.tsx`, `src/policy/components/pm/TaskDetailRightPanel.tsx` | Yes | No | No | Partial, task card selects local sidebar text | No | No | Yes, not labeled | 1 | Task selection does not open canonical task detail, event workspace, evidence, form, signature, approval, or audit views. | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/ces/components/board/SprintExecutionBoard.tsx`, `src/policy/components/pm/TaskDetailRightPanel.tsx` | Some checkpoints are pre-marked complete without deterministic live rule. |
+| CES Sprint Board | `/ui-staging/v32` section `ces` | `/ces/board`, `/calendar?view=sprint`, `/pm/*` | `src/ui-staging/V3_2StagingApp.tsx` | `V3_ExecutionUnitsSeed`, local Phase 4A preview state | `src/policy/ces/pages/CesBoardPage.tsx`, `src/policy/ces/components/board/SprintExecutionBoard.tsx`, `src/policy/pages/MasterCalendarPage.tsx`, `src/policy/components/pm/TaskDetailRightPanel.tsx` | Yes | Partial event/task content | No canonical PM drawer; V3 in-shell adapter | Yes, task card opens in-shell event/task detail | Yes, explicit `Open live route` only | Local preview only | Yes, labeled | 4 (local preview only; not durable production execution) | Evidence/artifact, signature/approval, durable completion, certification, and audit-history mutation remain blocked. | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/ces/data/V3_CES_SeedData.ts` | Phase 4A is not level 5 production-shaped completion. |
 | Taxonomy | `/ui-staging/v32` section `taxonomy` | `/taxonomy`, `/framework` | `src/ui-staging/V3_2StagingApp.tsx` | Empty construction state | `src/policy/pages/TaxonomyPage.tsx`, `src/policy/pages/FrameworkPage.tsx`, `src/policy/pages/AchcSurveyAlignmentPage.tsx` | No | No | No | No | No | No | Placeholder text | 0 | No taxonomy tree, policy crosswalk, or ACHC detail path in V3. | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/pages/TaxonomyPage.tsx` | Dead nav surface. |
 | Onboarding / Journey | `/ui-staging/v32` section `onboarding` | `/journey`, `/journey/module/:moduleId`, `/onboarding-v2/*` | `src/ui-staging/V3_2StagingApp.tsx` | `ALL_MODULES` | `src/policy/journey/pages/JourneyHomePage.tsx`, `src/policy/journey/data/modules.ts`, `src/policy/journey/pages/ModulePlayerPage.tsx`, `src/policy/onboarding-v2/pages/*`, `src/policy/onboarding/onboardingExecutionEngine.ts` | Yes | Yes, module catalog content | No embedded renderer; live route handoff | Yes, module clicks route to live player | Yes, journey/supervisor/admin/guide/onboarding-v2 handoffs | No | No new synthetic data | 2 | Gates, evidence, signatures, escalations, and deterministic progress remain Phase 4 workflow state. | `src/ui-staging/V3_2StagingApp.tsx`, journey/onboarding live files | `ALL_MODULES` content is now visible and clicks route to canonical live surfaces. |
 | Policy Lifecycle | `/ui-staging/v32` section `policy` | `/policy-lifecycle`, `/library`, `/library/:policyId`, `/policies/:policyId` | `src/ui-staging/V3_2StagingApp.tsx` | `frameworkPolicies`, `getPolicyContent`, `getPolicyBody` | `src/policy/pages/PolicyLifecyclePage.tsx`, `src/policy/pages/LibraryPage.tsx`, `src/policy/pages/PolicyDetailPage.tsx`, `src/policy/components/PolicyLibraryDocumentView.tsx`, `src/policy/data/policyContentMap.ts` | Yes | Yes | Yes, `PolicyLibraryDocumentView` embedded | Yes, list click renders full detail content | Yes, live route handoffs to `/library/:policyId` and `/policies/:policyId` | No | No new synthetic data | 3 | Lifecycle workflow/actions remain Phase 4; not production-shaped complete. | `src/ui-staging/V3_2StagingApp.tsx`, `src/policy/components/PolicyLibraryDocumentView.tsx`, `src/policy/data/policyContentMap.ts` | Full policy body path now resolves through canonical content accessors/renderer. |
@@ -106,11 +117,11 @@ Phase 2 does not upgrade content seeding, live renderer parity, workflow wiring,
 
 ### CES / Calendar / Tasks
 
-- V3.2 CES board is level 1: static columns and a local sidebar.
+- V3.2 CES board is Phase 4A: seeded columns now open an in-shell Event Workspace and Task Detail panel with safe local preview actions.
 - `/ui-staging/ces-seed` is level 1: static cards and filters only.
 - `V3_CES_SnapshotBuilder` is level 3 as a renderer adapter concept, but it is not mounted into the V3.2 click paths and uses local `V3_REGULATORY_EVENTS`.
-- V3.2 does not open a meaningful Event Workspace or canonical `RightDrawer`; task clicks do not open canonical `TaskDetailRightPanel`; evidence/forms/signatures/approvals/blockers/audit are displayed as static data or missing.
-- Some task checkpoints are pre-marked complete with no deterministic backing rule in V3.2.
+- V3.2 does not open canonical `TaskDetailRightPanel`; it opens a V3-local in-shell task detail adapter so containment is preserved.
+- Evidence/artifact, signature/approval, durable completion, certification, and audit-history mutation remain blocked and must not be counted as level 5 completion.
 
 ### Training / Journey / Onboarding
 
@@ -135,10 +146,10 @@ Phase 2 labeled these fallback locations in UI/source comments. They remain prev
 
 ## Top 10 Production Blockers
 
-1. CES V3 task cards do not open canonical task detail.
-2. CES V3 event/task workflows do not expose evidence/form/signature/approval/action state.
-3. Evidence/artifact workflows remain Phase 4.
-4. Signature/approval workflows remain Phase 4.
+1. CES evidence/artifact workflows remain Phase 4B.
+2. CES signature/approval workflows remain Phase 4B.
+3. Durable CES planner/task execution remains Phase 4C.
+4. Audit-history mutation and certification remain later Phase 4 work.
 5. Static completion/status indicators are not backed by deterministic live rules.
 6. Policy lifecycle workflow actions remain Phase 4 even though policy content renderer parity is now level 3.
 7. Form signature/approval workflow state remains Phase 4 even though form content renderer parity is now level 3.

@@ -7,7 +7,22 @@ Phase 1 audit plus Phase 2 route stabilization tracking.
 - Phase 1 before Phase 2: `npx tsc -b --pretty false` and `npm run build` failed on missing default export from `src/ui-staging/V3StagingApp.tsx`; `npx tsc --noEmit --skipLibCheck` passed.
 - Phase 2 after stabilization: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, and `npm run build` pass.
 - Phase 3 after content parity: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, and `npm run build` pass. A final `npx tsc -b --pretty false` also passed after the post-build search-label wording tweak.
-- Policy/forms/training click paths below now reflect Phase 3 content parity. CES workflow interiors remain Phase 4.
+- Policy/forms/training click paths below reflect Phase 3 content parity. CES event/task interiors now have Phase 4A in-shell local preview wiring; evidence, signature, approval, durable execution, certification, and audit-history mutation remain later Phase 4 blockers.
+
+## Phase 4A CES Click-Path Status
+
+| Click path | Phase 4A disposition | Status |
+|---|---|---|
+| CES sidebar primary nav | Still opens the contained V3 CES staging workspace; no live route navigation. | Contained |
+| CES task card click | Selects a seeded CES execution unit and opens an in-shell Event Workspace plus Task Detail panel. | `workflow wired` local preview |
+| CES Event Workspace | Shows source event, workflow, due timing, related seeded tasks, related policy/form IDs, and seeded audit preview where available. | `workflow wired` local preview |
+| CES Task Detail | Shows required task context, owner/status, due/escalation timing, workflow, evidence, signatures, approvals, readiness, completion rule, next best action, and audit preview. | `workflow wired` local preview |
+| Safe local actions | Mark viewed, mark started, add local note, add local blocker, clear local blocker. | Local preview state only |
+| Evidence/signature/approval/complete actions | Disabled with Phase 4B/4C blocker reasons. | Blocked, no fake completion |
+| Policy/form links from CES | Explicit secondary `Open live route` buttons only. | `LIVE_ROUTE_HANDOFF` |
+| Calendar/CES live access | Explicit secondary `Open live route` buttons only. | `LIVE_ROUTE_HANDOFF` |
+
+Phase 4A does not implement evidence upload/download/validation, signature collection, approval/rejection, durable task execution, certification, or audit-history mutation.
 
 ## Phase 3 Click-Path Status
 
