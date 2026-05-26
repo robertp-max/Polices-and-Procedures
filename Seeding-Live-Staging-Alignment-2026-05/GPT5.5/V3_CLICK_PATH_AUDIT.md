@@ -7,7 +7,24 @@ Phase 1 audit plus Phase 2 route stabilization tracking.
 - Phase 1 before Phase 2: `npx tsc -b --pretty false` and `npm run build` failed on missing default export from `src/ui-staging/V3StagingApp.tsx`; `npx tsc --noEmit --skipLibCheck` passed.
 - Phase 2 after stabilization: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, and `npm run build` pass.
 - Phase 3 after content parity: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, and `npm run build` pass. A final `npx tsc -b --pretty false` also passed after the post-build search-label wording tweak.
-- Policy/forms/training click paths below reflect Phase 3 content parity. CES event/task interiors now have Phase 4A in-shell local preview wiring; evidence, signature, approval, durable execution, certification, and audit-history mutation remain later Phase 4 blockers.
+- Phase 4B after CES evidence/signature local-preview wiring: `npx tsc -b --pretty false`, `npx tsc --noEmit --skipLibCheck`, `npm run build`, Phase 4B Playwright QA, and Phase 4A hardened selector QA all pass locally. Vercel commit statuses for 3376eeb were green. GitHub Actions CI and Deploy Frontend → S3 + CloudFront runs on main were failing before Phase 4B implementation.
+- Policy/forms/training click paths below reflect Phase 3 content parity. CES event/task interiors now have Phase 4B in-shell local preview wiring for evidence/artifacts/signature/approval interactions; durable execution, certification, backend persistence, and audit-history mutation remain Phase 4C blockers.
+
+## Phase 4B CES Click-Path Status
+
+| Click path | Phase 4B disposition | Status |
+|---|---|---|
+| CES task card click | Still selects a seeded CES execution unit and opens in-shell Event Workspace plus Task Detail; Phase 4A data-qa selectors remain intact. | `workflow wired` local preview |
+| Evidence panel | Shows required forms total/complete, missing form IDs, audit index state, related policy/form IDs, seeded status, local preview status, and readiness messages. | Local preview only |
+| Evidence actions | Mark evidence viewed, attach local preview evidence, mark preview evidence ready, add evidence blocker, and clear evidence blocker update React state only. | Local preview state only |
+| Signature/approval panel | Shows required signers, signer role/status, signatures complete vs required, approval owner/role, seeded state, local preview state, and readiness messages. | Local preview only |
+| Signature/approval actions | Prepare signature request, acknowledge preview signature, prepare approval request, acknowledge preview approval, add signature/approval blocker, and clear blocker update React state only. | Local preview state only |
+| Readiness output | Reports seeded/local blockers, missing forms, evidence readiness, signature acknowledgement, approval acknowledgement, and durable Phase 4C completion blocker. | Deterministic local preview |
+| Local preview history | Records session actions in React state and labels them `Local preview session history — not durable audit record`. | Not durable audit |
+| Complete task | Remains disabled with `BLOCKED_PENDING_PHASE_4C — Durable planner/task execution not wired in this phase.` | Blocked |
+| Policy/form references | Use V3 renderer-adapter availability where present and keep live access secondary via explicit `Open live route`. | Contained primary / secondary handoff |
+
+Phase 4B does not implement durable evidence upload/download/validation, signature collection, approval/rejection mutation, durable task execution, certification, backend persistence, or audit-history mutation.
 
 ## Phase 4A CES Click-Path Status
 
@@ -18,7 +35,7 @@ Phase 1 audit plus Phase 2 route stabilization tracking.
 | CES Event Workspace | Shows source event, workflow, due timing, related seeded tasks, related policy/form IDs, and seeded audit preview where available. | `workflow wired` local preview |
 | CES Task Detail | Shows required task context, owner/status, due/escalation timing, workflow, evidence, signatures, approvals, readiness, completion rule, next best action, and audit preview. | `workflow wired` local preview |
 | Safe local actions | Mark viewed, mark started, add local note, add local blocker, clear local blocker. | Local preview state only |
-| Evidence/signature/approval/complete actions | Disabled with Phase 4B/4C blocker reasons. | Blocked, no fake completion |
+| Evidence/signature/approval/complete actions | Superseded by Phase 4B local-preview panels for evidence/signature/approval; durable completion remains disabled with Phase 4C blocker reason. | Local preview plus blocked durable completion |
 | Policy/form links from CES | Explicit secondary `Open live route` buttons only. | `LIVE_ROUTE_HANDOFF` |
 | Calendar/CES live access | Explicit secondary `Open live route` buttons only. | `LIVE_ROUTE_HANDOFF` |
 
