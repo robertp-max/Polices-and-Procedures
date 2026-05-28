@@ -16,6 +16,7 @@ import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecution
 import { useShellStore } from '@/policy/stores/uiStore';
 import { useCiModeStore } from '@/policy/stores/ciModeStore';
 import { useAuth } from '@/auth/AuthProvider';
+import { isDemoAuthBypassEnabled } from '@/auth/bypass';
 import { evaluateAdminAccess } from '@/policy/security/identity';
 import { canViewNavItem as canViewNavItemFn } from '@/policy/security/features/featureAccess';
 import { useUserAssignmentsStore } from '@/policy/security/identity/userAssignmentsStore';
@@ -179,7 +180,7 @@ const MOBILE_BP = 1024;
 const ACCOUNT_MENU_WIDTH = 220;
 const ACCOUNT_MENU_VIEWPORT_PADDING = 8;
 const ACCOUNT_MENU_VERTICAL_OFFSET = 8;
-const LOCAL_DEMO_AUTH_BYPASS = import.meta.env.VITE_LOCAL_DEMO_AUTH_BYPASS === 'true';
+const LOCAL_DEMO_AUTH_BYPASS = isDemoAuthBypassEnabled();
 
 function useIsMobile(): boolean {
   const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < MOBILE_BP);

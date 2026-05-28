@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 import { AuthApi, type AuthSession, type DemoUser, type LoginChallengeResponse } from './api';
+import { isDemoAuthBypassEnabled } from './bypass';
 
 interface StoredAuth {
   session: AuthSession;
@@ -42,7 +43,7 @@ function redirectToLogin(): void {
     /* noop */
   }
 }
-const LOCAL_DEMO_AUTH_BYPASS = import.meta.env.VITE_LOCAL_DEMO_AUTH_BYPASS === 'true';
+const LOCAL_DEMO_AUTH_BYPASS = isDemoAuthBypassEnabled();
 const LOCAL_DEMO_USER: DemoUser = {
   id: 'demo-user-careindeed',
   email: 'robertp@careindeed.com',

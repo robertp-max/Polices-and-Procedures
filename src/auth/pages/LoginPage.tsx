@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthProvider';
 import { AuthCard, useAuthTheme } from '../components/AuthCard';
 import type { LoginChallengeResponse } from '../api';
+import { isDemoAuthBypassEnabled } from '../bypass';
 
 const AUTH_PAGE_PATHS = new Set(['/', '/login', '/register', '/check-email', '/setup-account', '/forgot-password', '/reset-password']);
 
@@ -15,6 +16,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const bypassAuth = isDemoAuthBypassEnabled();
 
   const rawNext = new URLSearchParams(location.search).get('next') || '/dashboard';
   const next = AUTH_PAGE_PATHS.has(rawNext) ? '/dashboard' : rawNext;
@@ -50,6 +52,11 @@ export function LoginPage() {
     >
       <form className="space-y-4" onSubmit={onSubmit}>
         {notice && <p className={t.isLight ? 'text-sm text-[#2E7D32] bg-green-50 border border-green-200 rounded-xl px-3 py-2' : 'text-sm text-green-300 bg-green-900/20 border border-green-700/40 rounded-xl px-3 py-2'}>{notice}</p>}
+        {bypassAuth && (
+          <p className={t.isLight ? 'text-sm text-[#0f766e] bg-teal-50 border border-teal-200 rounded-xl px-3 py-2' : 'text-sm text-teal-200 bg-teal-950/30 border border-teal-700/40 rounded-xl px-3 py-2'}>
+            Vercel demo mode is active. Click <span className="font-semibold">Sign In</span> to enter without email or password verification.
+          </p>
+        )}
         <label className={t.labelClass}>
           Email
           <input
@@ -58,7 +65,9 @@ export function LoginPage() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             autoComplete="email"
-            required
+            required={!bypassAuth}
+            readOnly={bypassAuth}
+            placeholder={bypassAuth ? 'Not required in Vercel demo mode' : undefined}
           />
         </label>
 
@@ -70,7 +79,9 @@ export function LoginPage() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             autoComplete="current-password"
-            required
+            required={!bypassAuth}
+            readOnly={bypassAuth}
+            placeholder={bypassAuth ? 'Not required in Vercel demo mode' : undefined}
           />
         </label>
 
