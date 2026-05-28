@@ -1,15 +1,14 @@
-import { useMemo } from 'react';
-import { Lock } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
-import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import { useShellStore } from '@/policy/stores/uiStore';
 import {
-  classifyInstance, STATE_COLOR, STATE_SOFT,
+  classifyInstance,
   type InstanceState,
 } from './timelineState';
-import { AUDIT_STATE_COLOR } from '@/policy/audit/auditState';
 import {
+  CesEventOverviewCard,
   CesSpotlightCard,
   getCesEventSpotlightTone,
 } from '@/policy/ces/components/calendar/CesEventInteraction';
@@ -33,10 +32,33 @@ export interface TimelineMonthProps {
   events: RegulatoryEvent[];     // already scoped to the current month
   activeId?: string | null;
   onSelect: (event: RegulatoryEvent) => void;
+  onOpenSwimlane: (event: RegulatoryEvent) => void;
   today: Date;
 }
 
 const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+function getReferenceCalendarTone(state: InstanceState, certified: boolean) {
+  if (certified || state === 'complete' || state === 'on-track') {
+    return {
+      fill: '#0F766E',
+      text: '#ECFEFF',
+      border: '#115E59',
+    };
+  }
+  if (state === 'due-soon') {
+    return {
+      fill: '#854D0E',
+      text: '#FEF3C7',
+      border: '#A16207',
+    };
+  }
+  return {
+    fill: '#FFE4E6',
+    text: '#BE123C',
+    border: '#FDA4AF',
+  };
+}
 
 function iso(d: Date): string {
   const y = d.getFullYear();
@@ -46,10 +68,59 @@ function iso(d: Date): string {
 }
 
 export function TimelineMonth({
-  year, month, events, activeId, onSelect, today,
+  year, month, events, activeId, onSelect, onOpenSwimlane, today,
 }: TimelineMonthProps) {
   const store = useRegulatoryExecutionStore();
   const isLight = useShellStore(s => s.theme === 'care-indeed-light');
+  const [hoveredEvent, setHoveredEvent] = useState<RegulatoryEvent | null>(null);
+  const [hoverAnchor, setHoverAnchor] = useState<DOMRect | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
+
+  const clearPendingClose = () => {
+    if (closeTimerRef.current) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  };
+
+  const closeHover = () => {
+    clearPendingClose();
+    setHoveredEvent(null);
+    setHoverAnchor(null);
+  };
+
+  const scheduleClose = () => {
+    clearPendingClose();
+    closeTimerRef.current = window.setTimeout(() => {
+      setHoveredEvent(null);
+      setHoverAnchor(null);
+      closeTimerRef.current = null;
+    }, 140);
+  };
+
+  const openHover = (event: RegulatoryEvent, target: HTMLElement) => {
+    clearPendingClose();
+    setHoveredEvent(event);
+    setHoverAnchor(target.getBoundingClientRect());
+  };
+
+  useEffect(() => {
+    if (!hoveredEvent) return undefined;
+    const closeOnViewportChange = () => closeHover();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeHover();
+    };
+    window.addEventListener('resize', closeOnViewportChange);
+    window.addEventListener('scroll', closeOnViewportChange, true);
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      window.removeEventListener('resize', closeOnViewportChange);
+      window.removeEventListener('scroll', closeOnViewportChange, true);
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [hoveredEvent]);
+
+  useEffect(() => () => clearPendingClose(), []);
 
   const { cells, weeks } = useMemo(() => {
     const first = new Date(year, month, 1);
@@ -78,14 +149,17 @@ export function TimelineMonth({
   }, [year, month, events, today]);
 
   return (
-    <div className="flex h-full flex-col min-h-0 flex-1">
+    <div className="flex h-full min-h-0 flex-1 flex-col bg-[#0B0F15]">
       {/* Weekday header */}
-      <div className="grid grid-cols-7 gap-px pb-1.5">
+      <div
+        className="grid grid-cols-7 border-b border-l"
+        style={{ borderColor: '#1C2433', background: '#0B0F15' }}
+      >
         {WEEKDAYS.map(w => (
           <div
             key={w}
-            className={`text-center font-montserrat font-bold uppercase tracking-[0.24em] ${isLight ? 'text-slate-500' : 'text-white/40'}`}
-            style={{ fontSize: 9 }}
+            className={`border-r px-2 py-3 text-center font-montserrat font-bold uppercase tracking-[0.24em] last:border-r-0 ${isLight ? 'text-slate-500' : 'text-white/40'}`}
+            style={{ fontSize: 9, borderColor: '#1C2433' }}
           >
             {w}
           </div>
@@ -94,11 +168,10 @@ export function TimelineMonth({
 
       {/* Month grid */}
       <div
-        className="grid grid-cols-7 gap-px rounded-xl overflow-hidden border border-white/10 flex-1 min-h-0"
+        className="grid min-h-0 flex-1 grid-cols-7 border-l"
         style={{
-          background: isLight ? 'rgba(15,23,42,0.05)' : 'rgba(255,255,255,0.05)',
-          borderColor: isLight ? 'rgba(15,23,42,0.12)' : 'rgba(255,255,255,0.10)',
-          gridTemplateRows: `repeat(${weeks}, minmax(0, 1fr))`,
+          borderColor: '#1C2433',
+          gridTemplateRows: `repeat(${weeks}, minmax(138px, 1fr))`,
         }}
       >
         {cells.map(cell => (
@@ -107,12 +180,26 @@ export function TimelineMonth({
             cell={cell}
             activeId={activeId ?? null}
             onSelect={onSelect}
+            onOpenSwimlane={onOpenSwimlane}
+            onOpenHover={openHover}
+            onCloseHover={scheduleClose}
             today={today}
             store={store}
             isLight={isLight}
           />
         ))}
       </div>
+      {hoveredEvent && hoverAnchor ? (
+        <TimelineHoverCard
+          event={hoveredEvent}
+          anchorRect={hoverAnchor}
+          today={today}
+          onOpenSwimlane={() => onOpenSwimlane(hoveredEvent)}
+          onMouseEnter={clearPendingClose}
+          onMouseLeave={scheduleClose}
+          onClose={closeHover}
+        />
+      ) : null}
     </div>
   );
 }
@@ -120,11 +207,17 @@ export function TimelineMonth({
 /* ─── Day cell ─────────────────────────────────────────── */
 function DayCell({
   cell, activeId, onSelect, today, store,
+  onOpenSwimlane,
+  onOpenHover,
+  onCloseHover,
   isLight,
 }: {
   cell: { dateISO: string; day: number; outOfMonth: boolean; isToday: boolean; events: RegulatoryEvent[] };
   activeId: string | null;
   onSelect: (e: RegulatoryEvent) => void;
+  onOpenSwimlane: (event: RegulatoryEvent) => void;
+  onOpenHover: (event: RegulatoryEvent, target: HTMLElement) => void;
+  onCloseHover: () => void;
   today: Date;
   store: ReturnType<typeof useRegulatoryExecutionStore.getState>;
   isLight: boolean;
@@ -134,31 +227,36 @@ function DayCell({
 
   return (
     <div
-      className="relative flex min-h-0 flex-col p-1.5 transition-colors duration-200 hover:bg-white/[0.03]"
+      className="relative flex min-h-0 flex-col border-r border-b px-2 py-2 transition-colors duration-200"
       style={{
+        borderColor: '#1C2433',
         background: cell.outOfMonth
-          ? 'var(--ci-cell-out, rgba(0,0,0,0.10))'
+          ? '#0B0F15'
           : cell.isToday
-            ? 'var(--ci-cell-today, rgba(20,184,166,0.08))'
-            : 'var(--ci-cell-day, transparent)',
+            ? '#101722'
+            : '#0B0F15',
       }}
     >
-      <div className="flex items-center justify-between mb-1">
-        <span
-          className={`inline-flex items-center justify-center font-montserrat font-bold transition-colors ${
-            cell.isToday
-              ? 'rounded-full text-white w-6 h-6'
-              : cell.outOfMonth
-                ? (isLight ? 'text-slate-300' : 'text-white/25')
-                : (isLight ? 'text-slate-700' : 'text-white/75')
-          }`}
-          style={{
-            fontSize: 11,
-            background: cell.isToday ? '#14B8A6' : undefined,
-          }}
-        >
-          {cell.day}
-        </span>
+      <div className="mb-2 flex items-center justify-between">
+        {cell.outOfMonth ? (
+          <span aria-hidden className="h-6 w-6" />
+        ) : (
+          <span
+            className={`inline-flex items-center justify-center font-montserrat font-bold transition-colors ${
+              cell.isToday
+                ? 'h-6 w-6 rounded-full text-white'
+                : isLight
+                  ? 'text-slate-700'
+                  : 'text-white/60'
+            }`}
+            style={{
+              fontSize: 11,
+              background: cell.isToday ? '#007970' : undefined,
+            }}
+          >
+            {cell.day}
+          </span>
+        )}
       </div>
       <div className="flex min-h-0 flex-col gap-1 overflow-y-auto custom-scrollbar">
         {eventsToShow.map(ev => (
@@ -170,11 +268,14 @@ function DayCell({
             store={store}
             isLight={isLight}
             onClick={() => onSelect(ev)}
+            onOpenSwimlane={() => onOpenSwimlane(ev)}
+            onOpenHover={onOpenHover}
+            onCloseHover={onCloseHover}
           />
         ))}
         {overflow > 0 && (
           <button
-            className={`self-start font-montserrat font-bold px-1 ${isLight ? 'text-slate-500 hover:text-slate-800' : 'text-white/55 hover:text-white'}`}
+            className={`self-start px-1 font-montserrat font-bold ${isLight ? 'text-slate-500 hover:text-slate-800' : 'text-white/50 hover:text-white'}`}
             style={{ fontSize: 9 }}
             onClick={() => { if (cell.events[eventsToShow.length]) onSelect(cell.events[eventsToShow.length]); }}
           >
@@ -191,6 +292,9 @@ function DayCell({
 /* ─── Timeline chip (state-colored only) ────────────────── */
 function TimelineChip({
   event, active, today, store, onClick,
+  onOpenSwimlane,
+  onOpenHover,
+  onCloseHover,
   isLight,
 }: {
   event: RegulatoryEvent;
@@ -198,17 +302,14 @@ function TimelineChip({
   today: Date;
   store: ReturnType<typeof useRegulatoryExecutionStore.getState>;
   onClick: () => void;
+  onOpenSwimlane: () => void;
+  onOpenHover: (event: RegulatoryEvent, target: HTMLElement) => void;
+  onCloseHover: () => void;
   isLight: boolean;
 }) {
   const state: InstanceState = classifyInstance(event, today, store);
   const certified = store.isCertified(event.id);
-  const { canonicalPolicyRefs } = getEventDisplayModel(event);
-  const subtitle = canonicalPolicyRefs.length > 0 ? canonicalPolicyRefs.slice(0, 2).join(' / ') : null;
-  // Certified instances are visually distinct from active execution —
-  // violet rail, lock glyph, and a subtle tinted background so the
-  // eye immediately registers "locked record" from across the grid.
-  const color = certified ? AUDIT_STATE_COLOR['certified-locked'] : STATE_COLOR[state];
-  const bg    = certified ? 'rgba(167,139,250,0.10)' : STATE_SOFT[state];
+  const tone = getReferenceCalendarTone(state, certified);
   const spotlightColor = getCesEventSpotlightTone(state, certified);
   const toneClassName =
     certified || state === 'complete' ? 'ces-card-spotlight-complete'
@@ -222,45 +323,94 @@ function TimelineChip({
       ariaLabel={`Open ${event.title}`}
       spotlightColor={spotlightColor}
       toneClassName={toneClassName}
-      className="group relative w-full text-left rounded-md transition-colors duration-150 px-1.5 py-1"
+      className="group relative w-full rounded-md px-2 py-1 text-left transition-colors duration-150"
+      onMouseEnter={eventTarget => onOpenHover(event, eventTarget.currentTarget)}
+      onMouseLeave={onCloseHover}
+      onFocus={eventTarget => onOpenHover(event, eventTarget.currentTarget)}
+      onBlur={onCloseHover}
+      onKeyDown={keyboardEvent => {
+        if (keyboardEvent.key === 'Enter' || keyboardEvent.key === ' ') {
+          keyboardEvent.preventDefault();
+          onOpenSwimlane();
+        }
+        if (keyboardEvent.key === 'Escape') {
+          keyboardEvent.preventDefault();
+          onCloseHover();
+        }
+      }}
       style={{
-        background: active ? `${color}18` : bg,
-        border: `1px solid ${active ? color : `${color}55`}`,
+        background: tone.fill,
+        border: `1px solid ${active ? tone.text : tone.border}`,
       }}
     >
-      <div className="flex items-start gap-1.5 pr-4">
+      <div className="flex items-start gap-1 pr-2">
         <span
           aria-hidden
-          className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full"
-          style={{ background: color }}
+          className="mt-[4px] h-1 w-1 shrink-0 rounded-full"
+          style={{ background: tone.text, opacity: 0.8 }}
         />
         <div className="min-w-0">
           <p
-            className={`font-montserrat font-bold leading-tight truncate ${isLight ? 'text-slate-800' : 'text-white'}`}
-            style={{ fontSize: 10 }}
+            className={`font-montserrat font-bold leading-tight ${isLight ? 'text-slate-800' : ''}`}
+            style={{
+              fontSize: 10,
+              color: tone.text,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
           >
             {event.title}
           </p>
-          {subtitle && (
-            <p className={`font-roboto truncate leading-snug ${isLight ? 'text-slate-500' : 'text-white/55'}`} style={{ fontSize: 9 }}>
-              {subtitle}
-            </p>
-          )}
         </div>
       </div>
-      {certified && (
-        <span
-          aria-label="Certified & Locked"
-          className="absolute top-1 right-1 inline-flex items-center justify-center rounded-sm"
-          style={{
-            width: 12, height: 12,
-            background: `${color}33`,
-            color,
-          }}
-        >
-          <Lock size={8} />
-        </span>
-      )}
     </CesSpotlightCard>
+  );
+}
+
+function TimelineHoverCard({
+  event,
+  anchorRect,
+  today,
+  onOpenSwimlane,
+  onMouseEnter,
+  onMouseLeave,
+  onClose,
+}: {
+  event: RegulatoryEvent;
+  anchorRect: DOMRect;
+  today: Date;
+  onOpenSwimlane: () => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  onClose: () => void;
+}) {
+  const width = 460;
+  const viewportPadding = 16;
+  const preferredLeft = anchorRect.right + 12;
+  const left = preferredLeft + width <= window.innerWidth - viewportPadding
+    ? preferredLeft
+    : Math.max(viewportPadding, Math.min(window.innerWidth - width - viewportPadding, anchorRect.left - width - 12));
+  const maxTop = Math.max(viewportPadding, window.innerHeight - 560);
+  const top = Math.max(viewportPadding, Math.min(anchorRect.top, maxTop));
+
+  return createPortal(
+    <div
+      className="fixed z-[80] hidden md:block"
+      style={{ top, left, width }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocusCapture={onMouseEnter}
+      onBlurCapture={onMouseLeave}
+      onKeyDown={eventKey => {
+        if (eventKey.key === 'Escape') {
+          eventKey.preventDefault();
+          onClose();
+        }
+      }}
+    >
+      <CesEventOverviewCard event={event} today={today} onOpenSwimlane={onOpenSwimlane} />
+    </div>,
+    document.body,
   );
 }

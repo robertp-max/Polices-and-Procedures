@@ -35,6 +35,8 @@ export { LoadingState } from './LoadingState';
 export type { LoadingStateProps } from './LoadingState';
 export { AriaLiveRegion } from './AriaLiveRegion';
 export type { AriaLiveRegionProps } from './AriaLiveRegion';
+export { SpotlightCard } from '@/components/ui/SpotlightCard';
+export type { SpotlightCardProps } from '@/components/ui/SpotlightCard';
 
 // Phase 2 Canonical Shell Primitives
 export { ShellFrame } from './ShellFrame';
@@ -58,14 +60,12 @@ export {
   DrawerSurface,
   RightPanel,
   SearchCommandBar,
-  SpotlightCard,
   StatusPill,
   GlassPanel as V32GlassPanel,
 } from './V32DesignSystem';
 export type {
   GlassPanelProps as V32GlassPanelProps,
   SearchCommandBarProps,
-  SpotlightCardProps,
   StatusPillProps,
   V32ActionButtonProps,
   V32EmptyStateProps,

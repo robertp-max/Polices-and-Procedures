@@ -32,6 +32,12 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
   const location = useLocation();
 
   const isActive = (to: string) => location.pathname === to || location.pathname.startsWith(to + '/');
+  const workflowLinkClass = (active: boolean) =>
+    `ml-8 mt-1 flex items-center gap-3 rounded-lg px-3 py-2 font-montserrat text-[11px] font-semibold transition-colors ${
+      active
+        ? 'bg-brand-teal/10 text-brand-teal'
+        : 'text-text-muted hover:bg-border hover:text-text-primary'
+    }`;
 
   // Phase 2 §4 — three semantic command groups per
   // Phase2_Exit_Criteria_Checklist.md: Primary Operations, Compliance
@@ -78,17 +84,33 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
 
         {cesItems.length > 0 && (
           <ShellCommandGroup title="Compliance Execution">
-            {cesItems.map((item) => (
-              <Link
-                key={item.id}
-                to={item.to}
-                onClick={() => onItemClick?.(item)}
-                className={linkClass(isActive(item.to))}
-              >
-                <item.icon size={18} />
-                <span>{item.label}</span>
-              </Link>
-            ))}
+            {cesItems.map((item) => {
+              const workflowSubItem = item.id === 'ces'
+                ? item.subItems?.find(sub => sub.to === '/workflows')
+                : undefined;
+
+              return (
+                <div key={item.id}>
+                  <Link
+                    to={item.to}
+                    onClick={() => onItemClick?.(item)}
+                    className={linkClass(isActive(item.to))}
+                  >
+                    <item.icon size={18} />
+                    <span>{item.label}</span>
+                  </Link>
+                  {workflowSubItem && (
+                    <Link
+                      to={workflowSubItem.to}
+                      onClick={() => onItemClick?.({ ...item, to: workflowSubItem.to, label: workflowSubItem.label })}
+                      className={workflowLinkClass(isActive(workflowSubItem.to))}
+                    >
+                      <span>{workflowSubItem.label}</span>
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
           </ShellCommandGroup>
         )}
 

@@ -89,6 +89,10 @@ function byOrder(a: PolicyViewer32Section, b: PolicyViewer32Section): number {
   return a.order - b.order;
 }
 
+function includesAny(value: string, fragments: string[]): boolean {
+  return fragments.some(fragment => value.includes(fragment));
+}
+
 function classifySections(sections: PolicyViewer32Section[]) {
   const buckets = {
     purpose: [] as PolicyViewer32Section[],
@@ -102,6 +106,32 @@ function classifySections(sections: PolicyViewer32Section[]) {
     appendices: [] as PolicyViewer32Section[],
   };
 
+  const referenceKeywords = [
+    'reference',
+    'admin',
+    'training',
+    'version control',
+    'review cycle',
+    'cross reference',
+    'revision',
+    'reaffirmation',
+    'change log',
+    'version history',
+    'scheduled review',
+    'document control',
+    'policy review',
+    'faq',
+    'frequently asked',
+    'common question',
+    'q and a',
+    'notes',
+    'note to',
+  ];
+
+  const documentationKeywords = ['documentation', 'required record', 'record requirement'];
+  const complianceKeywords = ['compliance', 'audit', 'surveyor', 'failure point', 'monitoring', 'measurement'];
+  const appendixKeywords = ['appendix', 'appendices', 'attachment', 'attachments', 'exhibit']; // 'form' removed — handled by exact token only below (prevents performance/information/informed/confirmation pollution)
+
   sections.forEach(section => {
     const title = normalize(section.title);
     if (title.includes('policy header')) return;
@@ -110,29 +140,27 @@ function classifySections(sections: PolicyViewer32Section[]) {
     else if (title.includes('definition')) buckets.definitions.push(section);
     else if (title.includes('policy statement')) buckets.statements.push(section);
     else if (title.includes('procedure')) buckets.procedures.push(section);
-    else if (title.includes('documentation') || title.includes('required record') || title.includes('record requirement')) buckets.documentation.push(section);
-    else if (
-      title.includes('compliance') ||
-      title.includes('audit') ||
-      title.includes('surveyor') ||
-      title.includes('failure point') ||
-      title.includes('monitoring') ||
-      title.includes('measurement')
-    ) buckets.compliance.push(section);
-    else if (
-      title.includes('reference') ||
-      title.includes('admin') ||
-      title.includes('training') ||
-      title.includes('version control') ||
-      title.includes('review cycle') ||
-      title.includes('cross reference')
-    ) buckets.references.push(section);
-    else if (title.includes('appendix') || title.includes('form')) buckets.appendices.push(section);
+    else if (includesAny(title, referenceKeywords)) buckets.references.push(section);
+    else if (includesAny(title, documentationKeywords)) buckets.documentation.push(section);
+    else if (includesAny(title, complianceKeywords)) buckets.compliance.push(section);
+    else if (includesAny(title, appendixKeywords) || isExactAppendixFormToken(title)) {
+      buckets.appendices.push(section);
+    }
     else buckets.documentation.push(section);
   });
 
   Object.values(buckets).forEach(bucket => bucket.sort(byOrder));
   return buckets;
+}
+
+// Surgical word-boundary safe helper (exact tokens post-normalize).
+// Deprioritizes 'form'/'forms' to standalone only. Prevents "performance", "information", "informed", "confirmation" etc. pollution into Appendices.
+// Real appendices (e.g. "APPENDICES", "31-appendices") continue to match via 'appendix'/'appendices' tokens.
+// Unknown sections still land in visible Documentation bucket.
+function isExactAppendixFormToken(title: string): boolean {
+  const tokens = title.split(/\s+/).filter(Boolean);
+  if (tokens.includes('form') || tokens.includes('forms')) return true;
+  return false;
 }
 
 export function buildPolicyViewer32Model(policyId: string, storePolicy?: Policy): PolicyViewer32Model | null {

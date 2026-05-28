@@ -16,6 +16,8 @@ import {
 import { usePolicyStore } from '@/policy/stores/policyStore';
 import { openPolicyPrintRoute } from '@/policy/utils/openPolicyPrintRoute';
 
+// Hard-coded single app logo (public/ci-logo-white.png) - the one and only logo for the entire app
+
 interface SpotlightCardProps {
   children: ReactNode;
   className?: string;
@@ -146,7 +148,7 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
   const filteredDocumentation = filterSections(model.documentation, searchQuery);
   const filteredCompliance = filterSections(model.compliance, searchQuery);
   const filteredReferences = filterSections(model.references, searchQuery);
-  const filteredAppendices = filterSections(model.appendices, searchQuery);
+  // filteredAppendices intentionally not computed here — text appendices are suppressed in the Appendices tab (only Linked Forms shown)
   const selectedProcedure = filteredProcedures.find(section => section.id === procedureSectionId) ?? filteredProcedures[0];
 
   const printPath = `/print/${encodeURIComponent(metadata.id)}`;
@@ -208,14 +210,15 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
         </section>
       </div>
 
-      <section className="pt-6 border-t border-[#1C2433]">
-        <div className="flex items-center gap-3 mb-6">
-          {renderSectionBadge('5')}
-          <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Definitions</h3>
-        </div>
-        {filteredDefinitions.length === 0 ? (
-          <PolicyViewer32EmptyState />
-        ) : (
+      {/* Only render the Definitions block when there is actual content.
+          This prevents large "No content available" blocks from appearing
+          between other sections (Purpose / Scope) in the Overview. */}
+      {filteredDefinitions.length > 0 && (
+        <section className="pt-6 border-t border-[#1C2433]">
+          <div className="flex items-center gap-3 mb-6">
+            {renderSectionBadge('5')}
+            <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Definitions</h3>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {filteredDefinitions.map(section => (
               <SpotlightCard key={section.id} className="p-5 h-full" spotlightColor="rgba(0, 121, 112, 0.12)">
@@ -224,8 +227,8 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
               </SpotlightCard>
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 
@@ -295,9 +298,11 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
       case 'appendices':
         return (
           <div className="space-y-8">
-            <PolicyViewer32SectionList sections={filteredAppendices} />
+            {/* Only show the curated Linked Forms grid from the Forms Library.
+                Text-based appendices / copy-pasted policy statements have been removed
+                per content cleanup requirements. */}
             {model.forms.length > 0 && (
-              <section className="pt-6 border-t border-[#1C2433]">
+              <section>
                 <div className="flex items-center gap-3 mb-6">
                   {renderSectionBadge('F')}
                   <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Linked Forms</h3>
@@ -309,7 +314,7 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
                       <h4 className="text-sm font-semibold text-white">{form.name}</h4>
                       <button
                         type="button"
-                        onClick={() => navigate(`/forms/${encodeURIComponent(form.id)}`)}
+                        onClick={() => window.open(`/forms/${encodeURIComponent(form.id)}`, '_blank', 'noopener,noreferrer')}
                         className="mt-4 text-xs font-medium text-[#A0ABC0] hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
                       >
                         Open form
@@ -319,7 +324,7 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
                 </div>
               </section>
             )}
-            {filteredAppendices.length === 0 && model.forms.length === 0 && <PolicyViewer32EmptyState />}
+            {model.forms.length === 0 && <PolicyViewer32EmptyState title="No linked forms available" />}
           </div>
         );
       default:
@@ -383,11 +388,12 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
 
       <aside className="w-[260px] flex-shrink-0 border-r border-[#1C2433] bg-[#0F131A] flex flex-col h-full z-20">
         <div className="h-[72px] flex items-center px-6 border-b border-[#1C2433]">
-          <div className="flex items-center gap-2 text-white font-semibold text-lg tracking-wide">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#007970] to-[#004142] rounded-lg flex items-center justify-center">
-              <Activity size={16} className="text-white" aria-hidden="true" />
-            </div>
-            CareIndeed
+          <div className="flex items-center gap-3 text-white font-semibold text-lg tracking-wide">
+            <img 
+              src="/ci-logo-white.png" 
+              alt="CareIndeed" 
+              className="h-8 w-auto object-contain" 
+            />
           </div>
         </div>
 

@@ -39,6 +39,7 @@ function setDismissed(value: boolean): void {
 
 export function GuidedUatWidget() {
   const location = useLocation();
+  const isSwimlaneRoute = /^\/(workflows\/.+swimlane|events\/.+\/swimlane)(\/|$|\?)/.test(location.pathname);
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== 'undefined' && window.innerWidth < 768,
   );
@@ -70,7 +71,7 @@ export function GuidedUatWidget() {
     return { completedCount: completed, activeStepId: active };
   }, [location.pathname]);
 
-  if (dismissed) return null;
+  if (dismissed || isSwimlaneRoute) return null;
 
   return (
     <aside

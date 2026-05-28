@@ -5,7 +5,8 @@
  * No sidebar / CommandCenterLayout.
  */
 import React, { useEffect, useMemo } from 'react';
-import ciLogoGray from '@/assets/ci-logo-gray.png';
+// Single app logo - the one file for the entire application
+import ciLogoWhite from '@/assets/ci-logo-white.png';
 import { buildFormContent } from '@/policy/data/formsLibraryContent';
 import { FormBody } from '@/policy/components/FormViewer';
 import { getFormsForPolicy } from '@/policy/utils/policyFormLinks';
@@ -347,7 +348,7 @@ const Cover = () => (
     }}
   >
     <img
-      src={ciLogoGray}
+      src={ciLogoWhite}
       alt="Care Indeed — The Heart of Home Health"
       style={{ height: 40, width: 'auto', display: 'block' }}
     />

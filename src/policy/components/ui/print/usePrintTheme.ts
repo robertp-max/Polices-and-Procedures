@@ -17,11 +17,12 @@
  */
 
 import { useMemo } from 'react';
-import ciLogoGray from '@/assets/ci-logo-gray.png';
+// Single app logo for the entire application
+import ciLogoWhite from '@/assets/ci-logo-white.png';
 import { PRINT_BRAND_TEAL } from './printStyles';
 
 export interface PrintTheme {
-  /** Pre-encoded Care Indeed gray logo, suitable for offline print. */
+  /** Pre-encoded Care Indeed logo (single source of truth for the app). */
   logoDataUrl: string;
   /** Brand color hex for print chrome (CI teal deep). */
   brandColor: string;
@@ -36,7 +37,7 @@ export interface PrintTheme {
 export function usePrintTheme(): PrintTheme {
   return useMemo(
     () => ({
-      logoDataUrl: ciLogoGray,
+      logoDataUrl: ciLogoWhite,
       brandColor: PRINT_BRAND_TEAL,
       bodyFontFamily: 'Roboto, system-ui, -apple-system, sans-serif',
       headingFontFamily: 'Montserrat, Roboto, system-ui, sans-serif',

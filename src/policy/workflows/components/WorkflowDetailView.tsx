@@ -1,10 +1,11 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { FormViewer } from '@/policy/components/FormViewer';
 import { CI, DOMAIN_META, RISK_META, CADENCE_LABEL } from '../brand';
 import { getWorkflow } from '@/policy/data/workflows.generated';
 import { formTitle } from '@/policy/data/formTitles.generated';
 import type { Workflow } from '@/policy/types/workflow';
+import { buildWorkflowSwimlaneRoute } from '@/policy/workflows/swimlanes/swimlaneRoutes';
 import {
   fetchWorkflowCompletionStatus,
   completeWorkflow,
@@ -39,6 +40,7 @@ const TABS: Array<{ id: TabId; label: string }> = [
 export function WorkflowDetailView() {
   const { workflowId } = useParams<{ workflowId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const wf = useMemo(() => (workflowId ? getWorkflow(workflowId) : null), [workflowId]);
   const [tab, setTab] = useState<TabId>('process');
@@ -62,7 +64,7 @@ export function WorkflowDetailView() {
       <div className="flex items-start justify-between gap-6">
         <div className="min-w-0">
           <button
-            onClick={() => navigate('/workflows')}
+            onClick={() => navigate({ pathname: '/workflows', search: location.search })}
             style={{
               fontFamily: 'Roboto, sans-serif', fontSize: 12,
               color: CI.teal, marginBottom: 8,
@@ -115,6 +117,27 @@ export function WorkflowDetailView() {
           >
             {titleCase(wf.title)}
           </h1>
+          <div style={{ marginTop: 16 }}>
+            <button
+              type="button"
+              onClick={() => navigate(buildWorkflowSwimlaneRoute(wf.id))}
+              style={{
+                fontFamily: 'Montserrat, sans-serif',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: 0.6,
+                textTransform: 'uppercase',
+                color: '#FFFFFF',
+                background: '#C74600',
+                border: 'none',
+                borderRadius: 8,
+                padding: '11px 18px',
+                lineHeight: 1,
+              }}
+            >
+              Launch Swimlane
+            </button>
+          </div>
         </div>
 
         {/* Fact column */}

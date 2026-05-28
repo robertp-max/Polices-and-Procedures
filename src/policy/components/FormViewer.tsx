@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, Printer, Download, Building2, User, Briefcase, HeartPulse, Info, CheckCircle2, Shield, ShieldCheck } from 'lucide-react';
-import ciLogoGray from '@/assets/ci-logo-gray.png';
+// App logo - using the single specified file via import for data URL compatibility in forms
+import ciLogoWhite from '@/assets/ci-logo-white.png';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import {
@@ -902,7 +903,7 @@ export function FormBody({ content, isEmbedded = false }: { content: FormContent
           {/* ── HEADER: logo left, library info right ── */}
           <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <img
-              src={ciLogoGray}
+              src={ciLogoWhite}
               alt="Care Indeed — The Heart of Home Health"
               className="h-12 w-auto select-none"
               draggable={false}
@@ -1203,10 +1204,10 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
   }, []);
 
   // ── Canonical logo data URL (base64) ─────────────────────────────
-  // The Vite asset URL (e.g. /assets/ci-logo-gray-abc123.png) is
+  // The Vite asset URL (e.g. /assets/ci-logo-white-abc123.png) is
   // localhost-relative and breaks in saved-HTML packets. We convert it
   // to a base64 data URL once at mount so it embeds inline in the packet.
-  const ciLogoDataUrlRef = useRef<string>(ciLogoGray);
+  const ciLogoDataUrlRef = useRef<string>(ciLogoWhite);
   useEffect(() => {
     let cancelled = false;
     const img = new Image();
@@ -1224,7 +1225,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
         }
       } catch { /* keep original URL on CORS failure */ }
     };
-    img.src = ciLogoGray;
+    img.src = ciLogoWhite;
     return () => { cancelled = true; };
   }, []);
 
@@ -1489,7 +1490,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
     // Preserve the actual Forms Library DOM. Only inline the logo asset so
     // downloaded/saved eCIgn packets do not depend on localhost asset URLs.
     Array.from(clone.querySelectorAll('img')).forEach(img => {
-      if (img.getAttribute('src') === ciLogoGray || img.alt.includes('Care Indeed')) {
+      if (img.getAttribute('src') === ciLogoWhite || img.alt.includes('Care Indeed')) {
         img.setAttribute('src', ciLogoDataUrlRef.current);
       }
     });

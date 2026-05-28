@@ -3,9 +3,9 @@ import {
   type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
-  useRef,
 } from 'react';
 import { Search } from 'lucide-react';
+import { SpotlightCard } from '@/components/ui/SpotlightCard';
 
 type Tone = 'neutral' | 'teal' | 'orange' | 'muted' | 'success' | 'warning' | 'danger';
 
@@ -28,50 +28,6 @@ const spotlightByTone: Record<Tone, string> = {
   warning: 'rgba(199, 70, 0, 0.20)',
   danger: 'rgba(199, 70, 0, 0.24)',
 };
-
-export interface SpotlightCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'style'> {
-  children: ReactNode;
-  spotlightColor?: string;
-}
-
-export function SpotlightCard({
-  children,
-  className,
-  spotlightColor = spotlightByTone.neutral,
-  ...rest
-}: SpotlightCardProps) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const applySpotlightColor = () => {
-    ref.current?.style.setProperty('--spotlight-color', spotlightColor);
-  };
-
-  return (
-    <div
-      {...rest}
-      ref={ref}
-      className={`card-spotlight ${className ?? ''}`}
-      onMouseEnter={(event) => {
-        applySpotlightColor();
-        rest.onMouseEnter?.(event);
-      }}
-      onMouseMove={(event) => {
-        const node = ref.current;
-        if (!node) return;
-        applySpotlightColor();
-        const rect = node.getBoundingClientRect();
-        node.style.setProperty('--mouse-x', `${event.clientX - rect.left}px`);
-        node.style.setProperty('--mouse-y', `${event.clientY - rect.top}px`);
-        rest.onMouseMove?.(event);
-      }}
-    >
-      <div className="spotlight-outer-glow" aria-hidden="true" />
-      <div className="spotlight-glow-wrapper" aria-hidden="true">
-        <div className="spotlight-inner-glow" />
-      </div>
-      {children}
-    </div>
-  );
-}
 
 export interface GlassPanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 'style'> {
   children: ReactNode;

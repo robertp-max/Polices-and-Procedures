@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { CI, DOMAIN_META } from '../brand';
 import { WORKFLOW_CARDS } from '@/policy/data/workflows.generated';
 import { WORKFLOW_GRAPH } from '@/policy/data/workflowGraph.generated';
@@ -27,6 +27,7 @@ const PAGE_SIZE = 9;
 
 export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(0);
   const [viewportWidth, setViewportWidth] = useState(() => (typeof window === 'undefined' ? 1920 : window.innerWidth));
@@ -217,7 +218,7 @@ export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
             key={c.id}
             card={c}
             compact={isMobile}
-            onOpen={() => navigate(`/workflows/${c.id}`)}
+            onOpen={() => navigate({ pathname: `/workflows/${c.id}`, search: location.search })}
           />
         ))}
         {pageItems.length === 0 ? (

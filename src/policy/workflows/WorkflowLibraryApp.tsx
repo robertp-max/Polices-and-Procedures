@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
-import { BrandRail } from './components/BrandRail';
+import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom';
 import { LandingView } from './components/LandingView';
 import { QAWorkflow03SwimlanePage } from './components/QAWorkflow03SwimlanePage';
 import { WorkflowDetailView } from './components/WorkflowDetailView';
-import type { DomainCode } from '@/policy/types/workflow';
+import { SwimlaneRoutePage } from './swimlanes/SwimlaneRoutePage';
+import { getWorkflowFilterState } from './workflowNav';
 
 /* ══════════════════════════════════════════════════════════════════════
    WorkflowLibraryApp — mounted at `/workflows/*` inside the main
@@ -12,45 +11,43 @@ import type { DomainCode } from '@/policy/types/workflow';
    Indeed logo, search, help, user avatar, surrounding one-card frame)
    is provided by CommandCenterLayout, identical to every other page.
 
-   This component only renders the *inside* of the shell: the brand
-   rail (left) and the workspace (right). No borders, no shadows, no
-   logo, no actor chip — those live in the shell chrome above.
+  This component only renders the workflow workspace itself. The shell
+  owns the contextual sub-navigation so the workflow filters can live
+  in the top bar instead of a second internal sidebar.
    ══════════════════════════════════════════════════════════════════════ */
 
 export function WorkflowLibraryApp() {
-  const [selectedDomain, setSelectedDomain] = useState<DomainCode | 'ALL'>('ALL');
-  const [savedView, setSavedView] = useState<string | null>(null);
-  const [compact, setCompact] = useState(false);
-
-  useEffect(() => {
-    const update = () => setCompact(window.innerWidth < 1200);
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, []);
+  const [searchParams] = useSearchParams();
+  const { selectedDomain, savedView } = getWorkflowFilterState(`?${searchParams.toString()}`);
 
   return (
     <div
-      className="w-full h-full flex overflow-hidden bg-ci-bg text-ci-text-primary font-roboto"
+      className="w-full h-full overflow-hidden bg-ci-bg text-ci-text-primary font-roboto"
     >
-      <BrandRail
-        selectedDomain={selectedDomain}
-        onSelectDomain={setSelectedDomain}
-        savedView={savedView}
-        onSelectSavedView={setSavedView}
-        compact={compact}
-      />
-      <main className="flex-1 min-w-0 overflow-hidden bg-ci-bg">
+      <main className="w-full h-full min-w-0 overflow-hidden bg-ci-bg">
         <Routes>
           <Route
             index
             element={<LandingView selectedDomain={selectedDomain} savedView={savedView} />}
           />
           <Route path="QA-WF-03-swimlane" element={<QAWorkflow03SwimlanePage />} />
-          <Route path="QA-WF-03/swimlane" element={<Navigate to="/workflows/QA-WF-03-swimlane" replace />} />
-          <Route path=":workflowId" element={<WorkflowDetailView />} />
+          <Route path="QA-WF-03/swimlane" element={<QAWorkflow03SwimlaneRedirect />} />
+          <Route path=":workflowId/swimlane" element={<SwimlaneRoutePage />} />
+          <Route path=":workflowId" element={<WorkflowDetailOrSwimlane />} />
         </Routes>
       </main>
     </div>
   );
+}
+
+function WorkflowDetailOrSwimlane() {
+  const { workflowId } = useParams<{ workflowId: string }>();
+  if (workflowId?.endsWith('-swimlane')) return <SwimlaneRoutePage />;
+  return <WorkflowDetailView />;
+}
+
+function QAWorkflow03SwimlaneRedirect() {
+  const [searchParams] = useSearchParams();
+  const suffix = searchParams.toString();
+  return <Navigate to={`/workflows/QA-WF-03-swimlane${suffix ? `?${suffix}` : ''}`} replace />;
 }

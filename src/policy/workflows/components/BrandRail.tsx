@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CI, DOMAIN_META } from '../brand';
+import { DOMAIN_META } from '../brand';
 import { WORKFLOW_GRAPH } from '@/policy/data/workflowGraph.generated';
 import type { DomainCode } from '@/policy/types/workflow';
 
@@ -20,6 +20,7 @@ interface BrandRailProps {
   savedView: string | null;
   onSelectSavedView: (id: string | null) => void;
   compact?: boolean;
+  surface?: 'sidebar' | 'panel';
 }
 
 const SAVED_VIEWS: Array<{ id: string; label: string; hint: string }> = [
@@ -32,7 +33,7 @@ const SAVED_VIEWS: Array<{ id: string; label: string; hint: string }> = [
 const DOMAIN_ORDER: DomainCode[] = ['GV', 'CL', 'QA', 'HR', 'CO', 'FN', 'OP', 'EN', 'IT', 'RM'];
 
 export function BrandRail({
-  selectedDomain, onSelectDomain, savedView, onSelectSavedView, compact,
+  selectedDomain, onSelectDomain, savedView, onSelectSavedView, compact, surface = 'sidebar',
 }: BrandRailProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,19 +47,22 @@ export function BrandRail({
       aria-label="Workflow navigation"
       className="flex-none flex flex-col overflow-y-auto"
       style={{
-        width: compact ? 64 : 240,
-        borderRight: `1px solid ${CI.line}`,
-        background: CI.paper,
+        width: compact ? 64 : surface === 'panel' ? '100%' : 268,
+        borderRight: surface === 'sidebar' ? '1px solid var(--ci-overlay-border-strong)' : 'none',
+        background: 'var(--ci-color-shell-navrail-bg)',
       }}
     >
       {/* WORKFLOWS header */}
       {!compact && (
-        <div className="px-4 pt-6 pb-2">
+        <div className="px-5 pt-5 pb-2">
           <div
             style={{
               fontFamily: 'Montserrat, sans-serif',
-              fontWeight: 600, fontSize: 11, letterSpacing: 1.4,
-              color: CI.muted, textTransform: 'uppercase',
+              fontWeight: 600,
+              fontSize: 11,
+              letterSpacing: '0.22em',
+              color: 'var(--ci-text-subtle)',
+              textTransform: 'uppercase',
             }}
           >
             Workflows
@@ -77,12 +81,15 @@ export function BrandRail({
 
       {/* Domains */}
       {!compact && (
-        <div className="px-4 pt-4 pb-2">
+        <div className="px-5 pt-5 pb-2">
           <div
             style={{
               fontFamily: 'Montserrat, sans-serif',
-              fontWeight: 600, fontSize: 11, letterSpacing: 1.4,
-              color: CI.muted, textTransform: 'uppercase',
+              fontWeight: 600,
+              fontSize: 11,
+              letterSpacing: '0.22em',
+              color: 'var(--ci-text-subtle)',
+              textTransform: 'uppercase',
             }}
           >
             Domains
@@ -106,12 +113,15 @@ export function BrandRail({
       {/* Saved views */}
       {!compact && (
         <>
-          <div className="px-4 pt-5 pb-2">
+          <div className="px-5 pt-6 pb-2">
             <div
               style={{
                 fontFamily: 'Montserrat, sans-serif',
-                fontWeight: 600, fontSize: 11, letterSpacing: 1.4,
-                color: CI.muted, textTransform: 'uppercase',
+                fontWeight: 600,
+                fontSize: 11,
+                letterSpacing: '0.22em',
+                color: 'var(--ci-text-subtle)',
+                textTransform: 'uppercase',
               }}
             >
               Saved views
@@ -152,23 +162,30 @@ function RailButton({
       onClick={onClick}
       className="w-full text-left transition-colors"
       style={{
-        padding: compact ? '10px 8px' : '8px 16px',
+        padding: compact ? '10px 8px' : '10px 18px',
         fontFamily: 'Roboto, sans-serif',
         fontSize: 13,
-        color: active ? CI.teal : CI.ink,
-        background: active ? CI.tealSoft : 'transparent',
-        borderLeft: `2px solid ${active ? CI.teal : 'transparent'}`,
+        color: active ? 'var(--ci-accent)' : 'var(--ci-text)',
+        background: active ? 'rgba(var(--ci-accent-rgb), 0.14)' : 'transparent',
+        borderLeft: `3px solid ${active ? 'var(--ci-accent)' : 'transparent'}`,
         fontWeight: active ? 500 : 400,
       }}
       onMouseEnter={(e) => {
-        if (!active) e.currentTarget.style.background = CI.lineSoft;
+        if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
       }}
       onMouseLeave={(e) => {
         if (!active) e.currentTarget.style.background = 'transparent';
       }}
     >
       {compact ? (
-        <div className="flex items-center justify-center" style={{ fontSize: 11, fontWeight: 600, color: active ? CI.teal : CI.inkSoft }}>
+        <div
+          className="flex items-center justify-center"
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: active ? 'var(--ci-accent)' : 'var(--ci-text-subtle)',
+          }}
+        >
           {sublabel ?? label.slice(0, 2).toUpperCase()}
         </div>
       ) : (
@@ -176,14 +193,18 @@ function RailButton({
           <div className="min-w-0">
             <div className="truncate">{label}</div>
             {hint ? (
-              <div style={{ fontSize: 11, color: CI.muted, marginTop: 2 }}>{hint}</div>
+              <div style={{ fontSize: 11, color: 'var(--ci-text-subtle)', marginTop: 2 }}>{hint}</div>
             ) : null}
           </div>
           {typeof count === 'number' ? (
             <div
               style={{
-                fontFamily: 'Montserrat, sans-serif', fontSize: 11, fontWeight: 600,
-                color: active ? CI.teal : CI.muted, minWidth: 20, textAlign: 'right',
+                fontFamily: 'Montserrat, sans-serif',
+                fontSize: 11,
+                fontWeight: 600,
+                color: active ? 'var(--ci-accent)' : 'var(--ci-text-subtle)',
+                minWidth: 20,
+                textAlign: 'right',
               }}
             >
               {count}

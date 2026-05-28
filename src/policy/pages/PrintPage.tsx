@@ -7,7 +7,8 @@ import { loadFrameworkSeed } from '@/policy/adapters/frameworkSeedAdapter';
 import type { PolicyContentSection } from '@/policy/types';
 import { achcSurveyByPolicyId } from '@/policy/data/achcSurveyProjection.generated';
 import { formatAnchorRefsForDisplay, getSupportRefsForPolicy } from '@/policy/data/achcSupportAnchors';
-import ciLogoGray from '@/assets/ci-logo-gray.png';
+// Single app logo - the one file specified for the entire application
+import ciLogoWhite from '@/assets/ci-logo-white.png';
 
 // Pre-load seed data for domain / subdomain name lookups and version metadata
 const { domains, subdomains, policyVersions } = loadFrameworkSeed();
@@ -278,7 +279,7 @@ export function PrintPage() {
           {/* Logo + document type */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
             <img
-              src={ciLogoGray}
+              src={ciLogoWhite}
               alt="Care Indeed — The Heart of Home Health"
               style={{ height: '40px', width: 'auto' }}
             />

@@ -73,6 +73,12 @@ export function ShellMobileDrawer({
         {items.map((item) => {
           const active = isActive(currentPath, item.to);
           const hasSubItems = !!item.subItems && item.subItems.length > 0;
+          const visibleSubItems = item.id === 'ces'
+            ? item.subItems?.filter(sub => sub.to !== '/workflows')
+            : item.subItems;
+          const workflowSubItem = item.id === 'ces'
+            ? item.subItems?.find(sub => sub.to === '/workflows')
+            : undefined;
 
           // Items with subItems render as a section: a non-interactive
           // group header (icon + label) followed by indented sub-rows.
@@ -88,7 +94,7 @@ export function ShellMobileDrawer({
                   <item.icon size={16} aria-hidden="true" />
                   <span>{item.label}</span>
                 </div>
-                {item.subItems!.map((sub, idx) => {
+                {visibleSubItems!.map((sub, idx) => {
                   const subActive = currentPath === sub.to || currentPath.startsWith(sub.to + '/');
                   return (
                     <button
@@ -111,6 +117,25 @@ export function ShellMobileDrawer({
                     </button>
                   );
                 })}
+                {workflowSubItem && (
+                  <button
+                    type="button"
+                    onClick={() => onItemClick({ ...item, to: workflowSubItem.to, label: workflowSubItem.label })}
+                    className="ci-touch-target w-full flex items-center gap-3 pl-10 pr-4 py-2.5 text-[14px] text-left rounded-lg transition-colors hover:bg-white/5"
+                    style={
+                      isActive(currentPath, workflowSubItem.to)
+                        ? {
+                            background: 'rgba(var(--ci-accent-rgb), 0.12)',
+                            color: 'var(--ci-accent)',
+                            fontWeight: 600,
+                          }
+                        : { color: 'var(--ci-text)' }
+                    }
+                    aria-current={isActive(currentPath, workflowSubItem.to) ? 'page' : undefined}
+                  >
+                    <span className="flex-1">{workflowSubItem.label}</span>
+                  </button>
+                )}
               </div>
             );
           }

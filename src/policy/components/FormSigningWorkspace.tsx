@@ -53,7 +53,8 @@ import {
   recommendSnapshotEncoding,
 } from '@/policy/ecign/captureSignedFormSnapshot';
 import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
-import ciLogoGray from '@/assets/ci-logo-gray.png';
+// Single app logo - using the one file specified by user
+import ciLogoWhite from '@/assets/ci-logo-white.png';
 import { HelpContextLink } from '@/policy/help/HelpContextLink';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
 import {
@@ -877,7 +878,7 @@ export function ECIgnWorkspace({
   // ── Care Indeed brand logo as base64 data URL ────────────────────
   // Required on EVERY page of the final PDF artifact for brand
   // defensibility. The user has demanded this be present 100+ times.
-  const ciLogoDataUrlRef = useRef<string>(ciLogoGray);
+  const ciLogoDataUrlRef = useRef<string>(ciLogoWhite);
   useEffect(() => {
     let cancelled = false;
     const inline = (src: string, target: { current: string }) => {
@@ -899,7 +900,7 @@ export function ECIgnWorkspace({
       img.src = src;
     };
     inline(eCIgnLogo, eCIgnLogoDataUrlRef);
-    inline(ciLogoGray, ciLogoDataUrlRef);
+    inline(ciLogoWhite, ciLogoDataUrlRef);
     return () => { cancelled = true; };
   }, []);
 

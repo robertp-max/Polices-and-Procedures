@@ -31,6 +31,7 @@ const IAdministratorPage = lazy(() => import('@/policy/pages/iAdministrator').th
 const GenericReferenceViewer = lazy(() => import('@/policy/pages/GenericReferenceViewer').then(m => ({ default: m.GenericReferenceViewer })))
 const BradProposalPage  = lazy(() => import('@/policy/pages/BradProposal').then(m => ({ default: m.BradProposalPage })))
 const WorkflowLibraryApp    = lazy(() => import('@/policy/workflows/WorkflowLibraryApp').then(m => ({ default: m.WorkflowLibraryApp })))
+const SwimlaneRoutePage = lazy(() => import('@/policy/workflows/swimlanes/SwimlaneRoutePage').then(m => ({ default: m.SwimlaneRoutePage })))
 const HubstaffStagingPage  = lazy(() => import('@/policy/pages/HubstaffStagingPage').then(m => ({ default: m.HubstaffStagingPage })))
 const PolicyLifecyclePage  = lazy(() => import('@/policy/pages/PolicyLifecyclePage').then(m => ({ default: m.PolicyLifecyclePage })))
 const FormPrintView        = lazy(() => import('@/policy/pages/FormPrintView').then(m => ({ default: m.FormPrintView })))
@@ -72,7 +73,7 @@ const OnboardingV2Audit       = lazy(() => import('@/policy/onboarding-v2/pages/
 const OnboardingV2Governance  = lazy(() => import('@/policy/onboarding-v2/pages/GovernancePage').then(m => ({ default: m.GovernancePage })))
 
 // ── Help Center (eCIgn knowledge base) ───────────────────────────
-const HelpCenterPage     = lazy(() => import('@/policy/help/HelpCenterPage').then(m => ({ default: m.HelpCenterPage })))
+const HelpCenterPage     = lazy(() => import('@/policy/help/HelpCenterPrototypePage').then(m => ({ default: m.HelpCenterPage })))
 const SystemDocumentationPage = lazy(() => import('@/policy/pages/SystemDocumentationPage').then(m => ({ default: m.SystemDocumentationPage })))
 
 // ── Clinician Profile & Patient Profile (Phase 1) ──────────────
@@ -182,6 +183,7 @@ function AppRoutes() {
         {/* Generic print page */}
         <Route path="/print/:policyId" element={<PrintPage />} />
         <Route path="/surveyor/policy/:policyId" element={<ProtectedRoute><SurveyorPolicyViewerPage /></ProtectedRoute>} />
+        <Route path="/help/*" element={<ProtectedRoute><FeatureRouteGuard featureId="helpCenter.view"><HelpCenterPage /></FeatureRouteGuard></ProtectedRoute>} />
 
         {/* Standalone form print — outside layout shell for clean pagination */}
         <Route path="/forms/:formId/print" element={<FormPrintView />} />
@@ -259,6 +261,7 @@ function AppRoutes() {
                     <Route path="/forms/:formId" element={<FeatureRouteGuard featureId="ecign.view"><FormViewer /></FeatureRouteGuard>} />
                     <Route path="/artifacts/:artifactId" element={<ArtifactViewerPage />} />
                     <Route path="/viewer/:referenceId" element={<GenericReferenceViewer />} />
+                    <Route path="/events/:eventId/swimlane" element={<RoleGate denyTrainer><FeatureRouteGuard featureId="workflows.view"><SwimlaneRoutePage /></FeatureRouteGuard></RoleGate>} />
                     <Route path="/events/:referenceId" element={<GenericReferenceViewer />} />
                     <Route path="/tasks/:referenceId" element={<GenericReferenceViewer />} />
                     <Route path="/governance" element={<RoleGate denyTrainer><GovernancePage /></RoleGate>} />
@@ -300,8 +303,6 @@ function AppRoutes() {
                       <Route path="audit"                element={<OnboardingV2Audit />} />
                       <Route path="governance"           element={<OnboardingV2Governance />} />
                     </Route>
-                    {/* Help Center (knowledge base) */}
-                    <Route path="/help/*" element={<FeatureRouteGuard featureId="helpCenter.view"><HelpCenterPage /></FeatureRouteGuard>} />
                     <Route path="/system-documentation" element={<Navigate to="/system-documentation/executive-overview" replace />} />
                     <Route path="/system-documentation/:sectionId" element={<FeatureRouteGuard featureId="systemDocumentation.view"><SystemDocumentationPage /></FeatureRouteGuard>} />
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthProvider';
 import { incrementLoginCountOncePerSession } from './loginCounter';
 import { preloadBradAvatar } from './BradTourAvatar';
@@ -25,19 +26,21 @@ type Phase = 'idle' | 'welcome' | 'tour' | 'closed';
 
 export function GuidedTourGate() {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
   const [phase, setPhase] = useState<Phase>('idle');
+  const isSwimlaneRoute = /^\/(workflows\/.+swimlane|events\/.+\/swimlane)(\/|$|\?)/.test(location.pathname);
 
   // Show the welcome overlay once per browser session per login.
   // sessionStorage survives React Strict Mode double-invocation
   // (ref does not, because state resets on the simulated remount).
   useEffect(() => {
-    if (loading || !isAuthenticated) return;
+    if (loading || !isAuthenticated || isSwimlaneRoute) return;
     if (sessionStorage.getItem(SESSION_SHOWN_FLAG)) return;
     sessionStorage.setItem(SESSION_SHOWN_FLAG, '1');
     preloadBradAvatar();
     incrementLoginCountOncePerSession();
     setPhase('welcome');
-  }, [loading, isAuthenticated]);
+  }, [loading, isAuthenticated, isSwimlaneRoute]);
 
   // Clear the session flag on logout so the next login shows it again.
   useEffect(() => {
@@ -49,15 +52,20 @@ export function GuidedTourGate() {
 
   // Any component may dispatch TOUR_RESTART_EVENT to reopen the tour.
   useEffect(() => {
+    if (isSwimlaneRoute) {
+      setPhase('closed');
+      return;
+    }
     const onRestart = () => setPhase('tour');
     window.addEventListener(TOUR_RESTART_EVENT, onRestart);
     return () => window.removeEventListener(TOUR_RESTART_EVENT, onRestart);
-  }, []);
+  }, [isSwimlaneRoute]);
 
   const closeWelcome = useCallback(() => setPhase('closed'), []);
   const startTour = useCallback(() => setPhase('tour'), []);
   const closeTour = useCallback(() => setPhase('closed'), []);
 
+  if (isSwimlaneRoute) return null;
   if (phase === 'welcome') {
     return <MissionPromptOverlay onClose={closeWelcome} onStartTour={startTour} />;
   }

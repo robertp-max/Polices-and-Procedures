@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useRef, useMemo, useCallback, type PropsWithChildren } from 'react';
 import { createPortal } from 'react-dom';
-import ciIonLogo from '@/assets/ci-logo-white.png';
+// Single app logo for the entire application - hard-coded stable public path
+// as explicitly requested. File must be present at public/ci-logo-white.png.
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardCheck, Network, FileEdit,
@@ -31,6 +32,7 @@ import { GlobalTaskDrawer } from '@/policy/components/pm/GlobalTaskDrawer';
 import { GuidedTourGate, restartGuidedTour } from '@/policy/components/onboarding/GuidedTourGate';
 import { GuidedUatWidget } from '@/policy/components/onboarding/GuidedUatWidget';
 import { CesRoleReviewSwitcher } from '@/policy/ces/components/review/CesRoleReviewSwitcher';
+import { getWorkflowSubNavItems } from '@/policy/workflows/workflowNav';
 
 function BradRobotIcon({ size = 24, strokeWidth = 1.5, className }: { size?: number; strokeWidth?: number; className?: string }) {
   return (
@@ -254,7 +256,9 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   const ciMode = useCiModeStore(s => s.mode);
   const isCareIndeedDark = false;
   const isVisualLight = false;
-  const logo = ciIonLogo;
+  // Hard-coded stable path to the single app logo (public/ci-logo-white.png)
+  // This ensures it never changes on build/push and always uses the exact file provided.
+  const logo = '/ci-logo-white.png';
   const accountDisplayName = useMemo(() => {
     const firstName = user?.firstName?.trim();
     const lastName = user?.lastName?.trim();
@@ -327,6 +331,20 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
     const expandedItem = VISIBLE_NAV.find(item => item.id === expandedNavId);
     return expandedItem?.subItems?.length ? expandedItem.id : null;
   }, [expandedNavId, VISIBLE_NAV]);
+  const workflowSubNavItems = useMemo(
+    () => getWorkflowSubNavItems(location.search),
+    [location.search],
+  );
+
+  useEffect(() => {
+    const routeScopedItem = VISIBLE_NAV.find(item =>
+      item.subItems?.some(sub => {
+        const subPath = sub.to.split('?')[0].split('#')[0];
+        return location.pathname === subPath || location.pathname.startsWith(`${subPath}/`);
+      }),
+    );
+    setExpandedNavId(routeScopedItem?.id ?? null);
+  }, [VISIBLE_NAV, location.pathname]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = 'v3-veil';
@@ -464,7 +482,6 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     src={logo}
                     alt="Care Indeed"
                     className="h-8 md:h-11 w-auto object-contain"
-                    style={{ filter: 'brightness(0) invert(1)', opacity: 0.95 }}
                   />
                 </button>
               }
@@ -664,7 +681,6 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         src={logo}
                         alt="Care Indeed V3"
                         className="h-14 w-auto object-contain"
-                        style={{ filter: 'brightness(0) invert(1)', opacity: 0.95 }}
                       />
                     </button>
 
@@ -886,17 +902,35 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                   {!hideChrome && !isMobile && activeDropdownNavId && (() => {
                     const hi = VISIBLE_NAV.find(i => i.id === activeDropdownNavId);
                     if (!hi?.subItems?.length) return null;
+                    const showWorkflowSubNav = hi.id === 'ces' && location.pathname.startsWith('/workflows');
+                    const subNavItems = showWorkflowSubNav
+                      ? workflowSubNavItems.map(sub => ({
+                          key: sub.id,
+                          to: sub.to,
+                          label: sub.label,
+                          active: sub.active,
+                        }))
+                      : hi.subItems
+                          .filter(sub => sub.to !== '/workflows')
+                          .map(sub => {
+                            const subPath = sub.to.split('?')[0];
+                            return {
+                              key: sub.to,
+                              to: sub.to,
+                              label: sub.label,
+                              active: location.pathname === subPath || location.pathname.startsWith(subPath + '/'),
+                            };
+                          });
+                    if (subNavItems.length === 0) return null;
                     return (
                       <nav
-                        aria-label={`${hi.label} sub-navigation`}
+                        aria-label={showWorkflowSubNav ? 'Workflow sub-navigation' : `${hi.label} sub-navigation`}
                         className="ci-shell-subnav custom-scrollbar-x justify-start"
                       >
-                        {hi.subItems.map(sub => {
-                          const subPath = sub.to.split('?')[0];
-                          const isSubActive = location.pathname === subPath || location.pathname.startsWith(subPath + '/');
+                        {subNavItems.map(sub => {
                           return (
                             <button
-                              key={sub.to}
+                              key={sub.key}
                               type="button"
                               onClick={() => navigate(sub.to)}
                               className="font-heading ci-shell-subnav-chip"
@@ -908,13 +942,13 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                                 padding: '4px 10px',
                                 borderRadius: 10,
                                 whiteSpace: 'nowrap',
-                                background: isSubActive
+                                background: sub.active
                                   ? 'rgba(var(--ci-accent-rgb), 0.13)'
                                   : 'var(--ci-overlay-faint)',
-                                color: isSubActive
+                                color: sub.active
                                   ? 'var(--ci-accent)'
                                   : (isVisualLight ? 'var(--ci-neutral-500)' : 'var(--ci-text-on-surface-muted)'),
-                                border: `1px solid ${isSubActive
+                                border: `1px solid ${sub.active
                                   ? 'rgba(var(--ci-accent-rgb), 0.28)'
                                   : 'transparent'}`,
                                 transition: 'all 0.15s ease',

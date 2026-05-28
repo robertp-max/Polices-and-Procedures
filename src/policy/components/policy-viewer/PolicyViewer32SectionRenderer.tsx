@@ -1,3 +1,4 @@
+import { Fragment, type ReactNode } from 'react';
 import { FileText } from 'lucide-react';
 import type { PolicyViewer32Section } from './PolicyViewer32Types';
 
@@ -18,22 +19,61 @@ function isListLine(line: string): boolean {
   return /^\s*(?:[-*]|[0-9]+[.)])\s+/.test(line);
 }
 
-function cleanInline(text: string): string {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
-    .trim();
+function renderInline(text: string, keyPrefix: string): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  const tokenPattern = /(\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|`([^`]+)`)/g;
+  let lastIndex = 0;
+
+  for (const match of text.matchAll(tokenPattern)) {
+    const start = match.index ?? 0;
+    if (start > lastIndex) {
+      nodes.push(text.slice(lastIndex, start));
+    }
+
+    const [token, , linkLabel, linkHref, boldText, codeText] = match;
+    if (linkLabel && linkHref) {
+      const external = /^[a-z]+:\/\//i.test(linkHref);
+      nodes.push(
+        <a
+          key={`${keyPrefix}-${start}`}
+          href={linkHref}
+          target={external ? '_blank' : undefined}
+          rel={external ? 'noreferrer' : undefined}
+          className="text-[#4FD1C5] underline underline-offset-2 hover:text-[#7BE4DA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
+        >
+          {linkLabel}
+        </a>,
+      );
+    } else if (boldText) {
+      nodes.push(<strong key={`${keyPrefix}-${start}`} className="font-semibold text-white">{boldText}</strong>);
+    } else if (codeText) {
+      nodes.push(
+        <code key={`${keyPrefix}-${start}`} className="rounded bg-[#141A23] px-1 py-0.5 font-mono text-[0.9em] text-[#CFE8E4]">
+          {codeText}
+        </code>,
+      );
+    } else {
+      nodes.push(token);
+    }
+
+    lastIndex = start + token.length;
+  }
+
+  if (lastIndex < text.length) {
+    nodes.push(text.slice(lastIndex));
+  }
+
+  return nodes;
 }
 
 function listText(line: string): string {
-  return cleanInline(line.replace(/^\s*(?:[-*]|[0-9]+[.)])\s+/, ''));
+  return line.replace(/^\s*(?:[-*]|[0-9]+[.)])\s+/, '').trim();
 }
 
 function tableCells(line: string): string[] {
   return line
     .split('|')
-    .map(cell => cleanInline(cell))
+    .map(cell => cell.trim())
     .filter(Boolean);
 }
 
@@ -95,17 +135,20 @@ function buildBlocks(body: string): MarkdownBlock[] {
 
 export function PolicyViewer32EmptyState({ title = 'No content available' }: { title?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center opacity-70">
-      <FileText size={42} className="text-[#5E6A7F] mb-4" aria-hidden="true" />
-      <h3 className="text-lg font-medium text-white mb-2">{title}</h3>
-      <p className="text-sm text-[#8A94A6]">This policy does not include content for this section.</p>
+    <div className="flex flex-col items-center justify-center py-10 text-center opacity-60">
+      <FileText size={28} className="text-[#5E6A7F] mb-3" aria-hidden="true" />
+      <h3 className="text-sm font-medium text-white">{title}</h3>
     </div>
   );
 }
 
 export function PolicyViewer32Markdown({ body }: { body: string }) {
   const blocks = buildBlocks(body);
-  if (blocks.length === 0) return <PolicyViewer32EmptyState />;
+  if (blocks.length === 0) {
+    // Avoid injecting large empty blocks inside section content flows.
+    // Return a very subtle placeholder only (or nothing).
+    return <div className="text-[10px] text-[#5E6A7F] italic py-2">—</div>;
+  }
 
   return (
     <div className="space-y-4">
@@ -113,18 +156,42 @@ export function PolicyViewer32Markdown({ body }: { body: string }) {
         if (block.kind === 'heading') {
           return (
             <h4 key={index} className="text-sm font-bold text-white tracking-wide">
-              {cleanInline(block.lines.join(' '))}
+              {renderInline(block.lines.join(' ').trim(), `heading-${index}`)}
             </h4>
           );
         }
 
         if (block.kind === 'list') {
+          const listItems = block.lines.map(l => listText(l));
+
+          // Heuristic: many policy "copy-pasted" responsibility / requirement lists
+          // are short, styless bullets. Render them as a clean 1-column table instead.
+          const looksLikeSimpleList = listItems.every(item => item.length < 140 && !/[.]{2,}/.test(item));
+          if (looksLikeSimpleList && listItems.length > 0) {
+            return (
+              <div key={index} className="rounded-lg border border-[#1C2433] bg-[#0F131A] overflow-hidden">
+                <table className="min-w-full text-left border-collapse">
+                  <tbody className="divide-y divide-[#1C2433]">
+                    {listItems.map((item, itemIndex) => (
+                      <tr key={itemIndex} className="hover:bg-[#1C2433]/30 transition-colors">
+                        <td className="py-2.5 px-4 text-sm text-[#E2E8F0] leading-relaxed">
+                          {renderInline(item, `list-table-${index}-${itemIndex}`)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          }
+
+          // Default bullet rendering for longer / more narrative lists
           return (
             <ul key={index} className="space-y-2">
-              {block.lines.map((line, itemIndex) => (
+              {listItems.map((item, itemIndex) => (
                 <li key={itemIndex} className="flex items-start gap-3 text-sm text-[#E2E8F0] leading-relaxed">
                   <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#007970] flex-shrink-0" aria-hidden="true" />
-                  <span>{listText(line)}</span>
+                  <span className="whitespace-pre-line">{renderInline(item, `list-${index}-${itemIndex}`)}</span>
                 </li>
               ))}
             </ul>
@@ -136,13 +203,13 @@ export function PolicyViewer32Markdown({ body }: { body: string }) {
           const headerCells = header ? tableCells(header) : [];
           return (
             <div key={index} className="rounded-xl border border-[#1C2433] bg-[#0F131A] overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left border-collapse">
+              <table className="min-w-full text-left border-collapse">
                 {headerCells.length > 0 && (
                   <thead>
                     <tr className="bg-[#141A23] border-b border-[#1C2433]">
                       {headerCells.map((cell, cellIndex) => (
                         <th key={cellIndex} className="py-3 px-4 text-[10px] font-bold text-[#5E6A7F] uppercase tracking-wider">
-                          {cell}
+                          {renderInline(cell, `table-head-${index}-${cellIndex}`)}
                         </th>
                       ))}
                     </tr>
@@ -152,8 +219,8 @@ export function PolicyViewer32Markdown({ body }: { body: string }) {
                   {rows.map((row, rowIndex) => (
                     <tr key={rowIndex} className="hover:bg-[#1C2433]/40 transition-colors group">
                       {tableCells(row).map((cell, cellIndex) => (
-                        <td key={cellIndex} className="py-4 px-4 text-xs text-[#8A94A6] leading-relaxed align-top group-hover:text-[#E2E8F0] transition-colors">
-                          {cell}
+                        <td key={cellIndex} className="py-4 px-4 text-xs text-[#8A94A6] leading-relaxed align-top break-words group-hover:text-[#E2E8F0] transition-colors">
+                          {renderInline(cell, `table-cell-${index}-${rowIndex}-${cellIndex}`)}
                         </td>
                       ))}
                     </tr>
@@ -165,8 +232,13 @@ export function PolicyViewer32Markdown({ body }: { body: string }) {
         }
 
         return (
-          <p key={index} className="text-sm text-[#E2E8F0] leading-relaxed">
-            {cleanInline(block.lines.join(' '))}
+          <p key={index} className="text-sm text-[#E2E8F0] leading-relaxed whitespace-pre-line">
+            {block.lines.map((line, lineIndex) => (
+              <Fragment key={`paragraph-${index}-${lineIndex}`}>
+                {lineIndex > 0 ? '\n' : null}
+                {renderInline(line, `paragraph-${index}-${lineIndex}`)}
+              </Fragment>
+            ))}
           </p>
         );
       })}
@@ -175,7 +247,10 @@ export function PolicyViewer32Markdown({ body }: { body: string }) {
 }
 
 export function PolicyViewer32SectionList({ sections }: { sections: PolicyViewer32Section[] }) {
-  if (sections.length === 0) return <PolicyViewer32EmptyState />;
+  if (sections.length === 0) {
+    // In tab content flows we prefer silence over a big empty state.
+    return null;
+  }
 
   return (
     <div className="space-y-6 max-w-6xl">

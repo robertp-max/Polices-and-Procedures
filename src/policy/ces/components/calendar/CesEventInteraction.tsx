@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, CalendarDays, ChevronRight, ExternalLink, History,
-  ListChecks, Lock, Maximize2, ShieldCheck, X,
+  ListChecks, Lock, ShieldCheck, X,
 } from 'lucide-react';
 import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { daysUntil, TODAY_ANCHOR } from '@/policy/data/regulatoryEvents';
@@ -15,8 +15,8 @@ import {
   classifyInstance, STATE_COLOR, STATE_LABEL, type InstanceState,
   TEAL_PRIMARY,
 } from '@/policy/components/regulatory/timelineState';
-import { useToastStore } from '@/policy/components/regulatory/Toast';
 import { classifyAuditState, AUDIT_STATE_COLOR, AUDIT_STATE_LABEL } from '@/policy/audit/auditState';
+import { getSwimlaneRegistryEntry } from '@/policy/workflows/swimlanes/swimlaneRegistry';
 
 export const CES_CALENDAR_LAYOUT = {
   CANVAS_WIDTH: 1760,
@@ -24,6 +24,14 @@ export const CES_CALENDAR_LAYOUT = {
 };
 
 export type CesZoomLevel = 'overview' | 'calendar' | 'preview' | 'detail' | 'workflow' | 'audit';
+
+export interface EventOverviewParticipant {
+  id: string;
+  label: string;
+  roleType: string;
+  responseStatus?: string;
+  signerFlag?: string;
+}
 
 export function useCesInfiniteZoom() {
   const [level, setLevel] = useState<CesZoomLevel>('overview');
@@ -93,7 +101,7 @@ export function CesInteractionStyles() {
         --spotlight-color: rgba(0, 121, 112, 0.16);
         position: relative;
         overflow: hidden;
-        border-radius: 18px;
+        border-radius: 14px;
         background:
           radial-gradient(
             500px circle at var(--mouse-x) var(--mouse-y),
@@ -102,6 +110,11 @@ export function CesInteractionStyles() {
           ),
           rgba(15, 19, 26, 0.92);
         border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: border-color 180ms ease, background-color 180ms ease;
+      }
+      .ces-card-spotlight:focus-visible {
+        outline: 2px solid rgba(94, 234, 212, 0.75);
+        outline-offset: 1px;
       }
       .ces-card-spotlight::before {
         content: "";
@@ -124,10 +137,10 @@ export function CesInteractionStyles() {
         opacity: 1;
       }
       .ces-card-spotlight-complete {
-        box-shadow: 0 0 0 1px rgba(20,184,166,0.22), 0 0 28px rgba(20,184,166,0.12);
+        box-shadow: inset 0 0 0 1px rgba(20,184,166,0.22);
       }
       .ces-card-spotlight-critical {
-        box-shadow: 0 0 0 1px rgba(248,113,113,0.20);
+        box-shadow: inset 0 0 0 1px rgba(248,113,113,0.20);
       }
       .ces-zoom-backdrop {
         background:
@@ -150,7 +163,8 @@ export function CesInteractionStyles() {
       }
       @media (prefers-reduced-motion: reduce) {
         .ces-card-spotlight,
-        #ces-calendar-canvas > div {
+        .ces-card-spotlight::before,
+        .ces-zoom-card {
           transition: none !important;
         }
       }
@@ -165,6 +179,80 @@ export function getCesEventSpotlightTone(state: InstanceState, certified: boolea
   return 'rgba(20, 184, 166, 0.18)';
 }
 
+export function buildEventOverviewParticipants(event: RegulatoryEvent): EventOverviewParticipant[] {
+  const participants: EventOverviewParticipant[] = [];
+  const seen = new Set<string>();
+
+  const addParticipant = (input: {
+    key?: string;
+    label?: string | null;
+    roleType?: string | null;
+    responseStatus?: string;
+    signerFlag?: string;
+  }) => {
+    const label = input.label?.trim();
+    const roleType = input.roleType?.trim() || label;
+    if (!label || !roleType) return;
+    const key = (input.key ?? `${label}::${roleType}`).toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    participants.push({
+      id: key.replace(/[^a-z0-9]+/g, '-'),
+      label,
+      roleType,
+      responseStatus: input.responseStatus,
+      signerFlag: input.signerFlag,
+    });
+  };
+
+  addParticipant({
+    key: `organizer::${event.owner}::${event.ownerRole}`,
+    label: event.owner,
+    roleType: event.ownerRole || 'Organizer',
+    responseStatus: 'Organizer',
+  });
+
+  if (event.minutes?.assignee) {
+    addParticipant({
+      key: `minutes-assignee::${event.minutes.assignee}`,
+      label: event.minutes.assignee,
+      roleType: 'Minutes assignee',
+      responseStatus: 'Pending',
+    });
+  }
+
+  (event.minutes?.signOffRoles ?? []).forEach(role => {
+    addParticipant({
+      key: `signer::${role}`,
+      label: role,
+      roleType: role,
+      responseStatus: 'Required signer',
+      signerFlag: 'Signer',
+    });
+  });
+
+  (event.approvals ?? []).forEach(approval => {
+    addParticipant({
+      key: `approval::${approval.approverRole}`,
+      label: approval.approverRole,
+      roleType: approval.approverRole,
+      responseStatus: approval.required ? 'Pending' : 'Maybe',
+      signerFlag: approval.targetKind === 'minutes' || approval.targetKind === 'report' || approval.targetKind === 'event' ? 'Reviewer' : undefined,
+    });
+  });
+
+  (event.agenda?.standingTopics ?? []).forEach(topic => {
+    addParticipant({
+      key: `agenda-owner::${topic.owner}`,
+      label: topic.owner,
+      roleType: topic.owner,
+      responseStatus: 'Agenda owner',
+    });
+  });
+
+  return participants;
+}
+
 export function CesSpotlightCard({
   children,
   className = '',
@@ -174,6 +262,7 @@ export function CesSpotlightCard({
   ariaLabel,
   toneClassName = '',
   style,
+  ...buttonProps
 }: {
   children: React.ReactNode;
   className?: string;
@@ -183,7 +272,7 @@ export function CesSpotlightCard({
   ariaLabel?: string;
   toneClassName?: string;
   style?: React.CSSProperties;
-}) {
+} & Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onMouseEnter' | 'onMouseLeave' | 'onFocus' | 'onBlur' | 'onKeyDown'>) {
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -208,6 +297,7 @@ export function CesSpotlightCard({
       aria-label={ariaLabel ?? title}
       className={`ces-card-spotlight ${toneClassName} ${className}`}
       style={style}
+      {...buttonProps}
     >
       <div className="relative z-20 h-full w-full">
         {children}
@@ -216,79 +306,158 @@ export function CesSpotlightCard({
   );
 }
 
-export function CesEventPreviewModal({
+export function CesEventOverviewCard({
   event,
   today = TODAY_ANCHOR,
-  onClose,
-  onExpand,
+  onOpenSwimlane,
+  actionLabel = 'Open Event Swimlane',
 }: {
   event: RegulatoryEvent;
   today?: Date;
-  onClose: () => void;
-  onExpand: () => void;
+  onOpenSwimlane: () => void;
+  actionLabel?: string;
 }) {
   const store = useRegulatoryExecutionStore();
-  const dataflow = useEventExecutionDataflow(event);
   const state = classifyInstance(event, today, store);
   const certified = store.isCertified(event.id);
   const auditState = classifyAuditState(event, today, store);
   const sla = computeCesSla(event, today);
   const mode = getCesExecutionMode(event.date);
+  const participants = useMemo(() => buildEventOverviewParticipants(event), [event]);
+  const validation = useMemo(() => store.validateEvent(event), [event, store]);
+  const signerRoles = event.minutes?.signOffRoles ?? [];
+  const agendaOwners = Array.from(new Set((event.agenda?.standingTopics ?? []).map(topic => topic.owner).filter(Boolean))) as string[];
+  const auditReadinessScore = useMemo(() => {
+    const stepRatio = validation.progress.stepsTotal > 0
+      ? validation.progress.stepsComplete / validation.progress.stepsTotal
+      : 1;
+    const formRatio = validation.progress.formsTotal > 0
+      ? validation.progress.formsComplete / validation.progress.formsTotal
+      : 1;
+    const minutesRatio = validation.progress.minutesRequired
+      ? (validation.progress.minutesFinalized ? 1 : 0)
+      : 1;
+    const requiredApprovals = (event.approvals ?? []).filter(approval => approval.required);
+    const approvedApprovals = requiredApprovals.filter(approval =>
+      store.approvals.some(candidate =>
+        candidate.eventId === event.id
+        && candidate.targetKind === approval.targetKind
+        && candidate.targetLabel === approval.targetLabel
+        && candidate.status === 'approved',
+      ),
+    ).length;
+    const approvalRatio = requiredApprovals.length > 0 ? approvedApprovals / requiredApprovals.length : 1;
+    return Math.round(((stepRatio + formRatio + minutesRatio + approvalRatio) / 4) * 100);
+  }, [event, store.approvals, validation]);
 
   return (
-    <CesEventZoomModal onClose={onClose} maxWidth="max-w-xl">
-      <div className="p-5" onClick={onExpand}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]">
-              <span style={{ color: STATE_COLOR[state] }}>{STATE_LABEL[state]}</span>
-              <span className="text-white/35">{event.id}</span>
-              {mode !== 'production' && <Badge>{CES_EXECUTION_MODE_LABEL[mode]}</Badge>}
-              {certified && <Badge><Lock size={10} /> Certified</Badge>}
-            </div>
-            <h2 className="mt-3 font-outfit text-2xl font-light leading-tight text-white">
-              {event.title}
-            </h2>
-            <p className="mt-2 text-[12px] leading-relaxed text-white/65">
-              {event.summary ?? event.regulatoryDriver ?? 'Compliance event ready for workflow review.'}
-            </p>
+    <div className="rounded-[24px] border border-[#1C2433] bg-[linear-gradient(180deg,rgba(20,26,35,0.98),rgba(11,15,21,0.98))] p-5 text-[#E2E8F0] shadow-[0_24px_80px_rgba(0,0,0,0.38)]">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]">
+            <span style={{ color: STATE_COLOR[state] }}>{STATE_LABEL[state]}</span>
+            <span className="rounded-full border border-[#1C2433] bg-[#141A23] px-2 py-0.5 text-[#8A94A6]">{event.id}</span>
+            <span className="rounded-full border border-[#007970]/35 bg-[#004142]/18 px-2 py-0.5 text-[#8BE6DF]">{event.domain}</span>
+            {mode !== 'production' && <Badge>{CES_EXECUTION_MODE_LABEL[mode]}</Badge>}
+            {certified && <Badge><Lock size={10} /> Locked</Badge>}
           </div>
+          <h2 className="mt-3 font-outfit text-[26px] font-light leading-tight text-white">{event.title}</h2>
+          <p className="mt-2 text-[12px] leading-relaxed text-[#A0ABC0]">
+            {event.summary ?? event.regulatoryDriver ?? 'Compliance event ready for event-specific swimlane execution.'}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 text-[11px] sm:grid-cols-3">
+        <Metric value={`${event.processFlow.length}`} label="steps" />
+        <Metric value={sla.label} label="SLA" tone={sla.tone} />
+        <Metric value={state === 'blocked' || state === 'overdue' ? 'High' : state === 'due-soon' ? 'Medium' : 'Low'} label="risk" tone={state} />
+        <Metric value={`${auditReadinessScore}%`} label="audit ready" />
+        <Metric value={AUDIT_STATE_LABEL[auditState]} label="audit state" tone={auditState} />
+        <Metric value={event.workflowId ?? 'No workflow'} label="workflow" />
+      </div>
+
+      <div className="mt-5 grid gap-x-6 gap-y-2 text-[12px] text-[#A0ABC0] sm:grid-cols-2">
+        <Metadata label="Date" value={event.endDate ? `${event.date} - ${event.endDate}` : event.date} />
+        <Metadata label="Time" value={event.allDay || !event.time ? 'All day' : `${event.time}${event.timeEnd ? ` - ${event.timeEnd}` : ''}`} />
+        <Metadata label="Owner role" value={event.ownerRole || 'Unassigned'} />
+        <Metadata label="Cadence" value={event.cadence} />
+        <Metadata label="Workflow ID" value={event.workflowId ?? 'No workflow swimlane mapped'} />
+        <Metadata label="Audit state" value={AUDIT_STATE_LABEL[auditState]} />
+        <Metadata label="Regulatory driver" value={event.regulatoryDriver ?? 'No regulatory driver captured.'} />
+        <Metadata label="Short description" value={event.summary ?? 'No summary captured for this event.'} />
+        <Metadata label="Required signer roles" value={signerRoles.length ? signerRoles.join(', ') : 'No signer roles configured.'} />
+        <Metadata label="Agenda owners" value={agendaOwners.length ? agendaOwners.join(', ') : 'No agenda owners configured.'} />
+      </div>
+
+      <section className="mt-5 border-t border-[#1C2433] pt-4">
+        <div className="mb-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em] text-[#8A94A6]">
+          Attendees / Participants
+        </div>
+        {participants.length > 0 ? (
+          <div className="space-y-2">
+            {participants.map(participant => (
+              <div key={participant.id} className="flex items-start justify-between gap-3 border-b border-white/5 pb-2 last:border-b-0 last:pb-0">
+                <div className="min-w-0">
+                  <div className="text-[12px] font-semibold text-[#E2E8F0]">{participant.label}</div>
+                  <div className="text-[11px] text-[#8A94A6]">{participant.roleType}</div>
+                </div>
+                <div className="shrink-0 text-right">
+                  {participant.responseStatus ? (
+                    <div className="text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#8BE6DF]">{participant.responseStatus}</div>
+                  ) : null}
+                  {participant.signerFlag ? (
+                    <div className="mt-1 text-[10px] text-[#FFB18D]">{participant.signerFlag}</div>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-[12px] text-[#8A94A6]">No attendees configured for this event.</div>
+        )}
+      </section>
+
+      <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#1C2433] pt-4">
+        <span className="text-[11px] text-[#8A94A6]">Click to open event swimlane.</span>
+        <button
+          type="button"
+          onClick={onOpenSwimlane}
+          className="inline-flex items-center gap-1.5 rounded-full border border-[#C74600]/42 bg-[#C74600]/12 px-4 py-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em] text-white transition-colors hover:border-[#C74600] hover:bg-[#C74600]/18"
+        >
+          {actionLabel}
+          <ExternalLink size={12} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function CesEventPreviewModal({
+  event,
+  today = TODAY_ANCHOR,
+  onClose,
+  onOpenSwimlane,
+}: {
+  event: RegulatoryEvent;
+  today?: Date;
+  onClose: () => void;
+  onOpenSwimlane: () => void;
+}) {
+  return (
+    <CesEventZoomModal onClose={onClose} maxWidth="max-w-xl">
+      <div className="p-5">
+        <div className="mb-3 flex justify-end">
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
+            onClick={onClose}
             className="rounded-md p-1.5 text-white/45 hover:text-white"
             aria-label="Close event preview"
           >
             <X size={16} />
           </button>
         </div>
-
-        <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 text-[11px] text-white/75 sm:grid-cols-3">
-          <Metric value={`${event.processFlow.length}`} label="steps" />
-          <Metric value={sla.label} label="SLA" tone={sla.tone} />
-          <Metric value={state === 'blocked' || state === 'overdue' ? 'High' : state === 'due-soon' ? 'Medium' : 'Low'} label="risk" tone={state} />
-          <Metric value={`${dataflow?.auditReadinessScore ?? 0}%`} label="audit ready" />
-          <Metric value={AUDIT_STATE_LABEL[auditState]} label="audit state" tone={auditState} />
-          <Metric value={event.workflowId ?? 'No swimlane'} label="workflow" />
-        </div>
-
-        <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
-          <span className="text-[10px] text-white/45">Click again or expand for full event detail.</span>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onExpand();
-            }}
-            className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-white/85 hover:text-white"
-          >
-            <Maximize2 size={11} />
-            Expand
-          </button>
-        </div>
+        <CesEventOverviewCard event={event} today={today} onOpenSwimlane={onOpenSwimlane} />
       </div>
     </CesEventZoomModal>
   );
@@ -311,7 +480,6 @@ export function CesEventDetailModal({
   const store = useRegulatoryExecutionStore();
   const dataflow = useEventExecutionDataflow(event);
   const navigate = useNavigate();
-  const push = useToastStore(s => s.push);
   const state = classifyInstance(event, today, store);
   const certified = store.isCertified(event.id);
   const auditState = classifyAuditState(event, today, store);
@@ -323,13 +491,13 @@ export function CesEventDetailModal({
 
   const openTask = (task: EventTask) => {
     const workflowId = task.workflowId ?? event.workflowId ?? '';
-    if (workflowId === 'QA-WF-03') {
-      navigate(`/workflows/QA-WF-03-swimlane?eventId=${encodeURIComponent(dataflow?.eventId ?? event.id)}&taskId=${encodeURIComponent(task.id)}`);
-      onClose();
-      return;
-    }
-
-    push('info', 'Swimlane coming soon', workflowId ? `${workflowId} does not have a swimlane yet.` : 'This task has no workflow swimlane mapping yet.');
+    const registryEntry = getSwimlaneRegistryEntry({
+      workflowId,
+      eventId: dataflow?.eventId ?? event.id,
+      taskId: task.id,
+    });
+    navigate(registryEntry.route);
+    onClose();
   };
 
   return (
