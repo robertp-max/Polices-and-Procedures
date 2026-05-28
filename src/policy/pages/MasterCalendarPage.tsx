@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useShellStore } from '@/policy/stores/uiStore';
 import {
   ChevronLeft, ChevronRight, CalendarDays, CalendarRange, Zap, Sparkles,
@@ -28,6 +28,16 @@ import { useCalendarSyncStore, type BulkSyncSummary } from '@/policy/stores/cale
 import { SurfaceCard, EmptyState } from '@/policy/components/ui';
 import { VeilDrawer } from '@/policy/components/ui/VeilDrawer';
 import { AriaLiveRegion } from '@/policy/components/ui';
+import {
+  CES_CALENDAR_LAYOUT,
+  CesEventDetailModal,
+  CesEventPreviewModal,
+  CesInteractionStyles,
+  CesSpotlightCard,
+  getCesEventSpotlightTone,
+  useCesInfiniteZoom,
+  useMousePanCanvas,
+} from '@/policy/ces/components/calendar/CesEventInteraction';
 
 export type PmView = 'calendar' | 'sprint' | 'kanban' | 'gantt';
 
@@ -50,9 +60,16 @@ export type PmView = 'calendar' | 'sprint' | 'kanban' | 'gantt';
 
 export function MasterCalendarPage() {
   const today = TODAY_ANCHOR;
-  const navigate = useNavigate();
+  const canvasRef = useRef<HTMLDivElement | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const store = useRegulatoryExecutionStore();
+  const {
+    zoomState,
+    openPreview,
+    openDetail,
+    backToPreview,
+    closeZoom,
+  } = useCesInfiniteZoom();
 
   const eventParam = searchParams.get('event');
   const workflowParam = searchParams.get('workflow');
@@ -121,8 +138,7 @@ export function MasterCalendarPage() {
 
   const selectInstance = (e: RegulatoryEvent) => {
     if (isMobileLayout) {
-      navigate(`/calendar/event/${encodeURIComponent(e.id)}`);
-      return;
+      // Mobile uses the same preview/detail interaction foundation instead of the old route drawer.
     }
     setActiveId(e.id);
     const next = new URLSearchParams(searchParams);
@@ -131,7 +147,11 @@ export function MasterCalendarPage() {
     // The inline panel is always visible, but mark the workflow active
     // so any enforcement log / audit signals that execution has started.
     store.openWorkflow(e.id);
-    setDetailsOpen(true);
+    if (view === 'calendar') {
+      openPreview(e);
+    } else {
+      setDetailsOpen(true);
+    }
   };
 
   const clearSelection = () => {
@@ -140,6 +160,11 @@ export function MasterCalendarPage() {
     next.delete('event');
     setSearchParams(next, { replace: true });
     store.closeWorkflow();
+  };
+
+  const closeEventZoom = () => {
+    closeZoom();
+    clearSelection();
   };
 
   const monthLabel = new Date(year, month, 1)
@@ -227,17 +252,23 @@ export function MasterCalendarPage() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  const calendarZoomOpen = zoomState.level !== 'overview' && zoomState.level !== 'calendar';
+  useMousePanCanvas(canvasRef, view === 'calendar' && !isMobileLayout && !calendarZoomOpen);
+
   const selectTask = (id: string | null) => {
     setActiveTaskId(id);
     if (id) setDetailsOpen(true);
   };
 
-  const hasDetailContext = view === 'kanban' || view === 'gantt'
+  const hasDetailContext = view === 'calendar'
+    ? false
+    : view === 'kanban' || view === 'gantt'
     ? Boolean(activeTaskId)
     : Boolean(activeInstance || activeTaskId);
 
   return (
     <div className="ci-page-container v3-calendar-surface h-full w-full flex flex-col font-sans animate-in fade-in duration-500 gap-3 sm:gap-4 overflow-hidden relative z-10">
+      <CesInteractionStyles />
 
       <TimelineHeader
         monthLabel={monthLabel}
@@ -267,18 +298,34 @@ export function MasterCalendarPage() {
             {isMobileLayout ? (
               <MobileAgendaList
                 events={monthInstances}
-                activeId={activeInstance?.id ?? null}
-                onSelect={selectInstance}
-              />
-            ) : (
-              <TimelineMonth
-                year={year}
-                month={month}
-                events={monthInstances}
-                activeId={activeInstance?.id ?? null}
+                activeId={activeId}
                 onSelect={selectInstance}
                 today={today}
+                store={store}
               />
+            ) : (
+              <div
+                id="ces-calendar-canvas"
+                className="w-full h-full relative select-none overflow-hidden"
+              >
+                <div
+                  ref={canvasRef}
+                  className="relative transition-transform duration-200 ease-out will-change-transform"
+                  style={{
+                    width: CES_CALENDAR_LAYOUT.CANVAS_WIDTH,
+                    height: CES_CALENDAR_LAYOUT.CANVAS_HEIGHT,
+                  }}
+                >
+                  <TimelineMonth
+                    year={year}
+                    month={month}
+                    events={monthInstances}
+                    activeId={activeId}
+                    onSelect={selectInstance}
+                    today={today}
+                  />
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -377,6 +424,25 @@ export function MasterCalendarPage() {
               </div>
           </VeilDrawer>
         </>
+      )}
+
+      {view === 'calendar' && zoomState.event && zoomState.level === 'preview' && (
+        <CesEventPreviewModal
+          event={zoomState.event}
+          today={today}
+          onClose={closeEventZoom}
+          onExpand={openDetail}
+        />
+      )}
+
+      {view === 'calendar' && zoomState.event && (zoomState.level === 'detail' || zoomState.level === 'audit') && (
+        <CesEventDetailModal
+          event={zoomState.event}
+          today={today}
+          initialTab={zoomState.level === 'audit' ? 'audit' : 'overview'}
+          onClose={closeEventZoom}
+          onBack={backToPreview}
+        />
       )}
 
       <ToastHost />
@@ -738,10 +804,14 @@ function MobileAgendaList({
   events,
   activeId,
   onSelect,
+  today,
+  store,
 }: {
   events: RegulatoryEvent[];
   activeId: string | null;
   onSelect: (event: RegulatoryEvent) => void;
+  today: Date;
+  store: ReturnType<typeof useRegulatoryExecutionStore.getState>;
 }) {
   const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date));
   if (sorted.length === 0) {
@@ -756,16 +826,20 @@ function MobileAgendaList({
     <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar space-y-2 pr-0.5">
       {sorted.map(event => {
         const isActive = event.id === activeId;
+        const state = classifyInstance(event, today, store);
+        const certified = store.isCertified(event.id);
+        const spotlightColor = getCesEventSpotlightTone(state, certified);
         const dateLabel = new Date(`${event.date}T00:00:00`).toLocaleDateString('en-US', {
           weekday: 'short',
           month: 'short',
           day: 'numeric',
         });
         return (
-          <button
+          <CesSpotlightCard
             key={event.id}
-            type="button"
             onClick={() => onSelect(event)}
+            spotlightColor={spotlightColor}
+            toneClassName={certified || state === 'complete' ? 'ces-card-spotlight-complete' : state === 'blocked' || state === 'overdue' ? 'ces-card-spotlight-critical' : ''}
             className="w-full rounded-lg border px-3 py-2.5 text-left transition-colors"
             style={{
               borderColor: isActive ? 'var(--ci-state-on-track)' : 'var(--ci-overlay-active-border)',
@@ -777,7 +851,7 @@ function MobileAgendaList({
             <p className="mt-0.5 text-[11px] font-roboto text-white/70">
               {event.time ? `${event.time}${event.timeEnd ? ` - ${event.timeEnd}` : ''}` : 'All day'} · {event.cadence}
             </p>
-          </button>
+          </CesSpotlightCard>
         );
       })}
     </div>

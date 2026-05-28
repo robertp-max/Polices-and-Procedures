@@ -9,10 +9,9 @@ import {
 } from '@/policy/data/achcSurveyProjection.generated';
 import { corridorAlignment } from '@/policy/data/corridorAlignment.generated';
 import { getPolicyContent } from '@/policy/data/policyContentMap';
-import { PolicyLibraryDocumentView } from '@/policy/components/PolicyLibraryDocumentView';
+import { PolicyViewer32 } from '@/policy/components/policy-viewer/PolicyViewer32';
 import {
   formatAnchorRefsForDisplay,
-  getSupportRefsForRecord,
   toAnchoredAchcMapping,
   type AchcSupportRef,
 } from '@/policy/data/achcSupportAnchors';
@@ -169,10 +168,10 @@ function toCrosswalkRows(rows: AchcSurveyMetadata[]): CrosswalkRow[] {
 export function AchcSurveyAlignmentPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewerPolicyId, setViewerPolicyId] = useState<string | null>(null);
-  const [viewerSource, setViewerSource] = useState<'ACHC_MATRIX' | 'ACHC_CROSSWALK' | 'ACHC_LIBRARY'>('ACHC_LIBRARY');
-  const [activeHhGroup, setActiveHhGroup] = useState<string>('ALL');
-  const [highlightedAnchorRef, setHighlightedAnchorRef] = useState<string | undefined>(undefined);
-  const [selectedAchcStandard, setSelectedAchcStandard] = useState<string | undefined>(undefined);
+  const [, setViewerSource] = useState<'ACHC_MATRIX' | 'ACHC_CROSSWALK' | 'ACHC_LIBRARY'>('ACHC_LIBRARY');
+  const [, setActiveHhGroup] = useState<string>('ALL');
+  const [, setHighlightedAnchorRef] = useState<string | undefined>(undefined);
+  const [, setSelectedAchcStandard] = useState<string | undefined>(undefined);
   const [anchorNotice, setAnchorNotice] = useState<string | null>(null);
   const [mode, setMode] = useState<ViewMode>('EVIDENCE');
   const [search, setSearch] = useState('');
@@ -336,19 +335,6 @@ export function AchcSurveyAlignmentPage() {
         }),
       }));
   }, [filteredEvidenceRows]);
-  const activeViewerMetadata = useMemo(
-    () => (viewerPolicyId ? achcSurveyRows.find((row) => row.policyId === viewerPolicyId) ?? null : null),
-    [viewerPolicyId],
-  );
-  const hhGroups = useMemo(() => {
-    if (!activeViewerMetadata) return [];
-    return uniqueSorted(
-      activeViewerMetadata.achcStandards
-        .map((standard) => standard.match(/^(HH\d)/)?.[1] ?? '')
-        .filter(Boolean),
-    );
-  }, [activeViewerMetadata]);
-
   const openViewerFromRecord = (
     record: AchcSurveyMetadata,
     source: 'ACHC_MATRIX' | 'ACHC_CROSSWALK',
@@ -929,19 +915,9 @@ export function AchcSurveyAlignmentPage() {
             )}
 
             <div className="h-full overflow-hidden rounded-2xl">
-              <PolicyLibraryDocumentView
+              <PolicyViewer32
                 policyId={viewerPolicyId}
                 embedded
-                achcContext={{
-                  source: viewerSource,
-                  metadata: activeViewerMetadata,
-                  supportRefs: activeViewerMetadata ? getSupportRefsForRecord(activeViewerMetadata) : [],
-                  hhGroups,
-                  onSetActiveHhGroup: (group) => setActiveHhGroup(group ?? 'ALL'),
-                  activeHhGroup: activeHhGroup === 'ALL' ? undefined : activeHhGroup,
-                  highlightedAnchorRef,
-                  selectedAchcStandard,
-                }}
               />
             </div>
           </div>

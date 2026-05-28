@@ -1,18 +1,14 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { X } from 'lucide-react';
-import { PolicyLibraryDocumentView } from '@/policy/components/PolicyLibraryDocumentView';
-import { achcSurveyByPolicyId } from '@/policy/data/achcSurveyProjection.generated';
-import { getSupportRefsForPolicy } from '@/policy/data/achcSupportAnchors';
+import { PolicyViewer32 } from '@/policy/components/policy-viewer/PolicyViewer32';
 
 export function SurveyorPolicyViewerPage() {
   const navigate = useNavigate();
   const { policyId } = useParams<{ policyId: string }>();
   const decodedPolicyId = useMemo(() => decodeURIComponent(policyId ?? ''), [policyId]);
-  const achcMeta = achcSurveyByPolicyId[decodedPolicyId] ?? null;
-
   return (
-    <div className="h-full overflow-hidden bg-white">
+    <div className="h-full overflow-hidden bg-[#0B0F15]">
       <div className="absolute right-4 top-4 z-[60]">
         <button
           type="button"
@@ -22,16 +18,9 @@ export function SurveyorPolicyViewerPage() {
           <X size={14} /> Close
         </button>
       </div>
-      <PolicyLibraryDocumentView
+      <PolicyViewer32
         policyId={decodedPolicyId}
         embedded
-        achcContext={achcMeta
-          ? {
-              source: 'ACHC_MATRIX',
-              metadata: achcMeta,
-              supportRefs: getSupportRefsForPolicy(decodedPolicyId),
-            }
-          : undefined}
       />
     </div>
   );

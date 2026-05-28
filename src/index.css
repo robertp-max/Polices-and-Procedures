@@ -175,11 +175,6 @@
   @media (min-width: 640px) {
     .ci-min-w-hero-stat-sm { min-width: var(--ci-dimension-hero-stat-grid-min); }
   }
-  .ci-min-w-board-scroll { min-width: var(--ci-dimension-board-column-min-mobile); }
-  @media (min-width: 640px) {
-    .ci-min-w-board-scroll { min-width: var(--ci-dimension-board-column-min-desktop); }
-  }
-
   .ci-shadow-elev-md          { box-shadow: var(--ci-shadow-elevation-md); }
   .ci-shadow-elev-interactive { box-shadow: var(--ci-shadow-elevation-interactive); }
 
@@ -1584,12 +1579,6 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-glass-panel {
   border-radius: 12px;
   background: color-mix(in srgb, var(--ci-surface-muted) 72%, transparent);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
-}
-.ci-hero-stat {
-  border-radius: 12px;
-  border: 1px solid var(--ci-border);
-  background: color-mix(in srgb, var(--ci-surface-2) 90%, transparent);
-  box-shadow: 0 10px 20px -16px rgba(15,23,42,0.5);
 }
 html[data-theme="ci-ion-dark"] .ci-premium-hero,
 html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-premium-hero {
@@ -3392,6 +3381,107 @@ body,
   }
 }
 
+/* V3.2 command-center base: scoped to authenticated app chrome, never auth/print routes. */
+.v32-command-center-app,
+.v32-command-center-app .v3-app-shell-base {
+  --v3-base-bg: #0B0F15;
+  --v3-bg-gradient: radial-gradient(circle at 50% 0%, #111824 0%, #0B0F15 52%, #070A0F 100%);
+  --v3-glass-card: rgba(15, 19, 26, 0.78);
+  --v3-border: #1C2433;
+  --v3-border-hover: #2A3441;
+  --v3-border-subtle: rgba(28, 36, 51, 0.84);
+  --v3-teal: #007970;
+  --v3-teal-light: #007970;
+  --v3-orange: #C74600;
+  --v3-orange-light: #C74600;
+  --v3-text-primary: #FFFFFF;
+  --v3-text-secondary: #E2E8F0;
+  --v3-text-tertiary: #8A94A6;
+  --ci-shell-navrail-width: 260px;
+}
+
+/* SpotlightCard architecture shared by V3.2 primitives. */
+.card-spotlight {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid #1C2433;
+  background-color: #141A23;
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  --spotlight-color: rgba(255, 255, 255, 0.08);
+  transition: border-color 220ms ease, background-color 220ms ease, color 180ms ease;
+}
+
+.card-spotlight:hover,
+.card-spotlight:focus-within {
+  border-color: #2A3441;
+}
+
+.card-spotlight > :not(.spotlight-outer-glow):not(.spotlight-glow-wrapper) {
+  position: relative;
+  z-index: 10;
+}
+
+.spotlight-outer-glow {
+  position: absolute;
+  inset: -16px;
+  border-radius: 1.5rem;
+  background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent 50%);
+  opacity: 0;
+  transition: opacity 420ms ease;
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(20px);
+}
+
+.spotlight-glow-wrapper {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.spotlight-inner-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent);
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
+.card-spotlight:hover .spotlight-outer-glow,
+.card-spotlight:focus-within .spotlight-outer-glow,
+.card-spotlight:hover .spotlight-inner-glow,
+.card-spotlight:focus-within .spotlight-inner-glow {
+  opacity: 1;
+}
+
+.v32-command-center-app .custom-scrollbar::-webkit-scrollbar,
+.v32-command-center-app .custom-scrollbar-x::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.v32-command-center-app .custom-scrollbar::-webkit-scrollbar-track,
+.v32-command-center-app .custom-scrollbar-x::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.v32-command-center-app .custom-scrollbar::-webkit-scrollbar-thumb,
+.v32-command-center-app .custom-scrollbar-x::-webkit-scrollbar-thumb {
+  background: #1C2433;
+  border-radius: 4px;
+}
+
+.v32-command-center-app .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.v32-command-center-app .custom-scrollbar-x::-webkit-scrollbar-thumb:hover {
+  background: #2A3441;
+}
+
 /* V3 Dashboard Reference base: matte slate-carbon, transparent shell chrome, hidden scrollbars. */
 .v3-app-shell-base,
 .v3-dashboard-reference {
@@ -3417,23 +3507,26 @@ body,
   padding: clamp(12px, 1.4vw, 24px);
 }
 
-.v3-command-center-tag {
-  color: var(--v3-orange-light);
-  text-shadow: 0 0 14px rgba(255, 160, 89, 0.42);
-}
-
-.v3-dashboard-reference,
-.v3-dashboard-reference *,
 .v3-app-shell-base,
 .v3-app-shell-base * {
   scrollbar-width: none;
 }
 
-.v3-dashboard-reference::-webkit-scrollbar,
-.v3-dashboard-reference *::-webkit-scrollbar,
 .v3-app-shell-base::-webkit-scrollbar,
 .v3-app-shell-base *::-webkit-scrollbar {
   display: none;
+}
+
+.v32-command-center-app .custom-scrollbar,
+.v32-command-center-app .custom-scrollbar-x {
+  scrollbar-width: thin;
+}
+
+.v32-command-center-app .custom-scrollbar::-webkit-scrollbar,
+.v32-command-center-app .custom-scrollbar-x::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+  height: 6px;
 }
 
 .v3-invisible-glare {
@@ -3523,8 +3616,6 @@ body,
   transform: rotate(180deg);
 }
 
-[data-shell-navrail],
-[data-shell-topbar],
 .ci-shell-command-group,
 .ci-shell-subnav {
   background: transparent !important;
@@ -3532,7 +3623,6 @@ body,
 }
 
 [data-shell-navrail] {
-  border-right-color: transparent !important;
   position: relative;
 }
 
@@ -3545,27 +3635,6 @@ body,
   width: 1px;
   background: rgba(255, 255, 255, 0.10);
   pointer-events: none;
-}
-
-.v3-dashboard-reference .ci-premium-hero,
-.v3-dashboard-reference .ci-premium-panel,
-.v3-dashboard-reference .ci-command-rail,
-.v3-dashboard-reference .ci-maturity-section,
-.v3-dashboard-reference .ci-operational-card,
-.v3-dashboard-reference .ci-kpi-card {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.v3-dashboard-reference .ci-operational-card,
-.v3-dashboard-reference .ci-kpi-card {
-  border-color: transparent !important;
-}
-
-.v3-dashboard-reference .ci-operational-card:hover,
-.v3-dashboard-reference .ci-kpi-card:hover {
-  border-color: var(--v3-border) !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.005)) !important;
 }
 
 /* V3 brand normalization: legacy gold/yellow/amber chrome resolves to brand orange. */

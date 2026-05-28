@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { GVGBDetailView } from '@/policy/pages/GVGBDetailView';
-import { PolicyLibraryDocumentView } from '@/policy/components/PolicyLibraryDocumentView';
+import { PolicyViewer32 } from '@/policy/components/policy-viewer/PolicyViewer32';
 import { usePolicyStore } from '@/policy/stores/policyStore';
 
 export function PolicyDetailPage() {
@@ -25,12 +24,8 @@ export function PolicyDetailPage() {
     );
   }
 
-  if (policy.id === 'GV-GB-001') {
-    return <GVGBDetailView />;
-  }
-
   return (
-    <PolicyLibraryDocumentView
+    <PolicyViewer32
       policyId={policy.id}
       embedded={false}
       onBack={() => navigate('/library')}

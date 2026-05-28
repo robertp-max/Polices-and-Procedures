@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle, Activity, ShieldCheck,
-  CheckCircle2, FileText, Filter, MoreHorizontal, ArrowRight,
+  CheckCircle2, FileText, MoreHorizontal, ArrowRight,
   Clock, ShieldX,
 } from 'lucide-react';
 import {
@@ -16,11 +16,14 @@ import { ToastHost } from '@/policy/components/regulatory/Toast';
 import { AUDIT_STATE_LABEL, evaluateAudit, isReadyToClose, type AuditEvaluation, type AuditState } from '@/policy/audit/auditState';
 import { useComplianceExecution, selectAuditReadinessRollup, selectAwaitingSignatureUnits } from '@/policy/compliance-execution';
 import {
-  ShellContentFrame,
-  ActionButton,
-  UtilityButton,
-  CiStatusBadge,
-  EmptyState,
+  SpotlightCard,
+  StatusPill,
+  V32ActionButton,
+  V32EmptyState,
+  V32GlassPanel as GlassPanel,
+  V32MetricTile,
+  V32PageHeader,
+  V32SectionHeader,
 } from '@/policy/components/ui';
 import { PlannerViewToggle, type ViewMode } from '@/policy/components/dashboard/PlannerViewToggle';
 import { MyPlannerView } from '@/policy/components/dashboard/MyPlannerView';
@@ -73,7 +76,9 @@ export function DashboardPage() {
     }
     navigate(`/calendar?event=${encodeURIComponent(id)}&workflow=1`);
   };
-  const goAudit = (filter?: AuditState) => navigate(filter ? `/audit?state=${encodeURIComponent(filter)}` : '/audit');
+  const goAudit = useCallback((filter?: AuditState) => {
+    navigate(filter ? `/audit?state=${encodeURIComponent(filter)}` : '/audit');
+  }, [navigate]);
 
   const instances = useMemo(
     () => [...REGULATORY_EVENTS, ...generatedEvents, ...triggeredEvents].filter(e => !e.isContext),
@@ -331,7 +336,7 @@ export function DashboardPage() {
     navigate(target.route);
   };
 
-  const kpis: KpiCardData[] = [
+  const kpis = useMemo<KpiCardData[]>(() => [
     {
       label: 'Active Sprint',
       value: snap.activeSprint.label,
@@ -379,7 +384,26 @@ export function DashboardPage() {
       trend: `${awaitingSignatures.length} awaiting sig`,
       onClick: () => goAudit(),
     },
-  ];
+  ], [
+    awaitingSignatures.length,
+    critical.atRisk.length,
+    criticalAndOverdue.length,
+    goAudit,
+    instances.length,
+    navigate,
+    pipeline.awaitingApproval.length,
+    pipeline.inProgress.length,
+    pipeline.missingEvidence.length,
+    pipeline.readyToClose.length,
+    readiness.auditReady,
+    rollup.notReady,
+    rollup.partial,
+    snap.activeSprint.label,
+    snap.sprintMetrics.activeBlockerCount,
+    snap.sprintMetrics.auditReadinessScore,
+    snap.sprintMetrics.completionRatePct,
+    snap.sprintMetrics.upcomingDeadlines48hCount,
+  ]);
 
   const kpiByLabel = useMemo(() => {
     const map = new Map<string, KpiCardData>();
@@ -412,67 +436,64 @@ export function DashboardPage() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  const dashboardKpis = isMobile
+    ? [
+        ...mobilePrimaryKpis,
+        ...(kpiByLabel.get('Audit Open') ? [kpiByLabel.get('Audit Open') as KpiCardData] : []),
+      ]
+    : kpis;
+
   return (
-    <ShellContentFrame scrollable className="v3-dashboard-reference animate-in fade-in duration-500" data-surface="dashboard">
-      <div className="flex flex-col gap-4 sm:gap-5">
-      <div className="px-4 sm:px-6 py-4 sm:py-6">
-        <DashboardHero
-          criticalCount={criticalAndOverdue.length}
-          atRiskCount={critical.atRisk.length}
-          auditReadyCount={readiness.auditReady}
-          totalCount={instances.length}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
+    <div className="v3-dashboard-reference min-h-full bg-background text-text-primary" data-surface="dashboard">
+      <div className="mx-auto flex w-full max-w-[1920px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+        <V32PageHeader
+          eyebrow="Command Center"
+          title="What needs action now"
+          description="Executive operational narrative for compliance execution, evidence readiness, and escalation control. Prioritize critical controls, clear risk queues, and lock evidence-ready workflows."
+          meta={
+            <div className="flex flex-col items-start gap-3 sm:items-end">
+              <div className="text-left sm:text-right">
+                <div className="font-montserrat text-[10px] font-bold uppercase tracking-[0.22em] text-text-disabled">
+                  Today
+                </div>
+                <div className="mt-1 text-sm font-semibold text-text-primary">
+                  {TODAY_ANCHOR.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </div>
+              </div>
+              <PlannerViewToggle value={viewMode} onChange={setViewMode} />
+            </div>
+          }
         />
-      </div>
 
-      {isMobile ? (
-        <section className="grid grid-cols-1 gap-3">
-          {mobilePrimaryKpis.map((kpi, idx) => (
-            <KpiCard key={kpi.label} {...kpi} emphasize={idx < 2 || kpi.label === 'Missing Evidence'} />
-          ))}
-          {kpiByLabel.get('Audit Open') ? <KpiCard {...(kpiByLabel.get('Audit Open') as KpiCardData)} /> : null}
-        </section>
-      ) : (
-        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
-          {kpis.map(kpi => (
-            <KpiCard key={kpi.label} {...kpi} />
+        <section className={isMobile ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7'}>
+          {dashboardKpis.map((kpi, idx) => (
+            <KpiCard key={`${kpi.label}-${idx}`} {...kpi} emphasize={idx < 2 || kpi.label === 'Missing Evidence'} />
           ))}
         </section>
-      )}
 
-      <AgencyReadinessBanner
-        ready={readiness.agencyReady}
-        reasons={readiness.reasons}
-        atRisk={readiness.atRisk}
-        graceWindow={readiness.graceWindow}
-        certifiedWithException={readiness.certifiedWithException}
-        onClickNotReady={() => goAudit()}
-      />
+        <AgencyReadinessBanner
+          ready={readiness.agencyReady}
+          reasons={readiness.reasons}
+          atRisk={readiness.atRisk}
+          graceWindow={readiness.graceWindow}
+          certifiedWithException={readiness.certifiedWithException}
+          onClickNotReady={() => goAudit()}
+        />
 
-      {/* ── VIEW MODE SWITCH: Agency Board vs My Planner Dashboard ── */}
-      {viewMode === 'agency' ? (
-        <>
-          {/* Events (Project Events) — Agency operational board */}
-          <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap px-1 py-1">
-            <div>
-              <h2 className="font-semibold ci-text-display-section text-[var(--v3-text-primary)]">
-                Events
-              </h2>
-              <p className="ci-text-body-sm text-[var(--v3-text-secondary)]">
-                Project events and regulatory deadlines requiring action.
-              </p>
-            </div>
+        {viewMode === 'agency' ? (
+          <>
+            <V32SectionHeader
+              title="Events"
+              description="Project events and regulatory deadlines requiring action."
+              actions={
+                <div className="flex items-center gap-2 text-xs text-text-muted">
+                  <StatusPill tone="muted">Sort: Priority</StatusPill>
+                  <StatusPill tone="muted">Live workload</StatusPill>
+                </div>
+              }
+            />
 
-            <div className="ci-operational-toolbar">
-              <UtilityButton ariaLabel="Filter board"><Filter size={14} aria-hidden="true" /><span className="ml-2">Filter</span></UtilityButton>
-              <UtilityButton ariaLabel="Sort by priority"><span>Sort by: Priority</span></UtilityButton>
-            </div>
-          </section>
-
-          {/* Main Events Board */}
-          <div className={`flex-1 min-h-0 pb-2 ${isMobile ? '' : '-mx-3 sm:mx-0 px-3 sm:px-0'} ${isMobile ? 'overflow-x-hidden' : 'overflow-x-auto'} p-3 sm:p-4`}>
-            <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'} gap-3 sm:gap-4 lg:min-w-0 ${isMobile ? 'min-w-0' : 'ci-min-w-board-scroll'} h-full`}>
+            <div className={isMobile ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-1 gap-4 xl:grid-cols-4'}>
               <BoardColumn
                 title="Critical & Overdue"
                 count={criticalAndOverdue.length}
@@ -510,177 +531,47 @@ export function DashboardPage() {
                 onFallback={goTaskFallback}
               />
             </div>
-          </div>
 
-          <section className="mt-6 border-t border-[var(--v3-border-subtle)] pt-4">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
+            <GlassPanel className="flex flex-wrap items-center justify-between gap-4 p-5">
               <div>
-                <h2 className="font-semibold ci-text-display-section text-[var(--v3-text-primary)]">
-                  My Planner
-                </h2>
-                <p className="ci-text-body-sm text-[var(--v3-text-secondary)]">
+                <h2 className="font-montserrat text-xl font-semibold tracking-[-0.03em] text-text-primary">My Planner</h2>
+                <p className="mt-1 text-sm text-text-muted">
                   Switch to your personal lane when you need assigned CES work and private tasks only.
                 </p>
               </div>
-              <ActionButton variant="ghost" size="sm" onClick={() => setViewMode('planner')}>
+              <V32ActionButton variant="secondary" onClick={() => setViewMode('planner')}>
                 Open My Planner
-              </ActionButton>
-            </div>
-          </section>
-        </>
-      ) : (
-        /* ── FULL MY PLANNER DASHBOARD VIEW (when toggle is on Planner) ── */
-        <div className="mt-2">
-          <div className="mb-4">
-            <h2 className="font-semibold ci-text-display-section text-[var(--v3-text-primary)]">
-              My Planner
-            </h2>
-            <p className="ci-text-body-sm text-[var(--v3-text-secondary)]">
-              Your personal workload • CES obligations assigned to you + private tasks
-            </p>
-          </div>
-          <MyPlannerView showHeader={true} />
-        </div>
-      )}
+              </V32ActionButton>
+            </GlassPanel>
+          </>
+        ) : (
+          <GlassPanel className="p-5">
+            <V32SectionHeader
+              title="My Planner"
+              description="Your personal workload across assigned CES obligations and private tasks."
+              className="mb-4"
+            />
+            <MyPlannerView showHeader={true} />
+          </GlassPanel>
+        )}
 
-      <ToastHost />
+        <ToastHost />
       </div>
-    </ShellContentFrame>
-  );
-}
-
-function DashboardHero({
-  criticalCount,
-  atRiskCount,
-  auditReadyCount,
-  totalCount,
-  viewMode,
-  setViewMode,
-}: {
-  criticalCount: number;
-  atRiskCount: number;
-  auditReadyCount: number;
-  totalCount: number;
-  viewMode: ViewMode;
-  setViewMode: (mode: ViewMode) => void;
-}) {
-  return (
-    <section className="flex items-start sm:items-end justify-between gap-4 flex-wrap">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <span className="v3-command-center-tag font-semibold uppercase ci-text-eyebrow-strong">
-            Command Center
-          </span>
-          <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-[var(--v3-teal-light)]" />
-          <span className="font-medium ci-text-eyebrow-strong text-[var(--v3-text-secondary)]">
-            What needs action now
-          </span>
-        </div>
-        <h1 className="font-semibold leading-tight sm:leading-none ci-text-display-hero text-[var(--v3-text-primary)]">
-          What needs action now
-        </h1>
-        <p className="mt-2 ci-text-body-sm text-[var(--v3-text-secondary)]">
-          Executive operational narrative for compliance execution, evidence readiness, and escalation control.
-        </p>
-      </div>
-      <div className="w-full sm:w-auto shrink-0">
-        <div className="grid grid-cols-2 gap-x-5 gap-y-2 ci-min-w-hero-stat-sm">
-          <HeroStat label="Critical" value={criticalCount} tone="danger" />
-          <HeroStat label="At Risk" value={atRiskCount} tone="warning" />
-          <HeroStat label="Audit Ready" value={auditReadyCount} tone="success" />
-          <HeroStat label="In Scope" value={totalCount} tone="default" />
-        </div>
-      </div>
-      <div className="text-left sm:text-right shrink-0 flex flex-col items-end gap-2">
-        <div className="font-semibold uppercase ci-text-eyebrow-md text-[var(--v3-text-tertiary)]">
-          Today
-        </div>
-        <div className="font-medium ci-text-body-sm text-[var(--v3-text-primary)]">
-          {TODAY_ANCHOR.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-        </div>
-
-        {/* Toggle moved to top right of Command Center header (as per screenshot) */}
-        <div className="mt-1">
-          <PlannerViewToggle value={viewMode} onChange={setViewMode} />
-        </div>
-      </div>
-      <p className="w-full mt-2 ci-text-body-xs text-[var(--v3-text-secondary)]">
-        Prioritize critical controls, clear risk queues, and lock evidence-ready workflows.
-      </p>
-    </section>
-  );
-}
-
-function HeroStat({ label, value, tone }: { label: string; value: number; tone: 'default' | 'success' | 'warning' | 'danger' }) {
-  const styles = {
-    default: 'text-[var(--v3-text-secondary)] border-transparent',
-    success: 'text-[var(--v3-teal-light)] border-transparent',
-    warning: 'text-[var(--v3-teal-light)] border-transparent',
-    danger: 'text-[var(--v3-teal-light)] border-transparent',
-  }[tone];
-  return (
-    <div className={`ci-hero-stat ${styles} flex items-baseline gap-2`}>
-      <div className="leading-none font-semibold ci-text-stat">{value}</div>
-      <div className="font-semibold uppercase ci-text-eyebrow-sm">{label}</div>
     </div>
   );
 }
 
 function KpiCard({ label, value, trend, tone = 'default', alert, onClick, emphasize = false }: KpiCardData & { emphasize?: boolean }) {
-  const valueClass = {
-    default: 'text-[var(--v3-text-primary)]',
-    positive: 'text-[var(--v3-teal-light)]',
-    warning: 'text-[var(--v3-teal-light)]',
-    danger: 'text-[var(--v3-teal-light)]',
-  }[tone];
-  const trendClass = {
-    default: 'text-[var(--v3-text-secondary)]',
-    positive: 'text-[var(--v3-teal-light)]',
-    warning: 'text-[var(--v3-text-secondary)]',
-    danger: 'text-[var(--v3-text-secondary)]',
-  }[tone];
-  const baseClass = 'ci-kpi-card border-t border-[var(--v3-border-subtle)] px-1 py-3';
-  const emphasizeAttr = emphasize ? 'true' : 'false';
-
-  const content = (
-    <>
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-semibold uppercase ci-text-eyebrow text-[var(--v3-text-tertiary)]">
-          {label}
-        </span>
-        {alert ? <AlertTriangle size={14} className="text-[var(--v3-teal-light)]" aria-hidden="true" /> : null}
-      </div>
-      <div className="flex items-baseline gap-2 flex-wrap">
-        <span className={`leading-none font-semibold ci-text-kpi ${valueClass}`}>
-          {value}
-        </span>
-        {trend ? (
-          <span className={`font-semibold pb-1 ci-text-meta ${trendClass}`}>{trend}</span>
-        ) : null}
-      </div>
-    </>
-  );
-
-  if (!onClick) {
-    return (
-      <div
-        className={`${baseClass} ci-min-h-kpi`}
-        data-emphasize={emphasizeAttr}
-      >
-        {content}
-      </div>
-    );
-  }
-
   return (
-    <button
-      type="button"
+    <V32MetricTile
+      label={label}
+      value={value}
+      trend={trend}
+      tone={tone === 'danger' ? 'danger' : tone === 'warning' ? 'warning' : tone === 'positive' ? 'teal' : emphasize ? 'teal' : 'neutral'}
+      icon={alert ? <AlertTriangle size={16} aria-hidden="true" /> : undefined}
       onClick={onClick}
-      data-emphasize={emphasizeAttr}
-      className={`${baseClass} ci-min-h-kpi text-left cursor-pointer ci-subtle-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300/60`}
-    >
-      {content}
-    </button>
+      className={emphasize ? 'border-brand-teal/40' : undefined}
+    />
   );
 }
 
@@ -704,41 +595,42 @@ function AgencyReadinessBanner({
   const supporting = ready
     ? 'All workflows compliant or certification-ready.'
     : `${reasons.join(' · ')}. Immediate action needed to avoid compliance risk.`;
-  const accentClass = 'text-[var(--v3-teal-light)]';
-  const iconShellClass = 'text-[var(--v3-teal-light)] border border-transparent';
+  const accentClass = ready ? 'text-brand-teal' : 'text-brand-orange';
+  const iconShellClass = ready ? 'text-brand-teal' : 'text-brand-orange';
 
   return (
-    <div className="border-y border-[var(--v3-border-subtle)] px-1 py-3 flex items-center gap-4 flex-wrap">
-      <span className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconShellClass}`}>
+    <SpotlightCard
+      className="flex flex-wrap items-center gap-4 p-5"
+      spotlightColor={ready ? 'rgba(0, 121, 112, 0.20)' : 'rgba(199, 70, 0, 0.22)'}
+    >
+      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconShellClass}`}>
         <Icon size={18} />
       </span>
       <div className="flex-1 min-w-0">
-        <div className={`font-semibold uppercase ci-text-eyebrow-md ${accentClass}`}>
+        <div className={`font-montserrat text-[10px] font-bold uppercase tracking-[0.20em] ${accentClass}`}>
           {status}
         </div>
-        <p className="mt-1 ci-text-body-sm text-[var(--v3-text-secondary)]">{supporting}</p>
+        <p className="mt-1 text-sm text-text-secondary">{supporting}</p>
       </div>
       <div className="flex items-center gap-3 ml-auto flex-wrap">
         {atRisk > 0 ? <BannerChip label="At Risk" value={atRisk} tone="warning" /> : null}
         {graceWindow > 0 ? <BannerChip label="Grace" value={graceWindow} tone="warning" /> : null}
         {certifiedWithException > 0 ? <BannerChip label="Cert w/ Exc" value={certifiedWithException} tone="default" /> : null}
         {!ready ? (
-          <ActionButton variant="ghost" size="sm" onClick={onClickNotReady}>
+          <V32ActionButton variant="danger" onClick={onClickNotReady}>
             View Readiness Report
-          </ActionButton>
+          </V32ActionButton>
         ) : null}
       </div>
-    </div>
+    </SpotlightCard>
   );
 }
 
 function BannerChip({ label, value, tone }: { label: string; value: number; tone: 'default' | 'warning' }) {
   return (
-    <CiStatusBadge tone={tone === 'warning' ? 'warning' : 'neutral'}>
-      <span className="font-semibold uppercase ci-text-eyebrow-sm">{label}</span>
-      <span className="mx-1" aria-hidden="true">·</span>
-      <span className="font-semibold ci-text-stat">{value}</span>
-    </CiStatusBadge>
+    <StatusPill tone={tone === 'warning' ? 'warning' : 'neutral'}>
+      {label}: {value}
+    </StatusPill>
   );
 }
 
@@ -762,49 +654,43 @@ function BoardColumn({
   const meta = {
     critical: {
       icon: AlertTriangle,
-      accent: 'text-[var(--v3-teal-light)]',
-      shell: 'border border-[var(--v3-border-subtle)] rounded-xl p-3 bg-transparent',
-      badge: 'text-[var(--v3-text-secondary)]',
-      title: 'text-[var(--v3-text-primary)]',
+      accent: 'text-brand-orange',
+      spotlight: 'rgba(199, 70, 0, 0.22)',
+      badge: 'danger' as const,
     },
     warning: {
       icon: Clock,
-      accent: 'text-[var(--v3-teal-light)]',
-      shell: 'border border-[var(--v3-border-subtle)] rounded-xl p-3 bg-transparent',
-      badge: 'text-[var(--v3-text-secondary)]',
-      title: 'text-[var(--v3-text-primary)]',
+      accent: 'text-brand-orange',
+      spotlight: 'rgba(199, 70, 0, 0.18)',
+      badge: 'warning' as const,
     },
     progress: {
       icon: Activity,
-      accent: 'text-[var(--v3-teal-light)]',
-      shell: 'border border-[var(--v3-border-subtle)] rounded-xl p-3 bg-transparent',
-      badge: 'text-[var(--v3-text-secondary)]',
-      title: 'text-[var(--v3-text-primary)]',
+      accent: 'text-brand-teal',
+      spotlight: 'rgba(0, 121, 112, 0.18)',
+      badge: 'teal' as const,
     },
     pending: {
       icon: FileText,
-      accent: 'text-[var(--v3-text-secondary)]',
-      shell: 'border border-[var(--v3-border-subtle)] rounded-xl p-3 bg-transparent',
-      badge: 'text-[var(--v3-text-secondary)]',
-      title: 'text-[var(--v3-text-primary)]',
+      accent: 'text-text-muted',
+      spotlight: 'rgba(226, 232, 240, 0.10)',
+      badge: 'muted' as const,
     },
   } as const;
   const column = meta[tone];
   const Icon = column.icon;
 
   return (
-    <section className={`flex flex-col min-h-0 ${column.shell}`}>
-      <header className="flex items-center justify-between px-1 mb-3">
+    <GlassPanel className="flex min-h-[520px] flex-col p-3">
+      <header className="mb-3 flex items-center justify-between px-1">
         <div className="flex items-center gap-2 min-w-0">
           <Icon size={16} className={column.accent} />
-          <h3 className={`font-semibold truncate ci-text-stat ${column.title}`}>{title}</h3>
+          <h3 className="truncate font-montserrat text-sm font-semibold text-text-primary">{title}</h3>
         </div>
-        <span className={`ci-min-w-count-badge flex items-center justify-center font-semibold ci-text-body-xs ${column.badge}`}>
-          {count}
-        </span>
+        <StatusPill tone={column.badge}>{count}</StatusPill>
       </header>
 
-      <div className="flex flex-col gap-3 overflow-y-auto min-h-0 pr-1">
+      <div className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
         {items.length > 0 ? items.map(event => (
           <TaskCard
             key={event.id}
@@ -813,10 +699,11 @@ function BoardColumn({
             onClick={() => onOpen(event.id)}
             onFallback={onFallback}
             tone={tone}
+            spotlightColor={column.spotlight}
           />
         )) : <EmptyBoardState label={title} onClick={onFallback} />}
       </div>
-    </section>
+    </GlassPanel>
   );
 }
 
@@ -826,81 +713,81 @@ function TaskCard({
   onClick,
   onFallback,
   tone,
+  spotlightColor,
 }: {
   event: RegulatoryEvent;
   today: Date;
   onClick: () => void;
   onFallback: () => void;
   tone: BoardTone;
+  spotlightColor: string;
 }) {
   const dueLabel = getDueLabel(event, today);
-  const labelClass = 'text-[var(--v3-text-tertiary)]';
-  const titleClass = 'text-[var(--v3-text-primary)]';
-  const ownerClass = 'text-[var(--v3-text-secondary)]';
-  const dividerClass = 'border-white/5';
-  const avatarClass = 'text-[var(--v3-text-primary)] border-transparent';
-  const badgeClass = {
-    critical: 'text-[var(--v3-teal-light)] border-transparent',
-    warning: 'text-[var(--v3-teal-light)] border-transparent',
-    progress: 'text-[var(--v3-teal-light)] border-transparent',
-    pending: 'text-[var(--v3-text-secondary)] border-transparent',
-  }[tone];
+  const badgeTone = {
+    critical: 'danger',
+    warning: 'warning',
+    progress: 'teal',
+    pending: 'muted',
+  } as const;
+  const dueTone = badgeTone[tone];
 
   return (
-    <button
-      type="button"
-      onClick={() => {
-        if (!event.id) {
-          onFallback();
-          return;
-        }
-        onClick();
-      }}
-      className="w-full rounded-xl border border-[var(--v3-border-subtle)] bg-transparent p-4 text-left group cursor-pointer ci-subtle-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300/60"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className={`font-semibold uppercase mb-1 ci-text-eyebrow-md ${labelClass}`}>
-            {event.domain}
+    <SpotlightCard className="group p-4" spotlightColor={spotlightColor}>
+      <button
+        type="button"
+        onClick={() => {
+          if (!event.id) {
+            onFallback();
+            return;
+          }
+          onClick();
+        }}
+        className="absolute inset-0 z-20 rounded-[inherit] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70"
+        aria-label={`Open ${event.title}`}
+      />
+      <div className="pointer-events-none">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="mb-1 font-montserrat text-[9px] font-bold uppercase tracking-[0.22em] text-text-muted">
+              {event.domain}
+            </div>
+            <h4 className="font-montserrat text-sm font-semibold leading-snug text-text-primary transition-colors group-hover:text-brand-teal">
+              {event.title}
+            </h4>
           </div>
-          <h4 className={`font-semibold leading-tight ci-text-card-title ${titleClass}`}>
-            {event.title}
-          </h4>
-        </div>
-        <MoreHorizontal size={16} className="text-[var(--v3-text-tertiary)]" aria-hidden="true" />
-      </div>
-
-      <div className={`flex items-center justify-between mt-4 pt-3 border-t ${dividerClass}`}>
-        <div className="flex items-center gap-2 min-w-0">
-          <span className={`w-7 h-7 rounded-full flex items-center justify-center font-semibold shrink-0 border ci-text-meta ${avatarClass}`}>
-            {getInitials(event.owner)}
-          </span>
-          <span className={`font-medium truncate ci-text-body-xs ${ownerClass}`}>{event.owner}</span>
+          <MoreHorizontal size={16} className="text-text-disabled opacity-70" aria-hidden="true" />
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <span className={`font-semibold uppercase px-2 py-1 rounded-lg border ci-text-eyebrow-sm ${badgeClass}`}>
-            {dueLabel}
-          </span>
-          <ArrowRight size={14} className="text-[var(--v3-text-tertiary)]" aria-hidden="true" />
+        <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border-hover bg-background font-montserrat text-[9px] font-bold text-text-secondary">
+              {getInitials(event.owner)}
+            </span>
+            <span className="truncate text-xs font-medium text-text-muted">{event.owner}</span>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <StatusPill tone={dueTone}>{dueLabel}</StatusPill>
+            <ArrowRight size={14} className="text-text-disabled" aria-hidden="true" />
+          </div>
         </div>
       </div>
-    </button>
+    </SpotlightCard>
   );
 }
 
 function EmptyBoardState({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <EmptyState
+    <V32EmptyState
       icon={<CheckCircle2 size={28} className="text-[var(--v3-teal-light)]" aria-hidden="true" />}
       title="All clear"
       description={`No ${label.toLowerCase()} items in the current queue.`}
       action={
-        <ActionButton variant="ghost" size="sm" onClick={onClick}>
+        <V32ActionButton variant="secondary" onClick={onClick}>
           Go to My Tasks
-        </ActionButton>
+        </V32ActionButton>
       }
-      className="ci-empty-board-state"
+      className="border-border bg-background/35"
     />
   );
 }

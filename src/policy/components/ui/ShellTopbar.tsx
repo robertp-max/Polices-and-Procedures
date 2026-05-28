@@ -1,5 +1,5 @@
 import React from 'react';
-import { SearchField } from './SearchField';
+import { SearchCommandBar } from './V32DesignSystem';
 
 interface ShellTopbarProps {
   children?: React.ReactNode;
@@ -24,13 +24,7 @@ export const ShellTopbar: React.FC<ShellTopbarProps> = ({
       role="banner"
       aria-label="Application topbar"
       data-shell-topbar
-      className="flex h-14 w-full items-center justify-between border-b px-4 flex-shrink-0"
-      style={{
-        background: 'transparent',
-        borderColor: 'var(--v3-border-subtle)',
-        backdropFilter: 'var(--v3-glass-blur)',
-        WebkitBackdropFilter: 'var(--v3-glass-blur)',
-      }}
+      className="flex h-[72px] w-full flex-shrink-0 items-center justify-between border-b border-border bg-surface/85 px-4 backdrop-blur-xl md:px-6"
     >
       {/* Left: Mobile menu + Logo */}
       <div className="flex items-center gap-3">
@@ -47,14 +41,14 @@ export const ShellTopbar: React.FC<ShellTopbarProps> = ({
           </button>
         )}
 
-        <div className="flex items-center gap-2 font-semibold tracking-tight text-[var(--v3-text-primary)]" style={{ fontSize: 'var(--ci-font-size-body-md, 15px)' }}>
+        <div className="flex items-center gap-2 font-montserrat text-[15px] font-semibold tracking-tight text-[var(--v3-text-primary)]">
           {logo || 'Care Indeed'}
         </div>
       </div>
 
       {/* Center: Global Search */}
-      <div className="hidden md:block w-full max-w-md px-4">
-        <SearchField
+      <div className="hidden md:block w-full max-w-xl px-4">
+        <SearchCommandBar
           placeholder="Search policies, tasks, evidence..."
           className="w-full"
         />

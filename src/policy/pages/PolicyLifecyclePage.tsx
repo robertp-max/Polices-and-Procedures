@@ -29,7 +29,7 @@ import {
   DOMAIN_LABEL,
   type CorpusPolicy,
 } from '@/policy/data/policyCorpus';
-import { PolicyLibraryDocumentView } from '@/policy/components/PolicyLibraryDocumentView';
+import { PolicyViewer32 } from '@/policy/components/policy-viewer/PolicyViewer32';
 import { useAuditorModeStore } from '@/policy/stores/auditorModeStore';
 import { useAuth } from '@/auth/AuthProvider';
 import { authorizeForAuthUser, type PermissionId } from '@/policy/security/identity';
@@ -695,7 +695,7 @@ function ModeBody({ mode, envelope }: { mode: WorkspaceMode; envelope: PolicyLif
           className="rounded-md border border-gray-200 bg-white overflow-hidden"
           style={{ height: 'calc(100vh - 320px)', minHeight: 600 }}
         >
-          <PolicyLibraryDocumentView policyId={envelope.policyId} embedded />
+          <PolicyViewer32 policyId={envelope.policyId} embedded />
         </div>
       );
     }

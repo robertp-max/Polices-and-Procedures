@@ -48,33 +48,27 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
   // via inline style rather than Tailwind arbitrary values, because
   // `bg-[var(...)]/10` cannot be parsed when the var has a comma-list
   // fallback (`--ci-accent-rgb: 255, 193, 7`).
-  const linkClass = 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors';
-  const linkStyle = (active: boolean): React.CSSProperties => active
-    ? { background: 'rgba(var(--ci-accent-rgb), 0.1)', color: 'var(--ci-accent)', fontWeight: 500 }
-    : { color: 'var(--ci-text-muted)' };
+  const linkClass = (active: boolean) =>
+    `flex items-center gap-3 rounded-lg px-3 py-2 font-montserrat text-xs font-semibold transition-colors ${
+      active
+        ? 'bg-brand-teal/10 text-brand-teal'
+        : 'text-text-muted hover:bg-border hover:text-text-primary'
+    }`;
 
   return (
     <nav
       data-shell-navrail
-      className="hidden lg:flex flex-col border-r py-4 overflow-y-auto flex-shrink-0"
-      style={{
-        width: 'var(--ci-shell-navrail-width)',
-        background: 'var(--ci-color-shell-navrail-bg)',
-        borderColor: 'var(--ci-color-border-subtle)',
-        backdropFilter: 'var(--ci-color-glass-blur)',
-        WebkitBackdropFilter: 'var(--ci-color-glass-blur)',
-      }}
+      className="custom-scrollbar hidden w-[var(--ci-shell-navrail-width)] flex-shrink-0 flex-col overflow-y-auto border-r border-border bg-surface py-5 lg:flex"
       aria-label="Primary navigation"
     >
-      <div className="px-3 space-y-4">
+      <div className="px-4 space-y-7">
         <ShellCommandGroup title="Primary Operations">
           {primaryItems.map((item) => (
             <Link
               key={item.id}
               to={item.to}
               onClick={() => onItemClick?.(item)}
-              className={`${linkClass} hover:bg-white/5`}
-              style={linkStyle(isActive(item.to))}
+              className={linkClass(isActive(item.to))}
             >
               <item.icon size={18} />
               <span>{item.label}</span>
@@ -89,8 +83,7 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
                 key={item.id}
                 to={item.to}
                 onClick={() => onItemClick?.(item)}
-                className={`${linkClass} hover:bg-white/5`}
-                style={linkStyle(isActive(item.to))}
+                className={linkClass(isActive(item.to))}
               >
                 <item.icon size={18} />
                 <span>{item.label}</span>
@@ -106,8 +99,7 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
                 key={item.id}
                 to={item.to}
                 onClick={() => onItemClick?.(item)}
-                className={`${linkClass} hover:bg-white/5`}
-                style={linkStyle(isActive(item.to))}
+                className={linkClass(isActive(item.to))}
               >
                 <item.icon size={18} />
                 <span>{item.label}</span>

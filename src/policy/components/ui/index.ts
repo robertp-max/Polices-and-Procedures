@@ -45,3 +45,31 @@ export { ShellContentFrame } from './ShellContentFrame';
 export { ShellCommandGroup } from './ShellCommandGroup';
 export { ShellMobileDrawer } from './ShellMobileDrawer';
 export type { ShellMobileDrawerProps } from './ShellMobileDrawer';
+export {
+  V32ActionButton,
+  V32AppShell,
+  V32EmptyState,
+  V32MetricTile,
+  V32PageHeader,
+  V32SectionHeader,
+  V32SidebarNav,
+  V32SidebarNavGroup,
+  V32SidebarNavItem,
+  DrawerSurface,
+  RightPanel,
+  SearchCommandBar,
+  SpotlightCard,
+  StatusPill,
+  GlassPanel as V32GlassPanel,
+} from './V32DesignSystem';
+export type {
+  GlassPanelProps as V32GlassPanelProps,
+  SearchCommandBarProps,
+  SpotlightCardProps,
+  StatusPillProps,
+  V32ActionButtonProps,
+  V32EmptyStateProps,
+  V32MetricTileProps,
+  V32PageHeaderProps,
+  V32SectionHeaderProps,
+} from './V32DesignSystem';

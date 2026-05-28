@@ -12,6 +12,27 @@ export default {
         mono:      ['JetBrains Mono', 'monospace'],
       },
       colors: {
+        // V3.2 command-center palette
+        background: '#0B0F15',
+        surface: {
+          DEFAULT: '#0F131A',
+          elevated: '#141A23',
+        },
+        border: {
+          DEFAULT: '#1C2433',
+          hover: '#2A3441',
+          focus: '#4A5568',
+        },
+        brand: {
+          teal: '#007970',
+          orange: '#C74600',
+        },
+        text: {
+          primary: '#FFFFFF',
+          secondary: '#E2E8F0',
+          muted: '#8A94A6',
+          disabled: '#5E6A7F',
+        },
         // CI-ION Premium dark palette
         ci: {
           gold:          '#FFC107',

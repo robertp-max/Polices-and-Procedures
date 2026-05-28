@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-text-primary font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar { 
+    width: 6px; 
+    height: 6px; 
+  }
+  .custom-scrollbar::-webkit-scrollbar-track { 
+    background: transparent; 
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb { 
+    background: #1C2433; 
+    border-radius: 4px; 
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { 
+    background: #2A3441; 
+  }
+
+  /* SpotlightCard Architecture */
+  .card-spotlight {
+    position: relative;
+    border-radius: 0.75rem;
+    border: 1px solid #1C2433;
+    background-color: #141A23;
+    --mouse-x: 50%;
+    --mouse-y: 50%;
+    --spotlight-color: rgba(255, 255, 255, 0.08);
+    transition: border-color 0.3s ease;
+  }
+
+  .card-spotlight:hover {
+    border-color: #2A3441;
+  }
+
+  /* Elevate all direct children above the glows */
+  .card-spotlight > :not(.spotlight-outer-glow):not(.spotlight-glow-wrapper) {
+    position: relative;
+    z-index: 10;
+  }
+
+  /* 1. Outer Ambient Glow (Behind the container, blurred, bleeds out) */
+  .spotlight-outer-glow {
+    position: absolute;
+    inset: -16px; 
+    border-radius: 1.5rem; 
+    background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent 50%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(20px);
+  }
+
+  /* 2. Wrapper to strictly clip inner glow to the border radius */
+  .spotlight-glow-wrapper {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* 3. Inner Crisp Glow */
+  .spotlight-inner-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  /* Hover interactions trigger both glows */
+  .card-spotlight:hover .spotlight-outer-glow,
+  .card-spotlight:focus-within .spotlight-outer-glow,
+  .card-spotlight:hover .spotlight-inner-glow,
+  .card-spotlight:focus-within .spotlight-inner-glow {
+    opacity: 1;
+  }
+}

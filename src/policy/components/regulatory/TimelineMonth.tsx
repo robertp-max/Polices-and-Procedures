@@ -9,6 +9,10 @@ import {
   type InstanceState,
 } from './timelineState';
 import { AUDIT_STATE_COLOR } from '@/policy/audit/auditState';
+import {
+  CesSpotlightCard,
+  getCesEventSpotlightTone,
+} from '@/policy/ces/components/calendar/CesEventInteraction';
 
 /* ═══════════════════════════════════════════════════════════════
    TimelineMonth — workflow-instance-only month grid.
@@ -74,7 +78,7 @@ export function TimelineMonth({
   }, [year, month, events, today]);
 
   return (
-    <div className="flex flex-col min-h-0 flex-1">
+    <div className="flex h-full flex-col min-h-0 flex-1">
       {/* Weekday header */}
       <div className="grid grid-cols-7 gap-px pb-1.5">
         {WEEKDAYS.map(w => (
@@ -205,12 +209,19 @@ function TimelineChip({
   // eye immediately registers "locked record" from across the grid.
   const color = certified ? AUDIT_STATE_COLOR['certified-locked'] : STATE_COLOR[state];
   const bg    = certified ? 'rgba(167,139,250,0.10)' : STATE_SOFT[state];
+  const spotlightColor = getCesEventSpotlightTone(state, certified);
+  const toneClassName =
+    certified || state === 'complete' ? 'ces-card-spotlight-complete'
+    : state === 'blocked' || state === 'overdue' ? 'ces-card-spotlight-critical'
+    : '';
 
   return (
-    <button
-      type="button"
+    <CesSpotlightCard
       onClick={onClick}
       title={certified ? `${event.title} — Certified & Locked` : event.title}
+      ariaLabel={`Open ${event.title}`}
+      spotlightColor={spotlightColor}
+      toneClassName={toneClassName}
       className="group relative w-full text-left rounded-md transition-colors duration-150 px-1.5 py-1"
       style={{
         background: active ? `${color}18` : bg,
@@ -250,6 +261,6 @@ function TimelineChip({
           <Lock size={8} />
         </span>
       )}
-    </button>
+    </CesSpotlightCard>
   );
 }

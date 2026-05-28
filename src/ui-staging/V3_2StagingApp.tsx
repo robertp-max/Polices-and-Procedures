@@ -10,7 +10,7 @@ import {
   Menu, Search, X, User, Bell, Bot, Network, UserPlus, FolderOpen,
   ArrowUpCircle, Shield, CheckSquare, ChevronDown, ChevronRight
 } from 'lucide-react';
-import { PolicyLibraryDocumentView } from '@/policy/components/PolicyLibraryDocumentView';
+import { PolicyViewer32 } from '@/policy/components/policy-viewer/PolicyViewer32';
 import { FormBody } from '@/policy/components/FormViewer';
 import { frameworkPolicies } from '@/policy/data/frameworkSeed.generated';
 import { getPolicyBody, getPolicyContent } from '@/policy/data/policyContentMap';
@@ -1893,7 +1893,7 @@ const PolicyContentWorkspace = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
           <FileText size={16} color={V3.orangeLight} />
           <span style={{ fontSize: '10px', fontWeight: 700, color: V3.orangeLight, letterSpacing: '1px' }}>V3_RENDERER_ADAPTER</span>
-          <span style={{ fontSize: '10px', color: V3.textTertiary }}>policyContentMap / getPolicyContent / getPolicyBody / PolicyLibraryDocumentView</span>
+          <span style={{ fontSize: '10px', color: V3.textTertiary }}>policyContentMap / getPolicyContent / getPolicyBody / PolicyViewer32</span>
         </div>
         <h1 style={{ fontSize: '24px', fontWeight: 600, color: V3.textPrimary, margin: 0 }}>Policy Content Renderer</h1>
         <p style={{ fontSize: '12.5px', color: V3.textSecondary, margin: '6px 0 0' }}>
@@ -1943,8 +1943,8 @@ const PolicyContentWorkspace = () => {
                   <OpenLiveRouteButton route={`/policies/${selectedPolicy.id}`} />
                 </div>
               </div>
-              <div style={{ background: '#FFFFFF', color: '#1F1C1B', borderRadius: '10px', overflow: 'hidden', maxHeight: '70vh' }}>
-                <PolicyLibraryDocumentView policyId={selectedPolicy.id} embedded />
+              <div style={{ background: '#0B0F15', color: '#E2E8F0', borderRadius: '10px', overflow: 'hidden', maxHeight: '70vh' }}>
+                <PolicyViewer32 policyId={selectedPolicy.id} embedded />
               </div>
             </div>
           ) : (

@@ -16,7 +16,7 @@ export const MASTER_CONTROLS_ARTICLES: HelpArticle[] = [
     evidence:
       'Viewing the inventory is not logged. Policy status changes (publishing, archiving) are logged in the enforcementStore audit chain.',
     related: {
-      components: ['MasterControlInventory', 'SharedPolicyDetailView'],
+      components: ['MasterControlInventory', 'PolicyViewer32'],
       endpoints: ['GET /api/compliance/objects/policy/:id'],
     },
     complianceRequirement:

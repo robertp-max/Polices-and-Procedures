@@ -25,8 +25,8 @@ export const ShellCommandGroup: React.FC<ShellCommandGroupProps> = ({
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       {title && (
-        <div 
-          className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.26em] text-[var(--ci-text-muted)]"
+        <div
+          className="px-2 py-1.5 font-montserrat text-[10px] font-bold uppercase tracking-[0.24em] text-text-disabled"
           style={{ fontSize: 'var(--ci-font-size-eyebrow, 10px)' }}
         >
           {title}

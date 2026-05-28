@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { BrandRail } from './components/BrandRail';
 import { LandingView } from './components/LandingView';
+import { QAWorkflow03SwimlanePage } from './components/QAWorkflow03SwimlanePage';
 import { WorkflowDetailView } from './components/WorkflowDetailView';
 import type { DomainCode } from '@/policy/types/workflow';
 
@@ -45,6 +46,8 @@ export function WorkflowLibraryApp() {
             index
             element={<LandingView selectedDomain={selectedDomain} savedView={savedView} />}
           />
+          <Route path="QA-WF-03-swimlane" element={<QAWorkflow03SwimlanePage />} />
+          <Route path="QA-WF-03/swimlane" element={<Navigate to="/workflows/QA-WF-03-swimlane" replace />} />
           <Route path=":workflowId" element={<WorkflowDetailView />} />
         </Routes>
       </main>
