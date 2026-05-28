@@ -1,0 +1,200 @@
+{
+  "generatedAt": "2026-05-27T14:44:21.152Z",
+  "out": [
+    {
+      "name": "/calendar-base",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent10-visual-ux-detail--calendar-base.png",
+      "state": {
+        "text": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin EVENT CALENDAR Regulatory events · May 2026 Orchestrate deadlines, sprint execution, and survey readiness from one cinematic timeline surface. BLOCK 16 DUE 13 TRACK 8 Calendar Sprint Board Kanban Gantt Today SYNC ALL EVENTS JULY READINESS ROLLOUT Project all non-triggered workflows into the calendar for the 12-month window starting 2026-07-01. Triggered workflows (incidents, complaints, sentinel events) are excluded and will materialize only when their trigger fires. PREVIEW SCHEDULE DISMISS SUN MON TUE WED THU FRI SAT 26 27 28 29 30 1 2 3 4 5 Monthly OIG/SAM Exclusion Check HR-TA-003 6 7 Q2 QAPI Review QA-PG-001 / QA-PI-001 Plan of Care Audit + 12 more 8 9 10 11 Governing Body Mtg (Prep - Owner Brief) GV-GB-001 Compliance Report (Weekly Snapshot) CO-RA-002 12 QAPI Committee Meeting QA-PG-001 / QA-PG-002 13 Claims Submission Cycle FN-BC-001 / FN-BC-003 System Activity Review IT-DR-003 14 Post-Bill Claims Audit Governing Body Meeting GV-GB-001 / GV-GB-002 + 1 more 15 Sentinel Event Root Cause Analysis (Trigger) RM-ER-002 16 17 18 30-Day Episode Review CL-CP-002 19 Infection Control Review CL-SD-016 20 Security Incidents Review IT-DR-005 21 Physician Signatures Due CL-CP-009 / FN-BC-003 Denial Management Review FN-BC-002 + 1 more 22 QAPI Data Dashboard Refresh QA-PG-003 23 24 25 26 Monthly Clinical Record Audit CO-DC-002 / CL-CP-001 27 Annual OSHA Bloodborne Pathogen Training RM-OS-003 28 Annual HIPAA Workforce Training IT-UP-004 / CO-HP-001 Annual Emergency Preparedness Full-Scale Exercise RM-EP-001 / OP-FM-005 29 Quarterly Vulnerability Scan IT-SC-001 Quarterly Competency Validation Cycle HR-TD-003 30 31 1 2 3 4 5 6 OPEN DETAILS GUIDED UAT 3/6 operational checkpoints",
+        "h": [
+          "Regulatory events · May 2026"
+        ],
+        "overflow": false
+      },
+      "notes": []
+    },
+    {
+      "name": "/calendar-Monthly OIG/SAM Exclusion Check",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent10-visual-ux-detail--calendar-monthly-oig-sam-exclusion-check.png",
+      "state": {
+        "text": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin EVENT CALENDAR Regulatory events · May 2026 Orchestrate deadlines, sprint execution, and survey readiness from one cinematic timeline surface. BLOCK 16 DUE 13 TRACK 8 Calendar Sprint Board Kanban Gantt Today SYNC ALL EVENTS JULY READINESS ROLLOUT Project all non-triggered workflows into the calendar for the 12-month window starting 2026-07-01. Triggered workflows (incidents, complaints, sentinel events) are excluded and will materialize only when their trigger fires. PREVIEW SCHEDULE DISMISS SUN MON TUE WED THU FRI SAT 26 27 28 29 30 1 2 3 4 5 Monthly OIG/SAM Exclusion Check HR-TA-003 6 7 Q2 QAPI Review QA-PG-001 / QA-PI-001 Plan of Care Audit + 12 more 8 9 10 11 Governing Body Mtg (Prep - Owner Brief) GV-GB-001 Compliance Report (Weekly Snapshot) CO-RA-002 12 QAPI Committee Meeting QA-PG-001 / QA-PG-002 13 Claims Submission Cycle FN-BC-001 / FN-BC-003 System Activity Review IT-DR-003 14 Post-Bill Claims Audit Governing Body Meeting GV-GB-001 / GV-GB-002 + 1 more 15 Sentinel Event Root Cause Analysis (Trigger) RM-ER-002 16 17 18 30-Day Episode Review CL-CP-002 19 Infection Control Review CL-SD-016 20 Security Incidents Review IT-DR-005 21 Physician Signatures Due CL-CP-009 / FN-BC-003 Denial Management Review FN-BC-002 + 1 more 22 QAPI Data Dashboard Refresh QA-PG-003 23 24 25 26 Monthly Clinical Record Audit CO-DC-002 / CL-CP-001 27 Annual OSHA Bloodborne Pathogen Training RM-OS-003 28 Annual HIPAA Workforce Training IT-UP-004 / CO-HP-001 Annual Emergency Preparedness Full-Scale Exercise RM-EP-001 / OP-FM-005 29 Quarterly Vulnerability Scan IT-SC-001 Quarterly Competency Validation Cycle HR-TD-003 30 31 1 2 3 4 5 6 COMPLIANCE Tasks OVERDUE OVERDUE Monthly OIG/SAM Exclusion Check RESET SANDBOX EVT-CO-EXCLUSIONSCR-20260505-001 · /events/EVT-CO-EXCLUSIONSCR-20260505-001 SANDBOX / TRAINING PLAYGROUND STEP 1/9 SLA 5D PAST RISK HIGH AUDIT READINESS 0% OVERVIEW TASKS AUDIT TRAIL TECHNICAL DETAILS Monthly OIG/SAM Excl",
+        "h": [
+          "Regulatory events · May 2026",
+          "Monthly OIG/SAM Exclusion Check",
+          "Monthly OIG/SAM Exclusion Check"
+        ],
+        "overflow": false
+      },
+      "notes": []
+    },
+    {
+      "name": "/evidence-base",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent10-visual-ux-detail--evidence-base.png",
+      "state": {
+        "text": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin Evidence Folder Explorer Evidence mode: DEMO_LOCAL Clear All Evidence Read-only folder view for Year → Quarter → Month → Event → Task evidence. Upload stays inside CES task drawers where the event, task, form, and requirement context is known. Chain of custody visible Immutable evidence timeline Survey packet ready context Folder tree File ledger DEMO_LOCAL: Evidence metadata is stored locally for this demo environment. Evidence Folder Tree Drive-style hierarchy: Year → Month → Event → Task → Requirement → Artifact. Operational completion and audit readiness are calculated separately. YEAR All 2025 2026 2028 2029 MONTH All January February March April May June July August September October November December TASK STATUS All todo in_progress in_review blocked done REQUIREMENT STATUS All PENDING IN_PROGRESS COMPLETED BLOCKED ASSIGNED All Missing evidence only Locked evidence only Pending signature only Blocked tasks only Orphan evidence only EVENTS 244 TASKS 5114 REQS 10716 COMPLETION 0% AUDIT READY 0% LOCKED EVIDENCE 0 FOLDERS - 2026 January February March April May June July August September October November December Evidence / 2026 2026 0% complete 0% audit ready 0% January 0% audit · 0/256 0% February 0% audit · 0/250 0% March 0% audit · 0/326 0% April 0% audit · 0/240 0% May 0% audit · 0/638 0% June 0% audit · 0/330 0% July 0% audit · 0/314 0% August 0% audit · 0/236 0% September 0% audit · 0/290 0% October 0% audit · 0/204 0% November 0% audit · 0/238 0% December 0% audit · 0/286 Performance Leaderboard Explain scoring User / Role SP Done Certified On-Time % Overdue Rejected Audit Perfect Score Unassigned 0 0 0% 2305 0 0 -4605 Contextual Help Month selected: monthly compliance execution, missing evidence, and pending signatures. Selection: Monthly compliance execution GUIDED UAT 5/6 operational checkpoints",
+        "h": [
+          "Evidence Folder Explorer",
+          "Evidence Folder Tree",
+          "2026",
+          "Performance Leaderboard",
+          "Contextual Help"
+        ],
+        "overflow": false
+      },
+      "notes": []
+    },
+    {
+      "name": "/evidence-File ledger",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent10-visual-ux-detail--evidence-file-ledger.png",
+      "state": {
+        "text": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin Evidence Folder Explorer Evidence mode: DEMO_LOCAL Clear All Evidence Read-only folder view for Year → Quarter → Month → Event → Task evidence. Upload stays inside CES task drawers where the event, task, form, and requirement context is known. Chain of custody visible Immutable evidence timeline Survey packet ready context Folder tree File ledger DEMO_LOCAL: Evidence metadata is stored locally for this demo environment. EVENT ID Load Accepts regulatory IDs and form-generated IDs (EVT-FORM-FI...) EVENT FORM POLICY WORKFLOW TASK EVIDENCE ID Refresh Task-scoped upload only No evidence uploaded for this event yet. Event EVT-DEMO-001 has no files in the compliance store. Open the source CES task drawer to add evidence with task context. Upload blocked until a CES task context is selected. Audit log — event EVT-DEMO-001 (0 entries) No audit entries yet for this event. What is \"evidence\"? Any file that proves a regulated activity happened — QAPI minutes, signed forms, competency checklists, training rosters, OASIS lock confirmations. Why the triplet? Every artifact is bound to a policy_id, workflow_id, and event_id. A surveyor can pull a single event packet and reconstruct the entire chain of custody. Audit log Append-only entries record who initiated each upload, every status transition, and every download URL we mint. Nothing in this view is editable. What to do next Pick the event you're documenting (top-left). Open the source CES task drawer and upload from its evidence requirement. Verify the new row appears with status EVIDENCE_LOCKED. Use Download to obtain a short-lived presigned URL. API: https://rtllnugat0.execute-api.us-west-1.amazonaws.com GUIDED UAT 5/6 operational checkpoints",
+        "h": [
+          "Evidence Folder Explorer",
+          "Audit log — event EVT-DEMO-001",
+          "What is \"evidence\"?",
+          "Why the triplet?",
+          "Audit log",
+          "What to do next"
+        ],
+        "overflow": false
+      },
+      "notes": []
+    },
+    {
+      "name": "/audit-base",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent10-visual-ux-detail--audit-base.png",
+      "state": {
+        "text": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin AUDIT Compliance validation and survey readiness Audit trail Verify chain Survey packet FILTERS SURVEY ROLLUP BUNDLE JSON ALL JULY READINESS NOT CERTIFIABLE MISSING EVIDENCE PENDING APPROVAL OVERDUE(101) READY TO CERTIFY CERTIFIED GOVERNANCE(8) QAPI(9) BILLING CRITICAL(3) SURVEY CRITICAL(196) 0% COMPLIANT Â· 0 CERTIFIED Â· 0 READY TO CERTIFY Â· 253 IN VIEW AUDIT STORYLINE Advance from not-certifiable to audit-ready with transparent readiness state transitions. SPRINT SPRINT 9 Â· CES AUDIT Not Ready: 1041 Partial: 0 Ready: 0 Certified: 0 Critical Units: 0 Open Sprint View â†’ AUDIT READY 0 0 instances READY TO CERTIFY 0 Awaiting sign-off NOT CERTIFIABLE 0 Requires review MISSING EVIDENCE 0 Evidence gaps PENDING APPROVAL 0 Awaiting approver CERTIFIED & LOCKED 0 Final audit state ALL INSTANCES253 NEEDS IMMEDIATE REVIEW 101 100 GOVERNANCE Due 122d past Annual Governance Packet Review governance_packet_review-20260108-01Â·Administrator OVERDUE 100 QAPI Due 94d past Quarterly QAPI Governance Review & Annual PIP Kickoff qapi_meeting-20260205-04Â·QAPI Coordinator OVERDUE 100 CLINICAL Due 46d past Q1 Infection Control Review infection_control_review_quarterly-20260325-01Â·Clinical Manager OVERDUE 100 QAPI Due 3d past Q2 QAPI Review qapi_meeting-20260507-08Â·Clinical Manager BLOCKED 100 GOVERNANCE Due 4d Governing Body Meeting governing_body_meeting-20260514-01Â·D. Alvarez BLOCKED 99 QAPI Due 129d past Incident / Adverse Event Review incident_report-20260101-01Â·Clinical Manager OVERDUE 99 COMPLIANCE Due 129d past Complaint / Grievance Investigation complaint_investigation-20260101-01Â·Compliance Officer OVERDUE 96 OPERATIONS Due 115d past Biennial Emergency Preparedness Plan Review & Update ep_plan_review-20260115-01Â·Administrator OVERDUE 96 OPERATIONS Due 53d past Annual Emergency Preparedness Exercise ep_exercise-20260318-01Â·Administrator OVERDUE 95 QAPI Due 88d Q3 QAPI Review qapi_meeting-20260806-12Â·Clinical Mana",
+        "h": [
+          "Compliance validation and survey readiness",
+          "Annual Governance Packet Review"
+        ],
+        "overflow": false
+      },
+      "notes": []
+    },
+    {
+      "name": "/audit-Annual Governance Packet Review",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent10-visual-ux-detail--audit-annual-governance-packet-review.png",
+      "state": {
+        "text": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin AUDIT Compliance validation and survey readiness Audit trail Verify chain Survey packet FILTERS SURVEY ROLLUP BUNDLE JSON ALL JULY READINESS NOT CERTIFIABLE MISSING EVIDENCE PENDING APPROVAL OVERDUE(101) READY TO CERTIFY CERTIFIED GOVERNANCE(8) QAPI(9) BILLING CRITICAL(3) SURVEY CRITICAL(196) 0% COMPLIANT Â· 0 CERTIFIED Â· 0 READY TO CERTIFY Â· 253 IN VIEW AUDIT STORYLINE Advance from not-certifiable to audit-ready with transparent readiness state transitions. SPRINT SPRINT 9 Â· CES AUDIT Not Ready: 1041 Partial: 0 Ready: 0 Certified: 0 Critical Units: 0 Open Sprint View â†’ AUDIT READY 0 0 instances READY TO CERTIFY 0 Awaiting sign-off NOT CERTIFIABLE 0 Requires review MISSING EVIDENCE 0 Evidence gaps PENDING APPROVAL 0 Awaiting approver CERTIFIED & LOCKED 0 Final audit state ALL INSTANCES253 NEEDS IMMEDIATE REVIEW 101 100 GOVERNANCE Due 122d past Annual Governance Packet Review governance_packet_review-20260108-01Â·Administrator OVERDUE 100 QAPI Due 94d past Quarterly QAPI Governance Review & Annual PIP Kickoff qapi_meeting-20260205-04Â·QAPI Coordinator OVERDUE 100 CLINICAL Due 46d past Q1 Infection Control Review infection_control_review_quarterly-20260325-01Â·Clinical Manager OVERDUE 100 QAPI Due 3d past Q2 QAPI Review qapi_meeting-20260507-08Â·Clinical Manager BLOCKED 100 GOVERNANCE Due 4d Governing Body Meeting governing_body_meeting-20260514-01Â·D. Alvarez BLOCKED 99 QAPI Due 129d past Incident / Adverse Event Review incident_report-20260101-01Â·Clinical Manager OVERDUE 99 COMPLIANCE Due 129d past Complaint / Grievance Investigation complaint_investigation-20260101-01Â·Compliance Officer OVERDUE 96 OPERATIONS Due 115d past Biennial Emergency Preparedness Plan Review & Update ep_plan_review-20260115-01Â·Administrator OVERDUE 96 OPERATIONS Due 53d past Annual Emergency Preparedness Exercise ep_exercise-20260318-01Â·Administrator OVERDUE 95 QAPI Due 88d Q3 QAPI Review qapi_meeting-20260806-12Â·Clinical Mana",
+        "h": [
+          "Compliance validation and survey readiness",
+          "Annual Governance Packet Review"
+        ],
+        "overflow": false
+      },
+      "notes": []
+    },
+    {
+      "name": "/forms-base",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent10-visual-ux-detail--forms-base.png",
+      "state": {
+        "text": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin Enterprise Forms Library 269 POLICIES 361 FORMS POLICIES FORMS EXPORT ALL DOMAINS GOVERNANCE CLINICAL OPS QAPI HUMAN RESOURCES COMPLIANCE FINANCE OPERATIONS IT & SECURITY RISK MGMT ENTERPRISE CTRL ALL MASTER TEMPLATE AUDIT CRITICAL SHARED ENTERPRISE HIGH RISK DIGITAL CANDIDATE 410 ARTIFACTS EN-FM-001 Universal Policy Acknowledgment Form MASTER TEMPLATE SHARED ENTERPRISE DIGITAL CANDIDATE ATTESTATION REQUIRED MAPPED POLICIES ALL (270 Policies) EN-FM-002 Master Policy Index / Taxonomy Register MASTER TEMPLATE SHARED ENTERPRISE TRACKING TOOL REQUIRED MAPPED POLICIES EN-TG-001 EN-FM-003 Policy Classification Tier Matrix MASTER TEMPLATE MATRIX REQUIRED ANNUAL MAPPED POLICIES EN-TG-001 EN-FM-004 Domain Owner Assignment Roster SHARED ENTERPRISE TRACKING TOOL REQUIRED MAPPED POLICIES EN-TG-001 EN-FM-005 Regulatory Crosswalk Template AUDIT CRITICAL MASTER TEMPLATE TEMPLATE REQUIRED MAPPED POLICIES EN-TG-002 EN-FM-006 Compliance Gap Analysis Worksheet AUDIT CRITICAL WORKSHEET REQUIRED ANNUAL MAPPED POLICIES EN-TG-002 EN-FM-007 Policy Development & Revision Template MASTER TEMPLATE TEMPLATE REQUIRED MAPPED POLICIES EN-LC-001 EN-FM-008 Policy Approval Routing Form DIGITAL CANDIDATE FORM REQUIRED MAPPED POLICIES EN-LC-001 EN-FM-009 Version Control Change Log AUDIT CRITICAL LOG REQUIRED MAPPED POLICIES EN-LC-001 EN-FM-010 Annual Policy Review Schedule SHARED ENTERPRISE TRACKING TOOL REQUIRED ANNUAL MAPPED POLICIES EN-LC-001 EN-FM-011 Policy Exception / Waiver Request Form DIGITAL CANDIDATE HIGH RISK FORM MAPPED POLICIES EN-LC-002 EN-FM-012 Exception & Waiver Tracking Log AUDIT CRITICAL LOG REQUIRED MAPPED POLICIES EN-LC-002 EN-FM-013 Role-Based Policy Assignment Matrix SHARED ENTERPRISE MATRIX REQUIRED ANNUAL MAPPED POLICIES EN-LC-003 EN-FM-014 Policy Acknowledgment Tracking Log AUDIT CRITICAL SHARED ENTERPRISE LOG REQUIRED MAPPED POLICIES EN-LC-003 EN-FM-015 Policy Retirement Request Form FORM MAPPED POLICIES EN-LC-004 EN-F",
+        "h": [
+          "Enterprise Forms Library",
+          "Universal Policy Acknowledgment Form",
+          "Master Policy Index / Taxonomy Register",
+          "Policy Classification Tier Matrix",
+          "Domain Owner Assignment Roster",
+          "Regulatory Crosswalk Template",
+          "Compliance Gap Analysis Worksheet",
+          "Policy Development & Revision Template",
+          "Policy Approval Routing Form",
+          "Version Control Change Log",
+          "Annual Policy Review Schedule",
+          "Policy Exception / Waiver Request Form",
+          "Exception & Waiver Tracking Log",
+          "Role-Based Policy Assignment Matrix",
+          "Policy Acknowledgment Tracking Log",
+          "Policy Retirement Request Form",
+          "Policy Obsolescence Impact Assessment",
+          "Enterprise Compliance Dashboard Template",
+          "Departmental KPI Reporting Form",
+          "Non-Compliance Remediation Plan"
+        ],
+        "overflow": false
+      },
+      "notes": []
+    },
+    {
+      "name": "/forms-Universal Policy Acknowledgment Form",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent10-visual-ux-detail--forms-universal-policy-acknowledgment-form.png",
+      "state": {
+        "text": "Return to Forms Library EN-FM-001 · v6.0 Print Save as Evidence Download Awaiting Signature Powered by LINKED POLICY / PROCEDUREREQUIRED 0 selected ENTERPRISE FORMS LIBRARY EN-FM-001 · v6.0 Universal Policy Acknowledgment Form ATTESTATION · FORM EN-FM-001 FORM ID EN-FM-001 VERSION v6.0 EFFECTIVE 2025-07-10 NEXT REVIEW 2026-07-10 PURPOSE Establishes a single enterprise-wide record that every workforce member has received, read, understood, and agreed to abide by an assigned policy, in satisfaction of 42 CFR § 484.105 and the agency Compliance Program. INSTRUCTIONS The assigned workforce member shall complete this form within 30 calendar days of policy issuance or revision. Submitted acknowledgments are retained in the personnel file for seven (7) years. A monthly exception report is generated for any workforce member with outstanding acknowledgments. SECTION 1 — IDENTIFICATION FORM COMPLETED BY (FULL NAME)* TITLE / ROLE* DEPARTMENT / BRANCH DATE COMPLETED* SECTION 2 — ATTESTATION I, the undersigned, hereby certify that: I have received, read, and reviewed the policy identified below in its entirety. I understand the content, obligations, and expected behaviors described in the policy as they apply to my role. I have had the opportunity to ask questions and received satisfactory clarification on any items I did not understand. I agree to comply with this policy, related procedures, and all referenced regulations at all times during my engagement with Care Indeed Home Health Care, Inc. I understand that failure to comply may result in corrective or disciplinary action up to and including termination. SECTION — SIGNATURES & ATTESTATION WORKFORCE MEMBER — PRINTED NAME WORKFORCE MEMBER — SIGNATURE Sign WORKFORCE MEMBER — DATE Care Indeed Home Health Care, Inc. · Form EN-FM-001 · Version 6.0 · Effective 2025-07-10 · Next Review 2026-07-10 Linked Policies: ALL (270 Policies) EN-FM-001 · v6.0 GUIDED UAT 4/6 operational checkpoints Review operational posture Open and execute tasks Validate workflow timeline Complete required forms Upload and verify evidence Run audit readiness pass Keep checklist visible",
+        "h": [
+          "Universal Policy Acknowledgment Form",
+          "Purpose",
+          "Instructions",
+          "Section 1 — Identification",
+          "Section 2 — Attestation",
+          "Section — Signatures & Attestation"
+        ],
+        "overflow": false
+      },
+      "notes": []
+    },
+    {
+      "name": "/library-base",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent10-visual-ux-detail--library-base.png",
+      "state": {
+        "text": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin Enterprise Policy Library 269 POLICIES 361 FORMS POLICIES FORMS IBM FRAMEWORK VIEW ACHC SURVEY VIEW REGULATORY FILTERS ALL TITLE 22 42 CFR §484 CMS STATE OPS HIPAA OSHA OIG FCA STRATEGIC DOMAINS GLOBAL REPOSITORY GOVERNANCE CLINICAL OPS QAPI HUMAN RES. COMPLIANCE FINANCE OPERATIONS IT & SECURITY RISK MGMT ENTERPRISE ALL DOMAINS — GLOBAL REPOSITORY CATEGORIES 269 policies GV-GB-001 Governing Body Authority & Responsibilities +2 GV-GB-002 Board Meeting & Minutes Requirements GV-GB-003 Conflict of Interest Disclosure GV-GB-004 Succession Planning for Key Leadership GV-GB-005 Annual Governance Self-Assessment GV-OG-001 Organizational Structure & Reporting GV-OG-002 Administrator Qualifications & Responsibilities GV-OG-003 Scope of Services Definition GV-OG-004 Strategic Planning & Annual Goals GV-OG-005 Delegation of Authority GV-PM-001 Policy Development & Approval Process GV-PM-002 Policy Review & Revision Cycle GV-PM-003 Policy Acknowledgment & Staff Attestation GV-PM-004 Communication & Notification Standards GV-PM-005 Stakeholder Grievance & Feedback Management GV-EA-001 Interagency Agreements & Contracts GV-EA-002 Community Liaison & Public Relations GV-EA-003 Legal Counsel Engagement & Oversight GV-EA-004 Agency Licensure & Certification Maintenance GV-EA-005 Agency Closure or Change of Ownership CL-CP-001 Plan of Care Development & Approval CL-CP-002 Plan of Care Review & Update CL-CP-003 Physician Orders & Order Management CL-CP-004 Verbal Order Receipt & Authentication CL-CP-005 Coordination of Care CL-CP-006 Discharge Planning & Criteria CL-CP-007 Transfer & Referral Procedures CL-CP-008 Physician Recertification Timing Compliance CL-CP-009 Physician Order Signature Tracking & Escalation CL-SD-001 Skilled Nursing Assessment & Services CL-SD-002 Physical Therapy Services CL-SD-003 Occupational Therapy Services CL-SD-004 Speech-Language Pathology Services CL-SD-005 Medical Social Work Services CL-SD-006 Ho",
+        "h": [
+          "Enterprise Policy Library",
+          "Regulatory Filters",
+          "Strategic Domains",
+          "Governing Body Authority & Responsibilities",
+          "Board Meeting & Minutes Requirements",
+          "Conflict of Interest Disclosure",
+          "Succession Planning for Key Leadership",
+          "Annual Governance Self-Assessment",
+          "Organizational Structure & Reporting",
+          "Administrator Qualifications & Responsibilities",
+          "Scope of Services Definition",
+          "Strategic Planning & Annual Goals",
+          "Delegation of Authority",
+          "Policy Development & Approval Process",
+          "Policy Review & Revision Cycle",
+          "Policy Acknowledgment & Staff Attestation",
+          "Communication & Notification Standards",
+          "Stakeholder Grievance & Feedback Management",
+          "Interagency Agreements & Contracts",
+          "Community Liaison & Public Relations"
+        ],
+        "overflow": false
+      },
+      "notes": []
+    },
+    {
+      "name": "/library-GV-EA-001",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent10-visual-ux-detail--library-gv-ea-001.png",
+      "state": {
+        "text": "RETURN TO LIBRARY PREV OVERVIEW NEXT PRINT DOWNLOAD Table of Contents 6 document groups Overview 2. Purpose 3. Scope 5. Definitions 4. Policy Statement 6. Procedures Contract Initiation and Review Contract Approval Authority Contract Execution Contract Monitoring and Performance Oversight Contract Renewal and Termination Escalation and Exception Handling How Compliance Is Measured Common Failure Points 7. Documentation Requirements 8. Compliance & Audit Considerations 9. References 10. Training & Acknowledgment Requirements 11. Version Control APPENDICES Interagency Agreements & Contracts POLICY ID: GV-EA-001 DOMAIN GV — Governance & Administration SUBDOMAIN EA CLASSIFICATION TIER REQUIRED STATUS ACTIVE POLICY OWNER Administrator / Governing Body VERSION v6.0 EFFECTIVE DATE 2025-07-10 APPROVED BY Governing Body Chair LAST REVIEWED 2025-07-10 NEXT REVIEW DATE 2026-07-10 LAST UPDATED 2025-07-10 OWNER Administrator / Governing Body STATUS ACTIVE Related Documents REGULATORY REFERENCES 42 CFR §484 GUIDED UAT 0/6 operational checkpoints Review operational posture Open and execute tasks Validate workflow timeline Complete required forms Upload and verify evidence Run audit readiness pass Keep checklist visible",
+        "h": [
+          "Interagency Agreements & Contracts",
+          "Interagency Agreements & Contracts",
+          "2. Purpose",
+          "3. Scope",
+          "4. Policy Statement",
+          "5. Definitions",
+          "6.1 Establishment and Composition",
+          "7. Documentation Requirements",
+          "8. Compliance & Audit",
+          "8.1 How Compliance Is Measured",
+          "8.2 Surveyor Expectations",
+          "8.3 Common Failure Points",
+          "9. References & Administration",
+          "9.1 Federal Regulations (42 CFR Part 484)",
+          "9.2 CMS Guidance",
+          "9.3 OIG Guidance",
+          "9.4 Cross-Referenced Agency Policies",
+          "10. Training Requirements",
+          "11. Version Control",
+          "Appendices"
+        ],
+        "overflow": false
+      },
+      "notes": []
+    }
+  ]
+}

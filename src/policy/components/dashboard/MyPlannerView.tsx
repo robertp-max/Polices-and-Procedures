@@ -17,7 +17,7 @@ import {
   Plus, Calendar, AlertTriangle, CheckCircle2, FileText, User,
   ArrowRight, X,
 } from 'lucide-react';
-import { useShellStore } from '@/policy/stores/uiStore';
+import { TODAY_ANCHOR } from '@/policy/data/regulatoryEvents';
 import { useObligations } from '@/policy/ces/obligations';
 import { usePmPersonalStore } from '@/policy/pm/personalStore';
 import { getCurrentUserId } from '@/policy/pm/currentUser';
@@ -41,7 +41,6 @@ export interface MyPlannerViewProps {
 
 export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerViewProps) {
   const navigate = useNavigate();
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const [filter, setFilter] = useState<PlannerFilter>('all');
   const [search, setSearch] = useState('');
   const [showNewForm, setShowNewForm] = useState(false);
@@ -55,6 +54,7 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
   const currentUserId = getCurrentUserId();
   const obligationsApi = useObligations();
   const personalStore = usePmPersonalStore();
+  const recentThreshold = useMemo(() => new Date(TODAY_ANCHOR.getTime() - 1000 * 86400 * 14), []);
 
   // === CES / Compliance tasks assigned to me ===
   const myCesTasks = useMemo(() => {
@@ -117,9 +117,9 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
   // Sprint-scoped (simple heuristic: obligations that have sprintId or are recent)
   const mySprintItems = useMemo(() => {
     return myCesTasks
-      .filter(t => t.sprintId || (t.dueDate && new Date(t.dueDate) > new Date(Date.now() - 1000 * 86400 * 14)))
+      .filter(t => t.sprintId || (t.dueDate && new Date(t.dueDate) > recentThreshold))
       .slice(0, 8);
-  }, [myCesTasks]);
+  }, [myCesTasks, recentThreshold]);
 
   // Upcoming deadlines (next 7 days from combined)
   const upcomingDeadlines = useMemo(() => {
@@ -162,9 +162,7 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
     }
   }
 
-  const cardShell = isLight
-    ? 'bg-white border-slate-200 hover:border-orange-300'
-    : 'bg-white/5 border-white/10 hover:border-orange-400/40';
+  const cardShell = 'bg-transparent border-[var(--v3-border-subtle)] hover:border-[rgba(0,209,193,0.24)]';
 
   return (
     <div className="space-y-5">
@@ -173,15 +171,15 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <User size={18} className={isLight ? 'text-orange-500' : 'text-orange-400'} />
-              <h3 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-900' : 'text-slate-50'}`}>
+              <User size={18} className="text-[var(--v3-teal-light)]" />
+              <h3 className="font-semibold ci-text-display-section text-[var(--v3-text-primary)]">
                 {embeddedTitle || 'My Planner'}
               </h3>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500">
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-[var(--v3-text-secondary)]">
                 {currentUserId.split('-').pop()}
               </span>
             </div>
-            <p className={`mt-0.5 text-sm ${isLight ? 'text-slate-500' : 'text-white/60'}`}>
+            <p className="mt-0.5 text-sm text-[var(--v3-text-secondary)]">
               Your personal workload • CES obligations + private tasks • fully traceable
             </p>
           </div>
@@ -199,33 +197,45 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
 
       {/* Quick Add Form (collapsible) */}
       {showNewForm && (
-        <div className={`rounded-2xl border p-4 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/10'}`}>
+        <div className="rounded-2xl border border-[var(--v3-border-subtle)] bg-transparent p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="font-semibold text-sm">Quick Add — Personal Task (not counted in agency KPIs)</div>
-            <button onClick={() => setShowNewForm(false)} className="text-white/60 hover:text-white">
+            <div className="font-semibold text-sm text-[var(--v3-text-primary)]">Quick Add — Personal Task</div>
+            <button
+              type="button"
+              title="Close quick add"
+              aria-label="Close quick add"
+              onClick={() => setShowNewForm(false)}
+              className="text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)]"
+            >
               <X size={16} />
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
             <input
               type="text"
+              title="Personal task title"
+              aria-label="Personal task title"
               placeholder="Task title (e.g. Upload Q2 wound-care photos for Patient 4821)"
               value={newTask.title}
               onChange={e => setNewTask({ ...newTask, title: e.target.value })}
-              className={`md:col-span-5 rounded-xl border px-3 py-2 text-sm ${isLight ? 'bg-white border-slate-300' : 'bg-black/20 border-white/15 text-white'}`}
+              className="md:col-span-5 rounded-xl border border-[var(--v3-border-subtle)] bg-transparent px-3 py-2 text-sm text-[var(--v3-text-primary)]"
             />
             <input
               type="date"
+              title="Personal task due date"
+              aria-label="Personal task due date"
               value={newTask.due_date}
               onChange={e => setNewTask({ ...newTask, due_date: e.target.value })}
-              className={`md:col-span-2 rounded-xl border px-3 py-2 text-sm ${isLight ? 'bg-white border-slate-300' : 'bg-black/20 border-white/15 text-white'}`}
+              className="md:col-span-2 rounded-xl border border-[var(--v3-border-subtle)] bg-transparent px-3 py-2 text-sm text-[var(--v3-text-primary)]"
             />
             <input
               type="text"
+              title="Linked policy or event"
+              aria-label="Linked policy or event"
               placeholder="Linked policy/event (optional)"
               value={newTask.linked_event_id || ''}
               onChange={e => setNewTask({ ...newTask, linked_event_id: e.target.value || undefined })}
-              className={`md:col-span-3 rounded-xl border px-3 py-2 text-sm ${isLight ? 'bg-white border-slate-300' : 'bg-black/20 border-white/15 text-white'}`}
+              className="md:col-span-3 rounded-xl border border-[var(--v3-border-subtle)] bg-transparent px-3 py-2 text-sm text-[var(--v3-text-primary)]"
             />
             <ActionButton onClick={handleQuickAdd} className="md:col-span-2">
               Add Task
@@ -233,10 +243,12 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
           </div>
           <input
             type="text"
+            title="Personal task description"
+            aria-label="Personal task description"
             placeholder="Description / notes (optional)"
             value={newTask.description}
             onChange={e => setNewTask({ ...newTask, description: e.target.value })}
-            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm ${isLight ? 'bg-white border-slate-300' : 'bg-black/20 border-white/15 text-white'}`}
+            className="mt-2 w-full rounded-xl border border-[var(--v3-border-subtle)] bg-transparent px-3 py-2 text-sm text-[var(--v3-text-primary)]"
           />
           {createSuccess && (
             <div className="mt-2 text-emerald-500 text-sm flex items-center gap-1">
@@ -254,10 +266,8 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
             onClick={() => setFilter(f)}
             className={`px-3 py-1 rounded-full text-xs font-medium border transition ${
               filter === f
-                ? 'bg-orange-500 text-white border-orange-500'
-                : isLight
-                  ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                  : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+                ? 'border-[rgba(0,209,193,0.28)] bg-[rgba(0,209,193,0.10)] text-[var(--v3-text-primary)]'
+                : 'border-[var(--v3-border-subtle)] bg-transparent text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)]'
             }`}
           >
             {f === 'all' && 'All My Work'}
@@ -274,12 +284,12 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search my tasks..."
-          className={`w-48 rounded-full border px-3 py-1 text-sm ${isLight ? 'bg-white border-slate-300' : 'bg-white/5 border-white/15 text-white placeholder:text-white/40'}`}
+          className="w-48 rounded-full border border-[var(--v3-border-subtle)] bg-transparent px-3 py-1 text-sm text-[var(--v3-text-primary)] placeholder:text-[var(--v3-text-tertiary)]"
         />
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="flex flex-wrap gap-x-6 gap-y-2 border-y border-[var(--v3-border-subtle)] py-3">
         <StatPill label="My Open CES" value={myCesTasks.length} tone="default" />
         <StatPill label="Overdue" value={myOverdue.length} tone="danger" />
         <StatPill label="Evidence Pending" value={myEvidencePending.length} tone="warning" />
@@ -289,10 +299,10 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
       {/* Primary My Tasks */}
       <section>
         <div className="flex items-center justify-between mb-2 px-1">
-          <div className={`font-semibold uppercase text-xs tracking-[0.5px] ${isLight ? 'text-slate-500' : 'text-white/60'}`}>
+          <div className="font-semibold uppercase text-xs tracking-[0.5px] text-[var(--v3-text-tertiary)]">
             MY TASKS ({combinedMyTasks.length})
           </div>
-          <button onClick={() => navigate('/my-tasks')} className="text-orange-500 text-xs flex items-center gap-1 hover:underline">
+          <button onClick={() => navigate('/my-tasks')} className="text-[var(--v3-teal-light)] text-xs flex items-center gap-1 hover:underline">
             View in My Tasks page <ArrowRight size={13} />
           </button>
         </div>
@@ -300,7 +310,7 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
         {combinedMyTasks.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {combinedMyTasks.map((card, idx) => (
-              <PlannerCard key={`${card.source}-${card.id || idx}`} card={card} onClick={() => goToTask(card)} isLight={isLight} shellClass={cardShell} />
+              <PlannerCard key={`${card.source}-${card.id || idx}`} card={card} onClick={() => goToTask(card)} shellClass={cardShell} />
             ))}
           </div>
         ) : (
@@ -315,62 +325,62 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
       {/* Two-column critical + sprint + deadlines */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* My Critical & Overdue */}
-        <section className={`rounded-2xl border p-4 ${isLight ? 'bg-rose-50/40 border-rose-100' : 'bg-rose-500/5 border-rose-500/20'}`}>
+        <section className="border-t border-[var(--v3-border-subtle)] px-1 pt-4">
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle size={16} className="text-red-500" />
-            <span className="font-semibold">My Critical &amp; Overdue</span>
-            <span className="ml-auto text-xs px-2 py-0.5 rounded bg-red-500/10 text-red-400">{myOverdue.length + myCritical.length}</span>
+            <AlertTriangle size={16} className="text-[var(--v3-teal-light)]" />
+            <span className="font-semibold text-[var(--v3-text-primary)]">My Critical &amp; Overdue</span>
+            <span className="ml-auto text-xs text-[var(--v3-text-secondary)]">{myOverdue.length + myCritical.length}</span>
           </div>
           {myOverdue.length + myCritical.length > 0 ? (
             <ul className="space-y-2 text-sm">
               {[...myOverdue, ...myCritical].slice(0, 6).map((t, i) => (
-                <li key={i} onClick={() => navigate(`/calendar?event=${encodeURIComponent(t.parentEventId || t.id)}&workflow=1`)} className="cursor-pointer flex justify-between hover:bg-white/5 px-2 py-1 rounded">
+                <li key={i} onClick={() => navigate(`/calendar?event=${encodeURIComponent(t.parentEventId || t.id)}&workflow=1`)} className="cursor-pointer flex justify-between border-b border-[var(--v3-border-subtle)] px-1 py-2">
                   <span className="truncate pr-3">{t.title}</span>
-                  <span className="text-red-400 text-xs shrink-0">{t.dueDate?.slice(5)}</span>
+                  <span className="text-[var(--v3-text-secondary)] text-xs shrink-0">{t.dueDate?.slice(5)}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="text-sm text-emerald-500/80">No personal critical items — great work.</div>
+            <div className="text-sm text-[var(--v3-text-secondary)]">No personal critical items.</div>
           )}
         </section>
 
         {/* Sprint + Deadlines */}
-        <section className={`rounded-2xl border p-4 ${isLight ? 'bg-sky-50/40 border-sky-100' : 'bg-sky-500/5 border-sky-500/20'}`}>
+        <section className="border-t border-[var(--v3-border-subtle)] px-1 pt-4">
           <div className="flex items-center gap-2 mb-3">
-            <Calendar size={16} className="text-sky-500" />
-            <span className="font-semibold">This Sprint &amp; Upcoming (7d)</span>
+            <Calendar size={16} className="text-[var(--v3-teal-light)]" />
+            <span className="font-semibold text-[var(--v3-text-primary)]">This Sprint &amp; Upcoming (7d)</span>
           </div>
 
           <div className="mb-3">
-            <div className={`uppercase text-[10px] mb-1 ${isLight ? 'text-slate-500' : 'text-white/50'}`}>Sprint Assignments</div>
+            <div className="uppercase text-[10px] mb-1 text-[var(--v3-text-tertiary)]">Sprint Assignments</div>
             {mySprintItems.length ? (
               mySprintItems.slice(0, 4).map((t, i) => (
-                <div key={i} onClick={() => navigate(`/pm/my-tasks`)} className="text-sm cursor-pointer truncate hover:underline">{t.title}</div>
+                <div key={i} onClick={() => navigate(`/pm/my-tasks`)} className="text-sm cursor-pointer truncate py-1 text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)]">{t.title}</div>
               ))
-            ) : <div className="text-xs text-white/50">No sprint items assigned yet.</div>}
+            ) : <div className="text-xs text-[var(--v3-text-tertiary)]">No sprint items assigned yet.</div>}
           </div>
 
           <div>
-            <div className={`uppercase text-[10px] mb-1 ${isLight ? 'text-slate-500' : 'text-white/50'}`}>Upcoming Deadlines</div>
+            <div className="uppercase text-[10px] mb-1 text-[var(--v3-text-tertiary)]">Upcoming Deadlines</div>
             {upcomingDeadlines.length ? (
               upcomingDeadlines.slice(0, 4).map((c, i) => (
-                <div key={i} onClick={() => goToTask(c)} className="text-sm cursor-pointer flex justify-between hover:underline">
+                <div key={i} onClick={() => goToTask(c)} className="text-sm cursor-pointer flex justify-between py-1">
                   <span className="truncate">{c.title}</span>
-                  <span className="text-amber-400 text-xs">{c.dueDate?.slice(5)}</span>
+                  <span className="text-[var(--v3-text-secondary)] text-xs">{c.dueDate?.slice(5)}</span>
                 </div>
               ))
-            ) : <div className="text-xs text-emerald-400/70">Nothing due in the next 7 days.</div>}
+            ) : <div className="text-xs text-[var(--v3-text-tertiary)]">Nothing due in the next 7 days.</div>}
           </div>
         </section>
       </div>
 
       {/* Evidence Queue highlight */}
       {myEvidencePending.length > 0 && (
-        <div className={`rounded-2xl border px-4 py-3 ${isLight ? 'bg-amber-50 border-amber-200' : 'bg-amber-500/10 border-amber-500/20'}`}>
+        <div className="border-t border-[var(--v3-border-subtle)] px-1 py-3">
           <div className="flex items-center gap-2 text-sm">
-            <FileText size={15} className="text-amber-500" />
-            <span className="font-medium">Evidence Queue — {myEvidencePending.length} items need your upload or approval</span>
+            <FileText size={15} className="text-[var(--v3-teal-light)]" />
+            <span className="font-medium text-[var(--v3-text-primary)]">Evidence Queue — {myEvidencePending.length} items need your upload or approval</span>
             <ActionButton size="sm" variant="secondary" onClick={() => navigate('/evidence')} className="ml-auto">
               Open Evidence Center
             </ActionButton>
@@ -379,7 +389,7 @@ export function MyPlannerView({ showHeader = true, embeddedTitle }: MyPlannerVie
       )}
 
       {/* Footer note */}
-      <div className={`text-[11px] px-1 ${isLight ? 'text-slate-400' : 'text-white/35'}`}>
+      <div className="text-[11px] px-1 text-[var(--v3-text-tertiary)]">
         All planner actions are fully audited. Personal tasks live only in your private lane (PM personalStore). CES items remain the agency source of truth.
       </div>
     </div>
@@ -442,7 +452,7 @@ function toPersonalPlannerCard(p: PersonalTask): PlannerCard {
   };
 }
 
-function PlannerCard({ card, onClick, isLight, shellClass }: { card: PlannerCard; onClick: () => void; isLight: boolean; shellClass: string }) {
+function PlannerCard({ card, onClick, shellClass }: { card: PlannerCard; onClick: () => void; shellClass: string }) {
   return (
     <button
       type="button"
@@ -451,22 +461,22 @@ function PlannerCard({ card, onClick, isLight, shellClass }: { card: PlannerCard
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className={`text-[10px] font-semibold uppercase tracking-wide ${isLight ? 'text-slate-500' : 'text-white/45'}`}>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--v3-text-tertiary)]">
             {card.subtitle || card.source.toUpperCase()}
           </div>
-          <div className={`mt-0.5 font-semibold leading-tight line-clamp-2 ${isLight ? 'text-slate-900' : 'text-slate-50'}`}>
+          <div className="mt-0.5 font-semibold leading-tight line-clamp-2 text-[var(--v3-text-primary)]">
             {card.title}
           </div>
         </div>
-        {card.isOverdue && <span className="shrink-0 text-red-500 text-xs font-bold">OVERDUE</span>}
+        {card.isOverdue && <span className="shrink-0 text-[var(--v3-teal-light)] text-xs font-bold">OVERDUE</span>}
       </div>
 
       <div className="mt-3 flex items-center justify-between text-xs">
-        <div className={`${isLight ? 'text-slate-500' : 'text-white/60'}`}>
+        <div className="text-[var(--v3-text-secondary)]">
           {card.dueDate ? `Due ${new Date(card.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'No due date'}
         </div>
         {card.policyLink && (
-          <div className="font-mono text-[10px] px-1.5 py-px rounded bg-orange-500/10 text-orange-400">{card.policyLink}</div>
+          <div className="font-mono text-[10px] px-1.5 py-px rounded bg-white/5 text-[var(--v3-text-secondary)]">{card.policyLink}</div>
         )}
       </div>
     </button>
@@ -474,11 +484,13 @@ function PlannerCard({ card, onClick, isLight, shellClass }: { card: PlannerCard
 }
 
 function StatPill({ label, value, tone }: { label: string; value: number; tone: 'default' | 'danger' | 'warning' }) {
-  const toneClass = tone === 'danger' ? 'text-red-500' : tone === 'warning' ? 'text-amber-500' : 'text-orange-500';
+  const toneClass = tone === 'danger' || tone === 'warning'
+    ? 'text-[var(--v3-teal-light)]'
+    : 'text-[var(--v3-text-primary)]';
   return (
-    <div className="rounded-2xl border px-3 py-2 ci-command-rail">
+    <div className="flex items-baseline gap-2">
+      <div className="text-2xl font-semibold tabular-nums mt-0.5 text-[var(--v3-text-primary)]">{value}</div>
       <div className={`text-xs uppercase tracking-widest ${toneClass}`}>{label}</div>
-      <div className="text-2xl font-semibold tabular-nums mt-0.5">{value}</div>
     </div>
   );
 }

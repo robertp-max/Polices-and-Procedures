@@ -1,0 +1,315 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "startedAt": "2026-05-27T14:43:28.242Z",
+  "assignedTesters": [
+    "ADM-06",
+    "HCP-02",
+    "HCP-07",
+    "CM-01"
+  ],
+  "perspectives": [
+    "new-user",
+    "power-user"
+  ],
+  "routes": {
+    "evidence": "/evidence?view=files&event_id=agent06-q1-event-2026&policy_id=AG06-POL-001&workflow_id=AG06-WF-001&task_id=AG06-TASK-001&requirement_id=AG06-REQ-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001",
+    "evidenceHierarchy": "/evidence?event_id=agent06-q1-event-2026",
+    "audit": "/audit",
+    "package": "/artifacts/AG06-TASK-001%3Apackage?type=evidence_package&event_id=agent06-q1-event-2026&task_id=AG06-TASK-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001"
+  },
+  "observations": [
+    {
+      "surface": "Evidence Center hierarchy",
+      "route": "/evidence?event_id=agent06-q1-event-2026",
+      "found": {
+        "year2026": true,
+        "quarterQ1": true,
+        "monthJanuary": true,
+        "eventTaskRequirementArtifactLanguage": true
+      }
+    },
+    {
+      "surface": "Evidence Center ledger",
+      "route": "/evidence?view=files&event_id=agent06-q1-event-2026&policy_id=AG06-POL-001&workflow_id=AG06-WF-001&task_id=AG06-TASK-001&requirement_id=AG06-REQ-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001",
+      "missingIds": []
+    },
+    {
+      "surface": "Evidence upload",
+      "uploadBlockedInCenter": true
+    },
+    {
+      "surface": "Artifact Viewer",
+      "artifactId": "AG06-IMG-001",
+      "expectation": "image preview",
+      "hasCoreMetadata": false,
+      "resolvedAsFormInstance": true,
+      "evidencePreviewTerms": true,
+      "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\n\nARTIFACT VIEWER\n\nAG06-IMG-001\nBack to Evidence Center\nCompleted form instance record\nTemplate AG06-FORM-001 is the reusable definition. Completed instance AG06-FI-001 is the execution artifact.\nOPEN FORM WORKSPACE\nOPEN FULL VIEW\nDOWNLOAD PDF\n\nShowing persisted signed snapshot. The workspace link opens the live form for reference.\n\nCOMPLETED FORM RENDERING\n\nShowing persisted immutable snapshot (signed form instance or signed package). This "
+    },
+    {
+      "surface": "Artifact Viewer",
+      "artifactId": "AG06-PDF-001",
+      "expectation": "PDF preview",
+      "hasCoreMetadata": false,
+      "resolvedAsFormInstance": true,
+      "evidencePreviewTerms": true,
+      "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\n\nARTIFACT VIEWER\n\nAG06-PDF-001\nBack to Evidence Center\nCompleted form instance record\nTemplate AG06-FORM-001 is the reusable definition. Completed instance AG06-FI-001 is the execution artifact.\nOPEN FORM WORKSPACE\nOPEN FULL VIEW\nDOWNLOAD PDF\n\nShowing persisted signed snapshot. The workspace link opens the live form for reference.\n\nCOMPLETED FORM RENDERING\n\nShowing persisted immutable snapshot (signed form instance or signed package). This "
+    },
+    {
+      "surface": "Artifact Viewer",
+      "artifactId": "AG06-DOC-001",
+      "expectation": "document fallback",
+      "hasCoreMetadata": false,
+      "resolvedAsFormInstance": true,
+      "evidencePreviewTerms": true,
+      "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\n\nARTIFACT VIEWER\n\nAG06-DOC-001\nBack to Evidence Center\nCompleted form instance record\nTemplate AG06-FORM-001 is the reusable definition. Completed instance AG06-FI-001 is the execution artifact.\nOPEN FORM WORKSPACE\nOPEN FULL VIEW\nDOWNLOAD PDF\n\nShowing persisted signed snapshot. The workspace link opens the live form for reference.\n\nCOMPLETED FORM RENDERING\n\nShowing persisted immutable snapshot (signed form instance or signed package). This "
+    },
+    {
+      "surface": "Artifact Viewer",
+      "artifactId": "AG06-SIGNED-001",
+      "expectation": "signed/certified preview",
+      "hasCoreMetadata": false,
+      "resolvedAsFormInstance": true,
+      "evidencePreviewTerms": true,
+      "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\n\nARTIFACT VIEWER\n\nAG06-SIGNED-001\nBack to Evidence Center\nCompleted form instance record\nTemplate AG06-FORM-001 is the reusable definition. Completed instance AG06-FI-001 is the execution artifact.\nOPEN FORM WORKSPACE\nOPEN FULL VIEW\nDOWNLOAD PDF\n\nShowing persisted signed snapshot. The workspace link opens the live form for reference.\n\nCOMPLETED FORM RENDERING\n\nShowing persisted immutable snapshot (signed form instance or signed package). Th"
+    },
+    {
+      "surface": "Artifact Viewer",
+      "artifactId": "AG06-MISSING-001",
+      "expectation": "missing local blob fallback",
+      "hasCoreMetadata": false,
+      "resolvedAsFormInstance": true,
+      "evidencePreviewTerms": true,
+      "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\n\nARTIFACT VIEWER\n\nAG06-MISSING-001\nBack to Evidence Center\nCompleted form instance record\nTemplate AG06-FORM-001 is the reusable definition. Completed instance AG06-FI-001 is the execution artifact.\nOPEN FORM WORKSPACE\nOPEN FULL VIEW\nDOWNLOAD PDF\n\nShowing persisted signed snapshot. The workspace link opens the live form for reference.\n\nCOMPLETED FORM RENDERING\n\nShowing persisted immutable snapshot (signed form instance or signed package). T"
+    },
+    {
+      "surface": "Artifact Viewer",
+      "artifactId": "AG06-ROUTEONLY-001",
+      "expectation": "route-only metadata fallback",
+      "hasCoreMetadata": false,
+      "resolvedAsFormInstance": true,
+      "evidencePreviewTerms": true,
+      "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\n\nARTIFACT VIEWER\n\nAG06-ROUTEONLY-001\nBack to Evidence Center\nCompleted form instance record\nTemplate AG06-FORM-001 is the reusable definition. Completed instance AG06-FI-001 is the execution artifact.\nOPEN FORM WORKSPACE\nOPEN FULL VIEW\nDOWNLOAD PDF\n\nShowing persisted signed snapshot. The workspace link opens the live form for reference.\n\nCOMPLETED FORM RENDERING\n\nShowing persisted immutable snapshot (signed form instance or signed package)."
+    },
+    {
+      "surface": "Evidence package/bundle",
+      "route": "/artifacts/AG06-TASK-001%3Apackage?type=evidence_package&event_id=agent06-q1-event-2026&task_id=AG06-TASK-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001",
+      "hasSummary": true,
+      "hasLinkedEvidence": true
+    },
+    {
+      "surface": "Audit Mode evidence links",
+      "route": "/audit",
+      "artifactLinks": 0,
+      "mentionsSurveyPacket": true
+    },
+    {
+      "surface": "Refresh behavior",
+      "route": "/evidence?view=files&event_id=agent06-q1-event-2026&policy_id=AG06-POL-001&workflow_id=AG06-WF-001&task_id=AG06-TASK-001&requirement_id=AG06-REQ-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001",
+      "evidenceStillListedAfterReload": true
+    }
+  ],
+  "defects": [
+    {
+      "defect_id": "AG06-001",
+      "severity": "P2",
+      "surface": "Evidence Center hierarchy",
+      "route": "/evidence?event_id=agent06-q1-event-2026",
+      "tester_id": "HCP-07",
+      "professional_identity": "Surveyor/External Auditor Persona",
+      "personality": "Frontline Workflow Realist",
+      "new_user_or_power_user": "new-user",
+      "steps_to_reproduce": "Open Evidence Center folder tree for Q1 2026 evidence.",
+      "expected_result": "Hierarchy visibly includes Year -> Quarter -> Month -> Event -> Task -> Requirement -> Artifact.",
+      "actual_result": "The live hierarchy copy and controls show Year and Month, but Q1 quarter is not clearly exposed as a selectable folder level.",
+      "artifact_or_task_ids": "agent06-q1-event-2026 / AG06-TASK-001",
+      "console_error": "",
+      "screenshot_path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-evidence-hierarchy.png",
+      "recommended_fix": "Expose Quarter as an explicit folder level/filter in the Evidence Center hierarchy.",
+      "blocking_status": "survey usability risk"
+    },
+    {
+      "defect_id": "AG06-002",
+      "severity": "P1",
+      "surface": "Artifact Viewer route resolution",
+      "route": "/artifacts/AG06-IMG-001?event_id=agent06-q1-event-2026&task_id=AG06-TASK-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001&evidence_id=AG06-IMG-001&type=evidence",
+      "tester_id": "HCP-02",
+      "professional_identity": "Compliance Officer",
+      "personality": "Tech-Savvy Early Adopter",
+      "new_user_or_power_user": "power-user",
+      "steps_to_reproduce": "Open artifact AG06-IMG-001 from the Artifact Viewer route.",
+      "expected_result": "image preview opens the evidence artifact branch, with preview/fallback and evidence-specific traceability.",
+      "actual_result": "The evidence artifact route resolves as \"Completed form instance record\" because the URL carries form_instance_id=AG06-FI-001; the evidence-specific image preview branch is masked.",
+      "artifact_or_task_ids": "AG06-IMG-001 / AG06-TASK-001 / AG06-FI-001",
+      "console_error": "",
+      "screenshot_path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-img-001.png",
+      "recommended_fix": "Prefer evidence_id/artifactId resolution over form_instance_id when type=evidence, or require explicit type precedence in Artifact Viewer.",
+      "blocking_status": "compliance evidence risk"
+    },
+    {
+      "defect_id": "AG06-003",
+      "severity": "P1",
+      "surface": "Artifact Viewer route resolution",
+      "route": "/artifacts/AG06-PDF-001?event_id=agent06-q1-event-2026&task_id=AG06-TASK-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001&evidence_id=AG06-PDF-001&type=evidence",
+      "tester_id": "HCP-02",
+      "professional_identity": "Compliance Officer",
+      "personality": "Tech-Savvy Early Adopter",
+      "new_user_or_power_user": "power-user",
+      "steps_to_reproduce": "Open artifact AG06-PDF-001 from the Artifact Viewer route.",
+      "expected_result": "PDF preview opens the evidence artifact branch, with preview/fallback and evidence-specific traceability.",
+      "actual_result": "The evidence artifact route resolves as \"Completed form instance record\" because the URL carries form_instance_id=AG06-FI-001; the evidence-specific PDF preview branch is masked.",
+      "artifact_or_task_ids": "AG06-PDF-001 / AG06-TASK-001 / AG06-FI-001",
+      "console_error": "",
+      "screenshot_path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-pdf-001.png",
+      "recommended_fix": "Prefer evidence_id/artifactId resolution over form_instance_id when type=evidence, or require explicit type precedence in Artifact Viewer.",
+      "blocking_status": "compliance evidence risk"
+    },
+    {
+      "defect_id": "AG06-004",
+      "severity": "P1",
+      "surface": "Artifact Viewer route resolution",
+      "route": "/artifacts/AG06-DOC-001?event_id=agent06-q1-event-2026&task_id=AG06-TASK-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001&evidence_id=AG06-DOC-001&type=evidence",
+      "tester_id": "HCP-02",
+      "professional_identity": "Compliance Officer",
+      "personality": "Tech-Savvy Early Adopter",
+      "new_user_or_power_user": "power-user",
+      "steps_to_reproduce": "Open artifact AG06-DOC-001 from the Artifact Viewer route.",
+      "expected_result": "document fallback opens the evidence artifact branch, with preview/fallback and evidence-specific traceability.",
+      "actual_result": "The evidence artifact route resolves as \"Completed form instance record\" because the URL carries form_instance_id=AG06-FI-001; the evidence-specific document fallback branch is masked.",
+      "artifact_or_task_ids": "AG06-DOC-001 / AG06-TASK-001 / AG06-FI-001",
+      "console_error": "",
+      "screenshot_path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-doc-001.png",
+      "recommended_fix": "Prefer evidence_id/artifactId resolution over form_instance_id when type=evidence, or require explicit type precedence in Artifact Viewer.",
+      "blocking_status": "compliance evidence risk"
+    },
+    {
+      "defect_id": "AG06-005",
+      "severity": "P1",
+      "surface": "Artifact Viewer route resolution",
+      "route": "/artifacts/AG06-SIGNED-001?event_id=agent06-q1-event-2026&task_id=AG06-TASK-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001&evidence_id=AG06-SIGNED-001&type=evidence",
+      "tester_id": "HCP-02",
+      "professional_identity": "Compliance Officer",
+      "personality": "Tech-Savvy Early Adopter",
+      "new_user_or_power_user": "power-user",
+      "steps_to_reproduce": "Open artifact AG06-SIGNED-001 from the Artifact Viewer route.",
+      "expected_result": "signed/certified preview opens the evidence artifact branch, with preview/fallback and evidence-specific traceability.",
+      "actual_result": "The evidence artifact route resolves as \"Completed form instance record\" because the URL carries form_instance_id=AG06-FI-001; the evidence-specific signed/certified preview branch is masked.",
+      "artifact_or_task_ids": "AG06-SIGNED-001 / AG06-TASK-001 / AG06-FI-001",
+      "console_error": "",
+      "screenshot_path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-signed-001.png",
+      "recommended_fix": "Prefer evidence_id/artifactId resolution over form_instance_id when type=evidence, or require explicit type precedence in Artifact Viewer.",
+      "blocking_status": "compliance evidence risk"
+    },
+    {
+      "defect_id": "AG06-006",
+      "severity": "P1",
+      "surface": "Artifact Viewer route resolution",
+      "route": "/artifacts/AG06-MISSING-001?event_id=agent06-q1-event-2026&task_id=AG06-TASK-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001&evidence_id=AG06-MISSING-001&type=evidence",
+      "tester_id": "HCP-02",
+      "professional_identity": "Compliance Officer",
+      "personality": "Tech-Savvy Early Adopter",
+      "new_user_or_power_user": "power-user",
+      "steps_to_reproduce": "Open artifact AG06-MISSING-001 from the Artifact Viewer route.",
+      "expected_result": "missing local blob fallback opens the evidence artifact branch, with preview/fallback and evidence-specific traceability.",
+      "actual_result": "The evidence artifact route resolves as \"Completed form instance record\" because the URL carries form_instance_id=AG06-FI-001; the evidence-specific missing local blob fallback branch is masked.",
+      "artifact_or_task_ids": "AG06-MISSING-001 / AG06-TASK-001 / AG06-FI-001",
+      "console_error": "",
+      "screenshot_path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-missing-001.png",
+      "recommended_fix": "Prefer evidence_id/artifactId resolution over form_instance_id when type=evidence, or require explicit type precedence in Artifact Viewer.",
+      "blocking_status": "compliance evidence risk"
+    },
+    {
+      "defect_id": "AG06-007",
+      "severity": "P1",
+      "surface": "Artifact Viewer missing local blob",
+      "route": "/artifacts/AG06-MISSING-001?event_id=agent06-q1-event-2026&task_id=AG06-TASK-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001&evidence_id=AG06-MISSING-001&type=evidence",
+      "tester_id": "CM-01",
+      "professional_identity": "Clinical Manager",
+      "personality": "Tech-Savvy Early Adopter",
+      "new_user_or_power_user": "power-user",
+      "steps_to_reproduce": "Open artifact metadata whose local blob is unavailable after refresh/session loss.",
+      "expected_result": "Viewer clearly states file data is missing and recovery action is needed.",
+      "actual_result": "Missing local blob state was not clearly labeled.",
+      "artifact_or_task_ids": "AG06-MISSING-001",
+      "console_error": "",
+      "screenshot_path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-missing-001.png",
+      "recommended_fix": "Keep a prominent missing-blob fallback on all object-path-only artifacts.",
+      "blocking_status": "artifact access risk"
+    },
+    {
+      "defect_id": "AG06-008",
+      "severity": "P1",
+      "surface": "Artifact Viewer route resolution",
+      "route": "/artifacts/AG06-ROUTEONLY-001?event_id=agent06-q1-event-2026&task_id=AG06-TASK-001&form_id=AG06-FORM-001&form_instance_id=AG06-FI-001&evidence_id=AG06-ROUTEONLY-001&type=evidence",
+      "tester_id": "HCP-02",
+      "professional_identity": "Compliance Officer",
+      "personality": "Tech-Savvy Early Adopter",
+      "new_user_or_power_user": "power-user",
+      "steps_to_reproduce": "Open artifact AG06-ROUTEONLY-001 from the Artifact Viewer route.",
+      "expected_result": "route-only metadata fallback opens the evidence artifact branch, with preview/fallback and evidence-specific traceability.",
+      "actual_result": "The evidence artifact route resolves as \"Completed form instance record\" because the URL carries form_instance_id=AG06-FI-001; the evidence-specific route-only metadata fallback branch is masked.",
+      "artifact_or_task_ids": "AG06-ROUTEONLY-001 / AG06-TASK-001 / AG06-FI-001",
+      "console_error": "",
+      "screenshot_path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-routeonly-001.png",
+      "recommended_fix": "Prefer evidence_id/artifactId resolution over form_instance_id when type=evidence, or require explicit type precedence in Artifact Viewer.",
+      "blocking_status": "compliance evidence risk"
+    },
+    {
+      "defect_id": "AG06-009",
+      "severity": "P1",
+      "surface": "Audit Mode evidence links",
+      "route": "/audit?event_id=agent06-q1-event-2026",
+      "tester_id": "HCP-07",
+      "professional_identity": "Surveyor/External Auditor Persona",
+      "personality": "Frontline Workflow Realist",
+      "new_user_or_power_user": "new-user",
+      "steps_to_reproduce": "Open Audit Mode after evidence and signed package are present; look for artifact links.",
+      "expected_result": "Audit Mode exposes signed/certified artifact links and survey packet evidence drill-down.",
+      "actual_result": "No artifact links were detectable on the initial Audit Mode view for the seeded event.",
+      "artifact_or_task_ids": "AG06-SIGNED-001 / AG06-TASK-001",
+      "console_error": "",
+      "screenshot_path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-audit-mode-evidence-links.png",
+      "recommended_fix": "Make event-scoped evidence links visible and filterable from Audit Mode/survey packet entry points.",
+      "blocking_status": "survey defensibility risk"
+    }
+  ],
+  "screenshots": [
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-evidence-hierarchy.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-evidence-ledger.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-img-001.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-pdf-001.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-doc-001.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-signed-001.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-missing-001.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-ag06-routeonly-001.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-artifact-evidence-package.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent06-evidence-artifacts-audit-mode-evidence-links.png"
+  ],
+  "console": [
+    {
+      "type": "pageerror",
+      "text": "Failed to read the 'localStorage' property from 'Window': Storage is disabled inside 'data:' URLs."
+    },
+    {
+      "type": "pageerror",
+      "text": "Failed to read the 'localStorage' property from 'Window': Storage is disabled inside 'data:' URLs."
+    },
+    {
+      "type": "pageerror",
+      "text": "Failed to read the 'localStorage' property from 'Window': Storage is disabled inside 'data:' URLs."
+    },
+    {
+      "type": "pageerror",
+      "text": "Failed to read the 'localStorage' property from 'Window': Storage is disabled inside 'data:' URLs."
+    },
+    {
+      "type": "pageerror",
+      "text": "Failed to read the 'localStorage' property from 'Window': Storage is disabled inside 'data:' URLs."
+    },
+    {
+      "type": "pageerror",
+      "text": "Failed to read the 'localStorage' property from 'Window': Storage is disabled inside 'data:' URLs."
+    }
+  ],
+  "finishedAt": "2026-05-27T14:43:48.284Z"
+}

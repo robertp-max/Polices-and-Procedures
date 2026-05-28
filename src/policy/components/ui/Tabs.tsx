@@ -35,7 +35,7 @@ export function Tabs<T extends string>({
           display: 'inline-flex',
           gap: 4,
           padding: 4,
-          background: 'var(--ci-surface-muted)',
+          background: 'transparent',
           borderRadius: 'var(--radius-md)',
         }}
       >
@@ -46,7 +46,7 @@ export function Tabs<T extends string>({
               key={it.id}
               role="tab"
               type="button"
-              aria-selected={active}
+              aria-selected={active ? 'true' : 'false'}
               disabled={it.disabled}
               onClick={() => onChange(it.id)}
               style={{
@@ -54,9 +54,9 @@ export function Tabs<T extends string>({
                 padding: '0 12px',
                 borderRadius: 'var(--radius-sm)',
                 border: 'none',
-                background: active ? 'var(--ci-surface)' : 'transparent',
-                color: active ? 'var(--ci-text-primary)' : 'var(--ci-text-muted-2)',
-                boxShadow: active ? 'var(--ci-shadow-sm)' : 'none',
+                background: active ? 'rgba(0, 209, 193, 0.1)' : 'transparent',
+                color: active ? 'var(--v3-text-primary)' : 'var(--v3-text-secondary)',
+                boxShadow: 'none',
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: it.disabled ? 'not-allowed' : 'pointer',
@@ -76,7 +76,7 @@ export function Tabs<T extends string>({
       role="tablist"
       aria-label={ariaLabel}
       className={className}
-      style={{ display: 'flex', gap: 24, borderBottom: '1px solid var(--ci-border)' }}
+      style={{ display: 'flex', gap: 24, borderBottom: '1px solid var(--v3-border-subtle)' }}
     >
       {items.map(it => {
         const active = it.id === value;
@@ -85,15 +85,15 @@ export function Tabs<T extends string>({
             key={it.id}
             role="tab"
             type="button"
-            aria-selected={active}
+            aria-selected={active ? 'true' : 'false'}
             disabled={it.disabled}
             onClick={() => onChange(it.id)}
             style={{
               padding: '12px 0',
               border: 'none',
               background: 'transparent',
-              color: active ? 'var(--ci-link)' : 'var(--ci-text-muted-2)',
-              borderBottom: active ? '2px solid var(--ci-accent)' : '2px solid transparent',
+              color: active ? 'var(--v3-teal-light)' : 'var(--v3-text-secondary)',
+              borderBottom: active ? '2px solid var(--v3-teal-light)' : '2px solid transparent',
               fontSize: 14,
               fontWeight: 600,
               cursor: it.disabled ? 'not-allowed' : 'pointer',

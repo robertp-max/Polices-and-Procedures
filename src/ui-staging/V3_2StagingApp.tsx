@@ -20,7 +20,12 @@ import { printForm } from '@/policy/utils/printForm';
 import { ALL_MODULES } from '@/policy/journey/data/modules';
 import { V3_ExecutionUnitsSeed, V3_SprintContextSeed } from '@/policy/ces/data/V3_CES_SeedData';
 import { V3_AUDIT_LOG, V3_FORMS } from '@/policy/ces/data/V3_AppSeedPrimitives';
+import { buildV3SeededSnapshot } from '@/policy/ces/data/V3_CES_SnapshotBuilder';
+import { CesLayout } from '@/policy/ces/layouts/CesLayout';
+import { ComplianceCalendar } from '@/policy/ces/components/calendar/ComplianceCalendar';
+import { SprintExecutionBoard } from '@/policy/ces/components/board/SprintExecutionBoard';
 import type { ExecutionUnit } from '@/policy/ces/types';
+import { SeededModeProvider } from '@/policy/compliance-execution/seededMode';
 import { useCesDurableExecutionAdapter } from '@/ui-staging/ces/cesDurableExecutionAdapter';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { useRegulatoryExecutionStore, type EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
@@ -86,9 +91,9 @@ const LIVE_ROUTE_HANDOFFS: Record<string, LiveRouteHandoff> = {
   },
   ces: {
     title: 'Compliance Execution (CES)',
-    route: '/calendar?view=sprint',
-    seedingLevel: 'V3_SYNTHETIC_FALLBACK',
-    missing: 'The in-shell CES board is preview-only. Task interiors, evidence mutation, signatures, approvals, and audit history remain outside this patch.',
+    route: '/ces/calendar',
+    seedingLevel: 'renderer seeded',
+    missing: 'The V3 CES staging surface mounts production Calendar and Board components through seeded mode. Evidence mutations, signatures, approvals, and audit certification remain governed by production component behavior.',
   },
   taxonomy: {
     title: 'Taxonomy',
@@ -253,7 +258,7 @@ const ShellContentFrame = ({ children, className, isMobile, activeSection, setAc
         ] },
         { id: 'calendar', icon: Calendar, label: 'Scheduling & Visits', status: 'LIVE_ROUTE_HANDOFF', route: '/calendar' },
         { id: 'brad', icon: Bot, label: 'Brad AI Copilot', status: 'V3_SYNTHETIC_FALLBACK' },
-        { id: 'ces', icon: ShieldCheck, label: 'Compliance Execution (CES)', status: 'LIVE_ROUTE_HANDOFF', route: '/calendar?view=sprint' },
+        { id: 'ces', icon: ShieldCheck, label: 'Compliance Execution (CES)', status: 'V3_RENDERER_ADAPTER', route: '/ces/calendar' },
       ]
     },
     {
@@ -1234,7 +1239,7 @@ const CesEventWorkspace = ({ unit, eventUnits }: { unit: ExecutionUnit; eventUni
       <DetailField label="Forms">{formatList(formIds, `${formsComplete}/${formsTotal} forms complete; no form IDs available`)}</DetailField>
       <DetailField label="Audit preview">{V3_AUDIT_LOG.find(row => row.resource.includes(unit.id) || row.resource.toLowerCase().includes(unit.title.toLowerCase().slice(0, 16)))?.action ?? 'No deterministic audit row found for this seed unit.'}</DetailField>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        <OpenLiveRouteButton route={`/calendar?view=sprint&event=${unit.parentEventId}`} />
+        <OpenLiveRouteButton route={`/ces/calendar?event=${unit.parentEventId}`} />
       </div>
     </div>
   );
@@ -1356,7 +1361,7 @@ const CesTaskDetailPanel = ({
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {policyIds.slice(0, 3).map(policyId => <OpenLiveRouteButton key={policyId} route={`/library/${policyId}`} />)}
             {formIds.slice(0, 3).map(formId => <OpenLiveRouteButton key={formId} route={`/forms/${formId}`} />)}
-            <OpenLiveRouteButton route={`/calendar?view=sprint&task=${unit.id}`} />
+            <OpenLiveRouteButton route={`/ces/calendar?task=${unit.id}`} />
           </div>
         </div>
       </div>
@@ -1394,7 +1399,7 @@ const SprintBoardWorkspace = () => {
           <PreviewLabel detail="Phase 4A event/task interiors are in-shell local preview only" />
           <div style={{ display: 'flex', gap: '8px' }}>
             <OpenLiveRouteButton route="/calendar" />
-            <OpenLiveRouteButton route="/calendar?view=sprint" />
+            <OpenLiveRouteButton route="/ces/calendar" />
           </div>
         </div>
       </div>
@@ -1453,6 +1458,87 @@ const SprintBoardWorkspace = () => {
             />
           </div>
         )}
+      </div>
+    </div>
+  );
+};
+
+// Retained unmounted to avoid broad Phase 4A/B/C preview deletion in this IA-only slice.
+void SprintBoardWorkspace;
+
+type CesSeededProductionTab = 'calendar' | 'board';
+
+const CesSeededProductionWorkspace = () => {
+  const [activeTab, setActiveTab] = useState<CesSeededProductionTab>('calendar');
+  const tabs: Array<{ id: CesSeededProductionTab; label: string }> = [
+    { id: 'calendar', label: 'Calendar' },
+    { id: 'board', label: 'Board' },
+  ];
+
+  return (
+    <div
+      data-qa="v3-ces-seeded-production-workspace"
+      data-qa-active-view={activeTab}
+      className="animate-butter-shift"
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px', minHeight: 0 }}
+    >
+      <div style={{ borderBottom: `1px solid rgba(255,255,255,0.08)`, paddingBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '10px', fontWeight: 700, color: V3.tealLight, letterSpacing: '1px' }}>CES</span>
+          <span style={{ fontSize: '10px', color: V3.textTertiary, letterSpacing: '0.4px' }}>SEEDED PRODUCTION SURFACE</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <h1 style={{ fontSize: '22px', fontWeight: 600, color: V3.textPrimary, margin: 0, letterSpacing: '-0.5px' }}>
+              {activeTab === 'calendar' ? 'Calendar' : 'Board'}
+            </h1>
+            <p style={{ fontSize: '12.5px', color: V3.textSecondary, margin: '6px 0 0' }}>
+              Real CES production components running inside the V3 shell with seeded execution data.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div aria-label="CES views" style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '3px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              {tabs.map(tab => {
+                const selected = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    data-qa="v3-ces-inner-tab"
+                    data-qa-tab={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      borderRadius: '999px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: selected ? V3.tealLight : 'transparent',
+                      color: selected ? '#020617' : V3.textSecondary,
+                      transition: 'background 0.2s ease, color 0.2s ease',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+            <ActionButton data-qa="v3-ces-live-handoff" data-qa-route="/ces/calendar" onClick={() => window.open('/ces/calendar', '_blank', 'noopener,noreferrer')}>
+              Open live route
+            </ActionButton>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <SeededModeProvider buildSnapshot={buildV3SeededSnapshot} initiallyActive>
+          <CesLayout>
+            <div data-qa="v3-ces-real-component" data-qa-component={activeTab === 'calendar' ? 'ComplianceCalendar' : 'SprintExecutionBoard'}>
+              {activeTab === 'calendar' ? <ComplianceCalendar /> : <SprintExecutionBoard />}
+            </div>
+          </CesLayout>
+        </SeededModeProvider>
       </div>
     </div>
   );
@@ -1664,7 +1750,7 @@ const EvidenceCenterWorkspace = () => {
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {selected.policyIds.slice(0, 2).map(policyId => <OpenLiveRouteButton key={policyId} route={`/library/${policyId}`} />)}
                 {selected.formIds.slice(0, 2).map(formId => <OpenLiveRouteButton key={formId} route={`/forms/${formId}`} />)}
-                <OpenLiveRouteButton route={`/calendar?view=sprint&task=${selected.taskId}`} />
+                <OpenLiveRouteButton route={`/ces/calendar?task=${selected.taskId}`} />
               </div>
 
               <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -2072,7 +2158,7 @@ export default function V3_2StagingApp() {
           ? <PlannerWorkspace tasks={INITIAL_PLANNED_TASKS} isMobile={isMobile} />
           : <DashboardWorkspace setIsPlannerView={setIsPlannerView} isMobile={isMobile} />;
       case 'ces':
-        return <SprintBoardWorkspace />;
+        return <CesSeededProductionWorkspace />;
       case 'evidence':
         return <EvidenceCenterWorkspace />;
       case 'brad':

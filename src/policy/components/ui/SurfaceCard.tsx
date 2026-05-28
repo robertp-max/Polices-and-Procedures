@@ -12,12 +12,12 @@ const PAD: Record<NonNullable<SurfaceCardProps['padding']>, string> = {
   lg: '24px',
 };
 
-/** Flat solid card on `--ci-surface`. Use everywhere except the one-glass canvas. */
+/** V3 flat content grouping. Use only when a structural boundary is needed. */
 export function SurfaceCard({ padding = 'lg', className, style, children, ...rest }: SurfaceCardProps) {
   return (
     <div
       {...rest}
-      className={'ci-card ' + (className ?? '')}
+      className={'v3-surface ' + (className ?? '')}
       style={{ padding: PAD[padding], ...style }}
     >
       {children}

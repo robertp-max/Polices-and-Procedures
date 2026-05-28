@@ -53,7 +53,7 @@ export function decide(req: AccessRequest): AccessDecision {
 
   // 1. RBAC: do any of the actor's roles grant this permission?
   const perms = effectivePermissions(req.actor.roles);
-  const [rt, act] = req.permission.split(':');
+  const [rt] = req.permission.split(':');
   const wildcard = `${rt}:*`;
   if (!perms.has(req.permission) && !perms.has(wildcard)) {
     return {

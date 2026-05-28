@@ -129,7 +129,7 @@ export function normalizeAndDedupeTasksForRender(eventId: string, tasks: EventTa
     // eslint-disable-next-line no-console
     console.warn(`[taskIdentity] pre-dedupe duplicate ids (${context} / ${eventId})`, dupes);
   }
-  let list = dedupeEventTasksByCanonicalId(pass1, `renderDedupe:${context}:${eventId}`);
+  const list = dedupeEventTasksByCanonicalId(pass1, `renderDedupe:${context}:${eventId}`);
   const seen = new Set<string>();
   const out: EventTask[] = [];
   const dupDetails: string[] = [];

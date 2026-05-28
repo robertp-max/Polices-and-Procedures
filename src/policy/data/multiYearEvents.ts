@@ -591,8 +591,8 @@ export const OIG_WORK_PLAN_REVIEW_2026: RegulatoryEvent = {
     },
   ],
   requiredForms: [
-    { id: 'oig-f1', label: 'OIG Work Plan Extract (filtered)', status: 'pending', dueOffsetDays: -14 },
-    { id: 'oig-f2', label: 'OIG Exposure Matrix', status: 'pending', dueOffsetDays: 0 },
+    { id: 'oig-f1', label: 'OIG Work Plan Extract (filtered)', formId: 'CO-F-010', status: 'pending', dueOffsetDays: -14 },
+    { id: 'oig-f2', label: 'OIG Exposure Matrix', formId: 'CO-FM-030', status: 'pending', dueOffsetDays: 0 },
     { id: 'oig-f3', label: 'Updated Compliance Work Plan', formId: 'CO-FM-011', status: 'pending', dueOffsetDays: 30 },
   ],
   minutes: {
@@ -927,9 +927,9 @@ export const STRATEGIC_EFFECTIVENESS_TRIENNIAL_2026: RegulatoryEvent = {
   ],
   requiredForms: [
     { id: 'spe-f1', label: '36-Month Enterprise Performance Dataset', formId: 'EN-FM-034', status: 'pending', dueOffsetDays: -30 },
-    { id: 'spe-f2', label: 'Strategic Effectiveness Assessment Report', status: 'pending', dueOffsetDays: 0 },
-    { id: 'spe-f3', label: 'Board-Ratified 36-Month Priorities', status: 'pending', dueOffsetDays: 7 },
-    { id: 'spe-f4', label: 'Cascaded Operating Plans (per domain)', status: 'pending', dueOffsetDays: 60 },
+    { id: 'spe-f2', label: 'Strategic Effectiveness Assessment Report', formId: 'GV-FM-023', status: 'pending', dueOffsetDays: 0 },
+    { id: 'spe-f3', label: 'Board-Ratified 36-Month Priorities', formId: 'GV-FM-009', status: 'pending', dueOffsetDays: 7 },
+    { id: 'spe-f4', label: 'Cascaded Operating Plans (per domain)', formId: 'EN-FM-022', status: 'pending', dueOffsetDays: 60 },
   ],
   minutes: {
     status: 'missing',

@@ -475,8 +475,8 @@ function GenericMarkdownBody({ text }: { text: string }) {
           const heading = trimmed.replace(/^#+\s+/, '').replace(/\\\./g, '.').replace(/\\/g, '');
           return <h4 key={i} className="font-montserrat font-semibold text-[14px] text-[#1F1C1B] mt-6 mb-3">{heading}</h4>;
         }
-        if (/^[*\-] /m.test(trimmed)) {
-          const items = trimmed.split('\n').map(l => l.replace(/^[*\-]\s+/, '').trim()).filter(Boolean);
+        if (/^[*-] /m.test(trimmed)) {
+          const items = trimmed.split('\n').map(l => l.replace(/^[*-]\s+/, '').trim()).filter(Boolean);
           return (
             <ul key={i} className="list-disc pl-6 space-y-2">
               {items.map((item, j) => <li key={j} className="font-roboto text-[15px] text-[#1F1C1B] leading-relaxed">{item}</li>)}
@@ -504,9 +504,9 @@ function splitPolicyStatements(body: string): string[] {
   for (const block of cleaned.split(/\n\n+/)) {
     const trimmed = block.trim();
     if (!trimmed) continue;
-    if (/^[*\-]\s/m.test(trimmed)) {
+    if (/^[*-]\s/m.test(trimmed)) {
       for (const line of trimmed.split('\n')) {
-        const item = line.replace(/^\s*[*\-]\s+/, '').trim();
+        const item = line.replace(/^\s*[*-]\s+/, '').trim();
         if (item) blocks.push(item);
       }
     } else {
@@ -1986,9 +1986,9 @@ export function SharedPolicyDetailView({
     : '';
 
   const navBtnBase =
-    'flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-montserrat font-semibold text-[11px] uppercase tracking-wider transition-all duration-200 select-none';
-  const navBtnActive  = 'border-[#D8D4D0] text-[#524048] hover:border-[#007970] hover:text-[#007970] cursor-pointer';
-  const navBtnDisabled = 'border-[#EDECEB] text-[#C8C4C0] cursor-not-allowed pointer-events-none';
+    'flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-montserrat font-semibold text-[11px] uppercase tracking-wider transition-colors duration-200 select-none';
+  const navBtnActive  = 'border-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)] hover:border-[var(--v3-teal-light)] hover:text-[var(--v3-teal-light)] cursor-pointer';
+  const navBtnDisabled = 'border-transparent text-[var(--v3-text-tertiary)] opacity-45 cursor-not-allowed pointer-events-none';
 
   // Persistent regulatory tags — shown at bottom-right across all sections/tabs
   const persistentTags: string[] = policy.policyId === 'GV-GB-001'
@@ -1996,22 +1996,69 @@ export function SharedPolicyDetailView({
     : (policy.regulatoryTags ?? []);
   const hhGroupOptions = achcContext?.hhGroups ?? [];
   const activeHhGroup = achcContext?.activeHhGroup ?? 'ALL';
+  const policyActiveContent = useGenericContent ? (
+    activeTab === 'appendices'
+      ? <TabAppendices policy={policy} />
+      : activeSectionInTab === -1
+        ? <TabOverview
+            policy={policy}
+            sectionIdx={0}
+            achcContext={achcContext}
+            activeAnchorRef={activeAnchorRef}
+            activeStandard={activeStandard}
+            standardTargets={standardTargetsByStandard}
+            onStandardActivate={handleStandardActivate}
+          />
+        : (() => {
+            const list = genericSectionsByTab[activeTab] ?? [];
+            const sec = list[activeSectionInTab];
+            if (!sec) {
+              return (
+                <p className="font-roboto text-[14px] italic text-[var(--v3-text-tertiary)]">
+                  No content available for this section.
+                </p>
+              );
+            }
+            return <GenericSectionPanel section={sec} />;
+        })()
+  ) : (
+    <>
+      {activeTab === 'overview'      && <TabOverview
+        policy={policy}
+        sectionIdx={activeSectionInTab}
+        achcContext={achcContext}
+        activeAnchorRef={activeAnchorRef}
+        activeStandard={activeStandard}
+        standardTargets={standardTargetsByStandard}
+        onStandardActivate={handleStandardActivate}
+      />}
+      {activeTab === 'statements'    && <TabStatements    policy={policy} />}
+      {activeTab === 'procedures'    && <TabProcedures    policy={policy} sectionIdx={activeSectionInTab} />}
+      {activeTab === 'documentation' && <TabDocumentation policy={policy} />}
+      {activeTab === 'compliance'    && <TabCompliance    policy={policy} sectionIdx={activeSectionInTab} />}
+      {activeTab === 'references'    && <TabReferences    policy={policy} sectionIdx={activeSectionInTab} />}
+      {activeTab === 'appendices'    && <TabAppendices    policy={policy} />}
+      {activeTab === 'alerts'        && <TabAlerts        policy={policy} />}
+      {activeTab === 'faq'           && <TabFAQ           policy={policy} />}
+      {activeTab === 'amendments'    && <TabAmendments    policy={policy} />}
+    </>
+  );
 
   return (
     <div
-      className="demo-view-enter relative h-full w-full bg-white text-[#1F1C1B] policy-page"
-      data-theme="light"
+      className="demo-view-enter relative h-full w-full text-[var(--v3-text-primary)] policy-page policy-page--v3"
+      data-theme="v3-veil"
     >
-      <div className="policy-carousel-screen relative h-full w-full bg-white flex flex-col overflow-hidden">
+      <div className="policy-carousel-screen relative h-full w-full flex flex-col overflow-hidden">
 
       {/* ══ ACTION BAR ══════════════════════════════════════════ */}
-      <div className="no-print flex items-center justify-between px-5 py-3 bg-white shrink-0 z-20 gap-3">
+      <div className="no-print flex items-center justify-between px-5 py-3 shrink-0 z-20 gap-3">
 
         {/* Left — back (hidden when embedded inside another shell) */}
         {!embedded && onBack ? (
           <button
             onClick={onBack}
-            className="flex items-center gap-1.5 text-[#007970] font-montserrat font-semibold text-[12px] uppercase tracking-wider hover:underline transition-all shrink-0"
+            className="flex items-center gap-1.5 text-[var(--v3-teal-light)] font-montserrat font-semibold text-[12px] uppercase tracking-wider transition-opacity hover:opacity-80 shrink-0"
           >
             <ChevronLeft size={16} /> Return to Library
           </button>
@@ -2031,7 +2078,7 @@ export function SharedPolicyDetailView({
           </button>
 
           <span
-            className="font-montserrat font-semibold text-[11px] tracking-[0.12em] uppercase text-[#524048] truncate max-w-[200px] hidden sm:block select-none"
+            className="font-montserrat font-semibold text-[11px] tracking-[0.12em] uppercase text-[var(--v3-text-tertiary)] truncate max-w-[200px] hidden sm:block select-none"
             aria-live="polite"
             aria-atomic="true"
           >
@@ -2051,135 +2098,101 @@ export function SharedPolicyDetailView({
         {/* Right — help + print + download */}
         <div className="flex items-center gap-3 shrink-0">
           {printNotice && (
-            <span className="text-[10px] font-semibold text-[#007970] hidden md:inline">Print requested</span>
+            <span className="text-[10px] font-semibold text-[var(--v3-teal-light)] hidden md:inline">Print requested</span>
           )}
           <button
             onClick={() => setHelpOpen(true)}
             aria-label="How to navigate this document"
             title="Navigation help"
-            className="w-8 h-8 rounded-full border-2 border-[#007970] flex items-center justify-center text-[#007970] hover:bg-[#007970] hover:text-white transition-all duration-200 shrink-0"
+            className="w-8 h-8 rounded-full border border-[var(--v3-border-subtle)] flex items-center justify-center text-[var(--v3-teal-light)] hover:bg-[rgba(0,209,193,0.10)] transition-colors duration-200 shrink-0"
           >
             <HelpCircle size={15} strokeWidth={2.2} />
           </button>
           <button
             type="button" onClick={handlePrint} data-testid="canonical-viewer-print-btn"
-            className="flex items-center gap-1.5 text-[#1F1C1B] font-montserrat font-semibold text-[11px] uppercase tracking-wider hover:opacity-70 transition-opacity no-print"
+            className="flex items-center gap-1.5 text-[var(--v3-text-secondary)] font-montserrat font-semibold text-[11px] uppercase tracking-wider hover:opacity-70 transition-opacity no-print"
           >
             <Printer size={15} /> Print
           </button>
           <button
             type="button" onClick={handleDownload} data-testid="canonical-viewer-download-btn"
-            className="flex items-center gap-1.5 text-[#007970] font-montserrat font-semibold text-[11px] uppercase tracking-wider hover:opacity-70 transition-opacity no-print"
+            className="flex items-center gap-1.5 text-[var(--v3-teal-light)] font-montserrat font-semibold text-[11px] uppercase tracking-wider hover:opacity-70 transition-opacity no-print"
           >
             <Download size={15} /> Download
           </button>
         </div>
       </div>
 
-      {/* ══ TAB BAR ════════════════════════════════════════════ */}
-      <nav
-        className="no-print bg-white border-b border-[#E5E4E3] shrink-0 overflow-x-auto custom-scrollbar"
-        role="tablist"
-        aria-label="Policy sections"
-      >
-        <div className="flex items-center px-5 min-w-max">
-          {navTabs.map(tab => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected={active}
-                onClick={() => handleTabClick(tab.id)}
-                className={`flex items-center gap-2 px-5 py-3 font-semibold group border-b-[3px] transition-all duration-200 ${
-                  active
-                    ? 'text-[#C74601] border-[#C74601]'
-                    : 'text-[#524048] border-transparent hover:text-[#1F1C1B] hover:border-[#E5E4E3]'
-                }`}
-              >
-                <Icon
-                  size={14}
-                  className={active ? 'text-[#C74601]' : 'text-[#524048] opacity-70 group-hover:opacity-100'}
-                />
-                <span className="font-montserrat text-[13px] whitespace-nowrap">
-                  {tab.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+      <div className="policy-approved-layout min-h-0 flex-1 grid grid-cols-[240px_minmax(0,1fr)_220px] overflow-hidden border-t border-[var(--v3-border-subtle)]">
+        <aside className="no-print min-h-0 overflow-y-auto border-r border-[var(--v3-border-subtle)] bg-white/[0.025] px-4 py-5">
+          <div className="font-montserrat text-[13px] font-semibold text-[var(--v3-text-primary)]">Table of Contents</div>
+          <div className="mt-1 text-[10px] text-[var(--v3-text-tertiary)]">{navTabs.length} document groups</div>
+          <nav className="mt-4 space-y-1" aria-label="Policy table of contents">
+            {FULL_SECTIONS.map((section, idx) => {
+              const active = idx === activeSectionGlobalIdx;
+              return (
+                <button
+                  key={`${section.tabId}-${section.sIdx}-${section.label}`}
+                  type="button"
+                  onClick={() => navigateToSection(idx, idx > activeSectionGlobalIdx ? 1 : -1)}
+                  className={`block w-full rounded px-3 py-2 text-left font-montserrat text-[12px] transition-colors ${
+                    active
+                      ? 'bg-[rgba(0,209,193,0.10)] text-[var(--v3-teal-light)]'
+                      : 'text-[var(--v3-text-secondary)] hover:bg-white/[0.03] hover:text-[var(--v3-text-primary)]'
+                  }`}
+                >
+                  {section.label}
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
 
-      {/* ══ MAIN CONTENT — section-by-section carousel ══════════ */}
-      <main
-        ref={mainPanelRef}
-        className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar bg-[#FAFBF8] policy-content flex flex-col"
-        role="tabpanel"
-        style={{ touchAction: 'pan-y' }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onScroll={handleMainScroll}
-      >
-        {/* Content starts near the top — pt-10 gives breathing room */}
-        <div className="flex flex-col">
+        <main
+          ref={mainPanelRef}
+          className="min-h-0 overflow-y-auto scroll-smooth custom-scrollbar policy-content"
+          role="tabpanel"
+          style={{ touchAction: 'pan-y', overscrollBehavior: 'contain', scrollbarGutter: 'stable' }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onScroll={handleMainScroll}
+        >
           <div
             key={`section-${activeSectionGlobalIdx}-${slidePhase === 'enter' ? 'in' : 'out'}`}
-            className={`max-w-[1100px] w-full mx-auto px-6 pt-8 pb-12 md:px-8 lg:px-10 ${slideClass} ${
+            className={`mx-auto w-full max-w-[760px] px-8 py-10 ${slideClass} ${
               flashAnchorRef ? 'ring-2 ring-[#007970]/40 rounded-xl transition-all duration-500' : ''
             }`}
           >
-            {useGenericContent ? (
-              activeTab === 'appendices'
-                ? <TabAppendices policy={policy} />
-                : activeSectionInTab === -1
-                  // Synthetic GV-GB-001-style overview header (big title + metadata grid)
-                  ? <TabOverview
-                      policy={policy}
-                      sectionIdx={0}
-                      achcContext={achcContext}
-                      activeAnchorRef={activeAnchorRef}
-                      activeStandard={activeStandard}
-                      standardTargets={standardTargetsByStandard}
-                      onStandardActivate={handleStandardActivate}
-                    />
-                  : (() => {
-                      const list = genericSectionsByTab[activeTab] ?? [];
-                      const sec = list[activeSectionInTab];
-                      if (!sec) {
-                        return (
-                          <p className="font-roboto text-[14px] italic text-[#9E9D9A]">
-                            No content available for this section.
-                          </p>
-                        );
-                      }
-                      return <GenericSectionPanel section={sec} />;
-                  })()
-            ) : (
-              <>
-                {activeTab === 'overview'      && <TabOverview
-                  policy={policy}
-                  sectionIdx={activeSectionInTab}
-                  achcContext={achcContext}
-                  activeAnchorRef={activeAnchorRef}
-                  activeStandard={activeStandard}
-                  standardTargets={standardTargetsByStandard}
-                  onStandardActivate={handleStandardActivate}
-                />}
-                {activeTab === 'statements'    && <TabStatements    policy={policy} />}
-                {activeTab === 'procedures'    && <TabProcedures    policy={policy} sectionIdx={activeSectionInTab} />}
-                {activeTab === 'documentation' && <TabDocumentation policy={policy} />}
-                {activeTab === 'compliance'    && <TabCompliance    policy={policy} sectionIdx={activeSectionInTab} />}
-                {activeTab === 'references'    && <TabReferences    policy={policy} sectionIdx={activeSectionInTab} />}
-                {activeTab === 'appendices'    && <TabAppendices    policy={policy} />}
-                {activeTab === 'alerts'        && <TabAlerts        policy={policy} />}
-                {activeTab === 'faq'           && <TabFAQ           policy={policy} />}
-                {activeTab === 'amendments'    && <TabAmendments    policy={policy} />}
-              </>
-            )}
+            {policyActiveContent}
           </div>
-        </div>
-      </main>
+        </main>
+
+        <aside className="no-print min-h-0 overflow-y-auto border-l border-[var(--v3-border-subtle)] px-4 py-7">
+          <div className="rounded-xl border border-[var(--v3-border-subtle)] bg-white/[0.04] p-4 text-[12px] text-[var(--v3-text-secondary)]">
+            <div className="space-y-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--v3-text-tertiary)]">Last Updated</div>
+                <div className="mt-1 text-[var(--v3-text-primary)]">{policy.effectiveDate}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--v3-text-tertiary)]">Owner</div>
+                <div className="mt-1 text-[var(--v3-orange-light)]">{policy.policyOwner}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--v3-text-tertiary)]">Status</div>
+                <div className="mt-1 text-[var(--v3-teal-light)]">{policy.status.replace('_', ' ')}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleTabClick('references')}
+                className="pt-1 text-left text-[var(--v3-orange-light)] transition-opacity hover:opacity-75"
+              >
+                Related Documents
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
 
       {/* ══ NAVIGATION HELP MODAL ══════════════════════════════ */}
       {helpOpen && (

@@ -10,7 +10,7 @@ export function DataGrid({ className, children, ...rest }: TableHTMLAttributes<H
         width: '100%',
         borderCollapse: 'separate',
         borderSpacing: 0,
-        color: 'var(--ci-text-primary)',
+        color: 'var(--v3-text-primary)',
         fontSize: 13,
       }}
     >
@@ -21,7 +21,7 @@ export function DataGrid({ className, children, ...rest }: TableHTMLAttributes<H
 
 DataGrid.Head = function GridHead({ children }: { children: ReactNode }) {
   return (
-    <thead style={{ background: 'var(--ci-surface-muted)' }}>{children}</thead>
+    <thead style={{ background: 'transparent' }}>{children}</thead>
   );
 };
 
@@ -43,8 +43,8 @@ DataGrid.HeaderCell = function HeaderCell({
         fontSize: 10,
         textTransform: 'uppercase',
         letterSpacing: '0.15em',
-        color: 'var(--ci-text-muted-2)',
-        borderBottom: '1px solid var(--ci-border)',
+        color: 'var(--v3-text-tertiary)',
+        borderBottom: '1px solid var(--v3-border-subtle)',
         whiteSpace: 'nowrap',
         ...rest.style,
       }}
@@ -69,9 +69,9 @@ DataGrid.Row = function Row({
       {...rest}
       className={className}
       style={{
-        background: selected ? 'var(--ci-info-bg)' : 'transparent',
-        boxShadow: selected ? 'inset 2px 0 0 var(--ci-accent)' : undefined,
-        transition: 'background 120ms ease',
+        background: selected ? 'rgba(0, 209, 193, 0.06)' : 'transparent',
+        boxShadow: 'none',
+        transition: 'background-color 120ms var(--v3-ease)',
         ...rest.style,
       }}
     >
@@ -91,7 +91,7 @@ DataGrid.Cell = function Cell({
       style={{
         textAlign: align,
         padding: '12px 16px',
-        borderBottom: '1px solid var(--ci-border)',
+        borderBottom: '1px solid var(--v3-border-subtle)',
         verticalAlign: 'top',
         ...rest.style,
       }}

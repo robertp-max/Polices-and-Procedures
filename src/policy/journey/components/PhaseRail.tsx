@@ -55,13 +55,12 @@ export function PhaseRail({ progress, active, onSelect }: Props) {
             </span>
             <div className="flex-1 min-w-0">
               <div className="font-montserrat font-bold uppercase tracking-widest ci-text-eyebrow-sm ci-text-on-rail">{p.label}</div>
-              <div className="mt-1 h-1.5 rounded-full ci-progress-track overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${done ? 'ci-progress-fill-done' : 'ci-progress-fill-go'}`}
-                  // eslint-disable-next-line react/forbid-dom-props -- dynamic % width cannot live in a stylesheet
-                  style={{ width: `${Math.min(100, Math.round(p1 * 100))}%` }}
-                />
-              </div>
+                <div className="mt-1 h-1.5 rounded-full ci-progress-track overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${done ? 'ci-progress-fill-done' : 'ci-progress-fill-go'}`}
+                    style={{ width: `${Math.min(100, Math.round(p1 * 100))}%` }}
+                  />
+                </div>
               <div className="ci-text-body-xs ci-text-on-rail-mute mt-1">{Math.round(p1 * 100)}%</div>
             </div>
           </button>

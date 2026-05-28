@@ -13,6 +13,9 @@
  *   POST /api/pm/personal               → { task }
  *   PATCH /api/pm/personal/:taskId      → { task }
  *   DELETE /api/pm/personal/:taskId     → { deleted }
+ *   GET  /api/pm/dependencies           → { edges }
+ *   POST /api/pm/dependencies           → { created, edge }
+ *   DELETE /api/pm/dependencies         → { deleted }
  *   GET  /api/pm/watchers               → { watchers }  (all rows)
  *   POST /api/pm/watchers               → { watcher }
  *   DELETE /api/pm/watchers/:taskId     → { deleted }
@@ -96,6 +99,13 @@ interface StoredPersonalTask {
 interface StoredWatcher {
   task_id: string;
   user_id: string;
+  created_at: string;
+}
+
+interface StoredDependency {
+  from: string;
+  to: string;
+  type: string;
   created_at: string;
 }
 
@@ -210,6 +220,52 @@ pmRouter.delete('/personal/:taskId', asyncH(async (req, res) => {
   data.tasks = data.tasks.filter(t => t.id !== taskId);
   writeJson('personal.json', data);
   res.json({ deleted: data.tasks.length < before });
+}));
+
+// ── Dependencies ──────────────────────────────────────────────────────────────
+pmRouter.get('/dependencies', asyncH(async (req, res) => {
+  const taskId = req.query.task_id as string | undefined;
+  const data = readJson<{ edges: StoredDependency[] }>('dependencies.json', { edges: [] });
+  if (taskId) {
+    res.json({
+      task_id: taskId,
+      incoming: data.edges.filter(edge => edge.to === taskId),
+      outgoing: data.edges.filter(edge => edge.from === taskId),
+    });
+    return;
+  }
+  res.json({ edges: data.edges });
+}));
+
+pmRouter.post('/dependencies', asyncH(async (req, res) => {
+  const { from_task_id, to_task_id, type } = req.body as { from_task_id?: string; to_task_id?: string; type?: string };
+  if (!from_task_id || !to_task_id) {
+    res.status(400).json({ error: { code: 'bad_request', message: 'from_task_id and to_task_id required' } });
+    return;
+  }
+  const data = readJson<{ edges: StoredDependency[] }>('dependencies.json', { edges: [] });
+  const existing = data.edges.find(edge => edge.from === from_task_id && edge.to === to_task_id);
+  if (existing) {
+    res.json({ created: false, edge: existing, reason: 'already_exists' });
+    return;
+  }
+  const edge = { from: from_task_id, to: to_task_id, type: type ?? 'blocks', created_at: nowISO() };
+  data.edges.push(edge);
+  writeJson('dependencies.json', data);
+  res.json({ created: true, edge });
+}));
+
+pmRouter.delete('/dependencies', asyncH(async (req, res) => {
+  const { from_task_id, to_task_id } = req.body as { from_task_id?: string; to_task_id?: string };
+  if (!from_task_id || !to_task_id) {
+    res.status(400).json({ error: { code: 'bad_request', message: 'from_task_id and to_task_id required' } });
+    return;
+  }
+  const data = readJson<{ edges: StoredDependency[] }>('dependencies.json', { edges: [] });
+  const before = data.edges.length;
+  data.edges = data.edges.filter(edge => !(edge.from === from_task_id && edge.to === to_task_id));
+  writeJson('dependencies.json', data);
+  res.json({ deleted: data.edges.length < before });
 }));
 
 // ── Watchers ──────────────────────────────────────────────────────────────────

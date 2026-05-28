@@ -1,27 +1,25 @@
 import { create } from 'zustand';
 
 /**
- * Care Indeed UI Mode store — Light vs Dark.
+ * V3-only UI mode store.
  *
  * IMPORTANT — separation of concerns:
- *   • Brand toggle (CI-ION ↔ Care Indeed) lives in `useShellStore.theme`
- *     and is owned by the logo click in CommandCenterLayout. DO NOT move
- *     that here, and DO NOT touch it from this store.
- *   • This store ONLY controls the Care Indeed Light/Dark mode and is
- *     ignored when brand = CI-ION (the CSS rule keys off both attributes).
+ * The historical store remains so existing selectors keep working, but the
+ * production design no longer has a light/dark branch. V4 can add a normal
+ * mode on top of the V3 token contract later.
  *
- * Persistence: localStorage key `ci-care-indeed-mode`, default `light`.
+ * Persistence: localStorage key `ci-care-indeed-mode`, default `v3`.
  * Applied to <html data-ci-mode="...">.
  */
 
-export type CiMode = 'light' | 'dark';
+export type CiMode = 'v3' | 'light' | 'dark';
 
 const STORAGE_KEY = 'ci-care-indeed-mode';
 
 function readInitial(): CiMode {
-  if (typeof window === 'undefined') return 'light';
-  const v = window.localStorage.getItem(STORAGE_KEY);
-  return v === 'dark' ? 'dark' : 'light';
+  if (typeof window === 'undefined') return 'v3';
+  window.localStorage.setItem(STORAGE_KEY, 'v3');
+  return 'v3';
 }
 
 interface CiModeState {
@@ -32,18 +30,17 @@ interface CiModeState {
 
 export const useCiModeStore = create<CiModeState>(set => ({
   mode: readInitial(),
-  setMode: (m: CiMode) => {
+  setMode: (_m: CiMode) => {
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(STORAGE_KEY, m);
+      window.localStorage.setItem(STORAGE_KEY, 'v3');
     }
-    set({ mode: m });
+    set({ mode: 'v3' });
   },
   toggleMode: () =>
-    set(s => {
-      const next: CiMode = s.mode === 'light' ? 'dark' : 'light';
+    set(() => {
       if (typeof window !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY, next);
+        window.localStorage.setItem(STORAGE_KEY, 'v3');
       }
-      return { mode: next };
+      return { mode: 'v3' };
     }),
 }));

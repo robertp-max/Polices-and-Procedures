@@ -14,14 +14,14 @@ export function EmptyState({ icon, title, description, action, className }: Empt
       className={
         'flex flex-col items-center justify-center text-center ' + (className ?? '')
       }
-      style={{ padding: 32, color: 'var(--ci-text-muted-2)' }}
+      style={{ padding: 32, color: 'var(--v3-text-secondary)' }}
     >
       {icon && (
-        <div style={{ color: 'var(--ci-text-subtle)', marginBottom: 12 }}>{icon}</div>
+        <div style={{ color: 'var(--v3-text-tertiary)', marginBottom: 12 }}>{icon}</div>
       )}
       <div
         className="font-montserrat"
-        style={{ color: 'var(--ci-text-primary)', fontSize: 16, fontWeight: 600 }}
+        style={{ color: 'var(--v3-text-primary)', fontSize: 16, fontWeight: 600 }}
       >
         {title}
       </div>

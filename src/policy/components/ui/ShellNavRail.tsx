@@ -57,7 +57,6 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
     <nav
       data-shell-navrail
       className="hidden lg:flex flex-col border-r py-4 overflow-y-auto flex-shrink-0"
-      // eslint-disable-next-line react/forbid-dom-props -- canonical shell-navrail surface; values resolve from --ci-color-* tokens
       style={{
         width: 'var(--ci-shell-navrail-width)',
         background: 'var(--ci-color-shell-navrail-bg)',

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useShellStore } from '@/policy/stores/uiStore';
 import {
   AlertTriangle, Activity, ShieldCheck,
   CheckCircle2, FileText, Filter, MoreHorizontal, ArrowRight,
@@ -47,7 +46,6 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const today = TODAY_ANCHOR;
   const store = useRegulatoryExecutionStore();
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const [viewportWidth, setViewportWidth] = useState(() => (typeof window === 'undefined' ? 1920 : window.innerWidth));
   const isMobile = viewportWidth < 768;
 
@@ -415,9 +413,9 @@ export function DashboardPage() {
   }, []);
 
   return (
-    <ShellContentFrame scrollable className="animate-in fade-in duration-500" data-surface="dashboard">
+    <ShellContentFrame scrollable className="v3-dashboard-reference animate-in fade-in duration-500" data-surface="dashboard">
       <div className="flex flex-col gap-4 sm:gap-5">
-      <div className="ci-premium-hero px-4 sm:px-6 py-4 sm:py-6">
+      <div className="px-4 sm:px-6 py-4 sm:py-6">
         <DashboardHero
           criticalCount={criticalAndOverdue.length}
           atRiskCount={critical.atRisk.length}
@@ -456,12 +454,12 @@ export function DashboardPage() {
       {viewMode === 'agency' ? (
         <>
           {/* Events (Project Events) — Agency operational board */}
-          <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap ci-shell-command-group ci-command-rail ci-maturity-section rounded-xl px-3 py-2">
+          <section className="flex items-center justify-between gap-3 gap-y-3 flex-wrap px-1 py-1">
             <div>
-              <h2 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
+              <h2 className="font-semibold ci-text-display-section text-[var(--v3-text-primary)]">
                 Events
               </h2>
-              <p className={`ci-text-body-sm ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
+              <p className="ci-text-body-sm text-[var(--v3-text-secondary)]">
                 Project events and regulatory deadlines requiring action.
               </p>
             </div>
@@ -473,7 +471,7 @@ export function DashboardPage() {
           </section>
 
           {/* Main Events Board */}
-          <div className={`flex-1 min-h-0 pb-2 ${isMobile ? '' : '-mx-3 sm:mx-0 px-3 sm:px-0'} ${isMobile ? 'overflow-x-hidden' : 'overflow-x-auto'} ci-premium-panel p-3 sm:p-4`}>
+          <div className={`flex-1 min-h-0 pb-2 ${isMobile ? '' : '-mx-3 sm:mx-0 px-3 sm:px-0'} ${isMobile ? 'overflow-x-hidden' : 'overflow-x-auto'} p-3 sm:p-4`}>
             <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'} gap-3 sm:gap-4 lg:min-w-0 ${isMobile ? 'min-w-0' : 'ci-min-w-board-scroll'} h-full`}>
               <BoardColumn
                 title="Critical & Overdue"
@@ -514,27 +512,30 @@ export function DashboardPage() {
             </div>
           </div>
 
-          {/* My Planner — compact summary always visible in Agency mode */}
-          <div className="mt-6 pt-4 border-t border-white/10">
-            <div className="mb-3">
-              <h2 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
-                My Planner
-              </h2>
-              <p className={`ci-text-body-sm ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
-                Tasks assigned to me • Personal + CES obligations
-              </p>
+          <section className="mt-6 border-t border-[var(--v3-border-subtle)] pt-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h2 className="font-semibold ci-text-display-section text-[var(--v3-text-primary)]">
+                  My Planner
+                </h2>
+                <p className="ci-text-body-sm text-[var(--v3-text-secondary)]">
+                  Switch to your personal lane when you need assigned CES work and private tasks only.
+                </p>
+              </div>
+              <ActionButton variant="ghost" size="sm" onClick={() => setViewMode('planner')}>
+                Open My Planner
+              </ActionButton>
             </div>
-            <MyPlannerView showHeader={false} />
-          </div>
+          </section>
         </>
       ) : (
         /* ── FULL MY PLANNER DASHBOARD VIEW (when toggle is on Planner) ── */
         <div className="mt-2">
           <div className="mb-4">
-            <h2 className={`font-semibold ci-text-display-section ${isLight ? 'text-slate-800' : 'text-slate-50'}`}>
+            <h2 className="font-semibold ci-text-display-section text-[var(--v3-text-primary)]">
               My Planner
             </h2>
-            <p className={`ci-text-body-sm ${isLight ? 'text-slate-500' : 'text-white/70'}`}>
+            <p className="ci-text-body-sm text-[var(--v3-text-secondary)]">
               Your personal workload • CES obligations assigned to you + private tasks
             </p>
           </div>
@@ -563,28 +564,27 @@ function DashboardHero({
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
 }) {
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   return (
     <section className="flex items-start sm:items-end justify-between gap-4 flex-wrap">
       <div className="min-w-0">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <span className="font-semibold uppercase text-orange-500 ci-text-eyebrow-strong">
+          <span className="v3-command-center-tag font-semibold uppercase ci-text-eyebrow-strong">
             Command Center
           </span>
-          <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-slate-300" />
-          <span className={`font-medium ci-text-eyebrow-strong ${isLight ? 'text-slate-500' : 'text-white/60'}`}>
+          <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-[var(--v3-teal-light)]" />
+          <span className="font-medium ci-text-eyebrow-strong text-[var(--v3-text-secondary)]">
             What needs action now
           </span>
         </div>
-        <h1 className={`font-semibold leading-tight sm:leading-none ci-text-display-hero ${isLight ? 'text-slate-900' : 'text-slate-50'}`}>
+        <h1 className="font-semibold leading-tight sm:leading-none ci-text-display-hero text-[var(--v3-text-primary)]">
           What needs action now
         </h1>
-        <p className={`mt-2 ci-text-body-sm ${isLight ? 'text-slate-600' : 'text-white/72'}`}>
+        <p className="mt-2 ci-text-body-sm text-[var(--v3-text-secondary)]">
           Executive operational narrative for compliance execution, evidence readiness, and escalation control.
         </p>
       </div>
       <div className="w-full sm:w-auto shrink-0">
-        <div className="grid grid-cols-2 gap-2 ci-min-w-hero-stat-sm">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-2 ci-min-w-hero-stat-sm">
           <HeroStat label="Critical" value={criticalCount} tone="danger" />
           <HeroStat label="At Risk" value={atRiskCount} tone="warning" />
           <HeroStat label="Audit Ready" value={auditReadyCount} tone="success" />
@@ -592,10 +592,10 @@ function DashboardHero({
         </div>
       </div>
       <div className="text-left sm:text-right shrink-0 flex flex-col items-end gap-2">
-        <div className={`font-semibold uppercase ci-text-eyebrow-md ${isLight ? 'text-slate-400' : 'text-white/50'}`}>
+        <div className="font-semibold uppercase ci-text-eyebrow-md text-[var(--v3-text-tertiary)]">
           Today
         </div>
-        <div className={`font-medium ci-text-body-sm ${isLight ? 'text-slate-700' : 'text-white/90'}`}>
+        <div className="font-medium ci-text-body-sm text-[var(--v3-text-primary)]">
           {TODAY_ANCHOR.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </div>
 
@@ -604,55 +604,53 @@ function DashboardHero({
           <PlannerViewToggle value={viewMode} onChange={setViewMode} />
         </div>
       </div>
-      <div className={`w-full mt-2 px-3 py-2 flex items-center justify-between gap-3 flex-wrap ci-command-rail ci-maturity-section ${isLight ? 'text-slate-600' : 'text-white/68'}`}>
-        <span className={`ci-maturity-eyebrow`}>Operational Storyline</span>
-        <span className="ci-text-body-xs">Prioritize critical controls, clear risk queues, and lock evidence-ready workflows.</span>
-      </div>
+      <p className="w-full mt-2 ci-text-body-xs text-[var(--v3-text-secondary)]">
+        Prioritize critical controls, clear risk queues, and lock evidence-ready workflows.
+      </p>
     </section>
   );
 }
 
 function HeroStat({ label, value, tone }: { label: string; value: number; tone: 'default' | 'success' | 'warning' | 'danger' }) {
   const styles = {
-    default: 'bg-slate-100 text-slate-700 border-slate-200',
-    success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    warning: 'bg-amber-50 text-amber-700 border-amber-200',
-    danger: 'bg-rose-50 text-rose-700 border-rose-200',
+    default: 'text-[var(--v3-text-secondary)] border-transparent',
+    success: 'text-[var(--v3-teal-light)] border-transparent',
+    warning: 'text-[var(--v3-teal-light)] border-transparent',
+    danger: 'text-[var(--v3-teal-light)] border-transparent',
   }[tone];
   return (
-    <div className={`rounded-xl border px-3 py-2 ci-hero-stat ${styles}`}>
+    <div className={`ci-hero-stat ${styles} flex items-baseline gap-2`}>
+      <div className="leading-none font-semibold ci-text-stat">{value}</div>
       <div className="font-semibold uppercase ci-text-eyebrow-sm">{label}</div>
-      <div className="leading-none font-semibold mt-1 ci-text-stat">{value}</div>
     </div>
   );
 }
 
 function KpiCard({ label, value, trend, tone = 'default', alert, onClick, emphasize = false }: KpiCardData & { emphasize?: boolean }) {
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const valueClass = {
-    default: isLight ? 'text-slate-900' : 'text-slate-50',
-    positive: 'text-emerald-600',
-    warning: 'text-amber-600',
-    danger: 'text-red-600',
+    default: 'text-[var(--v3-text-primary)]',
+    positive: 'text-[var(--v3-teal-light)]',
+    warning: 'text-[var(--v3-teal-light)]',
+    danger: 'text-[var(--v3-teal-light)]',
   }[tone];
   const trendClass = {
-    default: isLight ? 'text-slate-500' : 'text-white/65',
-    positive: 'text-emerald-500',
-    warning: 'text-amber-500',
-    danger: 'text-red-500',
+    default: 'text-[var(--v3-text-secondary)]',
+    positive: 'text-[var(--v3-teal-light)]',
+    warning: 'text-[var(--v3-text-secondary)]',
+    danger: 'text-[var(--v3-text-secondary)]',
   }[tone];
-  const baseClass = 'ci-kpi-card ci-operational-card rounded-2xl border px-4 py-3';
+  const baseClass = 'ci-kpi-card border-t border-[var(--v3-border-subtle)] px-1 py-3';
   const emphasizeAttr = emphasize ? 'true' : 'false';
 
   const content = (
     <>
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <span className={`font-semibold uppercase ci-text-eyebrow ${isLight ? 'text-slate-400' : 'text-white/55'}`}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-semibold uppercase ci-text-eyebrow text-[var(--v3-text-tertiary)]">
           {label}
         </span>
-        {alert ? <AlertTriangle size={14} className="text-red-500" aria-hidden="true" /> : null}
+        {alert ? <AlertTriangle size={14} className="text-[var(--v3-teal-light)]" aria-hidden="true" /> : null}
       </div>
-      <div className="flex items-end gap-2">
+      <div className="flex items-baseline gap-2 flex-wrap">
         <span className={`leading-none font-semibold ci-text-kpi ${valueClass}`}>
           {value}
         </span>
@@ -679,7 +677,7 @@ function KpiCard({ label, value, trend, tone = 'default', alert, onClick, emphas
       type="button"
       onClick={onClick}
       data-emphasize={emphasizeAttr}
-      className={`${baseClass} ci-min-h-kpi ci-shadow-elev-md text-left cursor-pointer ci-subtle-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60`}
+      className={`${baseClass} ci-min-h-kpi text-left cursor-pointer ci-subtle-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300/60`}
     >
       {content}
     </button>
@@ -701,23 +699,16 @@ function AgencyReadinessBanner({
   certifiedWithException: number;
   onClickNotReady: () => void;
 }) {
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const Icon = ready ? ShieldCheck : ShieldX;
   const status = ready ? 'Agency Readiness - Ready' : 'Agency Readiness - Not Ready';
   const supporting = ready
     ? 'All workflows compliant or certification-ready.'
     : `${reasons.join(' · ')}. Immediate action needed to avoid compliance risk.`;
-  const shellClass = ready
-    ? (isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/15 border-emerald-400/30')
-    : (isLight ? 'bg-red-50 border-red-200' : 'bg-red-500/10 border-red-400/30');
-  const bodyClass = ready
-    ? (isLight ? 'text-emerald-800' : 'text-white/80')
-    : (isLight ? 'text-red-700' : 'text-white/80');
-  const accentClass = ready ? 'text-emerald-600' : 'text-red-600';
-  const iconShellClass = ready ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600';
+  const accentClass = 'text-[var(--v3-teal-light)]';
+  const iconShellClass = 'text-[var(--v3-teal-light)] border border-transparent';
 
   return (
-    <div className={`rounded-2xl border px-4 py-3 flex items-center gap-4 flex-wrap ci-command-rail ${shellClass}`}>
+    <div className="border-y border-[var(--v3-border-subtle)] px-1 py-3 flex items-center gap-4 flex-wrap">
       <span className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconShellClass}`}>
         <Icon size={18} />
       </span>
@@ -725,14 +716,14 @@ function AgencyReadinessBanner({
         <div className={`font-semibold uppercase ci-text-eyebrow-md ${accentClass}`}>
           {status}
         </div>
-        <p className={`mt-1 ci-text-body-sm ${bodyClass}`}>{supporting}</p>
+        <p className="mt-1 ci-text-body-sm text-[var(--v3-text-secondary)]">{supporting}</p>
       </div>
       <div className="flex items-center gap-3 ml-auto flex-wrap">
         {atRisk > 0 ? <BannerChip label="At Risk" value={atRisk} tone="warning" /> : null}
         {graceWindow > 0 ? <BannerChip label="Grace" value={graceWindow} tone="warning" /> : null}
         {certifiedWithException > 0 ? <BannerChip label="Cert w/ Exc" value={certifiedWithException} tone="default" /> : null}
         {!ready ? (
-          <ActionButton variant="danger" size="sm" onClick={onClickNotReady}>
+          <ActionButton variant="ghost" size="sm" onClick={onClickNotReady}>
             View Readiness Report
           </ActionButton>
         ) : null}
@@ -768,48 +759,47 @@ function BoardColumn({
   onOpen: (id: string) => void;
   onFallback: () => void;
 }) {
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const meta = {
     critical: {
       icon: AlertTriangle,
-      accent: 'text-red-500',
-      shell: 'ci-operational-card p-3 bg-gradient-to-b from-rose-50/55 to-transparent dark:from-rose-500/8',
-      badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
-      title: isLight ? 'text-slate-700' : 'text-slate-50',
+      accent: 'text-[var(--v3-teal-light)]',
+      shell: 'border border-[var(--v3-border-subtle)] rounded-xl p-3 bg-transparent',
+      badge: 'text-[var(--v3-text-secondary)]',
+      title: 'text-[var(--v3-text-primary)]',
     },
     warning: {
       icon: Clock,
-      accent: 'text-amber-500',
-      shell: 'ci-operational-card p-3 bg-gradient-to-b from-amber-50/50 to-transparent dark:from-amber-500/8',
-      badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
-      title: isLight ? 'text-slate-700' : 'text-slate-50',
+      accent: 'text-[var(--v3-teal-light)]',
+      shell: 'border border-[var(--v3-border-subtle)] rounded-xl p-3 bg-transparent',
+      badge: 'text-[var(--v3-text-secondary)]',
+      title: 'text-[var(--v3-text-primary)]',
     },
     progress: {
       icon: Activity,
-      accent: 'text-blue-500',
-      shell: 'ci-operational-card p-3 bg-gradient-to-b from-sky-50/50 to-transparent dark:from-sky-500/8',
-      badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
-      title: isLight ? 'text-slate-700' : 'text-slate-50',
+      accent: 'text-[var(--v3-teal-light)]',
+      shell: 'border border-[var(--v3-border-subtle)] rounded-xl p-3 bg-transparent',
+      badge: 'text-[var(--v3-text-secondary)]',
+      title: 'text-[var(--v3-text-primary)]',
     },
     pending: {
       icon: FileText,
-      accent: 'text-slate-500',
-      shell: 'ci-operational-card p-3 bg-gradient-to-b from-slate-100/50 to-transparent dark:from-white/5',
-      badge: isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-slate-200',
-      title: isLight ? 'text-slate-700' : 'text-slate-50',
+      accent: 'text-[var(--v3-text-secondary)]',
+      shell: 'border border-[var(--v3-border-subtle)] rounded-xl p-3 bg-transparent',
+      badge: 'text-[var(--v3-text-secondary)]',
+      title: 'text-[var(--v3-text-primary)]',
     },
   } as const;
   const column = meta[tone];
   const Icon = column.icon;
 
   return (
-    <section className={`rounded-2xl border flex flex-col min-h-0 ${column.shell}`}>
+    <section className={`flex flex-col min-h-0 ${column.shell}`}>
       <header className="flex items-center justify-between px-1 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <Icon size={16} className={column.accent} />
           <h3 className={`font-semibold truncate ci-text-stat ${column.title}`}>{title}</h3>
         </div>
-        <span className={`ci-min-w-count-badge h-7 px-2 rounded-full flex items-center justify-center font-semibold ci-text-body-xs ${column.badge}`}>
+        <span className={`ci-min-w-count-badge flex items-center justify-center font-semibold ci-text-body-xs ${column.badge}`}>
           {count}
         </span>
       </header>
@@ -843,23 +833,17 @@ function TaskCard({
   onFallback: () => void;
   tone: BoardTone;
 }) {
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const dueLabel = getDueLabel(event, today);
-  const shellClass = isLight
-    ? 'bg-white border-slate-200'
-    : 'bg-white/5 border-white/10';
-  const labelClass = isLight ? 'text-slate-400' : 'text-white/50';
-  const titleClass = isLight ? 'text-slate-800' : 'text-slate-50';
-  const ownerClass = isLight ? 'text-slate-500' : 'text-white/70';
-  const dividerClass = isLight ? 'border-slate-100' : 'border-white/5';
-  const avatarClass = isLight
-    ? 'bg-slate-100 text-slate-500 border-slate-200'
-    : 'bg-white/10 text-slate-100 border-white/10';
+  const labelClass = 'text-[var(--v3-text-tertiary)]';
+  const titleClass = 'text-[var(--v3-text-primary)]';
+  const ownerClass = 'text-[var(--v3-text-secondary)]';
+  const dividerClass = 'border-white/5';
+  const avatarClass = 'text-[var(--v3-text-primary)] border-transparent';
   const badgeClass = {
-    critical: 'bg-red-50 text-red-600 border-red-200',
-    warning: 'bg-orange-50 text-orange-600 border-orange-200',
-    progress: 'bg-blue-50 text-blue-600 border-blue-200',
-    pending: 'bg-slate-50 text-slate-600 border-slate-300',
+    critical: 'text-[var(--v3-teal-light)] border-transparent',
+    warning: 'text-[var(--v3-teal-light)] border-transparent',
+    progress: 'text-[var(--v3-teal-light)] border-transparent',
+    pending: 'text-[var(--v3-text-secondary)] border-transparent',
   }[tone];
 
   return (
@@ -872,7 +856,7 @@ function TaskCard({
         }
         onClick();
       }}
-      className={`w-full rounded-2xl border p-4 text-left group cursor-pointer ci-subtle-hover ci-shadow-elev-interactive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 ${shellClass}`}
+      className="w-full rounded-xl border border-[var(--v3-border-subtle)] bg-transparent p-4 text-left group cursor-pointer ci-subtle-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300/60"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -883,7 +867,7 @@ function TaskCard({
             {event.title}
           </h4>
         </div>
-        <MoreHorizontal size={16} className={isLight ? 'text-slate-300' : 'text-white/35'} aria-hidden="true" />
+        <MoreHorizontal size={16} className="text-[var(--v3-text-tertiary)]" aria-hidden="true" />
       </div>
 
       <div className={`flex items-center justify-between mt-4 pt-3 border-t ${dividerClass}`}>
@@ -898,7 +882,7 @@ function TaskCard({
           <span className={`font-semibold uppercase px-2 py-1 rounded-lg border ci-text-eyebrow-sm ${badgeClass}`}>
             {dueLabel}
           </span>
-          <ArrowRight size={14} className={isLight ? 'text-slate-400' : 'text-white/50'} aria-hidden="true" />
+          <ArrowRight size={14} className="text-[var(--v3-text-tertiary)]" aria-hidden="true" />
         </div>
       </div>
     </button>
@@ -908,7 +892,7 @@ function TaskCard({
 function EmptyBoardState({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <EmptyState
-      icon={<CheckCircle2 size={28} className="text-emerald-500" aria-hidden="true" />}
+      icon={<CheckCircle2 size={28} className="text-[var(--v3-teal-light)]" aria-hidden="true" />}
       title="All clear"
       description={`No ${label.toLowerCase()} items in the current queue.`}
       action={

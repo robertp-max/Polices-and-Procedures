@@ -1,10 +1,10 @@
 /**
- * Evidence Center — demo-ready file system view backed by AWS Phase 1 demo backend.
+ * Evidence Center — read-only V3 folder explorer backed by local/demo evidence metadata.
  *
  * Reads from:
  *   GET  {API_BASE}/events/{event_id}/files
  *   GET  {API_BASE}/files/{evidence_id}/download   (returns presigned URL)
- *   POST {API_BASE}/uploads/init                    (presigned PUT URL)
+ *   POST {API_BASE}/uploads/init                    (used only from task-scoped CES drawers)
  *
  * Triplet enforcement: policy_id, workflow_id, event_id are mandatory.
  * No direct S3 listing or hard-coded S3 URLs.
@@ -495,8 +495,6 @@ export function EvidenceCenterPage() {
     }
   };
 
-  const onUploadClick = () => fileInputRef.current?.click();
-
   const onFileChosen = async (ev: React.ChangeEvent<HTMLInputElement>) => {
     const file = ev.target.files?.[0];
     if (!file) return;
@@ -655,11 +653,11 @@ export function EvidenceCenterPage() {
   return (
     <div className="flex flex-col h-full">
       {/* ── Header ─────────────────────────────────────────────── */}
-      <div className="px-6 pt-5 pb-4 border-b border-[var(--ci-color-border-subtle)] ci-bg-overlay-faint backdrop-blur-sm ci-premium-hero">
+      <div className="px-6 pt-5 pb-4 border-b border-[var(--v3-border-subtle)]">
         <div className="flex items-center gap-3 flex-wrap">
-          <FolderOpen size={22} className="text-[var(--ci-accent)]" />
-          <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-[var(--ci-text-primary)]">Evidence Command Center</h1>
-          <span className="ml-2 text-xs text-[var(--ci-text-muted)]">
+          <FolderOpen size={22} className="text-[var(--v3-teal-light)]" />
+          <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-[var(--v3-text-primary)]">Evidence Folder Explorer</h1>
+          <span className="ml-2 text-xs text-[var(--v3-text-secondary)]">
             Evidence mode: {toEvidenceModeLabel(effectiveMode)}
           </span>
           <div className="ml-auto">
@@ -671,33 +669,32 @@ export function EvidenceCenterPage() {
                   window.location.reload();
                 }
               }}
-              className="rounded px-3 py-1 text-xs font-semibold ci-status-pill--danger hover:opacity-90"
+              className="rounded px-3 py-1 text-xs font-semibold border border-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)]"
             >
               Clear All Evidence
             </button>
           </div>
         </div>
-        <p className="mt-1 text-sm text-[var(--ci-text-muted)] max-w-3xl">
-          Every file is bound to a <span className="text-[var(--ci-text-primary)] font-semibold">policy / workflow / event</span> triplet
-          and read through the API — never directly from S3.
+        <p className="mt-1 text-sm text-[var(--v3-text-secondary)] max-w-3xl">
+          Read-only folder view for Year → Quarter → Month → Event → Task evidence. Upload stays inside CES task drawers where the event, task, form, and requirement context is known.
         </p>
-        <div className="mt-3 px-3 py-2 flex items-center gap-2 flex-wrap text-[11px] ci-command-rail ci-maturity-section ci-text-surface-soft">
-          <span className="rounded-md border border-[var(--ci-overlay-active-border)] px-2 py-1 ci-bg-overlay-soft">Chain of custody visible</span>
-          <span className="rounded-md border border-[var(--ci-overlay-active-border)] px-2 py-1 ci-bg-overlay-soft">Immutable evidence timeline</span>
-          <span className="rounded-md border border-[var(--ci-overlay-active-border)] px-2 py-1 ci-bg-overlay-soft">Survey packet ready context</span>
+        <div className="mt-3 flex items-center gap-4 flex-wrap text-[11px] text-[var(--v3-text-secondary)]">
+          <span>Chain of custody visible</span>
+          <span>Immutable evidence timeline</span>
+          <span>Survey packet ready context</span>
         </div>
         <div className="mt-3 flex items-center gap-2">
           <button
             type="button"
             onClick={() => setCenterView('hierarchy')}
-            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'hierarchy' ? 'border-[var(--ci-accent)] ci-bg-overlay-strong text-[var(--ci-text-primary)]' : 'border-[var(--ci-overlay-border-strong)] ci-bg-overlay-soft ci-text-surface-soft'}`}
+            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'hierarchy' ? 'border-[var(--v3-border-subtle)] ci-bg-overlay-strong text-[var(--v3-text-primary)]' : 'border-[var(--v3-border-subtle)] bg-transparent text-[var(--v3-text-secondary)]'}`}
           >
-            CES hierarchy
+            Folder tree
           </button>
           <button
             type="button"
             onClick={() => setCenterView('files')}
-            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'files' ? 'border-[var(--ci-accent)] ci-bg-overlay-strong text-[var(--ci-text-primary)]' : 'border-[var(--ci-overlay-border-strong)] ci-bg-overlay-soft ci-text-surface-soft'}`}
+            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'files' ? 'border-[var(--v3-border-subtle)] ci-bg-overlay-strong text-[var(--v3-text-primary)]' : 'border-[var(--v3-border-subtle)] bg-transparent text-[var(--v3-text-secondary)]'}`}
           >
             File ledger
           </button>
@@ -753,9 +750,9 @@ export function EvidenceCenterPage() {
         {/* Left column */}
         <div className="col-span-12 xl:col-span-9 flex flex-col overflow-hidden">
           {/* Filter bar */}
-          <div className="px-3 sm:px-6 py-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-[var(--ci-color-border-subtle)] ci-bg-overlay-faint sticky top-0 z-20 ci-sticky-operational ci-shell-command-group ci-premium-panel ci-command-rail mx-3 sm:mx-6 mt-2 rounded-xl">
+          <div className="px-3 sm:px-6 py-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-y border-[var(--v3-border-subtle)] sticky top-0 z-20 mx-3 sm:mx-6 mt-2 ci-bg-overlay-faint">
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Event ID</label>
+              <label className="text-xs uppercase tracking-wider text-[var(--v3-text-tertiary)]">Event ID</label>
               <input
                 title="Event ID filter"
                 aria-label="Event ID"
@@ -763,84 +760,84 @@ export function EvidenceCenterPage() {
                 onChange={(e) => setEventInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && onSelectEvent()}
                 placeholder="EVT-..."
-                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-48 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
+                className="border border-[var(--v3-border-subtle)] rounded px-2 py-1 text-sm w-48 bg-transparent text-[var(--v3-text-primary)] focus:outline-none focus:border-[var(--v3-teal-light)]"
               />
               <button
                 onClick={onSelectEvent}
-                className="px-3 py-1 text-sm min-h-[44px] rounded ci-bg-overlay-strong hover:bg-[var(--ci-overlay-active-bg)] border border-[var(--ci-overlay-border-strong)] text-[var(--ci-text-primary)] ci-subtle-hover"
+                className="px-3 py-1 text-sm min-h-[44px] rounded border border-[var(--v3-border-subtle)] bg-transparent text-[var(--v3-text-primary)] ci-subtle-hover"
               >
                 Load
               </button>
-              <span className="text-[10px] ci-text-surface-faint">
+              <span className="text-[10px] text-[var(--v3-text-tertiary)]">
                 Accepts regulatory IDs and form-generated IDs (EVT-FORM-FI...)
               </span>
             </div>
 
             {/* Narrow client-side filters — applied to the already-loaded files */}
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Event</label>
+              <label className="text-xs uppercase tracking-wider text-[var(--v3-text-tertiary)]">Event</label>
               <input
                 title="Filter by Event ID"
                 aria-label="Filter by Event ID"
                 value={filterEventId}
                 onChange={(e) => setFilterEventId(e.target.value)}
                 placeholder="EVT-... / EVT-FORM-FI..."
-                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-44 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
+                className="border border-[var(--v3-border-subtle)] rounded px-2 py-1 text-sm w-44 bg-transparent text-[var(--v3-text-primary)] focus:outline-none focus:border-[var(--v3-teal-light)]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Form</label>
+              <label className="text-xs uppercase tracking-wider text-[var(--v3-text-tertiary)]">Form</label>
               <input
                 title="Filter by Form ID"
                 aria-label="Filter by Form ID"
                 value={filterFormId}
                 onChange={(e) => setFilterFormId(e.target.value)}
                 placeholder="GV-FM-017…"
-                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-32 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
+                className="border border-[var(--v3-border-subtle)] rounded px-2 py-1 text-sm w-32 bg-transparent text-[var(--v3-text-primary)] focus:outline-none focus:border-[var(--v3-teal-light)]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Policy</label>
+              <label className="text-xs uppercase tracking-wider text-[var(--v3-text-tertiary)]">Policy</label>
               <input
                 title="Filter by Policy ID"
                 aria-label="Filter by Policy ID"
                 value={filterPolicyId}
                 onChange={(e) => setFilterPolicyId(e.target.value)}
                 placeholder="GV-OG-005…"
-                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-32 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
+                className="border border-[var(--v3-border-subtle)] rounded px-2 py-1 text-sm w-32 bg-transparent text-[var(--v3-text-primary)] focus:outline-none focus:border-[var(--v3-teal-light)]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Workflow</label>
+              <label className="text-xs uppercase tracking-wider text-[var(--v3-text-tertiary)]">Workflow</label>
               <input
                 title="Filter by Workflow ID"
                 aria-label="Filter by Workflow ID"
                 value={filterWorkflowId}
                 onChange={(e) => setFilterWorkflowId(e.target.value)}
                 placeholder="WF-..."
-                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-32 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
+                className="border border-[var(--v3-border-subtle)] rounded px-2 py-1 text-sm w-32 bg-transparent text-[var(--v3-text-primary)] focus:outline-none focus:border-[var(--v3-teal-light)]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Task</label>
+              <label className="text-xs uppercase tracking-wider text-[var(--v3-text-tertiary)]">Task</label>
               <input
                 title="Filter by Task ID"
                 aria-label="Filter by Task ID"
                 value={filterTaskId}
                 onChange={(e) => setFilterTaskId(e.target.value)}
                 placeholder="TASK-..."
-                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-32 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
+                className="border border-[var(--v3-border-subtle)] rounded px-2 py-1 text-sm w-32 bg-transparent text-[var(--v3-text-primary)] focus:outline-none focus:border-[var(--v3-teal-light)]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-wider ci-text-surface-soft">Evidence ID</label>
+              <label className="text-xs uppercase tracking-wider text-[var(--v3-text-tertiary)]">Evidence ID</label>
               <input
                 title="Filter by Evidence ID"
                 aria-label="Filter by Evidence ID"
                 value={filterEvidenceId}
                 onChange={(e) => setFilterEvidenceId(e.target.value)}
                 placeholder="EVD-…"
-                className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded px-2 py-1 text-sm w-36 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
+                className="border border-[var(--v3-border-subtle)] rounded px-2 py-1 text-sm w-36 bg-transparent text-[var(--v3-text-primary)] focus:outline-none focus:border-[var(--v3-teal-light)]"
               />
             </div>
             {(filterEventId || filterFormId || filterPolicyId || filterWorkflowId || filterTaskId || filterEvidenceId) && (
@@ -853,7 +850,7 @@ export function EvidenceCenterPage() {
                   setFilterTaskId('');
                   setFilterEvidenceId('');
                 }}
-                className="text-xs px-2 py-1 rounded ci-bg-overlay-soft hover:bg-[var(--ci-overlay-active-bg)] border border-[var(--ci-overlay-border-strong)] ci-text-surface-soft"
+                className="text-xs px-2 py-1 rounded border border-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)]"
                 title="Clear filters"
               >
                 ✕ Clear filters
@@ -862,33 +859,33 @@ export function EvidenceCenterPage() {
 
             <div className="ci-maturity-toolbar ml-auto">
               <div className="relative">
-                <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 ci-text-surface-soft" />
+                <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-[var(--v3-text-tertiary)]" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Filter files…"
-                  className="ci-bg-overlay-strong border border-[var(--ci-overlay-border-strong)] rounded pl-7 pr-2 py-1 text-sm w-56 text-[var(--ci-text-primary)] focus:outline-none focus:border-[var(--ci-accent)]"
+                  className="border border-[var(--v3-border-subtle)] rounded pl-7 pr-2 py-1 text-sm w-56 bg-transparent text-[var(--v3-text-primary)] focus:outline-none focus:border-[var(--v3-teal-light)]"
                 />
               </div>
               <button
                 onClick={() => load(eventId)}
                 disabled={loading}
-                className="px-2 py-1 text-sm min-h-[44px] rounded ci-bg-overlay-strong hover:bg-[var(--ci-overlay-active-bg)] border border-[var(--ci-overlay-border-strong)] text-[var(--ci-text-primary)] disabled:opacity-50 inline-flex items-center gap-1 ci-subtle-hover"
+                className="px-2 py-1 text-sm min-h-[44px] rounded border border-[var(--v3-border-subtle)] bg-transparent text-[var(--v3-text-primary)] disabled:opacity-50 inline-flex items-center gap-1 ci-subtle-hover"
               >
                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
               </button>
               <button
-                onClick={onUploadClick}
+                onClick={() => setUploadMsg('Upload is blocked here. Open the CES task drawer and upload from the evidence requirement with task context.')}
                 disabled={uploading}
-                className="px-3 py-1 text-sm min-h-[44px] rounded ci-status-pill--accent hover:opacity-90 disabled:opacity-50 inline-flex items-center gap-1 ci-subtle-hover"
+                className="px-3 py-1 text-sm min-h-[44px] rounded border border-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)] hover:text-[var(--v3-teal-light)] disabled:opacity-50 inline-flex items-center gap-1 ci-subtle-hover"
               >
-                <Upload size={14} /> {uploading ? 'Uploading…' : 'Upload evidence'}
+                <Upload size={14} /> Task-scoped upload only
               </button>
               <input
                 ref={fileInputRef}
                 type="file"
-                title="Upload evidence file"
-                aria-label="Upload evidence file"
+                title="Task-scoped evidence file input"
+                aria-label="Task-scoped evidence file input"
                 className="hidden"
                 onChange={onFileChosen}
               />
@@ -921,10 +918,10 @@ export function EvidenceCenterPage() {
             {loading && files.length === 0 ? (
               <LoadingState variant="block" label="Loading evidence…" />
             ) : filtered.length === 0 ? (
-              <EvidenceCenterEmptyState eventId={eventId} onUpload={onUploadClick} />
+              <EvidenceCenterEmptyState eventId={eventId} />
             ) : (
               <table className="w-full text-sm border-separate border-spacing-y-[6px]">
-                <thead className="text-xs uppercase tracking-wider ci-text-surface-soft">
+                <thead className="text-xs uppercase tracking-wider text-[var(--v3-text-tertiary)]">
                   <tr>
                     <th className="text-left px-3 py-2">Filename</th>
                     <th className="text-left px-3 py-2">Policy / Workflow / Event</th>
@@ -940,12 +937,12 @@ export function EvidenceCenterPage() {
                   {filtered.map((f) => (
                     <tr
                       key={f.evidence_id}
-                      className="ci-bg-overlay-soft hover:bg-[var(--ci-overlay-strong)] cursor-pointer border border-[var(--ci-overlay-border)] select-none ci-premium-panel hover:shadow-[0_14px_28px_rgba(2,8,20,0.42)]"
+                      className="cursor-pointer border-b border-[var(--v3-border-subtle)] select-none hover:bg-[var(--ci-overlay-strong)]"
                       onClick={() => setSelected(f)}
                     >
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <FileText size={14} className="text-[var(--ci-accent)]" />
+                          <FileText size={14} className="text-[var(--v3-teal-light)]" />
                           <Link
                             to={buildArtifactRoute(f.evidence_id, {
                               eventId: f.event_id,
@@ -956,18 +953,18 @@ export function EvidenceCenterPage() {
                             })}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[var(--ci-text-primary)] underline decoration-dotted"
+                            className="text-[var(--v3-text-primary)] underline decoration-dotted"
                           >
                             {f.filename}
                           </Link>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-xs ci-text-surface-soft">
+                      <td className="px-3 py-2 text-xs text-[var(--v3-text-secondary)]">
                         <div><Link to={`/library/${encodeURIComponent(f.policy_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.policy_id}</Link></div>
                         <div><Link to={`/workflows/${encodeURIComponent(f.workflow_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.workflow_id}</Link></div>
-                        <div className="text-[var(--ci-text-primary)]"><Link to={`/calendar/event/${encodeURIComponent(f.event_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.event_id}</Link></div>
+                        <div className="text-[var(--v3-text-primary)]"><Link to={`/calendar/event/${encodeURIComponent(f.event_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.event_id}</Link></div>
                       </td>
-                      <td className="px-3 py-2 text-xs ci-text-surface-soft">
+                      <td className="px-3 py-2 text-xs text-[var(--v3-text-secondary)]">
                         <div>{f.form_id ? <Link to={`/forms/${encodeURIComponent(f.form_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.form_id}</Link> : '—'}</div>
                         <div>{f.task_id ? <Link to={`/calendar/event/${encodeURIComponent(f.event_id)}/task/${encodeURIComponent(f.task_id)}`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">{f.task_id}</Link> : '—'}</div>
                       </td>
@@ -981,9 +978,9 @@ export function EvidenceCenterPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-xs ci-text-surface-soft">{f.source_system || '—'}</td>
-                      <td className="px-3 py-2 text-xs ci-text-surface-soft">{formatTs(f.created_at)}</td>
-                      <td className="px-3 py-2 text-xs ci-text-surface-soft text-right">{formatBytes(f.size_bytes)}</td>
+                      <td className="px-3 py-2 text-xs text-[var(--v3-text-secondary)]">{f.source_system || '—'}</td>
+                      <td className="px-3 py-2 text-xs text-[var(--v3-text-secondary)]">{formatTs(f.created_at)}</td>
+                      <td className="px-3 py-2 text-xs text-[var(--v3-text-secondary)] text-right">{formatBytes(f.size_bytes)}</td>
                       <td className="px-3 py-2 text-right">
                         <div className="inline-flex gap-2">
                           <Link
@@ -997,14 +994,14 @@ export function EvidenceCenterPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-xs px-2 py-1 rounded ci-status-pill--accent inline-flex items-center gap-1"
+                            className="text-xs px-2 py-1 rounded border border-[var(--v3-border-subtle)] inline-flex items-center gap-1 text-[var(--v3-text-primary)]"
                             title="Open artifact viewer"
                           >
                             <ExternalLink size={12} /> View Artifact
                           </Link>
                           <button
                             onClick={(e) => { e.stopPropagation(); onDownload(f); }}
-                            className="text-xs px-2 py-1 rounded ci-bg-overlay-strong hover:bg-[var(--ci-overlay-active-bg)] border border-[var(--ci-overlay-border-strong)] text-[var(--ci-text-primary)] inline-flex items-center gap-1"
+                            className="text-xs px-2 py-1 rounded border border-[var(--v3-border-subtle)] text-[var(--v3-text-primary)] inline-flex items-center gap-1"
                             title="Get presigned download URL"
                           >
                             <Download size={12} /> Download
@@ -1019,29 +1016,29 @@ export function EvidenceCenterPage() {
           </div>
 
           {/* Audit panel */}
-          <div className="border-t border-[var(--ci-color-border-subtle)] px-6 py-4 max-h-72 overflow-auto ci-bg-overlay-faint">
+          <div className="border-t border-[var(--v3-border-subtle)] px-6 py-4 max-h-72 overflow-auto">
             <div className="flex items-center gap-2 mb-2">
-              <History size={16} className="text-[var(--ci-accent)]" />
-              <h2 className="text-sm font-semibold tracking-tight text-[var(--ci-text-primary)]">Audit log — event {eventId}</h2>
-              <span className="text-xs ci-text-surface-faint">({audit.length} entries)</span>
+              <History size={16} className="text-[var(--v3-teal-light)]" />
+              <h2 className="text-sm font-semibold tracking-tight text-[var(--v3-text-primary)]">Audit log — event {eventId}</h2>
+              <span className="text-xs text-[var(--v3-text-tertiary)]">({audit.length} entries)</span>
             </div>
             {audit.length === 0 ? (
-              <div className="text-xs ci-text-surface-faint">No audit entries yet for this event.</div>
+              <div className="text-xs text-[var(--v3-text-tertiary)]">No audit entries yet for this event.</div>
             ) : (
               <ul className="space-y-1.5">
                 {audit.map((a, i) => (
-                  <li key={`${a.ts}-${i}`} className="text-xs flex flex-wrap items-center gap-2 ci-bg-overlay-soft border border-[var(--ci-overlay-border)] rounded px-2 py-1.5">
-                    <Clock size={11} className="ci-text-surface-faint flex-shrink-0" />
-                    <span className="ci-text-surface-soft">{formatTs(a.ts)}</span>
-                    <span className="text-[10px] uppercase tracking-wider ci-status-pill--accent">
+                  <li key={`${a.ts}-${i}`} className="text-xs flex flex-wrap items-center gap-2 border-b border-[var(--v3-border-subtle)] px-1 py-2">
+                    <Clock size={11} className="text-[var(--v3-text-tertiary)] flex-shrink-0" />
+                    <span className="text-[var(--v3-text-secondary)]">{formatTs(a.ts)}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-[var(--v3-text-primary)]">
                       {a.action}
                     </span>
-                    <span className="text-[var(--ci-text-primary)]">{a.actor || 'system'}</span>
-                    {a.source_system && <span className="ci-text-surface-faint">· {a.source_system}</span>}
-                    {a.evidence_id && <span className="ci-text-surface-faint">· {a.evidence_id}</span>}
+                    <span className="text-[var(--v3-text-primary)]">{a.actor || 'system'}</span>
+                    {a.source_system && <span className="text-[var(--v3-text-tertiary)]">· {a.source_system}</span>}
+                    {a.evidence_id && <span className="text-[var(--v3-text-tertiary)]">· {a.evidence_id}</span>}
                     {(a.before_status || a.after_status) && (
-                      <span className="ci-text-surface-faint">
-                        {a.before_status || '·'} → <span className="text-[var(--ci-text-primary)]">{a.after_status || '·'}</span>
+                      <span className="text-[var(--v3-text-tertiary)]">
+                        {a.before_status || '·'} → <span className="text-[var(--v3-text-primary)]">{a.after_status || '·'}</span>
                       </span>
                     )}
                   </li>
@@ -1052,14 +1049,14 @@ export function EvidenceCenterPage() {
         </div>
 
         {/* Right contextual guidance */}
-        <aside className="hidden xl:flex xl:col-span-3 flex-col border-l border-[var(--ci-color-border-subtle)] ci-bg-overlay-soft overflow-auto">
+        <aside className="hidden xl:flex xl:col-span-3 flex-col border-l border-[var(--v3-border-subtle)] overflow-auto">
           <div className="p-5 space-y-5">
             <div>
               <div className="flex items-center gap-2">
-                <Info size={16} className="text-[var(--ci-accent)]" />
-                <h3 className="text-sm font-semibold tracking-tight text-[var(--ci-text-primary)]">What is "evidence"?</h3>
+                <Info size={16} className="text-[var(--v3-teal-light)]" />
+                <h3 className="text-sm font-semibold tracking-tight text-[var(--v3-text-primary)]">What is "evidence"?</h3>
               </div>
-              <p className="mt-1.5 text-xs ci-text-surface-soft leading-relaxed">
+              <p className="mt-1.5 text-xs text-[var(--v3-text-secondary)] leading-relaxed">
                 Any file that proves a regulated activity happened — QAPI minutes, signed forms,
                 competency checklists, training rosters, OASIS lock confirmations.
               </p>
@@ -1067,23 +1064,23 @@ export function EvidenceCenterPage() {
 
             <div>
               <div className="flex items-center gap-2">
-                <ShieldCheck size={16} className="text-[var(--ci-accent)]" />
-                <h3 className="text-sm font-semibold tracking-tight text-[var(--ci-text-primary)]">Why the triplet?</h3>
+                <ShieldCheck size={16} className="text-[var(--v3-teal-light)]" />
+                <h3 className="text-sm font-semibold tracking-tight text-[var(--v3-text-primary)]">Why the triplet?</h3>
               </div>
-              <p className="mt-1.5 text-xs ci-text-surface-soft leading-relaxed">
-                Every artifact is bound to a <code className="text-[var(--ci-text-primary)]">policy_id</code>,
-                {' '}<code className="text-[var(--ci-text-primary)]">workflow_id</code>, and
-                {' '}<code className="text-[var(--ci-text-primary)]">event_id</code>. A surveyor can pull a single
+              <p className="mt-1.5 text-xs text-[var(--v3-text-secondary)] leading-relaxed">
+                Every artifact is bound to a <code className="text-[var(--v3-text-primary)]">policy_id</code>,
+                {' '}<code className="text-[var(--v3-text-primary)]">workflow_id</code>, and
+                {' '}<code className="text-[var(--v3-text-primary)]">event_id</code>. A surveyor can pull a single
                 event packet and reconstruct the entire chain of custody.
               </p>
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <History size={16} className="text-[var(--ci-accent)]" />
-                <h3 className="text-sm font-semibold tracking-tight text-[var(--ci-text-primary)]">Audit log</h3>
+                <History size={16} className="text-[var(--v3-teal-light)]" />
+                <h3 className="text-sm font-semibold tracking-tight text-[var(--v3-text-primary)]">Audit log</h3>
               </div>
-              <p className="mt-1.5 text-xs ci-text-surface-soft leading-relaxed">
+              <p className="mt-1.5 text-xs text-[var(--v3-text-secondary)] leading-relaxed">
                 Append-only entries record who initiated each upload, every status transition, and
                 every download URL we mint. Nothing in this view is editable.
               </p>
@@ -1091,19 +1088,19 @@ export function EvidenceCenterPage() {
 
             <div>
               <div className="flex items-center gap-2">
-                <Upload size={16} className="text-[var(--ci-accent)]" />
-                <h3 className="text-sm font-semibold tracking-tight text-[var(--ci-text-primary)]">What to do next</h3>
+                <Upload size={16} className="text-[var(--v3-teal-light)]" />
+                <h3 className="text-sm font-semibold tracking-tight text-[var(--v3-text-primary)]">What to do next</h3>
               </div>
-              <ol className="mt-1.5 text-xs ci-text-surface-soft leading-relaxed list-decimal pl-4 space-y-1">
+              <ol className="mt-1.5 text-xs text-[var(--v3-text-secondary)] leading-relaxed list-decimal pl-4 space-y-1">
                 <li>Pick the event you're documenting (top-left).</li>
-                <li>Click <span className="text-[var(--ci-accent)]">Upload evidence</span> and choose a file.</li>
+                <li>Open the source CES task drawer and upload from its evidence requirement.</li>
                 <li>Verify the new row appears with status <code>EVIDENCE_LOCKED</code>.</li>
-                <li>Use <span className="text-[var(--ci-text-primary)]">Download</span> to obtain a short-lived presigned URL.</li>
+                <li>Use <span className="text-[var(--v3-text-primary)]">Download</span> to obtain a short-lived presigned URL.</li>
               </ol>
             </div>
 
-            <div className="text-[10px] ci-text-surface-faint leading-relaxed border-t border-[var(--ci-color-border-subtle)] pt-3">
-              API: <code className="break-all text-[var(--ci-text-primary)]">{API_BASE}</code>
+            <div className="text-[10px] text-[var(--v3-text-tertiary)] leading-relaxed border-t border-[var(--v3-border-subtle)] pt-3">
+              API: <code className="break-all text-[var(--v3-text-primary)]">{API_BASE}</code>
             </div>
           </div>
         </aside>
@@ -1118,7 +1115,7 @@ export function EvidenceCenterPage() {
 }
 
 // ── Empty state ────────────────────────────────────────────────
-export function EvidenceCenterEmptyState({ eventId, onUpload }: { eventId: string; onUpload: () => void }) {
+export function EvidenceCenterEmptyState({ eventId }: { eventId: string }) {
   return (
     <EmptyState
       icon={<FolderOpen size={42} />}
@@ -1126,22 +1123,10 @@ export function EvidenceCenterEmptyState({ eventId, onUpload }: { eventId: strin
       description={
         <>
           Event <code style={{ color: 'var(--ci-text-primary)' }}>{eventId}</code> has no files in
-          the compliance store. Upload the first artifact to start the audit chain.
+          the compliance store. Open the source CES task drawer to add evidence with task context.
         </>
       }
-      action={
-        <button
-          onClick={onUpload}
-          className="px-4 py-2 text-sm rounded inline-flex items-center gap-2"
-          style={{
-            background: 'var(--ci-surface-2)',
-            border: '1px solid var(--ci-border)',
-            color: 'var(--ci-link)',
-          }}
-        >
-          <Upload size={14} /> Upload evidence
-        </button>
-      }
+      action={<span className="text-xs text-[var(--v3-text-tertiary)]">Upload blocked until a CES task context is selected.</span>}
     />
   );
 }
@@ -1158,21 +1143,21 @@ function DetailDrawer({
     <div className="fixed inset-0 z-50 flex" onClick={onClose}>
       <div className="flex-1 bg-black/40 v3-backdrop" />
       <div
-        className="w-[min(100vw,420px)] max-w-full bg-[var(--ci-color-glass-main-detail)] border-l border-[var(--ci-color-glass-border)] h-full overflow-auto p-5 v3-drawer-panel"
+        className="w-[min(100vw,420px)] max-w-full bg-[var(--ci-color-glass-main-detail)] border-l border-[var(--v3-border-subtle)] h-full overflow-auto p-5 v3-drawer-panel"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <FileText size={16} className="text-[var(--ci-accent)]" />
-              <h3 className="text-sm font-semibold text-[var(--ci-text-primary)]">File metadata</h3>
+              <FileText size={16} className="text-[var(--v3-teal-light)]" />
+              <h3 className="text-sm font-semibold text-[var(--v3-text-primary)]">File metadata</h3>
             </div>
-            <p className="mt-1 text-base text-[var(--ci-text-primary)] break-all">{file.filename}</p>
+            <p className="mt-1 text-base text-[var(--v3-text-primary)] break-all">{file.filename}</p>
           </div>
-          <button title="Close" aria-label="Close panel" onClick={onClose} className="ci-text-surface-faint hover:text-[var(--ci-text-primary)] v3-micro"><X size={16} /></button>
+          <button title="Close" aria-label="Close panel" onClick={onClose} className="text-[var(--v3-text-tertiary)] hover:text-[var(--v3-text-primary)] v3-micro"><X size={16} /></button>
         </div>
 
-        <dl className="mt-5 space-y-2 text-xs">
+        <div className="mt-5 space-y-2 text-xs">
           <Field k="evidence_id"      v={file.evidence_id} />
           <Field k="policy_id"        v={file.policy_id} />
           <Field k="workflow_id"      v={file.workflow_id} />
@@ -1188,7 +1173,7 @@ function DetailDrawer({
           <Field k="size"             v={formatBytes(file.size_bytes)} />
           <Field k="created_at"       v={formatTs(file.created_at)} />
           <Field k="updated_at"       v={formatTs(file.updated_at)} />
-        </dl>
+        </div>
 
         <button
           onClick={() => window.open(buildArtifactRoute(file.evidence_id, {
@@ -1217,10 +1202,10 @@ function DetailDrawer({
 
 function Field({ k, v }: { k: string; v: string }) {
   return (
-    <>
-      <dt className="ci-text-surface-faint inline-block w-2/5">{k}</dt>
-      <dd className="text-[var(--ci-text-primary)] inline-block w-3/5 text-right break-all border-b border-[var(--ci-color-border-subtle)] pb-1.5">{v}</dd>
-    </>
+    <div className="grid grid-cols-[110px_1fr] gap-3">
+      <span className="text-[var(--v3-text-tertiary)]">{k}</span>
+      <span className="text-[var(--v3-text-primary)] break-all">{v}</span>
+    </div>
   );
 }
 

@@ -22,12 +22,11 @@ import { regulatoryEventOverlapsSprint } from '@/policy/pm/sprintWindows';
 import { usePmViewSprintStore } from '@/policy/pm/pmViewSprintStore';
 import { SprintScopeToolbar } from '@/policy/components/pm/SprintScopeToolbar';
 import { KanbanView, GanttView, SprintBoardView } from '@/policy/components/pm/PmViews';
-import { TaskDetailRightPanel } from '@/policy/components/pm/TaskDetailRightPanel';
+import { V3TaskDetailPanel } from '@/policy/components/pm/V3TaskDetailPanel';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { useCalendarSyncStore, type BulkSyncSummary } from '@/policy/stores/calendarSyncStore';
 import { SurfaceCard, EmptyState } from '@/policy/components/ui';
-import { RightDrawer } from '@/policy/components/ui/RightDrawer';
-import { BottomSheetDrawer } from '@/policy/components/ui/BottomSheetDrawer';
+import { VeilDrawer } from '@/policy/components/ui/VeilDrawer';
 import { AriaLiveRegion } from '@/policy/components/ui';
 
 export type PmView = 'calendar' | 'sprint' | 'kanban' | 'gantt';
@@ -67,7 +66,6 @@ export function MasterCalendarPage() {
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window === 'undefined' ? 1920 : window.innerWidth,
   );
-  const isCompactLayout = viewportWidth < 1280;
   const isMobileLayout = viewportWidth < 768;
 
   /* ── All workflow instances (base + autogen + triggered) ── */
@@ -133,7 +131,7 @@ export function MasterCalendarPage() {
     // The inline panel is always visible, but mark the workflow active
     // so any enforcement log / audit signals that execution has started.
     store.openWorkflow(e.id);
-    if (isCompactLayout) setDetailsOpen(true);
+    setDetailsOpen(true);
   };
 
   const clearSelection = () => {
@@ -229,13 +227,9 @@ export function MasterCalendarPage() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  useEffect(() => {
-    if (!isCompactLayout) setDetailsOpen(false);
-  }, [isCompactLayout]);
-
   const selectTask = (id: string | null) => {
     setActiveTaskId(id);
-    if (id && isCompactLayout) setDetailsOpen(true);
+    if (id) setDetailsOpen(true);
   };
 
   const hasDetailContext = view === 'kanban' || view === 'gantt'
@@ -243,7 +237,7 @@ export function MasterCalendarPage() {
     : Boolean(activeInstance || activeTaskId);
 
   return (
-    <div className="ci-page-container h-full w-full flex flex-col font-sans animate-in fade-in duration-500 gap-3 sm:gap-4 overflow-hidden relative z-10">
+    <div className="ci-page-container v3-calendar-surface h-full w-full flex flex-col font-sans animate-in fade-in duration-500 gap-3 sm:gap-4 overflow-hidden relative z-10">
 
       <TimelineHeader
         monthLabel={monthLabel}
@@ -268,7 +262,7 @@ export function MasterCalendarPage() {
       {view === 'calendar' && <JulyReadinessBanner today={today} />}
 
       {view === 'calendar' ? (
-        <div className={`${isCompactLayout ? 'flex-1 min-h-0 flex flex-col' : 'ci-content-grid min-h-0 overflow-hidden'}`}>
+        <div className="flex-1 min-h-0 flex flex-col">
           <div className="min-h-0 flex flex-col">
             {isMobileLayout ? (
               <MobileAgendaList
@@ -287,90 +281,30 @@ export function MasterCalendarPage() {
               />
             )}
           </div>
-          {!isCompactLayout && (
-            <div className="ci-right-panel">
-              {activeTaskId ? (
-                <TaskDetailRightPanel
-                  taskId={activeTaskId}
-                  onClose={() => setActiveTaskId(null)}
-                />
-              ) : (
-                <WorkflowExecutionPanel
-                  event={activeInstance}
-                  onClear={activeInstance ? clearSelection : undefined}
-                  today={today}
-                  onSelectTask={(taskId) => selectTask(taskId)}
-                />
-              )}
-            </div>
-          )}
         </div>
       ) : view === 'sprint' ? (
-        <div className={`${isCompactLayout ? 'flex-1 min-h-0 flex flex-col' : 'ci-content-grid min-h-0 overflow-hidden'}`}>
+        <div className="flex-1 min-h-0 flex flex-col">
           <div className="min-h-0 flex flex-col">
             <SprintBoardView onSelect={selectTask} selectedEventId={activeInstance?.id ?? null} />
           </div>
-          {!isCompactLayout && (
-            <div className="ci-right-panel">
-              {activeTaskId ? (
-                <TaskDetailRightPanel
-                  taskId={activeTaskId}
-                  onClose={() => setActiveTaskId(null)}
-                />
-              ) : (
-                <SprintTaskPanel
-                  event={
-                    activeInstance && sprintInstances.some(e => e.id === activeInstance.id)
-                      ? activeInstance
-                      : sprintInstances[0] ?? null
-                  }
-                  onClear={activeInstance ? clearSelection : undefined}
-                  today={today}
-                />
-              )}
-            </div>
-          )}
         </div>
       ) : view === 'kanban' ? (
-        <div className={`${isCompactLayout ? 'flex-1 min-h-0 flex flex-col' : 'ci-content-grid min-h-0 overflow-hidden'}`}>
+        <div className="flex-1 min-h-0 flex flex-col">
           <div className="min-h-0 flex flex-col">
             <KanbanView onSelect={selectTask} selectedEventId={null} />
           </div>
-          {!isCompactLayout && (
-            <div className="ci-right-panel">
-              {activeTaskId ? (
-                <TaskDetailRightPanel
-                  taskId={activeTaskId}
-                  onClose={() => setActiveTaskId(null)}
-                />
-              ) : (
-                <EmptyRightPanel label="Select a task to see details." />
-              )}
-            </div>
-          )}
         </div>
       ) : (
-        <div className={`${isCompactLayout ? 'flex-1 min-h-0 flex flex-col' : 'ci-content-grid min-h-0 overflow-hidden'}`}>
+        <div className="flex-1 min-h-0 flex flex-col">
           <div className="min-h-0 flex flex-col">
             <GanttView onSelect={selectTask} selectedEventId={null} />
           </div>
-          {!isCompactLayout && (
-            <div className="ci-right-panel">
-              {activeTaskId ? (
-                <TaskDetailRightPanel
-                  taskId={activeTaskId}
-                  onClose={() => setActiveTaskId(null)}
-                />
-              ) : (
-                <EmptyRightPanel label="Select a task to see details." />
-              )}
-            </div>
-          )}
         </div>
       )}
 
-      {isCompactLayout && (
+      {hasDetailContext && (
         <>
+          {!detailsOpen && (
           <div className="flex justify-end">
             <button
               type="button"
@@ -382,17 +316,19 @@ export function MasterCalendarPage() {
               Open Details
             </button>
           </div>
-          {isMobileLayout ? (
-            <BottomSheetDrawer
-              open={detailsOpen}
-              onClose={() => setDetailsOpen(false)}
-              height="lg"
-              disableSwipeDismiss={false}
-            >
+          )}
+          <VeilDrawer
+            open={detailsOpen}
+            onClose={() => setDetailsOpen(false)}
+            layer={activeTaskId ? 2 : 1}
+            width={activeTaskId ? 'lg' : 'md'}
+            eyebrow={activeTaskId ? activeTaskId : activeInstance?.domain}
+            title={activeTaskId ? 'Task detail' : 'Tasks'}
+          >
               <div className="h-full min-h-0">
                 {view === 'calendar' ? (
                   activeTaskId ? (
-                    <TaskDetailRightPanel
+                    <V3TaskDetailPanel
                       taskId={activeTaskId}
                       onClose={() => {
                         setActiveTaskId(null);
@@ -409,7 +345,7 @@ export function MasterCalendarPage() {
                   )
                 ) : view === 'sprint' ? (
                   activeTaskId ? (
-                    <TaskDetailRightPanel
+                    <V3TaskDetailPanel
                       taskId={activeTaskId}
                       onClose={() => {
                         setActiveTaskId(null);
@@ -428,7 +364,7 @@ export function MasterCalendarPage() {
                     />
                   )
                 ) : activeTaskId ? (
-                  <TaskDetailRightPanel
+                  <V3TaskDetailPanel
                     taskId={activeTaskId}
                     onClose={() => {
                       setActiveTaskId(null);
@@ -439,65 +375,7 @@ export function MasterCalendarPage() {
                   <EmptyRightPanel label="Select a task to see details." />
                 )}
               </div>
-            </BottomSheetDrawer>
-          ) : (
-          <RightDrawer
-            open={detailsOpen}
-            onClose={() => setDetailsOpen(false)}
-            width="lg"
-          >
-            <div className="h-full min-h-0">
-              {view === 'calendar' ? (
-                activeTaskId ? (
-                  <TaskDetailRightPanel
-                    taskId={activeTaskId}
-                    onClose={() => {
-                      setActiveTaskId(null);
-                      setDetailsOpen(false);
-                    }}
-                  />
-                ) : (
-                  <WorkflowExecutionPanel
-                    event={activeInstance}
-                    onClear={activeInstance ? clearSelection : undefined}
-                    today={today}
-                    onSelectTask={(taskId) => selectTask(taskId)}
-                  />
-                )
-              ) : view === 'sprint' ? (
-                activeTaskId ? (
-                  <TaskDetailRightPanel
-                    taskId={activeTaskId}
-                    onClose={() => {
-                      setActiveTaskId(null);
-                      setDetailsOpen(false);
-                    }}
-                  />
-                ) : (
-                  <SprintTaskPanel
-                    event={
-                      activeInstance && sprintInstances.some(e => e.id === activeInstance.id)
-                        ? activeInstance
-                        : sprintInstances[0] ?? null
-                    }
-                    onClear={activeInstance ? clearSelection : undefined}
-                    today={today}
-                  />
-                )
-              ) : activeTaskId ? (
-                <TaskDetailRightPanel
-                  taskId={activeTaskId}
-                  onClose={() => {
-                    setActiveTaskId(null);
-                    setDetailsOpen(false);
-                  }}
-                />
-              ) : (
-                <EmptyRightPanel label="Select a task to see details." />
-              )}
-            </div>
-          </RightDrawer>
-          )}
+          </VeilDrawer>
         </>
       )}
 
@@ -525,8 +403,6 @@ function PmTab({
   const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   return (
     <button
-      role="tab"
-      aria-selected={active ? 'true' : 'false'}
       onClick={onClick}
       className="ci-touch-target whitespace-nowrap text-[11px] font-outfit px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors ci-subtle-hover"
       style={isLight
@@ -596,7 +472,6 @@ function TimelineHeader({
         {/* View switcher: Calendar | Sprint | Kanban | Gantt */}
         <div
           className="flex max-w-full items-center gap-1 overflow-x-auto rounded-lg border border-white/10 p-0.5 ci-operational-card"
-          role="tablist"
           aria-label="PM view"
         >
           <PmTab active={view === 'calendar'} onClick={() => onViewChange('calendar')}>

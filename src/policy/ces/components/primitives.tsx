@@ -20,8 +20,8 @@ export function CesCard({ title, action, children, padding = true }: {
   const t = useCesTokens();
   return (
     <section
-      className="rounded-xl shadow-sm"
-      style={{ background: t.white, border: `1px solid ${t.border}` }}
+      className="rounded-xl"
+      style={{ background: t.white, border: `1px solid ${t.borderSoft}` }}
     >
       {title && (
         <header
@@ -36,6 +36,91 @@ export function CesCard({ title, action, children, padding = true }: {
       )}
       <div className={padding ? 'p-5' : ''}>{children}</div>
     </section>
+  );
+}
+
+/* ── V3 flat section ─────────────────────────────────────── */
+export function V3Section({
+  label,
+  trailing,
+  children,
+  divided = true,
+}: {
+  label?: ReactNode;
+  trailing?: ReactNode;
+  children: ReactNode;
+  divided?: boolean;
+}) {
+  const t = useCesTokens();
+  return (
+    <section
+      className="flex flex-col gap-2.5"
+      style={divided ? { borderTop: `1px solid var(--v3-border-subtle, ${t.borderSoft})`, paddingTop: 12 } : undefined}
+    >
+      {(label || trailing) && (
+        <div className="flex items-center justify-between gap-3">
+          {label && (
+            <div className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: `var(--v3-text-tertiary, ${t.muted})` }}>
+              {label}
+            </div>
+          )}
+          {trailing}
+        </div>
+      )}
+      {children}
+    </section>
+  );
+}
+
+/* ── Flat drawer metadata row ────────────────────────────── */
+export function DetailField({ label, children }: { label: string; children: ReactNode }) {
+  const t = useCesTokens();
+  return (
+    <div className="grid grid-cols-[112px_minmax(0,1fr)] items-baseline gap-3">
+      <span className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: `var(--v3-text-tertiary, ${t.muted})` }}>
+        {label}
+      </span>
+      <span className="min-w-0 text-[12px] leading-relaxed" style={{ color: `var(--v3-text-secondary, ${t.ink})` }}>
+        {children}
+      </span>
+    </div>
+  );
+}
+
+/* ── Inline secondary row metadata ───────────────────────── */
+export function MetadataLine({ items }: { items: Array<ReactNode | null | undefined | false> }) {
+  const t = useCesTokens();
+  const visible = items.filter(Boolean);
+  if (visible.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]" style={{ color: `var(--v3-text-tertiary, ${t.muted})` }}>
+      {visible.map((item, index) => (
+        <span key={index}>{item}</span>
+      ))}
+    </div>
+  );
+}
+
+/* ── Inline metric, not a boxed stat card ────────────────── */
+export function InlineMetric({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: ReactNode;
+  tone?: string;
+}) {
+  const t = useCesTokens();
+  return (
+    <span className="inline-flex items-baseline gap-1.5">
+      <span className="text-[12px] font-semibold" style={{ color: tone ?? `var(--v3-teal-light, ${t.navy})` }}>
+        {value}
+      </span>
+      <span className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: `var(--v3-text-tertiary, ${t.muted})` }}>
+        {label}
+      </span>
+    </span>
   );
 }
 
@@ -170,11 +255,5 @@ export function EscalationTimer({ hours }: { hours: number }) {
 
 /* ── KV row ────────────────────────────────────────────── */
 export function KV({ label, value }: { label: string; value: ReactNode }) {
-  const t = useCesTokens();
-  return (
-    <div className="flex items-baseline justify-between gap-3">
-      <span className="text-[11px] uppercase tracking-[0.12em]" style={{ color: t.muted }}>{label}</span>
-      <span className="text-[12.5px] font-medium" style={{ color: t.ink }}>{value}</span>
-    </div>
-  );
+  return <DetailField label={label}>{value}</DetailField>;
 }

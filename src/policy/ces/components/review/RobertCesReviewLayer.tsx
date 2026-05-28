@@ -8,7 +8,7 @@
    - Task assignedRole / accountableRole / reviewerRole / approverRole
    - Signer tasks generated for each required form
    - Why the task was assigned to that role
-   - Parent-child links: Event ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Form Task ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Signer Task ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Evidence ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Gate
+   - Parent-child links: Event -> Form Task -> Signer Task -> Evidence -> Gate
 
    To remove this entire feature:
      Delete this file + CesRoleReviewSwitcher.tsx + cesReviewMode.ts
@@ -50,21 +50,21 @@ interface Props {
 
 function describeAssignmentReason(task: EventTask, role: CesRole): string {
   if (task.ownerRole) {
-    return `ownerRole field on event: "${task.ownerRole}" ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ resolved to ${role}`;
+    return `ownerRole field on event: "${task.ownerRole}" -> resolved to ${role}`;
   }
   if (task.taskSourceType === 'approval') {
-    return `Approval task type ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Administrator (or DON for clinical domain)`;
+    return `Approval task type -> Administrator (or DON for clinical domain)`;
   }
   if (task.taskSourceType === 'minutes') {
-    return `Minutes task type ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Admin Designee (scheduling/documentation support)`;
+    return `Minutes task type -> Admin Designee (scheduling/documentation support)`;
   }
   if (task.taskSourceType === 'requiredForm') {
-    return `Required form ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ role derived from domain/form type (default: DON)`;
+    return `Required form -> role derived from domain/form type (default: DON)`;
   }
   if (task.taskSourceType === 'processFlow') {
-    return `Process flow step ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ role derived from domain (default: DON)`;
+    return `Process flow step -> role derived from domain (default: DON)`;
   }
-  return `No ownerRole specified ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ DON (default for all ambiguous tasks)`;
+  return `No ownerRole specified -> DON (default for all ambiguous tasks)`;
 }
 
 /* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Sub-components ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */

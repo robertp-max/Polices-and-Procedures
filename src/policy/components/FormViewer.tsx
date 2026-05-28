@@ -11,11 +11,12 @@ import {
   type FormField,
 } from '../data/formsLibraryContent';
 import { FORMS_DATASET } from '../data/formsLibraryDataset';
+import { resolveCanonicalFormId } from '../data/formIdAliases';
 import { printForm } from '../utils/printForm';
 import { recordFormSubmission, harvestFormFields } from '@/policy/services/hhcFormEvidence';
 import eCIgnLogo from '@/assets/eCIgn.png';
 import { FormSignatureFlow } from './FormSignatureFlow';
-import { eCIgnWorkspace as ECIgnWorkspace } from './FormSigningWorkspace';
+import { ECIgnWorkspace } from './FormSigningWorkspace';
 import { PolicyLinkSelector } from './PolicyLinkSelector';
 import { resolveCesRole, isDonAssistant } from '@/policy/ces/cesRoles';
 import { getCesReviewRole } from '@/policy/ces/cesReviewMode';
@@ -1048,6 +1049,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
   const effectiveSource: 'policy_viewer' | 'task' | 'forms_library' | 'workflow' =
     formSource ?? (isEmbedded ? 'policy_viewer' : 'forms_library');
   const id = formId ?? routeId;
+  const canonicalId = resolveCanonicalFormId(id);
   const queryInstanceId =
     formInstanceIdProp
     ?? searchParams.get('form_instance_id')
@@ -1078,16 +1080,16 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
   }, [isEmbedded, setDetailMode]);
 
   const content: FormContent | null = useMemo(() => {
-    if (!id) return null;
-    const rec = FORMS_DATASET.find(f => f.id === id);
+    if (!canonicalId) return null;
+    const rec = FORMS_DATASET.find(f => f.id === canonicalId);
     if (!rec) return null;
     return buildFormContent(rec);
-  }, [id]);
+  }, [canonicalId]);
 
   // ── Signature state (standalone mode only) ────────────────────────
   // All hooks must be called before any early returns.
   const [formInstanceId, setFormInstanceId] = useState(() => queryInstanceId ?? `fi_${signerNanoid(12)}`);
-  const [certId]          = useState(() => `CERT-${id ?? 'fm'}-${signerNanoid(8)}`);
+  const [certId]          = useState(() => `CERT-${canonicalId ?? id ?? 'fm'}-${signerNanoid(8)}`);
   const [signatures,      setSignatures]    = useState<Map<string, SignatureRecord>>(new Map());
   const [activeFieldId,   setActiveFieldId] = useState<string | null>(null);
   const [flowState,       setFlowState]     = useState<SignFlowState>('unsigned');

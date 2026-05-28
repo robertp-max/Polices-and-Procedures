@@ -49,14 +49,27 @@ export function ExecutionUnitCard({
       data-unit-id={unit.id}
       data-compliance-state={unit.complianceState}
       data-workflow-phase={unit.workflowPhase}
-      className="cursor-pointer rounded-lg shadow-sm transition-shadow hover:shadow-md select-none"
+      className="cursor-pointer rounded-xl border select-none transition-colors"
       style={{
-        background: t.white,
+        background: t.canvas,
         border: `1px solid ${isBlocked ? t.red + '55' : t.border}`,
-        borderTop: `3px solid ${topBar}`,
       }}
     >
-      <div className="p-3 space-y-2">
+      <div className="p-3 space-y-2.5">
+        <div className="flex items-center justify-between gap-3">
+          <span
+            className="text-[10px] font-semibold uppercase tracking-[0.14em]"
+            style={{ color: topBar }}
+          >
+            {unit.workflowPhase.replace(/_/g, ' ')}
+          </span>
+          {typeof auditScore === 'number' && (
+            <span className="text-[10px] font-semibold" style={{ color: t.muted }}>
+              Audit {auditScore}%
+            </span>
+          )}
+        </div>
+
         {/* Title */}
         <h4 className="text-[12.5px] font-semibold leading-snug" style={{ color: t.ink }}>
           {unit.title}
@@ -99,22 +112,14 @@ export function ExecutionUnitCard({
 
         {/* Completed evidence indicator */}
         {isCompleted && (
-          <div
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10.5px] font-semibold"
-            style={{ background: t.greenSoft, color: t.green }}
-          >
+          <div className="flex items-center gap-1.5 text-[10.5px] font-semibold" style={{ color: t.green }}>
             <FileText size={11} />
             Evidence complete · Audit indexed
           </div>
         )}
-        {typeof auditScore === 'number' && (
-          <div className="text-[10px] font-semibold" style={{ color: t.muted }}>
-            Audit readiness score: {auditScore}%
-          </div>
-        )}
 
         {/* Footer: owner + due */}
-        <div className="flex items-center justify-between pt-1" style={{ borderTop: `1px dashed ${t.border}` }}>
+        <div className="flex items-center justify-between pt-1" style={{ borderTop: `1px solid ${t.border}` }}>
           <div className="flex items-center gap-1.5">
             <UserAvatar initials={unit.owner.initials} size={20} />
             <span className="text-[11px]" style={{ color: t.ink }}>{unit.owner.name}</span>

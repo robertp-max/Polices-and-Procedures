@@ -219,7 +219,9 @@ export function dataUrlToBlobUrlForHtml(dataUrl: string): string | undefined {
   let html: string;
   if (/;base64/i.test(meta)) {
     try {
-      html = atob(payload.replace(/\s/g, ''));
+      const binary = atob(payload.replace(/\s/g, ''));
+      const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+      html = new TextDecoder('utf-8').decode(bytes);
     } catch {
       return undefined;
     }

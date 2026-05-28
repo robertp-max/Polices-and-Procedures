@@ -88,6 +88,7 @@ app.use('/api', (req, _res, next) => {
 
 // Centralized error handler.
 const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+  void _next;
   const apiErr = err instanceof ApiError
     ? err
     : new ApiError('internal_error', (err as Error)?.message ?? 'Internal error', 500);

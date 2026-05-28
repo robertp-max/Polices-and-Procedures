@@ -338,7 +338,6 @@ export function MyTasksPage({
                   onClick={() => handleRoleChipClick(role)}
                   title={`${count} tasks visible to ${role}`}
                   aria-pressed={reviewRole === role ? 'true' : 'false'}
-                  // eslint-disable-next-line react/forbid-dom-props -- dense diagnostic chip (Robert-only); palette routes through CES_TOKENS so no raw hex remains
                   style={{
                     fontSize: 9,
                     fontWeight: 700,

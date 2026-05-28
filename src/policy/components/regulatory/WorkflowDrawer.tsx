@@ -656,7 +656,8 @@ function ValidationPanel({ event }: { event: RegulatoryEvent }) {
           disabled={!report.canComplete}
           onClick={() => {
             const r = store.markEventComplete(event);
-            r.ok ? push('success', 'Event completed', event.title) : push('error', 'Cannot complete', r.message);
+            if (r.ok) push('success', 'Event completed', event.title);
+            else push('error', 'Cannot complete', r.message);
           }}
           className="w-full rounded-md border py-2 text-[11px] font-montserrat font-bold uppercase tracking-[0.14em] flex items-center justify-center gap-1.5 transition-colors disabled:cursor-not-allowed"
           style={{
@@ -742,7 +743,7 @@ function formatValidationBlockerLabel(
   }
 
   if (blocker.kind === 'approval') {
-    const cleaned = (blocker.label || 'Required approval pending').replace(/^pending approval[:\-]?\s*/i, '').trim();
+    const cleaned = (blocker.label || 'Required approval pending').replace(/^pending approval[:-]?\s*/i, '').trim();
     return cleaned || 'Required approval pending';
   }
 

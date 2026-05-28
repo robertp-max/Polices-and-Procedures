@@ -894,9 +894,9 @@ function markdownToHtmlBlocks(md: string): string {
       out.push(renderTable(tbl));
       continue;
     }
-    if (/^- /.test(line) || /^  - /.test(line)) {
+    if (/^- /.test(line) || /^ {2}- /.test(line)) {
       const items: string[] = [];
-      while (i < lines.length && (/^- /.test(lines[i]) || /^  - /.test(lines[i]))) {
+      while (i < lines.length && (/^- /.test(lines[i]) || /^ {2}- /.test(lines[i]))) {
         const lvl = lines[i].startsWith('  ') ? 'margin-left:1.5em;' : '';
         items.push(`<li style="${lvl}">${inline(lines[i].replace(/^  ?- /, ''))}</li>`);
         i++;

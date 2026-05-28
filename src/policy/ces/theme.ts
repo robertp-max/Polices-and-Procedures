@@ -50,38 +50,35 @@ import { useCiModeStore } from '@/policy/stores/ciModeStore';
 import { useShellStore } from '@/policy/stores/uiStore';
 
 /* ──────────────────────────────────────────────────────────────
- * CES brand palette — named constants (SINGLE POINT OF CHANGE).
- *
- * Values are mirrored to --ces-* custom properties in
- * src/index.css. Any change here MUST be reflected there
- * (see "REMAP CONTRACT" in the file header above).
+ * CES now resolves through the app-wide V3 design contract. The historical
+ * CES token names remain as a compatibility adapter for live components.
  * ────────────────────────────────────────────────────────────── */
 
 // Navy family — Lead 16 C14 amendment: navy is the approved CES identity.
-const CES_NAVY_LIGHT       = '#1F4A8A';
-const CES_NAVY_DEEP_LIGHT  = '#143366';
-const CES_NAVY_SOFT_LIGHT  = '#EAF1FF';
+const CES_NAVY_LIGHT       = '#00D1C1';
+const CES_NAVY_DEEP_LIGHT  = '#00D1C1';
+const CES_NAVY_SOFT_LIGHT  = 'rgba(0, 209, 193, 0.12)';
 
 // Orange family — accent / awaiting-signature signal.
-const CES_ORANGE_LIGHT      = '#C74601';
-const CES_ORANGE_SOFT_LIGHT = '#FFF1EA';
+const CES_ORANGE_LIGHT      = '#FFA059';
+const CES_ORANGE_SOFT_LIGHT = 'rgba(224, 123, 44, 0.12)';
 
 // Neutrals — text, surface, border.
-const CES_INK_LIGHT         = '#1E293B';
-const CES_MUTED_LIGHT       = '#64748B';
-const CES_BORDER_LIGHT      = '#E2E8F0';
-const CES_BORDER_SOFT_LIGHT = '#EEF2F7';
-const CES_PAPER_LIGHT       = '#FFFFFF';
-const CES_CANVAS_LIGHT      = '#F8FAFC';
-const CES_WHITE_LIGHT       = '#FFFFFF';
+const CES_INK_LIGHT         = '#FFFFFF';
+const CES_MUTED_LIGHT       = '#94A3B8';
+const CES_BORDER_LIGHT      = 'rgba(255, 255, 255, 0.12)';
+const CES_BORDER_SOFT_LIGHT = 'rgba(255, 255, 255, 0.08)';
+const CES_PAPER_LIGHT       = 'transparent';
+const CES_CANVAS_LIGHT      = 'transparent';
+const CES_WHITE_LIGHT       = 'transparent';
 
 // Sentiment — green / amber / red status colors.
-const CES_GREEN_LIGHT       = '#0F766E';
-const CES_GREEN_SOFT_LIGHT  = '#E6F7F4';
-const CES_AMBER_LIGHT       = '#B45309';
-const CES_AMBER_SOFT_LIGHT  = '#FFF5E8';
-const CES_RED_LIGHT         = '#B91C1C';
-const CES_RED_SOFT_LIGHT    = '#FEECEC';
+const CES_GREEN_LIGHT       = '#00D1C1';
+const CES_GREEN_SOFT_LIGHT  = 'rgba(0, 209, 193, 0.12)';
+const CES_AMBER_LIGHT       = '#FFA059';
+const CES_AMBER_SOFT_LIGHT  = 'rgba(224, 123, 44, 0.12)';
+const CES_RED_LIGHT         = '#FFA059';
+const CES_RED_SOFT_LIGHT    = 'rgba(224, 123, 44, 0.12)';
 
 // Dark variants — used when JS detects care-indeed-light + ciMode dark.
 // Per Lead 16 C14: navy reads as teal in dark for AAA contrast against

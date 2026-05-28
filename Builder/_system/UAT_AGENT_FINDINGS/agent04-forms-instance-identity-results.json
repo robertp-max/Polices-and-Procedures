@@ -1,0 +1,875 @@
+{
+  "baseURL": "http://localhost:5173",
+  "testers": [
+    {
+      "id": "DON-05",
+      "identity": "Director of Nursing",
+      "personality": "Detail-Oriented Perfectionist",
+      "newUser": "First-time DON reviewing forms and policy references",
+      "powerUser": "DON power user validating form instance identity and audit trail completeness"
+    },
+    {
+      "id": "CM-03",
+      "identity": "Clinical Manager",
+      "personality": "Detail-Oriented Perfectionist",
+      "newUser": "First-time Clinical Manager checking required forms",
+      "powerUser": "Clinical Manager power user validating form completion, signatures, and evidence status"
+    },
+    {
+      "id": "CM-07",
+      "identity": "Clinical Manager",
+      "personality": "Detail-Oriented Perfectionist",
+      "newUser": "First-time Clinical Manager validating clinical documentation",
+      "powerUser": "Clinical Manager power user checking survey packet and evidence defensibility"
+    },
+    {
+      "id": "HCP-04",
+      "identity": "Risk Manager",
+      "personality": "Detail-Oriented Perfectionist",
+      "newUser": "First-time risk user reviewing incidents/safety workflows",
+      "powerUser": "Risk power user testing CAPA, evidence, escalation, and audit readiness"
+    }
+  ],
+  "scenarios": [
+    {
+      "label": "DON-05 QAPI acknowledgment task-linked form",
+      "testerId": "DON-05",
+      "formId": "EN-FM-001",
+      "eventId": "agent04-don05-qapi-20260527",
+      "taskId": "TASK-agent04-don05-qapi-policy-ack",
+      "requirementId": "REQ-agent04-don05-form-ack",
+      "policyId": "GV-GB-001",
+      "workflowId": "WF-agent04-qapi-policy-ack"
+    },
+    {
+      "label": "CM-03 clinical documentation task-linked form",
+      "testerId": "CM-03",
+      "formId": "CL-FM-020",
+      "eventId": "agent04-cm03-clinical-audit-20260527",
+      "taskId": "TASK-agent04-cm03-clinical-record-audit",
+      "requirementId": "REQ-agent04-cm03-clinical-form",
+      "policyId": "CL-CA-001",
+      "workflowId": "WF-agent04-clinical-audit"
+    },
+    {
+      "label": "CM-07 survey packet task-linked form",
+      "testerId": "CM-07",
+      "formId": "CL-FM-021",
+      "eventId": "agent04-cm07-survey-packet-20260527",
+      "taskId": "TASK-agent04-cm07-survey-findings",
+      "requirementId": "REQ-agent04-cm07-survey-form",
+      "policyId": "CL-CA-002",
+      "workflowId": "WF-agent04-survey-packet"
+    },
+    {
+      "label": "HCP-04 risk CAPA task-linked form",
+      "testerId": "HCP-04",
+      "formId": "RM-FM-010",
+      "eventId": "agent04-hcp04-risk-capa-20260527",
+      "taskId": "TASK-agent04-hcp04-risk-quarterly",
+      "requirementId": "REQ-agent04-hcp04-risk-form",
+      "policyId": "RM-RM-001",
+      "workflowId": "WF-agent04-risk-capa"
+    }
+  ],
+  "observations": [
+    {
+      "check": "Opening blank template from /forms/:formId",
+      "route": "/forms/EN-FM-001",
+      "result": "opened reusable blank template",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-blank-template-EN-FM-001.png"
+    },
+    {
+      "tester": "DON-05",
+      "persona": "new_user",
+      "label": "DON-05 QAPI acknowledgment task-linked form",
+      "route": "http://localhost:5173/forms/EN-FM-001?event_id=agent04-don05-qapi-20260527&task_id=TASK-agent04-don05-qapi-policy-ack&requirement_id=REQ-agent04-don05-form-ack&form_id=EN-FM-001&policy_id=GV-GB-001&workflow_id=WF-agent04-qapi-policy-ack",
+      "expectedId": "agent04-don05-qapi-20260527-EN-FM-001-001",
+      "matches": [
+        {
+          "id": "agent04-don05-qapi-20260527-EN-FM-001-001",
+          "status": "IN_PROGRESS",
+          "taskId": "TASK-agent04-don05-qapi-policy-ack",
+          "requirementId": "REQ-agent04-don05-form-ack",
+          "workflowId": "WF-agent04-qapi-policy-ack",
+          "policyIds": [
+            "GV-GB-001"
+          ]
+        }
+      ],
+      "taskLinkedStripPresent": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-DON-05-new_user-task-linked-form.png"
+    },
+    {
+      "tester": "DON-05",
+      "persona": "new_user",
+      "check": "Opening form instance from artifact route before completion",
+      "route": "http://localhost:5173/artifacts/agent04-don05-qapi-20260527-EN-FM-001-001?event_id=agent04-don05-qapi-20260527&task_id=TASK-agent04-don05-qapi-policy-ack&requirement_id=REQ-agent04-don05-form-ack&form_id=EN-FM-001&form_instance_id=agent04-don05-qapi-20260527-EN-FM-001-001&type=form_instance",
+      "artifactContainsInstance": true,
+      "artifactMentionsTemplate": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-DON-05-new_user-artifact-in-progress.png"
+    },
+    {
+      "tester": "DON-05",
+      "persona": "new_user",
+      "check": "Opening completed form instance from artifact route",
+      "route": "http://localhost:5173/artifacts/agent04-don05-qapi-20260527-EN-FM-001-001?event_id=agent04-don05-qapi-20260527&task_id=TASK-agent04-don05-qapi-policy-ack&requirement_id=REQ-agent04-don05-form-ack&form_id=EN-FM-001&form_instance_id=agent04-don05-qapi-20260527-EN-FM-001-001&type=form_instance",
+      "hasNoRenderablePreview": true,
+      "hasSignedMissingBanner": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-DON-05-new_user-completed-artifact.png"
+    },
+    {
+      "tester": "DON-05",
+      "persona": "new_user",
+      "check": "Policy route opened for linked policy",
+      "route": "/policies/GV-GB-001",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-DON-05-new_user-policy-link.png"
+    },
+    {
+      "tester": "DON-05",
+      "persona": "power_user",
+      "label": "DON-05 QAPI acknowledgment task-linked form",
+      "route": "http://localhost:5173/forms/EN-FM-001?event_id=agent04-don05-qapi-20260527&task_id=TASK-agent04-don05-qapi-policy-ack&requirement_id=REQ-agent04-don05-form-ack&form_id=EN-FM-001&policy_id=GV-GB-001&workflow_id=WF-agent04-qapi-policy-ack",
+      "expectedId": "agent04-don05-qapi-20260527-EN-FM-001-001",
+      "matches": [
+        {
+          "id": "agent04-don05-qapi-20260527-EN-FM-001-001",
+          "status": "COMPLETED",
+          "taskId": "TASK-agent04-don05-qapi-policy-ack",
+          "requirementId": "REQ-agent04-don05-form-ack",
+          "workflowId": "WF-agent04-qapi-policy-ack",
+          "policyIds": [
+            "GV-GB-001"
+          ]
+        }
+      ],
+      "taskLinkedStripPresent": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-DON-05-power_user-task-linked-form.png"
+    },
+    {
+      "tester": "DON-05",
+      "persona": "power_user",
+      "check": "Opening form instance from artifact route before completion",
+      "route": "http://localhost:5173/artifacts/agent04-don05-qapi-20260527-EN-FM-001-001?event_id=agent04-don05-qapi-20260527&task_id=TASK-agent04-don05-qapi-policy-ack&requirement_id=REQ-agent04-don05-form-ack&form_id=EN-FM-001&form_instance_id=agent04-don05-qapi-20260527-EN-FM-001-001&type=form_instance",
+      "artifactContainsInstance": true,
+      "artifactMentionsTemplate": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-DON-05-power_user-artifact-in-progress.png"
+    },
+    {
+      "tester": "DON-05",
+      "persona": "power_user",
+      "check": "Opening completed form instance from artifact route",
+      "route": "http://localhost:5173/artifacts/agent04-don05-qapi-20260527-EN-FM-001-001?event_id=agent04-don05-qapi-20260527&task_id=TASK-agent04-don05-qapi-policy-ack&requirement_id=REQ-agent04-don05-form-ack&form_id=EN-FM-001&form_instance_id=agent04-don05-qapi-20260527-EN-FM-001-001&type=form_instance",
+      "hasNoRenderablePreview": true,
+      "hasSignedMissingBanner": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-DON-05-power_user-completed-artifact.png"
+    },
+    {
+      "tester": "DON-05",
+      "persona": "power_user",
+      "check": "Policy route opened for linked policy",
+      "route": "/policies/GV-GB-001",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-DON-05-power_user-policy-link.png"
+    },
+    {
+      "tester": "CM-03",
+      "persona": "new_user",
+      "label": "CM-03 clinical documentation task-linked form",
+      "route": "http://localhost:5173/forms/CL-FM-020?event_id=agent04-cm03-clinical-audit-20260527&task_id=TASK-agent04-cm03-clinical-record-audit&requirement_id=REQ-agent04-cm03-clinical-form&form_id=CL-FM-020&policy_id=CL-CA-001&workflow_id=WF-agent04-clinical-audit",
+      "expectedId": "agent04-cm03-clinical-audit-20260527-CL-FM-020-001",
+      "matches": [
+        {
+          "id": "agent04-cm03-clinical-audit-20260527-CL-FM-020-001",
+          "status": "IN_PROGRESS",
+          "taskId": "TASK-agent04-cm03-clinical-record-audit",
+          "requirementId": "REQ-agent04-cm03-clinical-form",
+          "workflowId": "WF-agent04-clinical-audit",
+          "policyIds": [
+            "CL-CA-001"
+          ]
+        }
+      ],
+      "taskLinkedStripPresent": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-03-new_user-task-linked-form.png"
+    },
+    {
+      "tester": "CM-03",
+      "persona": "new_user",
+      "check": "Opening form instance from artifact route before completion",
+      "route": "http://localhost:5173/artifacts/agent04-cm03-clinical-audit-20260527-CL-FM-020-001?event_id=agent04-cm03-clinical-audit-20260527&task_id=TASK-agent04-cm03-clinical-record-audit&requirement_id=REQ-agent04-cm03-clinical-form&form_id=CL-FM-020&form_instance_id=agent04-cm03-clinical-audit-20260527-CL-FM-020-001&type=form_instance",
+      "artifactContainsInstance": true,
+      "artifactMentionsTemplate": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-03-new_user-artifact-in-progress.png"
+    },
+    {
+      "tester": "CM-03",
+      "persona": "new_user",
+      "check": "Opening completed form instance from artifact route",
+      "route": "http://localhost:5173/artifacts/agent04-cm03-clinical-audit-20260527-CL-FM-020-001?event_id=agent04-cm03-clinical-audit-20260527&task_id=TASK-agent04-cm03-clinical-record-audit&requirement_id=REQ-agent04-cm03-clinical-form&form_id=CL-FM-020&form_instance_id=agent04-cm03-clinical-audit-20260527-CL-FM-020-001&type=form_instance",
+      "hasNoRenderablePreview": true,
+      "hasSignedMissingBanner": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-03-new_user-completed-artifact.png"
+    },
+    {
+      "tester": "CM-03",
+      "persona": "new_user",
+      "check": "Policy route opened for linked policy",
+      "route": "/policies/CL-CA-001",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-03-new_user-policy-link.png"
+    },
+    {
+      "tester": "CM-03",
+      "persona": "power_user",
+      "label": "CM-03 clinical documentation task-linked form",
+      "route": "http://localhost:5173/forms/CL-FM-020?event_id=agent04-cm03-clinical-audit-20260527&task_id=TASK-agent04-cm03-clinical-record-audit&requirement_id=REQ-agent04-cm03-clinical-form&form_id=CL-FM-020&policy_id=CL-CA-001&workflow_id=WF-agent04-clinical-audit",
+      "expectedId": "agent04-cm03-clinical-audit-20260527-CL-FM-020-001",
+      "matches": [
+        {
+          "id": "agent04-cm03-clinical-audit-20260527-CL-FM-020-001",
+          "status": "COMPLETED",
+          "taskId": "TASK-agent04-cm03-clinical-record-audit",
+          "requirementId": "REQ-agent04-cm03-clinical-form",
+          "workflowId": "WF-agent04-clinical-audit",
+          "policyIds": [
+            "CL-CA-001"
+          ]
+        }
+      ],
+      "taskLinkedStripPresent": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-03-power_user-task-linked-form.png"
+    },
+    {
+      "tester": "CM-03",
+      "persona": "power_user",
+      "check": "Opening form instance from artifact route before completion",
+      "route": "http://localhost:5173/artifacts/agent04-cm03-clinical-audit-20260527-CL-FM-020-001?event_id=agent04-cm03-clinical-audit-20260527&task_id=TASK-agent04-cm03-clinical-record-audit&requirement_id=REQ-agent04-cm03-clinical-form&form_id=CL-FM-020&form_instance_id=agent04-cm03-clinical-audit-20260527-CL-FM-020-001&type=form_instance",
+      "artifactContainsInstance": true,
+      "artifactMentionsTemplate": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-03-power_user-artifact-in-progress.png"
+    },
+    {
+      "tester": "CM-03",
+      "persona": "power_user",
+      "check": "Opening completed form instance from artifact route",
+      "route": "http://localhost:5173/artifacts/agent04-cm03-clinical-audit-20260527-CL-FM-020-001?event_id=agent04-cm03-clinical-audit-20260527&task_id=TASK-agent04-cm03-clinical-record-audit&requirement_id=REQ-agent04-cm03-clinical-form&form_id=CL-FM-020&form_instance_id=agent04-cm03-clinical-audit-20260527-CL-FM-020-001&type=form_instance",
+      "hasNoRenderablePreview": true,
+      "hasSignedMissingBanner": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-03-power_user-completed-artifact.png"
+    },
+    {
+      "tester": "CM-03",
+      "persona": "power_user",
+      "check": "Policy route opened for linked policy",
+      "route": "/policies/CL-CA-001",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-03-power_user-policy-link.png"
+    },
+    {
+      "tester": "CM-07",
+      "persona": "new_user",
+      "label": "CM-07 survey packet task-linked form",
+      "route": "http://localhost:5173/forms/CL-FM-021?event_id=agent04-cm07-survey-packet-20260527&task_id=TASK-agent04-cm07-survey-findings&requirement_id=REQ-agent04-cm07-survey-form&form_id=CL-FM-021&policy_id=CL-CA-002&workflow_id=WF-agent04-survey-packet",
+      "expectedId": "agent04-cm07-survey-packet-20260527-CL-FM-021-001",
+      "matches": [
+        {
+          "id": "agent04-cm07-survey-packet-20260527-CL-FM-021-001",
+          "status": "IN_PROGRESS",
+          "taskId": "TASK-agent04-cm07-survey-findings",
+          "requirementId": "REQ-agent04-cm07-survey-form",
+          "workflowId": "WF-agent04-survey-packet",
+          "policyIds": [
+            "CL-CA-002"
+          ]
+        }
+      ],
+      "taskLinkedStripPresent": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-07-new_user-task-linked-form.png"
+    },
+    {
+      "tester": "CM-07",
+      "persona": "new_user",
+      "check": "Opening form instance from artifact route before completion",
+      "route": "http://localhost:5173/artifacts/agent04-cm07-survey-packet-20260527-CL-FM-021-001?event_id=agent04-cm07-survey-packet-20260527&task_id=TASK-agent04-cm07-survey-findings&requirement_id=REQ-agent04-cm07-survey-form&form_id=CL-FM-021&form_instance_id=agent04-cm07-survey-packet-20260527-CL-FM-021-001&type=form_instance",
+      "artifactContainsInstance": true,
+      "artifactMentionsTemplate": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-07-new_user-artifact-in-progress.png"
+    },
+    {
+      "tester": "CM-07",
+      "persona": "new_user",
+      "check": "Opening completed form instance from artifact route",
+      "route": "http://localhost:5173/artifacts/agent04-cm07-survey-packet-20260527-CL-FM-021-001?event_id=agent04-cm07-survey-packet-20260527&task_id=TASK-agent04-cm07-survey-findings&requirement_id=REQ-agent04-cm07-survey-form&form_id=CL-FM-021&form_instance_id=agent04-cm07-survey-packet-20260527-CL-FM-021-001&type=form_instance",
+      "hasNoRenderablePreview": true,
+      "hasSignedMissingBanner": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-07-new_user-completed-artifact.png"
+    },
+    {
+      "tester": "CM-07",
+      "persona": "new_user",
+      "check": "Policy route opened for linked policy",
+      "route": "/policies/CL-CA-002",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-07-new_user-policy-link.png"
+    },
+    {
+      "tester": "CM-07",
+      "persona": "power_user",
+      "label": "CM-07 survey packet task-linked form",
+      "route": "http://localhost:5173/forms/CL-FM-021?event_id=agent04-cm07-survey-packet-20260527&task_id=TASK-agent04-cm07-survey-findings&requirement_id=REQ-agent04-cm07-survey-form&form_id=CL-FM-021&policy_id=CL-CA-002&workflow_id=WF-agent04-survey-packet",
+      "expectedId": "agent04-cm07-survey-packet-20260527-CL-FM-021-001",
+      "matches": [
+        {
+          "id": "agent04-cm07-survey-packet-20260527-CL-FM-021-001",
+          "status": "COMPLETED",
+          "taskId": "TASK-agent04-cm07-survey-findings",
+          "requirementId": "REQ-agent04-cm07-survey-form",
+          "workflowId": "WF-agent04-survey-packet",
+          "policyIds": [
+            "CL-CA-002"
+          ]
+        }
+      ],
+      "taskLinkedStripPresent": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-07-power_user-task-linked-form.png"
+    },
+    {
+      "tester": "CM-07",
+      "persona": "power_user",
+      "check": "Opening form instance from artifact route before completion",
+      "route": "http://localhost:5173/artifacts/agent04-cm07-survey-packet-20260527-CL-FM-021-001?event_id=agent04-cm07-survey-packet-20260527&task_id=TASK-agent04-cm07-survey-findings&requirement_id=REQ-agent04-cm07-survey-form&form_id=CL-FM-021&form_instance_id=agent04-cm07-survey-packet-20260527-CL-FM-021-001&type=form_instance",
+      "artifactContainsInstance": true,
+      "artifactMentionsTemplate": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-07-power_user-artifact-in-progress.png"
+    },
+    {
+      "tester": "CM-07",
+      "persona": "power_user",
+      "check": "Opening completed form instance from artifact route",
+      "route": "http://localhost:5173/artifacts/agent04-cm07-survey-packet-20260527-CL-FM-021-001?event_id=agent04-cm07-survey-packet-20260527&task_id=TASK-agent04-cm07-survey-findings&requirement_id=REQ-agent04-cm07-survey-form&form_id=CL-FM-021&form_instance_id=agent04-cm07-survey-packet-20260527-CL-FM-021-001&type=form_instance",
+      "hasNoRenderablePreview": true,
+      "hasSignedMissingBanner": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-07-power_user-completed-artifact.png"
+    },
+    {
+      "tester": "CM-07",
+      "persona": "power_user",
+      "check": "Policy route opened for linked policy",
+      "route": "/policies/CL-CA-002",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-07-power_user-policy-link.png"
+    },
+    {
+      "tester": "HCP-04",
+      "persona": "new_user",
+      "label": "HCP-04 risk CAPA task-linked form",
+      "route": "http://localhost:5173/forms/RM-FM-010?event_id=agent04-hcp04-risk-capa-20260527&task_id=TASK-agent04-hcp04-risk-quarterly&requirement_id=REQ-agent04-hcp04-risk-form&form_id=RM-FM-010&policy_id=RM-RM-001&workflow_id=WF-agent04-risk-capa",
+      "expectedId": "agent04-hcp04-risk-capa-20260527-RM-FM-010-001",
+      "matches": [
+        {
+          "id": "agent04-hcp04-risk-capa-20260527-RM-FM-010-001",
+          "status": "IN_PROGRESS",
+          "taskId": "TASK-agent04-hcp04-risk-quarterly",
+          "requirementId": "REQ-agent04-hcp04-risk-form",
+          "workflowId": "WF-agent04-risk-capa",
+          "policyIds": [
+            "RM-RM-001"
+          ]
+        }
+      ],
+      "taskLinkedStripPresent": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-HCP-04-new_user-task-linked-form.png"
+    },
+    {
+      "tester": "HCP-04",
+      "persona": "new_user",
+      "check": "Opening form instance from artifact route before completion",
+      "route": "http://localhost:5173/artifacts/agent04-hcp04-risk-capa-20260527-RM-FM-010-001?event_id=agent04-hcp04-risk-capa-20260527&task_id=TASK-agent04-hcp04-risk-quarterly&requirement_id=REQ-agent04-hcp04-risk-form&form_id=RM-FM-010&form_instance_id=agent04-hcp04-risk-capa-20260527-RM-FM-010-001&type=form_instance",
+      "artifactContainsInstance": true,
+      "artifactMentionsTemplate": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-HCP-04-new_user-artifact-in-progress.png"
+    },
+    {
+      "tester": "HCP-04",
+      "persona": "new_user",
+      "check": "Opening completed form instance from artifact route",
+      "route": "http://localhost:5173/artifacts/agent04-hcp04-risk-capa-20260527-RM-FM-010-001?event_id=agent04-hcp04-risk-capa-20260527&task_id=TASK-agent04-hcp04-risk-quarterly&requirement_id=REQ-agent04-hcp04-risk-form&form_id=RM-FM-010&form_instance_id=agent04-hcp04-risk-capa-20260527-RM-FM-010-001&type=form_instance",
+      "hasNoRenderablePreview": true,
+      "hasSignedMissingBanner": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-HCP-04-new_user-completed-artifact.png"
+    },
+    {
+      "tester": "HCP-04",
+      "persona": "new_user",
+      "check": "Policy route opened for linked policy",
+      "route": "/policies/RM-RM-001",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-HCP-04-new_user-policy-link.png"
+    },
+    {
+      "tester": "HCP-04",
+      "persona": "power_user",
+      "label": "HCP-04 risk CAPA task-linked form",
+      "route": "http://localhost:5173/forms/RM-FM-010?event_id=agent04-hcp04-risk-capa-20260527&task_id=TASK-agent04-hcp04-risk-quarterly&requirement_id=REQ-agent04-hcp04-risk-form&form_id=RM-FM-010&policy_id=RM-RM-001&workflow_id=WF-agent04-risk-capa",
+      "expectedId": "agent04-hcp04-risk-capa-20260527-RM-FM-010-001",
+      "matches": [
+        {
+          "id": "agent04-hcp04-risk-capa-20260527-RM-FM-010-001",
+          "status": "COMPLETED",
+          "taskId": "TASK-agent04-hcp04-risk-quarterly",
+          "requirementId": "REQ-agent04-hcp04-risk-form",
+          "workflowId": "WF-agent04-risk-capa",
+          "policyIds": [
+            "RM-RM-001"
+          ]
+        }
+      ],
+      "taskLinkedStripPresent": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-HCP-04-power_user-task-linked-form.png"
+    },
+    {
+      "tester": "HCP-04",
+      "persona": "power_user",
+      "check": "Opening form instance from artifact route before completion",
+      "route": "http://localhost:5173/artifacts/agent04-hcp04-risk-capa-20260527-RM-FM-010-001?event_id=agent04-hcp04-risk-capa-20260527&task_id=TASK-agent04-hcp04-risk-quarterly&requirement_id=REQ-agent04-hcp04-risk-form&form_id=RM-FM-010&form_instance_id=agent04-hcp04-risk-capa-20260527-RM-FM-010-001&type=form_instance",
+      "artifactContainsInstance": true,
+      "artifactMentionsTemplate": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-HCP-04-power_user-artifact-in-progress.png"
+    },
+    {
+      "tester": "HCP-04",
+      "persona": "power_user",
+      "check": "Opening completed form instance from artifact route",
+      "route": "http://localhost:5173/artifacts/agent04-hcp04-risk-capa-20260527-RM-FM-010-001?event_id=agent04-hcp04-risk-capa-20260527&task_id=TASK-agent04-hcp04-risk-quarterly&requirement_id=REQ-agent04-hcp04-risk-form&form_id=RM-FM-010&form_instance_id=agent04-hcp04-risk-capa-20260527-RM-FM-010-001&type=form_instance",
+      "hasNoRenderablePreview": true,
+      "hasSignedMissingBanner": true,
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-HCP-04-power_user-completed-artifact.png"
+    },
+    {
+      "tester": "HCP-04",
+      "persona": "power_user",
+      "check": "Policy route opened for linked policy",
+      "route": "/policies/RM-RM-001",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-HCP-04-power_user-policy-link.png"
+    },
+    {
+      "check": "Final persisted store summary",
+      "formInstances": [
+        {
+          "id": "agent04-don05-qapi-20260527-EN-FM-001-001",
+          "eventId": "agent04-don05-qapi-20260527",
+          "formId": "EN-FM-001",
+          "taskId": "TASK-agent04-don05-qapi-policy-ack",
+          "requirementId": "REQ-agent04-don05-form-ack",
+          "policyIds": [
+            "GV-GB-001"
+          ],
+          "workflowId": "WF-agent04-qapi-policy-ack",
+          "folderPath": "/events/agent04-don05-qapi-20260527/forms/completed",
+          "status": "COMPLETED",
+          "sequence": 1,
+          "createdAt": "2026-05-27T14:41:45.867Z",
+          "updatedAt": "2026-05-27T14:41:59.019Z"
+        },
+        {
+          "id": "agent04-cm03-clinical-audit-20260527-CL-FM-020-001",
+          "eventId": "agent04-cm03-clinical-audit-20260527",
+          "formId": "CL-FM-020",
+          "taskId": "TASK-agent04-cm03-clinical-record-audit",
+          "requirementId": "REQ-agent04-cm03-clinical-form",
+          "policyIds": [
+            "CL-CA-001"
+          ],
+          "workflowId": "WF-agent04-clinical-audit",
+          "folderPath": "/events/agent04-cm03-clinical-audit-20260527/forms/completed",
+          "status": "COMPLETED",
+          "sequence": 1,
+          "createdAt": "2026-05-27T14:42:02.751Z",
+          "updatedAt": "2026-05-27T14:42:15.315Z"
+        },
+        {
+          "id": "agent04-cm07-survey-packet-20260527-CL-FM-021-001",
+          "eventId": "agent04-cm07-survey-packet-20260527",
+          "formId": "CL-FM-021",
+          "taskId": "TASK-agent04-cm07-survey-findings",
+          "requirementId": "REQ-agent04-cm07-survey-form",
+          "policyIds": [
+            "CL-CA-002"
+          ],
+          "workflowId": "WF-agent04-survey-packet",
+          "folderPath": "/events/agent04-cm07-survey-packet-20260527/forms/completed",
+          "status": "COMPLETED",
+          "sequence": 1,
+          "createdAt": "2026-05-27T14:42:19.096Z",
+          "updatedAt": "2026-05-27T14:42:31.617Z"
+        },
+        {
+          "id": "agent04-hcp04-risk-capa-20260527-RM-FM-010-001",
+          "eventId": "agent04-hcp04-risk-capa-20260527",
+          "formId": "RM-FM-010",
+          "taskId": "TASK-agent04-hcp04-risk-quarterly",
+          "requirementId": "REQ-agent04-hcp04-risk-form",
+          "policyIds": [
+            "RM-RM-001"
+          ],
+          "workflowId": "WF-agent04-risk-capa",
+          "folderPath": "/events/agent04-hcp04-risk-capa-20260527/forms/completed",
+          "status": "COMPLETED",
+          "sequence": 1,
+          "createdAt": "2026-05-27T14:42:35.436Z",
+          "updatedAt": "2026-05-27T14:42:47.776Z"
+        }
+      ],
+      "evidence": [],
+      "auditRows": [
+        {
+          "id": "agent04-audit-1779892919019",
+          "action": "FORM_COMPLETED",
+          "actor": "Agent04 UAT browser state",
+          "at": "2026-05-27T14:41:59.019Z",
+          "eventId": "agent04-don05-qapi-20260527",
+          "entityId": "agent04-don05-qapi-20260527-EN-FM-001-001",
+          "entityType": "formInstance",
+          "after": {
+            "formInstanceId": "agent04-don05-qapi-20260527-EN-FM-001-001"
+          }
+        },
+        {
+          "id": "agent04-audit-1779892910885",
+          "action": "FORM_COMPLETED",
+          "actor": "Agent04 UAT browser state",
+          "at": "2026-05-27T14:41:50.885Z",
+          "eventId": "agent04-don05-qapi-20260527",
+          "entityId": "agent04-don05-qapi-20260527-EN-FM-001-001",
+          "entityType": "formInstance",
+          "after": {
+            "formInstanceId": "agent04-don05-qapi-20260527-EN-FM-001-001"
+          }
+        },
+        {
+          "auditId": "AUD-mpo6a3rf-mg870",
+          "eventId": "agent04-don05-qapi-20260527",
+          "entityType": "formInstance",
+          "entityId": "agent04-don05-qapi-20260527-EN-FM-001-001",
+          "action": "FORM_INSTANCE_CREATED",
+          "actorId": "demo-user",
+          "actorRole": "Administrator",
+          "timestamp": "2026-05-27T14:41:45.867Z",
+          "after": {
+            "id": "agent04-don05-qapi-20260527-EN-FM-001-001",
+            "eventId": "agent04-don05-qapi-20260527",
+            "formId": "EN-FM-001",
+            "taskId": "TASK-agent04-don05-qapi-policy-ack",
+            "requirementId": "REQ-agent04-don05-form-ack",
+            "policyIds": [
+              "GV-GB-001"
+            ],
+            "workflowId": "WF-agent04-qapi-policy-ack",
+            "folderPath": "/events/agent04-don05-qapi-20260527/forms/completed",
+            "status": "IN_PROGRESS",
+            "sequence": 1,
+            "createdAt": "2026-05-27T14:41:45.867Z"
+          },
+          "recordVersion": 1,
+          "currentHash": "h:412820b7"
+        },
+        {
+          "id": "agent04-audit-1779892935315",
+          "action": "FORM_COMPLETED",
+          "actor": "Agent04 UAT browser state",
+          "at": "2026-05-27T14:42:15.315Z",
+          "eventId": "agent04-cm03-clinical-audit-20260527",
+          "entityId": "agent04-cm03-clinical-audit-20260527-CL-FM-020-001",
+          "entityType": "formInstance",
+          "after": {
+            "formInstanceId": "agent04-cm03-clinical-audit-20260527-CL-FM-020-001"
+          }
+        },
+        {
+          "id": "agent04-audit-1779892927480",
+          "action": "FORM_COMPLETED",
+          "actor": "Agent04 UAT browser state",
+          "at": "2026-05-27T14:42:07.480Z",
+          "eventId": "agent04-cm03-clinical-audit-20260527",
+          "entityId": "agent04-cm03-clinical-audit-20260527-CL-FM-020-001",
+          "entityType": "formInstance",
+          "after": {
+            "formInstanceId": "agent04-cm03-clinical-audit-20260527-CL-FM-020-001"
+          }
+        },
+        {
+          "auditId": "AUD-mpo6agsf-5zw7j",
+          "eventId": "agent04-cm03-clinical-audit-20260527",
+          "entityType": "formInstance",
+          "entityId": "agent04-cm03-clinical-audit-20260527-CL-FM-020-001",
+          "action": "FORM_INSTANCE_CREATED",
+          "actorId": "demo-user",
+          "actorRole": "Administrator",
+          "timestamp": "2026-05-27T14:42:02.751Z",
+          "after": {
+            "id": "agent04-cm03-clinical-audit-20260527-CL-FM-020-001",
+            "eventId": "agent04-cm03-clinical-audit-20260527",
+            "formId": "CL-FM-020",
+            "taskId": "TASK-agent04-cm03-clinical-record-audit",
+            "requirementId": "REQ-agent04-cm03-clinical-form",
+            "policyIds": [
+              "CL-CA-001"
+            ],
+            "workflowId": "WF-agent04-clinical-audit",
+            "folderPath": "/events/agent04-cm03-clinical-audit-20260527/forms/completed",
+            "status": "IN_PROGRESS",
+            "sequence": 1,
+            "createdAt": "2026-05-27T14:42:02.751Z"
+          },
+          "recordVersion": 1,
+          "currentHash": "h:3208edc4"
+        },
+        {
+          "id": "agent04-audit-1779892951617",
+          "action": "FORM_COMPLETED",
+          "actor": "Agent04 UAT browser state",
+          "at": "2026-05-27T14:42:31.617Z",
+          "eventId": "agent04-cm07-survey-packet-20260527",
+          "entityId": "agent04-cm07-survey-packet-20260527-CL-FM-021-001",
+          "entityType": "formInstance",
+          "after": {
+            "formInstanceId": "agent04-cm07-survey-packet-20260527-CL-FM-021-001"
+          }
+        },
+        {
+          "id": "agent04-audit-1779892943814",
+          "action": "FORM_COMPLETED",
+          "actor": "Agent04 UAT browser state",
+          "at": "2026-05-27T14:42:23.814Z",
+          "eventId": "agent04-cm07-survey-packet-20260527",
+          "entityId": "agent04-cm07-survey-packet-20260527-CL-FM-021-001",
+          "entityType": "formInstance",
+          "after": {
+            "formInstanceId": "agent04-cm07-survey-packet-20260527-CL-FM-021-001"
+          }
+        },
+        {
+          "auditId": "AUD-mpo6ateg-zrjxn",
+          "eventId": "agent04-cm07-survey-packet-20260527",
+          "entityType": "formInstance",
+          "entityId": "agent04-cm07-survey-packet-20260527-CL-FM-021-001",
+          "action": "FORM_INSTANCE_CREATED",
+          "actorId": "demo-user",
+          "actorRole": "Administrator",
+          "timestamp": "2026-05-27T14:42:19.096Z",
+          "after": {
+            "id": "agent04-cm07-survey-packet-20260527-CL-FM-021-001",
+            "eventId": "agent04-cm07-survey-packet-20260527",
+            "formId": "CL-FM-021",
+            "taskId": "TASK-agent04-cm07-survey-findings",
+            "requirementId": "REQ-agent04-cm07-survey-form",
+            "policyIds": [
+              "CL-CA-002"
+            ],
+            "workflowId": "WF-agent04-survey-packet",
+            "folderPath": "/events/agent04-cm07-survey-packet-20260527/forms/completed",
+            "status": "IN_PROGRESS",
+            "sequence": 1,
+            "createdAt": "2026-05-27T14:42:19.096Z"
+          },
+          "recordVersion": 1,
+          "currentHash": "h:11701fe1"
+        },
+        {
+          "id": "agent04-audit-1779892967776",
+          "action": "FORM_COMPLETED",
+          "actor": "Agent04 UAT browser state",
+          "at": "2026-05-27T14:42:47.776Z",
+          "eventId": "agent04-hcp04-risk-capa-20260527",
+          "entityId": "agent04-hcp04-risk-capa-20260527-RM-FM-010-001",
+          "entityType": "formInstance",
+          "after": {
+            "formInstanceId": "agent04-hcp04-risk-capa-20260527-RM-FM-010-001"
+          }
+        },
+        {
+          "id": "agent04-audit-1779892960117",
+          "action": "FORM_COMPLETED",
+          "actor": "Agent04 UAT browser state",
+          "at": "2026-05-27T14:42:40.117Z",
+          "eventId": "agent04-hcp04-risk-capa-20260527",
+          "entityId": "agent04-hcp04-risk-capa-20260527-RM-FM-010-001",
+          "entityType": "formInstance",
+          "after": {
+            "formInstanceId": "agent04-hcp04-risk-capa-20260527-RM-FM-010-001"
+          }
+        },
+        {
+          "auditId": "AUD-mpo6b60c-h1umq",
+          "eventId": "agent04-hcp04-risk-capa-20260527",
+          "entityType": "formInstance",
+          "entityId": "agent04-hcp04-risk-capa-20260527-RM-FM-010-001",
+          "action": "FORM_INSTANCE_CREATED",
+          "actorId": "demo-user",
+          "actorRole": "Administrator",
+          "timestamp": "2026-05-27T14:42:35.436Z",
+          "after": {
+            "id": "agent04-hcp04-risk-capa-20260527-RM-FM-010-001",
+            "eventId": "agent04-hcp04-risk-capa-20260527",
+            "formId": "RM-FM-010",
+            "taskId": "TASK-agent04-hcp04-risk-quarterly",
+            "requirementId": "REQ-agent04-hcp04-risk-form",
+            "policyIds": [
+              "RM-RM-001"
+            ],
+            "workflowId": "WF-agent04-risk-capa",
+            "folderPath": "/events/agent04-hcp04-risk-capa-20260527/forms/completed",
+            "status": "IN_PROGRESS",
+            "sequence": 1,
+            "createdAt": "2026-05-27T14:42:35.436Z"
+          },
+          "recordVersion": 1,
+          "currentHash": "h:5cdb89e8"
+        }
+      ],
+      "consoleMessages": []
+    }
+  ],
+  "defects": [
+    {
+      "defect_id": "AG04-P1-DON-05-new_user-COMPLETED-NO-PREVIEW",
+      "severity": "P1",
+      "surface": "Artifact Viewer",
+      "route": "http://localhost:5173/artifacts/agent04-don05-qapi-20260527-EN-FM-001-001?event_id=agent04-don05-qapi-20260527&task_id=TASK-agent04-don05-qapi-policy-ack&requirement_id=REQ-agent04-don05-form-ack&form_id=EN-FM-001&form_instance_id=agent04-don05-qapi-20260527-EN-FM-001-001&type=form_instance",
+      "tester_id": "DON-05",
+      "professional_identity": "Director of Nursing",
+      "personality": "Detail-Oriented Perfectionist",
+      "new_user_or_power_user": "new_user",
+      "steps_to_reproduce": "Open task-linked form, persist its canonical instance, mark it completed through the app execution store, then open the artifact route.",
+      "expected_result": "Completed form instance opens a reviewable immutable completed/signed artifact, not a blank template or no-preview state.",
+      "actual_result": "Viewer reports signed artifact is not available in this session.",
+      "artifact_or_task_ids": "{\"eventId\":\"agent04-don05-qapi-20260527\",\"taskId\":\"TASK-agent04-don05-qapi-policy-ack\",\"requirementId\":\"REQ-agent04-don05-form-ack\",\"formId\":\"EN-FM-001\",\"formInstanceId\":\"agent04-don05-qapi-20260527-EN-FM-001-001\"}",
+      "console_error": "",
+      "screenshot_path": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-DON-05-new_user-completed-artifact.png",
+      "recommended_fix": "Create a durable completed/signed snapshot whenever a form reaches terminal status and make Artifact Viewer retrieve it from the canonical artifact store.",
+      "blocking_status": "Completed form cannot be reviewed"
+    },
+    {
+      "defect_id": "AG04-P1-DON-05-power_user-COMPLETED-NO-PREVIEW",
+      "severity": "P1",
+      "surface": "Artifact Viewer",
+      "route": "http://localhost:5173/artifacts/agent04-don05-qapi-20260527-EN-FM-001-001?event_id=agent04-don05-qapi-20260527&task_id=TASK-agent04-don05-qapi-policy-ack&requirement_id=REQ-agent04-don05-form-ack&form_id=EN-FM-001&form_instance_id=agent04-don05-qapi-20260527-EN-FM-001-001&type=form_instance",
+      "tester_id": "DON-05",
+      "professional_identity": "Director of Nursing",
+      "personality": "Detail-Oriented Perfectionist",
+      "new_user_or_power_user": "power_user",
+      "steps_to_reproduce": "Open task-linked form, persist its canonical instance, mark it completed through the app execution store, then open the artifact route.",
+      "expected_result": "Completed form instance opens a reviewable immutable completed/signed artifact, not a blank template or no-preview state.",
+      "actual_result": "Viewer reports signed artifact is not available in this session.",
+      "artifact_or_task_ids": "{\"eventId\":\"agent04-don05-qapi-20260527\",\"taskId\":\"TASK-agent04-don05-qapi-policy-ack\",\"requirementId\":\"REQ-agent04-don05-form-ack\",\"formId\":\"EN-FM-001\",\"formInstanceId\":\"agent04-don05-qapi-20260527-EN-FM-001-001\"}",
+      "console_error": "",
+      "screenshot_path": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-DON-05-power_user-completed-artifact.png",
+      "recommended_fix": "Create a durable completed/signed snapshot whenever a form reaches terminal status and make Artifact Viewer retrieve it from the canonical artifact store.",
+      "blocking_status": "Completed form cannot be reviewed"
+    },
+    {
+      "defect_id": "AG04-P1-CM-03-new_user-COMPLETED-NO-PREVIEW",
+      "severity": "P1",
+      "surface": "Artifact Viewer",
+      "route": "http://localhost:5173/artifacts/agent04-cm03-clinical-audit-20260527-CL-FM-020-001?event_id=agent04-cm03-clinical-audit-20260527&task_id=TASK-agent04-cm03-clinical-record-audit&requirement_id=REQ-agent04-cm03-clinical-form&form_id=CL-FM-020&form_instance_id=agent04-cm03-clinical-audit-20260527-CL-FM-020-001&type=form_instance",
+      "tester_id": "CM-03",
+      "professional_identity": "Clinical Manager",
+      "personality": "Detail-Oriented Perfectionist",
+      "new_user_or_power_user": "new_user",
+      "steps_to_reproduce": "Open task-linked form, persist its canonical instance, mark it completed through the app execution store, then open the artifact route.",
+      "expected_result": "Completed form instance opens a reviewable immutable completed/signed artifact, not a blank template or no-preview state.",
+      "actual_result": "Viewer reports signed artifact is not available in this session.",
+      "artifact_or_task_ids": "{\"eventId\":\"agent04-cm03-clinical-audit-20260527\",\"taskId\":\"TASK-agent04-cm03-clinical-record-audit\",\"requirementId\":\"REQ-agent04-cm03-clinical-form\",\"formId\":\"CL-FM-020\",\"formInstanceId\":\"agent04-cm03-clinical-audit-20260527-CL-FM-020-001\"}",
+      "console_error": "",
+      "screenshot_path": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-03-new_user-completed-artifact.png",
+      "recommended_fix": "Create a durable completed/signed snapshot whenever a form reaches terminal status and make Artifact Viewer retrieve it from the canonical artifact store.",
+      "blocking_status": "Completed form cannot be reviewed"
+    },
+    {
+      "defect_id": "AG04-P1-CM-03-power_user-COMPLETED-NO-PREVIEW",
+      "severity": "P1",
+      "surface": "Artifact Viewer",
+      "route": "http://localhost:5173/artifacts/agent04-cm03-clinical-audit-20260527-CL-FM-020-001?event_id=agent04-cm03-clinical-audit-20260527&task_id=TASK-agent04-cm03-clinical-record-audit&requirement_id=REQ-agent04-cm03-clinical-form&form_id=CL-FM-020&form_instance_id=agent04-cm03-clinical-audit-20260527-CL-FM-020-001&type=form_instance",
+      "tester_id": "CM-03",
+      "professional_identity": "Clinical Manager",
+      "personality": "Detail-Oriented Perfectionist",
+      "new_user_or_power_user": "power_user",
+      "steps_to_reproduce": "Open task-linked form, persist its canonical instance, mark it completed through the app execution store, then open the artifact route.",
+      "expected_result": "Completed form instance opens a reviewable immutable completed/signed artifact, not a blank template or no-preview state.",
+      "actual_result": "Viewer reports signed artifact is not available in this session.",
+      "artifact_or_task_ids": "{\"eventId\":\"agent04-cm03-clinical-audit-20260527\",\"taskId\":\"TASK-agent04-cm03-clinical-record-audit\",\"requirementId\":\"REQ-agent04-cm03-clinical-form\",\"formId\":\"CL-FM-020\",\"formInstanceId\":\"agent04-cm03-clinical-audit-20260527-CL-FM-020-001\"}",
+      "console_error": "",
+      "screenshot_path": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-03-power_user-completed-artifact.png",
+      "recommended_fix": "Create a durable completed/signed snapshot whenever a form reaches terminal status and make Artifact Viewer retrieve it from the canonical artifact store.",
+      "blocking_status": "Completed form cannot be reviewed"
+    },
+    {
+      "defect_id": "AG04-P1-CM-07-new_user-COMPLETED-NO-PREVIEW",
+      "severity": "P1",
+      "surface": "Artifact Viewer",
+      "route": "http://localhost:5173/artifacts/agent04-cm07-survey-packet-20260527-CL-FM-021-001?event_id=agent04-cm07-survey-packet-20260527&task_id=TASK-agent04-cm07-survey-findings&requirement_id=REQ-agent04-cm07-survey-form&form_id=CL-FM-021&form_instance_id=agent04-cm07-survey-packet-20260527-CL-FM-021-001&type=form_instance",
+      "tester_id": "CM-07",
+      "professional_identity": "Clinical Manager",
+      "personality": "Detail-Oriented Perfectionist",
+      "new_user_or_power_user": "new_user",
+      "steps_to_reproduce": "Open task-linked form, persist its canonical instance, mark it completed through the app execution store, then open the artifact route.",
+      "expected_result": "Completed form instance opens a reviewable immutable completed/signed artifact, not a blank template or no-preview state.",
+      "actual_result": "Viewer reports signed artifact is not available in this session.",
+      "artifact_or_task_ids": "{\"eventId\":\"agent04-cm07-survey-packet-20260527\",\"taskId\":\"TASK-agent04-cm07-survey-findings\",\"requirementId\":\"REQ-agent04-cm07-survey-form\",\"formId\":\"CL-FM-021\",\"formInstanceId\":\"agent04-cm07-survey-packet-20260527-CL-FM-021-001\"}",
+      "console_error": "",
+      "screenshot_path": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-07-new_user-completed-artifact.png",
+      "recommended_fix": "Create a durable completed/signed snapshot whenever a form reaches terminal status and make Artifact Viewer retrieve it from the canonical artifact store.",
+      "blocking_status": "Completed form cannot be reviewed"
+    },
+    {
+      "defect_id": "AG04-P1-CM-07-power_user-COMPLETED-NO-PREVIEW",
+      "severity": "P1",
+      "surface": "Artifact Viewer",
+      "route": "http://localhost:5173/artifacts/agent04-cm07-survey-packet-20260527-CL-FM-021-001?event_id=agent04-cm07-survey-packet-20260527&task_id=TASK-agent04-cm07-survey-findings&requirement_id=REQ-agent04-cm07-survey-form&form_id=CL-FM-021&form_instance_id=agent04-cm07-survey-packet-20260527-CL-FM-021-001&type=form_instance",
+      "tester_id": "CM-07",
+      "professional_identity": "Clinical Manager",
+      "personality": "Detail-Oriented Perfectionist",
+      "new_user_or_power_user": "power_user",
+      "steps_to_reproduce": "Open task-linked form, persist its canonical instance, mark it completed through the app execution store, then open the artifact route.",
+      "expected_result": "Completed form instance opens a reviewable immutable completed/signed artifact, not a blank template or no-preview state.",
+      "actual_result": "Viewer reports signed artifact is not available in this session.",
+      "artifact_or_task_ids": "{\"eventId\":\"agent04-cm07-survey-packet-20260527\",\"taskId\":\"TASK-agent04-cm07-survey-findings\",\"requirementId\":\"REQ-agent04-cm07-survey-form\",\"formId\":\"CL-FM-021\",\"formInstanceId\":\"agent04-cm07-survey-packet-20260527-CL-FM-021-001\"}",
+      "console_error": "",
+      "screenshot_path": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-CM-07-power_user-completed-artifact.png",
+      "recommended_fix": "Create a durable completed/signed snapshot whenever a form reaches terminal status and make Artifact Viewer retrieve it from the canonical artifact store.",
+      "blocking_status": "Completed form cannot be reviewed"
+    },
+    {
+      "defect_id": "AG04-P1-HCP-04-new_user-COMPLETED-NO-PREVIEW",
+      "severity": "P1",
+      "surface": "Artifact Viewer",
+      "route": "http://localhost:5173/artifacts/agent04-hcp04-risk-capa-20260527-RM-FM-010-001?event_id=agent04-hcp04-risk-capa-20260527&task_id=TASK-agent04-hcp04-risk-quarterly&requirement_id=REQ-agent04-hcp04-risk-form&form_id=RM-FM-010&form_instance_id=agent04-hcp04-risk-capa-20260527-RM-FM-010-001&type=form_instance",
+      "tester_id": "HCP-04",
+      "professional_identity": "Risk Manager",
+      "personality": "Detail-Oriented Perfectionist",
+      "new_user_or_power_user": "new_user",
+      "steps_to_reproduce": "Open task-linked form, persist its canonical instance, mark it completed through the app execution store, then open the artifact route.",
+      "expected_result": "Completed form instance opens a reviewable immutable completed/signed artifact, not a blank template or no-preview state.",
+      "actual_result": "Viewer reports signed artifact is not available in this session.",
+      "artifact_or_task_ids": "{\"eventId\":\"agent04-hcp04-risk-capa-20260527\",\"taskId\":\"TASK-agent04-hcp04-risk-quarterly\",\"requirementId\":\"REQ-agent04-hcp04-risk-form\",\"formId\":\"RM-FM-010\",\"formInstanceId\":\"agent04-hcp04-risk-capa-20260527-RM-FM-010-001\"}",
+      "console_error": "",
+      "screenshot_path": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-HCP-04-new_user-completed-artifact.png",
+      "recommended_fix": "Create a durable completed/signed snapshot whenever a form reaches terminal status and make Artifact Viewer retrieve it from the canonical artifact store.",
+      "blocking_status": "Completed form cannot be reviewed"
+    },
+    {
+      "defect_id": "AG04-P1-HCP-04-power_user-COMPLETED-NO-PREVIEW",
+      "severity": "P1",
+      "surface": "Artifact Viewer",
+      "route": "http://localhost:5173/artifacts/agent04-hcp04-risk-capa-20260527-RM-FM-010-001?event_id=agent04-hcp04-risk-capa-20260527&task_id=TASK-agent04-hcp04-risk-quarterly&requirement_id=REQ-agent04-hcp04-risk-form&form_id=RM-FM-010&form_instance_id=agent04-hcp04-risk-capa-20260527-RM-FM-010-001&type=form_instance",
+      "tester_id": "HCP-04",
+      "professional_identity": "Risk Manager",
+      "personality": "Detail-Oriented Perfectionist",
+      "new_user_or_power_user": "power_user",
+      "steps_to_reproduce": "Open task-linked form, persist its canonical instance, mark it completed through the app execution store, then open the artifact route.",
+      "expected_result": "Completed form instance opens a reviewable immutable completed/signed artifact, not a blank template or no-preview state.",
+      "actual_result": "Viewer reports signed artifact is not available in this session.",
+      "artifact_or_task_ids": "{\"eventId\":\"agent04-hcp04-risk-capa-20260527\",\"taskId\":\"TASK-agent04-hcp04-risk-quarterly\",\"requirementId\":\"REQ-agent04-hcp04-risk-form\",\"formId\":\"RM-FM-010\",\"formInstanceId\":\"agent04-hcp04-risk-capa-20260527-RM-FM-010-001\"}",
+      "console_error": "",
+      "screenshot_path": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent04-forms-instance-identity-HCP-04-power_user-completed-artifact.png",
+      "recommended_fix": "Create a durable completed/signed snapshot whenever a form reaches terminal status and make Artifact Viewer retrieve it from the canonical artifact store.",
+      "blocking_status": "Completed form cannot be reviewed"
+    }
+  ],
+  "consoleMessages": []
+}

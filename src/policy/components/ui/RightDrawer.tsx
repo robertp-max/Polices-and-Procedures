@@ -1,6 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import { UtilityButton } from './UtilityButton';
 
 export interface RightDrawerProps {
   open: boolean;
@@ -24,11 +23,12 @@ export interface RightDrawerProps {
   inline?: boolean;
   /**
    * Glass aesthetic variant.
-   * - 'ci-ion' (default): current production CI-ION maroon glass
-   * - 'v3-veil': premium V3 dark matte slate-carbon veil glass (expensive CES drawers)
-   *   Uses 0.33 borders, 32px blur, 0.7s signature cubic-bezier motion.
+   * V3 is the production default. The legacy value remains in the type only
+   * while older call sites are migrated.
    */
   glassVariant?: 'ci-ion' | 'v3-veil';
+  /** Progressive disclosure layer. Layer 1 is brief/minimal; Layer 2 is rich detail. */
+  layer?: 1 | 2;
 }
 
 const WIDTH = { sm: 420, md: 520, lg: 640, xl: 800 } as const;
@@ -44,15 +44,21 @@ export function RightDrawer({
   footer,
   children,
   inline = false,
-  glassVariant = 'ci-ion',
+  glassVariant = 'v3-veil',
+  layer = 2,
 }: RightDrawerProps) {
-  // V3 expensive transition controller: keeps DOM mounted during close for 0.62s exit anim (translate+scale+blur)
+  // Keep DOM mounted briefly during close for exit-right dismissal.
   const [isVisible, setIsVisible] = useState(open);
   const [isExiting, setIsExiting] = useState(false);
   const closeTimerRef = useRef<number | null>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (open) {
+      if (!isVisible && typeof document !== 'undefined') {
+        openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      }
       setIsVisible(true);
       setIsExiting(false);
       if (closeTimerRef.current) {
@@ -65,6 +71,8 @@ export function RightDrawer({
         setIsVisible(false);
         setIsExiting(false);
         closeTimerRef.current = null;
+        openerRef.current?.focus();
+        openerRef.current = null;
       }, 680);
     }
   }, [open, isVisible, isExiting]);
@@ -76,10 +84,41 @@ export function RightDrawer({
   useEffect(() => {
     if (!isVisible || inline) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusable = Array.from(panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )).filter(el => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
+      if (focusable.length === 0) {
+        e.preventDefault();
+        panel.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    const focusTimer = window.setTimeout(() => {
+      const panel = panelRef.current;
+      const first = panel?.querySelector<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+      (first ?? panel)?.focus();
+    }, 0);
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener('keydown', onKey);
+    };
   }, [isVisible, onClose, inline]);
 
   if (!isVisible) return null;
@@ -88,28 +127,24 @@ export function RightDrawer({
 
   const panel = (
     <aside
+      ref={panelRef}
       role="dialog"
-      aria-modal={!inline}
+      aria-modal="true"
       aria-label={typeof title === 'string' ? title : 'Detail panel'}
+      data-veil-layer={layer}
+      tabIndex={-1}
       className={
-        isV3
-          ? `v3-veil-glass-panel right-drawer flex flex-col ${isExiting ? 'v3-drawer-exiting' : 'v3-drawer-panel'}`
-          : `ci-glass-panel flex flex-col ${isExiting ? 'v3-drawer-exiting' : ''}`
+        `v3-veil-glass-panel right-drawer flex flex-col ${isExiting ? 'v3-drawer-exit-right' : 'v3-drawer-enter-left'}`
       }
       style={{
         width: inline ? '100%' : `min(calc(100vw - 16px), ${WIDTH[width]}px)`,
         maxWidth: inline ? undefined : '100vw',
-        height: '100dvh',
+        height: inline ? '100%' : '100dvh',
         borderTopRightRadius: inline ? undefined : 0,
         borderBottomRightRadius: inline ? undefined : 0,
         ...(isV3 && {
           borderColor: 'var(--v3-border)',
         }),
-        // V3 exit overrides — smooth expensive close (uses transition to allow bidirectional control)
-        transition: isExiting || !isV3 ? 'transform 0.62s var(--v3-ease), opacity 0.62s var(--v3-ease), filter 0.5s var(--v3-ease)' : undefined,
-        transform: isExiting ? 'translateX(32px) scale(0.985)' : undefined,
-        opacity: isExiting ? 0 : undefined,
-        filter: isExiting ? 'blur(3px)' : undefined,
       }}
     >
       {(title || eyebrow || headerActions) && (
@@ -117,8 +152,8 @@ export function RightDrawer({
           className={`flex items-center justify-between gap-3 shrink-0 v3-drawer-header ${isV3 ? '' : ''}`}
           style={{
             padding: 'clamp(14px, 1.6vh, 18px) clamp(14px, 1.7vw, 26px)',
-            borderBottom: isV3 ? '1px solid var(--v3-border)' : '1px solid var(--ci-border)',
-            background: isV3 ? 'rgba(255,255,255,0.015)' : undefined, // subtle header wash on veil
+            borderBottom: '1px solid var(--v3-border-subtle)',
+            background: 'transparent',
           }}
         >
           <div className="min-w-0">
@@ -129,7 +164,7 @@ export function RightDrawer({
                   fontSize: 10,
                   letterSpacing: '0.2em',
                   textTransform: 'uppercase',
-                  color: isV3 ? 'var(--v3-text-tertiary)' : 'var(--ci-text-subtle)',
+                  color: 'var(--v3-text-tertiary)',
                 }}
               >
                 {eyebrow}
@@ -138,9 +173,9 @@ export function RightDrawer({
             {title && (
               <div
                 className="font-montserrat truncate"
-                style={{ 
-                  color: isV3 ? 'var(--v3-text-primary)' : 'var(--ci-text-primary)', 
-                  fontSize: 18, 
+                style={{
+                  color: 'var(--v3-text-primary)',
+                  fontSize: 18,
                   fontWeight: 600,
                   letterSpacing: '-0.01em'
                 }}
@@ -151,30 +186,24 @@ export function RightDrawer({
           </div>
           <div className="flex items-center gap-1">
             {headerActions}
-            {isV3 ? (
-              <button
-                type="button"
-                onClick={onClose}
-                className="v3-veil-close p-1.5 text-[var(--v3-text-secondary)] hover:text-[var(--v3-teal-light)] v3-micro"
-                aria-label="Close panel"
-              >
-                <X size={18} aria-hidden="true" />
-              </button>
-            ) : (
-              <UtilityButton ariaLabel="Close panel" onClick={onClose}>
-                <X size={18} aria-hidden="true" />
-              </UtilityButton>
-            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="v3-veil-close p-1.5 text-[var(--v3-text-secondary)] hover:text-[var(--v3-teal-light)]"
+              aria-label="Close panel"
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
           </div>
         </header>
       )}
-      <div className="flex-1 overflow-auto" style={{ padding: 'clamp(12px, 1.6vw, 24px)' }}>
+      <div className="v3-veil-body flex-1 overflow-auto" style={{ padding: 'clamp(12px, 1.6vw, 24px)' }}>
         {children}
       </div>
       {footer && (
         <footer
           className="shrink-0"
-          style={{ padding: 16, borderTop: isV3 ? '1px solid var(--v3-border)' : '1px solid var(--ci-border)' }}
+          style={{ padding: 16, borderTop: '1px solid var(--v3-border-subtle)' }}
         >
           {footer}
         </footer>
@@ -187,9 +216,9 @@ export function RightDrawer({
   const backdropStyle = {
     ...(isV3
       ? { background: 'rgba(5, 6, 10, 0.72)', backdropFilter: 'blur(8px)' }
-      : { background: 'rgba(15,23,28,0.45)' }),
-    // V3 smooth expensive backdrop fade on both open and close
-    transition: 'opacity 0.62s var(--v3-ease)',
+      : { background: 'rgba(5, 6, 10, 0.72)', backdropFilter: 'blur(8px)' }),
+    WebkitBackdropFilter: 'blur(8px)',
+    transition: 'opacity 220ms var(--v3-ease)',
     opacity: isExiting ? 0 : 1,
   };
 

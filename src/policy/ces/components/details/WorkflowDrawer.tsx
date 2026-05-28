@@ -54,28 +54,35 @@ export function WorkflowDrawer({ unit, allUnits, onClose, onUpdate }: Props) {
   const currentPhaseIdx = WORKFLOW_PHASE_ORDER.indexOf(unit.workflowPhase);
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      {/* Backdrop — V3 buttery */}
+    <div className="fixed inset-0 z-[70] flex">
       <div
-        className="flex-1 bg-black/30 backdrop-blur-sm v3-backdrop"
+        className="flex-1 v3-backdrop"
+        style={{
+          background: 'rgba(5, 6, 10, 0.72)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        }}
         onClick={onClose}
         aria-label="Close drawer"
       />
-      {/* Panel — luxurious CES drawer post-declutter */}
       <aside
-        className="w-[560px] flex flex-col shadow-2xl v3-drawer-panel"
-        style={{ background: CES_TOKENS.white, borderLeft: `1px solid ${CES_TOKENS.border}` }}
+        className="v3-veil-glass-panel flex w-[min(100vw,560px)] flex-col overflow-hidden v3-drawer-panel"
+        style={{
+          borderTopRightRadius: 0,
+          borderBottomRightRadius: 0,
+          borderColor: 'var(--v3-border-subtle)',
+        }}
       >
         {/* Header */}
         <header
           className="px-6 py-4 flex items-start gap-3"
-          style={{ borderBottom: `1px solid ${CES_TOKENS.border}` }}
+          style={{ borderBottom: '1px solid var(--v3-border-subtle)' }}
         >
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: CES_TOKENS.muted }}>
+            <div className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'var(--v3-text-tertiary)' }}>
               {(ev?.category ?? ev?.domain) ?? '—'} · {ev?.title ?? '—'}
             </div>
-            <h2 className="text-[16px] font-bold mt-0.5" style={{ color: CES_TOKENS.navy }}>
+            <h2 className="text-[16px] font-bold mt-0.5" style={{ color: 'var(--v3-text-primary)' }}>
               {unit.title}
             </h2>
             <div className="mt-2 flex items-center gap-2">
@@ -86,10 +93,10 @@ export function WorkflowDrawer({ unit, allUnits, onClose, onUpdate }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 hover:bg-gray-100 v3-micro"
+            className="v3-veil-close rounded-md p-1.5 text-[var(--v3-text-secondary)] hover:text-[var(--v3-teal-light)]"
             aria-label="Close"
           >
-            <X size={18} style={{ color: CES_TOKENS.muted }} />
+            <X size={18} />
           </button>
         </header>
 

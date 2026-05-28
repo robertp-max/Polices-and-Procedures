@@ -37,6 +37,8 @@ export interface ResolveFormInstanceFromArtifactInput {
   formInstances: readonly EventFormInstance[];
   /** Loaded evidence docs (used for evidence-binding layer). */
   evidence: readonly EvidenceDoc[];
+  /** When true, evidence identity wins over URL form_instance fallback. */
+  preferEvidenceBinding?: boolean;
 }
 
 export interface ResolveFormInstanceFromArtifactResult {
@@ -71,7 +73,16 @@ function maybeForwardToCanonical(
 export function resolveFormInstanceFromArtifact(
   input: ResolveFormInstanceFromArtifactInput,
 ): ResolveFormInstanceFromArtifactResult {
-  const { primaryArtifactId, queryFormInstanceId, formInstances, evidence } = input;
+  const { primaryArtifactId, queryFormInstanceId, formInstances, evidence, preferEvidenceBinding } = input;
+
+  const evidenceMatch = evidence.find(doc => doc.id === primaryArtifactId);
+  if (preferEvidenceBinding && evidenceMatch?.linkedFormInstanceId) {
+    const byBinding = formInstances.find(i => i.id === evidenceMatch.linkedFormInstanceId);
+    if (byBinding) {
+      const { instance, forwarded } = maybeForwardToCanonical(byBinding, formInstances);
+      return { formInstance: instance, layer: 'evidence-binding', forwardedFromSuperseded: forwarded };
+    }
+  }
 
   // Layer 1 — URL query
   if (queryFormInstanceId) {
@@ -83,7 +94,6 @@ export function resolveFormInstanceFromArtifact(
   }
 
   // Layer 2 — evidence binding
-  const evidenceMatch = evidence.find(doc => doc.id === primaryArtifactId);
   if (evidenceMatch?.linkedFormInstanceId) {
     const byBinding = formInstances.find(i => i.id === evidenceMatch.linkedFormInstanceId);
     if (byBinding) {

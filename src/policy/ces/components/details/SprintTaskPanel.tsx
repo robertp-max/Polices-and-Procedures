@@ -38,9 +38,9 @@ export interface SprintTaskPanelProps {
 const EVENT_INSTANCE_INDEX = buildEventInstanceIndex(REGULATORY_EVENTS);
 
 const STATE_SECTIONS: ReadonlyArray<{ key: ComplianceState; label: string; tone: string; bg: string; border: string }> = [
-  { key: 'ready',              label: 'Ready',              tone: '#1A3778', bg: 'rgba(26,55,120,0.08)',  border: 'rgba(26,55,120,0.25)' },
-  { key: 'in_progress',        label: 'In Progress',        tone: '#1A3778', bg: 'rgba(26,55,120,0.08)',  border: 'rgba(26,55,120,0.25)' },
-  { key: 'awaiting_signature', label: 'Awaiting Signature', tone: '#F04B22', bg: 'rgba(240,75,34,0.08)',  border: 'rgba(240,75,34,0.30)' },
+  { key: 'ready',              label: 'Ready',              tone: 'var(--v3-teal-light)', bg: 'rgba(0,209,193,0.10)',  border: 'rgba(0,209,193,0.28)' },
+  { key: 'in_progress',        label: 'In Progress',        tone: 'var(--v3-teal-light)', bg: 'rgba(0,209,193,0.10)',  border: 'rgba(0,209,193,0.28)' },
+  { key: 'awaiting_signature', label: 'Awaiting Signature', tone: 'var(--v3-orange-light)', bg: 'rgba(224,123,44,0.10)',  border: 'rgba(224,123,44,0.32)' },
   { key: 'blocked',            label: 'Blocked',            tone: '#C53030', bg: 'rgba(197,48,48,0.08)',  border: 'rgba(197,48,48,0.30)' },
   { key: 'completed',          label: 'Completed',          tone: '#2F855A', bg: 'rgba(47,133,90,0.08)',  border: 'rgba(47,133,90,0.25)' },
 ];
@@ -142,9 +142,9 @@ function SprintTaskPanelContent({
     t.requiredSigners?.length > 0 || t.complianceState === 'awaiting_signature';
 
   return (
-    <aside className="h-full flex flex-col rounded-xl border border-white/10 bg-white overflow-hidden text-[#1F1C1B]">
+    <aside className="v3-task-panel h-full flex flex-col rounded-xl border border-white/10 overflow-hidden text-[var(--v3-text-primary)]">
       {/* Header */}
-      <header className="px-5 py-4 flex items-start gap-3 border-b border-[#E5E4E3]">
+      <header className="px-5 py-4 flex items-start gap-3 border-b border-[var(--v3-border-subtle)]">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL_PRIMARY }} />
@@ -152,10 +152,10 @@ function SprintTaskPanelContent({
               Sprint Task · {(event.cadence ?? '').toString().toUpperCase()}
             </span>
           </div>
-          <h2 className="text-[15px] font-bold leading-snug" style={{ color: '#1A3778' }}>
+          <h2 className="text-[15px] font-bold leading-snug" style={{ color: 'var(--v3-text-primary)' }}>
             {event.title}
           </h2>
-          <div className="mt-1 text-[11px] text-[#747470]">
+          <div className="mt-1 text-[11px] text-[var(--v3-text-secondary)]">
             Anchor {new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
             {event.owner && <> · Owner: <span className="font-semibold text-[#1F1C1B]">{event.owner}</span></>}
             {event.ownerRole && <> · {event.ownerRole}</>}
@@ -165,23 +165,23 @@ function SprintTaskPanelContent({
           <button
             type="button"
             onClick={onClear}
-            className="rounded-md p-1.5 hover:bg-[#F0F2F5]"
+            className="rounded-md p-1.5 hover:bg-white/5"
             aria-label="Close sprint task"
           >
-            <X size={16} className="text-[#747470]" />
+            <X size={16} className="text-[var(--v3-text-secondary)]" />
           </button>
         )}
       </header>
 
       {/* Roll-up bar */}
-      <div className="px-5 py-2.5 flex items-center gap-3 border-b border-[#E5E4E3] bg-[#FCFDFF] text-[11px]">
+      <div className="px-5 py-2.5 flex items-center gap-3 border-b border-[var(--v3-border-subtle)] bg-transparent text-[11px]">
         <RollupChip label="Tasks" value={`${done}/${totals}`} />
-        {awaiting > 0 && <RollupChip label="Awaiting Sig" value={awaiting} tone="#F04B22" />}
+        {awaiting > 0 && <RollupChip label="Awaiting Sig" value={awaiting} tone="var(--v3-orange-light)" />}
         {blocked > 0  && <RollupChip label="Blocked"      value={blocked}  tone="#C53030" />}
         {sprintTask && (
           <span
             className="ml-auto text-[10px] font-bold uppercase tracking-[0.14em] px-2 py-0.5 rounded"
-            style={{ background: 'rgba(26,55,120,0.08)', color: '#1A3778' }}
+            style={{ background: 'rgba(0,209,193,0.10)', color: 'var(--v3-teal-light)' }}
           >
             {sprintTask.rolledState.replace('_', ' ')}
           </span>
@@ -191,7 +191,7 @@ function SprintTaskPanelContent({
       {/* Body — scrollable */}
       <div className="flex-1 overflow-y-auto">
         {totals === 0 ? (
-          <div className="p-6 text-center text-[12px] text-[#747470]">
+          <div className="p-6 text-center text-[12px] text-[var(--v3-text-secondary)]">
             No execution tasks scheduled for this sprint task yet.
           </div>
         ) : (
@@ -206,7 +206,7 @@ function SprintTaskPanelContent({
                     style={{ color: section.tone }}
                   >
                     {section.label}
-                    <span className="font-normal normal-case tracking-normal text-[#747470]">({items.length})</span>
+                    <span className="font-normal normal-case tracking-normal text-[var(--v3-text-secondary)]">({items.length})</span>
                   </div>
                   <ul className="space-y-1.5">
                     {items.map(t => (
@@ -236,16 +236,16 @@ function SprintTaskPanelContent({
 
         {/* Inline form workspace — replaces "Mark Complete" for form tasks. */}
         {activeTask && activeTaskFormId && !formMaximized && (
-          <section className="border-t border-[#E5E4E3] bg-[#FAFBF8]">
+          <section className="border-t border-[var(--v3-border-subtle)] bg-transparent">
             <div className="px-5 py-2.5 flex items-center justify-between gap-3">
-              <div className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-[#1A3778]">
+              <div className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-[var(--v3-teal-light)]">
                 Complete Form · <span className="font-mono normal-case tracking-normal">{activeTaskFormId}</span>
               </div>
               <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={() => setFormMaximized(true)}
-                  className="text-[#747470] hover:text-[#1A3778] p-1 rounded"
+                  className="text-[var(--v3-text-secondary)] hover:text-[var(--v3-teal-light)] p-1 rounded"
                   title="Maximize form"
                   aria-label="Maximize form"
                 >
@@ -254,13 +254,13 @@ function SprintTaskPanelContent({
                 <button
                   type="button"
                   onClick={() => setRenderFormId(null)}
-                  className="text-[11px] text-[#747470] hover:text-[#1F1C1B] underline"
+                  className="text-[11px] text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)] underline"
                 >
                   Hide form
                 </button>
               </div>
             </div>
-            <div className="border-t border-[#E5E4E3]">
+            <div className="border-t border-[var(--v3-border-subtle)]">
               <FormViewer
                 formId={activeTaskFormId}
                 formSource="task"
@@ -288,12 +288,12 @@ function SprintTaskPanelContent({
 
       {/* Action footer (only when a task is selected and not already showing form) */}
       {activeTask && !activeTaskFormId && (
-        <footer className="px-5 py-3 border-t border-[#E5E4E3] flex items-center gap-2 bg-white">
+        <footer className="px-5 py-3 border-t border-[var(--v3-border-subtle)] flex items-center gap-2 bg-transparent">
           {canSignTask(activeTask) && (
             <button
               type="button"
               className="text-[11.5px] font-semibold px-3 py-1.5 rounded-md text-white"
-              style={{ background: '#F04B22' }}
+              style={{ background: 'var(--v3-orange)', color: 'white' }}
               onClick={() => {
                 // Signature path — defer to existing eCIgn flow via the form renderer if available.
                 if (activeTask.sourceFormIds?.[0]) setRenderFormId(activeTask.sourceFormIds[0]);
@@ -305,7 +305,7 @@ function SprintTaskPanelContent({
           )}
           <button
             type="button"
-            className="text-[11.5px] font-semibold px-3 py-1.5 rounded-md border border-[#1A3778] text-[#1A3778]"
+            className="text-[11.5px] font-semibold px-3 py-1.5 rounded-md border border-[var(--v3-teal-light)] text-[var(--v3-teal-light)]"
             onClick={() => {
               // Open form for upload/evidence path.
               const formId = activeTask.sourceFormIds?.[0]
@@ -334,10 +334,10 @@ function SprintTaskPanelContent({
 
 /* ─── Atoms ─────────────────────────────────────────────────── */
 
-function RollupChip({ label, value, tone = '#1A3778' }: { label: string; value: string | number; tone?: string }) {
+function RollupChip({ label, value, tone = 'var(--v3-teal-light)' }: { label: string; value: string | number; tone?: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#747470]">{label}</span>
+      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--v3-text-secondary)]">{label}</span>
       <span className="text-[11.5px] font-semibold" style={{ color: tone }}>{value}</span>
     </span>
   );
@@ -373,28 +373,28 @@ function TaskRow({
         onClick={onSelect}
         className="w-full text-left rounded-md px-3 py-2 flex items-start gap-2.5 transition-colors"
         style={{
-          background: active ? sectionBg     : '#FCFDFF',
-          border:     `1px solid ${active ? sectionBorder : '#E5E4E3'}`,
+          background: active ? sectionBg : 'rgba(255,255,255,0.025)',
+          border:     `1px solid ${active ? sectionBorder : 'var(--v3-border-subtle)'}`,
         }}
       >
         {isDone
           ? <CheckCircle2 size={14} style={{ color: '#2F855A' }} className="mt-0.5 flex-shrink-0" />
           : task.complianceState === 'blocked'
             ? <AlertCircle size={14} style={{ color: '#C53030' }} className="mt-0.5 flex-shrink-0" />
-            : <Circle size={12} style={{ color: '#747470' }} className="mt-0.5 flex-shrink-0" />}
+            : <Circle size={12} style={{ color: 'var(--v3-text-tertiary)' }} className="mt-0.5 flex-shrink-0" />}
         <div className="flex-1 min-w-0">
-          <div className="text-[12.5px] font-semibold leading-snug" style={{ color: '#1F1C1B' }}>
+          <div className="text-[12.5px] font-semibold leading-snug" style={{ color: 'var(--v3-text-primary)' }}>
             {task.title}
           </div>
-          <div className="text-[10.5px] text-[#747470] mt-0.5 flex items-center gap-1.5 flex-wrap">
+          <div className="text-[10.5px] text-[var(--v3-text-secondary)] mt-0.5 flex items-center gap-1.5 flex-wrap">
             Due {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             {assignedRole && (
               <span
                 style={{
                   padding: '0 4px',
                   borderRadius: 3,
-                  background: '#EFF6FF',
-                  color: '#1D4ED8',
+                  background: 'rgba(0,209,193,0.10)',
+                  color: 'var(--v3-teal-light)',
                   fontSize: 9,
                   fontWeight: 700,
                 }}
@@ -421,7 +421,7 @@ function TaskRow({
             onClick={(e) => { e.stopPropagation(); onCompleteForm(formId); }}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onCompleteForm(formId); } }}
             className="text-[10.5px] font-bold uppercase tracking-[0.14em] px-2 py-1 rounded cursor-pointer hover:opacity-80"
-            style={{ background: '#1A3778', color: 'white' }}
+            style={{ background: 'var(--v3-teal)', color: 'white' }}
           >
             <FileText size={10} className="inline mr-1" />
             Complete Form
@@ -467,18 +467,18 @@ function FormMaximizedModal({
       onKeyDown={(e) => { if (e.key === 'Escape') onMinimize(); }}
     >
       <div
-        className="relative w-[80vw] max-w-[1200px] h-[88vh] bg-white rounded-xl shadow-2xl border border-[#E5E4E3] overflow-hidden flex flex-col v3-modal-panel"
+        className="relative w-[80vw] max-w-[1200px] h-[88vh] rounded-xl border border-[var(--v3-border-subtle)] overflow-hidden flex flex-col v3-modal-panel"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="px-5 py-3 flex items-center justify-between gap-3 border-b border-[#E5E4E3] bg-[#FAFBF8]">
-          <div className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-[#1A3778]">
+        <header className="px-5 py-3 flex items-center justify-between gap-3 border-b border-[var(--v3-border-subtle)] bg-transparent">
+          <div className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-[var(--v3-teal-light)]">
             Complete Form · <span className="font-mono normal-case tracking-normal">{formId}</span>
           </div>
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={onMinimize}
-              className="text-[#747470] hover:text-[#1A3778] p-1.5 rounded v3-micro"
+              className="text-[var(--v3-text-secondary)] hover:text-[var(--v3-teal-light)] p-1.5 rounded v3-micro"
               title="Minimize"
               aria-label="Minimize"
             >
@@ -487,7 +487,7 @@ function FormMaximizedModal({
             <button
               type="button"
               onClick={onClose}
-              className="text-[#747470] hover:text-[#1F1C1B] p-1.5 rounded v3-micro"
+              className="text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)] p-1.5 rounded v3-micro"
               title="Close form"
               aria-label="Close form"
             >
@@ -495,7 +495,7 @@ function FormMaximizedModal({
             </button>
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto bg-white">
+        <div className="flex-1 overflow-y-auto bg-transparent">
           <FormViewer
             formId={formId}
             formSource="task"

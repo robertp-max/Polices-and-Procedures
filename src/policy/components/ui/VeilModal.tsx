@@ -4,7 +4,7 @@
  * Expensive, luxurious feel matching the V3 Veil Glass spec:
  * - Exact matte slate-carbon glass gradient + 32px blur + saturate(140%)
  * - Sacred 0.33 border contract with hover elevation to 0.45
- * - Signature 0.7s cubic-bezier(0.16, 1, 0.3, 1) enter animation (scale + lift)
+ * - Opacity/blur-only motion per the V3 flat-design rules
  * - Luminous catchlight edge
  * - Refined teal micro-interactions on close
  * - Generous breathing room, premium typography
@@ -20,7 +20,7 @@
  * Backward compatible with CI-ION glass too.
  */
 
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
 export interface VeilModalProps {
@@ -74,15 +74,51 @@ export function VeilModal({
   hideClose = false,
 }: VeilModalProps) {
   const isV3 = glassVariant === 'v3-veil';
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
 
   // Escape handler
   useEffect(() => {
-    if (!open || disableEscape) return;
+    if (!open) return;
+    openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && !disableEscape) {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusable = Array.from(panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ));
+      if (focusable.length === 0) {
+        e.preventDefault();
+        panel.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    const focusTimer = window.setTimeout(() => {
+      const panel = panelRef.current;
+      const first = panel?.querySelector<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+      (first ?? panel)?.focus();
+    }, 0);
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener('keydown', onKey);
+      openerRef.current?.focus();
+      openerRef.current = null;
+    };
   }, [open, onClose, disableEscape]);
 
   if (!open) return null;
@@ -115,15 +151,15 @@ export function VeilModal({
 
       {/* The glass panel */}
       <div
+        ref={panelRef}
         className={panelClass}
+        tabIndex={-1}
         style={{
           width: `min(${width}, calc(100vw - 32px))`,
           maxWidth: '100%',
-          animation: 'v3-modal-enter 620ms var(--v3-ease) both',
+          animation: 'v3ModalIn 220ms var(--v3-ease) both',
           borderColor: borderStyle,
-          boxShadow: isV3
-            ? '0 40px 120px -30px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.06) inset'
-            : undefined,
+          boxShadow: 'none',
         }}
       >
         {/* Luminous edge already provided by .v3-veil-glass-panel::before */}

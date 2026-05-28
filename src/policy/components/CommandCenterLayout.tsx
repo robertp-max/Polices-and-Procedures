@@ -1,7 +1,6 @@
 ﻿import { useState, useEffect, useRef, useMemo, useCallback, type PropsWithChildren } from 'react';
 import { createPortal } from 'react-dom';
 import ciIonLogo from '@/assets/ci-logo-white.png';
-import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardCheck, Network, FileEdit,
@@ -251,17 +250,10 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
 
   const detailMode = useShellStore(s => s.detailMode);
   const theme = useShellStore(s => s.theme);
-  const toggleTheme = useShellStore(s => s.toggleTheme);
-  const isCareIndeed = theme === 'care-indeed-light';
   const ciMode = useCiModeStore(s => s.mode);
-  // When brand is Care Indeed, ALWAYS render the flat light backdrop —
-  // never the maroon TravelightBG. The orthogonal `ciMode` only affects
-  // typography/glass tinting, never the global page background. This
-  // prevents the white→maroon→white flash during login/route transitions
-  // when a stale `ci-care-indeed-mode=dark` is in localStorage.
-  const isCareIndeedDark = isCareIndeed && ciMode === 'dark';
-  const isVisualLight = isCareIndeed;
-  const logo = isCareIndeed ? ciLogoGray : ciIonLogo;
+  const isCareIndeedDark = false;
+  const isVisualLight = false;
+  const logo = ciIonLogo;
   const accountDisplayName = useMemo(() => {
     const firstName = user?.firstName?.trim();
     const lastName = user?.lastName?.trim();
@@ -336,12 +328,12 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   }, [expandedNavId, VISIBLE_NAV]);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.theme = 'v3-veil';
   }, [theme]);
 
   // ── Care Indeed Light/Dark mode (orthogonal to brand toggle) ──────────────
   useEffect(() => {
-    document.documentElement.dataset.ciMode = ciMode;
+    document.documentElement.dataset.ciMode = 'v3';
   }, [ciMode]);
 
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
@@ -451,7 +443,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
       <ShellContentFrame
         scrollable={false}
         detail={hideChrome}
-        className={`flex flex-col ${isMobile ? 'rounded-none' : ''} ${isVisualLight ? 'text-slate-800' : 'text-[var(--ci-text)]'}`}
+        className={`flex flex-col ${isMobile ? 'rounded-none' : ''} text-[var(--v3-text-primary)]`}
       >
         {/* Inner flex column: topbar stacked above body */}
         <div className="flex h-full w-full flex-col min-h-0">
@@ -464,15 +456,14 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
               logo={
                 <button
                   type="button"
-                  onClick={toggleTheme}
-                  aria-label={`Switch to ${isCareIndeed ? 'CI-ION Dark' : 'Care Indeed Light'} theme`}
-                  className="cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
+                  aria-label="Care Indeed V3"
+                  className="flex-shrink-0"
                 >
                   <img
                     src={logo}
-                    alt="Care Indeed — theme toggle"
-                    className={`h-8 md:h-11 w-auto object-contain ${isCareIndeed ? '' : 'drop-shadow-md'}`}
-                    style={isCareIndeed ? undefined : { filter: 'brightness(0) invert(1)', opacity: 0.95 }}
+                    alt="Care Indeed"
+                    className="h-8 md:h-11 w-auto object-contain"
+                    style={{ filter: 'brightness(0) invert(1)', opacity: 0.95 }}
                   />
                 </button>
               }
@@ -664,16 +655,15 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     {/* Splash logo → theme toggle (both views) */}
                     <button
                       type="button"
-                      onClick={toggleTheme}
-                      aria-label={`Switch to ${isCareIndeed ? 'CI-ION dark' : 'Care Indeed light'} theme`}
-                      title={`Switch to ${isCareIndeed ? 'CI-ION dark' : 'Care Indeed light'} theme`}
-                      className="group rounded-xl p-1 hover:scale-[1.03] transition-transform cursor-pointer focus-visible:outline-offset-4"
+                      aria-label="Care Indeed V3"
+                      title="Care Indeed V3"
+                      className="group rounded-xl p-1 focus-visible:outline-offset-4"
                     >
                       <img
                         src={logo}
-                        alt={`Care Indeed — click to switch to ${isCareIndeed ? 'CI-ION dark' : 'Care Indeed light'} theme`}
-                        className={`h-14 w-auto object-contain ${isCareIndeed ? '' : 'drop-shadow-2xl'}`}
-                        style={isCareIndeed ? { opacity: 1 } : { opacity: 0.95 }}
+                        alt="Care Indeed V3"
+                        className="h-14 w-auto object-contain"
+                        style={{ filter: 'brightness(0) invert(1)', opacity: 0.95 }}
                       />
                     </button>
 
@@ -882,7 +872,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     navigate(item.to);
                     setIsMenuOpen(false);
                   }}
-                  eyebrow={isCareIndeed ? 'Care Indeed' : 'CI-ION'}
+                  eyebrow="Care Indeed V3"
                   title="Navigate"
                 />
 

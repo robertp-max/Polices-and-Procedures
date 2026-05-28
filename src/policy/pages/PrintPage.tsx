@@ -92,8 +92,8 @@ function PrintMarkdownBody({ text }: { text: string }) {
         const trimmed = block.trim();
         if (!trimmed || trimmed === '---') return null;
         if (trimmed.startsWith('|') && trimmed.includes('\n')) return <GfmTable key={i} text={trimmed} />;
-        if (/^[*\-] /m.test(trimmed)) {
-          const items = trimmed.split('\n').map(l => l.replace(/^[*\-]\s+/, '').trim()).filter(Boolean);
+        if (/^[*-] /m.test(trimmed)) {
+          const items = trimmed.split('\n').map(l => l.replace(/^[*-]\s+/, '').trim()).filter(Boolean);
           return (
             <ul key={i} style={{ paddingLeft: '20px', marginBottom: '12px' }}>
               {items.map((item, j) => (
@@ -148,6 +148,20 @@ export function PrintPage() {
     ),
   );
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('autoprint') === '1') {
+      window.setTimeout(() => window.print(), 250);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!policy) return;
+    const prev = document.title;
+    document.title = `${policy.id} - ${policy.title}`;
+    return () => { document.title = prev; };
+  }, [policy?.id, policy?.title]);
+
   if (!policy) {
     return (
       <div className="rounded-xl border border-[#D70101]/30 bg-[#D70101]/5 p-6 text-sm text-[#D70101] font-roboto">
@@ -155,19 +169,6 @@ export function PrintPage() {
       </div>
     );
   }
-
-  useEffect(() => {
-    const prev = document.title;
-    document.title = `${policy.id} — ${policy.title}`;
-    return () => { document.title = prev; };
-  }, [policy.id, policy.title]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('autoprint') === '1') {
-      window.setTimeout(() => window.print(), 250);
-    }
-  }, []);
 
   const isOfficialVersion =
     policy.lifecycleStatus === 'Approved' || policy.lifecycleStatus === 'Published';

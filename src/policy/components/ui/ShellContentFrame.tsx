@@ -44,7 +44,7 @@ export const ShellContentFrame: React.FC<ShellContentFrameProps> = ({
       data-shell-content-frame
       className={`
         relative z-10 flex w-full flex-1 flex-col border
-        overflow-hidden rounded-[var(--ci-glass-layer1-border-radius-desktop,2rem)]
+        overflow-hidden rounded-[var(--v3-card-radius,24px)]
         ${scrollable ? 'overflow-y-auto' : ''}
         ${className}
       `}
@@ -53,15 +53,12 @@ export const ShellContentFrame: React.FC<ShellContentFrameProps> = ({
       // Consumers MAY pass `style` to add layout-only properties (e.g.
       // grid-template-rows) — but the glass contract values must not be
       // overridden in production code paths.
-      // eslint-disable-next-line react/forbid-dom-props -- canonical shell-glass surface; values must reach the painted layer
       style={{
-        background: detail
-          ? 'var(--ci-color-glass-main-detail, var(--ci-color-glass-main))'
-          : 'var(--ci-color-glass-main)',
-        backdropFilter: 'var(--ci-color-glass-blur)',
-        WebkitBackdropFilter: 'var(--ci-color-glass-blur)',
-        borderColor: 'var(--ci-color-glass-border)',
-        boxShadow: 'var(--ci-color-glass-shadow)',
+        background: detail ? 'rgba(8, 10, 13, 0.98)' : 'var(--v3-glass-card)',
+        backdropFilter: 'var(--v3-glass-blur)',
+        WebkitBackdropFilter: 'var(--v3-glass-blur)',
+        borderColor: detail ? 'var(--v3-border-subtle)' : 'transparent',
+        boxShadow: 'none',
         ...style,
       }}
     >

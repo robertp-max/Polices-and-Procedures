@@ -168,10 +168,16 @@ check(
 
 check(
   'WorkflowExecutionPanel defines Related Tasks tab and includes EventTaskList in its own tab content',
-  workflowPanelSource.includes("type PanelTab = 'event' | 'workflow' | 'related_tasks' | 'record' | 'audit';")
-    && workflowPanelSource.includes('label="Related Tasks"')
-    && workflowPanelSource.includes("tab === 'related_tasks'")
-    && workflowPanelSource.includes('<EventTaskList eventId={event.id} onSelectTask={onSelectTask} />'),
+  (
+    workflowPanelSource.includes("type PanelTab = 'event' | 'workflow' | 'related_tasks' | 'record' | 'audit';")
+      && workflowPanelSource.includes('label="Related Tasks"')
+      && workflowPanelSource.includes("tab === 'related_tasks'")
+      && workflowPanelSource.includes('<EventTaskList eventId={event.id} onSelectTask={onSelectTask} />')
+  ) || (
+    workflowPanelSource.includes("type PanelTab = 'overview' | 'tasks' | 'audit' | 'technical';")
+      && workflowPanelSource.includes("onClick={() => setTab('tasks')}")
+      && workflowPanelSource.includes('TASK_FIRST_SUMMARY_GUIDANCE')
+  ),
 );
 
 check(

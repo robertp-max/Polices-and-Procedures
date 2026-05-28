@@ -126,6 +126,8 @@ export interface EvidenceDoc {
   documentHash?: string | null;
   manifestHash?: string | null;
   signatureHash?: string | null;
+  /** SHA-256 over the decoded stored snapshot bytes (used to verify post-refresh fidelity). */
+  snapshotSha256?: string;
   auditEventRefs?: string[];
   note?: string;
   lockedAt?: string;
@@ -300,6 +302,7 @@ interface RegulatoryExecutionState {
     documentHash?: string | null;
     manifestHash?: string | null;
     signatureHash?: string | null;
+    snapshotSha256?: string;
     auditEventRefs?: string[];
     note?: string;
     localDataUrl?: string;

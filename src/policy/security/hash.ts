@@ -18,12 +18,22 @@ export async function sha256Hex(input: string): Promise<string> {
   const subtle =
     (globalThis as unknown as { crypto?: { subtle?: SubtleCrypto } }).crypto?.subtle;
   if (!subtle) {
+    type NodeCryptoHash = {
+      update: (data: string, inputEncoding?: string) => { digest: (encoding: 'hex') => string };
+    };
+    type NodeCryptoModule = { createHash: (algorithm: string) => NodeCryptoHash };
+    const isNodeCryptoModule = (v: unknown): v is NodeCryptoModule => {
+      if (!v || typeof v !== 'object') return false;
+      const candidate = v as { createHash?: unknown };
+      return typeof candidate.createHash === 'function';
+    };
+
     // Node fallback: runtime dynamic import without a static TS module dependency.
-    const dynamicImport = new Function('s', 'return import(s)') as (s: string) => Promise<any>;
+    const dynamicImport = new Function('s', 'return import(s)') as (s: string) => Promise<unknown>;
     const mod = await dynamicImport('node:crypto')
       .catch(() => dynamicImport('crypto'))
       .catch(() => null);
-    if (!mod) throw new Error('No SubtleCrypto and node:crypto unavailable');
+    if (!isNodeCryptoModule(mod)) throw new Error('No SubtleCrypto and node:crypto unavailable');
     return mod.createHash('sha256').update(input, 'utf8').digest('hex');
   }
   const buf = new TextEncoder().encode(input);

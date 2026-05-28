@@ -75,7 +75,7 @@ hubstaffRouter.get('/projects/:id/tasks', asyncH(async (req, res) => {
 
   // Extract [EVT-ID] tags from existing task summaries
   const existingIds = tasks
-    .map(t => { const m = t.summary.match(/^\[([A-Z0-9\-]+)\]/); return m ? m[1] : null; })
+    .map(t => { const m = t.summary.match(/^\[([A-Z0-9-]+)\]/); return m ? m[1] : null; })
     .filter(Boolean) as string[];
 
   res.json({ count: tasks.length, existingIds });

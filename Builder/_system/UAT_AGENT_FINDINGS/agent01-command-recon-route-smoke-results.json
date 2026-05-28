@@ -1,0 +1,604 @@
+{
+  "generatedAt": "2026-05-27T14:42:49.775Z",
+  "baseUrl": "http://localhost:5173",
+  "totalRoutes": 27,
+  "issueCount": 3,
+  "duplicateKeyCount": 0,
+  "routes": [
+    {
+      "label": "Dashboard",
+      "route": "/dashboard",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/dashboard",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent01-command-recon-screenshots\\dashboard.png",
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin COMMAND CENTER What needs action now What needs action now Executive operational narrative for compliance execution, evidence readiness, and escalation control. CRITICAL 101 AT RISK 7 AUDIT READY 0 IN SCOPE 253 TODAY Sunday, May 10 Agency View My Planner OPERATIONAL STORYLINE Prioritize critical controls, clear risk queues, and lock evidence-",
+      "hasIssue": false
+    },
+    {
+      "label": "Calendar",
+      "route": "/calendar",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/calendar",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent01-command-recon-screenshots\\calendar.png",
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin EVENT CALENDAR Regulatory events · May 2026 Orchestrate deadlines, sprint execution, and survey readiness from one cinematic timeline surface. BLOCK 16 DUE 13 TRACK 8 Calendar Sprint Board Kanban Gantt Today SYNC ALL EVENTS JULY READINESS ROLLOUT Project all non-triggered workflows into the calendar for the 12-month window starting 2026-07-01",
+      "hasIssue": false
+    },
+    {
+      "label": "Calendar Sprint View",
+      "route": "/calendar?view=sprint",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/calendar?view=sprint",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin CES SPRINT WINDOW Sprint execution · Mon–Fri 2-week window Orchestrate deadlines, sprint execution, and survey readiness from one cinematic timeline surface. Calendar Sprint Board Kanban Gantt Today SYNC ALL EVENTS SPRINT SCOPE YEAR 2024 2025 2026 2027 2028 2029 2030 SPRINT 2026:01 — Sprint 1 2026:02 — Sprint 2 2026:03 — Sprint 3 2026:04 — Sp",
+      "hasIssue": false
+    },
+    {
+      "label": "Calendar Kanban View",
+      "route": "/calendar?view=kanban",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/calendar?view=kanban",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin PM KANBAN Project Kanban · CES projected tasks Orchestrate deadlines, sprint execution, and survey readiness from one cinematic timeline surface. Calendar Sprint Board Kanban Gantt Today SYNC ALL EVENTS SPRINT SCOPE YEAR 2024 2025 2026 2027 2028 2029 2030 SPRINT 2026:01 — Sprint 1 2026:02 — Sprint 2 2026:03 — Sprint 3 2026:04 — Sprint 4 2026:",
+      "hasIssue": false
+    },
+    {
+      "label": "Calendar Gantt View",
+      "route": "/calendar?view=gantt",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/calendar?view=gantt",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin PM GANTT Project Gantt · CES projected tasks Orchestrate deadlines, sprint execution, and survey readiness from one cinematic timeline surface. Calendar Sprint Board Kanban Gantt Today SYNC ALL EVENTS SPRINT SCOPE YEAR 2024 2025 2026 2027 2028 2029 2030 SPRINT 2026:01 — Sprint 1 2026:02 — Sprint 2 2026:03 — Sprint 3 2026:04 — Sprint 4 2026:05",
+      "hasIssue": false
+    },
+    {
+      "label": "CES Calendar",
+      "route": "/ces/calendar",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/ces/calendar",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin EVENT CALENDAR Regulatory events · May 2026 Orchestrate deadlines, sprint execution, and survey readiness from one cinematic timeline surface. BLOCK 16 DUE 13 TRACK 8 Calendar Sprint Board Kanban Gantt Today SYNC ALL EVENTS JULY READINESS ROLLOUT Project all non-triggered workflows into the calendar for the 12-month window starting 2026-07-01",
+      "hasIssue": false
+    },
+    {
+      "label": "Sprint Board",
+      "route": "/ces/board",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/ces/board",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin ACTIVE SPRINT Sprint 9 Apr 26 – May 7, 2026 PM scope: 2026:10 · 2026-05-10–2026-05-23 0 urgent JV JD Vance Administrator Designee SPRINT SCOPE YEAR 2024 2025 2026 2027 2028 2029 2030 SPRINT 2026:01 — Sprint 1 2026:02 — Sprint 2 2026:03 — Sprint 3 2026:04 — Sprint 4 2026:05 — Sprint 5 2026:06 — Sprint 6 2026:07 — Sprint 7 2026:08 — Sprint 8 20",
+      "hasIssue": false
+    },
+    {
+      "label": "CES Workloads",
+      "route": "/ces/workloads",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/ces/workloads",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin ACTIVE SPRINT Sprint 9 Apr 26 – May 7, 2026 PM scope: 2026:10 · 2026-05-10–2026-05-23 0 urgent JV JD Vance Administrator Designee Workload Distribution Owner-level accountability. Capacity risk reflects load, overdue items, and pending signatures. TOTAL OWNERS 5 OWNERS OVERLOADED 5 OWNERS ON WATCH 0 OWNER ASSIGNMENTS OWNER ROLE ALLOCATED IN F",
+      "hasIssue": false
+    },
+    {
+      "label": "CES Reports",
+      "route": "/ces/reports",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/ces/reports",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin ACTIVE SPRINT Sprint 9 Apr 26 – May 7, 2026 PM scope: 2026:10 · 2026-05-10–2026-05-23 0 urgent JV JD Vance Administrator Designee Executive Reports Sprint-over-sprint compliance trends. Each chart isolates a regulatory KPI. COMPLIANCE COMPLETION RATE (%) 0% +0% vs prior S7 0 S8 0 S9 0 ── Target: 85% ON-TIME COMPLETION (%) 0% +0% vs prior S7 0",
+      "hasIssue": false
+    },
+    {
+      "label": "My Tasks",
+      "route": "/my-tasks",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/my-tasks",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin EXECUTION My Tasks You · 0 total Governing Body: 1904 Administrator: 1904 Admin Designee: 24 DON: 1405 DON Assistant: 1073 Accounting: 198 Systems: 101 All Open Awaiting Signature Blocked Overdue OPERATIONAL QUEUE Task Command View Clear execution path from triage to completion with role-aware queue confidence. TOTAL 0 OPEN 0 OVERDUE 0 No tas",
+      "hasIssue": false
+    },
+    {
+      "label": "PM My Tasks",
+      "route": "/pm/my-tasks",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/pm/my-tasks",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 ()"
+        }
+      ],
+      "failedResponses": [
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/personal?owner=demo-user-careindeed"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/overlays"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/dependencies"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        },
+        {
+          "status": 503,
+          "url": "https://rtllnugat0.execute-api.us-west-1.amazonaws.com/pm/notifications"
+        }
+      ],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin MY TASKS 2026:102026:10 — Sprint 10 SPRINT PLAN REVIEW APPROVALS DASHBOARD 50 user: demo-user-careindeed SPRINT SCOPE YEAR 2024 2025 2026 2027 2028 2029 2030 SPRINT 2026:01 — Sprint 1 2026:02 — Sprint 2 2026:03 — Sprint 3 2026:04 — Sprint 4 2026:05 — Sprint 5 2026:06 — Sprint 6 2026:07 — Sprint 7 2026:08 — Sprint 8 2026:09 — Sprint 9 2026:10 ",
+      "hasIssue": false
+    },
+    {
+      "label": "PM Dashboard",
+      "route": "/pm/dashboard",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/pm/dashboard",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin PM REPORTING Sprint Dashboard ← 2026-11 → BURNDOWN · 317 PTS COMMITTED 317 pts 2026-06-06 THROUGHPUT · LAST 6 SPRINTS 06 0 07 0 08 0 09 0 10 0 11 0 STATUS MIX · 2026-11 To-Do 214 In Progress 0 In Review 0 Blocked 0 Done 0 GUIDED UAT 2/6 operational checkpoints Review operational posture Open and execute tasks Validate workflow timeline Comple",
+      "hasIssue": false
+    },
+    {
+      "label": "Event Workspace",
+      "route": "/calendar/event/qapi_meeting-20260512-09",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/calendar/event/qapi_meeting-20260512-09",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin INCIDENT / ADVERSE EVENT QAPI Committee Meeting STATUS Open RISK High SLA In 2 days OWNER M. Chen (QAPI Coordinator) QA-PG-001 QA-PG-002 EXECUTION LINKS Continue Workflow View Policy View Forms View Audit Trail Technical traceability Required forms: 10 · Workflow steps: 14 GUIDED UAT 3/6 operational checkpoints BRAD IADMINISTRATOR Hello, TJ, ",
+      "hasIssue": false
+    },
+    {
+      "label": "Event Task Detail",
+      "route": "/calendar/event/qapi_meeting-20260512-09/task/qapi_meeting-20260512-09-29",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/calendar/event/qapi_meeting-20260512-09/task/qapi_meeting-20260512-09-29",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin TASK DETAIL Complete form QA-FM-021 Status: todo · Due: 2026-05-12 Event: QAPI Committee Meeting Workflow step: qapi_meeting-20260512-09-29 Owner: Unassigned Instructions: Complete required forms/evidence and resolve blockers before closure. Required forms: QA-FM-021 Required evidence: Not required Approvals in flight: 0 Completion blockers: ",
+      "hasIssue": false
+    },
+    {
+      "label": "Evidence Center",
+      "route": "/evidence?event_id=qapi_meeting-20260512-09",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/evidence?event_id=qapi_meeting-20260512-09",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent01-command-recon-screenshots\\evidence-center.png",
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin Evidence Folder Explorer Evidence mode: DEMO_LOCAL Clear All Evidence Read-only folder view for Year → Quarter → Month → Event → Task evidence. Upload stays inside CES task drawers where the event, task, form, and requirement context is known. Chain of custody visible Immutable evidence timeline Survey packet ready context Folder tree File le",
+      "hasIssue": false
+    },
+    {
+      "label": "Audit Mode",
+      "route": "/audit?event=qapi_meeting-20260512-09",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/audit?event=qapi_meeting-20260512-09",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin AUDIT Compliance validation and survey readiness Audit trail Verify chain Survey packet FILTERS SURVEY ROLLUP BUNDLE JSON ALL JULY READINESS NOT CERTIFIABLE MISSING EVIDENCE PENDING APPROVAL OVERDUE(101) READY TO CERTIFY CERTIFIED GOVERNANCE(8) QAPI(9) BILLING CRITICAL(3) SURVEY CRITICAL(196) 0% COMPLIANT Â· 0 CERTIFIED Â· 0 READY TO CERTIFY ",
+      "hasIssue": false
+    },
+    {
+      "label": "Policy Library",
+      "route": "/library",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/library",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin Enterprise Policy Library 269 POLICIES 361 FORMS POLICIES FORMS IBM FRAMEWORK VIEW ACHC SURVEY VIEW REGULATORY FILTERS ALL TITLE 22 42 CFR §484 CMS STATE OPS HIPAA OSHA OIG FCA STRATEGIC DOMAINS GLOBAL REPOSITORY GOVERNANCE CLINICAL OPS QAPI HUMAN RES. COMPLIANCE FINANCE OPERATIONS IT & SECURITY RISK MGMT ENTERPRISE ALL DOMAINS — GLOBAL REPOS",
+      "hasIssue": false
+    },
+    {
+      "label": "Policy Detail",
+      "route": "/library/GV-GB-001",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/library/GV-GB-001",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "Library GV-GB-001 Overview & Definitions Policy Statements Procedures Documentation Compliance & Audit References & Admin Appendices (Forms) Print Governing Body Authority & Responsibilities POLICY ID: GV-GB-001 DOMAIN GV — Governance & Administration TIER REQUIRED APPROVED BY Governing Body Chair — Care Indeed Home Health Care, Inc. SUPERSEDES N/A (Initial Version) EFFECTIVE DATE 2025-07-10 LAST REVIEWED 2025-07-10 NEXT REVIEW 2026-07-10 VERSION v6.0 2. PURPOSE This policy establishes the authority, composition, functions, and oversight responsibilities of the Governing Body of Care Indeed Ho",
+      "hasIssue": false
+    },
+    {
+      "label": "ACHC Survey View",
+      "route": "/framework/achc-survey",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/framework/achc-survey?view=hh-evidence",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [
+        "502|bad gateway"
+      ],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent01-command-recon-screenshots\\achc-survey-view.png",
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin ACHC Survey Alignment Manual tagging source locked Surveyor evidence explorer for HH standard support, with matrix and crosswalk retained as secondary views. ACHC HH Evidence ACHC Standard Matrix ACHC Crosswalk HH Standard: ALL HH1-10A HH1-12A.01 HH1-1A HH1-1A.01 HH1-1B HH1-1C HH1-2A HH1-2A.03 HH1-4A.01 HH1-5A HH1-5A.01 HH1-6A HH1-6B HH1-8A H",
+      "hasIssue": true
+    },
+    {
+      "label": "Surveyor Policy Viewer",
+      "route": "/surveyor/policy/GV-GB-001",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/surveyor/policy/GV-GB-001#section-1",
+      "title": "GV-GB-001 — Governing Body Authority & Responsibilities",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "Close PREV OVERVIEW NEXT PRINT DOWNLOAD Table of Contents 10 document groups Overview 2. Purpose 3. Scope 4. Policy Statements 5. Definitions 6.1 Establishment 6.2 Core Responsibilities 6.2.2 Key Personnel 6.2.3 Policy & Compliance 6.2.4 QAPI Oversight 6.2.5 Financial Oversight 6.2.6 Emergency Preparedness 6.3 Meetings 6.4 Conflict of Interest 6.5 Escalation 7. Documentation 8. Compliance & Audit 8.2 Surveyor Expectations 8.3 Common Failure Points 9. References 9.2/9.3 CMS & OIG Guidance 9.4 Cross-References 10. Training & Version Control Appendices Policy Alerts FAQ Amendment Log Governing Bo",
+      "hasIssue": false
+    },
+    {
+      "label": "Forms",
+      "route": "/forms",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/forms",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [
+        "502|bad gateway"
+      ],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent01-command-recon-screenshots\\forms.png",
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin Enterprise Forms Library 269 POLICIES 361 FORMS POLICIES FORMS EXPORT ALL DOMAINS GOVERNANCE CLINICAL OPS QAPI HUMAN RESOURCES COMPLIANCE FINANCE OPERATIONS IT & SECURITY RISK MGMT ENTERPRISE CTRL ALL MASTER TEMPLATE AUDIT CRITICAL SHARED ENTERPRISE HIGH RISK DIGITAL CANDIDATE 410 ARTIFACTS EN-FM-001 Universal Policy Acknowledgment Form MASTE",
+      "hasIssue": true
+    },
+    {
+      "label": "Form Viewer / eCIgn Entry",
+      "route": "/forms/QA-FM-021?event_id=qapi_meeting-20260512-09&task_id=qapi_meeting-20260512-09-29&form_id=QA-FM-021&form_instance_id=qapi_meeting-20260512-09-QA-FM-021-001&workflow_id=QA-WF-03",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/forms/QA-FM-021?event_id=qapi_meeting-20260512-09&task_id=qapi_meeting-20260512-09-29&form_id=QA-FM-021&form_instance_id=qapi_meeting-20260512-09-QA-FM-021-001&workflow_id=QA-WF-03",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "Task-linked form context detected. event_id=qapi_meeting-20260512-09 · task_id=qapi_meeting-20260512-09-29 · form_id=QA-FM-021 · policy_id=QA-PI-001 · workflow_id=QA-WF-03 · requirement_id=— Return to Event Task Workspace Return to Forms Library QA-FM-021 · v6.0 Print Save as Evidence Download Awaiting Signature Powered by ENTERPRISE FORMS LIBRARY QA-FM-021 · v6.0 Performance Improvement Plan (PIP) Remeasurement & Status TEMPLATE · FORM QA-FM-021 FORM ID QA-FM-021 VERSION v6.0 EFFECTIVE 2025-07-10 NEXT REVIEW 2026-07-10 PURPOSE Standardized template capturing the required data elements for Per",
+      "hasIssue": false
+    },
+    {
+      "label": "Artifact Viewer",
+      "route": "/artifacts/qapi_meeting-20260512-09-QA-FM-021-001?event_id=qapi_meeting-20260512-09&task_id=qapi_meeting-20260512-09-29&form_id=QA-FM-021&form_instance_id=qapi_meeting-20260512-09-QA-FM-021-001&type=form_instance",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/artifacts/qapi_meeting-20260512-09-QA-FM-021-001?event_id=qapi_meeting-20260512-09&task_id=qapi_meeting-20260512-09-29&form_id=QA-FM-021&form_instance_id=qapi_meeting-20260512-09-QA-FM-021-001&type=form_instance",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [
+        "route not found|not found|missing route"
+      ],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent01-command-recon-screenshots\\artifact-viewer.png",
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin ARTIFACT VIEWER qapi_meeting-20260512-09-QA-FM-021-001 Back to Evidence Center Artifact was not found in the current CES store snapshot. Metadata Artifact ID qapi_meeting-20260512-09-QA-FM-021-001 Artifact Type form_instance Event ID qapi_meeting-20260512-09 Task ID qapi_meeting-20260512-09-29 Requirement ID — Form ID QA-FM-021 Form Instance ",
+      "hasIssue": true
+    },
+    {
+      "label": "Generic Reference Viewer",
+      "route": "/viewer/GV-GB-001",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/viewer/GV-GB-001",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin REFERENCE VIEWER GV-GB-001 Type: Reference Viewer under construction GUIDED UAT 0/6 operational checkpoints Review operational posture Open and execute tasks Validate workflow timeline Complete required forms Upload and verify evidence Run audit readiness pass Keep checklist visible BRAD IADMINISTRATOR Hello, TJ, I am Brad! Run with Brad SUGG",
+      "hasIssue": false
+    },
+    {
+      "label": "Policy Print",
+      "route": "/print/GV-GB-001",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/print/GV-GB-001",
+      "title": "GV-GB-001 — Governing Body Authority & Responsibilities",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "← Back to GV-GB-001 Print / Save as PDF CORPORATE POLICY DOCUMENT Care Indeed Home Health Care, Inc. GV-GB-001 ACTIVE REQUIRED Governing Body Authority & Responsibilities VERSION v6.0 EFFECTIVE 2025-07-10 LAST REVIEWED 2025-07-10 NEXT REVIEW 2026-07-10 POLICY OWNER Administrator SUBDOMAIN GB — Governing Body DOMAIN GV — Governance & Administration APPROVED BY Governing Body Chair — Care Indeed Home Health Care, Inc. Supersedes: N/A (Initial Version) Printed: May 27, 2026 2. Purpose This policy establishes the authority, composition, functions, and oversight responsibilities of the Governing Bo",
+      "hasIssue": false
+    },
+    {
+      "label": "Form Print",
+      "route": "/forms/QA-FM-021/print",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/forms/QA-FM-021/print",
+      "title": "QA-FM-021 — Performance Improvement Plan (PIP) Remeasurement & Status",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": null,
+      "textSample": "CLOSE SAVE TO PDF / PRINT Performance Improvement Plan (PIP) Remeasurement & Status FORM ID QA-FM-021 VERSION 6.0 DATE 2025-07-10 ENTERPRISE FORMS LIBRARY QA-FM-021 · v6.0 Performance Improvement Plan (PIP) Remeasurement & Status TEMPLATE · FORM QA-FM-021 FORM ID QA-FM-021 VERSION v6.0 EFFECTIVE 2025-07-10 NEXT REVIEW 2026-07-10 PURPOSE Standardized template capturing the required data elements for Performance Improvement Plan (PIP) Remeasurement & Status, aligned with Care Indeed policy, applicable federal/state regulation, and the enterprise gold standard (GV-GB-001). INSTRUCTIONS Completed ",
+      "hasIssue": false
+    },
+    {
+      "label": "Invalid Route Recovery",
+      "route": "/uat-agent01-missing-route-check",
+      "status": 200,
+      "finalUrl": "http://localhost:5173/dashboard",
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "redirectedToLogin": false,
+      "blankish": false,
+      "textFlags": [],
+      "duplicateKeyCount": 0,
+      "consoleMessages": [],
+      "failedResponses": [],
+      "navigationError": null,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent01-command-recon-screenshots\\invalid-route-recovery.png",
+      "textSample": "TP PRIMARY OPERATIONS Dashboard Clinician Profiles Patient Profiles Calendar Brad COMPLIANCE EXECUTION Compliance Execution (CES) Taxonomy Onboarding Policy Lifecycle Evidence ADMINISTRATION / KNOWLEDGE Hubstaff System Documentation Help Center Demo Admin COMMAND CENTER What needs action now What needs action now Executive operational narrative for compliance execution, evidence readiness, and escalation control. CRITICAL 101 AT RISK 7 AUDIT READY 0 IN SCOPE 253 TODAY Sunday, May 10 Agency View My Planner OPERATIONAL STORYLINE Prioritize critical controls, clear risk queues, and lock evidence-",
+      "hasIssue": false
+    }
+  ]
+}

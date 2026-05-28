@@ -42,7 +42,6 @@ import { downloadBlob } from '@/policy/audit/exportReport';
 import { evidenceTaskIdMatchesTask } from '@/policy/compliance-execution/taskIdentity';
 import { resolveEvidenceDataUrl } from '@/policy/evidence/demoEvidenceRuntimeCache';
 import { CalendarApi, toPlannerPayload } from '@/policy/services/calendarApi';
-import { useShellStore } from '@/policy/stores/uiStore';
 import { useEventExecutionDataflow, type EventExecutionDataflow } from '@/policy/compliance-execution';
 import { buildCesTaskRequirements, type CesTaskWithExecutionRequirements, type CesExecutionRequirement } from '@/policy/evidence/cesEvidenceHierarchy';
 import type { Task as PmTask } from '@/policy/pm/types';
@@ -143,7 +142,6 @@ function ActivePanel({
   const [tab, setTab] = useState<PanelTab>('overview');
   const [taskDeepLink, setTaskDeepLink] = useState<TaskDeepLinkTarget | null>(null);
   const location = useLocation();
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
 
   const state: InstanceState = classifyInstance(event, today, store);
   const auditState = classifyAuditState(event, today, store);
@@ -180,7 +178,8 @@ function ActivePanel({
       className="h-full w-full flex flex-col min-h-0 rounded-xl border overflow-hidden"
       style={{
         borderColor: `${stateColor}55`,
-        background: isLight ? 'var(--ci-surface-2)' : 'var(--ci-overlay-faint)',
+        background: 'var(--v3-glass-card)',
+        color: 'var(--v3-text-primary)',
       }}
     >
       {/* ── Header: instance projection ── */}
@@ -302,13 +301,13 @@ function ActivePanel({
       </header>
 
       {/* ── Tab bar ── */}
-      <nav
-        className="flex items-stretch gap-0 overflow-x-auto border-b"
-        style={{
-          borderColor: 'var(--ci-border)',
-          background: isLight ? 'var(--ci-surface-muted)' : 'rgba(248,250,252,0.9)',
-        }}
-      >
+        <nav
+          className="flex items-stretch gap-0 overflow-x-auto border-b"
+          style={{
+            borderColor: 'var(--ci-border)',
+            background: 'var(--ci-overlay-faint)',
+          }}
+        >
         <TabButton
           active={tab === 'overview'}
           onClick={() => setTab('overview')}
@@ -392,7 +391,6 @@ function TabButton({
   count?: number;
   accent: string;
 }) {
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   return (
     <button
       type="button"
@@ -400,8 +398,8 @@ function TabButton({
       className="ci-touch-target flex min-w-max flex-none items-center justify-center gap-1 whitespace-nowrap px-2 py-2 text-[9px] sm:min-w-0 sm:flex-1 sm:text-[10px] font-montserrat font-bold uppercase tracking-[0.1em] transition border-r last:border-r-0"
       style={{
         borderRightColor: 'var(--ci-border)',
-        color: active ? accent : (isLight ? 'var(--ci-text-muted-2)' : '#475569'),
-        background: active ? `${accent}1a` : (isLight ? 'var(--ci-surface-muted)' : 'rgba(248,250,252,0.75)'),
+        color: active ? accent : 'var(--v3-text-secondary)',
+        background: active ? `${accent}1a` : 'transparent',
         borderBottom: active ? `2px solid ${accent}` : '2px solid transparent',
       }}
     >
@@ -2243,7 +2241,7 @@ function InlineTaskActionPanel({
   );
 }
 
-export const _RequiredFormsTab = ({
+export const RequiredFormsTab = ({
   event,
   dataflow,
   onOpenTaskContext,

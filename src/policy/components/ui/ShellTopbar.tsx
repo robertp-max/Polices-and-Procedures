@@ -1,5 +1,4 @@
 import React from 'react';
-import { ThemeModeToggle } from './ThemeModeToggle';
 import { SearchField } from './SearchField';
 
 interface ShellTopbarProps {
@@ -12,13 +11,7 @@ interface ShellTopbarProps {
 /**
  * ShellTopbar - Canonical top bar for the shell.
  *
- * Surface colors flow through CSS custom properties declared per
- * (data-theme, data-ci-mode) combination in src/index.css —
- * `--ci-color-shell-topbar-bg` and `--ci-color-border-subtle`. Switching
- * brand or mode flips the painted surface without re-rendering React.
- *
- * Phase 2 visibility-fix pass: removed dual-store JS branching that
- * caused brand/mode desynchronization with `CommandCenterLayout`.
+ * Surface colors flow through the app-wide V3 token contract.
  */
 export const ShellTopbar: React.FC<ShellTopbarProps> = ({
   children,
@@ -32,12 +25,11 @@ export const ShellTopbar: React.FC<ShellTopbarProps> = ({
       aria-label="Application topbar"
       data-shell-topbar
       className="flex h-14 w-full items-center justify-between border-b px-4 flex-shrink-0"
-      // eslint-disable-next-line react/forbid-dom-props -- canonical shell-topbar surface; values resolve from --ci-color-* tokens
       style={{
-        background: 'var(--ci-color-shell-topbar-bg)',
-        borderColor: 'var(--ci-color-border-subtle)',
-        backdropFilter: 'var(--ci-color-glass-blur)',
-        WebkitBackdropFilter: 'var(--ci-color-glass-blur)',
+        background: 'transparent',
+        borderColor: 'var(--v3-border-subtle)',
+        backdropFilter: 'var(--v3-glass-blur)',
+        WebkitBackdropFilter: 'var(--v3-glass-blur)',
       }}
     >
       {/* Left: Mobile menu + Logo */}
@@ -46,7 +38,7 @@ export const ShellTopbar: React.FC<ShellTopbarProps> = ({
           <button
             onClick={onMenuClick}
             type="button"
-            className="lg:hidden p-2 -ml-2 text-[var(--ci-text-muted)] hover:text-[var(--ci-text-primary)]"
+            className="lg:hidden p-2 -ml-2 text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)]"
             aria-label="Open navigation"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,7 +47,7 @@ export const ShellTopbar: React.FC<ShellTopbarProps> = ({
           </button>
         )}
 
-        <div className="flex items-center gap-2 font-semibold tracking-tight text-[var(--ci-text-primary)]" style={{ fontSize: 'var(--ci-font-size-body-md, 15px)' }}>
+        <div className="flex items-center gap-2 font-semibold tracking-tight text-[var(--v3-text-primary)]" style={{ fontSize: 'var(--ci-font-size-body-md, 15px)' }}>
           {logo || 'Care Indeed'}
         </div>
       </div>
@@ -71,7 +63,6 @@ export const ShellTopbar: React.FC<ShellTopbarProps> = ({
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
         {children}
-        <ThemeModeToggle />
       </div>
     </div>
   );

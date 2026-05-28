@@ -221,7 +221,12 @@ export function FrameworkShowcase() {
   const activeCount = useMemo(() => visiblePolicies.filter(p => p._displayStatus === 'ACTIVE').length, [visiblePolicies]);
 
   const toggleReg = useCallback((id: string) => {
-    setActiveRegFilters(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    setActiveRegFilters(prev => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
   }, []);
   const pickDomain = useCallback((code: string) => { setSelectedDomain(code); setSelectedSubdomain('ALL'); }, []);
   const pickSubdomain = useCallback((subCode: string, domCode?: string) => {

@@ -1,19 +1,16 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { FileText, Folder } from 'lucide-react';
 import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import type { EventExecutionAuditEvent } from '@/policy/compliance-execution/types';
 import type { Task } from '@/policy/pm/types';
 import type { ApprovalRequest, EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
 import {
   buildCesEvidenceHierarchy,
-  type CesExecutionRequirement,
-  type EventHierarchyNode,
   type ExecutionRequirementStatus,
   type HierarchyMetrics,
   type LeaderboardEntry,
   type YearHierarchyNode,
 } from '@/policy/evidence/cesEvidenceHierarchy';
-import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 
 interface HierarchyFilters {
   year: string;
@@ -34,12 +31,22 @@ interface HierarchyFilters {
 
 type SelectedContext =
   | { kind: 'year'; label: string }
-  | { kind: 'quarter'; label: string }
   | { kind: 'month'; label: string }
   | { kind: 'event'; label: string }
   | { kind: 'task'; label: string }
   | { kind: 'requirement'; label: string }
   | { kind: 'leaderboard'; label: string };
+
+type ExplorerSelection =
+  | { kind: 'root' }
+  | { kind: 'year'; year: number }
+  | { kind: 'month'; year: number; month: number }
+  | { kind: 'event'; eventId: string }
+  | { kind: 'task'; taskId: string };
+
+type ExplorerItem =
+  | { kind: 'folder'; id: string; name: string; subtitle: string; metrics: HierarchyMetrics; onOpen: () => void }
+  | { kind: 'record'; id: string; name: string; subtitle: string; status: string; completion: number; audit: number; onOpen?: () => void };
 
 export function CesEvidenceHierarchyPanel({
   events,
@@ -57,10 +64,9 @@ export function CesEvidenceHierarchyPanel({
   onSelectEvent?: (eventId: string) => void;
 }) {
   const now = new Date();
-  const defaultQuarter = `Q${Math.floor(now.getMonth() / 3) + 1}`;
   const [filters, setFilters] = useState<HierarchyFilters>({
     year: String(now.getFullYear()),
-    quarter: defaultQuarter,
+    quarter: '',
     month: '',
     eventStatus: '',
     taskStatus: '',
@@ -75,11 +81,8 @@ export function CesEvidenceHierarchyPanel({
     orphanOnly: false,
   });
   const [expandedYears, setExpandedYears] = useState<Record<number, boolean>>({ [now.getFullYear()]: true });
-  const [expandedQuarters, setExpandedQuarters] = useState<Record<string, boolean>>({ [`${now.getFullYear()}-${defaultQuarter}`]: true });
-  const [expandedMonths, setExpandedMonths] = useState<Record<string, boolean>>({});
-  const [expandedEvents, setExpandedEvents] = useState<Record<string, boolean>>({});
-  const [expandedTasks, setExpandedTasks] = useState<Record<string, boolean>>({});
   const [selectedContext, setSelectedContext] = useState<SelectedContext>({ kind: 'month', label: 'Monthly compliance execution' });
+  const [explorerSelection, setExplorerSelection] = useState<ExplorerSelection>({ kind: 'year', year: now.getFullYear() });
 
   const hierarchy = useMemo(() => buildCesEvidenceHierarchy({
     events,
@@ -91,25 +94,28 @@ export function CesEvidenceHierarchyPanel({
 
   const filteredYears = useMemo(() => applyFilters(hierarchy.years, filters), [hierarchy.years, filters]);
   const compactMetrics = useMemo(() => aggregateYearMetrics(filteredYears), [filteredYears]);
+  const explorerView = useMemo(
+    () => buildExplorerView(filteredYears, explorerSelection, setExplorerSelection, setSelectedContext, onSelectEvent),
+    [filteredYears, explorerSelection, onSelectEvent, setSelectedContext],
+  );
 
   return (
     <div className="grid grid-cols-12 gap-4 px-3 md:px-6 py-4">
       <section className="col-span-12 xl:col-span-9">
-        <div className="rounded border border-white/15 bg-[#0a1626]">
-          <div className="border-b border-white/10 px-4 py-3">
-            <h2 className="text-sm font-semibold text-white">CES Evidence Hierarchy</h2>
-            <p className="mt-1 text-xs text-white/70">
-              Year → Quarter → Month → Event → Task → Execution Requirements. Operational completion and audit readiness are calculated separately.
+        <div className="border-t border-[var(--v3-border-subtle)] pt-4">
+          <div className="px-4 py-3">
+            <h2 className="text-sm font-semibold text-[var(--v3-text-primary)]">Evidence Folder Tree</h2>
+            <p className="mt-1 text-xs text-[var(--v3-text-secondary)]">
+              Drive-style hierarchy: Year → Month → Event → Task → Requirement → Artifact. Operational completion and audit readiness are calculated separately.
             </p>
             <div className="mt-3 grid grid-cols-2 gap-2 xl:grid-cols-6">
               <FilterSelect label="Year" value={filters.year} onChange={value => setFilters(prev => ({ ...prev, year: value }))} options={['', ...hierarchy.years.map(y => String(y.year))]} />
-              <FilterSelect label="Quarter" value={filters.quarter} onChange={value => setFilters(prev => ({ ...prev, quarter: value }))} options={['', 'Q1', 'Q2', 'Q3', 'Q4']} />
               <FilterSelect label="Month" value={filters.month} onChange={value => setFilters(prev => ({ ...prev, month: value }))} options={['', ...monthOptions(filteredYears)]} />
               <FilterSelect label="Task Status" value={filters.taskStatus} onChange={value => setFilters(prev => ({ ...prev, taskStatus: value }))} options={['', 'todo', 'in_progress', 'in_review', 'blocked', 'done']} />
               <FilterSelect label="Requirement Status" value={filters.requirementStatus} onChange={value => setFilters(prev => ({ ...prev, requirementStatus: value }))} options={['', 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED']} />
               <FilterSelect label="Assigned" value={filters.assigned} onChange={value => setFilters(prev => ({ ...prev, assigned: value }))} options={['', ...assigneeOptions(filteredYears)]} />
             </div>
-            <div className="mt-2 flex flex-wrap gap-3 text-xs text-white/75">
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-[var(--v3-text-secondary)]">
               <CheckToggle label="Missing evidence only" checked={filters.missingEvidenceOnly} onChange={checked => setFilters(prev => ({ ...prev, missingEvidenceOnly: checked }))} />
               <CheckToggle label="Locked evidence only" checked={filters.lockedEvidenceOnly} onChange={checked => setFilters(prev => ({ ...prev, lockedEvidenceOnly: checked }))} />
               <CheckToggle label="Pending signature only" checked={filters.pendingSignatureOnly} onChange={checked => setFilters(prev => ({ ...prev, pendingSignatureOnly: checked }))} />
@@ -120,134 +126,77 @@ export function CesEvidenceHierarchyPanel({
 
           <div className="px-4 py-3">
             <MetricsSummary metrics={compactMetrics} />
-            <div className="mt-3 space-y-2">
-              {filteredYears.map(yearNode => {
-                const yearOpen = expandedYears[yearNode.year] ?? yearNode.year === now.getFullYear();
-                return (
-                  <div key={yearNode.year} className="rounded border border-white/10">
-                    <RowButton
-                      label={`${yearNode.year}`}
-                      metrics={yearNode.metrics}
-                      open={yearOpen}
-                      onClick={() => {
-                        setExpandedYears(prev => ({ ...prev, [yearNode.year]: !yearOpen }));
-                        setSelectedContext({ kind: 'year', label: `${yearNode.year} compliance readiness` });
-                      }}
-                    />
-                    {yearOpen && (
-                      <div className="space-y-2 border-t border-white/10 p-2">
-                        {yearNode.quarters.map(quarterNode => {
-                          const quarterKey = `${yearNode.year}-${quarterNode.quarter}`;
-                          const quarterOpen = expandedQuarters[quarterKey] ?? quarterNode.quarter === defaultQuarter;
-                          return (
-                            <div key={quarterKey} className="rounded border border-white/10">
-                              <RowButton
-                                label={`${quarterNode.quarter}`}
-                                metrics={quarterNode.metrics}
-                                open={quarterOpen}
-                                indent
-                                onClick={() => {
-                                  setExpandedQuarters(prev => ({ ...prev, [quarterKey]: !quarterOpen }));
-                                  setSelectedContext({ kind: 'quarter', label: `${quarterNode.quarter} readiness` });
-                                }}
-                              />
-                              {quarterOpen && (
-                                <div className="space-y-2 border-t border-white/10 p-2">
-                                  {quarterNode.months.map(monthNode => {
-                                    const monthKey = `${yearNode.year}-${quarterNode.quarter}-${monthNode.month}`;
-                                    const monthOpen = expandedMonths[monthKey] ?? monthNode.month === now.getMonth();
-                                    return (
-                                      <div key={monthKey} className="rounded border border-white/10">
-                                        <RowButton
-                                          label={monthNode.label}
-                                          metrics={monthNode.metrics}
-                                          open={monthOpen}
-                                          indent
-                                          onClick={() => {
-                                            setExpandedMonths(prev => ({ ...prev, [monthKey]: !monthOpen }));
-                                            setSelectedContext({ kind: 'month', label: `${monthNode.label} compliance execution` });
-                                          }}
-                                        />
-                                        {monthOpen && (
-                                          <div className="space-y-2 border-t border-white/10 p-2">
-                                            {monthNode.events.map(eventNode => {
-                                              const eventOpen = expandedEvents[eventNode.eventId] ?? false;
-                                              return (
-                                                <div key={eventNode.eventId} className="rounded border border-white/10 bg-black/10">
-                                                  <EventRow
-                                                    eventNode={eventNode}
-                                                    open={eventOpen}
-                                                    onToggle={() => {
-                                                      setExpandedEvents(prev => ({ ...prev, [eventNode.eventId]: !eventOpen }));
-                                                      setSelectedContext({ kind: 'event', label: eventNode.event?.title || eventNode.eventId });
-                                                      onSelectEvent?.(eventNode.eventId);
-                                                    }}
-                                                  />
-                                                  {eventOpen && (
-                                                    <div className="space-y-2 border-t border-white/10 p-2">
-                                                      {eventNode.tasks.map(taskNode => {
-                                                        const taskOpen = expandedTasks[taskNode.task.task_id] ?? false;
-                                                        return (
-                                                          <div key={taskNode.task.task_id} className="rounded border border-white/10">
-                                                            <TaskRow
-                                                              taskNode={taskNode}
-                                                              open={taskOpen}
-                                                              onToggle={() => {
-                                                                setExpandedTasks(prev => ({ ...prev, [taskNode.task.task_id]: !taskOpen }));
-                                                                setSelectedContext({ kind: 'task', label: taskNode.task.title });
-                                                              }}
-                                                            />
-                                                            {taskOpen && (
-                                                              <div className="space-y-1 border-t border-white/10 p-2">
-                                                                {taskNode.requirements.map(req => (
-                                                                  <RequirementRow
-                                                                    key={req.requirement_id}
-                                                                    requirement={req}
-                                                                    onSelect={() => setSelectedContext({ kind: 'requirement', label: req.title })}
-                                                                  />
-                                                                ))}
-                                                              </div>
-                                                            )}
-                                                          </div>
-                                                        );
-                                                      })}
-                                                      {eventNode.orphanEvidence.length > 0 && (
-                                                        <div className="rounded border border-orange-500/40 bg-orange-500/10 p-2 text-xs text-orange-200">
-                                                          Needs Review / Orphan Evidence: {eventNode.orphanEvidence.length}
-                                                          {' '}items (excluded from completion and audit readiness).
-                                                        </div>
-                                                      )}
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              );
-                                            })}
-                                          </div>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+            <div className="mt-4 grid grid-cols-12 gap-4">
+              <aside className="col-span-12 lg:col-span-3">
+                <div className="text-[10px] uppercase tracking-[0.16em] text-[var(--v3-text-tertiary)]">Folders</div>
+                <div className="mt-2 space-y-1" role="tree" aria-label="Evidence folder hierarchy">
+                  {filteredYears.map(yearNode => {
+                    const yearOpen = expandedYears[yearNode.year] ?? yearNode.year === now.getFullYear();
+                    return (
+                      <div key={yearNode.year} role="treeitem" aria-expanded="true">
+                        <FolderTreeButton
+                          label={`${yearNode.year}`}
+                          active={isSelected(explorerSelection, { kind: 'year', year: yearNode.year })}
+                          open={yearOpen}
+                          onClick={() => {
+                            setExpandedYears(prev => ({ ...prev, [yearNode.year]: !yearOpen }));
+                            setExplorerSelection({ kind: 'year', year: yearNode.year });
+                            setSelectedContext({ kind: 'year', label: `${yearNode.year} compliance readiness` });
+                          }}
+                        />
+                        {yearOpen && (
+                          <div className="ml-3 border-l border-[var(--v3-border-subtle)] pl-2" role="group">
+                            {monthsForYear(yearNode).map(monthNode => (
+                              <div key={`${yearNode.year}-${monthNode.month}`} role="treeitem">
+                                <FolderTreeButton
+                                  label={monthNode.label}
+                                  active={isSelected(explorerSelection, { kind: 'month', year: yearNode.year, month: monthNode.month })}
+                                  onClick={() => {
+                                    setExplorerSelection({ kind: 'month', year: yearNode.year, month: monthNode.month });
+                                    setSelectedContext({ kind: 'month', label: `${monthNode.label} compliance execution` });
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    );
+                  })}
+                </div>
+              </aside>
+
+              <section className="col-span-12 lg:col-span-9 min-w-0">
+                <div className="flex items-center justify-between gap-3 border-b border-[var(--v3-border-subtle)] pb-3">
+                  <div className="min-w-0">
+                    <div className="truncate text-xs text-[var(--v3-text-tertiary)]">{explorerView.breadcrumb.join(' / ')}</div>
+                    <h3 className="mt-1 text-lg font-semibold text-[var(--v3-text-primary)]">{explorerView.title}</h3>
                   </div>
-                );
-              })}
+                  <div className="flex shrink-0 gap-4 text-right text-[11px] text-[var(--v3-text-secondary)]">
+                    <span><strong className="text-[var(--v3-text-primary)]">{explorerView.metrics.completionPercentage}%</strong> complete</span>
+                    <span><strong className="text-[var(--v3-text-primary)]">{explorerView.metrics.auditReadinessPercentage}%</strong> audit ready</span>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-x-8 gap-y-7 md:grid-cols-3 xl:grid-cols-4" role="list" aria-label="Evidence folder contents">
+                  {explorerView.items.map(item => (
+                    <div key={`${item.kind}-${item.id}`} role="listitem">
+                      <ExplorerRow item={item} />
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
           </div>
         </div>
 
-        <div className="mt-4 rounded border border-white/15 bg-[#0a1626] p-4">
+        <div className="mt-4 border-t border-[var(--v3-border-subtle)] pt-4 px-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-white">Performance Leaderboard</h3>
+            <h3 className="text-sm font-semibold text-[var(--v3-text-primary)]">Performance Leaderboard</h3>
             <button
               type="button"
               onClick={() => setSelectedContext({ kind: 'leaderboard', label: 'Story points and audit-ready scoring' })}
-              className="text-xs text-teal-200 underline"
+              className="text-xs text-[var(--v3-teal-light)] underline"
             >
               Explain scoring
             </button>
@@ -276,16 +225,16 @@ export function CesEvidenceHierarchyPanel({
         </div>
       </section>
 
-      <aside className="col-span-12 xl:col-span-3 rounded border border-white/15 bg-[#0a1626] p-4">
-        <h3 className="text-sm font-semibold text-white">Contextual Help</h3>
-        <p className="mt-2 text-xs text-white/70">
+      <aside className="col-span-12 xl:col-span-3 border-t border-[var(--v3-border-subtle)] pt-4 px-4">
+        <h3 className="text-sm font-semibold text-[var(--v3-text-primary)]">Contextual Help</h3>
+        <p className="mt-2 text-xs text-[var(--v3-text-secondary)]">
           {contextualHelpText(selectedContext)}
         </p>
-        <div className="mt-3 rounded border border-white/10 bg-black/10 p-2 text-xs text-white/70">
-          Selection: <span className="text-white">{selectedContext.label}</span>
+        <div className="mt-3 text-xs text-[var(--v3-text-secondary)]">
+          Selection: <span className="text-[var(--v3-text-primary)]">{selectedContext.label}</span>
         </div>
         {hierarchy.orphanEvidenceGlobal.length > 0 && (
-          <div className="mt-3 rounded border border-orange-500/40 bg-orange-500/10 p-2 text-xs text-orange-200">
+          <div className="mt-3 text-xs text-[var(--v3-teal-light)]">
             Orphan evidence detected: {hierarchy.orphanEvidenceGlobal.length}. These records are excluded from completion and leaderboard scoring.
           </div>
         )}
@@ -297,7 +246,6 @@ export function CesEvidenceHierarchyPanel({
 function contextualHelpText(context: SelectedContext): string {
   switch (context.kind) {
     case 'year': return 'Year selected: yearly compliance readiness across all events and weighted CES completion.';
-    case 'quarter': return 'Quarter selected: quarterly readiness and blocked execution hotspots.';
     case 'month': return 'Month selected: monthly compliance execution, missing evidence, and pending signatures.';
     case 'event': return 'Event selected: event-level evidence requirements, package status, and audit readiness gates.';
     case 'task': return 'Task selected: story points, weighted requirement completion, and required actions.';
@@ -305,6 +253,253 @@ function contextualHelpText(context: SelectedContext): string {
     case 'leaderboard': return 'Leaderboard selected: score favors certified, on-time, audit-ready completion over raw task count.';
     default: return 'Select a hierarchy node for contextual guidance.';
   }
+}
+
+function buildExplorerView(
+  years: YearHierarchyNode[],
+  selection: ExplorerSelection,
+  setSelection: (selection: ExplorerSelection) => void,
+  setSelectedContext: (context: SelectedContext) => void,
+  onSelectEvent?: (eventId: string) => void,
+): { title: string; breadcrumb: string[]; metrics: HierarchyMetrics; items: ExplorerItem[] } {
+  const rootMetrics = aggregateEventMetrics(years.map(year => year.metrics));
+  if (selection.kind === 'root') {
+    return {
+      title: 'Evidence',
+      breadcrumb: ['Evidence'],
+      metrics: rootMetrics,
+      items: years.map(year => ({
+        kind: 'folder',
+        id: String(year.year),
+        name: String(year.year),
+        subtitle: `${year.metrics.totalEvents} events, ${year.metrics.totalTasks} tasks`,
+        metrics: year.metrics,
+        onOpen: () => {
+          setSelection({ kind: 'year', year: year.year });
+          setSelectedContext({ kind: 'year', label: `${year.year} compliance readiness` });
+        },
+      })),
+    };
+  }
+
+  const selectedYear = selection.kind === 'year' || selection.kind === 'month'
+    ? selection.year
+    : years[0]?.year;
+  const year = years.find(item => item.year === selectedYear) ?? years[0];
+  if (!year) return { title: 'No evidence folders', breadcrumb: ['Evidence'], metrics: rootMetrics, items: [] };
+
+  if (selection.kind === 'year') {
+    const months = monthsForYear(year);
+    return {
+      title: `${year.year}`,
+      breadcrumb: ['Evidence', String(year.year)],
+      metrics: year.metrics,
+      items: months.map(month => ({
+        kind: 'folder',
+        id: `${year.year}-${month.month}`,
+        name: month.label,
+        subtitle: `${month.metrics.totalEvents} events, ${month.metrics.totalTasks} tasks`,
+        metrics: month.metrics,
+        onOpen: () => {
+          setSelection({ kind: 'month', year: year.year, month: month.month });
+          setSelectedContext({ kind: 'month', label: `${month.label} compliance execution` });
+        },
+      })),
+    };
+  }
+
+  const months = monthsForYear(year);
+  const selectedMonth = selection.kind === 'month' ? selection.month : months[0]?.month;
+  const month = months.find(item => item.month === selectedMonth) ?? months[0];
+  if (!month) return { title: `${year.year}`, breadcrumb: ['Evidence', String(year.year)], metrics: year.metrics, items: [] };
+
+  if (selection.kind === 'month') {
+    return {
+      title: month.label,
+      breadcrumb: ['Evidence', String(year.year), month.label],
+      metrics: month.metrics,
+      items: month.events.map(eventNode => ({
+        kind: 'folder',
+        id: eventNode.eventId,
+        name: eventNode.event?.title || eventNode.eventId,
+        subtitle: `${eventNode.eventId} - ${eventNode.event?.date || eventNode.date.slice(0, 10)}`,
+        metrics: eventNode.metrics,
+        onOpen: () => {
+          setSelection({ kind: 'event', eventId: eventNode.eventId });
+          setSelectedContext({ kind: 'event', label: eventNode.event?.title || eventNode.eventId });
+          onSelectEvent?.(eventNode.eventId);
+        },
+      })),
+    };
+  }
+
+  const eventNode = selection.kind === 'event'
+    ? years
+      .flatMap(item => item.quarters)
+      .flatMap(item => item.months)
+      .flatMap(item => item.events)
+      .find(item => item.eventId === selection.eventId)
+    : null;
+
+  if (selection.kind === 'event' && eventNode) {
+    return {
+      title: eventNode.event?.title || eventNode.eventId,
+      breadcrumb: ['Evidence', String(eventNode.year), monthName(eventNode.month), eventNode.event?.title || eventNode.eventId],
+      metrics: eventNode.metrics,
+      items: eventNode.tasks.map(taskNode => ({
+        kind: 'folder',
+        id: taskNode.task.task_id,
+        name: taskNode.task.title,
+        subtitle: `${taskNode.task.task_id} - ${taskNode.status} - ${taskNode.storyPoints} story points`,
+        metrics: metricsFromTask(taskNode),
+        onOpen: () => {
+          setSelection({ kind: 'task', taskId: taskNode.task.task_id });
+          setSelectedContext({ kind: 'task', label: taskNode.task.title });
+        },
+      })),
+    };
+  }
+
+  const taskNode = selection.kind === 'task'
+    ? years
+      .flatMap(item => item.quarters)
+      .flatMap(item => item.months)
+      .flatMap(item => item.events)
+      .flatMap(item => item.tasks)
+      .find(item => item.task.task_id === selection.taskId)
+    : null;
+
+  if (selection.kind === 'task' && taskNode) {
+    const requirementRows: ExplorerItem[] = taskNode.requirements.map(requirement => ({
+      kind: 'record',
+      id: requirement.requirement_id,
+      name: requirement.title,
+      subtitle: `${requirement.type} - ${requirement.actionNeeded}`,
+      status: requirement.status,
+      completion: requirement.completionPercentage,
+      audit: requirement.completionPercentage,
+    }));
+    const artifactRows: ExplorerItem[] = taskNode.linkedEvidence.map(doc => ({
+      kind: 'record',
+      id: doc.id,
+      name: doc.name || doc.id,
+      subtitle: doc.policyId || doc.eventId || 'Evidence artifact',
+      status: doc.status,
+      completion: doc.status === 'EVIDENCE_LOCKED' ? 100 : 0,
+      audit: doc.status === 'EVIDENCE_LOCKED' ? 100 : 0,
+    }));
+    return {
+      title: taskNode.task.title,
+      breadcrumb: ['Evidence', taskNode.task.event_id || 'Event', taskNode.task.task_id],
+      metrics: metricsFromTask(taskNode),
+      items: [...requirementRows, ...artifactRows],
+    };
+  }
+
+  return {
+    title: String(year.year),
+    breadcrumb: ['Evidence', String(year.year)],
+    metrics: year.metrics,
+    items: [],
+  };
+}
+
+function ExplorerRow({ item }: { item: ExplorerItem }) {
+  const completion = item.kind === 'folder' ? item.metrics.completionPercentage : item.completion;
+  const audit = item.kind === 'folder' ? item.metrics.auditReadinessPercentage : item.audit;
+  const evidenceLabel = item.kind === 'folder'
+    ? `${item.metrics.certifiedEvidenceCount}/${Math.max(1, item.metrics.requiredEvidenceCount)}`
+    : item.status;
+  const content = (
+    <div className="flex min-w-0 flex-col items-center text-center">
+      <div className="relative h-16 w-20">
+        <div className="absolute left-3 top-2 h-3 w-9 rounded-t-md bg-white/10" />
+        <div className="absolute inset-x-1 top-4 h-11 rounded-lg border border-[var(--v3-border-subtle)] bg-white/[0.07]" />
+        <div
+          className="absolute right-0 top-1 flex h-10 w-10 items-center justify-center rounded-full text-[10px] font-semibold text-[var(--v3-text-primary)]"
+          style={{ background: `conic-gradient(var(--v3-teal-light) ${completion * 3.6}deg, rgba(255,255,255,0.14) 0deg)` }}
+          aria-label={`${completion}% complete`}
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--v3-base-bg)]">
+            {completion}%
+          </span>
+        </div>
+        {item.kind === 'record' && <FileText size={16} className="absolute left-7 top-7 text-[var(--v3-text-tertiary)]" />}
+      </div>
+      <div className="mt-2 w-full truncate text-[12px] font-semibold text-[var(--v3-text-primary)]">{item.name}</div>
+      <div className="mt-1 h-1 w-14 rounded-full bg-white/20" />
+      <div className="mt-1 text-[10px] text-[var(--v3-text-tertiary)]">{audit}% audit · {evidenceLabel}</div>
+    </div>
+  );
+
+  if (item.kind === 'folder') {
+    return (
+      <button type="button" onClick={item.onOpen} className="block w-full rounded-xl p-2 transition-colors hover:bg-white/[0.03]">
+        {content}
+      </button>
+    );
+  }
+  return <div className="rounded-xl p-2">{content}</div>;
+}
+
+function FolderTreeButton({
+  label,
+  active,
+  open,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  open?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors ${
+        active ? 'bg-[rgba(0,209,193,0.10)] text-[var(--v3-teal-light)]' : 'text-[var(--v3-text-secondary)] hover:bg-white/[0.03]'
+      }`}
+    >
+      <Folder size={14} className="shrink-0" />
+      <span className="min-w-3 text-[10px]">{open == null ? '' : open ? '-' : '+'}</span>
+      <span className="truncate">{label}</span>
+    </button>
+  );
+}
+
+function isSelected(current: ExplorerSelection, target: ExplorerSelection): boolean {
+  return JSON.stringify(current) === JSON.stringify(target);
+}
+
+function metricsFromTask(taskNode: YearHierarchyNode['quarters'][number]['months'][number]['events'][number]['tasks'][number]): HierarchyMetrics {
+  return {
+    totalEvents: 0,
+    totalTasks: 1,
+    totalExecutionRequirements: taskNode.requirements.length,
+    completedTasks: taskNode.weightedCompletionPercentage >= 100 ? 1 : 0,
+    completedRequirements: taskNode.requirements.filter(req => req.completionPercentage >= 100).length,
+    totalStoryPoints: taskNode.storyPoints,
+    completedStoryPoints: Math.round((taskNode.weightedCompletionPercentage / 100) * taskNode.storyPoints),
+    completionPercentage: taskNode.weightedCompletionPercentage,
+    auditReadinessPercentage: taskNode.auditReadinessPercentage,
+    requiredEvidenceCount: taskNode.requirements.filter(req => req.type === 'SUPPORTING_EVIDENCE_UPLOAD').length,
+    certifiedEvidenceCount: taskNode.linkedEvidence.filter(doc => doc.status === 'EVIDENCE_LOCKED').length,
+    missingEvidenceCount: taskNode.requirements.filter(req => req.type === 'SUPPORTING_EVIDENCE_UPLOAD' && req.completionPercentage < 100).length,
+    lockedEvidenceCount: taskNode.linkedEvidence.filter(doc => doc.status === 'EVIDENCE_LOCKED').length,
+    pendingSignatureCount: taskNode.pendingSignatures,
+    blockedTaskCount: taskNode.isBlocked ? 1 : 0,
+  };
+}
+
+function monthName(month: number): string {
+  return new Date(2026, month, 1).toLocaleDateString('en-US', { month: 'long' });
+}
+
+function monthsForYear(year: YearHierarchyNode): YearHierarchyNode['quarters'][number]['months'] {
+  return year.quarters
+    .flatMap(quarter => quarter.months)
+    .sort((a, b) => a.month - b.month);
 }
 
 function applyFilters(years: YearHierarchyNode[], filters: HierarchyFilters): YearHierarchyNode[] {
@@ -453,12 +648,12 @@ function FilterSelect({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="text-[11px] text-white/70">
-      <span className="mb-1 block uppercase tracking-wide text-white/60">{label}</span>
+    <label className="text-[11px] text-[var(--v3-text-secondary)]">
+      <span className="mb-1 block uppercase tracking-wide text-[var(--v3-text-tertiary)]">{label}</span>
       <select
         value={value}
         onChange={event => onChange(event.target.value)}
-        className="w-full rounded border border-white/20 bg-black/20 px-2 py-1 text-xs text-white"
+        className="w-full rounded border border-[var(--v3-border-subtle)] bg-transparent px-2 py-1 text-xs text-[var(--v3-text-primary)]"
       >
         {options.map(option => (
           <option key={option} value={option}>{option || 'All'}</option>
@@ -479,13 +674,13 @@ function CheckToggle({ label, checked, onChange }: { label: string; checked: boo
 
 function MetricsSummary({ metrics }: { metrics: HierarchyMetrics }) {
   const stat = (label: string, value: string | number) => (
-    <div className="rounded border border-white/10 bg-black/10 px-2 py-1">
-      <div className="text-[10px] uppercase tracking-wide text-white/60">{label}</div>
-      <div className="text-xs text-white">{value}</div>
+    <div className="flex items-baseline gap-2">
+      <div className="text-xs text-[var(--v3-text-primary)]">{value}</div>
+      <div className="text-[10px] uppercase tracking-wide text-[var(--v3-text-tertiary)]">{label}</div>
     </div>
   );
   return (
-    <div className="grid grid-cols-2 gap-2 xl:grid-cols-6">
+    <div className="flex flex-wrap gap-x-5 gap-y-2">
       {stat('Events', metrics.totalEvents)}
       {stat('Tasks', metrics.totalTasks)}
       {stat('Reqs', metrics.totalExecutionRequirements)}
@@ -496,165 +691,9 @@ function MetricsSummary({ metrics }: { metrics: HierarchyMetrics }) {
   );
 }
 
-function RowButton({
-  label,
-  metrics,
-  open,
-  indent = false,
-  onClick,
-}: {
-  label: string;
-  metrics: HierarchyMetrics;
-  open: boolean;
-  indent?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs hover:bg-white/5 ${indent ? 'pl-3 md:pl-5' : ''}`}
-    >
-      <span className="text-white">{open ? '▾' : '▸'} {label}</span>
-      <span className="flex items-center gap-2 text-white/70">
-        <span>{metrics.totalEvents} events</span>
-        <span>{metrics.totalTasks} tasks</span>
-        <span className="text-teal-200">{metrics.completionPercentage}% complete</span>
-        <span className="text-orange-200">{metrics.auditReadinessPercentage}% audit ready</span>
-      </span>
-    </button>
-  );
-}
-
-function EventRow({
-  eventNode,
-  open,
-  onToggle,
-}: {
-  eventNode: EventHierarchyNode;
-  open: boolean;
-  onToggle: () => void;
-}) {
-  const event = eventNode.event;
-  const policyText = event?.policyRefs?.join(', ') || 'Needs confirmation';
-  const workflow = event?.workflowId || 'Needs confirmation';
-  return (
-    <button type="button" onClick={onToggle} className="w-full px-3 py-2 text-left text-xs hover:bg-white/5">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-white">{open ? '▾' : '▸'} {event?.title || eventNode.eventId}</div>
-          <div className="mt-1 text-white/65">ID: {eventNode.eventId} · Date: {event?.date || eventNode.date.slice(0, 10)}</div>
-          <div className="text-white/65">Policy: {policyText}</div>
-          <div className="text-white/65">Workflow: {workflow} · Required forms: {event?.requiredForms?.length ?? 0}</div>
-        </div>
-        <div className="text-right text-white/70">
-          <div className="text-teal-200">{eventNode.metrics.completionPercentage}% Complete</div>
-          <div className="text-orange-200">{eventNode.metrics.auditReadinessPercentage}% Audit Ready</div>
-          <div>{eventNode.metrics.certifiedEvidenceCount}/{Math.max(1, eventNode.metrics.requiredEvidenceCount)} Evidence Certified</div>
-          <div>{eventNode.metrics.pendingSignatureCount} Pending Signature</div>
-          <div>{eventNode.metrics.missingEvidenceCount} Missing Uploads</div>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function TaskRow({
-  taskNode,
-  open,
-  onToggle,
-}: {
-  taskNode: EventHierarchyNode['tasks'][number];
-  open: boolean;
-  onToggle: () => void;
-}) {
-  const task = taskNode.task;
-  const mainForm = 'form_id' in task ? task.form_id : '';
-  const mainEvidence = taskNode.linkedEvidence[0]?.id || 'Missing';
-  const mainFormInstance = task.generated_form_instance_ids?.[0];
-  const taskArtifactContext = {
-    eventId: task.event_id,
-    taskId: task.task_id,
-    formId: mainForm || undefined,
-    formInstanceId: mainFormInstance,
-    evidenceId: taskNode.linkedEvidence[0]?.id,
-  };
-  return (
-    <button type="button" onClick={onToggle} className="w-full px-3 py-2 text-left text-xs hover:bg-white/5">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-white">{open ? '▾' : '▸'} {task.title}</div>
-          <div className="text-white/65">Task ID: {task.task_id} · Story points: {taskNode.storyPoints} · Status: {task.status}</div>
-          <div className="text-white/65">Required form: {mainForm || '—'} · Evidence: {mainEvidence}</div>
-          <div className="text-white/65">Assigned: {task.assignee || task.owner || 'Unassigned'} · Due: {task.due_date || 'Needs confirmation'}</div>
-          <div className="mt-1 flex flex-wrap gap-2 text-teal-200">
-            <Link to={`/tasks/${encodeURIComponent(task.task_id)}`} target="_blank" rel="noopener noreferrer" className="underline">open task</Link>
-            {mainFormInstance ? (
-              <Link
-                to={buildArtifactRoute(mainFormInstance, { ...taskArtifactContext, type: 'form_instance' })}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline"
-              >
-                open form
-              </Link>
-            ) : (
-              mainForm ? <Link to={`/forms/${encodeURIComponent(mainForm)}`} target="_blank" rel="noopener noreferrer" className="underline">open form</Link> : null
-            )}
-            <Link to={`/evidence?event_id=${encodeURIComponent(task.event_id ?? '')}&task_id=${encodeURIComponent(task.task_id ?? '')}`} target="_blank" rel="noopener noreferrer" className="underline">upload supporting evidence</Link>
-            <Link
-              to={buildArtifactRoute('ces-evidence-package', {
-                ...taskArtifactContext,
-                type: 'evidence_package',
-              })}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-            >
-              view evidence package
-            </Link>
-            <Link to={`/calendar/event/${encodeURIComponent(task.event_id ?? '')}/approval`} target="_blank" rel="noopener noreferrer" className="underline">request signature</Link>
-            <Link to={`/audit?event=${encodeURIComponent(task.event_id ?? '')}`} target="_blank" rel="noopener noreferrer" className="underline">view audit log</Link>
-          </div>
-        </div>
-        <div className="text-right text-white/70">
-          <div className="text-teal-200">{taskNode.weightedCompletionPercentage}% Weighted Completion</div>
-          <div className="text-orange-200">{taskNode.auditReadinessPercentage}% Audit Readiness</div>
-          <div>Package: {taskNode.packageState}</div>
-          <div>{taskNode.pendingSignatures} Pending Signature</div>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function RequirementRow({
-  requirement,
-  onSelect,
-}: {
-  requirement: CesExecutionRequirement;
-  onSelect: () => void;
-}) {
-  return (
-    <button type="button" onClick={onSelect} className="w-full rounded border border-white/10 bg-black/10 px-2 py-1 text-left text-xs hover:bg-white/5">
-      <div className="flex items-center justify-between">
-        <div className="text-white">{requirement.title}</div>
-        <div className="text-right text-white/70">
-          <div>{requirement.type} · {requirement.weightPercentage}%</div>
-          <div>{requirement.status} · {requirement.completionPercentage}%</div>
-        </div>
-      </div>
-      <div className="mt-1 text-white/65">
-        Linked form: {requirement.form_id || '—'} · Linked evidence: {requirement.evidence_id || '—'} · Action: {requirement.actionNeeded}
-      </div>
-      <div className="text-white/50">Audit refs: {requirement.auditTrailReferences.join(', ') || '—'}</div>
-    </button>
-  );
-}
-
 function LeaderboardRow({ row }: { row: LeaderboardEntry }) {
   return (
-    <tr className="border-t border-white/10 text-white/80">
+    <tr className="border-t border-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)]">
       <td className="py-1">{row.userOrRole}</td>
       <td className="py-1 text-right">{row.storyPointsCompleted}</td>
       <td className="py-1 text-right">{row.evidencePackagesCertified}</td>
@@ -662,7 +701,7 @@ function LeaderboardRow({ row }: { row: LeaderboardEntry }) {
       <td className="py-1 text-right">{row.overdueItems}</td>
       <td className="py-1 text-right">{row.rejectedEvidenceCount}</td>
       <td className="py-1 text-right">{row.auditPerfectEvents}</td>
-      <td className="py-1 text-right text-teal-200">{row.performanceScore}</td>
+      <td className="py-1 text-right text-[var(--v3-teal-light)]">{row.performanceScore}</td>
     </tr>
   );
 }

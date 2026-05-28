@@ -14,6 +14,7 @@ import {
 import { useAuth } from '@/auth/AuthProvider';
 import { authorizeForAuthUser } from '@/policy/security/identity';
 import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
+import { isDonAssistant } from '@/policy/ces/cesRoles';
 
 /* ═══════════════════════════════════════════════════════════════════
    FormSignatureFlow — CI-App Internal Signature Flow
@@ -249,6 +250,10 @@ export function FormSignatureFlow({
       selfAttestationAllowed: false,
     },
   });
+  const donAssistantBlocked = isDonAssistant(signer.role);
+  const effectiveSignDecision = donAssistantBlocked
+    ? { allow: false, reason: 'DON Assistant may prepare forms but cannot apply or route legally binding signatures.' }
+    : signDecision;
 
   return (
     <>
@@ -290,18 +295,18 @@ export function FormSignatureFlow({
               {flowState === 'signed' && (
                 <button
                   type="button"
-                  disabled={!signDecision.allow}
+                  disabled={!effectiveSignDecision.allow}
                   onClick={() => setShowSecondSig(true)}
                   className="flex items-center gap-1.5 px-4 py-1.5 rounded-[7px] text-white font-roboto text-[12px] font-semibold hover:opacity-90 transition-opacity disabled:opacity-45 disabled:cursor-not-allowed"
                   style={{ background: CI_TEAL }}
-                  title={!signDecision.allow ? signDecision.reason : undefined}
+                  title={!effectiveSignDecision.allow ? effectiveSignDecision.reason : undefined}
                 >
                   <Send size={13} /> Send for Second Signature
                 </button>
               )}
-              {flowState === 'signed' && !signDecision.allow && (
+              {flowState === 'signed' && !effectiveSignDecision.allow && (
                 <span className="font-roboto text-[10px] text-[#b91c1c]">
-                  {signDecision.reason}
+                  {effectiveSignDecision.reason}
                 </span>
               )}
 

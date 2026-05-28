@@ -213,6 +213,13 @@ async function callDemoLocal<T>(path: string, init?: RequestInit): Promise<T> {
     );
     return lock as T;
   }
+  const matchArtifacts = path.match(/^\/ecign\/instances\/([^/]+)\/artifacts$/);
+  if (matchArtifacts && method === 'PATCH') {
+    return await demoLocalEcignApi.registerArtifacts(matchArtifacts[1], {
+      signed_package_artifact_id: typeof body.signed_package_artifact_id === 'string' ? body.signed_package_artifact_id : undefined,
+      certificate_artifact_id: typeof body.certificate_artifact_id === 'string' ? body.certificate_artifact_id : undefined,
+    }) as T;
+  }
   const matchSecond = path.match(/^\/ecign\/instances\/([^/]+)\/second-signature$/);
   if (matchSecond && method === 'POST') {
     assertShape(typeof body.assigned_to === 'string', 'second signature request', body);
@@ -334,6 +341,15 @@ export const ecignApi = {
     call<{ document_hash: string; manifest_hash: string; locked_at_utc: string }>(`/ecign/instances/${id}/lock`, {
       method: 'POST',
     }, mfaToken),
+
+  registerArtifacts: (id: string, body: {
+    signed_package_artifact_id?: string;
+    certificate_artifact_id?: string;
+  }) =>
+    call<Record<string, unknown>>(`/ecign/instances/${id}/artifacts`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
 
   requestSecondSignature: (id: string, assigned_to: string, due_date?: string) =>
     call<{ task_id: string }>(`/ecign/instances/${id}/second-signature`, {

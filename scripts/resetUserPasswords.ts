@@ -75,7 +75,7 @@ function generateTemporaryPassword(): string {
   return `CI-${part}`;
 }
 
-function buildEmailBody(name: string, password: string): string {
+function buildEmailBody(_name: string, password: string): string {
   return `Hello,
 
 Your access to the Care Indeed portal has been updated.

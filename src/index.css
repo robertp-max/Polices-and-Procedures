@@ -17,18 +17,18 @@
   --ci-maroon-black:  #310707;
   --ci-maroon-base:   #420808;
   --ci-maroon-glow:   #5D0E0E;
-  --ci-gold:          #FFC107;
-  --ci-gold-dark:     #D4AF37;
-  --ci-gold-deep:     #8C6B0A;
+  --ci-gold:          #E07B2C;
+  --ci-gold-dark:     #FFA059;
+  --ci-gold-deep:     #B85D1E;
   /* RGB triplet for the accent highlight — lets inline styles
      author "rgba(var(--ci-accent-rgb), 0.2)" and auto-theme. */
-  --ci-accent-rgb:    255, 193, 7;
-  --ci-accent-rgb-2:  217, 164, 6;
+  --ci-accent-rgb:    224, 123, 44;
+  --ci-accent-rgb-2:  255, 160, 89;
 
   /* Reusable CALENDAR cell tints — referenced via inline style so
      components don't need to branch on theme. */
   --ci-cell-out:      rgba(10,2,2,0.55);
-  --ci-cell-today:    linear-gradient(180deg, rgba(255,193,7,0.10) 0%, rgba(10,2,2,0.55) 100%);
+  --ci-cell-today:    linear-gradient(180deg, rgba(224,123,44,0.10) 0%, rgba(10,2,2,0.55) 100%);
   --ci-cell-day:      rgba(20,4,4,0.55);
   --ci-text:          #E0E0E0;
   --ci-text-muted:    rgba(255,255,255,0.45);
@@ -62,7 +62,7 @@
   =============================================================== */
   --v3-base-bg: #05060A;
   --v3-bg-gradient: radial-gradient(circle at 50% 0%, #121724 0%, #05060A 100%);
-  --v3-glass-card: linear-gradient(135deg, rgba(32, 41, 56, 0.88) 0%, rgba(16, 20, 28, 0.45) 60%, rgba(8, 10, 13, 0.98) 100%);
+  --v3-glass-card: transparent;
   --v3-glass-blur: blur(32px) saturate(140%);
   --v3-glass-shadow: 30px 10px 80px rgba(0, 0, 0, 0.9);
   --v3-border: rgba(255, 255, 255, 0.33);
@@ -276,7 +276,7 @@
    LibraryPage / FrameworkPage; centralized here so a future
    palette pass (eg. WCAG audit) edits one file, not 40. */
 :root {
-  --ci-domain-gv:    #FFC107;
+  --ci-domain-gv:    #E07B2C;
   --ci-domain-cl:    #EF4444;
   --ci-domain-qa:    #06B6D4;
   --ci-domain-hr:    #8B5CF6;
@@ -289,7 +289,7 @@
 
   /* Regulatory framework accents — same pattern. */
   --ci-reg-title22:  #FACC15;
-  --ci-reg-42cfr:    #FFC107;
+  --ci-reg-42cfr:    #E07B2C;
   --ci-reg-cms:      #EC4899;
   --ci-reg-hipaa:    #3B82F6;
   --ci-reg-osha:     #F59E0B;
@@ -488,9 +488,9 @@
 .custom-scrollbar::-webkit-scrollbar-track,
 .custom-scrollbar-x::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb,
-.custom-scrollbar-x::-webkit-scrollbar-thumb { background: rgba(255,193,7,0.14); border-radius: 10px; }
+.custom-scrollbar-x::-webkit-scrollbar-thumb { background: rgba(224,123,44,0.14); border-radius: 10px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover,
-.custom-scrollbar-x::-webkit-scrollbar-thumb:hover { background: rgba(255,193,7,0.28); }
+.custom-scrollbar-x::-webkit-scrollbar-thumb:hover { background: rgba(224,123,44,0.28); }
 
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
@@ -507,7 +507,7 @@
 
 /* Snappy interactive hover timing */
 .glass-interactive {
-  background-color: rgba(255,193,7,0);
+  background-color: rgba(224,123,44,0);
   transition:
     background-color 140ms ease,
     border-color 140ms ease,
@@ -517,7 +517,7 @@
     box-shadow 180ms ease !important;
 }
 .glass-interactive:hover {
-  background-color: rgba(255,193,7,0.14) !important;
+  background-color: rgba(224,123,44,0.14) !important;
   transition:
     background-color 140ms ease,
     border-color 140ms ease,
@@ -600,9 +600,9 @@
 .text-gold      { color: var(--ci-gold); }
 .border-gold    { border-color: var(--ci-gold); }
 .bg-gold        { background-color: var(--ci-gold); color: var(--ci-maroon-deep); }
-.ring-gold      { box-shadow: 0 0 0 2px rgba(255,193,7,0.35); }
-.glow-gold      { box-shadow: 0 0 24px rgba(255,193,7,0.35); }
-.gradient-gold  { background: linear-gradient(to bottom,#FFC107,#D9A406); color: var(--ci-maroon-deep); }
+.ring-gold      { box-shadow: 0 0 0 2px rgba(224,123,44,0.35); }
+.glow-gold      { box-shadow: 0 0 24px rgba(224,123,44,0.35); }
+.gradient-gold  { background: linear-gradient(to bottom,#E07B2C,#FFA059); color: var(--ci-maroon-deep); }
 
 /* Demo page view transitions */
 @keyframes demoViewEnter {
@@ -617,8 +617,8 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .demo-glass-card:hover {
-  border-color: rgba(255,193,7,0.30);
-  background-color: rgba(255,193,7,0.035);
+  border-color: rgba(224,123,44,0.30);
+  background-color: rgba(224,123,44,0.035);
 }
 
 @keyframes demoFadeIn {
@@ -684,7 +684,7 @@ button:focus-visible,
 input:focus-visible {
   outline: 2px solid var(--ci-gold);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(255,193,7,0.22);
+  box-shadow: 0 0 0 4px rgba(224,123,44,0.22);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -921,7 +921,7 @@ html[data-theme="care-indeed-light"] [data-shell-main] h2.text-white {
   --ci-accent:        var(--ci-gold);
   --ci-cta:           var(--ci-gold);
   --ci-cta-text:      var(--ci-maroon-deep);
-  --ci-focus-ring:    rgba(255,193,7,0.35);
+  --ci-focus-ring:    rgba(224,123,44,0.35);
   --ci-glass-bg:      var(--glass-main);
   --ci-glass-border:  var(--ci-border);
   --ci-shadow-sm:     0 1px 2px rgba(0,0,0,0.45);
@@ -1087,7 +1087,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] {
   /* Phase 3 timeline / board state tokens — Care Indeed dark. */
   --ci-state-on-track:    #7ADEDF;
   --ci-state-on-track-bg: rgba(122,222,223,0.16);
-  --ci-action:            #FFC107;
+  --ci-action:            #E07B2C;
 
   /* Legacy CI token remaps so existing call-sites auto-shift */
   --ci-gold:          #7ADEDF;
@@ -1218,8 +1218,8 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] {
   --ces-navy:         #7ADEDF;
   --ces-navy-deep:    #C4F4F5;
   --ces-navy-soft:    rgba(122,222,223,0.14);
-  --ces-orange:       #FFC107;
-  --ces-orange-soft:  rgba(255,193,7,0.16);
+  --ces-orange:       #E07B2C;
+  --ces-orange-soft:  rgba(224,123,44,0.16);
   --ces-ink:          #F1F5F4;
   --ces-muted:        #B7C7C5;
   --ces-border:       rgba(122,222,223,0.24);
@@ -1421,9 +1421,25 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-glass-panel {
   from { transform: translateX(28px) scale(0.985); opacity: 0; }
   to   { transform: translateX(0) scale(1); opacity: 1; }
 }
+@keyframes v3-drawer-enter-left {
+  from { transform: translateX(32px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes v3-drawer-exit-right {
+  from { transform: translateX(0); opacity: 1; }
+  to   { transform: translateX(48px); opacity: 0; }
+}
 @keyframes v3-drawer-slide-in-bottom {
   from { transform: translateY(48px) scale(0.985); opacity: 0; }
   to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes v3-drawer-enter-up {
+  from { transform: translateY(48px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+@keyframes v3-drawer-exit-down {
+  from { transform: translateY(0); opacity: 1; }
+  to   { transform: translateY(48px); opacity: 0; }
 }
 @keyframes v3-modal-enter {
   from { transform: scale(0.96) translateY(12px); opacity: 0; }
@@ -1444,6 +1460,22 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-glass-panel {
   @keyframes v3-drawer-slide-in-bottom {
     from { opacity: 0; transform: none; }
     to   { opacity: 1; transform: none; }
+  }
+  @keyframes v3-drawer-enter-left {
+    from { opacity: 0; transform: none; }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes v3-drawer-exit-right {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: none; }
+  }
+  @keyframes v3-drawer-enter-up {
+    from { opacity: 0; transform: none; }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes v3-drawer-exit-down {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: none; }
   }
   @keyframes v3-modal-enter {
     from { opacity: 0; transform: none; }
@@ -2165,7 +2197,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
   text-shadow: none !important;
 }
 *:focus-visible {
-  box-shadow: 0 0 0 4px rgba(255,193,7,0.22) !important;
+  box-shadow: 0 0 0 4px rgba(224,123,44,0.22) !important;
 }
 html[data-theme="care-indeed-light"] *:focus-visible {
   box-shadow: 0 0 0 4px rgba(199,70,1,0.22) !important;
@@ -2254,16 +2286,15 @@ html[data-theme="care-indeed-light"] .text-\[\#e85200\] { color: #9E3A01 !import
 html[data-theme="care-indeed-light"] .border-\[\#e85200\] { border-color: #9E3A01 !important; }
 html[data-theme="care-indeed-light"] .bg-\[\#e85200\]\/10,
 html[data-theme="care-indeed-light"] .bg-\[\#e85200\]\/20 { background-color: rgba(158,58,1,0.08) !important; }
-/* Per Care Indeed brand kit: ALL yellow/gold highlight chrome
-   (text / border / fill) becomes the primary brand TEAL in light
-   mode. Orange is reserved for CTA buttons only. */
+/* V3 brand normalization: ALL yellow/gold highlight chrome
+   (text / border / fill) becomes brand orange. */
 html[data-theme="care-indeed-light"] .text-\[\#FFC107\],
 html[data-theme="care-indeed-light"] .hover\:text-\[\#FFC107\]:hover,
 html[data-theme="care-indeed-light"] .group-hover\:text-\[\#FFC107\]:hover,
 html[data-theme="care-indeed-light"] .group:hover .group-hover\:text-\[\#FFC107\],
 html[data-theme="care-indeed-light"] .text-\[\#D4AF37\],
 html[data-theme="care-indeed-light"] .text-\[\#FFDF00\],
-html[data-theme="care-indeed-light"] .text-\[\#FFB400\] { color: #007970 !important; }
+html[data-theme="care-indeed-light"] .text-\[\#FFB400\] { color: #FFA059 !important; }
 
 html[data-theme="care-indeed-light"] .border-\[\#FFC107\],
 html[data-theme="care-indeed-light"] .border-\[\#FFC107\]\/50,
@@ -2274,12 +2305,12 @@ html[data-theme="care-indeed-light"] .hover\:border-\[\#FFC107\]\/40:hover,
 html[data-theme="care-indeed-light"] .hover\:border-\[\#FFC107\]\/50:hover,
 html[data-theme="care-indeed-light"] .group-hover\:border-\[\#FFC107\]\/40:hover,
 html[data-theme="care-indeed-light"] .group:hover .group-hover\:border-\[\#FFC107\]\/40,
-html[data-theme="care-indeed-light"] .border-\[\#D4AF37\] { border-color: rgba(0,121,112,0.45) !important; }
+html[data-theme="care-indeed-light"] .border-\[\#D4AF37\] { border-color: rgba(224,123,44,0.45) !important; }
 
 /* Bare solid gold fill → solid brand teal (e.g. "Today" pill, active
    chip, primary tag). Paired text colors (dark maroon hex literals)
    flip to white for contrast on the teal fill. */
-html[data-theme="care-indeed-light"] .bg-\[\#FFC107\] { background-color: #007970 !important; color: #ffffff !important; }
+html[data-theme="care-indeed-light"] .bg-\[\#FFC107\] { background-color: #E07B2C !important; color: #05060A !important; }
 html[data-theme="care-indeed-light"] .text-\[\#420808\],
 html[data-theme="care-indeed-light"] .text-\[\#0A0202\],
 html[data-theme="care-indeed-light"] .text-\[\#310707\],
@@ -2299,22 +2330,22 @@ html[data-theme="care-indeed-light"] .hover\:bg-\[\#FFC107\]\/20:hover,
 html[data-theme="care-indeed-light"] .group-hover\:bg-\[\#FFC107\]\/10:hover,
 html[data-theme="care-indeed-light"] .group:hover .group-hover\:bg-\[\#FFC107\]\/10,
 html[data-theme="care-indeed-light"] .bg-\[\#D4AF37\]\/10,
-html[data-theme="care-indeed-light"] .bg-\[\#D4AF37\]\/20 { background-color: rgba(0,121,112,0.12) !important; }
+html[data-theme="care-indeed-light"] .bg-\[\#D4AF37\]\/20 { background-color: rgba(224,123,44,0.12) !important; }
 
 /* Accent "from-" / "to-" gradient stops used in some title effects */
-html[data-theme="care-indeed-light"] .from-\[\#FFC107\] { --tw-gradient-from: #007970 var(--tw-gradient-from-position) !important; }
-html[data-theme="care-indeed-light"] .to-\[\#FFC107\]   { --tw-gradient-to:   #007970 var(--tw-gradient-to-position)   !important; }
-html[data-theme="care-indeed-light"] .via-\[\#FFC107\]  { --tw-gradient-via:  #007970 !important; }
+html[data-theme="care-indeed-light"] .from-\[\#FFC107\] { --tw-gradient-from: #E07B2C var(--tw-gradient-from-position) !important; }
+html[data-theme="care-indeed-light"] .to-\[\#FFC107\]   { --tw-gradient-to:   #FFA059 var(--tw-gradient-to-position)   !important; }
+html[data-theme="care-indeed-light"] .via-\[\#FFC107\]  { --tw-gradient-via:  #FFA059 !important; }
 
 /* ring utilities using gold — swap to teal */
 html[data-theme="care-indeed-light"] .ring-\[\#FFC107\],
 html[data-theme="care-indeed-light"] .ring-\[\#FFC107\]\/30,
 html[data-theme="care-indeed-light"] .ring-\[\#FFC107\]\/40,
-html[data-theme="care-indeed-light"] .ring-\[\#FFC107\]\/50 { --tw-ring-color: rgba(0,121,112,0.40) !important; }
+html[data-theme="care-indeed-light"] .ring-\[\#FFC107\]\/50 { --tw-ring-color: rgba(224,123,44,0.40) !important; }
 
 /* fill / stroke utilities — teal in light */
-html[data-theme="care-indeed-light"] .fill-\[\#FFC107\]  { fill: #007970 !important; }
-html[data-theme="care-indeed-light"] .stroke-\[\#FFC107\] { stroke: #007970 !important; }
+html[data-theme="care-indeed-light"] .fill-\[\#FFC107\]  { fill: #E07B2C !important; }
+html[data-theme="care-indeed-light"] .stroke-\[\#FFC107\] { stroke: #E07B2C !important; }
 
 /* CI-ION dark-maroon surface colors used by legacy pages (e.g. the
    calendar's <select> options) — swap to white/slate for light. */
@@ -2328,8 +2359,8 @@ html[data-theme="care-indeed-light"] option.bg-\[\#310707\] { color: #0f172a !im
 html[data-theme="care-indeed-light"] .text-orange-300 { color: #9a3412 !important; }
 html[data-theme="care-indeed-light"] .text-red-400 { color: #b91c1c !important; }
 html[data-theme="care-indeed-light"] .text-red-300 { color: #b91c1c !important; }
-html[data-theme="care-indeed-light"] .text-yellow-400 { color: #854d0e !important; }
-html[data-theme="care-indeed-light"] .text-yellow-300 { color: #854d0e !important; }
+html[data-theme="care-indeed-light"] .text-yellow-400 { color: #C74601 !important; }
+html[data-theme="care-indeed-light"] .text-yellow-300 { color: #C74601 !important; }
 html[data-theme="care-indeed-light"] .text-blue-400 { color: #1d4ed8 !important; }
 html[data-theme="care-indeed-light"] .text-blue-300 { color: #1d4ed8 !important; }
 
@@ -2462,19 +2493,19 @@ html[data-theme="care-indeed-light"] .vibrant-bg {
    LIGHT-MODE GOLD LEGACY UTILITIES — the gold-token utilities at
    the top of this stylesheet are static; in light mode we remap
    the concrete outputs so every .text-gold / .bg-gold / .ring-gold
-   / .glow-gold / .gradient-gold site becomes CI brand teal.
+   / .glow-gold / .gradient-gold site becomes brand orange.
    ────────────────────────────────────────────────────────────── */
-html[data-theme="care-indeed-light"] .text-gold    { color: #007970 !important; }
-html[data-theme="care-indeed-light"] .border-gold  { border-color: #007970 !important; }
-html[data-theme="care-indeed-light"] .bg-gold      { background-color: #007970 !important; color: #ffffff !important; }
-html[data-theme="care-indeed-light"] .ring-gold    { box-shadow: 0 0 0 2px rgba(0,121,112,0.35) !important; }
-/* Glow-gold → kept as a soft teal halo in light; FLAT DESIGN below
+html[data-theme="care-indeed-light"] .text-gold    { color: #C74601 !important; }
+html[data-theme="care-indeed-light"] .border-gold  { border-color: #C74601 !important; }
+html[data-theme="care-indeed-light"] .bg-gold      { background-color: #E07B2C !important; color: #05060A !important; }
+html[data-theme="care-indeed-light"] .ring-gold    { box-shadow: 0 0 0 2px rgba(224,123,44,0.35) !important; }
+/* Glow-gold → kept as a soft orange halo in light; FLAT DESIGN below
    still neutralises the box-shadow so this is only visible where
    we opt back in via [data-glass-hint]. */
-html[data-theme="care-indeed-light"] .glow-gold    { box-shadow: 0 0 24px rgba(0,121,112,0.28); }
+html[data-theme="care-indeed-light"] .glow-gold    { box-shadow: 0 0 24px rgba(224,123,44,0.28); }
 html[data-theme="care-indeed-light"] .gradient-gold {
-  background: linear-gradient(to bottom,#007970,#005751) !important;
-  color: #ffffff !important;
+  background: linear-gradient(to bottom,#E07B2C,#FFA059) !important;
+  color: #05060A !important;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -2583,7 +2614,7 @@ html[data-theme="care-indeed-light"] .text-amber-200,
 html[data-theme="care-indeed-light"] .text-amber-300,
 html[data-theme="care-indeed-light"] .text-amber-400,
 html[data-theme="care-indeed-light"] .text-yellow-200,
-html[data-theme="care-indeed-light"] .text-yellow-500 { color: #9A6700 !important; } /* warning text — darkened for AA */
+html[data-theme="care-indeed-light"] .text-yellow-500 { color: #C74601 !important; } /* brand orange */
 html[data-theme="care-indeed-light"] .text-purple-300,
 html[data-theme="care-indeed-light"] .text-purple-400,
 html[data-theme="care-indeed-light"] .text-violet-300,
@@ -2606,19 +2637,14 @@ html[data-theme="care-indeed-light"] .text-indigo-400 { color: #3730a3 !importan
 html[data-theme="care-indeed-light"] *::placeholder { color: #747474 !important; }
 
 /* ──────────────────────────────────────────────────────────────
-   Tailwind arbitrary-value overrides — the legacy #FFC107 gold
-   is burned directly into many pages as `text-[#FFC107]`,
-   `bg-[#FFC107]/10`, `border-[#FFC107]/40`, etc.
-   In light mode we route those arbitrary classes to the brand
-   secondary teal so they pass AA and match the KpiTile accent
-   (which already swaps via var(--ci-gold)).
+   Legacy gold arbitrary-value overrides route to brand orange.
    ────────────────────────────────────────────────────────────── */
 html[data-theme="care-indeed-light"] .text-\[\#FFC107\],
 html[data-theme="care-indeed-light"] .hover\:text-\[\#FFC107\]:hover,
 html[data-theme="care-indeed-light"] .group:hover .group-hover\:text-\[\#FFC107\],
 html[data-theme="care-indeed-light"] .text-\[\#FFC107\]\/75,
 html[data-theme="care-indeed-light"] .text-\[\#FFC107\]\/80,
-html[data-theme="care-indeed-light"] .text-\[\#FFC107\]\/90 { color: #007970 !important; }
+html[data-theme="care-indeed-light"] .text-\[\#FFC107\]\/90 { color: #C74601 !important; }
 
 html[data-theme="care-indeed-light"] .border-\[\#FFC107\],
 html[data-theme="care-indeed-light"] .border-\[\#FFC107\]\/20,
@@ -2628,7 +2654,7 @@ html[data-theme="care-indeed-light"] .border-\[\#FFC107\]\/50,
 html[data-theme="care-indeed-light"] .hover\:border-\[\#FFC107\]\/40:hover,
 html[data-theme="care-indeed-light"] .hover\:border-\[\#FFC107\]\/50:hover,
 html[data-theme="care-indeed-light"] .group:hover .group-hover\:border-\[\#FFC107\]\/40 {
-  border-color: rgba(0, 121, 112, 0.40) !important;
+  border-color: rgba(224, 123, 44, 0.40) !important;
 }
 
 html[data-theme="care-indeed-light"] .bg-\[\#FFC107\]\/5,
@@ -2639,14 +2665,14 @@ html[data-theme="care-indeed-light"] .hover\:bg-\[\#FFC107\]\/5:hover,
 html[data-theme="care-indeed-light"] .hover\:bg-\[\#FFC107\]\/10:hover,
 html[data-theme="care-indeed-light"] .hover\:bg-\[\#FFC107\]\/15:hover,
 html[data-theme="care-indeed-light"] .group:hover .group-hover\:bg-\[\#FFC107\]\/10 {
-  background-color: rgba(0, 121, 112, 0.08) !important;
+  background-color: rgba(224, 123, 44, 0.10) !important;
 }
 
-/* Pure yellow `text-[#facc15]`, `text-[#eab308]` → darkened for AA */
+/* Pure yellow `text-[#facc15]`, `text-[#eab308]` → brand orange */
 html[data-theme="care-indeed-light"] .text-\[\#facc15\],
 html[data-theme="care-indeed-light"] .text-\[\#eab308\],
 html[data-theme="care-indeed-light"] .text-\[\#FACC15\],
-html[data-theme="care-indeed-light"] .text-\[\#EAB308\] { color: #9A6700 !important; }
+html[data-theme="care-indeed-light"] .text-\[\#EAB308\] { color: #C74601 !important; }
 
 /* Arbitrary amber/emerald/cyan used inline — push to brand or AA tones */
 html[data-theme="care-indeed-light"] .text-\[\#f59e0b\],
@@ -2795,7 +2821,7 @@ html.ci-theme-transitioning *::after {
   /* V3 Veil Glass visual tokens (Gemini/ClaudeX5) — enables v3-veil drawers/modals in CES */
   --v3-base-bg: #05060A;
   --v3-bg-gradient: radial-gradient(circle at 50% 0%, #121724 0%, #05060A 100%);
-  --v3-glass-card: linear-gradient(135deg, rgba(32, 41, 56, 0.88) 0%, rgba(16, 20, 28, 0.45) 60%, rgba(8, 10, 13, 0.98) 100%);
+  --v3-glass-card: transparent;
   --v3-glass-blur: blur(32px) saturate(140%);
   --v3-glass-shadow: 30px 10px 80px rgba(0, 0, 0, 0.9);
   --v3-border: rgba(255, 255, 255, 0.33);
@@ -3053,3 +3079,618 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-neutral-300,
 html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-stone-100,
 html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-stone-200,
 html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-stone-300 { color: #B7C7C5 !important; }
+
+/* ============================================================
+   APP-WIDE V3-ONLY PRODUCTION CONTRACT
+   V3 is the sole production design system. Legacy CI/Care/CES classes
+   are intentionally mapped into V3 tokens while V4 normal mode is deferred.
+============================================================ */
+:root,
+html[data-theme],
+html[data-ci-mode] {
+  color-scheme: dark;
+  --v3-base-bg: #05060A;
+  --v3-bg-gradient: radial-gradient(circle at 50% 0%, #121724 0%, #05060A 100%);
+  --v3-grid-line: rgba(255, 255, 255, 0.012);
+  --v3-glass-card: transparent;
+  --v3-glass-blur: blur(32px) saturate(140%);
+  --v3-glass-shadow: none;
+  --v3-glass1: transparent;
+  --v3-glass2: rgba(255, 255, 255, 0.04);
+  --v3-glass3: rgba(255, 255, 255, 0.015);
+  --v3-card-radius: 24px;
+  --v3-border: rgba(255, 255, 255, 0.33);
+  --v3-border-hover: rgba(255, 255, 255, 0.45);
+  --v3-border-subtle: rgba(255, 255, 255, 0.12);
+  --v3-teal: #007970;
+  --v3-teal-light: #00D1C1;
+  --v3-orange: #E07B2C;
+  --v3-orange-light: #FFA059;
+  --v3-text-primary: #FFFFFF;
+  --v3-text-secondary: #94A3B8;
+  --v3-text-tertiary: #64748B;
+  --v3-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Legacy token bridge: old consumers now resolve to V3. */
+  --ci-bg: var(--v3-base-bg);
+  --ci-surface: transparent;
+  --ci-surface-muted: transparent;
+  --ci-border: var(--v3-border-subtle);
+  --ci-border-strong: var(--v3-border);
+  --ci-text: var(--v3-text-primary);
+  --ci-text-primary: var(--v3-text-primary);
+  --ci-text-muted: var(--v3-text-secondary);
+  --ci-text-subtle: var(--v3-text-tertiary);
+  --ci-link: var(--v3-teal-light);
+  --ci-accent: var(--v3-teal-light);
+  --ci-gold: var(--v3-orange-light);
+  --ci-gold-dark: var(--v3-orange-light);
+  --ci-gold-deep: var(--v3-orange);
+  --ci-accent-rgb: 0, 209, 193;
+  --ci-accent-rgb-2: 224, 123, 44;
+  --ci-warning-bg: rgba(224, 123, 44, 0.12);
+  --ci-warning-fg: var(--v3-orange-light);
+  --ci-warning-bdr: rgba(224, 123, 44, 0.38);
+  --ci-primary-500: var(--v3-teal);
+  --ci-primary-600: var(--v3-teal);
+  --ci-secondary-500: var(--v3-teal-light);
+  --ci-surface-2: transparent;
+  --ci-text-muted-2: var(--v3-text-secondary);
+  --ci-color-glass-main: var(--v3-glass-card);
+  --ci-color-glass-main-detail: rgba(8, 10, 13, 0.98);
+  --ci-color-glass-blur: var(--v3-glass-blur);
+  --ci-color-glass-border: var(--v3-border-subtle);
+  --ci-color-glass-shadow: none;
+  --ci-color-shell-topbar-bg: transparent;
+  --ci-color-shell-navrail-bg: transparent;
+  --ci-color-shell-mobile-tabbar-bg: rgba(5, 6, 10, 0.92);
+  --ci-color-shell-account-avatar-bg: linear-gradient(135deg, rgba(0, 121, 112, 0.88), rgba(0, 209, 193, 0.28));
+  --ci-overlay-border: var(--v3-border-subtle);
+  --ci-overlay-border-strong: var(--v3-border);
+  --ci-overlay-faint: rgba(255, 255, 255, 0.018);
+  --ci-overlay-soft: rgba(255, 255, 255, 0.04);
+  --ci-overlay-strong: rgba(255, 255, 255, 0.08);
+  --ci-overlay-active-bg: rgba(0, 209, 193, 0.12);
+  --ci-overlay-active-border: rgba(0, 209, 193, 0.32);
+  --ci-color-shell-overlay-shadow: none;
+  --ci-cell-day: rgba(255, 255, 255, 0.018);
+  --ci-cell-out: rgba(255, 255, 255, 0.008);
+  --ci-cell-today: linear-gradient(180deg, rgba(0, 209, 193, 0.14), rgba(255, 255, 255, 0.025));
+
+  /* CES bridge: retire navy as an independent visual system. */
+  --ces-navy: var(--v3-teal-light);
+  --ces-navy-deep: var(--v3-teal-light);
+  --ces-navy-soft: rgba(0, 209, 193, 0.12);
+  --ces-amber: var(--v3-orange-light);
+  --ces-amber-soft: rgba(224, 123, 44, 0.12);
+  --ces-border: var(--v3-border-subtle);
+}
+
+html,
+body,
+#root {
+  background: var(--v3-base-bg) !important;
+  color: var(--v3-text-primary);
+}
+
+.ci-card,
+.ci-glass-panel,
+.ci-premium-panel,
+.ci-shell-command-group,
+.v3-surface {
+  background: transparent !important;
+  color: var(--v3-text-primary);
+  border: 1px solid var(--v3-border-subtle) !important;
+  box-shadow: none !important;
+}
+
+.v3-surface--glass,
+.v3-veil-glass-panel {
+  background: var(--v3-glass-card) !important;
+  border-color: var(--v3-border-subtle) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: var(--v3-glass-blur);
+  backdrop-filter: var(--v3-glass-blur);
+}
+
+.v3-veil-glass-panel::before {
+  display: none;
+}
+
+.v3-veil-close,
+.v3-micro,
+.glass-interactive,
+.ci-subtle-hover {
+  transition: color 160ms var(--v3-ease), background-color 160ms var(--v3-ease), border-color 160ms var(--v3-ease), opacity 160ms var(--v3-ease) !important;
+  transform: none !important;
+  box-shadow: none !important;
+  will-change: auto !important;
+}
+
+.v3-veil-close:hover,
+.v3-micro:hover,
+.glass-interactive:hover,
+.ci-subtle-hover:hover,
+.v3-micro:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.v3-page-animate,
+.v3-subview-animate,
+.v3-drawer-panel,
+.v3-drawer-panel-left,
+.v3-modal-panel,
+.v3-stagger > * {
+  animation: v3FadeIn 220ms var(--v3-ease) both !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+@keyframes v3FadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Bridge common hardcoded utility islands toward V3 without waiting for every page to be hand-migrated. */
+.bg-white,
+.bg-slate-50,
+.bg-slate-100,
+.bg-gray-50,
+.bg-gray-100,
+.bg-\[\#f8fafc\],
+.bg-\[\#F7F8FA\],
+.bg-\[\#FAFBF8\],
+.bg-\[\#FCFDFF\] {
+  background-color: transparent !important;
+}
+
+.text-slate-900,
+.text-slate-800,
+.text-gray-900,
+.text-gray-800,
+.text-\[\#1F1C1B\],
+.text-\[\#0F172A\] {
+  color: var(--v3-text-primary) !important;
+}
+
+.text-slate-700,
+.text-slate-600,
+.text-gray-700,
+.text-gray-600,
+.text-\[\#747470\] {
+  color: var(--v3-text-secondary) !important;
+}
+
+.text-gold,
+.border-gold {
+  color: var(--v3-orange-light) !important;
+  border-color: var(--v3-orange-light) !important;
+}
+
+.bg-gold,
+.gradient-gold {
+  background: var(--v3-orange) !important;
+  color: var(--v3-base-bg) !important;
+}
+
+.ring-gold,
+.glow-gold {
+  box-shadow: 0 0 0 2px rgba(224, 123, 44, 0.28) !important;
+}
+
+.v3-calendar-surface {
+  --ci-cell-day: rgba(255, 255, 255, 0.018);
+  --ci-cell-out: rgba(255, 255, 255, 0.008);
+  --ci-cell-today: linear-gradient(180deg, rgba(0, 209, 193, 0.14), rgba(255, 255, 255, 0.025));
+  --ci-surface-2: transparent;
+  --ci-surface-muted: rgba(255, 255, 255, 0.035);
+  --ci-overlay-faint: rgba(255, 255, 255, 0.018);
+  --ci-overlay-soft: rgba(255, 255, 255, 0.04);
+  --ci-overlay-strong: rgba(255, 255, 255, 0.08);
+}
+
+.v3-calendar-surface .ci-right-panel > aside,
+.v3-calendar-surface .ci-right-panel .v3-veil-glass-panel,
+.v3-calendar-surface .v3-task-panel {
+  background: var(--v3-glass-card) !important;
+  color: var(--v3-text-primary) !important;
+  border-color: var(--v3-border-subtle) !important;
+}
+
+.v3-calendar-surface .bg-white,
+.v3-calendar-surface .bg-slate-50,
+.v3-calendar-surface .bg-slate-100,
+.v3-calendar-surface .bg-\[\#FCFDFF\],
+.v3-calendar-surface .bg-\[\#FAFBF8\],
+.v3-calendar-surface .bg-\[\#F0F2F5\] {
+  background-color: transparent !important;
+}
+
+.v3-calendar-surface .border-\[\#E5E4E3\],
+.v3-calendar-surface .border-slate-200,
+.v3-calendar-surface .border-gray-200 {
+  border-color: var(--v3-border-subtle) !important;
+}
+
+.v3-calendar-surface .text-\[\#1A3778\],
+.v3-calendar-surface .text-\[\#1F1C1B\] {
+  color: var(--v3-text-primary) !important;
+}
+
+/* V3 visual cleanup pass: remove ornamental shell/editor lines highlighted in review screenshots. */
+.ci-shell-topbar,
+.ci-shell-navrail,
+.ci-shell-subnav,
+.ci-shell-command-group {
+  border-color: transparent !important;
+}
+
+.ci-right-panel {
+  overscroll-behavior: contain;
+}
+
+.policy-page--v3,
+.policy-page--v3 .policy-carousel-screen,
+.policy-page--v3 .policy-content {
+  background: transparent !important;
+  color: var(--v3-text-primary) !important;
+}
+
+.policy-page--v3 .policy-content {
+  overscroll-behavior: contain;
+}
+
+.policy-page--v3 nav,
+.policy-page--v3 .no-print {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.policy-page--v3 .border-\[\#E5E4E3\],
+.policy-page--v3 .border-\[\#D8D4D0\],
+.policy-page--v3 .border-white\/10,
+.policy-page--v3 .border-white\/15 {
+  border-color: var(--v3-border-subtle) !important;
+}
+
+.policy-page--v3 .text-\[\#1F1C1B\],
+.policy-page--v3 .text-\[\#524048\],
+.policy-page--v3 .text-\[\#747474\],
+.policy-page--v3 .text-\[\#007970\] {
+  color: var(--v3-text-primary) !important;
+}
+
+.policy-page--v3 .text-\[\#C74601\],
+.policy-page--v3 .text-\[\#00e59b\],
+.policy-page--v3 .text-\[\#0f766e\] {
+  color: var(--v3-teal-light) !important;
+}
+
+.policy-page--v3 .bg-white,
+.policy-page--v3 .bg-\[\#FAFBF8\],
+.policy-page--v3 .bg-\[\#F2F8F7\],
+.policy-page--v3 .bg-\[\#E5FEFF\],
+.policy-page--v3 .bg-\[\#f0fdfa\],
+.policy-page--v3 .bg-amber-50,
+.policy-page--v3 .bg-slate-100 {
+  background: transparent !important;
+}
+
+.policy-page--v3 .policy-help-modal-panel {
+  background: var(--v3-glass-card) !important;
+  border-color: var(--v3-border-subtle) !important;
+  color: var(--v3-text-primary) !important;
+}
+
+@media (max-width: 1180px) {
+  .policy-approved-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .policy-approved-layout > aside {
+    display: none !important;
+  }
+}
+
+/* V3 Dashboard Reference base: matte slate-carbon, transparent shell chrome, hidden scrollbars. */
+.v3-app-shell-base,
+.v3-dashboard-reference {
+  color: var(--v3-text-primary);
+  background:
+    linear-gradient(to right, rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    var(--v3-bg-gradient) !important;
+  background-size: 24px 24px, 24px 24px, 100% 100%;
+  background-blend-mode: screen, screen, normal;
+}
+
+.v3-shell-backdrop {
+  background:
+    linear-gradient(to right, rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    var(--v3-bg-gradient);
+  background-size: 24px 24px, 24px 24px, 100% 100%;
+  background-blend-mode: screen, screen, normal;
+}
+
+.v3-shell-frame-inset {
+  padding: clamp(12px, 1.4vw, 24px);
+}
+
+.v3-command-center-tag {
+  color: var(--v3-orange-light);
+  text-shadow: 0 0 14px rgba(255, 160, 89, 0.42);
+}
+
+.v3-dashboard-reference,
+.v3-dashboard-reference *,
+.v3-app-shell-base,
+.v3-app-shell-base * {
+  scrollbar-width: none;
+}
+
+.v3-dashboard-reference::-webkit-scrollbar,
+.v3-dashboard-reference *::-webkit-scrollbar,
+.v3-app-shell-base::-webkit-scrollbar,
+.v3-app-shell-base *::-webkit-scrollbar {
+  display: none;
+}
+
+.v3-invisible-glare {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  transition: background 330ms var(--v3-ease), border-color 330ms var(--v3-ease), color 160ms var(--v3-ease) !important;
+}
+
+.v3-invisible-glare:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.005) 100%) !important;
+  border-color: var(--v3-border) !important;
+}
+
+.v3-drawer-enter-left {
+  animation: v3-drawer-enter-left 320ms var(--v3-ease) both;
+}
+
+.v3-drawer-exit-right {
+  animation: v3-drawer-exit-right 260ms var(--v3-ease) both;
+}
+
+.v3-drawer-enter-up {
+  animation: v3-drawer-enter-up 320ms var(--v3-ease) both;
+}
+
+.v3-drawer-exit-down {
+  animation: v3-drawer-exit-down 260ms var(--v3-ease) both;
+}
+
+.v3-veil-body {
+  overscroll-behavior: contain;
+}
+
+.v3-veil-highlight-orange,
+.v3-veil-highlight-yellow {
+  color: var(--v3-orange-light);
+  text-shadow: 0 0 14px rgba(224, 123, 44, 0.28);
+}
+
+.v3-veil-highlight-red {
+  color: #FF7A6E;
+  text-shadow: 0 0 14px rgba(255, 122, 110, 0.22);
+}
+
+.v3-task-row-minimal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 8px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--v3-text-secondary);
+  background: transparent;
+  transition: background 160ms var(--v3-ease), border-color 160ms var(--v3-ease), color 160ms var(--v3-ease);
+}
+
+.v3-task-row-minimal:hover {
+  background: var(--v3-glass2);
+  border-color: var(--v3-border);
+}
+
+.v3-veil-section {
+  border-top: 1px solid var(--v3-border-subtle);
+}
+
+.v3-veil-section-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  color: var(--v3-text-primary);
+  background: transparent;
+  border: 0;
+  font-weight: 600;
+}
+
+.v3-veil-section-body {
+  padding: 0 0 16px;
+  color: var(--v3-text-secondary);
+}
+
+.v3-veil-section-chevron-open {
+  transform: rotate(180deg);
+}
+
+[data-shell-navrail],
+[data-shell-topbar],
+.ci-shell-command-group,
+.ci-shell-subnav {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-shell-navrail] {
+  border-right-color: transparent !important;
+  position: relative;
+}
+
+[data-shell-navrail]::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 72px;
+  bottom: 72px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.10);
+  pointer-events: none;
+}
+
+.v3-dashboard-reference .ci-premium-hero,
+.v3-dashboard-reference .ci-premium-panel,
+.v3-dashboard-reference .ci-command-rail,
+.v3-dashboard-reference .ci-maturity-section,
+.v3-dashboard-reference .ci-operational-card,
+.v3-dashboard-reference .ci-kpi-card {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.v3-dashboard-reference .ci-operational-card,
+.v3-dashboard-reference .ci-kpi-card {
+  border-color: transparent !important;
+}
+
+.v3-dashboard-reference .ci-operational-card:hover,
+.v3-dashboard-reference .ci-kpi-card:hover {
+  border-color: var(--v3-border) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.005)) !important;
+}
+
+/* V3 brand normalization: legacy gold/yellow/amber chrome resolves to brand orange. */
+.text-yellow-100,
+.text-yellow-200,
+.text-yellow-300,
+.text-yellow-400,
+.text-yellow-500,
+.text-amber-100,
+.text-amber-200,
+.text-amber-300,
+.text-amber-400,
+.text-amber-500,
+.text-amber-600,
+.text-amber-700,
+.text-amber-800,
+.text-amber-900,
+.text-\[\#FFC107\],
+.text-\[\#D4AF37\],
+.text-\[\#FFDF00\],
+.text-\[\#FFB400\],
+.text-\[\#facc15\],
+.text-\[\#eab308\] {
+  color: var(--v3-orange-light) !important;
+}
+
+.border-yellow-200,
+.border-yellow-300,
+.border-yellow-400,
+.border-yellow-500,
+.border-amber-200,
+.border-amber-300,
+.border-amber-400,
+.border-amber-500,
+.border-\[\#FFC107\],
+.border-\[\#D4AF37\] {
+  border-color: rgba(224, 123, 44, 0.38) !important;
+}
+
+.bg-yellow-50,
+.bg-yellow-100,
+.bg-yellow-500\/10,
+.bg-yellow-500\/20,
+.bg-amber-50,
+.bg-amber-100,
+.bg-amber-500\/10,
+.bg-amber-500\/15,
+.bg-amber-500\/20,
+.bg-amber-900\/20,
+.bg-\[\#FFC107\]\/5,
+.bg-\[\#FFC107\]\/10,
+.bg-\[\#FFC107\]\/15,
+.bg-\[\#FFC107\]\/20,
+.bg-\[\#D4AF37\]\/10,
+.bg-\[\#D4AF37\]\/20 {
+  background-color: rgba(224, 123, 44, 0.12) !important;
+}
+
+.bg-yellow-400,
+.bg-yellow-500,
+.bg-amber-400,
+.bg-amber-500,
+.bg-\[\#FFC107\],
+.bg-\[\#D4AF37\] {
+  background-color: var(--v3-orange) !important;
+  color: var(--v3-base-bg) !important;
+}
+
+.from-\[\#FFC107\],
+.from-yellow-400,
+.from-yellow-500,
+.from-amber-400,
+.from-amber-500 {
+  --tw-gradient-from: var(--v3-orange) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(224, 123, 44, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.via-\[\#FFC107\],
+.via-yellow-400,
+.via-yellow-500,
+.via-amber-400,
+.via-amber-500 {
+  --tw-gradient-via: var(--v3-orange-light) var(--tw-gradient-via-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
+}
+
+.to-\[\#FFC107\],
+.to-yellow-400,
+.to-yellow-500,
+.to-amber-400,
+.to-amber-500 {
+  --tw-gradient-to: var(--v3-orange-light) var(--tw-gradient-to-position) !important;
+}
+
+.ring-yellow-400,
+.ring-yellow-500,
+.ring-amber-400,
+.ring-amber-500,
+.ring-\[\#FFC107\] {
+  --tw-ring-color: rgba(224, 123, 44, 0.42) !important;
+}
+
+@media (forced-colors: active) {
+  .v3-veil-glass-panel,
+  .v3-surface,
+  .v3-surface--glass {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: CanvasText !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .v3-veil-close,
+  :focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 2px !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .v3-veil-glass-panel,
+  .v3-surface,
+  .v3-surface--glass {
+    border-color: rgba(255, 255, 255, 0.66) !important;
+  }
+}

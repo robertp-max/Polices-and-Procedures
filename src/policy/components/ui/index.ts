@@ -1,16 +1,6 @@
 /**
- * Care Indeed shared UI primitives.
- *
- * All primitives consume the `--ci-*` semantic tokens defined in
- * src/index.css so that they work across:
- *   • CI-ION dark
- *   • Care Indeed light
- *   • Care Indeed dark (NEW)
- *
- * Components MUST NOT hardcode brand hex colours; use these primitives
- * or token classes (.ci-card, .ci-glass-panel, .ci-link, .ci-badge--*).
+ * App-wide V3 shared UI primitives.
  */
-export { ThemeModeToggle } from './ThemeModeToggle';
 export { PageHeader } from './PageHeader';
 export { SectionHeader } from './SectionHeader';
 export { SurfaceCard } from './SurfaceCard';
@@ -24,6 +14,12 @@ export { RightDrawer } from './RightDrawer';
 export type { RightDrawerProps } from './RightDrawer';
 export { BottomSheetDrawer } from './BottomSheetDrawer';
 export type { BottomSheetDrawerProps } from './BottomSheetDrawer';
+export { V3StackedDrawerHost } from './V3StackedDrawerHost';
+export type { DrawerLayer, V3StackedDrawerHostProps } from './V3StackedDrawerHost';
+export { VeilDrawer } from './VeilDrawer';
+export type { VeilDrawerProps } from './VeilDrawer';
+export { TaskRowMinimal, VeilCriticalText, VeilSection } from './VeilPrimitives';
+export type { TaskRowMinimalProps, VeilSectionProps } from './VeilPrimitives';
 
 // Premium V3 Veil Glass expensive modal (new Agent 11 creation)
 export { VeilModal } from './VeilModal';

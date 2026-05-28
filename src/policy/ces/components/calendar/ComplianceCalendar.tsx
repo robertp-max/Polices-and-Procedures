@@ -23,6 +23,8 @@ const DOMAIN_TONE: Record<ComplianceDomain, { bg: string; fg: string }> = {
   governance: { bg: CES_TOKENS.amberSoft,  fg: CES_TOKENS.amber },
 };
 
+const FALLBACK_DOMAIN_TONE = DOMAIN_TONE.compliance;
+
 function startOfDay(d: Date) { d.setHours(0,0,0,0); return d; }
 
 function buildDays(startISO: string): Date[] {
@@ -209,7 +211,8 @@ function CalendarDay({
 
 /* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ EventAnchorMarker ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
 function EventAnchorMarker({ event }: { event: ComplianceEvent }) {
-  const tone = DOMAIN_TONE[event.domain];
+  const tone = DOMAIN_TONE[event.domain] ?? FALLBACK_DOMAIN_TONE;
+  const domainLabel = COMPLIANCE_DOMAIN_LABEL[event.domain] ?? 'Compliance';
   return (
     <div
       data-testid="calendar-event"
@@ -217,7 +220,7 @@ function EventAnchorMarker({ event }: { event: ComplianceEvent }) {
       data-event-domain={event.domain}
       className="text-[10.5px] font-semibold rounded px-1.5 py-1 leading-tight cursor-pointer"
       style={{ background: tone.bg, color: tone.fg, borderLeft: `3px solid ${tone.fg}` }}
-      title={`${COMPLIANCE_DOMAIN_LABEL[event.domain]} Ãƒâ€šÃ‚Â· ${event.title}`}
+      title={`${domainLabel} - ${event.title}`}
       role="button"
       tabIndex={0}
     >

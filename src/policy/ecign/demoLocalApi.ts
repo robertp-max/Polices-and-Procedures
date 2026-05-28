@@ -317,6 +317,26 @@ export const demoLocalEcignApi = {
     };
   },
 
+  registerArtifacts: async (instanceId: string, body: {
+    signed_package_artifact_id?: string;
+    certificate_artifact_id?: string;
+  }) => {
+    const state = readState();
+    const row = getRequiredInstance(state, instanceId);
+    if (body.signed_package_artifact_id) {
+      row.signed_package_artifact_id = body.signed_package_artifact_id;
+    }
+    if (body.certificate_artifact_id) {
+      row.certificate_artifact_id = body.certificate_artifact_id;
+    }
+    appendAudit(state, instanceId, 'ARTIFACT_REGISTERED', {
+      signed_package_artifact_id: row.signed_package_artifact_id,
+      certificate_artifact_id: row.certificate_artifact_id,
+    });
+    writeState(state);
+    return row;
+  },
+
   requestSecondSignature: async (_instanceId: string, assigned_to: string) => ({
     task_id: `TASK-${assigned_to}-${Date.now().toString(36)}`,
   }),

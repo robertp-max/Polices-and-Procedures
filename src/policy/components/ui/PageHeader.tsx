@@ -25,7 +25,7 @@ export function PageHeader({ eyebrow, title, description, actions, className }: 
               fontSize: 11,
               letterSpacing: '0.22em',
               textTransform: 'uppercase',
-              color: 'var(--ci-text-subtle)',
+              color: 'var(--v3-text-tertiary)',
             }}
           >
             {eyebrow}
@@ -37,7 +37,7 @@ export function PageHeader({ eyebrow, title, description, actions, className }: 
             fontSize: 24,
             lineHeight: '32px',
             fontWeight: 700,
-            color: 'var(--ci-text-primary)',
+            color: 'var(--v3-text-primary)',
             margin: 0,
           }}
         >
@@ -46,7 +46,7 @@ export function PageHeader({ eyebrow, title, description, actions, className }: 
         {description && (
           <p
             className="mt-2"
-            style={{ color: 'var(--ci-text-muted-2)', fontSize: 14, lineHeight: '22px' }}
+            style={{ color: 'var(--v3-text-secondary)', fontSize: 14, lineHeight: '22px' }}
           >
             {description}
           </p>

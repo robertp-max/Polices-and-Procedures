@@ -87,6 +87,25 @@ function useIframeSafeSrc(raw: string | undefined): string | undefined {
   return out;
 }
 
+function decodeHtmlDataUrl(dataUrl: string): string | undefined {
+  if (!dataUrl.startsWith('data:text/html')) return undefined;
+  const comma = dataUrl.indexOf(',');
+  if (comma < 0) return undefined;
+  const meta = dataUrl.slice(5, comma);
+  const payload = dataUrl.slice(comma + 1);
+  try {
+    if (/;base64/i.test(meta)) {
+      const binary = atob(payload.replace(/\s/g, ''));
+      const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+      return new TextDecoder('utf-8').decode(bytes);
+    }
+    return decodeURIComponent(payload);
+  } catch {
+    return undefined;
+  }
+}
+
+
 /**
  * Render the signed HTML artifact in an iframe directly.
  *
@@ -118,7 +137,8 @@ function useHtmlToPdfBlobUrl(
     if (!htmlDataUrl.startsWith('data:text/html')) return;
 
     try {
-      const decoded = decodeURIComponent(htmlDataUrl.replace(/^data:text\/html;charset=utf-8,/, ''));
+      const decoded = decodeHtmlDataUrl(htmlDataUrl);
+      if (!decoded) return;
       const blob = new Blob([decoded], { type: 'text/html;charset=utf-8' });
       const blobUrl = URL.createObjectURL(blob);
       revokeRef.current = blobUrl;
@@ -241,16 +261,24 @@ export function ArtifactViewerPage() {
       return { kind: 'evidence_package' as const, eventId: qEventId, taskId: normalizedTaskId };
     }
 
+    const evidenceByPrimary = evidence.find(item => item.id === primaryId);
+    if (
+      evidenceByPrimary &&
+      (normalizedType === 'evidence' || normalizedType === 'signed_package' || normalizedType === 'signed_form_instance' || normalizedType === '')
+    ) {
+      return { kind: 'evidence' as const, evidenceDoc: evidenceByPrimary };
+    }
+
     const formByPrimary = resolveFormInstanceFromArtifact({
       primaryArtifactId: primaryId,
       queryFormInstanceId: qFormInstanceId,
       formInstances,
       evidence,
+      preferEvidenceBinding: normalizedType === 'evidence' || normalizedType === 'signed_package' || normalizedType === 'signed_form_instance',
     }).formInstance;
     if (formByPrimary) {
       return { kind: 'form_instance' as const, formInstance: formByPrimary };
     }
-    const evidenceByPrimary = evidence.find(item => item.id === primaryId);
     if (evidenceByPrimary) {
       return { kind: 'evidence' as const, evidenceDoc: evidenceByPrimary };
     }
@@ -668,7 +696,8 @@ export function ArtifactViewerPage() {
                       // HTML packet — open print popup so the browser PDF engine handles save.
                       let html: string;
                       if (printSrc.startsWith('data:text/html')) {
-                        html = decodeURIComponent(printSrc.replace(/^data:text\/html;charset=utf-8,/, ''));
+                        html = decodeHtmlDataUrl(printSrc) ?? '';
+                        if (!html) return;
                       } else {
                         const r = await fetch(printSrc);
                         html = await r.text();
@@ -837,7 +866,8 @@ export function ArtifactViewerPage() {
                           a.click();
                           return;
                         }
-                        const html = decodeURIComponent(printSrc.replace(/^data:text\/html;charset=utf-8,/, ''));
+                        const html = decodeHtmlDataUrl(printSrc);
+                        if (!html) return;
                         const fname = (activeEvidence.name || activeEvidence.linkedFormId || 'eCIgn-Artifact').replace(/[/\\?%*:|"<>]/g, '-').trim().replace(/\.html?$/i, '');
                         const win = window.open('', '_blank', 'width=840,height=980');
                         if (!win) return;
@@ -967,8 +997,17 @@ export function ArtifactViewerPage() {
           )}
 
           {metadata.kind === 'unknown' && (
-            <div className="rounded border border-rose-300/40 bg-rose-500/10 p-3 text-sm text-rose-100">
-              Artifact was not found in the current CES store snapshot.
+            <div className="rounded border border-rose-300/40 bg-rose-500/10 p-3 text-sm text-rose-100 space-y-2">
+              <div className="flex items-center gap-2 font-semibold"><FileWarning size={15} /> Artifact unavailable</div>
+              <p>
+                This artifact ID was not found in the current CES store snapshot, Evidence Center metadata,
+                form instances, signatures, or certification records.
+              </p>
+              <p className="text-rose-100/75">
+                If this should be a signed artifact, re-open the originating CES task or Evidence Center row
+                and verify the signed package exists after refresh. Missing bytes must be re-signed or re-uploaded
+                before the artifact is survey-defensible.
+              </p>
             </div>
           )}
         </section>

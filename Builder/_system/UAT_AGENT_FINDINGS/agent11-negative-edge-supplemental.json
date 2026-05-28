@@ -1,0 +1,108 @@
+{
+  "generatedAt": "2026-05-27T14:45:31.004Z",
+  "results": [
+    {
+      "label": "event",
+      "url": "http://localhost:5173/calendar/event/qapi_meeting-20260205-04",
+      "text": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\n\nINCIDENT / ADVERSE EVENT\n\nQuarterly QAPI Governance Review & Annual PIP Kickoff\nSTATUS\nOverdue\nRISK\nStandard\nSLA\n94 days past\nOWNER\nQAPI Coordinator (QAPI Coordinator)\nQA-PI-001\nQA-PI-002\nEXECUTION LINKS\nContinue Workflow\nView Policy\nView Forms\nView Audit Trail\nTechnical traceability\nRequired forms: 10 · Workflow steps: 14\n\nGUIDED UAT\n\n3/6 operational checkpoints\n\nBRAD IADMINISTRATOR\nHello, TJ, I am Brad!\nRun with Brad\nSUGGESTED MISSIONS\nRun pre-survey audit\nIdentify QAPI gaps\nShow missing governing body forms\nGROUNDED IN YOUR INTERNAL HOME HEALTH CORPUS\nStart Guided Tour\nSkip For Now",
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent11-negative-edge-screenshots/31-supp-event.png"
+    },
+    {
+      "label": "after-continue-workflow",
+      "url": "http://localhost:5173/calendar/event/qapi_meeting-20260205-04/workflow",
+      "text": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\n\nWORKFLOW\n\nQA-WF-03 · Quarterly QAPI Governance Review & Annual PIP Kickoff\n\nProgress 0% · 0/14 complete\n\n1. Verify pre-input completeness across all 40 audit workflows; log any gap\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-021 · Evidence: None\n\n2. Distribute agenda & pre-read packet\nPENDING\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: None · Evidence: None\n\n3. Review aggregate quality trends from CL-WF-26..37\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-003 · Evidence: None\n\n4. Review compliance/billing audit results from CO-WF-23..30\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-CO-FM-024 · Evidence: None\n\n5. Review HR audit results from HR-WF-18..21\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-EN-FM-022 · Evidence: None\n\n6. Review risk/safety audit results from RM-WF-16..20\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-CO-FM-024 · Evidence: None\n\n7. Review IT/security audit results from IT-WF-21..25\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-CO-FM-024 · Evidence: None\n\n8. Review QAPI-layer results: KPI (QA-WF-13), indicators (QA-WF-14), trends (QA-WF-15), validation (QA-WF-16), PIPs (QA-WF-17), policy effectiveness (QA-WF-18)\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-021 · Evidence: None\n\n9. Review adverse events & RCAs\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-004 · Evidence: None\n\n10. Review PIP status (QA-WF-04 + QA-WF-17 monitoring)\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-002, f-QA-FM-005 · Evidence: None\n\n11. Review infection surveillance\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-006 · Evidence: None\n\n12. Decide on priority actions / new PIPs / CAPs\nPENDING\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: None · Evidence: None\n\n13. Document minutes\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-001 · Evidence: None\n\n14. Package report for Governing Body (GV-WF-01)\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-GV-FM-023 · Evidence: None\n\nTechnical traceability\n\nGUIDED UAT\n\n3/6 operational checkpoints\n\nBRAD IADMINISTRATOR\nHello, TJ, I am Brad!\nRun with Brad\nSUGGESTED MISSIONS\nRun pre-survey audit\nIdentify QAPI gaps\nShow missing governing body forms\nGROUNDED IN YOUR INTERNAL HOME HEALTH CORPUS\nStart Guided Tour\nSkip For Now",
+      "buttons": [
+        "Care Indeed V3",
+        "View knowledge article",
+        "TP",
+        "1. Verify pre-input completeness across all 40 audit workflows; log any gap\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-021 · Evidence: None",
+        "2. Distribute agenda & pre-read packet\nPENDING\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: None · Evidence: None",
+        "3. Review aggregate quality trends from CL-WF-26..37\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-003 · Evidence: None",
+        "4. Review compliance/billing audit results from CO-WF-23..30\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-CO-FM-024 · Evidence: None",
+        "5. Review HR audit results from HR-WF-18..21\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-EN-FM-022 · Evidence: None",
+        "6. Review risk/safety audit results from RM-WF-16..20\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-CO-FM-024 · Evidence: None",
+        "7. Review IT/security audit results from IT-WF-21..25\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-CO-FM-024 · Evidence: None",
+        "8. Review QAPI-layer results: KPI (QA-WF-13), indicators (QA-WF-14), trends (QA-WF-15), validation (QA-WF-16), PIPs (QA-WF-17), policy effectiveness (QA-WF-18)\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-021 · Evidence: None",
+        "9. Review adverse events & RCAs\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-004 · Evidence: None",
+        "10. Review PIP status (QA-WF-04 + QA-WF-17 monitoring)\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-002, f-QA-FM-005 · Evidence: None",
+        "11. Review infection surveillance\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-006 · Evidence: None",
+        "12. Decide on priority actions / new PIPs / CAPs\nPENDING\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: None · Evidence: None",
+        "13. Document minutes\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-QA-FM-001 · Evidence: None",
+        "14. Package report for Governing Body (GV-WF-01)\nBLOCKED\n\nRole: QAPI Coordinator · Due: 2026-02-05\n\nForms: f-GV-FM-023 · Evidence: None",
+        "Expand guided UAT steps",
+        "Dismiss guided UAT widget",
+        "Dismiss",
+        "Run with Brad",
+        "Run pre-survey audit",
+        "Identify QAPI gaps",
+        "Show missing governing body forms",
+        "Start Guided Tour",
+        "Skip For Now"
+      ],
+      "links": [
+        {
+          "text": "Dashboard",
+          "href": "http://localhost:5173/dashboard"
+        },
+        {
+          "text": "Clinician Profiles",
+          "href": "http://localhost:5173/clinicians"
+        },
+        {
+          "text": "Patient Profiles",
+          "href": "http://localhost:5173/patients"
+        },
+        {
+          "text": "Calendar",
+          "href": "http://localhost:5173/staffing-calendar"
+        },
+        {
+          "text": "Brad",
+          "href": "http://localhost:5173/iadministrator"
+        },
+        {
+          "text": "Compliance Execution (CES)",
+          "href": "http://localhost:5173/ces/calendar"
+        },
+        {
+          "text": "Taxonomy",
+          "href": "http://localhost:5173/framework"
+        },
+        {
+          "text": "Onboarding",
+          "href": "http://localhost:5173/journey"
+        },
+        {
+          "text": "Policy Lifecycle",
+          "href": "http://localhost:5173/policy-lifecycle"
+        },
+        {
+          "text": "Evidence",
+          "href": "http://localhost:5173/evidence"
+        },
+        {
+          "text": "Hubstaff",
+          "href": "http://localhost:5173/hubstaff"
+        },
+        {
+          "text": "System Documentation",
+          "href": "http://localhost:5173/system-documentation"
+        },
+        {
+          "text": "Help Center",
+          "href": "http://localhost:5173/help"
+        },
+        {
+          "text": "Demo",
+          "href": "http://localhost:5173/demo"
+        },
+        {
+          "text": "Admin",
+          "href": "http://localhost:5173/admin/user-groups"
+        }
+      ],
+      "screenshot": "C:/AI/Git/training/HomeHealth/Policies_and_Procedures/Builder/_system/UAT_AGENT_FINDINGS/agent11-negative-edge-screenshots/32-supp-after-continue-workflow.png"
+    }
+  ],
+  "consoleEvents": []
+}

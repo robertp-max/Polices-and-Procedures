@@ -1,0 +1,843 @@
+{
+  "baseURL": "http://localhost:5175",
+  "startedAt": "2026-05-27T14:41:32.183Z",
+  "routes": [
+    {
+      "id": "dashboard",
+      "path": "/dashboard",
+      "url": "http://localhost:5175/dashboard",
+      "ok": true,
+      "status": 200,
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "bodySample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nCOMMAND CENTER\nWhat needs action now\nWhat needs action now\n\nExecutive operational narrative for compliance execution, evidence readiness, and escalation control.\n\nCRITICAL\n101\nAT RISK\n7\nAUDIT READY\n0\nIN SCOPE\n253\nTODAY\nSunday, May 10\nAgency View\nMy Planner\nOPERATIONAL STORYLINE\nPrioritize critical controls, clear risk queues, and lock evidence-ready workflows.\nACTIVE SPRINT\nSprint 9\n9 due within 48h\nSPRINT %\n0%\n112 blockers\nAUDIT READY\n0/253\n0/100\nACTION IN PROGRESS\n145\n0 ready to close\nMISSING EVIDENCE\n0\n0 pending approval\nCRITICAL ACTIONS\n101\n7 at risk\nAUDIT OPEN\n1041\n33 awaiting sig\nAGENCY READINESS - NOT READY\n\n89 overdue · 12 blocked. Immediate action needed to avoid compliance risk.\n\nAT RISK\n·\n7\nView Readiness Report\nEvents\n\nProject events and regulatory deadlines requiring action.\n\nFilter\nSort by: Priority\nCritical & Overdue\n101\nQAPI\nIncident / Adverse Event Review\nCM\nClinical Manager\n129D PAST\nCOMPLIANCE\nComplaint / Grievance Investigation\nCO\nCompliance Officer\n129D PAST\nCLINICAL\nPlan of Care Audit\nQR\nQA Reviewer (RN)\n123D PAST\nCLINICAL\nOASIS Accuracy Audit\nQR\nQA Reviewer (RN)\n123D PAST\nCLINICAL\nVisit Documentation Audit\nQR\nQA Reviewer (RN)\n123D PAST\nCLINICAL\nClinical Record Completeness Audit\nMR\nMedical Records\n123D PAST\nCLINICAL\nSkilled Need / Medical Necessity Review\nCM\nClinical Manager\n123D PAST\nCLINICAL\nMedication Management Audit\nQR\nQA Reviewer (RN)\n123D PAST\nCLINICAL\nInfection Control Compliance Audit\nIP\nInfection Preventionist\n123D PAST\nCLINICAL\nCare Coordination Audit\nCM\nClinical Manager\n123D PAST\nCLINICAL\nMissed Visit / Utilization Audit\nCM\nClinical Manager\n123D PAST\nCLINICAL\nOrders & Care Plan Alignment Audit\nQR\nQA Reviewer (RN)\n123D PAST\nCOMPLIANCE\nPre-Bill Claims Audit\nBA\nBilling Auditor\n123D PAST\nCOMPLIANCE\nAuthorization / Eligibility Audit\nIC\nIntake Coordinator\n123D PAST\nCOMPLIANCE\nLicense & Exclusion Monitoring\nHD\nHR Director\n123D PAST\nGOVERNANCE\nAnnual Governance Packet Review\nA\nAdministrator\n122D PAST\nCOMPLIANCE\nPost-Bill Claims Audit\nBA\nBilling Auditor\n116D PAST\nOPERATIONS\nBiennial Emergency Preparedness Plan Review & Update\nA\nAdministrator\n115D PAST\nOPERATIONS\nBiennial Emergency Preparedness Staff Training\nA\nAdministrator\n108D PAST\nQAPI\nQuarterly QAPI Governance Review & Annual PIP Kickoff\nQC\nQAPI Coordinator\n94D PAST\nCLINICAL\nPlan of Care Audit\nQR\nQA Reviewer (RN)\n90D PAST\nCLINICAL\nOASIS Accuracy Audit\nQR\nQA Reviewer (RN)\n90D PAST\nCLINICAL\nVisit Documentation Audit\nQR\nQA Reviewer (RN)\n90D PAST\nCLINICAL\nClinical Record Completeness Audit\nMR\nMedical Records\n90D PAST\nCLINICAL\nSkilled Need / Medical Necessity Review\nCM\nClinical Manager\n90D PAST\nCLINICAL\nMedication Management Audit\nQR\nQA Reviewer (RN)\n90D PAST\nCLINICAL\nInfection Control Compliance Audit\nIP\nInfection Preventionist\n90D PAST\nCLINICAL\nCare Coordination Audit\nCM\nClinical Manager\n90D PAST\nCLINICAL\nMissed Visit / Utilization Audit\nCM\nClinical Manager\n90D PAST\nCLINICAL\nOrders & Care Plan Alignment Audit\nQR\nQA Reviewer (RN)\n90D PAST\nCOMPLIANCE\nPre-Bill Claims Audit\nBA\nBilling Auditor\n90D PAST\nCOMPLIANCE\nAuthorization / Eligibility Audit\nIC\nIntake Coordinator\n90D PAST\nCOMPLIANCE\nLicense & Exclusion Monitoring\nHD\nHR Director\n90D PAST\nCLINICAL\nAnnual Aide In-Service Training Campaign\nDO\nDirector of Nursing\n90D PAST\nCOMPLIANCE\nPost-Bill Claims Audit\nBA\nBilling Auditor\n83D PAST\nCLINICAL\nAnnual Skilled-Patient Aide Observation\nDO\nDirector of Nursing\n74D PAST\nCLINICAL\nPlan of Care Audit\nQR\nQA Reviewer (RN)\n62D PAST\nCLINICAL\nOASIS Accuracy Audit\nQR\nQA Reviewer (RN)\n62D PAST\nCLINICAL\nVisit Documentation Audit\nQR\nQA Reviewer (RN)\n62D PAST\nCLINICAL\nClinical Record Completeness Audit\nMR\nMedical Records\n62D PAST\nCLINICAL\nSkilled Need / Medical Necessity Review\nCM\nClinical Manager\n62D PAST\nCLINICAL\nMedication Management Audit\nQR\nQA Reviewer (RN)\n62D PAST\nCLINICAL\nInfection Control Compliance Audit\nIP\nInfection Preventionist\n62D PAST\nCLINICAL\nCare Coordination Audit\nCM\nClinical Manager\n62D PAST\nCLINICAL\nMissed Visit / Utilization Audit\nCM\nClinical Manager\n62D PAST\nCLINICAL\nOrders & Care Plan Alignment Audit\nQR\nQA Reviewer (RN)\n62D PAST\nCOMPLIANCE\nPre-Bill Claims Audit\nBA\nBilling Auditor\n62D PAST\nCOMPLIANCE\nAuthorization / Eligibility Audit\nIC\nIntake Coordinator\n62D PAST\nCOMPLIANCE\nLicense & Exclusion Monitoring\nHD\nHR Director\n62D PAST\nCLINICAL\nSemiannual Aide-Only Patient Observation\nDO\nDirector of Nursing\n60D PAST\nCOMPLIANCE\nInternal Compliance Audit Cycle\nCO\nCompliance Officer\n55D PAST\nCOMPLIANCE\nPost-Bill Claims Audit\nBA\nBilling Auditor\n55D PAST\nCOMPLIANCE\nStaff File Audit\nHD\nHR Director\n55D PAST\nOPERATIONS\nAnnual Emergency Preparedness Exercise\nA\nAdministrator\n53D PAST\nCOMPLIANCE\nDocumentation Alignment Audit\nCA\nCompliance Auditor\n48D PAST\nRISK\nIncident Response Compliance Audit\nRM\nRis",
+      "metrics": {
+        "totalTextLength": 21969,
+        "hasSurveyPacket": true,
+        "hasEvidenceRollup": false,
+        "hasPolicyTrace": false,
+        "hasEventTrace": false,
+        "hasSignedArtifact": false,
+        "hasMissingEvidence": true,
+        "hasReadinessScore": true,
+        "hasQ1Locked": true,
+        "buttons": 314,
+        "links": 21,
+        "inputs": 3
+      },
+      "buttons": [
+        "TP",
+        "Agency View",
+        "My Planner",
+        "ACTIVE SPRINT\nSprint 9\n9 due within 48h",
+        "SPRINT %\n0%\n112 blockers",
+        "AUDIT READY\n0/253\n0/100",
+        "ACTION IN PROGRESS\n145\n0 ready to close",
+        "MISSING EVIDENCE\n0\n0 pending approval",
+        "CRITICAL ACTIONS\n101\n7 at risk",
+        "AUDIT OPEN\n1041\n33 awaiting sig",
+        "View Readiness Report",
+        "Filter",
+        "Sort by: Priority",
+        "QAPI\nIncident / Adverse Event Review\nCM\nClinical Manager\n129D PAST",
+        "COMPLIANCE\nComplaint / Grievance Investigation\nCO\nCompliance Officer\n129D PAST",
+        "CLINICAL\nPlan of Care Audit\nQR\nQA Reviewer (RN)\n123D PAST",
+        "CLINICAL\nOASIS Accuracy Audit\nQR\nQA Reviewer (RN)\n123D PAST",
+        "CLINICAL\nVisit Documentation Audit\nQR\nQA Reviewer (RN)\n123D PAST",
+        "CLINICAL\nClinical Record Completeness Audit\nMR\nMedical Records\n123D PAST",
+        "CLINICAL\nSkilled Need / Medical Necessity Review\nCM\nClinical Manager\n123D PAST",
+        "CLINICAL\nMedication Management Audit\nQR\nQA Reviewer (RN)\n123D PAST",
+        "CLINICAL\nInfection Control Compliance Audit\nIP\nInfection Preventionist\n123D PAST",
+        "CLINICAL\nCare Coordination Audit\nCM\nClinical Manager\n123D PAST",
+        "CLINICAL\nMissed Visit / Utilization Audit\nCM\nClinical Manager\n123D PAST",
+        "CLINICAL\nOrders & Care Plan Alignment Audit\nQR\nQA Reviewer (RN)\n123D PAST",
+        "COMPLIANCE\nPre-Bill Claims Audit\nBA\nBilling Auditor\n123D PAST",
+        "COMPLIANCE\nAuthorization / Eligibility Audit\nIC\nIntake Coordinator\n123D PAST",
+        "COMPLIANCE\nLicense & Exclusion Monitoring\nHD\nHR Director\n123D PAST",
+        "GOVERNANCE\nAnnual Governance Packet Review\nA\nAdministrator\n122D PAST",
+        "COMPLIANCE\nPost-Bill Claims Audit\nBA\nBilling Auditor\n116D PAST",
+        "OPERATIONS\nBiennial Emergency Preparedness Plan Review & Update\nA\nAdministrator\n115D PAST",
+        "OPERATIONS\nBiennial Emergency Preparedness Staff Training\nA\nAdministrator\n108D PAST",
+        "QAPI\nQuarterly QAPI Governance Review & Annual PIP Kickoff\nQC\nQAPI Coordinator\n94D PAST",
+        "CLINICAL\nPlan of Care Audit\nQR\nQA Reviewer (RN)\n90D PAST",
+        "CLINICAL\nOASIS Accuracy Audit\nQR\nQA Reviewer (RN)\n90D PAST",
+        "CLINICAL\nVisit Documentation Audit\nQR\nQA Reviewer (RN)\n90D PAST",
+        "CLINICAL\nClinical Record Completeness Audit\nMR\nMedical Records\n90D PAST",
+        "CLINICAL\nSkilled Need / Medical Necessity Review\nCM\nClinical Manager\n90D PAST",
+        "CLINICAL\nMedication Management Audit\nQR\nQA Reviewer (RN)\n90D PAST",
+        "CLINICAL\nInfection Control Compliance Audit\nIP\nInfection Preventionist\n90D PAST",
+        "CLINICAL\nCare Coordination Audit\nCM\nClinical Manager\n90D PAST",
+        "CLINICAL\nMissed Visit / Utilization Audit\nCM\nClinical Manager\n90D PAST",
+        "CLINICAL\nOrders & Care Plan Alignment Audit\nQR\nQA Reviewer (RN)\n90D PAST",
+        "COMPLIANCE\nPre-Bill Claims Audit\nBA\nBilling Auditor\n90D PAST",
+        "COMPLIANCE\nAuthorization / Eligibility Audit\nIC\nIntake Coordinator\n90D PAST",
+        "COMPLIANCE\nLicense & Exclusion Monitoring\nHD\nHR Director\n90D PAST",
+        "CLINICAL\nAnnual Aide In-Service Training Campaign\nDO\nDirector of Nursing\n90D PAST",
+        "COMPLIANCE\nPost-Bill Claims Audit\nBA\nBilling Auditor\n83D PAST",
+        "CLINICAL\nAnnual Skilled-Patient Aide Observation\nDO\nDirector of Nursing\n74D PAST",
+        "CLINICAL\nPlan of Care Audit\nQR\nQA Reviewer (RN)\n62D PAST",
+        "CLINICAL\nOASIS Accuracy Audit\nQR\nQA Reviewer (RN)\n62D PAST",
+        "CLINICAL\nVisit Documentation Audit\nQR\nQA Reviewer (RN)\n62D PAST",
+        "CLINICAL\nClinical Record Completeness Audit\nMR\nMedical Records\n62D PAST",
+        "CLINICAL\nSkilled Need / Medical Necessity Review\nCM\nClinical Manager\n62D PAST",
+        "CLINICAL\nMedication Management Audit\nQR\nQA Reviewer (RN)\n62D PAST",
+        "CLINICAL\nInfection Control Compliance Audit\nIP\nInfection Preventionist\n62D PAST",
+        "CLINICAL\nCare Coordination Audit\nCM\nClinical Manager\n62D PAST",
+        "CLINICAL\nMissed Visit / Utilization Audit\nCM\nClinical Manager\n62D PAST",
+        "CLINICAL\nOrders & Care Plan Alignment Audit\nQR\nQA Reviewer (RN)\n62D PAST",
+        "COMPLIANCE\nPre-Bill Claims Audit\nBA\nBilling Auditor\n62D PAST",
+        "COMPLIANCE\nAuthorization / Eligibility Audit\nIC\nIntake Coordinator\n62D PAST",
+        "COMPLIANCE\nLicense & Exclusion Monitoring\nHD\nHR Director\n62D PAST",
+        "CLINICAL\nSemiannual Aide-Only Patient Observation\nDO\nDirector of Nursing\n60D PAST",
+        "COMPLIANCE\nInternal Compliance Audit Cycle\nCO\nCompliance Officer\n55D PAST",
+        "COMPLIANCE\nPost-Bill Claims Audit\nBA\nBilling Auditor\n55D PAST",
+        "COMPLIANCE\nStaff File Audit\nHD\nHR Director\n55D PAST",
+        "OPERATIONS\nAnnual Emergency Preparedness Exercise\nA\nAdministrator\n53D PAST",
+        "COMPLIANCE\nDocumentation Alignment Audit\nCA\nCompliance Auditor\n48D PAST",
+        "RISK\nIncident Response Compliance Audit\nRM\nRisk Manager\n48D PAST",
+        "CLINICAL\nQ1 Infection Control Review\nCM\nClinical Manager\n46D PAST",
+        "COMPLIANCE\nHHCAHPS Participation Decision & Annual Filing\nA\nAdministrator\n40D PAST",
+        "CLINICAL\nPlan of Care Audit\nQR\nQA Reviewer (RN)\n33D PAST",
+        "CLINICAL\nOASIS Accuracy Audit\nQR\nQA Reviewer (RN)\n33D PAST",
+        "CLINICAL\nVisit Documentation Audit\nQR\nQA Reviewer (RN)\n33D PAST",
+        "CLINICAL\nClinical Record Completeness Audit\nMR\nMedical Records\n33D PAST",
+        "CLINICAL\nSkilled Need / Medical Necessity Review\nCM\nClinical Manager\n33D PAST",
+        "CLINICAL\nMedication Management Audit\nQR\nQA Reviewer (RN)\n33D PAST",
+        "CLINICAL\nInfection Control Compliance Audit\nIP\nInfection Preventionist\n33D PAST"
+      ],
+      "links": [
+        "/dashboard",
+        "/clinicians",
+        "/patients",
+        "/staffing-calendar",
+        "/iadministrator",
+        "/ces/calendar",
+        "/framework",
+        "/journey",
+        "/policy-lifecycle",
+        "/evidence",
+        "/hubstaff",
+        "/system-documentation",
+        "/help",
+        "/demo",
+        "/admin/user-groups",
+        "/dashboard",
+        "/my-tasks",
+        "/calendar",
+        "/forms",
+        "/evidence",
+        "/audit"
+      ],
+      "artifactLinks": [
+        "/evidence",
+        "/evidence",
+        "/audit"
+      ],
+      "interactions": [
+        {
+          "label": "dashboard-audit-link",
+          "found": true,
+          "clicked": true,
+          "urlBefore": "http://localhost:5175/dashboard",
+          "urlAfter": "http://localhost:5175/audit?state=audit-ready",
+          "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nAUDIT\nCompliance validation and survey readiness\nAudit trail\nVerify chain\nSurvey packet\nFILTERS\nSURVEY ROLLUP\nBUNDLE\nJSON\nALL\nJULY READINESS\nNOT CERTIFIABLE\nMISSING EVIDENCE\nPENDING APPROVAL\nOVERDUE(101)\nREADY TO CERTIFY\nCERTIFIED\nGOVERNANCE(8)\nQAPI(9)\nBILLING CRITICAL(3)\nSURVEY CRITICAL(196)\n100% COMPLIANT\nÂ·\n0 CERTIFIED\nÂ·\n0 READY TO CERTIFY\nÂ·\n0 IN VIEW\nAUDIT STORYLINE\nAdvance from not-certifiable to audit-ready with transparent readiness state transitions.\nSPRINT SPRINT 9 Â· CES AUDIT\nNot Ready: 1041\nPartial: 0\nReady: 0\nCertified: 0\nCritical Units: 0\nOpen Sprint View â†’\nAUDIT READY\n0\n0 instances\nREADY TO CERTIFY\n0\nAwaiting sign-off\nNOT CERTIFIABLE\n0\nRequires review\nMISSING EVIDENCE\n0\nEvidence gaps\nPENDING APPROVAL\n0\nAwaiting approver\nCERTIFIED & LOCKED\n0\nFinal audit state\nREADY TO CERTIFY0\nNo instances match this filter.\n\nSelect an instance to audit.\n\nGUIDED UAT\n\n6/6 operational checkpoints\n\nBRAD IADMINISTRATOR\nHello, TJ, I a",
+          "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-dashboard-dashboard-audit-link.png"
+        },
+        {
+          "label": "dashboard-evidence-link",
+          "found": true,
+          "clicked": true,
+          "urlBefore": "http://localhost:5175/audit?state=audit-ready",
+          "urlAfter": "http://localhost:5175/audit?state=complete-missing-evidence",
+          "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nAUDIT\nCompliance validation and survey readiness\nAudit trail\nVerify chain\nSurvey packet\nFILTERS\nSURVEY ROLLUP\nBUNDLE\nJSON\nALL\nJULY READINESS\nNOT CERTIFIABLE\nMISSING EVIDENCE\nPENDING APPROVAL\nOVERDUE(101)\nREADY TO CERTIFY\nCERTIFIED\nGOVERNANCE(8)\nQAPI(9)\nBILLING CRITICAL(3)\nSURVEY CRITICAL(196)\n100% COMPLIANT\nÂ·\n0 CERTIFIED\nÂ·\n0 READY TO CERTIFY\nÂ·\n0 IN VIEW\nAUDIT STORYLINE\nAdvance from not-certifiable to audit-ready with transparent readiness state transitions.\nSPRINT SPRINT 9 Â· CES AUDIT\nNot Ready: 1041\nPartial: 0\nReady: 0\nCertified: 0\nCritical Units: 0\nOpen Sprint View â†’\nAUDIT READY\n0\n0 instances\nREADY TO CERTIFY\n0\nAwaiting sign-off\nNOT CERTIFIABLE\n0\nRequires review\nMISSING EVIDENCE\n0\nEvidence gaps\nPENDING APPROVAL\n0\nAwaiting approver\nCERTIFIED & LOCKED\n0\nFinal audit state\nMISSING EVIDENCE0\nNo instances match this filter.\n\nSelect an instance to audit.\n\nGUIDED UAT\n\n6/6 operational checkpoints\n\nBRAD IADMINISTRATOR\nHello, TJ, I a",
+          "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-dashboard-dashboard-evidence-link.png"
+        }
+      ],
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-dashboard.png",
+      "printCalls": []
+    },
+    {
+      "id": "audit",
+      "path": "/audit",
+      "url": "http://localhost:5175/audit",
+      "ok": true,
+      "status": 200,
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "bodySample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nAUDIT\nCompliance validation and survey readiness\nAudit trail\nVerify chain\nSurvey packet\nFILTERS\nSURVEY ROLLUP\nBUNDLE\nJSON\nALL\nJULY READINESS\nNOT CERTIFIABLE\nMISSING EVIDENCE\nPENDING APPROVAL\nOVERDUE(101)\nREADY TO CERTIFY\nCERTIFIED\nGOVERNANCE(8)\nQAPI(9)\nBILLING CRITICAL(3)\nSURVEY CRITICAL(196)\n0% COMPLIANT\nÂ·\n0 CERTIFIED\nÂ·\n0 READY TO CERTIFY\nÂ·\n253 IN VIEW\nAUDIT STORYLINE\nAdvance from not-certifiable to audit-ready with transparent readiness state transitions.\nSPRINT SPRINT 9 Â· CES AUDIT\nNot Ready: 1041\nPartial: 0\nReady: 0\nCertified: 0\nCritical Units: 0\nOpen Sprint View â†’\nAUDIT READY\n0\n0 instances\nREADY TO CERTIFY\n0\nAwaiting sign-off\nNOT CERTIFIABLE\n0\nRequires review\nMISSING EVIDENCE\n0\nEvidence gaps\nPENDING APPROVAL\n0\nAwaiting approver\nCERTIFIED & LOCKED\n0\nFinal audit state\nALL INSTANCES253\nNEEDS IMMEDIATE REVIEW\n101\n100\nGOVERNANCE\nDue\n122d past\n\nAnnual Governance Packet Review\n\ngovernance_packet_review-20260108-01Â·Administrator\n\nOVERDUE\n100\nQAPI\nDue\n94d past\n\nQuarterly QAPI Governance Review & Annual PIP Kickoff\n\nqapi_meeting-20260205-04Â·QAPI Coordinator\n\nOVERDUE\n100\nCLINICAL\nDue\n46d past\n\nQ1 Infection Control Review\n\ninfection_control_review_quarterly-20260325-01Â·Clinical Manager\n\nOVERDUE\n100\nQAPI\nDue\n3d past\n\nQ2 QAPI Review\n\nqapi_meeting-20260507-08Â·Clinical Manager\n\nBLOCKED\n100\nGOVERNANCE\nDue\n4d\n\nGoverning Body Meeting\n\ngoverning_body_meeting-20260514-01Â·D. Alvarez\n\nBLOCKED\n99\nQAPI\nDue\n129d past\n\nIncident / Adverse Event Review\n\nincident_report-20260101-01Â·Clinical Manager\n\nOVERDUE\n99\nCOMPLIANCE\nDue\n129d past\n\nComplaint / Grievance Investigation\n\ncomplaint_investigation-20260101-01Â·Compliance Officer\n\nOVERDUE\n96\nOPERATIONS\nDue\n115d past\n\nBiennial Emergency Preparedness Plan Review & Update\n\nep_plan_review-20260115-01Â·Administrator\n\nOVERDUE\n96\nOPERATIONS\nDue\n53d past\n\nAnnual Emergency Preparedness Exercise\n\nep_exercise-20260318-01Â·Administrator\n\nOVERDUE\n95\nQAPI\nDue\n88d\n\nQ3 QAPI Review\n\nqapi_meeting-20260806-12Â·Clinical Manager\n\nBLOCKED\n95\nQAPI\nDue\n179d\n\nQ4 QAPI Review + Annual PIP Close\n\nqapi_meeting-20261105-16Â·Clinical Manager\n\nBLOCKED\n95\nQAPI\nDue\n214d\n\nAnnual QAPI Program Evaluation\n\nqapi_annual_eval-20261210-01Â·Clinical Manager\n\nBLOCKED\n91\nOPERATIONS\nDue\n806d\n\nWorkforce Competency Validation (Biennial Enterprise Cycle) — 2028\n\nHR-2028-COMPETENCY-BIENNIALÂ·Clinical Manager\n\nBLOCKED\n88\nCLINICAL\nDue\n90d past\n\nAnnual Aide In-Service Training Campaign\n\nhha_aide_inservice-20260209-01Â·Director of Nursing\n\nOVERDUE\n84\nCOMPLIANCE\nDue\n799d\n\nFull Policy Framework Review (Biennial Re-Baseline) — 2028\n\nEN-2028-PFRAMEWORK-BIENNIALÂ·Compliance Officer\n\nBLOCKED\n83\nCOMPLIANCE\nDue\n813d\n\nCompliance Program Effectiveness Review (Biennial Deep Audit) — 2028\n\nCO-2028-EFFECTIVENESS-BIENNIALÂ·Compliance Officer\n\nBLOCKED\n83\nCOMPLIANCE\nDue\n1177d\n\nComprehensive Compliance Program Evaluation (Triennial) — 2029\n\nCO-2029-COMPREHENSIVE-TRIENNIALÂ·Compliance Officer\n\nBLOCKED\n83\nCOMPLIANCE\nDue\n1178d\n\nExternal / Independent Compliance Review (Triennial) — 2029\n\nCO-2029-EXTREVIEW-TRIENNIALÂ·Compliance Officer\n\nBLOCKED\n78\nOPERATIONS\nDue\n108d past\n\nBiennial Emergency Preparedness Staff Training\n\nep_staff_training-20260122-01Â·Administrator\n\nOVERDUE\n78\nCLINICAL\nDue\n74d past\n\nAnnual Skilled-Patient Aide Observation\n\nhha_skill_observation-20260225-01Â·Director of Nursing\n\nOVERDUE\n78\nCLINICAL\nDue\n60d past\n\nSemiannual Aide-Only Patient Observation\n\nhha_aide_observation-20260311-01Â·Director of Nursing\n\nOVERDUE\n77\nCOMPLIANCE\nDue\n40d past\n\nHHCAHPS Participation Decision & Annual Filing\n\nhhcahps_filing-20260331-01Â·Administrator\n\nOVERDUE\n76\nRISK\nDue\n792d\n\nEnterprise Risk Assessment (Biennial Deep Reassessment) — 2028\n\nRM-2028-ENTRISK-BIENNIALÂ·Compliance Officer\n\nBLOCKED\n75\nCOMPLIANCE\nDue\n123d past\n\nPre-Bill Claims Audit\n\npre_bill_audit-20260107-01Â·Billing Auditor\n\nOVERDUE\n75\nCOMPLIANCE\nDue\n123d past\n\nLicense & Exclusion Monitoring\n\nlicense_exclusion_audit-20260107-01Â·HR Director\n\nOVERDUE\n75\nCOMPLIANCE\nDue\n90d past\n\nPre-Bill Claims Audit\n\npre_bill_audit-20260209-01Â·Billing Auditor\n\nOVERDUE\n75\nCOMPLIANCE\nDue\n90d past\n\nLicense & Exclusion Monitoring\n\nlicense_exclusion_audit-20260209-01Â·HR Director\n\nOVERDUE\n75\nCOMPLIANCE\nDue\n62d past\n\nPre-Bill Claims Audit\n\npre_bill_audit-20260309-01Â·Billing Auditor\n\nOVERDUE\n75\nCOMPLIANCE\nDue\n62d past\n\nLicense & Exclusion Monitoring\n\nlicense_exclusion_audit-20260309-01Â·HR Director\n\nOVERDUE\n75\nCOMPLIANCE\nDue\n55d past\n\nInternal Compliance Audit Cycle\n\ninternal_compliance_audit-20260316-01Â·Compliance Officer\n\nOVERDUE\n75\nCOMPLIANCE\nDue\n33d past\n\nPre-Bill Claims Audit\n\npre_bill_audit-20260407-01Â·Billing Auditor\n\nOVERDUE\n75\nCOMPLIANCE\nDue\n33d past\n\nLicense & Exclusion Monitoring\n\nlicense_exclusion_audit-20260407-01Â·HR Director\n\nOVERDUE\n68\nCLINIC",
+      "metrics": {
+        "totalTextLength": 14004,
+        "hasSurveyPacket": true,
+        "hasEvidenceRollup": true,
+        "hasPolicyTrace": false,
+        "hasEventTrace": false,
+        "hasSignedArtifact": false,
+        "hasMissingEvidence": true,
+        "hasReadinessScore": true,
+        "hasQ1Locked": true,
+        "buttons": 142,
+        "links": 18,
+        "inputs": 2
+      },
+      "buttons": [
+        "TP",
+        "FILTERS",
+        "SURVEY ROLLUP",
+        "BUNDLE",
+        "JSON",
+        "ALL",
+        "JULY READINESS",
+        "NOT CERTIFIABLE",
+        "MISSING EVIDENCE",
+        "PENDING APPROVAL",
+        "OVERDUE(101)",
+        "READY TO CERTIFY",
+        "CERTIFIED",
+        "GOVERNANCE(8)",
+        "QAPI(9)",
+        "BILLING CRITICAL(3)",
+        "SURVEY CRITICAL(196)",
+        "Open Sprint View â†’",
+        "AUDIT READY\n0\n0 instances",
+        "READY TO CERTIFY\n0\nAwaiting sign-off",
+        "NOT CERTIFIABLE\n0\nRequires review",
+        "MISSING EVIDENCE\n0\nEvidence gaps",
+        "PENDING APPROVAL\n0\nAwaiting approver",
+        "CERTIFIED & LOCKED\n0\nFinal audit state",
+        "100\nGOVERNANCE\nDue\n122d past\n\nAnnual Governance Packet Review\n\ngovernance_packet_review-20260108-01Â·Administrator\n\nOVERDUE",
+        "100\nQAPI\nDue\n94d past\n\nQuarterly QAPI Governance Review & Annual PIP Kickoff\n\nqapi_meeting-20260205-04Â·QAPI Coordinator\n\nOVERDUE",
+        "100\nCLINICAL\nDue\n46d past\n\nQ1 Infection Control Review\n\ninfection_control_review_quarterly-20260325-01Â·Clinical Manager\n\nOVERDUE",
+        "100\nQAPI\nDue\n3d past\n\nQ2 QAPI Review\n\nqapi_meeting-20260507-08Â·Clinical Manager\n\nBLOCKED",
+        "100\nGOVERNANCE\nDue\n4d\n\nGoverning Body Meeting\n\ngoverning_body_meeting-20260514-01Â·D. Alvarez\n\nBLOCKED",
+        "99\nQAPI\nDue\n129d past\n\nIncident / Adverse Event Review\n\nincident_report-20260101-01Â·Clinical Manager\n\nOVERDUE",
+        "99\nCOMPLIANCE\nDue\n129d past\n\nComplaint / Grievance Investigation\n\ncomplaint_investigation-20260101-01Â·Compliance Officer\n\nOVERDUE",
+        "96\nOPERATIONS\nDue\n115d past\n\nBiennial Emergency Preparedness Plan Review & Update\n\nep_plan_review-20260115-01Â·Administrator\n\nOVERDUE",
+        "96\nOPERATIONS\nDue\n53d past\n\nAnnual Emergency Preparedness Exercise\n\nep_exercise-20260318-01Â·Administrator\n\nOVERDUE",
+        "95\nQAPI\nDue\n88d\n\nQ3 QAPI Review\n\nqapi_meeting-20260806-12Â·Clinical Manager\n\nBLOCKED",
+        "95\nQAPI\nDue\n179d\n\nQ4 QAPI Review + Annual PIP Close\n\nqapi_meeting-20261105-16Â·Clinical Manager\n\nBLOCKED",
+        "95\nQAPI\nDue\n214d\n\nAnnual QAPI Program Evaluation\n\nqapi_annual_eval-20261210-01Â·Clinical Manager\n\nBLOCKED",
+        "91\nOPERATIONS\nDue\n806d\n\nWorkforce Competency Validation (Biennial Enterprise Cycle) — 2028\n\nHR-2028-COMPETENCY-BIENNIALÂ·Clinical Manager\n\nBLOCKED",
+        "88\nCLINICAL\nDue\n90d past\n\nAnnual Aide In-Service Training Campaign\n\nhha_aide_inservice-20260209-01Â·Director of Nursing\n\nOVERDUE",
+        "84\nCOMPLIANCE\nDue\n799d\n\nFull Policy Framework Review (Biennial Re-Baseline) — 2028\n\nEN-2028-PFRAMEWORK-BIENNIALÂ·Compliance Officer\n\nBLOCKED",
+        "83\nCOMPLIANCE\nDue\n813d\n\nCompliance Program Effectiveness Review (Biennial Deep Audit) — 2028\n\nCO-2028-EFFECTIVENESS-BIENNIALÂ·Compliance Officer\n\nBLOCKED",
+        "83\nCOMPLIANCE\nDue\n1177d\n\nComprehensive Compliance Program Evaluation (Triennial) — 2029\n\nCO-2029-COMPREHENSIVE-TRIENNIALÂ·Compliance Officer\n\nBLOCKED",
+        "83\nCOMPLIANCE\nDue\n1178d\n\nExternal / Independent Compliance Review (Triennial) — 2029\n\nCO-2029-EXTREVIEW-TRIENNIALÂ·Compliance Officer\n\nBLOCKED",
+        "78\nOPERATIONS\nDue\n108d past\n\nBiennial Emergency Preparedness Staff Training\n\nep_staff_training-20260122-01Â·Administrator\n\nOVERDUE",
+        "78\nCLINICAL\nDue\n74d past\n\nAnnual Skilled-Patient Aide Observation\n\nhha_skill_observation-20260225-01Â·Director of Nursing\n\nOVERDUE",
+        "78\nCLINICAL\nDue\n60d past\n\nSemiannual Aide-Only Patient Observation\n\nhha_aide_observation-20260311-01Â·Director of Nursing\n\nOVERDUE",
+        "77\nCOMPLIANCE\nDue\n40d past\n\nHHCAHPS Participation Decision & Annual Filing\n\nhhcahps_filing-20260331-01Â·Administrator\n\nOVERDUE",
+        "76\nRISK\nDue\n792d\n\nEnterprise Risk Assessment (Biennial Deep Reassessment) — 2028\n\nRM-2028-ENTRISK-BIENNIALÂ·Compliance Officer\n\nBLOCKED",
+        "75\nCOMPLIANCE\nDue\n123d past\n\nPre-Bill Claims Audit\n\npre_bill_audit-20260107-01Â·Billing Auditor\n\nOVERDUE",
+        "75\nCOMPLIANCE\nDue\n123d past\n\nLicense & Exclusion Monitoring\n\nlicense_exclusion_audit-20260107-01Â·HR Director\n\nOVERDUE",
+        "75\nCOMPLIANCE\nDue\n90d past\n\nPre-Bill Claims Audit\n\npre_bill_audit-20260209-01Â·Billing Auditor\n\nOVERDUE",
+        "75\nCOMPLIANCE\nDue\n90d past\n\nLicense & Exclusion Monitoring\n\nlicense_exclusion_audit-20260209-01Â·HR Director\n\nOVERDUE",
+        "75\nCOMPLIANCE\nDue\n62d past\n\nPre-Bill Claims Audit\n\npre_bill_audit-20260309-01Â·Billing Auditor\n\nOVERDUE",
+        "75\nCOMPLIANCE\nDue\n62d past\n\nLicense & Exclusion Monitoring\n\nlicense_exclusion_audit-20260309-01Â·HR Director\n\nOVERDUE",
+        "75\nCOMPLIANCE\nDue\n55d past\n\nInternal Compliance Audit Cycle\n\ninternal_compliance_audit-20260316-01Â·Compliance Officer\n\nOVERDUE",
+        "75\nCOMPLIANCE\nDue\n33d past\n\nPre-Bill Claims Audit\n\npre_bill_audit-20260407-01Â·Billing Auditor\n\nOVERDUE",
+        "75\nCOMPLIANCE\nDue\n33d past\n\nLicense & Exclusion Monitoring\n\nlicense_exclusion_audit-20260407-01Â·HR Director\n\nOVERDUE",
+        "68\nCLINICAL\nDue\n123d past\n\nSkilled Need / Medical Necessity Review\n\nmedical_necessity_audit-20260107-01Â·Clinical Manager\n\nOVERDUE",
+        "68\nCLINICAL\nDue\n90d past\n\nSkilled Need / Medical Necessity Review\n\nmedical_necessity_audit-20260209-01Â·Clinical Manager\n\nOVERDUE",
+        "68\nCLINICAL\nDue\n62d past\n\nSkilled Need / Medical Necessity Review\n\nmedical_necessity_audit-20260309-01Â·Clinical Manager\n\nOVERDUE",
+        "68\nCLINICAL\nDue\n33d past\n\nSkilled Need / Medical Necessity Review\n\nmedical_necessity_audit-20260407-01Â·Clinical Manager\n\nOVERDUE",
+        "68\nIT / SECURITY\nDue\n10d past\n\nAnnual Security Risk Analysis\n\nsecurity_risk_analysis-20260430-01Â·T. Nguyen\n\nOVERDUE",
+        "65\nCOMPLIANCE\nDue\n116d past\n\nPost-Bill Claims Audit\n\npost_bill_audit-20260114-01Â·Billing Auditor\n\nOVERDUE",
+        "65\nCOMPLIANCE\nDue\n83d past\n\nPost-Bill Claims Audit\n\npost_bill_audit-20260216-01Â·Billing Auditor\n\nOVERDUE",
+        "65\nCOMPLIANCE\nDue\n55d past\n\nPost-Bill Claims Audit\n\npost_bill_audit-20260316-01Â·Billing Auditor\n\nOVERDUE",
+        "65\nCOMPLIANCE\nDue\n55d past\n\nStaff File Audit\n\nstaff_file_audit-20260316-01Â·HR Director\n\nOVERDUE",
+        "65\nCOMPLIANCE\nDue\n48d past\n\nDocumentation Alignment Audit\n\ndocumentation_alignment_audit-20260323-01Â·Compliance Auditor\n\nOVERDUE",
+        "65\nCOMPLIANCE\nDue\n26d past\n\nPost-Bill Claims Audit\n\npost_bill_audit-20260414-01Â·Billing Auditor\n\nOVERDUE",
+        "64\nCLINICAL\nDue\n123d past\n\nOASIS Accuracy Audit\n\noasis_accuracy_audit-20260107-01Â·QA Reviewer (RN)\n\nOVERDUE",
+        "64\nCLINICAL\nDue\n90d past\n\nOASIS Accuracy Audit\n\noasis_accuracy_audit-20260209-01Â·QA Reviewer (RN)\n\nOVERDUE",
+        "64\nCLINICAL\nDue\n62d past\n\nOASIS Accuracy Audit\n\noasis_accuracy_audit-20260309-01Â·QA Reviewer (RN)\n\nOVERDUE",
+        "64\nCLINICAL\nDue\n33d past\n\nOASIS Accuracy Audit\n\noasis_accuracy_audit-20260407-01Â·QA Reviewer (RN)\n\nOVERDUE",
+        "62\nCLINICAL\nDue\n123d past\n\nMedication Management Audit\n\nmedication_management_audit-20260107-01Â·QA Reviewer (RN)\n\nOVERDUE",
+        "62\nCLINICAL\nDue\n90d past\n\nMedication Management Audit\n\nmedication_management_audit-20260209-01Â·QA Reviewer (RN)\n\nOVERDUE",
+        "62\nCLINICAL\nDue\n62d past\n\nMedication Management Audit\n\nmedication_management_audit-20260309-01Â·QA Reviewer (RN)\n\nOVERDUE",
+        "62\nCLINICAL\nDue\n33d past\n\nMedication Management Audit\n\nmedication_management_audit-20260407-01Â·QA Reviewer (RN)\n\nOVERDUE",
+        "62\nGOVERNANCE\nDue\n1178d\n\nStrategic Program Effectiveness Assessment (Triennial) — 2029\n\nGV-2029-STRATEGIC-TRIENNIALÂ·Administrator\n\nBLOCKED"
+      ],
+      "links": [
+        "/dashboard",
+        "/clinicians",
+        "/patients",
+        "/staffing-calendar",
+        "/iadministrator",
+        "/ces/calendar",
+        "/framework",
+        "/journey",
+        "/policy-lifecycle",
+        "/evidence",
+        "/hubstaff",
+        "/system-documentation",
+        "/help",
+        "/demo",
+        "/admin/user-groups",
+        "/help/audit-trail",
+        "/help/verify-chain",
+        "/help/survey-packet"
+      ],
+      "artifactLinks": [
+        "/evidence",
+        "/help/audit-trail"
+      ],
+      "interactions": [
+        {
+          "label": "readiness-drilldown",
+          "found": true,
+          "clicked": true,
+          "urlBefore": "http://localhost:5175/audit",
+          "urlAfter": "http://localhost:5175/audit",
+          "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nAUDIT\nCompliance validation and survey readiness\nAudit trail\nVerify chain\nSurvey packet\nFILTERS\nSURVEY ROLLUP\nBUNDLE\nJSON\nALL\nJULY READINESS\nNOT CERTIFIABLE\nMISSING EVIDENCE\nPENDING APPROVAL\nOVERDUE(101)\nREADY TO CERTIFY\nCERTIFIED\nGOVERNANCE(8)\nQAPI(9)\nBILLING CRITICAL(3)\nSURVEY CRITICAL(196)\n0% COMPLIANT\nÂ·\n0 CERTIFIED\nÂ·\n0 READY TO CERTIFY\nÂ·\n23 IN VIEW\nAUDIT STORYLINE\nAdvance from not-certifiable to audit-ready with transparent readiness state transitions.\nSPRINT SPRINT 9 Â· CES AUDIT\nNot Ready: 1041\nPartial: 0\nReady: 0\nCertified: 0\nCritical Units: 0\nOpen Sprint View â†’\nAUDIT READY\n0\n0 instances\nREADY TO CERTIFY\n0\nAwaiting sign-off\nNOT CERTIFIABLE\n0\nRequires review\nMISSING EVIDENCE\n0\nEvidence gaps\nPENDING APPROVAL\n0\nAwaiting approver\nCERTIFIED & LOCKED\n0\nFinal audit state\nJULY READINESS23\nNo instances in this group.\nOPERATIONS\nIN PROGRESS\nTIMELINE\nWorkforce Competency Validation (Biennial Enterprise Cycle)\ncompetency_validatio",
+          "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-audit-readiness-drilldown.png"
+        },
+        {
+          "label": "survey-packet",
+          "found": true,
+          "clicked": true,
+          "urlBefore": "http://localhost:5175/audit",
+          "urlAfter": "http://localhost:5175/audit",
+          "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nAUDIT\nCompliance validation and survey readiness\nAudit trail\nVerify chain\nSurvey packet\nFILTERS\nSURVEY ROLLUP\nBUNDLE\nJSON\nALL\nJULY READINESS\nNOT CERTIFIABLE\nMISSING EVIDENCE\nPENDING APPROVAL\nOVERDUE(101)\nREADY TO CERTIFY\nCERTIFIED\nGOVERNANCE(8)\nQAPI(9)\nBILLING CRITICAL(3)\nSURVEY CRITICAL(196)\n0% COMPLIANT\nÂ·\n0 CERTIFIED\nÂ·\n0 READY TO CERTIFY\nÂ·\n23 IN VIEW\nAUDIT STORYLINE\nAdvance from not-certifiable to audit-ready with transparent readiness state transitions.\nSPRINT SPRINT 9 Â· CES AUDIT\nNot Ready: 1041\nPartial: 0\nReady: 0\nCertified: 0\nCritical Units: 0\nOpen Sprint View â†’\nAUDIT READY\n0\n0 instances\nREADY TO CERTIFY\n0\nAwaiting sign-off\nNOT CERTIFIABLE\n0\nRequires review\nMISSING EVIDENCE\n0\nEvidence gaps\nPENDING APPROVAL\n0\nAwaiting approver\nCERTIFIED & LOCKED\n0\nFinal audit state\nJULY READINESS23\nNo instances in this group.\nOPERATIONS\nIN PROGRESS\nTIMELINE\nWorkforce Competency Validation (Biennial Enterprise Cycle)\ncompetency_validatio",
+          "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-audit-survey-packet.png"
+        },
+        {
+          "label": "export-download",
+          "found": false
+        },
+        {
+          "label": "print",
+          "found": true,
+          "clicked": true,
+          "urlBefore": "http://localhost:5175/audit",
+          "urlAfter": "http://localhost:5175/calendar?view=sprint",
+          "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nCES SPRINT WINDOW\nSprint execution · Mon–Fri 2-week window\n\nOrchestrate deadlines, sprint execution, and survey readiness from one cinematic timeline surface.\n\nCalendar\nSprint Board\nKanban\nGantt\nToday\nSYNC ALL EVENTS\nSPRINT SCOPE\nYEAR\n2024\n2025\n2026\n2027\n2028\n2029\n2030\nSPRINT\n2026:01 — Sprint 1\n2026:02 — Sprint 2\n2026:03 — Sprint 3\n2026:04 — Sprint 4\n2026:05 — Sprint 5\n2026:06 — Sprint 6\n2026:07 — Sprint 7\n2026:08 — Sprint 8\n2026:09 — Sprint 9\n2026:10 — Sprint 10\n2026:11 — Sprint 11\n2026:12 — Sprint 12\n2026:13 — Sprint 13\n2026:14 — Sprint 14\n2026:15 — Sprint 15\n2026:16 — Sprint 16\n2026:17 — Sprint 17\n2026:18 — Sprint 18\n2026:19 — Sprint 19\n2026:20 — Sprint 20\n2026:21 — Sprint 21\n2026:22 — Sprint 22\n2026:23 — Sprint 23\n2026:24 — Sprint 24\n2026:25 — Sprint 25\n2026:26 — Sprint 26\nPREV\nNEXT\nCURRENT\nNo CES tasks available for this view.\nSprint 2026-10 · 2026-05-10 to 2026-05-23\nOPEN DETAILS\nSurvey rollup exported\n23 instances Â· Markdo",
+          "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-audit-print.png"
+        },
+        {
+          "label": "evidence-drilldown",
+          "found": false
+        }
+      ],
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-audit.png",
+      "printCalls": []
+    },
+    {
+      "id": "evidence",
+      "path": "/evidence",
+      "url": "http://localhost:5175/evidence",
+      "ok": true,
+      "status": 200,
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "bodySample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nEvidence Folder Explorer\nEvidence mode: DEMO_LOCAL\nClear All Evidence\n\nRead-only folder view for Year → Quarter → Month → Event → Task evidence. Upload stays inside CES task drawers where the event, task, form, and requirement context is known.\n\nChain of custody visible\nImmutable evidence timeline\nSurvey packet ready context\nFolder tree\nFile ledger\nDEMO_LOCAL: Evidence metadata is stored locally for this demo environment.\nEvidence Folder Tree\n\nDrive-style hierarchy: Year → Month → Event → Task → Requirement → Artifact. Operational completion and audit readiness are calculated separately.\n\nYEAR\nAll\n2025\n2026\n2028\n2029\nMONTH\nAll\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember\nTASK STATUS\nAll\ntodo\nin_progress\nin_review\nblocked\ndone\nREQUIREMENT STATUS\nAll\nPENDING\nIN_PROGRESS\nCOMPLETED\nBLOCKED\nASSIGNED\nAll\nMissing evidence only\nLocked evidence only\nPending signature only\nBlocked tasks only\nOrphan evidence only\nEVENTS\n244\nTASKS\n5114\nREQS\n10716\nCOMPLETION\n0%\nAUDIT READY\n0%\nLOCKED EVIDENCE\n0\nFOLDERS\n-\n2026\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember\nEvidence / 2026\n2026\n0% complete\n0% audit ready\n0%\nJanuary\n0% audit · 0/256\n0%\nFebruary\n0% audit · 0/250\n0%\nMarch\n0% audit · 0/326\n0%\nApril\n0% audit · 0/240\n0%\nMay\n0% audit · 0/638\n0%\nJune\n0% audit · 0/330\n0%\nJuly\n0% audit · 0/314\n0%\nAugust\n0% audit · 0/236\n0%\nSeptember\n0% audit · 0/290\n0%\nOctober\n0% audit · 0/204\n0%\nNovember\n0% audit · 0/238\n0%\nDecember\n0% audit · 0/286\nPerformance Leaderboard\nExplain scoring\nUser / Role\tSP Done\tCertified\tOn-Time %\tOverdue\tRejected\tAudit Perfect\tScore\nUnassigned\t0\t0\t0%\t2305\t0\t0\t-4605\nContextual Help\n\nMonth selected: monthly compliance execution, missing evidence, and pending signatures.\n\nSelection: Monthly compliance execution\n\nGUIDED UAT\n\n5/6 operational checkpoints",
+      "metrics": {
+        "totalTextLength": 2104,
+        "hasSurveyPacket": true,
+        "hasEvidenceRollup": false,
+        "hasPolicyTrace": false,
+        "hasEventTrace": true,
+        "hasSignedArtifact": false,
+        "hasMissingEvidence": true,
+        "hasReadinessScore": true,
+        "hasQ1Locked": true,
+        "buttons": 34,
+        "links": 15,
+        "inputs": 11
+      },
+      "buttons": [
+        "TP",
+        "Clear All Evidence",
+        "Folder tree",
+        "File ledger",
+        "-\n2026",
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+        "0%\nJanuary\n0% audit · 0/256",
+        "0%\nFebruary\n0% audit · 0/250",
+        "0%\nMarch\n0% audit · 0/326",
+        "0%\nApril\n0% audit · 0/240",
+        "0%\nMay\n0% audit · 0/638",
+        "0%\nJune\n0% audit · 0/330",
+        "0%\nJuly\n0% audit · 0/314",
+        "0%\nAugust\n0% audit · 0/236",
+        "0%\nSeptember\n0% audit · 0/290",
+        "0%\nOctober\n0% audit · 0/204",
+        "0%\nNovember\n0% audit · 0/238",
+        "0%\nDecember\n0% audit · 0/286",
+        "Explain scoring"
+      ],
+      "links": [
+        "/dashboard",
+        "/clinicians",
+        "/patients",
+        "/staffing-calendar",
+        "/iadministrator",
+        "/ces/calendar",
+        "/framework",
+        "/journey",
+        "/policy-lifecycle",
+        "/evidence",
+        "/hubstaff",
+        "/system-documentation",
+        "/help",
+        "/demo",
+        "/admin/user-groups"
+      ],
+      "artifactLinks": [
+        "/evidence"
+      ],
+      "interactions": [
+        {
+          "label": "open-artifact",
+          "found": false
+        },
+        {
+          "label": "download-export",
+          "found": false
+        },
+        {
+          "label": "print",
+          "found": false
+        },
+        {
+          "label": "q1-filter",
+          "found": true,
+          "clicked": true,
+          "urlBefore": "http://localhost:5175/evidence",
+          "urlAfter": "http://localhost:5175/evidence",
+          "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nEvidence Folder Explorer\nEvidence mode: DEMO_LOCAL\nClear All Evidence\n\nRead-only folder view for Year → Quarter → Month → Event → Task evidence. Upload stays inside CES task drawers where the event, task, form, and requirement context is known.\n\nChain of custody visible\nImmutable evidence timeline\nSurvey packet ready context\nFolder tree\nFile ledger\nDEMO_LOCAL: Evidence metadata is stored locally for this demo environment.\nEvidence Folder Tree\n\nDrive-style hierarchy: Year → Month → Event → Task → Requirement → Artifact. Operational completion and audit readiness are calculated separately.\n\nYEAR\nAll\n2025\n2026\n2028\n2029\nMONTH\nAll\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember\nTASK STATUS\nAll\ntodo\nin_progress\nin_review\nblocked\ndone\nREQUIREMENT STATUS\nAll\nPENDING\nIN_PROGRESS\nCOMPLETED\nBLOCKED\nASSIGNED\nAll\nMissing evidence only\nLocked evidence only\nPending signature only\nBlocked tasks only\nOrphan e",
+          "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-evidence-q1-filter.png"
+        }
+      ],
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-evidence.png",
+      "printCalls": []
+    },
+    {
+      "id": "ces-calendar",
+      "path": "/ces/calendar",
+      "url": "http://localhost:5175/ces/calendar",
+      "ok": true,
+      "status": 200,
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "bodySample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nEVENT CALENDAR\nRegulatory events · May 2026\n\nOrchestrate deadlines, sprint execution, and survey readiness from one cinematic timeline surface.\n\nBLOCK\n16\nDUE\n13\nTRACK\n8\nCalendar\nSprint Board\nKanban\nGantt\nToday\nSYNC ALL EVENTS\nJULY READINESS ROLLOUT\n\nProject all non-triggered workflows into the calendar for the 12-month window starting 2026-07-01. Triggered workflows (incidents, complaints, sentinel events) are excluded and will materialize only when their trigger fires.\n\nPREVIEW SCHEDULE\nDISMISS\nSUN\nMON\nTUE\nWED\nTHU\nFRI\nSAT\n26\n27\n28\n29\n30\n1\n2\n3\n4\n5\n\nMonthly OIG/SAM Exclusion Check\n\nHR-TA-003\n\n6\n7\n\nQ2 QAPI Review\n\nQA-PG-001 / QA-PI-001\n\nPlan of Care Audit\n\n+ 12 more\n8\n9\n10\n11\n\nGoverning Body Mtg (Prep - Owner Brief)\n\nGV-GB-001\n\nCompliance Report (Weekly Snapshot)\n\nCO-RA-002\n\n12\n\nQAPI Committee Meeting\n\nQA-PG-001 / QA-PG-002\n\n13\n\nClaims Submission Cycle\n\nFN-BC-001 / FN-BC-003\n\nSystem Activity Review\n\nIT-DR-003\n\n14\n\nPost-Bill Claims Audit\n\nGoverning Body Meeting\n\nGV-GB-001 / GV-GB-002\n\n+ 1 more\n15\n\nSentinel Event Root Cause Analysis (Trigger)\n\nRM-ER-002\n\n16\n17\n18\n\n30-Day Episode Review\n\nCL-CP-002\n\n19\n\nInfection Control Review\n\nCL-SD-016\n\n20\n\nSecurity Incidents Review\n\nIT-DR-005\n\n21\n\nPhysician Signatures Due\n\nCL-CP-009 / FN-BC-003\n\nDenial Management Review\n\nFN-BC-002\n\n+ 1 more\n22\n\nQAPI Data Dashboard Refresh\n\nQA-PG-003\n\n23\n24\n25\n26\n\nMonthly Clinical Record Audit\n\nCO-DC-002 / CL-CP-001\n\n27\n\nAnnual OSHA Bloodborne Pathogen Training\n\nRM-OS-003\n\n28\n\nAnnual HIPAA Workforce Training\n\nIT-UP-004 / CO-HP-001\n\nAnnual Emergency Preparedness Full-Scale Exercise\n\nRM-EP-001 / OP-FM-005\n\n29\n\nQuarterly Vulnerability Scan\n\nIT-SC-001\n\nQuarterly Competency Validation Cycle\n\nHR-TD-003\n\n30\n31\n1\n2\n3\n4\n5\n6\nOPEN DETAILS\n\nGUIDED UAT\n\n0/6 operational checkpoints\n\nReview operational posture\nOpen and execute tasks\nValidate workflow timeline\nComplete required forms\nUpload and verify evidence\nRun audit readiness pass\nKeep checklist visible",
+      "metrics": {
+        "totalTextLength": 2194,
+        "hasSurveyPacket": false,
+        "hasEvidenceRollup": false,
+        "hasPolicyTrace": false,
+        "hasEventTrace": false,
+        "hasSignedArtifact": false,
+        "hasMissingEvidence": false,
+        "hasReadinessScore": true,
+        "hasQ1Locked": false,
+        "buttons": 43,
+        "links": 21,
+        "inputs": 1
+      },
+      "buttons": [
+        "TP",
+        "Calendar",
+        "Sprint Board",
+        "Kanban",
+        "Gantt",
+        "Today",
+        "SYNC ALL EVENTS",
+        "PREVIEW SCHEDULE",
+        "DISMISS",
+        "Monthly OIG/SAM Exclusion Check\n\nHR-TA-003",
+        "Q2 QAPI Review\n\nQA-PG-001 / QA-PI-001",
+        "Plan of Care Audit",
+        "+ 12 more",
+        "Governing Body Mtg (Prep - Owner Brief)\n\nGV-GB-001",
+        "Compliance Report (Weekly Snapshot)\n\nCO-RA-002",
+        "QAPI Committee Meeting\n\nQA-PG-001 / QA-PG-002",
+        "Claims Submission Cycle\n\nFN-BC-001 / FN-BC-003",
+        "System Activity Review\n\nIT-DR-003",
+        "Post-Bill Claims Audit",
+        "Governing Body Meeting\n\nGV-GB-001 / GV-GB-002",
+        "+ 1 more",
+        "Sentinel Event Root Cause Analysis (Trigger)\n\nRM-ER-002",
+        "30-Day Episode Review\n\nCL-CP-002",
+        "Infection Control Review\n\nCL-SD-016",
+        "Security Incidents Review\n\nIT-DR-005",
+        "Physician Signatures Due\n\nCL-CP-009 / FN-BC-003",
+        "Denial Management Review\n\nFN-BC-002",
+        "+ 1 more",
+        "QAPI Data Dashboard Refresh\n\nQA-PG-003",
+        "Monthly Clinical Record Audit\n\nCO-DC-002 / CL-CP-001",
+        "Annual OSHA Bloodborne Pathogen Training\n\nRM-OS-003",
+        "Annual HIPAA Workforce Training\n\nIT-UP-004 / CO-HP-001",
+        "Annual Emergency Preparedness Full-Scale Exercise\n\nRM-EP-001 / OP-FM-005",
+        "Quarterly Vulnerability Scan\n\nIT-SC-001",
+        "Quarterly Competency Validation Cycle\n\nHR-TD-003",
+        "OPEN DETAILS",
+        "Keep checklist visible"
+      ],
+      "links": [
+        "/dashboard",
+        "/clinicians",
+        "/patients",
+        "/staffing-calendar",
+        "/iadministrator",
+        "/ces/calendar",
+        "/framework",
+        "/journey",
+        "/policy-lifecycle",
+        "/evidence",
+        "/hubstaff",
+        "/system-documentation",
+        "/help",
+        "/demo",
+        "/admin/user-groups",
+        "/dashboard",
+        "/my-tasks",
+        "/calendar",
+        "/forms",
+        "/evidence",
+        "/audit"
+      ],
+      "artifactLinks": [
+        "/evidence",
+        "/evidence",
+        "/audit"
+      ],
+      "interactions": [
+        {
+          "label": "ces-detail-open",
+          "found": true,
+          "clicked": true,
+          "urlBefore": "http://localhost:5175/ces/calendar",
+          "urlAfter": "http://localhost:5175/ces/calendar?event=plan_of_care_audit-20260507-01",
+          "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nEVENT CALENDAR\nRegulatory events · May 2026\n\nOrchestrate deadlines, sprint execution, and survey readiness from one cinematic timeline surface.\n\nBLOCK\n16\nDUE\n13\nTRACK\n8\nCalendar\nSprint Board\nKanban\nGantt\nToday\nSYNC ALL EVENTS\nJULY READINESS ROLLOUT\n\nProject all non-triggered workflows into the calendar for the 12-month window starting 2026-07-01. Triggered workflows (incidents, complaints, sentinel events) are excluded and will materialize only when their trigger fires.\n\nPREVIEW SCHEDULE\nDISMISS\nSUN\nMON\nTUE\nWED\nTHU\nFRI\nSAT\n26\n27\n28\n29\n30\n1\n2\n3\n4\n5\n\nMonthly OIG/SAM Exclusion Check\n\nHR-TA-003\n\n6\n7\n\nQ2 QAPI Review\n\nQA-PG-001 / QA-PI-001\n\nPlan of Care Audit\n\n+ 12 more\n8\n9\n10\n11\n\nGoverning Body Mtg (Prep - Owner Brief)\n\nGV-GB-001\n\nCompliance Report (Weekly Snapshot)\n\nCO-RA-002\n\n12\n\nQAPI Committee Meeting\n\nQA-PG-001 / QA-PG-002\n\n13\n\nClaims Submission Cycle\n\nFN-BC-001 / FN-BC-003\n\nSystem Activity Review\n\nIT-DR-003\n\n14\n\nPost-Bill Claims A",
+          "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-ces-calendar-ces-detail-open.png"
+        }
+      ],
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-ces-calendar.png",
+      "printCalls": []
+    },
+    {
+      "id": "v3-staging",
+      "path": "/ui-staging/v32",
+      "url": "http://localhost:5175/ui-staging/v32",
+      "ok": true,
+      "status": 200,
+      "title": "Care Indeed Home Health Care, Inc. - Policies and Procedures",
+      "bodySample": "Agency View\nMy Planner\nCareIndeed\nCI\nNAVIGATION\nPRIMARY OPERATIONS\nDashboard\nPREVIEW DATA\nProfiles\nClinician Profiles\nLIVE ROUTE\nPatient Profiles\nLIVE ROUTE\nScheduling & Visits\nLIVE ROUTE\nBrad AI Copilot\nPREVIEW DATA\nCompliance Execution (CES)\nRENDERER\nCOMPLIANCE EXECUTION\nTaxonomy\nLIVE ROUTE\nOnboarding\nRENDERER\nPolicy Lifecycle\nRENDERER\nForms Library\nRENDERER\nEvidence Center\nLIVE ROUTE\nADMINISTRATION & KNOWLEDGE\nHubstaff\nLIVE ROUTE\nHelp Center\nLIVE ROUTE\nAdmin\nLIVE ROUTE\nManager User\nActive Session\nCOMMAND CENTER\nSystem Operations Monitoring\nV3_SYNTHETIC_FALLBACK — dashboard metrics are preview-only until live dashboard parity is wired\nSystem-Wide Readiness Status\n\nExecutive operational narrative for compliance execution, evidence readiness, and escalation control. Prioritize critical controls and lock evidence-ready workflows.\n\nCRITICAL\n121\nAT RISK\n0\nAUDIT READY\n0\nIN SCOPE\n445\nTODAY\nWed, May 20, 2026\nAGENCY VIEW\nACTIVE SPRINT\nSprint 9\n2 due within 48h\nSPRINT %\n88%\n0 blockers\nAUDIT READY\n0/445\n92/100 Readiness\nACTION IN PROGRESS\n317\n0 ready to close\nMISSING EVIDENCE\n0\n0 pending approval\nCRITICAL ACTIONS\n121\n0 at risk\nAUDIT OPEN\n1041\n0 awaiting sig\nAGENCY READINESS — ACTION REQUIRED\n\n121 Overdue · 0 Blockers. Immediate signature or uploads needed.\n\nGo to My Planner",
+      "metrics": {
+        "totalTextLength": 1285,
+        "hasSurveyPacket": false,
+        "hasEvidenceRollup": false,
+        "hasPolicyTrace": false,
+        "hasEventTrace": false,
+        "hasSignedArtifact": false,
+        "hasMissingEvidence": true,
+        "hasReadinessScore": true,
+        "hasQ1Locked": false,
+        "buttons": 21,
+        "links": 0,
+        "inputs": 1
+      },
+      "buttons": [
+        "Agency View",
+        "My Planner",
+        "Dashboard\nPREVIEW DATA",
+        "Profiles",
+        "Clinician Profiles\nLIVE ROUTE",
+        "Patient Profiles\nLIVE ROUTE",
+        "Scheduling & Visits\nLIVE ROUTE",
+        "Brad AI Copilot\nPREVIEW DATA",
+        "Compliance Execution (CES)\nRENDERER",
+        "Taxonomy\nLIVE ROUTE",
+        "Onboarding\nRENDERER",
+        "Policy Lifecycle\nRENDERER",
+        "Forms Library\nRENDERER",
+        "Evidence Center\nLIVE ROUTE",
+        "Hubstaff\nLIVE ROUTE",
+        "Help Center\nLIVE ROUTE",
+        "Admin\nLIVE ROUTE",
+        "Go to My Planner"
+      ],
+      "links": [],
+      "artifactLinks": [],
+      "interactions": [],
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-v3-staging.png",
+      "printCalls": []
+    },
+    {
+      "id": "artifact-candidate",
+      "path": "/evidence",
+      "candidate": "/evidence",
+      "url": "http://localhost:5175/evidence",
+      "status": 200,
+      "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nEvidence Folder Explorer\nEvidence mode: DEMO_LOCAL\nClear All Evidence\n\nRead-only folder view for Year → Quarter → Month → Event → Task evidence. Upload stays inside CES task drawers where the event, task, form, and requirement context is known.\n\nChain of custody visible\nImmutable evidence timeline\nSurvey packet ready context\nFolder tree\nFile ledger\nDEMO_LOCAL: Evidence metadata is stored locally for this demo environment.\nEvidence Folder Tree\n\nDrive-style hierarchy: Year → Month → Event → Task → Requirement → Artifact. Operational completion and audit readiness are calculated separately.\n\nYEAR\nAll\n2025\n2026\n2028\n2029\nMONTH\nAll\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember\nTASK STATUS\nAll\ntodo\nin_progress\nin_review\nblocked\ndone\nREQUIREMENT STATUS\nAll\nPENDING\nIN_PROGRESS\nCOMPLETED\nBLOCKED\nASSIGNED\nAll\nMissing evidence only\nLocked evidence only\nPending signature only\nBlocked tasks only\nOrphan evidence only\nEVENTS\n244\nTASKS\n5114\nREQS\n10716\nCOMPLETION\n0%\nAUDIT READY\n0%\nLOCKED EVIDENCE\n0\nFOLDERS\n-\n2026\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember\nEvidence / 2026\n2026\n0% complete\n0% audit ready\n0%\nJanuary\n0% audit · 0/256\n0%\nFebruary\n0% audit · 0/250\n0%\nMarch\n0% audit · 0/326\n0%\nApril\n0% audit · 0/240\n0%\nMay\n0% audit · 0/638\n0%\nJune\n0% audit · 0/330\n0%\nJuly\n0% audit · 0/314\n0%\nAugust\n0% audit · 0/236\n0%\nSeptember\n0% audit · 0/290\n0%\nOctober\n0% audit · 0/204\n0%\nNovember\n0% audit · 0/238\n0%\nDecember\n0% audit · 0/286\nPerformance Leaderboard\nExplain scoring\nUser / Role\tSP Done\tCertified\tOn-Time %\tOverdue\tRejected\tAudit Perfect\tScore\nUnassigned\t0\t0\t0%\t2305\t0\t0\t-4605\nContextual Help\n\nMonth selected: monthly compliance execution, missing evidence, a",
+      "hasPreview": true,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-artifact-candidate--evidence.png"
+    },
+    {
+      "id": "artifact-candidate",
+      "path": "/audit",
+      "candidate": "/audit",
+      "url": "http://localhost:5175/audit",
+      "status": 200,
+      "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nAUDIT\nCompliance validation and survey readiness\nAudit trail\nVerify chain\nSurvey packet\nFILTERS\nSURVEY ROLLUP\nBUNDLE\nJSON\nALL\nJULY READINESS\nNOT CERTIFIABLE\nMISSING EVIDENCE\nPENDING APPROVAL\nOVERDUE(101)\nREADY TO CERTIFY\nCERTIFIED\nGOVERNANCE(8)\nQAPI(9)\nBILLING CRITICAL(3)\nSURVEY CRITICAL(196)\n0% COMPLIANT\nÂ·\n0 CERTIFIED\nÂ·\n0 READY TO CERTIFY\nÂ·\n253 IN VIEW\nAUDIT STORYLINE\nAdvance from not-certifiable to audit-ready with transparent readiness state transitions.\nSPRINT SPRINT 9 Â· CES AUDIT\nNot Ready: 1041\nPartial: 0\nReady: 0\nCertified: 0\nCritical Units: 0\nOpen Sprint View â†’\nAUDIT READY\n0\n0 instances\nREADY TO CERTIFY\n0\nAwaiting sign-off\nNOT CERTIFIABLE\n0\nRequires review\nMISSING EVIDENCE\n0\nEvidence gaps\nPENDING APPROVAL\n0\nAwaiting approver\nCERTIFIED & LOCKED\n0\nFinal audit state\nALL INSTANCES253\nNEEDS IMMEDIATE REVIEW\n101\n100\nGOVERNANCE\nDue\n122d past\n\nAnnual Governance Packet Review\n\ngovernance_packet_review-20260108-01Â·Administrator\n\nOVERDUE\n100\nQAPI\nDue\n94d past\n\nQuarterly QAPI Governance Review & Annual PIP Kickoff\n\nqapi_meeting-20260205-04Â·QAPI Coordinator\n\nOVERDUE\n100\nCLINICAL\nDue\n46d past\n\nQ1 Infection Control Review\n\ninfection_control_review_quarterly-20260325-01Â·Clinical Manager\n\nOVERDUE\n100\nQAPI\nDue\n3d past\n\nQ2 QAPI Review\n\nqapi_meeting-20260507-08Â·Clinical Manager\n\nBLOCKED\n100\nGOVERNANCE\nDue\n4d\n\nGoverning Body Meeting\n\ngoverning_body_meeting-20260514-01Â·D. Alvarez\n\nBLOCKED\n99\nQAPI\nDue\n129d past\n\nIncident / Adverse Event Review\n\nincident_report-20260101-01Â·Clinical Manager\n\nOVERDUE\n99\nCOMPLIANCE\nDue\n129d past\n\nComplaint / Grievance Investigation\n\ncomplaint_investigation-20260101-01Â·Compliance Officer\n\nOVERDUE\n96\nOPERATIONS\nDue\n115d past\n\nBiennial Emergency Preparedness Plan Review & Update\n\nep_plan_re",
+      "hasPreview": false,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-artifact-candidate--audit.png"
+    },
+    {
+      "id": "artifact-candidate",
+      "path": "/help/audit-trail",
+      "candidate": "/help/audit-trail",
+      "url": "http://localhost:5175/help/audit-trail",
+      "status": 200,
+      "textSample": "TP\nPRIMARY OPERATIONS\nDashboard\nClinician Profiles\nPatient Profiles\nCalendar\nBrad\nCOMPLIANCE EXECUTION\nCompliance Execution (CES)\nTaxonomy\nOnboarding\nPolicy Lifecycle\nEvidence\nADMINISTRATION / KNOWLEDGE\nHubstaff\nSystem Documentation\nHelp Center\nDemo\nAdmin\nCareIndeed\nHelp Center\nHelp Center\n/\nCompliance & Audit\n/\nAudit Trail — How It Works\nCOMPLIANCE & AUDIT\nAudit Trail — How It Works\nPURPOSE\n\nThe audit trail is an append-only, hash-chained log of every state-changing action in eCIgn.\n\nWHEN TO USE IT\n\nWhenever a surveyor, compliance officer, or counsel needs to reconstruct who did what, when, from where, on what document version.\n\nSYSTEM BEHAVIOR\nEvery event row stores: event_id, prev_hash, hash = SHA-256(prev_hash | canonical(payload)), occurred_at_utc, actor (user_id, name, role, email, auth_method, mfa_verified_at), network (ip, user_agent, geo, device), subject (kind, id, document_version_id, document_hash), action, payload. Rows are inserted via POST /api/audit (internal) only; UPDATE/DELETE grants are revoked in production.\nCOMPLIANCE IMPACT\n\nSatisfies HIPAA 164.312(b) audit controls and CMS 42 CFR § 484 survey reconstruction requirements.\n\nEVIDENCE GENERATED\n\nEvery signing event, edit attempt, lock, void, export, and access denial is on the chain.\n\nGUIDED UAT\n\n0/6 operational checkpoints\n\nReview operational posture\nOpen and execute tasks\nValidate workflow timeline\nComplete required forms\nUpload and verify evidence\nRun audit readiness pass\nKeep checklist visible",
+      "hasPreview": true,
+      "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-artifact-candidate--help-audit-trail.png"
+    }
+  ],
+  "console": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "url": "http://localhost:5175/dashboard"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "url": "http://localhost:5175/dashboard"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "url": "http://localhost:5175/dashboard"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/dashboard"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/dashboard"
+    },
+    {
+      "type": "log",
+      "text": "[BradTourAvatar(circle)] MOUNT",
+      "url": "http://localhost:5175/dashboard"
+    },
+    {
+      "type": "log",
+      "text": "[BradTourAvatar(circle)] UNMOUNT",
+      "url": "http://localhost:5175/dashboard"
+    },
+    {
+      "type": "log",
+      "text": "[BradTourAvatar(circle)] MOUNT",
+      "url": "http://localhost:5175/dashboard"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "url": "http://localhost:5175/audit"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "url": "http://localhost:5175/audit"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "url": "http://localhost:5175/audit"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/audit"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/audit"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "url": "http://localhost:5175/evidence"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "url": "http://localhost:5175/evidence"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "url": "http://localhost:5175/evidence"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/evidence"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/evidence"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "url": "http://localhost:5175/ces/calendar"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "url": "http://localhost:5175/ces/calendar"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "url": "http://localhost:5175/ces/calendar"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/ces/calendar"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/ces/calendar"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "url": "http://localhost:5175/ui-staging/v32"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "url": "http://localhost:5175/ui-staging/v32"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "url": "http://localhost:5175/ui-staging/v32"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/ui-staging/v32"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/ui-staging/v32"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "url": "http://localhost:5175/evidence"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "url": "http://localhost:5175/evidence"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "url": "http://localhost:5175/evidence"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/evidence"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/evidence"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "url": "http://localhost:5175/audit"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "url": "http://localhost:5175/audit"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "url": "http://localhost:5175/audit"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/audit"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/audit"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "url": "http://localhost:5175/help/audit-trail"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "url": "http://localhost:5175/help/audit-trail"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "url": "http://localhost:5175/help/audit-trail"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/help/audit-trail"
+    },
+    {
+      "type": "log",
+      "text": "Application initialized with framework seed data {domains: 10, subdomains: 54, policies: 269, versions: 244, calendarTasks: 2}",
+      "url": "http://localhost:5175/help/audit-trail"
+    }
+  ],
+  "pageErrors": [],
+  "screenshots": [
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-dashboard.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-dashboard-dashboard-audit-link.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-dashboard-dashboard-evidence-link.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-audit.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-audit-readiness-drilldown.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-audit-survey-packet.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-audit-print.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-evidence.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-evidence-q1-filter.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-ces-calendar.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-ces-calendar-ces-detail-open.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-v3-staging.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-artifact-candidate--evidence.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-artifact-candidate--audit.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent08-audit-mode-artifact-candidate--help-audit-trail.png"
+  ],
+  "downloads": [],
+  "popups": [],
+  "printCalls": [],
+  "finishedAt": "2026-05-27T14:41:56.458Z"
+}

@@ -13,16 +13,13 @@ const PAD: Record<NonNullable<GlassPanelProps['padding']>, string> = {
 };
 
 /**
- * Translucent panel.
- * - Light mode: flat solid surface, no blur.
- * - Dark modes: light backdrop blur + glass border.
- * Backed by `.ci-glass-panel` token class so behaviour switches per theme.
+ * V3 translucent panel.
  */
 export function GlassPanel({ padding = 'lg', className, style, children, ...rest }: GlassPanelProps) {
   return (
     <div
       {...rest}
-      className={'ci-glass-panel ' + (className ?? '')}
+      className={'v3-surface v3-surface--glass ' + (className ?? '')}
       style={{ padding: PAD[padding], ...style }}
     >
       {children}

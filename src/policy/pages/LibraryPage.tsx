@@ -450,7 +450,6 @@ export function LibraryPage() {
             <div className="flex items-center gap-3 mt-4 ml-1">
               <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] ci-border-gold-soft flex items-center gap-2 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FFC107]/20 to-transparent -translate-x-full"
-                  // eslint-disable-next-line react/forbid-dom-props -- @keyframes animation reference cannot live in a stylesheet utility
                   style={{animation:'shimmerLib 2.5s infinite'}}/>
                 <FileText size={12} className="ci-text-gold animate-pulse"/>
                 <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-ci-text-primary">{renderedPolicies.length} POLICIES</span>
@@ -458,7 +457,6 @@ export function LibraryPage() {
               <div className="glass-interactive-lib px-3 py-1.5 rounded-full border-[0.77px] ci-border-fca-soft flex items-center gap-2 relative overflow-hidden cursor-pointer"
                 onClick={() => navigate('/forms')}>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#A855F7]/20 to-transparent -translate-x-full"
-                  // eslint-disable-next-line react/forbid-dom-props -- @keyframes animation reference cannot live in a stylesheet utility
                   style={{animation:'shimmerLib 3s infinite 0.5s'}}/>
                 <Layers size={12} className="ci-text-fca animate-pulse"/>
                 <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-ci-text-primary">361 FORMS</span>

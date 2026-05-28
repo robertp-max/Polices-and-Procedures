@@ -50,11 +50,13 @@ const callJson = async <T>(path: string, init: RequestInit = {}): Promise<T> => 
     headers: { 'content-type': 'application/json', ...(init.headers ?? {}) },
   });
   const text = await res.text();
-  let body: any = null;
+  let body: unknown = null;
   try { body = text ? JSON.parse(text) : null; } catch { /* non-JSON */ }
   if (!res.ok) {
-    const code = body?.error?.code ?? `http_${res.status}`;
-    const msg  = body?.error?.message ?? text ?? res.statusText;
+    const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object';
+    const err = isRecord(body) && isRecord(body.error) ? body.error : null;
+    const code = (err && typeof err.code === 'string' ? err.code : null) ?? `http_${res.status}`;
+    const msg  = (err && typeof err.message === 'string' ? err.message : null) ?? text ?? res.statusText;
     throw new StorageApiError(res.status, code, msg);
   }
   return body as T;

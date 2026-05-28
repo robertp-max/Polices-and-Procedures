@@ -1,6 +1,6 @@
 /**
  * Thin client for the HHC PM API Lambda.
- * Base URL overridable via VITE_HHC_API_BASE; defaults to the deployed demo endpoint.
+ * Base URL overridable via VITE_HHC_API_BASE; defaults to same-origin local API in dev.
  *
  * All endpoints expect actor-identity headers (x-hhc-actor-id / x-hhc-actor-role).
  * Read failures are returned as `null` (caller falls back to local cache).
@@ -8,9 +8,14 @@
  * local mutation or revert.
  */
 
-const API_BASE: string =
-  (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_HHC_API_BASE ||
-  'https://rtllnugat0.execute-api.us-west-1.amazonaws.com';
+const ENV = (import.meta as unknown as { env?: Record<string, string | boolean> }).env ?? {};
+const configuredBase = typeof ENV.VITE_HHC_API_BASE === 'string' ? ENV.VITE_HHC_API_BASE : '';
+const allowRemoteLocal = String(ENV.VITE_HHC_ALLOW_REMOTE_PM_LOCAL ?? '').toLowerCase() === 'true';
+const isDev = Boolean(ENV.DEV);
+const isRemoteBase = /^https?:\/\//i.test(configuredBase);
+const API_BASE: string = isDev && (!configuredBase || (isRemoteBase && !allowRemoteLocal))
+  ? '/api'
+  : configuredBase || '/api';
 
 function actorHeaders(): Record<string, string> {
   const id   = (typeof localStorage !== 'undefined' && localStorage.getItem('hhc_actor_id'))   || 'me';

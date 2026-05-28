@@ -312,7 +312,7 @@ export function GanttView({
       return e >= sprintStart && s <= sprintEnd;
     });
     if (tasksInWin.length === 0) return null;
-    let winStartMs = sprintStart;
+    const winStartMs = sprintStart;
     let winEndMs = sprintEnd;
     const maxSpanMs = 22 * dayMs;
     if (winEndMs - winStartMs > maxSpanMs) {

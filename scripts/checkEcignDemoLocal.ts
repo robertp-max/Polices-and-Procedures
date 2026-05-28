@@ -24,6 +24,7 @@ async function main(): Promise<void> {
     'ATTESTATION_ACCEPTED',
     'SIGNATURE_FINALIZED',
     'CERTIFICATE_CREATED',
+    'ARTIFACT_REGISTERED',
   ];
   for (const action of requiredAuditActions) {
     assert(demoLocalSource.includes(`'${action}'`) || demoLocalSource.includes(`"${action}"`), `Missing demo-local audit action: ${action}`);
@@ -35,6 +36,7 @@ async function main(): Promise<void> {
     "matchReview && method === 'POST'",
     "matchSign && method === 'POST'",
     "matchLock && method === 'POST'",
+    "matchArtifacts && method === 'PATCH'",
     "path === '/ecign/versions' && method === 'POST'",
   ];
   for (const marker of requiredDemoHandlers) {
@@ -45,6 +47,7 @@ async function main(): Promise<void> {
   assert(apiSource.includes('ECIGN_BACKEND_UNAVAILABLE'), 'Missing unavailable backend user-safe error');
   assert(workspaceSource.includes('CERTIFICATE_CREATED'), 'Missing certificate-created audit append in workspace');
   assert(workspaceSource.includes('uploadEvidence'), 'Missing finalized artifact creation in workspace');
+  assert(workspaceSource.includes('captureSignedFormSnapshot'), 'Missing isolated signed snapshot capture in workspace');
 
   // eslint-disable-next-line no-console
   console.log(`[check:ecign-demo-local] OK (${requiredAuditActions.length} audit markers + fallback and artifact markers verified).`);

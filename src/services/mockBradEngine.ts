@@ -531,7 +531,7 @@ function routeByClass(queryClass: QueryClass, context: BradAppContext): BradResp
   return buildSearchResponse(context);
 }
 
-export interface RunBradQueryOptions extends BuildBradContextOptions {}
+export type RunBradQueryOptions = BuildBradContextOptions;
 
 export async function runBradQuery(query: string, options: RunBradQueryOptions = {}): Promise<BradResponse> {
   const context = await buildBradAppContext(query, options);

@@ -18,6 +18,7 @@
 import type { ComplianceExecutionSnapshot } from '@/policy/compliance-execution/complianceExecutionStore';
 import type { MergedComplianceEvent, MergedExecutionUnit } from '@/policy/compliance-execution/complianceExecutionTypes';
 import type { Sprint, SprintMetrics, SprintTrendPoint, DomainRisk, Workflow, OwnerAssignment, ComplianceDomain, DomainRiskLevel } from '@/policy/ces/types';
+import type { AuditEvaluation } from '@/policy/audit/auditState';
 import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import {
   V3_ExecutionUnitsSeed,
@@ -72,7 +73,7 @@ const V3_REGULATORY_EVENTS: RegulatoryEvent[] = [
       { id: 'qapi-s4', label: 'DON sign-off', description: 'Final signature on data summary', status: 'pending', dueOffsetDays: -1 },
     ],
     requiredForms: [
-      { id: 'FRM-QAPI-019', label: 'QAPI Data Aggregate Summary', status: 'missing' },
+      { id: 'QA-FM-020', label: 'QAPI Data Aggregate Summary', status: 'missing' },
       { id: 'FRM-QAPI-020', label: 'PIP Progress Tracker', status: 'complete' },
       { id: 'FRM-QAPI-021', label: 'Indicator Dashboard Export', status: 'complete' },
     ],
@@ -551,7 +552,7 @@ const V3_REGULATORY_EVENTS: RegulatoryEvent[] = [
       { id: 'qapi-q3-s4', label: 'DON sign-off', description: 'Final signature on data summary', status: 'pending', dueOffsetDays: -1 },
     ],
     requiredForms: [
-      { id: 'FRM-QAPI-019', label: 'QAPI Data Aggregate Summary', status: 'pending' },
+      { id: 'QA-FM-020', label: 'QAPI Data Aggregate Summary', status: 'pending' },
       { id: 'FRM-QAPI-020', label: 'PIP Progress Tracker', status: 'pending' },
       { id: 'FRM-QAPI-021', label: 'Indicator Dashboard Export', status: 'pending' },
     ],
@@ -672,8 +673,18 @@ function buildSeededSprint(sw: typeof V3_SprintContextSeed.activeSprint): Sprint
   };
 }
 
+function toCesDomain(domain: string): ComplianceDomain {
+  const key = domain.toLowerCase();
+  if (key === 'clinical' || key === 'compliance' || key === 'hr' || key === 'governance') {
+    return key as ComplianceDomain;
+  }
+  if (key === 'finance') return 'governance';
+  if (key === 'operations' || key === 'qapi' || key === 'it/security') return 'compliance';
+  return 'compliance';
+}
+
 export function buildV3SeededSnapshot(): ComplianceExecutionSnapshot {
-  const { activeSprint: sw, previousSprint: prevSw, availableSprints } = V3_SprintContextSeed;
+  const { activeSprint: sw, availableSprints } = V3_SprintContextSeed;
   const units = V3_ExecutionUnitsSeed;
 
   const activeSprint = buildSeededSprint(sw);
@@ -687,7 +698,7 @@ export function buildV3SeededSnapshot(): ComplianceExecutionSnapshot {
     id: re.id,
     title: re.title,
     category: re.cadence === 'Quarterly' ? 'recurring' as const : 'one-time' as const,
-    domain: re.domain.toLowerCase() as ComplianceDomain,
+    domain: toCesDomain(re.domain),
     anchorDate: re.date,
     source: 'ces-seed' as const,
     regulatoryRef: re,
@@ -703,7 +714,6 @@ export function buildV3SeededSnapshot(): ComplianceExecutionSnapshot {
   const completed = units.filter(u => u.complianceState === 'completed').length;
   const blocked = units.filter(u => u.complianceState === 'blocked').length;
   const ready = units.filter(u => u.auditReadiness === 'ready').length;
-  const awaitingSig = units.filter(u => u.complianceState === 'awaiting_signature').length;
   const total = units.length || 1;
 
   const sigMissed = units.filter(u =>
@@ -770,7 +780,7 @@ export function buildV3SeededSnapshot(): ComplianceExecutionSnapshot {
     carryOverCount: sprintMetrics.activeBlockerCount,
   }));
 
-  const auditEvaluations = new Map<string, { score: number; status: string }>();
+  const auditEvaluations: Map<string, AuditEvaluation> = new Map();
 
   return {
     activeSprint,
@@ -779,7 +789,7 @@ export function buildV3SeededSnapshot(): ComplianceExecutionSnapshot {
     events,
     executionUnits,
     workflows,
-    auditEvaluations: auditEvaluations as any,
+    auditEvaluations,
     sprintMetrics,
     sprintTrends,
     domainRisks,

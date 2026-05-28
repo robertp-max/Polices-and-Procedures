@@ -36,7 +36,7 @@ import {
   UI_STEPS,
   type BackendState,
 } from '@/policy/ecign/useEcignInstance';
-import { ecignApi, ATTESTATION_TEXT } from '@/policy/ecign/api';
+import { ecignApi, ATTESTATION_TEXT, sha256Hex } from '@/policy/ecign/api';
 import {
   recordEsignEvidence,
   queryEvidenceByContext,
@@ -47,9 +47,15 @@ import { useEnforcementStore } from '@/policy/stores/enforcementStore';
 import { getFlag as getPmFlag } from '@/policy/pm/featureFlags';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { buildSignerRosterHtml, type RosterSignerEntry } from '@/policy/ecign/buildSignerRosterHtml';
+import {
+  captureSignedFormSnapshot,
+  isolateSignedSnapshotHtml,
+  recommendSnapshotEncoding,
+} from '@/policy/ecign/captureSignedFormSnapshot';
 import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
 import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { HelpContextLink } from '@/policy/help/HelpContextLink';
+import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
 import {
   type PolicyLinkMeta,
   resolvePolicyMetaList,
@@ -68,6 +74,24 @@ const PAPER      = '#FAFBF8';
 const BORDER     = '#E5E4E3';
 const BORDER_SOFT = '#F0F2F5';
 const CANVAS_BG  = '#FCFDFF';
+
+function decodeHtmlDataUrl(dataUrl: string): string | undefined {
+  if (!dataUrl.startsWith('data:text/html')) return undefined;
+  const comma = dataUrl.indexOf(',');
+  if (comma < 0) return undefined;
+  const meta = dataUrl.slice(5, comma);
+  const payload = dataUrl.slice(comma + 1);
+  try {
+    if (/;base64/i.test(meta)) {
+      const binary = atob(payload.replace(/\s/g, ''));
+      const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+      return new TextDecoder('utf-8').decode(bytes);
+    }
+    return decodeURIComponent(payload);
+  } catch {
+    return undefined;
+  }
+}
 const SIGNATURE_PLACEHOLDER_DATA_URL = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160"><rect width="100%" height="100%" fill="white"/><text x="16" y="98" fill="#1A3778" font-size="28" font-family="Segoe UI, Arial, sans-serif">Signature on file</text></svg>'
 )}`;
@@ -821,7 +845,7 @@ export interface eCIgnWorkspaceProps {
 }
 
 /* ═══ eCIgnWorkspace ═══════════════════════════════════════════════ */
-export function eCIgnWorkspace({
+export function ECIgnWorkspace({
   certId,
   fieldId,
   formId,
@@ -1441,8 +1465,8 @@ export function eCIgnWorkspace({
     getPrintableFormHtml,
   ]);
 
-  // Store the generated PDF blob URL so Download PDF serves the exact same file.
-  const [, setGeneratedPdfBlobUrl] = useState<string | null>(null);
+  // Store the finalized data URL so Download/Print use the exact artifact bytes.
+  const [signedPacketDataUrl, setSignedPacketDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (backendState !== 'signed_locked') return;
@@ -1482,12 +1506,21 @@ export function eCIgnWorkspace({
      * ───────────────────────────────────────────────────────────────── */
     (async () => {
     try {
-    const packetHtml = buildPacketHtml(effectiveRecord);
-    const packetPdfDataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(packetHtml)}`;
+    const rawPacketHtml = buildPacketHtml(effectiveRecord);
+    const packetHtml = isolateSignedSnapshotHtml(rawPacketHtml);
+    const signedSnapshot = captureSignedFormSnapshot({
+      packetHtml,
+      formInstanceId: canonicalFormInstanceId,
+      filename: `${formId}-${canonicalFormInstanceId}-signed-package.html`,
+      encoding: recommendSnapshotEncoding(packetHtml),
+    });
+    const packetPdfDataUrl = signedSnapshot.dataUrl;
+    setSignedPacketDataUrl(packetPdfDataUrl);
     // Stable blob URL for Download flow — same bytes as the stored artifact.
     try {
       const blob = new Blob([packetHtml], { type: 'text/html;charset=utf-8' });
-      setGeneratedPdfBlobUrl(URL.createObjectURL(blob));
+      const url = URL.createObjectURL(blob);
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch { /* non-fatal */ }
     const formSnapshotHtml = getPrintableFormHtml();
     void formSnapshotHtml;
@@ -1519,6 +1552,121 @@ export function eCIgnWorkspace({
       auditEventRefs: auditRefs,
     };
 
+    // SHA-256 over the exact stored snapshot bytes (decode(dataUrl) → UTF-8).
+    // Used to prove post-refresh viewer/print/download fidelity.
+    let snapshotSha256: string | undefined;
+    try {
+      const decoded = decodeHtmlDataUrl(packetPdfDataUrl);
+      if (decoded) snapshotSha256 = await sha256Hex(decoded);
+    } catch { /* verification-only */ }
+
+    // Lock gates MUST pass before we create/lock any signed_package evidence.
+    const aliasesForInstance = [hhcEventId, ...(exec.eventInstanceIdsBySourceEventId[hhcEventId] ?? [])];
+    const linkedInstance = aliasesForInstance
+      .flatMap(alias => exec.generatedFormInstancesByEventId[alias] ?? [])
+      .find(item => item.id === canonicalFormInstanceId);
+
+    let roleMismatch: { signerRole: string; currentRole: string } | null = null;
+    if (getPmFlag('signer_role_recheck_before_lock')) {
+      const currentActorRole = (useEnforcementStore.getState().actor.role ?? '').trim();
+      const signerRoleAtSignStart = (signer.role ?? '').trim();
+      if (
+        currentActorRole
+        && signerRoleAtSignStart
+        && currentActorRole.toLowerCase() !== signerRoleAtSignStart.toLowerCase()
+      ) {
+        roleMismatch = { signerRole: signerRoleAtSignStart, currentRole: currentActorRole };
+      }
+    }
+
+    const missingRequired: string[] = [];
+    if (getPmFlag('required_fields_lock_gate') && typeof document !== 'undefined') {
+      const required = Array.from(
+        document.querySelectorAll<HTMLElement>('[aria-required="true"][data-field-id]'),
+      );
+      for (const el of required) {
+        const fieldId = el.getAttribute('data-field-id') ?? '';
+        const labelText = (() => {
+          const id = el.id;
+          if (id) {
+            const lbl = document.querySelector<HTMLLabelElement>(`label[for="${CSS.escape(id)}"]`);
+            if (lbl?.textContent) return lbl.textContent.trim();
+          }
+          const fieldset = el.closest('fieldset');
+          if (fieldset) {
+            const legend = fieldset.querySelector('legend');
+            if (legend?.textContent) return legend.textContent.trim();
+          }
+          return fieldId || 'Required field';
+        })();
+        const tag = el.tagName.toLowerCase();
+        let filled = false;
+        if (tag === 'input') {
+          const inp = el as HTMLInputElement;
+          if (inp.type === 'checkbox' || inp.type === 'radio') {
+            filled = inp.checked;
+          } else {
+            filled = !!inp.value && inp.value.trim().length > 0;
+          }
+        } else if (tag === 'textarea') {
+          const ta = el as HTMLTextAreaElement;
+          filled = !!ta.value && ta.value.trim().length > 0;
+        } else if (tag === 'select') {
+          const sel = el as HTMLSelectElement;
+          filled = !!sel.value && sel.value.trim().length > 0;
+        } else {
+          const txt = (el.textContent ?? '').trim();
+          filled = txt.length > 0;
+        }
+        if (!filled) missingRequired.push(labelText.replace(/\\s*\\*?\\s*$/, ''));
+      }
+    }
+
+    if (roleMismatch || missingRequired.length > 0) {
+      if (roleMismatch) {
+        const msg = `Lock refused: actor role "${roleMismatch.currentRole}" no longer matches signer role "${roleMismatch.signerRole}" captured at sign start. Re-sign with the correct role.`;
+        setLockGateError({ code: 'role_mismatch', message: msg });
+        if (parentTaskId) {
+          exec.appendTaskAuditEvent(hhcEventId, 'task', parentTaskId, 'FORM_LOCK_BLOCKED_ROLE_MISMATCH', {
+            reason: msg,
+            before: { signerRole: roleMismatch.signerRole },
+            after: { currentActorRole: roleMismatch.currentRole, canonicalFormInstanceId },
+          });
+        }
+        appendExecutionAudit('FORM_LOCK_BLOCKED_ROLE_MISMATCH', msg, {
+          signerRoleAtSignStart: roleMismatch.signerRole,
+          currentActorRole: roleMismatch.currentRole,
+          canonicalFormInstanceId,
+        });
+        console.warn('[ECIGN-003] Lock blocked: role mismatch', roleMismatch);
+      } else if (missingRequired.length > 0) {
+        const head = missingRequired.slice(0, 3).join(', ');
+        const tail = missingRequired.length > 3 ? ` (and ${missingRequired.length - 3} more)` : '';
+        const msg = `Lock refused: ${missingRequired.length} required field(s) missing — ${head}${tail}. Complete the form and re-attempt.`;
+        setLockGateError({ code: 'missing_required', message: msg });
+        if (parentTaskId) {
+          exec.appendTaskAuditEvent(hhcEventId, 'task', parentTaskId, 'FORM_LOCK_BLOCKED_REQUIRED_FIELDS', {
+            reason: msg,
+            after: { missingFieldCount: missingRequired.length, missingFieldLabels: missingRequired, canonicalFormInstanceId },
+          });
+        }
+        appendExecutionAudit('FORM_LOCK_BLOCKED_REQUIRED_FIELDS', msg, {
+          missingFieldCount: missingRequired.length,
+          missingFieldLabels: missingRequired,
+          canonicalFormInstanceId,
+        });
+        console.warn('[ECIGN-004] Lock blocked: required fields missing', missingRequired);
+      }
+
+      // Physical signature occurred, but compliance lock is refused: do not create/lock evidence artifacts.
+      if (linkedInstance) {
+        exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'SIGNED');
+      }
+      return;
+    }
+
+    setLockGateError(null);
+
     const isSubsequentSigner = (signerIndex > 1 && totalSigners > 1) || hasExistingSignedPackage;
 
     // For subsequent signers, supersede existing evidence; for first signer, upload fresh.
@@ -1547,8 +1695,9 @@ export function eCIgnWorkspace({
         ...versionedMeta,
         name: `${formId}-${canonicalFormInstanceId}-signed-package-v${signerIndex}.html`,
         kind: 'signed_package',
-        sizeLabel: `${Math.round(packetPdfDataUrl.length / 1024)} KB`,
+        sizeLabel: `${Math.round(signedSnapshot.approxBytes / 1024)} KB`,
         artifactType: 'signed_package',
+        snapshotSha256,
         localDataUrl: packetPdfDataUrl,
       }, actorLabel);
 
@@ -1562,9 +1711,10 @@ export function eCIgnWorkspace({
         ...commonArtifactMeta,
         name: `${formId}-${canonicalFormInstanceId}-signed-package.html`,
         kind: 'signed_package',
-        sizeLabel: `${Math.round(packetPdfDataUrl.length / 1024)} KB`,
+        sizeLabel: `${Math.round(signedSnapshot.approxBytes / 1024)} KB`,
         artifactType: 'signed_package',
         note: `artifact_type=signed_package;canonical_form_instance_id=${canonicalFormInstanceId};ecign_session_id=${instance?.instance_id ?? ''}`,
+        snapshotSha256,
         localDataUrl: packetPdfDataUrl,
       }, actorLabel);
 
@@ -1583,6 +1733,16 @@ export function eCIgnWorkspace({
       packageId: signedPackageArtifactId,
       signedFormInstanceId: signedFormInstanceArtifactId,
     };
+    if (instance?.instance_id) {
+      try {
+        await ecignApi.registerArtifacts(instance.instance_id, {
+          signed_package_artifact_id: signedPackageArtifactId,
+          certificate_artifact_id: instance.certificate_artifact_id ? String(instance.certificate_artifact_id) : undefined,
+        });
+      } catch {
+        // Evidence is the durable artifact source; this best-effort sync keeps demo-local session metadata aligned.
+      }
+    }
 
     exec.appendTaskAuditEvent(hhcEventId, 'evidence', signedPackageArtifactId, 'SIGNED_PACKAGE_CREATED', {
       after: { artifactType: 'signed_package', canonicalFormInstanceId, ecignSessionId: instance?.instance_id },
@@ -1590,6 +1750,37 @@ export function eCIgnWorkspace({
     exec.appendTaskAuditEvent(hhcEventId, 'evidence', signedPackageArtifactId, 'ARTIFACT_LOCKED', {
       after: { artifactType: 'signed_package', canonicalFormInstanceId, lockedAt: finalizedAt },
     });
+
+    const sourceEvent = REGULATORY_EVENTS.find(event =>
+      event.id === hhcEventId || (exec.eventInstanceIdsBySourceEventId[event.id] ?? []).includes(hhcEventId),
+    );
+    const eventAliases = sourceEvent
+      ? [sourceEvent.id, ...(exec.eventInstanceIdsBySourceEventId[sourceEvent.id] ?? [])]
+      : [hhcEventId, ...(exec.eventInstanceIdsBySourceEventId[hhcEventId] ?? [])];
+    if (sourceEvent?.approvals?.length) {
+      for (const approval of sourceEvent.approvals.filter(item => item.required)) {
+        const alreadyRequested = exec.approvals.some(item =>
+          eventAliases.includes(item.eventId) &&
+          item.targetKind === approval.targetKind &&
+          item.targetLabel === approval.targetLabel &&
+          item.status !== 'rejected',
+        );
+        if (!alreadyRequested) {
+          const targetId = approval.targetKind === 'form'
+            ? canonicalFormInstanceId
+            : approval.targetKind === 'event'
+              ? sourceEvent.id
+              : parentTaskId;
+          exec.requestApproval(
+            hhcEventId,
+            approval.targetKind,
+            approval.targetLabel,
+            targetId,
+            `Auto-created after signed package ${signedPackageArtifactId} was locked for ${canonicalFormInstanceId}.`,
+          );
+        }
+      }
+    }
 
     appendExecutionAudit('SIGNED_PACKAGE_CREATED', 'Signed package artifact registered in canonical CES store.', {
       canonicalFormInstanceId,
@@ -1608,144 +1799,11 @@ export function eCIgnWorkspace({
       signedFormInstanceArtifactId,
     });
 
+    if (linkedInstance) {
+      exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'SIGNED');
+      exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'LOCKED');
+    }
     if (parentTaskId) {
-      const aliases = [hhcEventId, ...(exec.eventInstanceIdsBySourceEventId[hhcEventId] ?? [])];
-      const linkedInstance = aliases
-        .flatMap(alias => exec.generatedFormInstancesByEventId[alias] ?? [])
-        .find(item => item.id === canonicalFormInstanceId);
-      if (linkedInstance) {
-        /* ─────────────────────────────────────────────────────────────────
-         * MVP-P1-ECIGN-003 (Wave 4) — server/call-site role re-check.
-         *
-         * Defends against role elevation/change between sign-start and
-         * lock-time. We compare the role captured for THIS signer at
-         * sign-start (`signer.role`) against the CURRENT authenticated
-         * actor's role (`useEnforcementStore.getState().actor.role`).
-         *
-         * Mismatch → BLOCK the LOCKED transition (we still emit SIGNED
-         * because the physical eCign packet is signed; LOCKED is the
-         * immutable-audit step that we refuse). Surface inline banner +
-         * audit row + console log for compliance review. The unfinalized
-         * SIGNED state lets compliance re-sign with the correct role.
-         *
-         * Behind feature flag `signer_role_recheck_before_lock` (default
-         * ON; flip OFF to revert to legacy unchecked behavior).
-         * ───────────────────────────────────────────────────────────── */
-        let roleMismatch: { signerRole: string; currentRole: string } | null = null;
-        if (getPmFlag('signer_role_recheck_before_lock')) {
-          const currentActorRole = (useEnforcementStore.getState().actor.role ?? '').trim();
-          const signerRoleAtSignStart = (signer.role ?? '').trim();
-          if (
-            currentActorRole
-            && signerRoleAtSignStart
-            && currentActorRole.toLowerCase() !== signerRoleAtSignStart.toLowerCase()
-          ) {
-            roleMismatch = { signerRole: signerRoleAtSignStart, currentRole: currentActorRole };
-          }
-        }
-
-        /* ─────────────────────────────────────────────────────────────────
-         * MVP-P1-ECIGN-004 (Wave 4) — required-fields completeness gate.
-         *
-         * Walks every form input in the document marked `aria-required="true"`
-         * (Wave 3 A11Y-001 added these attributes on the canonical Field
-         * renderer) and confirms a non-empty value. Missing required fields
-         * → BLOCK the LOCKED transition + emit audit + surface inline
-         * banner naming the first few missing labels.
-         *
-         * Defensive: when zero `aria-required` fields are found in the DOM
-         * (form unmounted, non-Field-renderer surface), the gate is a
-         * NO-OP — we never block based on absence of evidence.
-         *
-         * Behind feature flag `required_fields_lock_gate` (default ON;
-         * flip OFF to revert to legacy unchecked behavior).
-         * ───────────────────────────────────────────────────────────── */
-        const missingRequired: string[] = [];
-        if (getPmFlag('required_fields_lock_gate') && typeof document !== 'undefined') {
-          const required = Array.from(
-            document.querySelectorAll<HTMLElement>('[aria-required="true"][data-field-id]'),
-          );
-          for (const el of required) {
-            const fieldId = el.getAttribute('data-field-id') ?? '';
-            const labelText = (() => {
-              const id = el.id;
-              if (id) {
-                const lbl = document.querySelector<HTMLLabelElement>(`label[for="${CSS.escape(id)}"]`);
-                if (lbl?.textContent) return lbl.textContent.trim();
-              }
-              const fieldset = el.closest('fieldset');
-              if (fieldset) {
-                const legend = fieldset.querySelector('legend');
-                if (legend?.textContent) return legend.textContent.trim();
-              }
-              return fieldId || 'Required field';
-            })();
-            const tag = el.tagName.toLowerCase();
-            let filled = false;
-            if (tag === 'input') {
-              const inp = el as HTMLInputElement;
-              if (inp.type === 'checkbox' || inp.type === 'radio') {
-                filled = inp.checked;
-              } else {
-                filled = !!inp.value && inp.value.trim().length > 0;
-              }
-            } else if (tag === 'textarea') {
-              const ta = el as HTMLTextAreaElement;
-              filled = !!ta.value && ta.value.trim().length > 0;
-            } else if (tag === 'select') {
-              const sel = el as HTMLSelectElement;
-              filled = !!sel.value && sel.value.trim().length > 0;
-            } else {
-              const txt = (el.textContent ?? '').trim();
-              filled = txt.length > 0;
-            }
-            if (!filled) missingRequired.push(labelText.replace(/\s*\*?\s*$/, ''));
-          }
-        }
-
-        if (roleMismatch || missingRequired.length > 0) {
-          if (roleMismatch) {
-            const msg = `Lock refused: actor role "${roleMismatch.currentRole}" no longer matches signer role "${roleMismatch.signerRole}" captured at sign start. Re-sign with the correct role.`;
-            setLockGateError({ code: 'role_mismatch', message: msg });
-            exec.appendTaskAuditEvent(hhcEventId, 'task', parentTaskId, 'FORM_LOCK_BLOCKED_ROLE_MISMATCH', {
-              reason: msg,
-              before: { signerRole: roleMismatch.signerRole },
-              after:  { currentActorRole: roleMismatch.currentRole, canonicalFormInstanceId },
-            });
-            appendExecutionAudit('FORM_LOCK_BLOCKED_ROLE_MISMATCH', msg, {
-              signerRoleAtSignStart: roleMismatch.signerRole,
-              currentActorRole: roleMismatch.currentRole,
-              canonicalFormInstanceId,
-            });
-            console.warn('[ECIGN-003] Lock blocked: role mismatch', roleMismatch);
-          } else if (missingRequired.length > 0) {
-            const head = missingRequired.slice(0, 3).join(', ');
-            const tail = missingRequired.length > 3 ? ` (and ${missingRequired.length - 3} more)` : '';
-            const msg = `Lock refused: ${missingRequired.length} required field(s) missing — ${head}${tail}. Complete the form and re-attempt.`;
-            setLockGateError({ code: 'missing_required', message: msg });
-            exec.appendTaskAuditEvent(hhcEventId, 'task', parentTaskId, 'FORM_LOCK_BLOCKED_REQUIRED_FIELDS', {
-              reason: msg,
-              after: { missingFieldCount: missingRequired.length, missingFieldLabels: missingRequired, canonicalFormInstanceId },
-            });
-            appendExecutionAudit('FORM_LOCK_BLOCKED_REQUIRED_FIELDS', msg, {
-              missingFieldCount: missingRequired.length,
-              missingFieldLabels: missingRequired,
-              canonicalFormInstanceId,
-            });
-            console.warn('[ECIGN-004] Lock blocked: required fields missing', missingRequired);
-          }
-          /* Mark SIGNED so the eCign packet artifact stays consistent with
-           * the physical sign event, but DO NOT mark LOCKED. The instance
-           * remains mutable so compliance can fix the issue and re-attempt. */
-          exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'SIGNED');
-        } else {
-          /* Both gates passed — proceed with the canonical SIGNED → LOCKED
-           * transition. Clear any stale lock-gate error from a prior attempt. */
-          setLockGateError(null);
-          exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'SIGNED');
-          exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'LOCKED');
-        }
-      }
       exec.attemptCompleteTask(hhcEventId, parentTaskId);
     }
     } finally {
@@ -1779,7 +1837,9 @@ export function eCIgnWorkspace({
   ]);
 
   const openPacketWindow = useCallback((opts?: { fallbackDownload?: boolean }) => {
-    const html = buildPacketHtml(effectiveRecord);
+    const html = signedPacketDataUrl
+      ? decodeHtmlDataUrl(signedPacketDataUrl) ?? isolateSignedSnapshotHtml(buildPacketHtml(effectiveRecord))
+      : isolateSignedSnapshotHtml(buildPacketHtml(effectiveRecord));
     // Sanitise formTitle for use in filenames (strip characters illegal on Windows/macOS/Linux).
     const safeTitle = (formTitle || formId).replace(/[/\\?%*:|"<>]/g, '-').trim();
     const pdfFilename = `${safeTitle} — ${canonicalFormInstanceId}`;
@@ -1812,7 +1872,7 @@ export function eCIgnWorkspace({
     setTimeout(() => {
       triggerPrint();
     }, 450);
-  }, [buildPacketHtml, canonicalFormInstanceId, effectiveRecord, formId, formTitle]);
+  }, [buildPacketHtml, canonicalFormInstanceId, effectiveRecord, formId, formTitle, signedPacketDataUrl]);
 
   /* ── Print packet (FINALIZE action) ─────────────────────────────── */
   const handlePrint = useCallback(() => {
@@ -2624,4 +2684,4 @@ function SecondSignerPicker({
   );
 }
 
-export default eCIgnWorkspace;
+export default ECIgnWorkspace;

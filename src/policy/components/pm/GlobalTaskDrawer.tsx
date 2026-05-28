@@ -13,7 +13,8 @@
 import { useEffect, type ReactElement } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
-import { TaskDetailRightPanel } from '@/policy/components/pm/TaskDetailRightPanel';
+import { V3TaskDetailPanel } from '@/policy/components/pm/V3TaskDetailPanel';
+import { V3StackedDrawerHost, type DrawerLayer } from '@/policy/components/ui/V3StackedDrawerHost';
 
 const PAGES_WITH_INLINE_PANEL = [
   '/calendar',
@@ -38,22 +39,20 @@ export function GlobalTaskDrawer(): ReactElement | null {
   if (!taskId) return null;
   if (pageHasInlinePanel(location.pathname)) return null;
 
-  // Wave 8 + V3 Transition Polish: expensive-feeling overlay with backdrop fade + panel slide/scale/blur
+  const layers: DrawerLayer[] = [{ type: 'task', taskId }];
+
   return (
-    <div className="fixed inset-0 z-[65] flex justify-end" role="presentation">
-      {/* V3 expensive backdrop */}
-      <div
-        className="absolute inset-0 v3-backdrop"
-        style={{ background: 'rgba(5,6,10,0.68)', backdropFilter: 'blur(6px)', transition: 'opacity 0.62s var(--v3-ease)' }}
-        onClick={closeTask}
-      />
-      {/* Panel — V3 slide + blur on mount */}
-      <div
-        className="relative h-full w-[min(100vw,420px)] shadow-2xl border-l border-white/10 bg-[#0f1420] overflow-y-auto v3-drawer-panel"
-        style={{ transition: 'transform 0.62s var(--v3-ease), opacity 0.62s var(--v3-ease)' }}
-      >
-        <TaskDetailRightPanel taskId={taskId} onClose={closeTask} />
-      </div>
-    </div>
+    <V3StackedDrawerHost
+      drawers={layers}
+      onPop={closeTask}
+      onCloseAll={closeTask}
+      getLayerEyebrow={(layer) => layer.type === 'task' ? layer.taskId : layer.type}
+      getLayerTitle={() => 'Task detail'}
+      renderLayer={(layer) => (
+        layer.type === 'task'
+          ? <V3TaskDetailPanel taskId={layer.taskId} onClose={closeTask} />
+          : null
+      )}
+    />
   );
 }

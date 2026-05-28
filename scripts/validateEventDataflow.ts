@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { REGULATORY_EVENTS } from '../src/policy/data/regulatoryEvents';
+import { FORMS_DATASET } from '../src/policy/data/formsLibraryDataset';
+import { resolveCanonicalFormId } from '../src/policy/data/formIdAliases';
 import { buildEventInstanceIndex } from '../src/policy/compliance-execution/eventInstanceId';
 import { deriveDefaultEventTasks } from '../src/policy/compliance-execution/eventTaskAdapter';
 import { resolveEventFolder } from '../src/policy/compliance-execution/eventFolders';
@@ -27,6 +29,16 @@ function run(): void {
     const eventId = index.bySourceEventId[event.id] ?? event.id;
     return deriveDefaultEventTasks(event, eventId);
   });
+  const formIds = new Set(FORMS_DATASET.map(form => form.id));
+  const unresolvedRequiredForms = REGULATORY_EVENTS.flatMap(event =>
+    event.requiredForms
+      .map(form => ({
+        eventId: event.id,
+        formId: form.formId || form.id,
+        canonicalId: resolveCanonicalFormId(form.formId || form.id),
+      }))
+      .filter(form => !form.canonicalId || !formIds.has(form.canonicalId)),
+  );
 
   checks.push({
     name: 'every generated task has eventId',
@@ -52,10 +64,9 @@ function run(): void {
   });
 
   checks.push({
-    name: 'every required form has a live formId',
-    ok: REGULATORY_EVENTS.every(event =>
-      event.requiredForms.every(form => Boolean(form.formId || form.id)),
-    ),
+    name: 'every required form resolves to Enterprise Forms Library',
+    ok: unresolvedRequiredForms.length === 0,
+    detail: unresolvedRequiredForms.slice(0, 5).map(form => `${form.eventId}:${form.formId}`).join(', '),
   });
 
   checks.push({
@@ -146,7 +157,10 @@ function run(): void {
   });
   checks.push({
     name: 'auditReadinessScore calculated',
-    ok: dataflowSource.includes('auditReadinessScore') && dataflowSource.includes('requiredTasksComplete'),
+    ok: dataflowSource.includes('const auditReadinessScore') &&
+      dataflowSource.includes('weightedAudit') &&
+      dataflowSource.includes('totalWeight') &&
+      dataflowSource.includes('auditReadinessScore'),
   });
   checks.push({
     name: 'certified event blocks mutation without admin override',

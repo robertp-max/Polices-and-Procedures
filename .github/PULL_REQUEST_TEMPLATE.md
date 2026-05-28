@@ -15,8 +15,8 @@
 - [ ] **Protected: Evidence Center** (`src/policy/evidence/*`, `EvidenceCenterPage.tsx`, `localDemoAdapter.ts`) — **Architecture + Compliance owner approval required**
 - [ ] **Protected: CES identity / form_instance routing** (`cesFormInstanceId.ts`, projector, audit) — **Architecture owner approval required**
 - [ ] Onboarding V2 (`src/policy/onboarding-v2/*`)
-- [ ] CES (`src/policy/ces/*`)
-- [ ] Calendar / Master Calendar
+- [ ] CES (`src/policy/ces/*`) — **V3 Pre-Rollout (Agent 21) mandatory: lint + 5174 visual + no new one-off components + ShellContentFrame**
+- [ ] Calendar / Master Calendar — **V3 Pre-Rollout applies if ShellContentFrame or v3-veil drawers touched**
 - [ ] Mobile shell / bottom-sheet drawer / SignaturePad
 - [ ] Print / PDF builders
 - [ ] Audit log / regulatory store
@@ -29,6 +29,7 @@
 - [ ] `npm run build` passes locally
 - [ ] `npm run lint` passes locally
 - [ ] `npm run verify:ui` passes locally (or new warnings explained below)
+- [ ] **If V3 / CES / Shell surface touched**: Full Agent 21 V3 Pre-Rollout checklist above is complete (lint + 5174 visual + ces forbidden patterns + reviewer)
 
 ### Required if surface above is checked
 
@@ -50,11 +51,12 @@
 
 ## Design System Compliance
 
-- [ ] No new raw hex / `rgb()` / `rgba()` literals in `className` or inline `style` — all colors via `var(--ci-*)` tokens
+- [ ] No new raw hex / `rgb()` / `rgba()` literals in `className` or inline `style` — all colors via `var(--ci-*)` or V3 `--v3-*` / `--ces-*` (via hook) tokens. **V3 Pre-Rollout lint (eslint.config.js V3_DRIFT_PREVENTION_RULES) passes with 0 new errors.**
 - [ ] No new glass surfaces beyond MVP §C1 (max 3 layers; Layer 3 portal-only for elevated modals)
-- [ ] No new instances of legacy parallel component families (CesCard, local TabButton, local SectionTitle) — use `ui/` primitives
+- [ ] No new instances of legacy parallel component families (CesCard, local TabButton, local SectionTitle) — use `ui/` primitives. **CES: no new one-off components in ces/components/ during migration.**
 - [ ] CTA orange uses canonical `#C74601` only (per MVP §C2)
 - [ ] Touch targets ≥48 px on primary CTAs, ≥44 px floor elsewhere
+- [ ] **V3 surfaces only**: All new content inside `<ShellContentFrame data-shell-content-frame>` preserving 4-sided contract (CANONICAL_UI_SYSTEM_SPEC.md §4)
 
 ### Phase 4 Closure Checklist (added 2026-05-18, refined 2026-05-19)
 
@@ -68,6 +70,19 @@ Required for any PR touching `src/policy/**/*.{ts,tsx}`:
 - [ ] If the change is visible on the Audit drawer (`WorkflowExecutionPanel.tsx`), the PR description states whether the change is an addition, a token migration, or a runtime-composition exception.
 
 If a `verify:ui` warning is acceptable for this PR (e.g. brand-owned exempt file), explain here:
+
+### Agent 21 — V3 Pre-Rollout to All Users Drift Prevention Playbook (MANDATORY before scale)
+**Active 2026-05-27. Required for any PR touching V3 surfaces, CES migration, Shell*, or files listed in eslint.config.js `V3_PRE_ROLLOUT_ATTESTED` / `CES_MIGRATION_SURFACES`.**
+
+- [ ] `npm run lint` shows **ZERO new ERRORS** from V3_DRIFT_PREVENTION_RULES (v3-* contract, raw rgba in V3/CES, direct CES_TOKENS anti-patterns, bypassing primitives). See updated `eslint.config.js` (Agent 21 section).
+- [ ] **CES migration only**: No new one-off components created in `src/policy/ces/components/` (must use `ui/` primitives + `glassVariant="v3-veil"` + `ShellContentFrame`). All touched CES files reviewed against `ces/theme.ts` sub-brand exception contract. Forbidden patterns documented in Agent 21 playbook.
+- [ ] Visual regression executed with **Playwright V3 project on port 5174** (`npx playwright test --project=v3-visual-5174`). Key surfaces: ShellContentFrame 4-sided contract, v3-veil drawers on CES Evidence/Tasks/Calendar/Board, no regression vs baselines. Attach diff or "no diff" note. See `playwright.config.ts` + `scripts/verifyUiDesignSystem.ts`.
+- [ ] PR reviewed by **V3 Contract Reviewer** (or explicit deferral + owner sign-off recorded) for surfaces in CommandCenterLayout / Shell* / CES pages / Evidence.
+- [ ] `npm run verify:ui` green (or deltas explained). No regression of V3-only invariants (no legacy ci-ion drawer variants, v3 theme forced, etc.).
+- [ ] All changes to V3 surfaces reference the Constrained Page View Contract (§4 of `docs/UIUX/CANONICAL_UI_SYSTEM_SPEC.md`) and update `docs/UIUX/DRIFT_REGISTER.md` if new drift discovered.
+- [ ] Before/after or staging demo (ui-staging V3 routes) attached for any visible CES / Shell / drawer change.
+
+**Failure to check these blocks merge for any V3 surface targeting production users at scale.** See full playbook in `docs/UIUX/V3_UIUX_RECONSTRUCTION_32_AGENT_DEEP_DIVE_PLAN.md` (Agent 21) and expanded Exec Summary §13.
 
 ## Rollback Plan
 

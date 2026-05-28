@@ -504,11 +504,11 @@ export const TEMPLATE_REGISTRY: EventTemplate[] = [
       step({ id: 'ep-rev-archive',     label: 'Archive versioned plan and distribute',        description: 'File approved plan; distribute to all staff.', dueOffsetDays: 7 }),
     ],
     requiredForms: [
-      form({ id: 'ep-rev-hva',    label: 'Hazard Vulnerability Analysis (updated)',       formId: 'OP-FM-030' }),
-      form({ id: 'ep-rev-plan-f', label: 'Emergency Preparedness Plan (all 4 elements)', formId: 'OP-FM-031' }),
-      form({ id: 'ep-rev-polpro', label: 'EP Policies & Procedures',                     formId: 'OP-FM-032' }),
-      form({ id: 'ep-rev-comm',   label: 'Communication Plan',                           formId: 'OP-FM-033' }),
-      form({ id: 'ep-rev-sig',    label: 'EP Plan Approval Signature Page',              formId: 'OP-FM-034' }),
+      form({ id: 'ep-rev-hva',    label: 'Hazard Vulnerability Analysis (updated)',       formId: 'RM-FM-001' }),
+      form({ id: 'ep-rev-plan-f', label: 'Emergency Preparedness Plan (all 4 elements)', formId: 'RM-F-020' }),
+      form({ id: 'ep-rev-polpro', label: 'EP Policies & Procedures',                     formId: 'CL-FM-043' }),
+      form({ id: 'ep-rev-comm',   label: 'Communication Plan',                           formId: 'RM-FM-002' }),
+      form({ id: 'ep-rev-sig',    label: 'EP Plan Approval Signature Page',              formId: 'EN-FM-008' }),
     ],
     approvals: [
       { id: 'ep-rev-rule-plan',  targetKind: 'form',  targetLabel: 'EP Plan (all 4 elements)', approverRole: 'Administrator', required: true, escalationDays: 7 },

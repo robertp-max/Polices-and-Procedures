@@ -38,7 +38,7 @@ export function requirePermission(
   if (!resourceType || !action) {
     throw new Error(`requirePermission: invalid permission "${permission}"`);
   }
-  return async (req, res, next) => {
+  return async (req, _res, next) => {
     try {
       let resource = { type: resourceType, id: 'unspecified' } as { type: string; id: string; attributes?: Record<string, unknown> };
       if (loader) {

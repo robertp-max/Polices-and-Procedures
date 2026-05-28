@@ -8,12 +8,11 @@ import { type PropsWithChildren, useMemo } from 'react';
 import {
   Search, Bell, ChevronDown,
 } from 'lucide-react';
-import { useCesTokens } from '../theme';
 import { useComplianceExecution } from '@/policy/compliance-execution';
 import { usePmViewSprintStore } from '@/policy/pm/pmViewSprintStore';
 import { toDisplaySprintId, sprintDropdownLabel } from '@/policy/pm/sprintWindows';
-
-const PROFILE = { initials: 'JV', name: 'JD Vance', role: 'Administrator Designee' };
+import { useAuth } from '@/auth/AuthProvider';
+import { resolveCesRole } from '@/policy/ces/cesRoles';
 
 function fmtRange(startISO: string, endISO: string): string {
   const s = new Date(startISO);
@@ -24,7 +23,7 @@ function fmtRange(startISO: string, endISO: string): string {
 }
 
 export function CesLayout({ children }: PropsWithChildren) {
-  const t = useCesTokens();
+  const { user } = useAuth();
   const snap = useComplianceExecution();
   const pmSprint = usePmViewSprintStore(s => s.window);
   const ACTIVE_SPRINT = snap.activeSprint;
@@ -41,11 +40,25 @@ export function CesLayout({ children }: PropsWithChildren) {
     ).length;
     return overdueSigs + criticalBlockers;
   }, [EXECUTION_UNITS]);
+  const profile = useMemo(() => {
+    const name = user?.name || user?.email || 'Current User';
+    const initials = name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part[0]?.toUpperCase())
+      .join('') || 'CU';
+    return {
+      initials,
+      name,
+      role: resolveCesRole(user?.role || 'Administrator'),
+    };
+  }, [user?.email, user?.name, user?.role]);
 
   return (
     <div
       className="w-full h-full flex flex-col"
-      style={{ background: t.canvas, color: t.ink }}
+      style={{ background: 'transparent', color: 'var(--v3-text-primary)' }}
     >
       {/* ── CES top context bar + content (no sidebar) ─────────── */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -53,29 +66,29 @@ export function CesLayout({ children }: PropsWithChildren) {
         <header
           className="shrink-0 flex items-center gap-4 px-6 h-14"
           style={{
-            background:    t.white,
-            borderBottom: `1px solid ${t.border}`,
+            background: 'rgba(255, 255, 255, 0.02)',
+            borderBottom: '1px solid var(--v3-border-subtle)',
           }}
         >
           {/* Active sprint */}
           <div className="flex items-center gap-2">
             <div
               className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-[0.14em]"
-              style={{ background: t.orangeSoft, color: t.orange }}
+              style={{ background: 'rgba(0, 209, 193, 0.08)', color: 'var(--v3-teal-light)' }}
             >
               Active Sprint
             </div>
             <div className="flex flex-col gap-0.5 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[13px] font-semibold" style={{ color: t.navy }}>
+                <span className="text-[13px] font-semibold" style={{ color: 'var(--v3-text-primary)' }}>
                   {ACTIVE_SPRINT.label}
                 </span>
-                <span className="text-[12px]" style={{ color: t.muted }}>
+                <span className="text-[12px]" style={{ color: 'var(--v3-text-secondary)' }}>
                   {fmtRange(ACTIVE_SPRINT.startDate, ACTIVE_SPRINT.endDate)}
                 </span>
-                <ChevronDown size={14} style={{ color: t.muted }} />
+                <ChevronDown size={14} style={{ color: 'var(--v3-text-tertiary)' }} />
               </div>
-              <div className="text-[10px] font-mono truncate" style={{ color: t.muted }} title={sprintDropdownLabel(pmSprint)}>
+              <div className="text-[10px] font-mono truncate" style={{ color: 'var(--v3-text-tertiary)' }} title={sprintDropdownLabel(pmSprint)}>
                 PM scope: {toDisplaySprintId(pmSprint)} · {pmSprint.startDate}–{pmSprint.endDate}
               </div>
             </div>
@@ -87,14 +100,14 @@ export function CesLayout({ children }: PropsWithChildren) {
           {/* Search */}
           <div
             className="flex items-center gap-2 px-3 h-9 rounded-lg w-72"
-            style={{ background: t.canvas, border: `1px solid ${t.border}` }}
+            style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--v3-border-subtle)' }}
           >
-            <Search size={14} style={{ color: t.muted }} />
+            <Search size={14} style={{ color: 'var(--v3-text-tertiary)' }} />
             <input
               type="text"
               placeholder="Search forms, policies, events…"
               className="flex-1 bg-transparent outline-none text-[12px]"
-              style={{ color: t.ink }}
+              style={{ color: 'var(--v3-text-primary)' }}
             />
           </div>
 
@@ -103,9 +116,9 @@ export function CesLayout({ children }: PropsWithChildren) {
             type="button"
             className="relative flex items-center gap-2 h-9 px-3 rounded-lg text-[12px] font-medium transition-colors"
             style={{
-              background: escalations > 0 ? t.orangeSoft : t.canvas,
-              color:      escalations > 0 ? t.orange     : t.muted,
-              border:    `1px solid ${escalations > 0 ? t.orange + '40' : t.border}`,
+              background: escalations > 0 ? 'rgba(0, 209, 193, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+              color: escalations > 0 ? 'var(--v3-teal-light)' : 'var(--v3-text-secondary)',
+              border: escalations > 0 ? '1px solid rgba(0, 209, 193, 0.22)' : '1px solid var(--v3-border-subtle)',
             }}
             title={`${escalations} urgent escalation${escalations === 1 ? '' : 's'}`}
           >
@@ -114,19 +127,19 @@ export function CesLayout({ children }: PropsWithChildren) {
           </button>
 
           {/* Profile */}
-          <div className="flex items-center gap-2 pl-3" style={{ borderLeft: `1px solid ${t.border}` }}>
+          <div className="flex items-center gap-2 pl-3" style={{ borderLeft: '1px solid var(--v3-border-subtle)' }}>
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold"
-              style={{ background: t.navy, color: t.paper }}
+              style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'var(--v3-text-primary)' }}
             >
-              {PROFILE.initials}
+              {profile.initials}
             </div>
             <div className="leading-tight">
-              <div className="text-[12px] font-semibold" style={{ color: t.ink }}>
-                {PROFILE.name}
+              <div className="text-[12px] font-semibold" style={{ color: 'var(--v3-text-primary)' }}>
+                {profile.name}
               </div>
-              <div className="text-[10px]" style={{ color: t.muted }}>
-                {PROFILE.role}
+              <div className="text-[10px]" style={{ color: 'var(--v3-text-secondary)' }}>
+                {profile.role}
               </div>
             </div>
           </div>

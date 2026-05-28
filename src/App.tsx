@@ -124,8 +124,8 @@ const STAGING_M01_ENABLED = import.meta.env.VITE_STAGING_M01 === 'true';
 
 function AppLoader() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-[#f8fafc] text-slate-500">
-      <div className="h-6 w-6 rounded-full border-2 border-slate-200 border-t-[#C74601] animate-spin" />
+    <div className="flex min-h-screen w-full items-center justify-center bg-[var(--v3-base-bg)] text-[var(--v3-text-secondary)]">
+      <div className="h-6 w-6 rounded-full border-2 border-white/10 border-t-[var(--v3-teal-light)] animate-spin" />
     </div>
   )
 }
@@ -136,8 +136,8 @@ function AppLoader() {
 // a small spinner over the existing surface.
 function InlineLoader() {
   return (
-    <div className="flex min-h-[40vh] w-full items-center justify-center bg-transparent text-slate-400">
-      <div className="h-5 w-5 rounded-full border-2 border-slate-200 border-t-[#C74601] animate-spin" />
+    <div className="flex min-h-[40vh] w-full items-center justify-center bg-transparent text-[var(--v3-text-secondary)]">
+      <div className="h-5 w-5 rounded-full border-2 border-white/10 border-t-[var(--v3-teal-light)] animate-spin" />
     </div>
   )
 }
@@ -146,7 +146,7 @@ function AppShell({ children }: PropsWithChildren) {
   const { loading } = useAuth()
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900">
+    <div className="min-h-screen bg-[var(--v3-base-bg)] text-[var(--v3-text-primary)]">
       <div className="min-h-screen">
         {loading ? <AppLoader /> : children}
       </div>

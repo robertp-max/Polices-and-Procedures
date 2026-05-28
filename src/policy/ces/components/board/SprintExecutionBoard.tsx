@@ -15,8 +15,9 @@ import { usePmViewSprintStore } from '@/policy/pm/pmViewSprintStore';
 import { SprintScopeToolbar } from '@/policy/components/pm/SprintScopeToolbar';
 import { useExecutionEnforcement } from '../../hooks/useExecutionEnforcement';
 import { ExecutionUnitCard } from './ExecutionUnitCard';
-import { WorkflowDrawer } from '../details/WorkflowDrawer';
 import { AriaLiveRegion } from '@/policy/components/ui';
+import { useProjectedTasks } from '@/policy/pm/taskProjection';
+import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 
 interface DragState {
   unit: ExecutionUnit;
@@ -31,6 +32,8 @@ export function SprintExecutionBoard() {
   const t = useCesTokens();
   const sprintWindow = usePmViewSprintStore(s => s.window);
   const snap = useComplianceExecution({ mode: 'sprint', window: sprintWindow });
+  const projectedTasks = useProjectedTasks('sprint');
+  const openTask = useSelectedTaskStore(s => s.openTask);
   const EVENTS          = snap.events;
   const EXECUTION_UNITS = snap.executionUnits;
 
@@ -38,12 +41,34 @@ export function SprintExecutionBoard() {
   const [drag, setDrag]       = useState<DragState | null>(null);
   const [overCol, setOverCol] = useState<ComplianceState | null>(null);
   const [flash, setFlash]     = useState<FlashWarning | null>(null);
-  const [openUnit, setOpenUnit] = useState<ExecutionUnit | null>(null);
 
   /* Resync local board when engine snapshot updates. */
   useEffect(() => { setUnits([...EXECUTION_UNITS]); }, [EXECUTION_UNITS]);
 
   const { canTransitionState } = useExecutionEnforcement();
+
+  const taskIdByUnitId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const unit of units) {
+      const eventTasks = projectedTasks.filter(task => task.event_id === unit.parentEventId);
+      const sourceForms = new Set(unit.sourceFormIds ?? []);
+      const matched = eventTasks.find(task => task.task_id === unit.id)
+        ?? eventTasks.find(task => 'step_id' in task && task.step_id && unit.id.includes(task.step_id))
+        ?? eventTasks.find(task => task.form_refs?.some(formId => sourceForms.has(formId)))
+        ?? eventTasks.find(task => {
+          const unitTitle = unit.title.toLowerCase();
+          const taskTitle = task.title.toLowerCase();
+          return unitTitle.includes(taskTitle) || taskTitle.includes(unitTitle);
+        })
+        ?? eventTasks[0];
+      if (matched) map.set(unit.id, matched.task_id);
+    }
+    return map;
+  }, [projectedTasks, units]);
+
+  const openCanonicalTask = useCallback((unit: ExecutionUnit) => {
+    openTask(taskIdByUnitId.get(unit.id) ?? unit.id, 'sprint');
+  }, [openTask, taskIdByUnitId]);
 
   /* ── Group: Event → Workflow → Units, sliced per column ── */
   const byEvent = useMemo(() => {
@@ -183,7 +208,7 @@ export function SprintExecutionBoard() {
                               key={u.id}
                               unit={u}
                               draggable={state !== 'completed'}
-                              onClick={() => setOpenUnit(u)}
+                              onClick={() => openCanonicalTask(u)}
                               onDragStart={handleDragStart}
                               onDragEnd={handleDragEnd}
                             />
@@ -206,19 +231,6 @@ export function SprintExecutionBoard() {
           })}
         </div>
       </div>
-
-      {/* ── Drawer ─────────────────────────────────────── */}
-      {openUnit && (
-        <WorkflowDrawer
-          unit={openUnit}
-          allUnits={units}
-          onClose={() => setOpenUnit(null)}
-          onUpdate={updated => {
-            setUnits(curr => curr.map(u => u.id === updated.id ? updated : u));
-            setOpenUnit(updated);
-          }}
-        />
-      )}
     </div>
   );
 }

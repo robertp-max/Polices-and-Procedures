@@ -1844,11 +1844,11 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
       },
     ],
     requiredForms: [
-      { id: 'ep-rev-hva',    label: 'Hazard Vulnerability Analysis (updated)',  formId: 'OP-FM-030', status: 'missing', dueOffsetDays: 0 },
-      { id: 'ep-rev-plan-f', label: 'Emergency Preparedness Plan (all 4 elements)', formId: 'OP-FM-031', status: 'missing', dueOffsetDays: 5 },
-      { id: 'ep-rev-polpro', label: 'EP Policies & Procedures',                formId: 'OP-FM-032', status: 'missing', dueOffsetDays: 5 },
-      { id: 'ep-rev-comm',   label: 'Communication Plan',                       formId: 'OP-FM-033', status: 'missing', dueOffsetDays: 5 },
-      { id: 'ep-rev-sig',    label: 'EP Plan Approval Signature Page',          formId: 'OP-FM-034', status: 'missing', dueOffsetDays: 7 },
+      { id: 'ep-rev-hva',    label: 'Hazard Vulnerability Analysis (updated)',  formId: 'RM-FM-001', status: 'missing', dueOffsetDays: 0 },
+      { id: 'ep-rev-plan-f', label: 'Emergency Preparedness Plan (all 4 elements)', formId: 'RM-F-020', status: 'missing', dueOffsetDays: 5 },
+      { id: 'ep-rev-polpro', label: 'EP Policies & Procedures',                formId: 'CL-FM-043', status: 'missing', dueOffsetDays: 5 },
+      { id: 'ep-rev-comm',   label: 'Communication Plan',                       formId: 'RM-FM-002', status: 'missing', dueOffsetDays: 5 },
+      { id: 'ep-rev-sig',    label: 'EP Plan Approval Signature Page',          formId: 'EN-FM-008', status: 'missing', dueOffsetDays: 7 },
     ],
     approvals: [
       { id: 'ep-rev-rule-plan', targetKind: 'form', targetLabel: 'EP Plan (all 4 elements)', approverRole: 'Administrator', required: true, escalationDays: 7 },

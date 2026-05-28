@@ -33,7 +33,7 @@ import { useFormInstances } from '@/policy/pm/formInstances';
 import { EntityLink } from './EntityLink';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { getCorpusPolicy } from '@/policy/data/policyCorpus';
-import { RightDrawer, CiStatusBadge } from '@/policy/components/ui';
+import { CiStatusBadge } from '@/policy/components/ui';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 
 /** Stable fallback for Zustand selectors — never use `?? []` inline (new ref → useSyncExternalStore loop). */
@@ -80,7 +80,7 @@ export interface TaskDetailRightPanelProps {
   onClose?: () => void;
 }
 
-export function TaskDetailRightPanel({
+export function TaskDetailContent({
   taskId,
   onOpenForm,
   onClose,
@@ -96,10 +96,11 @@ export function TaskDetailRightPanel({
   );
   const watchTask   = usePmOverlayStore(s => s.watchTask);
   const unwatchTask = usePmOverlayStore(s => s.unwatchTask);
+  const openTask = useSelectedTaskStore(s => s.openTask);
 
   if (!task) {
     return (
-      <RightDrawer inline open onClose={() => onClose?.()}>
+      <div className="h-full min-h-0 flex flex-col text-[var(--v3-text-primary)]">
         <PanelHeader
           eyebrow={taskId}
           title="Task not found"
@@ -111,17 +112,15 @@ export function TaskDetailRightPanel({
           The task <code className={`ml-1 ${tokens.primaryText}`}>{taskId}</code> does not exist
           in the current projection.
         </div>
-      </RightDrawer>
+      </div>
     );
   }
 
   const statusKey = task.status;
   const statusLabel = PM_TASK_STATUS_LABEL[statusKey];
-  const openTask = useSelectedTaskStore(s => s.openTask);
 
   return (
-    <RightDrawer inline open onClose={() => onClose?.()}>
-      <div data-task-id={task.task_id}>
+    <div data-task-id={task.task_id} className="h-full min-h-0 flex flex-col text-[var(--v3-text-primary)]">
       <PanelHeader
         eyebrow={task.task_id}
         title={task.title}
@@ -158,9 +157,12 @@ export function TaskDetailRightPanel({
           </div>
         )}
       </div>
-      </div>
-    </RightDrawer>
+    </div>
   );
+}
+
+export function TaskDetailRightPanel(props: TaskDetailRightPanelProps): ReactElement {
+  return <TaskDetailContent {...props} />;
 }
 
 /* ─── Header ───────────────────────────────────────────────────────── */

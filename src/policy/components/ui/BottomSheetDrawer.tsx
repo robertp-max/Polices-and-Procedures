@@ -18,7 +18,6 @@
  */
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import { UtilityButton } from './UtilityButton';
 
 export interface BottomSheetDrawerProps {
   open: boolean;
@@ -36,11 +35,12 @@ export interface BottomSheetDrawerProps {
   disableSwipeDismiss?: boolean;
   /**
    * Glass aesthetic variant.
-   * - 'ci-ion' (default): current production CI-ION maroon glass
-   * - 'v3-veil': premium V3 dark matte slate-carbon veil glass (expensive CES drawers)
-   *   Uses 0.33 borders, 32px blur, 0.7s signature cubic-bezier motion.
+   * V3 is the production default. The legacy value remains in the type only
+   * while older call sites are migrated.
    */
   glassVariant?: 'ci-ion' | 'v3-veil';
+  /** Progressive disclosure layer. Layer 1 is brief/minimal; Layer 2 is rich detail. */
+  layer?: 1 | 2;
 }
 
 /** maxHeight CSS value per height variant. */
@@ -65,13 +65,15 @@ export function BottomSheetDrawer({
   children,
   inline = false,
   disableSwipeDismiss = false,
-  glassVariant = 'ci-ion',
+  glassVariant = 'v3-veil',
+  layer = 2,
 }: BottomSheetDrawerProps) {
   const sheetRef = useRef<HTMLElement>(null);
-  // V3 expensive transition controller — smooth close for bottom sheets too
+  // Keep DOM mounted briefly during close for exit-down dismissal.
   const [isVisible, setIsVisible] = useState(open);
   const [isExiting, setIsExiting] = useState(false);
   const closeTimerRef = useRef<number | null>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
 
   // ── Escape key dismiss (mirrors RightDrawer) — active while visible (incl. during V3 exit) ──────────────────────────────
   useEffect(() => {
@@ -110,6 +112,9 @@ export function BottomSheetDrawer({
 
   useEffect(() => {
     if (open) {
+      if (!isVisible && typeof document !== 'undefined') {
+        openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      }
       setIsVisible(true);
       setIsExiting(false);
       if (closeTimerRef.current) {
@@ -122,6 +127,8 @@ export function BottomSheetDrawer({
         setIsVisible(false);
         setIsExiting(false);
         closeTimerRef.current = null;
+        openerRef.current?.focus();
+        openerRef.current = null;
       }, 680);
     }
   }, [open, isVisible, isExiting]);
@@ -139,12 +146,11 @@ export function BottomSheetDrawer({
     <aside
       ref={sheetRef}
       role="dialog"
-      aria-modal={!inline}
+      aria-modal="true"
       aria-label={ariaLabel}
+      data-veil-layer={layer}
       className={
-        isV3
-          ? `v3-veil-glass-panel bottom-sheet flex flex-col ${isExiting ? 'v3-drawer-exiting' : 'v3-drawer-panel'}`
-          : `ci-glass-panel flex flex-col ${isExiting ? 'v3-drawer-exiting' : ''}`
+        `v3-veil-glass-panel bottom-sheet flex flex-col ${isExiting ? 'v3-drawer-exit-down' : 'v3-drawer-enter-up'}`
       }
       style={{
         width: '100%',
@@ -153,11 +159,6 @@ export function BottomSheetDrawer({
         borderBottomRightRadius: 0,
         paddingBottom: inline ? undefined : 'env(safe-area-inset-bottom)',
         ...(isV3 && { borderColor: 'var(--v3-border)' }),
-        // V3 expensive-feeling close (translateY + scale + blur, 0.62s)
-        transition: 'transform 0.62s var(--v3-ease), opacity 0.62s var(--v3-ease), filter 0.5s var(--v3-ease)',
-        transform: isExiting ? 'translateY(60px) scale(0.985)' : 'translateY(0)',
-        opacity: isExiting ? 0 : 1,
-        filter: isExiting ? 'blur(3px)' : 'none',
       }}
     >
       {/* ── Drag handle ─────────────────────────────────────────────────── */}
@@ -174,8 +175,8 @@ export function BottomSheetDrawer({
             style={{
               width: 44,
               height: 4,
-              background: isV3 ? 'var(--v3-border)' : 'var(--ci-border-strong)',
-              opacity: isV3 ? 0.7 : 1,
+              background: 'var(--v3-border)',
+              opacity: 0.7,
             }}
           />
         </div>
@@ -187,8 +188,8 @@ export function BottomSheetDrawer({
           className="flex items-center justify-between gap-3 shrink-0 v3-drawer-header"
           style={{
             padding: 'clamp(14px, 1.6vh, 18px) clamp(14px, 1.7vw, 26px)',
-            borderBottom: isV3 ? '1px solid var(--v3-border)' : '1px solid var(--ci-border)',
-            background: isV3 ? 'rgba(255,255,255,0.015)' : undefined,
+            borderBottom: '1px solid var(--v3-border-subtle)',
+            background: 'transparent',
           }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -201,7 +202,7 @@ export function BottomSheetDrawer({
                   fontSize: 10,
                   letterSpacing: '0.2em',
                   textTransform: 'uppercase',
-                  color: isV3 ? 'var(--v3-text-tertiary)' : 'var(--ci-text-subtle)',
+                  color: 'var(--v3-text-tertiary)',
                 }}
               >
                 {eyebrow}
@@ -210,9 +211,9 @@ export function BottomSheetDrawer({
             {title && (
               <div
                 className="font-montserrat truncate"
-                style={{ 
-                  color: isV3 ? 'var(--v3-text-primary)' : 'var(--ci-text-primary)', 
-                  fontSize: 18, 
+                style={{
+                  color: 'var(--v3-text-primary)',
+                  fontSize: 18,
                   fontWeight: 600,
                   letterSpacing: '-0.01em'
                 }}
@@ -223,26 +224,20 @@ export function BottomSheetDrawer({
           </div>
           <div className="flex items-center gap-1">
             {headerActions}
-            {isV3 ? (
-              <button
-                type="button"
-                onClick={onClose}
-                className="v3-veil-close p-1.5 text-[var(--v3-text-secondary)] hover:text-[var(--v3-teal-light)] v3-micro"
-                aria-label="Close panel"
-              >
-                <X size={18} aria-hidden="true" />
-              </button>
-            ) : (
-              <UtilityButton ariaLabel="Close panel" onClick={onClose}>
-                <X size={18} aria-hidden="true" />
-              </UtilityButton>
-            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="v3-veil-close p-1.5 text-[var(--v3-text-secondary)] hover:text-[var(--v3-teal-light)]"
+              aria-label="Close panel"
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
           </div>
         </header>
       )}
 
       {/* ── Scrollable body ─────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto" style={{ padding: 'clamp(12px, 1.6vw, 24px)' }}>
+      <div className="v3-veil-body flex-1 overflow-auto" style={{ padding: 'clamp(12px, 1.6vw, 24px)' }}>
         {children}
       </div>
 
@@ -250,7 +245,7 @@ export function BottomSheetDrawer({
       {footer && (
         <footer
           className="shrink-0"
-          style={{ padding: 16, borderTop: isV3 ? '1px solid var(--v3-border)' : '1px solid var(--ci-border)' }}
+          style={{ padding: 16, borderTop: '1px solid var(--v3-border-subtle)' }}
         >
           {footer}
         </footer>
@@ -270,10 +265,10 @@ export function BottomSheetDrawer({
         <div
           className="absolute inset-0"
           style={{
-            ...(isV3 
-              ? { background: 'rgba(5, 6, 10, 0.72)', backdropFilter: 'blur(8px)' } 
-              : { background: 'rgba(15,23,28,0.45)' }),
-            transition: 'opacity 0.62s var(--v3-ease)',
+            background: 'rgba(5, 6, 10, 0.72)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            transition: 'opacity 220ms var(--v3-ease)',
             opacity: isExiting ? 0 : 1,
           }}
           onClick={onClose}

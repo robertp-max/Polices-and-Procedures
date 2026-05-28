@@ -1,0 +1,23 @@
+{
+  "target": "http://localhost:5173/ui-staging",
+  "passed": [
+    "/ui-staging loaded and remained in staging",
+    "/dashboard home remains the only visible Dashboard nav concept",
+    "CES section opens from primary V3 navigation",
+    "V3 CES seeded production workspace visible",
+    "Default CES inner view is Calendar",
+    "CES inner heading is Calendar",
+    "No \"CES Dashboard\" label is visible",
+    "V3 CES live handoff points to /ces/calendar",
+    "Seeded mode renders non-empty real CES Calendar content (5 events)",
+    "Board tab selected through local V3 sub-tabs",
+    "Real SprintExecutionBoard heading visible",
+    "Board tab renders real SprintExecutionBoard content (31 execution-unit cards)",
+    "Primary V3 section navigation remains contained inside /ui-staging",
+    "Evidence Center smoke check still opens after CES changes"
+  ],
+  "failed": [],
+  "screenshots": [
+    "ces-v3-seeded-production-workspace.png"
+  ]
+}

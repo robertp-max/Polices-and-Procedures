@@ -60,6 +60,34 @@ export interface SignedSnapshotArtifact {
   formInstanceId: string;
 }
 
+export function isolateSignedSnapshotHtml(packetHtml: string): string {
+  if (typeof DOMParser === 'undefined') {
+    return packetHtml;
+  }
+  try {
+    const doc = new DOMParser().parseFromString(packetHtml, 'text/html');
+    doc.querySelectorAll('*').forEach(node => {
+      if (!(node instanceof HTMLElement)) return;
+      const classes = Array.from(node.classList).filter(className =>
+        !className.startsWith('v3-') &&
+        !className.includes('v3-veil') &&
+        !className.includes('animate-') &&
+        !className.includes('transition-') &&
+        !className.includes('duration-'),
+      );
+      node.className = classes.join(' ');
+      node.removeAttribute('data-veil-layer');
+      node.removeAttribute('data-drawer-layer');
+      node.style.animation = 'none';
+      node.style.transition = 'none';
+      node.style.transform = 'none';
+    });
+    return `<!doctype html>${doc.documentElement.outerHTML}`;
+  } catch {
+    return packetHtml;
+  }
+}
+
 /**
  * Build a byte-stable snapshot artifact from a fully-rendered packet HTML
  * string. Pure function — no DOM access, no fetch, no timing.
@@ -84,7 +112,8 @@ export interface SignedSnapshotArtifact {
 export function captureSignedFormSnapshot(
   input: CaptureSignedFormSnapshotInput,
 ): SignedSnapshotArtifact {
-  const { packetHtml, formInstanceId, filename, encoding = 'utf8' } = input;
+  const { formInstanceId, filename, encoding = 'utf8' } = input;
+  const packetHtml = isolateSignedSnapshotHtml(input.packetHtml);
 
   if (!formInstanceId || formInstanceId.trim() === '') {
     throw new Error('captureSignedFormSnapshot: formInstanceId is required');

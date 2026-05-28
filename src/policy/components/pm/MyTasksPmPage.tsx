@@ -22,10 +22,11 @@ import { isPersonalTask, type Task } from '@/policy/pm/types';
 import { getCurrentUserId } from '@/policy/pm/currentUser';
 import { PmTaskCard } from './PmTaskCard';
 import { PmFilterBar, applyPmFilter, type PmFilterState } from './PmFilterBar';
-import { TaskDetailRightPanel } from './TaskDetailRightPanel';
+import { TaskDetailContent } from './TaskDetailRightPanel';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { NotificationCenter } from './NotificationCenter';
 import { usePmNotificationTicker } from '@/policy/pm/notificationTicker';
+import { VeilDrawer } from '@/policy/components/ui/VeilDrawer';
 
 // ── Tab definitions ──────────────────────────────────────────────────────────
 type TabKey =
@@ -366,20 +367,22 @@ export function MyTasksPmPage({
         </div>
       </div>
 
-      {/* Right detail panel */}
-      <div className="w-[420px] shrink-0 min-h-0 overflow-y-auto rounded-lg border border-white/10 bg-white/[0.02]">
-        {activeTaskId ? (
-          <TaskDetailRightPanel
+      <VeilDrawer
+        open={Boolean(activeTaskId)}
+        onClose={() => setActiveTaskId(null)}
+        width="lg"
+        layer={2}
+        eyebrow={activeTaskId ?? undefined}
+        title="Task detail"
+      >
+        {activeTaskId && (
+          <TaskDetailContent
             taskId={activeTaskId}
             onOpenForm={onOpenForm}
             onClose={() => setActiveTaskId(null)}
           />
-        ) : (
-          <div className="h-full flex items-center justify-center text-white/45 text-[12px] font-outfit p-6 text-center">
-            Select a task to view details.
-          </div>
         )}
-      </div>
+      </VeilDrawer>
     </div>
   );
 }

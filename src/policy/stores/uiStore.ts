@@ -42,7 +42,7 @@ export const useUiStore = create<UiState>(set => ({
    so that detail views (opened policies / forms) can take up the
    entire glass canvas.
    ═══════════════════════════════════════════════════════════════ */
-export type ShellTheme = 'ci-ion-dark' | 'care-indeed-light';
+export type ShellTheme = 'v3-veil' | 'ci-ion-dark' | 'care-indeed-light';
 
 interface ShellState {
   detailMode: boolean;
@@ -54,7 +54,7 @@ interface ShellState {
 
 /** Runs the theme mutator inside a View Transition (or with a
  *  500ms class-based transition fallback) so the swap between
- *  CI-ION dark and Care Indeed light crossfades smoothly. */
+ *  V3-only keeps the historical API surface stable while removing theme forks. */
 function runThemeSwap(mutate: () => void) {
   if (typeof document === 'undefined') {
     mutate();
@@ -80,21 +80,17 @@ export const useShellStore = create<ShellState>(set => ({
   theme:
     (typeof window !== 'undefined'
       ? (window.localStorage.getItem('ci-shell-theme') as ShellTheme | null)
-      : null) || 'care-indeed-light',
+      : null) || 'v3-veil',
   setDetailMode: v => set({ detailMode: v }),
-  setTheme: t =>
+  setTheme: _t =>
     runThemeSwap(() => {
-      if (typeof window !== 'undefined') window.localStorage.setItem('ci-shell-theme', t);
-      set({ theme: t });
+      if (typeof window !== 'undefined') window.localStorage.setItem('ci-shell-theme', 'v3-veil');
+      set({ theme: 'v3-veil' });
     }),
   toggleTheme: () =>
     runThemeSwap(() => {
-      const current = (typeof window !== 'undefined'
-        ? (window.localStorage.getItem('ci-shell-theme') as ShellTheme | null)
-        : null) || 'care-indeed-light';
-      const next: ShellTheme = current === 'ci-ion-dark' ? 'care-indeed-light' : 'ci-ion-dark';
-      if (typeof window !== 'undefined') window.localStorage.setItem('ci-shell-theme', next);
-      set({ theme: next });
+      if (typeof window !== 'undefined') window.localStorage.setItem('ci-shell-theme', 'v3-veil');
+      set({ theme: 'v3-veil' });
     }),
 }));
 
