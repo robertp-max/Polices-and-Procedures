@@ -42,6 +42,9 @@
     "check:ecign-routes": "tsx scripts/checkEcignRouteHealth.ts",
     "check:ecign-demo-local": "tsx --tsconfig tsconfig.app.json scripts/checkEcignDemoLocal.ts",
     "validate:aws-ces-mapping": "tsx scripts/validateAwsCesMapping.ts",
+    "validate:google-drive-evidence": "tsx Builder/_system/audit-google-calendar-drive-evidence-sync.ts",
+    "validate:ces-no-localstorage": "tsx Builder/_system/audit-ces-no-localstorage.ts",
+    "validate:google-drive-ces-evidence": "tsx Builder/_system/audit-google-drive-ces-evidence-storage.ts",
     "push-hubstaff": "tsx scripts/pushToHubstaff.ts",
     "seed:deeb": "tsx scripts/seedDeeb.ts",
     "forms:build": "tsx scripts/formsSystemBuild.ts",
@@ -52,7 +55,11 @@
     "cdk:frontend:deploy:staging": "npm --prefix infra/frontend-cdk run deploy:staging",
     "cdk:frontend:deploy:prod": "npm --prefix infra/frontend-cdk run deploy:prod",
     "cdk:frontend:diff:staging": "npm --prefix infra/frontend-cdk run diff:staging",
-    "cdk:frontend:diff:prod": "npm --prefix infra/frontend-cdk run diff:prod"
+    "cdk:frontend:diff:prod": "npm --prefix infra/frontend-cdk run diff:prod",
+    "cdk:ces-api:install": "npm --prefix infra/ces-api-cdk install",
+    "cdk:ces-api:synth": "npm --prefix infra/ces-api-cdk run synth",
+    "cdk:ces-api:diff": "npm --prefix infra/ces-api-cdk run diff",
+    "cdk:ces-api:deploy:staging": "npm --prefix infra/ces-api-cdk run deploy:staging"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.922.0",

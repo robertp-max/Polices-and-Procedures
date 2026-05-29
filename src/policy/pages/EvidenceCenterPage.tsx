@@ -23,6 +23,7 @@ import { useProjectedTasks } from '@/policy/pm/taskProjection';
 import { isCesTask } from '@/policy/pm/types';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { CesEvidenceHierarchyPanel } from '@/policy/components/evidence/CesEvidenceHierarchyPanel';
+import { GoogleEvidenceProviderCard } from '@/policy/components/regulatory/GoogleEvidenceProviderCard';
 import { prefetchDemoEvidenceFromIdb, resolveEvidenceDataUrl } from '@/policy/evidence/demoEvidenceRuntimeCache';
 import { useDataFreshness } from '@/policy/utils/useDataFreshness';
 import { StalenessBanner, AriaLiveRegion, LoadingState, EmptyState } from '@/policy/components/ui';
@@ -1097,6 +1098,10 @@ export function EvidenceCenterPage() {
                 <li>Verify the new row appears with status <code>EVIDENCE_LOCKED</code>.</li>
                 <li>Use <span className="text-[var(--v3-text-primary)]">Download</span> to obtain a short-lived presigned URL.</li>
               </ol>
+            </div>
+
+            <div className="border-t border-[var(--v3-border-subtle)] pt-4">
+              <GoogleEvidenceProviderCard />
             </div>
 
             <div className="text-[10px] text-[var(--v3-text-tertiary)] leading-relaxed border-t border-[var(--v3-border-subtle)] pt-3">

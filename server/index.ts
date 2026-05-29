@@ -4,6 +4,7 @@ import { env } from './env.js';
 import { log } from './logger.js';
 import { ApiError } from './errors.js';
 import { calendarRouter } from './routes/calendar.js';
+import { cesRouter } from './routes/ces.js';
 import { hubstaffRouter } from './routes/hubstaff.js';
 import { ecignRouter } from './routes/ecign.js';
 import { auditRouter } from './routes/audit.js';
@@ -51,6 +52,7 @@ app.use('/api', (req, _res, next) => {
 });
 
 app.use('/api/calendar', calendarRouter);
+app.use('/api/ces', cesRouter);
 app.use('/api/hubstaff', hubstaffRouter);
 app.use('/api/ecign', ecignRouter);
 app.use('/api/audit', auditRouter);

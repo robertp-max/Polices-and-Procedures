@@ -50,6 +50,25 @@ export const env = {
   calendarCredentialsPresent,
   credentialsPath: credPath,
   timezone: process.env.DEFAULT_TIMEZONE ?? 'America/Los_Angeles',
+
+  /** ───── Google Drive Evidence Attachment ─────────────────────
+   * Extends the Calendar integration. Reuses the SAME service-account
+   * key (credentialsPath above) — no second Google auth path. Drive
+   * stores files; Calendar attaches/indexes them. */
+  evidenceStorageProvider: process.env.GOOGLE_EVIDENCE_STORAGE_PROVIDER ?? 'google_calendar_drive',
+  calendarEvidenceEnabled: (process.env.GOOGLE_CALENDAR_EVIDENCE_ENABLED ?? 'true').toLowerCase() === 'true',
+  driveEvidenceSharedDriveId: process.env.GOOGLE_DRIVE_EVIDENCE_SHARED_DRIVE_ID ?? '0AFWjpId3CYL3Uk9PVA',
+  driveEvidenceRootFolderId:
+    process.env.GOOGLE_DRIVE_EVIDENCE_ROOT_FOLDER_ID
+    ?? process.env.GOOGLE_DRIVE_EVIDENCE_SHARED_DRIVE_ID
+    ?? '0AFWjpId3CYL3Uk9PVA',
+
+  /** ───── CES metadata backend (NON-PHI metadata; NO file bytes) ─────
+   * `file_local` (default) writes to .cache/ces-metadata for local/dev so the
+   * backend is testable without AWS. `dynamodb_metadata` uses DynamoDB in
+   * deployed environments. There is NO localStorage provider for CES. */
+  cesMetadataProvider: (process.env.CES_METADATA_PROVIDER ?? 'file_local') as 'file_local' | 'dynamodb_metadata',
+  cesMetadataTableName: process.env.CES_METADATA_TABLE_NAME ?? '',
   allowedOrigin: process.env.ALLOWED_ORIGIN ?? 'http://localhost:5173',
   apiSharedSecret: process.env.API_SHARED_SECRET ?? '',
   logLevel: (process.env.LOG_LEVEL ?? 'info') as 'debug' | 'info' | 'warn' | 'error',

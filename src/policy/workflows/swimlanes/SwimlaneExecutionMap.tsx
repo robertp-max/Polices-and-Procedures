@@ -8,6 +8,7 @@ import type { SwimlaneFormInstance, SwimlaneModel, SwimlaneNode, SwimlaneStatus 
 import { SwimlaneWorkspaceOverlay } from './SwimlaneWorkspaceOverlay';
 import { useSwimlaneModalPosition } from './useSwimlaneModalPosition';
 import { ECIgnSignatureField } from '@/policy/ecign/ECIgnSignatureField';
+import { GoogleEvidencePanel, type EvidenceTarget } from '@/policy/components/regulatory/GoogleEvidencePanel';
 import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
 import { permissionSatisfies, resolveUserPermissionRoles } from '@/policy/ecign/permissionRoles';
 import type { ECIgnPermissionRole, SignerRole } from '@/policy/ecign/types';
@@ -582,17 +583,89 @@ function LevelTwoCard({ model, node, zoomState, onBack, onClose }: { model: Swim
           : zoomState.level === 'signature' ? (
             <SignatureWorkspace model={model} node={node} />
           ) : (
-            <PlaceholderWorkspace
-              icon={zoomState.actionId === 'artifact' ? <LockKeyhole size={28} /> : <UploadCloud size={28} />}
-              title={model.mode === 'event_execution' ? 'Workspace Not Yet Available' : levelTwoTitle(zoomState)}
-              body={model.mode === 'event_execution'
-                ? `This action requires event execution context or a completed artifact. No record was found for eventId=${model.eventId ?? 'missing'}, taskId=${node.taskId}, workflowId=${model.workflowId ?? 'missing'}.`
-                : 'Template mode lists evidence and artifact requirements without creating execution workspaces.'}
-              details={artifactWorkspaceDetails(model, node, zoomState.actionId === 'artifact' ? 'artifact' : 'evidence')}
-            />
+            <EvidenceArtifactWorkspace model={model} node={node} mode={zoomState.actionId === 'artifact' ? 'artifact' : 'evidence'} zoomState={zoomState} />
           )}
       </div>
     </SpotlightCard>
+  );
+}
+
+function EvidenceArtifactWorkspace({ model, node, mode, zoomState }: { model: SwimlaneModel; node: SwimlaneNode; mode: 'artifact' | 'evidence'; zoomState: ZoomState }) {
+  const isEventExecution = model.mode === 'event_execution' && !!model.eventId;
+  const targets: EvidenceTarget[] = [];
+
+  if (isEventExecution) {
+    if (mode === 'evidence') {
+      for (const support of node.supportingDocumentationTasks ?? []) {
+        targets.push({
+          key: support.supportTaskId,
+          label: support.title,
+          category: 'supporting_documentation',
+          taskId: node.taskId,
+          formId: support.formId || undefined,
+          formInstanceId: support.formInstanceId,
+          evidenceRequirementId: support.evidenceRequirementId,
+          supportTaskId: support.supportTaskId,
+          required: support.required,
+        });
+      }
+      for (const fi of node.formInstances ?? []) {
+        if (!fi.formInstanceId) continue;
+        targets.push({
+          key: `formreq-${fi.formInstanceId}`,
+          label: `Form evidence — ${fi.formTitle}`,
+          category: 'form_instance',
+          taskId: node.taskId,
+          formId: fi.formId,
+          formInstanceId: fi.formInstanceId,
+        });
+      }
+      targets.push({
+        key: `overview-${node.taskId}`,
+        label: 'General task evidence',
+        category: 'overview',
+        taskId: node.taskId,
+      });
+    } else {
+      // Artifact mode: signed artifacts + eCIgn certificates.
+      targets.push({
+        key: `signed-${node.taskId}`,
+        label: 'Signed form artifact (PDF)',
+        category: 'signed_artifact',
+        taskId: node.taskId,
+      });
+      targets.push({
+        key: `cert-${node.taskId}`,
+        label: 'eCIgn certificate (PDF)',
+        category: 'ecign_certificate',
+        taskId: node.taskId,
+      });
+      targets.push({
+        key: `package-${node.taskId}`,
+        label: 'Final evidence package',
+        category: 'final_package',
+        taskId: node.taskId,
+      });
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <GoogleEvidencePanel
+        eventId={isEventExecution ? model.eventId : undefined}
+        workflowId={model.workflowId}
+        targets={targets}
+        title={mode === 'artifact' ? 'Signed Artifacts & Certificates' : 'Supporting Evidence'}
+      />
+      <PlaceholderWorkspace
+        icon={mode === 'artifact' ? <LockKeyhole size={28} /> : <UploadCloud size={28} />}
+        title={isEventExecution ? 'Evidence & Artifact Requirements' : levelTwoTitle(zoomState)}
+        body={isEventExecution
+          ? 'Upload evidence above. Files are stored in the event\u2019s Google Drive folder and attached to the matching Calendar event. The app remains the source of truth for task/form/evidence status.'
+          : 'Template mode lists evidence and artifact requirements without creating execution workspaces.'}
+        details={artifactWorkspaceDetails(model, node, mode)}
+      />
+    </div>
   );
 }
 

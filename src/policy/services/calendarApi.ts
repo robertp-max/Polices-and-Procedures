@@ -73,6 +73,84 @@ export interface CalendarApiError {
   status: number;
 }
 
+/* ─── Google Calendar + Drive evidence types ─────────────────────
+   Mirrors server/googleEvidence.ts. Drive stores files; Calendar
+   attaches/indexes them. The frontend never speaks to Google
+   directly — all traffic flows through /api/calendar/*. */
+
+export type CalendarAttachmentStatus = 'attached' | 'pending_attach' | 'attach_failed' | 'removed';
+export type EvidenceContentStatus = 'available' | 'metadata_only' | 'missing';
+export type GoogleEvidenceCategory =
+  | 'overview'
+  | 'form_instance'
+  | 'supporting_documentation'
+  | 'signed_artifact'
+  | 'ecign_certificate'
+  | 'final_package';
+
+export interface GoogleCalendarDriveEvidenceRef {
+  storageProvider: 'google_calendar_drive';
+  eventId: string;
+  workflowId?: string;
+  taskId: string;
+  formId?: string;
+  formInstanceId?: string;
+  evidenceRequirementId?: string;
+  supportTaskId?: string;
+  calendarEventId: string;
+  driveFileId: string;
+  driveFileUrl: string;
+  driveFolderId?: string;
+  mimeType?: string;
+  title: string;
+  uploadedAt: string;
+  uploadedBy?: string;
+  attachmentStatus: CalendarAttachmentStatus;
+  contentStatus: EvidenceContentStatus;
+}
+
+export interface UploadEvidenceInput {
+  workflowId?: string;
+  taskId: string;
+  formId?: string;
+  formInstanceId?: string;
+  evidenceRequirementId?: string;
+  supportTaskId?: string;
+  category?: GoogleEvidenceCategory;
+  title: string;
+  domain?: string;
+  eventDate?: string;
+  uploadedBy?: string;
+  attachToCalendar?: boolean;
+}
+
+export interface UploadEvidenceResponse {
+  evidenceId: string;
+  eventId: string;
+  workflowId?: string;
+  taskId: string;
+  formId?: string;
+  formInstanceId?: string;
+  evidenceRequirementId?: string;
+  supportTaskId?: string;
+  calendarEventId: string;
+  driveFolderId?: string;
+  driveFileId: string;
+  driveFileUrl: string;
+  calendarAttachmentStatus: CalendarAttachmentStatus;
+  contentStatus: EvidenceContentStatus;
+  storageProvider: 'google_calendar_drive';
+}
+
+export interface EvidenceHealthResponse {
+  ok: boolean;
+  enabled: boolean;
+  provider: string;
+  sharedDriveId?: string;
+  rootFolderId?: string;
+  drive: { reachable: boolean; rootId?: string; error?: string };
+}
+
 /* ─── Config ───────────────────────────────────────────── */
 
 const BASE = '/api/calendar';
@@ -139,7 +217,41 @@ export const CalendarApi = {
   async sync(events: PlannerEventPayload[]): Promise<BulkSyncResult> {
     return request('POST', '/sync', { events });
   },
+
+  /* ─── Google Drive evidence (extends Calendar; no second auth) ─── */
+
+  /** Drive evidence reachability + provider/config status. */
+  async evidenceHealth(): Promise<EvidenceHealthResponse> {
+    return request('GET', '/evidence/health');
+  },
+
+  /**
+   * Upload an evidence file for a CES event/task/form. The file is stored in
+   * Drive (auto-created event folder) and attached to the matching Calendar
+   * event. The file is sent as base64 over the existing JSON transport.
+   */
+  async uploadEvidence(eventId: string, file: File, meta: UploadEvidenceInput): Promise<UploadEvidenceResponse> {
+    const contentBase64 = await fileToBase64(file);
+    return request('POST', `/events/${encodeURIComponent(eventId)}/evidence/upload`, {
+      ...meta,
+      fileName: file.name,
+      mimeType: file.type || 'application/octet-stream',
+      contentBase64,
+    });
+  },
 };
+
+/** Read a File into a base64 string (strips the data: URL prefix). */
+async function fileToBase64(file: File): Promise<string> {
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
 
 /* ─── Translation: RegulatoryEvent → PlannerEventPayload ── */
 

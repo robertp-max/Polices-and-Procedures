@@ -11,6 +11,16 @@ import {
 import { listRows, getRow } from '../sync/eventStore.js';
 import { tailAudit } from '../sync/auditLog.js';
 import { tailNotifications } from '../sync/bradNotifier.js';
+import { env } from '../env.js';
+import { pingDrive, ensureFolderPath } from '../googleDrive.js';
+import {
+  uploadEventEvidence,
+  buildEvidenceFolderSegments,
+  evidenceFolderUrl,
+  type EvidenceCategory,
+  type GoogleCalendarDriveEvidenceRef,
+} from '../googleEvidence.js';
+import { getCesMetadataStore, type CesEvidenceRef } from '../cesMetadataStore.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Calendar API routes — thin HTTP layer around the sync engine.
@@ -179,7 +189,233 @@ calendarRouter.get('/healthz', asyncHandler(async (_req, res) => {
   res.status(ping.reachable ? 200 : 503).json({ ok: ping.reachable, calendar: ping });
 }));
 
+/**
+ * GET /api/calendar/evidence/health — Drive evidence reachability + config.
+ * Reports whether the evidence provider is enabled and the Shared Drive root
+ * is reachable using the SAME service-account auth as Calendar.
+ */
+calendarRouter.get('/evidence/health', asyncHandler(async (_req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    res.json({ ok: false, enabled: false, provider: env.evidenceStorageProvider, drive: { reachable: false, error: 'disabled' } });
+    return;
+  }
+  const drive = await pingDrive();
+  res.status(drive.reachable ? 200 : 503).json({
+    ok: drive.reachable,
+    enabled: true,
+    provider: env.evidenceStorageProvider,
+    sharedDriveId: env.driveEvidenceSharedDriveId,
+    rootFolderId: env.driveEvidenceRootFolderId,
+    drive,
+  });
+}));
+
+/**
+ * POST /api/calendar/events/:eventId/evidence/upload
+ *
+ * Uploads an evidence file to the event's auto-created Drive folder and
+ * attaches it to the matching Google Calendar event. Uses the existing JSON
+ * body parser (base64 file content) — no new upload middleware/dependency.
+ *
+ * Body: {
+ *   workflowId?, taskId, formId?, formInstanceId?,
+ *   evidenceRequirementId?, supportTaskId?, category?,
+ *   title, fileName, mimeType, contentBase64,
+ *   domain?, eventDate?, uploadedBy?, attachToCalendar?
+ * }
+ */
+calendarRouter.post('/events/:eventId/evidence/upload', asyncHandler(async (req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Calendar/Drive evidence is disabled.', 400);
+  }
+  const eventId = String(req.params.eventId);
+  const b = (req.body ?? {}) as Record<string, unknown>;
+
+  const taskId = strOrEmpty(b.taskId);
+  if (!taskId) throw new ApiError('validation_error', '`taskId` is required.', 400);
+  const title = strOrEmpty(b.title) || strOrEmpty(b.fileName) || 'evidence';
+  const contentBase64 = strOrEmpty(b.contentBase64);
+  if (!contentBase64) throw new ApiError('validation_error', '`contentBase64` (file content) is required.', 400);
+  const evidenceRequirementId = strOrUndef(b.evidenceRequirementId);
+  const supportTaskId = strOrUndef(b.supportTaskId);
+
+  const result = await uploadEventEvidence({
+    eventId,
+    workflowId: strOrUndef(b.workflowId),
+    taskId,
+    formId: strOrUndef(b.formId),
+    formInstanceId: strOrUndef(b.formInstanceId),
+    evidenceRequirementId,
+    supportTaskId,
+    category: strOrUndef(b.category) as EvidenceCategory | undefined,
+    title,
+    fileName: strOrEmpty(b.fileName) || `${title}`,
+    mimeType: strOrEmpty(b.mimeType) || 'application/octet-stream',
+    contentBase64,
+    domain: strOrUndef(b.domain),
+    eventDate: strOrUndef(b.eventDate),
+    uploadedBy: strOrUndef(b.uploadedBy) ?? resolveActor(req),
+    attachToCalendar: b.attachToCalendar !== false,
+  });
+
+  const { ref } = result;
+
+  // Persist the NON-PHI pointer to the CES metadata backend so the Evidence
+  // Center / Artifact Viewer can list it WITHOUT any localStorage. File bytes
+  // already live in Drive — only the pointer is recorded here.
+  await persistEvidenceRef(result.evidenceId, ref);
+
+  res.status(201).json({
+    evidenceId: result.evidenceId,
+    eventId: ref.eventId,
+    workflowId: ref.workflowId,
+    taskId: ref.taskId,
+    formId: ref.formId,
+    formInstanceId: ref.formInstanceId,
+    evidenceRequirementId: ref.evidenceRequirementId,
+    supportTaskId: ref.supportTaskId,
+    calendarEventId: ref.calendarEventId,
+    driveFolderId: ref.driveFolderId,
+    driveFileId: ref.driveFileId,
+    driveFileUrl: ref.driveFileUrl,
+    calendarAttachmentStatus: ref.attachmentStatus,
+    contentStatus: ref.contentStatus,
+    storageProvider: ref.storageProvider,
+  });
+}));
+
+/**
+ * GET /api/calendar/events/:eventId/evidence
+ * Lists the NON-PHI evidence pointers recorded in the CES metadata backend for
+ * an event. Returns metadata + Drive links only — never file bytes.
+ */
+calendarRouter.get('/events/:eventId/evidence', asyncHandler(async (req, res) => {
+  const eventId = String(req.params.eventId);
+  const items = await getCesMetadataStore().listEvidence(eventId);
+  res.json({ eventId, items, count: items.length });
+}));
+
+/**
+ * GET /api/calendar/events/:eventId/drive-folder
+ * Resolves (auto-creating if needed) the event's base Drive folder and returns
+ * its id + link. Query: domain?, eventDate?
+ */
+calendarRouter.get('/events/:eventId/drive-folder', asyncHandler(async (req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Calendar/Drive evidence is disabled.', 400);
+  }
+  const eventId = String(req.params.eventId);
+  const domain = strOrUndef(req.query.domain);
+  const eventDate = strOrUndef(req.query.eventDate);
+  validateISODate(eventDate, 'eventDate');
+  const segments = buildEvidenceFolderSegments({ eventId, domain, eventDate, category: 'overview' })
+    .slice(0, 4); // {year}/{quarter}/{domain}/{eventId} — base event folder
+  const folderId = await ensureFolderPath(segments);
+  res.json({ eventId, driveFolderId: folderId, driveFolderUrl: evidenceFolderUrl(folderId) });
+}));
+
+/**
+ * POST /api/calendar/events/:eventId/signed-artifact/publish
+ *
+ * Publishes a FULLY COMPLETED, signed artifact (signed form PDF, eCIgn
+ * certificate PDF, or final evidence package) to Google Drive and indexes it on
+ * the Calendar event. Per the form lifecycle rule, the caller must assert the
+ * artifact is complete — drafts/in-progress instances are NOT published here.
+ *
+ * Body: { workflowId?, taskId, formId?, formInstanceId?, artifactType,
+ *         title, fileName, mimeType, contentBase64, domain?, eventDate?,
+ *         completed: true, uploadedBy? }
+ */
+calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(async (req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Calendar/Drive evidence is disabled.', 400);
+  }
+  const eventId = String(req.params.eventId);
+  const b = (req.body ?? {}) as Record<string, unknown>;
+
+  if (b.completed !== true) {
+    throw new ApiError('validation_error', 'signed-artifact/publish requires `completed: true`. Drafts/in-progress instances stay in CES metadata only.', 400);
+  }
+  const taskId = strOrEmpty(b.taskId);
+  if (!taskId) throw new ApiError('validation_error', '`taskId` is required.', 400);
+  const contentBase64 = strOrEmpty(b.contentBase64);
+  if (!contentBase64) throw new ApiError('validation_error', '`contentBase64` (artifact content) is required.', 400);
+
+  const artifactType = strOrEmpty(b.artifactType);
+  const category: EvidenceCategory =
+    artifactType === 'ecign_certificate' ? 'ecign_certificate'
+    : artifactType === 'final_package' ? 'final_package'
+    : 'signed_artifact';
+
+  const title = strOrEmpty(b.title) || strOrEmpty(b.fileName) || 'signed-artifact';
+  const result = await uploadEventEvidence({
+    eventId,
+    workflowId: strOrUndef(b.workflowId),
+    taskId,
+    formId: strOrUndef(b.formId),
+    formInstanceId: strOrUndef(b.formInstanceId),
+    category,
+    title,
+    fileName: strOrEmpty(b.fileName) || `${title}`,
+    mimeType: strOrEmpty(b.mimeType) || 'application/pdf',
+    contentBase64,
+    domain: strOrUndef(b.domain),
+    eventDate: strOrUndef(b.eventDate),
+    uploadedBy: strOrUndef(b.uploadedBy) ?? resolveActor(req),
+    attachToCalendar: b.attachToCalendar !== false,
+  });
+
+  await persistEvidenceRef(result.evidenceId, result.ref);
+
+  res.status(201).json({
+    evidenceId: result.evidenceId,
+    artifactType: category,
+    eventId: result.ref.eventId,
+    driveFileId: result.ref.driveFileId,
+    driveFileUrl: result.ref.driveFileUrl,
+    driveFolderId: result.ref.driveFolderId,
+    calendarEventId: result.ref.calendarEventId,
+    calendarAttachmentStatus: result.ref.attachmentStatus,
+    storageProvider: result.ref.storageProvider,
+  });
+}));
+
 /* ── helpers ─────────────────────────────────────────── */
+
+/**
+ * Map a Drive/Calendar evidence ref to the canonical CES pointer shape and
+ * persist it to the CES metadata backend. NON-PHI metadata only — never bytes.
+ */
+async function persistEvidenceRef(evidenceId: string, ref: GoogleCalendarDriveEvidenceRef): Promise<void> {
+  const cesRef: CesEvidenceRef = {
+    storageProvider: 'google_drive_calendar',
+    evidenceId,
+    eventId: ref.eventId,
+    workflowId: ref.workflowId,
+    taskId: ref.taskId,
+    formId: ref.formId,
+    formInstanceId: ref.formInstanceId,
+    evidenceRequirementId: ref.evidenceRequirementId,
+    supportTaskId: ref.supportTaskId,
+    calendarEventId: ref.calendarEventId,
+    driveFileId: ref.driveFileId,
+    driveFileUrl: ref.driveFileUrl,
+    driveFolderId: ref.driveFolderId,
+    mimeType: ref.mimeType,
+    fileName: ref.title,
+    uploadedAt: ref.uploadedAt,
+    uploadedBy: ref.uploadedBy,
+    attachmentStatus: ref.attachmentStatus,
+    contentStatus: ref.contentStatus,
+  };
+  try {
+    await getCesMetadataStore().upsertEvidence(cesRef);
+  } catch (e) {
+    // Drive upload already succeeded; surface a non-fatal warning rather than
+    // losing the file. The pointer can be reconciled later.
+    log.warn('ces_metadata.evidence.persist_failed', { evidenceId, eventId: ref.eventId, error: (e as Error).message });
+  }
+}
 
 function validateISODate(v: string | undefined, name: string) {
   if (v == null) return;
@@ -225,6 +461,15 @@ function resolveActor(req: Request): string {
   return (req.header('x-actor')
        ?? req.header('x-user-id')
        ?? 'service-account');
+}
+
+function strOrEmpty(v: unknown): string {
+  return typeof v === 'string' ? v.trim() : '';
+}
+
+function strOrUndef(v: unknown): string | undefined {
+  const s = strOrEmpty(v);
+  return s ? s : undefined;
 }
 
 function clampInt(raw: string | undefined, min: number, max: number, dflt: number): number {

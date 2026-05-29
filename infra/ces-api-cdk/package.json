@@ -1,0 +1,28 @@
+{
+  "name": "ces-api-cdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "deploy:staging": "cdk deploy CesApi-staging --require-approval never",
+    "destroy:staging": "cdk destroy CesApi-staging"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.922.0",
+    "@aws-sdk/lib-dynamodb": "^3.922.0",
+    "aws-cdk-lib": "^2.196.0",
+    "constructs": "^10.4.2",
+    "source-map-support": "^0.5.21"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.152",
+    "@types/node": "^24.9.1",
+    "aws-cdk": "^2.1033.1",
+    "esbuild": "^0.25.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

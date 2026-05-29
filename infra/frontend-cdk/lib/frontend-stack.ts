@@ -151,7 +151,7 @@ export class FrontendStack extends Stack {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.execute-api.us-west-2.amazonaws.com https://*.amazoncognito.com",
+              "connect-src 'self' https://*.execute-api.us-west-1.amazonaws.com https://*.execute-api.us-west-2.amazonaws.com https://*.amazoncognito.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -212,6 +212,51 @@ export class FrontendStack extends Stack {
     });
 
     // ─────────────────────────────────────────────────────────────────────
+    // 6b. Optional CES metadata API behavior (/api/*)  — STAGING ONLY
+    //
+    //     When `-c apiOrigin=<httpApiId>.execute-api.us-west-1.amazonaws.com`
+    //     is supplied AND env === 'staging', an /api/* behavior is added so
+    //     the SPA reaches the CES metadata backend SAME-ORIGIN (no CORS, same
+    //     staging URL). The API Gateway host lives in us-west-1; CloudFront is
+    //     global so a cross-region origin is fine.
+    //
+    //     Without the context value (or for prod) NOTHING is added — the
+    //     distribution is unchanged, so this is safe to ship to prod as a
+    //     no-op and keeps production fully untouched.
+    // ─────────────────────────────────────────────────────────────────────
+    const apiOrigin = this.node.tryGetContext('apiOrigin') as string | undefined;
+    const enableApiBehavior = env === 'staging' && !!apiOrigin && apiOrigin.trim().length > 0;
+
+    const additionalBehaviors: Record<string, cloudfront.BehaviorOptions> = {
+      // /assets/* — Vite content-hashed filenames, safe for 1-year caching.
+      '/assets/*': {
+        origin: s3Origin,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: immutableCachePolicy,
+        responseHeadersPolicy: securityHeadersPolicy,
+        compress: true,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+        cachedMethods:  cloudfront.CachedMethods.CACHE_GET_HEAD,
+      },
+    };
+
+    if (enableApiBehavior) {
+      additionalBehaviors['/api/*'] = {
+        origin: new origins.HttpOrigin(apiOrigin!.trim(), {
+          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+        }),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        // Never cache API responses; forward everything except the Host header
+        // (API Gateway must see its own host).
+        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+        originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+        responseHeadersPolicy: securityHeadersPolicy,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        compress: true,
+      };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
     // 7.  CloudFront Distribution
     // ─────────────────────────────────────────────────────────────────────
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
@@ -230,18 +275,7 @@ export class FrontendStack extends Stack {
         cachedMethods:  cloudfront.CachedMethods.CACHE_GET_HEAD,
       },
 
-      additionalBehaviors: {
-        // /assets/* — Vite content-hashed filenames, safe for 1-year caching.
-        '/assets/*': {
-          origin: s3Origin,
-          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          cachePolicy: immutableCachePolicy,
-          responseHeadersPolicy: securityHeadersPolicy,
-          compress: true,
-          allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
-          cachedMethods:  cloudfront.CachedMethods.CACHE_GET_HEAD,
-        },
-      },
+      additionalBehaviors,
 
       // SPA routing fallback.
       // With OAC, S3 returns 403 (not 404) for missing keys.
@@ -397,6 +431,13 @@ export class FrontendStack extends Stack {
     new CfnOutput(this, 'Region', {
       value:       this.region,
       description: 'AWS region for data-bearing resources (CA/West)',
+    });
+
+    new CfnOutput(this, 'ApiBehaviorEnabled', {
+      value:       String(enableApiBehavior),
+      description: enableApiBehavior
+        ? `/api/* routed to ${apiOrigin} (staging same-origin CES backend)`
+        : 'No /api/* behavior — pass -c apiOrigin=<execute-api host> on staging to enable',
     });
   }
 }

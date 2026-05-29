@@ -290,3 +290,138 @@ function toRfc3339(input: string, endOfDay: boolean): string {
   }
   return input;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Drive evidence attachment bridge.
+
+   Drive stores the file; Calendar only attaches/indexes it. These
+   helpers patch the existing Calendar event's `attachments` array
+   (supportsAttachments=true) and write a small set of lightweight,
+   NON-PHI extendedProperties. They NEVER store file bytes, PHI,
+   patient names, form answers, audit trails, or certificate text on
+   the Calendar event.
+   ═══════════════════════════════════════════════════════════════ */
+
+export type CalendarAttachmentStatus = 'attached' | 'pending_attach' | 'attach_failed' | 'removed';
+
+export interface DriveAttachmentInput {
+  fileId: string;
+  fileUrl: string;
+  title: string;
+  mimeType?: string;
+  iconLink?: string;
+}
+
+export interface AttachResult {
+  status: CalendarAttachmentStatus;
+  attachmentCount: number;
+  duplicate: boolean;
+}
+
+/** Hard ceiling so we never push dozens of low-level files onto one event. */
+const MAX_CALENDAR_ATTACHMENTS = 25;
+
+/**
+ * Attach a Drive file to the existing Calendar event identified by event_id.
+ * Idempotent: a file already attached (by fileId/fileUrl) is not duplicated.
+ * Returns 'attach_failed' (non-throwing) so callers can persist honest status
+ * while still recording the Drive upload.
+ */
+export async function attachDriveFileToEvent(
+  eventId: string,
+  attachment: DriveAttachmentInput,
+): Promise<AttachResult> {
+  const c = await getClient();
+  try {
+    const existing = await findByEventId(eventId);
+    if (!existing?.googleEventId) {
+      log.warn('google.calendar.attach.no_event', { eventId });
+      return { status: 'attach_failed', attachmentCount: 0, duplicate: false };
+    }
+    const snap = await c.events.get({ calendarId: env.calendarId, eventId: existing.googleEventId });
+    const current = snap.data.attachments ?? [];
+
+    const already = current.some(a => a.fileId === attachment.fileId || a.fileUrl === attachment.fileUrl);
+    if (already) {
+      return { status: 'attached', attachmentCount: current.length, duplicate: true };
+    }
+    if (current.length >= MAX_CALENDAR_ATTACHMENTS) {
+      // Honor the attachment ceiling — defer to the Drive folder/manifest.
+      log.warn('google.calendar.attach.ceiling', { eventId, count: current.length });
+      return { status: 'pending_attach', attachmentCount: current.length, duplicate: false };
+    }
+
+    const next = [
+      ...current,
+      {
+        fileUrl: attachment.fileUrl,
+        title: attachment.title,
+        mimeType: attachment.mimeType,
+        fileId: attachment.fileId,
+        iconLink: attachment.iconLink,
+      },
+    ];
+    await c.events.patch({
+      calendarId: env.calendarId,
+      eventId: existing.googleEventId,
+      supportsAttachments: true,
+      requestBody: { attachments: next },
+    });
+    log.info('google.calendar.attach.ok', { eventId, fileId: attachment.fileId, count: next.length });
+    return { status: 'attached', attachmentCount: next.length, duplicate: false };
+  } catch (e) {
+    const err = fromGoogleError(e);
+    log.warn('google.calendar.attach.failed', { eventId, code: err.code, message: err.message });
+    return { status: 'attach_failed', attachmentCount: 0, duplicate: false };
+  }
+}
+
+/** Count current Drive attachments on the event (best-effort, non-throwing). */
+export async function getEventAttachmentCount(eventId: string): Promise<number | null> {
+  const c = await getClient();
+  try {
+    const existing = await findByEventId(eventId);
+    if (!existing?.googleEventId) return null;
+    const snap = await c.events.get({ calendarId: env.calendarId, eventId: existing.googleEventId });
+    return (snap.data.attachments ?? []).length;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Merge lightweight, NON-PHI evidence status keys into the event's
+ * extendedProperties.private. Only an allowlisted set of keys is written.
+ */
+export async function setEvidenceExtendedProperties(
+  eventId: string,
+  props: Record<string, string | undefined>,
+): Promise<boolean> {
+  const c = await getClient();
+  const ALLOWED = new Set([
+    'event_id', 'workflowId', 'evidencePackageId', 'swimlaneRoute', 'evidenceRoute',
+    'artifactRoute', 'eventStatus', 'auditReadyPct', 'lastEvidenceSyncAt',
+    'evidenceDriveFolderId', 'evidenceAttachmentCount',
+  ]);
+  try {
+    const existing = await findByEventId(eventId);
+    if (!existing?.googleEventId) return false;
+    const snap = await c.events.get({ calendarId: env.calendarId, eventId: existing.googleEventId });
+    const priv = { ...(snap.data.extendedProperties?.private ?? {}) };
+    for (const [k, v] of Object.entries(props)) {
+      if (!ALLOWED.has(k)) continue; // refuse anything not on the allowlist
+      if (v == null || v === '') continue;
+      priv[k] = v;
+    }
+    await c.events.patch({
+      calendarId: env.calendarId,
+      eventId: existing.googleEventId,
+      requestBody: { extendedProperties: { private: priv } },
+    });
+    return true;
+  } catch (e) {
+    const err = fromGoogleError(e);
+    log.warn('google.calendar.ext_props.failed', { eventId, code: err.code, message: err.message });
+    return false;
+  }
+}
