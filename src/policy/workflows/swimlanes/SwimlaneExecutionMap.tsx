@@ -7,6 +7,10 @@ import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
 import type { SwimlaneFormInstance, SwimlaneModel, SwimlaneNode, SwimlaneStatus } from './types';
 import { SwimlaneWorkspaceOverlay } from './SwimlaneWorkspaceOverlay';
 import { useSwimlaneModalPosition } from './useSwimlaneModalPosition';
+import { ECIgnSignatureField } from '@/policy/ecign/ECIgnSignatureField';
+import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
+import { permissionSatisfies, resolveUserPermissionRoles } from '@/policy/ecign/permissionRoles';
+import type { ECIgnPermissionRole, SignerRole } from '@/policy/ecign/types';
 
 type ZoomLevel = 'overview' | 'centering' | 'step' | 'form' | 'evidence' | 'signature';
 
@@ -576,7 +580,7 @@ function LevelTwoCard({ model, node, zoomState, onBack, onClose }: { model: Swim
       <div className="h-[calc(100%-86px)] overflow-auto custom-scrollbar p-8">
         {zoomState.level === 'form' ? <FormWorkspace model={model} node={node} formId={zoomState.actionId} />
           : zoomState.level === 'signature' ? (
-            <SignatureWorkspace node={node} />
+            <SignatureWorkspace model={model} node={node} />
           ) : (
             <PlaceholderWorkspace
               icon={zoomState.actionId === 'artifact' ? <LockKeyhole size={28} /> : <UploadCloud size={28} />}
@@ -869,7 +873,10 @@ function ActionPanel({ icon, title, detail, cta, disabled = false, onClick }: { 
   return <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-4"><div className="mb-3 flex items-start justify-between gap-3"><div><div className="mb-1 text-xs font-medium text-white">{title}</div><div className="line-clamp-2 text-[10px] leading-5 text-[#8a94a6]">{detail}</div></div><span className={disabled ? 'text-[#5e6a7f]' : 'text-[#007970]'}>{icon}</span></div><button type="button" onClick={onClick} disabled={disabled} className="relative z-10 flex w-full items-center justify-center gap-2 rounded border border-[#2a3441] bg-[#1c2433] py-2 text-xs font-medium text-white transition-colors hover:border-[#007970]/70 disabled:bg-transparent disabled:text-[#5e6a7f]"><Maximize2 size={12} />{cta}</button></div>;
 }
 
-function SignatureWorkspace({ node }: { node: SwimlaneNode }) {
+function SignatureWorkspace({ model, node }: { model: SwimlaneModel; node: SwimlaneNode }) {
+  const signer = useEcignSignerIdentity();
+  const userPermissionRoles = useMemo(() => resolveUserPermissionRoles(signer.role), [signer.role]);
+
   if (!node.signatureTasks?.length) {
     return (
       <PlaceholderWorkspace
@@ -881,36 +888,72 @@ function SignatureWorkspace({ node }: { node: SwimlaneNode }) {
     );
   }
 
+  const isEventExecution = model.mode === 'event_execution';
+
   return (
     <div className="mx-auto max-w-4xl space-y-5">
       <div className="rounded-[24px] border border-[#1c2433] bg-[#111923] p-6">
         <h3 className="text-[28px] font-semibold text-white">eCIgn Ceremony / Signature Path</h3>
         <p className="mt-2 text-[14px] leading-7 text-[#a0abc0]">
-          Every signer task below is deterministic and tied to the parent task, workflow, event, form, and signature slot. No signer task is created from this modal.
+          Every signer task below is deterministic and tied to the parent task, workflow, event, form, and signature slot. A signer role grants workflow authority; the required eCIgn permission role authorizes the actual signature. No signer task or form instance is created from this modal.
         </p>
       </div>
       <div className="space-y-3">
-        {node.signatureTasks.map(task => (
-          <div key={task.taskId} className="rounded-[20px] border border-[#1c2433] bg-[#111923] p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#8be6df]">Order {task.order}</div>
-                <div className="mt-1 text-[18px] font-semibold text-white">{task.signerRole}</div>
-                <div className="mt-1 text-[12px] text-[#a0abc0]">{task.reviewerRole ? `Reviewer path: ${task.reviewerRole}` : 'No reviewer path required.'}</div>
+        {node.signatureTasks.map(task => {
+          const requiredPermissionRole = task.requiredPermissionRole as ECIgnPermissionRole;
+          const userHasPermission = permissionSatisfies(userPermissionRoles, requiredPermissionRole);
+          return (
+            <div key={task.taskId} className="rounded-[20px] border border-[#1c2433] bg-[#111923] p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#8be6df]">Order {task.order}</div>
+                  <div className="mt-1 text-[18px] font-semibold text-white">{task.signerRole}</div>
+                  <div className="mt-1 text-[12px] text-[#a0abc0]">{task.reviewerRole ? `Reviewer path: ${task.reviewerRole}` : 'No reviewer path required.'}</div>
+                </div>
+                <div className="text-right text-[12px] text-[#cbd5e1]">
+                  <div>Status: {displayTitle(statusCopy(task.status as SwimlaneStatus))}</div>
+                  <div className="mt-1">Slot: {task.signatureSlot}</div>
+                </div>
               </div>
-              <div className="text-right text-[12px] text-[#cbd5e1]">
-                <div>Status: {displayTitle(statusCopy(task.status as SwimlaneStatus))}</div>
-                <div className="mt-1">Slot: {task.signatureSlot}</div>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
+                <span className="rounded-full border border-[#2a3441] bg-[#141a23] px-2.5 py-1 text-[#cbd5e1]">Required permission: {requiredPermissionRole}</span>
+                <span className={`rounded-full border px-2.5 py-1 ${userHasPermission ? 'border-[#1f6f5c] bg-[#0e2a22] text-[#8be6df]' : 'border-[#7f1d1d] bg-[#2a1212] text-[#fca5a5]'}`}>
+                  {userHasPermission ? 'Permission satisfied' : 'Missing eCIgn permission role'}
+                </span>
+              </div>
+              <div className="mt-3 grid gap-2 text-[11px] text-[#8a94a6]">
+                <div className="font-mono break-all text-[#5e6a7f]">{task.taskId}</div>
+                <div>Parent Task: {task.parentTaskId}</div>
+                <div>Form Instance: {task.formInstanceId ?? 'Not assigned'}</div>
+              </div>
+              <div className="mt-4">
+                {!isEventExecution ? (
+                  <div className="rounded-lg border border-dashed border-[#2a3441] px-3 py-2.5 text-[11px] text-[#8a94a6]">Template mode — signatures are preview-only. Open the event instance to sign.</div>
+                ) : task.status === 'signed' || task.status === 'reviewed' ? (
+                  <div className="rounded-lg border border-[#1f6f5c] bg-[#0e2a22] px-3 py-2.5 text-[11px] text-[#8be6df]">Signature recorded for this requirement.</div>
+                ) : task.status === 'blocked' || !task.formInstanceId ? (
+                  <div className="rounded-lg border border-dashed border-[#2a3441] px-3 py-2.5 text-[11px] text-[#8a94a6]">Action blocked until the required form instance exists.</div>
+                ) : (
+                  <div className="rounded-lg bg-white p-3">
+                    <ECIgnSignatureField
+                      taskId={task.taskId}
+                      formId={task.formId ?? node.requiredForms[0] ?? 'NOFORM'}
+                      formInstanceId={task.formInstanceId}
+                      eventId={task.eventId ?? model.eventId}
+                      workflowId={task.workflowId ?? model.workflowId}
+                      signerRole={task.signerRole as SignerRole}
+                      requiredPermissionRole={requiredPermissionRole}
+                      signatureSlot={task.signatureSlot}
+                      hasSignerTask
+                      mode="event_execution"
+                      variant="field"
+                    />
+                  </div>
+                )}
               </div>
             </div>
-            <div className="mt-3 grid gap-2 text-[11px] text-[#8a94a6]">
-              <div className="font-mono break-all text-[#5e6a7f]">{task.taskId}</div>
-              <div>Parent Task: {task.parentTaskId}</div>
-              <div>Form Instance: {task.formInstanceId ?? 'Not assigned'}</div>
-              <div>{task.status === 'blocked' ? 'Action blocked until the required form instance exists.' : 'Open signature ceremony only when this signer is actionable in the execution workspace.'}</div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {node.finalApproverRoles?.length ? (
         <div className="rounded-[20px] border border-[#1c2433] bg-[#111923] p-5 text-[13px] text-[#cbd5e1]">

@@ -64,6 +64,7 @@ export function buildSignatureTaskRecord(requirement: SignatureRequirement): Sig
     formInstanceId: requirement.formInstanceId,
     signatureSlot: requirement.signatureSlot,
     signerRole: requirement.signerRole,
+    requiredPermissionRole: requirement.requiredPermissionRole,
     reviewerRole: requirement.reviewerRole,
     order: requirement.order,
     status: requirement.status,

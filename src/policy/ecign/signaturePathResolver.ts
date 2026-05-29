@@ -2,6 +2,7 @@ import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
 import { FORM_OVERRIDES } from '@/policy/data/formsLibraryContent';
 import { buildSignatureRequirementId, buildSignatureTaskRecord, dedupeSignatureRequirements, dedupeSignatureTasks } from './signatureTaskBuilder';
 import { normalizeSignerRole, resolveSignerHierarchyRule, uniqueSignerRoles } from './signerHierarchy';
+import { inferRequiredPermissionRole } from './permissionRoles';
 import type {
   ResolvedSignaturePath,
   SignatureRequirement,
@@ -99,6 +100,11 @@ function resolveFormSpecificRequirements(
             formInstanceId: form.formInstanceId,
             signatureSlot: slot.field_id,
             signerRole,
+            requiredPermissionRole: inferRequiredPermissionRole({
+              signerRole,
+              signatureSlot: slot.field_id,
+              isFinalApprover: roles.finalApproverRoles.includes(signerRole),
+            }),
             reviewerRole: roles.reviewerRoles[0],
             order: order++,
             required: true,
@@ -134,6 +140,11 @@ function resolveFormSpecificRequirements(
       formInstanceId: form.formInstanceId,
       signatureSlot: recordType === 'attestation' || isAcknowledgment ? 'primary-attestation' : 'primary-signature',
       signerRole,
+      requiredPermissionRole: inferRequiredPermissionRole({
+        signerRole,
+        signatureSlot: recordType === 'attestation' || isAcknowledgment ? 'primary-attestation' : 'primary-signature',
+        isFinalApprover: roles.finalApproverRoles.includes(signerRole),
+      }),
       reviewerRole,
       order: order++,
       required: true,
@@ -178,6 +189,11 @@ function resolveApprovalRequirements(
       formInstanceId: context.forms.length === 1 ? context.forms[0].formInstanceId : undefined,
       signatureSlot,
       signerRole,
+      requiredPermissionRole: inferRequiredPermissionRole({
+        signerRole,
+        signatureSlot,
+        isFinalApprover: approval.targetKind === 'event' || roles.finalApproverRoles.includes(signerRole),
+      }),
       reviewerRole: roles.reviewerRoles[0],
       order: order++,
       required: true,
@@ -202,6 +218,11 @@ function resolveApprovalRequirements(
       parentTaskId: context.parentTaskId,
       signatureSlot: `minutes-signoff-${index + 1}`,
       signerRole,
+      requiredPermissionRole: inferRequiredPermissionRole({
+        signerRole,
+        signatureSlot: `minutes-signoff-${index + 1}`,
+        isFinalApprover: true,
+      }),
       reviewerRole: roles.reviewerRoles[0],
       order: order++,
       required: true,

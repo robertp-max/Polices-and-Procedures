@@ -31,6 +31,7 @@
     "verify:brad-scenario": "tsx --tsconfig tsconfig.app.json scripts/verifyBradScenarioActionLayer.ts",
     "validate:event-dataflow": "tsx --tsconfig tsconfig.app.json scripts/validateEventDataflow.ts",
     "validate:signer-hierarchy-ecign": "tsx --tsconfig tsconfig.app.json Builder/_system/audit-signer-hierarchy-and-ecign-task-mapping.ts",
+    "validate:ecign-consent-signature": "tsx --tsconfig tsconfig.app.json Builder/_system/audit-ecign-consent-signature-profile-and-permission.ts",
     "check:evidence-phase01": "tsx --tsconfig tsconfig.app.json scripts/checkEvidencePhase01.ts",
     "check:evidence-phase15": "tsx --tsconfig tsconfig.app.json scripts/checkEvidencePhase15.ts",
     "check:evidence-phase2": "tsx --tsconfig tsconfig.app.json scripts/checkEvidencePhase2.ts",
