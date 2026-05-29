@@ -1982,59 +1982,12 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
             ? { ...prev.formStates, [fKey(eventId, instance!.formId)]: { status: 'complete' as FormStatus, actor: enf.actor.userId, timestamp: now } }
             : prev.formStates;
 
-          // ── Auto-complete signer tasks for this form when signed/locked ──
-          const signerOverridesPatch: EventTask[] = [];
-          if (isCompletion && instance?.formId) {
-            const currentRole = enf.actor.role;
-            const safeRole = currentRole.replace(/\s+/g, '_').toUpperCase();
-            const signerTaskId = `SIGN-${eventId}-${instance.formId}-${safeRole}`;
-            const existingOverrides = prev.taskOverridesByEventId[eventId] ?? [];
-            const existing = existingOverrides.find(t => t.id === signerTaskId);
-            if (existing && existing.status !== 'completed') {
-              signerOverridesPatch.push({ ...existing, status: 'completed', updatedAt: now });
-            } else if (!existing) {
-              // Create the override as completed so it's tracked
-              signerOverridesPatch.push({
-                id: signerTaskId,
-                eventId,
-                taskSourceId: `signer:${instance.formId}:${safeRole}`,
-                taskSourceType: 'requiredForm',
-                isRequired: true,
-                requirementSource: 'regulation',
-                policyIds: [],
-                formIds: [instance.formId],
-                title: `Sign ${instance.formId} as ${currentRole}`,
-                source: 'generated',
-                status: 'completed',
-                ownerRole: currentRole,
-                folderPath: '',
-                createdAt: now,
-                updatedAt: now,
-                isDeleted: false,
-                isSignerTask: true,
-                signerRole: currentRole,
-              });
-            }
-          }
-
-          const mergedOverrides = signerOverridesPatch.length > 0
-            ? [
-                ...(prev.taskOverridesByEventId[eventId] ?? []).filter(
-                  t => !signerOverridesPatch.some(p => p.id === t.id),
-                ),
-                ...signerOverridesPatch,
-              ]
-            : (prev.taskOverridesByEventId[eventId] ?? []);
-
           return {
             formStates: formStatesPatch,
             generatedFormInstancesByEventId: {
               ...prev.generatedFormInstancesByEventId,
               [eventId]: updated,
             },
-            taskOverridesByEventId: signerOverridesPatch.length > 0
-              ? { ...prev.taskOverridesByEventId, [eventId]: mergedOverrides }
-              : prev.taskOverridesByEventId,
             taskAuditByEventId: {
               ...prev.taskAuditByEventId,
               [eventId]: appendExecutionAudit(prev.taskAuditByEventId[eventId] ?? [], {

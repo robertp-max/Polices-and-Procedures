@@ -18,8 +18,8 @@ export function buildEventSwimlaneRoute(eventId: string, params: { workflowId?: 
 }
 
 export function buildSwimlaneRouteForEvent(event: RegulatoryEvent, taskId?: string): string {
-  if (event.workflowId) {
-    return buildWorkflowSwimlaneRoute(event.workflowId, { eventId: event.id, taskId });
-  }
-  return buildEventSwimlaneRoute(event.id, { taskId });
+  return buildEventSwimlaneRoute(event.id, {
+    workflowId: event.workflowId ?? undefined,
+    taskId,
+  });
 }

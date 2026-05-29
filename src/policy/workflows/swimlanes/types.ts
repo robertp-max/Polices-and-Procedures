@@ -1,3 +1,5 @@
+import type { SignatureRequirement, SignatureTaskRecord } from '@/policy/ecign/types';
+
 export type SwimlaneStatus =
   | 'pending'
   | 'ready'
@@ -32,6 +34,8 @@ export interface SwimlaneNode {
   taskId: string;
   workflowId?: string;
   eventId?: string;
+  sourceStepId?: string;
+  processFlowStepId?: string;
   phaseId: string;
   laneId: string;
   title: string;
@@ -39,15 +43,50 @@ export interface SwimlaneNode {
   ownerRole: string;
   status: SwimlaneStatus;
   requiredForms: string[];
+  formInstances?: SwimlaneFormInstance[];
   requiredEvidence: string[];
+  supportingDocumentationTasks: SwimlaneSupportingDocumentationTask[];
+  instructions: string[];
+  signatureRequirements?: SignatureRequirement[];
+  signatureTasks?: SignatureTaskRecord[];
   signerRole?: string;
   reviewerRole?: string;
+  reviewerRoles?: string[];
+  finalApproverRoles?: string[];
+  governingBodyRequired?: boolean;
+  artifactBlockedReasons?: string[];
   dependencies: string[];
   nextNodeIds: string[];
   auditPurpose: string;
   policyRefs?: string[];
   regulatoryRefs?: string[];
   sourceType: SwimlaneSourceType;
+}
+
+export interface SwimlaneSupportingDocumentationTask {
+  id: string;
+  supportTaskId: string;
+  title: string;
+  description: string;
+  evidenceRequirementId: string;
+  eventId?: string;
+  parentTaskId: string;
+  workflowId?: string;
+  formId: string;
+  formInstanceId?: string;
+  status: SwimlaneStatus;
+  required: boolean;
+  artifactId?: string;
+}
+
+export interface SwimlaneFormInstance {
+  formId: string;
+  formTitle: string;
+  formInstanceId?: string;
+  status: SwimlaneStatus;
+  missing: boolean;
+  requiredAdditionalDocumentation: boolean;
+  supportingDocumentation: SwimlaneSupportingDocumentationTask[];
 }
 
 export interface SwimlaneEdge {

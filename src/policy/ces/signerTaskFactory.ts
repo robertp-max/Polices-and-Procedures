@@ -19,8 +19,10 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type { CesRole } from './cesRoles';
-import { resolveCesRole, buildCesRoleAssignment, isDonAssistant } from './cesRoles';
+import { buildCesRoleAssignment, resolveCesRole } from './cesRoles';
 import type { EventTask } from '@/policy/compliance-execution/types';
+import { resolveCanonicalSignaturePath } from '@/policy/ecign/signaturePathResolver';
+import { buildDeterministicSignatureTaskId } from '@/policy/ecign/signatureTaskBuilder';
 
 /* ─── Signer Task metadata ────────────────────────────────── */
 
@@ -63,12 +65,21 @@ export interface CesSignerTask {
 
 /** Builds the canonical signer task ID. Never use any other format. */
 export function buildSignerTaskId(
-  eventId:    string,
-  formId:     string,
+  eventId: string,
+  workflowId: string | undefined,
+  parentTaskId: string,
+  formId: string,
   signerRole: string,
+  signatureSlot = 'primary-signature',
 ): string {
-  const safeRole = signerRole.replace(/\s+/g, '_').toUpperCase();
-  return `${eventId}::${formId}::SIGNER::${safeRole}`;
+  return buildDeterministicSignatureTaskId({
+    eventId,
+    workflowId,
+    parentTaskId,
+    formId,
+    signatureSlot,
+    signerRole: resolveCesRole(signerRole),
+  });
 }
 
 /* ─── Signer role list per form / default signers ───────── */
@@ -92,7 +103,7 @@ export function resolveSignerRoles(
   explicitRoles?: readonly string[],
 ): CesRole[] {
   if (explicitRoles && explicitRoles.length > 0) {
-    return explicitRoles.map(r => resolveCesRole(r)).filter(r => !isDonAssistant(r));
+    return explicitRoles.map(r => resolveCesRole(r));
   }
   if (taskSourceType === 'approval') return APPROVAL_SIGNER_ROLES;
   if (domain === 'governance')       return GOVERNANCE_SIGNER_ROLES;
@@ -127,18 +138,38 @@ export interface SignerTaskInput {
 export function generateSignerTasksForForm(input: SignerTaskInput): CesSignerTask[] {
   const { eventId, formId, parentFormTask, domain, workflowId, sprintId, explicitSignerRoles } = input;
   if (!formId || !eventId) return [];
-
-  const signerRoles = resolveSignerRoles(
-    formId,
-    parentFormTask.taskSourceType,
+  const path = resolveCanonicalSignaturePath({
     domain,
-    explicitSignerRoles,
-  );
+    workflowId,
+    eventId,
+    parentTaskId: parentFormTask.id,
+    title: parentFormTask.title,
+    description: parentFormTask.description,
+    ownerRole: parentFormTask.ownerRole,
+    forms: [{ formId, formInstanceId: parentFormTask.generated_form_instance_ids?.[0] }],
+    approvals: [],
+  });
+  const signerRoles = path.signatureTasks.length > 0
+    ? path.signatureTasks.map(task => resolveCesRole(task.signerRole))
+    : resolveSignerRoles(
+        formId,
+        parentFormTask.taskSourceType,
+        domain,
+        explicitSignerRoles,
+      );
 
   const now = new Date().toISOString();
 
-  return signerRoles.map(signerRole => {
-    const id = buildSignerTaskId(eventId, formId, signerRole);
+  return signerRoles.map((signerRole, index) => {
+    const matchedTask = path.signatureTasks[index];
+    const id = buildSignerTaskId(
+      eventId,
+      workflowId,
+      parentFormTask.id,
+      formId,
+      signerRole,
+      matchedTask?.signatureSlot ?? `slot-${index + 1}`,
+    );
     const ra = buildCesRoleAssignment({
       domain,
       taskSourceType: 'requiredForm',
@@ -155,7 +186,7 @@ export function generateSignerTasksForForm(input: SignerTaskInput): CesSignerTas
       parentFormTaskId:        parentFormTask.id,
       signerRole,
       title:                   `Sign: ${parentFormTask.title} — ${signerRole}`,
-      status:                  'pending' as const,
+      status:                  matchedTask?.status === 'signed' ? 'signed' as const : 'pending' as const,
       dueDate:                 parentFormTask.dueDate,
       roleAssignment:          ra,
       blocksFormCompletion:    true as const,

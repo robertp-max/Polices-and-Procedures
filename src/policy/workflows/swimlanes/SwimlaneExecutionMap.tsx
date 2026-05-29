@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, ChevronRight, ExternalLink, FileSignature, FileText, LockKeyhole, Maximize2, UploadCloud, X } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ChevronRight, Copy, ExternalLink, FileSignature, FileText, LockKeyhole, Maximize2, UploadCloud, X } from 'lucide-react';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { FORM_TITLES } from '@/policy/data/formTitles.generated';
 import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
-import type { SwimlaneModel, SwimlaneNode, SwimlaneStatus } from './types';
+import type { SwimlaneFormInstance, SwimlaneModel, SwimlaneNode, SwimlaneStatus } from './types';
 import { SwimlaneWorkspaceOverlay } from './SwimlaneWorkspaceOverlay';
 import { useSwimlaneModalPosition } from './useSwimlaneModalPosition';
 
@@ -75,6 +75,91 @@ function displayTaskId(taskId: string) {
     .replace(/_/g, '-');
 }
 
+function normalizeIdentity(value: string | undefined | null) {
+  return String(value ?? '')
+    .trim()
+    .replace(/[^A-Za-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .toUpperCase();
+}
+
+function taskAliases(node: SwimlaneNode) {
+  const aliases = [node.taskId, node.sourceStepId, node.processFlowStepId].filter(Boolean) as string[];
+  const stepMatch = node.taskId.match(/STEP-\d+/i);
+  if (node.workflowId && stepMatch) aliases.push(`${node.workflowId}-${stepMatch[0].toUpperCase()}`);
+  if (node.eventId && node.processFlowStepId) aliases.push(`${node.eventId}-${node.processFlowStepId}`);
+  return aliases;
+}
+
+function copyText(value: string) {
+  if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) return;
+  void navigator.clipboard.writeText(value);
+}
+
+function nodeSupportTasks(node: SwimlaneNode) {
+  return node.supportingDocumentationTasks?.length
+    ? node.supportingDocumentationTasks
+    : node.formInstances?.flatMap(item => item.supportingDocumentation) ?? [];
+}
+
+function artifactPackageDetail(node: SwimlaneNode) {
+  const hasBlockingRequirements = node.requiredForms.length > 0
+    || node.requiredEvidence.length > 0
+    || nodeSupportTasks(node).length > 0
+    || Boolean((node.signatureTasks?.length ?? 0) > 0 || node.signerRole || node.reviewerRole);
+  if (node.status === 'complete' || node.status === 'locked') return 'Artifact package is ready to review for this task.';
+  if (node.artifactBlockedReasons?.length) return `Blocked: ${node.artifactBlockedReasons.slice(0, 2).join(' | ')}`;
+  if (hasBlockingRequirements) return 'Artifact package will be available after all required forms, evidence, and signatures are complete.';
+  return 'Artifact package will be available after all required forms, evidence, and signatures are complete.';
+}
+
+function nodeFormInstanceIds(node: SwimlaneNode) {
+  const ids = Array.from(new Set((node.formInstances ?? []).map(item => item.formInstanceId).filter(Boolean))) as string[];
+  return ids.length ? ids : ['Not assigned'];
+}
+
+function workflowAccountabilityCopy(node: SwimlaneNode) {
+  const reviewers = node.reviewerRoles?.length ? node.reviewerRoles.join(', ') : node.reviewerRole;
+  const signers = node.signatureTasks?.length ? Array.from(new Set(node.signatureTasks.map(task => task.signerRole))).join(', ') : node.signerRole;
+  const finalApprovers = node.finalApproverRoles?.length ? node.finalApproverRoles.join(', ') : undefined;
+  return [
+    `Owner: ${node.ownerRole}`,
+    reviewers ? `Reviewer path: ${reviewers}` : undefined,
+    signers ? `Signer path: ${signers}` : undefined,
+    finalApprovers ? `Final approval: ${finalApprovers}` : undefined,
+  ].filter(Boolean).join(' | ');
+}
+
+function signatureWorkspaceDetails(node: SwimlaneNode) {
+  if (node.signatureTasks?.length) {
+    return node.signatureTasks.map(task =>
+      `#${task.order} ${task.signerRole}${task.reviewerRole ? ` | reviewer ${task.reviewerRole}` : ''} | ${statusCopy(task.status as SwimlaneStatus)}`,
+    );
+  }
+  return [
+    `eventId: ${node.eventId ?? 'missing'}`,
+    `taskId: ${node.taskId}`,
+    `workflowId: ${node.workflowId ?? 'missing'}`,
+  ];
+}
+
+function artifactWorkspaceDetails(model: SwimlaneModel, node: SwimlaneNode, mode: 'artifact' | 'evidence') {
+  const checklist = node.artifactBlockedReasons?.length
+    ? node.artifactBlockedReasons
+    : mode === 'artifact'
+      ? [artifactPackageDetail(node)]
+      : node.requiredEvidence.length
+        ? node.requiredEvidence
+        : ['No evidence requirement is assigned to this node.'];
+  return [
+    `eventId: ${model.eventId ?? 'missing'}`,
+    `taskId: ${node.taskId}`,
+    `workflowId: ${model.workflowId ?? 'missing'}`,
+    ...checklist,
+  ];
+}
+
 function nodeCenter(model: SwimlaneModel, node: SwimlaneNode) {
   const phaseIds = model.phases.sort((a, b) => a.order - b.order).map(phase => phase.id);
   const laneIds = model.lanes.sort((a, b) => a.order - b.order).map(lane => lane.id);
@@ -142,7 +227,7 @@ export function SwimlaneExecutionMap({ model, initialTaskId }: { model: Swimlane
   const targetCenter = targetNode ? nodeCenter(model, targetNode) : null;
   const formCount = new Set(model.nodes.flatMap(node => node.requiredForms)).size;
   const evidenceCount = new Set(model.nodes.flatMap(node => node.requiredEvidence)).size;
-  const signerCount = model.nodes.filter(node => node.signerRole || node.reviewerRole).length;
+  const signerCount = model.nodes.reduce((count, node) => count + (node.signatureTasks?.length ?? (node.signerRole || node.reviewerRole ? 1 : 0)), 0);
   const { workspaceRect, captureWorkspaceRect } = useSwimlaneModalPosition(workspaceRef, isFullyZoomed);
   const canvasTransform = (() => {
     if (!targetCenter || zoomState.level === 'overview') return 'translate3d(0px, 0px, 0px) scale(1)';
@@ -192,11 +277,13 @@ export function SwimlaneExecutionMap({ model, initialTaskId }: { model: Swimlane
   // Deep taskId auto-open/select (P1 fix from QA)
   useEffect(() => {
     if (!initialTaskId) return;
-    const matchingNode = model.nodes.find(n =>
-      n.taskId === initialTaskId ||
-      n.taskId?.includes(initialTaskId) ||
-      initialTaskId.includes(n.taskId || '')
-    );
+    const normalizedInitialTaskId = normalizeIdentity(initialTaskId);
+    const matchingNode = model.nodes.find(node => taskAliases(node).some(alias => {
+      const normalizedAlias = normalizeIdentity(alias);
+      return normalizedAlias === normalizedInitialTaskId
+        || normalizedAlias.includes(normalizedInitialTaskId)
+        || normalizedInitialTaskId.includes(normalizedAlias);
+    }));
     if (matchingNode) {
       setLastNodeId(matchingNode.nodeId);
       setZoomState({ level: 'step', nodeId: matchingNode.nodeId, actionId: null });
@@ -394,7 +481,7 @@ function SwimlaneNodes({ model, selectedNodeId, onOpen }: { model: SwimlaneModel
         const unavailable = node.status === 'unavailable';
         const accented = !completed && !blocked && !unavailable;
         return (
-          <button key={node.nodeId} type="button" className={['swimlane-card absolute flex flex-col p-4 text-left outline-none transition-transform duration-300', accented ? 'accent-node' : '', blocked ? 'blocked-node' : '', unavailable ? 'unavailable-node' : '', completed && !finalNode ? 'completed-node' : '', completed && finalNode ? 'orange-completed-node' : '', node.nodeId === selectedNodeId ? 'selected-node' : ''].filter(Boolean).join(' ')} style={{ left: center.x, top: center.y, width: LAYOUT.NODE_WIDTH, height: LAYOUT.NODE_HEIGHT, transform: 'translate(-50%, -50%)' }} onClick={(event) => onOpen(node.nodeId, event)}>
+          <button key={node.nodeId} type="button" title={node.taskId} className={['swimlane-card absolute flex flex-col p-4 text-left outline-none transition-transform duration-300', accented ? 'accent-node' : '', blocked ? 'blocked-node' : '', unavailable ? 'unavailable-node' : '', completed && !finalNode ? 'completed-node' : '', completed && finalNode ? 'orange-completed-node' : '', node.nodeId === selectedNodeId ? 'selected-node' : ''].filter(Boolean).join(' ')} style={{ left: center.x, top: center.y, width: LAYOUT.NODE_WIDTH, height: LAYOUT.NODE_HEIGHT, transform: 'translate(-50%, -50%)' }} onClick={(event) => onOpen(node.nodeId, event)}>
             <span className="mb-2 flex items-start justify-between gap-3">
               <span className="min-w-0 truncate font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#8a94a6]">{displayTaskId(node.taskId)}</span>
               <NodeStatusBadge status={node.status} />
@@ -422,6 +509,7 @@ function ZoomOverlay({ model, node, zoomState, workspaceRect, onClose, onBack, o
 
 function ZoomCard({ model, node, onClose, onOpenLevelTwo }: { model: SwimlaneModel; node: SwimlaneNode; onClose: () => void; onOpenLevelTwo: (level: Exclude<ZoomLevel, 'overview' | 'centering' | 'step'>, actionId?: string | null) => void }) {
   const phase = model.phases.find(item => item.id === node.phaseId)?.title ?? node.phaseId;
+  const supportTasks = nodeSupportTasks(node);
   return (
     <SpotlightCard className="zoom-card-shell w-full max-w-4xl max-h-[85vh] animate-zoomIn ring-1 ring-white/5" role="dialog" aria-modal="true">
       <header className="border-b border-[#1c2433] bg-[#141a23]/90 px-8 py-6 backdrop-blur-md">
@@ -445,19 +533,22 @@ function ZoomCard({ model, node, onClose, onOpenLevelTwo }: { model: SwimlaneMod
         <div className="flex gap-8">
           <div className="flex-1 space-y-5">
             <div className="flex flex-wrap gap-x-7 gap-y-2">
-              <HeaderMetric value={displayTaskId(node.taskId)} label="task" />
               <HeaderMetric value={displayTitle(statusCopy(node.status))} label="status" />
               <HeaderMetric value={phase} label="phase" />
             </div>
-            <InfoBlock title="Workflow Accountability" body={`${node.ownerRole}${node.reviewerRole ? `; reviewer: ${node.reviewerRole}` : ''}${node.signerRole ? `; signer: ${node.signerRole}` : ''}`} />
+            <IdentityPanel model={model} node={node} />
+            <InfoBlock title="Workflow Accountability" body={workflowAccountabilityCopy(node)} />
             <InfoBlock title="Compliance Audit Purpose" body={node.auditPurpose} accent />
+            <InstructionPanel instructions={node.instructions} />
             {model.missingContext?.length ? <InfoBlock title="Missing Context Indicators" body={model.missingContext.join(' | ')} /> : null}
           </div>
           <div className="w-[340px] shrink-0 space-y-4">
-            <ActionPanel icon={<FileText size={16} />} title="Required Forms" detail={node.requiredForms.length ? node.requiredForms.join(', ') : 'No forms required'} disabled={!node.requiredForms.length} onClick={() => onOpenLevelTwo('form', node.requiredForms[0] ?? null)} cta={model.mode === 'event_execution' ? 'Open / Create Form Instance' : 'Open Template Requirement'} />
-            <ActionPanel icon={<UploadCloud size={16} />} title="Supporting Evidence" detail={node.requiredEvidence.length ? node.requiredEvidence.join(', ') : 'No evidence required'} disabled={!node.requiredEvidence.length} onClick={() => onOpenLevelTwo('evidence', 'evidence')} cta="Open Evidence Workspace" />
-            <ActionPanel icon={<FileSignature size={16} />} title="eCIgn Ceremony" detail={node.signerRole ? `Requires: ${node.signerRole}` : node.reviewerRole ? `Reviewer: ${node.reviewerRole}` : 'No signature path assigned'} disabled={!node.signerRole && !node.reviewerRole} onClick={() => onOpenLevelTwo('signature', 'sign')} cta="Show Signature Path" />
-            <ActionPanel icon={<LockKeyhole size={16} />} title="Artifact Package" detail="Preview locked package state" onClick={() => onOpenLevelTwo('evidence', 'artifact')} cta="Open Artifact Workspace" />
+            <FormInstancesPanel model={model} node={node} onOpenLevelTwo={onOpenLevelTwo} />
+            <SupportingDocumentationPanel tasks={supportTasks} />
+            <SupportingEvidencePanel evidence={node.requiredEvidence} />
+            <ActionPanel icon={<UploadCloud size={16} />} title="Supporting Evidence" detail={node.requiredEvidence.length ? 'Review required evidence and linked documentation for this task.' : 'No supporting evidence required for this task.'} disabled={!node.requiredEvidence.length} onClick={() => onOpenLevelTwo('evidence', 'evidence')} cta="Open Evidence Workspace" />
+            <ActionPanel icon={<FileSignature size={16} />} title="eCIgn Ceremony" detail={node.signatureTasks?.length ? `${node.signatureTasks.length} deterministic signer task${node.signatureTasks.length === 1 ? '' : 's'} resolved.` : node.signerRole ? `Requires: ${node.signerRole}` : node.reviewerRole ? `Reviewer: ${node.reviewerRole}` : 'No signature path assigned'} disabled={!(node.signatureTasks?.length || node.signerRole || node.reviewerRole)} onClick={() => onOpenLevelTwo('signature', 'sign')} cta="Show Signature Path" />
+            <ActionPanel icon={<LockKeyhole size={16} />} title="Artifact Package" detail={artifactPackageDetail(node)} onClick={() => onOpenLevelTwo('evidence', 'artifact')} cta="Open Artifact Workspace" />
           </div>
         </div>
       </div>
@@ -484,8 +575,18 @@ function LevelTwoCard({ model, node, zoomState, onBack, onClose }: { model: Swim
       </header>
       <div className="h-[calc(100%-86px)] overflow-auto custom-scrollbar p-8">
         {zoomState.level === 'form' ? <FormWorkspace model={model} node={node} formId={zoomState.actionId} />
-          : zoomState.level === 'signature' ? <PlaceholderWorkspace icon={<FileSignature size={28} />} title="Signature Workspace" body={model.mode === 'event_execution' ? 'Signature requirements route through event execution context; signer tasks are created by the form/eCIgn workflow, not by this visual map.' : 'Template mode shows signer path only and creates no signer tasks.'} details={[node.signerRole ?? node.reviewerRole ?? 'No signer/reviewer role assigned']} />
-          : <PlaceholderWorkspace icon={<UploadCloud size={28} />} title={zoomState.actionId === 'artifact' ? 'Artifact Workspace' : 'Evidence Workspace'} body={model.mode === 'event_execution' ? 'Evidence uploads require event, task, workflow, and form context.' : 'Template mode lists evidence requirements without creating records.'} details={node.requiredEvidence.length ? node.requiredEvidence : ['No evidence requirement is assigned to this node.']} />}
+          : zoomState.level === 'signature' ? (
+            <SignatureWorkspace node={node} />
+          ) : (
+            <PlaceholderWorkspace
+              icon={zoomState.actionId === 'artifact' ? <LockKeyhole size={28} /> : <UploadCloud size={28} />}
+              title={model.mode === 'event_execution' ? 'Workspace Not Yet Available' : levelTwoTitle(zoomState)}
+              body={model.mode === 'event_execution'
+                ? `This action requires event execution context or a completed artifact. No record was found for eventId=${model.eventId ?? 'missing'}, taskId=${node.taskId}, workflowId=${model.workflowId ?? 'missing'}.`
+                : 'Template mode lists evidence and artifact requirements without creating execution workspaces.'}
+              details={artifactWorkspaceDetails(model, node, zoomState.actionId === 'artifact' ? 'artifact' : 'evidence')}
+            />
+          )}
       </div>
     </SpotlightCard>
   );
@@ -494,25 +595,43 @@ function LevelTwoCard({ model, node, zoomState, onBack, onClose }: { model: Swim
 function FormWorkspace({ model, node, formId }: { model: SwimlaneModel; node: SwimlaneNode; formId: string | null }) {
   const form = formId ? FORMS_DATASET.find(item => item.id === formId) : null;
   if (!formId) return <PlaceholderWorkspace icon={<FileText size={28} />} title="Form Template" body="Select a form-bearing swimlane node." details={[]} />;
+  const formInstance = node.formInstances?.find(item => item.formId === formId);
   const query = new URLSearchParams();
   if (model.mode === 'event_execution' && model.eventId) {
     query.set('event_id', model.eventId);
     query.set('task_id', node.taskId);
     query.set('form_id', formId);
+    if (formInstance?.formInstanceId) query.set('form_instance_id', formInstance.formInstanceId);
     if (model.workflowId) query.set('workflow_id', model.workflowId);
     query.set('requirement_id', `${node.taskId}::FORM_COMPLETION::${formId}`);
   }
   const route = `/forms/${encodeURIComponent(formId)}${query.toString() ? `?${query.toString()}` : ''}`;
+  if (model.mode === 'event_execution' && !formInstance?.formInstanceId) {
+    return (
+      <PlaceholderWorkspace
+        icon={<FileText size={28} />}
+        title="Form Instance Missing — Sync Required"
+        body="The swimlane expected an event/task/form instance, but no stable formInstanceId is linked. This must be fixed in event task generation, not created from the modal."
+        details={[
+          `eventId: ${model.eventId ?? 'missing'}`,
+          `taskId: ${node.taskId}`,
+          `workflowId: ${model.workflowId ?? 'missing'}`,
+          `formId: ${formId}`,
+        ]}
+      />
+    );
+  }
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="rounded-[28px] border border-[#007970]/32 bg-[#004142]/18 p-7">
         <div className="mb-4 inline-flex rounded-2xl border border-[#007970]/35 bg-[#007970]/12 p-4 text-[#8be6df]"><FileText size={28} /></div>
         <h3 className="text-[34px] font-semibold tracking-[-0.02em] text-white">{formId}</h3>
         <p className="mt-2 text-[18px] text-[#d7fffb]">{FORM_TITLES[formId] ?? form?.name ?? 'Unresolved Forms Library ID'}</p>
-        <p className="mt-5 text-[14px] leading-7 text-[#a0abc0]">{model.mode === 'event_execution' ? 'Opens a stable event/task/form instance through the existing FormViewer idempotency guard.' : 'Opens the Forms Library template only. No form instance, evidence record, or signer task is created.'}</p>
+        <p className="mt-5 text-[14px] leading-7 text-[#a0abc0]">{model.mode === 'event_execution' ? 'Opens the existing form instance generated from the event task plan. The swimlane does not create form instances.' : 'Opens the Forms Library template only. No form instance, evidence record, or signer task is created.'}</p>
+        {formInstance?.formInstanceId ? <p className="mt-2 font-mono text-[12px] text-[#8be6df]">Instance: {formInstance.formInstanceId}</p> : null}
         <div className="mt-6 flex flex-wrap gap-3">
           <Link to={route} className="inline-flex items-center gap-2 rounded-full bg-[#007970] px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-[#00877d]">
-            {model.mode === 'event_execution' ? 'Open Event Form Instance' : 'Open Forms Library Template'}
+            {model.mode === 'event_execution' ? 'Open Form Instance' : 'Open Form Template'}
             <ExternalLink size={16} />
           </Link>
           <span className="rounded-full border border-[#2a3441] px-5 py-3 text-[14px] font-semibold text-[#cbd5e1]">Source Step: {node.taskId}</span>
@@ -537,8 +656,269 @@ function InfoBlock({ title, body, accent = false }: { title: string; body: strin
   return <div className={accent ? 'rounded-xl border border-[#007970]/20 bg-[#004142]/10 p-5' : 'rounded-xl border border-[#1c2433] bg-[#141a23] p-5'}><div className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#8a94a6]">{title}</div><p className="text-sm leading-7 text-[#cbd5e1]">{body}</p></div>;
 }
 
+function IdentityPanel({ model, node }: { model: SwimlaneModel; node: SwimlaneNode }) {
+  const rows = [
+    { label: 'Task ID', value: node.taskId, copyable: true },
+    { label: 'Node ID', value: node.nodeId },
+    { label: 'Event ID', value: model.eventId ?? 'Template mode' },
+    { label: 'Workflow ID', value: model.workflowId ?? 'Not assigned' },
+    { label: 'Form Instance ID(s)', value: nodeFormInstanceIds(node).join(' | ') },
+    { label: 'Source Step', value: node.processFlowStepId ?? node.sourceStepId ?? 'Generated' },
+  ];
+  return (
+    <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-5">
+      <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em] text-[#8a94a6]">Task Identity</div>
+      <div className="space-y-2">
+        {rows.map(row => (
+          <div key={row.label} className="flex items-start justify-between gap-3 text-sm">
+            <span className="shrink-0 text-[#8a94a6]">{row.label}:</span>
+            <span className="min-w-0 break-all font-mono text-[#cbd5e1]" title={row.value}>{row.value}</span>
+            {row.copyable ? (
+              <button type="button" aria-label={`Copy ${row.label}`} title={`Copy ${row.label}`} onClick={() => copyText(row.value)} className="shrink-0 rounded border border-[#2a3441] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#8be6df] transition-colors hover:border-[#007970]/70 hover:text-white">
+                <Copy size={11} />
+              </button>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function InstructionPanel({ instructions }: { instructions: string[] }) {
+  return (
+    <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-5">
+      <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em] text-[#8a94a6]">Task Instructions</div>
+      <ul className="space-y-2 text-sm leading-7 text-[#cbd5e1]">
+        {instructions.map((instruction, index) => (
+          <li key={`${index + 1}-${instruction}`} className="flex gap-3">
+            <span className="shrink-0 text-[#8be6df]">{index + 1}.</span>
+            <span>{instruction}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FormInstancesPanel({ model, node, onOpenLevelTwo }: { model: SwimlaneModel; node: SwimlaneNode; onOpenLevelTwo: (level: Exclude<ZoomLevel, 'overview' | 'centering' | 'step'>, actionId?: string | null) => void }) {
+  const forms = node.formInstances?.length ? node.formInstances : node.requiredForms.map(formId => ({
+    formId,
+    formTitle: FORM_TITLES[formId] ?? 'Unresolved Forms Library ID',
+    formInstanceId: undefined,
+    status: 'pending' as SwimlaneStatus,
+    missing: model.mode === 'event_execution',
+    requiredAdditionalDocumentation: false,
+    supportingDocumentation: [],
+  }));
+  const title = model.mode === 'event_execution' ? 'Form Instances' : 'Form Templates';
+
+  return (
+    <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <div className="mb-1 text-xs font-medium text-white">{title}</div>
+          <div className="text-[10px] leading-5 text-[#8a94a6]">
+            {model.mode === 'event_execution'
+              ? 'Instances are generated from the event task plan.'
+              : 'Template mode only. No instances, evidence records, or signer tasks are created.'}
+          </div>
+        </div>
+        <span className={forms.length ? 'text-[#007970]' : 'text-[#5e6a7f]'}><FileText size={16} /></span>
+      </div>
+
+      {forms.length ? (
+        <div className="space-y-3">
+          {forms.map(form => (
+            <FormInstanceRow
+              key={`${form.formId}-${form.formInstanceId ?? 'template'}`}
+              model={model}
+              node={node}
+              form={form}
+              onOpenLevelTwo={onOpenLevelTwo}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="rounded-lg border border-[#2a3441] bg-[#0b0f15]/55 px-3 py-2 text-[11px] text-[#8a94a6]">{model.mode === 'event_execution' ? 'No form instances required for this task.' : 'No form templates required for this task.'}</p>
+      )}
+    </div>
+  );
+}
+
+function SupportingDocumentationPanel({ tasks }: { tasks: SwimlaneNode['supportingDocumentationTasks'] }) {
+  return (
+    <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <div className="mb-1 text-xs font-medium text-white">Supporting Documentation</div>
+          <div className="text-[10px] leading-5 text-[#8a94a6]">Additional documentation requirements tied to this task.</div>
+        </div>
+        <span className={tasks.length ? 'text-[#007970]' : 'text-[#5e6a7f]'}><UploadCloud size={16} /></span>
+      </div>
+      {tasks.length ? (
+        <div className="space-y-2">
+          {tasks.map(task => (
+            <div key={task.supportTaskId} className="rounded-lg border border-[#2a3441] bg-[#0b0f15]/55 p-3">
+              <div className="text-[11px] font-semibold text-white">{task.title}</div>
+              <div className="mt-1 text-[10px] leading-5 text-[#8a94a6]">{task.description}</div>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-[9px] text-[#5e6a7f]">
+                <span className="font-mono">{task.supportTaskId}</span>
+                <span>Status: {displayTitle(statusCopy(task.status))}</span>
+                <span>{task.artifactId ? `Artifact: ${task.artifactId}` : 'Artifact pending'}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="rounded-lg border border-[#2a3441] bg-[#0b0f15]/55 px-3 py-2 text-[11px] text-[#8a94a6]">No additional supporting documents required. Signature or artifact evidence satisfies this requirement.</p>
+      )}
+    </div>
+  );
+}
+
+function SupportingEvidencePanel({ evidence }: { evidence: string[] }) {
+  return (
+    <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <div className="mb-1 text-xs font-medium text-white">Supporting Evidence</div>
+          <div className="text-[10px] leading-5 text-[#8a94a6]">Required evidence outputs and expected artifacts for this task.</div>
+        </div>
+        <span className={evidence.length ? 'text-[#007970]' : 'text-[#5e6a7f]'}><FileText size={16} /></span>
+      </div>
+      {evidence.length ? (
+        <div className="space-y-2">
+          {evidence.map(item => (
+            <div key={item} className="rounded-lg border border-[#2a3441] bg-[#0b0f15]/55 px-3 py-2 text-[11px] text-[#cbd5e1]">{item}</div>
+          ))}
+        </div>
+      ) : (
+        <p className="rounded-lg border border-[#2a3441] bg-[#0b0f15]/55 px-3 py-2 text-[11px] text-[#8a94a6]">No supporting evidence required for this task.</p>
+      )}
+    </div>
+  );
+}
+
+function FormInstanceRow({ model, node, form, onOpenLevelTwo }: { model: SwimlaneModel; node: SwimlaneNode; form: SwimlaneFormInstance; onOpenLevelTwo: (level: Exclude<ZoomLevel, 'overview' | 'centering' | 'step'>, actionId?: string | null) => void }) {
+  const actionLabel = model.mode === 'template'
+    ? 'Open Form Template'
+    : form.formInstanceId
+      ? 'Open Form Instance'
+      : 'Form Instance Missing — Sync Required';
+  const query = new URLSearchParams();
+  if (model.mode === 'event_execution' && model.eventId) {
+    query.set('event_id', model.eventId);
+    query.set('task_id', node.taskId);
+    query.set('form_id', form.formId);
+    if (form.formInstanceId) query.set('form_instance_id', form.formInstanceId);
+    if (model.workflowId) query.set('workflow_id', model.workflowId);
+    query.set('requirement_id', `${node.taskId}::FORM_COMPLETION::${form.formId}`);
+  }
+  const href = `/forms/${encodeURIComponent(form.formId)}${query.toString() ? `?${query.toString()}` : ''}`;
+  const missingContext = [
+    `eventId: ${model.eventId ?? 'missing'}`,
+    `taskId: ${node.taskId}`,
+    `workflowId: ${model.workflowId ?? 'missing'}`,
+    `formId: ${form.formId}`,
+  ];
+
+  return (
+    <div className="rounded-lg border border-[#2a3441] bg-[#0b0f15]/55 p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-[#8be6df]">{form.formId}</div>
+          <div className="mt-1 text-[12px] font-semibold leading-snug text-white">{form.formTitle}</div>
+          {model.mode === 'event_execution' ? (
+            <div className="mt-1 truncate font-mono text-[10px] text-[#8a94a6]">Instance: {form.formInstanceId ?? 'missing'}</div>
+          ) : null}
+          <div className="mt-1 text-[10px] uppercase tracking-[0.12em] text-[#8a94a6]">Status: {displayTitle(statusCopy(form.status))}</div>
+        </div>
+      </div>
+
+      {form.missing ? (
+        <div className="mt-3 rounded-lg border border-[#C74600]/40 bg-[#C74600]/10 p-2 text-[10px] leading-5 text-[#ffb18d]">
+          <div className="font-bold uppercase tracking-[0.12em]">Task-generation bug</div>
+          {missingContext.map(item => <div key={item}>{item}</div>)}
+        </div>
+      ) : null}
+
+      <p className="mt-3 text-[10px] leading-5 text-[#8a94a6]">
+        {form.requiredAdditionalDocumentation
+          ? `${form.supportingDocumentation.length} supporting documentation task${form.supportingDocumentation.length === 1 ? '' : 's'} linked.`
+          : 'Signed form artifact satisfies evidence requirement. No additional supporting document required.'}
+      </p>
+
+      <div className="mt-3 flex gap-2">
+        {form.missing ? (
+          <button type="button" className="relative z-10 flex w-full items-center justify-center gap-2 rounded border border-[#C74600]/45 bg-[#C74600]/10 py-2 text-[11px] font-bold text-[#ffb18d]" onClick={() => onOpenLevelTwo('form', form.formId)}>
+            {actionLabel}
+          </button>
+        ) : (
+          <Link to={href} className="relative z-10 flex w-full items-center justify-center gap-2 rounded border border-[#2a3441] bg-[#1c2433] py-2 text-[11px] font-bold text-white transition-colors hover:border-[#007970]/70">
+            {actionLabel}
+            <ExternalLink size={12} />
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ActionPanel({ icon, title, detail, cta, disabled = false, onClick }: { icon: ReactNode; title: string; detail: string; cta: string; disabled?: boolean; onClick: () => void }) {
   return <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-4"><div className="mb-3 flex items-start justify-between gap-3"><div><div className="mb-1 text-xs font-medium text-white">{title}</div><div className="line-clamp-2 text-[10px] leading-5 text-[#8a94a6]">{detail}</div></div><span className={disabled ? 'text-[#5e6a7f]' : 'text-[#007970]'}>{icon}</span></div><button type="button" onClick={onClick} disabled={disabled} className="relative z-10 flex w-full items-center justify-center gap-2 rounded border border-[#2a3441] bg-[#1c2433] py-2 text-xs font-medium text-white transition-colors hover:border-[#007970]/70 disabled:bg-transparent disabled:text-[#5e6a7f]"><Maximize2 size={12} />{cta}</button></div>;
+}
+
+function SignatureWorkspace({ node }: { node: SwimlaneNode }) {
+  if (!node.signatureTasks?.length) {
+    return (
+      <PlaceholderWorkspace
+        icon={<FileSignature size={28} />}
+        title="Signature Path Not Required"
+        body="This task does not have a required eCIgn signer path."
+        details={signatureWorkspaceDetails(node)}
+      />
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-4xl space-y-5">
+      <div className="rounded-[24px] border border-[#1c2433] bg-[#111923] p-6">
+        <h3 className="text-[28px] font-semibold text-white">eCIgn Ceremony / Signature Path</h3>
+        <p className="mt-2 text-[14px] leading-7 text-[#a0abc0]">
+          Every signer task below is deterministic and tied to the parent task, workflow, event, form, and signature slot. No signer task is created from this modal.
+        </p>
+      </div>
+      <div className="space-y-3">
+        {node.signatureTasks.map(task => (
+          <div key={task.taskId} className="rounded-[20px] border border-[#1c2433] bg-[#111923] p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#8be6df]">Order {task.order}</div>
+                <div className="mt-1 text-[18px] font-semibold text-white">{task.signerRole}</div>
+                <div className="mt-1 text-[12px] text-[#a0abc0]">{task.reviewerRole ? `Reviewer path: ${task.reviewerRole}` : 'No reviewer path required.'}</div>
+              </div>
+              <div className="text-right text-[12px] text-[#cbd5e1]">
+                <div>Status: {displayTitle(statusCopy(task.status as SwimlaneStatus))}</div>
+                <div className="mt-1">Slot: {task.signatureSlot}</div>
+              </div>
+            </div>
+            <div className="mt-3 grid gap-2 text-[11px] text-[#8a94a6]">
+              <div className="font-mono break-all text-[#5e6a7f]">{task.taskId}</div>
+              <div>Parent Task: {task.parentTaskId}</div>
+              <div>Form Instance: {task.formInstanceId ?? 'Not assigned'}</div>
+              <div>{task.status === 'blocked' ? 'Action blocked until the required form instance exists.' : 'Open signature ceremony only when this signer is actionable in the execution workspace.'}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {node.finalApproverRoles?.length ? (
+        <div className="rounded-[20px] border border-[#1c2433] bg-[#111923] p-5 text-[13px] text-[#cbd5e1]">
+          Final approval path: {node.finalApproverRoles.join(', ')}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function PlaceholderWorkspace({ icon, title, body, details }: { icon: ReactNode; title: string; body: string; details: string[] }) {

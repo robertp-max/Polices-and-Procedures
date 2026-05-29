@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
+import type { SwimlaneModel as RuntimeSwimlaneModel } from '@/policy/workflows/swimlanes/types';
 
 type ZoomLevel = 'overview' | 'centering' | 'step' | 'form' | 'evidence' | 'signature';
 type NodeStatus = 'complete' | 'ready' | 'in_progress' | 'blocked' | 'pending';
@@ -444,7 +445,12 @@ function overviewTransform(pan: { x: number; y: number }) {
   return `translate3d(${pan.x}px, ${pan.y}px, 0px) scale(1)`;
 }
 
-export function QAWorkflow03SwimlanePage() {
+interface QAWorkflow03SwimlanePageProps {
+  model?: RuntimeSwimlaneModel;
+  initialTaskId?: string;
+}
+
+export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03SwimlanePageProps = {}) {
   const [zoomState, setZoomState] = useState<ZoomState>(initialZoomState);
   const [mousePan, setMousePan] = useState({ x: -600, y: -300 });
   const [lastNodeId, setLastNodeId] = useState<string | null>(null);
@@ -453,6 +459,13 @@ export function QAWorkflow03SwimlanePage() {
   const mousePanRef = useRef({ x: -600, y: -300 });
   const panFrameRef = useRef<number | null>(null);
   const pendingPanRef = useRef<{ x: number; y: number } | null>(null);
+  const isEventExecution = model?.mode === 'event_execution';
+  const headerBadge = isEventExecution ? 'Event Execution' : 'Workflow Template';
+  const headerContextCopy = isEventExecution ? 'Event-owned Quarterly QAPI execution surface' : 'Workflow-owned visual execution surface';
+  const headerTitle = isEventExecution ? model?.title ?? 'Quarterly QAPI Review' : 'QA-WF-03 - Quarterly QAPI Committee Review';
+  const headerSubtitle = isEventExecution ? 'QA-WF-03 visual rendered in event-instance mode.' : null;
+  const backRoute = isEventExecution ? '/calendar' : '/workflows/QA-WF-03';
+  const backLabel = isEventExecution ? 'Back to Calendar' : 'Back to Workflow';
 
   const nodeById = useMemo(
     () => new Map(QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes.map((node) => [node.nodeId, node])),
@@ -461,16 +474,17 @@ export function QAWorkflow03SwimlanePage() {
   const activeNode = zoomState.nodeId ? nodeById.get(zoomState.nodeId) ?? null : null;
   const isFullyZoomed = zoomState.level === 'step' || zoomState.level === 'form' || zoomState.level === 'evidence' || zoomState.level === 'signature';
   const linkedFormCount = useMemo(
-    () => new Set(QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes.flatMap((node) => node.requiredForms)).size,
-    [],
+    () => new Set((model?.nodes ?? QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes).flatMap((node) => node.requiredForms)).size,
+    [model],
   );
   const evidenceCount = useMemo(
-    () => new Set(QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes.flatMap((node) => node.requiredEvidence)).size,
-    [],
+    () => new Set((model?.nodes ?? QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes).flatMap((node) => node.requiredEvidence)).size,
+    [model],
   );
   const signerCount = useMemo(
-    () => QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes.filter((node) => node.signerRole).length,
-    [],
+    () => (model?.nodes ?? QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes)
+      .filter((node) => node.signerRole || ('signatureTasks' in node && (node.signatureTasks?.length ?? 0) > 0)).length,
+    [model],
   );
   const targetTransformNode = activeNode ?? (lastNodeId ? nodeById.get(lastNodeId) ?? null : null);
   const targetCenter = targetTransformNode ? nodeCenter(targetTransformNode) : null;
@@ -610,6 +624,13 @@ export function QAWorkflow03SwimlanePage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!initialTaskId) return;
+    const matchedNode = QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes.find(node => node.taskId === initialTaskId);
+    if (!matchedNode) return;
+    setLastNodeId(matchedNode.nodeId);
+  }, [initialTaskId]);
+
   const content = (
     <div
       className="qa-wf03-swimlane fixed inset-0 flex h-screen w-screen flex-col overflow-hidden bg-[#0b0f15] text-[#e2e8f0]"
@@ -621,24 +642,27 @@ export function QAWorkflow03SwimlanePage() {
           <div className="min-w-0">
             <div className="mb-2 flex items-center gap-3">
               <span className="rounded-full border border-[#007970]/35 bg-[#004142]/20 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#92f4ed]">
-                Workflow Template
+                {headerBadge}
               </span>
-              <span className="text-[12px] font-semibold text-[#a0abc0]">Workflow-owned visual execution surface</span>
+              <span className="text-[12px] font-semibold text-[#a0abc0]">{headerContextCopy}</span>
             </div>
             <h1 className="truncate text-[25px] font-semibold tracking-[-0.01em] text-white">
-              QA-WF-03 - Quarterly QAPI Committee Review
+              {headerTitle}
             </h1>
+            {headerSubtitle ? (
+              <p className="mt-2 text-[12px] font-semibold text-[#8a94a6]">{headerSubtitle}</p>
+            ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-5">
             <HeaderMetric value={String(linkedFormCount)} label="linked forms" />
             <HeaderMetric value={String(evidenceCount)} label="evidence requirements" />
             <HeaderMetric value={String(signerCount)} label="signer/reviewer paths" />
             <Link
-              to="/workflows/QA-WF-03"
+              to={backRoute}
               className="inline-flex items-center gap-2 rounded-full border border-white/14 px-4 py-2 text-[12px] font-bold text-white/82 transition-colors hover:border-[#007970]/70 hover:text-white"
             >
               <ArrowLeft size={14} />
-              Back to Workflow
+              {backLabel}
             </Link>
             <button
               type="button"

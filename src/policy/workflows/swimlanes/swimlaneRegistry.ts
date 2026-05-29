@@ -38,7 +38,9 @@ export function getSwimlaneRegistryEntry(input: { workflowId?: string | null; ev
       workflowId,
       eventId,
       state: 'custom',
-      route: buildWorkflowSwimlaneRoute(workflowId, { eventId, taskId: input.taskId ?? undefined }),
+      route: event
+        ? buildEventSwimlaneRoute(event.id, { workflowId, taskId: input.taskId ?? undefined })
+        : buildWorkflowSwimlaneRoute(workflowId, { eventId, taskId: input.taskId ?? undefined }),
       build: context => event
         ? buildSwimlaneFromEvent(event, { eventId: event.id, taskId: context?.taskId ?? input.taskId ?? undefined })
         : workflow

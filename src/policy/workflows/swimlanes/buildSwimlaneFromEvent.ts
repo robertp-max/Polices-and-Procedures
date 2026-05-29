@@ -4,7 +4,11 @@ import { FORM_TITLES } from '@/policy/data/formTitles.generated';
 import { inferPhaseTemplate } from './phaseTemplates';
 import { normalizeRole, roleKey } from './roleNormalizer';
 import { buildSwimlaneFromWorkflow } from './buildSwimlaneFromWorkflow';
+import { resolveSwimlaneFormInstances } from './formInstanceResolver';
+import { buildCanonicalEventSwimlaneNodeId, buildCanonicalEventSwimlaneTaskId } from './eventSwimlaneIdentity';
+import { buildSwimlaneInstructions, inferSwimlaneTaskPurpose } from './swimlaneInstructions';
 import type { SwimlaneBuildContext, SwimlaneLane, SwimlaneModel, SwimlaneNode, SwimlaneStatus } from './types';
+import { resolveCanonicalSignaturePath } from '@/policy/ecign/signaturePathResolver';
 
 function unique(values: Array<string | undefined | null>): string[] {
   return Array.from(new Set(values.filter((value): value is string => Boolean(value?.trim()))));
@@ -46,6 +50,34 @@ function evidenceLabels(event: RegulatoryEvent): string[] {
     ...(event.minutes ? ['Finalized minutes'] : []),
     ...(event.approvals ?? []).map(rule => `${rule.targetLabel} approval by ${rule.approverRole}`),
   ]);
+}
+
+function buildArtifactBlockedReasons(input: Pick<SwimlaneNode, 'formInstances' | 'supportingDocumentationTasks' | 'signatureTasks' | 'requiredEvidence' | 'finalApproverRoles' | 'governingBodyRequired'>) {
+  const reasons: string[] = [];
+  input.formInstances?.forEach(form => {
+    if (form.missing || !form.formInstanceId) reasons.push(`Missing form instance: ${form.formId}`);
+    if (form.status !== 'complete' && form.status !== 'locked') reasons.push(`Form incomplete: ${form.formId}`);
+  });
+  input.supportingDocumentationTasks?.forEach(task => {
+    if (task.required && task.status !== 'complete' && task.status !== 'locked') reasons.push(`Supporting documentation pending: ${task.title}`);
+  });
+  input.signatureTasks?.forEach(task => {
+    if (task.required && task.status !== 'signed') reasons.push(`Signature pending: ${task.signerRole} (${task.signatureSlot})`);
+  });
+  input.finalApproverRoles?.forEach(role => {
+    reasons.push(`Final approval path required: ${role}`);
+  });
+  if (input.governingBodyRequired) reasons.push('Governing Body review required before final lock.');
+  if (input.requiredEvidence.length > 0 && input.supportingDocumentationTasks.length === 0 && input.formInstances?.length === 0 && input.signatureTasks?.length === 0) {
+    reasons.push('Required artifact links must resolve before lock.');
+  }
+  return unique(reasons);
+}
+
+function statusWithSignaturePath(baseStatus: SwimlaneStatus, signatureCount: number, reviewerCount: number) {
+  if (baseStatus === 'complete' || baseStatus === 'locked') return baseStatus;
+  if (signatureCount > 0) return reviewerCount > 0 ? 'awaiting_reviewer' : 'needs_signature';
+  return baseStatus;
 }
 
 function buildMinimalEventSteps(event: RegulatoryEvent): EventProcessStep[] {
@@ -94,6 +126,8 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
   const allForms = requiredFormIds(event);
   const approvalRoles = (event.approvals ?? []).map(rule => normalizeRole(rule.approverRole));
   const minuteSignerRoles = event.minutes?.signOffRoles?.map(normalizeRole) ?? [];
+  const sequenceByEventForm = new Map<string, number>();
+  const canonicalFormInstanceIds = new Map<string, string>();
 
   const nodes: SwimlaneNode[] = sourceSteps.map((step, index) => {
     const roleFromAgenda = event.agenda?.standingTopics.find(topic => topic.id === step.id || step.label.includes(topic.title))?.owner;
@@ -101,31 +135,117 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
     const ownerRole = normalizeRole(roleFromAgenda ?? approvalRole ?? event.ownerRole ?? event.owner);
     const lane = laneForRole(ownerRole, lanes);
     const phase = phases[phaseIndexForEventStep(step, index, phases.length) - 1] ?? phases[0];
-    const nodeId = `${event.id}-node-${index + 1}`;
-    const previous = index > 0 ? `${event.id}-node-${index}` : undefined;
-    const next = index < sourceSteps.length - 1 ? `${event.id}-node-${index + 2}` : undefined;
+    const sourceStepId = `processFlow:${step.id}`;
+    const nodeId = buildCanonicalEventSwimlaneNodeId({
+      eventId,
+      workflowId,
+      sourceStepId: step.id,
+      stepOrder: index + 1,
+    });
     const stepForms = unique([...(step.requiredFormIds ?? []), ...(index === 1 && allForms.length ? allForms : [])]);
+
+    const requiredEvidence = unique([
+      step.expectedOutput,
+      ...stepForms.map(formId => FORM_TITLES[formId] ? `${formId} ${FORM_TITLES[formId]}` : `Unresolved form ${formId}`),
+    ]);
+    const taskId = buildCanonicalEventSwimlaneTaskId({
+      eventId,
+      workflowId,
+      sourceStepId: step.id,
+      stepOrder: index + 1,
+      taskPurpose: inferSwimlaneTaskPurpose(step.label, step.description),
+    });
+    const signerRole = /sign|attest/i.test(step.label) ? approvalRole ?? minuteSignerRoles[0] : undefined;
+    const reviewerRole = /review|approve|validate/i.test(step.label) ? approvalRole ?? ownerRole : undefined;
+    const { formInstances, supportingDocumentationTasks } = resolveSwimlaneFormInstances({
+      mode,
+      eventId,
+      workflowId,
+      taskId,
+      title: step.label,
+      formIds: stepForms,
+      evidence: requiredEvidence,
+      signerRole,
+      reviewerRole,
+      sequenceByEventForm,
+      canonicalFormInstanceIds,
+    });
+    const signaturePath = resolveCanonicalSignaturePath({
+      domain: event.domain,
+      workflowId,
+      eventId,
+      parentTaskId: taskId,
+      title: step.label,
+      description: step.description || step.onCompleteText,
+      ownerRole,
+      taskPurpose: inferSwimlaneTaskPurpose(step.label, step.description),
+      forms: formInstances.map(form => ({ formId: form.formId, formInstanceId: form.formInstanceId })),
+      approvals: (event.approvals ?? []).map(approval => ({
+        id: approval.id,
+        targetKind: approval.targetKind,
+        targetLabel: approval.targetLabel,
+        approverRole: approval.approverRole,
+        required: approval.required,
+      })),
+      minutesSignOffRoles: event.minutes?.signOffRoles,
+    });
+    const artifactBlockedReasons = buildArtifactBlockedReasons({
+      formInstances,
+      supportingDocumentationTasks,
+      signatureTasks: signaturePath.signatureTasks,
+      requiredEvidence,
+      finalApproverRoles: signaturePath.finalApproverRoles,
+      governingBodyRequired: signaturePath.governingBodyRequired,
+    });
+    const instructions = buildSwimlaneInstructions({
+      title: step.label,
+      description: step.description || step.onCompleteText,
+      explicitInstructions: step.instructions,
+      formInstructions: stepForms.map(formId => `Complete ${formId} ${FORM_TITLES[formId] ?? 'required form'} for this event task.`),
+      evidenceDescriptions: supportingDocumentationTasks.map(task => task.title),
+      auditPurpose: event.regulatoryDriver ?? event.complianceFlags?.surveyorNote,
+      regulatoryDriver: event.regulatoryDriver,
+      taskPurpose: inferSwimlaneTaskPurpose(step.label, step.description),
+    });
 
     return {
       nodeId,
-      taskId: context.taskId && index === 0 ? context.taskId : `${event.id}-${step.id}`,
+      taskId,
       workflowId,
       eventId,
+      sourceStepId,
+      processFlowStepId: step.id,
       phaseId: phase.id,
       laneId: lane.id,
       title: step.label,
       shortDescription: step.description || step.instructions || 'Generated event execution step.',
       ownerRole,
-      status: statusForEventStep(step),
+      status: statusWithSignaturePath(statusForEventStep(step), signaturePath.signatureTasks.length, signaturePath.reviewerRoles.length),
       requiredForms: stepForms,
-      requiredEvidence: unique([
-        step.expectedOutput,
-        ...stepForms.map(formId => FORM_TITLES[formId] ? `${formId} ${FORM_TITLES[formId]}` : `Unresolved form ${formId}`),
-      ]),
-      signerRole: /sign|attest/i.test(step.label) ? approvalRole ?? minuteSignerRoles[0] : undefined,
-      reviewerRole: /review|approve|validate/i.test(step.label) ? approvalRole ?? ownerRole : undefined,
-      dependencies: previous ? [previous] : [],
-      nextNodeIds: next ? [next] : [],
+      formInstances,
+      requiredEvidence,
+      supportingDocumentationTasks,
+      instructions,
+      signatureRequirements: signaturePath.signatureRequirements,
+      signatureTasks: signaturePath.signatureTasks,
+      signerRole: signaturePath.signerRoles[0] ?? signerRole,
+      reviewerRole: signaturePath.reviewerRoles[0] ?? reviewerRole,
+      reviewerRoles: signaturePath.reviewerRoles,
+      finalApproverRoles: signaturePath.finalApproverRoles,
+      governingBodyRequired: signaturePath.governingBodyRequired,
+      artifactBlockedReasons,
+      dependencies: index > 0 ? [buildCanonicalEventSwimlaneNodeId({
+        eventId,
+        workflowId,
+        sourceStepId: sourceSteps[index - 1]?.id,
+        stepOrder: index,
+      })] : [],
+      nextNodeIds: index < sourceSteps.length - 1 ? [buildCanonicalEventSwimlaneNodeId({
+        eventId,
+        workflowId,
+        sourceStepId: sourceSteps[index + 1]?.id,
+        stepOrder: index + 2,
+      })] : [],
       auditPurpose: event.regulatoryDriver ?? event.complianceFlags?.surveyorNote ?? 'Maintains an auditable mandated-event execution trail.',
       policyRefs: event.policyRefs,
       regulatoryRefs: unique([event.complianceFlags?.citation, ...(workflow?.regulatoryAnchors ?? [])]),
@@ -138,12 +258,26 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
     const lane = laneForRole('Evidence / eCIgn System', lanes);
     const last = nodes[nodes.length - 1];
     const phase = phases[phases.length - 1];
-    const nodeId = `${event.id}-evidence-lock`;
+    const taskId = buildCanonicalEventSwimlaneTaskId({
+      eventId,
+      workflowId,
+      sourceStepId: 'final-evidence-lock',
+      stepOrder: nodes.length + 1,
+      taskPurpose: 'evidence_lock',
+    });
+    const nodeId = buildCanonicalEventSwimlaneNodeId({
+      eventId,
+      workflowId,
+      sourceStepId: 'final-evidence-lock',
+      stepOrder: nodes.length + 1,
+      taskPurpose: 'evidence_lock',
+    });
     nodes.push({
       nodeId,
-      taskId: `${event.id}-LOCK`,
+      taskId,
       workflowId,
       eventId,
+      sourceStepId: 'generated:final-evidence-lock',
       phaseId: phase.id,
       laneId: lane.id,
       title: 'Final evidence package locked',
@@ -151,7 +285,30 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
       ownerRole: 'Evidence / eCIgn System',
       status: 'blocked',
       requiredForms: [],
+      formInstances: [],
       requiredEvidence: evidenceLabels(event),
+      supportingDocumentationTasks: [],
+      instructions: buildSwimlaneInstructions({
+        title: 'Final evidence package locked',
+        description: 'Forms, evidence, signatures, approvals, and artifact links must be complete before lock.',
+        auditPurpose: 'Creates the final locked evidence package for survey defensibility.',
+        regulatoryDriver: event.regulatoryDriver,
+        taskPurpose: 'evidence_lock',
+        finalEvidenceLock: true,
+      }),
+      signatureRequirements: [],
+      signatureTasks: [],
+      reviewerRoles: [],
+      finalApproverRoles: unique(nodes.flatMap(node => node.finalApproverRoles ?? [])),
+      governingBodyRequired: nodes.some(node => node.governingBodyRequired),
+      artifactBlockedReasons: buildArtifactBlockedReasons({
+        formInstances: nodes.flatMap(node => node.formInstances ?? []),
+        supportingDocumentationTasks: nodes.flatMap(node => node.supportingDocumentationTasks ?? []),
+        signatureTasks: nodes.flatMap(node => node.signatureTasks ?? []),
+        requiredEvidence: evidenceLabels(event),
+        finalApproverRoles: unique(nodes.flatMap(node => node.finalApproverRoles ?? [])),
+        governingBodyRequired: nodes.some(node => node.governingBodyRequired),
+      }),
       dependencies: last ? [last.nodeId] : [],
       nextNodeIds: [],
       auditPurpose: 'Creates the final locked evidence package for survey defensibility.',

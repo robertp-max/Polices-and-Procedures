@@ -2,6 +2,7 @@ import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import type { EventTask, EventTaskStatus } from './types';
 import { resolveEventFolder } from './eventFolders';
 import { buildCesRoleAssignment } from '@/policy/ces/cesRoles';
+import { formatCesFormInstanceId } from './cesFormInstanceId';
 
 const nowISO = () => new Date().toISOString();
 
@@ -23,6 +24,13 @@ export function deriveDefaultEventTasks(
   const timestamp = nowISO();
   const folder = resolveEventFolder(eventId);
   const tasks: EventTask[] = [];
+  const formSequenceById = new Map<string, number>();
+
+  const allocateFormInstanceIds = (formIds: string[]) => formIds.map(formId => {
+    const sequence = (formSequenceById.get(formId) ?? 0) + 1;
+    formSequenceById.set(formId, sequence);
+    return formatCesFormInstanceId(eventId, formId, sequence);
+  });
 
   const requiredFormCovered = new Set<string>();
   event.processFlow.forEach(step => {
@@ -35,6 +43,7 @@ export function deriveDefaultEventTasks(
       title:          step.label,
       workflowId:     event.workflowId,
     });
+    const formIds = step.requiredFormIds ?? [];
     tasks.push({
       id: buildDeterministicTaskId(eventId, taskSourceId),
       eventId,
@@ -44,7 +53,8 @@ export function deriveDefaultEventTasks(
       isRequired: true,
       requirementSource: event.workflowId ? 'workflow' : 'regulation',
       policyIds: event.policyRefs,
-      formIds: step.requiredFormIds ?? [],
+      formIds,
+      generated_form_instance_ids: allocateFormInstanceIds(formIds),
       title: step.label,
       description: step.description,
       source: 'processFlow',
@@ -79,6 +89,7 @@ export function deriveDefaultEventTasks(
       title:          form.label,
       workflowId:     event.workflowId,
     });
+    const formIds = [formId];
     tasks.push({
       id: buildDeterministicTaskId(eventId, taskSourceId),
       eventId,
@@ -88,7 +99,8 @@ export function deriveDefaultEventTasks(
       isRequired: true,
       requirementSource: 'policy',
       policyIds: event.policyRefs,
-      formIds: [formId],
+      formIds,
+      generated_form_instance_ids: allocateFormInstanceIds(formIds),
       title: `Complete ${form.label}`,
       description: `Required form ${formId}`,
       source: 'requiredForm',
