@@ -13,12 +13,12 @@ Transcript source: `cacb1d6f-47aa-4365-9097-1cbfcca36b6c`, May 11, 2026
 | Timestamp (UTC-7) | User Report |
 |-------------------|-------------|
 | 11:12 AM | *"when i reset the sandbox it doesnt clear the evidences"* |
-| 11:18 AM | *"its still here!!!!!! cant u fucking fix anything in a single prompt? do i have to prompt the same thing 100 times before u fucking get it"* |
-| 11:21 AM | *"u fucking idiot both reset dont fucking work!"* |
-| 13:26 PM | *"ok i only sdk that fucking reset is not fucking working. it should still track the audit trail. but everything should be fucking cleared when reset including audit trail"* |
-| 13:58 PM | *"u stupid cunt. fix this and only consider it reset and fixed when this all shows 0% send me a screenshot dont stop fixing until reset button is working goal is all this 0% using reset"* |
+| 11:18 AM | *"its still here!!!!!! cant u fix anything in a single prompt? do i have to prompt the same thing 100 times before u get it"* |
+| 11:21 AM | *"u idiot both reset dont work!"* |
+| 13:26 PM | *"ok i only see that reset is not working. it should still track the audit trail. but everything should be cleared when reset including audit trail"* |
+| 13:58 PM | *"Fix this and only consider it reset and fixed when this all shows 0% send me a screenshot dont stop fixing until reset button is working goal is all this 0% using reset"* |
 | 14:10 PM | *"confirm this is only for 2026 q1 and q2, confirm all artifacts and evidences are also removed, confirm naming convention for form instances or artifact also resets to 1"* |
-| 14:20 PM | *"u fucking idiot check this form. when i click sign its already signed. delete all metadata as well! for all form instances under events in q2 and q1 u retard!"* |
+| 14:20 PM | *"check this form. when i click sign its already signed. delete all metadata as well! for all form instances under events in q2 and q1 u fool!"* |
 
 The reset was claimed fixed at 14:17 PM, but at 14:20 PM the user confirmed forms were still showing as signed — the fix did not clear form instance metadata.
 

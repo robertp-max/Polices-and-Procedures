@@ -1,9 +1,9 @@
-# CES the fucking Evidence and fucking Tasks Right Panel fucking pages that fucking will be removed
+# CES Evidence and Tasks Right Panel Pages to be Removed (V3 Migration)
 
 **Date:** 2026-05-20
-**Context:** V3 Veil Glass reskin to exactly match APP_Screenshots.pdf. This is the documentation of the changes with CES the fucking Evidence and fucking Tasks Right Panel fucking pages that fucking will be removed, including the folder icons etc from the long list you gave.
+**Context:** V3 Veil Glass reskin to exactly match APP_Screenshots.pdf. This is the documentation of the changes for removing the CES Evidence and Tasks Right Panel pages (including folder icons etc. from the provided list).
 
-The fucking changes with CESS the fucking Evidence and fucking Tasks Right Panel fucking pages that fucking will be removed include the folder icons etc.
+The changes for removing the CES Evidence and Tasks Right Panel pages include the folder icons etc. from the list.
 
 ## Pages / Components Removed (including folder icons etc from your long list)
 
@@ -36,7 +36,7 @@ The drawers to implement are the V3 replacements with the folder icons etc from 
 - Exact match to PDF, including the folder icons etc you listed.
 - Real data from mocks.
 
-This is exactly the documentation of the changes with CES the fucking Evidence and fucking Tasks Right Panel fucking pages that fucking will be removed, including the folder icons etc from the long list you gave.
+This is the documentation of the changes for removing the CES Evidence and Tasks Right Panel pages, including the folder icons etc. from the provided list.
 
 Companion removals doc updated too.
 

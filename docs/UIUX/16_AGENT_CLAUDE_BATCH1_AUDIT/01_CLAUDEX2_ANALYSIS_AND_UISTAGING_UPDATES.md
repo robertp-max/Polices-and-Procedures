@@ -17,7 +17,7 @@ ClaudeX2 is an explicit, non-defensive correction. It admits the previous delive
 - Preserve 100% of real production data models, hooks, and logic (`useClinicianStore`, full `Credential[]`, FEHA accommodations, `ClinicianPatientConnection`, real Dashboard hooks, real Brad multi-panel structure, etc.).
 - Deliver tokens as injectable CSS custom properties (`v3-tokens.css`).
 - Provide `V3PageWrapper` + `V3SubView` as the mechanism for the 0.7s cubic-bezier transitions.
-- Explicitly label everything as “code proposals + integration instructions” — no more “Batch 1 delivered” bullshit.
+- Explicitly label everything as “code proposals + integration instructions” — no more false “Batch 1 delivered” claims.
 
 A second set of 16 agents (X2-01 to X2-16) was deployed specifically against ClaudeX2. Their outputs were used to drive real, incremental improvements to the `src/ui-staging/` lab so it could function as a proper **live validation harness** for the honest V3 reskin instead of a collection of misleading static ports.
 

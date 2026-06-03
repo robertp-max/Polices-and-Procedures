@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/auth/ProtectedRoute'
 import { useAuth } from '@/auth/AuthProvider'
 import { FeatureRouteGuard } from '@/policy/security/features/FeatureRouteGuard'
 import { RoleGate } from '@/policy/auth/RoleGate'
+import { GlobalModalShell } from '@/components/global/GlobalModalShell'
 
 // ── Lazy-loaded page routes (code-split per route) ──────────────
 const DashboardPage     = lazy(() => import('@/policy/pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
@@ -351,11 +352,12 @@ function App() {
   }, [])
 
   return (
-    <AppShell>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AppShell>
         <AppRoutes />
-      </BrowserRouter>
-    </AppShell>
+      </AppShell>
+      <GlobalModalShell />
+    </BrowserRouter>
   )
 }
 

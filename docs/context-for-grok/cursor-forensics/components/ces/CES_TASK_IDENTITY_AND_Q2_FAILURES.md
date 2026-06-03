@@ -74,7 +74,7 @@ From transcript `cacb1d6f-47aa-4365-9097-1cbfcca36b6c` (May 11, 2026):
 
 - *"when i reset the sandbox it doesnt clear the evidences"* (11:12 AM)
 - *"its still here!!!!!"* — after first reset fix attempt (11:18 AM)
-- *"u fucking idiot both reset dont fucking work"* (11:21 AM)
+- *"u idiot both reset dont work"* (11:21 AM)
 - *"confirm all artifacts and evidences are also removed, confirm naming convention for form instances or artifact also resets to 1"* (14:10 PM)
 
 The reset function was claimed fixed but did not clear:

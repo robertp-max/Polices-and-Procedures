@@ -25,11 +25,11 @@
 
 Transcript source: `cacb1d6f-47aa-4365-9097-1cbfcca36b6c`, May 11, 2026, 00:34 UTC-7
 
-> *"why is it so fucking difficult for u to fucking understand to fucking use the fucking pdf generated at the fucking end of the ecign and fucking use the fucking pdf for the fucking artifact. after fucking ecigning fucking download the fucking pdf gen"*
+> *"why is it so difficult for u to understand to use the pdf generated at the end of the ecign and use the pdf for the artifact. after ecigning download the pdf gen"*
 
 Transcript source: `cacb1d6f-47aa-4365-9097-1cbfcca36b6c`, May 11, 2026, 15:15 UTC-7
 
-> *"u are fucking missing the point! it is fucking important that the fucking pdf generated is the same fucking pdf saved in the evidence for it to be defensible dont fucking generate a new fucking pdf are u fucking really this fucking stupid"*
+> *"u are missing the point! it is important that the pdf generated is the same pdf saved in the evidence for it to be defensible dont generate a new pdf are u really this dense"*
 
 Transcript source: `cacb1d6f-47aa-4365-9097-1cbfcca36b6c`, May 11, 2026, 15:32 UTC-7
 

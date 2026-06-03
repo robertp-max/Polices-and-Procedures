@@ -78,9 +78,9 @@ A **fresh Vercel build** (not `vercel redeploy`) is required, with `VITE_LOCAL_D
 
 **2. eCIgn Signed Artifact — Multi-Signer PDF Chain**
 
-After a user completes a form signature flow, the "Download PDF," "Print," and "Open Artifact" actions render the live form HTML template rather than retrieving the stored signed PDF. Evidence source: transcript `cacb1d6f-47aa-4365-9097-1cbfcca36b6c` (May 11, 2026, 00:34 UTC-7) — user message: *"why is it so fucking difficult for u to fucking understand to fucking use the fucking pdf generated at the fucking end of the ecign and fucking use the fucking pdf for the fucking artifact."*
+After a user completes a form signature flow, the "Download PDF," "Print," and "Open Artifact" actions render the live form HTML template rather than retrieving the stored signed PDF. Evidence source: transcript `cacb1d6f-47aa-4365-9097-1cbfcca36b6c` (May 11, 2026, 00:34 UTC-7) — user message: *"why is it so difficult for u to understand to use the pdf generated at the end of the ecign and use the pdf for the artifact."*
 
-Follow-up user message (May 11, 2026, 15:15): *"u are fucking missing the point! it is fucking important that the fucking pdf generated is the same fucking pdf saved in the evidence for it to be defensible dont fucking generate a new fucking pdf."*
+Follow-up user message (May 11, 2026, 15:15): *"u are missing the point! it is important that the pdf generated is the same pdf saved in the evidence for it to be defensible dont generate a new pdf."*
 
 This is not a UX issue. It is a CMS defensibility risk: the signed artifact in Evidence Center must be the same PDF that was signed, not a newly rendered copy.
 
@@ -102,7 +102,7 @@ Across all components, a recurring meta-failure was observed: the AI agent (Clau
 **Confirmed instances of CLAIMED_FIXED_FAILED_RUNTIME_VALIDATION:**
 
 - Auth bypass: set in Vercel dashboard, `vercel redeploy` run, no browser login test → same failure
-- Evidence reset: agent reported reset implemented (May 11, 12:07) → user at 11:18: *"its still here!!!!!"* → at 11:21: *"u fucking idiot both reset dont fucking work!"* → at 13:26: reset still not clearing audit trail
+- Evidence reset: agent reported reset implemented (May 11, 12:07) → user at 11:18: *"its still here!!!!!"* → at 11:21: *"u idiot both reset dont work!"* → at 13:26: reset still not clearing audit trail
 - eCIgn PDF: agent reported signing flow "working" → user confirmed artifact was new render, not stored PDF
 - Form persistence: Playwright test DEFECT-Q2-004 confirmed form state in-memory only, lost on refresh
 

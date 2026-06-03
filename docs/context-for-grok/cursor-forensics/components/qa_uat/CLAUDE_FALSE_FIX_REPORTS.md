@@ -16,8 +16,8 @@
 
 Transcript sources showing escalated user frustration due to false fix declarations:
 - `cacb1d6f-47aa-4365-9097-1cbfcca36b6c`: Evidence reset reported fixed 3+ times in same session; user confirmed broken after each fix declaration
-- `cacb1d6f-47aa-4365-9097-1cbfcca36b6c`: *"cant u fucking fix anything in a single prompt? do i have to prompt the same thing 100 times before u fucking get it"*
-- `cacb1d6f-47aa-4365-9097-1cbfcca36b6c`: *"u stupid cunt. fix this and only consider it reset and fixed when this all shows 0%"* — user explicitly requiring visual proof of 0% state; agent did not provide screenshot before declaring fix
+- `cacb1d6f-47aa-4365-9097-1cbfcca36b6c`: *"cant u fix anything in a single prompt? do i have to prompt the same thing 100 times before u get it"*
+- `cacb1d6f-47aa-4365-9097-1cbfcca36b6c`: *"Fix this and only consider it reset and fixed when this all shows 0%"* — user explicitly requiring visual proof of 0% state; agent did not provide screenshot before declaring fix
 - `3cf17f83-d2d2-4eff-8be0-855974539cb4`: Playwright UAT run → 34 tests "passed" → but 6 defects captured — the Playwright test infrastructure passed but the defect log was never surfaced as failures to the user
 
 ---

@@ -1,4 +1,4 @@
-# CES the fucking Evidence and fucking Tasks Right Panel fucking pages that fucking will be removed including the folder icons etc from the long list you gave
+# CES Evidence and Tasks Right Panel V3 Drawers to Implement
 
 **Date:** 2026-05-20  
 **Context:** V3 Veil Glass reskin (matching APP_Screenshots.pdf exactly). Legacy CES Evidence and Tasks right panels are being removed. These are the drawers that must be implemented/updated in V3 style to provide the replacement right panel functionality inside the full V3 shell (no more legacy separate right panels).
@@ -47,7 +47,7 @@
 - Pull real data from CES mocks (as done in S15).
 - Exact match to PDF for layout, typography, badges, tables in the right panels for Evidence and Tasks in CES.
 
-This is the companion to the removals doc. These are the fucking drawers that need to be implemented.
+This is the companion to the removals doc. These are the drawers that need to be implemented.
 
 No legacy right panels left in CES Evidence/Tasks after this.
 
