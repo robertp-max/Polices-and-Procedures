@@ -129,6 +129,13 @@ export const ROLE_ASSIGNMENTS: RoleAssignment[] = [
     scope: { organizationId: 'careindeed-demo' },
     effectiveFrom: START,
   },
+  {
+    id: 'asn-william',
+    userId: 'usr-william',
+    groupId: 'grp-compliance',
+    scope: { organizationId: 'careindeed-demo' },
+    effectiveFrom: '2026-06-05T00:00:00.000Z',
+  },
 ];
 
 export function getActiveAssignments(userId: string, atIso: string): RoleAssignment[] {
