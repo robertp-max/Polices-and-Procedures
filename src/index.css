@@ -671,15 +671,25 @@
 
 /* Focus-visible accessibility */
 *:focus-visible {
-  outline: 2px solid var(--ci-gold);
+  outline: 2px solid var(--ci-accent, var(--v3-teal-light));
   outline-offset: 2px;
   border-radius: 6px;
 }
 button:focus-visible,
 input:focus-visible {
-  outline: 2px solid var(--ci-gold);
+  outline: 2px solid var(--ci-accent, var(--v3-teal-light));
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(224,123,44,0.22);
+  box-shadow: 0 0 0 4px var(--ci-focus-ring, rgba(0, 209, 193, 0.24));
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -780,7 +790,7 @@ html[data-theme="care-indeed-light"] .custom-scrollbar-x::-webkit-scrollbar-thum
   background: #C74601;
 }
 html[data-theme="care-indeed-light"] *:focus-visible {
-  outline: 2px solid #C74601;
+  outline: 2px solid var(--ci-accent, #007970);
   outline-offset: 2px;
 }
 html[data-theme="care-indeed-light"] button:focus-visible,
@@ -788,8 +798,17 @@ html[data-theme="care-indeed-light"] input:focus-visible,
 html[data-theme="care-indeed-light"] select:focus-visible,
 html[data-theme="care-indeed-light"] textarea:focus-visible,
 html[data-theme="care-indeed-light"] a:focus-visible {
-  outline: 2px solid #C74601;
-  box-shadow: 0 0 0 4px rgba(199,70,1,0.22) !important;
+  outline: 2px solid var(--ci-accent, #007970);
+  box-shadow: 0 0 0 4px var(--ci-focus-ring, rgba(0,121,112,0.22)) !important;
+}
+html[data-theme="care-indeed-light"] input:focus,
+html[data-theme="care-indeed-light"] select:focus,
+html[data-theme="care-indeed-light"] textarea:focus,
+html[data-theme="care-indeed-light"] input:focus-visible,
+html[data-theme="care-indeed-light"] select:focus-visible,
+html[data-theme="care-indeed-light"] textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 html[data-theme="care-indeed-light"] .glass-interactive {
   background-color: rgba(0,121,112,0);
@@ -916,7 +935,7 @@ html[data-theme="care-indeed-light"] [data-shell-main] h2.text-white {
   --ci-accent:        var(--ci-gold);
   --ci-cta:           var(--ci-gold);
   --ci-cta-text:      var(--ci-maroon-deep);
-  --ci-focus-ring:    rgba(224,123,44,0.35);
+  --ci-focus-ring:    rgba(0,209,193,0.26);
   --ci-glass-bg:      var(--glass-main);
   --ci-glass-border:  var(--ci-border);
   --ci-shadow-sm:     0 1px 2px rgba(0,0,0,0.45);
@@ -997,7 +1016,7 @@ html[data-theme="care-indeed-light"] {
   --ci-accent:        #007970;
   --ci-cta:           #C74601;
   --ci-cta-text:      #FFFFFF;
-  --ci-focus-ring:    rgba(199,70,1,0.30);
+  --ci-focus-ring:    rgba(0,121,112,0.26);
   --ci-glass-bg:      #FFFFFF;
   --ci-glass-border:  #E5E4E3;
   --ci-shadow-sm:     0 1px 2px rgba(31,28,27,0.06);
@@ -2186,10 +2205,20 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
   text-shadow: none !important;
 }
 *:focus-visible {
-  box-shadow: 0 0 0 4px rgba(224,123,44,0.22) !important;
+  box-shadow: 0 0 0 4px var(--ci-focus-ring, rgba(0,209,193,0.24)) !important;
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  box-shadow: none !important;
 }
 html[data-theme="care-indeed-light"] *:focus-visible {
-  box-shadow: 0 0 0 4px rgba(199,70,1,0.22) !important;
+  box-shadow: 0 0 0 4px var(--ci-focus-ring, rgba(0,121,112,0.22)) !important;
+}
+html[data-theme="care-indeed-light"] input:focus-visible,
+html[data-theme="care-indeed-light"] textarea:focus-visible,
+html[data-theme="care-indeed-light"] select:focus-visible {
+  box-shadow: none !important;
 }
 /* Kill hover Y-translate / scale — that's what truncates calendar
    event pills and generally creates the "3D lift" feel. */
@@ -3460,6 +3489,50 @@ body,
   opacity: 1;
 }
 
+/* Login/auth card: matte V3 slate with teal-only spotlight. */
+.auth-spotlight-card {
+  --spotlight-color: rgba(0, 209, 193, 0.22);
+  border-color: rgba(28, 36, 51, 0.92) !important;
+  background: linear-gradient(145deg, rgba(20, 26, 35, 0.98), rgba(12, 17, 24, 0.97)) !important;
+  box-shadow:
+    0 28px 82px rgba(0, 0, 0, 0.48),
+    0 10px 26px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.03) !important;
+}
+
+.auth-spotlight-card::before,
+.auth-spotlight-card::after {
+  display: none !important;
+}
+
+/* Auth controls stay optically neutral: spotlight can remain active around
+   controls, but opaque controls sit above it so they are not illuminated. */
+.auth-spotlight-card :is(input, textarea, select, button, a) {
+  position: relative;
+  z-index: 30;
+}
+
+.auth-spotlight-card :is(input, textarea, select, button) {
+  background-clip: padding-box;
+}
+
+.auth-spotlight-card input,
+.auth-spotlight-card input:focus,
+.auth-spotlight-card input:focus-visible,
+.auth-spotlight-card input:-webkit-autofill,
+.auth-spotlight-card input:-webkit-autofill:hover,
+.auth-spotlight-card input:-webkit-autofill:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 1000px #0d131b inset !important;
+  -webkit-text-fill-color: var(--v3-text-primary) !important;
+  caret-color: var(--v3-text-primary);
+}
+
+.auth-spotlight-card input:focus,
+.auth-spotlight-card input:-webkit-autofill:focus {
+  border-color: var(--v3-teal-light) !important;
+}
+
 .v32-command-center-app .custom-scrollbar::-webkit-scrollbar,
 .v32-command-center-app .custom-scrollbar-x::-webkit-scrollbar {
   width: 6px;
@@ -3483,7 +3556,11 @@ body,
 }
 
 /* V3 Dashboard Reference base: matte slate-carbon, transparent shell chrome, hidden scrollbars. */
-.v3-app-shell-base,
+.v3-app-shell-base {
+  color: var(--v3-text-primary);
+  background: transparent !important;
+}
+
 .v3-dashboard-reference {
   color: var(--v3-text-primary);
   background:

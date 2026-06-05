@@ -28,7 +28,7 @@
       "Value": {
        "Fn::GetAtt": [
         "ExportsReader8B249524",
-        "/cdk/exports/CiPolicyFrontendAlarms-staging/CiPolicyFrontendstaginguseast2RefDistribution830FAC52E4F721B1"
+        "/cdk/exports/CiPolicyFrontendAlarms-staging/CiPolicyFrontendstaginguswest1RefDistribution830FAC5287B4C79B"
        ]
       }
      },
@@ -71,7 +71,7 @@
       "Value": {
        "Fn::GetAtt": [
         "ExportsReader8B249524",
-        "/cdk/exports/CiPolicyFrontendAlarms-staging/CiPolicyFrontendstaginguseast2RefDistribution830FAC52E4F721B1"
+        "/cdk/exports/CiPolicyFrontendAlarms-staging/CiPolicyFrontendstaginguswest1RefDistribution830FAC5287B4C79B"
        ]
       }
      },
@@ -100,7 +100,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yXJQQ7CIBBA0bN0D2PFegDjAUysezMONU5LoemALAh3N62r/5JvwJw7aBvMoslO2vELSh+RJoVZnkW8QHmEhUld335HVeRCshkjfaBcHK7z9nbUuvGW4pJiVT7YAUY5fE0HxxO0zSjMek0+8jzA/d8fJiJ2lIIAAAA="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yXJQQrCMBBA0bN0n4xl0AOIBxDUvYyTimnTpHQmZhFyd2ld/QcfAU9H6DsqYtlNNvgX1LsST4aKPKtEgfpIi2dzeccdzXBI2RVS/kA9B1rn7e1obeM165K1mZjcAKMcvoiACH03ivd2zVH9PMDt3x+VrOecggAAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "CiPolicyFrontendAlarms-staging/CDKMetadata/Default"
@@ -119,7 +119,7 @@
      "region": "us-east-1",
      "prefix": "CiPolicyFrontendAlarms-staging",
      "imports": {
-      "/cdk/exports/CiPolicyFrontendAlarms-staging/CiPolicyFrontendstaginguseast2RefDistribution830FAC52E4F721B1": "{{resolve:ssm:/cdk/exports/CiPolicyFrontendAlarms-staging/CiPolicyFrontendstaginguseast2RefDistribution830FAC52E4F721B1}}"
+      "/cdk/exports/CiPolicyFrontendAlarms-staging/CiPolicyFrontendstaginguswest1RefDistribution830FAC5287B4C79B": "{{resolve:ssm:/cdk/exports/CiPolicyFrontendAlarms-staging/CiPolicyFrontendstaginguswest1RefDistribution830FAC5287B4C79B}}"
      }
     }
    },
@@ -165,11 +165,7 @@
             {
              "Ref": "AWS::Partition"
             },
-            ":ssm:us-east-1:",
-            {
-             "Ref": "AWS::AccountId"
-            },
-            ":parameter/cdk/exports/CiPolicyFrontendAlarms-staging/*"
+            ":ssm:us-east-1:069857851156:parameter/cdk/exports/CiPolicyFrontendAlarms-staging/*"
            ]
           ]
          },
@@ -192,9 +188,7 @@
    "Type": "AWS::Lambda::Function",
    "Properties": {
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1"
-     },
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-east-1",
      "S3Key": "f06f7035054cb2aada184c7c251ec5cb31fb6b5e975284939b9ff097603ea769.zip"
     },
     "Timeout": 900,

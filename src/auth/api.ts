@@ -58,6 +58,8 @@ interface MeResponse {
   user: DemoUser;
 }
 
+type PageAccessApiMap = Record<string, unknown>;
+
 interface ApiErrorPayload {
   error?: {
     code?: string;
@@ -203,6 +205,36 @@ export const AuthApi = {
       method: 'POST',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       body: JSON.stringify({ email, newPassword }),
+    });
+  },
+
+  adminGrantAccess(accessToken: string, email: string, newPassword: string): Promise<{ message: string }> {
+    return call('/admin/grant-access', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify({ email, newPassword }),
+    });
+  },
+
+  getMyPageAccess(accessToken: string): Promise<{ actorEmail: string; record: unknown | null }> {
+    return call('/page-access/me', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  getAllPageAccess(accessToken: string): Promise<{ access: PageAccessApiMap }> {
+    return call('/admin/page-access', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  saveAllPageAccess(accessToken: string, access: PageAccessApiMap): Promise<{ access: PageAccessApiMap }> {
+    return call('/admin/page-access', {
+      method: 'PUT',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify({ access }),
     });
   },
 };

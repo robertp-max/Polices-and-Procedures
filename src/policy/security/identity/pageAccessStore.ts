@@ -1,14 +1,10 @@
 /**
  * pageAccessStore — Phase A page-view-access matrix.
  *
- * Persists per-user component / page access grants in localStorage so
- * admin changes survive a hard refresh. Falls back to deterministic
- * seed defaults the first time it loads in a browser.
- *
- * Persistence is intentionally local-only — this mirrors the existing
- * identity persistence pattern. Backend persistence (DynamoDB /
- * Cognito) for page access is left as a TODO; do NOT add it as part
- * of this change.
+ * Persists per-user component / page access grants in localStorage as a
+ * browser cache and mirrors them to the backend when an authenticated
+ * admin is available. Falls back to deterministic seed defaults the
+ * first time it loads in a browser.
  *
  * Audit log: every mutation is appended to a small in-memory + local
  * audit list with `action: 'page_access_updated'`. Backend audit
@@ -16,7 +12,10 @@
  */
 
 import { create } from 'zustand';
+import { AuthApi } from '@/auth/api';
+import type { DemoUser as AuthDemoUser } from '@/auth/api';
 import { COMPONENT_GROUPS, getPagesForComponent } from './pageRegistry';
+import { DEMO_USERS, resolveUserIdFromAuth } from './demoUsers';
 import type {
   ComponentAccessGrant,
   ComponentId,
@@ -30,6 +29,39 @@ import type {
 const STORAGE_KEY = 'ci.pageAccess.v1';
 const AUDIT_KEY = 'ci.pageAccess.audit.v1';
 const MAX_AUDIT_ENTRIES = 500;
+
+function normalizeIdentityKey(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function aliasKeysForIdentity(userId: string, email?: string): string[] {
+  const keys = new Set<string>([userId]);
+  if (email) keys.add(normalizeIdentityKey(email));
+  const seeded = DEMO_USERS.find(user => user.id === userId);
+  if (seeded?.email) keys.add(normalizeIdentityKey(seeded.email));
+  return [...keys];
+}
+
+function writeAliases(
+  map: Record<string, UserPageAccess>,
+  record: UserPageAccess,
+  aliases: string[],
+): Record<string, UserPageAccess> {
+  const next = { ...map };
+  for (const key of aliases) {
+    next[key] = record;
+  }
+  return next;
+}
+
+function normalizeAccessMap(input: Record<string, UserPageAccess>): Record<string, UserPageAccess> {
+  let next: Record<string, UserPageAccess> = {};
+  for (const [key, record] of Object.entries(input)) {
+    if (!record || typeof record !== 'object' || typeof record.userId !== 'string') continue;
+    next = writeAliases(next, record, aliasKeysForIdentity(record.userId, key.includes('@') ? key : undefined));
+  }
+  return next;
+}
 
 // ─── Seed builders ───────────────────────────────────────────
 
@@ -56,22 +88,24 @@ function fullGrant(componentId: ComponentId, level: PageAccessLevel): ComponentA
  *    role/feature evaluation for read, and `none` for write.
  */
 function buildSeedAccess(): Record<string, UserPageAccess> {
-  const seed: Record<string, UserPageAccess> = {};
+  let seed: Record<string, UserPageAccess> = {};
 
   // Robert — full grants everywhere.
-  seed['demo-user-careindeed'] = {
+  const robertRecord: UserPageAccess = {
     userId: 'demo-user-careindeed',
     components: COMPONENT_GROUPS.map(c => fullGrant(c.componentId, 'write')),
   };
+  seed = writeAliases(seed, robertRecord, aliasKeysForIdentity('demo-user-careindeed', 'robertp@careindeed.com'));
 
   // Marites — read+write on User Management + read on everything else.
-  seed['usr-marites'] = {
+  const maritesRecord: UserPageAccess = {
     userId: 'usr-marites',
     components: COMPONENT_GROUPS.map(c => {
       const level: PageAccessLevel = c.componentId === 'cmp-user-management' ? 'write' : 'read';
       return fullGrant(c.componentId, level);
     }),
   };
+  seed = writeAliases(seed, maritesRecord, aliasKeysForIdentity('usr-marites', 'maritesa@careindeed.com'));
 
   return seed;
 }
@@ -195,7 +229,7 @@ export interface PageAccessState {
   audit: PageAccessAuditEntry[];
 
   /** Returns the explicit grant for a user, reconciled with registry. */
-  getAccessForUser: (userId: string) => UserPageAccess;
+  getAccessForUser: (userId: string, email?: string) => UserPageAccess;
   /** Returns the explicit component grant, if any (NOT reconciled to a fallback). */
   getComponentGrant: (userId: string, componentId: ComponentId) => ComponentAccessGrant | undefined;
 
@@ -232,6 +266,8 @@ export interface PageAccessState {
 
   /** Inspect the audit trail (newest last). */
   listAudit: (filterTargetUserId?: string) => PageAccessAuditEntry[];
+  /** Replace the entire access map after server hydration. */
+  replaceAccess: (access: Record<string, UserPageAccess>) => void;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────
@@ -265,11 +301,15 @@ function appendAudit(
 function updateAccessMap(
   state: PageAccessState,
   userId: string,
+  targetEmail: string | undefined,
   updater: (current: UserPageAccess) => UserPageAccess,
 ): Record<string, UserPageAccess> {
-  const current = state.access[userId] ?? reconcileUserComponents(emptyRecordForUser(userId));
+  const identityKeys = aliasKeysForIdentity(userId, targetEmail);
+  const current = state.access[userId]
+    ?? (targetEmail ? state.access[normalizeIdentityKey(targetEmail)] : undefined)
+    ?? reconcileUserComponents(emptyRecordForUser(userId));
   const updated = updater(current);
-  const next = { ...state.access, [userId]: updated };
+  const next = writeAliases(state.access, updated, identityKeys);
   saveToStorage(next);
   return next;
 }
@@ -291,8 +331,8 @@ export const usePageAccessStore = create<PageAccessState>((set, get) => {
     access: initial,
     audit: loadAuditFromStorage(),
 
-    getAccessForUser(userId) {
-      const record = get().access[userId];
+    getAccessForUser(userId: string, email?: string) {
+      const record = get().access[userId] ?? (email ? get().access[normalizeIdentityKey(email)] : undefined);
       if (record) return reconcileUserComponents(record);
       return reconcileUserComponents(emptyRecordForUser(userId));
     },
@@ -306,7 +346,7 @@ export const usePageAccessStore = create<PageAccessState>((set, get) => {
     setComponentEnabled(actorEmail, targetUserId, targetEmail, componentId, enabled) {
       set(state => {
         const oldGrant = state.access[targetUserId]?.components.find(c => c.componentId === componentId);
-        const access = updateAccessMap(state, targetUserId, current => ({
+        const access = updateAccessMap(state, targetUserId, targetEmail, current => ({
           userId: current.userId,
           components: current.components.map(c =>
             c.componentId === componentId ? { ...c, enabled } : c,
@@ -327,7 +367,7 @@ export const usePageAccessStore = create<PageAccessState>((set, get) => {
       set(state => {
         const oldGrant = state.access[targetUserId]?.components.find(c => c.componentId === componentId);
         const oldLevel = oldGrant?.defaultAccess;
-        const access = updateAccessMap(state, targetUserId, current => ({
+        const access = updateAccessMap(state, targetUserId, targetEmail, current => ({
           userId: current.userId,
           components: current.components.map(c =>
             c.componentId === componentId
@@ -357,7 +397,7 @@ export const usePageAccessStore = create<PageAccessState>((set, get) => {
       set(state => {
         const oldGrant = state.access[targetUserId]?.components.find(c => c.componentId === componentId);
         const oldLevel = oldGrant?.pages.find(p => p.pageId === pageId)?.access;
-        const access = updateAccessMap(state, targetUserId, current => ({
+        const access = updateAccessMap(state, targetUserId, targetEmail, current => ({
           userId: current.userId,
           components: current.components.map(c =>
             c.componentId === componentId
@@ -388,7 +428,7 @@ export const usePageAccessStore = create<PageAccessState>((set, get) => {
       set(state => {
         const reseed = buildSeedAccess()[targetUserId];
         const next = reseed
-          ? { ...state.access, [targetUserId]: reseed }
+          ? writeAliases(state.access, reseed, aliasKeysForIdentity(targetUserId, targetEmail))
           : (() => { const copy = { ...state.access }; delete copy[targetUserId]; return copy; })();
         saveToStorage(next);
         const audit = appendAudit(state, {
@@ -409,6 +449,12 @@ export const usePageAccessStore = create<PageAccessState>((set, get) => {
         e.targetEmail.toLowerCase() === filterTargetUserId.toLowerCase(),
       );
     },
+
+    replaceAccess(access) {
+      const normalized = reconcileWithSeed(normalizeAccessMap(access), buildSeedAccess());
+      saveToStorage(normalized);
+      set({ access: normalized });
+    },
   };
 });
 
@@ -417,6 +463,11 @@ export const usePageAccessStore = create<PageAccessState>((set, get) => {
 /** Live (non-hook) read used by the access helpers + route guards. */
 export function getLivePageAccessForUser(userId: string): UserPageAccess {
   return usePageAccessStore.getState().getAccessForUser(userId);
+}
+
+/** Live read that falls back from demo user id to authenticated email. */
+export function getLivePageAccessForIdentity(userId: string, email?: string): UserPageAccess {
+  return usePageAccessStore.getState().getAccessForUser(userId, email);
 }
 
 /** Live (non-hook) audit reader. */
@@ -431,4 +482,34 @@ export function getLivePageAccessAudit(): PageAccessAuditEntry[] {
  */
 export function debugBuildSeed(): Record<string, UserPageAccess> {
   return buildSeedAccess();
+}
+
+export async function hydratePageAccessFromServer(
+  accessToken: string,
+  authUser: AuthDemoUser | null,
+  canManageAccess: boolean,
+): Promise<void> {
+  if (!accessToken) return;
+
+  if (canManageAccess) {
+    const response = await AuthApi.getAllPageAccess(accessToken);
+    usePageAccessStore.getState().replaceAccess(response.access as Record<string, UserPageAccess>);
+    return;
+  }
+
+  const response = await AuthApi.getMyPageAccess(accessToken);
+  if (!response.record || typeof response.record !== 'object' || !authUser?.email) return;
+
+  const userId = resolveUserIdFromAuth(authUser);
+  const merged = writeAliases(
+    usePageAccessStore.getState().access,
+    response.record as UserPageAccess,
+    aliasKeysForIdentity(userId, authUser.email),
+  );
+  usePageAccessStore.getState().replaceAccess(merged);
+}
+
+export async function persistPageAccessToServer(accessToken: string): Promise<void> {
+  if (!accessToken) return;
+  await AuthApi.saveAllPageAccess(accessToken, usePageAccessStore.getState().access);
 }

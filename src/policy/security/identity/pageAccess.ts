@@ -22,7 +22,7 @@
 import type { DemoUser as AuthDemoUser } from '@/auth/api';
 import { resolveUserIdFromAuth } from './demoUsers';
 import { PAGE_BY_ID, COMPONENT_GROUP_BY_ID } from './pageRegistry';
-import { getLivePageAccessForUser } from './pageAccessStore';
+import { getLivePageAccessForIdentity } from './pageAccessStore';
 import { canViewFeature, isAdminUser } from '../features/featureAccess';
 import type { FeatureId } from '../features/types';
 import type {
@@ -142,10 +142,10 @@ interface ResolvedComponentGrant {
   hasExplicitEntry: boolean;
 }
 
-function resolveComponentForPage(userId: string, pageId: PageId): ResolvedComponentGrant {
+function resolveComponentForPage(userId: string, email: string | undefined, pageId: PageId): ResolvedComponentGrant {
   const page = PAGE_BY_ID[pageId];
   if (!page) return { grant: undefined, hasExplicitEntry: false };
-  const record = getLivePageAccessForUser(userId);
+  const record = getLivePageAccessForIdentity(userId, email);
   const grant = record.components.find(c => c.componentId === page.componentGroup);
   // `hasExplicitEntry` is true when the user has a stored entry for
   // this component. The reconciled record always returns a grant, so
@@ -188,7 +188,8 @@ export function getPageAccessLevel(
   if (isPageAccessManager(authUser)) return 'write';
 
   const userId = resolveUserIdFromAuth(authUser);
-  const { grant, hasExplicitEntry } = resolveComponentForPage(userId, pageId);
+  const email = authUser.email?.toLowerCase();
+  const { grant, hasExplicitEntry } = resolveComponentForPage(userId, email, pageId);
 
   if (grant && hasExplicitEntry) {
     if (!grant.enabled) return 'none';

@@ -6,6 +6,7 @@ import {
   reloadApprovedUsers,
   validateAllowlistCsv,
 } from '../auth/approvedUsers.js';
+import { getPageAccessPersistence } from '../auth/pageAccessPersistence.js';
 
 export const authRouter: Router = Router();
 
@@ -155,6 +156,54 @@ authRouter.post('/admin/manual-password-reset', asyncHandler(async (req, res) =>
   const newPassword = String(req.body?.newPassword || '');
   const result = await service.adminSetUserPassword(accessToken, email, newPassword);
   res.json(result);
+}));
+
+authRouter.post('/admin/grant-access', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  const email = String(req.body?.email || '');
+  const newPassword = String(req.body?.newPassword || '');
+  const result = await service.adminGrantUserAccess(accessToken, email, newPassword);
+  res.json(result);
+}));
+
+authRouter.get('/page-access/me', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  if (!accessToken) {
+    throw new ApiError('auth_error', 'Not authenticated.', 401);
+  }
+
+  const actor = await service.getCurrentUser(accessToken);
+  const actorEmail = String(actor.email || '').trim().toLowerCase();
+  const access = await getPageAccessPersistence().getAll();
+  res.json({
+    actorEmail,
+    record: actorEmail ? (access[actorEmail] ?? null) : null,
+  });
+}));
+
+authRouter.get('/admin/page-access', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  await service.assertAdminAccessToken(accessToken);
+  const access = await getPageAccessPersistence().getAll();
+  res.json({ access });
+}));
+
+authRouter.put('/admin/page-access', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  await service.assertAdminAccessToken(accessToken);
+  const access = (req.body?.access && typeof req.body.access === 'object')
+    ? req.body.access as Record<string, unknown>
+    : {};
+  const saved = await getPageAccessPersistence().putAll(access);
+  res.json({ access: saved });
 }));
 
 authRouter.post('/refresh', asyncHandler(async (req, res) => {

@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useRef, useMemo, useCallback, type PropsWithChildren } from 'react';
 import { createPortal } from 'react-dom';
-// Single app logo for the entire application - hard-coded stable public path
-// as explicitly requested. File must be present at public/ci-logo-white.png.
+import ciLogoWhite from '@/assets/ci-logo-white.png';
+// Single app logo for the entire application - bundled from src/assets.
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardCheck, Network, FileEdit,
@@ -22,7 +22,8 @@ import { evaluateAdminAccess } from '@/policy/security/identity';
 import { canViewNavItem as canViewNavItemFn } from '@/policy/security/features/featureAccess';
 import { useUserAssignmentsStore } from '@/policy/security/identity/userAssignmentsStore';
 import { canViewPage } from '@/policy/security/identity/pageAccess';
-import { usePageAccessStore } from '@/policy/security/identity/pageAccessStore';
+import { canManagePageAccess } from '@/policy/security/identity/pageAccess';
+import { hydratePageAccessFromServer, usePageAccessStore } from '@/policy/security/identity/pageAccessStore';
 import type { PageId } from '@/policy/security/identity/pageAccessTypes';
 import { PermissionGate } from '@/policy/security/features/PermissionGate';
 import { ShellFrame, ShellNavRail, ShellTopbar, ShellContentFrame, ShellMobileDrawer } from '@/policy/components/ui';
@@ -202,7 +203,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, getAccessToken } = useAuth();
   const showSplash = !LOCAL_DEMO_AUTH_BYPASS && !isAuthenticated && location.pathname === '/';
 
   const adminAccess = useMemo(() => evaluateAdminAccess(user), [user]);
@@ -256,9 +257,8 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   const ciMode = useCiModeStore(s => s.mode);
   const isCareIndeedDark = false;
   const isVisualLight = false;
-  // Hard-coded stable path to the single app logo (public/ci-logo-white.png)
-  // This ensures it never changes on build/push and always uses the exact file provided.
-  const logo = '/ci-logo-white.png';
+  // Use the app logo bundled from src/assets/ci-logo-white.png.
+  const logo = ciLogoWhite;
   const accountDisplayName = useMemo(() => {
     const firstName = user?.firstName?.trim();
     const lastName = user?.lastName?.trim();
@@ -354,6 +354,23 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   useEffect(() => {
     document.documentElement.dataset.ciMode = 'v3';
   }, [ciMode]);
+
+  useEffect(() => {
+    if (!isAuthenticated || LOCAL_DEMO_AUTH_BYPASS) return;
+    let cancelled = false;
+    void (async () => {
+      const accessToken = await getAccessToken();
+      if (!accessToken || cancelled) return;
+      try {
+        await hydratePageAccessFromServer(accessToken, user, canManagePageAccess(user));
+      } catch {
+        // Fall back to the local cache / seed state when the auth API is unavailable.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [getAccessToken, isAuthenticated, user]);
 
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const accountMenuButtonRef = useRef<HTMLButtonElement | null>(null);

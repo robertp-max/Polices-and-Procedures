@@ -74,6 +74,7 @@
     "express": "^4.21.1",
     "googleapis": "^144.0.0",
     "gradflow": "^0.1.0",
+    "gsap": "^3.15.0",
     "html2pdf.js": "^0.14.0",
     "lucide-react": "^1.7.0",
     "mammoth": "^1.12.0",
