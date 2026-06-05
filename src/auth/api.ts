@@ -50,6 +50,12 @@ export interface LoginChallengeResponse {
   email: string;
 }
 
+export interface AdminTempPasswordResponse {
+  temporaryPassword: string;
+  expiresAt: string;
+  mustChangePassword: boolean;
+}
+
 interface RefreshResponse {
   session: AuthSession;
 }
@@ -205,6 +211,14 @@ export const AuthApi = {
       method: 'POST',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       body: JSON.stringify({ email, newPassword }),
+    });
+  },
+
+  adminGenerateTempPassword(accessToken: string, email: string): Promise<AdminTempPasswordResponse> {
+    return call('/admin/generate-temp-password', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify({ email }),
     });
   },
 
