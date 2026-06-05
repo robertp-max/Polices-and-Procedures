@@ -77,12 +77,111 @@ function validateEmail(email: string): string | null {
   return null;
 }
 
+// ─── Browser persistence ────────────────────────────────────────────────────
+//
+// The Phase A identity-admin list is a browser-side store, mirroring its
+// sibling `pageAccessStore` (which already persists the same class of data in
+// localStorage). Without this, the store was rebuilt from the static seed on
+// every page (re)load, so any admin-added/edited user vanished on refresh.
+//
+// This persists ONLY non-sensitive user/assignment metadata (id, email, name,
+// status, group). It never stores passwords, OTPs, tokens, or secrets — those
+// live exclusively in the backend auth source of truth (Cognito + DynamoDB
+// registration) and are unaffected by this cache.
+
+const STORAGE_KEY = 'ci.userAssignments.v1';
+
+interface PersistedAssignments {
+  users: User[];
+  assignments: RoleAssignment[];
+}
+
+function loadFromStorage(): PersistedAssignments | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PersistedAssignments>;
+    if (!parsed || !Array.isArray(parsed.users) || !Array.isArray(parsed.assignments)) {
+      return null;
+    }
+    // Light shape validation — drop anything that isn't a recognizable record
+    // rather than throwing, so a stale/partial blob can't blank the admin list.
+    const users = parsed.users.filter(
+      (u): u is User => !!u && typeof u.id === 'string' && typeof u.email === 'string',
+    );
+    const assignments = parsed.assignments.filter(
+      (a): a is RoleAssignment => !!a && typeof a.id === 'string' && typeof a.userId === 'string',
+    );
+    return { users, assignments };
+  } catch {
+    return null;
+  }
+}
+
+function saveToStorage(state: PersistedAssignments): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // Quota or privacy mode — swallow silently; the store still works in-memory.
+  }
+}
+
+/**
+ * Build the initial store state.
+ *
+ * First load (no persisted blob): seed from the static arrays and persist.
+ * Subsequent loads: trust the persisted blob as the source of truth (so adds,
+ * edits, and deletes survive refresh) but always guarantee the protected
+ * bootstrap Super Admin and an active super-admin assignment exist, so the
+ * admin can never be locked out by a stale cache. Persisted data is never
+ * deleted or overwritten here.
+ */
+function buildInitialState(): PersistedAssignments {
+  const seedUsers = DEMO_USERS.map(u => ({ ...u }));
+  const seedAssignments = ROLE_ASSIGNMENTS.map(a => ({ ...a }));
+
+  const persisted = loadFromStorage();
+  if (!persisted) {
+    const initial = { users: seedUsers, assignments: seedAssignments };
+    saveToStorage(initial);
+    return initial;
+  }
+
+  const users = [...persisted.users];
+  const assignments = [...persisted.assignments];
+
+  for (const protectedId of PROTECTED_USER_IDS) {
+    if (!users.some(u => u.id === protectedId)) {
+      const seedUser = seedUsers.find(u => u.id === protectedId);
+      if (seedUser) users.push(seedUser);
+    }
+    const hasActiveSuperAdmin = assignments.some(
+      a => a.userId === protectedId && a.groupId === SUPER_ADMIN_GROUP_ID && !a.revokedAt,
+    );
+    if (!hasActiveSuperAdmin) {
+      const seedAsn = seedAssignments.find(
+        a => a.userId === protectedId && a.groupId === SUPER_ADMIN_GROUP_ID,
+      );
+      if (seedAsn) assignments.push(seedAsn);
+    }
+  }
+
+  const reconciled = { users, assignments };
+  saveToStorage(reconciled);
+  return reconciled;
+}
+
 // ─── Store ────────────────────────────────────────────────────────────────────
 
+const INITIAL_STATE = buildInitialState();
+
 export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) => ({
-  // Seed from static arrays — deep copies so mutations don't touch the originals
-  users: DEMO_USERS.map(u => ({ ...u })),
-  assignments: ROLE_ASSIGNMENTS.map(a => ({ ...a })),
+  // Hydrated from localStorage (reconciled with the static seed). Mutations
+  // below persist back so changes survive refresh, reload, and OTP generation.
+  users: INITIAL_STATE.users,
+  assignments: INITIAL_STATE.assignments,
 
   getUserById(userId) {
     return get().users.find(u => u.id === userId);
@@ -136,7 +235,10 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
       effectiveFrom: now,
     };
 
-    set({ users: [...users, newUser], assignments: [...assignments, newAssignment] });
+    const nextUsers = [...users, newUser];
+    const nextAssignments = [...assignments, newAssignment];
+    set({ users: nextUsers, assignments: nextAssignments });
+    saveToStorage({ users: nextUsers, assignments: nextAssignments });
     return { ok: true };
   },
 
@@ -183,10 +285,9 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
       );
     }
 
-    set({
-      users: users.map(u => (u.id === userId ? updatedUser : u)),
-      assignments: updatedAssignments,
-    });
+    const nextUsers = users.map(u => (u.id === userId ? updatedUser : u));
+    set({ users: nextUsers, assignments: updatedAssignments });
+    saveToStorage({ users: nextUsers, assignments: updatedAssignments });
     return { ok: true };
   },
 
@@ -209,10 +310,10 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
       return { ok: false, error: 'Cannot remove the last Super Admin.' };
     }
 
-    set({
-      users: users.filter(u => u.id !== userId),
-      assignments: assignments.filter(a => a.userId !== userId),
-    });
+    const nextUsers = users.filter(u => u.id !== userId);
+    const nextAssignments = assignments.filter(a => a.userId !== userId);
+    set({ users: nextUsers, assignments: nextAssignments });
+    saveToStorage({ users: nextUsers, assignments: nextAssignments });
     return { ok: true };
   },
 }));
