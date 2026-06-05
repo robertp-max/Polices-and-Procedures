@@ -10,6 +10,7 @@ export const DEMO_USERS: User[] = [
   { id: 'usr-janine', email: 'janinec@careindeed.com', name: 'Janine Catanghal', status: 'active', source: 'seed' },
   { id: 'usr-reden', email: 'redenv@careindeed.com', name: 'Reden Valerio', status: 'active', source: 'seed' },
   { id: 'usr-monserat', email: 'monseratz@careindeed.com', name: 'Monserat Zapanta', status: 'active', source: 'seed' },
+  { id: 'usr-william', email: 'williamb@careindeed.com', name: 'William Babas', status: 'active', source: 'seed' },
   { id: 'usr-rn', email: 'rn@careindeed.com', name: 'Riley RN', status: 'active' },
   { id: 'usr-lvn', email: 'lvn@careindeed.com', name: 'Logan LVN', status: 'active' },
   { id: 'usr-chha', email: 'chha@careindeed.com', name: 'Casey CHHA', status: 'active' },
