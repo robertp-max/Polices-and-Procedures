@@ -132,11 +132,12 @@ function saveToStorage(state: PersistedAssignments): void {
  * Build the initial store state.
  *
  * First load (no persisted blob): seed from the static arrays and persist.
- * Subsequent loads: trust the persisted blob as the source of truth (so adds,
- * edits, and deletes survive refresh) but always guarantee the protected
- * bootstrap Super Admin and an active super-admin assignment exist, so the
- * admin can never be locked out by a stale cache. Persisted data is never
- * deleted or overwritten here.
+ * Subsequent loads: start from the persisted blob (so manually-added users and
+ * admin edits survive refresh), then merge in ANY seed user/assignment that
+ * isn't already present by id. This guarantees the baseline seed users — and
+ * any newly-added seed user like William — always appear in the table, even
+ * when an older localStorage blob was written before they existed. Persisted
+ * data is never deleted or overwritten here.
  */
 function buildInitialState(): PersistedAssignments {
   const seedUsers = DEMO_USERS.map(u => ({ ...u }));
@@ -149,14 +150,28 @@ function buildInitialState(): PersistedAssignments {
     return initial;
   }
 
+  // Keep every persisted user (manual + previously-persisted seed), then
+  // append any seed user not already present by id.
   const users = [...persisted.users];
-  const assignments = [...persisted.assignments];
-
-  for (const protectedId of PROTECTED_USER_IDS) {
-    if (!users.some(u => u.id === protectedId)) {
-      const seedUser = seedUsers.find(u => u.id === protectedId);
-      if (seedUser) users.push(seedUser);
+  const userIds = new Set(users.map(u => u.id));
+  for (const seedUser of seedUsers) {
+    if (!userIds.has(seedUser.id)) {
+      users.push(seedUser);
+      userIds.add(seedUser.id);
     }
+  }
+
+  const assignments = [...persisted.assignments];
+  const assignmentIds = new Set(assignments.map(a => a.id));
+  for (const seedAsn of seedAssignments) {
+    if (!assignmentIds.has(seedAsn.id)) {
+      assignments.push(seedAsn);
+      assignmentIds.add(seedAsn.id);
+    }
+  }
+
+  // Defensive: never let a stale cache lock out the bootstrap Super Admin.
+  for (const protectedId of PROTECTED_USER_IDS) {
     const hasActiveSuperAdmin = assignments.some(
       a => a.userId === protectedId && a.groupId === SUPER_ADMIN_GROUP_ID && !a.revokedAt,
     );
