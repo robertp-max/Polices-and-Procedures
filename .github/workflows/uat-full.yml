@@ -1,0 +1,72 @@
+# ──────────────────────────────────────────────────────────────────
+# UAT Full (Playwright) — exhaustive end-to-end / visual-regression suite.
+#
+# This workflow is intentionally NOT a required PR gate. It runs the entire
+# Builder/_system/uat suite (wave-9..14 visual captures, full CES Q2 walkthrough,
+# canonical fix verification incl. the known T5 artifact-iframe timing defect,
+# etc.), which is slow and may contain in-progress product defects.
+#
+# The fast, required subset that gates merges lives in playwright.smoke.config.ts
+# and runs in ci.yml. Keep this suite separate so a UAT defect or a long run
+# never blocks the release gate.
+#
+# Triggers:
+#   • workflow_dispatch — run on demand from the Actions tab.
+#   • schedule          — nightly, to track UAT drift (informational only).
+# Does NOT deploy.
+# ──────────────────────────────────────────────────────────────────
+name: UAT Full (Playwright)
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Nightly at 08:00 UTC. Informational; never a required check.
+    - cron: '0 8 * * *'
+
+# Only the latest UAT run per ref needs to be alive.
+concurrency:
+  group: uat-full-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  uat:
+    name: Full Playwright UAT (non-required)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies (npm ci)
+        run: npm ci --no-audit --no-fund
+
+      # Full UAT suite. The Playwright webServer (playwright.config.ts) boots the
+      # Vite dev server with the demo auth bypass, so no separate build/serve is
+      # needed here.
+      - name: Playwright full UAT suite
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test --reporter=list
+
+      # Always publish the report + JSON results so failures (e.g. the known T5
+      # defect) can be triaged without re-running.
+      - name: Upload Playwright UAT report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-uat-report-${{ github.run_id }}
+          path: |
+            Builder/_system/uat-html-report/
+            Builder/_system/reports/
+          retention-days: 14
+          if-no-files-found: warn
