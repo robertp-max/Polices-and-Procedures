@@ -37,7 +37,7 @@
     {
       "type": "aws:cdk:creationStack",
       "data": [
-        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:322:9)",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:353:9)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
         "...node internals..."
       ]
@@ -51,7 +51,7 @@
     {
       "type": "aws:cdk:creationStack",
       "data": [
-        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:327:9)",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:358:9)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
         "...node internals..."
       ]
@@ -65,7 +65,7 @@
     {
       "type": "aws:cdk:creationStack",
       "data": [
-        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:332:9)",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:363:9)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
         "...node internals..."
       ]
@@ -79,7 +79,7 @@
     {
       "type": "aws:cdk:creationStack",
       "data": [
-        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:337:9)",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:368:9)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
         "...node internals..."
       ]
@@ -93,7 +93,21 @@
     {
       "type": "aws:cdk:creationStack",
       "data": [
-        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:342:9)",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:373:9)",
+        "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/CiPolicyFrontend-staging/ApiBehaviorEnabled": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiBehaviorEnabled"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:377:9)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
         "...node internals..."
       ]
@@ -215,7 +229,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new Distribution2 in aws-cdk-lib...",
-        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:189:30)",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:231:30)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
         "...node internals..."
       ]
@@ -230,7 +244,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...new Role2 in aws-cdk-lib...",
-        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:272:28)",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:303:28)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
         "...node internals..."
       ]
@@ -314,7 +328,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...WrappedClass.<anonymous> in aws-cdk-lib...",
-        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:286:20)",
+        "new FrontendStack (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/lib/frontend-stack.ts:317:20)",
         "file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33: (file:///C:/AI/Git/training/HomeHealth/Policies_and_Procedures/infra/frontend-cdk/bin/frontend.ts:33:2)",
         "...node internals..."
       ]

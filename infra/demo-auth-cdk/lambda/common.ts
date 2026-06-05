@@ -53,6 +53,12 @@ const autoApprovedEmails = String(process.env.AUTO_APPROVED_EMAILS || '')
   .split(',')
   .map(e => e.trim().toLowerCase())
   .filter(Boolean);
+const adminManualPasswordEmails = String(
+  process.env.ADMIN_MANUAL_PASSWORD_EMAILS || 'robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com',
+)
+  .split(',')
+  .map(e => e.trim().toLowerCase())
+  .filter(Boolean);
 const demoAuthDebug = /^(1|true|yes|on)$/i.test(String(process.env.DEMO_AUTH_DEBUG || 'false'));
 
 export const clients = {
@@ -72,6 +78,7 @@ export const config = {
   setupTokenTtlMinutes,
   autoApprovedDomain,
   autoApprovedEmails,
+  adminManualPasswordEmails,
   demoAuthDebug,
 };
 
@@ -172,12 +179,36 @@ export function parseBody(raw: string | null): Record<string, unknown> {
   }
 }
 
+export function parseBearerToken(rawAuthHeader: string | undefined): string {
+  const auth = String(rawAuthHeader || '');
+  return auth.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : '';
+}
+
 export async function getRegistration(email: string): Promise<RegistrationRecord | null> {
   const result = await clients.ddb.send(new GetCommand({
     TableName: config.tableName,
     Key: registrationKey(email),
   }));
   return (result.Item as RegistrationRecord | undefined) ?? null;
+}
+
+export async function getCurrentUser(accessToken: string) {
+  return clients.cognito.send(new GetUserCommand({ AccessToken: accessToken }));
+}
+
+export async function assertAdminAccessToken(accessToken: string): Promise<string> {
+  if (!accessToken) {
+    throw new Error('Not authenticated.');
+  }
+
+  const me = await getCurrentUser(accessToken);
+  const email = normalizeEmail(
+    (me.UserAttributes ?? []).find(attr => attr.Name === 'email')?.Value || '',
+  );
+  if (!config.adminManualPasswordEmails.includes(email)) {
+    throw new Error('You do not have permission to manage user access.');
+  }
+  return email;
 }
 
 export async function writeRegistration(record: RegistrationRecord): Promise<void> {
@@ -319,4 +350,33 @@ export async function markActive(email: string): Promise<void> {
       ':updatedAt': now,
     },
   }));
+}
+
+export interface PageAccessStateRecord {
+  pk: 'PAGE_ACCESS';
+  sk: 'STATE';
+  updatedAt: string;
+  access: Record<string, unknown>;
+}
+
+export async function getPageAccessState(): Promise<Record<string, unknown>> {
+  const result = await clients.ddb.send(new GetCommand({
+    TableName: config.tableName,
+    Key: { pk: 'PAGE_ACCESS', sk: 'STATE' },
+  }));
+  const item = result.Item as PageAccessStateRecord | undefined;
+  return item?.access && typeof item.access === 'object' ? item.access : {};
+}
+
+export async function putPageAccessState(access: Record<string, unknown>): Promise<Record<string, unknown>> {
+  await clients.ddb.send(new PutCommand({
+    TableName: config.tableName,
+    Item: {
+      pk: 'PAGE_ACCESS',
+      sk: 'STATE',
+      updatedAt: nowIso(),
+      access,
+    } satisfies PageAccessStateRecord,
+  }));
+  return access;
 }

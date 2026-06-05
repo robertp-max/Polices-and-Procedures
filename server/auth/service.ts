@@ -483,6 +483,22 @@ export class DemoAuthService {
     };
   }
 
+  async assertAdminAccessToken(actorAccessToken: string): Promise<string> {
+    const accessToken = String(actorAccessToken || '').trim();
+    if (!accessToken) {
+      throw new ApiError('auth_error', 'Not authenticated.', 401);
+    }
+
+    const actor = await this.getCurrentUser(accessToken);
+    const actorEmail = this.normalizeEmail(actor.email);
+    if (!this.cfg.adminManualPasswordEmails.includes(actorEmail)) {
+      log.warn('auth.admin_access.forbidden', { actorEmail });
+      throw new ApiError('forbidden', 'You do not have permission to manage user access.', 403);
+    }
+
+    return actorEmail;
+  }
+
   async forgotPassword(emailRaw: string): Promise<{ message: string }> {
     const email = this.normalizeEmail(emailRaw);
     if (!email || !email.includes('@')) {
@@ -530,22 +546,8 @@ export class DemoAuthService {
     targetEmailRaw: string,
     newPasswordRaw: string,
   ): Promise<{ message: string }> {
-    const accessToken = String(actorAccessToken || '').trim();
-    if (!accessToken) {
-      throw new ApiError('auth_error', 'Not authenticated.', 401);
-    }
-
-    const actor = await this.getCurrentUser(accessToken);
-    const actorEmail = this.normalizeEmail(actor.email);
+    const actorEmail = await this.assertAdminAccessToken(actorAccessToken);
     const targetEmail = this.normalizeEmail(targetEmailRaw);
-
-    if (!this.cfg.adminManualPasswordEmails.includes(actorEmail)) {
-      log.warn('auth.admin_set_password.forbidden', {
-        actorEmail,
-        targetEmail,
-      });
-      throw new ApiError('forbidden', 'You do not have permission to manually change user passwords.', 403);
-    }
 
     if (!targetEmail || !targetEmail.includes('@')) {
       throw new ApiError('validation_error', 'Please enter a valid user email address.', 400);
@@ -600,6 +602,67 @@ export class DemoAuthService {
     });
 
     return { message: 'Password updated successfully.' };
+  }
+
+  async adminGrantUserAccess(
+    actorAccessToken: string,
+    targetEmailRaw: string,
+    newPasswordRaw: string,
+  ): Promise<{ message: string }> {
+    const actorEmail = await this.assertAdminAccessToken(actorAccessToken);
+    const targetEmail = this.normalizeEmail(targetEmailRaw);
+    if (!targetEmail || !targetEmail.includes('@')) {
+      throw new ApiError('validation_error', 'Please enter a valid user email address.', 400);
+    }
+
+    const newPassword = String(newPasswordRaw || '');
+    this.validatePassword(newPassword);
+
+    await this.ensureCognitoUser(targetEmail);
+    await this.cognito.send(new AdminSetUserPasswordCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: targetEmail,
+      Password: newPassword,
+      Permanent: true,
+    }));
+    await this.cognito.send(new AdminUpdateUserAttributesCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: targetEmail,
+      UserAttributes: [
+        { Name: 'email', Value: targetEmail },
+        { Name: 'email_verified', Value: 'true' },
+      ],
+    }));
+    await this.cognito.send(new AdminEnableUserCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: targetEmail,
+    }));
+
+    const now = this.nowIso();
+    const existing = await this.getRegistration(targetEmail);
+    const record: RegistrationRecord = {
+      ...(existing?.pk ? existing : this.registrationKey(targetEmail)),
+      email: targetEmail,
+      emailDomain: this.emailDomain(targetEmail),
+      cognitoUsername: targetEmail,
+      status: 'active',
+      setupCompletedAt: existing?.setupCompletedAt ?? now,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      approvedAt: existing?.approvedAt ?? now,
+      approvedBy: actorEmail,
+    };
+    delete (record as Partial<RegistrationRecord>).setupTokenHash;
+    delete (record as Partial<RegistrationRecord>).setupTokenExpiresAt;
+
+    await this.writeRegistration(record);
+
+    log.info('auth.admin_grant_access.success', {
+      actorEmail,
+      targetEmail,
+    });
+
+    return { message: 'Access granted successfully.' };
   }
 
   async verifyRegistration(emailRaw: string, sfOrgIdRaw: string): Promise<{

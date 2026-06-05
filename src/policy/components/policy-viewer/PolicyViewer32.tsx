@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  Search, LayoutDashboard, Users, Calendar, User, ShieldCheck,
-  Network, UserPlus, FileText, FileBox, Clock, BookOpen,
-  HelpCircle, PlayCircle, Settings, Activity, ChevronRight,
-  Printer, Download, History, Info,
+  Search, ChevronRight, Printer, Download, History, Info,
 } from 'lucide-react';
 import { buildPolicyViewer32Model } from './PolicyViewer32Adapters';
 import type { PolicyViewer32Section, PolicyViewer32TabId } from './PolicyViewer32Types';
@@ -24,38 +21,6 @@ interface SpotlightCardProps {
   spotlightColor?: string;
 }
 
-const SIDEBAR_NAV = [
-  {
-    group: 'PRIMARY OPERATIONS',
-    items: [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-      { id: 'clinicians', label: 'Clinician Profiles', icon: Users, path: '/clinicians' },
-      { id: 'patients', label: 'Patient Profiles', icon: User, path: '/patients' },
-      { id: 'calendar', label: 'Calendar', icon: Calendar, path: '/calendar' },
-      { id: 'brad', label: 'Brad', icon: Activity, path: '/iadministrator' },
-    ],
-  },
-  {
-    group: 'COMPLIANCE EXECUTION',
-    items: [
-      { id: 'ces', label: 'Compliance Execution (CES)', icon: ShieldCheck, path: '/ces' },
-      { id: 'taxonomy', label: 'Taxonomy', icon: Network, path: '/taxonomy' },
-      { id: 'onboarding', label: 'Onboarding', icon: UserPlus, path: '/journey' },
-      { id: 'policy', label: 'Policy Lifecycle', icon: FileText, path: '/policy-lifecycle', active: true },
-      { id: 'evidence', label: 'Evidence', icon: FileBox, path: '/evidence' },
-    ],
-  },
-  {
-    group: 'ADMINISTRATION / KNOWLEDGE',
-    items: [
-      { id: 'hubstaff', label: 'Hubstaff', icon: Clock, path: '/hubstaff' },
-      { id: 'sysdocs', label: 'System Documentation', icon: BookOpen, path: '/system-documentation' },
-      { id: 'help', label: 'Help Center', icon: HelpCircle, path: '/help' },
-      { id: 'demo', label: 'Demo', icon: PlayCircle, path: '/demo' },
-      { id: 'admin', label: 'Admin', icon: Settings, path: '/admin' },
-    ],
-  },
-];
 
 const POLICY_TABS: Array<{ id: PolicyViewer32TabId; label: string }> = [
   { id: 'overview', label: 'Overview & Definitions' },
@@ -64,7 +29,7 @@ const POLICY_TABS: Array<{ id: PolicyViewer32TabId; label: string }> = [
   { id: 'documentation', label: 'Documentation' },
   { id: 'compliance', label: 'Compliance & Audit' },
   { id: 'references', label: 'References & Admin' },
-  { id: 'appendices', label: 'Appendices (Forms)' },
+  { id: 'appendices', label: 'Appendices' },
 ];
 
 export interface PolicyViewer32Props {
@@ -186,7 +151,13 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
           ].map(([label, value]) => (
             <div key={label}>
               <div className="text-[9px] font-bold text-[#5E6A7F] uppercase tracking-widest mb-1">{label}</div>
-              <div className="text-sm font-medium text-[#E2E8F0]">{value || 'Unavailable'}</div>
+              <div className="text-sm font-medium text-[#E2E8F0]">
+                {label === 'Tier' && value && value.toUpperCase().includes('REQUIRED') ? (
+                  <span className="text-[#C74600] font-semibold tracking-wide">{value}</span>
+                ) : (
+                  value || 'Unavailable'
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -219,7 +190,7 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
             {renderSectionBadge('5')}
             <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Definitions</h3>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filteredDefinitions.map(section => (
               <SpotlightCard key={section.id} className="p-5 h-full" spotlightColor="rgba(0, 121, 112, 0.12)">
                 <h4 className="text-[13px] font-bold text-white mb-2 tracking-wide">{section.title}</h4>
@@ -243,7 +214,28 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
               {renderSectionBadge('4')}
               <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Policy Statements</h3>
             </div>
-            <PolicyViewer32SectionList sections={filteredStatements} />
+            {filteredStatements.length > 0 ? (
+              filteredStatements.flatMap((section, sIdx) => {
+                // Split body into individual numbered statements (e.g. 4.1, 4.2) to render as design cards
+                const parts = section.body.split(/\n(?=\d+\.\d+\s)/).filter(Boolean);
+                return parts.length > 1
+                  ? parts.map((part, pIdx) => (
+                      <div key={`${section.id}-${pIdx}`} className="rounded-lg border border-[#1C2433] bg-[#141A23] p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 w-8 h-8 rounded-full border border-[#C74600] bg-[#141A23] flex-shrink-0 flex items-center justify-center text-[11px] font-mono text-[#C74600]">
+                            {part.match(/^\d+\.\d+/)?.[0] || (pIdx + 1)}
+                          </div>
+                          <div className="text-sm text-[#E2E8F0] leading-relaxed whitespace-pre-line">
+                            <PolicyViewer32Markdown body={part.replace(/^\d+\.\d+\s*/, '')} />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  : <PolicyViewer32SectionList key={sIdx} sections={[section]} />;
+              })
+            ) : (
+              <PolicyViewer32EmptyState title="No policy statements defined" />
+            )}
           </div>
         );
       case 'procedures':
@@ -298,9 +290,19 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
       case 'appendices':
         return (
           <div className="space-y-8">
-            {/* Only show the curated Linked Forms grid from the Forms Library.
-                Text-based appendices / copy-pasted policy statements have been removed
-                per content cleanup requirements. */}
+            {/* Render substantive appendix sections (roster, disclosure, ack, minutes template, checklist, calendar etc.)
+                These are core content from the source PDF for GV-GB-001 and must render in viewer. */}
+            {model.appendices.length > 0 && (
+              <section>
+                <div className="flex items-center gap-3 mb-6">
+                  {renderSectionBadge('A')}
+                  <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Appendices</h3>
+                </div>
+                <PolicyViewer32SectionList sections={model.appendices} />
+              </section>
+            )}
+
+            {/* Linked Forms from Forms Library */}
             {model.forms.length > 0 && (
               <section>
                 <div className="flex items-center gap-3 mb-6">
@@ -324,7 +326,10 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
                 </div>
               </section>
             )}
-            {model.forms.length === 0 && <PolicyViewer32EmptyState title="No linked forms available" />}
+
+            {model.appendices.length === 0 && model.forms.length === 0 && (
+              <PolicyViewer32EmptyState title="No appendices or linked forms available" />
+            )}
           </div>
         );
       default:
@@ -333,7 +338,7 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
   };
 
   return (
-    <div className={`${embedded ? 'h-full min-h-[680px]' : 'h-screen'} flex w-full bg-[#0B0F15] text-slate-200 font-sans overflow-hidden selection:bg-[#007970]/30 selection:text-white`}>
+    <div className={`${embedded ? 'h-full min-h-[680px]' : 'h-full min-h-screen'} w-full bg-[#0B0F15] text-slate-200 font-sans overflow-hidden selection:bg-[#007970]/30 selection:text-white`}>
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -386,84 +391,12 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
         .animate-policy32-enter { animation: fadeInPolicy32 0.25s ease forwards; }
       `}</style>
 
-      <aside className="w-[260px] flex-shrink-0 border-r border-[#1C2433] bg-[#0F131A] flex flex-col h-full z-20">
-        <div className="h-[72px] flex items-center px-6 border-b border-[#1C2433]">
-          <div className="flex items-center gap-3 text-white font-semibold text-lg tracking-wide">
-            <img 
-              src="/ci-logo-white.png" 
-              alt="CareIndeed" 
-              className="h-8 w-auto object-contain" 
-            />
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto custom-scrollbar py-6 px-4 space-y-8">
-          {SIDEBAR_NAV.map(section => (
-            <div key={section.group}>
-              <h3 className="text-[10px] font-bold text-[#5E6A7F] uppercase tracking-widest mb-3 px-2">
-                {section.group}
-              </h3>
-              <div className="space-y-1">
-                {section.items.map(item => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => navigate(item.path)}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970] ${
-                        item.active
-                          ? 'bg-[#007970]/10 text-[#007970]'
-                          : 'text-[#A0ABC0] hover:bg-[#1C2433] hover:text-white'
-                      }`}
-                    >
-                      <Icon size={16} className={item.active ? 'text-[#007970]' : 'text-[#5E6A7F]'} aria-hidden="true" />
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </aside>
-
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#0B0F15] relative z-10">
-        <header className="h-[72px] flex-shrink-0 border-b border-[#1C2433] bg-[#0F131A]/80 backdrop-blur-md flex items-center justify-between px-8 z-20 sticky top-0">
-          <div className="flex-1 flex items-center max-w-2xl">
-            <div className="relative w-full max-w-md group">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5E6A7F] group-focus-within:text-[#007970] transition-colors" aria-hidden="true" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={event => setSearchQuery(event.target.value)}
-                placeholder="Search this policy..."
-                aria-label="Search this policy"
-                className="w-full bg-[#141A23] border border-[#1C2433] rounded-full pl-10 pr-4 py-2 text-xs text-white placeholder-[#5E6A7F] focus:outline-none focus:border-[#007970] focus:ring-1 focus:ring-[#007970]/50 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <div className="flex flex-col items-end leading-tight text-xs font-medium text-[#8A94A6]">
-              <span className="text-[10px] text-[#5E6A7F] uppercase tracking-wider">Policy</span>
-              <span className="text-white">{metadata.id}</span>
-            </div>
-            <div className="h-6 w-px bg-[#1C2433]" />
-            <button
-              type="button"
-              aria-label="User profile"
-              className="w-8 h-8 rounded-full bg-[#141A23] border border-[#1C2433] flex items-center justify-center hover:border-[#4A5568] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
-            >
-              <span className="text-xs font-bold text-[#007970]">TP</span>
-            </button>
-          </div>
-        </header>
-
-        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar flex flex-col">
-          <div className="px-8 pt-8 pb-12 max-w-7xl mx-auto w-full">
-            <div className="flex items-center justify-between mb-6 gap-4">
-              <div className="flex items-center gap-2 text-xs font-medium">
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#0B0F15] relative z-10">
+        <div className="px-8 pt-6 pb-12 max-w-7xl mx-auto w-full">
+          {/* Clean top bar matching design screenshots: breadcrumb + search + actions. No app sidebar, no duplicate header. */}
+          <div className="flex flex-col gap-3 mb-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 text-xs font-medium min-w-0">
                 {onBack && (
                   <>
                     <button
@@ -479,12 +412,13 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
                 {!onBack && <span className="text-[#5E6A7F]">Library</span>}
                 <span className="text-[#007970] font-mono tracking-wide">{metadata.id}</span>
               </div>
-              <div className="flex items-center gap-3">
+
+              <div className="flex items-center gap-3 flex-shrink-0">
                 <button
                   type="button"
-                  disabled
-                  aria-label="Version history unavailable"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-[#1C2433] bg-[#141A23] text-[#5E6A7F] text-xs font-medium cursor-not-allowed"
+                  onClick={() => navigate('/policy-lifecycle')}
+                  aria-label="View version history and lifecycle for this policy"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-[#1C2433] bg-[#141A23] hover:bg-[#1C2433] text-[#A0ABC0] hover:text-white text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
                 >
                   <History size={14} aria-hidden="true" /> Version History
                 </button>
@@ -506,6 +440,20 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
                 </button>
               </div>
             </div>
+
+            {/* Search integrated to match clean viewer design */}
+            <div className="relative w-full max-w-md">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5E6A7F]" aria-hidden="true" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={event => setSearchQuery(event.target.value)}
+                placeholder="Search this policy..."
+                aria-label="Search this policy"
+                className="w-full bg-[#141A23] border border-[#1C2433] rounded-full pl-9 pr-4 py-1.5 text-xs text-white placeholder-[#5E6A7F] focus:outline-none focus:border-[#007970] focus:ring-1 focus:ring-[#007970]/50 transition-all"
+              />
+            </div>
+          </div>
 
             {model.missingContent && (
               <div className="mb-6 p-4 rounded-lg bg-[#C74600]/10 border border-[#C74600]/30 flex gap-3">
@@ -565,8 +513,7 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
   );
 }
 

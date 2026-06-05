@@ -37,7 +37,9 @@ const HEADER_FIELD_MAP: Record<string, keyof PolicyViewer32Metadata> = {
 function cleanTitle(title: string): string {
   return title
     .replace(/\\\./g, '.')
-    .replace(/^\d+(\.\d+)*\s*[-.)]?\s*/, '')
+    // Only strip top-level "N. " (e.g. "6. Procedures" -> "Procedures").
+    // Preserve sub-section numbers like "6.1 Establishment", "6.2.1 — Foo" for procedures display and design match.
+    .replace(/^\d+\.\s+/, '')
     .trim();
 }
 
@@ -130,23 +132,60 @@ function classifySections(sections: PolicyViewer32Section[]) {
 
   const documentationKeywords = ['documentation', 'required record', 'record requirement'];
   const complianceKeywords = ['compliance', 'audit', 'surveyor', 'failure point', 'monitoring', 'measurement'];
-  const appendixKeywords = ['appendix', 'appendices', 'attachment', 'attachments', 'exhibit']; // 'form' removed — handled by exact token only below (prevents performance/information/informed/confirmation pollution)
+  const appendixKeywords = ['appendix', 'appendices', 'attachment', 'attachments', 'exhibit'];
 
   sections.forEach(section => {
-    const title = normalize(section.title);
-    if (title.includes('policy header')) return;
-    if (title.includes('purpose')) buckets.purpose.push(section);
-    else if (title.includes('scope')) buckets.scope.push(section);
-    else if (title.includes('definition')) buckets.definitions.push(section);
-    else if (title.includes('policy statement')) buckets.statements.push(section);
-    else if (title.includes('procedure')) buckets.procedures.push(section);
-    else if (includesAny(title, referenceKeywords)) buckets.references.push(section);
-    else if (includesAny(title, documentationKeywords)) buckets.documentation.push(section);
-    else if (includesAny(title, complianceKeywords)) buckets.compliance.push(section);
-    else if (includesAny(title, appendixKeywords) || isExactAppendixFormToken(title)) {
+    const normTitle = normalize(section.title);
+    const raw = section.title.toLowerCase().replace(/\\\./g, '.');
+    if (normTitle.includes('policy header')) return;
+
+    if (normTitle.includes('purpose') || raw.includes('purpose')) {
+      buckets.purpose.push(section);
+    } else if (normTitle.includes('scope') || raw.includes('scope')) {
+      buckets.scope.push(section);
+    } else if (normTitle.includes('definition') || raw.includes('definition')) {
+      buckets.definitions.push(section);
+    } else if (normTitle.includes('policy statement') || raw.includes('policy statement')) {
+      buckets.statements.push(section);
+    } else if (
+      normTitle.includes('procedure') ||
+      raw.includes('procedure') ||
+      /\b6\.\d+/.test(raw) ||
+      raw.trim().startsWith('6.')
+    ) {
+      buckets.procedures.push(section);
+    } else if (
+      includesAny(normTitle, referenceKeywords) ||
+      includesAny(raw, referenceKeywords) ||
+      /\b9\.\d+/.test(raw) ||
+      raw.trim().startsWith('9.')
+    ) {
+      buckets.references.push(section);
+    } else if (
+      includesAny(normTitle, documentationKeywords) ||
+      includesAny(raw, documentationKeywords) ||
+      /\b7\.\d+/.test(raw) ||
+      raw.trim().startsWith('7.')
+    ) {
+      buckets.documentation.push(section);
+    } else if (
+      includesAny(normTitle, complianceKeywords) ||
+      includesAny(raw, complianceKeywords) ||
+      /\b8\.\d+/.test(raw) ||
+      raw.trim().startsWith('8.')
+    ) {
+      buckets.compliance.push(section);
+    } else if (
+      includesAny(normTitle, appendixKeywords) ||
+      includesAny(raw, appendixKeywords) ||
+      isExactAppendixFormToken(normTitle) ||
+      /3[1-9]\./.test(raw) ||
+      raw.trim().startsWith('append')
+    ) {
       buckets.appendices.push(section);
+    } else {
+      buckets.documentation.push(section);
     }
-    else buckets.documentation.push(section);
   });
 
   Object.values(buckets).forEach(bucket => bucket.sort(byOrder));

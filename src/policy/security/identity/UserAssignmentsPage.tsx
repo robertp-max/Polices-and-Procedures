@@ -407,12 +407,119 @@ function ManualPasswordModal({ userId, onClose, currentUserId }: { userId: strin
   );
 }
 
+function GrantAccessModal({ userId, onClose, currentUserId }: { userId: string; onClose: () => void; currentUserId: string }) {
+  const users = useUserAssignmentsStore(s => s.users);
+  const editUser = useUserAssignmentsStore(s => s.editUser);
+  const { getAccessToken } = useAuth();
+  const targetUser = users.find(u => u.id === userId);
+
+  const [newPassword, setNewPassword] = useState('Caregiver2012!');
+  const [confirmPassword, setConfirmPassword] = useState('Caregiver2012!');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  if (!targetUser) return null;
+
+  const isSelf = targetUser.id === currentUserId;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (isSelf) {
+      setError('Use the standard account reset flow for your own account.');
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      setError('Your admin session is not available. Please sign in again.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await AuthApi.adminGrantAccess(accessToken, targetUser!.email, newPassword);
+      if (targetUser!.status !== 'active') {
+        editUser(targetUser!.id, currentUserId, { status: 'active' });
+      }
+      setSuccess(true);
+      setTimeout(onClose, 900);
+    } catch (err) {
+      if (err instanceof AuthApiError) {
+        setError(err.message);
+      } else {
+        setError('Unable to grant access right now. Please try again.');
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal title={`Grant Staging Access — ${targetUser.name}`} onClose={onClose}>
+      {success ? (
+        <div className="flex items-center gap-2 text-emerald-700 text-sm">
+          <CheckCircle size={16} /> Access granted and password set successfully.
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="rounded-md bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-600">
+            Target: <span className="font-semibold text-slate-800">{targetUser.email}</span>
+          </div>
+
+          <Field label="Temporary / Shared Password" required>
+            <TextInput value={newPassword} onChange={setNewPassword} type="password" placeholder="At least 8 characters" />
+          </Field>
+
+          <Field label="Confirm Password" required>
+            <TextInput value={confirmPassword} onChange={setConfirmPassword} type="password" placeholder="Re-enter password" />
+          </Field>
+
+          <div className="text-xs text-slate-500">
+            Grant Access creates or re-enables the staging account, marks the registration active, and sets the password immediately.
+          </div>
+
+          {error && (
+            <div className="flex items-start gap-2 rounded-md bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
+              <AlertCircle size={14} className="shrink-0 mt-0.5" /> {error}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={onClose} className="px-4 py-1.5 text-sm rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50">Cancel</button>
+            <button
+              type="submit"
+              disabled={saving}
+              className={`px-4 py-1.5 text-sm rounded-md text-white font-semibold ${saving ? 'bg-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+            >
+              {saving ? 'Granting...' : 'Grant Access'}
+            </button>
+          </div>
+        </form>
+      )}
+    </Modal>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 type ModalState =
   | { type: 'add' }
   | { type: 'edit'; userId: string }
   | { type: 'delete'; userId: string }
+  | { type: 'grant-access'; userId: string }
   | { type: 'password'; userId: string }
   | null;
 
@@ -587,6 +694,7 @@ export function UserAssignmentsPage() {
                     const isSelf = u.id === currentUserId;
                     const editDisabled = isProtected || !canWriteUserManagement;
                     const deleteDisabled = isProtected || isSelf || !canWriteUserManagement;
+                    const grantAccessDisabled = isSelf || !canWriteUserManagement;
                     const passwordDisabled = isSelf || !canWriteUserManagement;
                     return (
                       <tr key={u.id} className="border-t border-slate-100 hover:bg-slate-50/60 transition-colors">
@@ -647,6 +755,21 @@ export function UserAssignmentsPage() {
                             </button>
                             <button
                               type="button"
+                              onClick={() => setModal({ type: 'grant-access', userId: u.id })}
+                              disabled={grantAccessDisabled}
+                              title={
+                                isSelf
+                                  ? 'Use self-service reset for your own account'
+                                  : !canWriteUserManagement
+                                    ? writeDisabledTitle
+                                    : `Grant staging access to ${u.name}`
+                              }
+                              className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded border transition-colors ${grantAccessDisabled ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'}`}
+                            >
+                              Access
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => setModal({ type: 'password', userId: u.id })}
                               disabled={passwordDisabled}
                               title={
@@ -694,6 +817,7 @@ export function UserAssignmentsPage() {
       {modal?.type === 'add' && canWriteUserManagement && <AddUserModal onClose={() => setModal(null)} />}
       {modal?.type === 'edit' && canWriteUserManagement && <EditUserModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
       {modal?.type === 'delete' && canWriteUserManagement && <DeleteUserModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
+      {modal?.type === 'grant-access' && canWriteUserManagement && <GrantAccessModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
       {modal?.type === 'password' && canWriteUserManagement && <ManualPasswordModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
     </div>
   );
