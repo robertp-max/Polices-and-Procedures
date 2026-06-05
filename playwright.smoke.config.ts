@@ -33,4 +33,9 @@ const SMOKE_SPECS = [
 export default defineConfig({
   ...baseConfig,
   testMatch: SMOKE_SPECS,
+  // Required smoke gate runs only the fast `chromium` project. The base config's
+  // `v3-visual-5174` project (visual regression against a separate :5174 server)
+  // belongs to the non-required uat-full.yml workflow, not the merge gate — without
+  // this scope it leaks into the smoke run and fails on ERR_CONNECTION_REFUSED.
+  projects: (baseConfig.projects ?? []).filter(p => p.name === 'chromium'),
 });
