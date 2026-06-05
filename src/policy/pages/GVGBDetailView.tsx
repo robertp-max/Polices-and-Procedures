@@ -10,10 +10,11 @@ import {
   Printer, FileText, Shield, Search, CheckCircle, BookOpen,
   AlertTriangle, Settings, List, CheckSquare, Archive, Info,
   LayoutList, ChevronRight, FileLock2, Award,
-  ArrowLeft,
+  ArrowLeft, ExternalLink,
 } from 'lucide-react';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { FormViewer } from '@/policy/components/FormViewer';
+import { VeilModal } from '@/policy/components/ui/VeilModal';
 import { openPolicyPrintRoute } from '@/policy/utils/openPolicyPrintRoute';
 import { getFormsForPolicy } from '@/policy/utils/policyFormLinks';
 
@@ -603,16 +604,23 @@ const ViewReferencesAdmin = () => (
 
 const GV_GB_LINKED_FORMS = getFormsForPolicy('GV-GB-001');
 
-function shortAppendixTabLabel(name: string): string {
-  return name.replace(/\bform\b/gi, '').replace(/\s+/g, ' ').trim();
+function appendixCode(index: number): string {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let n = index;
+  let out = '';
+  do {
+    out = alphabet[n % 26] + out;
+    n = Math.floor(n / 26) - 1;
+  } while (n >= 0);
+  return out;
 }
 
 const ViewAppendices = () => {
   const forms = GV_GB_LINKED_FORMS;
-  const [activeFormId, setActiveFormId] = useState(forms[0]?.id ?? '');
-  const active = forms.find(f => f.id === activeFormId) ?? forms[0];
+  const [activeFormId, setActiveFormId] = useState<string | null>(null);
+  const active = forms.find(f => f.id === activeFormId) ?? null;
 
-  if (!active) {
+  if (forms.length === 0) {
     return (
       <div className="p-8 text-center text-[#524048] font-roboto text-sm">
         No forms are linked to GV-GB-001 in the Forms Library.
@@ -623,31 +631,67 @@ const ViewAppendices = () => {
   return (
     <div className="h-full flex flex-col pb-6 relative">
       <Card className="flex-shrink-0 mb-4 border-b-2 border-[#007970]">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <SectionTitle icon={LayoutList} title="Appendices (Forms and Templates)" />
-          <div className="flex gap-3 flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => openPolicyPrintRoute(`/print/GV-GB-001/appendix/${encodeURIComponent(active.id)}`)}
-              className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-gray-300"
-            >
-              <Printer size={16} />
-              Print Form
-            </button>
-          </div>
+        <div className="flex flex-col gap-3 mb-6">
+          <SectionTitle icon={LayoutList} title="Appendices (Attached Forms)" />
+          <p className="font-roboto text-sm text-gray-600 max-w-3xl">
+            Attached appendix records open in a centered viewer modal using the live Enterprise Forms Library renderer.
+          </p>
         </div>
-        <div className="flex space-x-2 overflow-x-auto pb-2">
-          {forms.map(f => (
-            <TabButton key={f.id} active={activeFormId === f.id} onClick={() => setActiveFormId(f.id)}>
-              {shortAppendixTabLabel(f.name || f.id)}
-            </TabButton>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {forms.map((f, idx) => {
+            const label = `Appendix ${appendixCode(idx)}`;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setActiveFormId(f.id)}
+                className="text-left rounded-xl border border-[#E5E4E3] bg-white p-4 shadow-sm hover:border-[#007970]/50 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-[#007970]/30"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-[#007970] mb-2">
+                      {label} · {f.id}
+                    </div>
+                    <h3 className="font-montserrat text-sm font-bold text-[#1F1C1B] leading-snug">{f.name || f.id}</h3>
+                    <p className="mt-2 font-roboto text-[11px] uppercase tracking-[0.14em] text-[#747470]">
+                      {f.type} · {f.frequency}
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-[#007970]/30 bg-[#007970]/10 px-2 py-1 font-mono text-[10px] text-[#007970]">
+                    Attached
+                  </span>
+                </div>
+                <span className="mt-4 inline-flex items-center gap-2 font-roboto text-xs font-semibold text-[#007970]">
+                  Open attached form <ExternalLink size={12} aria-hidden="true" />
+                </span>
+              </button>
+            );
+          })}
         </div>
       </Card>
 
-      <div className="flex-1 bg-white rounded-xl shadow-sm border-2 border-[#007970] overflow-y-auto">
-        <FormViewer formId={active.id} enableEmbeddedSigning />
-      </div>
+      <VeilModal
+        open={Boolean(active)}
+        onClose={() => setActiveFormId(null)}
+        size="xl"
+        eyebrow={active?.id}
+        title={active?.name || 'Attached appendix form'}
+        headerActions={active && (
+          <button
+            type="button"
+            onClick={() => openPolicyPrintRoute(`/print/GV-GB-001/appendix/${encodeURIComponent(active.id)}`)}
+            className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-100 hover:border-[#007970]/60 hover:bg-[#007970]/15 transition-colors"
+          >
+            <Printer size={14} /> Print Form
+          </button>
+        )}
+      >
+        {active && (
+          <div className="max-h-[72vh] overflow-y-auto rounded-xl bg-white p-4">
+            <FormViewer formId={active.id} enableEmbeddedSigning formSource="policy_viewer" />
+          </div>
+        )}
+      </VeilModal>
     </div>
   );
 };

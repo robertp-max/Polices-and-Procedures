@@ -214,7 +214,6 @@ export interface FormSignatureFlowProps {
 // ── Main export ──────────────────────────────────────────────────────
 
 export function FormSignatureFlow({
-  formId: _formId,
   formInstanceId,
   maxW,
   flowState,
@@ -254,13 +253,13 @@ export function FormSignatureFlow({
     <>
       <div className={`no-print mx-auto ${maxW} px-4 md:px-8 pb-4`}>
         <div
-          className="rounded-[10px] border bg-white px-4 py-3 flex flex-wrap items-center gap-2"
-          style={{ borderColor: isComplete ? '#86EFAC' : isPending ? '#FDE68A' : '#E5E4E3' }}
+          className="rounded-[10px] border bg-[#081120] px-4 py-3 flex flex-wrap items-center gap-2 shadow-xl"
+          style={{ borderColor: isComplete ? '#22C55E66' : isPending ? '#F59E0B66' : '#1D4ED866' }}
         >
           {/* ── State badge ── */}
           <div className="flex items-center gap-1.5 shrink-0">
             {flowState === 'unsigned' && (
-              <span className="inline-flex items-center gap-1.5 font-roboto text-[11px]" style={{ color: CI_MUTED }}>
+              <span className="inline-flex items-center gap-1.5 font-roboto font-semibold text-[11px] text-[#60A5FA]">
                 <Clock size={12} /> Awaiting Signature
               </span>
             )}
@@ -281,7 +280,7 @@ export function FormSignatureFlow({
             )}
           </div>
 
-          {hasSigned && <div className="w-px h-4 bg-[#E5E4E3] shrink-0" />}
+          {hasSigned && <div className="w-px h-4 bg-[#1C2433] shrink-0" />}
 
           {/* ── Post-sign actions ── */}
           {hasSigned && (
@@ -292,7 +291,7 @@ export function FormSignatureFlow({
                   type="button"
                   disabled={!signDecision.allow}
                   onClick={() => setShowSecondSig(true)}
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-[7px] text-white font-roboto text-[12px] font-semibold hover:opacity-90 transition-opacity disabled:opacity-45 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-[7px] text-white font-roboto text-[12px] font-semibold hover:opacity-90 transition-opacity disabled:opacity-45 disabled:cursor-not-allowed shadow-[0_10px_24px_rgba(0,121,112,0.22)]"
                   style={{ background: CI_TEAL }}
                   title={!signDecision.allow ? signDecision.reason : undefined}
                 >
@@ -323,7 +322,7 @@ export function FormSignatureFlow({
               <button
                 type="button"
                 onClick={onPrint}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-[#E5E4E3] font-roboto text-[12px] text-[#1F1C1B] hover:bg-[#F8FAF9] transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-[#1C2433] bg-[#111827] font-roboto text-[12px] text-[#CBD5E1] hover:border-[#007970]/50 hover:text-white transition-colors"
               >
                 <Printer size={13} /> Print / Download
               </button>
@@ -332,7 +331,7 @@ export function FormSignatureFlow({
               <button
                 type="button"
                 onClick={handleSaveDraft}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-[#E5E4E3] font-roboto text-[12px] text-[#1F1C1B] hover:bg-[#F8FAF9] transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-[#1C2433] bg-[#111827] font-roboto text-[12px] text-[#CBD5E1] hover:border-[#007970]/50 hover:text-white transition-colors"
               >
                 <Save size={13} /> {savedDraft ? 'Saved' : 'Save Draft'}
               </button>
@@ -341,7 +340,7 @@ export function FormSignatureFlow({
 
           {/* ── Powered by eCign ── */}
           <div className="ml-auto flex items-center gap-1.5 shrink-0 pl-2">
-            <span className="font-roboto text-[10px] select-none" style={{ color: CI_MUTED }}>
+            <span className="font-roboto text-[10px] text-[#64748B] select-none">
               Powered by
             </span>
             <img src={eCignLogo} alt="eCign" className="h-10 w-auto" />
