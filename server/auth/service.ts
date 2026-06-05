@@ -11,6 +11,7 @@ import {
   GetUserCommand,
   GlobalSignOutCommand,
   InitiateAuthCommand,
+  RespondToAuthChallengeCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
@@ -37,6 +38,19 @@ interface DemoAuthConfig {
   autoApprovedDomain: string;
   autoApprovedEmails: string[];
   adminManualPasswordEmails: string[];
+  temporaryPasswordValidityDays: number;
+}
+
+export interface LoginChallenge {
+  challenge: 'NEW_PASSWORD_REQUIRED';
+  session: string;
+  email: string;
+}
+
+export interface AdminTemporaryPasswordResult {
+  temporaryPassword: string;
+  expiresAt: string;
+  mustChangePassword: true;
 }
 
 interface RegisterResult {
@@ -108,6 +122,34 @@ export class DemoAuthService {
     if (!password || password.length < 8) {
       throw new ApiError('validation_error', 'Password must be at least 8 characters.', 400);
     }
+  }
+
+  // Generates a cryptographically strong one-time password that satisfies common
+  // Cognito complexity policies (lower, upper, digit, symbol). The value is only
+  // returned to the admin caller once and is never persisted or logged.
+  private generateTemporaryPassword(): string {
+    const lowers = 'abcdefghijkmnpqrstuvwxyz';
+    const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const digits = '23456789';
+    const symbols = '!@#$%^&*-_=+';
+    const all = lowers + uppers + digits + symbols;
+
+    const pick = (chars: string): string => chars[crypto.randomInt(chars.length)];
+
+    // Guarantee at least one character from each required class, then fill.
+    const required = [pick(lowers), pick(uppers), pick(digits), pick(symbols)];
+    const targetLength = 16;
+    while (required.length < targetLength) {
+      required.push(pick(all));
+    }
+
+    // Fisher–Yates shuffle so the guaranteed characters are not positionally
+    // predictable, using a CSPRNG for the swap indices.
+    for (let i = required.length - 1; i > 0; i--) {
+      const j = crypto.randomInt(i + 1);
+      [required[i], required[j]] = [required[j], required[i]];
+    }
+    return required.join('');
   }
 
   private async getRegistration(email: string): Promise<RegistrationRecord | null> {
@@ -396,7 +438,7 @@ export class DemoAuthService {
     return { success: true };
   }
 
-  async login(emailRaw: string, password: string): Promise<{ session: AuthSession; user: DemoUser }> {
+  async login(emailRaw: string, password: string): Promise<{ session: AuthSession; user: DemoUser } | LoginChallenge> {
     const email = this.normalizeEmail(emailRaw);
     if (!email || !password) {
       throw new ApiError('validation_error', 'Email and password are required.', 400);
@@ -407,8 +449,9 @@ export class DemoAuthService {
       throw new ApiError('auth_error', 'Account is not active.', 403);
     }
 
+    let response;
     try {
-      const response = await this.cognito.send(new InitiateAuthCommand({
+      response = await this.cognito.send(new InitiateAuthCommand({
         ClientId: this.cfg.clientId,
         AuthFlow: 'USER_PASSWORD_AUTH',
         AuthParameters: {
@@ -416,27 +459,91 @@ export class DemoAuthService {
           PASSWORD: password,
         },
       }));
-
-      const auth = response.AuthenticationResult;
-      if (!auth?.AccessToken || !auth.IdToken || !auth.RefreshToken || !auth.ExpiresIn || !auth.TokenType) {
-        throw new ApiError('auth_error', 'Login failed. Please try again.', 401);
-      }
-
-      const user = await this.getCurrentUser(auth.AccessToken);
-      return {
-        session: {
-          accessToken: auth.AccessToken,
-          idToken: auth.IdToken,
-          refreshToken: auth.RefreshToken,
-          expiresIn: auth.ExpiresIn,
-          tokenType: auth.TokenType,
-        },
-        user,
-      };
     } catch (err) {
       log.warn('auth.login.failed', { email, err: (err as Error).message });
       throw new ApiError('auth_error', 'Invalid email or password.', 401);
     }
+
+    // A user with an admin-issued temporary password (set with Permanent=false)
+    // must complete the new-password challenge before a session is issued. The
+    // temporary password itself is never echoed back; only the opaque Cognito
+    // session handle is returned for the next step.
+    if (response.ChallengeName === 'NEW_PASSWORD_REQUIRED' && response.Session) {
+      return { challenge: 'NEW_PASSWORD_REQUIRED', session: response.Session, email };
+    }
+
+    const auth = response.AuthenticationResult;
+    if (!auth?.AccessToken || !auth.IdToken || !auth.RefreshToken || !auth.ExpiresIn || !auth.TokenType) {
+      throw new ApiError('auth_error', 'Login failed. Please try again.', 401);
+    }
+
+    const user = await this.getCurrentUser(auth.AccessToken);
+    return {
+      session: {
+        accessToken: auth.AccessToken,
+        idToken: auth.IdToken,
+        refreshToken: auth.RefreshToken,
+        expiresIn: auth.ExpiresIn,
+        tokenType: auth.TokenType,
+      },
+      user,
+    };
+  }
+
+  async respondToNewPasswordChallenge(
+    emailRaw: string,
+    sessionRaw: string,
+    newPasswordRaw: string,
+  ): Promise<{ session: AuthSession; user: DemoUser }> {
+    const email = this.normalizeEmail(emailRaw);
+    const session = String(sessionRaw || '');
+    const newPassword = String(newPasswordRaw || '');
+
+    if (!email || !session) {
+      throw new ApiError('validation_error', 'Your reset session has expired. Please sign in again.', 400);
+    }
+    // validatePassword never logs the password value. Cognito additionally
+    // enforces the user pool password policy and will reject weak passwords.
+    this.validatePassword(newPassword);
+
+    let response;
+    try {
+      response = await this.cognito.send(new RespondToAuthChallengeCommand({
+        ClientId: this.cfg.clientId,
+        ChallengeName: 'NEW_PASSWORD_REQUIRED',
+        Session: session,
+        ChallengeResponses: {
+          USERNAME: email,
+          NEW_PASSWORD: newPassword,
+        },
+      }));
+    } catch (err) {
+      const name = (err as { name?: string })?.name;
+      log.warn('auth.respond_challenge.failed', { email, err: (err as Error).message });
+      if (name === 'InvalidPasswordException') {
+        throw new ApiError('validation_error', 'Password does not meet the required complexity.', 400);
+      }
+      // Expired/used/invalid challenge sessions surface as NotAuthorized.
+      throw new ApiError('auth_error', 'Your reset session has expired. Please sign in again.', 401);
+    }
+
+    const auth = response.AuthenticationResult;
+    if (!auth?.AccessToken || !auth.IdToken || !auth.RefreshToken || !auth.ExpiresIn || !auth.TokenType) {
+      throw new ApiError('auth_error', 'Could not complete password setup. Please sign in again.', 401);
+    }
+
+    const user = await this.getCurrentUser(auth.AccessToken);
+    log.info('auth.respond_challenge.success', { email });
+    return {
+      session: {
+        accessToken: auth.AccessToken,
+        idToken: auth.IdToken,
+        refreshToken: auth.RefreshToken,
+        expiresIn: auth.ExpiresIn,
+        tokenType: auth.TokenType,
+      },
+      user,
+    };
   }
 
   async refresh(refreshToken: string): Promise<AuthSession> {
@@ -602,6 +709,84 @@ export class DemoAuthService {
     });
 
     return { message: 'Password updated successfully.' };
+  }
+
+  // Admin-only: issue a one-time temporary password for an existing user. The
+  // password is set with Permanent=false so Cognito places the account in
+  // FORCE_CHANGE_PASSWORD state and requires the new-password challenge on the
+  // next sign-in. The temporary password is single-use (consumed once the
+  // challenge completes) and expires per the pool's temporary-password policy.
+  // No email is sent; the admin delivers it out-of-band.
+  async adminGenerateTemporaryPassword(
+    actorAccessToken: string,
+    targetEmailRaw: string,
+  ): Promise<AdminTemporaryPasswordResult> {
+    const actorEmail = await this.assertAdminAccessToken(actorAccessToken);
+    const targetEmail = this.normalizeEmail(targetEmailRaw);
+
+    if (!targetEmail || !targetEmail.includes('@')) {
+      throw new ApiError('validation_error', 'Please enter a valid user email address.', 400);
+    }
+
+    try {
+      await this.cognito.send(new AdminGetUserCommand({
+        UserPoolId: this.cfg.userPoolId,
+        Username: targetEmail,
+      }));
+    } catch (err) {
+      const name = (err as { name?: string })?.name;
+      if (name === 'UserNotFoundException' || name === 'ResourceNotFoundException') {
+        throw new ApiError('validation_error', 'Target user was not found.', 404);
+      }
+      throw err;
+    }
+
+    const temporaryPassword = this.generateTemporaryPassword();
+
+    await this.cognito.send(new AdminSetUserPasswordCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: targetEmail,
+      Password: temporaryPassword,
+      Permanent: false,
+    }));
+
+    await this.cognito.send(new AdminEnableUserCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: targetEmail,
+    }));
+
+    const now = this.nowIso();
+    const expiresAt = new Date(
+      Date.now() + this.cfg.temporaryPasswordValidityDays * 24 * 60 * 60 * 1000,
+    ).toISOString();
+
+    // Keep the registration active so the temporary-password sign-in is allowed
+    // to reach the new-password challenge.
+    const registration = await this.getRegistration(targetEmail);
+    if (registration) {
+      await this.dynamo.send(new UpdateCommand({
+        TableName: this.cfg.tableName,
+        Key: this.registrationKey(targetEmail),
+        UpdateExpression: 'SET #status = :active, updatedAt = :updatedAt',
+        ExpressionAttributeNames: { '#status': 'status' },
+        ExpressionAttributeValues: {
+          ':active': 'active' as RegistrationStatus,
+          ':updatedAt': now,
+        },
+      }));
+    }
+
+    // Audit metadata only — never the password value.
+    log.info('auth.admin_temp_password.issued', {
+      actorEmail,
+      targetEmail,
+      method: 'cognito_admin_set_temporary_password',
+      mustChangePassword: true,
+      issuedAt: now,
+      expiresAt,
+    });
+
+    return { temporaryPassword, expiresAt, mustChangePassword: true };
   }
 
   async adminGrantUserAccess(
@@ -821,6 +1006,12 @@ export function buildDemoAuthServiceFromEnv(envLike: NodeJS.ProcessEnv): DemoAut
     .split(',')
     .map(email => email.trim().toLowerCase())
     .filter(Boolean);
+  // Used only to report an informational expiry to the admin. Cognito enforces
+  // the real expiry via the user pool's TemporaryPasswordValidityDays policy.
+  const temporaryPasswordValidityDays = (() => {
+    const raw = Number(envLike.COGNITO_TEMP_PASSWORD_VALIDITY_DAYS || 7);
+    return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 7;
+  })();
 
   if (!region || !userPoolId || !clientId || !fromEmail || !tableName) {
     throw new ApiError('internal_error', 'Auth environment is not configured.', 500);
@@ -837,5 +1028,6 @@ export function buildDemoAuthServiceFromEnv(envLike: NodeJS.ProcessEnv): DemoAut
     autoApprovedDomain,
     autoApprovedEmails,
     adminManualPasswordEmails,
+    temporaryPasswordValidityDays,
   });
 }

@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
-import { Plus, Pencil, Trash2, X, AlertCircle, CheckCircle, ShieldCheck, Lock } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, AlertCircle, CheckCircle, ShieldCheck, Lock, KeyRound, Copy } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
 import { AuthApi, AuthApiError } from '@/auth/api';
+import { isDemoAuthBypassEnabled } from '@/auth/bypass';
 import { authorizeForAuthUser } from './authorize';
 import { resolveUserIdFromAuth } from './demoUsers';
 import {
@@ -407,6 +408,165 @@ function ManualPasswordModal({ userId, onClose, currentUserId }: { userId: strin
   );
 }
 
+// ─── Generate One-Time Password Modal ─────────────────────────────────────────
+
+function GenerateOtpModal({ userId, onClose, currentUserId }: { userId: string; onClose: () => void; currentUserId: string }) {
+  const users = useUserAssignmentsStore(s => s.users);
+  const { getAccessToken } = useAuth();
+  const targetUser = users.find(u => u.id === userId);
+
+  const isLocalDemo = isDemoAuthBypassEnabled();
+  const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
+
+  if (!targetUser) return null;
+
+  const isSelf = targetUser.id === currentUserId;
+
+  // Clears the secret from React state on close. The value is never written to
+  // localStorage/sessionStorage and disappears as soon as the modal unmounts.
+  function handleClose() {
+    setTempPassword(null);
+    setExpiresAt(null);
+    setCopied(false);
+    onClose();
+  }
+
+  async function handleGenerate() {
+    setError(null);
+
+    if (isSelf) {
+      setError('Use the standard account reset flow for your own account.');
+      return;
+    }
+
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      setError('Your admin session is not available. Please sign in again.');
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const result = await AuthApi.adminGenerateTempPassword(accessToken, targetUser!.email);
+      setTempPassword(result.temporaryPassword);
+      setExpiresAt(result.expiresAt);
+    } catch (err) {
+      if (err instanceof AuthApiError) {
+        setError(err.message);
+      } else {
+        setError('Unable to generate a one-time password right now. Please try again.');
+      }
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function handleCopy() {
+    if (!tempPassword) return;
+    try {
+      await navigator.clipboard.writeText(tempPassword);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setError('Copy failed. Select the password and copy it manually.');
+    }
+  }
+
+  if (isLocalDemo) {
+    return (
+      <Modal title={`One-Time Password — ${targetUser.name}`} onClose={handleClose}>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-start gap-2 rounded-md bg-sky-50 border border-sky-200 px-3 py-2 text-sm text-sky-800">
+            <AlertCircle size={14} className="shrink-0 mt-0.5" />
+            One-time password reset is disabled in local/Vercel demo mode. It requires the live
+            authentication backend and is not simulated here to avoid affecting production code paths.
+          </div>
+          <div className="flex justify-end">
+            <button type="button" onClick={handleClose} className="px-4 py-1.5 text-sm rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50">Close</button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal title={`One-Time Password — ${targetUser.name}`} onClose={handleClose}>
+      {tempPassword ? (
+        <div className="flex flex-col gap-4">
+          <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+            <AlertCircle size={14} className="shrink-0 mt-0.5" />
+            This password is shown <span className="font-semibold">once</span>. Copy it now — it cannot be
+            retrieved again. Deliver it through a secure channel only.
+          </div>
+
+          <div className="rounded-md bg-slate-900 px-3 py-3 flex items-center justify-between gap-3">
+            <code className="font-mono text-sm text-emerald-300 break-all select-all">{tempPassword}</code>
+            <button
+              type="button"
+              onClick={handleCopy}
+              title="Copy to clipboard"
+              className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded border border-slate-600 text-slate-100 hover:bg-slate-800 shrink-0"
+            >
+              <Copy size={12} /> {copied ? 'Copied' : 'Copy'}
+            </button>
+          </div>
+
+          <div className="text-xs text-slate-500 space-y-1">
+            <div>Target: <span className="font-semibold text-slate-700">{targetUser.email}</span></div>
+            {expiresAt && <div>Expires: <span className="font-mono text-slate-700">{new Date(expiresAt).toLocaleString()}</span></div>}
+            <div>The user must set a new password on their next sign-in. This temporary password is single-use.</div>
+          </div>
+
+          {error && (
+            <div className="flex items-start gap-2 rounded-md bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
+              <AlertCircle size={14} className="shrink-0 mt-0.5" /> {error}
+            </div>
+          )}
+
+          <div className="flex justify-end pt-1">
+            <button type="button" onClick={handleClose} className="px-4 py-1.5 text-sm rounded-md bg-[#0f766e] text-white hover:bg-[#0d6461] font-semibold">Done — Clear from screen</button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <div className="rounded-md bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-600">
+            Target: <span className="font-semibold text-slate-800">{targetUser.email}</span>
+          </div>
+
+          <ul className="text-sm text-slate-600 list-disc pl-5 space-y-1">
+            <li>A strong temporary password will be generated and <span className="font-semibold">shown only once</span>.</li>
+            <li>Copy it immediately — it is never stored or shown again.</li>
+            <li>The user must change it on first sign-in (forced new-password challenge).</li>
+            <li>Do not send it over an insecure channel. No email is sent.</li>
+          </ul>
+
+          {error && (
+            <div className="flex items-start gap-2 rounded-md bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
+              <AlertCircle size={14} className="shrink-0 mt-0.5" /> {error}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={handleClose} className="px-4 py-1.5 text-sm rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50">Cancel</button>
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={generating}
+              className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-md text-white font-semibold ${generating ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#0f766e] hover:bg-[#0d6461]'}`}
+            >
+              <KeyRound size={13} /> {generating ? 'Generating...' : 'Generate one-time password'}
+            </button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
 function GrantAccessModal({ userId, onClose, currentUserId }: { userId: string; onClose: () => void; currentUserId: string }) {
   const users = useUserAssignmentsStore(s => s.users);
   const editUser = useUserAssignmentsStore(s => s.editUser);
@@ -521,6 +681,7 @@ type ModalState =
   | { type: 'delete'; userId: string }
   | { type: 'grant-access'; userId: string }
   | { type: 'password'; userId: string }
+  | { type: 'generate-otp'; userId: string }
   | null;
 
 type TabId = 'assignments' | 'page-access';
@@ -783,6 +944,21 @@ export function UserAssignmentsPage() {
                             >
                               Password
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => setModal({ type: 'generate-otp', userId: u.id })}
+                              disabled={passwordDisabled}
+                              title={
+                                isSelf
+                                  ? 'Use self-service reset for your own account'
+                                  : !canWriteUserManagement
+                                    ? writeDisabledTitle
+                                    : `Generate a one-time password for ${u.name}`
+                              }
+                              className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded border transition-colors ${passwordDisabled ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-sky-200 text-sky-700 hover:bg-sky-50'}`}
+                            >
+                              <KeyRound size={11} /> One-time
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -819,6 +995,7 @@ export function UserAssignmentsPage() {
       {modal?.type === 'delete' && canWriteUserManagement && <DeleteUserModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
       {modal?.type === 'grant-access' && canWriteUserManagement && <GrantAccessModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
       {modal?.type === 'password' && canWriteUserManagement && <ManualPasswordModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
+      {modal?.type === 'generate-otp' && canWriteUserManagement && <GenerateOtpModal userId={modal.userId} currentUserId={currentUserId} onClose={() => setModal(null)} />}
     </div>
   );
 }
