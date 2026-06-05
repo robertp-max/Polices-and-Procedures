@@ -66,12 +66,15 @@ jobs:
       - name: Permission matrix verification
         run: npx tsx scripts/verify-feature-access.mjs
 
-      # Conditional Playwright e2e step — only runs when test files exist.
-      - name: Playwright tests (if present)
+      # Required Playwright SMOKE suite — a fast, stable subset (see
+      # playwright.smoke.config.ts). The exhaustive visual/walkthrough UAT suite
+      # runs separately and non-required via .github/workflows/uat-full.yml, so a
+      # slow or in-progress UAT defect cannot block the merge gate.
+      - name: Playwright smoke tests (required)
         run: |
-          if find Builder/_system/uat -name '*.spec.ts' 2>/dev/null | grep -q .; then
+          if find Builder/_system/uat -name '*.spec.*' 2>/dev/null | grep -q .; then
             npx playwright install --with-deps chromium
-            npx playwright test --reporter=list
+            npx playwright test -c playwright.smoke.config.ts --reporter=list
           else
             echo "No Playwright specs found; skipping."
           fi
