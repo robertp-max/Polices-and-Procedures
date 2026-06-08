@@ -80,7 +80,7 @@ export const useShellStore = create<ShellState>(set => ({
   theme:
     (typeof window !== 'undefined'
       ? (window.localStorage.getItem('ci-shell-theme') as ShellTheme | null)
-      : null) || 'care-indeed-light',
+      : null) || 'ci-ion-dark',
   setDetailMode: v => set({ detailMode: v }),
   setTheme: t =>
     runThemeSwap(() => {
@@ -91,7 +91,7 @@ export const useShellStore = create<ShellState>(set => ({
     runThemeSwap(() => {
       const current = (typeof window !== 'undefined'
         ? (window.localStorage.getItem('ci-shell-theme') as ShellTheme | null)
-        : null) || 'care-indeed-light';
+        : null) || 'ci-ion-dark';
       const next: ShellTheme = current === 'ci-ion-dark' ? 'care-indeed-light' : 'ci-ion-dark';
       if (typeof window !== 'undefined') window.localStorage.setItem('ci-shell-theme', next);
       set({ theme: next });
