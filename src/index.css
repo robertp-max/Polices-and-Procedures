@@ -3053,3 +3053,32 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-neutral-300,
 html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-stone-100,
 html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-stone-200,
 html[data-theme="care-indeed-light"][data-ci-mode="dark"] .text-stone-300 { color: #B7C7C5 !important; }
+
+html[data-theme="care-indeed-light"] [data-auth-shell],
+html[data-theme="care-indeed-light"] [data-auth-shell] label,
+html[data-theme="care-indeed-light"] [data-auth-shell] h1 {
+  color: #ffffff !important;
+}
+
+html[data-theme="care-indeed-light"] [data-auth-shell] p {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+html[data-theme="care-indeed-light"] [data-auth-shell] input,
+html[data-theme="care-indeed-light"] [data-auth-shell] textarea,
+html[data-theme="care-indeed-light"] [data-auth-shell] select {
+  background-color: #061a1f !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="care-indeed-light"] [data-auth-shell] input::placeholder,
+html[data-theme="care-indeed-light"] [data-auth-shell] textarea::placeholder {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+html[data-theme="care-indeed-light"] [data-auth-shell] input:focus,
+html[data-theme="care-indeed-light"] [data-auth-shell] textarea:focus,
+html[data-theme="care-indeed-light"] [data-auth-shell] select:focus {
+  border-color: #63b59d !important;
+}
