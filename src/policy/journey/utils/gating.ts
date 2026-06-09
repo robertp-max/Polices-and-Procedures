@@ -10,12 +10,14 @@
 
 import type {
   JourneyEmployee,
+  JourneyEvidence,
   JourneyModule,
   ModuleAttempt,
   SupervisedVisit,
   JourneyProgress,
 } from '@/policy/journey/types/journey';
 import { modulesForRole } from '@/policy/journey/data/modules';
+import { calculateAchcModuleStatus, isAchcModuleId } from '@/policy/journey/utils/achcTrainingCalculations';
 
 export interface GateDecision {
   unlocked: boolean;
@@ -126,6 +128,7 @@ export function computeProgress(
   attempts: ModuleAttempt[],
   visits: SupervisedVisit[],
   openEscalations: number,
+  evidence: JourneyEvidence[] = [],
 ): JourneyProgress {
   const mods = modulesForRole(employee.role);
   const gao = mods.filter(m => m.group === 'GAO' && m.id !== 'GAO-EXAM');
@@ -133,7 +136,12 @@ export function computeProgress(
   const role = mods.filter(m => m.group === 'ROLE' && m.phase === 'ROLE');
   const rolePassed = role.filter(m => isModulePassed(m, latestAttempt(attempts, employee.id, m.id))).length;
   const annual = mods.filter(m => m.group === 'ANN');
-  const annualPassed = annual.filter(m => isModulePassed(m, latestAttempt(attempts, employee.id, m.id))).length;
+  const annualPassed = annual.filter(m => {
+    if (isAchcModuleId(m.id)) {
+      return calculateAchcModuleStatus({ employee, module: m, attempts, evidence }).compliant;
+    }
+    return isModulePassed(m, latestAttempt(attempts, employee.id, m.id));
+  }).length;
   const supMods = mods.filter(m => m.phase === 'SUPERVISED');
   const supReq = supMods.reduce((n, m) => n + (m.supervisedVisitsRequired ?? 0), 0);
   const supDone = visits.filter(v => v.employeeId === employee.id && v.rating === 'SATISFACTORY').length;

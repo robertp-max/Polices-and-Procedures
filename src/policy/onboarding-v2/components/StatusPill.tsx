@@ -4,11 +4,11 @@ import type { BatchStatus, UnitStatus, EvidenceStatus, SignatureStatus, GateOutc
 type Tone = 'success' | 'warning' | 'danger' | 'info' | 'muted';
 
 const TONE_CLASS: Record<Tone, string> = {
-  success: 'bg-[#E5F4EC] text-[#1F8A4C] border-[#BFE6CE]',
-  warning: 'bg-[#FBEDD7] text-[#B45309] border-[#F2D2A4]',
-  danger:  'bg-[#FCE5E5] text-[#B42318] border-[#F2BCBC]',
-  info:    'bg-[#E5EEF8] text-[#1E63B0] border-[#BFD3EE]',
-  muted:   'bg-[#F2F4F7] text-[#4B5563] border-[#E5E7EB]',
+  success: 'ci-bg-success-soft ci-text-success ci-border-success',
+  warning: 'ci-bg-warning-soft text-[var(--ci-warning-fg)] border-[var(--ci-warning-bdr)]',
+  danger:  'ci-bg-danger-soft ci-text-danger border-[var(--ci-danger-bdr)]',
+  info:    'ci-bg-info-soft ci-text-info border-[var(--ci-info-bdr)]',
+  muted:   'ci-bg-overlay-faint ci-text-surface-muted ci-border-overlay',
 };
 
 const UNIT_TONE: Record<UnitStatus, Tone> = {

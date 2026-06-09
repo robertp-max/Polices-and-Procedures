@@ -92,6 +92,7 @@ export function JourneyHomePage() {
   const nav = useNavigate();
   const employee = useJourneyStore(s => s.employees.find(e => e.id === s.currentEmployeeId)!);
   const attempts = useJourneyStore(s => s.attempts);
+  const evidence = useJourneyStore(s => s.evidence);
   const visits = useJourneyStore(s => s.supervisedVisits);
   const escalations = useJourneyStore(s => s.escalations);
   const recompute = useJourneyStore(s => s.recomputeEscalations);
@@ -101,8 +102,8 @@ export function JourneyHomePage() {
 
   const mods = useMemo(() => modulesForRole(employee.role), [employee.role]);
   const progress = useMemo(() =>
-    computeProgress(employee, attempts, visits, openEscalationsCount(escalations, employee.id)),
-  [employee, attempts, visits, escalations]);
+    computeProgress(employee, attempts, visits, openEscalationsCount(escalations, employee.id), evidence),
+  [employee, attempts, visits, escalations, evidence]);
 
   useEffect(() => {
     if (!employee.appendixFCleared) { setPhase('PRE_DAY_1'); return; }

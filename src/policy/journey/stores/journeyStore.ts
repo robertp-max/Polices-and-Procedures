@@ -24,6 +24,7 @@ import { APPENDIX_F_TEMPLATE } from '@/policy/journey/data/appendices';
 import { SEED_EMPLOYEES } from '@/policy/journey/data/employees';
 import { evaluateEscalations } from '@/policy/journey/utils/escalation';
 import { scormTimeToSeconds } from '@/policy/journey/scorm/ScormRuntime';
+import { createAchcCompletionEvidence, isAchcModuleId } from '@/policy/journey/utils/achcTrainingCalculations';
 
 interface JourneyState {
   currentEmployeeId: string;
@@ -202,6 +203,33 @@ export const useJourneyStore = create<JourneyState>()(
             };
           }),
         }));
+        const s = get();
+        const attempt = s.attempts.find(a => a.id === attemptId);
+        const module = attempt ? moduleById(attempt.moduleId) : undefined;
+        const employee = attempt ? s.employees.find(e => e.id === attempt.employeeId) : undefined;
+        if (
+          attempt &&
+          module &&
+          employee &&
+          attempt.status === 'completed' &&
+          isAchcModuleId(module.id) &&
+          !s.evidence.some(ev =>
+            ev.employeeId === employee.id &&
+            ev.moduleId === module.id &&
+            ev.data.bundle_id === 'ACHC_ANNUAL_FIELD_WORKER_TRAINING' &&
+            ev.data.attempt_count === attempt.attemptNumber
+          )
+        ) {
+          const completedAt = attempt.completedAt ?? nowIso();
+          const evidence = createAchcCompletionEvidence(employee, module, attempt, completedAt);
+          const row: JourneyEvidence = {
+            ...evidence,
+            id: `EV-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            createdAt: completedAt,
+            updatedAt: completedAt,
+          };
+          set(current => ({ evidence: [row, ...current.evidence] }));
+        }
         get().recomputeEscalations();
       },
 

@@ -712,6 +712,12 @@ select:focus-visible {
    Light mode remaps the legacy CI-ION "gold" token onto TEAL so every
    downstream component that reads var(--ci-gold) auto-switches. */
 html[data-theme="care-indeed-light"] {
+  /* V3 frame / outer shell overrides — ShellFrame uses --v3-base-bg directly for the
+     4-sided constrained backdrop. Without this, the page gutters/outer frame stay
+     dark (#05060A) even when topbar/sidebar and inner tokens are light. */
+  --v3-base-bg: #F4F8F7;
+  --v3-bg-gradient: linear-gradient(180deg, #F4F8F7 0%, #F8FBFA 100%);
+
   /* === Care Indeed brand-kit tokens (CIHHCBRANDKIT.HTML) ========= */
   /* Primary (orange) — reserved for CTAs on light backgrounds */
   --ci-primary-100:   #FFFAF7;
@@ -870,6 +876,114 @@ html[data-theme="care-indeed-light"] [data-shell-main] .border-white\/20 {
 html[data-theme="care-indeed-light"] [data-shell-main] h1.text-white,
 html[data-theme="care-indeed-light"] [data-shell-main] h2.text-white {
   color: var(--ci-text-primary) !important;
+}
+
+/* ── Light mode: CES calendar + execution surfaces + remaining dark hex bleed ──
+   MasterCalendarPage (CES /ces/calendar) and some PM/regulatory/workflow-execution
+   surfaces use local hardcoded dark palettes (CES_V32_COLORS, swimlane roots, etc.)
+   that bypass the token system. These are scoped via data-* attrs added to the
+   minimal roots only (no component logic or data changes). Protected dark shells
+   (FormViewer, PolicyViewer32) are deliberately not given these attrs.
+   Also completes sidebar hover/active + group header contrast for pale nav bg.
+*/
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0B0F15\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0b0f15\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0F131A\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0f131a\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#141A23\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#141a23\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0d1a2d\] {
+  background-color: #FFFFFF !important;
+  color: #1F1C1B !important;
+  border-color: #E5E4E3 !important;
+}
+html[data-theme="care-indeed-light"] [data-ces-calendar] .text-white,
+html[data-theme="care-indeed-light"] [data-ces-calendar] [class*="text-white/"] {
+  color: #1F1C1B !important;
+}
+html[data-theme="care-indeed-light"] [data-ces-calendar] .text-\[\#A0ABC0\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .text-\[\#5E6A7F\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .text-\[\#6E7C93\] {
+  color: #52404B !important;
+}
+
+/* Workflow execution / swimlane dark canvases (scoped; library cards are already token clean) */
+html[data-theme="care-indeed-light"] [data-workflow-execution] .bg-\[\#0b0f15\],
+html[data-theme="care-indeed-light"] [data-workflow-execution] .bg-\[\#0B0F15\],
+html[data-theme="care-indeed-light"] [data-workflow-execution] .bg-\[\#0f131a\],
+html[data-theme="care-indeed-light"] [data-workflow-execution] .bg-\[\#141a23\] {
+  background-color: #FFFFFF !important;
+  color: #1F1C1B !important;
+}
+
+/* PM / regulatory / other common dark execution panels (scoped) */
+html[data-theme="care-indeed-light"] [data-pm-shell] .bg-\[\#1a1f2e\],
+html[data-theme="care-indeed-light"] [data-pm-shell] .bg-\[\#0f1420\] {
+  background-color: #F4F4F2 !important;
+}
+html[data-theme="care-indeed-light"] [data-regulatory-drawer] .bg-\[\#0d1a2d\] {
+  background-color: #FFFFFF !important;
+  color: #1F1C1B !important;
+}
+
+/* Sidebar (data-shell-navrail already present) — slightly deeper soft teal than
+   the page base, high contrast text. */
+html[data-theme="care-indeed-light"] [data-shell-navrail] {
+  background-color: #DCEAE6 !important;
+  border-right-color: #CFE0DB !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] .text-text-muted,
+html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="text-text-muted"],
+html[data-theme="care-indeed-light"] [data-shell-navrail] .text-text-primary {
+  color: #1F1C1B !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] .text-text-disabled {
+  color: #16201F !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="hover:bg-border"]:hover {
+  background-color: rgba(0, 121, 112, 0.08) !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="hover:text-text-primary"]:hover {
+  color: #1F1C1B !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="bg-brand-teal/10"] {
+  background-color: rgba(0, 121, 112, 0.10) !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="text-brand-teal"] {
+  color: #007970 !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail]::after {
+  background: rgba(31, 28, 27, 0.08) !important;
+}
+
+/* Topbar surface reinforcement (bg-surface/85 + border) */
+html[data-theme="care-indeed-light"] [data-shell-topbar] {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: #E5E4E3 !important;
+}
+
+/* General remaining arbitrary dark hex used in route canvases (scoped to shell content) */
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#0B0F15\],
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#0b0f15\],
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#0F131A\],
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#0f131a\],
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#141A23\],
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#141a23\],
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#0f172a\],
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#1a1f2e\],
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#081425\] {
+  background-color: #FFFFFF !important;
+  color: #1F1C1B !important;
+  border-color: #E5E4E3 !important;
+}
+
+/* Spotlight glow tuning for light (subtle teal, no dark shadow wash) */
+html[data-theme="care-indeed-light"] .card-spotlight {
+  --spotlight-color: rgba(0, 121, 112, 0.12);
+}
+html[data-theme="care-indeed-light"] .spotlight-outer-glow,
+html[data-theme="care-indeed-light"] .spotlight-inner-glow {
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--spotlight-color), transparent 70%);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -3839,4 +3953,145 @@ body,
   .v3-surface--glass {
     border-color: rgba(255, 255, 255, 0.66) !important;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DAY / NORMAL MODE — soft-teal app-shell theme (additive)
+   ──────────────────────────────────────────────────────────────
+   Scope: ONLY when <html data-theme="care-indeed-light">. The signed-in
+   app shell (CommandCenterLayout) sets this; detail viewers and ALL auth
+   pages (/login, /forgot-password, …) are force-set to data-theme="v3-veil"
+   in code, so NONE of these rules can ever touch auth or the dark detail
+   shells. Dark V3 ('v3-veil') is the default and is left fully untouched.
+
+   This block re-lights the V3 token primitives (so the entire
+   token-driven surface flips), plus the handful of V3.2 *hardcoded*
+   Tailwind palette classes (bg-background / bg-surface / border-border /
+   text-text-*) and the SpotlightCard surface, which are not token-driven.
+   Placed last so it wins source-order ties against the V3-only contract.
+
+   NOTE: the authenticated shell re-declares the --v3-* primitives on its
+   own container (.v32-command-center-app / .v3-app-shell-base), so the
+   token overrides below are applied at BOTH the <html> scope AND that
+   container scope — otherwise the shell interior would stay dark.
+   ══════════════════════════════════════════════════════════════ */
+html[data-theme="care-indeed-light"],
+html[data-theme="care-indeed-light"] .v32-command-center-app,
+html[data-theme="care-indeed-light"] .v32-command-center-app .v3-app-shell-base {
+  color-scheme: light;
+
+  /* — Re-light the V3 primitives (all --ci-* aliases inherit these) —
+       Soft light-teal page base (NOT pure white) so the signed-in shell
+       reads as Care Indeed day mode; white cards sit on top for contrast. */
+  --v3-base-bg: #EAF4F2;
+  --v3-bg-gradient: radial-gradient(circle at 50% 0%, #E1EEEA 0%, #EAF4F2 58%);
+  --v3-grid-line: rgba(0, 121, 112, 0.05);
+  --v3-glass-card: #FFFFFF;
+  --v3-glass-blur: none;
+  --v3-glass-shadow: 0 1px 2px rgba(31, 28, 27, 0.06);
+  --v3-glass1: #FFFFFF;
+  --v3-glass2: rgba(0, 121, 112, 0.05);
+  --v3-glass3: rgba(0, 121, 112, 0.025);
+  --v3-border: rgba(0, 121, 112, 0.20);
+  --v3-border-hover: rgba(0, 121, 112, 0.34);
+  --v3-border-subtle: #E2E7E5;
+  --v3-text-primary: #16201F;
+  --v3-text-secondary: #475459;
+  --v3-text-tertiary: #6B7770;
+
+  /* — Non-aliased shell-chrome / overlay tokens the V3 contract pins
+       to dark; re-declare for the soft-teal surface. — */
+  --ci-surface: #FFFFFF;
+  --ci-surface-2: #F4F8F7;
+  --ci-surface-muted: #EEF4F2;
+  --ci-color-glass-main: #FFFFFF;
+  --ci-color-glass-main-detail: #FFFFFF;
+  --ci-color-glass-blur: none;
+  --ci-color-glass-shadow: 0 1px 2px rgba(31, 28, 27, 0.05);
+  --ci-color-shell-topbar-bg: #FFFFFF;
+  --ci-color-shell-navrail-bg: #DCEAE6;
+  --ci-color-shell-mobile-tabbar-bg: rgba(255, 255, 255, 0.96);
+  --ci-color-shell-account-avatar-bg: #007970;
+  --ci-color-shell-overlay-shadow: 0 12px 28px rgba(31, 28, 27, 0.12);
+  --ci-overlay-faint: rgba(0, 121, 112, 0.04);
+  --ci-overlay-soft: rgba(0, 121, 112, 0.07);
+  --ci-overlay-strong: rgba(0, 121, 112, 0.12);
+  --ci-overlay-border: rgba(31, 28, 27, 0.08);
+  --ci-overlay-border-strong: rgba(31, 28, 27, 0.14);
+  --ci-overlay-active-bg: rgba(0, 121, 112, 0.12);
+  --ci-overlay-active-border: rgba(0, 121, 112, 0.34);
+  --ci-cell-day: #FFFFFF;
+  --ci-cell-out: #F4F8F7;
+  --ci-cell-today: linear-gradient(180deg, #E2F6F4 0%, #FFFFFF 100%);
+}
+
+/* V3.2 hardcoded Tailwind palette (tailwind.config.js fixed dark hex) →
+   day-mode surfaces. Substring matchers also catch /opacity variants
+   (e.g. bg-surface-elevated/88). */
+html[data-theme="care-indeed-light"] [class*="bg-background"] {
+  background-color: var(--v3-base-bg) !important;
+}
+html[data-theme="care-indeed-light"] [class*="bg-surface"] {
+  background-color: #FFFFFF !important;
+}
+html[data-theme="care-indeed-light"] [class*="border-border"] {
+  border-color: var(--v3-border-subtle) !important;
+}
+html[data-theme="care-indeed-light"] .text-text-primary {
+  color: var(--v3-text-primary) !important;
+}
+html[data-theme="care-indeed-light"] .text-text-secondary {
+  color: var(--v3-text-secondary) !important;
+}
+html[data-theme="care-indeed-light"] .text-text-muted {
+  color: #5E6B6A !important;
+}
+html[data-theme="care-indeed-light"] .text-text-disabled {
+  color: #9AA4A2 !important;
+}
+
+/* Shell chrome surfaces (topbar/navrail use hardcoded bg-surface/border) */
+html[data-theme="care-indeed-light"] [data-shell-topbar] {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-bottom-color: var(--v3-border-subtle) !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] {
+  background-color: var(--ci-color-shell-navrail-bg) !important;
+  border-right-color: var(--v3-border-subtle) !important;
+}
+/* Topbar search field reads on the white bar */
+html[data-theme="care-indeed-light"] [data-shell-topbar] input {
+  background-color: #FFFFFF !important;
+  color: var(--v3-text-primary) !important;
+  border-color: var(--v3-border-subtle) !important;
+}
+
+/* SpotlightCard — reuse the single real component, re-skin for light.
+   White surface, pale-teal hairline, subtle teal spotlight sheen. */
+html[data-theme="care-indeed-light"] .card-spotlight {
+  background-color: #FFFFFF !important;
+  border-color: var(--v3-border-subtle) !important;
+  --spotlight-color: rgba(0, 121, 112, 0.12);
+  box-shadow: 0 1px 2px rgba(31, 28, 27, 0.05);
+}
+html[data-theme="care-indeed-light"] .card-spotlight:hover,
+html[data-theme="care-indeed-light"] .card-spotlight:focus-within {
+  border-color: rgba(0, 121, 112, 0.34) !important;
+}
+
+/* Day mode: the dark shell's canvas painters (.v3-dashboard-reference /
+   .v3-shell-backdrop) draw WHITE grid lines with background-blend-mode: screen.
+   On a light base that "screen" blend lightens everything toward white, which
+   is what made the day-mode dashboard look washed-out / near-white. Re-paint
+   them here with the soft-teal gradient, faint TEAL grid lines, and a normal
+   blend so the main canvas reads as light teal. Scoped to care-indeed-light
+   only — dark mode and auth pages (forced v3-veil) are untouched. */
+html[data-theme="care-indeed-light"] .v3-dashboard-reference,
+html[data-theme="care-indeed-light"] .v3-shell-backdrop {
+  background:
+    linear-gradient(to right, rgba(0, 121, 112, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 121, 112, 0.05) 1px, transparent 1px),
+    var(--v3-bg-gradient) !important;
+  background-size: 24px 24px, 24px 24px, 100% 100% !important;
+  background-blend-mode: normal, normal, normal !important;
 }

@@ -1,7 +1,10 @@
 ﻿import { useState, useEffect, useRef, useMemo, useCallback, type PropsWithChildren } from 'react';
 import { createPortal } from 'react-dom';
 import ciLogoWhite from '@/assets/ci-logo-white.png';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 // Single app logo for the entire application - bundled from src/assets.
+// Light (Day/Normal) signed-in shell uses the gray asset; dark V3 keeps white.
+// Auth pages never reach this component (see App.tsx PublicAuthRoute + index.html bootstrap).
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardCheck, Network, FileEdit,
@@ -11,7 +14,7 @@ import {
   ShieldCheck, Zap,
   ArrowUpCircle, FolderOpen, UserCheck, Sparkles,
   ListChecks, LogOut, Compass, Trash2,
-  Users, Heart,
+  Users, Heart, Sun, Moon,
 } from 'lucide-react';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import { useShellStore } from '@/policy/stores/uiStore';
@@ -254,11 +257,17 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
 
   const detailMode = useShellStore(s => s.detailMode);
   const theme = useShellStore(s => s.theme);
+  const toggleTheme = useShellStore(s => s.toggleTheme);
   const ciMode = useCiModeStore(s => s.mode);
   const isCareIndeedDark = false;
-  const isVisualLight = false;
-  // Use the app logo bundled from src/assets/ci-logo-white.png.
-  const logo = ciLogoWhite;
+  // Day / Normal mode — the only non-dark app-shell theme. Drives the
+  // light-mode inline-style branches that were already present in this shell.
+  const isVisualLight = theme === 'care-indeed-light';
+  // Use the app logo bundled from src/assets.
+  // Day / Normal (care-indeed-light) signed-in shell → gray logo.
+  // Dark V3 (v3-veil) → white logo.
+  // Auth pages are outside CommandCenterLayout and always dark (never see this).
+  const logo = isVisualLight ? ciLogoGray : ciLogoWhite;
   const accountDisplayName = useMemo(() => {
     const firstName = user?.firstName?.trim();
     const lastName = user?.lastName?.trim();
@@ -347,8 +356,18 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   }, [VISIBLE_NAV, location.pathname]);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = 'v3-veil';
-  }, [theme]);
+    // Apply the selected app-shell theme to <html>. Dark V3 ('v3-veil')
+    // is the default; 'care-indeed-light' enables Day / Normal mode.
+    //
+    // Detail viewers (opened policies / forms — `hideChrome`) are kept on
+    // the dark shell regardless of preference so the recovered "Form viewer
+    // dark shell + white form paper" / policy viewer look stays intact and
+    // we avoid dark-on-dark text inside those dark detail surfaces.
+    //
+    // Auth pages live outside this layout and are force-set to 'v3-veil'
+    // by App.tsx, so they never inherit the light theme.
+    document.documentElement.dataset.theme = hideChrome ? 'v3-veil' : theme;
+  }, [theme, hideChrome]);
 
   // ── Care Indeed Light/Dark mode (orthogonal to brand toggle) ──────────────
   useEffect(() => {
@@ -503,6 +522,17 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                 </button>
               }
             >
+              {/* Day / Normal mode toggle — minimalist, app-shell only.
+                  Persists via useShellStore; auth pages are unaffected. */}
+              <button
+                type="button"
+                onClick={() => toggleTheme()}
+                aria-label={isVisualLight ? 'Switch to dark mode' : 'Switch to day mode'}
+                title={isVisualLight ? 'Switch to dark mode' : 'Switch to day mode'}
+                className="glass-interactive ci-subtle-hover flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--ci-overlay-border-strong)] text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)]"
+              >
+                {isVisualLight ? <Moon size={18} strokeWidth={1.75} /> : <Sun size={18} strokeWidth={1.75} />}
+              </button>
               <ContextualKnowledgeBulb />
               {/* Account menu */}
               <div className="relative shrink-0 z-40" ref={accountMenuRef}>
@@ -913,7 +943,11 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                 {/* ══════════════════════════════════════════
                     MAIN APP CONTENT
                    ══════════════════════════════════════════ */}
-                <div className={`flex-1 flex flex-col relative z-10 w-full overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isMenuOpen ? 'blur-[12px] opacity-30 scale-[0.98]' : ''} ${isMobile ? 'pb-16' : ''}`}>
+                <div
+                  data-shell-main
+                  data-shell-scroll
+                  className={`flex-1 flex flex-col relative z-10 w-full overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isMenuOpen ? 'blur-[12px] opacity-30 scale-[0.98]' : ''} ${isMobile ? 'pb-16' : ''}`}
+                >
 
                   {/* Sub-nav strip — canonical desktop-only sub-item row */}
                   {!hideChrome && !isMobile && activeDropdownNavId && (() => {
