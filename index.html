@@ -9,17 +9,36 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-    <!-- Critical paint-blocking V3 background — prevents legacy light/maroon flash before app CSS loads. -->
+    <!-- Critical paint-blocking background — theme-aware first paint.
+         Dark V3 is the default; Day / Normal mode paints the soft-teal
+         surface. Auth + detail routes always paint dark (set by the
+         bootstrap script below). No !important so the app's own CSS
+         (which resolves --v3-base-bg per theme) can take over cleanly. -->
     <style>
-      html, body, #root { background-color: #05060A !important; min-height: 100vh; margin: 0; padding: 0; }
-      html { color-scheme: dark; }
+      html, body, #root { min-height: 100vh; margin: 0; padding: 0; }
+      html { background-color: #05060A; color-scheme: dark; }
+      html:not([data-theme="care-indeed-light"]) body,
+      html:not([data-theme="care-indeed-light"]) #root { background-color: #05060A; }
+      html[data-theme="care-indeed-light"] { background-color: #F4F8F7; color-scheme: light; }
+      html[data-theme="care-indeed-light"] body,
+      html[data-theme="care-indeed-light"] #root { background-color: #F4F8F7; }
     </style>
-    <!-- Force V3-only mode on first paint. V4 can later add a normal/light mode on top of V3 tokens. -->
+    <!-- App-shell theme bootstrap (anti-FOUC).
+         Reads the persisted preference and applies it on first paint so the
+         Day/Normal toggle survives refreshes without flashing the wrong shell.
+         Auth pages (/login, /forgot-password, …) and opened detail viewers
+         (policy / form) ALWAYS paint on the dark shell, mirroring the React
+         guards in App.tsx (PublicAuthRoute) and CommandCenterLayout. -->
     <script>
       try {
-        document.documentElement.setAttribute('data-theme', 'v3-veil');
+        var p = location.pathname;
+        var isAuth = p === '/' || /^\/(login|forgot-password|register|check-email|setup-account|reset-password|set-new-password)(\/|$)/.test(p);
+        var isDetail = /^\/(library|gv-policy|forms)\/.+/.test(p);
+        var stored = localStorage.getItem('ci-shell-theme');
+        var theme = (!isAuth && !isDetail && stored === 'care-indeed-light') ? 'care-indeed-light' : 'v3-veil';
+        document.documentElement.setAttribute('data-theme', theme);
         document.documentElement.setAttribute('data-ci-mode', 'v3');
-        localStorage.setItem('ci-shell-theme', 'v3-veil');
+        // Keep the orthogonal Care-Indeed mode axis pinned to V3.
         localStorage.setItem('ci-care-indeed-mode', 'v3');
       } catch (e) { /* ignore */ }
     </script>

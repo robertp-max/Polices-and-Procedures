@@ -1527,9 +1527,11 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
   if (isEmbedded) {
     return (
       <SignatureCtx.Provider value={ctxValue}>
+        <style>{`.ci-form-viewer-paper > section > h3 { color: #1F1C1B !important; }`}</style>
         <div
           ref={formPaperRef}
-          className="form-frame bg-white border border-[#E5E4E3] rounded-[12px] shadow-sm px-8 py-10 md:px-12 md:py-14 text-[#1F1C1B] font-roboto"
+          className="ci-form-viewer-paper form-frame border border-[#E5E4E3] rounded-[12px] shadow-sm px-8 py-10 md:px-12 md:py-14 font-roboto"
+          style={{ backgroundColor: '#FFFFFF', color: '#1F1C1B' }}
         >
           <FormBody content={content} />
           {cesSignBlock && (
@@ -1576,10 +1578,11 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
 
   return (
     <SignatureCtx.Provider value={ctxValue}>
-      <div className="min-h-screen overflow-auto bg-[#F2F2F0] font-roboto text-[#1F1C1B]">
+      <style>{`.ci-form-viewer-paper > section > h3 { color: #1F1C1B !important; }`}</style>
+      <div className="min-h-screen overflow-auto bg-[#050A12] font-roboto text-[#E2E8F0]">
         {effectiveSource === 'task' && !parentTaskId && !queryTaskId && (
-          <div className={`no-print mx-auto ${maxW} px-6 md:px-10 pt-5`}>
-            <div className="rounded-[10px] border border-rose-300 bg-rose-50 px-3 py-2 text-[12px] text-rose-900">
+          <div className={`no-print mx-auto ${maxW} px-4 md:px-8 pt-5`}>
+            <div className="rounded-[10px] border border-rose-400/40 bg-rose-950/40 px-3 py-2 text-[12px] text-rose-100">
               <div className="font-semibold">Missing taskId — form/evidence/signature operations blocked.</div>
               <div className="mt-1 text-[11px]">
                 event_id={effectiveEventContext || '—'} · form_id={content.id} · formSource=task
@@ -1589,8 +1592,8 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
           </div>
         )}
         {hasTaskLinkedContext && (
-          <div className={`no-print mx-auto ${maxW} px-6 md:px-10 pt-5`}>
-            <div className="rounded-[10px] border border-[#56B6A9] bg-[#E8F6F4] px-3 py-2 text-[12px] text-[#134E4A]">
+          <div className={`no-print mx-auto ${maxW} px-4 md:px-8 pt-5`}>
+            <div className="rounded-[10px] border border-[#007970]/40 bg-[#0B1D24] px-3 py-2 text-[12px] text-[#B8FFF5]">
               <div className="font-semibold">Task-linked form context detected.</div>
               <div className="mt-1 text-[11px]">
                 event_id={queryEventIdV2 || effectiveEventContext || '—'} · task_id={queryTaskId || parentTaskId || '—'} · form_id={queryFormId || content.id} · policy_id={queryPolicyId || content.policies[0] || '—'} · workflow_id={queryWorkflowIdV2 || effectiveWorkflowContext || '—'} · requirement_id={queryRequirementId || '—'}
@@ -1609,7 +1612,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                     if (queryRequirementId) q.set('requirement_id', queryRequirementId);
                     navigate(`/calendar/event/${encodeURIComponent(eventForRoute)}${q.toString() ? `?${q.toString()}` : ''}`);
                   }}
-                  className="rounded-[8px] border border-[#2D8C83] px-2 py-1 text-[11px] font-semibold text-[#0F766E] hover:bg-[#D7F0ED]"
+                  className="rounded-[8px] border border-[#007970]/50 bg-[#007970]/10 px-2 py-1 text-[11px] font-semibold text-[#B8FFF5] hover:bg-[#007970]/20"
                 >
                   Return to Event Task Workspace
                 </button>
@@ -1618,16 +1621,16 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
           </div>
         )}
         {/* ── No-print action bar ── */}
-        <div className={`no-print flex items-center justify-between px-6 md:px-10 pt-5 pb-3 mx-auto ${maxW}`}>
+        <div className={`no-print flex flex-wrap items-center justify-between gap-4 px-4 md:px-6 py-3 mt-5 mx-auto ${maxW} rounded-[14px] border border-[#1C2433] bg-[#0B111B] shadow-2xl`}>
           <button
             type="button"
             onClick={() => navigate('/forms')}
-            className="flex items-center gap-2 text-[12px] font-semibold text-[#1F1C1B] hover:text-[#007970] transition-colors"
+            className="flex items-center gap-2 rounded-[8px] border border-[#1C2433] bg-[#111827] px-3 py-2 text-[12px] font-semibold text-[#CBD5E1] hover:border-[#007970]/50 hover:text-white transition-colors"
           >
             <ChevronLeft size={15} /> Return to Forms Library
           </button>
           <div className="flex items-center gap-3">
-            <span className="text-[11px] text-[#747470] font-mono">{content.id} · v{content.version}</span>
+            <span className="rounded-[8px] border border-[#007970]/30 bg-[#007970]/10 px-3 py-2 text-[11px] text-[#27D4C4] font-mono">{content.id} · v{content.version}</span>
             <button
               type="button"
               onClick={() => {
@@ -1637,7 +1640,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                 }
                 printForm(content.id);
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#007970] hover:brightness-95 text-white text-[12px] font-semibold transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#007970] hover:bg-[#009085] text-white text-[12px] font-semibold transition-colors shadow-[0_10px_24px_rgba(0,121,112,0.22)]"
             >
               <Printer size={14} /> Print
             </button>
@@ -1673,7 +1676,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                 }
               }}
               disabled={submitBusy}
-              className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-[#C4C2C0] text-[#1F1C1B] text-[12px] font-semibold hover:bg-[#EAEAE8] disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-[#2563EB]/45 bg-[#1D4ED8] text-white text-[12px] font-semibold hover:bg-[#2563EB] disabled:opacity-50 transition-colors"
               title="Capture this form's current field values as compliance evidence (writes S3 + DDB + audit)"
             >
               <ShieldCheck size={14} /> {submitBusy ? 'Saving…' : 'Save as Evidence'}
@@ -1689,7 +1692,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                 a.click();
                 URL.revokeObjectURL(url);
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-[#E5E4E3] text-[#1F1C1B] text-[12px] font-semibold hover:bg-white transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-[#1C2433] bg-[#111827] text-[#CBD5E1] text-[12px] font-semibold hover:border-[#007970]/50 hover:text-white transition-colors"
             >
               <Download size={14} /> Download
             </button>
@@ -1700,7 +1703,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
             to screen readers via role+aria-live. Success uses polite (status),
             error uses assertive (alert) so it interrupts. */}
         {(submitMsg || submitErr) && (
-          <div className={`no-print mx-auto ${maxW} px-6 md:px-10`}>
+          <div className={`no-print mx-auto ${maxW} px-4 md:px-8`}>
             {submitMsg && (
               <div
                 role="status"
@@ -1743,7 +1746,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
         {isEnfm001Standalone && (
           <div className={`mx-auto ${maxW} px-4 md:px-8 pb-4`}>
             <div
-              className={`rounded-[10px] border bg-white px-4 py-3 ${enfmPolicyValidation.ok ? 'border-[#E5E4E3]' : 'border-rose-300'}`}
+              className={`rounded-[10px] border bg-white px-4 py-3 shadow-xl ${enfmPolicyValidation.ok ? 'border-[#E5E4E3]' : 'border-rose-300'}`}
             >
               <PolicyLinkSelector
                 value={enfmLinkedPolicyIds}
@@ -1767,10 +1770,11 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
         )}
 
         {/* ── Screen shell (paper gutter) ── */}
-        <div className={`screen-shell mx-auto ${maxW} px-4 py-6 md:px-8 md:py-10`}>
+        <div className={`screen-shell mx-auto ${maxW} px-4 py-8 md:px-8 md:py-12`}>
           <div
             ref={formPaperRef}
-            className="form-page bg-white border border-[#E5E4E3] rounded-[12px] shadow-sm px-8 py-10 md:px-12 md:py-14 text-[#1F1C1B]"
+            className="ci-form-viewer-paper form-page border border-[#D8DEE8] rounded-[12px] ring-1 ring-white/5 px-8 py-10 md:px-12 md:py-14 shadow-2xl"
+            style={{ backgroundColor: '#FFFFFF', color: '#1F1C1B' }}
           >
             <FormBody content={content} />
             {hasSigned && Array.from(signatures.values())[0] && (

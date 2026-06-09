@@ -5,6 +5,12 @@ import type { ChipKind } from './StatusChip';
 import type { JourneyModule, ModuleAttempt } from '@/policy/journey/types/journey';
 import { canStartModule, isModulePassed, latestAttempt } from '@/policy/journey/utils/gating';
 import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
+import {
+  ACHC_MINIMUM_PASSING_PERCENT,
+  CARE_INDEED_PASSING_STANDARD_PERCENT,
+  calculateAchcModuleStatus,
+  isAchcModuleId,
+} from '@/policy/journey/utils/achcTrainingCalculations';
 
 interface Props {
   module: JourneyModule;
@@ -40,9 +46,21 @@ export function ModuleCard({ module, compact }: Props) {
   const nav = useNavigate();
   const employee = useJourneyStore(s => s.employees.find(e => e.id === s.currentEmployeeId)!);
   const attempts = useJourneyStore(s => s.attempts);
+  const evidence = useJourneyStore(s => s.evidence);
   const attempt = latestAttempt(attempts, employee.id, module.id);
   const gate = canStartModule(employee, module, attempts);
-  const kind = chipFor(module, attempt, gate.unlocked);
+  const achcStatus = isAchcModuleId(module.id)
+    ? calculateAchcModuleStatus({ employee, module, attempts, evidence })
+    : null;
+  const kind = achcStatus
+    ? !gate.unlocked ? 'locked'
+      : achcStatus.compliant ? 'passed'
+      : achcStatus.pass_fail_status === 'failed' ? 'failed'
+      : achcStatus.pass_fail_status === 'passed' ? 'warn'
+      : achcStatus.attempt_count > 0 || achcStatus.lesson_progress_percent > 0 ? 'in-progress'
+      : 'available'
+    : chipFor(module, attempt, gate.unlocked);
+  const chipLabel = achcStatus && kind === 'warn' ? 'Evidence Missing' : undefined;
 
   return (
     <button
@@ -58,7 +76,7 @@ export function ModuleCard({ module, compact }: Props) {
           <div className="ci-text-eyebrow-strong font-montserrat font-bold ci-text-gold-soft mb-1">{module.id}</div>
           <div className="font-montserrat font-semibold text-white text-sm leading-snug">{module.title}</div>
         </div>
-        <StatusChip kind={kind} />
+        <StatusChip kind={kind} label={chipLabel} />
       </div>
 
       {!compact && (
@@ -84,6 +102,20 @@ export function ModuleCard({ module, compact }: Props) {
             <div className="flex items-center gap-1.5 ci-text-gold">
               <Fingerprint size={12} aria-hidden="true" />
               <span>Supervisor signature required</span>
+            </div>
+          )}
+          {achcStatus && (
+            <div className="space-y-1 border-t ci-border-overlay pt-2">
+              <div className="flex flex-wrap gap-x-3 gap-y-1">
+                <span>ACHC minimum: {ACHC_MINIMUM_PASSING_PERCENT}%</span>
+                <span>Care Indeed passing standard: {CARE_INDEED_PASSING_STANDARD_PERCENT}%</span>
+              </div>
+              <div>
+                Lessons {achcStatus.lesson_progress_percent}% · Attempts {achcStatus.attempt_count} · Best score {achcStatus.best_attempt_score ?? '—'}%
+              </div>
+              <div className={achcStatus.compliant ? 'ci-text-success' : 'ci-text-gold'}>
+                {achcStatus.compliant ? 'Certificate and post-test evidence attached' : 'Completion requires passed post-test, certificate, post-test artifact, personnel-file evidence, and next annual due date.'}
+              </div>
             </div>
           )}
         </div>

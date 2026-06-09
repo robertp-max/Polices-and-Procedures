@@ -290,17 +290,8 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
       case 'appendices':
         return (
           <div className="space-y-8">
-            {/* Render substantive appendix sections (roster, disclosure, ack, minutes template, checklist, calendar etc.)
-                These are core content from the source PDF for GV-GB-001 and must render in viewer. */}
-            {model.appendices.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-6">
-                  {renderSectionBadge('A')}
-                  <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Appendices</h3>
-                </div>
-                <PolicyViewer32SectionList sections={model.appendices} />
-              </section>
-            )}
+            {/* Appendices tab shows attached/linked forms only. Text-rendered appendix
+                sections are intentionally suppressed here per approved June 5 intent. */}
 
             {/* Linked Forms from Forms Library */}
             {model.forms.length > 0 && (
@@ -327,8 +318,8 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
               </section>
             )}
 
-            {model.appendices.length === 0 && model.forms.length === 0 && (
-              <PolicyViewer32EmptyState title="No appendices or linked forms available" />
+            {model.forms.length === 0 && (
+              <PolicyViewer32EmptyState title="No linked forms available" />
             )}
           </div>
         );

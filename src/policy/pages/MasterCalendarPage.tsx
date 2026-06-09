@@ -400,7 +400,7 @@ export function MasterCalendarPage() {
           </div>
         )}
 
-        <div className="min-h-0 flex-1 overflow-hidden bg-[#0B0F15]">
+        <div data-ces-calendar className="min-h-0 flex-1 overflow-hidden bg-[#0B0F15]">
           {view === 'calendar' ? (
             isMobileLayout ? (
               <MobileAgendaList
@@ -578,7 +578,7 @@ function CesV32KanbanView({
   });
 
   return (
-    <div className="h-full overflow-x-auto custom-scrollbar bg-[#0B0F15] px-6 py-6">
+    <div data-ces-calendar className="h-full overflow-x-auto custom-scrollbar bg-[#0B0F15] px-6 py-6">
       <div className="flex min-h-full min-w-[1040px] gap-6">
         {byColumn.map(column => (
           <section key={column.id} className="flex w-[320px] shrink-0 flex-col">
@@ -650,8 +650,9 @@ function CesV32GanttView({
   const sortedEvents = [...events].sort((a, b) => a.date.localeCompare(b.date));
 
   return (
-    <div className="h-full overflow-auto custom-scrollbar bg-[#0B0F15] p-6">
+    <div data-ces-calendar className="h-full overflow-auto custom-scrollbar bg-[#0B0F15] p-6">
       <div
+        data-ces-calendar
         className="flex min-h-full min-w-[1320px] overflow-hidden rounded-xl border bg-[#0F131A]"
         style={{ borderColor: '#1C2433' }}
       >

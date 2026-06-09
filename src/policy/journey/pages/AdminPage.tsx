@@ -27,11 +27,11 @@ export function AdminPage() {
     const cleared = employees.filter(e => e.clearedForIndependentWork).length;
     const open = escalations.filter(e => e.status === 'Open').length;
     const critical = escalations.filter(e => e.severity === 'CRITICAL' && e.status !== 'Resolved').length;
-    const byEmp = employees.map(e => computeProgress(e, attempts, visits, openEscalationsCount(escalations, e.id)));
+    const byEmp = employees.map(e => computeProgress(e, attempts, visits, openEscalationsCount(escalations, e.id), evidence));
     const overdueAnnual = byEmp.filter(p => p.annualCompletePct < 1).length;
     const apxFMissing = employees.filter(e => !e.appendixFCleared).length;
     return { totalEmp, cleared, open, critical, overdueAnnual, apxFMissing };
-  }, [employees, attempts, visits, escalations]);
+  }, [employees, attempts, visits, escalations, evidence]);
 
   return (
     <div className="h-full overflow-y-auto custom-scrollbar p-6 md:p-10">

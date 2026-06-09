@@ -11,6 +11,15 @@ import type { JourneyModule, ModuleAttempt } from '@/policy/journey/types/journe
 import { installScorm12API, secondsToScormTime } from '@/policy/journey/scorm/ScormRuntime';
 import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
 import { GAO_EXAM_ITEMS } from '@/policy/journey/data/appendices';
+import {
+  CARE_INDEED_PASSING_STANDARD_PERCENT,
+  ACHC_MINIMUM_PASSING_PERCENT,
+  getAchcLessons,
+  getAchcRequiredScreenIds,
+  getAchcTest,
+  gradeAchcQuiz,
+  isAchcModuleId,
+} from '@/policy/journey/utils/achcTrainingCalculations';
 import { CheckCircle2, XCircle, Save, BookOpen, Play } from 'lucide-react';
 
 interface Props {
@@ -57,7 +66,7 @@ export function ScormPlayer({ module, employeeId, attempt, onExit }: Props) {
 
   // Fallback — built-in shell that calls window.API exactly as a SCORM package would.
   if (module.method === 'Quiz' || module.method === 'CodingExercise' || module.method === 'PhishingSim') {
-    return <BuiltInQuiz module={module} />;
+    return <BuiltInQuiz module={module} attemptNumber={attempt.attemptNumber} />;
   }
   return <BuiltInAcknowledge module={module} />;
 }
@@ -65,16 +74,32 @@ export function ScormPlayer({ module, employeeId, attempt, onExit }: Props) {
 /* ─────────────────────────────────────────────────────────────
    Built-in quiz shell — talks to window.API exactly like SCORM.
    ───────────────────────────────────────────────────────────── */
-function BuiltInQuiz({ module }: { module: JourneyModule }) {
-  const bank = useMemo(() => GAO_EXAM_ITEMS.slice(0, 5), []);
+function BuiltInQuiz({ module, attemptNumber }: { module: JourneyModule; attemptNumber: number }) {
+  const achcTest = useMemo(() => isAchcModuleId(module.id) ? getAchcTest(module.id) : undefined, [module.id]);
+  const achcLessons = useMemo(() => isAchcModuleId(module.id) ? getAchcLessons(module.id) : [], [module.id]);
+  const requiredScreenIds = useMemo(() => isAchcModuleId(module.id) ? getAchcRequiredScreenIds(module.id) : [], [module.id]);
+  const bank = useMemo(() => {
+    if (achcTest) {
+      return achcTest.questions.map(q => ({
+        id: q.question_id,
+        q: q.prompt,
+        options: q.choices,
+        correct: q.correct_answer,
+        policyRef: module.policyRefs.join(' · ') || module.id,
+      }));
+    }
+    return GAO_EXAM_ITEMS.slice(0, 5).map((q, index) => ({ id: `gao-${index}`, ...q }));
+  }, [achcTest, module.id, module.policyRefs]);
   const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [lessonsViewed, setLessonsViewed] = useState(!achcTest);
   const [submitted, setSubmitted] = useState(false);
-  const startedAt = useRef(Date.now());
+  const startedAt = useRef(0);
 
   const api = (): Record<string, (k: string, v?: string) => string> | null =>
     (window as unknown as { API?: Record<string, (k: string, v?: string) => string> }).API ?? null;
 
   useEffect(() => {
+    startedAt.current = Date.now();
     const a = api();
     if (!a) return;
     a.LMSInitialize('');
@@ -85,9 +110,13 @@ function BuiltInQuiz({ module }: { module: JourneyModule }) {
   const save = () => {
     const a = api();
     if (!a) return;
-    a.LMSSetValue('cmi.suspend_data', JSON.stringify(answers));
+    a.LMSSetValue('cmi.suspend_data', JSON.stringify({
+      answers,
+      lesson_screen_ids: lessonsViewed ? requiredScreenIds : [],
+      required_lesson_screen_ids: requiredScreenIds,
+    }));
     a.LMSSetValue('cmi.core.lesson_location', String(Object.keys(answers).length));
-    const sessionSec = Math.floor((Date.now() - startedAt.current) / 1000);
+    const sessionSec = Math.floor((Date.now() - (startedAt.current || Date.now())) / 1000);
     a.LMSSetValue('cmi.core.session_time', secondsToScormTime(sessionSec));
     a.LMSCommit('');
   };
@@ -95,8 +124,13 @@ function BuiltInQuiz({ module }: { module: JourneyModule }) {
   const submit = () => {
     const a = api();
     if (!a) return;
-    const correct = bank.filter((q, i) => answers[i] === q.correct).length;
-    const score = Math.round((correct / bank.length) * 100);
+    if (!lessonsViewed) return;
+    const answerByQuestionId = Object.fromEntries(bank.map((q, i) => [q.id, answers[i]]));
+    const grade = achcTest
+      ? gradeAchcQuiz(achcTest, answerByQuestionId, attemptNumber, new Date().toISOString(), CARE_INDEED_PASSING_STANDARD_PERCENT)
+      : null;
+    const correct = grade?.correct_answers ?? bank.filter((q, i) => answers[i] === q.correct).length;
+    const score = grade?.score_percent ?? Math.round((correct / bank.length) * 100);
     const threshold = (module.passThreshold ?? 0.8) * 100;
     const passed = score >= threshold;
 
@@ -104,8 +138,16 @@ function BuiltInQuiz({ module }: { module: JourneyModule }) {
     a.LMSSetValue('cmi.core.score.min', '0');
     a.LMSSetValue('cmi.core.score.max', '100');
     a.LMSSetValue('cmi.core.lesson_status', passed ? 'passed' : 'failed');
+    a.LMSSetValue('cmi.suspend_data', JSON.stringify({
+      answers,
+      grade,
+      lesson_screen_ids: requiredScreenIds,
+      required_lesson_screen_ids: requiredScreenIds,
+      achc_minimum_passing_score: ACHC_MINIMUM_PASSING_PERCENT,
+      care_indeed_passing_standard: CARE_INDEED_PASSING_STANDARD_PERCENT,
+    }));
     a.LMSSetValue('cmi.core.exit', 'normal');
-    const sessionSec = Math.floor((Date.now() - startedAt.current) / 1000);
+    const sessionSec = Math.floor((Date.now() - (startedAt.current || Date.now())) / 1000);
     a.LMSSetValue('cmi.core.session_time', secondsToScormTime(sessionSec));
     a.LMSCommit('');
     a.LMSFinish('');
@@ -116,21 +158,56 @@ function BuiltInQuiz({ module }: { module: JourneyModule }) {
   const score = Math.round((correctCount / bank.length) * 100);
   const threshold = (module.passThreshold ?? 0.8) * 100;
   const passed = score >= threshold;
+  const allAnswered = Object.keys(answers).length === bank.length;
 
   return (
-    <div className="h-full overflow-y-auto custom-scrollbar p-6 space-y-5">
+    <div className="h-full overflow-y-auto custom-scrollbar p-6 space-y-5 ci-text">
       <div className="flex items-center gap-3 mb-2">
-        <BookOpen size={20} className="text-[#FFC107]" />
-        <div className="text-xs font-montserrat font-bold uppercase tracking-widest text-[#FFC107]">
+        <BookOpen size={20} className="ci-text-gold" />
+        <div className="text-xs font-montserrat font-bold uppercase tracking-widest ci-text-gold">
           {module.id} · {module.method}
         </div>
       </div>
-      <h2 className="text-xl font-montserrat font-bold text-white">{module.title}</h2>
+      <h2 className="text-xl font-montserrat font-bold ci-text">{module.title}</h2>
+
+      {achcTest && (
+        <div className="rounded-xl p-4 ci-bg-overlay-faint ci-border-overlay border space-y-3">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-bold uppercase tracking-widest ci-text-surface-soft">
+            <span>ACHC minimum: {ACHC_MINIMUM_PASSING_PERCENT}%</span>
+            <span>Care Indeed passing standard: {CARE_INDEED_PASSING_STANDARD_PERCENT}%</span>
+          </div>
+          <div className="text-[12px] ci-text-muted">
+            Care Indeed standard, stricter than ACHC packet minimum. Completion also requires required lesson screens, post-test submission, certificate generation, personnel-file evidence, and annual due date creation.
+          </div>
+          <div className="max-h-64 overflow-y-auto custom-scrollbar space-y-3 pr-1">
+            {achcLessons.map(lesson => (
+              <section key={lesson.lesson_id} className="space-y-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider ci-text-gold">{lesson.title}</div>
+                {lesson.cards.filter(card => card.completion_required).map(card => (
+                  <article key={card.card_id} className="rounded-lg border ci-border-overlay px-3 py-2">
+                    <div className="text-[12px] font-semibold ci-text">{card.title}</div>
+                    <p className="mt-1 whitespace-pre-line text-[11px] leading-relaxed ci-text-muted">{card.content}</p>
+                  </article>
+                ))}
+              </section>
+            ))}
+          </div>
+          <label className="flex items-start gap-2 text-[12px] ci-text-surface-soft">
+            <input
+              type="checkbox"
+              checked={lessonsViewed}
+              onChange={event => setLessonsViewed(event.target.checked)}
+              className="mt-0.5"
+            />
+            I confirm all {requiredScreenIds.length} required lesson screens for {module.id} have been viewed before submitting the post-test.
+          </label>
+        </div>
+      )}
 
       {bank.map((q, i) => (
-        <div key={i} className="border border-white/10 rounded-xl p-4 bg-black/15">
-          <div className="text-sm text-white/80 mb-3">
-            <span className="font-bold text-[#FFC107] mr-2">{i + 1}.</span>{q.q}
+        <div key={q.id} className="border ci-border-overlay rounded-xl p-4 ci-bg-overlay-faint">
+          <div className="text-sm ci-text-surface-strong mb-3">
+            <span className="font-bold ci-text-gold mr-2">{i + 1}.</span>{q.q}
           </div>
           <div className="space-y-2">
             {q.options.map((opt, k) => {
@@ -143,32 +220,32 @@ function BuiltInQuiz({ module }: { module: JourneyModule }) {
                   disabled={submitted}
                   onClick={() => setAnswers(a => ({ ...a, [i]: k }))}
                   className={`glass-interactive w-full text-left rounded-lg px-3 py-2 border text-sm transition-all ${
-                    isCorrect ? 'border-[#34D399] bg-[#34D399]/10 text-[#34D399]' :
-                    isWrong ? 'border-[#DC2626] bg-[#DC2626]/10 text-[#DC2626]' :
-                    selected ? 'border-[#FFC107] bg-[#FFC107]/5 text-white' :
-                    'border-white/10 text-white/70 hover:border-white/25'
+                    isCorrect ? 'ci-border-success ci-bg-success-soft ci-text-success' :
+                    isWrong ? 'border-[var(--ci-danger-bdr)] ci-bg-danger-soft ci-text-danger' :
+                    selected ? 'ci-border-overlay-strong ci-bg-gold-soft ci-text' :
+                    'ci-border-overlay ci-text-surface-soft ci-border-overlay-hover'
                   }`}
                 >{opt}</button>
               );
             })}
           </div>
-          <div className="text-[10px] uppercase tracking-widest text-white/35 mt-2">Policy ref: {q.policyRef}</div>
+          <div className="text-[10px] uppercase tracking-widest ci-text-surface-ghost mt-2">Policy ref: {q.policyRef}</div>
         </div>
       ))}
 
-      <div className="flex items-center gap-3 sticky bottom-0 pt-4 border-t border-white/10 bg-gradient-to-t from-black/60 to-transparent">
+      <div className="flex items-center gap-3 sticky bottom-0 pt-4 border-t ci-border-overlay ci-bg-overlay-soft">
         <button onClick={save}
-          className="glass-interactive flex items-center gap-2 border border-white/15 rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest text-white/70">
+          className="glass-interactive flex items-center gap-2 border ci-border-overlay rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest ci-text-surface-soft">
           <Save size={14} /> Save & Resume Later
         </button>
         {!submitted ? (
           <button onClick={submit}
-            disabled={Object.keys(answers).length !== bank.length}
+            disabled={!allAnswered || !lessonsViewed}
             className="gradient-gold rounded-lg px-5 py-2 text-xs font-bold uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
             <Play size={14} /> Submit Attempt
           </button>
         ) : (
-          <div className={`flex items-center gap-2 text-sm font-bold ${passed ? 'text-[#34D399]' : 'text-[#DC2626]'}`}>
+          <div className={`flex items-center gap-2 text-sm font-bold ${passed ? 'ci-text-success' : 'ci-text-danger'}`}>
             {passed ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
             {passed ? `PASSED · ${score}%` : `FAILED · ${score}% (need ${threshold}%)`}
           </div>
@@ -180,7 +257,11 @@ function BuiltInQuiz({ module }: { module: JourneyModule }) {
 
 function BuiltInAcknowledge({ module }: { module: JourneyModule }) {
   const [acknowledged, setAcknowledged] = useState(false);
-  const startedAt = useRef(Date.now());
+  const startedAt = useRef(0);
+
+  useEffect(() => {
+    startedAt.current = Date.now();
+  }, []);
 
   const submit = () => {
     const a = (window as unknown as { API?: Record<string, (k: string, v?: string) => string> }).API;
@@ -188,7 +269,7 @@ function BuiltInAcknowledge({ module }: { module: JourneyModule }) {
     a.LMSInitialize('');
     a.LMSSetValue('cmi.core.lesson_status', 'completed');
     a.LMSSetValue('cmi.core.exit', 'normal');
-    const sec = Math.floor((Date.now() - startedAt.current) / 1000);
+    const sec = Math.floor((Date.now() - (startedAt.current || Date.now())) / 1000);
     a.LMSSetValue('cmi.core.session_time', secondsToScormTime(sec));
     a.LMSCommit('');
     a.LMSFinish('');

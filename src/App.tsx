@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, type PropsWithChildren, type ReactElement } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, type PropsWithChildren, type ReactElement } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { CommandCenterLayout } from '@/policy/components/CommandCenterLayout'
 import { initializeApp } from '@/policy/utils/appInitializer'
@@ -160,6 +160,18 @@ function AppShell({ children }: PropsWithChildren) {
 
 function PublicAuthRoute({ children, redirectIfAuthenticated = true }: { children: ReactElement; redirectIfAuthenticated?: boolean }) {
   const { isAuthenticated, loading } = useAuth()
+
+  // AUTH THEME PROTECTION — auth pages must ALWAYS render on the dark
+  // blue/green shell, regardless of the app-shell Day/Normal preference.
+  // CommandCenterLayout writes data-theme on <html>; that value can linger
+  // when navigating from a signed-in (possibly light) shell to /login or
+  // /forgot-password. Force the dark shell theme here (pre-paint via
+  // useLayoutEffect) so auth never turns white.
+  useLayoutEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.theme = 'v3-veil'
+    }
+  })
 
   if (loading) return <AppLoader />
   if (redirectIfAuthenticated && isAuthenticated) return <Navigate to="/dashboard" replace />

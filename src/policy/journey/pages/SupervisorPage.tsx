@@ -17,6 +17,7 @@ export function SupervisorPage() {
   const employees = useJourneyStore(s => s.employees);
   const attempts = useJourneyStore(s => s.attempts);
   const visits = useJourneyStore(s => s.supervisedVisits);
+  const evidence = useJourneyStore(s => s.evidence);
   const escalations = useJourneyStore(s => s.escalations);
   const clearFn = useJourneyStore(s => s.clearForIndependentWork);
   const addVisit = useJourneyStore(s => s.addSupervisedVisit);
@@ -28,11 +29,11 @@ export function SupervisorPage() {
 
   const rows = useMemo(() => employees.map(e => ({
     e,
-    p: computeProgress(e, attempts, visits, openEscalationsCount(escalations, e.id)),
-  })), [employees, attempts, visits, escalations]);
+    p: computeProgress(e, attempts, visits, openEscalationsCount(escalations, e.id), evidence),
+  })), [employees, attempts, visits, escalations, evidence]);
 
   if (!selected) return <div className="p-10 text-white">No employees.</div>;
-  const selectedProgress = computeProgress(selected, attempts, visits, openEscalationsCount(escalations, selected.id));
+  const selectedProgress = computeProgress(selected, attempts, visits, openEscalationsCount(escalations, selected.id), evidence);
   const clearGate = canClearForIndependentWork(selected, attempts, visits);
   const selectedEscalations = escalations.filter(e => e.employeeId === selected.id && e.status !== 'Resolved');
 
@@ -198,13 +199,13 @@ function QuickActions({ employeeId, onVisit, onRemediation }: {
       <div className="border border-white/5 rounded-lg p-3">
         <div className="text-[10px] uppercase tracking-widest font-bold text-white/40 mb-2">Log Supervised Visit (HR-TA-005 App. E / HR-TD-003 App. E)</div>
         <div className="grid grid-cols-2 gap-2 mb-2">
-          <select value={visitType} onChange={e => setVisitType(e.target.value as typeof visitType)} className="bg-black/30 border border-white/10 rounded px-2 py-1.5 text-xs text-white">
+          <select title="Supervised visit type" value={visitType} onChange={e => setVisitType(e.target.value as typeof visitType)} className="bg-black/30 border border-white/10 rounded px-2 py-1.5 text-xs text-white">
             <option value="INITIAL">Initial supervised visit</option>
             <option value="HHA_14_DAY">HHA 14-day cycle</option>
             <option value="HHA_60_DAY">HHA 60-day cycle</option>
             <option value="COMPETENCY_VALIDATION">Competency validation</option>
           </select>
-          <select value={rating} onChange={e => setRating(e.target.value as typeof rating)} className="bg-black/30 border border-white/10 rounded px-2 py-1.5 text-xs text-white">
+          <select title="Supervised visit rating" value={rating} onChange={e => setRating(e.target.value as typeof rating)} className="bg-black/30 border border-white/10 rounded px-2 py-1.5 text-xs text-white">
             <option value="SATISFACTORY">Satisfactory</option>
             <option value="NEEDS_IMPROVEMENT">Needs Improvement</option>
             <option value="UNSATISFACTORY">Unsatisfactory</option>

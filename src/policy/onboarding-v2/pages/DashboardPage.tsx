@@ -2,6 +2,15 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity, AlertOctagon, Clock, ShieldCheck, Sparkles } from 'lucide-react';
 import { useOnboardingV2Store } from '../store/onboardingV2Store';
+import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
+import {
+  ACHC_BUNDLE_ID,
+  ACHC_BUNDLE_NAME,
+  ACHC_REQUIRED_MODULE_IDS,
+  calculateAchcBundleSummary,
+  calculateAchcEmployeeStatus,
+  isDirectCareRole,
+} from '@/policy/journey/utils/achcTrainingCalculations';
 import { KpiTile } from '../components/KpiTile';
 import { StatusPill } from '../components/StatusPill';
 import { AUDIT_LABEL } from '../engine/audit';
@@ -12,6 +21,9 @@ type Tab = 'all' | 'inflight' | 'blocked' | 'awaiting' | 'completed';
 
 export function DashboardPage() {
   const snap = useOnboardingV2Store(s => s.snap);
+  const journeyEmployees = useJourneyStore(s => s.employees);
+  const journeyAttempts = useJourneyStore(s => s.attempts);
+  const journeyEvidence = useJourneyStore(s => s.evidence);
   const [tab, setTab] = useState<Tab>('inflight');
 
   const kpis = useMemo(() => {
@@ -36,6 +48,22 @@ export function DashboardPage() {
   }, [snap.batches, tab]);
 
   const recentAudit = useMemo(() => snap.audit.slice(-15).reverse(), [snap.audit]);
+  const achcSummary = useMemo(() => {
+    const directCare = journeyEmployees.filter(employee => isDirectCareRole(employee.role));
+    const statuses = directCare.map(employee => calculateAchcEmployeeStatus({
+      employee,
+      attempts: journeyAttempts,
+      evidence: journeyEvidence,
+    }));
+    const compliant = statuses.filter(status => calculateAchcBundleSummary(status).bundle_passed).length;
+    const overdue = statuses.filter(status => status.bundle_status === 'overdue').length;
+    const inProgress = statuses.filter(status => status.bundle_status === 'in_progress').length;
+    const evidenceMissing = statuses.filter(status => {
+      const bundle = calculateAchcBundleSummary(status);
+      return status.passed_modules_count > 0 && bundle.personnel_file_evidence_status !== 'complete';
+    }).length;
+    return { directCare: directCare.length, compliant, overdue, inProgress, evidenceMissing };
+  }, [journeyEmployees, journeyAttempts, journeyEvidence]);
 
   return (
     <div className="p-6 space-y-6 overflow-y-auto h-full">
@@ -63,6 +91,26 @@ export function DashboardPage() {
         <KpiTile label="Awaiting signature"  value={kpis.awaitingSig}  hint="eCIgn envelopes pending" tone={kpis.awaitingSig ? 'warning' : 'default'} />
         <KpiTile label="Awaiting evidence"   value={kpis.awaitingEv}   hint="Forms / uploads needed" tone={kpis.awaitingEv ? 'warning' : 'default'} />
         <KpiTile label="Overdue units"       value={kpis.overdue}      hint="Past SLA dueAt"          tone={kpis.overdue ? 'danger' : 'default'} />
+      </section>
+
+      <section className="border ci-border-overlay rounded-[10px] ci-bg-overlay-faint p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.16em] ci-text-gold">{ACHC_BUNDLE_ID}</div>
+            <h2 className="text-[15px] font-semibold ci-text">{ACHC_BUNDLE_NAME}</h2>
+            <p className="text-[12px] ci-text-muted mt-1">
+              Canonical annual direct-care bundle: {ACHC_REQUIRED_MODULE_IDS.length} required modules assigned on hire and annually. Completion is UAT-only until backend personnel/evidence persistence is implemented.
+            </p>
+          </div>
+          <StatusPill status={achcSummary.overdue ? 'RevalidationDue' : achcSummary.compliant === achcSummary.directCare && achcSummary.directCare > 0 ? 'Completed' : 'InProgress'} size="md" />
+        </div>
+        <div className="mt-4 grid grid-cols-5 gap-3">
+          <KpiTile label="Direct-care employees" value={achcSummary.directCare} hint="RN, LVN, HHA, therapy, MSW" />
+          <KpiTile label="Bundle compliant" value={achcSummary.compliant} hint="All M01-M12 + evidence" tone={achcSummary.compliant ? 'success' : 'default'} />
+          <KpiTile label="In progress" value={achcSummary.inProgress} hint="Started, not fully gated" tone={achcSummary.inProgress ? 'warning' : 'default'} />
+          <KpiTile label="Overdue" value={achcSummary.overdue} hint="Annual due date elapsed" tone={achcSummary.overdue ? 'danger' : 'default'} />
+          <KpiTile label="Evidence gaps" value={achcSummary.evidenceMissing} hint="Certificate/post-test/personnel-file missing" tone={achcSummary.evidenceMissing ? 'danger' : 'default'} />
+        </div>
       </section>
 
       {/* Two-column body */}
