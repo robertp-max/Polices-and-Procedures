@@ -1,13 +1,31 @@
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { getRegistration, getUser, json, loginCognito, normalizeEmail } from './common.js';
+import {
+  getRegistration,
+  getUser,
+  json,
+  normalizeEmail,
+  parseBody,
+  respondToNewPasswordChallenge,
+} from './common.js';
 
 export async function handler(event: APIGatewayProxyEventV2) {
-  const body = event.body ? JSON.parse(event.body) as { email?: string; password?: string } : {};
+  const body = parseBody(event.body ?? null) as {
+    email?: string;
+    session?: string;
+    newPassword?: string;
+  };
   const email = normalizeEmail(body.email || '');
-  const password = String(body.password || '');
+  const session = String(body.session || '');
+  const newPassword = String(body.newPassword || '');
 
-  if (!email || !password) {
-    return json(400, { error: { code: 'validation_error', message: 'Email and password are required.' } });
+  if (!email || !email.includes('@')) {
+    return json(400, { error: { code: 'validation_error', message: 'Email is required.' } });
+  }
+  if (!session) {
+    return json(400, { error: { code: 'validation_error', message: 'Challenge session is required.' } });
+  }
+  if (!newPassword || newPassword.length < 8) {
+    return json(400, { error: { code: 'validation_error', message: 'Password must be at least 8 characters.' } });
   }
 
   const registration = await getRegistration(email);
@@ -16,28 +34,19 @@ export async function handler(event: APIGatewayProxyEventV2) {
   }
 
   try {
-    const response = await loginCognito(email, password);
-    if (response.ChallengeName === 'NEW_PASSWORD_REQUIRED' && response.Session) {
-      return json(200, {
-        challenge: 'NEW_PASSWORD_REQUIRED',
-        challengeName: 'NEW_PASSWORD_REQUIRED',
-        session: response.Session,
-        email,
-      });
-    }
-
+    const response = await respondToNewPasswordChallenge(email, session, newPassword);
     if (response.ChallengeName) {
       return json(401, {
         error: {
           code: 'unsupported_challenge',
-          message: 'Login requires an unsupported authentication challenge.',
+          message: 'Password challenge requires an unsupported follow-up challenge.',
         },
       });
     }
 
     const auth = response.AuthenticationResult;
     if (!auth?.AccessToken || !auth?.IdToken || !auth?.RefreshToken || !auth?.ExpiresIn || !auth?.TokenType) {
-      return json(401, { error: { code: 'auth_error', message: 'Invalid email or password.' } });
+      return json(401, { error: { code: 'auth_error', message: 'Unable to complete password challenge.' } });
     }
 
     const me = await getUser(auth.AccessToken);
@@ -59,6 +68,6 @@ export async function handler(event: APIGatewayProxyEventV2) {
       },
     });
   } catch {
-    return json(401, { error: { code: 'auth_error', message: 'Invalid email or password.' } });
+    return json(401, { error: { code: 'auth_error', message: 'Unable to complete password challenge.' } });
   }
 }

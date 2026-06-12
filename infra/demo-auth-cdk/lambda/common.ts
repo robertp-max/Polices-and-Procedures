@@ -9,6 +9,7 @@ import {
   GetUserCommand,
   GlobalSignOutCommand,
   InitiateAuthCommand,
+  RespondToAuthChallengeCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
@@ -53,6 +54,19 @@ const autoApprovedEmails = String(process.env.AUTO_APPROVED_EMAILS || '')
   .split(',')
   .map(e => e.trim().toLowerCase())
   .filter(Boolean);
+const defaultProtectedAuthEmails = [
+  'robertp@careindeed.com',
+  'tjpadilla@careindeed.com',
+  'tj@careindeed.com',
+  'maritesa@careindeed.com',
+  'marites@careindeed.com',
+  'deeb@careindeed.com',
+  'dee@careindeed.com',
+].join(',');
+const protectedAuthEmails = String(process.env.PROTECTED_AUTH_EMAILS || defaultProtectedAuthEmails)
+  .split(',')
+  .map(e => e.trim().toLowerCase())
+  .filter(Boolean);
 const adminManualPasswordEmails = String(
   process.env.ADMIN_MANUAL_PASSWORD_EMAILS || 'robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com',
 )
@@ -78,6 +92,7 @@ export const config = {
   setupTokenTtlMinutes,
   autoApprovedDomain,
   autoApprovedEmails,
+  protectedAuthEmails,
   adminManualPasswordEmails,
   demoAuthDebug,
 };
@@ -141,6 +156,10 @@ export function normalizeEmail(emailRaw: string): string {
 export function emailDomain(email: string): string {
   const idx = email.lastIndexOf('@');
   return idx >= 0 ? email.slice(idx + 1) : '';
+}
+
+export function isProtectedAuthEmail(emailRaw: string): boolean {
+  return config.protectedAuthEmails.includes(normalizeEmail(emailRaw));
 }
 
 export function nowIso(): string {
@@ -314,6 +333,18 @@ export async function loginCognito(email: string, password: string) {
     AuthParameters: {
       USERNAME: email,
       PASSWORD: password,
+    },
+  }));
+}
+
+export async function respondToNewPasswordChallenge(email: string, session: string, newPassword: string) {
+  return clients.cognito.send(new RespondToAuthChallengeCommand({
+    ClientId: config.clientId,
+    ChallengeName: 'NEW_PASSWORD_REQUIRED',
+    Session: session,
+    ChallengeResponses: {
+      USERNAME: email,
+      NEW_PASSWORD: newPassword,
     },
   }));
 }

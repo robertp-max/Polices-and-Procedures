@@ -13,6 +13,7 @@ interface AuthContextValue {
   loading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
+  completeNewPassword: (email: string, session: string, newPassword: string) => Promise<void>;
   logout: () => Promise<void>;
   getAccessToken: () => Promise<string | null>;
 }
@@ -258,6 +259,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
     writeAuth({ ...toStored(result.session), user: result.user }, result.user);
   }, [writeAuth]);
 
+  const completeNewPassword = useCallback(async (email: string, session: string, newPassword: string) => {
+    if (LOCAL_DEMO_AUTH_BYPASS) {
+      setBypassLoggedOut(false);
+      setUser(LOCAL_DEMO_USER);
+      setLoading(false);
+      return;
+    }
+
+    const result = await AuthApi.respondChallenge(email, session, newPassword);
+    writeAuth({ ...toStored(result.session), user: result.user }, result.user);
+  }, [writeAuth]);
+
   const logout = useCallback(async () => {
     if (LOCAL_DEMO_AUTH_BYPASS) {
       setBypassLoggedOut(true);
@@ -293,9 +306,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
     loading,
     isAuthenticated: !!user,
     login,
+    completeNewPassword,
     logout,
     getAccessToken,
-  }), [getAccessToken, loading, login, logout, user]);
+  }), [completeNewPassword, getAccessToken, loading, login, logout, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
