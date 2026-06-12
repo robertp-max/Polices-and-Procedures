@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AuthApi } from '../api';
+import { useAuth } from '../AuthProvider';
 import { AuthCard, useAuthTheme } from '../components/AuthCard';
 
 interface LocationState {
@@ -12,6 +12,7 @@ interface LocationState {
 export function SetNewPasswordPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { completeNewPassword } = useAuth();
   const t = useAuthTheme();
 
   const state = (location.state ?? {}) as LocationState;
@@ -40,12 +41,8 @@ export function SetNewPasswordPage() {
     }
     setLoading(true);
     try {
-      await AuthApi.respondChallenge(email, session, password);
-      // After setting new password, redirect to login to re-authenticate cleanly
-      navigate('/login', {
-        replace: true,
-        state: { notice: 'Password updated. Please sign in with your new password.' },
-      });
+      await completeNewPassword(email, session, password);
+      navigate(state.next || '/dashboard', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to set password. Please try again.');
     } finally {

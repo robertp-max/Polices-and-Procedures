@@ -16,6 +16,7 @@ import {
   parseBody,
   assertAdminAccessToken,
   getRegistration,
+  isProtectedAuthEmail,
   registrationKey,
 } from './common.js';
 
@@ -29,6 +30,10 @@ export async function handler(event: APIGatewayProxyEventV2) {
 
     if (!targetEmail || !targetEmail.includes('@')) {
       return jsonError(400, 'validation_error', 'Please enter a valid user email address.');
+    }
+    if (isProtectedAuthEmail(targetEmail)) {
+      console.warn(JSON.stringify({ event: 'auth.admin_set_password.blocked_protected_account', actorEmail, targetEmail }));
+      return jsonError(403, 'protected_account', 'This account is protected and cannot be reset from the admin password tool.');
     }
     if (!newPassword || newPassword.length < 8) {
       return jsonError(400, 'validation_error', 'Password must be at least 8 characters.');

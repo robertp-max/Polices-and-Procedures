@@ -19,6 +19,16 @@ export class DemoAuthStack extends Stack {
 
     const autoApprovedDomain = this.node.tryGetContext('autoApprovedDomain') || process.env.AUTO_APPROVED_DOMAIN || 'careindeed.com';
     const autoApprovedEmails = this.node.tryGetContext('autoApprovedEmails') || process.env.AUTO_APPROVED_EMAILS || '';
+    const defaultProtectedAuthEmails = [
+      'robertp@careindeed.com',
+      'tjpadilla@careindeed.com',
+      'tj@careindeed.com',
+      'maritesa@careindeed.com',
+      'marites@careindeed.com',
+      'deeb@careindeed.com',
+      'dee@careindeed.com',
+    ].join(',');
+    const protectedAuthEmails = this.node.tryGetContext('protectedAuthEmails') || process.env.PROTECTED_AUTH_EMAILS || defaultProtectedAuthEmails;
     const adminManualPasswordEmails = this.node.tryGetContext('adminManualPasswordEmails') || process.env.ADMIN_MANUAL_PASSWORD_EMAILS || 'robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com';
     const appBaseUrl = this.node.tryGetContext('appBaseUrl') || process.env.APP_BASE_URL || 'http://localhost:5173';
     const allowedOriginsRaw = this.node.tryGetContext('allowedOrigins') || process.env.ALLOWED_ORIGINS;
@@ -85,6 +95,7 @@ export class DemoAuthStack extends Stack {
       SETUP_TOKEN_TTL_MINUTES: '60',
       AUTO_APPROVED_DOMAIN: autoApprovedDomain,
       AUTO_APPROVED_EMAILS: autoApprovedEmails,
+      PROTECTED_AUTH_EMAILS: protectedAuthEmails,
       ADMIN_MANUAL_PASSWORD_EMAILS: adminManualPasswordEmails,
       DEMO_AUTH_DEBUG: demoAuthDebug,
     };
@@ -93,6 +104,7 @@ export class DemoAuthStack extends Stack {
     const setupFn = this.createHandler('SetupAccountHandler', 'setupAccount.ts', lambdaEnv);
     const resendFn = this.createHandler('ResendSetupLinkHandler', 'resendSetupLink.ts', lambdaEnv);
     const loginFn = this.createHandler('LoginHandler', 'login.ts', lambdaEnv);
+    const respondChallengeFn = this.createHandler('RespondChallengeHandler', 'respondChallenge.ts', lambdaEnv);
     const refreshFn = this.createHandler('RefreshHandler', 'refresh.ts', lambdaEnv);
     const meFn = this.createHandler('MeHandler', 'me.ts', lambdaEnv);
     const logoutFn = this.createHandler('LogoutHandler', 'logout.ts', lambdaEnv);
@@ -109,6 +121,7 @@ export class DemoAuthStack extends Stack {
       setupFn,
       resendFn,
       loginFn,
+      respondChallengeFn,
       refreshFn,
       meFn,
       logoutFn,
@@ -131,6 +144,7 @@ export class DemoAuthStack extends Stack {
           'cognito-idp:AdminUpdateUserAttributes',
           'cognito-idp:AdminEnableUser',
           'cognito-idp:InitiateAuth',
+          'cognito-idp:RespondToAuthChallenge',
           'cognito-idp:GetUser',
           'cognito-idp:GlobalSignOut',
           'cognito-idp:ForgotPassword',
@@ -179,6 +193,11 @@ export class DemoAuthStack extends Stack {
       path: '/auth/login',
       methods: [apigwv2.HttpMethod.POST],
       integration: new integrations.HttpLambdaIntegration('LoginIntegration', loginFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/respond-challenge',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: new integrations.HttpLambdaIntegration('RespondChallengeIntegration', respondChallengeFn),
     });
     httpApi.addRoutes({
       path: '/auth/refresh',

@@ -46,6 +46,7 @@ interface LoginResponse {
 
 export interface LoginChallengeResponse {
   challenge: 'NEW_PASSWORD_REQUIRED';
+  challengeName?: 'NEW_PASSWORD_REQUIRED';
   session: string;
   email: string;
 }
