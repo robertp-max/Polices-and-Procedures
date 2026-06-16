@@ -3,18 +3,17 @@
  *
  * All UI surfaces must derive display values from this adapter rather than
  * reading event fields directly. This ensures:
- *   - Only registry-verified policy IDs are ever shown
+ *   - Only canonical policy IDs are ever shown
+ *   - Workflow-linked form policies can contribute display refs
  *   - Generated/technical IDs (EVT-*) are confined to a collapsed Technical
  *     Details section
  *   - Display logic is defined in exactly one place
  *
- * Source of truth for valid policy IDs: frameworkSeed.generated.ts
+ * Source of truth for valid policy IDs: policyCorpus.ts
  */
 
-import { frameworkPolicies } from './frameworkSeed.generated';
 import type { RegulatoryEvent } from './regulatoryEvents';
-
-const _REGISTRY: Set<string> = new Set(frameworkPolicies.map(p => p.id));
+import { resolveEventPolicyRefs } from '@/policy/workflows/utils/resolveWorkflowPolicyRefs';
 
 export interface EventDisplayModel {
   title: string;
@@ -34,9 +33,11 @@ export interface EventDisplayModel {
 }
 
 export function getEventDisplayModel(event: RegulatoryEvent): EventDisplayModel {
+  const policyResolution = resolveEventPolicyRefs(event);
+
   return {
     title: event.title,
-    canonicalPolicyRefs: event.policyRefs.filter(id => _REGISTRY.has(id)),
+    canonicalPolicyRefs: policyResolution.effectivePolicyRefs.map(ref => ref.policyId),
     requiredForms: event.requiredForms.map(f => ({
       formId: f.formId ?? '',
       label: f.label,

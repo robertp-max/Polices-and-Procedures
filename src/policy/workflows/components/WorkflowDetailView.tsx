@@ -7,6 +7,10 @@ import { formTitle } from '@/policy/data/formTitles.generated';
 import type { Workflow } from '@/policy/types/workflow';
 import { buildWorkflowSwimlaneRoute } from '@/policy/workflows/swimlanes/swimlaneRoutes';
 import {
+  resolveWorkflowPolicyRefs,
+  type WorkflowPolicyResolution,
+} from '@/policy/workflows/utils/resolveWorkflowPolicyRefs';
+import {
   fetchWorkflowCompletionStatus,
   completeWorkflow,
   type CompletionStatus,
@@ -43,6 +47,10 @@ export function WorkflowDetailView() {
   const location = useLocation();
   const { user } = useAuth();
   const wf = useMemo(() => (workflowId ? getWorkflow(workflowId) : null), [workflowId]);
+  const policyResolution = useMemo(
+    () => (wf ? resolveWorkflowPolicyRefs(wf) : null),
+    [wf],
+  );
   const [tab, setTab] = useState<TabId>('process');
 
   if (!wf) {
@@ -142,7 +150,7 @@ export function WorkflowDetailView() {
 
         {/* Fact column */}
         <div className="flex-none" style={{ width: 260 }}>
-          <FactGrid wf={wf} />
+          <FactGrid wf={wf} policyResolution={policyResolution} />
         </div>
       </div>
 
@@ -182,7 +190,7 @@ export function WorkflowDetailView() {
         {tab === 'forms'      && <FormsTab wf={wf} />}
         {tab === 'approvals'  && <ApprovalsTab wf={wf} />}
         {tab === 'escalation' && <EscalationTab wf={wf} />}
-        {tab === 'audit'      && <AuditTab wf={wf} />}
+        {tab === 'audit'      && <AuditTab wf={wf} policyResolution={policyResolution} />}
         {tab === 'compliance' && <ComplianceTab wf={wf} user={user} />}
       </div>
     </div>
@@ -190,12 +198,12 @@ export function WorkflowDetailView() {
 }
 
 /* ── Fact grid (top-right) ────────────────────────────────────────── */
-function FactGrid({ wf }: { wf: Workflow }) {
+function FactGrid({ wf, policyResolution }: { wf: Workflow; policyResolution: WorkflowPolicyResolution | null }) {
   const entries: Array<[string, string]> = [
     ['Cadence',    `${CADENCE_LABEL[wf.cadence.interval] ?? 'On demand'} · ${wf.cadence.kind.replace('_', '-')}`],
     ['Steps',      String(wf.metrics.stepCount)],
     ['Forms',      String(wf.metrics.formCount)],
-    ['Policies',   String(wf.metrics.policyCount)],
+    ['Policies',   String(policyResolution?.effectivePolicyRefs.length ?? wf.metrics.policyCount)],
     ['Primary',    wf.roles.primary[0] ?? '—'],
   ];
   return (
@@ -642,16 +650,32 @@ function EscalationTab({ wf }: { wf: Workflow }) {
   );
 }
 
-function AuditTab({ wf }: { wf: Workflow }) {
+function AuditTab({
+  wf,
+  policyResolution,
+}: {
+  wf: Workflow;
+  policyResolution: WorkflowPolicyResolution | null;
+}) {
+  const effectivePolicyRefs = policyResolution?.effectivePolicyRefs ?? [];
+
   return (
     <div className="grid grid-cols-2 gap-6">
       <Section title="Audit requirements (§13)">
         <p style={bodyStyle}>{wf.auditRequirements}</p>
       </Section>
       <Section title="Policy references (§1)">
-        <ul style={listStyle}>
-          {wf.policyReferences.map((p, i) => <li key={i}>{p}</li>)}
-        </ul>
+        {effectivePolicyRefs.length === 0 ? (
+          <p style={bodyStyle}>No resolved policy references are available for this workflow.</p>
+        ) : (
+          <ul style={listStyle}>
+            {effectivePolicyRefs.map(ref => (
+              <li key={ref.policyId}>
+                {ref.policyId} - {ref.title}
+              </li>
+            ))}
+          </ul>
+        )}
       </Section>
     </div>
   );

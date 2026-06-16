@@ -675,6 +675,10 @@ function EventTasksTab({
   const taskRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const requirementRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const activeTasks = dataflow.tasks.filter(task => !task.isDeleted);
+  const eventDisplayPolicyIds = useMemo(
+    () => getEventDisplayModel(event).canonicalPolicyRefs,
+    [event],
+  );
   const [requirementAudit, setRequirementAudit] = useState<{ task: EventExecutionDataflow['tasks'][number]; requirement: CesExecutionRequirement } | null>(null);
   const deletedTasks = dataflow.tasks.filter(task => task.isDeleted);
   const taskAuditRefs = useMemo(() => dataflow.auditTrail.slice(0, 20).map(item => item.auditId), [dataflow.auditTrail]);
@@ -1039,7 +1043,7 @@ function EventTasksTab({
                   {fid}
                 </button>
               ))}
-              {task.policyIds.map(pid => <button key={pid} type="button" onClick={() => window.open(`/policies/${encodeURIComponent(pid)}`, '_blank')} className="rounded border px-1.5 py-0.5">{pid}</button>)}
+              {policyIdsForTaskDisplay(task, eventDisplayPolicyIds).map(pid => <button key={pid} type="button" onClick={() => window.open(`/policies/${encodeURIComponent(pid)}`, '_blank')} className="rounded border px-1.5 py-0.5">{pid}</button>)}
             </div>
             {expandedTaskIds[task.id] && (
               <div className="mt-3 rounded border border-white/10 bg-black/10 p-2">
@@ -1180,6 +1184,15 @@ function toPmTask(task: EventExecutionDataflow['tasks'][number], event: Regulato
     assignee: task.ownerUserId,
     owner: task.ownerRole,
   };
+}
+
+function policyIdsForTaskDisplay(
+  task: EventExecutionDataflow['tasks'][number],
+  eventCanonicalPolicyRefs: readonly string[],
+): string[] {
+  const allowed = new Set(eventCanonicalPolicyRefs);
+  const taskDisplayPolicyIds = task.policyIds.filter(policyId => allowed.has(policyId));
+  return taskDisplayPolicyIds.length > 0 ? taskDisplayPolicyIds : [...eventCanonicalPolicyRefs];
 }
 
 function ensureAllRequirementTypes(
