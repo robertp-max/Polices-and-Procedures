@@ -1,6 +1,7 @@
 import { CI, DOMAIN_META, RISK_META, CADENCE_LABEL } from '../brand';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import type { WorkflowCardProjection } from '@/policy/types/workflow';
+import { resolveWorkflowPolicyRefs } from '@/policy/workflows/utils/resolveWorkflowPolicyRefs';
 
 /* ══════════════════════════════════════════════════════════════════
    WorkflowCard — library grid card.
@@ -20,7 +21,11 @@ interface Props {
 export function WorkflowCard({ card, onOpen, compact = false }: Props) {
   const domain = DOMAIN_META[card.domain];
   const risk = RISK_META[card.declaredRisk];
-  const stepCount = WORKFLOWS[card.id]?.steps?.length ?? 0;
+  const workflow = WORKFLOWS[card.id];
+  const stepCount = workflow?.steps?.length ?? 0;
+  const policyCount = workflow
+    ? resolveWorkflowPolicyRefs(workflow).effectivePolicyRefs.length
+    : card.policyCount;
 
   return (
     <button
@@ -126,7 +131,7 @@ export function WorkflowCard({ card, onOpen, compact = false }: Props) {
           {!compact && (
             <>
               <span style={{ color: CI.line }}>·</span>
-              <span>{card.policyCount} polic{card.policyCount === 1 ? 'y' : 'ies'}</span>
+              <span>{policyCount} polic{policyCount === 1 ? 'y' : 'ies'}</span>
             </>
           )}
         </div>

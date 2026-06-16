@@ -73,3 +73,23 @@ export type {
   V32PageHeaderProps,
   V32SectionHeaderProps,
 } from './V32DesignSystem';
+
+// =============================================================================
+// CANONICAL CORE PRIMITIVES (single-file high-fidelity foundation library)
+// All future templates should prefer composition from these. Self-contained
+// token contract + reduced-motion safe + dual light/dark support.
+// =============================================================================
+export type {
+  SurfaceCardProps as CoreSurfaceCardProps,
+  KpiCardProps,
+  StatusBadgeProps,
+  StatusTone,
+  DataTableProps,
+  DataTableColumn,
+  FilterTrayProps,
+  DrawerProps,
+  ModalProps,
+  PageHeaderProps as CorePageHeaderProps,
+  PageGridProps,
+  PageViewCardProps,
+} from './CorePrimitives';

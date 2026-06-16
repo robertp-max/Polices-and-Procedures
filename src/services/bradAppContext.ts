@@ -8,6 +8,10 @@ import { MANDATED_EVENTS_EXPANDED } from '@/policy/data/mandatedEventsExpanded';
 import { HELP_ARTICLES } from '@/policy/data/helpArticles';
 import { ALL_TASKS } from '@/policy/data/hubstaffTasks';
 import { loadMasterControlInventorySeed } from '@/policy/data/masterControlInventory';
+import {
+  resolveEventPolicyRefs,
+  resolveWorkflowPolicyRefs,
+} from '@/policy/workflows/utils/resolveWorkflowPolicyRefs';
 
 export interface BradTaskLike {
   id: string;
@@ -111,7 +115,7 @@ export async function buildBradAppContext(query: string, options: BuildBradConte
     id: workflow.id,
     title: workflow.title,
     overview: workflow.processOverview ?? '',
-    policyRefs: workflow.policyRefs ?? [],
+    policyRefs: resolveWorkflowPolicyRefs(workflow).effectivePolicyRefs.map(ref => ref.policyId),
     requiredForms: workflow.requiredForms ?? [],
   }));
 
@@ -123,7 +127,7 @@ export async function buildBradAppContext(query: string, options: BuildBradConte
     title: event.title,
     date: toEventDate(event),
     urgency: event.urgency,
-    policyRefs: [...event.policyRefs],
+    policyRefs: resolveEventPolicyRefs(event).effectivePolicyRefs.map(ref => ref.policyId),
   }));
 
   const runtimeEvents = (runtime?.events ?? []).map(event => ({
@@ -131,7 +135,11 @@ export async function buildBradAppContext(query: string, options: BuildBradConte
     title: event.title,
     date: event.date ?? event.anchorDate ?? '',
     urgency: event.urgency ?? 'on-track',
-    policyRefs: [...(event.policyRefs ?? [])],
+    policyRefs: resolveEventPolicyRefs({
+      id: event.id,
+      title: event.title,
+      policyRefs: event.policyRefs ?? [],
+    }).effectivePolicyRefs.map(ref => ref.policyId),
   }));
 
   const events = uniqById([...runtimeEvents, ...staticEvents]);
