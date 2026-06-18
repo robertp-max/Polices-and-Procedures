@@ -126,6 +126,21 @@ export interface EvidenceDoc {
   documentHash?: string | null;
   manifestHash?: string | null;
   signatureHash?: string | null;
+  artifactId?: string;
+  driveFileId?: string;
+  driveFolderId?: string;
+  webViewLink?: string;
+  driveMimeType?: string;
+  driveFilename?: string;
+  driveUploadedAt?: string;
+  driveUploadStatus?: 'uploaded' | 'failed' | 'pending';
+  pdfVersion?: number;
+  completedSignerSlotOrder?: number;
+  signerUserId?: string;
+  signerTier?: number;
+  signerDomain?: string;
+  priorDocumentHash?: string;
+  finalDocumentHash?: string;
   /** SHA-256 over the decoded stored snapshot bytes (used to verify post-refresh fidelity). */
   snapshotSha256?: string;
   auditEventRefs?: string[];
@@ -302,6 +317,21 @@ interface RegulatoryExecutionState {
     documentHash?: string | null;
     manifestHash?: string | null;
     signatureHash?: string | null;
+    artifactId?: string;
+    driveFileId?: string;
+    driveFolderId?: string;
+    webViewLink?: string;
+    driveMimeType?: string;
+    driveFilename?: string;
+    driveUploadedAt?: string;
+    driveUploadStatus?: 'uploaded' | 'failed' | 'pending';
+    pdfVersion?: number;
+    completedSignerSlotOrder?: number;
+    signerUserId?: string;
+    signerTier?: number;
+    signerDomain?: string;
+    priorDocumentHash?: string;
+    finalDocumentHash?: string;
     snapshotSha256?: string;
     auditEventRefs?: string[];
     note?: string;
@@ -318,6 +348,7 @@ interface RegulatoryExecutionState {
     note?: string;
     localDataUrl?: string;
   }, actor?: string) => string;
+  attachDriveMetadata: (eventId: string, evidenceId: string, meta: { driveFileId?: string; driveFolderId?: string; webViewLink?: string; driveMimeType?: string; driveFilename?: string; driveUploadedAt?: string; driveUploadStatus?: 'uploaded' | 'failed' | 'pending' }) => void;
   evidenceErrorsByEventId: Record<string, string>;
 
   /* ── approvals ── */
@@ -494,8 +525,8 @@ function migrateEvidenceRecords(raw: unknown): Record<string, EvidenceDoc[]> {
 
 function stripEvidenceLargePayloads(doc: EvidenceDoc): EvidenceDoc {
   // Strip localDataUrl from the persisted store to prevent localStorage quota overflow.
-  // The actual bytes live in separate ces_ev_data_* localStorage keys (via demoEvidenceRuntimeCache)
-  // and are re-loaded on resolveEvidenceDataUrl calls. In-memory docs keep localDataUrl.
+  // For Drive-backed finalized signed packages, the bytes for render are in ces_ev_data_* (via runtime cache).
+  // The canonical record requires driveFileId / webViewLink etc. on the EVIDENCE_LOCKED entry.
   if (!doc.localDataUrl) return doc;
   const { localDataUrl: _drop, ...rest } = doc;
   return rest as EvidenceDoc;
@@ -889,6 +920,18 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
             // Always stash the raw data URL — blob URLs are ephemeral and die on reload.
             // useIframeSafeSrc converts to blob URL at display time.
             if (doc.localDataUrl) stashDemoEvidenceDataUrl(dup.id, doc.localDataUrl);
+            // Merge drive metadata if newly provided on re-finalize (idempotent attach without dup artifact)
+            if (doc.driveFileId || doc.driveFolderId || doc.webViewLink || doc.driveUploadStatus) {
+              get().attachDriveMetadata(eventId, dup.id, {
+                driveFileId: doc.driveFileId,
+                driveFolderId: doc.driveFolderId,
+                webViewLink: doc.webViewLink,
+                driveMimeType: (doc as any).driveMimeType,
+                driveFilename: (doc as any).driveFilename,
+                driveUploadedAt: (doc as any).driveUploadedAt,
+                driveUploadStatus: (doc as any).driveUploadStatus,
+              });
+            }
             return dup.id;
           }
         }
@@ -1046,6 +1089,45 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           }));
         }
         return id;
+      },
+
+      attachDriveMetadata: (eventId, evidenceId, meta) => {
+        const enf = useEnforcementStore.getState();
+        set(state => {
+          const list = state.evidence[eventId] ?? [];
+          const idx = list.findIndex(d => d.id === evidenceId);
+          if (idx < 0) return state;
+          const prev = list[idx];
+          const updated: EvidenceDoc = {
+            ...prev,
+            driveFileId: meta.driveFileId ?? prev.driveFileId,
+            driveFolderId: meta.driveFolderId ?? prev.driveFolderId,
+            webViewLink: meta.webViewLink ?? prev.webViewLink,
+            driveMimeType: meta.driveMimeType ?? prev.driveMimeType,
+            driveFilename: meta.driveFilename ?? prev.driveFilename,
+            driveUploadedAt: meta.driveUploadedAt ?? prev.driveUploadedAt,
+            driveUploadStatus: meta.driveUploadStatus ?? prev.driveUploadStatus,
+          };
+          const nextList = [...list];
+          nextList[idx] = updated;
+          return {
+            evidence: { ...state.evidence, [eventId]: nextList },
+            taskAuditByEventId: {
+              ...state.taskAuditByEventId,
+              [eventId]: appendExecutionAudit(state.taskAuditByEventId[eventId] ?? [], {
+                auditId: nextAuditId(),
+                eventId,
+                entityType: 'evidence',
+                entityId: evidenceId,
+                action: 'DRIVE_METADATA_ATTACHED',
+                actorId: enf.actor.userId,
+                actorRole: enf.actor.role,
+                timestamp: nowISO(),
+                after: { driveFileId: meta.driveFileId, driveUploadStatus: meta.driveUploadStatus },
+              }),
+            },
+          };
+        });
       },
 
       generateReport: (eventId, title, taskId, actor = CURRENT_USER) => {
@@ -1610,6 +1692,18 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           deletedAt: undefined,
           isDeleted: false,
           blockedReason: task.blockedReason,
+          assignedRole: task.assignedRole,
+          accountableRole: task.accountableRole,
+          reviewerRole: task.reviewerRole,
+          approverRole: task.approverRole,
+          canCompleteRoles: task.canCompleteRoles,
+          canReviewRoles: task.canReviewRoles,
+          canApproveRoles: task.canApproveRoles,
+          escalationRole: task.escalationRole,
+          isSignerTask: task.isSignerTask,
+          signerRole: task.signerRole,
+          parentFormTaskId: task.parentFormTaskId,
+          blocksOnSignerTasks: task.blocksOnSignerTasks,
         };
         set(prev => ({
           taskOverridesByEventId: {
@@ -2225,11 +2319,14 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         );
 
         // Locked signed evidence (signed_package or signed_form_instance) proves form completion + signature
+        // For production (non-demo) require real Drive metadata on signed artifacts.
+        const hasRealDriveMetadata = (item: any) => !!(item.driveFileId || item.driveUploadStatus === 'uploaded' || item.webViewLink);
         const lockedSignedEvidence = usableEvidence.filter(
           item => item.status === 'EVIDENCE_LOCKED'
             && (item.artifactType === 'signed_package'
               || item.artifactType === 'signed_form_instance'
-              || item.artifactType === 'signed_certificate'),
+              || item.artifactType === 'signed_certificate')
+            && hasRealDriveMetadata(item),
         );
         const lockedSignedFormIds = new Set(
           lockedSignedEvidence
@@ -2266,7 +2363,12 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           || approvedSignatures >= requiredSignatureTarget
           || hasLockedSignedEvidenceForForm;
 
-        const packageReady = usableEvidence.some(item => item.status === 'EVIDENCE_LOCKED') || usableEvidence.length > 0;
+        // For signed artifacts, only count as ready if they have real Drive metadata (production requirement).
+        const hasRealLockedSigned = lockedSignedEvidence.length > 0;
+        const hasOtherLocked = usableEvidence.some(item => item.status === 'EVIDENCE_LOCKED'
+          && !(item.artifactType === 'signed_package' || item.artifactType === 'signed_form_instance' || item.artifactType === 'signed_certificate'));
+        // packageReady requires real Drive metadata for signed_package artifacts; other evidence may support but cannot satisfy signed CES alone.
+        const packageReady = hasRealLockedSigned || hasOtherLocked;
 
         // ── Signer task gating ──
         // If this task blocksOnSignerTasks, check that all child SIGN- tasks are completed.
@@ -2383,6 +2485,12 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
 
       /* ── signer tasks (multi-signer eCIgn) ── */
       createSignerTask: (task) => {
+        const existingTasks = get().signerTasksByFormInstanceId[task.formInstanceId] ?? [];
+        const existing = existingTasks.find(candidate =>
+          candidate.taskId === task.taskId
+          || (candidate.slotFieldId === task.slotFieldId && candidate.signerIndex === task.signerIndex),
+        );
+        if (existing) return;
         set(state => ({
           signerTasksByFormInstanceId: {
             ...state.signerTasksByFormInstanceId,
@@ -2392,15 +2500,38 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
             ],
           },
         }));
+        if (task.parentTaskId) {
+          get().createTask(task.eventId, {
+            taskSourceId: `signer:${task.formInstanceId}:${task.signerIndex}:${task.slotFieldId}`,
+            taskSourceType: 'generated',
+            isRequired: true,
+            requirementSource: 'workflow',
+            workflowId: SOURCE_EVENT_BY_ID[resolveCanonicalEventId(task.eventId)]?.workflowId,
+            policyIds: task.linkedPolicyIds,
+            formIds: [task.formId],
+            title: `eCIgn signature: ${task.slotPurpose ?? task.assignedToRole ?? task.slotFieldId}`,
+            description: `Awaiting signature from ${task.assignedToName ?? task.assignedTo}.`,
+            source: 'generated',
+            status: 'awaiting_signature',
+            ownerRole: task.assignedToRole,
+            ownerUserId: task.assignedTo,
+            isSignerTask: true,
+            signerRole: task.assignedToRole,
+            parentFormTaskId: task.parentTaskId,
+            blocksOnSignerTasks: false,
+          }, { reason: 'SIGNER_TASK_AUTO_CREATED' });
+        }
         const enf = useEnforcementStore.getState();
         enf.log({ action: 'signer_task.created', eventId: task.eventId, targetKind: 'task', targetId: task.taskId,
           after: { formInstanceId: task.formInstanceId, slotFieldId: task.slotFieldId, assignedTo: task.assignedTo, sequenceGroup: task.sequenceGroup, signerIndex: task.signerIndex } });
       },
 
       updateSignerTaskStatus: (formInstanceId, taskId, status, extra) => {
+        let updatedTask: SignerTask | undefined;
         set(state => {
           const tasks = state.signerTasksByFormInstanceId[formInstanceId];
           if (!tasks) return state;
+          updatedTask = tasks.find(task => task.taskId === taskId);
           return {
             signerTasksByFormInstanceId: {
               ...state.signerTasksByFormInstanceId,
@@ -2410,6 +2541,20 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
             },
           };
         });
+        if (updatedTask?.parentTaskId) {
+          const taskSourceId = `signer:${updatedTask.formInstanceId}:${updatedTask.signerIndex}:${updatedTask.slotFieldId}`;
+          const materializedId = buildDeterministicTaskId(updatedTask.eventId, taskSourceId);
+          const nextStatus = status === 'signed'
+            ? 'completed'
+            : status === 'opened'
+              ? 'in_progress'
+              : status === 'declined' || status === 'expired'
+                ? 'blocked'
+                : 'awaiting_signature';
+          get().updateTask(updatedTask.eventId, materializedId, { status: nextStatus }, {
+            reason: `SIGNER_TASK_${status.toUpperCase()}`,
+          });
+        }
       },
 
       getSignerTasksForInstance: (formInstanceId) => {
@@ -3133,6 +3278,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         eventInstancesById: state.eventInstancesById,
         eventInstanceIdsBySourceEventId: state.eventInstanceIdsBySourceEventId,
         taskOverridesByEventId: state.taskOverridesByEventId,
+        signerTasksByFormInstanceId: state.signerTasksByFormInstanceId,
         taskAuditByEventId: Object.fromEntries(
           Object.entries(state.taskAuditByEventId ?? {}).map(([eventId, rows]) => [
             eventId,

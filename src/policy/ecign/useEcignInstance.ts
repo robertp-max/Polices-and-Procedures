@@ -15,6 +15,11 @@ import {
   ecignApi, EcignApiError, ATTESTATION_TEXT, sha256Hex, HIGH_IMPACT_FORMS, getEcignClientMode,
 } from './api';
 import { useEcignSignerIdentity } from './signerIdentity';
+import {
+  deriveCanonicalSignerRequirements,
+  requiredSignerPayloads,
+  type RequiredSignerPayload,
+} from './signerAuthority';
 
 export type BackendState =
   | 'created' | 'disclosed' | 'verified' | 'reviewed'
@@ -42,10 +47,11 @@ export function backendToUi(state: BackendState): UiStepKey {
 
 export interface InstanceShape {
   instance_id: string;
+  form_instance_id?: string;
   form_id: string;
   document_version_id: string;
   state: BackendState;
-  required_signers: Array<{ role: string; tier: number; user_id?: string; field_id: string }>;
+  required_signers: RequiredSignerPayload[];
   document_hash?: string;
   manifest_hash?: string;
   locked_at_utc?: string;
@@ -71,6 +77,9 @@ export interface UseInstanceArgs {
   formInstanceId?:     string;
   sharedInstance?:     boolean;
   signerSlots?:        Array<{ field_id: string; role: string; tier: number; user_id?: string }>;
+  parentTaskId?:       string;
+  domain?:             string;
+  signerRequirements?: RequiredSignerPayload[];
   signerIndex?:        number;
   totalSigners?:       number;
 }
@@ -90,7 +99,7 @@ export function useEcignInstance(args: UseInstanceArgs) {
       ? {
           code: e.code,
           message: e.code === 'ECIGN_BACKEND_UNAVAILABLE'
-            ? 'eCIgn backend is unavailable. Use DEMO_LOCAL mode or enable configured fallback.'
+            ? 'eCIgn backend is unavailable. Real backend/Drive persistence is required for evidence finalization.'
             : e.message,
         }
       : { code: 'CLIENT_ERROR', message: e instanceof Error ? e.message : String(e) };
@@ -143,24 +152,43 @@ export function useEcignInstance(args: UseInstanceArgs) {
           });
         } catch { /* non-fatal */ }
 
-        const requiredSigners = useShared && args.signerSlots?.length
-          ? args.signerSlots.map(s => ({
-              role:     s.role,
-              tier:     s.tier,
-              user_id:  s.user_id,
-              field_id: s.field_id,
+        const requiredSigners = useShared && args.signerRequirements?.length
+          ? args.signerRequirements
+          : useShared && args.signerSlots?.length
+          ? requiredSignerPayloads(deriveCanonicalSignerRequirements({
+              formId: args.formId,
+              workflowId: args.workflowInstanceId,
+              eventId: args.eventId,
+              taskId: args.parentTaskId,
+              domain: args.domain,
+              slots: args.signerSlots,
+            })).map((requirement, index) => ({
+              ...requirement,
+              user_id: args.signerSlots?.[index]?.user_id,
             }))
           : [{
               role:     signer.role,
               tier:     signer.tier,
               user_id:  signer.id,
               field_id: args.fieldId,
+              slot_order: 1,
+              slot_purpose: signer.role,
+              required_domain: signer.authorityDomains[0] ?? 'operations',
+              allowed_roles: [signer.role],
+              min_tier: signer.tier,
+              required: true,
+              sequential: true,
+              can_delegate: false,
+              requires_same_domain: true,
+              blocks_self_approval: false,
+              required_for_final_package: true,
             }];
 
         const created = await ecignApi.createInstance({
           form_id:             args.formId,
           document_version_id: documentVersionId,
           required_signers:    requiredSigners,
+          form_instance_id:     useShared ? args.formInstanceId : undefined,
           workflow_instance_id: args.workflowInstanceId,
           event_id:             args.eventId,
         }) as unknown as InstanceShape;
@@ -182,7 +210,7 @@ export function useEcignInstance(args: UseInstanceArgs) {
     return () => { cancelled = true; };
   // bootstrap once for these props
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [args.eventId, args.fieldId, args.formId, args.formVersion, args.formInstanceId, args.workflowInstanceId, useShared, signer.id, signer.role, signer.tier]);
+  }, [args.domain, args.eventId, args.fieldId, args.formId, args.formVersion, args.formInstanceId, args.parentTaskId, args.workflowInstanceId, useShared, signer.authorityDomains, signer.id, signer.role, signer.tier]);
 
   /* ── State-machine actions: each calls backend, then refreshes ── */
 
@@ -234,6 +262,10 @@ export function useEcignInstance(args: UseInstanceArgs) {
     if (!instance) return;
     setBusy('sign');
     try {
+      if (instance.state === 'attested' && (args.signerIndex ?? 1) > 1) {
+        const disc = await ecignApi.getCurrentDisclosure();
+        await ecignApi.recordConsent(disc.disclosure_version);
+      }
       const attestation_text_hash = await sha256Hex(ATTESTATION_TEXT);
       await ecignApi.applySignature(instance.instance_id, {
         field_id:              args.fieldId,
@@ -245,7 +277,7 @@ export function useEcignInstance(args: UseInstanceArgs) {
       await refresh(instance.instance_id);
     } catch (e) { captureError(e); }
     finally { setBusy(null); }
-  }, [instance, args.fieldId, mfaToken, refresh, captureError]);
+  }, [instance, args.fieldId, args.signerIndex, mfaToken, refresh, captureError]);
 
   const lockDocument = useCallback(async () => {
     if (!instance) return;

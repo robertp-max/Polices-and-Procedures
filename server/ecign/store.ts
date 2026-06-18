@@ -131,9 +131,27 @@ export interface ConsentRow {
   disclosure_text_hash: string; accepted_at_utc: string;
   ip: string; user_agent: string;
 }
-export interface RequiredSigner { role: string; tier: number; user_id?: string; field_id: string }
+export interface RequiredSigner {
+  role: string;
+  tier: number;
+  user_id?: string;
+  field_id: string;
+  slot_order?: number;
+  slot_purpose?: string;
+  required_domain?: string;
+  allowed_roles?: string[];
+  min_tier?: number;
+  max_tier?: number;
+  required?: boolean;
+  sequential?: boolean;
+  can_delegate?: boolean;
+  requires_same_domain?: boolean;
+  blocks_self_approval?: boolean;
+  required_for_final_package?: boolean;
+}
 export interface FormInstanceRow {
   instance_id: string; form_id: string; document_version_id: string;
+  form_instance_id?: string;
   state: 'created'|'disclosed'|'verified'|'reviewed'|'attested'|'signed_locked'|'voided'|'expired';
   required_signers: RequiredSigner[];
   field_values: Record<string, string>;
@@ -150,6 +168,9 @@ export interface SignatureRow {
   signer_email: string; signed_at_utc: string;
   signature_png: string; signature_hash: string;
   attestation_text_hash: string;
+  signer_tier?: number;
+  signer_domains?: string[];
+  signature_slot_order?: number;
   network_location?: NetworkLocationMetadata;
 }
 

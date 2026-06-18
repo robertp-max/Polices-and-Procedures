@@ -109,7 +109,7 @@ function actorHeaders(): Record<string, string> {
 
 export async function recordEsignEvidence(args: RecordEsignArgs): Promise<EsignEvidenceResponse> {
   if (LAMBDA_DISABLED) {
-    /** Session-only mirror id — never use as a CES certification or primary artifact target. */
+    /** Isolated HHC mirror id (non-CES) — never use as canonical CES certification or primary artifact. */
     return {
       evidence_id:      `ECIGN-INTERNAL-MIRROR-${Date.now().toString(36)}`,
       status:           'APPROVED_EVIDENCE',

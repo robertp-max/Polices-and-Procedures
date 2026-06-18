@@ -21,6 +21,7 @@ import {
   type GoogleCalendarDriveEvidenceRef,
 } from '../googleEvidence.js';
 import { getCesMetadataStore, type CesEvidenceRef } from '../cesMetadataStore.js';
+import { store as ecignStore } from '../ecign/store.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Calendar API routes — thin HTTP layer around the sync engine.
@@ -330,6 +331,11 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
   if (!env.calendarEvidenceEnabled) {
     throw new ApiError('validation_error', 'Google Calendar/Drive evidence is disabled.', 400);
   }
+  // Dynamic capability check: backend must report Drive healthy before accepting a finalized signed package.
+  const driveHealth = await pingDrive();
+  if (!driveHealth.reachable) {
+    throw new ApiError('validation_error', 'Evidence finalization blocked: Google Drive evidence persistence is not configured.', 400);
+  }
   const eventId = String(req.params.eventId);
   const b = (req.body ?? {}) as Record<string, unknown>;
 
@@ -340,12 +346,33 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
   if (!taskId) throw new ApiError('validation_error', '`taskId` is required.', 400);
   const contentBase64 = strOrEmpty(b.contentBase64);
   if (!contentBase64) throw new ApiError('validation_error', '`contentBase64` (artifact content) is required.', 400);
+  const formInstanceId = strOrUndef(b.formInstanceId);
 
   const artifactType = strOrEmpty(b.artifactType);
   const category: EvidenceCategory =
     artifactType === 'ecign_certificate' ? 'ecign_certificate'
     : artifactType === 'final_package' ? 'final_package'
     : 'signed_artifact';
+  if (category === 'final_package') {
+    if (!formInstanceId) {
+      throw new ApiError('validation_error', 'final package publication requires `formInstanceId`.', 400);
+    }
+    const instance = await ecignStore.getInstance(formInstanceId);
+    if (!instance) {
+      throw new ApiError('validation_error', 'final package publication requires an existing eCIgn form instance.', 400);
+    }
+    const signatures = await ecignStore.listSignatures(formInstanceId);
+    const signedFields = new Set(signatures.map(signature => signature.field_id));
+    const missingFinalSignerFields = instance.required_signers
+      .filter(signer => signer.required !== false && signer.required_for_final_package !== false)
+      .map(signer => signer.field_id)
+      .filter(fieldId => !signedFields.has(fieldId));
+    if (missingFinalSignerFields.length > 0 || instance.state !== 'signed_locked') {
+      throw new ApiError('validation_error', 'final package publication requires a locked eCIgn instance with all required signer slots complete.', 400);
+    }
+  } else if (b.signerSlotsComplete !== true) {
+    throw new ApiError('validation_error', 'signed-artifact/publish requires all required signer slots to be complete.', 400);
+  }
 
   const title = strOrEmpty(b.title) || strOrEmpty(b.fileName) || 'signed-artifact';
   const result = await uploadEventEvidence({
@@ -353,7 +380,7 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
     workflowId: strOrUndef(b.workflowId),
     taskId,
     formId: strOrUndef(b.formId),
-    formInstanceId: strOrUndef(b.formInstanceId),
+    formInstanceId,
     category,
     title,
     fileName: strOrEmpty(b.fileName) || `${title}`,
@@ -365,7 +392,27 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
     attachToCalendar: b.attachToCalendar !== false,
   });
 
-  await persistEvidenceRef(result.evidenceId, result.ref);
+  const now = new Date().toISOString();
+  const extraMetadata = {
+    artifactId: strOrUndef(b.artifactId),
+    pdfVersion: numOrUndef(b.pdfVersion),
+    status: 'final_locked',
+    hash: strOrUndef(b.sha256),
+    signerSlotOrder: numOrUndef(b.signerSlotOrder),
+    signerUserId: strOrUndef(b.signerUserId),
+    signerRole: strOrUndef(b.signerRole),
+    signerTier: numOrUndef(b.signerTier),
+    signerDomain: strOrUndef(b.signerDomain),
+    signedAt: now,
+    priorDocumentHash: strOrUndef(b.priorDocumentHash),
+    finalDocumentHash: strOrUndef(b.finalDocumentHash),
+    auditEventIds: Array.isArray(b.auditEventIds) ? b.auditEventIds.filter((value): value is string => typeof value === 'string') : undefined,
+    createdBy: strOrUndef(b.uploadedBy) ?? resolveActor(req),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  await persistEvidenceRef(result.evidenceId, result.ref, extraMetadata);
 
   res.status(201).json({
     evidenceId: result.evidenceId,
@@ -377,6 +424,7 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
     calendarEventId: result.ref.calendarEventId,
     calendarAttachmentStatus: result.ref.attachmentStatus,
     storageProvider: result.ref.storageProvider,
+    ...extraMetadata,
   });
 }));
 
@@ -386,7 +434,11 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
  * Map a Drive/Calendar evidence ref to the canonical CES pointer shape and
  * persist it to the CES metadata backend. NON-PHI metadata only — never bytes.
  */
-async function persistEvidenceRef(evidenceId: string, ref: GoogleCalendarDriveEvidenceRef): Promise<void> {
+async function persistEvidenceRef(
+  evidenceId: string,
+  ref: GoogleCalendarDriveEvidenceRef,
+  extra: Partial<CesEvidenceRef> = {},
+): Promise<void> {
   const cesRef: CesEvidenceRef = {
     storageProvider: 'google_drive_calendar',
     evidenceId,
@@ -407,6 +459,7 @@ async function persistEvidenceRef(evidenceId: string, ref: GoogleCalendarDriveEv
     uploadedBy: ref.uploadedBy,
     attachmentStatus: ref.attachmentStatus,
     contentStatus: ref.contentStatus,
+    ...extra,
   };
   try {
     await getCesMetadataStore().upsertEvidence(cesRef);
@@ -470,6 +523,11 @@ function strOrEmpty(v: unknown): string {
 function strOrUndef(v: unknown): string | undefined {
   const s = strOrEmpty(v);
   return s ? s : undefined;
+}
+
+function numOrUndef(v: unknown): number | undefined {
+  const n = typeof v === 'number' ? v : typeof v === 'string' && v.trim() ? Number(v) : NaN;
+  return Number.isFinite(n) ? n : undefined;
 }
 
 function clampInt(raw: string | undefined, min: number, max: number, dflt: number): number {
