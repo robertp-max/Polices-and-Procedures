@@ -42,23 +42,28 @@ export const ShellContentFrame: React.FC<ShellContentFrameProps> = ({
   return (
     <div
       data-shell-content-frame
+      data-bleed="full"
+      data-border="none"
       className={`
-        relative z-10 flex w-full flex-1 flex-col border
-        overflow-hidden rounded-[var(--v3-card-radius,24px)]
+        relative z-10 flex w-full h-full flex-1 flex-col
+        overflow-hidden
         ${scrollable ? 'overflow-y-auto' : ''}
         ${className}
       `}
       // Canonical glass surface — all values resolve through --ci-color-glass-*
       // tokens declared in src/index.css per (data-theme, data-ci-mode).
+      // Coordinator final: main full (no outer frame/bleed), border none always.
       // Consumers MAY pass `style` to add layout-only properties (e.g.
       // grid-template-rows) — but the glass contract values must not be
       // overridden in production code paths.
+      // Confirmed: border:none, padding:0, boxShadow:none, h-full w-full for full occupy main card / full-bleed contract.
       style={{
         background: detail ? 'rgba(8, 10, 13, 0.98)' : 'var(--v3-glass-card)',
         backdropFilter: 'var(--v3-glass-blur)',
         WebkitBackdropFilter: 'var(--v3-glass-blur)',
-        borderColor: detail ? 'var(--v3-border-subtle)' : 'transparent',
         boxShadow: 'none',
+        border: 'none',
+        padding: '0',
         ...style,
       }}
     >

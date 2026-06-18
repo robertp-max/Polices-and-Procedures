@@ -31,19 +31,35 @@ interface ShellNavRailProps {
 export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }) => {
   const location = useLocation();
 
-  const isActive = (to: string) => location.pathname === to || location.pathname.startsWith(to + '/');
+  const isActive = (to: string) => {
+    const p = location.pathname;
+    // Side nav active state for Calendar per #4 (design ref): separate activation for primary /calendar vs CES /ces/calendar.
+    // Use clean exact-prefix without cross-activation between main Calendar and CES Calendar.
+    // Data attrs used for active state (data-active) per spec.
+    if (to === '/calendar') {
+      // Primary Calendar: only its own paths (exclude ces/*)
+      return (p === '/calendar' || p.startsWith('/calendar/')) && !p.startsWith('/ces');
+    }
+    if (to === '/ces/calendar') {
+      return p === '/ces/calendar' || p.startsWith('/ces/calendar');
+    }
+    if (to === '/staffing-calendar') {
+      return p === '/staffing-calendar' || p.startsWith('/staffing-calendar');
+    }
+    return p === to || p.startsWith(to + '/');
+  };
   const workflowLinkClass = (active: boolean) =>
     `ml-8 mt-1 flex items-center gap-3 rounded-lg px-3 py-2 font-montserrat text-[11px] font-semibold transition-colors ${
       active
         ? 'bg-brand-teal/10 text-brand-teal'
-        : 'text-text-muted hover:bg-border hover:text-text-primary'
+        : 'text-[var(--v3-text-secondary)] hover:bg-[var(--v3-glass2)] hover:text-[var(--v3-text-primary)]'
     }`;
 
   // Phase 2 §4 — three semantic command groups per
   // Phase2_Exit_Criteria_Checklist.md: Primary Operations, Compliance
   // Execution (CES), Administration / Knowledge.
   // FIXED: robust id-based grouping instead of brittle index slices (prevents duplicate/misplaced items after nav changes)
-  const primaryIds = ['dashboard', 'clinician-profiles', 'patient-profiles', 'staffing-calendar', 'iadmin']
+  const primaryIds = ['dashboard', 'calendar', 'clinician-profiles', 'patient-profiles', 'staffing-calendar', 'iadmin']
   const cesIds = ['ces', 'taxonomy', 'onboarding', 'lifecycle', 'evidence']
   const primaryItems = items.filter(i => primaryIds.includes(i.id))
   const cesItems = items.filter(i => cesIds.includes(i.id))
@@ -58,22 +74,28 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
     `flex items-center gap-3 rounded-lg px-3 py-2 font-montserrat text-xs font-semibold transition-colors ${
       active
         ? 'bg-brand-teal/10 text-brand-teal'
-        : 'text-text-muted hover:bg-border hover:text-text-primary'
+        : 'text-[var(--v3-text-secondary)] hover:bg-[var(--v3-glass2)] hover:text-[var(--v3-text-primary)]'
     }`;
 
   return (
     <nav
       data-shell-navrail
-      className="custom-scrollbar hidden w-[var(--ci-shell-navrail-width)] flex-shrink-0 flex-col overflow-y-auto border-r border-border bg-surface py-5 lg:flex"
+      data-bleed="full"
+      data-border="none"
+      data-active-state="data-attr"
+      className="custom-scrollbar h-full w-[var(--ci-shell-navrail-width)] flex-shrink-0 flex-col overflow-y-auto"
+      style={{ background: 'var(--ci-color-shell-navrail-bg)', border: 'none', padding: '0', boxShadow: 'none' }}
       aria-label="Primary navigation"
     >
-      <div className="px-4 space-y-7">
+      {/* padding:0 on ShellNavRail root for perimeter contract; moved vertical to child to preserve internal spacing */}
+      <div className="px-4 py-5 space-y-7">
         <ShellCommandGroup title="Primary Operations">
           {primaryItems.map((item) => (
             <Link
               key={item.id}
               to={item.to}
               onClick={() => onItemClick?.(item)}
+              data-active={isActive(item.to) ? 'true' : 'false'}
               className={linkClass(isActive(item.to))}
             >
               <item.icon size={18} />
@@ -94,6 +116,7 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
                   <Link
                     to={item.to}
                     onClick={() => onItemClick?.(item)}
+                    data-active={isActive(item.to) ? 'true' : 'false'}
                     className={linkClass(isActive(item.to))}
                   >
                     <item.icon size={18} />
@@ -103,6 +126,7 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
                     <Link
                       to={workflowSubItem.to}
                       onClick={() => onItemClick?.({ ...item, to: workflowSubItem.to, label: workflowSubItem.label })}
+                      data-active={isActive(workflowSubItem.to) ? 'true' : 'false'}
                       className={workflowLinkClass(isActive(workflowSubItem.to))}
                     >
                       <span>{workflowSubItem.label}</span>
@@ -121,6 +145,7 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
                 key={item.id}
                 to={item.to}
                 onClick={() => onItemClick?.(item)}
+                data-active={isActive(item.to) ? 'true' : 'false'}
                 className={linkClass(isActive(item.to))}
               >
                 <item.icon size={18} />

@@ -42,6 +42,7 @@ export const PRIMITIVE_TOKENS_CSS = `
   --ci-text-secondary: #94A3B8;
   --ci-text-tertiary: #64748B;
   --ci-text-muted: #475569;
+  --ci-heading-primary: var(--ci-text-primary);
 
   --ci-border: rgba(241, 245, 249, 0.10);
   --ci-border-strong: rgba(241, 245, 249, 0.18);
@@ -51,6 +52,9 @@ export const PRIMITIVE_TOKENS_CSS = `
   --ci-accent-teal-light: #00D1C1;
   --ci-accent-orange: #E07B2C;
   --ci-accent-orange-light: #FFA059;
+  --brand-primary: var(--ci-accent-teal);
+  --text-primary: var(--ci-text-primary);
+  --text-secondary: var(--ci-text-secondary);
   --ci-success: #10B981;
   --ci-success-bg: rgba(16, 185, 129, 0.12);
   --ci-warning: #F59E0B;
@@ -85,35 +89,40 @@ export const PRIMITIVE_TOKENS_CSS = `
 
 /* === WARM PAPER LIGHT MODE === */
 [data-theme="light"],
+html[data-theme="care-indeed-light"],
 :root[data-ci-mode="light"] {
-  --ci-bg: #F8F5F0;
+  --ci-bg: #F8F6F1;
   --ci-surface: #FFFFFF;
-  --ci-surface-2: #F5F2EB;
-  --ci-surface-elevated: #FFFEF9;
+  --ci-surface-2: #FCFAF6;
+  --ci-surface-elevated: #FFFFFF;
   --ci-surface-glass: #FFFFFF;
 
-  --ci-text-primary: #1C1917;
-  --ci-text-secondary: #57534E;
-  --ci-text-tertiary: #78716C;
-  --ci-text-muted: #A8A29E;
+  --ci-text-primary: #1F1C1B;
+  --ci-text-secondary: #5F5855;
+  --ci-text-tertiary: #74706F;
+  --ci-text-muted: #9A9692;
+  --ci-heading-primary: #00797D;
 
-  --ci-border: #E7E5E4;
-  --ci-border-strong: #D6D3D1;
-  --ci-border-subtle: #F0EDE8;
+  --ci-border: rgba(82, 77, 75, 0.14);
+  --ci-border-strong: rgba(0, 121, 125, 0.34);
+  --ci-border-subtle: rgba(82, 77, 75, 0.08);
 
-  --ci-accent-teal: #007970;
-  --ci-accent-teal-light: #00635E;
-  --ci-accent-orange: #C2410C;
-  --ci-accent-orange-light: #E07B2C;
+  --ci-accent-teal: #00797D;
+  --ci-accent-teal-light: #00797D;
+  --ci-accent-orange: #C74601;
+  --ci-accent-orange-light: #C74601;
+  --brand-primary: #00797D;
+  --text-primary: var(--ci-text-primary);
+  --text-secondary: var(--ci-text-secondary);
   --ci-success: #15803D;
   --ci-success-bg: rgba(21, 128, 61, 0.10);
   --ci-warning: #B45309;
   --ci-error: #B91C1C;
 
-  --ci-shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.06);
-  --ci-shadow-md: 0 4px 12px rgba(28, 25, 23, 0.08);
-  --ci-shadow-lg: 0 10px 28px -2px rgba(28, 25, 23, 0.10);
-  --ci-shadow-interactive: 0 8px 20px -2px rgba(28, 25, 23, 0.08);
+  --ci-shadow-sm: 0 2px 8px rgba(82, 77, 75, 0.06);
+  --ci-shadow-md: 0 10px 28px rgba(82, 77, 75, 0.08);
+  --ci-shadow-lg: 0 18px 45px rgba(82, 77, 75, 0.14);
+  --ci-shadow-interactive: 0 14px 34px rgba(82, 77, 75, 0.12);
 }
 
 /* Reduced motion safety for all primitives */
@@ -285,9 +294,10 @@ export const PRIMITIVE_TOKENS_CSS = `
   background: rgba(0, 121, 112, 0.035);
 }
 
+html[data-theme="care-indeed-light"] .ci-data-table tbody tr:hover,
 [data-theme="light"] .ci-data-table tbody tr:hover,
 :root[data-ci-mode="light"] .ci-data-table tbody tr:hover {
-  background: rgba(0, 121, 112, 0.045);
+  background: rgba(0, 121, 125, 0.045);
 }
 
 /* =====================================================
@@ -412,7 +422,7 @@ export const PRIMITIVE_TOKENS_CSS = `
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: var(--ci-text-primary);
+  color: var(--ci-heading-primary);
 }
 
 .ci-drawer-body {
@@ -470,7 +480,7 @@ export const PRIMITIVE_TOKENS_CSS = `
   font-family: 'Montserrat', system-ui, sans-serif;
   font-size: 18px;
   font-weight: 600;
-  color: var(--ci-text-primary);
+  color: var(--ci-heading-primary);
 }
 
 .ci-modal-body {
@@ -504,7 +514,7 @@ export const PRIMITIVE_TOKENS_CSS = `
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.015em;
-  color: var(--ci-text-primary);
+  color: var(--ci-heading-primary);
   margin: 0;
 }
 
@@ -540,7 +550,7 @@ export const PRIMITIVE_TOKENS_CSS = `
   font-family: 'Montserrat', system-ui, sans-serif;
   font-size: 15px;
   font-weight: 600;
-  color: var(--ci-text-primary);
+  color: var(--ci-heading-primary);
   margin-bottom: 4px;
 }
 

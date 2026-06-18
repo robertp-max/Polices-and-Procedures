@@ -37,7 +37,7 @@ export function PageHeader({ eyebrow, title, description, actions, className }: 
             fontSize: 24,
             lineHeight: '32px',
             fontWeight: 700,
-            color: 'var(--v3-text-primary)',
+            color: 'var(--brand-primary, #00797D)', /* teal for page titles in light mode per spec; body neutral dark ok */
             margin: 0,
           }}
         >
