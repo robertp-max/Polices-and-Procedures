@@ -23,7 +23,7 @@ interface ShellFrameProps {
 export const ShellFrame: React.FC<ShellFrameProps> = ({ children, className = '' }) => {
   return (
     <div className={`v32-command-center-app v3-app-shell-base relative h-screen w-full overflow-hidden bg-[var(--v3-base-bg)] text-[var(--v3-text-primary)] ${className}`}>
-      {/* Main content area with constrained framing on desktop */}
+      {/* Main content area with full screen main card (0 inset, no framing) — full occupy per design #4 */}
       <div className="v3-shell-frame-inset relative z-10 flex h-full w-full flex-col">
         {children}
       </div>

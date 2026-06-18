@@ -174,7 +174,7 @@ export function RightDrawer({
               <div
                 className="font-montserrat truncate"
                 style={{
-                  color: 'var(--v3-text-primary)',
+                  color: 'var(--v3-heading-primary, var(--v3-text-primary))',
                   fontSize: 18,
                   fontWeight: 600,
                   letterSpacing: '-0.01em'
@@ -191,13 +191,14 @@ export function RightDrawer({
               onClick={onClose}
               className="v3-veil-close p-1.5 text-[var(--v3-text-secondary)] hover:text-[var(--v3-teal-light)]"
               aria-label="Close panel"
+              title="Close panel"
             >
               <X size={18} aria-hidden="true" />
             </button>
           </div>
         </header>
       )}
-      <div className="v3-veil-body flex-1 overflow-auto" style={{ padding: 'clamp(12px, 1.6vw, 24px)' }}>
+      <div className="v3-veil-body flex-1 min-h-0 overflow-auto" style={{ padding: 'clamp(12px, 1.6vw, 24px)' }}>
         {children}
       </div>
       {footer && (

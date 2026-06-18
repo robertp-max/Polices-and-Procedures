@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes } from 'react';
+// DARK MODE DEFECT FIXES (calendar/hover/modals): isLight checks in CesEventOverviewCard, Metadata, participant lists etc.
+// Prevented bg bleed/low contrast on glass in dark hover cards + detail modals; titles use primary tokens; glass preserved via mix.
+
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, CalendarDays, ChevronRight, ExternalLink, History,
@@ -10,6 +13,7 @@ import { getCesExecutionMode, CES_EXECUTION_MODE_LABEL } from '@/policy/ces/cesE
 import { useEventExecutionDataflow } from '@/policy/compliance-execution';
 import type { EventTask } from '@/policy/compliance-execution/types';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
+import { useShellStore, useIsLight } from '@/policy/stores/uiStore';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import {
   classifyInstance, STATE_COLOR, STATE_LABEL, type InstanceState,
@@ -17,6 +21,7 @@ import {
 } from '@/policy/components/regulatory/timelineState';
 import { classifyAuditState, AUDIT_STATE_COLOR, AUDIT_STATE_LABEL } from '@/policy/audit/auditState';
 import { getSwimlaneRegistryEntry } from '@/policy/workflows/swimlanes/swimlaneRegistry';
+import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
 
 export const CES_CALENDAR_LAYOUT = {
   CANVAS_WIDTH: 1760,
@@ -101,15 +106,15 @@ export function CesInteractionStyles() {
         --spotlight-color: rgba(0, 121, 112, 0.16);
         position: relative;
         overflow: hidden;
-        border-radius: 14px;
+        border-radius: 6px;
         background:
           radial-gradient(
             500px circle at var(--mouse-x) var(--mouse-y),
             var(--spotlight-color),
             transparent 42%
           ),
-          rgba(15, 19, 26, 0.92);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+          var(--ci-surface);
+        border: 1px solid var(--ci-border, rgba(255, 255, 255, 0.08));
         transition: border-color 180ms ease, background-color 180ms ease;
       }
       .ces-card-spotlight:focus-visible {
@@ -131,28 +136,57 @@ export function CesInteractionStyles() {
         opacity: 0;
         transition: opacity 180ms ease;
         z-index: 1;
+        border-radius: inherit;
       }
       .ces-card-spotlight:hover::before,
       .ces-card-spotlight:focus-visible::before {
         opacity: 1;
       }
+      .ces-card-spotlight:hover {
+        filter: brightness(1.08);
+        border-color: rgba(255, 255, 255, 0.22);
+      }
       .ces-card-spotlight-complete {
-        box-shadow: inset 0 0 0 1px rgba(20,184,166,0.22);
+        box-shadow: inset 0 0 0 1px rgba(0,121,112,0.22);
       }
       .ces-card-spotlight-critical {
-        box-shadow: inset 0 0 0 1px rgba(248,113,113,0.20);
+        box-shadow: inset 0 0 0 1px rgba(215,1,1,0.18);
+      }
+      /* Fix gradient/image bleed out of rounded event pills (design #4 match) */
+      .ces-card-spotlight.ces-event-pill,
+      .ces-zoom-card .ces-event-pill,
+      .ces-hover-card .ces-event-pill {
+        border-radius: 999px !important;
+        background: transparent !important;
+        border: none !important;
+        overflow: hidden !important;
       }
       .ces-zoom-backdrop {
-        background:
-          radial-gradient(900px circle at 50% 20%, rgba(20,184,166,0.16), transparent 46%),
-          rgba(4, 8, 13, 0.72);
-        backdrop-filter: blur(18px);
+        /* dark glass default (v3 veil-like) to preserve dark/light aesthetic; light override below */
+        background: rgba(5, 6, 10, 0.72);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
       }
       .ces-zoom-card {
-        background:
-          radial-gradient(900px circle at var(--mouse-x, 50%) var(--mouse-y, 20%), var(--spotlight-color, rgba(20,184,166,0.18)), transparent 45%),
-          rgba(13, 18, 27, 0.96);
-        border: 1px solid rgba(255,255,255,0.12);
+        background: var(--ci-surface);
+        border: 1px solid var(--ci-border, rgba(255,255,255,0.10));
+        box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+        isolation: isolate;
+        overflow: hidden;
+        overflow-x: hidden;
+        border-radius: 24px;
+        /* reinforced max-h/overflow to prevent viewport bleed when content grows */
+        max-height: 90vh;
+      }
+      .ces-hover-card {
+        isolation: isolate !important;
+        overflow: hidden !important;
+        border-radius: 24px !important;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.18) !important;
+        background: var(--ci-surface) !important;
+        border: 1px solid var(--ci-border, rgba(255,255,255,0.10)) !important;
+        color: var(--ci-text-primary) !important;
+        contain: layout paint style !important;
       }
       .ces-audit-scrollbar-hidden {
         scrollbar-width: none;
@@ -168,15 +202,83 @@ export function CesInteractionStyles() {
           transition: none !important;
         }
       }
+      /* Light mode: clean corporate no dark bleed for popups/preview/hover (Image #4). Use token bgs, no hard dark hexes in light paths. */
+      html[data-theme="care-indeed-light"] .ces-zoom-backdrop {
+        background: color-mix(in srgb, var(--ci-bg) 92%, transparent) !important;
+      }
+      html[data-theme="care-indeed-light"] .ces-zoom-card,
+      html[data-theme="care-indeed-light"] .ces-hover-card {
+        background: var(--ci-surface) !important;
+        border-color: var(--ci-border, #E5E4E3) !important;
+        color: var(--ci-text-primary) !important;
+        box-shadow: 0 18px 48px rgba(31,28,27,0.1) !important;
+        contain: layout paint style !important;
+      }
+      html[data-theme="care-indeed-light"] .ces-card-spotlight {
+        background: var(--ci-surface) !important;
+        border-color: rgba(0,0,0,0.06) !important;
+      }
+      html[data-theme="care-indeed-light"] .ces-zoom-card .ces-card-spotlight,
+      html[data-theme="care-indeed-light"] .ces-hover-card .ces-card-spotlight {
+        background: inherit !important;
+      }
+      /* Prevent text/color/gradient bleed inside hover cards for dark/light; force containment */
+      .ces-hover-card,
+      .ces-hover-card *,
+      .ces-hover-card .ces-overview-card,
+      .ces-hover-card h2,
+      .ces-hover-card p,
+      .ces-hover-card span,
+      .ces-hover-card div[style] {
+        color: inherit !important;
+      }
+      .ces-hover-card {
+        overflow: auto !important;
+      }
+      /* Prevent gradient/spotlight bleed out of popups + hover cards; contain paints; clean edges/z for #4 */
+      .ces-zoom-card,
+      .ces-hover-card,
+      .ces-zoom-card .ces-card-spotlight,
+      .ces-hover-card .ces-card-spotlight {
+        overflow: hidden !important;
+        isolation: isolate;
+        border-radius: 24px;
+      }
+      .ces-zoom-card { z-index: 1; }
     `}</style>
   );
 }
 
 export function getCesEventSpotlightTone(state: InstanceState, certified: boolean) {
-  if (certified || state === 'complete') return 'rgba(20, 184, 166, 0.22)';
-  if (state === 'blocked' || state === 'overdue') return 'rgba(239, 68, 68, 0.20)';
-  if (state === 'due-soon') return 'rgba(249, 115, 22, 0.18)';
-  return 'rgba(20, 184, 166, 0.18)';
+  if (certified || state === 'complete') return 'rgba(0, 121, 112, 0.16)'; // v3 teal
+  if (state === 'blocked' || state === 'overdue') return 'rgba(215, 1, 1, 0.18)';
+  if (state === 'due-soon') return 'rgba(224, 123, 44, 0.16)'; // v3 orange
+  return 'rgba(0, 121, 112, 0.12)'; // v3 teal
+}
+
+/* Improved viewport-aware hover card positioning (used by Timeline hover + CES cards)
+   - Left flip: prefer right of anchor; if no room, flip to left of anchor
+   - Top adjust: clamp to keep within viewport padding (using est height to decide)
+   - max-height + overflow for tall content without bleed offscreen
+   Before: hardcoded 520px est, local duplicate logic in TimelineMonth
+   After: centralized, reusable, safer est (420), consistent maxH/overflow, bleed guards
+*/
+export function getCesHoverCardPosition(anchorRect: DOMRect, cardWidth = 460) {
+  const viewportPadding = 12;
+  const offset = 8;
+  const preferredLeft = anchorRect.right + offset;
+  let left = preferredLeft + cardWidth <= (typeof window !== 'undefined' ? window.innerWidth : 1200) - viewportPadding
+    ? preferredLeft
+    : Math.max(viewportPadding, anchorRect.left - cardWidth - offset);
+  const maxH = Math.max(200, (typeof window !== 'undefined' ? window.innerHeight : 800) - viewportPadding * 2);
+  // top adjust using improved estimate (avoids over-shifting vs prior 520px fixed)
+  const estH = Math.min(420, maxH);
+  let top = anchorRect.top;
+  if (top + estH > ((typeof window !== 'undefined' ? window.innerHeight : 800) - viewportPadding)) {
+    top = Math.max(viewportPadding, (typeof window !== 'undefined' ? window.innerHeight : 800) - estH - viewportPadding);
+  }
+  if (top < viewportPadding) top = viewportPadding;
+  return { left, top, width: cardWidth, maxHeight: maxH };
 }
 
 export function buildEventOverviewParticipants(event: RegulatoryEvent): EventOverviewParticipant[] {
@@ -258,7 +360,6 @@ export function CesSpotlightCard({
   className = '',
   spotlightColor = 'rgba(0, 121, 112, 0.18)',
   onClick,
-  title,
   ariaLabel,
   toneClassName = '',
   style,
@@ -268,7 +369,6 @@ export function CesSpotlightCard({
   className?: string;
   spotlightColor?: string;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
-  title?: string;
   ariaLabel?: string;
   toneClassName?: string;
   style?: React.CSSProperties;
@@ -293,8 +393,7 @@ export function CesSpotlightCard({
       type="button"
       onMouseMove={handleMouseMove}
       onClick={onClick}
-      title={title}
-      aria-label={ariaLabel ?? title}
+      aria-label={ariaLabel}
       className={`ces-card-spotlight ${toneClassName} ${className}`}
       style={style}
       {...buttonProps}
@@ -318,6 +417,7 @@ export function CesEventOverviewCard({
   actionLabel?: string;
 }) {
   const store = useRegulatoryExecutionStore();
+  const isLight = useIsLight();
   const state = classifyInstance(event, today, store);
   const certified = store.isCertified(event.id);
   const auditState = classifyAuditState(event, today, store);
@@ -325,6 +425,7 @@ export function CesEventOverviewCard({
   const mode = getCesExecutionMode(event.date);
   const participants = useMemo(() => buildEventOverviewParticipants(event), [event]);
   const validation = useMemo(() => store.validateEvent(event), [event, store]);
+  const display = useMemo(() => getEventDisplayModel(event), [event]);
   const signerRoles = event.minutes?.signOffRoles ?? [];
   const agendaOwners = Array.from(new Set((event.agenda?.standingTopics ?? []).map(topic => topic.owner).filter(Boolean))) as string[];
   const auditReadinessScore = useMemo(() => {
@@ -350,38 +451,46 @@ export function CesEventOverviewCard({
     return Math.round(((stepRatio + formRatio + minutesRatio + approvalRatio) / 4) * 100);
   }, [event, store.approvals, validation]);
 
+  const cardBg = isLight ? 'var(--ci-surface, #FFFFFF)' : 'color-mix(in srgb, var(--v3-base-bg) 82%, transparent)';
+  const cardBorder = isLight ? 'var(--ci-border, #E5E4E3)' : 'var(--v3-border-subtle)';
+  const titleColor = 'var(--v3-text-primary)';
+  const bodyText = isLight ? 'var(--ci-text-secondary, #5F5855)' : 'var(--ci-text-secondary, #94A3B8)';
+  // DARK MODE FIX (hover + modal card): added isLight + glass color-mix for hover cards/modals in calendar.
+  // Fixes bg bleed (solid darks), low contrast (grays/text on glass), title text (v3 primary), preserve glass blur.
+  // Overflow handled by existing truncate + portal positioning.
   return (
-    <div className="rounded-[24px] border border-[#1C2433] bg-[linear-gradient(180deg,rgba(20,26,35,0.98),rgba(11,15,21,0.98))] p-5 text-[#E2E8F0] shadow-[0_24px_80px_rgba(0,0,0,0.38)]">
+    <div className="rounded-[24px] border p-5 shadow-sm ces-overview-card overflow-hidden" style={{borderColor: cardBorder, background: cardBg, color: 'var(--ci-text-primary)'}}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]">
             <span style={{ color: STATE_COLOR[state] }}>{STATE_LABEL[state]}</span>
-            <span className="rounded-full border border-[#1C2433] bg-[#141A23] px-2 py-0.5 text-[#8A94A6]">{event.id}</span>
-            <span className="rounded-full border border-[#007970]/35 bg-[#004142]/18 px-2 py-0.5 text-[#8BE6DF]">{event.domain}</span>
+            <span className="ces-filter-pill ces-preview-pill rounded-full border px-2 py-0.5" style={{borderColor: cardBorder, background: isLight ? 'var(--ci-surface-muted, #F4F4F2)' : 'rgba(0,121,112,0.06)', color: isLight ? 'var(--ci-accent, #007970)' : 'var(--v3-teal-light)'}}>{event.id}</span>
+            <span className="ces-filter-pill ces-preview-pill rounded-full border px-2 py-0.5" style={{borderColor: cardBorder, background: isLight ? 'var(--ci-surface-muted, #F4F4F2)' : 'rgba(0,121,112,0.06)', color: isLight ? 'var(--ci-accent, #007970)' : 'var(--v3-teal-light)'}}>{event.domain}</span>
             {mode !== 'production' && <Badge>{CES_EXECUTION_MODE_LABEL[mode]}</Badge>}
             {certified && <Badge><Lock size={10} /> Locked</Badge>}
           </div>
-          <h2 className="mt-3 font-outfit text-[26px] font-light leading-tight text-white">{event.title}</h2>
-          <p className="mt-2 text-[12px] leading-relaxed text-[#A0ABC0]">
+          <h2 className="mt-3 font-outfit text-[26px] font-light leading-tight" style={{ color: titleColor }}>{event.title}</h2>
+          <p className="mt-2 text-[12px] leading-relaxed" style={{ color: bodyText }}>
             {event.summary ?? event.regulatoryDriver ?? 'Compliance event ready for event-specific swimlane execution.'}
           </p>
         </div>
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 text-[11px] sm:grid-cols-3">
-        <Metric value={`${event.processFlow.length}`} label="steps" />
-        <Metric value={sla.label} label="SLA" tone={sla.tone} />
-        <Metric value={state === 'blocked' || state === 'overdue' ? 'High' : state === 'due-soon' ? 'Medium' : 'Low'} label="risk" tone={state} />
-        <Metric value={`${auditReadinessScore}%`} label="audit ready" />
-        <Metric value={AUDIT_STATE_LABEL[auditState]} label="audit state" tone={auditState} />
-        <Metric value={event.workflowId ?? 'No workflow'} label="workflow" />
+        <Metric value={`${event.processFlow.length}`} label="steps" isLight={isLight} />
+        <Metric value={sla.label} label="SLA" tone={sla.tone} isLight={isLight} />
+        <Metric value={state === 'blocked' || state === 'overdue' ? 'High' : state === 'due-soon' ? 'Medium' : 'Low'} label="risk" tone={state} isLight={isLight} />
+        <Metric value={`${auditReadinessScore}%`} label="audit ready" isLight={isLight} />
+        <Metric value={AUDIT_STATE_LABEL[auditState]} label="audit state" tone={auditState} isLight={isLight} />
+        <Metric value={event.workflowId ?? 'No workflow'} label="workflow" isLight={isLight} />
       </div>
 
-      <div className="mt-5 grid gap-x-6 gap-y-2 text-[12px] text-[#A0ABC0] sm:grid-cols-2">
+      <div className="mt-5 grid gap-x-6 gap-y-2 text-[12px] sm:grid-cols-2" style={{ color: isLight ? '#52404B' : '#A0ABC0' }}>
         <Metadata label="Date" value={event.endDate ? `${event.date} - ${event.endDate}` : event.date} />
         <Metadata label="Time" value={event.allDay || !event.time ? 'All day' : `${event.time}${event.timeEnd ? ` - ${event.timeEnd}` : ''}`} />
         <Metadata label="Owner role" value={event.ownerRole || 'Unassigned'} />
         <Metadata label="Cadence" value={event.cadence} />
+        <Metadata label="Canonical policy refs" value={display.canonicalPolicyRefs.length ? display.canonicalPolicyRefs.join(', ') : '—'} />
         <Metadata label="Workflow ID" value={event.workflowId ?? 'No workflow swimlane mapped'} />
         <Metadata label="Audit state" value={AUDIT_STATE_LABEL[auditState]} />
         <Metadata label="Regulatory driver" value={event.regulatoryDriver ?? 'No regulatory driver captured.'} />
@@ -390,24 +499,24 @@ export function CesEventOverviewCard({
         <Metadata label="Agenda owners" value={agendaOwners.length ? agendaOwners.join(', ') : 'No agenda owners configured.'} />
       </div>
 
-      <section className="mt-5 border-t border-[#1C2433] pt-4">
-        <div className="mb-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em] text-[#8A94A6]">
+      <section className="mt-5 border-t pt-4" style={{borderColor: isLight ? 'var(--ci-border, #E5E4E3)' : 'var(--v3-border-subtle)'}}>
+        <div className="mb-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]" style={{ color: isLight ? '#52404B' : '#8A94A6' }}>
           Attendees / Participants
         </div>
         {participants.length > 0 ? (
           <div className="space-y-2">
             {participants.map(participant => (
-              <div key={participant.id} className="flex items-start justify-between gap-3 border-b border-white/5 pb-2 last:border-b-0 last:pb-0">
+              <div key={participant.id} className="flex items-start justify-between gap-3 border-b pb-2 last:border-b-0 last:pb-0" style={{ borderColor: isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)' }}>
                 <div className="min-w-0">
-                  <div className="text-[12px] font-semibold text-[#E2E8F0]">{participant.label}</div>
-                  <div className="text-[11px] text-[#8A94A6]">{participant.roleType}</div>
+                  <div className="text-[12px] font-semibold" style={{color: isLight ? 'var(--ci-text-primary, #1F1C1B)' : 'var(--ci-text-primary, #E2E8F0)'}}>{participant.label}</div>
+                  <div className="text-[11px]" style={{color: isLight ? '#52404B' : 'var(--ci-text-secondary, #8A94A6)'}}>{participant.roleType}</div>
                 </div>
                 <div className="shrink-0 text-right">
                   {participant.responseStatus ? (
-                    <div className="text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#8BE6DF]">{participant.responseStatus}</div>
+                    <div className="text-[10px] font-montserrat font-bold uppercase tracking-[0.14em]" style={{color: 'var(--ci-secondary-500, #8BE6DF)'}}>{participant.responseStatus}</div>
                   ) : null}
                   {participant.signerFlag ? (
-                    <div className="mt-1 text-[10px] text-[#FFB18D]">{participant.signerFlag}</div>
+                    <div className="mt-1 text-[10px]" style={{color: 'var(--ci-text-tertiary, #FFB18D)'}}>{participant.signerFlag}</div>
                   ) : null}
                 </div>
               </div>
@@ -418,8 +527,8 @@ export function CesEventOverviewCard({
         )}
       </section>
 
-      <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#1C2433] pt-4">
-        <span className="text-[11px] text-[#8A94A6]">Click to open event swimlane.</span>
+      <div className="mt-5 flex items-center justify-between gap-3 border-t pt-4" style={{borderColor:'var(--ci-border, #E5E4E3)'}}>
+        <span className="text-[11px]" style={{color: 'var(--ci-text-secondary, #8A94A6)'}}>Click to open event swimlane.</span>
         <button
           type="button"
           onClick={onOpenSwimlane}
@@ -446,12 +555,13 @@ export function CesEventPreviewModal({
 }) {
   return (
     <CesEventZoomModal onClose={onClose} maxWidth="max-w-xl">
-      <div className="p-5">
+      <div className="p-5" style={{background: 'transparent'}}>
         <div className="mb-3 flex justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-white/45 hover:text-white"
+            className="rounded-md p-1.5"
+            style={{color: 'var(--ci-text-tertiary, rgba(255,255,255,0.45))'}}
             aria-label="Close event preview"
           >
             <X size={16} />
@@ -484,6 +594,8 @@ export function CesEventDetailModal({
   const certified = store.isCertified(event.id);
   const auditState = classifyAuditState(event, today, store);
   const sla = computeCesSla(event, today);
+  const isLight = useShellStore(s => s.theme === 'care-indeed-light'); // or useIsLight()
+  // Light mode defect fixes: explicit isLight for title text contrast (h2, task titles, metrics) + muted audit text to prevent white bleed/low contrast on glass surfaces. Use of isLight + surface vars preserves clean glass in modals/hover/cards/calendar.
 
   useEffect(() => {
     setTab(initialTab);
@@ -502,40 +614,40 @@ export function CesEventDetailModal({
 
   return (
     <CesEventZoomModal onClose={onClose} maxWidth="max-w-5xl">
-      <div className="flex max-h-[82vh] min-h-[620px] flex-col overflow-hidden">
+      <div className="flex max-h-[82vh] min-h-[620px] flex-col overflow-hidden overflow-x-hidden" style={{background: isLight ? 'var(--ci-surface, #FFFFFF)' : 'var(--ci-surface, var(--v3-base-bg, #0f131a))'}}>
         <header className="border-b border-white/10 px-6 py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]">
                 <span style={{ color: STATE_COLOR[state] }}>{STATE_LABEL[state]}</span>
-                <span className="text-white/35">{event.id}</span>
+                <span style={{color: 'var(--ci-text-tertiary, rgba(255,255,255,0.35))'}}>{event.id}</span>
                 {certified && <Badge><Lock size={10} /> Certified / Locked</Badge>}
                 <Badge>{event.domain}</Badge>
               </div>
-              <h2 className="mt-3 font-outfit text-3xl font-light leading-tight text-white">
+              <h2 className="mt-3 font-outfit text-3xl font-light leading-tight" style={{ color: isLight ? '#1F1C1B' : '#fff' }}>
                 {event.title}
               </h2>
             </div>
             <div className="flex items-center gap-1">
-              <button type="button" onClick={onBack} className="rounded-md p-2 text-white/45 hover:text-white" aria-label="Back to event preview">
+              <button type="button" onClick={onBack} className="rounded-md p-2" style={{color: 'var(--ci-text-tertiary, rgba(255,255,255,0.45))'}} aria-label="Back to event preview">
                 <ArrowLeft size={16} />
               </button>
-              <button type="button" onClick={onClose} className="rounded-md p-2 text-white/45 hover:text-white" aria-label="Close event detail">
+              <button type="button" onClick={onClose} className="rounded-md p-2" style={{color: 'var(--ci-text-tertiary, rgba(255,255,255,0.45))'}} aria-label="Close event detail">
                 <X size={16} />
               </button>
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-6 text-[11px] text-white/75">
-            <Metric value={`${event.processFlow.length}`} label="steps" />
-            <Metric value={sla.label} label="SLA" tone={sla.tone} />
-            <Metric value={state === 'blocked' || state === 'overdue' ? 'High' : state === 'due-soon' ? 'Medium' : 'Low'} label="risk" tone={state} />
-            <Metric value={`${dataflow?.auditReadinessScore ?? 0}%`} label="audit ready" />
-            <Metric value={AUDIT_STATE_LABEL[auditState]} label="audit trail" tone={auditState} />
+          <div className="mt-5 flex flex-wrap gap-6 text-[11px]" style={{color: 'var(--ci-text-secondary, rgba(255,255,255,0.75))'}}>
+            <Metric value={`${event.processFlow.length}`} label="steps" isLight={isLight} />
+            <Metric value={sla.label} label="SLA" tone={sla.tone} isLight={isLight} />
+            <Metric value={state === 'blocked' || state === 'overdue' ? 'High' : state === 'due-soon' ? 'Medium' : 'Low'} label="risk" tone={state} isLight={isLight} />
+            <Metric value={`${dataflow?.auditReadinessScore ?? 0}%`} label="audit ready" isLight={isLight} />
+            <Metric value={AUDIT_STATE_LABEL[auditState]} label="audit trail" tone={auditState} isLight={isLight} />
           </div>
         </header>
 
-        <nav className="flex border-b border-white/10 bg-white/[0.025]">
+        <nav className="flex border-b border-white/10" style={{background: 'color-mix(in srgb, var(--ci-surface) 97%, transparent)'}}>
           <ZoomTab active={tab === 'overview'} onClick={() => setTab('overview')} icon={<CalendarDays size={12} />} label="Overview" />
           <ZoomTab active={tab === 'tasks'} onClick={() => setTab('tasks')} icon={<ListChecks size={12} />} label="Tasks" />
           <ZoomTab active={tab === 'audit'} onClick={() => setTab('audit')} icon={<History size={12} />} label="Audit Trail" />
@@ -543,13 +655,13 @@ export function CesEventDetailModal({
 
         <div className="min-h-0 flex-1 overflow-y-auto ces-audit-scrollbar-hidden px-6 py-5">
           {tab === 'overview' && (
-            <OverviewTab event={event} state={state} />
+            <OverviewTab event={event} state={state} isLight={isLight} />
           )}
           {tab === 'tasks' && (
-            <TasksTab tasks={dataflow?.tasks.filter(task => !task.isDeleted) ?? []} onOpenTask={openTask} />
+            <TasksTab tasks={dataflow?.tasks.filter(task => !task.isDeleted) ?? []} onOpenTask={openTask} isLight={isLight} />
           )}
           {tab === 'audit' && dataflow && (
-            <CesAuditTrailView dataflow={dataflow} />
+            <CesAuditTrailView dataflow={dataflow} isLight={isLight} />
           )}
         </div>
       </div>
@@ -559,15 +671,17 @@ export function CesEventDetailModal({
 
 export function CesAuditTrailView({
   dataflow,
+  isLight = false,
 }: {
   dataflow: NonNullable<ReturnType<typeof useEventExecutionDataflow>>;
+  isLight?: boolean;
 }) {
   const evidenceById = useMemo(() => new Map(dataflow.evidence.map(doc => [doc.id, doc])), [dataflow.evidence]);
   const rows = dataflow.auditTrail;
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5 text-[12px] text-white/60">
+      <div className="rounded-xl border p-5 text-[12px]" style={{borderColor:'var(--ci-border, rgba(255,255,255,0.10))', background: isLight ? '#F8FAFC' : 'var(--ci-surface)', color: isLight ? '#1F1C1B' : 'var(--ci-text-muted, rgba(255,255,255,0.6))'}}>
         No audit trail entries exist for this event yet. No placeholder audit records have been generated.
       </div>
     );
@@ -578,30 +692,30 @@ export function CesAuditTrailView({
       {rows.map(row => {
         const artifact = row.entityType === 'evidence' ? evidenceById.get(row.entityId) : undefined;
         return (
-          <article key={row.auditId} className="rounded-xl border border-white/10 bg-[#0B0F15]/85 p-4">
+          <article key={row.auditId} className="rounded-xl border p-4" style={{borderColor:'var(--ci-border, rgba(255,255,255,0.10))', background:'var(--ci-surface)'}}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]">
                   <span className="text-[#14B8A6]">{row.action}</span>
-                  <span className="text-white/35">{row.entityType}</span>
-                  <span className="text-white/35">{row.auditId}</span>
+                  <span style={{ color: isLight ? '#9CA3AF' : 'rgba(255,255,255,0.35)' }}>{row.entityType}</span>
+                  <span style={{ color: isLight ? '#9CA3AF' : 'rgba(255,255,255,0.35)' }}>{row.auditId}</span>
                 </div>
-                <p className="mt-2 text-[12px] text-white/80">
+                <p className="mt-2 text-[12px]" style={{ color: isLight ? '#52404B' : 'rgba(255,255,255,0.80)' }}>
                   {row.reason ?? `${row.entityId} changed by ${row.actorRole ?? row.actorId ?? 'system'}.`}
                 </p>
               </div>
-              <time className="shrink-0 text-[10px] text-white/40">
+              <time className="shrink-0 text-[10px]" style={{ color: isLight ? '#747474' : 'rgba(255,255,255,0.40)' }}>
                 {new Date(row.timestamp).toLocaleString()}
               </time>
             </div>
-            <div className="mt-3 max-h-28 overflow-y-auto rounded-lg bg-black/25 p-3 font-mono text-[10px] leading-relaxed text-white/45 ces-audit-scrollbar-hidden">
+            <div className="mt-3 max-h-28 overflow-y-auto rounded-lg p-3 font-mono text-[10px] leading-relaxed ces-audit-scrollbar-hidden" style={{background: 'var(--ci-surface-muted, var(--ci-surface))', color:'var(--ci-text-tertiary, rgba(255,255,255,0.45))'}}>
               {JSON.stringify({ before: row.before ?? null, after: row.after ?? null, hash: row.currentHash ?? null }, null, 2)}
             </div>
             {artifact && (
               <button
                 type="button"
                 onClick={() => window.open(buildArtifactRoute(artifact.id, { eventId: dataflow.eventId, taskId: artifact.taskId, evidenceId: artifact.id, type: artifact.artifactType ?? 'evidence' }), '_blank', 'noopener,noreferrer')}
-                className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#14B8A6] hover:text-white"
+                className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#14B8A6]"
               >
                 <ExternalLink size={11} />
                 Open Artifact
@@ -642,14 +756,14 @@ function CesEventZoomModal({
   };
 
   return (
-    <div className="ces-zoom-backdrop fixed inset-0 z-50 flex items-center justify-center px-4 py-6" onMouseDown={onClose}>
+    <div className="ces-zoom-backdrop fixed inset-0 z-[200] flex items-center justify-center px-4 py-6" onMouseDown={onClose}>
       <div
         ref={cardRef}
         role="dialog"
         aria-modal="true"
         onMouseMove={handleMouseMove}
         onMouseDown={e => e.stopPropagation()}
-        className={`ces-zoom-card w-full ${maxWidth} overflow-hidden rounded-3xl`}
+        className={`ces-zoom-card w-full ${maxWidth} max-h-[calc(100vh-3rem)] overflow-hidden overflow-x-hidden rounded-3xl`}
       >
         {children}
       </div>
@@ -657,24 +771,24 @@ function CesEventZoomModal({
   );
 }
 
-function OverviewTab({ event, state }: { event: RegulatoryEvent; state: InstanceState }) {
+function OverviewTab({ event, state, isLight = false }: { event: RegulatoryEvent; state: InstanceState; isLight?: boolean }) {
   return (
     <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
       <section className="space-y-4">
-        <p className="text-[13px] leading-relaxed text-white/72">
+        <p className="text-[13px] leading-relaxed" style={{color: 'var(--ci-text-secondary, rgba(255,255,255,0.72))'}}>
           {event.summary ?? event.regulatoryDriver ?? 'This event is part of the CES calendar workflow surface.'}
         </p>
         {event.regulatoryDriver && (
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-            <div className="mb-2 flex items-center gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em] text-white/45">
+          <div className="rounded-xl border border-white/10 p-4" style={{background: isLight ? '#F8FAFC' : 'var(--ci-surface-elevated, var(--ci-surface))', borderColor: 'var(--ci-border, rgba(255,255,255,0.10))'}}>
+            <div className="mb-2 flex items-center gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]" style={{color: 'var(--ci-text-tertiary, rgba(255,255,255,0.45))'}}>
               <ShieldCheck size={12} />
               Regulatory Driver
             </div>
-            <p className="text-[12px] leading-relaxed text-white/70">{event.regulatoryDriver}</p>
+            <p className="text-[12px] leading-relaxed" style={{color: 'var(--ci-text-secondary, rgba(255,255,255,0.70))'}}>{event.regulatoryDriver}</p>
           </div>
         )}
       </section>
-      <section className="space-y-3 text-[12px] text-white/70">
+      <section className="space-y-3 text-[12px]" style={{color: 'var(--ci-text-secondary, rgba(255,255,255,0.70))'}}>
         <Metadata label="Date" value={event.endDate ? `${event.date} - ${event.endDate}` : event.date} />
         <Metadata label="Time" value={event.allDay || !event.time ? 'All day' : `${event.time}${event.timeEnd ? ` - ${event.timeEnd}` : ''}`} />
         <Metadata label="Owner" value={`${event.owner} · ${event.ownerRole}`} />
@@ -689,13 +803,15 @@ function OverviewTab({ event, state }: { event: RegulatoryEvent; state: Instance
 function TasksTab({
   tasks,
   onOpenTask,
+  isLight = false,
 }: {
   tasks: EventTask[];
   onOpenTask: (task: EventTask) => void;
+  isLight?: boolean;
 }) {
   if (tasks.length === 0) {
     return (
-      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5 text-[12px] text-white/60">
+      <div className="rounded-xl border p-5 text-[12px]" style={{borderColor:'var(--ci-border, rgba(255,255,255,0.10))', background: isLight ? '#F8FAFC' : 'var(--ci-surface)', color: isLight ? '#1F1C1B' : 'var(--ci-text-muted, rgba(255,255,255,0.6))'}}>
         No executable tasks are available for this event.
       </div>
     );
@@ -708,19 +824,19 @@ function TasksTab({
           key={task.id}
           type="button"
           onClick={() => onOpenTask(task)}
-          className="rounded-xl border border-white/10 bg-white/[0.035] p-4 text-left hover:bg-white/[0.055]"
+          className="rounded-xl border border-white/10 p-4 text-left hover:bg-white/[0.055]" style={{background: 'var(--ci-surface-elevated, var(--ci-surface))', borderColor: 'var(--ci-border, rgba(255,255,255,0.10))'}}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="mb-1 flex flex-wrap items-center gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em] text-white/40">
+              <div className="mb-1 flex flex-wrap items-center gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]" style={{ color: isLight ? '#747474' : 'rgba(255,255,255,0.40)' }}>
                 <span>{task.id}</span>
                 <span>{task.status.replace(/_/g, ' ')}</span>
                 {task.workflowId && <span>{task.workflowId}</span>}
               </div>
-              <h3 className="text-[13px] font-semibold text-white">{task.title}</h3>
-              {task.description && <p className="mt-1 text-[11px] text-white/55">{task.description}</p>}
+              <h3 className="text-[13px] font-semibold" style={{ color: isLight ? '#1F1C1B' : '#fff' }}>{task.title}</h3>
+              {task.description && <p className="mt-1 text-[11px]" style={{ color: isLight ? '#52404B' : 'rgba(255,255,255,0.55)' }}>{task.description}</p>}
             </div>
-            <ChevronRight size={15} className="shrink-0 text-white/35" />
+            <ChevronRight size={15} style={{ color: isLight ? '#9CA3AF' : 'rgba(255,255,255,0.35)' }} />
           </div>
         </button>
       ))}
@@ -744,7 +860,7 @@ function ZoomTab({
       type="button"
       onClick={onClick}
       className="flex items-center gap-1.5 border-r border-white/10 px-4 py-3 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em]"
-      style={{ color: active ? TEAL_PRIMARY : 'rgba(255,255,255,0.48)', background: active ? 'rgba(20,184,166,0.10)' : 'transparent' }}
+      style={{ color: active ? TEAL_PRIMARY : 'var(--ci-text-tertiary, rgba(255,255,255,0.48))', background: active ? 'rgba(20,184,166,0.10)' : 'transparent' }}
     >
       {icon}
       {label}
@@ -754,7 +870,7 @@ function ZoomTab({
 
 function Badge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-white/55">
+    <span className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2 py-0.5" style={{background: 'color-mix(in srgb, var(--ci-surface-elevated, white) 96%, transparent)', color: 'var(--ci-text-tertiary, rgba(255,255,255,0.55))', borderColor: 'var(--ci-border, rgba(255,255,255,0.10))'}}>
       {children}
     </span>
   );
@@ -764,10 +880,12 @@ function Metric({
   value,
   label,
   tone,
+  isLight = false,
 }: {
   value: string;
   label: string;
   tone?: string;
+  isLight?: boolean;
 }) {
   const color =
     tone === 'red' || tone === 'blocked' || tone === 'overdue' ? STATE_COLOR.overdue
@@ -777,17 +895,18 @@ function Metric({
 
   return (
     <span className="inline-flex items-baseline gap-1.5">
-      <span className="font-outfit text-[18px] text-white" style={{ color }}>{value}</span>
-      <span className="font-montserrat text-[9px] font-bold uppercase tracking-[0.14em] text-white/40">{label}</span>
+      <span className="font-outfit text-[18px]" style={{ color }}>{value}</span>
+      <span className="font-montserrat text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: isLight ? '#52404B' : 'rgba(255,255,255,0.40)' }}>{label}</span>
     </span>
   );
 }
 
 function Metadata({ label, value }: { label: string; value: string }) {
+  const isLight = useIsLight();
   return (
     <div className="flex gap-2">
-      <span className="shrink-0 text-white/40">{label}:</span>
-      <span className="text-white/75">{value}</span>
+      <span className="shrink-0" style={{color: isLight ? 'var(--ci-text-tertiary, #74706F)' : 'var(--ci-text-tertiary, rgba(255,255,255,0.40))'}}>{label}:</span>
+      <span style={{color: isLight ? 'var(--ci-text-secondary, #5F5855)' : 'var(--ci-text-secondary, rgba(255,255,255,0.75))'}}>{value}</span>
     </div>
   );
 }

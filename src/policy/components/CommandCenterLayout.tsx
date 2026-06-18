@@ -8,7 +8,6 @@ import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardCheck, Network, FileEdit,
-  PlayCircle,
   CalendarDays,
   HelpCircle,
   ShieldCheck, Zap,
@@ -157,7 +156,6 @@ const NAV_ITEMS: NavItem[] = [
     featureId: 'systemDocumentation.view',
   },
   { id: 'help', to: '/help', label: 'Help Center', icon: HelpCircle, featureId: 'helpCenter.view' },
-  { id: 'demo', to: '/demo', label: 'Demo', icon: PlayCircle, featureId: 'demo.view' },
 ];
 
 /**
@@ -485,7 +483,11 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   // above for the shell breadcrumb history.
 
   return (
-    <ShellFrame>
+    <ShellFrame
+      data-bleed="full"
+      data-border="none"
+      data-shell-commandcenter
+    >
       {/* ═══════════════════════════════════════════════════════════
           Phase 2 Canonical Shell
           ShellFrame (backdrop + 4-sided inset)
@@ -496,9 +498,12 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                       └─ Main content region
          ═══════════════════════════════════════════════════════════ */}
       <ShellContentFrame
+        data-bleed="full"
+        data-border="none"
         scrollable={false}
         detail={hideChrome}
-        className={`flex flex-col ${isMobile ? 'rounded-none' : ''} text-[var(--v3-text-primary)]`}
+        className={`flex flex-col ${isMobile ? 'rounded-none' : ''} text-[var(--v3-text-primary)] h-full w-full`}
+        style={{ border: 'none', padding: '0', boxShadow: 'none' }}
       >
         {/* Inner flex column: topbar stacked above body */}
         <div className="flex h-full w-full flex-col min-h-0">
@@ -1015,7 +1020,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
 
                   <main data-shell-main="" className="flex-1 w-full h-full relative overflow-hidden">
                     <div data-shell-scroll="" className="absolute inset-0 overflow-y-auto custom-scrollbar">
-                      <div className={`${isMobile ? 'pb-[calc(96px+env(safe-area-inset-bottom))]' : 'pb-4'}`}>
+                      <div className={`${isMobile ? 'pb-[calc(96px+env(safe-area-inset-bottom))]' : ''}`}>
                         {children}
                       </div>
                     </div>

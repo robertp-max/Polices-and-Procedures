@@ -179,7 +179,7 @@ export function V32PageHeader({
             {eyebrow}
           </div>
         ) : null}
-        <h1 className="font-montserrat text-3xl font-semibold leading-tight tracking-[-0.04em] text-text-primary md:text-4xl">
+        <h1 className="font-montserrat text-3xl font-semibold leading-tight tracking-[-0.04em] text-[var(--v3-heading-primary)] md:text-4xl">
           {title}
         </h1>
         {description ? <p className="mt-3 max-w-3xl font-roboto text-sm leading-6 text-text-muted">{description}</p> : null}
@@ -215,7 +215,7 @@ export function V32SectionHeader({
             {eyebrow}
           </div>
         ) : null}
-        <h2 className="font-montserrat text-xl font-semibold tracking-[-0.03em] text-text-primary">{title}</h2>
+        <h2 className="font-montserrat text-xl font-semibold tracking-[-0.03em] text-[var(--v3-heading-primary)]">{title}</h2>
         {description ? <p className="mt-1 font-roboto text-xs text-text-muted">{description}</p> : null}
       </div>
       {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
@@ -269,7 +269,7 @@ export function V32EmptyState({ icon, title, description, action, className, ...
   return (
     <GlassPanel {...rest} className={`flex min-h-[220px] flex-col items-center justify-center p-8 text-center ${className ?? ''}`}>
       {icon ? <div className="mb-4 text-brand-teal">{icon}</div> : null}
-      <div className="font-montserrat text-base font-semibold text-text-primary">{title}</div>
+      <div className="font-montserrat text-base font-semibold text-[var(--v3-heading-primary)]">{title}</div>
       {description ? <p className="mt-2 max-w-sm text-sm leading-6 text-text-muted">{description}</p> : null}
       {action ? <div className="mt-5">{action}</div> : null}
     </GlassPanel>

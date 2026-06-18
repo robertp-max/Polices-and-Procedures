@@ -75,6 +75,10 @@
   --v3-text-primary: #FFFFFF;
   --v3-text-secondary: #94A3B8;
   --v3-text-tertiary: #64748B;
+  --v3-heading-primary: var(--v3-text-primary);
+  --brand-primary: var(--v3-teal);
+  --text-primary: var(--v3-text-primary);
+  --text-secondary: var(--v3-text-secondary);
   --v3-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --v3-duration: 0.7s;
   --v3-duration-fast: 0.4s;
@@ -85,7 +89,7 @@
      CANONICAL SHELL TOKENS (Phase 2)
      4-sided constrained page view for glassmorphism magnification
      ============================================================ */
-  --ci-glass-layer1-inset-desktop: clamp(16px, 1.6vw, 28px);
+  --ci-glass-layer1-inset-desktop: 0px; /* full screen main content, no outer framing per coordinator task */
   --ci-glass-layer1-border-radius-desktop: 2rem;
   /* Phase 2 — ShellNavRail width token (replaces raw Tailwind w-64). */
   --ci-shell-navrail-width: 16rem;
@@ -226,6 +230,187 @@
   .ci-status-pill--danger  { background: var(--ci-danger-bg);  color: var(--ci-danger-fg);  border-color: var(--ci-danger-bdr); }
   .ci-status-pill--accent  { background: rgba(var(--ci-accent-rgb), 0.12); color: var(--ci-accent); border-color: rgba(var(--ci-accent-rgb), 0.40); }
   .ci-status-pill--muted   { background: var(--ci-overlay-soft); color: var(--ci-text-on-surface-soft); border-color: var(--ci-overlay-border-strong); }
+
+  /* ═══════════════════════════════════════════════════════════════
+     PREMIUM CLEAN CORPORATE FILTER PILL / DATE NAV / ASSIGNEE BAR (title case per design #4)
+     MasterCalendarPage CES — exactly matches Image #4 CES design.
+     Clean light grid friendly, rounded pills, uppercase labels,
+     teal/orange active, NO borders/edges, no z/overflow bleed.
+     ═══════════════════════════════════════════════════════════════ */
+  .ces-premium-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 8px;
+    border-radius: 10px;
+    border: none !important;
+    box-shadow: none !important;
+    background: rgba(255, 255, 255, 0.02);
+    min-height: 32px;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .ces-premium-filter-bar::-webkit-scrollbar {
+    height: 2px;
+  }
+  .ces-premium-filter-bar::-webkit-scrollbar-thumb {
+    background: rgba(0, 209, 193, 0.2);
+    border-radius: 2px;
+  }
+  .ces-filter-label {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 9px;
+    font-size: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: none;
+    color: var(--v3-text-tertiary);
+    background: transparent;
+    border: none !important;
+    white-space: nowrap;
+  }
+  .ces-filter-pill {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 168px;
+    border-radius: 999px;
+    border: none !important;
+    background: transparent;
+    color: var(--v3-text-secondary);
+    font-size: 9.5px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: none;
+    padding: 3px 11px;
+    line-height: 1;
+    transition: all 120ms ease;
+    height: 24px;
+    max-width: min(168px, 42vw); /* mobile/responsive bleed guard, pills clean on <640 per #4 */
+  }
+  .ces-filter-pill:hover {
+    color: var(--v3-teal-light);
+    background: rgba(0, 209, 193, 0.04);
+  }
+  .ces-filter-pill.active {
+    background: rgba(0, 209, 193, 0.12) !important;
+    color: var(--v3-teal) !important;
+    border: none !important;
+  }
+  .ces-filter-clear {
+    white-space: nowrap;
+    border: none !important;
+    background: rgba(224, 123, 44, 0.08);
+    color: var(--v3-orange-light);
+    font-size: 9.5px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: none;
+    padding: 3px 10px;
+    line-height: 1;
+    height: 24px;
+    transition: all 120ms ease;
+  }
+  .ces-filter-clear:hover {
+    background: rgba(224, 123, 44, 0.15);
+    color: var(--v3-orange);
+  }
+  .ces-date-nav {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    border-radius: 0;
+    border: none !important;
+    background: transparent;
+    padding: 0;
+    height: auto;
+  }
+  .ces-date-nav button,
+  .ces-date-nav span {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: none;
+    background: transparent;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  /* Design #4 CES exact: clean prominent TODAY label no extra borders */
+
+  /* Extra clean for filter bar + pills (light grid friendly + no overflow bleed) */
+  .ces-premium-filter-bar,
+  .ces-date-nav {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .ces-filter-pill,
+  .ces-filter-clear,
+  .ces-legend-pill {
+    border: none !important;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ENHANCED .ces-premium-filter-bar .ces-filter-pill .ces-date-nav — EXACT DESIGN #4 LOOK
+     (Agent 7 global bleed pass): clean corporate, NO border, specific radius (10px bar / 999px pill),
+     padding, pure light bgs in care-indeed-light (#fff / #f8fafc), teal accents, no dark hex bleed.
+     Full clean, no stray borders, tight corporate feel per production light mode design.
+     ═══════════════════════════════════════════════════════════════ */
+  html[data-theme="care-indeed-light"] .ces-premium-filter-bar {
+    background: #FFFFFF !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 4px 8px !important;
+    box-shadow: none !important;
+  }
+  html[data-theme="care-indeed-light"] .ces-filter-pill {
+    border-radius: 999px !important;
+    border: none !important;
+    background: #F8FAFC !important;
+    padding: 3px 11px !important;
+    height: 24px !important;
+    color: var(--ci-text-secondary, #5F5855) !important;
+    font-size: 9.5px !important;
+  }
+  html[data-theme="care-indeed-light"] .ces-filter-pill:hover {
+    background: rgba(0, 121, 112, 0.08) !important;
+    color: #007970 !important;
+    border: none !important;
+  }
+  html[data-theme="care-indeed-light"] .ces-filter-pill.active {
+    background: #FFFFFF !important;
+    border: 1px solid #007970 !important;
+    color: #007970 !important;
+  }
+  html[data-theme="care-indeed-light"] .ces-date-nav {
+    border-radius: 10px !important;
+    border: none !important;
+    background: #F8FAFC !important;
+    padding: 1px !important;
+    height: 28px !important;
+  }
+  html[data-theme="care-indeed-light"] .ces-date-nav button,
+  html[data-theme="care-indeed-light"] .ces-date-nav span {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    background: transparent !important;
+    border: none !important;
+  }
 
   /* Surface text helpers (theme-aware via overlay-text tokens). */
   .ci-text-surface-strong  { color: var(--ci-text-on-surface-strong); }
@@ -385,7 +570,7 @@
       font-size: 16px;
     }
     /* Larger default tap targets on coarse pointers — keeps icon
-       buttons clickable without redesign. */
+       buttons clickable without visual redesign. */
     button, [role='button'], a.button, .glass-interactive {
       min-height: 36px;
     }
@@ -718,6 +903,23 @@ html[data-theme="care-indeed-light"] {
   --v3-base-bg: #F4F8F7;
   --v3-bg-gradient: linear-gradient(180deg, #F4F8F7 0%, #F8FBFA 100%);
 
+  /* === Exact required light-mode semantic tokens per spec ========= */
+  --brand-primary: #007970;       /* teal for H1/H2 page/workspace/card/modal titles, active nav, accents in light (production light mode / V3-compatible) */
+  --brand-primary-dark: #005F62;
+  --brand-accent: #C74601;        /* orange for urgency/primary CTA emphasis */
+
+  --app-bg: #F8F3F0;              /* warm paper / soft peach-teal background */
+  --surface: #FFFFFF;
+  --surface-elevated: #FFFDFB;
+  --surface-muted: #F6F1EE;
+
+  --text-primary: #1F1C1B;        /* body dark neutral */
+  --text-secondary: #5F5855;
+  --text-tertiary: #74706F;
+
+  --border: rgba(31, 28, 27, 0.09);
+  --shadow-soft: 0 18px 45px rgba(31, 28, 27, 0.08);
+
   /* === Care Indeed brand-kit tokens (CIHHCBRANDKIT.HTML) ========= */
   /* Primary (orange) — reserved for CTAs on light backgrounds */
   --ci-primary-100:   #FFFAF7;
@@ -761,7 +963,7 @@ html[data-theme="care-indeed-light"] {
   --ci-accent-rgb:    0, 121, 112;       /* CI secondary teal */
   --ci-accent-rgb-2:  0, 65, 66;         /* CI secondary-600 */
   --ci-cell-out:      #FAFBF8;           /* out-of-month neutral wash */
-  --ci-cell-today:    linear-gradient(180deg, #E5FEFF 0%, #FFFFFF 100%);
+  --ci-cell-today:    linear-gradient(180deg, rgba(0,121,112,0.08) 0%, #FFFFFF 100%); /* teal per design #4 */
   --ci-cell-day:      #FFFFFF;
 
   --ci-text:          #1F1C1B;           /* neutral-600 body */
@@ -783,9 +985,13 @@ html[data-theme="care-indeed-light"] h2,
 html[data-theme="care-indeed-light"] h3,
 html[data-theme="care-indeed-light"] h4,
 html[data-theme="care-indeed-light"] h5,
-html[data-theme="care-indeed-light"] h6 {
+html[data-theme="care-indeed-light"] h6,
+html[data-theme="care-indeed-light"] .page-title,
+html[data-theme="care-indeed-light"] .section-title,
+html[data-theme="care-indeed-light"] [data-header],
+html[data-theme="care-indeed-light"] .font-heading {
   font-family: 'Montserrat', 'Outfit', sans-serif;
-  color: #1F1C1B;
+  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode. Use clinical teal, not black */
 }
 html[data-theme="care-indeed-light"] .custom-scrollbar::-webkit-scrollbar-thumb,
 html[data-theme="care-indeed-light"] .custom-scrollbar-x::-webkit-scrollbar-thumb {
@@ -879,12 +1085,10 @@ html[data-theme="care-indeed-light"] [data-shell-main] h2.text-white {
 }
 
 /* ── Light mode: CES calendar + execution surfaces + remaining dark hex bleed ──
-   MasterCalendarPage (CES /ces/calendar) and some PM/regulatory/workflow-execution
-   surfaces use local hardcoded dark palettes (CES_V32_COLORS, swimlane roots, etc.)
-   that bypass the token system. These are scoped via data-* attrs added to the
-   minimal roots only (no component logic or data changes). Protected dark shells
-   (FormViewer, PolicyViewer32) are deliberately not given these attrs.
-   Also completes sidebar hover/active + group header contrast for pale nav bg.
+   MasterCalendarPage (CES /ces/calendar) and swimlane/workflow-execution
+   surfaces use live v3 tokens + .swimlane-* / .v3-calendar-surface now.
+   Scoped via data-* + classes. Dark mode uses clean v3 slate-navy style (teal/orange accents).
+   No more indigo bleed or hard #0b0f15 leaking.
 */
 html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0B0F15\],
 html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0b0f15\],
@@ -894,26 +1098,52 @@ html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#141A23\],
 html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#141a23\],
 html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0d1a2d\] {
   background-color: #FFFFFF !important;
-  color: #1F1C1B !important;
-  border-color: #E5E4E3 !important;
+  background: #F8FAFC !important;
+  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+  border: none !important;
+  padding: 0 !important;
 }
 html[data-theme="care-indeed-light"] [data-ces-calendar] .text-white,
 html[data-theme="care-indeed-light"] [data-ces-calendar] [class*="text-white/"] {
-  color: #1F1C1B !important;
+  color: var(--v3-teal, #007970) !important; /* teal per design #4 */
 }
 html[data-theme="care-indeed-light"] [data-ces-calendar] .text-\[\#A0ABC0\],
 html[data-theme="care-indeed-light"] [data-ces-calendar] .text-\[\#5E6A7F\],
 html[data-theme="care-indeed-light"] [data-ces-calendar] .text-\[\#6E7C93\] {
-  color: #52404B !important;
+  color: var(--ci-text-muted-2, #52404B) !important;
+}
+
+/* CES Sprint Board (swimlane board) — full bleed no dark bleed in light, pill headers, #4 clean */
+html[data-theme="care-indeed-light"] .ces-sprint-board,
+html[data-theme="care-indeed-light"] .ces-sprint-board [data-ces-board] {
+  background: transparent !important;
+}
+html[data-theme="care-indeed-light"] .ces-sprint-board .rounded-xl,
+html[data-theme="care-indeed-light"] .ces-sprint-board .rounded-full {
+  border-color: transparent !important;
 }
 
 /* Workflow execution / swimlane dark canvases (scoped; library cards are already token clean) */
 html[data-theme="care-indeed-light"] [data-workflow-execution] .bg-\[\#0b0f15\],
 html[data-theme="care-indeed-light"] [data-workflow-execution] .bg-\[\#0B0F15\],
 html[data-theme="care-indeed-light"] [data-workflow-execution] .bg-\[\#0f131a\],
-html[data-theme="care-indeed-light"] [data-workflow-execution] .bg-\[\#141a23\] {
-  background-color: #FFFFFF !important;
-  color: #1F1C1B !important;
+html[data-theme="care-indeed-light"] [data-workflow-execution] .bg-\[\#141a23\],
+html[data-theme="care-indeed-light"] .swimlane-workspace-overlay .bg-\[\#0b0f15\],
+html[data-theme="care-indeed-light"] .swimlane-workspace-overlay .bg-\[\#0B0F15\],
+html[data-theme="care-indeed-light"] .swimlane-workspace-overlay .bg-\[\#0f131a\],
+html[data-theme="care-indeed-light"] .swimlane-workspace-overlay .bg-\[\#141a23\],
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal .bg-\[\#0b0f15\],
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal .bg-\[\#0B0F15\],
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal .bg-\[\#0b0f15\],
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal .bg-\[\#141a23\],
+html[data-theme="care-indeed-light"] .qa-wf03-swimlane .bg-\[\#0b0f15\],
+html[data-theme="care-indeed-light"] .qa-wf03-swimlane .bg-\[\#0B0F15\],
+html[data-theme="care-indeed-light"] .swimlane-workspace-overlay [class*="111923"],
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal [class*="111923"],
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal [class*="111923"],
+html[data-theme="care-indeed-light"] .qa-wf03-swimlane [class*="111923"] {
+  background-color: var(--ci-surface) !important;
+  color: var(--ci-text-primary) !important;
 }
 
 /* PM / regulatory / other common dark execution panels (scoped) */
@@ -923,19 +1153,25 @@ html[data-theme="care-indeed-light"] [data-pm-shell] .bg-\[\#0f1420\] {
 }
 html[data-theme="care-indeed-light"] [data-regulatory-drawer] .bg-\[\#0d1a2d\] {
   background-color: #FFFFFF !important;
-  color: #1F1C1B !important;
+  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
 }
 
 /* Sidebar (data-shell-navrail already present) — slightly deeper soft teal than
    the page base, high contrast text. */
 html[data-theme="care-indeed-light"] [data-shell-navrail] {
   background-color: #DCEAE6 !important;
-  border-right-color: #CFE0DB !important;
+  /* no borders on four sides — production light mode flat light surfaces, no left/right/top/bottom framing lines. Side nav correct, no bleed. */
+  border: none !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  box-shadow: none !important;
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] .text-text-muted,
 html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="text-text-muted"],
 html[data-theme="care-indeed-light"] [data-shell-navrail] .text-text-primary {
-  color: #1F1C1B !important;
+  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] .text-text-disabled {
   color: #16201F !important;
@@ -944,7 +1180,7 @@ html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="hover:bg-bord
   background-color: rgba(0, 121, 112, 0.08) !important;
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="hover:text-text-primary"]:hover {
-  color: #1F1C1B !important;
+  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="bg-brand-teal/10"] {
   background-color: rgba(0, 121, 112, 0.10) !important;
@@ -953,13 +1189,185 @@ html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="text-brand-te
   color: #007970 !important;
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail]::after {
-  background: rgba(31, 28, 27, 0.08) !important;
+  background: transparent !important; /* no side border simulation — production light mode */
 }
 
 /* Topbar surface reinforcement (bg-surface/85 + border) */
-html[data-theme="care-indeed-light"] [data-shell-topbar] {
+html[data-theme="care-indeed-light"] [data-shell-topbar],
+html[data-theme="v3-veil"] [data-shell-topbar],
+html:not([data-theme]) [data-shell-topbar] {
   background-color: rgba(255, 255, 255, 0.95) !important;
-  border-bottom-color: #E5E4E3 !important;
+  /* no borders on four sides — production light mode flat light surfaces, no left/right/top/bottom framing lines */
+  border: none !important;
+  border-bottom: none !important;
+}
+
+/* Main content canvas — ensure no perimeter border on top/left/bottom/right in light mode per reference + full screen main content
+   STRENGTHENED (Agent 7): full bleed padding 0 enforced on calendar surfaces too. */
+html[data-theme="care-indeed-light"] [data-shell-content-frame],
+html[data-theme="care-indeed-light"] [data-shell-main],
+html[data-theme="care-indeed-light"] [data-main-workspace],
+html[data-theme="care-indeed-light"] [data-ces-calendar],
+html[data-theme="care-indeed-light"] .ces-calendar-grid,
+html[data-theme="care-indeed-light"] .TimelineMonth,
+html[data-theme="care-indeed-light"] .swimlane-execution-map {
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 0 !important; /* full screen / bleed fix */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Same for dark mode (v3-veil / default dark glass) + full screen */
+html[data-theme="v3-veil"] [data-shell-content-frame],
+html:not([data-theme]) [data-shell-content-frame],
+html[data-theme="v3-veil"] [data-shell-main],
+html:not([data-theme]) [data-shell-main] {
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Calendar (CES, Master, Staffing) and swimlane main areas — full screen feel, no perimeter borders, bleeding fixed
+   Per Agent 13 task (coord Agent 5): main calendar + swimlane MUST occupy ENTIRE available screen area (full bleed inside shell content frame, no borders, no padding, no internal frames).
+   STRENGTHENED (Agent 7): explicit !important light bgs (#fff / #f8fafc) + no dark hex on listed selectors. */
+html[data-theme="care-indeed-light"] [data-ces-calendar],
+html[data-theme="care-indeed-light"] .ces-calendar-grid,
+html[data-theme="care-indeed-light"] .TimelineMonth,
+html[data-theme="care-indeed-light"] .swimlane-execution-map,
+html[data-theme="care-indeed-light"] .ces-event-pill,
+html[data-theme="care-indeed-light"] .ces-zoom-card,
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal,
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal,
+html[data-theme="care-indeed-light"] .card-spotlight,
+html[data-theme="care-indeed-light"] .ces-card-spotlight,
+html[data-theme="care-indeed-light"] .swimlane-canvas,
+html[data-theme="care-indeed-light"] .MonthCalendarView,
+html[data-theme="care-indeed-light"] .staffing-calendar-grid,
+[data-ces-calendar],
+[data-shell-main] .calendar-grid,
+[data-shell-main] .MonthCalendarView,
+.swimlane-execution-map,
+.swimlane-canvas,
+.v3-calendar-surface,
+.TimelineMonth,
+.WeekCalendarView,
+.staffing-calendar,
+.calendar-day-cell,
+.ces-calendar-grid,
+.ces-event-pill,
+.ces-card-spotlight.ces-event-pill {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important; /* responsive bleed guard <640 */
+}
+/* Additional #f8fafc canvas surfaces + purge any remaining stray borders / dark bleed */
+html[data-theme="care-indeed-light"] [data-ces-calendar],
+html[data-theme="care-indeed-light"] .ces-calendar-grid,
+html[data-theme="care-indeed-light"] .TimelineMonth,
+html[data-theme="care-indeed-light"] .swimlane-execution-map,
+html[data-theme="care-indeed-light"] .ces-event-pill {
+  background-color: var(--ces-canvas) !important;
+  background: var(--ces-canvas) !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Force main calendar/swimlane to fill entire available flex area (full bleed inside shell) */
+.swimlane-execution-map,
+[data-ces-calendar],
+.v3-calendar-surface,
+.TimelineMonth,
+.MonthCalendarView,
+.WeekCalendarView {
+  flex: 1 1 0%;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Kanban/Gantt/PM views clean corporate surfaces (no borders on main card, match #4) + popup fixes */
+html[data-theme="care-indeed-light"] .KanbanColumn,
+html[data-theme="care-indeed-light"] .kanban-column,
+html[data-theme="care-indeed-light"] .gantt-view,
+html[data-theme="care-indeed-light"] [data-pm-shell] {
+  border: none !important;
+  box-shadow: none !important;
+}
+html[data-theme="care-indeed-light"] .ces-event-pill,
+html[data-theme="care-indeed-light"] .ces-card-spotlight,
+html[data-theme="care-indeed-light"] .ces-zoom-card,
+html[data-theme="care-indeed-light"] .CesEventOverviewCard,
+html[data-theme="care-indeed-light"] .ces-calendar-grid,
+html[data-theme="care-indeed-light"] .calendar-day-cell {
+  border: none !important;
+  background: #f8fafc !important;
+  color: #1F1C1B !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+/* #4: rounded pills teal/orange exact (no square edges) + ces filters clean */
+html[data-theme="care-indeed-light"] .ces-event-pill,
+html[data-theme="care-indeed-light"] .ces-filter-pill {
+  border-radius: 999px !important;
+}
+html[data-theme="care-indeed-light"] .ces-premium-filter-bar,
+html[data-theme="care-indeed-light"] .ces-state-legend,
+html[data-theme="care-indeed-light"] .ces-date-nav,
+html[data-theme="care-indeed-light"] .ces-filter-clear {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+html[data-theme="care-indeed-light"] .ces-filter-pill {
+  border-radius: 999px !important;
+  text-transform: uppercase !important;
+}
+html[data-theme="care-indeed-light"] .ces-filter-pill.active {
+  background: rgba(0, 209, 193, 0.12) !important;
+  color: #007970 !important;
+}
+html[data-theme="care-indeed-light"] .ces-filter-clear {
+  background: rgba(224, 123, 44, 0.09) !important;
+  color: #C74600 !important;
+}
+html[data-theme="care-indeed-light"] .ces-filter-label {
+  text-transform: uppercase !important;
+}
+html[data-theme="care-indeed-light"] .ces-date-label {
+  text-transform: uppercase !important;
+  font-weight: 800 !important;
+}
+
+/* Upcoming clean no border/edge/z bleed + light friendly */
+html[data-theme="care-indeed-light"] .hidden.lg\:flex.w-72,
+[data-ces-calendar] .hidden.lg\:flex.w-72 {
+  border: none !important;
+  background: #FFFFFF !important;
+}
+html[data-theme="care-indeed-light"] .hidden.lg\:flex.w-72 > div {
+  text-transform: uppercase !important;
 }
 
 /* General remaining arbitrary dark hex used in route canvases (scoped to shell content) */
@@ -971,15 +1379,321 @@ html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#141A23\],
 html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#141a23\],
 html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#0f172a\],
 html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#1a1f2e\],
-html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#081425\] {
-  background-color: #FFFFFF !important;
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#081425\],
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#0B0F15\],
+html[data-theme="care-indeed-light"] [data-shell-main] * .bg-\[\#0F131A\] {
+  background-color: var(--ci-surface, #FFFFFF) !important;
+  color: var(--ci-text-primary, #1F1C1B) !important;
+  border-color: var(--ci-border, #E5E4E3) !important;
+  border: none !important;
+}
+
+/* Bleeding fix + calendar match design #4 (light clean surfaces, no dark bleed into grid/panels, no borders). Side nav correct (no right bleed/border), main card full occupy. No bleed from images into calendar. */
+html[data-theme="care-indeed-light"] [data-shell-main] .calendar,
+html[data-theme="care-indeed-light"] [data-shell-main] .MonthCalendarView,
+html[data-theme="care-indeed-light"] [data-shell-main] .staffing-calendar,
+html[data-theme="care-indeed-light"] .TimelineMonth,
+html[data-theme="care-indeed-light"] .month-grid,
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#0B0F15\],
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#0F131A\],
+html[data-theme="care-indeed-light"] [data-shell-main] .bg-\[\#141A23\] {
+  background-color: var(--ci-surface, #FFFFFF) !important;
+  color: var(--ci-text-primary, #1F1C1B) !important;
+  border: none !important;
+  overflow: hidden !important;
+}
+
+/* Fix bleed on state legend + role filters (Agent 15 / design #4 exact) + MasterCalendar CES Image #4:
+   clean light grid friendly, rounded pills, NO borders/edges anywhere, teal/orange active states.
+   Upcoming clean, date-nav prominent. No z or overflow bleed. */
+.ces-state-legend,
+.ces-role-filters,
+[data-design-legend="state"],
+[data-design-filter="role"],
+.ces-premium-filter-bar,
+.ces-date-nav,
+html[data-theme="care-indeed-light"] [data-shell-main] .ces-state-legend,
+html[data-theme="care-indeed-light"] [data-shell-main] .ces-role-filters,
+html[data-theme="care-indeed-light"] .ces-premium-filter-bar,
+html[data-theme="care-indeed-light"] .ces-date-nav,
+html[data-theme="care-indeed-light"] .ces-filter-pill,
+html[data-theme="care-indeed-light"] .ces-filter-clear,
+html[data-theme="care-indeed-light"] .ces-legend-pill {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+html[data-theme="care-indeed-light"] .ces-filter-pill {
+  color: #3F3A39 !important;
+}
+html[data-theme="care-indeed-light"] .ces-filter-pill.active {
+  background: rgba(0, 121, 112, 0.12) !important;
+  color: #007970 !important;
+}
+html[data-theme="care-indeed-light"] .ces-filter-clear {
+  background: rgba(224, 123, 44, 0.09) !important;
+  color: #C74600 !important;
+}
+html[data-theme="care-indeed-light"] .ces-filter-label {
+  color: #6B645F !important;
+  background: transparent !important;
+}
+html[data-theme="care-indeed-light"] .ces-premium-filter-bar {
+  background: rgba(0, 121, 112, 0.015) !important;
+}
+html[data-theme="care-indeed-light"] .ces-date-label,
+html[data-theme="care-indeed-light"] .ces-date-nav button {
   color: #1F1C1B !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-main] .ces-state-legend .ces-legend-pill,
+html[data-theme="care-indeed-light"] [data-shell-main] .ces-legend-pill {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* Upcoming panel clean — Image #4: remove all edges, no z bleed, light grid friendly */
+html[data-theme="care-indeed-light"] [data-ces-calendar] .lg\:flex.w-72,
+[data-ces-calendar] .hidden.lg\:flex.w-72 {
+  border: none !important;
+  box-shadow: none !important;
+}
+[data-ces-calendar] .hidden.lg\:flex.w-72 button {
+  border: none !important;
+  border-bottom: none !important;
+}
+
+/* Extend design #4 calendar: full occupy + no image bleed into grids from any source (global dots, evidence images, nav bleed, abs elements) */
+html[data-theme="care-indeed-light"] [data-shell-main] .calendar-grid,
+html[data-theme="care-indeed-light"] [data-shell-main] .MonthCalendarView,
+html[data-theme="care-indeed-light"] [data-shell-main] .staffing-calendar-grid,
+html[data-theme="care-indeed-light"] [data-shell-main] .calendar-grid button,
+html[data-theme="care-indeed-light"] [data-shell-main] .MonthCalendarView button {
+  background-color: #FFFFFF !important;
+  border: none !important;
+  overflow: hidden !important;
+  max-width: 100% !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-main] .calendar img,
+html[data-theme="care-indeed-light"] [data-shell-main] .MonthCalendarView img,
+html[data-theme="care-indeed-light"] [data-shell-main] .staffing-calendar img,
+html[data-theme="care-indeed-light"] [data-ces-calendar] img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+}
+[data-shell-main] [data-ces-calendar],
+[data-shell-main] .MonthCalendarView,
+[data-shell-main] .staffing-calendar,
+[data-shell-main] .TimelineMonth {
+  position: relative !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  background-color: #FFFFFF !important;
+  border: none !important;
+}
+
+/* Popup / detail modal bleed fixes (CesEventInteraction + Swimlane + GlobalModal custom) — clean corporate, design #4 reference: solid light surfaces, no dark hex bleed in overlays, proper text contrast
+   STRENGTHENED (Agent 7): !important for popups + ces elements, clean #fff/#f8fafc bgs, purge borders, full bleed padding 0. */
+html[data-theme="care-indeed-light"] .ces-zoom-backdrop,
+html[data-theme="care-indeed-light"] .ces-zoom-card,
+html[data-theme="care-indeed-light"] .ces-hover-card,
+html[data-theme="care-indeed-light"] .ces-card-spotlight,
+html[data-theme="care-indeed-light"] .swimlane-workspace-overlay,
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal,
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal,
+html[data-theme="care-indeed-light"] .card-spotlight.swimlane-zoom-modal,
+html[data-theme="care-indeed-light"] .card-spotlight.swimlane-level-two-modal,
+html[data-theme="care-indeed-light"] .level-two-workspace,
+html[data-theme="care-indeed-light"] [data-ces-calendar],
+html[data-theme="care-indeed-light"] .ces-calendar-grid,
+html[data-theme="care-indeed-light"] .TimelineMonth,
+html[data-theme="care-indeed-light"] .swimlane-execution-map,
+html[data-theme="care-indeed-light"] .ces-event-pill {
+  background-color: var(--ci-surface) !important;
+  background: var(--ci-surface) !important;
+  color: var(--ci-text-primary) !important;
+  border-color: var(--ci-border, #E5E4E3) !important;
+  border: none !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+html[data-theme="care-indeed-light"] .ces-zoom-card,
+html[data-theme="care-indeed-light"] .ces-hover-card,
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal,
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal,
+html[data-theme="care-indeed-light"] .card-spotlight {
+  box-shadow: 0 18px 45px rgba(31, 28, 27, 0.10) !important;
+  border: 1px solid var(--ci-border, #E5E4E3) !important;
+  background-color: var(--ci-surface) !important;
+  isolation: isolate;
+}
+/* Force light clean on all ces/swinlane inline dark fallbacks to kill #1-3 bleed */
+html[data-theme="care-indeed-light"] .ces-zoom-card [style*="background:"],
+html[data-theme="care-indeed-light"] .ces-zoom-card [style*="#0f131a"],
+html[data-theme="care-indeed-light"] .ces-zoom-card [style*="#0b0f15"],
+html[data-theme="care-indeed-light"] [data-ces-calendar] [style*="#0f131a"],
+html[data-theme="care-indeed-light"] [data-ces-calendar] [style*="#0b0f15"],
+html[data-theme="care-indeed-light"] .swimlane-execution-map [style*="#0b0f15"],
+html[data-theme="care-indeed-light"] .swimlane-execution-map [style*="#0f131a"],
+html[data-theme="care-indeed-light"] .TimelineMonth [style*="#0b0f15"],
+html[data-theme="care-indeed-light"] .TimelineMonth [style*="#0f131a"],
+html[data-theme="care-indeed-light"] .ces-zoom-card,
+html[data-theme="care-indeed-light"] .ces-hover-card,
+html[data-theme="care-indeed-light"] .ces-zoom-card div[style*="background"],
+html[data-theme="care-indeed-light"] .ces-hover-card div[style*="background"] {
+  background: var(--ci-surface) !important;
+  background-color: var(--ci-surface) !important;
+  color: var(--ci-text-primary) !important;
+}
+html[data-theme="care-indeed-light"] .ces-zoom-backdrop {
+  background: color-mix(in srgb, var(--ci-bg) 92%, transparent) !important;
+}
+
+/* STRENGTHENED global bleed purge (Agent 7): kill any remaining dark hex bleed inside [data-ces-calendar] / calendar surfaces / popups / swimlane in light mode */
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0B0F15\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0b0f15\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0F131A\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0f131a\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#141A23\],
+html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#141a23\],
+html[data-theme="care-indeed-light"] .ces-calendar-grid .bg-\[\#0B0F15\],
+html[data-theme="care-indeed-light"] .TimelineMonth .bg-\[\#0F131A\],
+html[data-theme="care-indeed-light"] .swimlane-execution-map .bg-\[\#0b0f15\],
+html[data-theme="care-indeed-light"] .ces-event-pill .bg-\[\#141A23\],
+html[data-theme="care-indeed-light"] .ces-zoom-card .bg-\[\#0B0F15\],
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal [class*="111923"],
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal [class*="111923"] {
+  background-color: var(--ci-surface) !important;
+  background: #FFFFFF !important;
+  border: none !important;
+}
+html[data-theme="care-indeed-light"] .ces-zoom-card .text-white,
+html[data-theme="care-indeed-light"] .ces-zoom-card [class*="text-white"],
+html[data-theme="care-indeed-light"] .ces-zoom-card .text-\[\#E2E8F0\],
+html[data-theme="care-indeed-light"] .ces-hover-card .text-white,
+html[data-theme="care-indeed-light"] .ces-hover-card [class*="text-white"],
+html[data-theme="care-indeed-light"] .ces-hover-card .text-\[\#E2E8F0\],
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal .text-white,
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal [class*="text-white"],
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal .text-white,
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal [class*="text-white"] {
+  color: #1F1C1B !important;
+}
+html[data-theme="care-indeed-light"] .ces-zoom-card .text-\[\#A0ABC0\],
+html[data-theme="care-indeed-light"] .ces-zoom-card .text-\[\#8A94A6\],
+html[data-theme="care-indeed-light"] .ces-hover-card .text-\[\#A0ABC0\],
+html[data-theme="care-indeed-light"] .ces-hover-card .text-\[\#8A94A6\],
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal .text-\[\#A0ABC0\],
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal .text-\[\#8A94A6\] {
+  color: #52404B !important;
+}
+/* Ensure CesEventOverviewCard (used in popups + hover tooltips) and fixed z portals use clean corporate light surfaces per design #4 */
+html[data-theme="care-indeed-light"] .ces-zoom-card > div[style*="background"],
+html[data-theme="care-indeed-light"] .ces-hover-card > div[style*="background"],
+html[data-theme="care-indeed-light"] .fixed > div[style*="background: var(--ci-surface"],
+html[data-theme="care-indeed-light"] .fixed[style*="z-"] > div > div[style*="background"],
+html[data-theme="care-indeed-light"] .ces-event-pill + div {
+  background-color: var(--ci-surface) !important;
+  color: var(--ci-text-primary) !important;
+  border-color: var(--ci-border, #E5E4E3) !important;
+}
+/* GlobalModalShell custom-surface popups (swimlane workspace) + detail clean corporate no bleed */
+html[data-theme="care-indeed-light"] .swimlane-workspace-overlay,
+html[data-theme="care-indeed-light"] [class*="swimlane-workspace-overlay"] {
+  background: rgba(250, 251, 248, 0.88) !important;
+  backdrop-filter: blur(6px) !important;
+}
+html[data-theme="care-indeed-light"] .card-spotlight[class*="zoom"],
+html[data-theme="care-indeed-light"] .card-spotlight[class*="level-two"] {
+  background-color: #FFFFFF !important;
   border-color: #E5E4E3 !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-main] .calendar-grid button,
+html[data-theme="care-indeed-light"] [data-shell-main] .MonthCalendarView button {
+  background-color: var(--ci-surface-muted, #F4F4F2) !important;
+  border: none !important;
 }
 
 /* Spotlight glow tuning for light (subtle teal, no dark shadow wash) */
 html[data-theme="care-indeed-light"] .card-spotlight {
   --spotlight-color: rgba(0, 121, 112, 0.12);
+}
+
+/* Coordinator final polish: universal no-borders + full-screen main for shell + all views (prevents bleed, matches design contract #4). Side nav correct, main card full occupy.
+   STRENGTHENED (Agent 7): purge ALL stray borders on calendar surfaces globally. */
+[data-shell-app],
+[data-shell-navrail],
+[data-shell-topbar],
+[data-shell-content-frame],
+[data-shell-main],
+.v32-command-center-app,
+.v3-shell-frame-inset,
+.v3-app-shell-base,
+.staffing-calendar,
+.MonthCalendarView,
+.TimelineMonth,
+.calendar-grid,
+main[data-shell-main],
+.swimlane-execution-map,
+[data-ces-calendar],
+.ces-calendar-grid,
+.ces-event-pill,
+.swimlane-execution-map,
+.TimelineMonth {
+  border: none !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-color: transparent !important;
+  overflow: hidden !important;
+}
+/* Main card (ShellContentFrame + main area) must FULLY OCCUPY remaining space next to side nav. No padding, margin, or bleed. */
+[data-shell-content-frame],
+[data-shell-main],
+.v3-shell-frame-inset,
+main[data-shell-main] {
+  padding: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+/* Side nav + main content full occupy contract: abut cleanly, no gap, no simulated border bleed from nav into calendar/main. Main card consumes 100% remaining space. */
+.flex.flex-1.min-h-0.overflow-hidden.relative > [data-shell-navrail] + div,
+.flex.flex-1.min-h-0.overflow-hidden.relative > div.flex-1 {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  border-left: none !important;
+}
+[data-shell-navrail] + .flex-1,
+[data-shell-navrail] + div.flex-1.flex-col {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+}
+/* Confirm full screen main card + side nav (Agent 16 coord): no right edge from nav, calendar/main full bleed z=auto contained */
+[data-shell-navrail] {
+  z-index: 40 !important;
+  border-right: none !important;
+}
+[data-shell-main],
+main[data-shell-main],
+[data-shell-content-frame] {
+  z-index: 1 !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
 }
 html[data-theme="care-indeed-light"] .spotlight-outer-glow,
 html[data-theme="care-indeed-light"] .spotlight-inner-glow {
@@ -1030,9 +1744,9 @@ html[data-theme="care-indeed-light"] .spotlight-inner-glow {
   /* Phase 3 — execution-timeline / board state tokens (theme-aware).
      on-track = teal, action = orange. Distinct from --ci-accent because
      --ci-accent varies (gold on CI-ION, teal on Care Indeed). */
-  --ci-state-on-track:    #0F766E;
-  --ci-state-on-track-bg: rgba(15,118,110,0.12);
-  --ci-action:            #C74601;
+  --ci-state-on-track:    #007970;
+  --ci-state-on-track-bg: rgba(0,121,112,0.12);
+  --ci-action:            #E07B2C; /* design #4 orange */
 }
 
 /* ── Semantic tokens — CI-ION dark (legacy default) ────────── */
@@ -1122,9 +1836,12 @@ html[data-theme="care-indeed-light"] {
   --ci-surface:       #FFFFFF;
   --ci-surface-2:     #FAFBF8;
   --ci-surface-muted: #F4F4F2;
-  --ci-text-primary:  #1F1C1B;
+  --ci-text-primary:  #111316; /* dark neutral body text for production light mode */
   --ci-text-muted-2:  #52404B;
   --ci-text-subtle:   #747474;
+  --brand-primary:    #007970; /* clinical teal for production light mode */
+  --text-primary:     var(--ci-text-primary);
+  --text-secondary:   #5F5855;
   --ci-link:          #007970;
   --ci-link-hover:    #004142;
   --ci-accent:        #007970;
@@ -1363,6 +2080,84 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] {
   --ces-red-soft:     rgba(255,122,122,0.16);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   CES COMPLIANCE CALENDAR CLEAN CORPORATE (live only)
+   Fixes bleeding (bg bleed, pill overlap, z, borders).
+   Monthly grid + event pills + filters + header/nav for production light mode.
+   Uses actual REGULATORY_EVENTS + classify from stores.
+   Full main area, no outer borders, clean rounded pills.
+   ═══════════════════════════════════════════════════════════════ */
+.ces-calendar-grid,
+[data-ces-calendar] {
+  background: var(--ces-canvas) !important;
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0;
+}
+.calendar-day-cell {
+  border: none !important;
+  border-color: transparent !important;
+  background: var(--ces-canvas) !important;
+}
+/* STRENGTHENED full bleed + clean light bg per Image #4, no dark bleed, use --ces-canvas */
+html[data-theme="care-indeed-light"] .ces-calendar-grid,
+html[data-theme="care-indeed-light"] [data-ces-calendar],
+html[data-theme="care-indeed-light"] .TimelineMonth {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+/* Purge stray borders on ALL calendar surfaces (cells, grids, pills, timelines) in light mode */
+html[data-theme="care-indeed-light"] .calendar-day-cell,
+html[data-theme="care-indeed-light"] .ces-event-pill,
+html[data-theme="care-indeed-light"] .TimelineChip,
+html[data-theme="care-indeed-light"] .ces-calendar-grid *,
+html[data-theme="care-indeed-light"] [data-ces-calendar] * {
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  background: var(--ces-canvas) !important;
+}
+.ces-event-pill, .TimelineChip, [data-testid="calendar-event"] {
+  /* Match exactly the pills in design #4 (Image #4): full pill shape (999px), border:none, no bleed, clean corporate */
+  border-radius: 999px !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+  background-color: inherit !important;
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 0 !important;
+}
+html[data-theme="care-indeed-light"] .ces-event-pill,
+html[data-theme="care-indeed-light"] .TimelineChip,
+html[data-theme="care-indeed-light"] [data-testid="calendar-event"] {
+  /* Prevent any dark surface/image bleed into light mode event pills */
+  /* STRENGTHENED: force clean --ces-canvas bg, no border, no dark hex per design #4 */
+  background-color: var(--ces-canvas) !important;
+  background: var(--ces-canvas) !important;
+  border: none !important;
+  color: inherit !important;
+}
+
 html[data-theme="care-indeed-light"][data-ci-mode="dark"] body {
   background: var(--ci-bg);
   color: var(--ci-text-primary);
@@ -1490,7 +2285,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-glass-panel {
   -webkit-backdrop-filter: var(--v3-glass-blur);
   backdrop-filter: var(--v3-glass-blur);
   overflow: hidden; /* clean edges on glass */
-  transition: transform var(--v3-duration) var(--v3-ease), 
+  transition: transform var(--v3-duration) var(--v3-ease),
               opacity var(--v3-duration) var(--v3-ease),
               box-shadow 280ms var(--v3-ease);
 }
@@ -1890,7 +2685,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
     overflow: visible !important;
     font-size: 11pt !important;
     line-height: 1.4 !important;
-    color: #1F1C1B !important;
+    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
   }
 
   /* ── 3. Shell layer reset ── */
@@ -1942,7 +2737,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
   }
   .policy-page {
     background: #ffffff !important;
-    color: #1F1C1B !important;
+    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
     border: none !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -2096,7 +2891,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
     padding: 5px 8px !important;
     font-weight: 700 !important;
     font-size: 8.5pt !important;
-    color: #1F1C1B !important;
+    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
     text-transform: uppercase !important;
     letter-spacing: 0.08em !important;
     vertical-align: bottom !important;
@@ -2105,7 +2900,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
     border: 1px solid #ccc !important;
     padding: 5px 8px !important;
     font-size: 9.5pt !important;
-    color: #1F1C1B !important;
+    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
     background: transparent !important;
     vertical-align: top !important;
   }
@@ -2217,6 +3012,9 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
     visibility: visible !important;
   }
   body:has(.form-page) [data-form-shell] {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
     min-height: 0 !important;
     height: auto !important;
     overflow: visible !important;
@@ -2244,7 +3042,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
   body:has(.form-page) .form-page input,
   body:has(.form-page) .form-page textarea,
   body:has(.form-page) .form-page select {
-    color: #1F1C1B !important;
+    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
     border-color: #999 !important;
     background: transparent !important;
   }
@@ -2269,7 +3067,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
   .ia-form-print-root textarea,
   .ia-form-print-root select {
     border-color: #aaa !important;
-    color: #1F1C1B !important;
+    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
     background: transparent !important;
   }
 
@@ -2301,7 +3099,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
   .policy-page input,
   .policy-page textarea,
   .policy-page select {
-    color: #1F1C1B !important;
+    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
     border-color: #999 !important;
     background: transparent !important;
   }
@@ -2355,7 +3153,7 @@ html[data-theme="care-indeed-light"] .text-white,
 html[data-theme="care-indeed-light"] .text-white\/95,
 html[data-theme="care-indeed-light"] .text-white\/90,
 html[data-theme="care-indeed-light"] .text-white\/85,
-html[data-theme="care-indeed-light"] .text-white\/80 { color: #1F1C1B !important; }   /* neutral-600 */
+html[data-theme="care-indeed-light"] .text-white\/80 { color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }   /* neutral-600 */
 html[data-theme="care-indeed-light"] .text-white\/75,
 html[data-theme="care-indeed-light"] .text-white\/70,
 html[data-theme="care-indeed-light"] .text-white\/65,
@@ -2393,7 +3191,7 @@ html[data-theme="care-indeed-light"] .bg-white\/20,
 html[data-theme="care-indeed-light"] .bg-white\/10,
 html[data-theme="care-indeed-light"] .bg-white\/5,
 html[data-theme="care-indeed-light"] .bg-white\/\[0\.03\],
-html[data-theme="care-indeed-light"] .bg-white\/\[0\.02\] { background-color: #FAFBF8 !important; color: #1F1C1B !important; }
+html[data-theme="care-indeed-light"] .bg-white\/\[0\.02\] { background-color: #FAFBF8 !important; color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
 
 /* Dividers — neutral-200 */
 html[data-theme="care-indeed-light"] .divide-white\/5 > :not([hidden]) ~ :not([hidden]),
@@ -2510,18 +3308,18 @@ html[data-theme="care-indeed-light"] .bg-black\/50,
 html[data-theme="care-indeed-light"] .bg-black\/40,
 html[data-theme="care-indeed-light"] .bg-black\/30,
 html[data-theme="care-indeed-light"] .bg-black\/25,
-html[data-theme="care-indeed-light"] .bg-black\/20 { background-color: #FAFBF8 !important; color: #1F1C1B !important; border-color: #E5E4E3 !important; }
+html[data-theme="care-indeed-light"] .bg-black\/20 { background-color: #FAFBF8 !important; color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ border-color: #E5E4E3 !important; }
 html[data-theme="care-indeed-light"] .bg-black\/15,
 html[data-theme="care-indeed-light"] .bg-black\/10,
-html[data-theme="care-indeed-light"] .bg-black\/5  { background-color: #FFFFFF !important; color: #1F1C1B !important; }
-html[data-theme="care-indeed-light"] .bg-black     { background-color: #FFFFFF !important; color: #1F1C1B !important; }
+html[data-theme="care-indeed-light"] .bg-black\/5  { background-color: #FFFFFF !important; color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
+html[data-theme="care-indeed-light"] .bg-black     { background-color: #FFFFFF !important; color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
 
 /* Form inputs — brand kit spec (white surface, neutral-300 border,
    neutral-600 text, neutral-400 placeholder, primary-500 focus ring) */
 html[data-theme="care-indeed-light"] input,
 html[data-theme="care-indeed-light"] select,
 html[data-theme="care-indeed-light"] textarea {
-  color: #1F1C1B !important;
+  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
 }
 html[data-theme="care-indeed-light"] input.bg-black\/30,
 html[data-theme="care-indeed-light"] input.bg-black\/20,
@@ -2530,7 +3328,7 @@ html[data-theme="care-indeed-light"] select.bg-black\/20,
 html[data-theme="care-indeed-light"] textarea.bg-black\/30,
 html[data-theme="care-indeed-light"] textarea.bg-black\/20 {
   background-color: #FFFFFF !important;
-  color: #1F1C1B !important;
+  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
   border-color: #D1D1D1 !important;
 }
 html[data-theme="care-indeed-light"] input::placeholder,
@@ -2697,7 +3495,7 @@ html[data-theme="care-indeed-light"] .text-stone-600,
 html[data-theme="care-indeed-light"] .text-stone-700,
 html[data-theme="care-indeed-light"] .text-stone-800,
 html[data-theme="care-indeed-light"] .text-stone-900,
-html[data-theme="care-indeed-light"] .text-black { color: #1F1C1B !important; }
+html[data-theme="care-indeed-light"] .text-black { color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
 
 /* Slate/gray backgrounds on light → neutral-100 surface */
 html[data-theme="care-indeed-light"] .bg-slate-50,
@@ -2878,8 +3676,8 @@ html.ci-theme-transitioning *::after {
    wrapper so all tab content sections automatically switch to
    light-mode colors without touching each heading individually.
    ══════════════════════════════════════════════════════════════ */
-[data-theme="light"] .text-white { color: #1F1C1B !important; }
-[data-theme="light"] .text-white\/90 { color: #1F1C1B !important; }
+[data-theme="light"] .text-white { color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
+[data-theme="light"] .text-white\/90 { color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
 [data-theme="light"] .text-white\/80 { color: #524D4B !important; }
 [data-theme="light"] .text-white\/70 { color: #524D4B !important; }
 [data-theme="light"] .text-white\/60 { color: #747470 !important; }
@@ -2896,7 +3694,7 @@ html.ci-theme-transitioning *::after {
 [data-theme="light"] .bg-white\/10 { background-color: #F2F2F0 !important; }
 [data-theme="light"] .bg-white\/\[0\.05\] { background-color: #F5F5F3 !important; }
 [data-theme="light"] .hover\:bg-white\/10:hover { background-color: #F2F2F0 !important; }
-[data-theme="light"] .hover\:text-white:hover { color: #1F1C1B !important; }
+[data-theme="light"] .hover\:text-white:hover { color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
 [data-theme="light"] .divide-white\/5 > * { border-color: #EDECEB !important; }
 [data-theme="light"] .divide-white\/10 > * { border-color: #E5E4E3 !important; }
 
@@ -3312,14 +4110,14 @@ body,
 .v3-surface {
   background: transparent !important;
   color: var(--v3-text-primary);
-  border: 1px solid var(--v3-border-subtle) !important;
+  border: none !important;
   box-shadow: none !important;
 }
 
 .v3-surface--glass,
 .v3-veil-glass-panel {
   background: var(--v3-glass-card) !important;
-  border-color: var(--v3-border-subtle) !important;
+  border: none !important;
   box-shadow: none !important;
   -webkit-backdrop-filter: var(--v3-glass-blur);
   backdrop-filter: var(--v3-glass-blur);
@@ -3400,6 +4198,57 @@ body,
   border-color: var(--v3-orange-light) !important;
 }
 
+/* Policy/form documents are white printable artifacts even inside the dark V3 app. */
+.ci-form-viewer-paper,
+.form-frame,
+.print-document,
+.gvgb-print-form-frame {
+  color-scheme: light;
+  background: #ffffff !important;
+  color: #0b1220 !important;
+}
+
+.ci-form-viewer-paper :where(p, ol, ul, li, dl, dt, dd, label, legend, th, td, strong, em),
+.form-frame :where(p, ol, ul, li, dl, dt, dd, label, legend, th, td, strong, em),
+.print-document :where(p, ol, ul, li, dl, dt, dd, label, legend, th, td, strong, em),
+.gvgb-print-form-frame :where(p, ol, ul, li, dl, dt, dd, label, legend, th, td, strong, em) {
+  color: #0b1220;
+}
+
+.ci-form-viewer-paper .text-\[\#1F1C1B\],
+.ci-form-viewer-paper .text-\[\#0F172A\],
+.form-frame .text-\[\#1F1C1B\],
+.form-frame .text-\[\#0F172A\],
+.print-document .text-\[\#1F1C1B\],
+.print-document .text-\[\#0F172A\],
+.gvgb-print-form-frame .text-\[\#1F1C1B\],
+.gvgb-print-form-frame .text-\[\#0F172A\] {
+  color: #0b1220 !important;
+}
+
+.ci-form-viewer-paper .text-\[\#52404B\],
+.ci-form-viewer-paper .text-\[\#524D4B\],
+.ci-form-viewer-paper .text-\[\#747470\],
+.form-frame .text-\[\#52404B\],
+.form-frame .text-\[\#524D4B\],
+.form-frame .text-\[\#747470\],
+.print-document .text-\[\#52404B\],
+.print-document .text-\[\#524D4B\],
+.print-document .text-\[\#747470\],
+.gvgb-print-form-frame .text-\[\#52404B\],
+.gvgb-print-form-frame .text-\[\#524D4B\],
+.gvgb-print-form-frame .text-\[\#747470\] {
+  color: #475569 !important;
+}
+
+.ci-form-viewer-paper :where(input, textarea, select),
+.form-frame :where(input, textarea, select),
+.print-document :where(input, textarea, select),
+.gvgb-print-form-frame :where(input, textarea, select) {
+  color: #0b1220 !important;
+  -webkit-text-fill-color: #0b1220;
+}
+
 .bg-gold,
 .gradient-gold {
   background: var(--v3-orange) !important;
@@ -3412,14 +4261,22 @@ body,
 }
 
 .v3-calendar-surface {
-  --ci-cell-day: rgba(255, 255, 255, 0.018);
-  --ci-cell-out: rgba(255, 255, 255, 0.008);
+  /* Clean v3 dark glass calendar surface (matches staging + live dark tokens) */
+  --ci-cell-day: var(--v3-surface-2, rgba(255, 255, 255, 0.018));
+  --ci-cell-out: var(--v3-surface-muted, rgba(255, 255, 255, 0.008));
   --ci-cell-today: linear-gradient(180deg, rgba(0, 209, 193, 0.14), rgba(255, 255, 255, 0.025));
   --ci-surface-2: transparent;
   --ci-surface-muted: rgba(255, 255, 255, 0.035);
   --ci-overlay-faint: rgba(255, 255, 255, 0.018);
   --ci-overlay-soft: rgba(255, 255, 255, 0.04);
   --ci-overlay-strong: rgba(255, 255, 255, 0.08);
+}
+
+/* Care-indeed light calendar cells — clean adaptation, no bleed into dark */
+html[data-theme="care-indeed-light"] .v3-calendar-surface {
+  --ci-cell-day: rgba(0,0,0,0.02);
+  --ci-cell-out: rgba(0,0,0,0.01);
+  --ci-cell-today: linear-gradient(180deg, rgba(0,121,112,0.08), rgba(0,0,0,0.01));
 }
 
 .v3-calendar-surface .ci-right-panel > aside,
@@ -3448,6 +4305,152 @@ body,
 .v3-calendar-surface .text-\[\#1A3778\],
 .v3-calendar-surface .text-\[\#1F1C1B\] {
   color: var(--v3-text-primary) !important;
+}
+
+/* ===============================================================
+   SWIMLANE + WORKFLOW EXECUTION — Clean v3 dark style (agent 9)
+   Uses live app v3 tokens. Dark default matches clean staging / Image ref style.
+   Prevents color bleeding across light/dark + care-indeed modes.
+   Scopes tightly; data attr + class for overrides.
+   Fixes gray bleed, borders, overlay on columns, task cards, popups (Image #3 swimlane popup + Image #4 calendar).
+   =============================================================== */
+.swimlane-execution-map,
+[data-workflow-execution] {
+  background-color: transparent !important;
+  color: var(--v3-text-primary);
+}
+.swimlane-execution-map header,
+[data-workflow-execution] header {
+  background-color: transparent !important;
+  border: none !important;
+}
+.swimlane-execution-map [class*="border-"],
+[data-workflow-execution] [class*="border-"] {
+  border-color: var(--v3-border-subtle) !important;
+}
+/* Ensure main swimlane/calendar areas have absolutely no perimeter framing borders even if class or token bleed */
+.swimlane-execution-map,
+.swimlane-execution-map > header,
+.swimlane-execution-map > main,
+.swimlane-canvas,
+[data-workflow-execution],
+[data-ces-calendar],
+.v3-calendar-surface,
+[data-ces-calendar] > div,
+[data-ces-calendar] > .flex {
+  border: none !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  contain: layout style paint;
+  isolation: isolate;
+  overflow: hidden;
+}
+/* clean columns: phase-col body must be transparent to avoid gray bleed/fill areas across full height. Matches clean calendar #4 design, no gray */
+.swimlane-phase-col,
+.swimlane-phase-col > div {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: var(--ci-border) !important;
+}
+.swimlane-lane-header,
+.swimlane-corner {
+  background: transparent !important;
+  border: none !important;
+}
+.swimlane-lane-header,
+.swimlane-corner {
+  background-color: transparent !important;
+  color: var(--v3-text-secondary);
+  border-color: var(--ci-border) !important;
+  overflow: hidden;
+  contain: paint;
+}
+.swimlane-node-card {
+  /* clean task cards: prevent gray bleed, use token surface, hairline border. Matches Image #3 popup + #4 calendar aesthetic */
+  background-color: var(--ci-surface) !important;
+  border-color: var(--ci-border) !important;
+  border: 1px solid var(--ci-border) !important;
+  color: var(--ci-text-primary);
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  contain: layout paint;
+  isolation: isolate;
+}
+.swimlane-node-meta {
+  color: var(--ci-text-subtle);
+}
+.swimlane-edge-teal { stroke: var(--v3-teal); }
+.swimlane-edge-orange { stroke: var(--v3-orange); }
+
+/* Popup / overlay bleed + border fixes for swimlane modals (Image #3). Clean no-gray, no extra borders. High contained z (120+), isolation, strict clip for no bleed over nav/main. Token bgs only. */
+.swimlane-workspace-overlay {
+  background-color: color-mix(in srgb, var(--ci-bg) 82%, transparent) !important;
+  backdrop-filter: blur(10px) !important;
+  overflow: hidden !important;
+}
+.swimlane-workspace-overlay .swimlane-zoom-modal,
+.swimlane-workspace-overlay .swimlane-level-two-modal {
+  position: relative;
+  z-index: 125;
+  border: 1px solid var(--ci-border) !important;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.65) !important;
+  background: var(--ci-surface) !important;
+  overflow: hidden !important;
+  overflow-clip-margin: 0 !important;
+  isolation: isolate;
+  contain: layout paint size;
+}
+.swimlane-workspace-overlay [class*="111923"] {
+  background-color: var(--ci-surface) !important;
+}
+
+/* Care Indeed light mode adaptation (no bleeding) — stronger than prior hex-only
+   STRENGTHENED (Agent 7): !important + listed selectors for global bleed + no dark hex. */
+html[data-theme="care-indeed-light"] .swimlane-execution-map,
+html[data-theme="care-indeed-light"] [data-workflow-execution],
+html[data-theme="care-indeed-light"] [data-ces-calendar],
+html[data-theme="care-indeed-light"] .ces-calendar-grid,
+html[data-theme="care-indeed-light"] .TimelineMonth,
+html[data-theme="care-indeed-light"] .ces-event-pill {
+  background-color: var(--ces-canvas) !important;
+  background: var(--ces-canvas) !important;
+  color: var(--ci-text-primary, #1F1C1B) !important;
+  border: none !important;
+  padding: 0 !important;
+}
+html[data-theme="care-indeed-light"] .swimlane-execution-map header,
+html[data-theme="care-indeed-light"] [data-workflow-execution] header {
+  background-color: #FFFFFF !important;
+  border: none !important;
+  padding: 0 !important;
+}
+html[data-theme="care-indeed-light"] .swimlane-node-card {
+  background-color: #F8FAF9 !important;
+  border-color: rgba(0,0,0,0.1) !important;
+  color: #1F1C1B !important;
+}
+html[data-theme="care-indeed-light"] .swimlane-node-meta,
+html[data-theme="care-indeed-light"] .swimlane-phase-col {
+  background-color: transparent !important;
+}
+html[data-theme="care-indeed-light"] .swimlane-execution-map .swimlane-canvas {
+  border: none !important;
+}
+html[data-theme="care-indeed-light"] .swimlane-workspace-overlay,
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal,
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal {
+  background-color: var(--ci-surface) !important;
+  background: #FFFFFF !important;
+  border-color: var(--ci-border) !important;
+  color: var(--ci-text-primary) !important;
+}
+html[data-theme="care-indeed-light"] .swimlane-lane-header,
+html[data-theme="care-indeed-light"] .swimlane-corner {
+  background-color: #FFFFFF !important;
+  color: #52404B !important;
 }
 
 /* V3 visual cleanup pass: remove ornamental shell/editor lines highlighted in review screenshots. */
@@ -3532,6 +4535,8 @@ body,
   --v3-glass-card: rgba(15, 19, 26, 0.78);
   --v3-border: #1C2433;
   --v3-border-hover: #2A3441;
+  height: 100% !important;
+  width: 100% !important;
   --v3-border-subtle: rgba(28, 36, 51, 0.84);
   --v3-teal: #007970;
   --v3-teal-light: #007970;
@@ -3548,13 +4553,14 @@ body,
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-radius: 0.75rem;
+  border-radius: 16px;
   border: 1px solid #1C2433;
   background-color: #141A23;
   --mouse-x: 50%;
   --mouse-y: 50%;
   --spotlight-color: rgba(255, 255, 255, 0.08);
   transition: border-color 220ms ease, background-color 220ms ease, color 180ms ease;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.55);
 }
 
 .card-spotlight:hover,
@@ -3578,6 +4584,16 @@ body,
   z-index: -1;
   filter: blur(20px);
 }
+/* Prevent glow bleed outside clean popup edges in calendar/swimlane detail overlays */
+.swimlane-zoom-modal .spotlight-outer-glow,
+.swimlane-level-two-modal .spotlight-outer-glow,
+.ces-zoom-card .spotlight-outer-glow,
+.card-spotlight[class*="zoom"] .spotlight-outer-glow,
+.card-spotlight[class*="level-two"] .spotlight-outer-glow {
+  inset: -4px;
+  border-radius: inherit;
+  filter: blur(12px);
+}
 
 .spotlight-glow-wrapper {
   position: absolute;
@@ -3586,6 +4602,15 @@ body,
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
+}
+.card-spotlight.swimlane-zoom-modal,
+.card-spotlight.swimlane-level-two-modal {
+  position: relative;
+  z-index: 125;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  overflow-clip-margin: 0 !important;
+  isolation: isolate;
 }
 
 .spotlight-inner-glow {
@@ -3695,7 +4720,11 @@ body,
 }
 
 .v3-shell-frame-inset {
-  padding: clamp(12px, 1.4vw, 24px);
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+  flex: 1 1 0% !important;
 }
 
 .v3-app-shell-base,
@@ -3815,17 +4844,12 @@ body,
 
 [data-shell-navrail] {
   position: relative;
+  border-right: none !important;
 }
 
 [data-shell-navrail]::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: 72px;
-  bottom: 72px;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.10);
-  pointer-events: none;
+  content: none;
+  background: transparent !important;
 }
 
 /* V3 brand normalization: legacy gold/yellow/amber chrome resolves to brand orange. */
@@ -3980,49 +5004,86 @@ html[data-theme="care-indeed-light"] .v32-command-center-app,
 html[data-theme="care-indeed-light"] .v32-command-center-app .v3-app-shell-base {
   color-scheme: light;
 
+  --ci-light-teal-primary: #00797D;
+  --ci-light-orange-primary: #C74601;
+  --ci-light-text-primary: #1F1C1B;
+  --ci-light-text-secondary: #5F5855;
+  --ci-light-text-tertiary: #74706F;
+  --brand-primary: var(--ci-light-teal-primary);
+  --text-primary: var(--ci-light-text-primary);
+  --text-secondary: var(--ci-light-text-secondary);
+  --ci-light-paper-base: #F8F6F1;
+  --ci-light-paper-soft: #F3F0EA;
+  --ci-light-paper-teal: #EEF6F4;
+  --ci-light-overlay-warm: rgba(255, 255, 255, 0.62);
+  --ci-light-card-surface: #FFFFFF;
+  --ci-light-card-surface-soft: #FCFAF6;
+  --ci-light-drawer-bg: rgba(255, 255, 255, 0.96);
+  --ci-light-tab-pill-bg: rgba(255, 255, 255, 0.68);
+  --ci-light-card-border: rgba(82, 77, 75, 0.14);
+  --ci-light-card-border-hover: rgba(0, 121, 125, 0.34);
+  --ci-light-shell-border: rgba(0, 121, 125, 0.16);
+  --ci-light-shadow-soft: 0 10px 28px rgba(82, 77, 75, 0.08);
+  --ci-light-shadow-panel: 0 18px 45px rgba(82, 77, 75, 0.14);
+  --ci-light-shadow-floating: 0 22px 54px rgba(82, 77, 75, 0.16);
+  --ci-light-focus-ring: rgba(0, 121, 125, 0.24);
+
   /* — Re-light the V3 primitives (all --ci-* aliases inherit these) —
        Soft light-teal page base (NOT pure white) so the signed-in shell
        reads as Care Indeed day mode; white cards sit on top for contrast. */
-  --v3-base-bg: #EAF4F2;
-  --v3-bg-gradient: radial-gradient(circle at 50% 0%, #E1EEEA 0%, #EAF4F2 58%);
-  --v3-grid-line: rgba(0, 121, 112, 0.05);
-  --v3-glass-card: #FFFFFF;
+  --v3-base-bg: var(--ci-light-paper-base);
+  --v3-bg-gradient:
+    radial-gradient(circle at 18% 0%, rgba(0, 121, 125, 0.10) 0%, transparent 32%),
+    radial-gradient(circle at 86% 6%, rgba(199, 70, 1, 0.07) 0%, transparent 30%),
+    linear-gradient(180deg, #FBF9F4 0%, var(--ci-light-paper-teal) 100%);
+  --v3-grid-line: rgba(0, 121, 125, 0.045);
+  --v3-glass-card: var(--ci-light-card-surface);
   --v3-glass-blur: none;
-  --v3-glass-shadow: 0 1px 2px rgba(31, 28, 27, 0.06);
-  --v3-glass1: #FFFFFF;
+  --v3-glass-shadow: var(--ci-light-shadow-soft);
+  --v3-glass1: var(--ci-light-card-surface);
   --v3-glass2: rgba(0, 121, 112, 0.05);
   --v3-glass3: rgba(0, 121, 112, 0.025);
-  --v3-border: rgba(0, 121, 112, 0.20);
-  --v3-border-hover: rgba(0, 121, 112, 0.34);
-  --v3-border-subtle: #E2E7E5;
-  --v3-text-primary: #16201F;
-  --v3-text-secondary: #475459;
-  --v3-text-tertiary: #6B7770;
+  --v3-border: var(--ci-light-card-border-hover);
+  --v3-border-hover: rgba(0, 121, 125, 0.46);
+  --v3-border-subtle: var(--ci-light-card-border);
+  --v3-teal: var(--ci-light-teal-primary);
+  --v3-teal-light: var(--ci-light-teal-primary);
+  --v3-orange: var(--ci-light-orange-primary);
+  --v3-orange-light: var(--ci-light-orange-primary);
+  --v3-text-primary: var(--ci-light-text-primary);
+  --v3-text-secondary: var(--ci-light-text-secondary);
+  --v3-text-tertiary: var(--ci-light-text-tertiary);
+  --v3-heading-primary: var(--brand-primary);
 
   /* — Non-aliased shell-chrome / overlay tokens the V3 contract pins
        to dark; re-declare for the soft-teal surface. — */
-  --ci-surface: #FFFFFF;
-  --ci-surface-2: #F4F8F7;
-  --ci-surface-muted: #EEF4F2;
-  --ci-color-glass-main: #FFFFFF;
-  --ci-color-glass-main-detail: #FFFFFF;
+  --ci-surface: var(--ci-light-card-surface);
+  --ci-surface-2: var(--ci-light-card-surface-soft);
+  --ci-surface-muted: var(--ci-light-paper-soft);
+  --ci-color-glass-main: var(--ci-light-card-surface);
+  --ci-color-glass-main-detail: var(--ci-light-card-surface);
   --ci-color-glass-blur: none;
-  --ci-color-glass-shadow: 0 1px 2px rgba(31, 28, 27, 0.05);
-  --ci-color-shell-topbar-bg: #FFFFFF;
-  --ci-color-shell-navrail-bg: #DCEAE6;
+  --ci-color-glass-shadow: var(--ci-light-shadow-soft);
+  --ci-color-shell-topbar-bg: rgba(255, 255, 255, 0.90);
+  --ci-color-shell-navrail-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(238, 246, 244, 0.92) 100%);
   --ci-color-shell-mobile-tabbar-bg: rgba(255, 255, 255, 0.96);
-  --ci-color-shell-account-avatar-bg: #007970;
-  --ci-color-shell-overlay-shadow: 0 12px 28px rgba(31, 28, 27, 0.12);
+  --ci-color-shell-account-avatar-bg: var(--ci-light-teal-primary);
+  --ci-color-shell-overlay-shadow: var(--ci-light-shadow-panel);
   --ci-overlay-faint: rgba(0, 121, 112, 0.04);
   --ci-overlay-soft: rgba(0, 121, 112, 0.07);
   --ci-overlay-strong: rgba(0, 121, 112, 0.12);
-  --ci-overlay-border: rgba(31, 28, 27, 0.08);
-  --ci-overlay-border-strong: rgba(31, 28, 27, 0.14);
-  --ci-overlay-active-bg: rgba(0, 121, 112, 0.12);
-  --ci-overlay-active-border: rgba(0, 121, 112, 0.34);
-  --ci-cell-day: #FFFFFF;
-  --ci-cell-out: #F4F8F7;
-  --ci-cell-today: linear-gradient(180deg, #E2F6F4 0%, #FFFFFF 100%);
+  --ci-overlay-border: var(--ci-light-card-border);
+  --ci-overlay-border-strong: rgba(82, 77, 75, 0.22);
+  --ci-overlay-active-bg: rgba(0, 121, 125, 0.12);
+  --ci-overlay-active-border: var(--ci-light-card-border-hover);
+  --ci-cell-day: var(--ci-light-card-surface);
+  --ci-cell-out: var(--ci-light-card-surface-soft);
+  --ci-cell-today: linear-gradient(180deg, rgba(0, 121, 125, 0.10) 0%, #FFFFFF 100%);
+  --ci-accent: var(--ci-light-teal-primary);
+  --ci-link: var(--ci-light-teal-primary);
+  --ci-cta: var(--ci-light-orange-primary);
+  --ci-cta-text: #FFFFFF;
+  --ci-focus-ring: var(--ci-light-focus-ring);
 }
 
 /* V3.2 hardcoded Tailwind palette (tailwind.config.js fixed dark hex) →
@@ -4044,39 +5105,103 @@ html[data-theme="care-indeed-light"] .text-text-secondary {
   color: var(--v3-text-secondary) !important;
 }
 html[data-theme="care-indeed-light"] .text-text-muted {
-  color: #5E6B6A !important;
+  color: var(--ci-light-text-secondary) !important;
 }
 html[data-theme="care-indeed-light"] .text-text-disabled {
-  color: #9AA4A2 !important;
+  color: var(--ci-light-text-tertiary) !important;
+}
+html[data-theme="care-indeed-light"] .text-brand-teal {
+  color: var(--ci-light-teal-primary) !important;
+}
+html[data-theme="care-indeed-light"] .text-brand-orange {
+  color: var(--ci-light-orange-primary) !important;
+}
+html[data-theme="care-indeed-light"] .bg-brand-teal {
+  background-color: var(--ci-light-teal-primary) !important;
+}
+html[data-theme="care-indeed-light"] .bg-brand-orange {
+  background-color: var(--ci-light-orange-primary) !important;
+}
+
+/* Light-mode typography: major titles use Care Indeed teal, not black. */
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-text-primary,
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-ci-text-primary,
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-black,
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-gray-900,
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-gray-950,
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-slate-900,
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-slate-950,
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-\[\#0F172A\],
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-\[\#111827\],
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-\[\#1F1C1B\],
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-\[var\(--v3-text-primary\)\],
+html[data-theme="care-indeed-light"] :is(h1, h2, h3, h4).text-\[var\(--ci-text-primary\)\],
+html[data-theme="care-indeed-light"] .ci-page-header-title,
+html[data-theme="care-indeed-light"] .ci-modal-title,
+html[data-theme="care-indeed-light"] .ci-drawer-title,
+html[data-theme="care-indeed-light"] .ci-page-view-card-title,
+html[data-theme="care-indeed-light"] .v3-drawer-header .font-montserrat {
+  color: var(--brand-primary) !important;
 }
 
 /* Shell chrome surfaces (topbar/navrail use hardcoded bg-surface/border) */
+html[data-theme="care-indeed-light"] [data-shell-content-frame] {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(252, 250, 246, 0.92) 100%) !important;
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  height: 100% !important;
+  width: 100% !important;
+}
 html[data-theme="care-indeed-light"] [data-shell-topbar] {
-  background-color: rgba(255, 255, 255, 0.92) !important;
-  border-bottom-color: var(--v3-border-subtle) !important;
+  background: var(--ci-color-shell-topbar-bg) !important;
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(18px) saturate(132%) !important;
+  backdrop-filter: blur(18px) saturate(132%) !important;
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] {
-  background-color: var(--ci-color-shell-navrail-bg) !important;
-  border-right-color: var(--v3-border-subtle) !important;
+  background: var(--ci-color-shell-navrail-bg) !important;
+  /* STRENGTHENED (Agent 7): ensure no border on side nav for bleed-free light calendar surfaces */
+  border: none !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  box-shadow: none !important;
 }
 /* Topbar search field reads on the white bar */
 html[data-theme="care-indeed-light"] [data-shell-topbar] input {
-  background-color: #FFFFFF !important;
+  background-color: transparent !important;
   color: var(--v3-text-primary) !important;
-  border-color: var(--v3-border-subtle) !important;
+  border-color: transparent !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-topbar] label[class*="bg-surface"] {
+  background: var(--ci-light-overlay-warm) !important;
+  border-color: var(--ci-light-card-border) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 6px 18px rgba(82, 77, 75, 0.06);
 }
 
 /* SpotlightCard — reuse the single real component, re-skin for light.
    White surface, pale-teal hairline, subtle teal spotlight sheen. */
 html[data-theme="care-indeed-light"] .card-spotlight {
-  background-color: #FFFFFF !important;
-  border-color: var(--v3-border-subtle) !important;
-  --spotlight-color: rgba(0, 121, 112, 0.12);
-  box-shadow: 0 1px 2px rgba(31, 28, 27, 0.05);
+  background:
+    linear-gradient(180deg, var(--ci-light-card-surface) 0%, var(--ci-light-card-surface-soft) 100%) !important;
+  border-color: var(--ci-light-card-border) !important;
+  --spotlight-color: rgba(0, 121, 125, 0.12);
+  box-shadow: var(--ci-light-shadow-soft);
 }
 html[data-theme="care-indeed-light"] .card-spotlight:hover,
 html[data-theme="care-indeed-light"] .card-spotlight:focus-within {
-  border-color: rgba(0, 121, 112, 0.34) !important;
+  border-color: var(--ci-light-card-border-hover) !important;
+  box-shadow: var(--ci-light-shadow-panel);
 }
 
 /* Day mode: the dark shell's canvas painters (.v3-dashboard-reference /
@@ -4089,9 +5214,55 @@ html[data-theme="care-indeed-light"] .card-spotlight:focus-within {
 html[data-theme="care-indeed-light"] .v3-dashboard-reference,
 html[data-theme="care-indeed-light"] .v3-shell-backdrop {
   background:
-    linear-gradient(to right, rgba(0, 121, 112, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 121, 112, 0.05) 1px, transparent 1px),
+    linear-gradient(to right, rgba(0, 121, 125, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 121, 125, 0.045) 1px, transparent 1px),
     var(--v3-bg-gradient) !important;
   background-size: 24px 24px, 24px 24px, 100% 100% !important;
   background-blend-mode: normal, normal, normal !important;
+}
+
+html[data-theme="care-indeed-light"] .v3-dashboard-reference[data-surface="dashboard"] [class*="bg-surface"] {
+  background-color: rgba(255, 255, 255, 0.90) !important;
+  border-color: var(--ci-light-card-border) !important;
+  box-shadow: var(--ci-light-shadow-soft);
+}
+
+html[data-theme="care-indeed-light"] .v3-dashboard-reference[data-surface="dashboard"] [class*="bg-background"] {
+  background-color: rgba(248, 246, 241, 0.72) !important;
+}
+
+html[data-theme="care-indeed-light"] .v3-dashboard-reference[data-surface="dashboard"] .card-spotlight .spotlight-outer-glow,
+html[data-theme="care-indeed-light"] .v3-dashboard-reference[data-surface="dashboard"] .card-spotlight .spotlight-inner-glow {
+  opacity: 0.82;
+}
+
+html[data-theme="care-indeed-light"] .v3-dashboard-reference[data-surface="dashboard"] h1,
+html[data-theme="care-indeed-light"] .v3-dashboard-reference[data-surface="dashboard"] h2,
+html[data-theme="care-indeed-light"] .v3-dashboard-reference[data-surface="dashboard"] h3,
+html[data-theme="care-indeed-light"] .v3-dashboard-reference[data-surface="dashboard"] h4 {
+  color: var(--ci-light-text-primary);
+}
+
+html[data-theme="care-indeed-light"] .v3-veil-glass-panel {
+  background: var(--ci-light-drawer-bg) !important;
+  color: var(--ci-light-text-primary) !important;
+  border-color: var(--ci-light-card-border) !important;
+  box-shadow: var(--ci-light-shadow-floating) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(132%) !important;
+  backdrop-filter: blur(18px) saturate(132%) !important;
+}
+
+html[data-theme="care-indeed-light"] .v3-veil-glass-panel.right-drawer,
+html[data-theme="care-indeed-light"] .v3-veil-glass-panel.bottom-sheet {
+  box-shadow: var(--ci-light-shadow-floating) !important;
+}
+
+html[data-theme="care-indeed-light"] .v3-veil-glass-panel::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.86), transparent) !important;
+}
+
+html[data-theme="care-indeed-light"] .v3-backdrop {
+  background: rgba(82, 77, 75, 0.18) !important;
+  -webkit-backdrop-filter: blur(4px) saturate(112%) !important;
+  backdrop-filter: blur(4px) saturate(112%) !important;
 }

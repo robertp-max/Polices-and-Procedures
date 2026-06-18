@@ -45,9 +45,9 @@ export interface BottomSheetDrawerProps {
 
 /** maxHeight CSS value per height variant. */
 const MAX_HEIGHT: Record<NonNullable<BottomSheetDrawerProps['height']>, string> = {
-  sm: 'min(40vh, 40%)',
-  md: 'min(60vh, 60%)',
-  lg: 'min(80vh, 80%)',
+  sm: 'min(40vh, 320px)',
+  md: 'min(60vh, 520px)',
+  lg: 'min(80vh, 720px)',
 };
 
 /**
@@ -212,7 +212,7 @@ export function BottomSheetDrawer({
               <div
                 className="font-montserrat truncate"
                 style={{
-                  color: 'var(--v3-text-primary)',
+                  color: 'var(--v3-heading-primary, var(--v3-text-primary))',
                   fontSize: 18,
                   fontWeight: 600,
                   letterSpacing: '-0.01em'
@@ -229,6 +229,7 @@ export function BottomSheetDrawer({
               onClick={onClose}
               className="v3-veil-close p-1.5 text-[var(--v3-text-secondary)] hover:text-[var(--v3-teal-light)]"
               aria-label="Close panel"
+              title="Close panel"
             >
               <X size={18} aria-hidden="true" />
             </button>
@@ -237,7 +238,7 @@ export function BottomSheetDrawer({
       )}
 
       {/* ── Scrollable body ─────────────────────────────────────────────── */}
-      <div className="v3-veil-body flex-1 overflow-auto" style={{ padding: 'clamp(12px, 1.6vw, 24px)' }}>
+      <div className="v3-veil-body flex-1 min-h-0 overflow-auto" style={{ padding: 'clamp(12px, 1.6vw, 24px)' }}>
         {children}
       </div>
 
@@ -263,7 +264,7 @@ export function BottomSheetDrawer({
       >
         {/* Scrim — premium V3 veil or legacy */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 v3-backdrop"
           style={{
             background: 'rgba(5, 6, 10, 0.72)',
             backdropFilter: 'blur(8px)',
