@@ -168,7 +168,7 @@ export function CesInteractionStyles() {
         -webkit-backdrop-filter: blur(8px);
       }
       .ces-zoom-card {
-        background: var(--ci-surface);
+        background: isLight ? '#FFFFFF' : '#15282A';
         border: 1px solid var(--ci-border, rgba(255,255,255,0.10));
         box-shadow: 0 24px 60px rgba(0,0,0,0.25);
         isolation: isolate;
@@ -204,7 +204,7 @@ export function CesInteractionStyles() {
       }
       /* Light mode: clean corporate no dark bleed for popups/preview/hover (Image #4). Use token bgs, no hard dark hexes in light paths. */
       html[data-theme="care-indeed-light"] .ces-zoom-backdrop {
-        background: color-mix(in srgb, var(--ci-bg) 92%, transparent) !important;
+        background: isLight ? 'rgba(250,251,248,0.92)' : 'rgba(14,27,28,0.92)' !important;
       }
       html[data-theme="care-indeed-light"] .ces-zoom-card,
       html[data-theme="care-indeed-light"] .ces-hover-card {

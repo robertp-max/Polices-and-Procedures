@@ -702,7 +702,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                   transition: 'opacity 700ms cubic-bezier(.22,1,.36,1)',
                   opacity: splashExit ? 0 : 1,
                   pointerEvents: splashExit ? ('none' as const) : ('auto' as const),
-                  background: 'var(--ci-bg, #FFFFFF)',
+                  background: isVisualLight ? '#FAFBF8' : '#0E1B1C',
                 }}
               >
                 {/* Splash inner card — brand-aligned enterprise panel.
@@ -717,7 +717,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     minHeight: 580,
                     padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem)',
                     borderRadius: '24px',
-                    background: 'var(--ci-bg, #FFFFFF)',
+                    background: isVisualLight ? '#FAFBF8' : '#0E1B1C',
                     border: '1px solid var(--ci-neutral-200)',
                   }}
                 >
