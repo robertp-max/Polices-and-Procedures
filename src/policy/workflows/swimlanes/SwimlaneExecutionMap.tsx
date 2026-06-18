@@ -1550,6 +1550,42 @@ html[data-theme="care-indeed-light"] .card-spotlight {
   contain: layout style paint;
   isolation: isolate;
 }
+
+/* Component-local surface fix for step-focus modal cards (Task Identity, Workflow Accountability,
+   Form Instances, Supporting Documentation, Supporting Evidence) to prevent maroon/CI-ION bleed
+   in portal context. Forces correct light (white) and V3 dark (slate) surfaces. Visual-only. */
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal,
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal {
+  background: #FFFFFF !important;
+}
+html[data-theme="v3-veil"] .swimlane-zoom-modal,
+html[data-theme="v3-veil"] .swimlane-level-two-modal {
+  background: #15282A !important;
+}
+.swimlane-zoom-modal .bg-ci-surface,
+.swimlane-level-two-modal .bg-ci-surface,
+.swimlane-zoom-modal .swimlane-card,
+.swimlane-level-two-modal .swimlane-card {
+  background: var(--ci-surface) !important;
+}
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal .bg-ci-surface,
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal .bg-ci-surface,
+html[data-theme="care-indeed-light"] .swimlane-zoom-modal .swimlane-card,
+html[data-theme="care-indeed-light"] .swimlane-level-two-modal .swimlane-card {
+  background: #FFFFFF !important;
+}
+html[data-theme="v3-veil"] .swimlane-zoom-modal .bg-ci-surface,
+html[data-theme="v3-veil"] .swimlane-level-two-modal .bg-ci-surface,
+html[data-theme="v3-veil"] .swimlane-zoom-modal .swimlane-card,
+html[data-theme="v3-veil"] .swimlane-level-two-modal .swimlane-card {
+  background: #15282A !important;
+}
+html[data-theme="care-indeed-light"] .swimlane-modal-scroll {
+  background: #FAFBF8 !important;
+}
+html[data-theme="v3-veil"] .swimlane-modal-scroll {
+  background: #0E1B1C !important;
+}
 @keyframes swimlaneTealRadiate { 0% { opacity: 0.7; transform: scale(0.98); } 100% { opacity: 0; transform: scale(1.12); } }
 @keyframes swimlaneOrangeRadiate { 0% { opacity: 0.65; transform: scale(0.98); } 100% { opacity: 0; transform: scale(1.12); } }
 @keyframes swimlaneEdgeFlow { to { stroke-dashoffset: -50; } }
