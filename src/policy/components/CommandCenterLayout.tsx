@@ -13,7 +13,7 @@ import {
   ShieldCheck, Zap,
   ArrowUpCircle, FolderOpen, UserCheck, Sparkles,
   ListChecks, LogOut, Compass, Trash2,
-  Users, Heart, Sun, Moon,
+  Users, Heart, Sun,
 } from 'lucide-react';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import { useShellStore } from '@/policy/stores/uiStore';
@@ -254,13 +254,18 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   );
 
   const detailMode = useShellStore(s => s.detailMode);
-  const theme = useShellStore(s => s.theme);
-  const toggleTheme = useShellStore(s => s.toggleTheme);
+  // TEMP: Production runtime forced to light mode (care-indeed-light) pending independent V3 dark-mode rebuild.
+  // Do not delete dark tokens/code. Dark mode preserved for later. Toggle made non-mutating.
+  const _rawTheme = useShellStore(s => s.theme);
+  void _rawTheme;
+  let toggleTheme = useShellStore(s => s.toggleTheme);
+  const theme = 'care-indeed-light';
+  toggleTheme = () => {};
   const ciMode = useCiModeStore(s => s.mode);
   const isCareIndeedDark = false;
-  // Day / Normal mode — the only non-dark app-shell theme. Drives the
-  // light-mode inline-style branches that were already present in this shell.
-  const isVisualLight = theme === 'care-indeed-light';
+  // Day / Normal mode — forced for production.
+  const isVisualLight = true;
+  void theme; void toggleTheme; // prevent TS unused after force-light override
   // Use the app logo bundled from src/assets.
   // Day / Normal (care-indeed-light) signed-in shell → gray logo.
   // Dark V3 (v3-veil) → white logo.
@@ -354,18 +359,11 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   }, [VISIBLE_NAV, location.pathname]);
 
   useEffect(() => {
-    // Apply the selected app-shell theme to <html>. Dark V3 ('v3-veil')
-    // is the default; 'care-indeed-light' enables Day / Normal mode.
-    //
-    // Detail viewers (opened policies / forms — `hideChrome`) are kept on
-    // the dark shell regardless of preference so the recovered "Form viewer
-    // dark shell + white form paper" / policy viewer look stays intact and
-    // we avoid dark-on-dark text inside those dark detail surfaces.
-    //
-    // Auth pages live outside this layout and are force-set to 'v3-veil'
-    // by App.tsx, so they never inherit the light theme.
-    document.documentElement.dataset.theme = hideChrome ? 'v3-veil' : theme;
-  }, [theme, hideChrome]);
+    // TEMP: Production forced to care-indeed-light. Dark V3 preserved in source.
+    // Detail viewers kept light too for consistency in this force-light fallback.
+    // Auth pages untouched (outside this layout).
+    document.documentElement.dataset.theme = 'care-indeed-light';
+  }, [hideChrome]);
 
   // ── Care Indeed Light/Dark mode (orthogonal to brand toggle) ──────────────
   useEffect(() => {
@@ -527,16 +525,17 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                 </button>
               }
             >
-              {/* Day / Normal mode toggle — minimalist, app-shell only.
-                  Persists via useShellStore; auth pages are unaffected. */}
+              {/* TEMP: Theme toggle hidden/disabled for production force-light.
+                  Dark mode source preserved. Toggle calls are no-op. */}
               <button
                 type="button"
-                onClick={() => toggleTheme()}
-                aria-label={isVisualLight ? 'Switch to dark mode' : 'Switch to day mode'}
-                title={isVisualLight ? 'Switch to dark mode' : 'Switch to day mode'}
-                className="glass-interactive ci-subtle-hover flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--ci-overlay-border-strong)] text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)]"
+                onClick={() => {}}
+                aria-label="Theme toggle disabled (production light mode)"
+                title="Theme locked to light (pending dark rebuild)"
+                className="glass-interactive ci-subtle-hover flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--ci-overlay-border-strong)] text-[var(--v3-text-secondary)] opacity-30 pointer-events-none"
+                disabled
               >
-                {isVisualLight ? <Moon size={18} strokeWidth={1.75} /> : <Sun size={18} strokeWidth={1.75} />}
+                <Sun size={18} strokeWidth={1.75} />
               </button>
               <ContextualKnowledgeBulb />
               {/* Account menu */}
