@@ -83,11 +83,13 @@ DataGrid.Row = function Row({
 DataGrid.Cell = function Cell({
   children,
   align = 'left',
+  colSpan,
   ...rest
-}: HTMLAttributes<HTMLTableCellElement> & { align?: 'left' | 'right' | 'center' }) {
+}: HTMLAttributes<HTMLTableCellElement> & { align?: 'left' | 'right' | 'center'; colSpan?: number }) {
   return (
     <td
       {...rest}
+      colSpan={colSpan}
       style={{
         textAlign: align,
         padding: '12px 16px',
