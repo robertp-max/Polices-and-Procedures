@@ -31,12 +31,12 @@ import {
 
 export const PRIMITIVE_TOKENS_CSS = `
 :root {
-  /* === DARK DEFAULT (Veil premium / #05060A family) === */
-  --ci-bg: #05060A;
-  --ci-surface: #0B0E16;
-  --ci-surface-2: #11151F;
-  --ci-surface-elevated: #151A24;
-  --ci-surface-glass: rgba(17, 21, 31, 0.78);
+  /* === DARK DEFAULT (stabilized V3 veil / production dark) === */
+  --ci-bg: #0E1B1C;
+  --ci-surface: #15282A;
+  --ci-surface-2: #1B3133;
+  --ci-surface-elevated: #1F3A3D;
+  --ci-surface-glass: rgba(21, 40, 42, 0.78);
 
   --ci-text-primary: #F1F5F9;
   --ci-text-secondary: #94A3B8;
@@ -91,9 +91,9 @@ export const PRIMITIVE_TOKENS_CSS = `
 [data-theme="light"],
 html[data-theme="care-indeed-light"],
 :root[data-ci-mode="light"] {
-  --ci-bg: #F8F6F1;
+  --ci-bg: #FAFBF8;
   --ci-surface: #FFFFFF;
-  --ci-surface-2: #FCFAF6;
+  --ci-surface-2: #FAFBF8;
   --ci-surface-elevated: #FFFFFF;
   --ci-surface-glass: #FFFFFF;
 

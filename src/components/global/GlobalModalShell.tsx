@@ -69,7 +69,7 @@ export function GlobalModalShell() {
   };
 
   const overlayClassName = [
-    'fixed z-[130] flex items-center justify-center overflow-y-auto overflow-x-hidden p-3 md:p-6 bg-ci-bg/90 backdrop-blur-md transition-opacity duration-300',
+    'fixed z-[130] flex items-center justify-center overflow-y-auto overflow-x-hidden p-3 md:p-6 bg-black/60 backdrop-blur-md transition-opacity duration-300',
     modal.isOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
     modal.overlayClassName ?? '',
   ].filter(Boolean).join(' ');
@@ -79,7 +79,7 @@ export function GlobalModalShell() {
       ? 'max-h-[var(--global-modal-panel-max-height)] w-auto max-w-[var(--global-modal-panel-max-width)] shadow-2xl ring-1 ring-white/5 transition-[opacity] duration-300 overflow-hidden isolate'
       : 'w-full max-h-[85vh] shadow-2xl ring-1 ring-white/5 transition-[opacity] duration-300',
     modal.maxWidthClassName ?? 'max-w-4xl',
-    modal.variant === 'custom-surface' ? '' : 'bg-ci-surface',
+    /* surface provided via SpotlightCard + explicit style below to guarantee light white / v3 dark without legacy ci- fallback */
     modal.panelClassName ?? '',
   ].filter(Boolean).join(' ');
 
@@ -96,7 +96,7 @@ export function GlobalModalShell() {
         className="shrink-0 border-b px-8 py-6 backdrop-blur-md"
         style={{
           borderColor: isLight ? 'var(--ci-border, #E5E4E3)' : 'var(--v3-border-subtle)',
-          background: isLight ? 'color-mix(in srgb, var(--ci-surface) 96%, transparent)' : 'color-mix(in srgb, var(--v3-base-bg) 86%, transparent)',
+          background: isLight ? '#FFFFFF' : '#15282A',
         }}
       >
         <div className="flex items-start justify-between gap-4">
@@ -128,7 +128,7 @@ export function GlobalModalShell() {
           </div>
         </div>
       </div>
-      <div className={['relative z-20 flex-1 min-h-0 overflow-y-auto p-8 custom-scrollbar', modal.bodyClassName ?? ''].join(' ')} style={{ background: isLight ? 'var(--ci-bg, #FAFBF8)' : 'transparent' }}>
+      <div className={['relative z-20 flex-1 min-h-0 overflow-y-auto p-8 custom-scrollbar', modal.bodyClassName ?? ''].join(' ')} style={{ background: isLight ? '#FAFBF8' : '#0E1B1C' }}>
         {modal.content}
       </div>
       {modal.footer ? (
@@ -136,7 +136,7 @@ export function GlobalModalShell() {
           className="shrink-0 border-t px-8 py-5 backdrop-blur-md"
           style={{
             borderColor: isLight ? 'var(--ci-border, #E5E4E3)' : 'var(--v3-border-subtle)',
-            background: isLight ? 'color-mix(in srgb, var(--ci-surface) 96%, transparent)' : 'color-mix(in srgb, var(--v3-base-bg) 86%, transparent)',
+            background: isLight ? '#FFFFFF' : '#15282A',
           }}
         >
           {modal.footer}

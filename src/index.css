@@ -37,7 +37,7 @@
   --ci-hairline:      rgba(255,255,255,0.06);
 
   /* The single main glass — 33% opacity deep-maroon */
-  --glass-main: linear-gradient(160deg, rgba(66,8,8,0.33) 0%, rgba(10,2,2,0.33) 100%);
+  --glass-main: linear-gradient(160deg, rgba(27,49,51,0.78) 0%, rgba(14,27,28,0.78) 100%); /* stabilized */
   --glass-panel: var(--glass-main);
 
   /* Flat helper — used when we need a faint ambient zone without
@@ -1749,12 +1749,13 @@ html[data-theme="care-indeed-light"] .spotlight-inner-glow {
   --ci-action:            #E07B2C; /* design #4 orange */
 }
 
-/* ── Semantic tokens — CI-ION dark (legacy default) ────────── */
+/* ── Semantic tokens — CI-ION dark (legacy default, stabilized to V3) ────────── */
 :root {
-  --ci-bg:            var(--ci-maroon-deep);
-  --ci-surface:       transparent;          /* one-glass canvas */
-  --ci-surface-2:     rgba(255,255,255,0.02);
-  --ci-surface-muted: rgba(255,255,255,0.04);
+  /* Stabilized: legacy CI-ION dark surfaces now resolve to V3 navy/slate/charcoal to eliminate maroon runtime bleed for normal cards/modals/drawers. */
+  --ci-bg:            #0E1B1C;
+  --ci-surface:       #15282A;
+  --ci-surface-2:     #1B3133;
+  --ci-surface-muted: #11242A;
   --ci-text-primary:  var(--ci-text);
   --ci-text-muted-2:  rgba(255,255,255,0.65);
   --ci-text-subtle:   rgba(255,255,255,0.40);
@@ -1784,13 +1785,14 @@ html[data-theme="care-indeed-light"] .spotlight-inner-glow {
      specific values are overridden in the data-theme blocks below.
      Documented in Phase2_Visibility_Fix_Plan.md.
      ============================================================ */
-  --ci-color-glass-main:        linear-gradient(160deg, rgba(66,8,8,0.3044) 0%, rgba(10,2,2,0.3044) 100%);
-  --ci-color-glass-main-detail: linear-gradient(160deg, rgba(66,8,8,1) 0%, rgba(10,2,2,1) 100%);
+  /* Stabilized: legacy deep-maroon glass tints replaced with V3 teal-charcoal. */
+  --ci-color-glass-main:        linear-gradient(160deg, rgba(27,49,51,0.78) 0%, rgba(14,27,28,0.78) 100%);
+  --ci-color-glass-main-detail: linear-gradient(160deg, rgba(27,49,51,0.96) 0%, rgba(14,27,28,0.96) 100%);
   --ci-color-glass-border:      rgba(255,255,255,0.09);
   --ci-color-glass-blur:        blur(22px) saturate(145%);
   --ci-color-glass-shadow:      0 40px 120px -30px rgba(0,0,0,0.85), 0 18px 48px -18px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07), inset 0 0 0 1px rgba(255,255,255,0.015);
-  --ci-color-shell-topbar-bg:   rgba(66,8,8,0.42);
-  --ci-color-shell-navrail-bg:  rgba(66,8,8,0.42);
+  --ci-color-shell-topbar-bg:   rgba(20,40,42,0.78);
+  --ci-color-shell-navrail-bg:  rgba(20,40,42,0.78);
   --ci-color-border-subtle:     rgba(255,255,255,0.09);
   /* Back-compat aliases for any historical references */
   --ci-color-glass-light-main:  var(--ci-color-glass-main);
