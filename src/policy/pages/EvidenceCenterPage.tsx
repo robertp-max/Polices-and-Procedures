@@ -1,5 +1,5 @@
 /**
- * Evidence Center — read-only V3 folder explorer backed by local/demo evidence metadata.
+ * Evidence Center — read-only V3 folder explorer backed by backend/Drive evidence metadata (no local-only final artifacts).
  *
  * Reads from:
  *   GET  {API_BASE}/events/{event_id}/files
@@ -23,7 +23,6 @@ import { useProjectedTasks } from '@/policy/pm/taskProjection';
 import { isCesTask } from '@/policy/pm/types';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
 import { CesEvidenceHierarchyPanel } from '@/policy/components/evidence/CesEvidenceHierarchyPanel';
-import { GoogleEvidenceProviderCard } from '@/policy/components/regulatory/GoogleEvidenceProviderCard';
 import { prefetchDemoEvidenceFromIdb, resolveEvidenceDataUrl } from '@/policy/evidence/demoEvidenceRuntimeCache';
 import { useDataFreshness } from '@/policy/utils/useDataFreshness';
 import { StalenessBanner, AriaLiveRegion, LoadingState, EmptyState } from '@/policy/components/ui';
@@ -32,7 +31,6 @@ import {
   type EvidenceMode,
   type EvidenceStatus,
   logEvidenceDevWarning,
-  toEvidenceModeLabel,
   validateEvidenceUploadInput,
 } from '@/policy/evidence/evidenceModel';
 
@@ -42,10 +40,7 @@ const API_BASE: string =
   (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_HHC_API_BASE ||
   'https://rtllnugat0.execute-api.us-west-1.amazonaws.com';
 
-const REQUESTED_MODE: EvidenceMode =
-  ((import.meta as unknown as { env?: Record<string, string> }).env?.VITE_EVIDENCE_MODE || 'DEMO_LOCAL').toUpperCase() === 'BACKEND_LIVE'
-    ? 'BACKEND_LIVE'
-    : 'DEMO_LOCAL';
+const REQUESTED_MODE: EvidenceMode = 'BACKEND_LIVE';
 
 const DEFAULT_EVENT  = 'EVT-DEMO-001';
 
@@ -80,6 +75,10 @@ interface EvidenceFile {
   source_system:    string | null;
   mime_type:        string | null;
   size_bytes:       number | null;
+  drive_file_id?:   string | null;
+  drive_folder_id?: string | null;
+  drive_web_url?:   string | null;
+  drive_upload_status?: string | null;
   created_at:       string;
   updated_at:       string;
 }
@@ -93,12 +92,6 @@ interface AuditEntry {
   upload_id:     string | null;
   before_status: string | null;
   after_status:  string | null;
-}
-
-interface ListResponse {
-  event_id: string;
-  files:    EvidenceFile[];
-  audit:    AuditEntry[];
 }
 
 interface InitResponse {
@@ -246,7 +239,6 @@ export function EvidenceCenterPage() {
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
   const [memCacheVersion, setMemCacheVersion] = useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [effectiveMode, setEffectiveMode] = useState<EvidenceMode>(REQUESTED_MODE);
   const [centerView, setCenterViewState] = useState<'hierarchy' | 'files'>(qCenterView);
   const setCenterView = useCallback((next: 'hierarchy' | 'files') => {
     setCenterViewState(next);
@@ -257,7 +249,7 @@ export function EvidenceCenterPage() {
       return merged;
     }, { replace: true });
   }, [setSearchParams]);
-  const isDemoMode = effectiveMode === 'DEMO_LOCAL';
+  // DEMO_LOCAL removed. All CES/eCign evidence requires BACKEND_LIVE + Drive persistence.
   const store = useRegulatoryExecutionStore();
   const projectedTasks = useProjectedTasks('full');
   const generatedEvents = useAutogenStore(s => s.generatedEvents);
@@ -294,6 +286,10 @@ export function EvidenceCenterPage() {
     size_bytes: resolvedSize ?? null,
     created_at: doc.createdAt,
     updated_at: doc.uploadedAt ?? doc.createdAt,
+    drive_file_id: doc.driveFileId ?? null,
+    drive_folder_id: doc.driveFolderId ?? null,
+    drive_web_url: doc.webViewLink ?? null,
+    drive_upload_status: doc.driveUploadStatus ?? null,
   });
   }, []);
   const toAuditEntry = useCallback((row: ReturnType<typeof useRegulatoryExecutionStore.getState>['taskAuditByEventId'][string][number]): AuditEntry => ({
@@ -344,66 +340,42 @@ export function EvidenceCenterPage() {
     return out;
   }, [cesTasks, hierarchyEvents, resolveEventAliases, store.taskAuditByEventId]);
 
+  // Always warm IDB cache for large signed artifact previews (CES store + Drive-backed artifacts use local stash for bytes)
   useEffect(() => {
-    if (!isDemoMode || normalizedEvidenceIds.length === 0) return;
+    if (normalizedEvidenceIds.length === 0) return;
     let active = true;
     prefetchDemoEvidenceFromIdb(normalizedEvidenceIds).then(() => {
       if (!active) return;
-      // Force a re-render after async IDB warm-up so rows that were IDB-only
-      // resolve without needing a manual page refresh.
       setMemCacheVersion(v => v + 1);
     }).catch(() => {});
     return () => { active = false; };
-  }, [isDemoMode, normalizedEvidenceIds]);
+  }, [normalizedEvidenceIds]);
 
   const load = useCallback(async (id: string) => {
-    if (isDemoMode) {
+    setLoading(true);
+    setError(null);
+    try {
+      // CES regulatory store is the source for canonical signed_package + attached Drive metadata.
+      // External fetch (if any) is best-effort only; localDataUrl provides render bytes, Drive is authoritative persistence.
       const aliases = resolveEventAliases(id);
       const docs = aliases
         .flatMap(alias => store.evidence[alias] ?? [])
-        .filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx)
-        .filter(item => (item.artifactType || item.kind) !== 'signed_form_instance');
+        .filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx);
       const auditRows = aliases
         .flatMap(alias => store.taskAuditByEventId[alias] ?? [])
         .filter(row => row.entityType === 'evidence' || row.action === 'FILE_UPLOADED' || row.action === 'FILE_VALIDATED' || row.action === 'EVIDENCE_PROMOTED' || row.action === 'EVIDENCE_LOCKED')
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       setFiles(docs.map(toEvidenceFile));
       setAudit(auditRows.map(toAuditEntry));
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await jsonOrThrow<ListResponse>(
-        await fetch(`${API_BASE}/events/${encodeURIComponent(id)}/files`)
-      );
-      setFiles(data.files || []);
-      setAudit(data.audit || []);
     } catch (e) {
-      if (effectiveMode === 'BACKEND_LIVE') {
-        setEffectiveMode('DEMO_LOCAL');
-        setError('Backend evidence endpoints are unavailable. The page switched to local demo evidence mode.');
-        logEvidenceDevWarning('Evidence Center backend unavailable. Falling back to DEMO_LOCAL mode.', e);
-        const aliases = resolveEventAliases(id);
-        const docs = aliases
-          .flatMap(alias => store.evidence[alias] ?? [])
-          .filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx)
-          .filter(item => (item.artifactType || item.kind) !== 'signed_form_instance');
-        const auditRows = aliases
-          .flatMap(alias => store.taskAuditByEventId[alias] ?? [])
-          .filter(row => row.entityType === 'evidence' || row.action === 'FILE_UPLOADED' || row.action === 'FILE_VALIDATED' || row.action === 'EVIDENCE_PROMOTED' || row.action === 'EVIDENCE_LOCKED')
-          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        setFiles(docs.map(toEvidenceFile));
-        setAudit(auditRows.map(toAuditEntry));
-      } else {
-        setError((e as Error).message);
-        setFiles([]);
-        setAudit([]);
-      }
+      setError('Evidence load issue. Google Drive persistence is required for final signed eCign artifacts.');
+      logEvidenceDevWarning('Evidence Center load issue. Drive persistence required.', e);
+      setFiles([]);
+      setAudit([]);
     } finally {
       setLoading(false);
     }
-  }, [effectiveMode, isDemoMode, resolveEventAliases, store.evidence, store.taskAuditByEventId, toAuditEntry, toEvidenceFile]);
+  }, [resolveEventAliases, store.evidence, store.taskAuditByEventId, toAuditEntry, toEvidenceFile]);
 
   useEffect(() => { load(eventId); }, [eventId, load]);
 
@@ -468,19 +440,8 @@ export function EvidenceCenterPage() {
   };
 
   const onDownload = async (f: EvidenceFile) => {
-    if (isDemoMode) {
-      if (!f.local_data_url) {
-        setError('Download is unavailable for this local demo record because file bytes were not persisted.');
-        return;
-      }
-      const a = document.createElement('a');
-      a.href = f.local_data_url;
-      a.download = f.filename;
-      a.target = '_blank';
-      a.rel = 'noopener';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+    if (!f.local_data_url) {
+      setError('Download unavailable — bytes not cached. Re-finalize the signed package after configuring Google Drive evidence persistence.');
       return;
     }
     try {
@@ -531,58 +492,57 @@ export function EvidenceCenterPage() {
       return;
     }
 
-    if (isDemoMode) {
-      setUploading(true);
-      setUploadMsg(null);
-      setError(null);
-      try {
-        const linkedInstance = qFormInstanceId
-          || resolveEventAliases(eventId)
-            .flatMap(alias => store.generatedFormInstancesByEventId[alias] ?? [])
-            .find(instance =>
-              instance.status !== 'SUPERSEDED'
-              && (!uploadTaskId || instance.taskId === uploadTaskId)
-              && (!uploadFormId || instance.formId === uploadFormId),
-            )?.id;
-        const evidenceId = store.uploadEvidence(eventId, {
-          taskId: uploadTaskId || undefined,
-          policyIds: [uploadPolicyId],
-          workflowId: uploadWorkflowId,
-          formIds: uploadFormId ? [uploadFormId] : [],
-          linkedFormId: uploadFormId || undefined,
-          linkedFormInstanceId: linkedInstance || undefined,
-          name: file.name,
-          kind: 'attachment',
-          sizeLabel: `${Math.max(1, Math.round(file.size / 1024))} KB`,
-          localDataUrl: await new Promise<string | undefined>(resolve => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : undefined);
-            reader.onerror = () => resolve(undefined);
-            reader.readAsDataURL(file);
-          }),
-        });
-        if (!evidenceId) {
-          setError(store.evidenceErrorsByEventId[eventId] || 'Evidence upload failed validation and was not persisted.');
-          return;
-        }
-        await load(eventId);
-        const persisted = resolveEventAliases(eventId)
-          .flatMap(alias => store.evidence[alias] ?? [])
-          .some(item => item.id === evidenceId);
-        if (!persisted) {
-          setError(`Upload failed persistence check for evidence_id=${evidenceId}.`);
-          return;
-        }
-        const uploaded = resolveEventAliases(eventId)
-          .flatMap(alias => store.evidence[alias] ?? [])
-          .find(item => item.id === evidenceId);
-        if (uploaded) setSelected(toEvidenceFile(uploaded));
-        setUploadMsg(`✓ ${file.name} → EVIDENCE_LOCKED (evidence_id=${evidenceId})`);
-      } finally {
-        setUploading(false);
-        if (fileInputRef.current) fileInputRef.current.value = '';
+    // CES evidence path: upload to regulatory store (with localDataUrl for preview). For eCign signed_package, Drive persistence + metadata attach happens in FormSigningWorkspace finalize.
+    // Direct uploads here are supporting evidence; signed canonical evidence must come through the Drive-required eCign flow.
+    setUploading(true);
+    setUploadMsg(null);
+    setError(null);
+    try {
+      const linkedInstance = qFormInstanceId
+        || resolveEventAliases(eventId)
+          .flatMap(alias => store.generatedFormInstancesByEventId[alias] ?? [])
+          .find(instance =>
+            instance.status !== 'SUPERSEDED'
+            && (!uploadTaskId || instance.taskId === uploadTaskId)
+            && (!uploadFormId || instance.formId === uploadFormId),
+          )?.id;
+      const evidenceId = store.uploadEvidence(eventId, {
+        taskId: uploadTaskId || undefined,
+        policyIds: [uploadPolicyId],
+        workflowId: uploadWorkflowId,
+        formIds: uploadFormId ? [uploadFormId] : [],
+        linkedFormId: uploadFormId || undefined,
+        linkedFormInstanceId: linkedInstance || undefined,
+        name: file.name,
+        kind: 'attachment',
+        sizeLabel: `${Math.max(1, Math.round(file.size / 1024))} KB`,
+        localDataUrl: await new Promise<string | undefined>(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : undefined);
+          reader.onerror = () => resolve(undefined);
+          reader.readAsDataURL(file);
+        }),
+      });
+      if (!evidenceId) {
+        setError(store.evidenceErrorsByEventId[eventId] || 'Evidence upload failed validation and was not persisted.');
+        return;
       }
-      return;
+      await load(eventId);
+      const persisted = resolveEventAliases(eventId)
+        .flatMap(alias => store.evidence[alias] ?? [])
+        .some(item => item.id === evidenceId);
+      if (!persisted) {
+        setError(`Upload failed persistence check for evidence_id=${evidenceId}.`);
+        return;
+      }
+      const uploaded = resolveEventAliases(eventId)
+        .flatMap(alias => store.evidence[alias] ?? [])
+        .find(item => item.id === evidenceId);
+      if (uploaded) setSelected(toEvidenceFile(uploaded));
+      setUploadMsg(`✓ ${file.name} uploaded (id=${evidenceId})`);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
 
     setUploading(true);
@@ -653,13 +613,13 @@ export function EvidenceCenterPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* ── Header ─────────────────────────────────────────────── */}
+      {/* Header */}
       <div className="px-6 pt-5 pb-4 border-b border-[var(--v3-border-subtle)]">
         <div className="flex items-center gap-3 flex-wrap">
           <FolderOpen size={22} className="text-[var(--v3-teal-light)]" />
           <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-[var(--v3-text-primary)]">Evidence Folder Explorer</h1>
           <span className="ml-2 text-xs text-[var(--v3-text-secondary)]">
-            Evidence mode: {toEvidenceModeLabel(effectiveMode)}
+            Persistence: {REQUESTED_MODE} (Drive required)
           </span>
           <div className="ml-auto">
             <button
@@ -677,7 +637,7 @@ export function EvidenceCenterPage() {
           </div>
         </div>
         <p className="mt-1 text-sm text-[var(--v3-text-secondary)] max-w-3xl">
-          Read-only folder view for Year → Quarter → Month → Event → Task evidence. Upload stays inside CES task drawers where the event, task, form, and requirement context is known.
+          Read-only folder view for Year, Quarter, Month, Event, and Task evidence. Upload stays inside CES task drawers where event, task, form, and requirement context is known.
         </p>
         <div className="mt-3 flex items-center gap-4 flex-wrap text-[11px] text-[var(--v3-text-secondary)]">
           <span>Chain of custody visible</span>
@@ -685,27 +645,29 @@ export function EvidenceCenterPage() {
           <span>Survey packet ready context</span>
         </div>
         <div className="mt-3 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setCenterView('hierarchy')}
-            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'hierarchy' ? 'border-[var(--v3-border-subtle)] ci-bg-overlay-strong text-[var(--v3-text-primary)]' : 'border-[var(--v3-border-subtle)] bg-transparent text-[var(--v3-text-secondary)]'}`}
-          >
-            Folder tree
-          </button>
-          <button
-            type="button"
-            onClick={() => setCenterView('files')}
-            className={`rounded border px-2.5 py-2 min-h-[44px] text-xs ${centerView === 'files' ? 'border-[var(--v3-border-subtle)] ci-bg-overlay-strong text-[var(--v3-text-primary)]' : 'border-[var(--v3-border-subtle)] bg-transparent text-[var(--v3-text-secondary)]'}`}
-          >
-            File ledger
-          </button>
+        <button
+          type="button"
+          onClick={() => setCenterView('hierarchy')}
+          className="rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em]"
+          style={centerView === 'hierarchy' ? { borderColor: 'var(--v3-teal)', background: 'rgba(0,209,193,0.1)', color: 'var(--v3-teal-light)' } : { borderColor: 'var(--v3-border-subtle)', color: 'var(--v3-text-secondary)' }}
+        >
+          Hierarchy
+        </button>
+        <button
+          type="button"
+          onClick={() => setCenterView('files')}
+          className="rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em]"
+          style={centerView === 'files' ? { borderColor: 'var(--v3-teal)', background: 'rgba(0,209,193,0.1)', color: 'var(--v3-teal-light)' } : { borderColor: 'var(--v3-border-subtle)', color: 'var(--v3-text-secondary)' }}
+        >
+          Flat Files
+        </button>
+        <span className="ml-auto text-xs text-[var(--v3-text-tertiary)] self-center">PERSISTENCE: BACKEND_LIVE (Drive required)</span>
+      </div>
+
+        <div className="mt-3 flex items-start gap-2 rounded border border-[var(--ci-info-bdr)] ci-bg-info-soft px-3 py-2 text-sm ci-text-info">
+          <Info size={16} className="mt-0.5 flex-shrink-0" />
+          <span>Evidence metadata is persisted to the configured backend/Drive.</span>
         </div>
-        {isDemoMode && (
-          <div className="mt-3 flex items-start gap-2 rounded border border-[var(--ci-info-bdr)] ci-bg-info-soft px-3 py-2 text-sm ci-text-info">
-            <Info size={16} className="mt-0.5 flex-shrink-0" />
-            <span>DEMO_LOCAL: Evidence metadata is stored locally for this demo environment.</span>
-          </div>
-        )}
         {(qTaskId || qRequirementId) && (
           <div className="mt-3 flex items-start gap-2 rounded border ci-border-success ci-bg-success-soft px-3 py-2 text-sm ci-text-success select-none">
             <Info size={16} className="mt-0.5 flex-shrink-0 ci-text-success" />
@@ -745,11 +707,10 @@ export function EvidenceCenterPage() {
           }}
         />
       ) : (
-      <>
-      {/* ── Main grid: left = browser+table+audit, right = guidance ── */}
-      <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
-        {/* Left column */}
-        <div className="col-span-12 xl:col-span-9 flex flex-col overflow-hidden">
+        <>
+        {/* Main content - full screen, no borders */}
+        <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
+          <div className="col-span-12 xl:col-span-9 flex flex-col overflow-hidden">
           {/* Filter bar */}
           <div className="px-3 sm:px-6 py-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-y border-[var(--v3-border-subtle)] sticky top-0 z-20 mx-3 sm:mx-6 mt-2 ci-bg-overlay-faint">
             <div className="flex items-center gap-2">
@@ -774,7 +735,6 @@ export function EvidenceCenterPage() {
               </span>
             </div>
 
-            {/* Narrow client-side filters — applied to the already-loaded files */}
             <div className="flex items-center gap-2">
               <label className="text-xs uppercase tracking-wider text-[var(--v3-text-tertiary)]">Event</label>
               <input
@@ -907,7 +867,7 @@ export function EvidenceCenterPage() {
                 <div className="flex items-start gap-2 text-sm ci-text-success ci-bg-success-soft border border-[var(--ci-success-fg)] rounded px-3 py-2">
                   <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" />
                   <div className="flex-1 break-all">{uploadMsg}</div>
-                  <button title="Dismiss" aria-label="Dismiss" onClick={() => setUploadMsg(null)} className="ci-text-success hover:opacity-90"><X size={14} /></button>
+                  <button title="Dismiss message" aria-label="Dismiss message" onClick={() => setUploadMsg(null)} className="ci-text-success hover:opacity-90"><X size={14} /></button>
                 </div>
               )}
             </div>
@@ -1048,69 +1008,8 @@ export function EvidenceCenterPage() {
             )}
           </div>
         </div>
-
-        {/* Right contextual guidance */}
-        <aside className="hidden xl:flex xl:col-span-3 flex-col border-l border-[var(--v3-border-subtle)] overflow-auto">
-          <div className="p-5 space-y-5">
-            <div>
-              <div className="flex items-center gap-2">
-                <Info size={16} className="text-[var(--v3-teal-light)]" />
-                <h3 className="text-sm font-semibold tracking-tight text-[var(--v3-text-primary)]">What is "evidence"?</h3>
-              </div>
-              <p className="mt-1.5 text-xs text-[var(--v3-text-secondary)] leading-relaxed">
-                Any file that proves a regulated activity happened — QAPI minutes, signed forms,
-                competency checklists, training rosters, OASIS lock confirmations.
-              </p>
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck size={16} className="text-[var(--v3-teal-light)]" />
-                <h3 className="text-sm font-semibold tracking-tight text-[var(--v3-text-primary)]">Why the triplet?</h3>
-              </div>
-              <p className="mt-1.5 text-xs text-[var(--v3-text-secondary)] leading-relaxed">
-                Every artifact is bound to a <code className="text-[var(--v3-text-primary)]">policy_id</code>,
-                {' '}<code className="text-[var(--v3-text-primary)]">workflow_id</code>, and
-                {' '}<code className="text-[var(--v3-text-primary)]">event_id</code>. A surveyor can pull a single
-                event packet and reconstruct the entire chain of custody.
-              </p>
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2">
-                <History size={16} className="text-[var(--v3-teal-light)]" />
-                <h3 className="text-sm font-semibold tracking-tight text-[var(--v3-text-primary)]">Audit log</h3>
-              </div>
-              <p className="mt-1.5 text-xs text-[var(--v3-text-secondary)] leading-relaxed">
-                Append-only entries record who initiated each upload, every status transition, and
-                every download URL we mint. Nothing in this view is editable.
-              </p>
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2">
-                <Upload size={16} className="text-[var(--v3-teal-light)]" />
-                <h3 className="text-sm font-semibold tracking-tight text-[var(--v3-text-primary)]">What to do next</h3>
-              </div>
-              <ol className="mt-1.5 text-xs text-[var(--v3-text-secondary)] leading-relaxed list-decimal pl-4 space-y-1">
-                <li>Pick the event you're documenting (top-left).</li>
-                <li>Open the source CES task drawer and upload from its evidence requirement.</li>
-                <li>Verify the new row appears with status <code>EVIDENCE_LOCKED</code>.</li>
-                <li>Use <span className="text-[var(--v3-text-primary)]">Download</span> to obtain a short-lived presigned URL.</li>
-              </ol>
-            </div>
-
-            <div className="border-t border-[var(--v3-border-subtle)] pt-4">
-              <GoogleEvidenceProviderCard />
-            </div>
-
-            <div className="text-[10px] text-[var(--v3-text-tertiary)] leading-relaxed border-t border-[var(--v3-border-subtle)] pt-3">
-              API: <code className="break-all text-[var(--v3-text-primary)]">{API_BASE}</code>
-            </div>
-          </div>
-        </aside>
-      </div>
-      </>
+        </div>
+        </>
       )}
 
       {/* Detail drawer */}
@@ -1178,6 +1077,10 @@ function DetailDrawer({
           <Field k="size"             v={formatBytes(file.size_bytes)} />
           <Field k="created_at"       v={formatTs(file.created_at)} />
           <Field k="updated_at"       v={formatTs(file.updated_at)} />
+          {file.drive_file_id && <Field k="drive_file_id" v={file.drive_file_id} />}
+          {file.drive_folder_id && <Field k="drive_folder_id" v={file.drive_folder_id} />}
+          {file.drive_web_url && <Field k="drive_web_url" v={file.drive_web_url} />}
+          {file.drive_upload_status && <Field k="drive_upload_status" v={file.drive_upload_status} />}
         </div>
 
         <button

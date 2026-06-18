@@ -97,6 +97,12 @@ export function quarterFromDate(dateISO?: string): string {
   return `Q${Math.floor((month - 1) / 3) + 1}`;
 }
 
+export function fullMonthName(dateISO?: string): string {
+  const d = dateISO && /^\d{4}-\d{2}-\d{2}/.test(dateISO) ? new Date(dateISO) : new Date();
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return months[d.getUTCMonth()] || 'Unknown';
+}
+
 /**
  * Heuristic PHI guard for names. Returns true when a folder/file name looks
  * like it could contain patient identifiers (SSN, MRN, DOB, "patient <name>").
@@ -132,14 +138,18 @@ export function buildEvidenceFolderSegments(input: {
   evidenceRequirementId?: string;
   supportTaskId?: string;
 }): string[] {
+  // Harden for CES task evidence: always route to 01_CES/Evidence/YEAR/MONTH/EVENT/
+  // regardless of artifact type (eCign signed, form, supporting, final package, etc.).
+  // Files land directly under the event folder (or task sub if present).
+  // This ensures CES events land under the canonical CES evidence tree and not category folders.
   const segments: string[] = [
+    '01_CES',
+    'Evidence',
     sanitizeName(yearFromDate(input.eventDate)),
-    sanitizeName(quarterFromDate(input.eventDate)),
-    sanitizeName(input.domain || 'general'),
+    sanitizeName(fullMonthName(input.eventDate)),
     sanitizeName(input.eventId),
-    EVIDENCE_SUBFOLDERS[input.category],
   ];
-  // Task/form-specific deepening (only the segments that are present).
+  // Task/form-specific deepening (only the segments that are present). No category sub to keep under event.
   for (const part of [input.taskId, input.formId, input.formInstanceId, input.evidenceRequirementId ?? input.supportTaskId]) {
     if (part) segments.push(sanitizeName(part));
   }
@@ -385,6 +395,11 @@ export async function uploadEventEvidence(input: UploadEvidenceInput): Promise<U
     uploadedBy: input.uploadedBy,
     attachmentStatus,
     contentStatus: 'available',
+    // Additional for CES routing validation
+    drivePath: segments.join('/'),
+    driveEventFolderId: folderId, // the event level folder
+    driveEventFolderPath: segments.slice(0, 5).join('/'), // up to event
+    driveEventFolderUrl: evidenceFolderUrl ? evidenceFolderUrl(folderId) : undefined,
   };
 
   const evidenceId = buildEvidenceId({

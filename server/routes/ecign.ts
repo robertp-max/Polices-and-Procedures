@@ -18,12 +18,22 @@ import {
   resolveNetworkLocationMetadata,
   resolveRequestNetworkContext,
 } from '../ecign/networkMetadata.js';
+import {
+  canGenerateFinalPackage,
+  normalizeAuthorityDomain,
+  normalizeSignerProfile,
+  validateSignerEligibility,
+  type AuthorityDomain,
+  type CanonicalSignerRequirement,
+  type ProductionSignerTier,
+  type SignatureCompletion,
+} from '../../src/policy/ecign/signerAuthority.ts';
 
 export const ecignRouter: Router = Router();
 
 // ── Demo session middleware ────────────────────────────────────────────────
 // In production replace with real auth. Fail-closed: requires X-User header.
-interface SessionUser { user_id: string; name: string; role: string; email: string; tier: number }
+interface SessionUser { user_id: string; name: string; role: string; email: string; tier: number; authorityDomains: AuthorityDomain[] }
 declare module 'express-serve-static-core' {
   interface Request { user?: SessionUser; mfaToken?: string }
 }
@@ -37,6 +47,7 @@ ecignRouter.use((req, _res, next) => {
     role:    req.header('x-user-role')  ?? 'unknown',
     email:   req.header('x-user-email') ?? `${uid}@careindeed.com`,
     tier:    Number(req.header('x-user-tier') ?? 4),
+    authorityDomains: parseAuthorityDomains(req.header('x-user-authority-domains')),
   };
   req.mfaToken = req.header('x-mfa-token') ?? undefined;
   next();
@@ -47,6 +58,73 @@ function requireStepUp(formId: string, mfa?: string) {
   if (HIGH_IMPACT_FORMS.has(formId) && !mfa) {
     throw new EcignError('STEP_UP_REQUIRED', 'MFA step-up required for this form.', 403);
   }
+}
+
+function parseAuthorityDomains(header: string | undefined): AuthorityDomain[] {
+  const parsed = String(header ?? '')
+    .split(',')
+    .map(value => normalizeAuthorityDomain(value))
+    .filter((value): value is AuthorityDomain => Boolean(value));
+  return parsed.length ? parsed : ['operations'];
+}
+
+function tier(value: number | undefined): ProductionSignerTier {
+  if (!value || value <= 1) return 1;
+  if (value === 2) return 2;
+  if (value === 3) return 3;
+  if (value === 4) return 4;
+  return 5;
+}
+
+function requirementFromRequiredSigner(cur: FormInstanceRow, signer: RequiredSigner, index: number): CanonicalSignerRequirement {
+  const requiredDomain = normalizeAuthorityDomain(signer.required_domain) ?? 'operations';
+  const slotOrder = signer.slot_order ?? index + 1;
+  return {
+    signatureRequirementId: [
+      'SIGREQ',
+      cur.event_id ?? 'NOEVENT',
+      cur.workflow_instance_id ?? 'NOWF',
+      cur.form_id,
+      String(slotOrder).padStart(2, '0'),
+      signer.field_id,
+    ].join('-'),
+    formId: cur.form_id,
+    workflowId: cur.workflow_instance_id,
+    eventId: cur.event_id,
+    slotOrder,
+    slotFieldId: signer.field_id,
+    slotPurpose: signer.slot_purpose ?? signer.role,
+    requiredDomain,
+    allowedRoles: signer.allowed_roles?.length ? signer.allowed_roles : [signer.role],
+    minTier: tier(signer.min_tier ?? signer.tier),
+    maxTier: signer.max_tier ? tier(signer.max_tier) : undefined,
+    required: signer.required !== false,
+    mode: signer.sequential === false ? 'parallel' : 'sequential',
+    canDelegate: signer.can_delegate === true,
+    requiresSameDomain: signer.requires_same_domain !== false,
+    blocksSelfApproval: signer.blocks_self_approval === true,
+    requiredForFinalPackage: signer.required_for_final_package !== false,
+  };
+}
+
+function requirementsForInstance(cur: FormInstanceRow): CanonicalSignerRequirement[] {
+  return cur.required_signers
+    .map((signer, index) => requirementFromRequiredSigner(cur, signer, index))
+    .sort((a, b) => a.slotOrder - b.slotOrder);
+}
+
+function signatureCompletionFromRow(sig: SignatureRow, requirement: CanonicalSignerRequirement): SignatureCompletion {
+  return {
+    slotOrder: sig.signature_slot_order ?? requirement.slotOrder,
+    fieldId: sig.field_id,
+    signerUserId: sig.signer_user_id,
+    signerRole: sig.signer_role,
+    signerTier: tier(sig.signer_tier ?? requirement.minTier),
+    signerDomains: (sig.signer_domains ?? [requirement.requiredDomain])
+      .map(domain => normalizeAuthorityDomain(domain))
+      .filter((domain): domain is AuthorityDomain => Boolean(domain)),
+    signedAt: sig.signed_at_utc,
+  };
 }
 
 function asyncH(fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) {
@@ -160,10 +238,15 @@ ecignRouter.get('/network-info', async (req, res) => {
 
 // ── Form instances ─────────────────────────────────────────────────────────
 ecignRouter.post('/instances', asyncH(async (req, res) => {
-  const { form_id, document_version_id, required_signers, workflow_instance_id, event_id } = req.body ?? {};
+  const { form_id, document_version_id, required_signers, form_instance_id, workflow_instance_id, event_id } = req.body ?? {};
   assert(form_id && document_version_id, 'VALIDATION', 'form_id + document_version_id required', 400);
+  if (form_instance_id) {
+    const existing = await store.getInstance(String(form_instance_id));
+    if (existing) return res.json(existing);
+  }
   const row: FormInstanceRow = {
-    instance_id: ulid(),
+    instance_id: form_instance_id ? String(form_instance_id) : ulid(),
+    form_instance_id: form_instance_id ? String(form_instance_id) : undefined,
     form_id, document_version_id,
     state: 'created',
     required_signers: (required_signers as RequiredSigner[]) ?? [],
@@ -270,6 +353,74 @@ ecignRouter.post('/instances/:id/signatures', asyncH(async (req, res) => {
   assert(field_id && signature_png_b64 && attestation_text_hash,
     'VALIDATION', 'field_id, signature_png_b64, attestation_text_hash required', 400);
 
+  const requirements = requirementsForInstance(cur);
+  const matchingRequirement = requirements.find(requirement => requirement.slotFieldId === field_id);
+  if (requirements.length > 0) {
+    if (!matchingRequirement) {
+      await appendAudit({ actor: actorOf(req), network: networkOf(req),
+        subject: { kind: 'form_instance', id: cur.instance_id },
+        action: 'access.denied',
+        payload: { reason: 'SIGNER_SLOT_NOT_REQUIRED', field_id } });
+      throw new EcignError('SIGNER_SLOT_NOT_REQUIRED', 'Signature field is not an active required signer slot for this form instance.', 403);
+    }
+    const sigs = await store.listSignatures(cur.instance_id);
+    const signedFields = new Set(sigs.map(s => s.field_id));
+    const previousRequiredMissing = requirements
+      .filter(requirement => requirement.required && requirement.slotOrder < matchingRequirement.slotOrder)
+      .filter(requirement => !signedFields.has(requirement.slotFieldId));
+    if (previousRequiredMissing.length > 0) {
+      await appendAudit({ actor: actorOf(req), network: networkOf(req),
+        subject: { kind: 'form_instance', id: cur.instance_id },
+        action: 'access.denied',
+        payload: {
+          reason: 'SIGNER_SLOT_OUT_OF_ORDER',
+          field_id,
+          missing_prior_slots: previousRequiredMissing.map(requirement => requirement.slotFieldId),
+        } });
+      throw new EcignError('SIGNER_SLOT_OUT_OF_ORDER', 'Required prior signer slots must be completed before this signature.', 409);
+    }
+    const profile = normalizeSignerProfile({
+      userId: req.user!.user_id,
+      name: req.user!.name,
+      role: req.user!.role,
+      tier: req.user!.tier,
+      authorityDomains: req.user!.authorityDomains,
+    });
+    const previousSignatures = sigs
+      .map(sig => {
+        const requirement = requirements.find(item => item.slotFieldId === sig.field_id);
+        return requirement ? signatureCompletionFromRow(sig, requirement) : null;
+      })
+      .filter((value): value is SignatureCompletion => Boolean(value))
+      .filter(completion => completion.slotOrder < matchingRequirement.slotOrder);
+    const eligibility = validateSignerEligibility(profile, matchingRequirement, {
+      previousSignatures,
+      preparerUserId: previousSignatures.find(completion => completion.slotOrder === 1)?.signerUserId,
+      currentActorUserId: matchingRequirement.blocksSelfApproval ? previousSignatures.at(-1)?.signerUserId : undefined,
+    });
+    if (!eligibility.eligible) {
+      await appendAudit({ actor: actorOf(req), network: networkOf(req),
+        subject: { kind: 'form_instance', id: cur.instance_id },
+        action: 'access.denied',
+        payload: {
+          reason: 'SIGNER_NOT_ELIGIBLE',
+          field_id,
+          signer_role: req.user!.role,
+          signer_tier: req.user!.tier,
+          signer_domains: req.user!.authorityDomains,
+          requirement: {
+            slot_order: matchingRequirement.slotOrder,
+            slot_purpose: matchingRequirement.slotPurpose,
+            required_domain: matchingRequirement.requiredDomain,
+            allowed_roles: matchingRequirement.allowedRoles,
+            min_tier: matchingRequirement.minTier,
+          },
+          reasons: eligibility.reasons,
+        } });
+      throw new EcignError('SIGNER_NOT_ELIGIBLE', eligibility.reasons.join(' '), 403);
+    }
+  }
+
   const sig: SignatureRow = {
     signature_id: ulid(),
     instance_id: cur.instance_id,
@@ -282,6 +433,9 @@ ecignRouter.post('/instances/:id/signatures', asyncH(async (req, res) => {
     signature_png: signature_png_b64,
     signature_hash: sha256(Buffer.from(signature_png_b64.split(',').pop() ?? '', 'base64')),
     attestation_text_hash,
+    signer_tier: req.user!.tier,
+    signer_domains: req.user!.authorityDomains,
+    signature_slot_order: matchingRequirement?.slotOrder,
   };
   const networkLocation = await resolveNetworkLocationMetadata(req);
   sig.network_location = networkLocation;
@@ -339,6 +493,19 @@ ecignRouter.post('/instances/:id/lock', asyncH(async (req, res) => {
     throw new EcignError('SIGNATURES_INCOMPLETE',
       'Required signatures missing.', 409);
   }
+  const requirements = requirementsForInstance(cur);
+  if (requirements.length > 0) {
+    const completions = sigs
+      .map(sig => {
+        const requirement = requirements.find(item => item.slotFieldId === sig.field_id);
+        return requirement ? signatureCompletionFromRow(sig, requirement) : null;
+      })
+      .filter((value): value is SignatureCompletion => Boolean(value));
+    if (!canGenerateFinalPackage(requirements, completions)) {
+      throw new EcignError('SIGNATURES_INCOMPLETE',
+        'Final package cannot be locked until all required signer slots are complete.', 409);
+    }
+  }
   // Compute document hash
   const versions = await store.listVersions();
   const v = versions.find(x => x.version_id === cur.document_version_id);
@@ -367,8 +534,55 @@ ecignRouter.post('/instances/:id/lock', asyncH(async (req, res) => {
 ecignRouter.post('/instances/:id/second-signature', asyncH(async (req, res) => {
   const cur = await store.getInstance(req.params.id);
   if (!cur) throw new EcignError('NOT_FOUND', 'Instance not found', 404);
-  const { assigned_to, due_date } = req.body ?? {};
+  const { assigned_to, due_date, assigned_user } = req.body ?? {};
   assert(assigned_to, 'VALIDATION', 'assigned_to required', 400);
+  const requirements = requirementsForInstance(cur);
+  if (requirements.length > 0) {
+    const sigs = await store.listSignatures(cur.instance_id);
+    const completions = sigs
+      .map(sig => {
+        const requirement = requirements.find(item => item.slotFieldId === sig.field_id);
+        return requirement ? signatureCompletionFromRow(sig, requirement) : null;
+      })
+      .filter((value): value is SignatureCompletion => Boolean(value));
+    const nextRequirement = requirements
+      .filter(requirement => requirement.required)
+      .filter(requirement => !completions.some(completion => completion.slotOrder === requirement.slotOrder))
+      .sort((a, b) => a.slotOrder - b.slotOrder)[0];
+    assert(nextRequirement, 'SIGNATURES_COMPLETE', 'No downstream signer slot is pending.', 409);
+    const assigned = assigned_user && typeof assigned_user === 'object'
+      ? assigned_user as { role?: string; tier?: number; authorityDomains?: string[] }
+      : null;
+    assert(assigned?.role && assigned?.tier, 'VALIDATION', 'assigned_user role and tier are required for signer assignment validation.', 400);
+    const profile = normalizeSignerProfile({
+      userId: String(assigned_to),
+      role: assigned.role,
+      tier: assigned.tier,
+      authorityDomains: assigned.authorityDomains ?? [],
+    });
+    const eligibility = validateSignerEligibility(profile, nextRequirement, {
+      previousSignatures: completions.filter(completion => completion.slotOrder < nextRequirement.slotOrder),
+      preparerUserId: completions.find(completion => completion.slotOrder === 1)?.signerUserId,
+      currentActorUserId: req.user!.user_id,
+    });
+    if (!eligibility.eligible) {
+      await appendAudit({ actor: actorOf(req), network: networkOf(req),
+        subject: { kind: 'form_instance', id: cur.instance_id },
+        action: 'access.denied',
+        payload: {
+          reason: 'SECOND_SIGNER_NOT_ELIGIBLE',
+          assigned_to,
+          requirement: {
+            slot_order: nextRequirement.slotOrder,
+            required_domain: nextRequirement.requiredDomain,
+            allowed_roles: nextRequirement.allowedRoles,
+            min_tier: nextRequirement.minTier,
+          },
+          reasons: eligibility.reasons,
+        } });
+      throw new EcignError('SECOND_SIGNER_NOT_ELIGIBLE', eligibility.reasons.join(' '), 403);
+    }
+  }
   const task = { taskId: ulid(), type: 'signature_request' as const,
     formInstanceId: cur.instance_id, assignedTo: assigned_to,
     assignedBy: req.user!.user_id, status: 'pending' as const,
@@ -382,7 +596,7 @@ ecignRouter.post('/instances/:id/second-signature', asyncH(async (req, res) => {
 ecignRouter.post('/instances/:id/void', asyncH(async (req, res) => {
   const cur = await store.getInstance(req.params.id);
   if (!cur) throw new EcignError('NOT_FOUND', 'Instance not found', 404);
-  assert(req.user!.tier <= 2, 'PERMISSION_DENIED', 'Tier ≤ 2 required to void.', 403);
+  assert(req.user!.tier >= 4, 'PERMISSION_DENIED', 'Tier 4 or higher required to void.', 403);
   const next = await store.updateInstance(cur.instance_id, { state: 'voided' });
   await appendAudit({ actor: actorOf(req), network: networkOf(req),
     subject: { kind: 'form_instance', id: cur.instance_id },

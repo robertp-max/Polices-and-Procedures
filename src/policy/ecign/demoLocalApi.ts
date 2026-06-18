@@ -1,4 +1,5 @@
 import { getEcignSignerIdentity } from './signerIdentity';
+import type { RequiredSignerPayload } from './signerAuthority';
 
 export type DemoBackendState =
   | 'created'
@@ -12,10 +13,11 @@ export type DemoBackendState =
 
 export interface DemoInstanceRecord {
   instance_id: string;
+  form_instance_id?: string;
   form_id: string;
   document_version_id: string;
   state: DemoBackendState;
-  required_signers: Array<{ role: string; tier: number; user_id?: string; field_id: string }>;
+  required_signers: RequiredSignerPayload[];
   workflow_instance_id?: string;
   event_id?: string;
   created_at_utc: string;
@@ -192,13 +194,20 @@ export const demoLocalEcignApi = {
   createInstance: async (body: {
     form_id: string;
     document_version_id: string;
-    required_signers: Array<{ role: string; tier: number; user_id?: string; field_id: string }>;
+    required_signers: RequiredSignerPayload[];
+    form_instance_id?: string;
     workflow_instance_id?: string;
     event_id?: string;
   }) => {
     const state = readState();
+    const instanceId = body.form_instance_id || randomId('FI');
+    const existing = state.instances[instanceId];
+    if (existing) {
+      return { instance_id: existing.instance_id, state: existing.state };
+    }
     const row: DemoInstanceRecord = {
-      instance_id: randomId('FI'),
+      instance_id: instanceId,
+      form_instance_id: body.form_instance_id,
       form_id: body.form_id,
       document_version_id: body.document_version_id,
       required_signers: body.required_signers ?? [],
@@ -290,6 +299,14 @@ export const demoLocalEcignApi = {
     const row = getRequiredInstance(state, instanceId);
     const signatures = state.signaturesByInstanceId[instanceId] ?? [];
     if (signatures.length === 0) throw new Error('Cannot finalize without a signature.');
+    const signedFieldIds = new Set(signatures.map(signature => signature.field_id));
+    const missingRequiredFields = (row.required_signers ?? [])
+      .filter(signer => signer.required !== false && signer.required_for_final_package !== false)
+      .map(signer => signer.field_id)
+      .filter(fieldId => !signedFieldIds.has(fieldId));
+    if (missingRequiredFields.length > 0) {
+      throw new Error(`Cannot finalize before required signer slots are complete: ${missingRequiredFields.join(', ')}.`);
+    }
     const signatureHash = signatures[0]?.signature_hash ?? '';
     const document_hash = hashLike(`${instanceId}|${row.document_version_id}|${signatureHash}`);
     const manifest_hash = hashLike(`${document_hash}|${signatures.length}`);

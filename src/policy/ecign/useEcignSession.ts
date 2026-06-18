@@ -77,6 +77,17 @@ export function useEcignSession() {
           tier:     signer.tier,
           user_id:  signer.id,
           field_id: args.fieldId,
+          slot_order: 1,
+          slot_purpose: signer.role,
+          required_domain: signer.authorityDomains[0] ?? 'operations',
+          allowed_roles: [signer.role],
+          min_tier: signer.tier,
+          required: true,
+          sequential: true,
+          can_delegate: false,
+          requires_same_domain: true,
+          blocks_self_approval: false,
+          required_for_final_package: true,
         }],
         workflow_instance_id: args.workflowInstanceId,
         event_id:             args.eventId,
@@ -121,7 +132,7 @@ export function useEcignSession() {
       setStatus({ phase: 'error', message: err.message, error: err });
       return null;
     }
-  }, [signer.id, signer.role, signer.tier]);
+  }, [signer.authorityDomains, signer.id, signer.role, signer.tier]);
 
   return { status, commitSignature, reset };
 }

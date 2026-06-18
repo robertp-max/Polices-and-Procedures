@@ -46,6 +46,21 @@ export interface CesEvidenceRef {
   attachmentStatus: 'attached' | 'pending_attach' | 'attach_failed' | 'not_attached' | 'removed';
   contentStatus: 'available' | 'metadata_only' | 'missing';
   hash?: string;
+  artifactId?: string;
+  pdfVersion?: number;
+  status?: string;
+  signerSlotOrder?: number;
+  signerUserId?: string;
+  signerRole?: string;
+  signerTier?: number;
+  signerDomain?: string;
+  signedAt?: string;
+  priorDocumentHash?: string;
+  finalDocumentHash?: string;
+  auditEventIds?: string[];
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /** Opaque, non-PHI CES metadata snapshot (mirrors the FE execution metadata). */

@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { AuthorityDomain, ProductionSignerTier } from '@/policy/ecign/signerAuthority';
 
 /* ═══════════════════════════════════════════════════════════════════
    FormSignatureContext
@@ -13,7 +14,8 @@ export interface DemoUser {
   name:  string;
   role:  string;
   email: string;
-  tier:  number; // 1 = highest authority
+  tier:  ProductionSignerTier; // 1 = staff/preparer, 5 = Governing Body/final authority
+  authorityDomains: AuthorityDomain[];
 }
 
 export interface SignatureRecord {
@@ -85,6 +87,14 @@ export interface SignerTask {
     source: 'policy_viewer' | 'task' | 'forms_library' | 'workflow';
     parentTaskId?: string;
   };
+  parentTaskId?: string;
+  requiredDomain?: AuthorityDomain;
+  slotPurpose?: string;
+  minTier?: ProductionSignerTier;
+  artifactId?: string;
+  pdfVersion?: number;
+  priorDocumentHash?: string;
+  finalDocumentHash?: string;
 }
 
 export type SignFlowState = 'unsigned' | 'signed' | 'pending_second' | 'pending_next_signer' | 'all_signed' | 'completed';
@@ -120,17 +130,19 @@ export const DEMO_SESSION: DemoUser = {
   name:  'JD Vance',
   role:  'Administrator Designee',
   email: 'jvance@careindeed.com',
-  tier:  2,
+  tier:  4,
+  authorityDomains: ['governance', 'operations'],
 };
 
 export const DEMO_STAFF: DemoUser[] = [
-  { id: 'user_trump',   name: 'Donald Trump',  role: 'Administrator',          email: 'dtrump@careindeed.com',   tier: 1 },
-  { id: 'user_vance',   name: 'JD Vance',      role: 'Administrator Designee', email: 'jvance@careindeed.com',   tier: 2 },
-  { id: 'user_rubio',   name: 'Marco Rubio',   role: 'Compliance Officer',     email: 'mrubio@careindeed.com',   tier: 3 },
-  { id: 'user_hegseth', name: 'Pete Hegseth',  role: 'Clinical Manager',       email: 'phegseth@careindeed.com', tier: 4 },
-  { id: 'user_bondi',   name: 'Pam Bondi',     role: 'Compliance Liaison',     email: 'pbondi@careindeed.com',   tier: 4 },
-  { id: 'user_noem',    name: 'Kristi Noem',   role: 'Staff RN',               email: 'knoem@careindeed.com',    tier: 5 },
-  { id: 'user_rollins', name: 'Brooke Rollins', role: 'CHHA Supervisor',       email: 'brollins@careindeed.com', tier: 5 },
+  { id: 'user_trump',   name: 'Donald Trump',  role: 'Governing Body Chair',   email: 'dtrump@careindeed.com',   tier: 5, authorityDomains: ['governance'] },
+  { id: 'user_vance',   name: 'JD Vance',      role: 'Administrator Designee', email: 'jvance@careindeed.com',   tier: 4, authorityDomains: ['governance', 'operations'] },
+  { id: 'user_qapi_lead', name: 'Alex Morgan', role: 'QAPI Lead / Chair',      email: 'amorgan@careindeed.com',  tier: 3, authorityDomains: ['qapi'] },
+  { id: 'user_rubio',   name: 'Marco Rubio',   role: 'Compliance Officer',     email: 'mrubio@careindeed.com',   tier: 3, authorityDomains: ['compliance', 'qapi'] },
+  { id: 'user_hegseth', name: 'Pete Hegseth',  role: 'Clinical Manager',       email: 'phegseth@careindeed.com', tier: 3, authorityDomains: ['clinical'] },
+  { id: 'user_bondi',   name: 'Pam Bondi',     role: 'Accounting Manager',     email: 'pbondi@careindeed.com',   tier: 5, authorityDomains: ['accounting', 'finance'] },
+  { id: 'user_noem',    name: 'Kristi Noem',   role: 'Staff RN',               email: 'knoem@careindeed.com',    tier: 1, authorityDomains: ['clinical'] },
+  { id: 'user_rollins', name: 'Brooke Rollins', role: 'CHHA Supervisor',       email: 'brollins@careindeed.com', tier: 2, authorityDomains: ['clinical'] },
 ];
 
 // ── Utilities ────────────────────────────────────────────────────────
