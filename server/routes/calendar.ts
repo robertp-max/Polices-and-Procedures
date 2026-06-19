@@ -1,7 +1,8 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import {
-  listEvents, findByEventId, pingCalendar,
+  listEvents, findByEventId, pingCalendar, resolveCalendarEvent,
 } from '../googleCalendar.js';
+import { getCesEnrichment, buildEnrichedPlannerPayload } from '../cesCalendarEventBuilder.js';
 import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
 import type { PlannerEventPayload } from '../mappers.js';
@@ -48,9 +49,35 @@ calendarRouter.get('/events', asyncHandler(async (req, res) => {
  */
 calendarRouter.get('/events/by-app/:eventId', asyncHandler(async (req, res) => {
   const eventId = String(req.params.eventId);
-  const ev = await findByEventId(eventId);
-  if (!ev) throw new ApiError('event_not_found', 'No Google event maps to this event_id.', 404);
-  res.json(ev);
+  const enrichment = getCesEnrichment(eventId);
+  let resolved;
+  try {
+    resolved = await resolveCalendarEvent(
+      eventId,
+      enrichment ? buildEnrichedPlannerPayload(enrichment) : undefined,
+    );
+  } catch (e) {
+    const err = e instanceof ApiError ? e : new ApiError('internal_error', (e as Error).message, 500);
+    if (err.code === 'calendar_not_found') {
+      throw new ApiError(
+        'calendar_not_found',
+        'Configured Google Calendar is unreachable. Verify GOOGLE_CALENDAR_ID and service-account sharing.',
+        404,
+        { eventId },
+      );
+    }
+    throw err;
+  }
+  if (!resolved) throw new ApiError('event_not_found', 'No Google event maps to this event_id.', 404);
+  res.json({
+    ...resolved.event,
+    _resolve: {
+      action: resolved.action,
+      healed: resolved.healed,
+      staleGoogleId: resolved.staleGoogleId ?? null,
+      duplicateAvoided: resolved.duplicateAvoided,
+    },
+  });
 }));
 
 /** POST /api/calendar/events — create/upsert (deterministic via eventSync). */

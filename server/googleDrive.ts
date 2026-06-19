@@ -49,14 +49,24 @@ async function getClient(): Promise<drive_v3.Drive> {
   }
 }
 
-/** Shared-Drive aware list/create options. */
+/** Shared-Drive aware list/create options.
+ * Only set corpora+driveId when a shared drive ID is configured.
+ * Prevents "driveId must be specified if corpora=drive" when using regular Drive folders or no shared configured.
+ */
 function driveScopeParams() {
-  return {
+  const id = env.driveEvidenceSharedDriveId;
+  const base = {
     supportsAllDrives: true,
     includeItemsFromAllDrives: true,
-    corpora: 'drive' as const,
-    driveId: env.driveEvidenceSharedDriveId,
   };
+  if (id) {
+    return {
+      ...base,
+      corpora: 'drive' as const,
+      driveId: id,
+    };
+  }
+  return base;
 }
 
 /** Health check — confirms the Shared Drive root is reachable. */
