@@ -74,7 +74,7 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
     `flex items-center gap-3 rounded-lg px-3 py-2 font-montserrat text-xs font-semibold transition-colors ${
       active
         ? 'bg-brand-teal/10 text-brand-teal'
-        : 'text-[var(--v3-text-secondary)] hover:bg-[var(--v3-glass2)] hover:text-[var(--v3-text-primary)]'
+        : 'text-[#1F1C1B] hover:bg-[#F7FEFF] hover:text-[#00797D]'
     }`;
 
   return (

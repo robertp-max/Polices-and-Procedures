@@ -1832,10 +1832,27 @@ html[data-theme="care-indeed-light"] .spotlight-inner-glow {
   --ci-color-on-primary:                 #FFFFFF;
 }
 
-/* ── Semantic tokens — Care Indeed LIGHT ───────────────────── */
+/* ── Semantic tokens — Care Indeed LIGHT (Production Design Spec) ─────────────────────
+   Pale atmospheric base + white work surfaces + clinical teal structure + orange action
+   Layer 0: atmospheric #F7FEFF / #FAF8F8
+   Layer 1: plane #FFFFFF
+   Layer 2: card/elevated #FFFFFF with soft elevation
+*/
 html[data-theme="care-indeed-light"] {
-  --ci-bg:            #FAFBF8;
-  --ci-surface:       #FFFFFF;
+  /* Production Light Design Tokens from spec */
+  --surface-page: #F7FEFF;          /* pale atmospheric teal-tinted base (Layer 0) */
+  --surface-plane: #FFFFFF;         /* main application plane (Layer 1) */
+  --surface-card: #FFFFFF;          /* elevated cards and panels (Layer 2) */
+  --surface-elevated: #FFFFFF;
+  --surface-popover: #FFFFFF;
+  --text-primary: #1F1C1B;
+  --text-muted: #524D4B;
+  --border-subtle: #E5E4E3;
+  --brand-teal: #00797D;            /* clinical teal for structure, nav, progress, selection */
+  --brand-orange: #C74601;          /* primary action only */
+
+  --ci-bg:            var(--surface-page);
+  --ci-surface:       var(--surface-card);
   --ci-surface-2:     #FAFBF8;
   --ci-surface-muted: #F4F4F2;
   --ci-text-primary:  #111316; /* dark neutral body text for production light mode */
@@ -1864,7 +1881,7 @@ html[data-theme="care-indeed-light"] {
   --ci-color-glass-blur:        none;
   --ci-color-glass-shadow:      0 1px 2px rgba(0,0,0,0.04);
   --ci-color-shell-topbar-bg:   #FFFFFF;
-  --ci-color-shell-navrail-bg:  #FFFFFF;
+  --ci-color-shell-navrail-bg:  var(--surface-page); /* pale atmospheric for sidebar per design spec */
   --ci-color-border-subtle:     #E5E4E3;
   --ci-color-glass-light-main:  var(--ci-color-glass-main);
   --ci-color-glass-dark-main:   var(--ci-color-glass-main);
@@ -1894,6 +1911,30 @@ html[data-theme="care-indeed-light"] {
   --ci-color-shell-overlay-shadow:       0 12px 28px rgba(0,0,0,0.12);
   --ci-color-cta-primary-border-soft:    rgba(199,70,1,0.45);
   --ci-color-on-primary:                 #FFFFFF;
+}
+
+/* Production light atmospheric base for the entire page (Layer 0) */
+html[data-theme="care-indeed-light"] body,
+html[data-theme="care-indeed-light"] #root,
+html[data-theme="care-indeed-light"] .app-root {
+  background-color: var(--surface-page);
+}
+
+/* Elevated content cards per design spec (Layer 2) - soft white, subtle elevation, 16px radius */
+html[data-theme="care-indeed-light"] .rounded-xl,
+html[data-theme="care-indeed-light"] .swimlane-card,
+html[data-theme="care-indeed-light"] .card,
+html[data-theme="care-indeed-light"] .spotlight-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 10px rgba(0,0,0,0.03);
+}
+
+/* Major panels / large cards: 24px radius */
+html[data-theme="care-indeed-light"] .rounded-2xl,
+html[data-theme="care-indeed-light"] .major-panel {
+  border-radius: 24px;
 }
 
 /* ── Semantic tokens — Care Indeed DARK (NEW) ──────────────── */
