@@ -1902,6 +1902,8 @@
       return VIEW_BY_ID[id] ? id : 'dashboard';
     }
 
+    const CAREINDEED_MARK_SRC = '/_Heavy/Fix-2026-05-14/ForGrok/UIUX_Audit/favicon_careindeed_com_256x256.png';
+
     function Icon({ name, className = 'w-4 h-4' }) {
       return <i data-lucide={name} className={className}></i>;
     }
@@ -4288,6 +4290,7 @@
     function App() {
       const [activeId, setActiveId] = useState(getInitialViewId);
       const [query, setQuery] = useState('');
+      const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
       const [calendarSwimlaneOpen, setCalendarSwimlaneOpen] = useState(false);
       const activeView = VIEW_BY_ID[activeId] || VIEW_BY_ID.dashboard;
 
@@ -4311,7 +4314,7 @@
         if (window.lucide) {
           window.requestAnimationFrame(() => window.lucide.createIcons());
         }
-      }, [activeId, query]);
+      }, [activeId, query, sidebarCollapsed]);
 
       const visibleGroups = useMemo(() => {
         if (!query.trim()) return VIEW_GROUPS;
@@ -4336,32 +4339,54 @@
       return (
         <div className="prototype-shell min-h-screen">
           <div className="flex min-h-screen">
-          <aside className="sticky top-0 hidden h-screen w-[292px] shrink-0 overflow-y-auto border-r border-white/70 bg-[#E7F3F3]/95 lg:block">
-            <div className="px-6 pb-4 pt-6">
-              <img src="/src/assets/ci-logo-gray.png" alt="Care Indeed" className="h-12 w-auto object-contain" />
+          <aside className={`sticky top-0 hidden h-screen shrink-0 overflow-y-auto border-r border-white/70 bg-[#E7F3F3]/95 transition-[width] duration-300 lg:block ${sidebarCollapsed ? 'w-[88px]' : 'w-[292px]'}`}>
+            <div className={`flex items-center gap-3 pb-4 pt-6 ${sidebarCollapsed ? 'flex-col px-3' : 'justify-between px-6'}`}>
+              <img
+                src={sidebarCollapsed ? CAREINDEED_MARK_SRC : '/src/assets/ci-logo-gray.png'}
+                alt="Care Indeed"
+                className={`${sidebarCollapsed ? 'h-11 w-11 rounded-full object-contain' : 'h-12 w-auto object-contain'} transition-all duration-300`}
+              />
+              <button
+                type="button"
+                title={sidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+                aria-label={sidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+                onClick={() => {
+                  if (!sidebarCollapsed) setQuery('');
+                  setSidebarCollapsed(!sidebarCollapsed);
+                }}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/95 bg-white/70 text-brand-teal-600 shadow-soft transition hover:bg-white"
+              >
+                <Icon name={sidebarCollapsed ? 'panel-left-open' : 'panel-left-close'} className="h-4 w-4" />
+              </button>
             </div>
-            <div className="border-b border-transparent px-6 pb-5">
+            {!sidebarCollapsed && <div className="border-b border-transparent px-6 pb-5">
               <div className="rounded-2xl border border-white/95 bg-white/62 p-4 shadow-soft">
                 <div className="text-2xl font-heading font-extrabold text-brand-teal-500">{ALL_VIEWS.length}</div>
                 <div className="text-[10px] font-heading font-extrabold uppercase tracking-wider text-brand-neutral-400">Active page views covered</div>
               </div>
-            </div>
-            <div className="p-4">
-              <div className="relative mb-4">
+            </div>}
+            <div className={`${sidebarCollapsed ? 'px-3 pb-4 pt-2' : 'p-4'}`}>
+              {!sidebarCollapsed && <div className="relative mb-4">
                 <Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-neutral-400" />
                 <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Filter views..." className="w-full rounded-xl border border-white/90 bg-white/70 py-2.5 pl-9 pr-3 text-sm shadow-soft outline-none focus:border-brand-teal-500 focus:bg-white" />
-              </div>
-              <nav className="space-y-6">
+              </div>}
+              <nav className={sidebarCollapsed ? 'space-y-4' : 'space-y-6'}>
                 {visibleGroups.map((group) => (
                   <div key={group.title}>
-                    <div className="mb-2 px-2 text-[10px] font-heading font-extrabold uppercase tracking-[0.2em] text-brand-neutral-400">{group.title}</div>
-                    <div className="space-y-1">
+                    {!sidebarCollapsed && <div className="mb-2 px-2 text-[10px] font-heading font-extrabold uppercase tracking-[0.2em] text-brand-neutral-400">{group.title}</div>}
+                    <div className={sidebarCollapsed ? 'flex flex-col items-center gap-2' : 'space-y-1'}>
                       {group.items.map((item) => {
                         const active = item.id === activeView.id;
                         return (
-                          <button key={item.id} onClick={() => goTo(item.id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-bold transition ${active ? 'bg-brand-teal-500 text-white shadow-soft' : 'text-brand-neutral-500 hover:bg-brand-teal-50 hover:text-brand-teal-500'}`}>
+                          <button
+                            key={item.id}
+                            title={item.label}
+                            aria-label={item.label}
+                            onClick={() => goTo(item.id)}
+                            className={`flex items-center rounded-xl text-xs font-bold transition ${sidebarCollapsed ? 'h-11 w-11 justify-center px-0 py-0' : 'w-full gap-3 px-3 py-2.5 text-left'} ${active ? 'bg-brand-teal-500 text-white shadow-soft' : 'text-brand-neutral-500 hover:bg-brand-teal-50 hover:text-brand-teal-500'}`}
+                          >
                             <Icon name={item.icon} className="h-4 w-4 shrink-0" />
-                            <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                            {!sidebarCollapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
                           </button>
                         );
                       })}
