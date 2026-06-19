@@ -8,8 +8,10 @@ import { PhaseRail } from '@/policy/journey/components/PhaseRail';
 import { ModuleCard } from '@/policy/journey/components/ModuleCard';
 import { GateBanner } from '@/policy/journey/components/GateBanner';
 import { EmployeePicker } from '@/policy/journey/components/EmployeePicker';
-import { BookOpen, GraduationCap, FlaskConical, Play, Clock, ChevronRight } from 'lucide-react';
+import { BookOpen, GraduationCap, FlaskConical, Play, Clock } from 'lucide-react';
 import type { JourneyModule } from '@/policy/journey/types/journey';
+import { PageHeader } from '@/policy/components/ui/PageHeader';
+import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
 
 /* ─── Staging module catalogue ─────────────────────────────────────────── */
 
@@ -97,6 +99,8 @@ export function JourneyHomePage() {
   const escalations = useJourneyStore(s => s.escalations);
   const recompute = useJourneyStore(s => s.recomputeEscalations);
   const [phase, setPhase] = useState<PhaseId>('PRE_DAY_1');
+  const [searchQuery, _setSearchQuery] = useState('');
+  const [activeCategory, _setActiveCategory] = useState<'All' | JourneyCategory>('All');
 
   useEffect(() => { recompute(); }, [recompute]);
 
@@ -142,37 +146,67 @@ export function JourneyHomePage() {
       }
     });
 
-    return CATEGORY_ORDER
+    let sections = CATEGORY_ORDER
       .map(category => ({ category, modules: grouped.get(category) ?? [] }))
       .filter(section => section.modules.length > 0);
-  }, [phaseModules]);
+
+    // Apply search + category filter (premium clean filters from design ref)
+    if (searchQuery || activeCategory !== 'All') {
+      const q = searchQuery.toLowerCase().trim();
+      sections = sections
+        .map(sec => ({
+          category: sec.category,
+          modules: sec.modules.filter(m => {
+            const matchesSearch = !q || 
+              m.id.toLowerCase().includes(q) || 
+              m.title.toLowerCase().includes(q) ||
+              m.policyRefs.some(r => r.toLowerCase().includes(q));
+            const matchesCategory = activeCategory === 'All' || sec.category === activeCategory;
+            return matchesSearch && matchesCategory;
+          })
+        }))
+        .filter(sec => sec.modules.length > 0);
+    }
+
+    return sections;
+  }, [phaseModules, searchQuery, activeCategory]);
 
   const clearGate = canClearForIndependentWork(employee, attempts, visits);
 
   return (
-    <div className="h-full w-full flex flex-col p-6 md:p-10 font-sans animate-in fade-in duration-500 overflow-y-auto custom-scrollbar">
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div>
-          <div className="text-[10px] font-montserrat font-bold text-[#FFC107] uppercase tracking-[0.28em] mb-2">Journey Dashboard</div>
-          <h1 className="font-outfit font-light text-white leading-tight" style={{ fontSize: 28, letterSpacing: '-0.01em' }}>
+    <div className="h-full w-full flex flex-col p-4 md:p-6 lg:p-8 font-sans animate-in fade-in duration-500 overflow-y-auto custom-scrollbar">
+      {/* Premium clean header using ui/ PageHeader for corporate hierarchy */}
+      <PageHeader
+        eyebrow="ONBOARDING & COMPETENCY · JOURNEY"
+        title={
+          <span className="flex items-center gap-3">
             {employee.name}
-          </h1>
-          <div className="mt-1 text-[12px] text-white/55 font-roboto">
-            Role: <span className="text-white/85">{employee.role}</span> ·
-            Start Date: <span className="text-white/85">{employee.startDate ?? '—'}</span> ·
-            Status: <span className={progress.clearedForIndependentWork ? 'text-[#34D399]' : 'text-[#FFC107]'}>
+            <span className="inline-flex items-center rounded-full px-3 py-0.5 text-xs font-semibold tracking-widest" 
+                  style={{ background: 'rgba(0, 209, 193, 0.12)', color: 'var(--v3-teal-light)', fontSize: '11px' }}>
+              {employee.role}
+            </span>
+          </span>
+        }
+        description={
+          <>
+            Start: {employee.startDate ?? '—'} ·{' '}
+            <span className={progress.clearedForIndependentWork ? 'text-[#34D399]' : 'text-[#E07B2C]'}>
               {progress.clearedForIndependentWork ? 'CLEARED for independent practice' : 'In Onboarding'}
             </span>
+          </>
+        }
+        actions={
+          <div className="flex items-center gap-2">
+            <EmployeePicker />
+            <button 
+              onClick={() => nav('/journey/guide')}
+              className="flex items-center gap-2 rounded-full border border-[var(--v3-border-subtle)] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)] hover:bg-white/5 transition"
+            >
+              <BookOpen size={15} /> User Guide
+            </button>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <EmployeePicker />
-          <button onClick={() => nav('/journey/guide')}
-            className="glass-interactive flex items-center gap-2 border border-white/10 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest text-white/70 hover:text-white">
-            <BookOpen size={14} /> User Guide
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Hard-stop banner — Appendix F */}
       {!employee.appendixFCleared && (
@@ -209,84 +243,43 @@ export function JourneyHomePage() {
         />
       )}
 
-      {/* ── STAGING CATEGORY ──────────────────────────────────────────────── */}
-      <section className="mb-8 rounded-2xl overflow-hidden border border-amber-500/15 bg-gradient-to-br from-amber-950/30 via-black/0 to-transparent">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-amber-500/10">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-amber-500/15 border border-amber-500/30">
-              <FlaskConical size={15} className="text-amber-400" strokeWidth={1.75} />
+      {/* Staging - clean premium card from reference design visual language */}
+      {STAGING_MODULES.length > 0 && (
+        <SurfaceCard padding="lg" className="mb-6 border border-amber-500/20 bg-[rgba(12,8,3,0.6)]">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/30">
+                <FlaskConical size={16} className="text-amber-400" />
+              </div>
+              <div>
+                <div className="font-montserrat text-[10px] font-bold uppercase tracking-[0.24em] text-amber-400">STAGING PREVIEW</div>
+                <div className="text-sm text-white/90">Cinematic prototype modules — active development</div>
+              </div>
             </div>
-            <div>
-              <h3 className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-amber-400">Staging</h3>
-              <p className="text-[10px] text-white/40 font-roboto">Prototype cinematic modules — in active development</p>
-            </div>
+            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber-400">Preview</span>
           </div>
-          <span className="text-[9px] font-bold uppercase tracking-[0.2em] px-2 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
-            Preview
-          </span>
-        </div>
-
-        <div className="p-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {STAGING_MODULES.map(m => (
-            <div key={m.id} className="group relative flex flex-col gap-4 p-6 rounded-xl bg-white/[0.03] border border-white/8 hover:border-amber-500/30 hover:bg-amber-950/20 transition-all duration-300">
-              {/* Header */}
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[9px] font-bold uppercase tracking-[0.25em] px-2 py-0.5 rounded-full bg-[#C74601]/15 text-[#C74601] border border-[#C74601]/25">
-                      {m.tag}
-                    </span>
-                    <span className="flex items-center gap-1 text-[9px] text-white/30 font-bold uppercase tracking-widest">
-                      <Clock size={9} /> {m.duration}
-                    </span>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            {STAGING_MODULES.map(m => (
+              <div key={m.id} onClick={() => nav(m.path)} className="group cursor-pointer rounded-xl border border-white/10 bg-black/20 p-5 transition hover:border-amber-500/40">
+                <div className="flex justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 text-[10px]">
+                      <span className="rounded bg-[#C74601]/15 px-2 py-px font-bold text-[#C74601] tracking-[0.2em]">{m.tag}</span>
+                      <span className="text-white/40"><Clock size={10} /> {m.duration}</span>
+                    </div>
+                    <div className="mt-1.5 text-lg font-semibold leading-tight text-white">{m.title}</div>
+                    <div className="text-xs text-[#E07B2C]">{m.subtitle}</div>
                   </div>
-                  <h4 className="font-outfit font-light text-white text-xl leading-tight" style={{ letterSpacing: '-0.01em' }}>
-                    {m.title}
-                  </h4>
-                  <p className="text-[11px] text-[#C74601] font-medium mt-0.5">{m.subtitle}</p>
+                  <button onClick={(e) => { e.stopPropagation(); nav(m.path); }} className="mt-1 flex h-9 items-center gap-1.5 rounded-full bg-[#C74601] px-5 text-xs font-bold uppercase tracking-widest text-white hover:brightness-110">
+                    <Play size={13} fill="currentColor" /> LAUNCH
+                  </button>
                 </div>
-                <button
-                  onClick={() => nav(m.path)}
-                  className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-bold text-[11px] uppercase tracking-widest transition-all duration-300 hover:scale-105 shadow-lg"
-                  style={{ background: '#C74601', boxShadow: '0 0 20px rgba(199,70,1,0.35)' }}
-                >
-                  <Play size={12} fill="currentColor" /> Launch
-                </button>
+                <p className="mt-3 line-clamp-2 text-xs text-white/60">{m.description}</p>
               </div>
-
-              {/* Description */}
-              <p className="text-[11px] text-white/50 font-roboto leading-relaxed">{m.description}</p>
-
-              {/* Story acts */}
-              <div className="flex flex-col gap-1">
-                {m.acts.map((act, i) => (
-                  <div key={i} className="flex items-center gap-2 text-[10px] text-white/35">
-                    <div className="w-1 h-1 rounded-full bg-[#C74601]/50 flex-shrink-0" />
-                    {act}
-                  </div>
-                ))}
-              </div>
-
-              {/* Structure pills */}
-              <div className="flex flex-wrap gap-1.5 pt-1 border-t border-white/5">
-                {m.structure.map((item, i) => (
-                  <span key={i} className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-white/[0.04] text-white/30 border border-white/6">
-                    {item}
-                  </span>
-                ))}
-              </div>
-
-              <button
-                onClick={() => nav(m.path)}
-                className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
-                aria-label={`Launch ${m.title}`}
-              >
-                <ChevronRight size={32} className="text-white/10" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </SurfaceCard>
+      )}
 
       <div className="grid grid-cols-12 gap-6">
         <aside className="col-span-12 lg:col-span-3 space-y-6">

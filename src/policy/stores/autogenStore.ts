@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { REGULATORY_EVENTS, type RegulatoryEvent } from '@/policy/data/regulatoryEvents';
+import { dedupeCanonicalCalendarEvents } from '@/policy/ces/calendar/canonicalEventDedup';
 import { TEMPLATE_REGISTRY, TRIGGER_TEMPLATES } from '@/policy/autogen/templateRegistry';
 import { generateEvents } from '@/policy/autogen/annualGenerator';
 import { materializeTrigger, type TriggerSignal } from '@/policy/autogen/triggerEngine';
@@ -197,5 +198,5 @@ export const useAutogenStore = create<AutogenState>()(
 export function useMergedEvents(): RegulatoryEvent[] {
   const gen = useAutogenStore(s => s.generatedEvents);
   const trg = useAutogenStore(s => s.triggeredEvents);
-  return [...REGULATORY_EVENTS, ...gen, ...trg];
+  return dedupeCanonicalCalendarEvents(REGULATORY_EVENTS, gen, trg).events;
 }

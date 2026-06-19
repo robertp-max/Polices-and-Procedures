@@ -2,7 +2,12 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import {
   listEvents, findByEventId, pingCalendar, resolveCalendarEvent,
 } from '../googleCalendar.js';
-import { getCesEnrichment, buildEnrichedPlannerPayload } from '../cesCalendarEventBuilder.js';
+import {
+  buildEnrichedPlannerPayloadLive,
+  getCesEnrichment,
+  parseCesHubMeta,
+} from '../cesCalendarEventBuilder.js';
+import { dedupePlannerEvents } from '../cesCalendarDedup.js';
 import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
 import type { PlannerEventPayload } from '../mappers.js';
@@ -38,7 +43,8 @@ calendarRouter.get('/events', asyncHandler(async (req, res) => {
   validateISODate(start, 'start');
   validateISODate(end, 'end');
   const items = await listEvents({ start, end, q });
-  res.json({ items });
+  const deduped = dedupePlannerEvents(items);
+  res.json({ items: deduped.items, suppressed: deduped.suppressed });
 }));
 
 /**
@@ -51,11 +57,15 @@ calendarRouter.get('/events/by-app/:eventId', asyncHandler(async (req, res) => {
   const eventId = String(req.params.eventId);
   const enrichment = getCesEnrichment(eventId);
   let resolved;
+  let snapshot;
+  let payloadHint;
+  if (enrichment) {
+    const live = await buildEnrichedPlannerPayloadLive(enrichment);
+    payloadHint = live.payload;
+    snapshot = live.snapshot;
+  }
   try {
-    resolved = await resolveCalendarEvent(
-      eventId,
-      enrichment ? buildEnrichedPlannerPayload(enrichment) : undefined,
-    );
+    resolved = await resolveCalendarEvent(eventId, payloadHint);
   } catch (e) {
     const err = e instanceof ApiError ? e : new ApiError('internal_error', (e as Error).message, 500);
     if (err.code === 'calendar_not_found') {
@@ -69,8 +79,48 @@ calendarRouter.get('/events/by-app/:eventId', asyncHandler(async (req, res) => {
     throw err;
   }
   if (!resolved) throw new ApiError('event_not_found', 'No Google event maps to this event_id.', 404);
+
+  if (enrichment && payloadHint) {
+    await syncEvent(payloadHint, {
+      trigger: 'api:GET /events/by-app/:eventId',
+      actor: resolveActor(req),
+      env: enrichment.env ?? 'SANDBOX',
+    });
+    const refreshed = await resolveCalendarEvent(eventId, payloadHint);
+    if (refreshed) resolved = refreshed;
+  }
+
+  const hub = enrichment
+    ? parseCesHubMeta(enrichment, {
+        ...(snapshot ? {
+          completionPercent: String(snapshot.completionPercent),
+          evidenceCount: String(snapshot.evidenceCount),
+          evidenceAttachedCount: String(snapshot.evidenceAttachedCount),
+          ecignStatus: snapshot.ecignStatus,
+          calendarAttachmentStatus: snapshot.calendarAttachmentStatus,
+          eventStatus: snapshot.statusLabel,
+          auditReadyPct: String(snapshot.auditReadyPercent),
+          workflowId: enrichment.workflowId,
+          policyRefs: (enrichment.policyRefs ?? []).map(p => p.id).join(','),
+          driveFolderId: enrichment.driveFolderId,
+          driveFolderUrl: enrichment.driveFolderUrl,
+        } : {}),
+      })
+    : undefined;
+
   res.json({
     ...resolved.event,
+    _hub: hub ?? null,
+    _completion: snapshot ? {
+      percent: snapshot.completionPercent,
+      formula: 'tasks35+evidence25+forms15+ecign15+audit10',
+      breakdown: snapshot.breakdown,
+      evidenceCount: snapshot.evidenceCount,
+      evidenceAttachedCount: snapshot.evidenceAttachedCount,
+      ecignStatus: snapshot.ecignStatus,
+      calendarAttachmentStatus: snapshot.calendarAttachmentStatus,
+      statusLabel: snapshot.statusLabel,
+    } : null,
     _resolve: {
       action: resolved.action,
       healed: resolved.healed,

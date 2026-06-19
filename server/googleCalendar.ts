@@ -329,7 +329,7 @@ export async function listCiEvents(): Promise<calendar_v3.Schema$Event[]> {
 
 export async function createEvent(
   payload: PlannerEventPayload,
-  extras: { hash?: string; version?: number } = {},
+  extras: { hash?: string; version?: number; snapshot?: import('./cesCalendarCompletion.js').CesExecutionSnapshot } = {},
 ): Promise<PlannerEventResponse> {
   const c = await getClient();
   const eventId = normalizeEventId(payload);
@@ -361,7 +361,7 @@ export async function createEvent(
 export async function updateEvent(
   googleEventId: string,
   payload: PlannerEventPayload,
-  extras: { hash?: string; version?: number } = {},
+  extras: { hash?: string; version?: number; snapshot?: import('./cesCalendarCompletion.js').CesExecutionSnapshot } = {},
 ): Promise<PlannerEventResponse> {
   const c = await getClient();
   const eventId = normalizeEventId(payload);

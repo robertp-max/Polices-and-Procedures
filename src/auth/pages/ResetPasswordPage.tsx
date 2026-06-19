@@ -37,7 +37,7 @@ export function ResetPasswordPage() {
 
   return (
     <AuthCard
-      eyebrow="Care Indeed Compliance Demo"
+      eyebrow="Care Indeed Compliance"
       title="Set New Password"
       subtitle="Enter the code we sent to your email, then choose a new password."
     >

@@ -86,9 +86,10 @@ export function PmTaskCard({
       }}
       role="button"
       tabIndex={0}
-      className="w-full text-left rounded-md border transition-colors px-3 py-2 ci-border"
+      className="w-full text-left rounded-md transition-colors px-3 py-2"
       style={{
         background: 'var(--ci-surface-muted)',
+        border: 'none',
         borderColor: accent ?? undefined,
         boxShadow: accent ? `0 0 0 1px ${accent}` : undefined,
       }}
@@ -128,7 +129,7 @@ export function PmTaskCard({
                   key={fid}
                   kind="form"
                   id={fid}
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm"
+                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-full"
                 />
               ))}
             </div>
@@ -141,7 +142,7 @@ export function PmTaskCard({
                   key={pid}
                   kind="policy"
                   id={pid}
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm"
+                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-full"
                 />
               ))}
             </div>
@@ -157,7 +158,7 @@ export function PmTaskCard({
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {chip && (
                 <span
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm"
+                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-full"
                   style={{ background: `${chip.color}22`, color: chip.color }}
                 >
                   {chip.label}
@@ -165,7 +166,7 @@ export function PmTaskCard({
               )}
               {depCount > 0 && (
                 <span
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm"
+                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-full"
                   style={{ background: 'var(--ci-surface-2)', color: 'var(--ci-text-subtle)' }}
                   title={`${depCount} dependency(ies)`}
                 >
@@ -173,13 +174,13 @@ export function PmTaskCard({
                 </span>
               )}
               {task.story_points && (
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm" style={{ background: 'var(--ci-surface-2)', color: 'var(--ci-text-subtle)' }}>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full" style={{ background: 'var(--ci-surface-2)', color: 'var(--ci-text-subtle)' }}>
                   {task.story_points} pt
                 </span>
               )}
               {showSource && (
                 <span
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-sm"
+                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-full"
                   style={{ background: `${sourceColor}22`, color: sourceColor }}
                 >
                   {sourceLabel}

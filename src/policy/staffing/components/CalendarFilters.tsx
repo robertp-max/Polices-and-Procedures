@@ -5,7 +5,7 @@ const ALL_DISCIPLINES: ShiftDiscipline[] = ['RN', 'LVN', 'PT', 'OT', 'MSW', 'HHA
 
 const SELECT_STYLE: React.CSSProperties = {
   background: 'var(--ci-surface)',
-  border: '1px solid var(--ci-border-strong)',
+  border: 'none',
   color: 'var(--ci-text-primary)',
 };
 

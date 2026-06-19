@@ -1,36 +1,27 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  Search, ChevronRight, Printer, Download, History, Info,
+  BookOpen,
+  ChevronRight,
+  ClipboardList,
+  Download,
+  FileText,
+  History,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Printer,
+  Search,
+  ShieldCheck,
 } from 'lucide-react';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { buildPolicyViewer32Model } from './PolicyViewer32Adapters';
-import type { PolicyViewer32Section, PolicyViewer32TabId } from './PolicyViewer32Types';
+import type { PolicyViewer32Section } from './PolicyViewer32Types';
 import {
   PolicyViewer32EmptyState,
   PolicyViewer32Markdown,
-  PolicyViewer32SectionList,
 } from './PolicyViewer32SectionRenderer';
 import { usePolicyStore } from '@/policy/stores/policyStore';
 import { openPolicyPrintRoute } from '@/policy/utils/openPolicyPrintRoute';
-
-// Hard-coded single app logo (public/ci-logo-white.png) - the one and only logo for the entire app
-
-interface SpotlightCardProps {
-  children: ReactNode;
-  className?: string;
-  spotlightColor?: string;
-}
-
-
-const POLICY_TABS: Array<{ id: PolicyViewer32TabId; label: string }> = [
-  { id: 'overview', label: 'Overview & Definitions' },
-  { id: 'statements', label: 'Policy Statements' },
-  { id: 'procedures', label: 'Procedures' },
-  { id: 'documentation', label: 'Documentation' },
-  { id: 'compliance', label: 'Compliance & Audit' },
-  { id: 'references', label: 'References & Admin' },
-  { id: 'appendices', label: 'Appendices' },
-];
 
 export interface PolicyViewer32Props {
   policyId?: string;
@@ -38,29 +29,11 @@ export interface PolicyViewer32Props {
   onBack?: () => void;
 }
 
-function SpotlightCard({ children, className = '', spotlightColor = 'rgba(255, 255, 255, 0.08)' }: SpotlightCardProps) {
-  const divRef = useRef<HTMLDivElement | null>(null);
-
-  const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
-    if (!divRef.current) return;
-    const rect = divRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    divRef.current.style.setProperty('--mouse-x', `${x}px`);
-    divRef.current.style.setProperty('--mouse-y', `${y}px`);
-    divRef.current.style.setProperty('--spotlight-color', spotlightColor);
-  };
-
-  return (
-    <div ref={divRef} onMouseMove={handleMouseMove} className={`card-spotlight ${className}`}>
-      <div className="spotlight-outer-glow" />
-      <div className="spotlight-glow-wrapper">
-        <div className="spotlight-inner-glow" />
-      </div>
-      {children}
-    </div>
-  );
+interface PolicySectionGroup {
+  id: string;
+  label: string;
+  badge: string;
+  sections: PolicyViewer32Section[];
 }
 
 function sectionMatches(section: PolicyViewer32Section, query: string): boolean {
@@ -69,8 +42,31 @@ function sectionMatches(section: PolicyViewer32Section, query: string): boolean 
   return section.title.toLowerCase().includes(q) || section.body.toLowerCase().includes(q);
 }
 
-function filterSections(sections: PolicyViewer32Section[], query: string): PolicyViewer32Section[] {
-  return sections.filter(section => sectionMatches(section, query));
+function sectionAnchor(groupId: string, section: PolicyViewer32Section): string {
+  return `${groupId}-${section.id}`.replace(/[^a-zA-Z0-9_-]+/g, '-');
+}
+
+function StatusPill({ children, tone = 'teal' }: { children: string; tone?: 'teal' | 'orange' | 'green' | 'neutral' }) {
+  const toneClass = {
+    teal: 'border-[#B8E9E7] bg-[#F0FBFB] text-[#007970]',
+    orange: 'border-[#FFD8C6] bg-[#FFF6F1] text-[#C74601]',
+    green: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    neutral: 'border-[#DDEBEB] bg-white text-[#426768]',
+  }[tone];
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${toneClass}`}>
+      {children}
+    </span>
+  );
+}
+
+function InfoTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[12px] border border-[#E2EEEE] bg-white/78 px-3 py-3 shadow-[0_12px_28px_-24px_rgba(0,65,66,0.35)]">
+      <div className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#668183]">{label}</div>
+      <div className="mt-1 text-[13px] font-semibold leading-snug text-[#004142]">{value || 'Unavailable'}</div>
+    </div>
+  );
 }
 
 export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBack }: PolicyViewer32Props) {
@@ -78,433 +74,490 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
   const navigate = useNavigate();
   const policyId = propPolicyId ?? params.policyId ?? '';
   const storePolicy = usePolicyStore(state => state.policies.find(item => item.id === decodeURIComponent(policyId).toUpperCase()));
-  const [activeTab, setActiveTab] = useState<PolicyViewer32TabId>('overview');
-  const [procedureSectionId, setProcedureSectionId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [tocCollapsed, setTocCollapsed] = useState(false);
+  const [activeSectionId, setActiveSectionId] = useState('');
+  const [readingProgress, setReadingProgress] = useState(0);
+  const [selectedAppendixId, setSelectedAppendixId] = useState<string | null>(null);
+  const workspaceRef = useRef<HTMLDivElement | null>(null);
 
   const model = useMemo(
     () => (policyId ? buildPolicyViewer32Model(policyId, storePolicy) : null),
     [policyId, storePolicy],
   );
 
+  const metadata = model?.metadata;
+
+  const sectionGroups = useMemo<PolicySectionGroup[]>(() => {
+    if (!model) return [];
+    const groups: PolicySectionGroup[] = [
+      { id: 'purpose', label: 'Purpose', badge: '2', sections: model.purpose },
+      { id: 'scope', label: 'Scope', badge: '3', sections: model.scope },
+      { id: 'definitions', label: 'Definitions', badge: '5', sections: model.definitions },
+      { id: 'statements', label: 'Policy Statement', badge: '4', sections: model.statements },
+      { id: 'procedures', label: 'Procedures', badge: '6', sections: model.procedures },
+      { id: 'documentation', label: 'Documentation', badge: '7', sections: model.documentation },
+      { id: 'compliance', label: 'Compliance & Audit', badge: '8', sections: model.compliance },
+      { id: 'references', label: 'References & Administration', badge: '9', sections: model.references },
+    ];
+    return groups
+      .map(group => ({
+        ...group,
+        sections: group.sections.filter(section => sectionMatches(section, searchQuery)),
+      }))
+      .filter(group => group.sections.length > 0);
+  }, [model, searchQuery]);
+
+  const flatSections = useMemo(
+    () => sectionGroups.flatMap(group => group.sections.map(section => ({ group, section, anchor: sectionAnchor(group.id, section) }))),
+    [sectionGroups],
+  );
+
+  const scrollKey = metadata ? `ci-policy-reader-scroll:${metadata.id}` : '';
+  const printPath = metadata ? `/print/${encodeURIComponent(metadata.id)}` : '';
+
+  const handlePrint = () => {
+    if (printPath) openPolicyPrintRoute(`${printPath}?autoprint=1`);
+  };
+
+  const handleDownload = () => {
+    if (printPath) openPolicyPrintRoute(printPath);
+  };
+
+  const scrollToSection = useCallback((anchor: string) => {
+    const target = document.getElementById(anchor);
+    if (!target) return;
+    target.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    setActiveSectionId(anchor);
+  }, []);
+
   useEffect(() => {
-    setActiveTab('overview');
     setSearchQuery('');
+    setSelectedAppendixId(null);
   }, [policyId]);
 
   useEffect(() => {
-    setProcedureSectionId(model?.procedures[0]?.id ?? '');
-  }, [model?.metadata.id, model?.procedures]);
+    if (!metadata || !flatSections.length) return;
+    setActiveSectionId(flatSections[0].anchor);
+  }, [metadata?.id, flatSections]);
 
-  if (!model) {
+  useEffect(() => {
+    if (!scrollKey) return;
+    const container = workspaceRef.current;
+    if (!container) return;
+    const raw = localStorage.getItem(scrollKey);
+    if (!raw) return;
+    const saved = Number(raw);
+    if (!Number.isFinite(saved)) return;
+    window.requestAnimationFrame(() => {
+      container.scrollTop = saved;
+    });
+  }, [scrollKey]);
+
+  useEffect(() => {
+    const container = workspaceRef.current;
+    if (!container || !scrollKey) return;
+    const onScroll = () => {
+      const max = container.scrollHeight - container.clientHeight;
+      setReadingProgress(max <= 0 ? 0 : Math.min(100, Math.round((container.scrollTop / max) * 100)));
+      localStorage.setItem(scrollKey, String(container.scrollTop));
+    };
+    container.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => container.removeEventListener('scroll', onScroll);
+  }, [scrollKey]);
+
+  useEffect(() => {
+    const container = workspaceRef.current;
+    if (!container || flatSections.length === 0) return;
+    const observer = new IntersectionObserver(
+      entries => {
+        const visible = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible?.target.id) setActiveSectionId(visible.target.id);
+      },
+      { root: container, threshold: [0.28, 0.5, 0.72], rootMargin: '-72px 0px -45% 0px' },
+    );
+    flatSections.forEach(({ anchor }) => {
+      const node = document.getElementById(anchor);
+      if (node) observer.observe(node);
+    });
+    return () => observer.disconnect();
+  }, [flatSections]);
+
+  if (!model || !metadata) {
     return (
-      <div className="flex h-full min-h-[520px] items-center justify-center bg-[#0B0F15] text-[#E2E8F0]">
+      <div className="flex h-full min-h-[520px] items-center justify-center bg-[#EEF9F9] text-[#315B5C]">
         <PolicyViewer32EmptyState title="Policy not found" />
       </div>
     );
   }
 
-  const metadata = model.metadata;
-  const filteredPurpose = filterSections(model.purpose, searchQuery);
-  const filteredScope = filterSections(model.scope, searchQuery);
-  const filteredDefinitions = filterSections(model.definitions, searchQuery);
-  const filteredStatements = filterSections(model.statements, searchQuery);
-  const filteredProcedures = filterSections(model.procedures, searchQuery);
-  const filteredDocumentation = filterSections(model.documentation, searchQuery);
-  const filteredCompliance = filterSections(model.compliance, searchQuery);
-  const filteredReferences = filterSections(model.references, searchQuery);
-  // filteredAppendices intentionally not computed here — text appendices are suppressed in the Appendices tab (only Linked Forms shown)
-  const selectedProcedure = filteredProcedures.find(section => section.id === procedureSectionId) ?? filteredProcedures[0];
-
-  const printPath = `/print/${encodeURIComponent(metadata.id)}`;
-  const handlePrint = () => openPolicyPrintRoute(`${printPath}?autoprint=1`);
-  const handleDownload = () => openPolicyPrintRoute(printPath);
-
-  const renderSectionBadge = (label: string) => (
-    <div className="w-6 h-6 rounded border border-[#1C2433] bg-[#141A23] flex items-center justify-center text-[10px] font-mono text-[#007970]">
-      {label}
-    </div>
-  );
-
-  const renderOverview = () => (
-    <div className="space-y-10">
-      <SpotlightCard className="p-6" spotlightColor="rgba(0, 121, 112, 0.15)">
-        <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">
-          {metadata.title}
-        </h1>
-        <div className="text-[10px] font-mono text-[#007970] mb-8 uppercase tracking-widest flex items-center gap-2">
-          POLICY ID: {metadata.id}
-          <div className="h-1 w-1 rounded-full bg-[#007970]" />
-          {metadata.status}
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-8 pt-6 border-t border-[#1C2433]">
-          {[
-            ['Domain', metadata.domain],
-            ['Tier', metadata.tier],
-            ['Approved By', metadata.approvedBy],
-            ['Supersedes', metadata.supersedes],
-            ['Effective Date', metadata.effectiveDate],
-            ['Last Reviewed', metadata.lastReviewed],
-            ['Next Review', metadata.nextReview],
-            ['Version', metadata.version],
-          ].map(([label, value]) => (
-            <div key={label}>
-              <div className="text-[9px] font-bold text-[#5E6A7F] uppercase tracking-widest mb-1">{label}</div>
-              <div className="text-sm font-medium text-[#E2E8F0]">
-                {label === 'Tier' && value && value.toUpperCase().includes('REQUIRED') ? (
-                  <span className="text-[#C74600] font-semibold tracking-wide">{value}</span>
-                ) : (
-                  value || 'Unavailable'
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </SpotlightCard>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
-        <section>
-          <div className="flex items-center gap-3 mb-4">
-            {renderSectionBadge('2')}
-            <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Purpose</h3>
-          </div>
-          <PolicyViewer32SectionList sections={filteredPurpose} />
-        </section>
-
-        <section>
-          <div className="flex items-center gap-3 mb-4">
-            {renderSectionBadge('3')}
-            <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Scope</h3>
-          </div>
-          <PolicyViewer32SectionList sections={filteredScope} />
-        </section>
-      </div>
-
-      {/* Only render the Definitions block when there is actual content.
-          This prevents large "No content available" blocks from appearing
-          between other sections (Purpose / Scope) in the Overview. */}
-      {filteredDefinitions.length > 0 && (
-        <section className="pt-6 border-t border-[#1C2433]">
-          <div className="flex items-center gap-3 mb-6">
-            {renderSectionBadge('5')}
-            <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Definitions</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filteredDefinitions.map(section => (
-              <SpotlightCard key={section.id} className="p-5 h-full" spotlightColor="rgba(0, 121, 112, 0.12)">
-                <h4 className="text-[13px] font-bold text-white mb-2 tracking-wide">{section.title}</h4>
-                <PolicyViewer32Markdown body={section.body} />
-              </SpotlightCard>
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
-  );
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'overview':
-        return renderOverview();
-      case 'statements':
-        return (
-          <div className="space-y-6 max-w-5xl">
-            <div className="flex items-center gap-3 mb-6">
-              {renderSectionBadge('4')}
-              <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Policy Statements</h3>
-            </div>
-            {filteredStatements.length > 0 ? (
-              filteredStatements.flatMap((section, sIdx) => {
-                // Split body into individual numbered statements (e.g. 4.1, 4.2) to render as design cards
-                const parts = section.body.split(/\n(?=\d+\.\d+\s)/).filter(Boolean);
-                return parts.length > 1
-                  ? parts.map((part, pIdx) => (
-                      <div key={`${section.id}-${pIdx}`} className="rounded-lg border border-[#1C2433] bg-[#141A23] p-4">
-                        <div className="flex items-start gap-3">
-                          <div className="mt-0.5 w-8 h-8 rounded-full border border-[#C74600] bg-[#141A23] flex-shrink-0 flex items-center justify-center text-[11px] font-mono text-[#C74600]">
-                            {part.match(/^\d+\.\d+/)?.[0] || (pIdx + 1)}
-                          </div>
-                          <div className="text-sm text-[#E2E8F0] leading-relaxed whitespace-pre-line">
-                            <PolicyViewer32Markdown body={part.replace(/^\d+\.\d+\s*/, '')} />
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  : <PolicyViewer32SectionList key={sIdx} sections={[section]} />;
-              })
-            ) : (
-              <PolicyViewer32EmptyState title="No policy statements defined" />
-            )}
-          </div>
-        );
-      case 'procedures':
-        return (
-          <div className="space-y-8">
-            <div className="flex items-center gap-3">
-              {renderSectionBadge('6')}
-              <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Procedures</h3>
-            </div>
-            {filteredProcedures.length > 1 && (
-              <div className="flex gap-6 border-b border-[#1C2433] overflow-x-auto custom-scrollbar" role="tablist" aria-label="Procedure sections">
-                {filteredProcedures.map(section => {
-                  const active = selectedProcedure?.id === section.id;
-                  if (active) {
-                    return (
-                      <button
-                        key={section.id}
-                        type="button"
-                        role="tab"
-                        aria-selected="true"
-                        onClick={() => setProcedureSectionId(section.id)}
-                        className="text-xs font-medium pb-3 transition-colors border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970] border-[#C74600] text-[#C74600]"
-                      >
-                        {section.title}
-                      </button>
-                    );
-                  }
-                  return (
-                    <button
-                      key={section.id}
-                      type="button"
-                      role="tab"
-                      aria-selected="false"
-                      onClick={() => setProcedureSectionId(section.id)}
-                      className="text-xs font-medium pb-3 transition-colors border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970] border-transparent text-[#5E6A7F] hover:text-[#A0ABC0]"
-                    >
-                      {section.title}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-            {selectedProcedure ? <PolicyViewer32SectionList sections={[selectedProcedure]} /> : <PolicyViewer32EmptyState />}
-          </div>
-        );
-      case 'documentation':
-        return <PolicyViewer32SectionList sections={filteredDocumentation} />;
-      case 'compliance':
-        return <PolicyViewer32SectionList sections={filteredCompliance} />;
-      case 'references':
-        return <PolicyViewer32SectionList sections={filteredReferences} />;
-      case 'appendices':
-        return (
-          <div className="space-y-8">
-            {/* Appendices tab shows attached/linked forms only. Text-rendered appendix
-                sections are intentionally suppressed here per approved June 5 intent. */}
-
-            {/* Linked Forms from Forms Library */}
-            {model.forms.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-6">
-                  {renderSectionBadge('F')}
-                  <h3 className="text-sm font-bold text-[#8A94A6] uppercase tracking-widest">Linked Forms</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {model.forms.map(form => (
-                    <SpotlightCard key={form.id} className="p-5" spotlightColor="rgba(0, 121, 112, 0.12)">
-                      <div className="text-[10px] font-mono text-[#007970] mb-2">{form.id}</div>
-                      <h4 className="text-sm font-semibold text-white">{form.name}</h4>
-                      <button
-                        type="button"
-                        onClick={() => window.open(`/forms/${encodeURIComponent(form.id)}`, '_blank', 'noopener,noreferrer')}
-                        className="mt-4 text-xs font-medium text-[#A0ABC0] hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
-                      >
-                        Open form
-                      </button>
-                    </SpotlightCard>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {model.forms.length === 0 && (
-              <PolicyViewer32EmptyState title="No linked forms available" />
-            )}
-          </div>
-        );
-      default:
-        return <PolicyViewer32EmptyState />;
-    }
-  };
+  const statusTone: 'green' | 'neutral' = metadata.status.toLowerCase().includes('active') ? 'green' : 'neutral';
+  const requiredTone: 'orange' | 'neutral' = metadata.tier.toLowerCase().includes('required') ? 'orange' : 'neutral';
 
   return (
-    <div className={`${embedded ? 'h-full min-h-[680px]' : 'h-full min-h-screen'} w-full bg-[#0B0F15] text-slate-200 font-sans overflow-hidden selection:bg-[#007970]/30 selection:text-white`}>
+    <div
+      className={`${embedded ? 'h-full min-h-[680px]' : 'h-screen min-h-screen'} w-full overflow-hidden bg-[#EEF9F9] font-roboto text-[#263C3D] selection:bg-[#B8E9E7] selection:text-[#004142]`}
+    >
       <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1C2433; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #2A3441; }
-        .card-spotlight {
-          position: relative;
-          border-radius: 0.75rem;
-          border: 1px solid #1C2433;
-          background-color: #141A23;
-          --mouse-x: 50%;
-          --mouse-y: 50%;
-          --spotlight-color: rgba(255, 255, 255, 0.08);
-          transition: border-color 0.3s ease;
+        .policy-reader-shell {
+          background:
+            radial-gradient(circle at 74% -8%, rgba(255,255,255,0.95), transparent 26%),
+            radial-gradient(circle at 12% 8%, rgba(0,121,112,0.08), transparent 32%),
+            linear-gradient(135deg, #EEF9F9 0%, #F8FFFF 52%, #F2FAFA 100%);
         }
-        .card-spotlight:hover { border-color: #2A3441; }
-        .card-spotlight > :not(.spotlight-outer-glow):not(.spotlight-glow-wrapper) {
-          position: relative;
-          z-index: 10;
+        .policy-glass {
+          background: rgba(255, 255, 255, 0.82);
+          border: 1px solid rgba(184, 220, 220, 0.72);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.94), 0 18px 42px -34px rgba(0,65,66,0.42);
+          backdrop-filter: blur(18px) saturate(1.08);
         }
-        .spotlight-outer-glow {
-          position: absolute;
-          inset: -16px;
-          border-radius: 1.5rem;
-          background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent 50%);
-          opacity: 0;
-          transition: opacity 0.5s ease;
-          pointer-events: none;
-          z-index: -1;
-          filter: blur(20px);
+        .policy-paper {
+          box-shadow: 0 30px 80px -52px rgba(0,65,66,0.52), 0 1px 0 rgba(255,255,255,0.9);
         }
-        .spotlight-glow-wrapper {
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          overflow: hidden;
-          pointer-events: none;
-          z-index: 0;
+        .policy-enter {
+          animation: policyEnter 220ms cubic-bezier(.22,1,.36,1) both;
         }
-        .spotlight-inner-glow {
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent);
-          opacity: 0;
-          transition: opacity 0.5s ease;
+        .policy-card-motion {
+          transition: transform 180ms cubic-bezier(.22,1,.36,1), box-shadow 180ms cubic-bezier(.22,1,.36,1), border-color 180ms cubic-bezier(.22,1,.36,1), background-color 180ms cubic-bezier(.22,1,.36,1);
         }
-        .card-spotlight:hover .spotlight-outer-glow,
-        .card-spotlight:hover .spotlight-inner-glow { opacity: 1; }
-        @keyframes fadeInPolicy32 { 0% { opacity: 0; } 100% { opacity: 1; } }
-        .animate-policy32-enter { animation: fadeInPolicy32 0.25s ease forwards; }
+        .policy-card-motion:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 18px 42px -30px rgba(0,65,66,0.42);
+        }
+        .policy-card-motion:active { transform: scale(.985); }
+        @keyframes policyEnter {
+          from { opacity: 0; transform: translateY(7px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .policy-enter,
+          .policy-card-motion,
+          .policy-card-motion:hover,
+          .policy-card-motion:active {
+            animation: none !important;
+            transition: none !important;
+            transform: none !important;
+          }
+        }
       `}</style>
 
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#0B0F15] relative z-10">
-        <div className="px-8 pt-6 pb-12 max-w-7xl mx-auto w-full">
-          {/* Clean top bar matching design screenshots: breadcrumb + search + actions. No app sidebar, no duplicate header. */}
-          <div className="flex flex-col gap-3 mb-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 text-xs font-medium min-w-0">
-                {onBack && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={onBack}
-                      className="text-[#5E6A7F] hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
-                    >
-                      Library
-                    </button>
-                    <ChevronRight size={14} className="text-[#5E6A7F]" aria-hidden="true" />
-                  </>
+      <div className="policy-reader-shell flex h-full min-h-0 flex-col">
+        <header className="policy-glass z-20 border-x-0 border-t-0 px-5 py-4 md:px-8">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+                {onBack ? (
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="text-[#607C7D] transition-colors hover:text-[#004142] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
+                  >
+                    Library
+                  </button>
+                ) : (
+                  <span className="text-[#607C7D]">Library</span>
                 )}
-                {!onBack && <span className="text-[#5E6A7F]">Library</span>}
-                <span className="text-[#007970] font-mono tracking-wide">{metadata.id}</span>
+                <ChevronRight size={14} className="text-[#8AA0A1]" aria-hidden="true" />
+                <span className="font-mono text-[#007970]">{metadata.id}</span>
               </div>
-
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={() => navigate('/policy-lifecycle')}
-                  aria-label="View version history and lifecycle for this policy"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-[#1C2433] bg-[#141A23] hover:bg-[#1C2433] text-[#A0ABC0] hover:text-white text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
-                >
-                  <History size={14} aria-hidden="true" /> Version History
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDownload}
-                  aria-label={`Open print view for ${metadata.id} to save as PDF`}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-[#1C2433] bg-[#141A23] hover:bg-[#1C2433] text-[#A0ABC0] hover:text-white text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
-                >
-                  <Download size={14} aria-hidden="true" /> Export PDF
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePrint}
-                  aria-label={`Open print route for ${metadata.id}`}
-                  className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-[#007970] hover:bg-[#009085] text-white text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-                >
-                  <Printer size={14} aria-hidden="true" /> Print
-                </button>
-              </div>
+              <h1 className="mt-2 truncate font-montserrat text-2xl font-semibold tracking-tight text-[#004142] md:text-3xl">
+                {metadata.title}
+              </h1>
+              <p className="mt-1 max-w-4xl text-sm leading-6 text-[#426768]">
+                Current policy document with appendix access and complete packet export.
+              </p>
             </div>
-
-            {/* Search integrated to match clean viewer design */}
-            <div className="relative w-full max-w-md">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5E6A7F]" aria-hidden="true" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={event => setSearchQuery(event.target.value)}
-                placeholder="Search this policy..."
-                aria-label="Search this policy"
-                className="w-full bg-[#141A23] border border-[#1C2433] rounded-full pl-9 pr-4 py-1.5 text-xs text-white placeholder-[#5E6A7F] focus:outline-none focus:border-[#007970] focus:ring-1 focus:ring-[#007970]/50 transition-all"
-              />
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => navigate('/policy-lifecycle')}
+                className="policy-card-motion inline-flex items-center gap-2 rounded-full border border-[#DDEBEB] bg-white/78 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#426768] hover:border-[#B8E9E7] hover:text-[#004142] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
+              >
+                <History size={14} aria-hidden="true" /> Versions
+              </button>
+              <button
+                type="button"
+                onClick={handleDownload}
+                className="policy-card-motion inline-flex items-center gap-2 rounded-full border border-[#DDEBEB] bg-white/78 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#426768] hover:border-[#B8E9E7] hover:text-[#004142] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
+              >
+                <Download size={14} aria-hidden="true" /> Download Packet
+              </button>
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="policy-card-motion inline-flex items-center gap-2 rounded-full bg-[#C74601] px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white shadow-[0_14px_28px_-18px_rgba(199,70,1,0.78)] hover:bg-[#B43F00] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#004142]"
+              >
+                <Printer size={14} aria-hidden="true" /> Print
+              </button>
             </div>
           </div>
+        </header>
 
-            {model.missingContent && (
-              <div className="mb-6 p-4 rounded-lg bg-[#C74600]/10 border border-[#C74600]/30 flex gap-3">
-                <Info size={16} className="text-[#C74600] mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <p className="text-xs font-medium text-[#C74600] leading-relaxed">
-                  This policy exists in the policy registry, but no rendered policy body is available in the content corpus.
-                </p>
-              </div>
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 px-5 py-5 xl:grid-cols-[auto_minmax(0,1fr)_320px] md:px-8">
+          <aside className={`policy-glass hidden min-h-0 rounded-[20px] p-4 xl:block ${tocCollapsed ? 'w-[82px]' : 'w-[272px]'}`}>
+            <div className={`flex items-center gap-2 ${tocCollapsed ? 'justify-center' : 'justify-between'}`}>
+              {!tocCollapsed && <h2 className="text-sm font-semibold text-[#004142]">Contents</h2>}
+              <button
+                type="button"
+                onClick={() => setTocCollapsed(value => !value)}
+                title={tocCollapsed ? 'Expand contents' : 'Collapse contents'}
+                aria-label={tocCollapsed ? 'Expand contents' : 'Collapse contents'}
+                className="policy-card-motion flex h-9 w-9 items-center justify-center rounded-full border border-[#DDEBEB] bg-white/78 text-[#007970]"
+              >
+                {tocCollapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
+              </button>
+            </div>
+
+            {!tocCollapsed && (
+              <>
+                <div className="mt-4 rounded-[14px] border border-[#DDEBEB] bg-white/72 p-3">
+                  <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.16em] text-[#607C7D]">
+                    <span>Reading</span>
+                    <span>{readingProgress}%</span>
+                  </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#DDEBEB]">
+                    <div className="h-full rounded-full bg-[#007970] transition-[width] duration-[520ms]" style={{ width: `${readingProgress}%` }} />
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    <StatusPill tone={statusTone}>{metadata.status}</StatusPill>
+                    <StatusPill tone={requiredTone}>{metadata.tier}</StatusPill>
+                  </div>
+                </div>
+
+                <div className="relative mt-4">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6E8888]" aria-hidden="true" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={event => setSearchQuery(event.target.value)}
+                    placeholder="Search within policy..."
+                    aria-label="Search within policy"
+                    className="w-full rounded-[12px] border border-[#DDEBEB] bg-white/82 py-2.5 pl-9 pr-3 text-sm text-[#263C3D] placeholder:text-[#8AA0A1] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] outline-none transition focus:border-[#007970] focus:ring-2 focus:ring-[#B8E9E7]"
+                  />
+                </div>
+              </>
             )}
 
-            <div className="flex overflow-x-auto custom-scrollbar border-b border-[#1C2433] mb-8 sticky top-0 bg-[#0B0F15] z-10 pt-2" role="tablist" aria-label="Policy viewer sections">
-              {POLICY_TABS.map(tab => {
-                const active = activeTab === tab.id;
-                if (active) {
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      role="tab"
-                      id={`policy32-tab-${tab.id}`}
-                      aria-selected="true"
-                      aria-controls={`policy32-panel-${tab.id}`}
-                      onClick={() => setActiveTab(tab.id)}
-                      className="whitespace-nowrap px-1 py-3 mr-8 text-[13px] font-medium transition-colors relative focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970] text-[#007970]"
-                    >
-                      {tab.label}
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007970] rounded-t-full" />
-                    </button>
-                  );
-                }
+            <nav className={`mt-4 min-h-0 overflow-y-auto ${tocCollapsed ? 'space-y-2' : 'space-y-1.5'}`} aria-label="Policy sections">
+              {flatSections.map(({ group, section, anchor }) => {
+                const active = activeSectionId === anchor;
                 return (
                   <button
-                    key={tab.id}
+                    key={anchor}
                     type="button"
-                    role="tab"
-                    id={`policy32-tab-${tab.id}`}
-                    aria-selected="false"
-                    aria-controls={`policy32-panel-${tab.id}`}
-                    onClick={() => setActiveTab(tab.id)}
-                    className="whitespace-nowrap px-1 py-3 mr-8 text-[13px] font-medium transition-colors relative focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970] text-[#8A94A6] hover:text-white"
+                    onClick={() => scrollToSection(anchor)}
+                    title={section.title}
+                    className={`policy-card-motion flex w-full items-center gap-3 rounded-[12px] border text-left text-xs font-semibold ${
+                      tocCollapsed ? 'h-11 justify-center px-0' : 'px-3 py-2.5'
+                    } ${
+                      active
+                        ? 'border-[#B8E9E7] bg-[#F0FBFB] text-[#004142] shadow-[inset_3px_0_0_#007970]'
+                        : 'border-transparent text-[#426768] hover:border-[#DDEBEB] hover:bg-white/72 hover:text-[#004142]'
+                    }`}
                   >
-                    {tab.label}
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[10px] font-mono text-[#007970] shadow-[0_6px_14px_-12px_rgba(0,65,66,0.55)]">
+                      {group.badge}
+                    </span>
+                    {!tocCollapsed && <span className="min-w-0 truncate">{section.title}</span>}
                   </button>
                 );
               })}
-            </div>
+            </nav>
+          </aside>
 
-            <div
-              key={activeTab}
-              id={`policy32-panel-${activeTab}`}
-              role="tabpanel"
-              aria-labelledby={`policy32-tab-${activeTab}`}
-              className="animate-policy32-enter"
-              tabIndex={0}
-            >
-              {renderTabContent()}
+          <main ref={workspaceRef} className="min-h-0 overflow-y-auto rounded-[24px] scroll-smooth">
+            {model.missingContent && (
+              <div className="mb-5 rounded-[16px] border border-[#FFD8C6] bg-[#FFF6F1] px-4 py-3 text-sm text-[#C74601]">
+                This policy exists in the registry, but no rendered policy body is available in the content corpus.
+              </div>
+            )}
+
+            <article className="policy-paper policy-enter mx-auto min-h-[11in] max-w-[8.5in] rounded-[4px] border border-[#D7E0E0] bg-white px-9 py-10 text-[#263C3D] md:px-14 md:py-14">
+              <header className="border-b border-[#DDE5E5] pb-8">
+                <div className="flex items-start justify-between gap-6">
+                  <img src={ciLogoGray} alt="Care Indeed" className="h-12 w-auto object-contain" />
+                  <div className="text-right">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#607C7D]">Corporate Policy Document</div>
+                    <div className="mt-1 text-sm font-semibold text-[#004142]">{metadata.id}</div>
+                  </div>
+                </div>
+                <div className="mt-8 flex flex-wrap gap-2">
+                  <StatusPill>{metadata.id}</StatusPill>
+                  <StatusPill tone={statusTone}>{metadata.status}</StatusPill>
+                  <StatusPill tone={requiredTone}>{metadata.tier}</StatusPill>
+                </div>
+                <h2 className="mt-6 font-roboto text-3xl font-semibold leading-tight tracking-tight text-[#004142] md:text-[34px]">
+                  {metadata.title}
+                </h2>
+                <dl className="mt-7 grid grid-cols-2 gap-x-10 gap-y-5 border-t border-[#E6EEEE] pt-6 md:grid-cols-4">
+                  {[
+                    ['Version', metadata.version],
+                    ['Effective', metadata.effectiveDate],
+                    ['Last Reviewed', metadata.lastReviewed],
+                    ['Next Review', metadata.nextReview],
+                    ['Policy Owner', metadata.owner],
+                    ['Subdomain', metadata.subdomain],
+                    ['Domain', metadata.domain],
+                    ['Approved By', metadata.approvedBy],
+                  ].map(([label, value]) => (
+                    <div key={label}>
+                      <dt className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#607C7D]">{label}</dt>
+                      <dd className="mt-1 text-sm font-semibold leading-snug text-[#1F2F31]">{value || 'Unavailable'}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="mt-8 h-[3px] w-full rounded-full bg-[#007970]" />
+              </header>
+
+              <div className="pt-9">
+                {sectionGroups.length === 0 ? (
+                  <PolicyViewer32EmptyState title="No matching policy sections" />
+                ) : (
+                  <div className="space-y-10">
+                    {sectionGroups.map(group => (
+                      <section key={group.id} aria-labelledby={`group-${group.id}`} className="space-y-7">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#DDEBEB] bg-[#F0FBFB] font-mono text-[11px] font-semibold text-[#007970]">
+                            {group.badge}
+                          </span>
+                          <h3 id={`group-${group.id}`} className="text-[13px] font-semibold uppercase tracking-[0.18em] text-[#426768]">
+                            {group.label}
+                          </h3>
+                        </div>
+                        {group.sections.map(section => (
+                          <section key={section.id} id={sectionAnchor(group.id, section)} className="scroll-mt-8 space-y-3">
+                            {group.sections.length > 1 && (
+                              <h4 className="border-b border-[#007970] pb-2 text-[17px] font-semibold tracking-tight text-[#1F2F31]">
+                                {section.title}
+                              </h4>
+                            )}
+                            <PolicyViewer32Markdown body={section.body} />
+                          </section>
+                        ))}
+                      </section>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </article>
+          </main>
+
+          <aside className="policy-glass hidden min-h-0 overflow-y-auto rounded-[20px] p-5 xl:block">
+            <div className="space-y-5">
+              <section>
+                <div className="flex items-center gap-2">
+                  <BookOpen size={16} className="text-[#007970]" aria-hidden="true" />
+                  <h2 className="text-sm font-semibold text-[#004142]">Policy Metadata</h2>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <InfoTile label="Owner" value={metadata.owner} />
+                  <InfoTile label="Review" value={metadata.reviewCycle} />
+                  <InfoTile label="Effective" value={metadata.effectiveDate} />
+                  <InfoTile label="Next Review" value={metadata.nextReview} />
+                </div>
+              </section>
+
+              <section className="rounded-[16px] border border-[#DDEBEB] bg-white/76 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.94)]">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={16} className="text-[#007970]" aria-hidden="true" />
+                  <h3 className="text-sm font-semibold text-[#004142]">Next Required Action</h3>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-[#426768]">
+                  Current version is available for review. The complete packet includes all linked appendices when printed or exported.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  className="policy-card-motion mt-3 inline-flex items-center gap-2 rounded-full bg-[#007970] px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white"
+                >
+                  <Download size={13} /> Complete Packet
+                </button>
+              </section>
+
+              <section>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <ClipboardList size={16} className="text-[#007970]" aria-hidden="true" />
+                    <h3 className="text-sm font-semibold text-[#004142]">Appendices & Linked Forms</h3>
+                  </div>
+                  <StatusPill tone="neutral">{`${model.forms.length} Forms`}</StatusPill>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {model.forms.length > 0 ? (
+                    model.forms.map((form, index) => {
+                      const selected = selectedAppendixId === form.id;
+                      const appendixLabel = `Appendix ${String.fromCharCode(65 + index)}`;
+                      return (
+                        <button
+                          key={form.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedAppendixId(form.id);
+                            navigate(`/forms/${encodeURIComponent(form.id)}`);
+                          }}
+                          className={`policy-card-motion w-full rounded-[14px] border px-3 py-3 text-left ${
+                            selected
+                              ? 'border-[#B8E9E7] bg-[#F0FBFB] shadow-[0_0_0_3px_rgba(0,121,112,0.08)]'
+                              : 'border-[#E2EEEE] bg-white/76 hover:border-[#B8E9E7]'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="rounded-full border border-[#B8E9E7] bg-[#F0FBFB] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#007970]">
+                                  {appendixLabel}
+                                </span>
+                                <span className="font-mono text-[11px] font-semibold text-[#007970]">{form.id}</span>
+                              </div>
+                              <div className="mt-1 text-sm font-semibold leading-snug text-[#004142]">{form.name}</div>
+                              <div className="mt-1 text-xs text-[#426768]">{form.type} · Included in full packet</div>
+                            </div>
+                            <FileText size={15} className="mt-0.5 shrink-0 text-[#C74601]" aria-hidden="true" />
+                          </div>
+                          <p className="mt-2 text-[11px] leading-5 text-[#607C7D]">
+                            View form · Canonical appendix document
+                          </p>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="rounded-[14px] border border-[#E2EEEE] bg-white/72 px-3 py-3 text-sm text-[#607C7D]">
+                      No linked forms are registered for this policy.
+                    </div>
+                  )}
+                </div>
+                {model.appendices.length > 0 && (
+                  <p className="mt-3 text-[11px] leading-5 text-[#607C7D]">
+                    {model.appendices.length} text appendix section{model.appendices.length === 1 ? '' : 's'} available in the complete printed or exported packet.
+                  </p>
+                )}
+              </section>
+
+              <section className="rounded-[16px] border border-[#DDEBEB] bg-white/76 p-4">
+                <h3 className="text-sm font-semibold text-[#004142]">Audit Readiness</h3>
+                <div className="mt-3 space-y-2 text-sm text-[#426768]">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Version status</span>
+                    <span className="font-semibold text-[#007970]">{metadata.status}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Linked forms</span>
+                    <span className="font-semibold text-[#004142]">{model.forms.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Print packet</span>
+                    <span className="font-semibold text-[#007970]">Complete</span>
+                  </div>
+                </div>
+              </section>
             </div>
-          </div>
+          </aside>
         </div>
       </div>
+    </div>
   );
 }
 

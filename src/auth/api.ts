@@ -1,5 +1,7 @@
 export interface DemoUser {
   id?: string;
+  authSubject?: string;
+  provider?: string;
   email: string;
   name?: string;
   role?: string;
@@ -60,6 +62,41 @@ interface MeResponse {
 }
 
 type PageAccessApiMap = Record<string, unknown>;
+
+export interface IdentityRegistryApiUser {
+  id: string;
+  email: string;
+  name: string;
+  status: 'active' | 'pending' | 'suspended';
+  source?: 'manual-provisioned' | 'seed' | 'authenticated';
+  authSubject?: string;
+  provider?: string;
+  createdAt?: string;
+  lastLoginAt?: string;
+}
+
+interface IdentityRegistryApiScope {
+  organizationId: string;
+  branchId?: string;
+  programId?: string;
+  patientId?: string;
+}
+
+export interface IdentityRegistryApiAssignment {
+  id: string;
+  userId: string;
+  groupId: string;
+  scope: IdentityRegistryApiScope;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  revokedAt?: string;
+}
+
+export type IdentityRegistryApiMap = {
+  users: IdentityRegistryApiUser[];
+  assignments: IdentityRegistryApiAssignment[];
+  syncedCount?: number;
+};
 
 interface ApiErrorPayload {
   error?: {
@@ -236,6 +273,35 @@ export const AuthApi = {
       method: 'PUT',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       body: JSON.stringify({ access }),
+    });
+  },
+
+  syncCurrentIdentity(accessToken: string): Promise<IdentityRegistryApiMap> {
+    return call('/identity-sync/me', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  getIdentityRegistry(accessToken: string): Promise<IdentityRegistryApiMap> {
+    return call('/admin/identity-registry', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  saveIdentityRegistry(accessToken: string, registry: IdentityRegistryApiMap): Promise<IdentityRegistryApiMap> {
+    return call('/admin/identity-registry', {
+      method: 'PUT',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify(registry),
+    });
+  },
+
+  syncAuthenticatedUsers(accessToken: string): Promise<IdentityRegistryApiMap> {
+    return call('/admin/identity-registry/sync-authenticated-users', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
     });
   },
 };

@@ -1,6 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { LayoutDashboard, Zap, ListChecks, FileSearch2, ShieldCheck } from 'lucide-react';
-
 interface RailItem {
   to: string;
   label: string;
@@ -30,18 +29,18 @@ const RAIL: RailItem[] = [
  * surfaces (per Wave 4 "DO NOT TOUCH unrelated onboarding rebuild"). */
 export function OnboardingV2Layout() {
   return (
-    <div className="flex h-full min-h-[calc(100vh-100px)] gap-4">
-      {/* Sub-rail */}
+    <div className="flex h-full min-h-[calc(100vh-100px)] gap-4 p-1">
+      {/* Premium sub-rail — clean corporate dark glass hierarchy matching design ref */}
       <aside
-        className="w-[260px] shrink-0 border-r bg-white/80 backdrop-blur-sm rounded-l-[12px]"
-        style={{ borderColor: 'var(--ci-border)' }}
+        className="w-[248px] shrink-0 border-r rounded-l-[14px] border-[var(--v3-border-subtle)] bg-[var(--v3-glass-card)] overflow-hidden"
+        style={{ backdropFilter: 'var(--v3-glass-blur)' }}
       >
-        <div className="px-4 py-4 border-b" style={{ borderColor: 'var(--ci-border)' }}>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--ci-text-muted)' }}>Onboarding</div>
-          <div className="text-[15px] font-semibold leading-tight" style={{ color: 'var(--ces-navy-deep)' }}>Compliance Activation</div>
-          <div className="mt-1 text-[10px]" style={{ color: 'var(--ci-text-muted)' }}>v2 · Audit-grade execution module</div>
+        <div className="px-4 py-4 border-b border-[var(--v3-border-subtle)]">
+          <div className="text-[10px] font-montserrat font-semibold uppercase tracking-[0.18em] text-[var(--v3-text-tertiary)]">ONBOARDING V2</div>
+          <div className="mt-0.5 text-[15px] font-semibold tracking-[-0.01em] text-[var(--v3-text-primary)]">Compliance Activation</div>
+          <div className="mt-0.5 text-[10px] text-[var(--v3-text-secondary)]">v2 · Audit-grade execution engine</div>
         </div>
-        <nav className="px-2 py-2 space-y-0.5">
+        <nav className="px-2 py-3 space-y-0.5">
           {RAIL.map(item => {
             const Icon = item.icon;
             return (
@@ -50,30 +49,23 @@ export function OnboardingV2Layout() {
                 to={item.to}
                 end
                 className={({ isActive }) =>
-                  `flex items-start gap-2.5 px-3 py-2.5 rounded-md text-[12px] transition ${
+                  `flex items-start gap-2.5 px-3 py-2 rounded-lg text-[12px] transition-all ${
                     isActive
-                      ? 'text-white shadow-sm'
-                      : 'hover:bg-[#F2F4F7]'
+                      ? 'bg-[rgba(var(--ci-accent-rgb),0.12)] border border-[var(--brand-primary,#00797D)]/30'
+                      : 'hover:bg-[var(--v3-surface-elevated)] border border-transparent'
                   }`
                 }
-                style={({ isActive }) => ({
-                  background: isActive ? 'var(--ces-navy-deep)' : undefined,
-                  color: isActive ? '#fff' : 'var(--ci-text)',
-                })}
               >
                 {({ isActive }) => (
                   <>
                     <Icon
-                      size={16}
-                      className="mt-0.5"
-                      style={{ color: isActive ? '#E07B2C' : 'var(--ces-navy)' }}
+                      size={15}
+                      className="mt-px shrink-0"
+                      style={{ color: isActive ? 'var(--brand-primary,#00797D)' : 'var(--v3-text-secondary)' }}
                     />
                     <div className="min-w-0">
-                      <div className="font-semibold leading-tight">{item.label}</div>
-                      <div
-                        className="text-[10px] mt-0.5 leading-snug"
-                        style={{ color: isActive ? 'rgba(255,255,255,0.7)' : 'var(--ci-text-muted)' }}
-                      >
+                      <div className={`font-semibold leading-tight ${isActive ? 'text-[var(--v3-text-primary)]' : 'text-[var(--v3-text-primary)]'}`}>{item.label}</div>
+                      <div className="text-[10px] mt-px leading-snug text-[var(--v3-text-tertiary)]">
                         {item.description}
                       </div>
                     </div>
@@ -85,13 +77,12 @@ export function OnboardingV2Layout() {
         </nav>
       </aside>
 
-      {/* Surface */}
-      <section
-        className="flex-1 min-w-0 bg-white rounded-r-[12px] border overflow-hidden"
-        style={{ borderColor: 'var(--ci-border)' }}
-      >
-        <Outlet />
-      </section>
+      {/* Content surface — blends with shell glass, premium carded inner content */}
+      <div className="flex-1 min-w-0 overflow-hidden rounded-r-[14px] border border-[var(--v3-border-subtle)] bg-[var(--v3-glass-card)]" style={{ backdropFilter: 'var(--v3-glass-blur)' }}>
+        <div className="h-full overflow-auto p-5">
+          <Outlet />
+        </div>
+      </div>
     </div>
   );
 }

@@ -75,7 +75,7 @@ const OnboardingV2Audit       = lazy(() => import('@/policy/onboarding-v2/pages/
 const OnboardingV2Governance  = lazy(() => import('@/policy/onboarding-v2/pages/GovernancePage').then(m => ({ default: m.GovernancePage })))
 
 // ── Help Center (eCIgn knowledge base) ───────────────────────────
-const HelpCenterPage     = lazy(() => import('@/policy/help/HelpCenterPrototypePage').then(m => ({ default: m.HelpCenterPage })))
+const HelpCenterPage     = lazy(() => import('@/policy/help/HelpCenterPage').then(m => ({ default: m.HelpCenterPage })))
 const SystemDocumentationPage = lazy(() => import('@/policy/pages/SystemDocumentationPage').then(m => ({ default: m.SystemDocumentationPage })))
 
 // ── Clinician Profile & Patient Profile (Phase 1) ──────────────
@@ -149,9 +149,9 @@ function AppShell({ children }: PropsWithChildren) {
   const { loading } = useAuth()
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#00151a] text-[var(--v3-text-primary)]">
+    <div className="relative h-screen min-h-screen w-full overflow-hidden bg-transparent text-[var(--v3-text-primary)]" style={{ border: 'none' }}>
       <GlobalDotBackground />
-      <div className="relative z-10 min-h-screen">
+      <div className="relative z-10 h-full min-h-screen w-full">
         {loading ? <AppLoader /> : children}
       </div>
     </div>

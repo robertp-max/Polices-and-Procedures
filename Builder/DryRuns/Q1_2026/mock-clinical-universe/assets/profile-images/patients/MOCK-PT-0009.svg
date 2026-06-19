@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320" role="img" aria-label="Synthetic mock profile image for Imani Duarte">
+  <rect width="320" height="320" rx="42" fill="#f2e3d3"/>
+  <circle cx="160" cy="132" r="72" fill="#7b4a1f" opacity="0.94"/>
+  <text x="160" y="154" text-anchor="middle" font-family="Arial, sans-serif" font-size="62" font-weight="700" fill="#f8fafc">ID</text>
+  <rect x="58" y="232" width="204" height="34" rx="17" fill="#7b4a1f" opacity="0.13"/>
+  <text x="160" y="254" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.2" fill="#7b4a1f">MOCK PATIENT</text>
+</svg>

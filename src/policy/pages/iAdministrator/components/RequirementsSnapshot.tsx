@@ -1,5 +1,6 @@
 import { CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import type { RequirementSnapshotItem } from '../lib/responseTypes';
+import { sanitizeRequirementSnapshot } from '../lib/referenceSanitizer';
 import { ReferenceLink } from './ReferenceLink';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -15,7 +16,8 @@ export interface RequirementsSnapshotProps {
 }
 
 export function RequirementsSnapshot({ items, isLight, onOpenReference: _onOpenReference }: RequirementsSnapshotProps) {
-  if (items.length === 0) return null;
+  const resolvedItems = sanitizeRequirementSnapshot(items, 'RequirementsSnapshot');
+  if (resolvedItems.length === 0) return null;
 
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
   const surface = isLight ? '#FFFFFF' : 'rgba(255,255,255,0.025)';
@@ -39,11 +41,11 @@ export function RequirementsSnapshot({ items, isLight, onOpenReference: _onOpenR
           className="text-[10px] font-semibold uppercase tracking-[0.2em]"
           style={{ color: muted, fontFamily: "'JetBrains Mono', monospace" }}
         >
-          {items.length} {items.length === 1 ? 'item' : 'items'}
+          {resolvedItems.length} {resolvedItems.length === 1 ? 'item' : 'items'}
         </span>
       </header>
       <ul className="divide-y" style={{ borderColor: border }}>
-        {items.map((it, idx) => (
+        {resolvedItems.map((it, idx) => (
           <li
             key={`${it.sourcePolicyId}-${idx}`}
             className="px-5 py-3 flex items-center gap-3"

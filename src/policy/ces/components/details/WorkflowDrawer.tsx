@@ -388,7 +388,7 @@ function ComplianceActionPanel({
     setTimeout(() => setFeedback(null), 2400);
   };
 
-  /* ── Mock action handlers (UI demo; real wiring pending) ── */
+  /* ── Mock action handlers (UI preview; real wiring pending) ── */
   const handleUploadEvidence = () => {
     note('Evidence upload would attach to this Execution Unit and update form completion.');
   };

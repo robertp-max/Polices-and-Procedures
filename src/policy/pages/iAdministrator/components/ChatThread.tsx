@@ -534,7 +534,7 @@ export function ChatThread({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={1}
-            placeholder="Chat input under construction — use guided prompts for demo"
+            placeholder="Enter message (guided prompts recommended)"
             className="flex-1 resize-none bg-transparent outline-none text-[12px] leading-relaxed"
             style={{
               color: subColor,
@@ -561,7 +561,7 @@ export function ChatThread({
           </button>
         </div>
         <p className="text-[9px] mt-1 text-center" style={{ color: subColor, fontFamily: mono }}>
-          Brad Chat is currently in demo mode. Use suggested prompts above.
+          Use the guided prompts above for best results.
         </p>
       </div>
     </div>

@@ -3,32 +3,31 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { type ReactNode } from 'react';
-import { useCesTokens, type CesTokens } from '../theme';
+import { type CesTokens } from '../theme';
 import {
   type ComplianceState, type WorkflowPhase, type AuditReadiness,
   type DomainRiskLevel, type SignerStatus,
   COMPLIANCE_STATE_LABEL, WORKFLOW_PHASE_LABEL, AUDIT_READINESS_LABEL,
 } from '../types';
 
-/* ── SectionCard ─────────────────────────────────────────── */
+/* ── SectionCard — clean corporate, explicit subtle bg to prevent bleed ─────────────────────────────────────────── */
 export function CesCard({ title, action, children, padding = true }: {
   title?:   ReactNode;
   action?:  ReactNode;
   children: ReactNode;
   padding?: boolean;
 }) {
-  const t = useCesTokens();
   return (
     <section
       className="rounded-xl"
-      style={{ background: t.white, border: `1px solid ${t.borderSoft}` }}
+      style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--v3-border-subtle)' }}
     >
       {title && (
         <header
           className="flex items-center justify-between px-5 py-3"
-          style={{ borderBottom: `1px solid ${t.border}` }}
+          style={{ borderBottom: '1px solid var(--v3-border-subtle)' }}
         >
-          <h3 className="text-[12px] font-bold uppercase tracking-[0.14em]" style={{ color: t.navy }}>
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--v3-teal-light)' }}>
             {title}
           </h3>
           {action}
@@ -39,7 +38,7 @@ export function CesCard({ title, action, children, padding = true }: {
   );
 }
 
-/* ── V3 flat section ─────────────────────────────────────── */
+/* ── V3 flat section — clean corporate ─────────────────────────────────────── */
 export function V3Section({
   label,
   trailing,
@@ -51,16 +50,15 @@ export function V3Section({
   children: ReactNode;
   divided?: boolean;
 }) {
-  const t = useCesTokens();
   return (
     <section
       className="flex flex-col gap-2.5"
-      style={divided ? { borderTop: `1px solid var(--v3-border-subtle, ${t.borderSoft})`, paddingTop: 12 } : undefined}
+      style={divided ? { borderTop: '1px solid var(--v3-border-subtle)', paddingTop: 12 } : undefined}
     >
       {(label || trailing) && (
         <div className="flex items-center justify-between gap-3">
           {label && (
-            <div className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: `var(--v3-text-tertiary, ${t.muted})` }}>
+            <div className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--v3-text-tertiary)' }}>
               {label}
             </div>
           )}
@@ -72,28 +70,26 @@ export function V3Section({
   );
 }
 
-/* ── Flat drawer metadata row ────────────────────────────── */
+/* ── Flat drawer metadata row ─ clean ────────────────────────────── */
 export function DetailField({ label, children }: { label: string; children: ReactNode }) {
-  const t = useCesTokens();
   return (
     <div className="grid grid-cols-[112px_minmax(0,1fr)] items-baseline gap-3">
-      <span className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: `var(--v3-text-tertiary, ${t.muted})` }}>
+      <span className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--v3-text-tertiary)' }}>
         {label}
       </span>
-      <span className="min-w-0 text-[12px] leading-relaxed" style={{ color: `var(--v3-text-secondary, ${t.ink})` }}>
+      <span className="min-w-0 text-[12px] leading-relaxed" style={{ color: 'var(--v3-text-secondary)' }}>
         {children}
       </span>
     </div>
   );
 }
 
-/* ── Inline secondary row metadata ───────────────────────── */
+/* ── Inline secondary row metadata — clean ───────────────────────── */
 export function MetadataLine({ items }: { items: Array<ReactNode | null | undefined | false> }) {
-  const t = useCesTokens();
   const visible = items.filter(Boolean);
   if (visible.length === 0) return null;
   return (
-    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]" style={{ color: `var(--v3-text-tertiary, ${t.muted})` }}>
+    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px]" style={{ color: 'var(--v3-text-tertiary)' }}>
       {visible.map((item, index) => (
         <span key={index}>{item}</span>
       ))}
@@ -111,41 +107,39 @@ export function InlineMetric({
   value: ReactNode;
   tone?: string;
 }) {
-  const t = useCesTokens();
   return (
     <span className="inline-flex items-baseline gap-1.5">
-      <span className="text-[12px] font-semibold" style={{ color: tone ?? `var(--v3-teal-light, ${t.navy})` }}>
+      <span className="text-[11px] font-semibold" style={{ color: tone ?? 'var(--v3-teal-light)' }}>
         {value}
       </span>
-      <span className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: `var(--v3-text-tertiary, ${t.muted})` }}>
+      <span className="text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--v3-text-tertiary)' }}>
         {label}
       </span>
     </span>
   );
 }
 
-/* ── ComplianceStateBadge ───────────────────────────────── */
-function stateStyle(t: CesTokens): Record<ComplianceState, { bg: string; fg: string; bd: string }> {
+/* ── ComplianceStateBadge — clean corporate, subtle non-bleed bgs matching V3 palette ───────────────────────────────── */
+function stateStyle(_t: CesTokens): Record<ComplianceState, { bg: string; fg: string; bd: string }> {
   return {
-    upcoming:           { bg: t.canvas,     fg: t.muted,  bd: t.border },
-    ready:              { bg: t.navySoft,   fg: t.navy,   bd: t.navy + '33' },
-    in_progress:        { bg: t.navySoft,   fg: t.navy,   bd: t.navy + '55' },
-    awaiting_signature: { bg: t.orangeSoft, fg: t.orange, bd: t.orange + '55' },
-    blocked:            { bg: t.redSoft,    fg: t.red,    bd: t.red + '55' },
-    completed:          { bg: t.greenSoft,  fg: t.green,  bd: t.green + '55' },
+    upcoming:           { bg: 'rgba(255,255,255,0.02)', fg: 'var(--v3-text-secondary)', bd: 'var(--v3-border-subtle)' },
+    ready:              { bg: 'rgba(0,209,193,0.08)',   fg: 'var(--v3-teal-light)',     bd: 'rgba(0,209,193,0.25)' },
+    in_progress:        { bg: 'rgba(0,209,193,0.12)',   fg: 'var(--v3-teal-light)',     bd: 'rgba(0,209,193,0.35)' },
+    awaiting_signature: { bg: 'rgba(224,123,44,0.10)',  fg: 'var(--v3-orange-light)',   bd: 'rgba(224,123,44,0.3)' },
+    blocked:            { bg: 'rgba(239,68,68,0.10)',   fg: '#fecaca',                  bd: 'rgba(239,68,68,0.3)' },
+    completed:          { bg: 'rgba(16,185,129,0.08)',  fg: '#4ade80',                  bd: 'rgba(16,185,129,0.25)' },
   };
 }
 
 export function ComplianceStateBadge({ state, compact = false }: { state: ComplianceState; compact?: boolean }) {
-  const t = useCesTokens();
-  const s = stateStyle(t)[state];
+  const s = stateStyle({} as CesTokens)[state];
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-md font-semibold uppercase tracking-[0.1em]"
+      className="inline-flex items-center gap-1 rounded font-semibold uppercase tracking-[0.08em]"
       style={{
         background: s.bg, color: s.fg, border: `1px solid ${s.bd}`,
-        padding: compact ? '2px 7px' : '3px 9px',
-        fontSize: compact ? 9.5 : 10,
+        padding: compact ? '1px 5px' : '2px 6px',
+        fontSize: compact ? 8 : 9,
       }}
     >
       {COMPLIANCE_STATE_LABEL[state]}
@@ -155,16 +149,15 @@ export function ComplianceStateBadge({ state, compact = false }: { state: Compli
 
 /* ── PhaseIndicator ─────────────────────────────────────── */
 export function PhaseIndicator({ phase }: { phase: WorkflowPhase }) {
-  const t = useCesTokens();
   return (
     <span
       className="inline-flex items-center rounded-md font-semibold uppercase tracking-[0.1em]"
       style={{
-        background: t.paper,
-        color:      t.navy,
-        border:    `1px solid ${t.border}`,
-        padding:   '2px 7px',
-        fontSize:   9.5,
+        background: 'rgba(255,255,255,0.015)',
+        color:      'var(--v3-teal-light)',
+        border:    '1px solid var(--v3-border-subtle)',
+        padding:   '1px 6px',
+        fontSize:   8.5,
       }}
     >
       {WORKFLOW_PHASE_LABEL[phase]}
@@ -172,28 +165,27 @@ export function PhaseIndicator({ phase }: { phase: WorkflowPhase }) {
   );
 }
 
-/* ── AuditReadinessTag ──────────────────────────────────── */
-function readyStyle(t: CesTokens): Record<AuditReadiness, { bg: string; fg: string }> {
+/* ── AuditReadinessTag — clean non-bleed ──────────────────────────────────── */
+function readyStyle(_t: CesTokens): Record<AuditReadiness, { bg: string; fg: string }> {
   return {
-    not_ready: { bg: t.redSoft,   fg: t.red },
-    partial:   { bg: t.amberSoft, fg: t.amber },
-    ready:     { bg: t.greenSoft, fg: t.green },
+    not_ready: { bg: 'rgba(239,68,68,0.08)',   fg: '#fca5a5' },
+    partial:   { bg: 'rgba(224,123,44,0.08)', fg: 'var(--v3-orange-light)' },
+    ready:     { bg: 'rgba(16,185,129,0.08)', fg: '#4ade80' },
   };
 }
 
 export function AuditReadinessTag({ readiness }: { readiness: AuditReadiness }) {
-  const t = useCesTokens();
-  const s = readyStyle(t)[readiness];
+  const s = readyStyle({} as CesTokens)[readiness]; // values now hardcoded clean below
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-md font-semibold"
+      className="inline-flex items-center gap-1 rounded font-semibold"
       style={{
         background: s.bg, color: s.fg,
-        padding: '2px 7px', fontSize: 10,
+        padding: '1px 5px', fontSize: 8.5,
       }}
       title={`Audit readiness: ${AUDIT_READINESS_LABEL[readiness]}`}
     >
-      <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.fg }} />
+      <span className="w-1 h-1 rounded-full" style={{ background: s.fg }} />
       {AUDIT_READINESS_LABEL[readiness]}
     </span>
   );
@@ -201,8 +193,7 @@ export function AuditReadinessTag({ readiness }: { readiness: AuditReadiness }) 
 
 /* ── DomainRiskDot ──────────────────────────────────────── */
 export function DomainRiskDot({ level, size = 10 }: { level: DomainRiskLevel; size?: number }) {
-  const t = useCesTokens();
-  const fg = level === 'red' ? t.red : level === 'yellow' ? t.amber : t.green;
+  const fg = level === 'red' ? '#fca5a5' : level === 'yellow' ? 'var(--v3-orange-light)' : '#4ade80';
   return <span aria-label={level} className="inline-block rounded-full" style={{ width: size, height: size, background: fg }} />;
 }
 
@@ -210,20 +201,20 @@ export function DomainRiskDot({ level, size = 10 }: { level: DomainRiskLevel; si
 export function UserAvatar({ initials, size = 28, status }: {
   initials: string; size?: number; status?: SignerStatus;
 }) {
-  const t = useCesTokens();
   const ringColor =
-    status === 'signed'  ? t.green :
-    status === 'overdue' ? t.red :
-    status === 'pending' ? t.orange :
-    t.border;
+    status === 'signed'  ? '#4ade80' :
+    status === 'overdue' ? '#fca5a5' :
+    status === 'pending' ? 'var(--v3-orange-light)' :
+    'var(--v3-border-subtle)';
   return (
     <span
       className="inline-flex items-center justify-center rounded-full font-bold"
       style={{
         width: size, height: size,
-        background: t.navySoft, color: t.navy,
-        border: `2px solid ${ringColor}`,
-        fontSize: Math.max(9, size * 0.35),
+        background: 'rgba(255,255,255,0.06)',
+        color: 'var(--v3-teal-light)',
+        border: `1px solid ${ringColor}`,
+        fontSize: Math.max(8, size * 0.32),
       }}
     >
       {initials}
@@ -233,7 +224,6 @@ export function UserAvatar({ initials, size = 28, status }: {
 
 /* ── EscalationTimer ────────────────────────────────────── */
 export function EscalationTimer({ hours }: { hours: number }) {
-  const t = useCesTokens();
   const overdue = hours < 0;
   const days    = Math.round(Math.abs(hours) / 24 * 10) / 10;
   const label   = overdue
@@ -241,11 +231,11 @@ export function EscalationTimer({ hours }: { hours: number }) {
     : `Escalates in ${days < 1 ? `${hours}h` : `${days}d`}`;
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-md font-semibold"
+      className="inline-flex items-center gap-1 rounded font-semibold"
       style={{
-        background: overdue ? t.redSoft : t.orangeSoft,
-        color:      overdue ? t.red     : t.orange,
-        padding: '2px 7px', fontSize: 10,
+        background: overdue ? 'rgba(239,68,68,0.08)' : 'rgba(224,123,44,0.08)',
+        color:      overdue ? '#fecaca' : 'var(--v3-orange-light)',
+        padding: '1px 5px', fontSize: 8.5,
       }}
     >
       {label}

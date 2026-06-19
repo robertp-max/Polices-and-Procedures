@@ -29,6 +29,7 @@ import { buildContextEnvelope } from './session/envelope.js';
 import { recordAuditEntry } from './session/audit.js';
 import { buildChatSystemPrompt } from './prompt.js';
 import type { SessionSummary } from './session/types.js';
+import type { ScenarioMapping } from './types.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Top-level service. Owns:
@@ -313,6 +314,11 @@ export class IaService {
     // Session classification + state update
     const turnCtx = processTurn(threadId, req.input);
 
+    // Scenario classification (high-stakes taxonomy) for chat path too
+    const scenario: ScenarioMapping | undefined = classifyScenario(req.input);
+    const lifeSafetyFromScenario = !!scenario && scenario.lifeSafetyFlag;
+    const effectiveLifeSafety = turnCtx.sessionState.lifeSafetyFlag || lifeSafetyFromScenario;
+
     // Use session-enhanced retrieval query
     const enhancedRequest: QueryRequest = {
       input: turnCtx.retrievalQuery,
@@ -340,7 +346,7 @@ export class IaService {
         threadId,
         mode: turnCtx.sessionState.mode,
         urgency: turnCtx.sessionState.urgency,
-        lifeSafetyFlag: turnCtx.sessionState.lifeSafetyFlag,
+        lifeSafetyFlag: effectiveLifeSafety,
         incidentType: turnCtx.sessionState.detectedIncidentType,
         intent: query.intent,
         chunkCount: hits.length,
@@ -353,7 +359,7 @@ export class IaService {
       intent: query.intent,
       mode: turnCtx.sessionState.mode,
       urgency: turnCtx.sessionState.urgency,
-      lifeSafetyFlag: turnCtx.sessionState.lifeSafetyFlag,
+      lifeSafetyFlag: effectiveLifeSafety,
     });
 
     // Operational + regulatory context
@@ -371,7 +377,7 @@ export class IaService {
       regulatoryAlerts: regUpdates,
     });
 
-    // Generate response with single envelope
+    // Generate response with single envelope + scenario for high-stakes
     let response = await generateStructuredResponse({
       input: req.input,    // use original user input (not the expanded retrieval query)
       intent: query.intent,
@@ -384,20 +390,70 @@ export class IaService {
       operationalGaps: opCtx.gaps,
       lifecycleAlerts: opCtx.lifecycleAlerts,
       regulatoryAlerts: regUpdates,
+      scenario: (scenario && scenario.category !== 'GENERAL_QUERY') ? scenario : undefined,
+      forceScenarioAnswer: effectiveLifeSafety || (scenario ? isHighStakesScenario(scenario) : false),
     });
 
-    // ── Emergency Hard Enforcement ───────────────────────────────────
-    // DO NOT trust the model to lead with emergency action.
-    // Deterministically enforce it here.
-    if (envelope.lifeSafetyActive) {
-      const EMERGENCY_LEAD = 'EMERGENCY — Call 911 immediately. ';
-      if (!response.directAnswer.startsWith('EMERGENCY')) {
+    // ── Emergency Hard Enforcement + Human First Response ────────────
+    // Force exact required lead sentence, short human supervisor tone, single follow-up.
+    // Overrides any corpus/LLM dump. References suppressed until safety confirmed.
+    const EMERGENCY_LEAD = 'EMERGENCY — Call 911 immediately. ';
+    const isActiveDangerFirst = effectiveLifeSafety && (turnCtx.sessionState.safetyStatus === 'active_danger' || turnCtx.sessionState.safetyStatus === 'unknown');
+    if (effectiveLifeSafety || envelope.lifeSafetyActive) {
+      if (isActiveDangerFirst) {
+        // First visible sentence exactly as specified. Short, no policy/workflow dump.
+        const shortEmergency = 'EMERGENCY — Call 911 immediately. Get out of the house now if you can do so safely. If you cannot leave, lock yourself in a room, create distance, stay quiet, and remain on the line with 911. Do not continue the visit. Once safe, notify your supervisor/DON/Administrator and complete the incident report. Are you safe and out of the home right now?';
+        response = {
+          ...response,
+          directAnswer: shortEmergency,
+          riskLevel: 'critical',
+          enforcementLevel: 'condition_level',
+          confidence: 'high',
+          scenario: response.scenario ?? scenario,
+        };
+        // Clear early linked refs for first emergency turn (forms only after safe)
+        if (turnCtx.sessionState.safetyStatus !== 'safe') {
+          response.linkedReferences = [];
+          response.requiredArtifacts = [];
+          response.availableActions = (response.scenario?.suggestedGenerators || []).map((g, i) => ({
+            id: `a-scn-emerg-${i}`,
+            type: g.type,
+            label: g.label,
+            targetId: '',
+            targetType: 'policy',
+            studioOutputType: g.studioOutputType,
+            priority: i === 0 ? 'primary' : 'secondary',
+          }));
+        }
+      } else if (!response.directAnswer.startsWith('EMERGENCY')) {
         response = {
           ...response,
           directAnswer: EMERGENCY_LEAD + response.directAnswer,
           riskLevel: 'critical',
           enforcementLevel: 'condition_level',
           confidence: 'high',
+        };
+      }
+    }
+    // Scenario playbooks now provide calmer human-operator phrasing (headline + structured immediateActions) for high-risk real-life events. UI should prefer scenario.immediateActions / headline for stress use.
+
+    // ── Safe continuation for active case (after user says they are out/safe) ──
+    if (turnCtx.sessionState.safetyStatus === 'safe' && turnCtx.sessionState.lifeSafetyFlag) {
+      const lowerInput = req.input.toLowerCase();
+      const wantsDoc = /\b(yes|start|incident|report|document|form|now what|what next)\b/.test(lowerInput);
+      if (wantsDoc || turnCtx.sessionState.documentationStage !== 'not_started') {
+        response = {
+          ...response,
+          directAnswer: 'Good. Do not re-enter the home. Notify your supervisor/DON/Administrator now. Document the threat, weapon, time, location, people involved, and whether police/EMS responded. I can help you open the workforce safety/incident report next. Do you want to start the incident report now?',
+          riskLevel: 'critical',
+          scenario: response.scenario ?? scenario,
+        };
+      } else {
+        response = {
+          ...response,
+          directAnswer: 'Good. Do not re-enter the home. Notify your supervisor/DON/Administrator now. Document the threat, weapon, time, location, people involved, and whether police/EMS responded.',
+          riskLevel: 'critical',
+          scenario: response.scenario ?? scenario,
         };
       }
     }
@@ -421,6 +477,19 @@ export class IaService {
 
     const updatedState = sessionStore.load(threadId);
     const sessionSummary = toSessionSummary(updatedState ?? turnCtx.sessionState);
+
+    // Main inference answer-first rule: strip documents unless explicit request (applies to all modes)
+    const normalizedForDoc = req.input.toLowerCase();
+    const explicitDocRequest = /(which form|what form|open the|start the|incident note|document this|create the report|what document|help me document|start report|workforce safety|show me the (policy|workflow|form)|pull the (policy|form|workflow)|give me the (policy|references)|what policy covers)/.test(normalizedForDoc);
+    if (!explicitDocRequest && !effectiveLifeSafety) {
+      response.linkedReferences = [];
+      response.citations = [];
+      response.availableActions = (response.availableActions || []).filter((a: any) => ['generate_action_plan', 'generate_audit_checklist'].includes(a.type));
+      response.requiredArtifacts = [];
+      if (response.directAnswer && response.directAnswer.includes('App data matches were found')) {
+        response.directAnswer = response.directAnswer.replace(/Direct Answer: App data matches were found[^.]*\./, 'Start with the practical step that fits the situation.');
+      }
+    }
 
     // ── Audit log ─────────────────────────────────────────────────
     const emergencyEnforced = envelope.lifeSafetyActive &&

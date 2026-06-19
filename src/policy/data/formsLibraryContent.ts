@@ -84,6 +84,7 @@ export interface FormContent {
   orientation: 'portrait' | 'landscape';
   sections: FormSection[];
   signatures?: SignatureBlock[];
+  signerSlots?: FormSignerSlot[];
   footerNotes?: string[];
 }
 
@@ -974,6 +975,7 @@ export function buildFormContent(rec: FormRecord): FormContent {
     orientation,
     sections,
     signatures: signers.map(r => ({ role: r, includeName: true, includeTitle: true, includeDate: true })),
+    signerSlots: o?.signerSlots,
     footerNotes: [
       `Care Indeed Home Health Care, Inc. · Form ${rec.id} · Version ${VERSION} · Effective ${EFFECTIVE_DATE} · Next Review ${REVISION_DATE}`,
       `Linked Policies: ${rec.policies.join(', ')}`,

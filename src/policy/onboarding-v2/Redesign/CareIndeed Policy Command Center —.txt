@@ -1,0 +1,3401 @@
+CareIndeed Policy Command Center — Complete App-Wide Redesign
+Architecture Overview & Design System
+This is a complete TSX implementation of the redesigned system. I'll deliver it in organized sections covering the full app.
+
+PART 1: Design System Foundation
+src/design-system/tokens.ts
+// ============================================================
+// CAREINDEED POLICY COMMAND CENTER — DESIGN TOKENS
+// Single source of truth for all visual decisions
+// ============================================================
+
+export const tokens = {
+  colors: {
+    // Brand primaries
+    teal: {
+      50:  '#f0faf9',
+      100: '#d0f0ed',
+      200: '#a1e1da',
+      300: '#5cc8bd',
+      400: '#2fada2',
+      500: '#007970', // Primary teal
+      600: '#006560',
+      700: '#004f4b',
+      800: '#003a37',
+      900: '#002624',
+    },
+    rust: {
+      50:  '#fff4ef',
+      100: '#ffe0d0',
+      200: '#ffbfa0',
+      300: '#ff9060',
+      400: '#e85a1a',
+      500: '#C74600', // Primary accent
+      600: '#a83b00',
+      700: '#8a2f00',
+      800: '#6b2400',
+      900: '#4d1900',
+    },
+    // Ink neutrals — no pastels
+    ink: {
+      950: '#0d0f0f',
+      900: '#111316',
+      800: '#1c2124',
+      700: '#2d3439',
+      600: '#404b52',
+      500: '#556068',
+      400: '#788490',
+      300: '#9eaab5',
+      200: '#c4cdd5',
+      100: '#e0e5ea',
+      50:  '#f4f6f8',
+      25:  '#f9fafb',
+    },
+    // Semantic
+    success: { bg: '#e8f5f0', text: '#0d6b45', border: '#34a871' },
+    warning: { bg: '#fff8e8', text: '#8a5c00', border: '#e8b84b' },
+    danger:  { bg: '#fef0f0', text: '#8b1a1a', border: '#d45252' },
+    info:    { bg: '#eff7ff', text: '#1a4f8b', border: '#4d8fd4' },
+  },
+  typography: {
+    heading: "'Montserrat', system-ui, sans-serif",
+    body:    "'Roboto', system-ui, sans-serif",
+    mono:    "'JetBrains Mono', 'Fira Code', monospace",
+  },
+  radius: {
+    sm:   '6px',
+    md:   '10px',
+    lg:   '14px',
+    xl:   '20px',
+    '2xl':'28px',
+    full: '9999px',
+  },
+  shadow: {
+    xs:  '0 1px 2px rgba(0,0,0,0.04)',
+    sm:  '0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+    md:  '0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)',
+    lg:  '0 8px 32px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06)',
+    xl:  '0 16px 48px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.08)',
+    teal:'0 8px 32px rgba(0,121,112,0.18)',
+    rust:'0 8px 32px rgba(199,70,0,0.18)',
+    glass:'0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.15)',
+  },
+  glass: {
+    // Screen only — never applied in print
+    light: {
+      background: 'rgba(255,255,255,0.72)',
+      backdropFilter: 'blur(20px) saturate(180%)',
+      border: '1px solid rgba(255,255,255,0.50)',
+    },
+    dark: {
+      background: 'rgba(0,121,112,0.85)',
+      backdropFilter: 'blur(24px) saturate(200%)',
+      border: '1px solid rgba(255,255,255,0.15)',
+    },
+    teal: {
+      background: 'rgba(0,121,112,0.08)',
+      backdropFilter: 'blur(16px)',
+      border: '1px solid rgba(0,121,112,0.20)',
+    },
+  },
+  spacing: {
+    '2xs': '4px',
+    xs:   '8px',
+    sm:   '12px',
+    md:   '16px',
+    lg:   '24px',
+    xl:   '32px',
+    '2xl':'48px',
+    '3xl':'64px',
+    '4xl':'96px',
+  },
+} as const;
+
+// Status badge configuration
+export const statusConfig = {
+  published: { label: 'Published', color: 'bg-emerald-50 text-emerald-700 border border-emerald-200', dot: 'bg-emerald-500' },
+  draft:     { label: 'Draft',     color: 'bg-amber-50 text-amber-700 border border-amber-200',   dot: 'bg-amber-500'   },
+  review:    { label: 'In Review', color: 'bg-blue-50 text-blue-700 border border-blue-200',       dot: 'bg-blue-500'    },
+  required:  { label: 'Required',  color: 'bg-red-50 text-red-700 border border-red-200',          dot: 'bg-red-500'     },
+  approved:  { label: 'Approved',  color: 'bg-teal-50 text-teal-700 border border-teal-200',       dot: 'bg-teal-500'    },
+  archived:  { label: 'Archived',  color: 'bg-gray-100 text-gray-500 border border-gray-200',      dot: 'bg-gray-400'    },
+} as const;
+src/design-system/primitives.tsx
+import * as React from "react";
+import { tokens as TOKENS } from "./tokens";
+
+const tokens: any = TOKENS;
+
+type CSS = React.CSSProperties;
+
+function cx(...parts: Array<string | undefined | false | null>) {
+  return parts.filter(Boolean).join(" ");
+}
+
+function pick<T>(value: T | undefined, fallback: T): T {
+  return value === undefined ? fallback : value;
+}
+
+const DS = {
+  color: {
+    bg: pick(tokens?.colors?.surface ?? tokens?.colors?.neutral?.[0], "#0B1220"),
+    panel: pick(tokens?.colors?.panel ?? tokens?.colors?.neutral?.[100], "#0F1B2E"),
+    panel2: pick(tokens?.colors?.panel2 ?? tokens?.colors?.neutral?.[200], "#13233A"),
+    text: pick(tokens?.colors?.text ?? tokens?.colors?.neutral?.[900], "#EAF1FF"),
+    muted: pick(tokens?.colors?.muted ?? tokens?.colors?.neutral?.[600], "#9FB0CC"),
+    border: pick(tokens?.colors?.border ?? tokens?.colors?.neutral?.[300], "#223454"),
+
+    primary: pick(tokens?.colors?.brand?.teal?.[600], "#1AA7A1"),
+    primaryHover: pick(tokens?.colors?.brand?.teal?.[500], "#22B7B0"),
+    primarySoft: pick(tokens?.colors?.brand?.teal?.[200], "#7BE0DA"),
+
+    danger: pick(tokens?.colors?.danger ?? "#E5484D", "#E5484D"),
+    warning: pick(tokens?.colors?.warning ?? "#F5A524", "#F5A524"),
+    success: pick(tokens?.colors?.success ?? "#2ECC71", "#2ECC71"),
+
+    accent: pick(tokens?.colors?.brand?.rust?.[600], "#C95A2E"),
+    accentHover: pick(tokens?.colors?.brand?.rust?.[500], "#D66A41"),
+  },
+  radius: {
+    sm: pick(tokens?.radii?.sm, 10),
+    md: pick(tokens?.radii?.md, 14),
+    lg: pick(tokens?.radii?.lg, 18),
+    pill: 999,
+  },
+  shadow: {
+    sm: pick(tokens?.shadows?.sm, "0 8px 20px rgba(0,0,0,0.25)"),
+    md: pick(tokens?.shadows?.md, "0 14px 30px rgba(0,0,0,0.32)"),
+  },
+  space: {
+    0: 0,
+    1: pick(tokens?.space?.[1], 4),
+    2: pick(tokens?.space?.[2], 8),
+    3: pick(tokens?.space?.[3], 12),
+    4: pick(tokens?.space?.[4], 16),
+    5: pick(tokens?.space?.[5], 20),
+    6: pick(tokens?.space?.[6], 24),
+    8: pick(tokens?.space?.[8], 32),
+    10: pick(tokens?.space?.[10], 40),
+    12: pick(tokens?.space?.[12], 48),
+  },
+  font: {
+    family: pick(tokens?.typography?.fontFamily ?? tokens?.fontFamily, "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial"),
+    mono: pick(tokens?.typography?.monoFamily ?? tokens?.monoFamily, "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace"),
+  },
+};
+
+export type Intent = "neutral" | "primary" | "success" | "warning" | "danger" | "accent";
+export type Size = "sm" | "md" | "lg";
+
+function intentColor(intent: Intent) {
+  switch (intent) {
+    case "primary":
+      return DS.color.primary;
+    case "success":
+      return DS.color.success;
+    case "warning":
+      return DS.color.warning;
+    case "danger":
+      return DS.color.danger;
+    case "accent":
+      return DS.color.accent;
+    default:
+      return DS.color.border;
+  }
+}
+
+/** ---------- Layout ---------- */
+
+export function AppShell(props: { children: React.ReactNode; style?: CSS; className?: string }) {
+  return (
+    <div
+      className={props.className}
+      style={{
+        minHeight: "100vh",
+        background: DS.color.bg,
+        color: DS.color.text,
+        fontFamily: DS.font.family,
+        ...props.style,
+      }}
+    >
+      {props.children}
+    </div>
+  );
+}
+
+export function Container(props: {
+  children: React.ReactNode;
+  maxWidth?: number;
+  paddingY?: number;
+  paddingX?: number;
+  style?: CSS;
+  className?: string;
+}) {
+  const maxWidth = props.maxWidth ?? 1160;
+  const px = props.paddingX ?? DS.space[6];
+  const py = props.paddingY ?? DS.space[8];
+  return (
+    <div className={props.className} style={{ width: "100%", ...props.style }}>
+      <div style={{ maxWidth, margin: "0 auto", padding: `${py}px ${px}px` }}>{props.children}</div>
+    </div>
+  );
+}
+
+export function Stack(props: {
+  children: React.ReactNode;
+  gap?: number;
+  align?: CSS["alignItems"];
+  justify?: CSS["justifyContent"];
+  style?: CSS;
+  className?: string;
+}) {
+  const gap = props.gap ?? DS.space[4];
+  return (
+    <div
+      className={props.className}
+      style={{ display: "flex", flexDirection: "column", gap, alignItems: props.align, justifyContent: props.justify, ...props.style }}
+    >
+      {props.children}
+    </div>
+  );
+}
+
+export function Inline(props: {
+  children: React.ReactNode;
+  gap?: number;
+  align?: CSS["alignItems"];
+  justify?: CSS["justifyContent"];
+  wrap?: boolean;
+  style?: CSS;
+  className?: string;
+}) {
+  const gap = props.gap ?? DS.space[3];
+  return (
+    <div
+      className={props.className}
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        gap,
+        alignItems: props.align ?? "center",
+        justifyContent: props.justify,
+        flexWrap: props.wrap ? "wrap" : "nowrap",
+        ...props.style,
+      }}
+    >
+      {props.children}
+    </div>
+  );
+}
+
+export function Grid(props: {
+  children: React.ReactNode;
+  columns?: string;
+  gap?: number;
+  style?: CSS;
+  className?: string;
+}) {
+  return (
+    <div
+      className={props.className}
+      style={{
+        display: "grid",
+        gridTemplateColumns: props.columns ?? "repeat(12, minmax(0, 1fr))",
+        gap: props.gap ?? DS.space[4],
+        ...props.style,
+      }}
+    >
+      {props.children}
+    </div>
+  );
+}
+
+/** ---------- Typography ---------- */
+
+export function Text(props: {
+  children: React.ReactNode;
+  muted?: boolean;
+  mono?: boolean;
+  size?: 12 | 13 | 14 | 15 | 16 | 18;
+  weight?: 400 | 500 | 600 | 700;
+  style?: CSS;
+  className?: string;
+}) {
+  return (
+    <span
+      className={props.className}
+      style={{
+        color: props.muted ? DS.color.muted : DS.color.text,
+        fontFamily: props.mono ? DS.font.mono : DS.font.family,
+        fontSize: (props.size ?? 14) + "px",
+        fontWeight: props.weight ?? 500,
+        lineHeight: 1.4,
+        ...props.style,
+      }}
+    >
+      {props.children}
+    </span>
+  );
+}
+
+export function Heading(props: {
+  children: React.ReactNode;
+  as?: "h1" | "h2" | "h3" | "h4";
+  size?: 18 | 20 | 22 | 26 | 30 | 34;
+  style?: CSS;
+  className?: string;
+}) {
+  const Tag = (props.as ?? "h2") as any;
+  return (
+    <Tag
+      className={props.className}
+      style={{
+        margin: 0,
+        fontSize: (props.size ?? 22) + "px",
+        fontWeight: 700,
+        lineHeight: 1.15,
+        letterSpacing: "-0.02em",
+        color: DS.color.text,
+        ...props.style,
+      }}
+    >
+      {props.children}
+    </Tag>
+  );
+}
+
+/** ---------- Surfaces ---------- */
+
+export function Card(props: {
+  children: React.ReactNode;
+  title?: React.ReactNode;
+  subtitle?: React.ReactNode;
+  right?: React.ReactNode;
+  padding?: number;
+  style?: CSS;
+  className?: string;
+}) {
+  const pad = props.padding ?? DS.space[6];
+  return (
+    <div
+      className={props.className}
+      style={{
+        background: DS.color.panel,
+        border: `1px solid ${DS.color.border}`,
+        borderRadius: DS.radius.lg,
+        boxShadow: DS.shadow.sm,
+        overflow: "hidden",
+        ...props.style,
+      }}
+    >
+      {(props.title || props.subtitle || props.right) && (
+        <div
+          style={{
+            padding: pad,
+            paddingBottom: DS.space[4],
+            borderBottom: `1px solid ${DS.color.border}`,
+            background: "linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0))",
+          }}
+        >
+          <Inline justify="space-between" align="flex-start" gap={DS.space[4]} wrap>
+            <Stack gap={6}>
+              {props.title && (typeof props.title === "string" ? <Heading as="h3" size={20}>{props.title}</Heading> : props.title)}
+              {props.subtitle && (typeof props.subtitle === "string" ? <Text muted size={14}>{props.subtitle}</Text> : props.subtitle)}
+            </Stack>
+            {props.right ? <div>{props.right}</div> : null}
+          </Inline>
+        </div>
+      )}
+      <div style={{ padding: pad }}>{props.children}</div>
+    </div>
+  );
+}
+
+export function Divider(props: { style?: CSS; className?: string }) {
+  return <div className={props.className} style={{ height: 1, width: "100%", background: DS.color.border, ...props.style }} />;
+}
+
+export function Badge(props: { children: React.ReactNode; intent?: Intent; style?: CSS; className?: string }) {
+  const c = intentColor(props.intent ?? "neutral");
+  return (
+    <span
+      className={props.className}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "4px 10px",
+        borderRadius: DS.radius.pill,
+        border: `1px solid ${c}`,
+        color: DS.color.text,
+        background: "rgba(255,255,255,0.02)",
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: "0.02em",
+        ...props.style,
+      }}
+    >
+      <span style={{ width: 8, height: 8, borderRadius: 99, background: c, boxShadow: `0 0 0 3px rgba(255,255,255,0.04)` }} />
+      {props.children}
+    </span>
+  );
+}
+
+/** ---------- Buttons & Inputs ---------- */
+
+export const Button = React.forwardRef<
+  HTMLButtonElement,
+  {
+    children: React.ReactNode;
+    intent?: Intent;
+    size?: Size;
+    variant?: "solid" | "outline" | "ghost";
+    leftIcon?: React.ReactNode;
+    rightIcon?: React.ReactNode;
+    disabled?: boolean;
+    onClick?: React.MouseEventHandler<HTMLButtonElement>;
+    type?: "button" | "submit" | "reset";
+    style?: CSS;
+    className?: string;
+  }
+>(function Button(
+  { children, intent = "primary", size = "md", variant = "solid", leftIcon, rightIcon, disabled, ...rest },
+  ref
+) {
+  const c = intentColor(intent);
+
+  const height = size === "sm" ? 34 : size === "lg" ? 44 : 38;
+  const px = size === "sm" ? 12 : size === "lg" ? 16 : 14;
+  const fontSize = size === "sm" ? 13 : 14;
+
+  const base: CSS = {
+    height,
+    padding: `0 ${px}px`,
+    borderRadius: DS.radius.md,
+    border: "1px solid transparent",
+    fontSize,
+    fontWeight: 700,
+    letterSpacing: "0.01em",
+    cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.6 : 1,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    userSelect: "none",
+    transition: "transform 80ms ease, background 120ms ease, border-color 120ms ease, filter 120ms ease",
+  };
+
+  let style: CSS = {};
+  if (variant === "solid") {
+    style = {
+      background: c,
+      color: "#081018",
+      boxShadow: "0 10px 20px rgba(0,0,0,0.25)",
+    };
+  } else if (variant === "outline") {
+    style = {
+      background: "transparent",
+      color: DS.color.text,
+      borderColor: c,
+    };
+  } else {
+    style = {
+      background: "transparent",
+      color: DS.color.text,
+      borderColor: "transparent",
+    };
+  }
+
+  return (
+    <button
+      ref={ref}
+      {...rest}
+      disabled={disabled}
+      className={rest.className}
+      style={{ ...base, ...style, ...(rest.style ?? {}) }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        (e.currentTarget as HTMLButtonElement).style.transform = "translateY(1px)";
+      }}
+      onMouseUp={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0px)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0px)";
+      }}
+    >
+      {leftIcon ? <span style={{ display: "inline-flex" }}>{leftIcon}</span> : null}
+      <span>{children}</span>
+      {rightIcon ? <span style={{ display: "inline-flex" }}>{rightIcon}</span> : null}
+    </button>
+  );
+});
+
+export function Label(props: { children: React.ReactNode; style?: CSS; className?: string }) {
+  return (
+    <label
+      className={props.className}
+      style={{
+        display: "block",
+        fontSize: 12,
+        fontWeight: 800,
+        letterSpacing: "0.06em",
+        textTransform: "uppercase",
+        color: DS.color.muted,
+        marginBottom: 8,
+        ...props.style,
+      }}
+    >
+      {props.children}
+    </label>
+  );
+}
+
+function inputBase(): CSS {
+  return {
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: DS.radius.md,
+    background: DS.color.panel2,
+    border: `1px solid ${DS.color.border}`,
+    color: DS.color.text,
+    outline: "none",
+    fontSize: 14,
+    fontWeight: 600,
+  };
+}
+
+export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  function Input(props, ref) {
+    return (
+      <input
+        ref={ref}
+        {...props}
+        style={{ ...inputBase(), ...(props.style ?? {}) }}
+        onFocus={(e) => {
+          (e.currentTarget as HTMLInputElement).style.borderColor = DS.color.primarySoft;
+          props.onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          (e.currentTarget as HTMLInputElement).style.borderColor = DS.color.border;
+          props.onBlur?.(e);
+        }}
+      />
+    );
+  }
+);
+
+export const TextArea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
+  function TextArea(props, ref) {
+    return (
+      <textarea
+        ref={ref}
+        {...props}
+        style={{ ...inputBase(), minHeight: 110, resize: "vertical", ...(props.style ?? {}) }}
+        onFocus={(e) => {
+          (e.currentTarget as HTMLTextAreaElement).style.borderColor = DS.color.primarySoft;
+          props.onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          (e.currentTarget as HTMLTextAreaElement).style.borderColor = DS.color.border;
+          props.onBlur?.(e);
+        }}
+      />
+    );
+  }
+);
+
+export const Select = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement>>(
+  function Select(props, ref) {
+    return (
+      <select
+        ref={ref}
+        {...props}
+        style={{
+          ...inputBase(),
+          appearance: "none",
+          backgroundImage:
+            "linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.65) 50%), linear-gradient(135deg, rgba(255,255,255,0.65) 50%, transparent 50%)",
+          backgroundPosition: "calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px)",
+          backgroundSize: "5px 5px, 5px 5px",
+          backgroundRepeat: "no-repeat",
+          ...(props.style ?? {}),
+        }}
+        onFocus={(e) => {
+          (e.currentTarget as HTMLSelectElement).style.borderColor = DS.color.primarySoft;
+          props.onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          (e.currentTarget as HTMLSelectElement).style.borderColor = DS.color.border;
+          props.onBlur?.(e);
+        }}
+      />
+    );
+  }
+);
+
+/** ---------- Data Display ---------- */
+
+export function Stat(props: { label: string; value: React.ReactNode; hint?: React.ReactNode; intent?: Intent }) {
+  const intent = props.intent ?? "neutral";
+  const bar = intentColor(intent);
+  return (
+    <div style={{ padding: DS.space[4], borderRadius: DS.radius.md, border: `1px solid ${DS.color.border}`, background: DS.color.panel2 }}>
+      <Stack gap={8}>
+        <Inline justify="space-between" align="center">
+          <Text muted size={12} weight={800} style={{ letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            {props.label}
+          </Text>
+          <span style={{ width: 10, height: 10, borderRadius: 999, background: bar }} />
+        </Inline>
+        <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.02em" }}>{props.value}</div>
+        {props.hint ? <Text muted size={13}>{props.hint}</Text> : null}
+      </Stack>
+    </div>
+  );
+}
+
+export function KeyValue(props: { k: React.ReactNode; v: React.ReactNode }) {
+  return (
+    <Inline justify="space-between" align="flex-start" gap={DS.space[4]} style={{ padding: "10px 0" }}>
+      <Text muted size={13} weight={700} style={{ minWidth: 160 }}>
+        {props.k}
+      </Text>
+      <div style={{ textAlign: "right" }}>{props.v}</div>
+    </Inline>
+  );
+}
+
+export function Table(props: { children: React.ReactNode; style?: CSS }) {
+  return (
+    <div style={{ width: "100%", overflowX: "auto", border: `1px solid ${DS.color.border}`, borderRadius: DS.radius.lg, ...props.style }}>
+      <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, minWidth: 760 }}>{props.children}</table>
+    </div>
+  );
+}
+
+export function THead(props: { children: React.ReactNode }) {
+  return (
+    <thead>
+      <tr
+        style={{
+          background: "rgba(255,255,255,0.03)",
+        }}
+      >
+        {props.children}
+      </tr>
+    </thead>
+  );
+}
+
+export function TH(props: { children: React.ReactNode; align?: "left" | "right" | "center"; width?: number | string }) {
+  return (
+    <th
+      style={{
+        textAlign: props.align ?? "left",
+        padding: "12px 14px",
+        fontSize: 12,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        color: DS.color.muted,
+        fontWeight: 900,
+        borderBottom: `1px solid ${DS.color.border}`,
+        width: props.width,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {props.children}
+    </th>
+  );
+}
+
+export function TBody(props: { children: React.ReactNode }) {
+  return <tbody>{props.children}</tbody>;
+}
+
+export function TR(props: { children: React.ReactNode; onClick?: () => void }) {
+  return (
+    <tr
+      onClick={props.onClick}
+      style={{
+        cursor: props.onClick ? "pointer" : "default",
+      }}
+    >
+      {props.children}
+    </tr>
+  );
+}
+
+export function TD(props: { children: React.ReactNode; align?: "left" | "right" | "center" }) {
+  return (
+    <td
+      style={{
+        padding: "12px 14px",
+        borderBottom: `1px solid ${DS.color.border}`,
+        color: DS.color.text,
+        fontSize: 14,
+        fontWeight: 600,
+        textAlign: props.align ?? "left",
+        verticalAlign: "middle",
+      }}
+    >
+      {props.children}
+    </td>
+  );
+}
+
+/** ---------- Small helpers ---------- */
+
+export function Spacer(props: { y?: number }) {
+  return <div style={{ height: props.y ?? DS.space[6] }} />;
+}
+
+export { cx, DS };
+
+PART 2: App Shell
+src/components/AppShell.tsx
+// ============================================================
+// APP SHELL — Navigation, sidebar, layout wrapper
+// Premium glassmorphic enterprise shell
+// ============================================================
+
+import React, { useState } from 'react';
+import {
+  LayoutDashboard, BookOpen, GitBranch, Shield,
+  FileEdit, Eye, CheckCircle, Calendar, ChevronDown,
+  ChevronRight, Menu, X, Bell, Search, Settings,
+  LogOut, User
+} from 'lucide-react';
+
+interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  href: string;
+  badge?: number;
+  children?: NavItem[];
+}
+
+const navigation: NavItem[] = [
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    icon: <LayoutDashboard size={17} />,
+    href: '/',
+  },
+  {
+    id: 'library',
+    label: 'Policy Library',
+    icon: <BookOpen size={17} />,
+    href: '/library',
+    children: [
+      { id: 'library-all',      label: 'All Policies',  icon: <></>, href: '/library' },
+      { id: 'library-taxonomy', label: 'Taxonomy',       icon: <></>, href: '/library/taxonomy' },
+    ],
+  },
+  {
+    id: 'governance',
+    label: 'Governance',
+    icon: <Shield size={17} />,
+    href: '/governance',
+    children: [
+      { id: 'governance-body',  label: 'Governing Body',  icon: <></>, href: '/governance/body' },
+      { id: 'governance-comm',  label: 'Committees',      icon: <></>, href: '/governance/committees' },
+      { id: 'governance-audit', label: 'Audit Trail',     icon: <></>, href: '/governance/audit' },
+    ],
+  },
+  {
+    id: 'workflow',
+    label: 'Workflow',
+    icon: <GitBranch size={17} />,
+    href: '/workflow',
+    children: [
+      { id: 'drafts',   label: 'Drafts',       icon: <FileEdit size={14} />,   href: '/drafts',   badge: 3 },
+      { id: 'review',   label: 'In Review',    icon: <Eye size={14} />,         href: '/review',   badge: 2 },
+      { id: 'approval', label: 'Pending Approval', icon: <CheckCircle size={14} />, href: '/approval', badge: 1 },
+    ],
+  },
+  {
+    id: 'calendar',
+    label: 'Master Calendar',
+    icon: <Calendar size={17} />,
+    href: '/calendar',
+  },
+];
+
+const NavItemRow: React.FC<{
+  item: NavItem;
+  activeId: string;
+  setActiveId: (id: string) => void;
+  depth?: number;
+}> = ({ item, activeId, setActiveId, depth = 0 }) => {
+  const [open, setOpen] = useState(
+    item.children?.some(c => c.id === activeId || c.children?.some(cc => cc.id === activeId))
+  );
+  const isActive = activeId === item.id;
+  const hasChildren = item.children && item.children.length > 0;
+
+  return (
+    <div>
+      <div
+        onClick={() => {
+          if (hasChildren) setOpen(!open);
+          else setActiveId(item.id);
+        }}
+        className={`
+          group flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer
+          transition-all duration-150 select-none
+          ${depth > 0 ? 'ml-4 pl-3' : ''}
+          ${isActive
+            ? 'bg-white/20 text-white shadow-sm'
+            : 'text-teal-100 hover:bg-white/10 hover:text-white'
+          }
+        `}
+      >
+        {depth === 0 && (
+          <span className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-teal-200 group-hover:text-white'}`}>
+            {item.icon}
+          </span>
+        )}
+        {depth > 0 && (
+          <span className={`w-1 h-1 rounded-full flex-shrink-0 ${isActive ? 'bg-rust-400' : 'bg-teal-400/50'}`} />
+        )}
+        <span className={`flex-1 font-roboto text-sm ${depth === 0 ? 'font-medium' : 'font-normal'}`}>
+          {item.label}
+        </span>
+        {item.badge !== undefined && (
+          <span className="flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-rust-500 text-white text-[10px] font-montserrat font-bold flex items-center justify-center">
+            {item.badge}
+          </span>
+        )}
+        {hasChildren && (
+          <span className="text-teal-300 flex-shrink-0">
+            {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+          </span>
+        )}
+      </div>
+
+      {hasChildren && open && (
+        <div className="mt-1 space-y-0.5">
+          {item.children!.map(child => (
+            <NavItemRow
+              key={child.id}
+              item={child}
+              activeId={activeId}
+              setActiveId={setActiveId}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const AppShell: React.FC<{
+  children: React.ReactNode;
+  activePage?: string;
+}> = ({ children, activePage = 'dashboard' }) => {
+  const [activeId, setActiveId] = useState(activePage);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const Sidebar = (
+    <aside className="
+      flex flex-col h-full
+      bg-gradient-to-b from-teal-800 via-teal-700 to-teal-800
+      relative overflow-hidden
+    ">
+      {/* Decorative background */}
+      <div className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: `radial-gradient(circle at 30% 20%, rgba(255,255,255,0.8) 0%, transparent 50%),
+                            radial-gradient(circle at 80% 80%, rgba(199,70,0,0.6) 0%, transparent 40%)`,
+        }}
+      />
+
+      {/* Logo zone */}
+      <div className="relative z-10 px-5 pt-6 pb-5 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          {/* Logo icon representation */}
+          <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0 border border-white/20">
+            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="#C74600" strokeWidth={2}>
+              <circle cx="12" cy="7" r="3" />
+              <path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div>
+            <div className="font-montserrat text-white font-bold text-base leading-tight">
+              CareIndeed
+            </div>
+            <div className="font-roboto text-teal-300 text-[10px] tracking-wide leading-tight">
+              Policy Command Center
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav className="relative z-10 flex-1 px-3 py-4 space-y-0.5 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20">
+        {navigation.map(item => (
+          <NavItemRow
+            key={item.id}
+            item={item}
+            activeId={activeId}
+            setActiveId={setActiveId}
+          />
+        ))}
+      </nav>
+
+      {/* User zone */}
+      <div className="relative z-10 px-4 py-4 border-t border-white/10">
+        <div className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-white/10 cursor-pointer transition-colors group">
+          <div className="w-8 h-8 rounded-full bg-rust-500 flex items-center justify-center flex-shrink-0">
+            <span className="text-white text-xs font-montserrat font-bold">AD</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-roboto font-medium text-white truncate">Admin User</div>
+            <div className="text-[10px] font-roboto text-teal-300">Administrator</div>
+          </div>
+          <Settings size={14} className="text-teal-300 group-hover:text-white flex-shrink-0" />
+        </div>
+      </div>
+    </aside>
+  );
+
+  return (
+    <div className="flex h-screen bg-ink-50 overflow-hidden">
+      {/* Desktop sidebar */}
+      <div className={`
+        hidden lg:flex flex-col flex-shrink-0 transition-all duration-300
+        ${sidebarOpen ? 'w-60' : 'w-16'}
+      `}>
+        {Sidebar}
+      </div>
+
+      {/* Mobile sidebar overlay */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="w-64 flex-shrink-0">{Sidebar}</div>
+          <div className="flex-1 bg-black/50 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+        </div>
+      )}
+
+      {/* Main area */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Top bar */}
+        <header className="
+          flex-shrink-0 h-14
+          flex items-center gap-4 px-6
+          bg-white/80 backdrop-blur-xl
+          border-b border-ink-100
+          shadow-xs
+          z-40
+        ">
+          <button
+            onClick={() => { setSidebarOpen(!sidebarOpen); setMobileOpen(!mobileOpen); }}
+            className="p-1.5 rounded-lg text-ink-500 hover:bg-ink-100 transition-colors lg:flex hidden"
+          >
+            <Menu size={18} />
+          </button>
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="p-1.5 rounded-lg text-ink-500 hover:bg-ink-100 transition-colors lg:hidden"
+          >
+            <Menu size={18} />
+          </button>
+
+          {/* Global search */}
+          <div className="flex-1 max-w-md hidden sm:flex relative">
+            <div className="relative w-full">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+              <input
+                type="text"
+                placeholder="Search policies, governance…"
+                className="
+                  w-full pl-9 pr-4 py-2
+                  bg-ink-50 border border-ink-200 rounded-xl
+                  text-sm font-roboto text-ink-700 placeholder-ink-400
+                  focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400 focus:bg-white
+                  transition-all duration-200
+                "
+              />
+              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-ink-400 bg-ink-100 px-1.5 py-0.5 rounded">
+                ⌘K
+              </kbd>
+            </div>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            {/* Notification bell */}
+            <button className="relative p-2 rounded-xl text-ink-500 hover:bg-ink-100 transition-colors">
+              <Bell size={17} />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-rust-500" />
+            </button>
+            {/* Version indicator */}
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 border border-teal-100 rounded-xl">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+              <span className="text-xs font-montserrat font-semibold text-teal-700">v6.0</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Content area */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="px-6 lg:px-8 py-8 max-w-[1600px] mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+PART 3: Dashboard Page
+src/pages/Dashboard.tsx
+// ============================================================
+// DASHBOARD — Executive command center
+// ============================================================
+
+import React from 'react';
+import {
+  BookOpen, AlertTriangle, CheckCircle2, Clock,
+  FileEdit, Eye, Calendar, TrendingUp, ArrowRight,
+  Shield, Activity, BarChart3
+} from 'lucide-react';
+import {
+  Card, PageHero, KpiCard, DataTable, TableRow, Td,
+  StatusBadge, SectionTitle, Btn, PolicyIdTag, FieldLabel, FieldValue, Alert
+} from '../design-system/primitives';
+
+// ─── Mock data ─────────────────────────────────────────────────
+const kpis = [
+  { label: 'Total Policies',     value: 147, sub: '12 domains covered', icon: <BookOpen size={20} />,     accent: 'teal' as const, trend: 'up' as const, trendValue: '+3 this month' },
+  { label: 'Overdue Reviews',    value: 8,   sub: 'Action required',    icon: <AlertTriangle size={20} />, accent: 'rust' as const, trend: 'down' as const, trendValue: '−2 resolved'  },
+  { label: 'Pending Approvals',  value: 4,   sub: '2 in final stage',   icon: <CheckCircle2 size={20} />,  accent: 'teal' as const  },
+  { label: 'Active Drafts',      value: 11,  sub: '3 in review',        icon: <FileEdit size={20} />,      accent: 'ink' as const   },
+];
+
+const recentActivity = [
+  { id: 'GV-GB-001', title: 'Governing Body Authority & Responsibilities', status: 'draft' as const,     owner: 'Sarah K.',    date: '2026-03-26', action: 'Updated' },
+  { id: 'HR-ST-003', title: 'Staff Orientation & Training Requirements',    status: 'review' as const,   owner: 'Marcus L.',   date: '2026-03-25', action: 'Submitted for review' },
+  { id: 'CL-IC-007', title: 'Infection Control & Prevention',               status: 'published' as const, owner: 'Diana T.',    date: '2026-03-24', action: 'Published' },
+  { id: 'QA-PI-002', title: 'QAPI Program Structure & Reporting',           status: 'required' as const,  owner: 'Unassigned',  date: '2026-03-20', action: 'Review due' },
+];
+
+const upcomingDeadlines = [
+  { policy: 'GV-OG-002', title: 'Administrator Qualifications',   due: '2026-04-01', type: 'Annual Review',  urgency: 'critical' },
+  { policy: 'CL-PN-005', title: 'Plan of Care Development',       due: '2026-04-10', type: 'Revision Due',   urgency: 'warning'  },
+  { policy: 'HR-RQ-001', title: 'Background Check Policy',        due: '2026-04-15', type: 'Annual Review',  urgency: 'normal'   },
+  { policy: 'QA-AU-003', title: 'Internal Audit Procedures',      due: '2026-04-28', type: 'Pending Draft',  urgency: 'normal'   },
+];
+
+const governanceHealth = [
+  { domain: 'Governance & Administration', total: 18, published: 16, pct: 89 },
+  { domain: 'Clinical Services',           total: 34, published: 28, pct: 82 },
+  { domain: 'Human Resources',             total: 22, published: 19, pct: 86 },
+  { domain: 'Quality & Compliance',        total: 29, published: 21, pct: 72 },
+  { domain: 'Financial Management',        total: 15, published: 12, pct: 80 },
+];
+
+export const Dashboard: React.FC = () => {
+  return (
+    <div className="space-y-8">
+      {/* Hero */}
+      <PageHero
+        eyebrow="CareIndeed Home Health Care, Inc."
+        title="Policy Command Center"
+        subtitle="Executive governance dashboard — all policies, workflows, and compliance deadlines in one place."
+        actions={
+          <>
+            <Btn variant="secondary" size="sm" className="bg-white/20 border-white/30 text-white hover:bg-white/30">
+              <Calendar size={15} />
+              Master Calendar
+            </Btn>
+            <Btn variant="primary" size="sm" className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg">
+              <FileEdit size={15} />
+              New Draft
+            </Btn>
+          </>
+        }
+      />
+
+      {/* Active alert */}
+      <Alert variant="warning" className="flex items-start gap-3">
+        <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" />
+        <span>
+          <strong>8 policies are overdue for annual review.</strong>{' '}
+          CMS survey preparation requires all policies to have active review within 12 months.{' '}
+          <a href="/library?filter=overdue" className="underline font-semibold">View overdue policies →</a>
+        </span>
+      </Alert>
+
+      {/* KPI Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+        {kpis.map((kpi, i) => (
+          <KpiCard key={i} {...kpi} />
+        ))}
+      </div>
+
+      {/* Main content grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        {/* Recent Activity — 2 cols */}
+        <div className="xl:col-span-2 space-y-4">
+          <div className="flex items-center justify-between">
+            <SectionTitle>Recent Activity</SectionTitle>
+            <Btn variant="ghost" size="sm" iconRight={<ArrowRight size={13} />}>View all</Btn>
+          </div>
+
+          <Card className="overflow-hidden">
+            <DataTable headers={['Policy ID', 'Title', 'Status', 'Action', 'Owner', 'Date']}>
+              {recentActivity.map(row => (
+                <TableRow key={row.id} onClick={() => {}}>
+                  <Td><PolicyIdTag id={row.id} /></Td>
+                  <Td className="max-w-[220px]">
+                    <span className="font-medium text-ink-800 line-clamp-2 text-xs leading-relaxed">{row.title}</span>
+                  </Td>
+                  <Td><StatusBadge status={row.status} /></Td>
+                  <Td className="text-ink-500 text-xs">{row.action}</Td>
+                  <Td className="text-ink-500">{row.owner}</Td>
+                  <Td className="text-ink-400 text-xs whitespace-nowrap">{row.date}</Td>
+                </TableRow>
+              ))}
+            </DataTable>
+          </Card>
+        </div>
+
+        {/* Upcoming Deadlines — 1 col */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <SectionTitle>Upcoming Deadlines</SectionTitle>
+            <Btn variant="ghost" size="sm" iconRight={<ArrowRight size={13} />}>Calendar</Btn>
+          </div>
+
+          <div className="space-y-3">
+            {upcomingDeadlines.map((d, i) => (
+              <Card key={i} className="p-4" hover>
+                <div className="flex items-start gap-3">
+                  <div className={`
+                    w-2 h-2 rounded-full mt-1.5 flex-shrink-0
+                    ${d.urgency === 'critical' ? 'bg-red-500'    :
+                      d.urgency === 'warning'  ? 'bg-amber-500'  : 'bg-ink-300'}
+                  `} />
+                  <div className="flex-1 min-w-0">
+                    <PolicyIdTag id={d.policy} className="mb-1" />
+                    <p className="text-xs font-roboto font-medium text-ink-800 leading-snug mt-1">{d.title}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-[10px] font-roboto text-ink-400">{d.type}</span>
+                      <span className={`text-[11px] font-montserrat font-semibold ${
+                        d.urgency === 'critical' ? 'text-red-600'   :
+                        d.urgency === 'warning'  ? 'text-amber-600' : 'text-ink-500'
+                      }`}>
+                        {d.due}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Governance Health */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <SectionTitle>Policy Coverage by Domain</SectionTitle>
+          <Btn variant="ghost" size="sm" iconRight={<ArrowRight size={13} />}>Full report</Btn>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {governanceHealth.map((domain, i) => (
+            <Card key={i} className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <FieldLabel>{domain.domain.split(' ')[0]}</FieldLabel>
+                <span className={`text-sm font-montserrat font-bold ${
+                  domain.pct >= 85 ? 'text-emerald-600' :
+                  domain.pct >= 70 ? 'text-amber-600'   : 'text-red-600'
+                }`}>
+                  {domain.pct}%
+                </span>
+              </div>
+              <div className="h-1.5 bg-ink-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${
+                    domain.pct >= 85 ? 'bg-emerald-500' :
+                    domain.pct >= 70 ? 'bg-amber-500'   : 'bg-red-500'
+                  }`}
+                  style={{ width: `${domain.pct}%` }}
+                />
+              </div>
+              <div className="mt-3 flex items-center justify-between">
+                <span className="text-xs font-roboto text-ink-500">{domain.title}</span>
+                <span className="text-xs font-roboto text-ink-400">{domain.published}/{domain.total}</span>
+              </div>
+              <p className="text-[11px] font-roboto text-ink-400 mt-0.5 leading-tight">{domain.domain}</p>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+PART 4: Policy Library
+src/pages/PolicyLibrary.tsx
+// ============================================================
+// POLICY LIBRARY — Searchable, filterable policy system
+// ============================================================
+
+import React, { useState } from 'react';
+import { BookOpen, Filter, ArrowUpDown, Eye, FileEdit, Printer, Plus } from 'lucide-react';
+import {
+  PageHero, Card, DataTable, TableRow, Td, StatusBadge,
+  SearchInput, FilterSelect, Btn, PolicyIdTag,
+  FieldLabel, SectionTitle, Breadcrumb, EmptyState
+} from '../design-system/primitives';
+
+const policies = [
+  { id: 'GV-GB-001', title: 'Governing Body Authority & Responsibilities', domain: 'Governance', subdomain: 'Governing Body', status: 'draft' as const,     tier: 'Required',  version: 'v6.0', effective: '2025-07-10', nextReview: '2026-07-10', owner: 'Governing Body Chair' },
+  { id: 'GV-OG-002', title: 'Administrator Qualifications & Appointment',   domain: 'Governance', subdomain: 'Operations',     status: 'published' as const, tier: 'Required',  version: 'v4.1', effective: '2024-01-15', nextReview: '2026-04-01', owner: 'Administrator'       },
+  { id: 'CL-SN-001', title: 'Skilled Nursing Assessment Standards',          domain: 'Clinical',   subdomain: 'Nursing',        status: 'published' as const, tier: 'Standard',  version: 'v3.0', effective: '2025-01-10', nextReview: '2026-01-10', owner: 'DON'                 },
+  { id: 'HR-ST-003', title: 'Staff Orientation & Training Requirements',     domain: 'HR',         subdomain: 'Training',       status: 'review' as const,    tier: 'Standard',  version: 'v2.2', effective: '2025-06-01', nextReview: '2026-06-01', owner: 'HR Director'         },
+  { id: 'QA-PI-002', title: 'QAPI Program Structure & Reporting',            domain: 'Quality',    subdomain: 'QAPI',           status: 'required' as const,  tier: 'Required',  version: 'v1.0', effective: '—',          nextReview: '2026-03-30', owner: 'Unassigned'          },
+  { id: 'CL-IC-007', title: 'Infection Control & Prevention Standards',      domain: 'Clinical',   subdomain: 'Infection Ctrl', status: 'published' as const, tier: 'Required',  version: 'v5.1', effective: '2025-03-01', nextReview: '2026-03-01', owner: 'Clinical Manager'    },
+  { id: 'FN-BL-001', title: 'Billing Compliance & Claims Management',        domain: 'Financial',  subdomain: 'Billing',        status: 'approved' as const,  tier: 'Standard',  version: 'v2.0', effective: '2025-10-01', nextReview: '2026-10-01', owner: 'Finance Director'    },
+];
+
+const domainOptions = [
+  { label: 'Governance',  value: 'Governance' },
+  { label: 'Clinical',    value: 'Clinical'   },
+  { label: 'HR',          value: 'HR'         },
+  { label: 'Quality',     value: 'Quality'    },
+  { label: 'Financial',   value: 'Financial'  },
+];
+
+const statusOptions = [
+  { label: 'Published',  value: 'published' },
+  { label: 'Draft',      value: 'draft'     },
+  { label: 'In Review',  value: 'review'    },
+  { label: 'Required',   value: 'required'  },
+  { label: 'Approved',   value: 'approved'  },
+];
+
+const tierOptions = [
+  { label: 'Required', value: 'Required' },
+  { label: 'Standard', value: 'Standard' },
+  { label: 'Advisory', value: 'Advisory' },
+];
+
+export const PolicyLibrary: React.FC = () => {
+  const [search, setSearch] = useState('');
+  const [domain, setDomain] = useState('');
+  const [status, setStatus] = useState('');
+  const [tier, setTier] = useState('');
+  const [view, setView] = useState<'table' | 'card'>('table');
+
+  const filtered = policies.filter(p =>
+    (!search || p.title.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase())) &&
+    (!domain || p.domain === domain) &&
+    (!status || p.status === status) &&
+    (!tier || p.tier === tier)
+  );
+
+  return (
+    <div className="space-y-7">
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Policy Library' }]} />
+
+      <PageHero
+        eyebrow="Document Control"
+        title="Policy Library"
+        subtitle={`${policies.length} policies across 5 domains — governed, versioned, and survey-ready.`}
+        actions={
+          <Btn variant="primary" size="md" className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg">
+            <Plus size={15} />
+            New Policy
+          </Btn>
+        }
+      />
+
+      {/* Filter bar */}
+      <Card className="p-5">
+        <div className="flex flex-wrap items-center gap-3">
+          <SearchInput
+            placeholder="Search by title or ID…"
+            value={search}
+            onChange={setSearch}
+            className="flex-1 min-w-[200px]"
+          />
+          <FilterSelect value={domain} onChange={setDomain} options={domainOptions} placeholder="All Domains" className="min-w-[150px]" />
+          <FilterSelect value={status} onChange={setStatus} options={statusOptions} placeholder="All Statuses" className="min-w-[140px]" />
+          <FilterSelect value={tier}   onChange={setTier}   options={tierOptions}   placeholder="All Tiers"    className="min-w-[130px]" />
+
+          {(search || domain || status || tier) && (
+            <Btn variant="ghost" size="sm" onClick={() => { setSearch(''); setDomain(''); setStatus(''); setTier(''); }}>
+              Clear filters
+            </Btn>
+          )}
+
+          <div className="ml-auto flex items-center gap-1 bg-ink-100 rounded-lg p-1">
+            <button
+              onClick={() => setView('table')}
+              className={`p-1.5 rounded-md transition-colors ${view === 'table' ? 'bg-white shadow-sm text-teal-600' : 'text-ink-400 hover:text-ink-600'}`}
+            >
+              <ArrowUpDown size={15} />
+            </button>
+            <button
+              onClick={() => setView('card')}
+              className={`p-1.5 rounded-md transition-colors ${view === 'card' ? 'bg-white shadow-sm text-teal-600' : 'text-ink-400 hover:text-ink-600'}`}
+            >
+              <Filter size={15} />
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center gap-3">
+          <span className="text-xs font-roboto text-ink-400">
+            Showing <strong className="text-ink-700">{filtered.length}</strong> of {policies.length} policies
+          </span>
+        </div>
+      </Card>
+
+      {/* Table view */}
+      {view === 'table' && (
+        <Card className="overflow-hidden">
+          <DataTable headers={['Policy ID', 'Title', 'Domain', 'Status', 'Tier', 'Version', 'Effective', 'Next Review', 'Actions']}>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={9}>
+                  <EmptyState
+                    icon={<BookOpen size={28} />}
+                    title="No policies found"
+                    description="Adjust your filters or search term."
+                  />
+                </td>
+              </tr>
+            ) : filtered.map(p => (
+              <TableRow key={p.id} onClick={() => {}}>
+                <Td><PolicyIdTag id={p.id} /></Td>
+                <Td className="max-w-[260px]">
+                  <div>
+                    <p className="font-medium text-ink-800 text-xs leading-relaxed">{p.title}</p>
+                    <p className="text-[10px] text-ink-400 mt-0.5">{p.subdomain}</p>
+                  </div>
+                </Td>
+                <Td>
+                  <span className="text-xs font-montserrat font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">
+                    {p.domain}
+                  </span>
+                </Td>
+                <Td><StatusBadge status={p.status} /></Td>
+                <Td>
+                  <span className={`text-[11px] font-montserrat font-semibold px-2 py-0.5 rounded-md ${
+                    p.tier === 'Required' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-ink-100 text-ink-600 border border-ink-200'
+                  }`}>
+                    {p.tier}
+                  </span>
+                </Td>
+                <Td className="font-mono text-xs text-ink-500">{p.version}</Td>
+                <Td className="text-xs text-ink-500 whitespace-nowrap">{p.effective}</Td>
+                <Td className="text-xs text-ink-500 whitespace-nowrap">{p.nextReview}</Td>
+                <Td>
+                  <div className="flex items-center gap-1">
+                    <button className="p-1.5 rounded-lg hover:bg-teal-50 text-ink-400 hover:text-teal-600 transition-colors" title="View">
+                      <Eye size={14} />
+                    </button>
+                    <button className="p-1.5 rounded-lg hover:bg-ink-100 text-ink-400 hover:text-ink-600 transition-colors" title="Edit">
+                      <FileEdit size={14} />
+                    </button>
+                    <button className="p-1.5 rounded-lg hover:bg-ink-100 text-ink-400 hover:text-ink-600 transition-colors" title="Print">
+                      <Printer size={14} />
+                    </button>
+                  </div>
+                </Td>
+              </TableRow>
+            ))}
+          </DataTable>
+        </Card>
+      )}
+
+      {/* Card view */}
+      {view === 'card' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {filtered.map(p => (
+            <Card key={p.id} className="p-6 flex flex-col gap-4" hover>
+              <div className="flex items-start justify-between gap-2">
+                <PolicyIdTag id={p.id} />
+                <StatusBadge status={p.status} />
+              </div>
+              <h3 className="font-montserrat text-sm font-semibold text-ink-800 leading-snug">{p.title}</h3>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div><FieldLabel>Domain</FieldLabel><br /><span className="text-ink-700 font-medium">{p.domain}</span></div>
+                <div><FieldLabel>Tier</FieldLabel><br /><span className="text-ink-700 font-medium">{p.tier}</span></div>
+                <div><FieldLabel>Version</FieldLabel><br /><span className="font-mono text-ink-700">{p.version}</span></div>
+                <div><FieldLabel>Next Review</FieldLabel><br /><span className="text-ink-700">{p.nextReview}</span></div>
+              </div>
+              <div className="flex items-center gap-2 mt-auto pt-2 border-t border-ink-100">
+                <Btn variant="ghost" size="sm" icon={<Eye size={13} />}>View</Btn>
+                <Btn variant="ghost" size="sm" icon={<FileEdit size={13} />}>Edit</Btn>
+                <Btn variant="ghost" size="sm" icon={<Printer size={13} />} className="ml-auto">Print</Btn>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+PART 5: Policy Detail Page
+src/pages/PolicyDetail.tsx
+import * as React from "react";
+import { useMemo, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import {
+  AppShell,
+  Badge,
+  Button,
+  Card,
+  Container,
+  Divider,
+  DS,
+  Grid,
+  Heading,
+  Inline,
+  Input,
+  KeyValue,
+  Label,
+  Spacer,
+  Stack,
+  Stat,
+  Text,
+  TextArea,
+} from "../design-system/primitives";
+
+type PolicyStatus = "Active" | "Draft" | "Needs Review" | "Archived";
+type Severity = "Low" | "Medium" | "High";
+
+type Policy = {
+  id: string;
+  title: string;
+  status: PolicyStatus;
+  owner: string;
+  lastUpdated: string;
+  version: string;
+  scope: string;
+  summary: string;
+  lastReview: string;
+  nextReview: string;
+  risk: Severity;
+  controlsMapped: number;
+  exceptionsOpen: number;
+  attestationsDue: number;
+  tags: string[];
+};
+
+function statusIntent(s: PolicyStatus) {
+  switch (s) {
+    case "Active":
+      return "success" as const;
+    case "Draft":
+      return "neutral" as const;
+    case "Needs Review":
+      return "warning" as const;
+    case "Archived":
+      return "danger" as const;
+  }
+}
+
+function severityIntent(s: Severity) {
+  switch (s) {
+    case "Low":
+      return "success" as const;
+    case "Medium":
+      return "warning" as const;
+    case "High":
+      return "danger" as const;
+  }
+}
+
+const MOCK_POLICIES: Policy[] = [
+  {
+    id: "POL-1024",
+    title: "HIPAA Privacy & Minimum Necessary",
+    status: "Needs Review",
+    owner: "Compliance Team",
+    lastUpdated: "2026-02-18",
+    version: "v3.4",
+    scope: "All PHI handling across CareIndeed systems",
+    summary:
+      "Defines permitted uses/disclosures, minimum necessary standards, workforce training requirements, and breach escalation procedures.",
+    lastReview: "2025-02-20",
+    nextReview: "2026-03-31",
+    risk: "High",
+    controlsMapped: 18,
+    exceptionsOpen: 2,
+    attestationsDue: 14,
+    tags: ["HIPAA", "Privacy", "PHI"],
+  },
+  {
+    id: "POL-0877",
+    title: "Vendor Risk Management",
+    status: "Active",
+    owner: "Security",
+    lastUpdated: "2026-01-05",
+    version: "v2.1",
+    scope: "Third-party vendors and subcontractors",
+    summary: "Covers onboarding, SOC evidence collection, contractual clauses, and continuous monitoring.",
+    lastReview: "2026-01-05",
+    nextReview: "2027-01-05",
+    risk: "Medium",
+    controlsMapped: 12,
+    exceptionsOpen: 0,
+    attestationsDue: 3,
+    tags: ["Vendors", "Security", "Due Diligence"],
+  },
+];
+
+export default function PolicyDetail() {
+  const params = useParams();
+  const policyId = (params as any)?.policyId ?? (params as any)?.id ?? "POL-1024";
+
+  const policy = useMemo(() => {
+    const found = MOCK_POLICIES.find((p) => p.id === policyId);
+    return found ?? MOCK_POLICIES[0];
+  }, [policyId]);
+
+  const [note, setNote] = useState("");
+  const [changeSummary, setChangeSummary] = useState("");
+
+  return (
+    <AppShell>
+      <Container>
+        <Stack gap={DS.space[6]}>
+          {/* Top bar */}
+          <Inline justify="space-between" wrap gap={DS.space[4]} align="flex-start">
+            <Stack gap={10}>
+              <Inline gap={10} wrap>
+                <Link to="/governance" style={{ color: DS.color.muted, textDecoration: "none", fontWeight: 800 }}>
+                  ← Governance
+                </Link>
+                <Text muted>•</Text>
+                <Text mono muted>
+                  {policy.id}
+                </Text>
+              </Inline>
+
+              <Heading as="h1" size={34}>
+                {policy.title}
+              </Heading>
+
+              <Inline gap={10} wrap>
+                <Badge intent={statusIntent(policy.status)}>{policy.status}</Badge>
+                <Badge intent={severityIntent(policy.risk)}>Risk: {policy.risk}</Badge>
+                {policy.tags.map((t) => (
+                  <Badge key={t} intent="neutral">
+                    {t}
+                  </Badge>
+                ))}
+              </Inline>
+            </Stack>
+
+            <Inline gap={10} wrap justify="flex-end">
+              <Button intent="primary" variant="solid">
+                Publish update
+              </Button>
+              <Button intent="accent" variant="outline">
+                Request exception
+              </Button>
+              <Button intent="neutral" variant="ghost">
+                Export PDF
+              </Button>
+            </Inline>
+          </Inline>
+
+          {/* Stats row */}
+          <Grid columns="repeat(12, minmax(0, 1fr))" gap={DS.space[4]}>
+            <div style={{ gridColumn: "span 4" }}>
+              <Stat label="Controls mapped" value={policy.controlsMapped} hint="Mapped to internal control library" intent="primary" />
+            </div>
+            <div style={{ gridColumn: "span 4" }}>
+              <Stat label="Open exceptions" value={policy.exceptionsOpen} hint="Requires resolution/approval" intent={policy.exceptionsOpen ? "warning" : "success"} />
+            </div>
+            <div style={{ gridColumn: "span 4" }}>
+              <Stat label="Attestations due" value={policy.attestationsDue} hint="Pending this quarter" intent={policy.attestationsDue ? "warning" : "success"} />
+            </div>
+          </Grid>
+
+          {/* Main content */}
+          <Grid columns="repeat(12, minmax(0, 1fr))" gap={DS.space[4]}>
+            {/* Left / main */}
+            <div style={{ gridColumn: "span 8" }}>
+              <Stack gap={DS.space[4]}>
+                <Card title="Policy overview" subtitle="Summary, scope, and review cadence">
+                  <Stack gap={DS.space[4]}>
+                    <Text size={15} style={{ lineHeight: 1.6 }}>
+                      {policy.summary}
+                    </Text>
+
+                    <Divider />
+
+                    <Stack gap={0}>
+                      <KeyValue k="Owner" v={<Text weight={800}>{policy.owner}</Text>} />
+                      <Divider />
+                      <KeyValue k="Scope" v={<Text muted>{policy.scope}</Text>} />
+                      <Divider />
+                      <KeyValue k="Version" v={<Text mono>{policy.version}</Text>} />
+                      <Divider />
+                      <KeyValue k="Last updated" v={<Text mono muted>{policy.lastUpdated}</Text>} />
+                      <Divider />
+                      <KeyValue k="Last review" v={<Text mono muted>{policy.lastReview}</Text>} />
+                      <Divider />
+                      <KeyValue k="Next review" v={<Badge intent="warning">{policy.nextReview}</Badge>} />
+                    </Stack>
+                  </Stack>
+                </Card>
+
+                <Card
+                  title="Change request"
+                  subtitle="Describe what you’re updating and why (audit-friendly)"
+                  right={<Badge intent="neutral">Draft</Badge>}
+                >
+                  <Stack gap={DS.space[4]}>
+                    <div>
+                      <Label>Change summary</Label>
+                      <Input
+                        placeholder="e.g., Updated breach escalation timeline to 24h internal notice"
+                        value={changeSummary}
+                        onChange={(e) => setChangeSummary(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Notes / justification</Label>
+                      <TextArea
+                        placeholder="Include references, ticket IDs, or regulatory updates."
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                      />
+                    </div>
+
+                    <Inline justify="flex-end" wrap>
+                      <Button intent="neutral" variant="outline">
+                        Save draft
+                      </Button>
+                      <Button intent="primary" variant="solid">
+                        Submit for review
+                      </Button>
+                    </Inline>
+
+                    <Text muted size={12}>
+                      Tip: Keep changes tied to evidence (tickets, vendor docs, regulatory updates) to speed approvals.
+                    </Text>
+                  </Stack>
+                </Card>
+              </Stack>
+            </div>
+
+            {/* Right / sidebar */}
+            <div style={{ gridColumn: "span 4" }}>
+              <Stack gap={DS.space[4]}>
+                <Card title="Governance actions" subtitle="Common workflows for this policy">
+                  <Stack gap={DS.space[3]}>
+                    <Button intent="primary" variant="outline">
+                      Start annual review
+                    </Button>
+                    <Button intent="accent" variant="outline">
+                      Create exception request
+                    </Button>
+                    <Button intent="neutral" variant="outline">
+                      Link controls
+                    </Button>
+                    <Button intent="neutral" variant="outline">
+                      Assign attestation
+                    </Button>
+                  </Stack>
+                </Card>
+
+                <Card title="Health checks" subtitle="Quick signals for risk & hygiene">
+                  <Stack gap={DS.space[3]}>
+                    <Inline justify="space-between">
+                      <Text muted>Review overdue</Text>
+                      <Badge intent={policy.status === "Needs Review" ? "warning" : "success"}>
+                        {policy.status === "Needs Review" ? "Yes" : "No"}
+                      </Badge>
+                    </Inline>
+                    <Inline justify="space-between">
+                      <Text muted>Exceptions open</Text>
+                      <Badge intent={policy.exceptionsOpen ? "warning" : "success"}>{policy.exceptionsOpen}</Badge>
+                    </Inline>
+                    <Inline justify="space-between">
+                      <Text muted>Attestations due</Text>
+                      <Badge intent={policy.attestationsDue ? "warning" : "success"}>{policy.attestationsDue}</Badge>
+                    </Inline>
+                  </Stack>
+
+                  <Spacer y={DS.space[4]} />
+                  <Divider />
+                  <Spacer y={DS.space[4]} />
+
+                  <Text muted size={12}>
+                    These indicators are placeholders—wire them to your real sources (GRC tasks, Jira, evidence store) when ready.
+                  </Text>
+                </Card>
+              </Stack>
+            </div>
+          </Grid>
+        </Stack>
+      </Container>
+    </AppShell>
+  );
+}
+
+
+PART 6: Print Architecture
+src/print/PrintLayout.tsx
+import React from 'react';
+
+export const GLOBAL_PRINT_CSS = `
+@media print {
+  @page {
+    size: letter;
+    margin: 0.75in 0.75in 0.85in 0.75in;
+  }
+
+  @page :first {
+    margin-top: 0.5in;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  [class*="backdrop-blur"],
+  [class*="bg-white/"] {
+    backdrop-filter: none !important;
+    background: white !important;
+  }
+
+  .no-print,
+  header,
+  nav,
+  aside,
+  .print-hide {
+    display: none !important;
+  }
+
+  body {
+    font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+    font-size: 10pt;
+    line-height: 1.6;
+    color: #111316;
+    background: white;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Montserrat', 'Helvetica Neue', sans-serif;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  .print-page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  .print-keep-together {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .print-section {
+    page-break-before: auto;
+    break-before: auto;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    page-break-inside: auto;
+    break-inside: auto;
+    font-size: 9pt;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  th {
+    background-color: #007970 !important;
+    color: white !important;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8pt 10pt;
+    text-align: left;
+    border: 1px solid #005f58;
+  }
+
+  td {
+    padding: 7pt 10pt;
+    border: 1px solid #e5e7eb;
+    font-size: 9pt;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td {
+    background-color: #f9fafb;
+  }
+
+  a {
+    color: #007970;
+    text-decoration: none;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="email"] {
+    border: none;
+    border-bottom: 1px solid #374151;
+    background: transparent;
+    font-size: 9pt;
+    padding: 2pt 0;
+    width: 100%;
+    min-width: 60pt;
+  }
+
+  select {
+    border: 1px solid #374151;
+    background: transparent;
+    font-size: 9pt;
+    padding: 2pt 4pt;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input[type="checkbox"] {
+    width: 12pt;
+    height: 12pt;
+    border: 1.5pt solid #374151;
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+`;
+
+export const PrintCoverPage: React.FC<{
+  title: string;
+  policyId: string;
+  version: string;
+  effectiveDate: string;
+  status: string;
+  tier: string;
+  domain: string;
+  approvedBy: string;
+  nextReview: string;
+  printDate?: string;
+}> = ({
+  title, policyId, version, effectiveDate, status, tier,
+  domain, approvedBy, nextReview,
+  printDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+}) => (
+  <div className="print-page-break" style={{ minHeight: '9in', display: 'flex', flexDirection: 'column' }}>
+    <div style={{
+      background: '#007970',
+      color: 'white',
+      padding: '32pt 40pt',
+      marginBottom: '32pt',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24pt' }}>
+        <div style={{ marginRight: '16pt' }}>
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="16" r="8" stroke="#C74600" strokeWidth="2.5" fill="none" />
+            <path d="M10 40 Q12 28 24 26 Q36 28 38 40" stroke="#C74600" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+            <path d="M6 44 Q8 30 24 28 Q40 30 42 44" stroke="#C74600" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
+          </svg>
+        </div>
+        <div>
+          <div style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '18pt', fontWeight: 700, lineHeight: 1.2 }}>
+            CareIndeed
+          </div>
+          <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: '9pt', opacity: 0.8, marginTop: '2pt' }}>
+            The Heart of Home Health.
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '8pt', marginBottom: '12pt' }}>
+        <span style={{
+          fontFamily: 'monospace',
+          fontSize: '9pt',
+          background: 'rgba(255,255,255,0.2)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          padding: '3pt 8pt',
+          borderRadius: '4pt',
+          fontWeight: 600,
+          letterSpacing: '0.05em',
+        }}>
+          {policyId}
+        </span>
+        <span style={{
+          fontSize: '8pt',
+          background: status === 'published' ? '#059669' : '#d97706',
+          color: 'white',
+          padding: '3pt 8pt',
+          borderRadius: '4pt',
+          fontWeight: 700,
+          textTransform: 'uppercase' as const,
+          letterSpacing: '0.08em',
+        }}>
+          {status.toUpperCase()}
+        </span>
+        <span style={{
+          fontSize: '8pt',
+          background: 'rgba(199,70,0,0.85)',
+          color: 'white',
+          padding: '3pt 8pt',
+          borderRadius: '4pt',
+          fontWeight: 700,
+          textTransform: 'uppercase' as const,
+          letterSpacing: '0.08em',
+        }}>
+          {tier}
+        </span>
+      </div>
+
+      <h1 style={{
+        fontFamily: 'Montserrat, sans-serif',
+        fontSize: '24pt',
+        fontWeight: 800,
+        color: 'white',
+        margin: 0,
+        lineHeight: 1.2,
+        maxWidth: '500pt',
+      }}>
+        {title}
+      </h1>
+    </div>
+
+    <div style={{ padding: '0', flex: 1 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '24pt' }}>
+        <tbody>
+          {[
+            ['Domain',         domain,        'Tier',          tier        ],
+            ['Approved By',    approvedBy,    'Supersedes',    'N/A'       ],
+            ['Effective Date', effectiveDate, 'Last Reviewed', effectiveDate],
+            ['Next Review',    nextReview,    'Version',       version     ],
+          ].map((row, i) => (
+            <tr key={i} style={{ borderBottom: '1px solid #e5e7eb' }}>
+              <td style={{ padding: '8pt 12pt', fontFamily: 'Montserrat, sans-serif', fontSize: '7pt', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#6b7280', width: '80pt', background: '#f9fafb' }}>
+                {row[0]}
+              </td>
+              <td style={{ padding: '8pt 12pt', fontFamily: 'Roboto, sans-serif', fontSize: '10pt', fontWeight: 500, color: '#111316', width: '180pt' }}>
+                {row[1]}
+              </td>
+              <td style={{ padding: '8pt 12pt', fontFamily: 'Montserrat, sans-serif', fontSize: '7pt', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#6b7280', width: '80pt', background: '#f9fafb' }}>
+                {row[2]}
+              </td>
+              <td style={{ padding: '8pt 12pt', fontFamily: 'Roboto, sans-serif', fontSize: '10pt', fontWeight: 500, color: '#111316' }}>
+                {row[3]}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div style={{
+        borderTop: '2px solid #007970',
+        paddingTop: '12pt',
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginTop: 'auto',
+      }}>
+        <span style={{ fontFamily: 'Roboto, sans-serif', fontSize: '8pt', color: '#6b7280' }}>
+          Care Indeed Home Health Care, Inc.
+        </span>
+        <span style={{ fontFamily: 'Roboto, sans-serif', fontSize: '8pt', color: '#6b7280' }}>
+          Printed: {printDate}
+        </span>
+      </div>
+    </div>
+  </div>
+);
+
+export const PrintSection: React.FC<{
+  number: string;
+  title: string;
+  children: React.ReactNode;
+  breakBefore?: boolean;
+}> = ({ number, title, children, breakBefore = false }) => (
+  <div
+    className="print-section"
+    style={{
+      pageBreakBefore: breakBefore ? 'always' : 'auto',
+      marginBottom: '24pt',
+    }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8pt', marginBottom: '10pt' }}>
+      <h2 style={{
+        fontFamily: 'Montserrat, sans-serif',
+        fontSize: '14pt',
+        fontWeight: 700,
+        color: '#111316',
+        margin: 0,
+      }}>
+        {number}. {title}
+      </h2>
+      <div style={{ flex: 1, height: '2pt', background: '#007970' }} />
+    </div>
+    <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: '10pt', lineHeight: 1.65, color: '#1c2124' }}>
+      {children}
+    </div>
+  </div>
+);
+
+export const PrintAppendixCover: React.FC<{
+  letter: string;
+  title: string;
+  policyId: string;
+  policyTitle: string;
+  version: string;
+  effectiveDate: string;
+}> = ({ letter, title, policyId, policyTitle, version, effectiveDate }) => (
+  <div style={{ pageBreakBefore: 'always', paddingTop: '24pt' }}>
+    <div style={{
+      borderLeft: '4pt solid #007970',
+      paddingLeft: '16pt',
+      marginBottom: '24pt',
+    }}>
+      <div style={{
+        fontFamily: 'Montserrat, sans-serif',
+        fontSize: '8pt',
+        fontWeight: 600,
+        textTransform: 'uppercase' as const,
+        letterSpacing: '0.12em',
+        color: '#007970',
+        marginBottom: '4pt',
+      }}>
+        Appendix {letter} — {policyId}
+      </div>
+      <h1 style={{
+        fontFamily: 'Montserrat, sans-serif',
+        fontSize: '20pt',
+        fontWeight: 800,
+        color: '#111316',
+        margin: 0,
+        lineHeight: 1.2,
+      }}>
+        {title}
+      </h1>
+      <div style={{
+        fontFamily: 'Roboto, sans-serif',
+        fontSize: '8pt',
+        color: '#6b7280',
+        marginTop: '6pt',
+        fontStyle: 'italic',
+      }}>
+        Care Indeed Home Health Care, Inc. · Policy {policyId} · Version {version} · {effectiveDate}
+      </div>
+    </div>
+  </div>
+);
+
+PART 7: Appendix / Form Views
+src/pages/AppendixView.tsx
+// ============================================================
+// APPENDIX / FORM VIEW — First-class governed assets
+// Screen: premium | Print: official document-grade
+// ============================================================
+
+import React, { useRef } from 'react';
+import { Printer, ArrowLeft, Download, Info } from 'lucide-react';
+import { Card, Btn, PolicyIdTag, Breadcrumb, FieldLabel, Alert } from '../design-system/primitives';
+import { PrintAppendixCover } from '../print/PrintLayout';
+
+// ─── Screen form field primitives ────────────────────────────
+const FormField: React.FC<{
+  label?: string;
+  placeholder?: string;
+  type?: string;
+  className?: string;
+}> = ({ label, placeholder = '', type = 'text', className = '' }) => (
+  <div className={`flex flex-col gap-1 ${className}`}>
+    {label && <FieldLabel>{label}</FieldLabel>}
+    <input
+      type={type}
+      placeholder={placeholder}
+      className="
+        w-full px-3 py-2.5 rounded-xl
+        bg-white border border-ink-200
+        text-sm font-roboto text-ink-800 placeholder-ink-300
+        focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400
+        transition-all duration-200
+      "
+    />
+  </div>
+);
+
+const FormSelect: React.FC<{
+  label?: string;
+  options: string[];
+  className?: string;
+}> = ({ label, options, className = '' }) => (
+  <div className={`flex flex-col gap-1 ${className}`}>
+    {label && <FieldLabel>{label}</FieldLabel>}
+    <select className="
+      w-full px-3 py-2.5 rounded-xl
+      bg-white border border-ink-200
+      text-sm font-roboto text-ink-800
+      focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400
+      appearance-none cursor-pointer
+      transition-all duration-200
+    ">
+      {options.map(o => <option key={o}>{o}</option>)}
+    </select>
+  </div>
+);
+
+const FormCheckbox: React.FC<{
+  label: string;
+  className?: string;
+}> = ({ label, className = '' }) => (
+  <label className={`flex items-center gap-3 cursor-pointer group ${className}`}>
+    <div className="
+      w-5 h-5 rounded-md border-2 border-ink-300
+      group-hover:border-teal-500
+      flex items-center justify-center flex-shrink-0
+      transition-colors duration-200
+    ">
+      <input type="checkbox" className="sr-only" />
+    </div>
+    <span className="text-sm font-roboto text-ink-700">{label}</span>
+  </label>
+);
+
+// ─── Governing Body Membership Roster ────────────────────────
+export const AppendixGoverningBodyRoster: React.FC = () => {
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const rosterHeaders = [
+    '#', 'Full Legal Name', 'Title / Role', 'Voting Status',
+    'Appt Date', 'Term Exp', 'Competency Area', 'Email Address', 'OIG/SAM?',
+  ];
+
+  const totalRows = 7;
+
+  return (
+    <div>
+      {/* Screen view */}
+      <div className="print-hide space-y-6">
+        <Breadcrumb items={[
+          { label: 'Home', href: '/' },
+          { label: 'Policy Library', href: '/library' },
+          { label: 'GV-GB-001', href: '/library/GV-GB-001' },
+          { label: 'Appendix A' },
+        ]} />
+
+        {/* Top actions */}
+        <div className="flex items-center justify-between gap-4">
+          <Btn variant="ghost" size="sm" icon={<ArrowLeft size={14} />}>Back to Policy</Btn>
+          <div className="flex items-center gap-2">
+            <Btn variant="secondary" size="sm" icon={<Download size={13} />}>Export</Btn>
+            <Btn variant="primary" size="sm" icon={<Printer size={14} />} onClick={handlePrint}>
+              Print Roster
+            </Btn>
+          </div>
+        </div>
+
+        {/* Header card */}
+        <Card className="overflow-hidden">
+          <div className="h-2 bg-gradient-to-r from-teal-600 to-teal-400" />
+          <div className="p-8">
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-teal-600 text-white font-montserrat font-bold text-lg flex items-center justify-center">
+                    A
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-montserrat font-semibold uppercase tracking-widest text-ink-400">
+                      Appendix A — GV-GB-001
+                    </div>
+                    <h1 className="font-montserrat text-2xl font-bold text-ink-900 leading-tight">
+                      Governing Body Membership Roster
+                    </h1>
+                  </div>
+                </div>
+                <div className="text-xs font-roboto text-ink-500 italic">
+                  Care Indeed Home Health Care, Inc. · Policy GV-GB-001 · Version 6.0 · 2025-07-10
+                </div>
+              </div>
+              <PolicyIdTag id="GV-GB-001" />
+            </div>
+          </div>
+        </Card>
+
+        {/* Instructions */}
+        <Alert variant="info">
+          <div className="flex items-start gap-2">
+            <Info size={15} className="mt-0.5 flex-shrink-0" />
+            <span>
+              <strong>Instructions:</strong> The Governing Body Chair (or designee) shall update this
+              roster within 7 calendar days of any membership change. A copy shall be maintained in
+              the agency governance file and provided to the Administrator. This roster must be
+              readily accessible for CMS survey review.
+            </span>
+          </div>
+        </Alert>
+
+        {/* Roster table */}
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse min-w-[900px]">
+              <thead>
+                <tr className="bg-teal-600">
+                  {rosterHeaders.map((h, i) => (
+                    <th
+                      key={i}
+                      className="px-4 py-3.5 text-left text-[10px] font-montserrat font-semibold uppercase tracking-widest text-white border-r border-teal-500 last:border-r-0 whitespace-nowrap"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink-100">
+                {Array.from({ length: totalRows }, (_, i) => (
+                  <tr key={i} className={i % 2 === 1 ? 'bg-ink-50/40' : 'bg-white'}>
+                    <td className="px-4 py-3 text-center">
+                      <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 font-montserrat font-bold text-xs flex items-center justify-center mx-auto">
+                        {i + 1}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3"><FormField placeholder="Full legal name" /></td>
+                    <td className="px-4 py-3"><FormField placeholder="Title or role" /></td>
+                    <td className="px-4 py-3">
+                      <FormSelect label="" options={['Voting', 'Non-Voting', 'Advisory']} />
+                    </td>
+                    <td className="px-4 py-3"><FormField type="date" /></td>
+                    <td className="px-4 py-3"><FormField type="date" /></td>
+                    <td className="px-4 py-3"><FormField placeholder="Area of expertise" /></td>
+                    <td className="px-4 py-3"><FormField type="email" placeholder="email@example.com" /></td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex justify-center">
+                        <div className="w-5 h-5 rounded-md border-2 border-ink-300 flex-shrink-0" />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+        {/* Certification footer */}
+        <Card className="p-6">
+          <h3 className="font-montserrat text-sm font-semibold text-ink-800 mb-5">Certification & Signature</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <FormField label="Roster Maintained By" placeholder="Full name" />
+              <FormField label="Title" placeholder="Position title" />
+            </div>
+            <div className="space-y-4">
+              <FormField label="Date Last Updated" type="date" />
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="Quorum Requirement (of)" placeholder="e.g. 3" />
+                <FormField label="Total Voting Members" placeholder="e.g. 5" />
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-ink-100 grid grid-cols-2 gap-6">
+            <div>
+              <FieldLabel>Authorized Signature</FieldLabel>
+              <div className="mt-3 h-14 border-b-2 border-ink-300 rounded-t-sm" />
+            </div>
+            <FormField label="Non-Voting / Advisory Count" placeholder="Count" />
+          </div>
+        </Card>
+      </div>
+
+      {/* ─── PRINT VIEW ──────────────────────────────────────── */}
+      <div className="hidden print:block" ref={printRef}>
+        <style>{`
+          @media print {
+            @page { size: letter landscape; margin: 0.6in; }
+            body { font-family: 'Roboto', sans-serif; }
+            .print-roster-table th {
+              background-color: #007970 !important;
+              color: white !important;
+              font-size: 8pt;
+              font-family: 'Montserrat', sans-serif;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              padding: 7pt 8pt;
+              border: 1px solid #005f58;
+              text-align: left;
+            }
+            .print-roster-table td {
+              padding: 6pt 8pt;
+              border: 1pt solid #d1d5db;
+              font-size: 9pt;
+              vertical-align: middle;
+            }
+            .print-roster-table tr:nth-child(even) td {
+              background-color: #f9fafb;
+            }
+            .print-form-line {
+              display: inline-block;
+              border-bottom: 1pt solid #374151;
+              min-width: 120pt;
+            }
+            .print-checkbox {
+              display: inline-block;
+              width: 12pt;
+              height: 12pt;
+              border: 1.5pt solid #374151;
+            }
+          }
+        `}</style>
+
+        {/* Print header */}
+        <div style={{ textAlign: 'center', marginBottom: '24pt' }}>
+          {/* Logo text representation */}
+          <div style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '18pt', fontWeight: 800, color: '#111316', letterSpacing: '-0.02em' }}>
+            CareIndeed
+          </div>
+          <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: '9pt', color: '#6b7280', fontStyle: 'italic', marginTop: '2pt' }}>
+            The Heart of Home Health.
+          </div>
+
+          <div style={{ height: '2pt', background: '#007970', margin: '16pt 0 10pt' }} />
+
+          <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '18pt', fontWeight: 800, margin: '0 0 6pt', color: '#111316' }}>
+            Governing Body Membership Roster
+          </h1>
+          <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: '9pt', color: '#6b7280', fontStyle: 'italic' }}>
+            Care Indeed Home Health Care, Inc. · Policy GV-GB-001 · Version 6.0 · 2025-07-10
+          </div>
+          <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: '8pt', color: '#9ca3af', marginTop: '4pt' }}>
+            Printed: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+
+          <div style={{ height: '1pt', background: '#e5e7eb', margin: '12pt 0' }} />
+        </div>
+
+        {/* Print instructions */}
+        <div style={{
+          border: '1pt solid #bfdbfe',
+          background: '#eff6ff',
+          borderRadius: '6pt',
+          padding: '10pt 14pt',
+          marginBottom: '18pt',
+          fontSize: '9pt',
+          fontFamily: 'Roboto, sans-serif',
+          lineHeight: 1.5,
+          color: '#1e40af',
+        }}>
+          <strong>Instructions:</strong> The Governing Body Chair (or designee) shall update this roster
+          within 7 calendar days of any membership change. A copy shall be maintained in the agency
+          governance file and provided to the Administrator. This roster must be readily accessible
+          for CMS survey review.
+        </div>
+
+        {/* Print roster table — fixed width columns, no overflow */}
+        <table className="print-roster-table" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '22pt' }} />
+            <col style={{ width: '100pt' }} />
+            <col style={{ width: '80pt' }} />
+            <col style={{ width: '55pt' }} />
+            <col style={{ width: '55pt' }} />
+            <col style={{ width: '55pt' }} />
+            <col style={{ width: '80pt' }} />
+            <col style={{ width: '100pt' }} />
+            <col style={{ width: '40pt' }} />
+          </colgroup>
+          <thead>
+            <tr>
+              {['#', 'Full Legal Name', 'Title / Role', 'Voting Status', 'Appt Date', 'Term Exp', 'Competency Area', 'Email Address', 'OIG/SAM?'].map((h, i) => (
+                <th key={i}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: 7 }, (_, i) => (
+              <tr key={i}>
+                <td style={{ textAlign: 'center', fontWeight: 700, color: '#374151' }}>{i + 1}</td>
+                <td><span className="print-form-line" style={{ minWidth: '90pt' }}>&nbsp;</span></td>
+                <td><span className="print-form-line" style={{ minWidth: '70pt' }}>&nbsp;</span></td>
+                <td style={{ textAlign: 'center' }}>
+                  <select style={{ border: '1pt solid #374151', fontSize: '8pt', width: '90%', background: 'transparent' }}>
+                    <option>Voting</option>
+                    <option>Non-Voting</option>
+                    <option>Advisory</option>
+                  </select>
+                </td>
+                <td><span className="print-form-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
+                <td><span className="print-form-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
+                <td><span className="print-form-line" style={{ minWidth: '70pt' }}>&nbsp;</span></td>
+                <td><span className="print-form-line" style={{ minWidth: '90pt' }}>&nbsp;</span></td>
+                <td style={{ textAlign: 'center' }}>
+                  <span className="print-checkbox">&nbsp;</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Print certification block */}
+        <div style={{ marginTop: '20pt', padding: '14pt', border: '1pt solid #d1d5db', borderRadius: '6pt' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12pt', marginBottom: '12pt' }}>
+            <div>
+              <div style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '7pt', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: '4pt' }}>
+                Roster Maintained By
+              </div>
+              <span className="print-form-line" style={{ minWidth: '160pt' }}>&nbsp;</span>
+            </div>
+            <div>
+              <div style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '7pt', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: '4pt' }}>
+                Title
+              </div>
+              <span className="print-form-line" style={{ minWidth: '140pt' }}>&nbsp;</span>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12pt' }}>
+            <div>
+              <div style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '7pt', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: '4pt' }}>
+                Date Last Updated
+              </div>
+              <span className="print-form-line" style={{ minWidth: '100pt' }}>&nbsp;</span>
+            </div>
+            <div>
+              <div style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '7pt', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: '4pt' }}>
+                Quorum Requirement
+              </div>
+              <span style={{ fontFamily: 'Roboto, sans-serif', fontSize: '9pt' }}>
+                <span className="print-form-line" style={{ minWidth: '30pt' }}>&nbsp;</span>
+                {' '}of{' '}
+                <span className="print-form-line" style={{ minWidth: '30pt' }}>&nbsp;</span>
+                {' '}voting members
+              </span>
+            </div>
+            <div>
+              <div style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '7pt', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', marginBottom: '4pt' }}>
+                Total Voting | Non-Voting / Advisory
+              </div>
+              <span className="print-form-line" style={{ minWidth: '40pt' }}>&nbsp;</span>
+              {' | '}
+              <span className="print-form-line" style={{ minWidth: '40pt' }}>&nbsp;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+PART 8: Workflow Pages
+src/pages/WorkflowPages.tsx
+// ============================================================
+// WORKFLOW PAGES — Drafts, Review, Approval
+// ============================================================
+
+import React, { useState } from 'react';
+import {
+  FileEdit, Eye, CheckCircle2, Clock, ArrowRight,
+  User, Calendar, AlertCircle, ChevronDown
+} from 'lucide-react';
+import {
+  Card, PageHero, StatusBadge, PolicyIdTag, Btn,
+  DataTable, TableRow, Td, SectionTitle, FieldLabel,
+  Breadcrumb, GlassPanel, Alert
+} from '../design-system/primitives';
+
+const drafts = [
+  { id: 'GV-GB-001', title: 'Governing Body Authority & Responsibilities', domain: 'Governance', assignee: 'Sarah K.', lastEdit: '2026-03-26', readiness: 85, status: 'draft' as const },
+  { id: 'HR-ST-003', title: 'Staff Orientation & Training Requirements',   domain: 'HR',         assignee: 'Marcus L.', lastEdit: '2026-03-25', readiness: 62, status: 'draft' as const },
+  { id: 'QA-PI-002', title: 'QAPI Program Structure',                     domain: 'Quality',    assignee: 'Unassigned', lastEdit: '2026-03-20', readiness: 30, status: 'required' as const },
+];
+
+const inReview = [
+  { id: 'CL-SN-002', title: 'Medication Management in Home Health',     domain: 'Clinical', reviewer: 'Dr. Patricia M.', submitted: '2026-03-22', due: '2026-03-30', status: 'review' as const },
+  { id: 'GV-OG-003', title: 'Compliance Program Annual Assessment',     domain: 'Governance', reviewer: 'Compliance Officer', submitted: '2026-03-20', due: '2026-03-28', status: 'review' as const },
+];
+
+const pendingApproval = [
+  { id: 'FN-BL-001', title: 'Billing Compliance & Claims Management', domain: 'Financial', approver: 'Governing Body Chair', submitted: '2026-03-18', status: 'approved' as const },
+];
+
+const ReadinessBar: React.FC<{ pct: number }> = ({ pct }) => (
+  <div className="flex items-center gap-2">
+    <div className="flex-1 h-1.5 bg-ink-100 rounded-full overflow-hidden">
+      <div
+        className={`h-full rounded-full ${
+          pct >= 80 ? 'bg-emerald-500' :
+          pct >= 50 ? 'bg-amber-500'   : 'bg-red-500'
+        }`}
+        style={{ width: `${pct}%` }}
+      />
+    </div>
+    <span className={`text-[11px] font-montserrat font-semibold ${
+      pct >= 80 ? 'text-emerald-600' :
+      pct >= 50 ? 'text-amber-600'   : 'text-red-600'
+    }`}>
+      {pct}%
+    </span>
+  </div>
+);
+
+export const WorkflowDrafts: React.FC = () => (
+  <div className="space-y-7">
+    <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Workflow' }, { label: 'Drafts' }]} />
+
+    <PageHero
+      eyebrow="Document Lifecycle"
+      title="Active Drafts"
+      subtitle={`${drafts.length} policies in active development — track readiness and submit for review.`}
+      actions={
+        <Btn variant="primary" size="md" className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg">
+          <FileEdit size={15} />
+          New Draft
+        </Btn>
+      }
+    />
+
+    {/* Stage pipeline visual */}
+    <Card className="p-5">
+      <div className="flex items-center gap-0">
+        {[
+          { label: 'Drafts',    count: 11, icon: <FileEdit size={16} />,    active: true  },
+          { label: 'Review',    count: 4,  icon: <Eye size={16} />,          active: false },
+          { label: 'Approval',  count: 2,  icon: <CheckCircle2 size={16} />, active: false },
+          { label: 'Published', count: 94, icon: <Clock size={16} />,        active: false },
+        ].map((stage, i, arr) => (
+          <React.Fragment key={stage.label}>
+            <div className={`
+              flex-1 flex flex-col items-center gap-2 py-4 px-3 rounded-xl transition-colors
+              ${stage.active ? 'bg-teal-600 text-white' : 'text-ink-500 hover:bg-ink-50'}
+            `}>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                stage.active ? 'bg-white/20' : 'bg-ink-100'
+              }`}>
+                {stage.icon}
+              </div>
+              <div className="text-center">
+                <div className={`font-montserrat text-xl font-bold ${stage.active ? 'text-white' : 'text-ink-800'}`}>
+                  {stage.count}
+                </div>
+                <div className={`text-xs font-roboto ${stage.active ? 'text-teal-100' : 'text-ink-500'}`}>
+                  {stage.label}
+                </div>
+              </div>
+            </div>
+            {i < arr.length - 1 && (
+              <ArrowRight size={16} className="text-ink-300 flex-shrink-0 mx-1" />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </Card>
+
+    {/* Drafts table */}
+    <Card className="overflow-hidden">
+      <DataTable headers={['Policy ID', 'Title', 'Domain', 'Assignee', 'Last Edit', 'Readiness', 'Status', 'Actions']}>
+        {drafts.map(d => (
+          <TableRow key={d.id} onClick={() => {}}>
+            <Td><PolicyIdTag id={d.id} /></Td>
+            <Td className="max-w-[220px]">
+              <span className="font-medium text-ink-800 text-xs leading-relaxed">{d.title}</span>
+            </Td>
+            <Td>
+              <span className="text-xs font-montserrat font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">
+                {d.domain}
+              </span>
+            </Td>
+            <Td>
+              <div className="flex items-center gap-1.5">
+                <div className="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                  <User size={11} className="text-teal-600" />
+                </div>
+                <span className="text-xs text-ink-600">{d.assignee}</span>
+              </div>
+            </Td>
+            <Td className="text-xs text-ink-500 whitespace-nowrap">{d.lastEdit}</Td>
+            <Td className="min-w-[120px]"><ReadinessBar pct={d.readiness} /></Td>
+            <Td><StatusBadge status={d.status} /></Td>
+            <Td>
+              <div className="flex items-center gap-1.5">
+                <Btn variant="ghost" size="sm">Edit</Btn>
+                <Btn variant="teal-outline" size="sm">Submit</Btn>
+              </div>
+            </Td>
+          </TableRow>
+        ))}
+      </DataTable>
+    </Card>
+  </div>
+);
+
+export const WorkflowReview: React.FC = () => (
+  <div className="space-y-7">
+    <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Workflow' }, { label: 'In Review' }]} />
+
+    <PageHero
+      eyebrow="Document Lifecycle"
+      title="In Review"
+      subtitle="Policies currently undergoing clinical and compliance review before approval."
+    />
+
+    <div className="space-y-4">
+      {inReview.map(p => (
+        <Card key={p.id} className="p-6" hover>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                <Eye size={20} className="text-blue-500" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <PolicyIdTag id={p.id} />
+                  <StatusBadge status={p.status} />
+                </div>
+                <h3 className="font-montserrat text-base font-semibold text-ink-800">{p.title}</h3>
+                <div className="flex items-center gap-4 mt-2 text-xs font-roboto text-ink-500">
+                  <span className="flex items-center gap-1"><User size={11} /> Reviewer: <strong className="text-ink-700">{p.reviewer}</strong></span>
+                  <span className="flex items-center gap-1"><Calendar size={11} /> Submitted: {p.submitted}</span>
+                  <span className={`flex items-center gap-1 ${new Date(p.due) < new Date() ? 'text-red-600 font-semibold' : ''}`}>
+                    <Clock size={11} /> Due: {p.due}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Btn variant="secondary" size="sm">View Policy</Btn>
+              <Btn variant="ghost" size="sm">Request Changes</Btn>
+              <Btn variant="primary" size="sm" icon={<CheckCircle2 size={13} />}>Approve</Btn>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  </div>
+);
+
+export const WorkflowApproval: React.FC = () => (
+  <div className="space-y-7">
+    <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Workflow' }, { label: 'Pending Approval' }]} />
+
+    <PageHero
+      eyebrow="Document Lifecycle"
+      title="Pending Approval"
+      subtitle="Final stage before publication. Awaiting authorized signature and governing body approval."
+    />
+
+    <Alert variant="info">
+      These policies have completed technical review and are ready for final governing body authorization.
+    </Alert>
+
+    <div className="space-y-4">
+      {pendingApproval.map(p => (
+        <Card key={p.id} className="p-6 border-l-4 border-l-teal-500" hover>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <PolicyIdTag id={p.id} />
+                <StatusBadge status="approved" />
+              </div>
+              <h3 className="font-montserrat text-base font-semibold text-ink-800">{p.title}</h3>
+              <div className="flex items-center gap-3 mt-2 text-xs font-roboto text-ink-500">
+                <span>Approver: <strong className="text-ink-700">{p.approver}</strong></span>
+                <span>Submitted: {p.submitted}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Btn variant="secondary" size="sm">View</Btn>
+              <Btn variant="danger" size="sm">Reject</Btn>
+              <Btn variant="primary" size="sm" icon={<CheckCircle2 size={13} />}>
+                Authorize & Publish
+              </Btn>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  </div>
+);
+PART 9: Governance Page
+src/pages/Governance.tsx
+import * as React from "react";
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  AppShell,
+  Badge,
+  Button,
+  Card,
+  Container,
+  DS,
+  Grid,
+  Heading,
+  Inline,
+  Input,
+  Label,
+  Select,
+  Spacer,
+  Stack,
+  Stat,
+  Table,
+  TBody,
+  TD,
+  TH,
+  THead,
+  TR,
+  Text,
+} from "../design-system/primitives";
+
+type PolicyStatus = "Active" | "Draft" | "Needs Review" | "Archived";
+type Domain = "Privacy" | "Security" | "Clinical" | "HR" | "Operations";
+
+type PolicyRow = {
+  id: string;
+  title: string;
+  domain: Domain;
+  status: PolicyStatus;
+  owner: string;
+  lastUpdated: string;
+  nextReview: string;
+  risk: "Low" | "Medium" | "High";
+};
+
+function statusIntent(s: PolicyStatus) {
+  switch (s) {
+    case "Active":
+      return "success" as const;
+    case "Draft":
+      return "neutral" as const;
+    case "Needs Review":
+      return "warning" as const;
+    case "Archived":
+      return "danger" as const;
+  }
+}
+
+function riskIntent(r: PolicyRow["risk"]) {
+  switch (r) {
+    case "Low":
+      return "success" as const;
+    case "Medium":
+      return "warning" as const;
+    case "High":
+      return "danger" as const;
+  }
+}
+
+const POLICIES: PolicyRow[] = [
+  {
+    id: "POL-1024",
+    title: "HIPAA Privacy & Minimum Necessary",
+    domain: "Privacy",
+    status: "Needs Review",
+    owner: "Compliance Team",
+    lastUpdated: "2026-02-18",
+    nextReview: "2026-03-31",
+    risk: "High",
+  },
+  {
+    id: "POL-0877",
+    title: "Vendor Risk Management",
+    domain: "Security",
+    status: "Active",
+    owner: "Security",
+    lastUpdated: "2026-01-05",
+    nextReview: "2027-01-05",
+    risk: "Medium",
+  },
+  {
+    id: "POL-0401",
+    title: "Access Control & MFA",
+    domain: "Security",
+    status: "Active",
+    owner: "IT Ops",
+    lastUpdated: "2025-12-10",
+    nextReview: "2026-12-10",
+    risk: "High",
+  },
+  {
+    id: "POL-0666",
+    title: "Clinical Documentation Retention",
+    domain: "Clinical",
+    status: "Draft",
+    owner: "Clinical Admin",
+    lastUpdated: "2026-02-03",
+    nextReview: "—",
+    risk: "Medium",
+  },
+  {
+    id: "POL-0110",
+    title: "Workforce Background Checks",
+    domain: "HR",
+    status: "Active",
+    owner: "People Ops",
+    lastUpdated: "2025-11-22",
+    nextReview: "2026-11-22",
+    risk: "Low",
+  },
+];
+
+export default function Governance() {
+  const nav = useNavigate();
+
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState<"" | PolicyStatus>("");
+  const [domain, setDomain] = useState<"" | Domain>("");
+  const [risk, setRisk] = useState<"" | PolicyRow["risk"]>("");
+
+  const filtered = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    return POLICIES.filter((p) => {
+      if (status && p.status !== status) return false;
+      if (domain && p.domain !== domain) return false;
+      if (risk && p.risk !== risk) return false;
+      if (!query) return true;
+      return (p.title + " " + p.id + " " + p.owner).toLowerCase().includes(query);
+    });
+  }, [q, status, domain, risk]);
+
+  const counts = useMemo(() => {
+    const total = POLICIES.length;
+    const needsReview = POLICIES.filter((p) => p.status === "Needs Review").length;
+    const highRisk = POLICIES.filter((p) => p.risk === "High").length;
+    const drafts = POLICIES.filter((p) => p.status === "Draft").length;
+    return { total, needsReview, highRisk, drafts };
+  }, []);
+
+  return (
+    <AppShell>
+      <Container>
+        <Stack gap={DS.space[6]}>
+          <Inline justify="space-between" wrap gap={DS.space[4]} align="flex-start">
+            <Stack gap={10}>
+              <Heading as="h1" size={34}>
+                Governance
+              </Heading>
+              <Text muted size={15}>
+                Policy portfolio, review cadence, and risk posture at a glance.
+              </Text>
+            </Stack>
+
+            <Inline gap={10} wrap justify="flex-end">
+              <Button intent="primary" variant="solid">
+                New policy
+              </Button>
+              <Button intent="neutral" variant="outline">
+                Import
+              </Button>
+              <Button intent="neutral" variant="ghost">
+                Settings
+              </Button>
+            </Inline>
+          </Inline>
+
+          {/* KPI row */}
+          <Grid columns="repeat(12, minmax(0, 1fr))" gap={DS.space[4]}>
+            <div style={{ gridColumn: "span 3" }}>
+              <Stat label="Total policies" value={counts.total} hint="In your governance library" intent="primary" />
+            </div>
+            <div style={{ gridColumn: "span 3" }}>
+              <Stat label="Needs review" value={counts.needsReview} hint="Overdue or due soon" intent={counts.needsReview ? "warning" : "success"} />
+            </div>
+            <div style={{ gridColumn: "span 3" }}>
+              <Stat label="High risk" value={counts.highRisk} hint="Prioritize evidence + audits" intent={counts.highRisk ? "danger" : "success"} />
+            </div>
+            <div style={{ gridColumn: "span 3" }}>
+              <Stat label="Drafts" value={counts.drafts} hint="Not yet published" intent="neutral" />
+            </div>
+          </Grid>
+
+          {/* Filters + Table */}
+          <Card
+            title="Policy library"
+            subtitle={`${filtered.length} result(s) • Click a row to open policy detail`}
+            right={
+              <Inline gap={10} wrap>
+                <Button intent="neutral" variant="outline" onClick={() => { setQ(""); setStatus(""); setDomain(""); setRisk(""); }}>
+                  Clear filters
+                </Button>
+                <Button intent="accent" variant="outline">
+                  Review queue
+                </Button>
+              </Inline>
+            }
+          >
+            <Stack gap={DS.space[4]}>
+              <Grid columns="repeat(12, minmax(0, 1fr))" gap={DS.space[4]}>
+                <div style={{ gridColumn: "span 5" }}>
+                  <Label>Search</Label>
+                  <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by title, ID, or owner…" />
+                </div>
+
+                <div style={{ gridColumn: "span 2" }}>
+                  <Label>Status</Label>
+                  <Select value={status} onChange={(e) => setStatus(e.target.value as any)}>
+                    <option value="">All</option>
+                    <option value="Active">Active</option>
+                    <option value="Draft">Draft</option>
+                    <option value="Needs Review">Needs Review</option>
+                    <option value="Archived">Archived</option>
+                  </Select>
+                </div>
+
+                <div style={{ gridColumn: "span 3" }}>
+                  <Label>Domain</Label>
+                  <Select value={domain} onChange={(e) => setDomain(e.target.value as any)}>
+                    <option value="">All</option>
+                    <option value="Privacy">Privacy</option>
+                    <option value="Security">Security</option>
+                    <option value="Clinical">Clinical</option>
+                    <option value="HR">HR</option>
+                    <option value="Operations">Operations</option>
+                  </Select>
+                </div>
+
+                <div style={{ gridColumn: "span 2" }}>
+                  <Label>Risk</Label>
+                  <Select value={risk} onChange={(e) => setRisk(e.target.value as any)}>
+                    <option value="">All</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </Select>
+                </div>
+              </Grid>
+
+              <Table>
+                <THead>
+                  <TH width={140}>Policy ID</TH>
+                  <TH>Title</TH>
+                  <TH width={140}>Domain</TH>
+                  <TH width={150}>Status</TH>
+                  <TH width={160}>Risk</TH>
+                  <TH width={180}>Owner</TH>
+                  <TH width={150} align="right">
+                    Next review
+                  </TH>
+                </THead>
+
+                <TBody>
+                  {filtered.map((p) => (
+                    <TR
+                      key={p.id}
+                      onClick={() => {
+                        // Adjust route as needed:
+                        // e.g., /policies/:policyId
+                        nav(`/policies/${p.id}`);
+                      }}
+                    >
+                      <TD>
+                        <Text mono muted>
+                          {p.id}
+                        </Text>
+                      </TD>
+                      <TD>
+                        <Stack gap={4}>
+                          <Text weight={800}>{p.title}</Text>
+                          <Text muted size={12}>
+                            Updated <Text mono muted size={12}>{p.lastUpdated}</Text>
+                          </Text>
+                        </Stack>
+                      </TD>
+                      <TD>
+                        <Badge intent="neutral">{p.domain}</Badge>
+                      </TD>
+                      <TD>
+                        <Badge intent={statusIntent(p.status)}>{p.status}</Badge>
+                      </TD>
+                      <TD>
+                        <Badge intent={riskIntent(p.risk)}>Risk: {p.risk}</Badge>
+                      </TD>
+                      <TD>
+                        <Text>{p.owner}</Text>
+                      </TD>
+                      <TD align="right">
+                        {p.nextReview === "—" ? (
+                          <Text muted>—</Text>
+                        ) : (
+                          <Badge intent={p.status === "Needs Review" ? "warning" : "neutral"}>{p.nextReview}</Badge>
+                        )}
+                      </TD>
+                    </TR>
+                  ))}
+
+                  {filtered.length === 0 && (
+                    <TR>
+                      <TD align="center">
+                        <Text muted>No results</Text>
+                      </TD>
+                      <TD>
+                        <Text muted>Try adjusting your filters.</Text>
+                      </TD>
+                      <TD><Text muted>—</Text></TD>
+                      <TD><Text muted>—</Text></TD>
+                      <TD><Text muted>—</Text></TD>
+                      <TD><Text muted>—</Text></TD>
+                      <TD align="right"><Text muted>—</Text></TD>
+                    </TR>
+                  )}
+                </TBody>
+              </Table>
+
+              <Spacer y={DS.space[2]} />
+              <Inline justify="space-between" wrap>
+                <Text muted size={12}>
+                  Routes assumed: <Text mono muted size={12}>/governance</Text> and <Text mono muted size={12}>/policies/:policyId</Text>
+                </Text>
+                <Link to="/policies/POL-1024" style={{ color: DS.color.primarySoft, fontWeight: 800, textDecoration: "none" }}>
+                  Open sample policy →
+                </Link>
+              </Inline>
+            </Stack>
+          </Card>
+        </Stack>
+      </Container>
+    </AppShell>
+  );
+}
+
+
+PART 10: Master Calendar
+src/pages/MasterCalendar.tsx
+// ============================================================
+// MASTER CALENDAR — Governance scheduling system
+// ============================================================
+
+import React, { useState } from 'react';
+import { Calendar, Clock, AlertTriangle, CheckCircle, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Card, PageHero, SectionTitle, Btn, Breadcrumb, FieldLabel } from '../design-system/primitives';
+
+type CalendarEventType = 'review' | 'meeting' | 'deadline' | 'audit';
+
+interface CalEvent {
+  date: string;
+  title: string;
+  type: CalendarEventType;
+  policyId?: string;
+  urgency?: 'normal' | 'warning' | 'critical';
+}
+
+const events: CalEvent[] = [
+  { date: '2026-04-01', title: 'Annual Review — GV-OG-002',          type: 'review',   policyId: 'GV-OG-002', urgency: 'critical' },
+  { date: '2026-04-05', title: 'QAPI Committee Meeting',              type: 'meeting',                          urgency: 'normal'   },
+  { date: '2026-04-10', title: 'Revision Due — CL-PN-005',           type: 'deadline', policyId: 'CL-PN-005', urgency: 'warning'  },
+  { date: '2026-04-15', title: 'Annual Review — HR-RQ-001',          type: 'review',   policyId: 'HR-RQ-001', urgency: 'normal'   },
+  { date: '2026-04-18', title: 'Internal Compliance Audit',           type: 'audit',                            urgency: 'normal'   },
+  { date: '2026-04-28', title: 'Draft Pending — QA-AU-003',          type: 'deadline', policyId: 'QA-AU-003', urgency: 'normal'   },
+  { date: '2026-06-15', title: 'Quarterly Governing Body Meeting',    type: 'meeting',                          urgency: 'normal'   },
+  { date: '2026-07-10', title: 'Annual Review — GV-GB-001',          type: 'review',   policyId: 'GV-GB-001', urgency: 'normal'   },
+];
+
+const eventTypeConfig: Record<CalendarEventType, { label: string; color: string; dot: string }> = {
+  review:   { label: 'Policy Review', color: 'bg-blue-50 text-blue-700 border border-blue-100',         dot: 'bg-blue-500'    },
+  meeting:  { label: 'Meeting',        color: 'bg-teal-50 text-teal-700 border border-teal-100',         dot: 'bg-teal-500'    },
+  deadline: { label: 'Deadline',       color: 'bg-amber-50 text-amber-700 border border-amber-100',      dot: 'bg-amber-500'   },
+  audit:    { label: 'Audit',          color: 'bg-purple-50 text-purple-700 border border-purple-100',   dot: 'bg-purple-500'  },
+};
+
+const urgencyColor = { normal: '', warning: 'border-l-amber-400', critical: 'border-l-red-500' };
+
+export const MasterCalendar: React.FC = () => {
+  const [viewMode, setViewMode] = useState<'list' | 'month'>('list');
+
+  const grouped = events.reduce((acc, e) => {
+    const month = e.date.substring(0, 7);
+    if (!acc[month]) acc[month] = [];
+    acc[month].push(e);
+    return acc;
+  }, {} as Record<string, CalEvent[]>);
+
+  return (
+    <div className="space-y-7">
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Master Calendar' }]} />
+
+      <PageHero
+        eyebrow="Governance Operations"
+        title="Master Calendar"
+        subtitle="Annual policy reviews, governance meetings, compliance deadlines, and audit schedules."
+        actions={
+          <Btn variant="primary" size="md" className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg">
+            <Plus size={15} />
+            Add Event
+          </Btn>
+        }
+      />
+
+      {/* Summary strip */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Upcoming Reviews', value: 5,  color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-100'   },
+          { label: 'Scheduled Meetings', value: 2, color: 'text-teal-600',  bg: 'bg-teal-50 border-teal-100'   },
+          { label: 'Deadlines',         value: 3,  color: 'text-amber-600', bg: 'bg-amber-50 border-amber-100' },
+          { label: 'Planned Audits',    value: 1,  color: 'text-purple-600',bg: 'bg-purple-50 border-purple-100'},
+        ].map((s, i) => (
+          <Card key={i} className={`p-5 border ${s.bg}`}>
+            <div className={`font-montserrat text-3xl font-bold ${s.color}`}>{s.value}</div>
+            <div className="text-sm font-roboto text-ink-500 mt-1">{s.label}</div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Legend + view toggle */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          {Object.entries(eventTypeConfig).map(([type, cfg]) => (
+            <span key={type} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-montserrat font-semibold ${cfg.color}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+              {cfg.label}
+            </span>
+          ))}
+        </div>
+        <div className="flex items-center gap-1 bg-ink-100 rounded-xl p-1">
+          <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-lg text-xs font-montserrat font-semibold transition-colors ${viewMode === 'list' ? 'bg-white text-teal-700 shadow-sm' : 'text-ink-500'}`}>
+            List
+          </button>
+          <button onClick={() => setViewMode('month')} className={`px-3 py-1.5 rounded-lg text-xs font-montserrat font-semibold transition-colors ${viewMode === 'month' ? 'bg-white text-teal-700 shadow-sm' : 'text-ink-500'}`}>
+            Month
+          </button>
+        </div>
+      </div>
+
+      {/* List view */}
+      {viewMode === 'list' && (
+        <div className="space-y-8">
+          {Object.entries(grouped).map(([month, monthEvents]) => (
+            <div key={month}>
+              <div className="flex items-center gap-3 mb-4">
+                <h3 className="font-montserrat text-base font-bold text-ink-700">
+                  {new Date(month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </h3>
+                <div className="flex-1 h-px bg-ink-100" />
+                <span className="text-xs font-roboto text-ink-400">{monthEvents.length} event{monthEvents.length !== 1 ? 's' : ''}</span>
+              </div>
+              <div className="space-y-3">
+                {monthEvents.map((event, i) => {
+                  const cfg = eventTypeConfig[event.type];
+                  return (
+                    <Card
+                      key={i}
+                      className={`p-5 border-l-4 ${
+                        event.urgency === 'critical' ? 'border-l-red-500' :
+                        event.urgency === 'warning'  ? 'border-l-amber-400' : 'border-l-teal-400'
+                      }`}
+                      hover
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="text-center flex-shrink-0 w-12">
+                            <div className="font-montserrat text-xl font-bold text-ink-800">
+                              {event.date.split('-')[2]}
+                            </div>
+                            <div className="text-[10px] font-roboto text-ink-400 uppercase tracking-wide">
+                              {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
+                            </div>
+                          </div>
+                          <div className="w-px h-10 bg-ink-100 flex-shrink-0" />
+                          <div>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-montserrat font-semibold ${cfg.color} mb-1`}>
+                              <span className={`w-1 h-1 rounded-full ${cfg.dot}`} />
+                              {cfg.label}
+                            </span>
+                            <p className="font-roboto text-sm font-medium text-ink-800">{event.title}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {event.urgency === 'critical' && (
+                            <span className="text-[11px] font-montserrat font-bold text-red-600">CRITICAL</span>
+                          )}
+                          {event.urgency === 'warning' && (
+                            <span className="text-[11px] font-montserrat font-bold text-amber-600">DUE SOON</span>
+                          )}
+                          <Btn variant="ghost" size="sm">Details</Btn>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+PART 11: Tailwind Config & Global CSS
+tailwind.config.ts
+import type { Config } from 'tailwindcss';
+
+export default {
+  content: ['./src/**/*.{ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        teal: {
+          50:  '#f0faf9', 100: '#d0f0ed', 200: '#a1e1da', 300: '#5cc8bd',
+          400: '#2fada2', 500: '#007970', 600: '#006560', 700: '#004f4b',
+          800: '#003a37', 900: '#002624',
+        },
+        rust: {
+          50:  '#fff4ef', 100: '#ffe0d0', 200: '#ffbfa0', 300: '#ff9060',
+          400: '#e85a1a', 500: '#C74600', 600: '#a83b00', 700: '#8a2f00',
+        },
+        ink: {
+          25:  '#f9fafb', 50:  '#f4f6f8', 100: '#e0e5ea', 200: '#c4cdd5',
+          300: '#9eaab5', 400: '#788490', 500: '#556068', 600: '#404b52',
+          700: '#2d3439', 800: '#1c2124', 900: '#111316', 950: '#0d0f0f',
+        },
+      },
+      fontFamily: {
+        montserrat: ['Montserrat', 'system-ui', 'sans-serif'],
+        roboto:     ['Roboto', 'system-ui', 'sans-serif'],
+        mono:       ['JetBrains Mono', 'Fira Code', 'monospace'],
+      },
+      boxShadow: {
+        xs:    '0 1px 2px rgba(0,0,0,0.04)',
+        sm:    '0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+        md:    '0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)',
+        lg:    '0 8px 32px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06)',
+        xl:    '0 16px 48px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.08)',
+        teal:  '0 8px 32px rgba(0,121,112,0.18)',
+        rust:  '0 8px 32px rgba(199,70,0,0.18)',
+        glass: '0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.15)',
+      },
+      borderRadius: {
+        '2xl': '16px',
+        '3xl': '24px',
+        '4xl': '32px',
+      },
+    },
+  },
+  plugins: [],
+} satisfies Config;
+src/index.css (globals)
+PART 12: App Entry & Routing
+src/App.tsx
+// ============================================================
+// APP ROOT — Routing and shell integration
+// ============================================================
+
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AppShell } from './components/AppShell';
+import { Dashboard }         from './pages/Dashboard';
+import { PolicyLibrary }     from './pages/PolicyLibrary';
+import { PolicyDetail }      from './pages/PolicyDetail';
+import { Governance }        from './pages/Governance';
+import { WorkflowDrafts, WorkflowReview, WorkflowApproval } from './pages/WorkflowPages';
+import { MasterCalendar }    from './pages/MasterCalendar';
+import { AppendixGoverningBodyRoster } from './pages/AppendixView';
+
+// ─── Print-only route wrapper (no shell) ──────────────────────
+const PrintRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="print-layout">{children}</div>
+);
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* ── Main app routes (with shell) ── */}
+        <Route path="/" element={
+          <AppShell activePage="dashboard"><Dashboard /></AppShell>
+        } />
+        <Route path="/library" element={
+          <AppShell activePage="library"><PolicyLibrary /></AppShell>
+        } />
+        <Route path="/library/:id" element={
+          <AppShell activePage="library"><PolicyDetail /></AppShell>
+        } />
+        <Route path="/governance" element={
+          <AppShell activePage="governance"><Governance /></AppShell>
+        } />
+        <Route path="/governance/body" element={
+          <AppShell activePage="governance-body"><Governance /></AppShell>
+        } />
+        <Route path="/drafts" element={
+          <AppShell activePage="drafts"><WorkflowDrafts /></AppShell>
+        } />
+        <Route path="/review" element={
+          <AppShell activePage="review"><WorkflowReview /></AppShell>
+        } />
+        <Route path="/approval" element={
+          <AppShell activePage="approval"><WorkflowApproval /></AppShell>
+        } />
+        <Route path="/calendar" element={
+          <AppShell activePage="calendar"><MasterCalendar /></AppShell>
+        } />
+
+        {/* ── Appendix/form routes (with shell) ── */}
+        <Route path="/library/:id/appendix/:letter" element={
+          <AppShell activePage="library"><AppendixGoverningBodyRoster /></AppShell>
+        } />
+
+        {/* ── Print-only routes (no shell, print CSS fires) ── */}
+        <Route path="/print/:id" element={
+          <PrintRoute><PolicyDetail /></PrintRoute>
+        } />
+        <Route path="/print/:id/appendix/:letter" element={
+          <PrintRoute><AppendixGoverningBodyRoster /></PrintRoute>
+        } />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+Implementation Notes
+What Changed — Summary
+
+
+Area	Before	After
+Design system	None — one-off per page	Unified token file + shared primitives
+Shell	Generic sidebar	Premium teal glassmorphic shell with badge counts
+Typography	Inconsistent	Montserrat (headings) / Roboto (body) / JetBrains Mono (IDs) everywhere
+Spacing	Random	Disciplined space-y-* rhythm throughout
+Colors	Pastel/inconsistent	#007970 teal + #C74600 rust + ink neutral system, no pastels
+Cards/surfaces	Flat, generic	Layered glass panels (screen) / clean white (print)
+Badges	Inconsistent	Unified StatusBadge, PolicyIdTag across all pages
+Tables	Browser default look	DataTable + TableRow + Td with teal headers, hover states
+Print	Browser dump, column collapse	Dedicated print architecture with @page, fixed <colgroup>, no glass
+Appendices	Second-class	First-class cards on screen, proper print page breaks
+Forms in print	Malformed	Fixed-width columns, print-form-line pattern, crisp checkboxes
+Dashboard	Dull	Executive KPI cards, governance health bars, deadline sidebar
+Workflow	Fragmented	Unified pipeline visual, stage-aware cards
+Wiring Notes
+Install fonts via Google Fonts CDN in index.html for print reliability
+Print routes (/print/:id) should be opened in a new tab and trigger window.print() automatically via useEffect
+The GLOBAL_PRINT_CSS string in PrintLayout.tsx should be injected as a <style> tag inside print routes
+react-router-dom v6 is assumed for all routing patterns shown**

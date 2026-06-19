@@ -125,6 +125,7 @@ function canvasHeight(model: SwimlaneModel) {
 }
 
 function routeContextCopy(model: SwimlaneModel) {
+  if (model.readOnly) return 'Read-only process visualization';
   return model.mode === 'event_execution'
     ? 'Event-owned visual execution surface'
     : 'Workflow-owned visual execution surface';
@@ -295,6 +296,7 @@ function computeOrthogonalPath(model: SwimlaneModel, fromNode: SwimlaneNode, toN
 
 export function SwimlaneExecutionMap({ model, initialTaskId }: { model: SwimlaneModel; initialTaskId?: string }) {
   const isLight = useIsLight();
+  const isReadOnly = model.readOnly === true;
   // Light defects (swimlanes): use isLight prop down to hover preview + modals + inner panels (titles, facts, forms, evidence, sig). Fixes white text titles (low contrast on light glass), no bg bleed, preserve clean glass. Overflow handled by max-h + auto on previews/modals.
   const [zoomState, setZoomState] = useState<ZoomState>(initialZoomState);
   const [lastNodeId, setLastNodeId] = useState<string | null>(null);
@@ -412,7 +414,7 @@ export function SwimlaneExecutionMap({ model, initialTaskId }: { model: Swimlane
   }, [initialTaskId, model.nodes]); // run once model is stable
 
   return (
-    <div ref={workspaceRef} data-workflow-execution data-live-data="regulatory-events" className="swimlane-execution-map relative flex h-full w-full flex-col overflow-hidden overflow-x-hidden contain-paint" style={{ border: 'none', background: 'transparent', padding: 0, isolation: 'isolate' }}>
+    <div ref={workspaceRef} data-workflow-execution data-live-data="regulatory-events" data-read-only={isReadOnly ? 'true' : 'false'} className="swimlane-execution-map relative flex h-full w-full flex-col overflow-hidden overflow-x-hidden contain-paint" style={{ border: 'none', background: 'transparent', padding: 0, isolation: 'isolate' }}>
       <style>{SWIMLANE_CSS}</style>
       {/* Header controls; per Agent 13 full bleed task (coord w/ Agent 5): main canvas below fills entire remaining screen area, no borders */}
       <header className="shrink-0 px-7 py-4 border-b overflow-hidden" style={{ background: 'transparent', border: 'none' }}>
@@ -420,13 +422,19 @@ export function SwimlaneExecutionMap({ model, initialTaskId }: { model: Swimlane
           <div className="min-w-0">
             <div className="mb-2 flex items-center gap-3">
               <span className="rounded-full border border-[var(--v3-teal)]/35 bg-[var(--v3-teal)]/12 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--v3-teal-light)]">
-                {model.mode === 'event_execution' ? 'Event Execution' : 'Workflow Template'}
+                {isReadOnly ? 'Read-only process visualization' : model.mode === 'event_execution' ? 'Event Execution' : 'Workflow Template'}
               </span>
+              {isReadOnly && model.completionPercent != null ? (
+                <span className="rounded-full border border-[var(--v3-orange)]/35 bg-[var(--v3-orange)]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--v3-orange-light)]">
+                  {model.completionPercent}% complete
+                </span>
+              ) : null}
               <span className="text-[12px] font-semibold text-[var(--v3-text-secondary)]">{routeContextCopy(model)}</span>
             </div>
             <h1 className="truncate text-[25px] font-semibold tracking-[-0.01em] text-[var(--v3-text-primary)]">{displayTitle(model.title)}</h1>
           </div>
           <div className="flex shrink-0 items-center gap-5">
+            {model.completionPercent != null ? <HeaderMetric value={`${model.completionPercent}%`} label="completion" /> : null}
             <HeaderMetric value={String(formCount)} label="linked forms" />
             <HeaderMetric value={String(evidenceCount)} label="evidence requirements" />
             <HeaderMetric value={String(signerCount)} label="signer/reviewer paths" />
@@ -767,9 +775,9 @@ function ZoomCard({ model, node, onClose, onOpenLevelTwo, isLight = false }: { m
             <FormInstancesPanel model={model} node={node} onOpenLevelTwo={onOpenLevelTwo} isLight={isLight} />
             <SupportingDocumentationPanel tasks={supportTasks} isLight={isLight} />
             <SupportingEvidencePanel evidence={node.requiredEvidence} isLight={isLight} />
-            <ActionPanel icon={<UploadCloud size={16} />} title="Supporting Evidence" detail={node.requiredEvidence.length ? 'Review required evidence and linked documentation for this task.' : 'No supporting evidence required for this task.'} disabled={!node.requiredEvidence.length} onClick={() => onOpenLevelTwo('evidence', 'evidence')} cta="Open Evidence Workspace" />
-            <ActionPanel icon={<FileSignature size={16} />} title="eCIgn Ceremony" detail={node.signatureTasks?.length ? `${node.signatureTasks.length} deterministic signer task${node.signatureTasks.length === 1 ? '' : 's'} resolved.` : node.signerRole ? `Requires: ${node.signerRole}` : node.reviewerRole ? `Reviewer: ${node.reviewerRole}` : 'No signature path assigned'} disabled={!(node.signatureTasks?.length || node.signerRole || node.reviewerRole)} onClick={() => onOpenLevelTwo('signature', 'sign')} cta="Show Signature Path" />
-            <ActionPanel icon={<LockKeyhole size={16} />} title="Artifact Package" detail={artifactPackageDetail(node)} onClick={() => onOpenLevelTwo('evidence', 'artifact')} cta="Open Artifact Workspace" />
+            <ActionPanel icon={<UploadCloud size={16} />} title="Supporting Evidence" detail={node.requiredEvidence.length ? 'Review required evidence and linked documentation for this task.' : 'No supporting evidence required for this task.'} disabled={!node.requiredEvidence.length} onClick={() => onOpenLevelTwo('evidence', 'evidence')} cta={model.readOnly ? 'View Evidence Status' : 'Open Evidence Workspace'} />
+            <ActionPanel icon={<FileSignature size={16} />} title="eCIgn Ceremony" detail={node.signatureTasks?.length ? `${node.signatureTasks.length} deterministic signer task${node.signatureTasks.length === 1 ? '' : 's'} resolved.` : node.signerRole ? `Requires: ${node.signerRole}` : node.reviewerRole ? `Reviewer: ${node.reviewerRole}` : 'No signature path assigned'} disabled={!(node.signatureTasks?.length || node.signerRole || node.reviewerRole || model.ecignStatus)} onClick={() => onOpenLevelTwo('signature', 'sign')} cta={model.readOnly ? 'View Signature Status' : 'Show Signature Path'} />
+            <ActionPanel icon={<LockKeyhole size={16} />} title="Artifact Package" detail={artifactPackageDetail(node)} onClick={() => onOpenLevelTwo('evidence', 'artifact')} cta={model.readOnly ? 'View Artifact Status' : 'Open Artifact Workspace'} />
           </div>
         </div>
       </div>
@@ -825,6 +833,25 @@ function LevelTwoCard({ model, node, zoomState, onBack, onClose, isLight = false
 function EvidenceArtifactWorkspace({ model, node, mode, zoomState }: { model: SwimlaneModel; node: SwimlaneNode; mode: 'artifact' | 'evidence'; zoomState: ZoomState }) {
   const isEventExecution = model.mode === 'event_execution' && !!model.eventId;
   const targets: EvidenceTarget[] = [];
+
+  if (model.readOnly) {
+    return (
+      <PlaceholderWorkspace
+        icon={mode === 'artifact' ? <LockKeyhole size={28} /> : <UploadCloud size={28} />}
+        title={mode === 'artifact' ? 'Read-only artifact status' : 'Read-only evidence status'}
+        body="This full swimlane is a visualization only. Evidence uploads and artifact package actions are handled from the Event Execution Cockpit."
+        details={[
+          `eventId: ${model.eventId ?? 'missing'}`,
+          `taskId: ${node.taskId}`,
+          `completion: ${model.completionPercent ?? 0}%`,
+          `evidence: ${model.evidenceAttachedCount ?? 0} / ${model.evidenceCount ?? node.requiredEvidence.length}`,
+          `calendar: ${model.calendarAttachmentStatus ?? 'Unknown'}`,
+          `drive: ${model.driveLinked ? 'Linked' : 'Not linked'}`,
+          ...artifactWorkspaceDetails(model, node, mode),
+        ]}
+      />
+    );
+  }
 
   if (isEventExecution) {
     if (mode === 'evidence') {
@@ -905,6 +932,23 @@ function FormWorkspace({ model, node, formId, isLight = false }: { model: Swimla
   const form = formId ? FORMS_DATASET.find(item => item.id === formId) : null;
   if (!formId) return <PlaceholderWorkspace icon={<FileText size={28} />} title="Form Template" body="Select a form-bearing swimlane node." details={[]} />;
   const formInstance = node.formInstances?.find(item => item.formId === formId);
+  if (model.readOnly) {
+    return (
+      <PlaceholderWorkspace
+        icon={<FileText size={28} />}
+        title="Read-only form status"
+        body="This full swimlane does not open or create form instances. Use the Event Execution Cockpit for behavior actions."
+        details={[
+          `eventId: ${model.eventId ?? 'missing'}`,
+          `taskId: ${node.taskId}`,
+          `workflowId: ${model.workflowId ?? 'missing'}`,
+          `formId: ${formId}`,
+          `formInstanceId: ${formInstance?.formInstanceId ?? 'missing'}`,
+          `status: ${formInstance?.status ?? 'pending'}`,
+        ]}
+      />
+    );
+  }
   const query = new URLSearchParams();
   if (model.mode === 'event_execution' && model.eventId) {
     query.set('event_id', model.eventId);
@@ -1177,7 +1221,11 @@ function FormInstanceRow({ model, node, form, onOpenLevelTwo, isLight = false }:
       </p>
 
       <div className="mt-3 flex gap-2">
-        {form.missing ? (
+        {model.readOnly ? (
+          <button type="button" className="relative z-10 flex w-full items-center justify-center gap-2 rounded border border-ci-border bg-ci-surface-muted py-2 text-[11px] font-bold text-[var(--v3-text-primary)]" onClick={() => onOpenLevelTwo('form', form.formId)}>
+            View Form Status
+          </button>
+        ) : form.missing ? (
           <button type="button" className="relative z-10 flex w-full items-center justify-center gap-2 rounded border border-[var(--v3-orange)]/45 bg-[var(--v3-orange)]/10 py-2 text-[11px] font-bold text-[var(--v3-orange-light)]" onClick={() => onOpenLevelTwo('form', form.formId)}>
             {actionLabel}
           </button>
@@ -1199,6 +1247,25 @@ function ActionPanel({ icon, title, detail, cta, disabled = false, onClick }: { 
 function SignatureWorkspace({ model, node, isLight = false }: { model: SwimlaneModel; node: SwimlaneNode; isLight?: boolean }) {
   const signer = useEcignSignerIdentity();
   const userPermissionRoles = useMemo(() => resolveUserPermissionRoles(signer.role), [signer.role]);
+
+  if (model.readOnly) {
+    return (
+      <PlaceholderWorkspace
+        icon={<FileSignature size={28} />}
+        title="Read-only signature status"
+        body="This full swimlane is a visualization only. eCIgn signing is available from the Event Execution Cockpit when the canonical form instance is ready."
+        details={[
+          `eventId: ${model.eventId ?? 'missing'}`,
+          `taskId: ${node.taskId}`,
+          `workflowId: ${model.workflowId ?? 'missing'}`,
+          `eCign: ${model.ecignStatus ?? 'unknown'}`,
+          `eCign detail: ${model.ecignDisplayStatus ?? 'unknown'}`,
+          ...(model.blockerText ? [`blocker: ${model.blockerText}`] : []),
+          ...signatureWorkspaceDetails(node),
+        ]}
+      />
+    );
+  }
 
   if (!node.signatureTasks?.length) {
     return (

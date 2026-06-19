@@ -1,51 +1,70 @@
-import { NavLink } from 'react-router-dom';
+import { PageHeader, SurfaceCard, DataGrid } from '@/policy/components/ui';
 import { PERMISSION_CATALOG } from './permissionCatalog';
 
-const navClass = ({ isActive }: { isActive: boolean }) =>
-  `px-3 py-1.5 rounded-md text-xs font-semibold border ${isActive ? 'bg-[#0f766e] text-white border-[#0f766e]' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`;
+const ADMIN_TABS = [
+  { id: 'user-groups', label: 'User Groups' },
+  { id: 'roles', label: 'Roles' },
+  { id: 'permissions', label: 'Permissions' },
+  { id: 'users', label: 'User Assignments' },
+] as const;
 
 export function PermissionCatalogPage() {
   return (
-    <div className="h-full w-full overflow-y-auto bg-[#f8fafc] text-slate-900">
-      <div className="max-w-6xl mx-auto px-6 py-6 space-y-4">
-        <header className="flex flex-wrap items-center gap-3">
-          <h1 className="text-lg font-bold">Phase A Identity Admin - Permission Catalog</h1>
-          <div className="ml-auto flex items-center gap-2">
-            <NavLink to="/admin/user-groups" className={navClass}>User Groups</NavLink>
-            <NavLink to="/admin/roles" className={navClass}>Roles</NavLink>
-            <NavLink to="/admin/permissions" className={navClass}>Permissions</NavLink>
-            <NavLink to="/admin/users" className={navClass}>User Assignments</NavLink>
-          </div>
-        </header>
+    <div className="h-full w-full overflow-y-auto p-6" style={{ background: 'transparent' }}>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <PageHeader
+          eyebrow="ADMIN / IDENTITY"
+          title="Permission Catalog"
+          description="Catalog is constrained to Phase A foundation permissions and is intentionally separate from HIPAA-only controls."
+        />
 
-        <p className="text-sm text-slate-600">
-          Catalog is constrained to Phase A foundation permissions and is intentionally separate from HIPAA-only controls.
-        </p>
-
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-600">
-              <tr>
-                <th className="text-left px-3 py-2">Permission</th>
-                <th className="text-left px-3 py-2">Resource</th>
-                <th className="text-left px-3 py-2">Action</th>
-                <th className="text-left px-3 py-2">PHI</th>
-                <th className="text-left px-3 py-2">Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              {PERMISSION_CATALOG.map(permission => (
-                <tr key={permission.id} className="border-t border-slate-100">
-                  <td className="px-3 py-2 font-mono text-xs">{permission.id}</td>
-                  <td className="px-3 py-2">{permission.resource}</td>
-                  <td className="px-3 py-2">{permission.action}</td>
-                  <td className="px-3 py-2">{permission.phi ? 'yes' : 'no'}</td>
-                  <td className="px-3 py-2 text-slate-600">{permission.description}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="flex flex-wrap gap-2">
+          {ADMIN_TABS.map(t => {
+            const active = t.id === 'permissions';
+            return (
+              <a
+                key={t.id}
+                href={`/admin/${t.id === 'user-groups' ? 'user-groups' : t.id}`}
+                className={`px-3.5 py-1 rounded-full text-xs font-semibold border transition ${active ? 'bg-[var(--brand-primary,#00797D)] text-white border-[var(--brand-primary,#00797D)]' : 'border-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)] hover:bg-[var(--v3-surface-elevated)]'}`}
+              >
+                {t.label}
+              </a>
+            );
+          })}
         </div>
+
+        <SurfaceCard padding="lg">
+          <DataGrid>
+            <DataGrid.Head>
+              <DataGrid.HeaderRow>
+                <DataGrid.HeaderCell>Permission</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell>Resource</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell>Action</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell>PHI</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell>Description</DataGrid.HeaderCell>
+              </DataGrid.HeaderRow>
+            </DataGrid.Head>
+            <DataGrid.Body>
+              {PERMISSION_CATALOG.map(permission => (
+                <DataGrid.Row key={permission.id}>
+                  <DataGrid.Cell>
+                    <span className="font-mono text-xs tracking-[0.5px]">{permission.id}</span>
+                  </DataGrid.Cell>
+                  <DataGrid.Cell>{permission.resource}</DataGrid.Cell>
+                  <DataGrid.Cell>{permission.action}</DataGrid.Cell>
+                  <DataGrid.Cell>
+                    <span className={`inline-block rounded-full px-1.5 py-px text-[10px] ${permission.phi ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                      {permission.phi ? 'yes' : 'no'}
+                    </span>
+                  </DataGrid.Cell>
+                  <DataGrid.Cell>
+                    <span className="text-[var(--v3-text-secondary)] text-sm">{permission.description}</span>
+                  </DataGrid.Cell>
+                </DataGrid.Row>
+              ))}
+            </DataGrid.Body>
+          </DataGrid>
+        </SurfaceCard>
       </div>
     </div>
   );

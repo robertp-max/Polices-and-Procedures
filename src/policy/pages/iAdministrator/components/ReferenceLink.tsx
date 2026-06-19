@@ -1,9 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react';
 import {
   resolveReferenceKindLabel,
-  resolveReferenceRoute,
   type ResolvedReferenceType,
 } from '../lib/referenceRouting';
+import { resolveIaReference, warnUnresolvedIaReference } from '../lib/referenceResolver';
 
 export interface ReferenceLinkProps {
   id: string;
@@ -22,13 +22,21 @@ export function ReferenceLink({
   style,
   typeOverride,
 }: ReferenceLinkProps) {
-  const resolved = resolveReferenceRoute(id);
-  const type = typeOverride ?? resolved.type;
+  const resolved = resolveIaReference({
+    id,
+    claimedType: typeOverride,
+    source: 'ReferenceLink',
+  });
+  if (!resolved.resolved) {
+    warnUnresolvedIaReference(resolved);
+    return null;
+  }
+  const type: ResolvedReferenceType = resolved.resolvedType === 'appendix' ? 'viewer' : resolved.resolvedType;
   const label = resolveReferenceKindLabel(type);
 
   return (
     <a
-      href={resolved.route}
+      href={resolved.openRoute}
       target="_blank"
       rel="noopener noreferrer"
       title={`Open ${label}`}

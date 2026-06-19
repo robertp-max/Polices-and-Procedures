@@ -1,0 +1,446 @@
+import React, { useState, useMemo } from 'react';
+import { 
+  LayoutDashboard, Calendar, Library, Network, FileEdit, 
+  CheckSquare, Send, FileBarChart, HelpCircle, Settings, 
+  ShieldCheck, Search, Bell, Clock, CheckCircle, Plus, 
+  Download, AlertCircle, AlertTriangle, ChevronRight, BookOpen, 
+  RefreshCcw, CheckCircle2, Archive, FileText
+} from 'lucide-react';
+
+// Extract relevant events derived from the policy doc: quarterly meetings, annual evaluations, record reviews, QAPI, budget
+const eventsData = [
+  // Quarterly Governing Body Meetings (Patterns: No later than Jan 15, Apr 15, Jul 15, Oct 15)
+  { id: 'CAL-GV-001', title: 'Q1 Governing Body Meeting', owner: 'Governing Body', date: '2026-01-15', module: 'Governance', status: 'COMPLETED' },
+  { id: 'CAL-GV-002', title: 'Q2 Governing Body Meeting', owner: 'Governing Body', date: '2026-04-15', module: 'Governance', status: 'DUE SOON' },
+  { id: 'CAL-GV-003', title: 'Q3 Governing Body Meeting', owner: 'Governing Body', date: '2026-07-15', module: 'Governance', status: 'UPCOMING' },
+  { id: 'CAL-GV-004', title: 'Q4 Governing Body Meeting', owner: 'Governing Body', date: '2026-10-15', module: 'Governance', status: 'UPCOMING' },
+  
+  // Quarterly Clinical Record Reviews (Pattern: Quarterly, end of each quarter)
+  { id: 'CAL-CL-001', title: 'Q1 Clinical Record Review', owner: 'Director of Nursing', date: '2026-03-31', module: 'Clinical', status: 'COMPLETED' },
+  { id: 'CAL-CL-002', title: 'Q2 Clinical Record Review', owner: 'Director of Nursing', date: '2026-06-30', module: 'Clinical', status: 'UPCOMING' },
+  { id: 'CAL-CL-003', title: 'Q3 Clinical Record Review', owner: 'Director of Nursing', date: '2026-09-30', module: 'Clinical', status: 'UPCOMING' },
+  { id: 'CAL-CL-004', title: 'Q4 Clinical Record Review', owner: 'Director of Nursing', date: '2026-12-31', module: 'Clinical', status: 'UPCOMING' },
+
+  // Annual Agency Program Evaluation (Pattern: QAPI review complete Mar 31, GB review complete Apr 15, results to committee May 15)
+  { id: 'CAL-QA-001', title: 'QAPI Program Review for Prior Year Completion', owner: 'QAPI Coordinator', date: '2026-03-31', module: 'QAPI', status: 'OVERDUE' }, // Simulate overdue
+  { id: 'CAL-QA-002', title: 'Annual Program Review Results Submission to GB', owner: 'QAPI Coordinator', date: '2026-04-15', module: 'QAPI', status: 'DUE SOON' },
+  { id: 'CAL-QA-003', title: 'Annual Evaluation Results to QAPI Committee', owner: 'Governing Body', date: '2026-05-15', module: 'QAPI', status: 'UPCOMING' },
+
+  // Budget Review & Approval (Pattern: No later than Oct 31)
+  { id: 'CAL-FN-001', title: 'Budget Review and Approval', owner: 'CFO', date: '2026-10-31', module: 'Finance', status: 'UPCOMING' },
+
+  // general policy review cycle (hypothetical date)
+  { id: 'CAL-GV-100', title: 'Compliance Program & Code of Conduct Annual Review', owner: 'Compliance Officer', date: '2026-03-15', module: 'Governance', status: 'COMPLETED' },
+];
+
+// simulate current date as April 1, 2026, for card calculations
+const currentFakeDate = '2026-04-01';
+
+export default function ComplianceCalendar() {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // brand badges
+  const getStatusBadge = (status) => {
+    switch(status) {
+      case 'COMPLETED': return 'bg-[#007970] text-white border-transparent';
+      case 'DUE SOON': return 'bg-[#C74600] text-white border-transparent';
+      case 'UPCOMING': return 'bg-slate-500 text-white border-transparent';
+      case 'OVERDUE': return 'bg-[#DC2626] text-white border-transparent';
+      default: return 'bg-gray-200 text-gray-800 border-transparent';
+    }
+  };
+
+  const getModuleBadge = (module) => {
+    switch(module) {
+      case 'Clinical': return 'border border-gray-400 text-gray-600 bg-white'; 
+      case 'QAPI': return 'border border-[#007970] text-[#007970] bg-white'; 
+      default: return 'border border-gray-300 text-gray-500 bg-white';
+    }
+  };
+
+  // calculate real data for cards derived from events list relative to mock date
+  const totalEvents = eventsData.length;
+  const compliantActions = eventsData.filter(e => e.status === 'COMPLETED').length;
+  const upcoming30Days = eventsData.filter(e => {
+    const eventDate = new Date(e.date);
+    const mockDate = new Date(currentFakeDate);
+    const thirtyDaysLater = new Date(currentFakeDate);
+    thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+    return eventDate >= mockDate && eventDate <= thirtyDaysLater;
+  }).length;
+  
+  // calculate critical deadlines (0-7 days)
+  const criticalDeadlines = eventsData.filter(e => {
+    const eventDate = new Date(e.date);
+    const mockDate = new Date(currentFakeDate);
+    const sevenDaysLater = new Date(currentFakeDate);
+    sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+    return eventDate >= mockDate && eventDate <= sevenDaysLater;
+  }).length;
+
+
+  // filter events for table to only show current/future
+  const futureEvents = eventsData.filter(e => e.date >= currentFakeDate);
+
+  return (
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@400;500;700&display=swap');
+          
+          .font-montserrat {
+            font-family: 'Montserrat', sans-serif;
+          }
+          .font-roboto {
+            font-family: 'Roboto', sans-serif;
+          }
+
+          /* Hide global scrollbar for absolute single pane constraint */
+          ::-webkit-scrollbar {
+            display: none;
+          }
+          /* Hide scrollbar on the main body to prevent any overflow */
+          body {
+            overflow: hidden;
+          }
+        `}
+      </style>
+
+      {/* Outer container for letterboxing to 16:9 aspect ratio */}
+      <div className="min-h-screen w-full bg-[#111827] flex items-center justify-center overflow-hidden p-2 lg:p-4">
+        
+        {/* 16:9 Display Container - constrained by height so it never causes vertical scrolling */}
+        <div className="flex w-full aspect-video max-h-[95vh] max-w-[calc(95vh*16/9)] mx-auto bg-[#E8EDF2] font-roboto text-gray-900 overflow-hidden relative z-0 shadow-2xl rounded-[12px] ring-1 ring-white/10">
+      
+          {/* Vibrant Ambient Orbs to make the Glassmorphism OBVIOUS */}
+          <div className="absolute top-[-10%] left-[-5%] w-[45vw] h-[45vw] bg-[#007970] rounded-full mix-blend-multiply filter blur-[140px] opacity-[0.12] -z-10 pointer-events-none"></div>
+          <div className="absolute bottom-[-15%] right-[-10%] w-[50vw] h-[50vw] bg-[#C74600] rounded-full mix-blend-multiply filter blur-[160px] opacity-[0.10] -z-10 pointer-events-none"></div>
+          <div className="absolute top-[30%] left-[30%] w-[35vw] h-[35vw] bg-[#00bdae] rounded-full mix-blend-multiply filter blur-[130px] opacity-[0.08] -z-10 pointer-events-none"></div>
+
+          {/* Sidebar - Scaled down */}
+          <aside className="w-[180px] bg-white/40 backdrop-blur-3xl flex flex-col shrink-0 z-20 border-r border-white/70 shadow-[4px_0_32px_rgba(0,0,0,0.03)]">
+            <div className="h-10 flex items-center px-3 border-b border-white/60">
+              <ShieldCheck className="w-4 h-4 text-[#C74600] mr-2 drop-shadow-sm" />
+              <div className="flex flex-col">
+                <span className="font-montserrat font-bold text-gray-900 text-[11px] tracking-wide leading-tight">
+                  Care Indeed
+                </span>
+                <span className="font-montserrat font-bold text-[#007970] text-[7px] uppercase tracking-widest">
+                  Policy Command
+                </span>
+              </div>
+            </div>
+            
+            <nav className="flex-1 py-2 space-y-0.5 overflow-hidden px-2">
+              <SidebarItem icon={<LayoutDashboard size={12} />} label="Dashboard" />
+              <SidebarItem icon={<Calendar size={12} />} label="Compliance Calendar" active />
+              <SidebarItem icon={<Library size={12} />} label="Policy Library" />
+              <SidebarItem icon={<Network size={12} />} label="Taxonomy" />
+              <SidebarItem icon={<FileEdit size={12} />} label="Drafts" badge="2" />
+              <SidebarItem icon={<CheckSquare size={12} />} label="Review" badge="1" />
+              <SidebarItem icon={<Send size={12} />} label="Publish" />
+              <SidebarItem icon={<FileBarChart size={12} />} label="Master Report" />
+            </nav>
+
+            <div className="p-2 border-t border-white/60 space-y-0.5">
+              <SidebarItem icon={<Settings size={12} />} label="Settings" />
+              <SidebarItem icon={<HelpCircle size={12} />} label="Help Center" />
+              <div className="mt-2 pt-2 border-t border-white/60 px-2 flex items-center cursor-pointer group">
+                <div className="w-5 h-5 rounded-full bg-[#007970] flex items-center justify-center text-[9px] text-white font-montserrat font-bold shadow-md transition-transform group-hover:scale-105">JD</div>
+                <div className="ml-2 flex flex-col flex-1">
+                  <span className="text-[9px] text-gray-900 font-montserrat font-bold group-hover:text-[#C74600] transition-colors">John Doe</span>
+                  <span className="text-[7px] text-[#007970] font-roboto font-bold flex items-center mt-0.5">
+                    <span className="w-1 h-1 rounded-full bg-[#007970] mr-1 shadow-sm"></span> Online
+                  </span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
+            
+            {/* Top Header - Scaled down height */}
+            <header className="h-10 bg-white/40 backdrop-blur-2xl border-b border-white/70 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex items-center justify-between px-4 shrink-0 z-10">
+              <div className="relative w-56">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" size={10} />
+                <input 
+                  type="text" 
+                  placeholder="Search globally..." 
+                  className="w-full pl-7 pr-2 py-1 bg-white/50 border border-white/80 rounded-[4px] text-[10px] text-gray-900 placeholder-gray-500 font-roboto focus:outline-none focus:bg-white/80 focus:border-[#007970] focus:ring-1 focus:ring-[#007970] shadow-inner transition-all"
+                />
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="text-[9px] font-montserrat font-bold text-gray-600 hidden md:block">
+                  Thursday, March 26
+                </div>
+                <button className="relative p-1 text-gray-500 hover:text-[#C74600] transition-colors">
+                  <Bell size={12} />
+                  <span className="absolute top-0.5 right-0.5 w-1 h-1 bg-[#C74600] rounded-full border border-white shadow-sm"></span>
+                </button>
+              </div>
+            </header>
+
+            {/* Content Area - Explicitly overflow-hidden to guarantee NO scrolling on the main page */}
+            <div className="flex-1 overflow-hidden p-3 flex flex-col space-y-2.5">
+              
+              {/* Header Title & Actions */}
+              <div className="flex justify-between items-end mb-1">
+                <div>
+                  <h1 className="text-lg font-montserrat font-bold text-gray-900 leading-none mb-0.5">Compliance Calendar</h1>
+                  <p className="text-[10px] text-gray-600 font-roboto">View and manage all recurring governance and operational deadlines</p>
+                </div>
+                <div className="flex space-x-2">
+                  <button className="flex items-center space-x-1 px-2.5 py-1.5 bg-white border border-[#007970] text-[#007970] rounded-[4px] text-[9px] font-montserrat font-bold hover:bg-[#007970] hover:text-white transition-colors shadow-sm">
+                    <Download size={10} />
+                    <span>Export</span>
+                  </button>
+                  <button className="flex items-center space-x-1 px-2.5 py-1.5 bg-[#C74600] text-white border border-[#C74600] rounded-[4px] text-[9px] font-montserrat font-bold hover:bg-[#A83B00] transition-colors shadow-sm">
+                    <Plus size={10} />
+                    <span>New Event</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* KPI Row (Derived real data relative to mock date) */}
+              <div className="grid grid-cols-4 gap-2.5shrink-0">
+                <StatusKpiCard 
+                  status="TOTAL EVENTS" 
+                  count={totalEvents} 
+                  desc="Tracked for the current year"
+                  icon={<FileText size={12} />}
+                  textColor="text-slate-600"
+                  bgIconClass="bg-slate-500 text-white shadow-sm"
+                />
+                <StatusKpiCard 
+                  status="UPCOMING (30 DAYS)" 
+                  count={upcoming30Days} 
+                  desc="Requires immediate attention"
+                  icon={<Clock size={12} />}
+                  textColor="text-[#C74600]"
+                  bgIconClass="bg-[#C74600] text-white shadow-sm"
+                />
+                <StatusKpiCard 
+                  status="CRITICAL DEADLINES" 
+                  count={criticalDeadlines} 
+                  desc="Action required (0-7 Days)"
+                  icon={<AlertCircle size={12} />}
+                  textColor="text-[#DC2626]"
+                  bgIconClass="bg-[#DC2626] text-white shadow-sm"
+                />
+                 <StatusKpiCard 
+                  status="COMPLIANT ACTIONS" 
+                  count={compliantActions} 
+                  desc="Completed as scheduled"
+                  icon={<CheckCircle size={12} />}
+                  textColor="text-[#007970]"
+                  bgIconClass="bg-[#007970] text-white shadow-sm"
+                />
+              </div>
+
+              {/* Middle Row: Metrics & Calendar */}
+              <div className="grid grid-cols-3 gap-2.5 flex-1 overflow-hidden">
+                
+                {/* Main Table Container (2 columns) - internally scrolls */}
+                <div className="col-span-2 bg-white/70 backdrop-blur-2xl rounded-[8px] border border-white/70 shadow-[0_2px_12px_rgba(0,0,0,0.04)] flex flex-col overflow-hidden">
+                  
+                  {/* Table Title Wrapper */}
+                  <div className="p-3 border-b border-white/60 bg-white/30 shrink-0">
+                    <h2 className="text-xs font-montserrat font-bold text-gray-900 flex items-center">
+                      <Calendar className="mr-1.5 text-[#007970]" size={14}/> Upcoming Compliance Events
+                    </h2>
+                  </div>
+
+                  {/* Table Body Wrapper (Scrollable internally) */}
+                  <div className="flex-1 overflow-y-auto">
+                    <table className="w-full text-left table-fixed">
+                      <thead className="bg-white/30 backdrop-blur-sm sticky top-0 z-10">
+                        <tr>
+                          <th className="py-1.5 px-3 text-[7px] font-montserrat font-bold text-gray-500 uppercase tracking-widest w-[15%] border-b border-white/60">ID</th>
+                          <th className="py-1.5 px-3 text-[7px] font-montserrat font-bold text-gray-500 uppercase tracking-widest w-[32%] border-b border-white/60">Title</th>
+                          <th className="py-1.5 px-3 text-[7px] font-montserrat font-bold text-gray-500 uppercase tracking-widest w-[20%] border-b border-white/60">Owner</th>
+                          <th className="py-1.5 px-3 text-[7px] font-montserrat font-bold text-gray-500 uppercase tracking-widest w-[10%] text-center border-b border-white/60">Module</th>
+                          <th className="py-1.5 px-3 text-[7px] font-montserrat font-bold text-gray-500 uppercase tracking-widest w-[10%] text-center border-b border-white/60">Date</th>
+                          <th className="py-1.5 px-3 text-[7px] font-montserrat font-bold text-gray-500 uppercase tracking-widest w-[13%] text-center pr-4 border-b border-white/60">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-black/5 font-roboto bg-white/50">
+                        {futureEvents.map((event) => (
+                          <tr key={event.id} className="hover:bg-white/80 transition-colors group">
+                            <td className="py-1.5 px-3 align-middle w-[15%]">
+                              <span className="text-[10px] font-bold text-[#007970]">{event.id}</span>
+                            </td>
+                            <td className="py-1.5 px-3 align-middle w-[32%] truncate">
+                              <span className="text-[10px] font-bold text-gray-900 group-hover:text-[#C74600] transition-colors truncate block">{event.title}</span>
+                            </td>
+                            <td className="py-1.5 px-3 align-middle w-[20%] truncate">
+                              <span className="text-[9px] font-medium text-gray-600 truncate block">{event.owner}</span>
+                            </td>
+                            <td className="py-1.5 px-3 align-middle w-[10%] text-center">
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded-[2px] text-[7px] font-montserrat font-bold tracking-wider uppercase whitespace-nowrap ${getModuleBadge(event.module)}`}>
+                                {event.module}
+                              </span>
+                            </td>
+                            <td className="py-1.5 px-3 align-middle w-[10%] text-center">
+                              <span className="text-[9px] font-medium text-gray-600">{new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                            </td>
+                            <td className="py-1.5 px-3 align-middle w-[13%] text-center pr-4">
+                              <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-[2px] text-[7px] font-montserrat font-bold tracking-wider uppercase shadow-sm whitespace-nowrap ${getStatusBadge(event.status)}`}>
+                                {event.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                </div>
+
+                {/* Right Column Stacked (Metrics + Urgent) */}
+                <div className="col-span-1 flex flex-col gap-2.5 overflow-hidden">
+                  
+                  {/* Compliance Metrics */}
+                  <div className="bg-white/40 backdrop-blur-3xl rounded-[8px] border border-white/70 p-3.5 flex flex-col shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden shrink-0">
+                    <div className="flex justify-between items-center mb-2">
+                      <h2 className="text-xs font-montserrat font-bold text-gray-900 flex items-center">
+                        <FileText className="mr-1.5 text-[#007970]" size={14}/> Compliance Metrics
+                      </h2>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-y-2.5 gap-x-3 flex-1">
+                      <MetricItem label="GOVERNANCE" value="5" icon={<ShieldCheck size={10}/>} />
+                      <MetricItem label="CLINICAL" value="4" icon={<BookOpen size={10}/>} />
+                      <MetricItem label="QAPI" value="3" icon={<FileBarChart size={10}/>} />
+                      <MetricItem label="FINANCE" value="1" icon={<FileText size={10}/>} />
+                    </div>
+                  </div>
+
+                   {/* urgent action required style (Simulate near/past due data) */}
+                    <div className="bg-white/70 backdrop-blur-2xl rounded-[8px] border border-white/70 shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden flex-1 flex flex-col">
+                        <div className="px-3 py-1.5 border-b border-white/60 bg-[#DC2626]/10 shrink-0">
+                            <h2 className="text-xs font-montserrat font-bold text-[#DC2626] flex items-center">
+                                <AlertTriangle className="mr-1.5" size={14}/> Compliance Action Needed
+                            </h2>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto pr-1">
+                            <table className="w-full text-left table-fixed">
+                                <tbody className="divide-y divide-black/5 font-roboto bg-white/50">
+                                    
+                                    <tr className="hover:bg-white/80 transition-colors group">
+                                        <td className="py-1.5 px-3 align-middle w-[60%]">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-bold text-gray-900 truncate block">OASIS Look-Back Compliance Audit</span>
+                                                <span className="text-[7px] font-montserrat font-bold text-gray-500 uppercase tracking-widest">CAL-CO-001</span>
+                                            </div>
+                                        </td>
+                                        <td className="py-1.5 px-3 align-middle w-[15%] text-center">
+                                            <span className="text-[9px] font-bold text-gray-900">Mar 31</span>
+                                        </td>
+                                        <td className="py-1.5 px-3 align-middle w-[15%] text-center">
+                                          <span className="inline-flex items-center justify-center px-2 py-0.5 bg-[#DC2626] text-white rounded-[2px] text-[7px] font-montserrat font-bold tracking-wider uppercase whitespace-nowrap shadow-sm">
+                                            OVERDUE
+                                          </span>
+                                        </td>
+                                        <td className="py-1.5 px-3 align-middle w-[10%] text-right pr-4">
+                                            <button className="px-1.5 py-0.5 bg-white/60 backdrop-blur-md border border-white/80 text-gray-800 font-montserrat font-bold text-[7px] rounded-[4px] hover:bg-white hover:text-[#007970] shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all flex items-center justify-end ml-auto">
+                                                Review <ChevronRight size={8} className="ml-0.5" />
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                     <tr className="hover:bg-white/80 transition-colors group">
+                                        <td className="py-1.5 px-3 align-middle w-[60%]">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-bold text-gray-900 truncate block">Annual QAPI Review Submission</span>
+                                                <span className="text-[7px] font-montserrat font-bold text-gray-500 uppercase tracking-widest">CAL-QA-001</span>
+                                            </div>
+                                        </td>
+                                        <td className="py-1.5 px-3 align-middle w-[15%] text-center">
+                                            <span className="text-[9px] font-bold text-[#C74600]">Apr 15</span>
+                                        </td>
+                                        <td className="py-1.5 px-3 align-middle w-[15%] text-center">
+                                          <span className="inline-flex items-center justify-center px-2 py-0.5 bg-[#C74600] text-white rounded-[2px] text-[7px] font-montserrat font-bold tracking-wider uppercase whitespace-nowrap shadow-sm">
+                                            DUE SOON
+                                          </span>
+                                        </td>
+                                        <td className="py-1.5 px-3 align-middle w-[10%] text-right pr-4">
+                                            <button className="px-1.5 py-0.5 bg-white/60 backdrop-blur-md border border-white/80 text-gray-800 font-montserrat font-bold text-[7px] rounded-[4px] hover:bg-white hover:text-[#C74600] shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all flex items-center justify-end ml-auto">
+                                                Submit <ChevronRight size={8} className="ml-0.5" />
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                  
+                </div>
+
+              </div>
+
+            </div>
+          </main>
+          
+        </div> {/* End of 16:9 Container */}
+      </div> {/* End of Letterboxing Container */}
+    </>
+  );
+}
+
+// Subcomponents definitions
+
+function SidebarItem({ icon, label, active = false, badge }) {
+  return (
+    <button 
+      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-[4px] mb-0.5 transition-all font-montserrat font-bold text-[9px]
+        ${active 
+          ? 'bg-white/70 text-[#007970] shadow-[0_1px_4px_rgba(0,0,0,0.04)] border border-white/90' 
+          : 'bg-transparent text-gray-500 hover:bg-white/30 hover:text-gray-900'
+        }`}
+    >
+      <div className="flex items-center space-x-2">
+        <span className={`${active ? 'text-[#007970]' : 'text-gray-400'}`}>{icon}</span>
+        <span className="truncate block">{label}</span>
+      </div>
+      {badge && (
+        <span className={`text-[7px] font-bold px-1 py-0.5 rounded-[2px] shadow-sm ${active ? 'bg-[#C74600] text-white' : 'bg-white/60 border border-white/80 text-gray-600'}`}>
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function StatusKpiCard({ status, count, desc, icon, textColor, bgIconClass }) {
+  return (
+    <div className={`bg-white/40 backdrop-blur-3xl rounded-[8px] border border-white/70 shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-2.5 flex flex-col justify-between`}>
+      <div className="flex justify-between items-start mb-1.5">
+        <div className={`p-1 rounded-[4px] ${bgIconClass}`}>
+          {icon}
+        </div>
+        <span className="text-xl font-montserrat font-bold text-gray-900 leading-none">{count}</span>
+      </div>
+      <div>
+        <h3 className={`text-[8px] font-montserrat font-bold uppercase tracking-widest mb-0.5 ${textColor}`}>{status}</h3>
+        <p className="text-[7px] text-gray-600 font-roboto leading-tight">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
+function MetricItem({ label, value, icon }) {
+  return (
+    <div className="flex justify-between items-end border-b border-black/5 pb-1 group cursor-default relative">
+      <div className="absolute bottom-[-1px] left-0 w-0 h-px bg-[#007970] transition-all duration-300 group-hover:w-full"></div>
+      
+      <div className="flex flex-col">
+        <div className="text-[#007970] mb-0.5 group-hover:text-[#C74600] transition-colors drop-shadow-sm">{icon}</div>
+        <span className="text-[7px] font-montserrat font-bold text-gray-500 uppercase tracking-widest truncate block">{label}</span>
+      </div>
+      <span className="text-lg font-montserrat font-bold text-gray-900 leading-none">{value}</span>
+    </div>
+  );
+}

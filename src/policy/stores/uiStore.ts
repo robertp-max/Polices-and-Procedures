@@ -123,3 +123,9 @@ export const useShellStore = create<ShellState>((set, get) => ({
     }),
 }));
 
+/** Standardized selector hook for light (care-indeed-light) vs dark (v3-veil) mode.
+ *  Use this (or direct `useShellStore(s => s.theme === 'care-indeed-light')`) everywhere
+ *  to avoid drift between `isLight` / `isLightMode` naming across calendar + swimlane. */
+export const useIsLight = () => useShellStore(s => s.theme === 'care-indeed-light');
+export const useIsLightMode = useIsLight; // alias for legacy / MasterCalendar consistency
+

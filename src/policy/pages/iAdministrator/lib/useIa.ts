@@ -2,7 +2,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { iaClient, IaClientError, type BackendMode } from './iaClient';
 import { runBradQuery, type BradResponse, type BradCitation } from '@/services/mockBradEngine';
 import type { BradRuntimeSnapshot } from '@/services/bradAppContext';
-import { isDemoCriticalTrigger } from './demoCriticalEmergency';
+import { WORKFLOW_GRAPH } from '@/policy/data/workflowGraph.generated';
+import { WORKFLOWS } from '@/policy/data/workflows.generated';
+import { COMPLIANCE_ACTION_MAP, getComplianceActionDefinition } from './complianceActionMap';
+import { resolveIaReference, warnUnresolvedIaReference } from './referenceResolver';
+import {
+  sanitizeReferencePreview,
+  sanitizeSessionSummaryReferences,
+  sanitizeStructuredResponseReferences,
+} from './referenceSanitizer';
+// import { isDemoCriticalTrigger } from './demoCriticalEmergency'; // retained for potential live critical triggers, currently unused in demo human-first path
 import type {
   AvailableAction,
   Citation,
@@ -67,7 +76,7 @@ function classifyError(err: unknown): { mode: BackendMode; message: string } {
       case 'static_deploy':
         return {
           mode: 'static_deploy',
-          message: 'Demo intelligence mode is active for this deployment.',
+          message: 'Intelligence backend not connected in this deployment.',
         };
       case 'method_mismatch':
         return {
@@ -210,6 +219,15 @@ function toCitation(c: BradCitation, idx: number): Citation {
 function toAvailableActions(citations: Citation[]): AvailableAction[] {
   const primary = citations[0];
   if (!primary) return [];
+  const resolved = resolveIaReference({
+    id: primary.policyId,
+    title: primary.title,
+    source: 'useIa.toAvailableActions',
+  });
+  if (!resolved.resolved || resolved.resolvedType === 'event') {
+    warnUnresolvedIaReference(resolved);
+    return [];
+  }
   const primaryType = demoReferenceTypeFromId(primary.policyId);
   const openType: AvailableAction['type'] =
     primaryType === 'workflow' ? 'open_workflow' :
@@ -249,32 +267,44 @@ function toAvailableActions(citations: Citation[]): AvailableAction[] {
 }
 
 function demoReferenceTypeFromId(id: string): DocumentType {
-  if (id.startsWith('WF-') || id.includes('.')) return 'workflow';
-  if (id.includes('-FM-') || id.startsWith('FM-') || id.startsWith('CE-FRM-')) return 'form';
-  if (id.startsWith('APP-')) return 'appendix';
+  const resolved = resolveIaReference({ id, source: 'useIa.demoReferenceTypeFromId' });
+  if (resolved.resolved) {
+    if (resolved.resolvedType === 'workflow') return 'workflow';
+    if (resolved.resolvedType === 'form') return 'form';
+    if (resolved.resolvedType === 'appendix') return 'appendix';
+    return 'policy';
+  }
+  warnUnresolvedIaReference(resolved);
   return 'policy';
 }
 
 function demoReferenceTitle(id: string): string {
-  return id === 'EN-WF-101' ? 'Policy Execution, Workflow Enforcement & Evidence Traceability' :
-    id === 'CL-DC-101' ? 'Clinical Documentation Integrity & Authenticity' :
-    id === 'CL-OA-101' ? 'OASIS Data Accuracy, Validation & Submission Integrity' :
-    id === 'CL-CC-101' ? 'Care Coordination & SDOH Management' :
-    id === 'QA-VBP-101' ? 'HHVBP Performance & Outcomes Management' :
-    id === 'WF-EMER-001' ? 'Emergency Incident Orchestration Workflow' :
-    id === 'WF-CSE-001' ? 'Critical Safety Event Workflow' :
-    id === 'CE-FRM-101' ? 'Incident Report - Critical Event' :
-    id === 'CE-FRM-102' ? 'Emergency Response Documentation' :
-    id === 'CE-FRM-103' ? 'Environmental Safety Risk Assessment' :
-    `${id} Reference Summary`;
+  const resolved = resolveIaReference({ id, source: 'useIa.demoReferenceTitle' });
+  if (resolved.resolved) return resolved.title;
+  warnUnresolvedIaReference(resolved);
+  return `${id} Reference Summary`;
 }
 
 function buildDemoRelatedReferenceBody(ids: string[]): string {
-  const refs = ids.map(id => ({ id, title: demoReferenceTitle(id), type: demoReferenceTypeFromId(id) }));
+  const refs = ids.flatMap(id => {
+    const resolved = resolveIaReference({ id, source: 'useIa.buildDemoRelatedReferenceBody' });
+    if (!resolved.resolved || resolved.resolvedType === 'event') {
+      warnUnresolvedIaReference(resolved);
+      return [];
+    }
+    return [{
+      id: resolved.id,
+      title: resolved.title,
+      type: demoReferenceTypeFromId(resolved.id),
+    }];
+  });
   const policies = refs.filter(ref => ref.type === 'policy');
   const workflows = refs.filter(ref => ref.type === 'workflow');
   const forms = refs.filter(ref => ref.type === 'form');
   const lines: string[] = ['Related Policy / Workflow / Form References', ''];
+  if (refs.length === 0) {
+    return 'No linked references available.';
+  }
 
   if (policies.length > 0) {
     lines.push('Policies:');
@@ -295,13 +325,94 @@ function buildDemoRelatedReferenceBody(ids: string[]): string {
   return lines.join('\n').trim();
 }
 
-function toDemoReferencePreview(id: string): ReferencePreview {
-  const type = demoReferenceTypeFromId(id);
-  const title = demoReferenceTitle(id);
-  const linkedIds = ['EN-WF-101', 'WF-EMER-001', 'CE-FRM-101'];
+function uniqueIds(ids: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const id of ids) {
+    const normalized = id.trim().toUpperCase();
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    out.push(normalized);
+  }
+  return out;
+}
 
-  return {
-    id,
+function scenarioLinkedReferenceIds(id: string): string[] {
+  for (const definition of Object.values(COMPLIANCE_ACTION_MAP)) {
+    const candidates = [
+      ...definition.relatedPolicyIds,
+      ...definition.relatedFormIds,
+      ...definition.relatedWorkflowIds,
+    ].map(item => item.toUpperCase());
+    if (!candidates.includes(id)) continue;
+    const resolvedDefinition = getComplianceActionDefinition(definition.id);
+    return [
+      ...resolvedDefinition.relatedPolicies.map(item => item.id),
+      ...resolvedDefinition.relatedWorkflows.map(item => item.id),
+      ...resolvedDefinition.relatedForms.map(item => item.id),
+    ];
+  }
+  return [];
+}
+
+function graphLinkedReferenceIds(id: string): string[] {
+  const workflow = WORKFLOWS[id];
+  if (workflow) {
+    return [
+      ...workflow.policyRefs,
+      id,
+      ...workflow.requiredForms,
+    ];
+  }
+
+  const workflowIds = [
+    ...(WORKFLOW_GRAPH.byPolicy[id] ?? []),
+    ...(WORKFLOW_GRAPH.byForm[id] ?? []),
+  ];
+  const linked: string[] = [...workflowIds];
+  for (const workflowId of workflowIds) {
+    const linkedWorkflow = WORKFLOWS[workflowId];
+    if (!linkedWorkflow) continue;
+    linked.push(...linkedWorkflow.policyRefs, ...linkedWorkflow.requiredForms);
+  }
+  return linked;
+}
+
+function buildDemoLinkedReferenceIds(id: string): string[] {
+  const resolved = resolveIaReference({ id, source: 'useIa.buildDemoLinkedReferenceIds' });
+  if (!resolved.resolved) {
+    warnUnresolvedIaReference(resolved);
+    return [];
+  }
+  return uniqueIds([
+    ...scenarioLinkedReferenceIds(resolved.id),
+    ...graphLinkedReferenceIds(resolved.id),
+  ])
+    .filter(candidate => candidate !== resolved.id)
+    .filter((candidate) => {
+      const candidateResolution = resolveIaReference({
+        id: candidate,
+        source: 'useIa.buildDemoLinkedReferenceIds.candidate',
+      });
+      if (candidateResolution.resolved && candidateResolution.resolvedType !== 'event') return true;
+      warnUnresolvedIaReference(candidateResolution);
+      return false;
+    })
+    .slice(0, 12);
+}
+
+function toDemoReferencePreview(id: string): ReferencePreview {
+  const resolved = resolveIaReference({ id, source: 'useIa.toDemoReferencePreview' });
+  if (!resolved.resolved || resolved.resolvedType === 'event') {
+    warnUnresolvedIaReference(resolved);
+  }
+  const resolvedId = resolved.resolved ? resolved.id : id;
+  const type = demoReferenceTypeFromId(resolvedId);
+  const title = resolved.resolved ? resolved.title : demoReferenceTitle(resolvedId);
+  const linkedIds = buildDemoLinkedReferenceIds(resolvedId);
+
+  const preview: ReferencePreview = {
+    id: resolvedId,
     type,
     title,
     domain: 'Compliance',
@@ -310,7 +421,7 @@ function toDemoReferencePreview(id: string): ReferencePreview {
     regulatoryTags: ['Policy Guidance', 'Operational Review', 'Reference Summary'],
     sections: [
       {
-        id: `${id}-s1`,
+        id: `${resolvedId}-s1`,
         title: 'Reference Guidance',
         level: 1,
         body: [
@@ -320,19 +431,20 @@ function toDemoReferencePreview(id: string): ReferencePreview {
         ].join(' '),
       },
       {
-        id: `${id}-s2`,
+        id: `${resolvedId}-s2`,
         title: 'Related Policy / Workflow / Form References',
         level: 1,
         body: buildDemoRelatedReferenceBody(linkedIds),
       },
     ],
     linkedIds,
-    sourcePath: `demo://${id}`,
+    sourcePath: `demo://${resolvedId}`,
     version: '1.0',
     effectiveDate: '2026-04-29',
     nextReviewDate: '2027-04-29',
     description: 'Reference summary surfaced for Brad compliance guidance.',
   };
+  return sanitizeReferencePreview(preview, 'useIa.toDemoReferencePreview') ?? preview;
 }
 
 function renderAnswerForIntent(intent: IntentKind | undefined, brad: BradResponse): string {
@@ -373,45 +485,65 @@ function deriveEnforcement(intent: IntentKind | undefined): EnforcementLevel {
 
 function toMockStructuredResponse(req: QueryRequest, brad: BradResponse, elapsedMs: number): StructuredResponse {
   const intent = req.intent ?? 'question';
-  const citations = (brad.citations ?? []).map(toCitation);
-  const policyIds = citations.map(c => c.policyId);
-  const primaryPolicy = citations[0]?.policyId ?? null;
-  const answer = renderAnswerForIntent(intent, brad);
-  const isEmergency = answer.includes('Call 911 immediately') || answer.includes('cardiac emergency');
+  const rawAnswer = renderAnswerForIntent(intent, brad);
+  const inputLower = (req.input || '').toLowerCase();
 
-  return {
+  const isEmergency = rawAnswer.includes('Call 911 immediately') || rawAnswer.includes('cardiac emergency');
+  const isHumanSupport = isEmergency ||
+    /i'm sorry that happened|that is serious|step away|notify your supervisor|do you feel safe|are you safe right now/i.test(rawAnswer);
+
+  const explicitDocRequest = /(which form|what form|open the|start the|incident note|document this|create the report|what document|help.*document|start report)/.test(inputLower);
+
+  const useCitations = (isHumanSupport && !explicitDocRequest) ? [] : (brad.citations ?? []).map(toCitation);
+  const policyIds = useCitations.map(c => c.policyId);
+  const primaryPolicy = useCitations[0]?.policyId ?? null;
+
+  // Never show hard-coded High Confidence 92% on human safety / staff distress responses in preview.
+  // Use modest "Preview guidance — verify with supervisor" behavior.
+  const confidenceLevel: 'high' | 'medium' | 'low' = isHumanSupport ? 'medium' : 'high';
+  const score = isHumanSupport ? 65 : 92;
+
+  return sanitizeStructuredResponseReferences({
     id: `mock-${Date.now()}`,
     responseType: 'compliance_answer',
-    directAnswer: answer,
-    operationalRequirement: brad.actionPlan?.actions[0] ?? 'Review governing requirements and close documentation gaps.',
-    requiredArtifacts: policyIds,
+    directAnswer: rawAnswer,
+    operationalRequirement: (isHumanSupport && !explicitDocRequest)
+      ? 'Focus on your immediate safety and supervisor notification first. Documentation only when you are clear.'
+      : (brad.actionPlan?.actions[0] ?? 'Review governing requirements and close documentation gaps.'),
+    requiredArtifacts: (isHumanSupport && !explicitDocRequest) ? [] : policyIds,
     complianceRisk: intent === 'pre_survey_audit'
       ? 'Multiple documentation deficiencies could trigger survey citations if not remediated promptly.'
-      : 'Compliance readiness depends on documented execution and evidence retention.',
-    riskLevel: isEmergency ? 'critical' : deriveRiskLevel(intent),
-    confidence: 'high',
-    systemConfidenceScore: 92,
+      : (isHumanSupport ? 'Field staff safety and objective facts take priority over routine compliance lookup.' : 'Compliance readiness depends on documented execution and evidence retention.'),
+    riskLevel: isEmergency ? 'critical' : (isHumanSupport ? 'high' : deriveRiskLevel(intent)),
+    confidence: confidenceLevel,
+    systemConfidenceScore: score,
     governingPolicyId: primaryPolicy,
     enforcementLevel: isEmergency ? 'condition_level' : deriveEnforcement(intent),
-    complianceImpact: 'Supports survey readiness decisions with policy-linked operational guidance.',
-    surveyFocus: [
-      'Evidence completeness and traceability',
-      'Policy-to-practice alignment',
-      'Oversight documentation and corrective follow-through',
-    ],
-    commonFailurePoints: [
-      'Missing signatures or approval records',
-      'Incomplete corrective action logs',
-      'Outdated policy-linked forms',
-    ],
-    requirementsSnapshot: citations.map(c => ({
+    complianceImpact: isHumanSupport
+      ? 'Immediate safety and objective documentation protect the clinician and support proper incident handling.'
+      : 'Supports survey readiness decisions with policy-linked operational guidance.',
+    surveyFocus: isHumanSupport
+      ? ['Immediate safety of field staff', 'Objective real-time documentation only', 'Timely supervisor / DON notification']
+      : [
+          'Evidence completeness and traceability',
+          'Policy-to-practice alignment',
+          'Oversight documentation and corrective follow-through',
+        ],
+    commonFailurePoints: isHumanSupport
+      ? ['Delay notifying supervisor while still in the home', 'Continuing the visit when unsafe', 'Speculating or arguing instead of objective facts']
+      : [
+          'Missing signatures or approval records',
+          'Incomplete corrective action logs',
+          'Outdated policy-linked forms',
+        ],
+    requirementsSnapshot: useCitations.map(c => ({
       label: c.title,
       status: 'required',
       sourcePolicyId: c.policyId,
       sourceSection: c.section,
     })),
-    citations,
-    linkedReferences: citations.map(c => ({
+    citations: useCitations,
+    linkedReferences: useCitations.map(c => ({
       id: c.policyId,
       type: demoReferenceTypeFromId(c.policyId),
       title: c.title,
@@ -429,16 +561,76 @@ function toMockStructuredResponse(req: QueryRequest, brad: BradResponse, elapsed
           ? 'workflow'
           : 'document',
     })),
-    availableActions: toAvailableActions(citations),
+    availableActions: (isHumanSupport && !explicitDocRequest) ? [] : toAvailableActions(useCitations),
     studioOutputType: studioOutputFromIntent(intent),
     noAnswerFound: false,
     noAnswerReason: '',
     meta: {
       intent,
-      retrievedChunkIds: citations.map(c => c.id),
+      retrievedChunkIds: useCitations.map(c => c.id),
       model: 'mock-brad-engine-v1',
       elapsedMs,
     },
+  }, 'useIa.toMockStructuredResponse');
+}
+
+/**
+ * PLAN B FINAL HARD OVERRIDE - runs at the very last moment before display.
+ * This ensures even if the engine or toMock returns app-data spam for distress cases,
+ * the visible UI gets the human supervisor response.
+ * Called right before setResponse and before appending brad message in chat.
+ */
+function applyBradHumanFirstOverride(currentInput: string, currentResponse: StructuredResponse): StructuredResponse {
+  const combined = `${currentInput} ${currentResponse.directAnswer || ''}`.toLowerCase();
+
+  const isDistress = 
+    /groped|sexually harassed|inappropriate touching|grabbed me|touched my chest/.test(combined) ||
+    /accus.*(theft|steal|stole)|says I stole|theft accusation/.test(combined) ||
+    /i do not feel safe|not safe in the home|family.*blocking|patient is violent|hostile/.test(combined) ||
+    /client is chasing|chasing me.*(knife|gun|weapon)|has a (knife|gun)|trapped.*(knife|client)|i am trapped/.test(combined) ||
+    /lost my client|cannot find my client|i lost my client/.test(combined) ||
+    // Discovered deceased / fatality / unresponsive
+    /(client|clients|patient|patients) (is|are|was|were) dead|found (client|patient)(s)? dead|arrived and (client|clients|patient|patients) (is|are|was|were) dead|unresponsive|not breathing|no pulse|deceased|death in home|found on floor not breathing|possible death|died during visit/.test(combined);
+
+  if (!isDistress) return currentResponse;
+
+  let humanText = '';
+  const isKnifeThreat = /chasing.*(knife|gun)|has a (knife|gun)|trapped.*(knife|client)/.test(combined);
+  const isFatality = /(client|clients|patient|patients) (is|are|was|were) dead|found (client|patient)(s)? dead|arrived and (client|clients|patient|patients) (is|are|was|were) dead|unresponsive|not breathing|no pulse|deceased|death in home|found on floor not breathing|possible death|died during visit/.test(combined);
+
+  if (isFatality) {
+    humanText = "EMERGENCY — Call 911 immediately. Do not touch or move the clients unless 911 instructs you to. Step back and make sure the scene is safe. If there may be danger in the home, leave immediately and call 911 from a safe place. Notify your supervisor/DON/Administrator right away after calling 911. Stay available for emergency responders and document only objective facts after you are safe. Are you safe right now, and have you called 911?";
+  } else if (isKnifeThreat) {
+    humanText = "EMERGENCY — Call 911 immediately. Get out of the house now if you can do so safely. If you cannot leave, lock yourself in a room, create distance, stay quiet, and stay on the line with 911. Do not continue the visit. After you are safe, notify your supervisor/DON/Administrator. Are you safe and out of the home right now?";
+  } else if (/groped|sexually harassed|inappropriate touching/.test(combined)) {
+    humanText = "I'm sorry that happened. Are you safe right now? Step away from the client and end the visit if you feel unsafe. If there is any immediate threat or you cannot leave safely, call 911. Once safe, notify your supervisor/DON/Administrator. I can help you document it after you're safe. Do you feel safe right now?";
+  } else if (/accus.*(theft|steal|stole)|says I stole/.test(combined)) {
+    humanText = "That's serious, and you shouldn't handle it alone. Are you safe continuing the visit right now? Do not argue with the client or try to resolve the accusation by yourself. Step away if it's escalating, notify your supervisor/DON/Administrator, and document only objective facts. Do you feel safe continuing the visit?";
+  } else if (/lost my client|cannot find my client/.test(combined)) {
+    humanText = "I've got you. First, make sure the client is not in immediate danger. Check the last known location, call the client if safe to do so, and notify your supervisor/DON/Administrator right now. If the client may be unsafe, missing from a visit location, confused, injured, or at risk, escalate immediately and call 911 if there is urgent danger. Where was the client last seen?";
+  } else {
+    humanText = "I hear you — this sounds like a high-stress field situation. Are you safe right now? Step back if needed and contact your supervisor immediately. Once you're clear, we can document the facts objectively. Are you in a safe place?";
+  }
+
+  const isEmergency = humanText.startsWith('EMERGENCY');
+
+  // Force clean response - no spam, no 92%, no auto docs
+  return {
+    ...currentResponse,
+    directAnswer: humanText,
+    riskLevel: isEmergency ? 'critical' : 'high',
+    confidence: 'medium',
+    systemConfidenceScore: 60,
+    linkedReferences: [],
+    citations: [],
+    availableActions: [],
+    requiredArtifacts: [],
+    governingPolicyId: null,
+    meta: {
+      ...(currentResponse.meta as any || {}),
+      humanFirstOverride: true,
+      bradHumanLayer: 'active',
+    } as any,
   };
 }
 
@@ -477,9 +669,13 @@ export function useIaQuery(backendMode: BackendMode = 'checking', runtime?: Brad
         ]);
         if (ctrl.signal.aborted) return;
         const elapsedMs = Math.max(Date.now() - startedAt, 420);
-        const structured = toMockStructuredResponse(req, mock, elapsedMs);
+        let structured = toMockStructuredResponse(req, mock, elapsedMs);
+        // PLAN B HARD OVERRIDE - final layer before display
+        structured = applyBradHumanFirstOverride(req.input, structured);
+        structured = sanitizeStructuredResponseReferences(structured, 'useIaQuery.mock.final');
+        const isHumanOverride = (structured.meta as any)?.humanFirstOverride === true || (structured.meta as any)?.bradHumanLayer === 'active' || /^EMERGENCY — Call 911/i.test(structured.directAnswer || '');
         setResponse(structured);
-        setPhase1TopDocId(structured.governingPolicyId);
+        setPhase1TopDocId(isHumanOverride ? null : structured.governingPolicyId);
         setLoading(false);
         setRetrieving(false);
       } catch (err) {
@@ -504,7 +700,12 @@ export function useIaQuery(backendMode: BackendMode = 'checking', runtime?: Brad
         },
         onComplete: (r) => {
           if (ctrl.signal.aborted) return;
-          setResponse(r);
+          // PLAN B HARD OVERRIDE for live backend path too
+          const overridden = sanitizeStructuredResponseReferences(
+            applyBradHumanFirstOverride(req.input, r),
+            'useIaQuery.live.final',
+          );
+          setResponse(overridden);
           setLoading(false);
           setRetrieving(false);
         },
@@ -557,16 +758,25 @@ export function useIaReference(): ReferenceHookState {
 
     setLoading(true);
     setError(null);
+    const resolved = resolveIaReference({ id, source: 'useIaReference.load' });
+    if (!resolved.resolved || resolved.resolvedType === 'event') {
+      warnUnresolvedIaReference(resolved);
+      setReference(null);
+      setError('Reference is not available in the current app registry.');
+      setLoading(false);
+      inflight.current = null;
+      return;
+    }
 
     if (BRAD_DEMO_MODE_ENABLED) {
-      setReference(toDemoReferencePreview(id));
+      setReference(toDemoReferencePreview(resolved.id));
       setLoading(false);
       return;
     }
 
     try {
-      const r = await iaClient.getReference(id, ctrl.signal);
-      if (!ctrl.signal.aborted) setReference(r);
+      const r = await iaClient.getReference(resolved.id, ctrl.signal);
+      if (!ctrl.signal.aborted) setReference(sanitizeReferencePreview(r, 'useIaReference.load.response'));
     } catch (err) {
       if ((err as { name?: string })?.name === 'AbortError') return;
       setError((err as Error)?.message ?? 'reference load failed');
@@ -625,6 +835,37 @@ export function useChatThread(runtime?: BradRuntimeSnapshot): ChatThreadState {
   const [error, setError] = useState<string | null>(null);
   const inflight = useRef<AbortController | null>(null);
 
+  const DEMO_STORAGE_KEY = 'brad-demo-chat';
+
+  // Persist / hydrate chat history for preview mode (survives refresh, tab switch, route change)
+  const saveDemoChat = useCallback((tid: string | null, msgs: ChatMessage[], sess: SessionSummary | null) => {
+    if (!BRAD_DEMO_MODE_ENABLED) return;
+    try {
+      localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify({
+        threadId: tid,
+        messages: msgs,
+        session: sess,
+        savedAt: Date.now(),
+      }));
+    } catch { /* ignore quota / private mode */ }
+  }, []);
+
+  // Load last active chat on mount for preview
+  useEffect(() => {
+    if (!BRAD_DEMO_MODE_ENABLED) return;
+    try {
+      const raw = localStorage.getItem(DEMO_STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved && saved.threadId && Array.isArray(saved.messages)) {
+          setThreadId(saved.threadId);
+          setMessages(saved.messages);
+          setSession(saved.session || null);
+        }
+      }
+    } catch { /* ignore */ }
+  }, []);
+
   const submit = useCallback((input: string) => {
     if (!input.trim() || loading) return;
 
@@ -638,7 +879,8 @@ export function useChatThread(runtime?: BradRuntimeSnapshot): ChatThreadState {
       content: input.trim(),
       timestamp: new Date().toISOString(),
     };
-    setMessages(prev => [...prev, userMsg]);
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
     setLoading(true);
     setRetrieving(true);
     setError(null);
@@ -648,53 +890,64 @@ export function useChatThread(runtime?: BradRuntimeSnapshot): ChatThreadState {
 
     if (BRAD_DEMO_MODE_ENABLED) {
       const startedAt = new Date().toISOString();
-      const normalized = input.trim().toLowerCase();
-      const emergency = isDemoCriticalTrigger(input)
-        || (normalized.includes('heart attack') && (normalized.includes('gun') || normalized.includes('firearm')))
-        || (normalized.includes('cardiac arrest') && (normalized.includes('gun') || normalized.includes('firearm')));
+
+      // Multi-turn continuation for active human safety case (do not restart app-data search)
+      const lastBrad = [...messages].reverse().find(m => m.role === 'brad');
+      const lastAnswer = lastBrad?.content || '';
+      const isActiveHumanCase = /i'm sorry that happened|that is serious|step away|notify your supervisor|do you feel safe|EMERGENCY  Call 911/i.test(lastAnswer);
+      const isContinuation = /^(yes|yeah|yep|im safe|i'm safe|i got out|got out|what next|now what|start report|yes start|document|ok)$/i.test(input.trim());
 
       window.setTimeout(async () => {
         if (ctrl.signal.aborted) return;
         setRetrieving(false);
-        setPhase1Mode(emergency ? 'emergency_response' : 'general');
+        setPhase1Mode(isActiveHumanCase ? 'emergency_response' : 'general');
 
-        const mock = await runBradQuery(input.trim(), { runtime, currentUserRole: 'iAdministrator' });
+        let mock: BradResponse;
+        if (isActiveHumanCase && isContinuation) {
+          // Continue the same case with human supervisor tone. Only one next step + focused ask.
+          if (/ (safe|got out)/i.test(input)) {
+            mock = { answer: "Good. Do not re-enter the home. Notify your supervisor/DON/Administrator now. Document the facts (time, location, what was said or done, who was present, witnesses). I can help with the incident note when you are ready. Do you want to start the incident report now?", citations: [] };
+          } else if (/yes|start|document/i.test(input)) {
+            mock = { answer: "Understood. The most relevant next step is the workforce safety or incident report for this event. Open it only when you are in a safe location and have a few quiet minutes. Would you like the exact form reference or step-by-step fields to capture?", citations: [] };
+          } else {
+            mock = { answer: "Understood. Stay safe, notify your supervisor if you have not already, and document only the objective facts once you are clear. Is there anything else you need right now before we close the immediate safety steps?", citations: [] };
+          }
+        } else {
+          mock = await runBradQuery(input.trim(), { runtime, currentUserRole: 'iAdministrator' });
+        }
         if (ctrl.signal.aborted) return;
 
-        const structured = toMockStructuredResponse(
+        let structured = toMockStructuredResponse(
           { input: input.trim(), intent: 'question' },
           mock,
           420,
         );
+        // PLAN B HARD OVERRIDE for chat path - ensures visible UI always gets human-first for distress
+        structured = applyBradHumanFirstOverride(input.trim(), structured);
+        structured = sanitizeStructuredResponseReferences(structured, 'useChatThread.mock.final');
 
         const syntheticThreadId = currentThreadId ?? `demo-${genId()}`;
         const now = new Date().toISOString();
-        const sessionSummary: SessionSummary = {
+        const sessionSummary: SessionSummary = sanitizeSessionSummaryReferences({
           threadId: syntheticThreadId,
-          mode: emergency ? 'emergency_response' : 'general',
-          urgency: emergency ? 'critical' : 'moderate',
+          mode: isActiveHumanCase ? 'emergency_response' : (isEmergencyish(input) ? 'emergency_response' : 'general'),
+          urgency: isActiveHumanCase ? 'critical' : 'moderate',
           caseStatus: 'active',
-          caseTitle: emergency ? 'Critical Safety Emergency' : 'Compliance Guidance Session',
-          caseSummary: emergency
-            ? 'Firearm and cardiac emergency scenario in home setting.'
-            : 'Deterministic demo compliance conversation.',
-          detectedIncidentType: emergency ? 'suspected_heart_attack' : null,
-          lifeSafetyFlag: emergency,
-          escalationRequired: emergency,
-          formsRequired: true,
-          qapiTriggerPossible: emergency,
-          immediateActions: emergency
-            ? ['Call 911 immediately', 'Do not enter unsafe scene', 'Notify DON after EMS activation']
-            : ['Confirm policy requirements', 'Document execution evidence', 'Escalate unresolved gaps'],
-          pendingTasks: emergency
-            ? ['Complete CE-FRM-101', 'Complete CE-FRM-102', 'Log incident event trail']
-            : ['Validate workflow linkage', 'Confirm required forms are complete'],
-          activePolicies: emergency ? ['ERP-002', 'WS-001', 'IR-004'] : ['EN-WF-101', 'CL-DC-101'],
-          activeForms: emergency ? ['CE-FRM-101', 'CE-FRM-102'] : ['EN-FM-002'],
-          messageCount: messages.length + 2,
+          caseTitle: isActiveHumanCase ? 'Staff Safety / Field Incident' : 'Compliance Guidance Session',
+          caseSummary: isActiveHumanCase ? 'Active field staff safety case — human supervisor guidance in progress.' : 'Deterministic demo compliance conversation.',
+          detectedIncidentType: isActiveHumanCase ? 'other' : null,
+          lifeSafetyFlag: isActiveHumanCase,
+          escalationRequired: isActiveHumanCase,
+          formsRequired: false, // only when user explicitly asks
+          qapiTriggerPossible: false,
+          immediateActions: isActiveHumanCase ? ['Ensure personal safety', 'Notify supervisor', 'Objective facts only'] : ['Confirm policy requirements'],
+          pendingTasks: [],
+          activePolicies: [],
+          activeForms: [],
+          messageCount: nextMessages.length + 1,
           createdAt: session?.createdAt ?? startedAt,
           updatedAt: now,
-        };
+        });
 
         const bradMsg: ChatMessage = {
           id: genId(),
@@ -704,12 +957,16 @@ export function useChatThread(runtime?: BradRuntimeSnapshot): ChatThreadState {
           structuredResponse: structured,
         };
 
+        const finalMessages = [...nextMessages, bradMsg];
         if (!threadId) setThreadId(syntheticThreadId);
         setSession(sessionSummary);
-        setMessages(prev => [...prev, bradMsg]);
+        setMessages(finalMessages);
         setLoading(false);
         setRetrieving(false);
         setPhase1Mode(undefined);
+
+        // Persist so history + active case survive refresh / navigation
+        saveDemoChat(syntheticThreadId, finalMessages, sessionSummary);
       }, 320);
 
       return;
@@ -721,7 +978,6 @@ export function useChatThread(runtime?: BradRuntimeSnapshot): ChatThreadState {
         onPhase1: (p1: ChatPhase1Event) => {
           setRetrieving(false);
           setPhase1Mode(p1.mode);
-          // Update session urgency/mode immediately from phase1
           setSession(prev => prev ? {
             ...prev,
             mode: p1.mode as SessionSummary['mode'],
@@ -731,12 +987,25 @@ export function useChatThread(runtime?: BradRuntimeSnapshot): ChatThreadState {
           } : null);
         },
         onComplete: (result) => {
+          const safeMessage: ChatMessage = result.message.structuredResponse
+            ? {
+                ...result.message,
+                structuredResponse: sanitizeStructuredResponseReferences(
+                  result.message.structuredResponse,
+                  'useChatThread.live.message',
+                ),
+              }
+            : result.message;
+          const safeSession = sanitizeSessionSummaryReferences(result.sessionSummary);
+          const finalMessages = [...nextMessages, safeMessage];
           if (!threadId) setThreadId(result.threadId);
-          setSession(result.sessionSummary);
-          setMessages(prev => [...prev, result.message]);
+          setSession(safeSession);
+          setMessages(finalMessages);
           setLoading(false);
           setRetrieving(false);
           setPhase1Mode(undefined);
+          // For live backend, the server session already persists; we still mirror locally for UI
+          saveDemoChat(result.threadId, finalMessages, safeSession);
         },
         onError: (msg) => {
           if (ctrl.signal.aborted) return;
@@ -747,7 +1016,7 @@ export function useChatThread(runtime?: BradRuntimeSnapshot): ChatThreadState {
       },
       ctrl.signal,
     );
-  }, [loading, messages.length, runtime, session?.createdAt, threadId]);
+  }, [loading, messages, runtime, session?.createdAt, threadId, saveDemoChat]);
 
   const newThread = useCallback(() => {
     inflight.current?.abort();
@@ -762,11 +1031,18 @@ export function useChatThread(runtime?: BradRuntimeSnapshot): ChatThreadState {
     setRetrieving(false);
     setError(null);
     setPhase1Mode(undefined);
+    if (BRAD_DEMO_MODE_ENABLED) {
+      try { localStorage.removeItem(DEMO_STORAGE_KEY); } catch {}
+    }
   }, [threadId]);
 
   const updateSession = useCallback((patch: Partial<SessionSummary>) => {
-    setSession(prev => prev ? { ...prev, ...patch } : null);
-  }, []);
+    setSession(prev => {
+      const next = prev ? { ...prev, ...patch } : null;
+      if (next && BRAD_DEMO_MODE_ENABLED) saveDemoChat(next.threadId, messages, next);
+      return next;
+    });
+  }, [messages, saveDemoChat]);
 
   useEffect(() => () => { inflight.current?.abort(); }, []);
 
@@ -782,4 +1058,9 @@ export function useChatThread(runtime?: BradRuntimeSnapshot): ChatThreadState {
     newThread,
     updateSession,
   };
+}
+
+function isEmergencyish(input: string): boolean {
+  const n = input.toLowerCase();
+  return /knife|gun|weapon|chasing|trapped|not safe|911/.test(n);
 }

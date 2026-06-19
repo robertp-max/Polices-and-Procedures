@@ -268,7 +268,7 @@ let remoteKnownUnavailable = false;
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   if (remoteKnownUnavailable) {
-    throw new Error('Compliance execution backend is unavailable. The application is using local demo execution mode.');
+    throw new Error('Compliance execution backend is unavailable. The application is using local execution mode.');
   }
   const res = await fetch(`${API_BASE}${path}`, {
     method,
@@ -279,8 +279,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     const text = await res.text();
     if (res.status === 404 || res.status >= 500) {
       remoteKnownUnavailable = true;
-      logEvidenceDevWarning('Remote compliance-execution route unavailable; falling back to local demo mode.', { status: res.status, path });
-      throw new Error('Compliance execution backend is currently unavailable. Please continue in local demo mode.');
+      logEvidenceDevWarning('Remote compliance-execution route unavailable; falling back to local mode.', { status: res.status, path });
+      throw new Error('Compliance execution backend is currently unavailable. Please continue in local mode.');
     }
     throw new Error(text || `Request failed: ${method} ${path}`);
   }

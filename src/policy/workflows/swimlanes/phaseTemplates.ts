@@ -3,7 +3,7 @@ import type { Workflow } from '@/policy/types/workflow';
 import type { SwimlanePhase } from './types';
 
 const GENERIC = ['Preparation', 'Execution', 'Review', 'Approval / Signature', 'Evidence', 'Lock / Report'];
-const QAPI = ['Pre-Meeting Preparation', 'Data / Packet Validation', 'Committee Review', 'Vote & Actions', 'Minutes & Signatures', 'Governing Body', 'Locked Package'];
+const QAPI = ['Pre-Meeting Preparation', 'Data Validation', 'Committee Review', 'Vote & Actions', 'Minutes & Signatures', 'Governing Body', 'Locked Package'];
 const GOVERNANCE = ['Preparation', 'Committee / Board Review', 'Decision', 'Documentation', 'Approval / Signature', 'Evidence Lock'];
 const CLINICAL = ['Clinical Trigger', 'Assessment / Review', 'Care Planning', 'Documentation', 'Clinical Manager Review', 'Evidence Lock'];
 const COMPLIANCE = ['Regulatory Trigger', 'Document Review', 'Risk Review', 'Findings / Decision', 'Approval', 'Evidence Lock'];

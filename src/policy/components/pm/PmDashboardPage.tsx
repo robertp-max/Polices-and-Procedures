@@ -15,6 +15,7 @@ import { useMemo, useState, type ReactElement } from 'react';
 import { useProjectedTasks } from '@/policy/pm/taskProjection';
 import { currentSprint, neighbourSprint, sprintForDate } from '@/policy/pm/sprintWindows';
 import type { PmTaskStatus, Task } from '@/policy/pm/types';
+import { PageHeader } from '@/policy/components/ui';
 
 const STATUS_COLOR: Record<PmTaskStatus, string> = {
   todo: 'var(--ci-text-subtle)',
@@ -130,13 +131,11 @@ export function PmDashboardPage(): ReactElement {
 
   return (
     <div className="p-3 sm:p-6 max-w-6xl mx-auto">
-      <header className="mb-4 sm:mb-6 flex items-end justify-between gap-3 flex-wrap">
-        <div>
-          <div className="text-[10px] font-montserrat font-bold uppercase tracking-[0.22em] ci-text-subtle">
-            PM Reporting
-          </div>
-          <h1 className="text-2xl font-outfit ci-text mt-1">Sprint Dashboard</h1>
-        </div>
+      <PageHeader
+        eyebrow="PM REPORTING"
+        title="Sprint Dashboard"
+        description="Burndown, throughput and status mix for active sprint cycles."
+      />
         <div className="flex items-center gap-2">
           {/* Wave 8 mobile-ops fix: enforce WCAG AA 44x44 touch targets on
              sprint prev/next controls (was px-2 py-1, ~24x24). */}
@@ -158,7 +157,6 @@ export function PmDashboardPage(): ReactElement {
             →
           </button>
         </div>
-      </header>
 
       {/* Burndown */}
       <section className="rounded-lg ci-operational-card p-4 mb-6">

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes } from 'react';
+import { Link } from 'react-router-dom';
 // DARK MODE DEFECT FIXES (calendar/hover/modals): isLight checks in CesEventOverviewCard, Metadata, participant lists etc.
 // Prevented bg bleed/low contrast on glass in dark hover cards + detail modals; titles use primary tokens; glass preserved via mix.
 
@@ -21,7 +22,8 @@ import {
 } from '@/policy/components/regulatory/timelineState';
 import { classifyAuditState, AUDIT_STATE_COLOR, AUDIT_STATE_LABEL } from '@/policy/audit/auditState';
 import { getSwimlaneRegistryEntry } from '@/policy/workflows/swimlanes/swimlaneRegistry';
-import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
+import { CalendarApi, type CesCalendarHubMeta } from '@/policy/services/calendarApi';
+import { buildCesEventExecutionViewModel } from '@/policy/ces/eventExecution/buildCesEventExecutionViewModel';
 
 export const CES_CALENDAR_LAYOUT = {
   CANVAS_WIDTH: 1760,
@@ -405,6 +407,76 @@ export function CesSpotlightCard({
   );
 }
 
+function useCesEventHub(eventId: string) {
+  const [hub, setHub] = useState<CesCalendarHubMeta | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    CalendarApi.findByAppId(eventId)
+      .then(res => {
+        if (cancelled) return;
+        setHub(res._hub ?? null);
+      })
+      .catch((e: { message?: string }) => {
+        if (cancelled) return;
+        setHub(null);
+        setError(e?.message ?? 'Hub metadata unavailable');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [eventId]);
+
+  return { hub, loading, error };
+}
+
+function HubLinkButton({
+  label,
+  path,
+  external,
+}: {
+  label: string;
+  path?: string;
+  external?: string;
+}) {
+  if (external) {
+    return (
+      <a
+        href={external}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#14B8A6]"
+        style={{ borderColor: 'var(--ci-border, rgba(255,255,255,0.12))' }}
+      >
+        {label}
+        <ExternalLink size={11} />
+      </a>
+    );
+  }
+  if (path) {
+    return (
+      <Link
+        to={path}
+        className="inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#14B8A6]"
+        style={{ borderColor: 'var(--ci-border, rgba(255,255,255,0.12))' }}
+      >
+        {label}
+        <ChevronRight size={11} />
+      </Link>
+    );
+  }
+  return (
+    <span className="text-[10px] text-[var(--ci-text-tertiary,#8A94A6)]">
+      {label}: route missing
+    </span>
+  );
+}
+
 export function CesEventOverviewCard({
   event,
   today = TODAY_ANCHOR,
@@ -418,38 +490,22 @@ export function CesEventOverviewCard({
 }) {
   const store = useRegulatoryExecutionStore();
   const isLight = useIsLight();
+  const { hub, loading: hubLoading, error: hubError } = useCesEventHub(event.id);
   const state = classifyInstance(event, today, store);
   const certified = store.isCertified(event.id);
   const auditState = classifyAuditState(event, today, store);
   const sla = computeCesSla(event, today);
   const mode = getCesExecutionMode(event.date);
   const participants = useMemo(() => buildEventOverviewParticipants(event), [event]);
-  const validation = useMemo(() => store.validateEvent(event), [event, store]);
-  const display = useMemo(() => getEventDisplayModel(event), [event]);
+  const executionVm = useMemo(() => buildCesEventExecutionViewModel({
+    eventId: event.id,
+    workflowId: event.workflowId ?? hub?.workflowId,
+    regulatoryEvent: event,
+    hub,
+    executionState: store,
+  }), [event, hub, store]);
   const signerRoles = event.minutes?.signOffRoles ?? [];
   const agendaOwners = Array.from(new Set((event.agenda?.standingTopics ?? []).map(topic => topic.owner).filter(Boolean))) as string[];
-  const auditReadinessScore = useMemo(() => {
-    const stepRatio = validation.progress.stepsTotal > 0
-      ? validation.progress.stepsComplete / validation.progress.stepsTotal
-      : 1;
-    const formRatio = validation.progress.formsTotal > 0
-      ? validation.progress.formsComplete / validation.progress.formsTotal
-      : 1;
-    const minutesRatio = validation.progress.minutesRequired
-      ? (validation.progress.minutesFinalized ? 1 : 0)
-      : 1;
-    const requiredApprovals = (event.approvals ?? []).filter(approval => approval.required);
-    const approvedApprovals = requiredApprovals.filter(approval =>
-      store.approvals.some(candidate =>
-        candidate.eventId === event.id
-        && candidate.targetKind === approval.targetKind
-        && candidate.targetLabel === approval.targetLabel
-        && candidate.status === 'approved',
-      ),
-    ).length;
-    const approvalRatio = requiredApprovals.length > 0 ? approvedApprovals / requiredApprovals.length : 1;
-    return Math.round(((stepRatio + formRatio + minutesRatio + approvalRatio) / 4) * 100);
-  }, [event, store.approvals, validation]);
 
   const cardBg = isLight ? 'var(--ci-surface, #FFFFFF)' : 'color-mix(in srgb, var(--v3-base-bg) 82%, transparent)';
   const cardBorder = isLight ? 'var(--ci-border, #E5E4E3)' : 'var(--v3-border-subtle)';
@@ -477,25 +533,90 @@ export function CesEventOverviewCard({
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 text-[11px] sm:grid-cols-3">
-        <Metric value={`${event.processFlow.length}`} label="steps" isLight={isLight} />
+        <Metric value={hub || !hubLoading ? `${executionVm.completionPercent}%` : '…'} label="completion" isLight={isLight} />
+        <Metric value={`${executionVm.attachedDriveEvidenceCount} / ${executionVm.evidenceCount}`} label="evidence" isLight={isLight} />
+        <Metric value={hub || !hubLoading ? executionVm.ecignStatus : '…'} label="eCign" isLight={isLight} />
+        <Metric value={`${executionVm.tasks.length}`} label="steps" isLight={isLight} />
         <Metric value={sla.label} label="SLA" tone={sla.tone} isLight={isLight} />
-        <Metric value={state === 'blocked' || state === 'overdue' ? 'High' : state === 'due-soon' ? 'Medium' : 'Low'} label="risk" tone={state} isLight={isLight} />
-        <Metric value={`${auditReadinessScore}%`} label="audit ready" isLight={isLight} />
+        <Metric value={executionVm.workflowId ?? 'No workflow'} label="workflow" isLight={isLight} />
+        <Metric value={`${executionVm.auditReadinessPercent}%`} label="audit ready" isLight={isLight} />
         <Metric value={AUDIT_STATE_LABEL[auditState]} label="audit state" tone={auditState} isLight={isLight} />
-        <Metric value={event.workflowId ?? 'No workflow'} label="workflow" isLight={isLight} />
+        <Metric value={executionVm.statusLabel ?? STATE_LABEL[state]} label="status" isLight={isLight} />
       </div>
+
+      {(hub || executionVm) && (
+        <section className="mt-5 border-t pt-4" style={{ borderColor: isLight ? 'var(--ci-border, #E5E4E3)' : 'var(--v3-border-subtle)' }}>
+          <div className="mb-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]" style={{ color: isLight ? '#52404B' : '#8A94A6' }}>
+            Execution Hub
+          </div>
+          <div className="grid gap-2 text-[12px] sm:grid-cols-2">
+            <Metadata label="Calendar" value={executionVm.calendarAttachmentStatus} />
+            <Metadata label="Drive" value={executionVm.driveLinked ? 'Linked' : 'Not linked'} />
+            <Metadata label="Workflow" value={executionVm.workflowId ?? '—'} />
+            <Metadata label="Evidence attached" value={`${executionVm.attachedDriveEvidenceCount} / ${executionVm.evidenceCount}`} />
+          </div>
+          {executionVm.requiredForms.length > 0 && (
+            <div className="mt-3">
+              <div className="mb-1 text-[10px] uppercase tracking-[0.14em]" style={{ color: isLight ? '#747474' : '#8A94A6' }}>Required Forms</div>
+              <ul className="list-disc pl-5 text-[11px]" style={{ color: isLight ? '#52404B' : '#A0ABC0' }}>
+                {executionVm.requiredForms.map(form => <li key={form.id}>{form.title}</li>)}
+              </ul>
+            </div>
+          )}
+          {executionVm.requiredSignerRoles.length > 0 && (
+            <div className="mt-3">
+              <div className="mb-1 text-[10px] uppercase tracking-[0.14em]" style={{ color: isLight ? '#747474' : '#8A94A6' }}>Signer Roles</div>
+              <p className="text-[11px]" style={{ color: isLight ? '#52404B' : '#A0ABC0' }}>
+                {executionVm.requiredSignerRoles.join(', ')}
+              </p>
+            </div>
+          )}
+          {executionVm.blockerText && (
+            <div className="mt-3 rounded-xl border px-3 py-2 text-[11px]" style={{ borderColor: 'rgba(199,70,0,0.35)', background: 'rgba(199,70,0,0.08)', color: isLight ? '#9A3412' : '#FFB18D' }}>
+              {executionVm.blockerText}
+            </div>
+          )}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <HubLinkButton label="Full Swimlane" path={executionVm.routes.fullSwimlane} />
+            <HubLinkButton label="Workspace" path={executionVm.routes.eventWorkspace} />
+            <HubLinkButton label="Evidence" path={executionVm.routes.evidenceCenter} />
+            <HubLinkButton label="Audit" path={executionVm.routes.auditMode} />
+            <HubLinkButton label="eCign" path={executionVm.routes.ecignSigning} />
+            <HubLinkButton label="Packet Preview" path={executionVm.routes.packetPreview} />
+            {executionVm.routes.driveFolder && <HubLinkButton label="Drive Folder" external={executionVm.routes.driveFolder} />}
+          </div>
+          {executionVm.policyRefs.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {executionVm.policyRefs.map(policyId => (
+                <Link
+                  key={policyId}
+                  to={`/library/${encodeURIComponent(policyId.trim())}`}
+                  className="text-[10px] font-montserrat font-bold uppercase tracking-[0.14em] text-[#14B8A6]"
+                >
+                  {policyId.trim()}
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+      {hubError && !hub && (
+        <p className="mt-3 text-[11px]" style={{ color: isLight ? '#747474' : '#8A94A6' }}>
+          Hub metadata: {hubError}
+        </p>
+      )}
 
       <div className="mt-5 grid gap-x-6 gap-y-2 text-[12px] sm:grid-cols-2" style={{ color: isLight ? '#52404B' : '#A0ABC0' }}>
         <Metadata label="Date" value={event.endDate ? `${event.date} - ${event.endDate}` : event.date} />
         <Metadata label="Time" value={event.allDay || !event.time ? 'All day' : `${event.time}${event.timeEnd ? ` - ${event.timeEnd}` : ''}`} />
         <Metadata label="Owner role" value={event.ownerRole || 'Unassigned'} />
         <Metadata label="Cadence" value={event.cadence} />
-        <Metadata label="Canonical policy refs" value={display.canonicalPolicyRefs.length ? display.canonicalPolicyRefs.join(', ') : '—'} />
-        <Metadata label="Workflow ID" value={event.workflowId ?? 'No workflow swimlane mapped'} />
+        <Metadata label="Canonical policy refs" value={executionVm.policyRefs.length ? executionVm.policyRefs.join(', ') : '—'} />
+        <Metadata label="Workflow ID" value={executionVm.workflowId ?? 'No workflow swimlane mapped'} />
         <Metadata label="Audit state" value={AUDIT_STATE_LABEL[auditState]} />
         <Metadata label="Regulatory driver" value={event.regulatoryDriver ?? 'No regulatory driver captured.'} />
         <Metadata label="Short description" value={event.summary ?? 'No summary captured for this event.'} />
-        <Metadata label="Required signer roles" value={signerRoles.length ? signerRoles.join(', ') : 'No signer roles configured.'} />
+        <Metadata label="Required signer roles" value={executionVm.requiredSignerRoles.length ? executionVm.requiredSignerRoles.join(', ') : signerRoles.length ? signerRoles.join(', ') : 'No signer roles configured.'} />
         <Metadata label="Agenda owners" value={agendaOwners.length ? agendaOwners.join(', ') : 'No agenda owners configured.'} />
       </div>
 
@@ -528,7 +649,7 @@ export function CesEventOverviewCard({
       </section>
 
       <div className="mt-5 flex items-center justify-between gap-3 border-t pt-4" style={{borderColor:'var(--ci-border, #E5E4E3)'}}>
-        <span className="text-[11px]" style={{color: 'var(--ci-text-secondary, #8A94A6)'}}>Click to open event swimlane.</span>
+        <span className="text-[11px]" style={{color: 'var(--ci-text-secondary, #8A94A6)'}}>Open the read-only process visualization.</span>
         <button
           type="button"
           onClick={onOpenSwimlane}
@@ -547,11 +668,13 @@ export function CesEventPreviewModal({
   today = TODAY_ANCHOR,
   onClose,
   onOpenSwimlane,
+  actionLabel = 'Open Event Swimlane',
 }: {
   event: RegulatoryEvent;
   today?: Date;
   onClose: () => void;
   onOpenSwimlane: () => void;
+  actionLabel?: string;
 }) {
   return (
     <CesEventZoomModal onClose={onClose} maxWidth="max-w-xl">
@@ -567,7 +690,7 @@ export function CesEventPreviewModal({
             <X size={16} />
           </button>
         </div>
-        <CesEventOverviewCard event={event} today={today} onOpenSwimlane={onOpenSwimlane} />
+        <CesEventOverviewCard event={event} today={today} onOpenSwimlane={onOpenSwimlane} actionLabel={actionLabel} />
       </div>
     </CesEventZoomModal>
   );

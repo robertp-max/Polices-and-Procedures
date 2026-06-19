@@ -3,7 +3,11 @@ import {
   findByEventId, findByTitleAndDate, getEventByGoogleId, createEvent, updateEvent, deleteEvent,
   listCiEvents,
 } from '../googleCalendar.js';
-import { getCesEnrichment } from '../cesCalendarEventBuilder.js';
+import {
+  buildEnrichedPlannerPayloadLive,
+  getCesEnrichment,
+} from '../cesCalendarEventBuilder.js';
+import type { CesExecutionSnapshot } from '../cesCalendarCompletion.js';
 import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
 import {
@@ -166,6 +170,14 @@ export async function syncEvent(
   const maxAttempts = opts.maxAttempts ?? 3;
   const notify = opts.notify ?? true;
 
+  let executionSnapshot: CesExecutionSnapshot | undefined;
+  const enrichment = getCesEnrichment(event_id);
+  if (enrichment) {
+    const live = await buildEnrichedPlannerPayloadLive(enrichment, payload);
+    payload = live.payload;
+    executionSnapshot = live.snapshot;
+  }
+
   const incomingHash = computeHash(payload);
   const existingRow = getRow(event_id);
   const incomingVersion = payload.version ?? (existingRow ? existingRow.version + 1 : 1);
@@ -216,7 +228,7 @@ export async function syncEvent(
   // ── perform create or update (with retry) ────────────────────
   try {
     const { value: resp, attempts } = await withRetry(
-      () => performWrite(payload, existingRow, incomingHash, incomingVersion),
+      () => performWrite(payload, existingRow, incomingHash, incomingVersion, executionSnapshot),
       maxAttempts,
       (attempt, err) => {
         appendAudit({
@@ -326,13 +338,15 @@ async function performWrite(
   existingRow: EventRow | null,
   hash: string,
   version: number,
+  snapshot?: CesExecutionSnapshot,
 ): Promise<PlannerEventResponse> {
+  const writeExtras = { hash, version, snapshot };
   const event_id = normalizeEventId(payload);
 
   if (existingRow?.google_event_id) {
     const snap = await getEventByGoogleId(existingRow.google_event_id);
     if (snap) {
-      return updateEvent(existingRow.google_event_id, payload, { hash, version });
+      return updateEvent(existingRow.google_event_id, payload, writeExtras);
     }
     log.warn('sync.cache_miss.google_event', {
       event_id,
@@ -344,7 +358,7 @@ async function performWrite(
   // Authoritative Google-side lookup by event_id.
   const remote = await findByEventId(event_id);
   if (remote?.googleEventId) {
-    return updateEvent(remote.googleEventId, payload, { hash, version });
+    return updateEvent(remote.googleEventId, payload, writeExtras);
   }
 
   // Title + date fallback before creating a duplicate.
@@ -355,11 +369,11 @@ async function performWrite(
     const fallback = await findByTitleAndDate(title, date);
     if (fallback?.googleEventId) {
       log.info('sync.heal.title_date_fallback', { event_id, googleEventId: fallback.googleEventId });
-      return updateEvent(fallback.googleEventId, payload, { hash, version });
+      return updateEvent(fallback.googleEventId, payload, writeExtras);
     }
   }
 
-  return createEvent(payload, { hash, version });
+  return createEvent(payload, writeExtras);
 }
 
 /* ═══════════════════════════════════════════════════════════════

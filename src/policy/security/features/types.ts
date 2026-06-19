@@ -95,6 +95,7 @@ export type FeatureDecisionReasonCode =
   | 'deny.unknown_feature'
   | 'deny.feature_disabled'
   | 'deny.internal_only'
+  | 'deny.onboarding_scope'
   | 'deny.rollout_phase'
   | 'deny.permission_not_granted'
   | 'deny.no_assignment';

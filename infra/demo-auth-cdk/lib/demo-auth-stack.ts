@@ -115,6 +115,10 @@ export class DemoAuthStack extends Stack {
     const pageAccessMeFn = this.createHandler('PageAccessMeHandler', 'pageAccessMe.ts', lambdaEnv);
     const pageAccessAdminGetFn = this.createHandler('PageAccessAdminGetHandler', 'pageAccessAdminGet.ts', lambdaEnv);
     const pageAccessAdminPutFn = this.createHandler('PageAccessAdminPutHandler', 'pageAccessAdminPut.ts', lambdaEnv);
+    const identitySyncMeFn = this.createHandler('IdentitySyncMeHandler', 'identitySyncMe.ts', lambdaEnv);
+    const identityRegistryAdminGetFn = this.createHandler('IdentityRegistryAdminGetHandler', 'identityRegistryAdminGet.ts', lambdaEnv);
+    const identityRegistryAdminPutFn = this.createHandler('IdentityRegistryAdminPutHandler', 'identityRegistryAdminPut.ts', lambdaEnv);
+    const identityRegistrySyncAuthenticatedUsersFn = this.createHandler('IdentityRegistrySyncAuthenticatedUsersHandler', 'identityRegistrySyncAuthenticatedUsers.ts', lambdaEnv);
 
     const handlers = [
       registerFn,
@@ -132,6 +136,10 @@ export class DemoAuthStack extends Stack {
       pageAccessMeFn,
       pageAccessAdminGetFn,
       pageAccessAdminPutFn,
+      identitySyncMeFn,
+      identityRegistryAdminGetFn,
+      identityRegistryAdminPutFn,
+      identityRegistrySyncAuthenticatedUsersFn,
     ];
 
     for (const fn of handlers) {
@@ -248,6 +256,26 @@ export class DemoAuthStack extends Stack {
       path: '/auth/admin/page-access',
       methods: [apigwv2.HttpMethod.PUT],
       integration: new integrations.HttpLambdaIntegration('PageAccessAdminPutIntegration', pageAccessAdminPutFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/identity-sync/me',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: new integrations.HttpLambdaIntegration('IdentitySyncMeIntegration', identitySyncMeFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/admin/identity-registry',
+      methods: [apigwv2.HttpMethod.GET],
+      integration: new integrations.HttpLambdaIntegration('IdentityRegistryAdminGetIntegration', identityRegistryAdminGetFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/admin/identity-registry',
+      methods: [apigwv2.HttpMethod.PUT],
+      integration: new integrations.HttpLambdaIntegration('IdentityRegistryAdminPutIntegration', identityRegistryAdminPutFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/admin/identity-registry/sync-authenticated-users',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: new integrations.HttpLambdaIntegration('IdentityRegistrySyncAuthenticatedUsersIntegration', identityRegistrySyncAuthenticatedUsersFn),
     });
 
     const seedUserCall = new cr.AwsCustomResource(this, 'SeedSuperAdminUser', {

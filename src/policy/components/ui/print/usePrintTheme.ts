@@ -17,8 +17,7 @@
  */
 
 import { useMemo } from 'react';
-// Single app logo for the entire application
-import ciLogoWhite from '@/assets/ci-logo-white.png';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { PRINT_BRAND_TEAL } from './printStyles';
 
 export interface PrintTheme {
@@ -37,7 +36,7 @@ export interface PrintTheme {
 export function usePrintTheme(): PrintTheme {
   return useMemo(
     () => ({
-      logoDataUrl: ciLogoWhite,
+      logoDataUrl: ciLogoGray,
       brandColor: PRINT_BRAND_TEAL,
       bodyFontFamily: 'Roboto, system-ui, -apple-system, sans-serif',
       headingFontFamily: 'Montserrat, Roboto, system-ui, sans-serif',

@@ -82,7 +82,7 @@ function isDropAllowed(
 
 function EmptyState({ message = EMPTY_MSG }: { message?: string }) {
   return (
-    <SurfaceCard className="flex-1 flex items-center justify-center" padding="md">
+    <SurfaceCard className="flex-1 flex items-center justify-center" padding="md" style={{ border: 'none' }}>
       <UiEmptyState title={message} description="No projected workflow tasks in the current scope." />
     </SurfaceCard>
   );
@@ -126,26 +126,28 @@ function KanbanColumn({
   status,
   items,
   onSelect,
+  isLight,
 }: {
   status: PmTaskStatus;
   items: Task[];
   onSelect: (id: string) => void;
+  isLight: boolean;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `col:${status}` });
+  const { setNodeRef, isOver: _isOver } = useDroppable({ id: `col:${status}` });
   return (
     <div
       ref={setNodeRef}
-      className="flex flex-col min-h-0 rounded-lg border transition-colors ci-card"
+      className="flex flex-col min-h-0 transition-colors"
       style={{
-        borderColor: isOver ? 'var(--ci-accent)' : 'var(--ci-border)',
         background: 'var(--ci-surface-2)',
+        border: 'none',
       }}
     >
-      <header className="flex items-center justify-between px-3 py-2 border-b ci-border">
-        <span className="text-[10px] font-montserrat font-bold uppercase tracking-[0.22em] ci-text">
+      <header className="flex items-center justify-between px-3 py-2" style={{ borderBottom: isLight ? '1px solid var(--ci-border)' : '1px solid rgba(255,255,255,0.08)' }}>
+        <span className="text-[10px] font-montserrat font-bold uppercase tracking-[0.22em]" style={{ color: isLight ? 'var(--ci-text)' : 'var(--ci-text)' }}>
           {PM_TASK_STATUS_LABEL[status]}
         </span>
-        <span className="text-[10px] font-mono ci-text-subtle">{items.length}</span>
+        <span className="text-[10px] font-mono" style={{ color: isLight ? 'var(--ci-text-muted)' : 'var(--ci-text-subtle)' }}>{items.length}</span>
       </header>
       <div className="flex-1 overflow-y-auto p-2 space-y-2">
         {items.length === 0 ? (
@@ -170,6 +172,8 @@ export function KanbanView({
   const projected = useProjectedTasks();
   const tasks = useMemo(() => bySelectedEvent(projected, selectedEventId), [projected, selectedEventId]);
   const personal = usePmPersonalStore();
+  const theme = useShellStore(s => s.theme);
+  const isLight = theme === 'care-indeed-light';
   const [toast, setToast] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -208,21 +212,26 @@ export function KanbanView({
   if (tasks.length === 0) return <EmptyState />;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-2">
+    <div className="flex-1 min-h-0 flex flex-col gap-2" style={{ border: 'none' }}>
       <DndContext sensors={sensors} onDragEnd={onDragEnd}>
         <div
-          className="flex-1 grid gap-3 min-h-0 overflow-hidden"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}
+          className="flex-1 grid gap-3 min-h-0 overflow-hidden overflow-x-hidden"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', border: 'none' }}
         >
           {columns.map(col => (
-            <KanbanColumn key={col.status} {...col} onSelect={onSelect} />
+            <KanbanColumn key={col.status} {...col} onSelect={onSelect} isLight={isLight} />
           ))}
         </div>
       </DndContext>
       {toast && (
         <div
           role="alert"
-          className="self-end max-w-[420px] rounded-lg border border-pink-400/40 bg-pink-500/15 px-3 py-2 text-[11px] font-outfit text-pink-100"
+          className="self-end max-w-[420px] rounded-lg px-3 py-2 text-[11px] font-outfit"
+          style={{
+            border: isLight ? '1px solid #fda4af' : '1px solid rgba(244,63,94,0.4)',
+            background: isLight ? '#fff1f2' : 'rgba(190,24,93,0.15)',
+            color: isLight ? '#9f1239' : '#fda4af',
+          }}
         >
           {toast}
         </div>
@@ -365,25 +374,36 @@ export function GanttView({
 
   if (isMobile) {
     return (
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1" style={{ border: 'none' }}>
         {eventGroups.map(group => (
-          <section key={group.eventId} className="ci-card p-3">
+          <section key={group.eventId} className="ci-card p-3" style={{ border: 'none', background: isLight ? 'var(--ci-surface)' : 'var(--ci-surface-2)' }}>
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-semibold ci-text truncate">{group.eventLabel}</h3>
-              <span className={`text-[10px] uppercase px-2 py-0.5 rounded-full ${group.risk === 'high' ? 'bg-red-100 text-red-700' : group.risk === 'medium' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700'}`}>
+              <span
+                className="text-[10px] uppercase px-2 py-0.5 rounded-full"
+                style={{
+                  background: isLight
+                    ? (group.risk === 'high' ? '#FEE2E2' : group.risk === 'medium' ? '#FEF3E8' : '#F4F4F2')
+                    : (group.risk === 'high' ? 'rgba(215,1,1,0.15)' : group.risk === 'medium' ? 'rgba(224,123,44,0.15)' : 'rgba(255,255,255,0.06)'),
+                  color: isLight
+                    ? (group.risk === 'high' ? '#D70101' : group.risk === 'medium' ? '#C74601' : '#52404B')
+                    : (group.risk === 'high' ? '#FDA4AF' : group.risk === 'medium' ? '#FFA059' : 'rgba(255,255,255,0.7)'),
+                  border: 'none',
+                }}
+              >
                 {group.risk} risk
               </span>
             </div>
             <p className="text-[11px] ci-text-muted mt-1">{group.taskCount} tasks · {group.completionPct}% complete</p>
             <div className="mt-3 space-y-2">
               {group.bars.map(bar => (
-                <button key={bar.task.task_id} type="button" onClick={() => onSelect(bar.task.task_id)} className="w-full text-left rounded-lg border border-slate-200 p-2.5 bg-white">
+                <button key={bar.task.task_id} type="button" onClick={() => onSelect(bar.task.task_id)} className="w-full text-left rounded-lg p-2.5" style={{ border: 'none', background: isLight ? 'var(--ci-surface-muted)' : 'var(--ci-surface-2)' }}>
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-[12px] font-semibold ci-text truncate">{bar.task.title}</p>
                     <span className="text-[10px] ci-text-muted">{bar.durationDays}d</span>
                   </div>
                   <p className="text-[10px] ci-text-muted mt-1">{bar.task.assignee ?? bar.task.owner ?? 'Unassigned'} · {bar.task.due_date}</p>
-                  <div className="mt-2 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: isLight ? 'var(--ci-surface-2)' : 'rgba(255,255,255,0.08)' }}>
                     {/* Wave 7 T3: untoned-tone fallback uses canonical --ci-border-strong instead of
                        the slate-pinned palette to clear the pm.slate-pin verifier warning. */}
                     <div className={`h-full ${bar.tone === 'red' ? 'bg-red-500' : bar.tone === 'orange' ? 'bg-orange-500' : bar.tone === 'teal' ? 'bg-teal-600' : 'bg-[var(--ci-border-strong)]'}`} style={{ width: `${bar.progressPct}%` }} />
@@ -398,14 +418,14 @@ export function GanttView({
   }
 
   return (
-    <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-slate-200 bg-white">
-      <div className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50">
+    <div className="flex-1 min-h-0 overflow-auto overflow-x-hidden" style={{ background: isLight ? 'var(--ci-surface)' : 'var(--ci-surface-2)', border: 'none' }}>
+      <div className="sticky top-0 z-10" style={{ borderBottom: isLight ? '1px solid var(--ci-border)' : '1px solid rgba(255,255,255,0.06)', background: isLight ? 'var(--ci-surface-2)' : 'rgba(255,255,255,0.015)' }}>
         <div className="grid" style={{ gridTemplateColumns: `${GANTT_EVENT_LABEL_W}px ${timelineWidth}px` }}>
-          <div className="px-3 py-2 text-[10px] uppercase tracking-[0.16em] font-semibold text-slate-500">Event Pipeline</div>
+          <div className="px-3 py-2 text-[10px] uppercase tracking-[0.16em] font-semibold" style={{ color: isLight ? 'var(--ci-text-muted)' : 'var(--v3-text-tertiary)' }}>Event Pipeline</div>
           <div className="relative h-8">
             <div className="absolute inset-0 flex">
               {gridLines.map((_, idx) => (
-                <div key={idx} className="border-l border-slate-200/70 text-[9px] text-slate-500 font-mono text-center" style={{ width: GANTT_DAY_PX, lineHeight: '32px' }}>
+                <div key={idx} className="border-l font-mono text-center" style={{ borderColor: isLight ? 'var(--ci-border)' : 'rgba(255,255,255,0.06)', color: isLight ? 'var(--ci-text-muted)' : 'var(--v3-text-tertiary)', width: GANTT_DAY_PX, lineHeight: '32px' }}>
                   {idx % 7 === 0 ? idx + 1 : ''}
                 </div>
               ))}
@@ -416,42 +436,51 @@ export function GanttView({
 
       <div className="p-2">
         {eventGroups.map(group => (
-          <section key={group.eventId} className="mb-3 rounded-lg border border-slate-200 overflow-hidden">
-            <div className="grid items-center border-b border-slate-200 bg-slate-50" style={{ gridTemplateColumns: `${GANTT_EVENT_LABEL_W}px ${timelineWidth}px` }}>
+          <section key={group.eventId} className="mb-3 overflow-hidden" style={{ border: 'none' }}>
+            <div className="grid items-center" style={{ gridTemplateColumns: `${GANTT_EVENT_LABEL_W}px ${timelineWidth}px`, borderBottom: isLight ? '1px solid var(--ci-border)' : '1px solid rgba(255,255,255,0.06)', background: isLight ? 'var(--ci-surface-2)' : 'rgba(255,255,255,0.015)', border: 'none' }}>
               <div className="px-3 py-2">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-slate-900 truncate">{group.eventLabel}</h3>
-                  <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded-full ${group.risk === 'high' ? 'bg-red-100 text-red-700' : group.risk === 'medium' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700'}`}>
+                  <h3 className="text-sm font-semibold truncate" style={{ color: isLight ? 'var(--ci-text)' : 'var(--v3-text-primary)' }}>{group.eventLabel}</h3>
+                  <span
+                    className="text-[9px] uppercase px-1.5 py-0.5 rounded-full"
+                    style={{
+                      background: isLight ? (group.risk === 'high' ? '#FEE2E2' : group.risk === 'medium' ? '#FEF3E8' : '#F4F4F2') : (group.risk === 'high' ? 'rgba(215,1,1,0.15)' : group.risk === 'medium' ? 'rgba(224,123,44,0.15)' : 'rgba(255,255,255,0.06)'),
+                      color: isLight ? (group.risk === 'high' ? '#D70101' : group.risk === 'medium' ? '#C74601' : '#52404B') : (group.risk === 'high' ? '#FDA4AF' : group.risk === 'medium' ? '#FFA059' : 'rgba(255,255,255,0.7)'),
+                      border: 'none',
+                    }}
+                  >
                     {group.risk}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">{group.taskCount} tasks · {group.completionPct}% complete</p>
+                <p className="text-[11px] mt-0.5" style={{ color: isLight ? 'var(--ci-text-muted)' : 'var(--v3-text-tertiary)' }}>{group.taskCount} tasks · {group.completionPct}% complete</p>
               </div>
               <div />
             </div>
 
             {group.bars.map(bar => (
-              <div key={bar.task.task_id} className="grid border-b last:border-b-0 border-slate-100" style={{ gridTemplateColumns: `${GANTT_EVENT_LABEL_W}px ${timelineWidth}px` }}>
-                <button type="button" onClick={() => onSelect(bar.task.task_id)} className="px-3 py-2 text-left hover:bg-slate-50">
-                  <p className="text-[12px] font-medium text-slate-900 truncate">{bar.task.title}</p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">
+              <div key={bar.task.task_id} className="grid" style={{ gridTemplateColumns: `${GANTT_EVENT_LABEL_W}px ${timelineWidth}px` }}>
+                <button type="button" onClick={() => onSelect(bar.task.task_id)} className="px-3 py-2 text-left" style={{ background: 'transparent', border: 'none' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = isLight ? 'var(--ci-overlay-soft)' : 'rgba(255,255,255,0.04)'; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
+                  <p className="text-[12px] font-medium truncate" style={{ color: isLight ? 'var(--ci-text)' : 'var(--v3-text-primary)' }}>{bar.task.title}</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: isLight ? 'var(--ci-text-muted)' : 'var(--v3-text-tertiary)' }}>
                     {bar.task.assignee ?? bar.task.owner ?? 'Unassigned'} · {PM_TASK_STATUS_LABEL[bar.task.status]} · {bar.progressPct}%
                   </p>
                 </button>
                 <div className="relative h-11">
                   <div className="absolute inset-0 flex pointer-events-none">
                     {gridLines.map((_, idx) => (
-                      <div key={idx} className="border-l border-slate-200/60" style={{ width: GANTT_DAY_PX }} />
+                      <div key={idx} className="border-l" style={{ borderColor: isLight ? 'var(--ci-border)' : 'rgba(255,255,255,0.04)', width: GANTT_DAY_PX }} />
                     ))}
                   </div>
                   <button
                     type="button"
                     onClick={() => onSelect(bar.task.task_id)}
-                    className={`absolute top-2 h-7 rounded-md px-2 text-left overflow-hidden ${bar.tone === 'red' ? 'bg-red-500' : bar.tone === 'orange' ? 'bg-orange-500' : bar.tone === 'teal' ? 'bg-teal-600' : 'bg-slate-500'} text-white`}
+                    className={`absolute top-2 h-7 rounded-full px-2 text-left overflow-hidden text-white`}
                     style={{
                       left: bar.startOffset * GANTT_DAY_PX + 2,
                       width: Math.max(18, (bar.durationDays * GANTT_DAY_PX) - 4),
                       boxShadow: isLight ? '0 2px 7px rgba(15,23,42,0.22)' : undefined,
+                      background: bar.tone === 'red' ? '#D70101' : bar.tone === 'orange' ? '#E07B2C' : bar.tone === 'teal' ? '#007970' : '#64748B',
+                      border: 'none',
                     }}
                     title={`${bar.task.title} · ${bar.durationDays}d · ${bar.progressPct}%`}
                   >
@@ -465,7 +494,7 @@ export function GanttView({
         ))}
       </div>
       {isTablet ? (
-        <div className="px-3 pb-2 text-[10px] text-slate-500">Tablet mode: timeline scrolls horizontally inside this panel.</div>
+        <div className="px-3 pb-2 text-[10px]" style={{ color: isLight ? 'var(--ci-text-muted)' : 'var(--v3-text-tertiary)', border: 'none' }}>Tablet mode: timeline scrolls horizontally inside this panel.</div>
       ) : null}
     </div>
   );
@@ -506,6 +535,8 @@ export function SprintBoardView({
 }): ReactElement {
   const projected = useProjectedTasks();
   const sprintWindow = usePmViewSprintStore(s => s.window);
+  const theme = useShellStore(s => s.theme);
+  const isLight = theme === 'care-indeed-light';
   const baseTasks = useMemo(() => bySelectedEvent(projected, selectedEventId), [projected, selectedEventId]);
   const sprintTasks = useMemo(
     () => baseTasks.filter(t => t.source !== 'personal' && t.sprint_id === sprintWindow.id),
@@ -526,7 +557,7 @@ export function SprintBoardView({
 
   if (sprintTasks.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-1 text-[12px] ci-text-muted">
+      <div className="flex-1 flex flex-col items-center justify-center gap-1 text-[12px] ci-text-muted" style={{ border: 'none' }}>
         <div>{EMPTY_MSG}</div>
         <div className="text-[10px]">Sprint {sprintWindow.id} · {sprintWindow.startDate} to {sprintWindow.endDate}</div>
       </div>
@@ -539,8 +570,8 @@ export function SprintBoardView({
   const completed = columns.completed.length;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-3">
-      <div className="ci-card p-3">
+    <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden" style={{ border: 'none' }}>
+      <div className="ci-card p-3" style={{ border: 'none', background: isLight ? 'var(--ci-surface)' : 'var(--ci-surface-2)' }}>
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div>
             <p className="text-[10px] uppercase tracking-[0.16em] font-semibold ci-text-muted">Sprint {sprintWindow.id}</p>
@@ -548,34 +579,34 @@ export function SprintBoardView({
             <p className="text-[11px] ci-text-muted">{sprintWindow.startDate} to {sprintWindow.endDate}</p>
           </div>
           <div className="flex items-center gap-2 text-[11px] flex-wrap">
-            <StatChip label="Tasks" value={sprintTasks.length} tone="gray" />
-            <StatChip label="Blockers" value={blockers} tone={blockers > 0 ? 'red' : 'gray'} />
-            <StatChip label="Overdue" value={overdue} tone={overdue > 0 ? 'red' : 'gray'} />
-            <StatChip label="Awaiting Signature" value={awaiting} tone={awaiting > 0 ? 'orange' : 'gray'} />
-            <StatChip label="Completed" value={completed} tone="teal" />
+            <StatChip label="Tasks" value={sprintTasks.length} tone="gray" isLight={isLight} />
+            <StatChip label="Blockers" value={blockers} tone={blockers > 0 ? 'red' : 'gray'} isLight={isLight} />
+            <StatChip label="Overdue" value={overdue} tone={overdue > 0 ? 'red' : 'gray'} isLight={isLight} />
+            <StatChip label="Awaiting Signature" value={awaiting} tone={awaiting > 0 ? 'orange' : 'gray'} isLight={isLight} />
+            <StatChip label="Completed" value={completed} tone="teal" isLight={isLight} />
           </div>
         </div>
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto">
-        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))' }}>
+        <div className="grid gap-3 overflow-hidden" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))' }}>
           {(Object.keys(SPRINT_COLUMN_LABEL) as SprintColumnKey[]).map(col => (
-            <section key={col} className="rounded-lg border border-slate-200 bg-white min-h-[220px] flex flex-col">
-              <header className="px-3 py-2 border-b border-slate-200 flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-slate-600">{SPRINT_COLUMN_LABEL[col]}</span>
-                <span className="text-[10px] font-mono text-slate-500">{columns[col].length}</span>
+            <section key={col} className="rounded-lg min-h-[220px] flex flex-col" style={{ border: 'none', background: isLight ? 'var(--ci-surface)' : 'var(--ci-surface-2)' }}>
+              <header className="px-3 py-2 border-b flex items-center justify-between" style={{ borderColor: isLight ? 'var(--ci-border)' : 'rgba(255,255,255,0.08)' }}>
+                <span className="text-[10px] uppercase tracking-[0.14em] font-semibold" style={{ color: isLight ? 'var(--ci-text-muted)' : 'var(--v3-text-tertiary)' }}>{SPRINT_COLUMN_LABEL[col]}</span>
+                <span className="text-[10px] font-mono" style={{ color: isLight ? 'var(--ci-text-muted)' : 'rgba(255,255,255,0.5)' }}>{columns[col].length}</span>
               </header>
               <div className="p-2 space-y-2 overflow-y-auto min-h-0">
-                {columns[col].length === 0 ? <p className="text-[11px] text-slate-400 text-center py-6">No tasks</p> : null}
+                {columns[col].length === 0 ? <p className="text-[11px] text-center py-6" style={{ color: isLight ? 'var(--ci-text-muted)' : 'rgba(255,255,255,0.4)' }}>No tasks</p> : null}
                 {columns[col].map(task => (
-                  <button key={task.task_id} type="button" onClick={() => onSelect(task.task_id)} className="w-full text-left rounded-md border border-slate-200 bg-slate-50 px-2.5 py-2 hover:bg-slate-100">
-                    <p className="text-[12px] font-semibold text-slate-900 truncate">{task.title}</p>
-                    <p className="text-[10px] text-slate-500 mt-1 truncate">{task.event_id ? <EntityLink kind="event" id={task.event_id} label={task.event_title ?? task.event_id} /> : (task.event_title ?? 'No linked event')}</p>
-                    <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-500">
+                  <button key={task.task_id} type="button" onClick={() => onSelect(task.task_id)} className="w-full text-left rounded-md px-2.5 py-2" style={{ border: 'none', background: isLight ? 'var(--ci-surface-muted)' : 'var(--ci-surface-2)' }}>
+                    <p className="text-[12px] font-semibold truncate" style={{ color: isLight ? 'var(--ci-text)' : 'var(--ci-text)' }}>{task.title}</p>
+                    <p className="text-[10px] mt-1 truncate" style={{ color: isLight ? 'var(--ci-text-muted)' : 'rgba(255,255,255,0.55)' }}>{task.event_id ? <EntityLink kind="event" id={task.event_id} label={task.event_title ?? task.event_id} /> : (task.event_title ?? 'No linked event')}</p>
+                    <div className="mt-1.5 flex items-center justify-between text-[10px]" style={{ color: isLight ? 'var(--ci-text-muted)' : 'rgba(255,255,255,0.55)' }}>
                       <span className="truncate">{task.assignee ?? task.owner ?? 'Unassigned'}</span>
                       <span>{task.due_date}</span>
                     </div>
-                    <div className="mt-1 text-[10px] text-slate-500">{PM_TASK_STATUS_LABEL[task.status]}</div>
+                    <div className="mt-1 text-[10px]" style={{ color: isLight ? 'var(--ci-text-muted)' : 'rgba(255,255,255,0.55)' }}>{PM_TASK_STATUS_LABEL[task.status]}</div>
                   </button>
                 ))}
               </div>
@@ -587,13 +618,15 @@ export function SprintBoardView({
   );
 }
 
-function StatChip({ label, value, tone }: { label: string; value: number; tone: 'gray' | 'teal' | 'orange' | 'red' }) {
-  const cls = tone === 'teal'
-    ? 'bg-teal-50 text-teal-700 border-teal-200'
+function StatChip({ label, value, tone, isLight }: { label: string; value: number; tone: 'gray' | 'teal' | 'orange' | 'red'; isLight: boolean }) {
+  // var(--) + isLight conditionals to purge dark fallbacks / slate bleed in SprintBoard (design #4 match).
+  // rounded-full, teal/orange fills (light: soft tints; dark: low-opacity var tones), no perimeter.
+  const style: React.CSSProperties = tone === 'teal'
+    ? { background: isLight ? '#E6F7F5' : 'rgba(0,121,112,0.18)', color: isLight ? '#007970' : '#5EEAD4', borderColor: isLight ? '#99D9D0' : 'rgba(0,209,193,0.35)' }
     : tone === 'orange'
-      ? 'bg-orange-50 text-orange-700 border-orange-200'
+      ? { background: isLight ? '#FEF3E8' : 'rgba(224,123,44,0.18)', color: isLight ? '#C74601' : '#FFA059', borderColor: isLight ? '#F5D3A8' : 'rgba(224,123,44,0.35)' }
       : tone === 'red'
-        ? 'bg-red-50 text-red-700 border-red-200'
-        : 'bg-slate-50 text-slate-700 border-slate-200';
-  return <span className={`text-[10px] px-2 py-1 rounded-full border ${cls}`}>{label}: {value}</span>;
+        ? { background: isLight ? '#FEE2E2' : 'rgba(215,1,1,0.18)', color: isLight ? '#D70101' : '#FDA4AF', borderColor: isLight ? '#FECACA' : 'rgba(244,63,94,0.35)' }
+        : { background: isLight ? '#F4F4F2' : 'rgba(255,255,255,0.06)', color: isLight ? '#52404B' : 'rgba(255,255,255,0.65)', borderColor: isLight ? '#E5E4E3' : 'rgba(255,255,255,0.14)' };
+  return <span className="text-[10px] px-2 py-1 rounded-full border" style={style}>{label}: {value}</span>;
 }

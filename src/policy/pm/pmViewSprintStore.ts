@@ -3,7 +3,6 @@
  * CES board, My Tasks). Defaults to the sprint covering the app demo "today".
  */
 import { create } from 'zustand';
-import { TODAY_ANCHOR } from '@/policy/data/regulatoryEvents';
 import { currentSprint, type SprintWindow } from './sprintWindows';
 
 interface PmViewSprintState {
@@ -13,7 +12,7 @@ interface PmViewSprintState {
 }
 
 export const usePmViewSprintStore = create<PmViewSprintState>((set) => ({
-  window: currentSprint(TODAY_ANCHOR),
+  window: currentSprint(),
   setWindow: (window) => set({ window }),
-  resetToCurrent: () => set({ window: currentSprint(TODAY_ANCHOR) }),
+  resetToCurrent: () => set({ window: currentSprint() }),
 }));

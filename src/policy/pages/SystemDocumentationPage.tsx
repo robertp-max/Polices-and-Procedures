@@ -20,6 +20,7 @@ import {
   HelpCircle,
   ExternalLink,
 } from 'lucide-react';
+import { PageHeader } from '@/policy/components/ui';
 
 type SectionId =
   | 'executive-overview'
@@ -76,7 +77,7 @@ function PanelHeader({ kicker, title }: { kicker: string; title?: string }) {
   return (
     <div className="px-4 py-3 border-b border-[#E2E8F0] bg-white">
       <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-[#64748B]">{kicker}</div>
-      {title ? <div className="mt-0.5 text-sm font-semibold text-[#0F172A]">{title}</div> : null}
+      {title ? <div className="mt-0.5 text-sm font-semibold text-[var(--brand-primary,#007970)]">{title}</div> : null}
     </div>
   );
 }
@@ -127,7 +128,7 @@ function VisualCard({ title, body, accent = 'slate' }: { title: string; body: st
 
   return (
     <article className={`rounded-xl border border-[#E2E8F0] border-l-4 p-4 ${accents[accent]}`}>
-      <h3 className="text-sm font-semibold text-[#0F172A]">{title}</h3>
+      <h3 className="text-sm font-semibold text-[var(--brand-primary,#007970)]">{title}</h3>
       <p className="mt-1 text-xs text-[#334155] leading-5">{body}</p>
     </article>
   );
@@ -318,7 +319,7 @@ function ArchitectureObjectButton({
       ? 'border-[#C74600] bg-[#FFF7ED] text-[#9A3412] shadow-[0_0_0_2px_rgba(199,70,0,0.15)]'
       : 'border-[#FCD7BE] bg-[#FFF7ED] text-[#9A3412]',
     slate: active
-      ? 'border-[#475569] bg-[#F8FAFC] text-[#0F172A] shadow-[0_0_0_2px_rgba(71,85,105,0.2)]'
+      ? 'border-[#475569] bg-[#F8FAFC] text-[var(--brand-primary,#007970)] shadow-[0_0_0_2px_rgba(71,85,105,0.2)]'
       : 'border-[#CBD5E1] bg-white text-[#1E293B]',
   } as const;
 
@@ -345,10 +346,10 @@ function ExecutiveOverviewSection() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4">
           <div>
             <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-[#0F766E]">System URLs</div>
-            <div className="mt-1 text-sm font-semibold text-[#0F172A]">Care Indeed Compliance Platform environments</div>
+            <div className="mt-1 text-sm font-semibold text-[var(--brand-primary,#007970)]">Care Indeed Compliance Platform environments</div>
             <div className="mt-2 space-y-2 text-xs">
               <div>
-                <div className="font-semibold text-[#0F172A]">Production (active login)</div>
+                <div className="font-semibold text-[var(--brand-primary,#007970)]">Production (active login)</div>
                 <a
                   href={APP_PRODUCTION_URL}
                   target="_blank"
@@ -359,7 +360,7 @@ function ExecutiveOverviewSection() {
                 </a>
               </div>
               <div>
-                <div className="font-semibold text-[#0F172A]">Staging (AWS demo environment)</div>
+                <div className="font-semibold text-[var(--brand-primary,#007970)]">Staging (AWS environment)</div>
                 <a
                   href={APP_STAGING_URL}
                   target="_blank"
@@ -418,13 +419,13 @@ function ExecutiveOverviewSection() {
       <Panel kicker="Environment framing" padded={false}>
         <SplitRow>
           <Cell accent="orange">
-            <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-[#9A3412]">Current demo environment</div>
-            <div className="mt-1 text-sm font-semibold text-[#0F172A]">Validation sandbox</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-[#9A3412]">Current environment</div>
+            <div className="mt-1 text-sm font-semibold text-[var(--brand-primary,#007970)]">Validation sandbox</div>
             <p className="mt-1 text-xs text-[#7C2D12] leading-5">Built to validate workflows and gates in a controlled cloud demo state.</p>
           </Cell>
           <Cell accent="teal">
             <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-[#0F766E]">Production target environment</div>
-            <div className="mt-1 text-sm font-semibold text-[#0F172A]">HIPAA-ready posture</div>
+            <div className="mt-1 text-sm font-semibold text-[var(--brand-primary,#007970)]">HIPAA-ready posture</div>
             <p className="mt-1 text-xs text-[#134E4A] leading-5">Planned HIPAA-ready controls and operational hardening for high-assurance workloads.</p>
           </Cell>
         </SplitRow>
@@ -463,7 +464,7 @@ function SystemArchitectureSection() {
           className={`px-3 py-2 rounded-lg text-xs font-semibold border transition ${
             view === 'demo'
               ? 'bg-[#0F766E] text-white border-[#0F766E]'
-              : 'bg-white text-[#0F172A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
+              : 'bg-white text-[var(--brand-primary,#007970)] border-[#CBD5E1] hover:bg-[#F8FAFC]'
           }`}
         >
           Current AWS Demo
@@ -474,7 +475,7 @@ function SystemArchitectureSection() {
           className={`px-3 py-2 rounded-lg text-xs font-semibold border transition ${
             view === 'hipaa'
               ? 'bg-[#C74600] text-white border-[#C74600]'
-              : 'bg-white text-[#0F172A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
+              : 'bg-white text-[var(--brand-primary,#007970)] border-[#CBD5E1] hover:bg-[#F8FAFC]'
           }`}
         >
           HIPAA-Ready Target
@@ -518,7 +519,7 @@ function SystemArchitectureSection() {
 
           <div className="p-4 h-[500px] overflow-hidden bg-[#FAFCFB]">
             <div className="flex items-start justify-between gap-3">
-              <h3 className="text-sm font-semibold text-[#0F172A]">{detail.title}</h3>
+              <h3 className="text-sm font-semibold text-[var(--brand-primary,#007970)]">{detail.title}</h3>
               <HelpCircle size={16} className="text-[#007970] shrink-0" />
             </div>
             <div className="mt-3 space-y-2 text-[11px] text-[#334155] leading-4">
@@ -583,7 +584,7 @@ function SystemArchitectureSection() {
         </div>
         {comparisonRows.map(row => (
           <div key={row.layer} className="grid grid-cols-3 border-b border-[#F1F5F9] text-xs">
-            <div className="p-3 font-semibold text-[#0F172A]">{row.layer}</div>
+            <div className="p-3 font-semibold text-[var(--brand-primary,#007970)]">{row.layer}</div>
             <div className="p-3 text-[#0F766E] bg-[#F0FDFA]">{row.current}</div>
             <div className="p-3 text-[#9A3412] bg-[#FFF7ED]">{row.production}</div>
           </div>
@@ -718,17 +719,17 @@ function TrainingSystemSection() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="rounded-xl border border-[#E2E8F0] bg-white p-4">
           <div className="text-[11px] uppercase tracking-[0.16em] font-semibold text-[#64748B]">Hard Gate</div>
-          <div className="mt-2 text-sm font-semibold text-[#0F172A]">Must pass before access</div>
+          <div className="mt-2 text-sm font-semibold text-[var(--brand-primary,#007970)]">Must pass before access</div>
           <div className="mt-1 text-xs text-[#334155]">Examples: critical onboarding validations and mandatory competency checks.</div>
         </div>
         <div className="rounded-xl border border-[#E2E8F0] bg-white p-4">
           <div className="text-[11px] uppercase tracking-[0.16em] font-semibold text-[#64748B]">Functional Gate</div>
-          <div className="mt-2 text-sm font-semibold text-[#0F172A]">Feature-limited if incomplete</div>
+          <div className="mt-2 text-sm font-semibold text-[var(--brand-primary,#007970)]">Feature-limited if incomplete</div>
           <div className="mt-1 text-xs text-[#334155]">Operations can continue in restricted mode until required tasks are resolved.</div>
         </div>
         <div className="rounded-xl border border-[#E2E8F0] bg-white p-4">
           <div className="text-[11px] uppercase tracking-[0.16em] font-semibold text-[#64748B]">Audit-only</div>
-          <div className="mt-2 text-sm font-semibold text-[#0F172A]">Tracked for evidence posture</div>
+          <div className="mt-2 text-sm font-semibold text-[var(--brand-primary,#007970)]">Tracked for evidence posture</div>
           <div className="mt-1 text-xs text-[#334155]">No immediate block, but non-compliance remains visible in audit views.</div>
         </div>
       </div>
@@ -907,7 +908,7 @@ function HipaaGapAnalysisSection() {
         </div>
         {rows.map(row => (
           <div key={row.category} className="grid grid-cols-4 gap-0 border-b border-[#F1F5F9] text-xs">
-            <div className="p-3 font-semibold text-[#0F172A] capitalize">{row.category}</div>
+            <div className="p-3 font-semibold text-[var(--brand-primary,#007970)] capitalize">{row.category}</div>
             <div className="p-3 text-[#334155]">{row.demo}</div>
             <div className="p-3 text-[#334155]">{row.target}</div>
             <div className="p-3">
@@ -962,7 +963,7 @@ function ProductionRoadmapSection() {
                   <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#64748B]">{phase.phase}</span>
                   <Icon size={15} className="text-[#0F766E]" />
                 </div>
-                <h3 className="mt-2 text-sm font-semibold text-[#0F172A]">{phase.title}</h3>
+                <h3 className="mt-2 text-sm font-semibold text-[var(--brand-primary,#007970)]">{phase.title}</h3>
                 <ul className="mt-2 space-y-1 text-xs text-[#334155]">
                   {phase.bullets.map(item => (
                     <li key={item} className="flex items-start gap-1.5">
@@ -1043,22 +1044,27 @@ export function SystemDocumentationPage() {
   const current = SECTIONS[currentIndex];
 
   return (
-    <div className="h-full overflow-hidden p-4 md:p-6">
-      <div className="h-full min-h-0 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] flex flex-col lg:flex-row overflow-hidden">
-        <aside className="lg:w-[280px] shrink-0 border-b lg:border-b-0 lg:border-r border-[#E2E8F0] bg-white p-3 md:p-4">
-          <div className="text-[10px] uppercase tracking-[0.16em] font-semibold text-[#64748B]">System Documentation</div>
-          <div className="mt-1 text-sm font-semibold text-[#0F172A]">Visual Module Index</div>
+    <div className="h-full overflow-hidden p-6" style={{ background: 'transparent' }}>
+      <PageHeader
+        eyebrow="SYSTEM"
+        title="System Documentation"
+        description="Visual module index with deep dives into architecture, identity, and audit readiness."
+      />
+      <div className="h-full min-h-0 rounded-2xl border flex flex-col lg:flex-row overflow-hidden" style={{ borderColor: 'var(--v3-border-subtle)', background: 'var(--v3-glass-card)' }}>
+        <aside className="lg:w-[260px] shrink-0 border-b lg:border-b-0 lg:border-r p-4" style={{ borderColor: 'var(--v3-border-subtle)' }}>
+          <div className="text-[10px] uppercase tracking-[0.16em] font-semibold text-[var(--v3-text-tertiary)]">System Documentation</div>
+          <div className="mt-1 text-sm font-semibold" style={{ color: 'var(--brand-primary,#00797D)' }}>Visual Module Index</div>
 
           <div className="mt-3">
             <div className="flex items-center justify-between text-[11px] text-[#64748B]">
               <span>Section progress</span>
-              <span className="font-semibold text-[#0F172A]">{progressPct}%</span>
+              <span className="font-semibold text-[var(--brand-primary,#007970)]">{progressPct}%</span>
             </div>
             <div className="mt-1 grid grid-cols-9 gap-1">
               {SECTIONS.map((section, index) => (
                 <span
                   key={`progress-${section.id}`}
-                  className={`h-2 rounded-full ${index <= currentIndex ? 'bg-[#007970]' : 'bg-[#E2E8F0]'}`}
+                  className={`h-2 rounded-full ${index <= currentIndex ? 'bg-[var(--brand-primary,#00797D)]' : 'bg-white/10'}`}
                 />
               ))}
             </div>
@@ -1074,10 +1080,10 @@ export function SystemDocumentationPage() {
                   key={section.id}
                   type="button"
                   onClick={() => navigate(`/system-documentation/${section.id}`)}
-                  className={`w-full text-left rounded-lg border px-2.5 py-2 transition ${
+                  className={`w-full text-left rounded-xl border px-2.5 py-1.5 text-xs transition font-medium ${
                     active
-                      ? 'border-[#007970]/35 bg-[#ECFDF5]'
-                      : 'border-transparent bg-transparent hover:bg-[#F1F5F9]'
+                      ? 'border-[var(--brand-primary,#00797D)] bg-[rgba(0,121,125,0.12)] text-[var(--brand-primary,#00797D)]'
+                      : 'border-transparent hover:bg-white/5 text-[var(--v3-text-secondary)]'
                   }`}
                   aria-current={active ? 'page' : undefined}
                 >
@@ -1087,7 +1093,7 @@ export function SystemDocumentationPage() {
                       <div className={`text-[11px] uppercase tracking-[0.14em] font-semibold ${active ? 'text-[#047857]' : 'text-[#64748B]'}`}>
                         {index + 1}. {section.kicker}
                       </div>
-                      <div className={`text-xs font-semibold leading-tight ${active ? 'text-[#0F172A]' : 'text-[#334155]'}`}>
+                      <div className={`text-xs font-semibold leading-tight ${active ? 'text-[var(--brand-primary,#007970)]' : 'text-[#334155]'}`}>
                         {section.title}
                       </div>
                     </div>
@@ -1099,13 +1105,13 @@ export function SystemDocumentationPage() {
         </aside>
 
         <section className="flex-1 min-h-0 flex flex-col overflow-hidden">
-          <header className="bg-white border-b border-[#E2E8F0] px-4 md:px-6 py-4">
-            <div className="text-[11px] uppercase tracking-[0.16em] font-semibold text-[#64748B]">Section {currentIndex + 1} of {SECTIONS.length}</div>
-            <h1 className="mt-1 text-xl md:text-2xl font-semibold text-[#0F172A]">{current.title}</h1>
-            <p className="mt-2 text-sm text-[#475569] max-w-3xl">{SECTION_SPIELS[activeSection]}</p>
+          <header className="border-b px-4 md:px-6 py-4" style={{ borderColor: 'var(--v3-border-subtle)', background: 'rgba(255,255,255,0.02)' }}>
+            <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-[var(--v3-text-tertiary)]">Section {currentIndex + 1} of {SECTIONS.length}</div>
+            <h1 className="mt-1 text-xl font-semibold" style={{ color: 'var(--brand-primary,#00797D)' }}>{current.title}</h1>
+            <p className="mt-2 text-sm text-[var(--v3-text-secondary)] max-w-3xl">{SECTION_SPIELS[activeSection]}</p>
           </header>
 
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6">
             <SectionContent id={activeSection} />
           </div>
 
@@ -1117,7 +1123,7 @@ export function SystemDocumentationPage() {
               className={`px-3 py-2 rounded-lg text-xs font-semibold border ${
                 currentIndex === 0
                   ? 'bg-[#F8FAFC] text-[#94A3B8] border-[#E2E8F0] cursor-not-allowed'
-                  : 'bg-white text-[#0F172A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
+                  : 'bg-white text-[var(--brand-primary,#007970)] border-[#CBD5E1] hover:bg-[#F8FAFC]'
               }`}
             >
               Previous

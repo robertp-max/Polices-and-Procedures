@@ -3,13 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   Shield, Search, Building2, Users, AlertTriangle,
   DollarSign, Monitor, BarChart3, Heart, Cpu, Briefcase,
-  GitBranch, Printer, Layers, Database, Download, Eye,
-  FileSignature, ClipboardCheck, FileText, Share2, Flame, Copy,
-  FileCheck, LayoutList
+  Share2, Flame, Copy,
+  FileCheck
 } from 'lucide-react';
-import { useShellStore } from '../stores/uiStore';
-import { printForm } from '../utils/printForm';
-import { EmptyState, SearchField } from '@/policy/components/ui';
+import { EmptyState, SearchField, V32PageHeader, GlassPanel } from '@/policy/components/ui';
 
 // ══════════════════════════════════════════════════════════════
 // ENTERPRISE FORMS LIBRARY – 361 ARTIFACTS ACROSS 10 DOMAINS
@@ -38,43 +35,12 @@ const CLASSIFICATION_FILTERS = [
 
 import { FORMS_DATASET } from '../data/formsLibraryDataset';
 
-// UI HELPERS
-// ══════════════════════════════════════════════════════════════
-
-const getFormIcon = (type: string, size = 16) => {
-  switch (type.toLowerCase()) {
-    case 'attestation': return <FileSignature size={size}/>;
-    case 'checklist': return <ClipboardCheck size={size}/>;
-    case 'log': return <Database size={size}/>;
-    case 'assessment': return <BarChart3 size={size}/>;
-    case 'worksheet': return <LayoutList size={size}/>;
-    case 'template': return <Layers size={size}/>;
-    case 'tracking tool': return <BarChart3 size={size}/>;
-    default: return <FileText size={size}/>;
-  }
-};
-
-const getFormTypeColor = (type: string) => {
-  switch (type.toLowerCase()) {
-    case 'attestation': return 'text-purple-400 bg-purple-400/10 border-purple-400/20';
-    case 'checklist': return 'text-green-400 bg-green-400/10 border-green-400/20';
-    case 'log': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
-    case 'assessment': return 'text-orange-400 bg-orange-400/10 border-orange-400/20';
-    case 'template': return 'text-pink-400 bg-pink-400/10 border-pink-400/20';
-    case 'tracking tool': return 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20';
-    case 'matrix': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
-    default: return 'text-gray-300 bg-gray-400/10 border-gray-400/20';
-  }
-};
-
 // ══════════════════════════════════════════════════════════════
 // MAIN EXPORT
 // ══════════════════════════════════════════════════════════════
 
 export function FormsPage() {
   const navigate = useNavigate();
-  const theme = useShellStore(s => s.theme);
-  const isLight = theme === 'care-indeed-light';
   const [selectedDomain, setSelectedDomain] = useState('ALL');
   const [activeClassifications, setActiveClassifications] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
@@ -126,189 +92,71 @@ export function FormsPage() {
         @media(max-width:550px){.forms-grid-7{grid-template-columns:repeat(1,minmax(0,1fr))}}
       `}</style>
 
-      <div className="h-full w-full font-roboto text-ci-text-primary bg-ci-bg flex flex-col overflow-hidden">
-        {/* HEADER — Wave 8 mobile-ops fix: responsive horizontal padding so the
-           desktop-first `px-10` does not overflow on 390px viewports. */}
-        <div className="px-4 sm:px-6 md:px-10 pt-10 pb-4 flex items-center justify-between shrink-0">
-          <div className="flex flex-col">
-            <h1 className="font-montserrat text-3xl font-light text-ci-text-primary flex items-center gap-4">
-              <Layers className="text-[#a855f7]" size={36} strokeWidth={1.5}/> Enterprise Forms Library
-            </h1>
-            <div className="flex items-center gap-3 mt-4 ml-1">
-              <div className="glass-interactive-forms px-3 py-1.5 rounded-full border-[0.77px] border-[#FFC107]/40 flex items-center gap-2 relative overflow-hidden cursor-pointer"
-                onClick={() => navigate('/library')}>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FFC107]/20 to-transparent -translate-x-full"
-                  style={{animation:'shimmerForms 2.5s infinite'}}/>
-                <FileText size={12} className="text-[#FFC107] animate-pulse"/>
-                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-ci-text-primary">269 POLICIES</span>
+      <div className="min-h-full w-full font-roboto text-[var(--v3-text-primary)] bg-transparent flex flex-col overflow-hidden">
+        <div className="mx-auto w-full w-full px-6 md:px-8 pt-6">
+          <V32PageHeader
+            eyebrow="FORMS LIBRARY"
+            title="Enterprise Forms Library"
+            description="361 canonical artifacts. Filter by domain and classification. Open any card to view and sign."
+            actions={
+              <div className="flex gap-2 items-center">
+                <SearchField placeholder="Search forms..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-[240px]" />
+                <button onClick={() => navigate('/library')} className="rounded-lg px-3 py-1 text-xs uppercase tracking-widest">Policies</button>
               </div>
-              <div className="glass-interactive-forms px-3 py-1.5 rounded-full border-[0.77px] border-[#a855f7]/40 flex items-center gap-2 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#a855f7]/20 to-transparent -translate-x-full"
-                  style={{animation:'shimmerForms 3s infinite 0.5s'}}/>
-                <Layers size={12} className="text-[#a855f7] animate-pulse"/>
-                <span className="text-[9px] font-bold font-montserrat tracking-[0.2em] text-ci-text-primary">361 FORMS</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            {/* Search */}
-            <SearchField
-              placeholder="Search forms..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-[280px]"
-            />
-
-            {/* Policies / Forms toggle */}
-            <div className="flex items-center p-1 rounded-full border border-ci-border">
-              <button onClick={() => navigate('/library')}
-                className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-transparent text-ci-text-subtle hover:text-ci-text-primary transition-colors font-montserrat">
-                Policies
-              </button>
-              <button className="px-6 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase border-[0.77px] border-[#a855f7] text-[#a855f7] font-montserrat">
-                Forms
-              </button>
-            </div>
-
-            {/* Export */}
-            <button className="glass-interactive-forms flex items-center gap-2 px-5 py-2.5 rounded-full border border-ci-border text-[9px] font-bold tracking-widest uppercase text-ci-text-subtle hover:text-ci-text-primary transition-colors font-montserrat">
-              <Printer size={13}/> Export
-            </button>
-          </div>
+            }
+          />
         </div>
 
-        {/* DOMAIN PILLS */}
-        <div className="px-10 py-3 shrink-0 border-b border-ci-border">
-          <div className="flex gap-2 overflow-x-auto forms-custom-scrollbar pb-1">
-            <button onClick={() => setSelectedDomain('ALL')}
-              className="flex-shrink-0 glass-interactive-forms px-5 py-2 rounded-full font-montserrat text-[9px] font-bold tracking-widest uppercase transition-colors border-[0.77px]"
-              style={selectedDomain === 'ALL'
-                ? isLight ? { borderColor: 'rgba(0,0,0,0.25)', color: '#1F1C1B', fontWeight: 700 } : { borderColor: 'rgba(255,255,255,0.3)', color: '#fff' }
-                : isLight ? { borderColor: 'transparent', color: '#747470' } : { borderColor: 'transparent', color: 'rgba(255,255,255,0.4)' }}>
-              ALL DOMAINS
-            </button>
+        {/* Domain pills — clean corporate */}
+        <div className="mx-auto w-full w-full px-6 md:px-8 pt-1">
+          <div className="flex flex-wrap gap-1.5 pb-2 border-b border-[var(--v3-border-subtle)]">
+            <button onClick={() => setSelectedDomain('ALL')} title="Show all form domains" className={`px-3 py-1 text-xs rounded-full uppercase tracking-widest ${selectedDomain==='ALL' ? 'bg-[var(--v3-teal)] text-white' : 'hover:bg-white/5'}`}>ALL</button>
             {DOMAINS.map(d => {
-              const isActive = selectedDomain === d.code;
               const Icon = d.icon;
-              const dColor = d.accentToken;
+              const active = selectedDomain === d.code;
               return (
-                <button key={d.code} onClick={() => setSelectedDomain(d.code)}
-                  className="flex-shrink-0 glass-interactive-forms px-5 py-2 rounded-full font-montserrat text-[9px] font-bold tracking-widest uppercase flex items-center gap-2 transition-colors border-[0.77px]"
-                  style={isActive
-                    ? { borderColor: `color-mix(in srgb, ${dColor} 60%, transparent)`, color: dColor, backgroundColor: `color-mix(in srgb, ${dColor} 10%, transparent)` }
-                    : isLight ? { borderColor: 'transparent', color: '#747470' } : { borderColor: 'transparent', color: 'rgba(255,255,255,0.4)' }}>
-                  <Icon size={13} style={{ color: isActive ? dColor : undefined }}/> {d.name}
+                <button key={d.code} onClick={() => setSelectedDomain(d.code)} title={`Filter forms to ${d.name}`} className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs uppercase tracking-widest ${active ? 'bg-white/10' : 'hover:bg-white/5'}`}>
+                  <Icon size={12} /> {d.name}
                 </button>
               );
             })}
+            <div className="ml-auto text-xs text-[var(--v3-text-tertiary)] font-mono self-center">{visibleForms.length} ARTIFACTS</div>
           </div>
         </div>
 
-        {/* CLASSIFICATION FILTERS */}
-        <div className="px-10 py-3 shrink-0 flex items-center gap-3 border-b border-ci-border">
-          <button onClick={() => setActiveClassifications(new Set())}
-            className="flex-shrink-0 glass-interactive-forms px-3 py-1.5 rounded-full font-montserrat font-bold text-[8px] uppercase tracking-widest transition-colors border-[0.77px]"
-            style={activeClassifications.size === 0
-              ? isLight ? { borderColor: 'rgba(0,0,0,0.25)', color: '#1F1C1B' } : { borderColor: 'rgba(255,255,255,0.3)', color: '#fff' }
-              : isLight ? { borderColor: 'transparent', color: '#747470' } : { borderColor: 'transparent', color: 'rgba(255,255,255,0.4)' }}>
-            ALL
-          </button>
-          {CLASSIFICATION_FILTERS.map(c => {
-            const isActive = activeClassifications.has(c.id);
-            const Icon = c.icon;
-            const cColor = c.accentToken;
-            return (
-              <button key={c.id} onClick={() => toggleClassification(c.id)}
-                className="flex-shrink-0 glass-interactive-forms flex items-center gap-1.5 px-3 py-1.5 rounded-full font-montserrat font-bold text-[8px] uppercase tracking-widest transition-colors border-[0.77px]"
-                style={isActive
-                  ? { borderColor: cColor, color: cColor }
-                  : isLight ? { borderColor: 'rgba(0,0,0,0.12)', color: '#747470' } : { borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}>
-                <Icon size={10}/> {c.name}
-              </button>
-            );
-          })}
-          <div className="ml-auto text-[9px] font-mono text-ci-text-subtle">
-            {visibleForms.length} ARTIFACTS
-          </div>
+        {/* Classification chips */}
+        <div className="mx-auto w-full w-full px-6 md:px-8 py-2 flex flex-wrap gap-1.5 text-xs">
+          <button onClick={() => setActiveClassifications(new Set())} title="Show all classifications" className={`px-2.5 py-0.5 rounded border ${activeClassifications.size===0 ? 'bg-white/10' : 'border-[var(--v3-border-subtle)]'}`}>ALL</button>
+          {CLASSIFICATION_FILTERS.map(c => (
+            <button key={c.id} onClick={() => toggleClassification(c.id)} title={`Toggle ${c.name} filter`} className={`px-2.5 py-0.5 rounded border inline-flex items-center gap-1 ${activeClassifications.has(c.id) ? 'border-current' : 'border-[var(--v3-border-subtle)]'}`}>
+              <c.icon size={10} /> {c.name}
+            </button>
+          ))}
         </div>
 
-        {/* FORMS GRID */}
-        <div className="flex-1 overflow-y-auto forms-custom-scrollbar p-8">
-          <div className="forms-grid-7 animate-fadeUpForms">
+        {/* FORMS GRID — premium clean corporate cards */}
+        <div className="mx-auto w-full w-full flex-1 overflow-y-auto px-6 md:px-8 py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
             {visibleForms.map(form => {
               const domain = DOMAINS.find(d => d.code === form.domainCode);
-              const color = domain?.accentToken || 'var(--ci-neutral-600)';
-              const typeColorClass = getFormTypeColor(form.type);
+              const color = domain?.accentToken || '#a1a1aa';
               return (
-                <div key={form.id}
-                  onClick={() => navigate(`/forms/${form.id}`)}
-                  className={`glass-interactive-forms flex flex-col justify-between p-4 rounded-xl border-[0.77px] transition-all duration-300 group h-full relative cursor-pointer ${isLight ? 'border-[#E5E4E3] hover:border-[#C74601]/50' : 'border-white/10 hover:border-white/25'}`}>
-                  <div>
-                    <div className="flex justify-between items-start mb-3">
-                      <div className={`text-[11px] font-bold font-mono tracking-wider px-1.5 py-0.5 rounded border ${isLight ? 'border-black/10' : 'border-white/10'}`} style={{color}}>
-                        {form.id}
-                      </div>
-                      <div className={`p-1.5 rounded-md border ${typeColorClass}`} title={form.type}>
-                        {getFormIcon(form.type, 14)}
-                      </div>
-                    </div>
-                    <h3 className="text-[13px] text-ci-text-primary font-medium leading-snug mb-3 line-clamp-3 group-hover:text-ci-text-primary transition-colors">
-                      {form.name}
-                    </h3>
-                    {form.classifications?.length > 0 && (
-                      <div className="flex flex-col gap-1.5 mb-4">
-                        {form.classifications.map(cId => {
-                          const cls = CLASSIFICATION_FILTERS.find(c => c.id === cId);
-                          if (!cls) return null;
-                          const Icon = cls.icon;
-                          const clsColor = cls.accentToken;
-                          return (
-                            <div key={cId} className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border w-max"
-                              style={{borderColor:`color-mix(in srgb, ${clsColor} 30%, transparent)`,backgroundColor:`color-mix(in srgb, ${clsColor} 10%, transparent)`,color:clsColor}}>
-                              <Icon size={10}/> {cls.name}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest border ${typeColorClass}`}>{form.type}</span>
-                      {form.usage === 'Required' && <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest border border-red-500/20 text-red-400">Required</span>}
-                      {form.frequency !== 'Ongoing' && form.frequency !== 'Triggered' && (
-                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest border ${isLight ? 'border-black/10 text-[#52404B]' : 'border-white/10 text-white/60'}`}>{form.frequency}</span>
-                      )}
-                    </div>
+                <GlassPanel key={form.id} onClick={() => navigate(`/forms/${form.id}`)} className="p-4 cursor-pointer group flex flex-col hover:border-[var(--v3-border-hover)]">
+                  <div className="flex justify-between">
+                    <span className="font-mono text-[10px] font-semibold tracking-widest" style={{color}}>{form.id}</span>
+                    <span className="text-[10px] opacity-60">{form.type}</span>
                   </div>
-                  <div className={`mt-auto pt-3 border-t relative ${isLight ? 'border-black/8' : 'border-white/10'}`}>
-                    <div className={`text-[8px] uppercase tracking-widest mb-2 font-bold flex items-center justify-between ${isLight ? 'text-[#747470]' : 'text-white/40'}`}>
-                      <span className="flex items-center gap-1.5"><GitBranch size={10}/> Mapped Policies</span>
-                      <div className={`flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-10 right-0 border p-1 rounded-lg shadow-xl ${isLight ? 'border-[#E5E4E3] bg-white' : 'border-white/10 bg-black/60 backdrop-blur'}`}>
-                        <button onClick={e => { e.stopPropagation(); navigate(`/forms/${form.id}`); }} className={`p-1.5 rounded ${isLight ? 'hover:bg-black/5 text-[#52404B] hover:text-[#1F1C1B]' : 'hover:bg-white/10 text-white/70 hover:text-white'}`} title="Preview / Open Form"><Eye size={14}/></button>
-                        <button onClick={e => { e.stopPropagation(); printForm(form.id); }} className={`p-1.5 rounded ${isLight ? 'hover:bg-black/5 text-[#52404B] hover:text-[#1F1C1B]' : 'hover:bg-white/10 text-white/70 hover:text-white'}`} title="Print Form"><Download size={14}/></button>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {form.policies.map(pp => (
-                        <span key={pp} className="px-1.5 py-0.5 rounded text-[9px] font-mono border border-ci-border text-ci-text-subtle hover:text-ci-text-primary transition-colors cursor-default">{pp}</span>
-                      ))}
-                    </div>
+                  <div className="mt-1 text-sm font-medium leading-tight pr-2 group-hover:text-[var(--v3-teal-light)]">{form.name}</div>
+                  <div className="mt-auto pt-3 text-[10px] flex flex-wrap gap-1 text-[var(--v3-text-secondary)]">
+                    {form.classifications.slice(0,2).map(c => <span key={c} className="border px-1 rounded text-[8px]">{c}</span>)}
+                    <span className="ml-auto">{form.policies.length} policies</span>
                   </div>
-                </div>
+                </GlassPanel>
               );
             })}
           </div>
-          {visibleForms.length === 0 && (
-            <div className="w-full mt-10">
-              <EmptyState
-                icon={<Search size={40} />}
-                title="No forms match your search criteria"
-                description="Try adjusting domain, classification, or search text."
-              />
-            </div>
-          )}
+          {visibleForms.length === 0 && <EmptyState icon={<Search size={36}/>} title="No forms match" />}
         </div>
-
       </div>
     </>
   );

@@ -11,6 +11,10 @@ dist
 .env.local
 
 # Service-account credentials (NEVER commit)
+docs/keys/
+*service-account*.json
+*credentials*.json
+*.private.json
 server/credentials/*.json
 !server/credentials/.gitkeep
 !server/credentials/README.md

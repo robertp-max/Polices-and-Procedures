@@ -1,5 +1,6 @@
 import { CheckCircle2, Clock3, ShieldAlert } from 'lucide-react';
 import type { DemoCriticalEmergencyState } from '../lib/demoCriticalEmergency';
+import { resolveIaReference, warnUnresolvedIaReference } from '../lib/referenceResolver';
 
 export interface DemoCriticalOrchestrationPanelProps {
   state: DemoCriticalEmergencyState;
@@ -19,8 +20,30 @@ export function DemoCriticalOrchestrationPanel({
   const text = isLight ? 'text-[#1F1C1B]' : 'text-[#E0E0E0]';
   const muted = isLight ? 'text-[#6B6B6B]' : 'text-white/60';
 
-  const selectedForm = state.forms.find((item) => item.id === state.selectedItemId);
-  const selectedPolicy = state.policies.find((item) => item.id === state.selectedItemId);
+  const resolvedForms = state.forms.filter((form) => {
+    const resolved = resolveIaReference({
+      id: form.id,
+      claimedType: 'form',
+      title: form.title,
+      source: 'DemoCriticalOrchestrationPanel.forms',
+    });
+    if (resolved.resolved && resolved.resolvedType === 'form') return true;
+    warnUnresolvedIaReference(resolved);
+    return false;
+  });
+  const resolvedPolicies = state.policies.filter((policy) => {
+    const resolved = resolveIaReference({
+      id: policy.id,
+      claimedType: 'policy',
+      title: policy.title,
+      source: 'DemoCriticalOrchestrationPanel.policies',
+    });
+    if (resolved.resolved && resolved.resolvedType === 'policy') return true;
+    warnUnresolvedIaReference(resolved);
+    return false;
+  });
+  const selectedForm = resolvedForms.find((item) => item.id === state.selectedItemId);
+  const selectedPolicy = resolvedPolicies.find((item) => item.id === state.selectedItemId);
 
   return (
     <aside className={`h-full rounded-2xl ${surface} border ${border} overflow-hidden flex flex-col`}>
@@ -64,7 +87,7 @@ export function DemoCriticalOrchestrationPanel({
         <section>
           <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C74601] font-mono mb-2">Required Forms (Clickable)</h4>
           <div className="space-y-2">
-            {state.forms.map((form) => (
+            {resolvedForms.map((form) => (
               <button
                 key={form.id}
                 type="button"
@@ -82,7 +105,7 @@ export function DemoCriticalOrchestrationPanel({
         <section>
           <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C74601] font-mono mb-2">Policy References (Linked)</h4>
           <div className="space-y-2">
-            {state.policies.map((policy) => (
+            {resolvedPolicies.map((policy) => (
               <button
                 key={policy.id}
                 type="button"

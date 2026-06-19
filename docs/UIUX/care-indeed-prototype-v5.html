@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Care Indeed • Prototype v5</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Outfit:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap');
+    
+    :root {
+      --v3-base-bg: #05060A;
+      --v3-glass-card: linear-gradient(135deg, rgba(32, 41, 56, 0.88) 0%, rgba(16, 20, 28, 0.45) 60%, rgba(8, 10, 13, 0.98) 100%);
+      --v3-glass-blur: blur(32px) saturate(140%);
+      --v3-glass-shadow: 30px 10px 80px rgba(0, 0, 0, 0.9);
+      --v3-border: rgba(255, 255, 255, 0.33);
+      --v3-border-hover: rgba(255, 255, 255, 0.45);
+      --v3-border-subtle: rgba(255, 255, 255, 0.12);
+      --v3-teal: #007970;
+      --v3-teal-light: #00D1C1;
+      --v3-orange: #E07B2C;
+      --v3-orange-light: #FFA059;
+      --v3-text-primary: #FFFFFF;
+      --v3-text-secondary: #94A3B8;
+      --v3-text-tertiary: #64748B;
+      --v3-ease: cubic-bezier(0.16, 1, 0.3, 1);
+      --v3-card-radius: 20px;
+      --motion-premium: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    [data-theme="light"] {
+      --v3-base-bg: #FAF9F6;
+      --v3-glass-card: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(250,249,246,0.96) 100%);
+      --v3-glass-blur: blur(18px) saturate(110%);
+      --v3-glass-shadow: 0 10px 40px -15px rgba(15,23,42,0.11), 0 4px 12px -4px rgba(15,23,42,0.07);
+      --v3-border: rgba(15,23,42,0.13);
+      --v3-border-hover: rgba(15,23,42,0.24);
+      --v3-border-subtle: rgba(15,23,42,0.07);
+      --v3-teal: #007970;
+      --v3-teal-light: #0F766E;
+      --v3-orange: #C2410C;
+      --v3-orange-light: #E07B2C;
+      --v3-text-primary: #1C252E;
+      --v3-text-secondary: #475569;
+      --v3-text-tertiary: #64748B;
+    }
+    
+    html, body { margin:0; padding:0; height:100%; width:100%; font-family:'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing:antialiased; }
+    h1, h2, .section-title { font-family:'Outfit', system-ui, sans-serif; letter-spacing:-0.025em; }
+    .eyebrow { font-size:10px; letter-spacing:0.14em; text-transform:uppercase; font-weight:700; }
+    
+    .shell-root { min-height:100vh; width:100vw; overflow:hidden; background:var(--v3-base-bg); color:var(--v3-text-primary); }
+    
+    .sidebar-rail { width:72px; transition:width 260ms var(--motion-premium); background:#030406; border-right:1px solid var(--v3-border-subtle); }
+    [data-theme="light"] .sidebar-rail { background:#F4F3ED; border-right:1px solid rgba(15,23,42,0.08); }
+    .sidebar-rail.expanded { width:260px; }
+    
+    .nav-item { display:flex; align-items:center; gap:13px; padding:9px 14px; border-radius:11px; font-size:13px; font-weight:600; letter-spacing:-0.01em; color:var(--v3-text-secondary); transition:all 140ms var(--motion-premium); }
+    .nav-item:hover { color:var(--v3-text-primary); background:rgba(255,255,255,0.045); }
+    [data-theme="light"] .nav-item:hover { background:rgba(15,23,42,0.045); }
+    .nav-item.active { color:var(--v3-teal-light); background:rgba(0,121,112,0.13); border:1px solid rgba(0,209,193,0.22); }
+    [data-theme="light"] .nav-item.active { background:rgba(0,121,112,0.09); }
+    
+    .sidebar-rail.collapsed .nav-item { justify-content:center; padding:11px 0; gap:0; }
+    .sidebar-rail.collapsed .nav-item span { display:none; }
+    .sidebar-group-label { font-size:9px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; color:var(--v3-text-tertiary); padding:0 14px 4px; margin-top:10px; }
+    
+    .topbar { height:68px; background:rgba(5,6,10,0.82); backdrop-filter:blur(24px); border-bottom:1px solid var(--v3-border-subtle); }
+    [data-theme="light"] .topbar { background:rgba(250,249,246,0.94); border-bottom:1px solid rgba(15,23,42,0.08); }
+    
+    .glass-surface { background:var(--v3-glass-card); backdrop-filter:var(--v3-glass-blur); -webkit-backdrop-filter:var(--v3-glass-blur); border:1px solid var(--v3-border); box-shadow:var(--v3-glass-shadow); border-radius:var(--v3-card-radius); }
+    .glass-panel { background:var(--v3-glass-card); backdrop-filter:var(--v3-glass-blur); -webkit-backdrop-filter:var(--v3-glass-blur); border:1px solid var(--v3-border-subtle); border-radius:16px; transition:all 160ms var(--motion-premium); }
+    
+    .surface-card { position:relative; overflow:hidden; transition:transform 180ms var(--motion-premium), box-shadow 180ms var(--motion-premium), border-color 160ms var(--motion-premium); border:1px solid var(--v3-border-subtle); border-radius:18px; background:var(--v3-glass-card); backdrop-filter:var(--v3-glass-blur); -webkit-backdrop-filter:var(--v3-glass-blur); }
+    .surface-card:hover { transform:translateY(-2px); border-color:var(--v3-border-hover); box-shadow:0 18px 48px -12px rgba(0,0,0,0.55); }
+    .surface-card::after { content:''; position:absolute; inset:-60%; background:radial-gradient(circle at var(--mouse-x,50%) var(--mouse-y,50%), rgba(0,209,193,0.13), transparent 68%); opacity:0; transition:opacity 220ms var(--motion-premium); pointer-events:none; z-index:1; }
+    .surface-card:hover::after { opacity:1; }
+    
+    .kpi-card { transition:transform 160ms var(--motion-premium), box-shadow 160ms var(--motion-premium), border-color 140ms var(--motion-premium); }
+    .kpi-card:hover { transform:translateY(-1px); }
+    
+    .proto-table th { font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:0.1em; color:var(--v3-text-tertiary); padding:10px 12px 8px; }
+    .proto-table td { padding:11px 12px; border-top:1px solid var(--v3-border-subtle); font-size:13.5px; }
+    .proto-table tr:hover td { background:rgba(255,255,255,0.03); }
+    [data-theme="light"] .proto-table tr:hover td { background:rgba(15,23,42,0.03); }
+    
+    .command-modal { animation:commandEnter 200ms var(--motion-premium) both; }
+    @keyframes commandEnter { from { opacity:0; transform:translateY(-14px) scale(0.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+    .command-result { transition:all 110ms var(--motion-premium); }
+    .command-result:hover, .command-result.active { background:rgba(255,255,255,0.06); transform:translateX(2px); }
+    [data-theme="light"] .command-result:hover, [data-theme="light"] .command-result.active { background:rgba(15,23,42,0.055); }
+    
+    .drawer { box-shadow:-32px 0 88px -22px rgba(0,0,0,0.65); animation:drawerSlide 260ms var(--motion-premium) both; }
+    @keyframes drawerSlide { from { transform:translateX(46px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+    
+    .filter-tray { transition:max-height 280ms var(--motion-premium), opacity 200ms var(--motion-premium); overflow:hidden; }
+    
+    .content-frame { flex:1; min-height:0; overflow-y:auto; padding:24px 34px 40px; }
+    
+    .premium-ease { transition:all 180ms var(--motion-premium); }
+    .focus-ring:focus-visible { outline:2px solid var(--v3-teal-light); outline-offset:3px; box-shadow:0 0 0 4px rgba(0,209,193,0.15); }
+    
+    .kpi-value { font-size:33px; line-height:1; font-weight:700; letter-spacing:-0.03em; font-family:'Outfit', system-ui; }
+    .section-header { font-size:11px; letter-spacing:0.09em; text-transform:uppercase; font-weight:700; color:var(--v3-text-tertiary); }
+    
+    .status-badge { font-size:10px; font-weight:700; letter-spacing:0.5px; padding:1px 9px 2px; border-radius:999px; display:inline-flex; align-items:center; gap:4px; }
+    
+    .nav-icon { width:17px; height:17px; flex-shrink:0; }
+    
+    .topbar-logo { height:26px; width:auto; transition:opacity 160ms ease; }
+    
+    .login-glass { background:var(--v3-glass-card); backdrop-filter:var(--v3-glass-blur); -webkit-backdrop-filter:var(--v3-glass-blur); box-shadow:var(--v3-glass-shadow); }
+    
+    .custom-scroll::-webkit-scrollbar { width:5px; height:5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background:rgba(224,123,44,0.25); border-radius:999px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background:rgba(224,123,44,0.42); }
+    [data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb { background:rgba(15,23,42,0.22); }
+    
+    .full-bleed { width:100%; }
+    
+    .spotlight-card { position:relative; overflow:hidden; }
+    .spotlight-card::before { content:''; position:absolute; inset:-55%; background:radial-gradient(circle at var(--mouse-x,50%) var(--mouse-y,50%), rgba(0,209,193,0.11), transparent 72%); opacity:0; transition:opacity 220ms var(--motion-premium); pointer-events:none; }
+    .spotlight-card:hover::before { opacity:1; }
+    
+    .metric-lift { transition:transform 160ms var(--motion-premium); }
+    .metric-lift:hover { transform:translateY(-1.5px); }
+    
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    const { useState, useEffect, useMemo, useCallback, useRef, createElement: h } = React;
+    const { createRoot } = ReactDOM;
+
+    const LOGO_DARK = 'https://dovdry3t4njek.cloudfront.net/assets/ci-logo-white-DfgJTkII.png';
+    const LOGO_LIGHT = 'https://dovdry3t4njek.cloudfront.net/assets/ci-logo-gray-Dju7zS6k.png';
+
+    const THEME_KEY = 'ci-prototype-theme';
+    const SIDEBAR_KEY = 'ci-sidebar-collapsed';
+
+    const Icons = {
+      dashboard: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'1.9'}, [h('rect',{x:'3',y:'3',width:'7',height:'9',rx:'1.5'}), h('rect',{x:'14',y:'3',width:'7',height:'5',rx:'1.5'}), h('rect',{x:'14',y:'12',width:'7',height:'9',rx:'1.5'}), h('rect',{x:'3',y:'16',width:'7',height:'5',rx:'1.5'})]),
+      library: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'1.9'}, [h('path',{d:'M4 19.5A2.5 2.5 0 0 1 6.5 17H20'}), h('path',{d:'M4 4.5A2.5 2.5 0 0 1 6.5 2H20v15H6.5A2.5 2.5 0 0 1 4 17.5V4.5z'})]),
+      forms: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'1.85'}, [h('rect',{x:'3',y:'4',width:'18',height:'18',rx:'2'}), h('line',{x1:'7',y1:'10',x2:'17',y2:'10'}), h('line',{x1:'7',y1:'14',x2:'17',y2:'14'}), h('line',{x1:'7',y1:'18',x2:'13',y2:'18'})]),
+      calendar: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'1.9'}, [h('rect',{x:'3',y:'4',width:'18',height:'18',rx:'2'}), h('line',{x1:'3',y1:'10',x2:'21',y2:'10'}), h('line',{x1:'8',y1:'2',x2:'8',y2:'6'}), h('line',{x1:'16',y1:'2',x2:'16',y2:'6'})]),
+      evidence: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'1.9'}, [h('path',{d:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'}), h('polyline',{points:'14 2 14 8 20 8'})]),
+      users: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'1.9'}, [h('path',{d:'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'}), h('circle',{cx:'9',cy:'7',r:'4'}), h('path',{d:'M23 21v-2a4 4 0 0 0-3-3.87'}), h('path',{d:'M16 3.13a4 4 0 0 1 0 7.75'})]),
+      shield: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'1.85'}, [h('path',{d:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'})]),
+      help: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'2'}, [h('circle',{cx:'12',cy:'12',r:'10'}), h('path',{d:'M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'}), h('path',{d:'M12 17h.01'})]),
+      search: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'2.2'}, [h('circle',{cx:'11',cy:'11',r:'8'}), h('path',{d:'m21 21-4.35-4.35'})]),
+      bell: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'2'}, [h('path',{d:'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'}), h('path',{d:'M13.73 21a2 2 0 0 1-3.46 0'})]),
+      moon: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'2'}, [h('path',{d:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'})]),
+      sun: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'2'}, [h('circle',{cx:'12',cy:'12',r:'5'}), h('line',{x1:'12',y1:'1',x2:'12',y2:'3'}), h('line',{x1:'12',y1:'21',x2:'12',y2:'23'}), h('line',{x1:'4.22',y1:'4.22',x2:'5.64',y2:'5.64'}), h('line',{x1:'18.36',y1:'18.36',x2:'19.78',y2:'19.78'}), h('line',{x1:'1',y1:'12',x2:'3',y2:'12'}), h('line',{x1:'21',y1:'12',x2:'23',y2:'12'}), h('line',{x1:'4.22',y1:'19.78',x2:'5.64',y2:'18.36'}), h('line',{x1:'18.36',y1:'5.64',x2:'19.78',y2:'4.22'})]),
+      close: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'2.6'}, [h('line',{x1:'18',y1:'6',x2:'6',y2:'18'}), h('line',{x1:'6',y1:'6',x2:'18',y2:'18'})]),
+      chevronRight: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'2.5'}, [h('polyline',{points:'9 18 15 12 9 6'})]),
+      menu: (p) => h('svg', {...p, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'2.3'}, [h('line',{x1:'3',y1:'6',x2:'21',y2:'6'}), h('line',{x1:'3',y1:'12',x2:'21',y2:'12'}), h('line',{x1:'3',y1:'18',x2:'21',y2:'18'})]),
+    };
+
+    const COMPONENT_GROUPS = [
+      { componentId: 'cmp-dashboard', label: 'Dashboard / Command Center', defaultAccess: 'read', order: 10 },
+      { componentId: 'cmp-policy-library', label: 'Policy Library', defaultAccess: 'read', order: 20 },
+      { componentId: 'cmp-forms', label: 'Forms', defaultAccess: 'read', order: 30 },
+      { componentId: 'cmp-ces', label: 'CES / Compliance Execution', defaultAccess: 'read', order: 40 },
+      { componentId: 'cmp-calendar', label: 'Calendar', defaultAccess: 'read', order: 50 },
+      { componentId: 'cmp-evidence', label: 'Evidence Center', defaultAccess: 'read', order: 60 },
+      { componentId: 'cmp-audit', label: 'Audit Mode', defaultAccess: 'read', order: 70 },
+      { componentId: 'cmp-journey', label: 'Journey / Training', defaultAccess: 'read', order: 80 },
+      { componentId: 'cmp-staffing', label: 'Staffing / Clinical', defaultAccess: 'read', order: 90 },
+      { componentId: 'cmp-iadministrator', label: 'iAdministrator', defaultAccess: 'read', order: 100 },
+      { componentId: 'cmp-user-management', label: 'User Management / Identity Admin', defaultAccess: 'none', order: 110 },
+      { componentId: 'cmp-system', label: 'System / Settings', defaultAccess: 'read', order: 120 },
+    ];
+
+    const PAGE_REGISTRY = [
+      { pageId: 'page.dashboard', label: 'Dashboard', routePattern: '/dashboard', componentGroup: 'cmp-dashboard', templateType: 'dashboard' },
+      { pageId: 'page.library', label: 'Policy Library', routePattern: '/library', componentGroup: 'cmp-policy-library', templateType: 'registry-table' },
+      { pageId: 'page.policy-detail', label: 'Policy Detail', routePattern: '/library/:policyId', componentGroup: 'cmp-policy-library', templateType: 'detail' },
+      { pageId: 'page.policy-lifecycle', label: 'Policy Lifecycle', routePattern: '/policy-lifecycle', componentGroup: 'cmp-policy-library', templateType: 'documentation' },
+      { pageId: 'page.framework', label: 'Framework', routePattern: '/framework', componentGroup: 'cmp-policy-library', templateType: 'documentation' },
+      { pageId: 'page.taxonomy', label: 'Taxonomy', routePattern: '/taxonomy', componentGroup: 'cmp-policy-library', templateType: 'directory' },
+      { pageId: 'page.achc-survey', label: 'ACHC Survey Alignment', routePattern: '/framework/achc-survey', componentGroup: 'cmp-policy-library', templateType: 'documentation' },
+      { pageId: 'page.forms', label: 'Forms Library', routePattern: '/forms', componentGroup: 'cmp-forms', templateType: 'registry-table' },
+      { pageId: 'page.form-viewer', label: 'Form Viewer / Sign', routePattern: '/forms/:formId', componentGroup: 'cmp-forms', templateType: 'detail' },
+      { pageId: 'page.ces-calendar', label: 'CES Calendar', routePattern: '/ces/calendar', componentGroup: 'cmp-ces', templateType: 'calendar' },
+      { pageId: 'page.ces-board', label: 'CES Sprint Board', routePattern: '/ces/board', componentGroup: 'cmp-ces', templateType: 'board' },
+      { pageId: 'page.ces-workloads', label: 'CES Workloads', routePattern: '/ces/workloads', componentGroup: 'cmp-ces', templateType: 'board' },
+      { pageId: 'page.ces-reports', label: 'CES Reports', routePattern: '/ces/reports', componentGroup: 'cmp-ces', templateType: 'registry-table' },
+      { pageId: 'page.my-tasks', label: 'My Tasks', routePattern: '/my-tasks', componentGroup: 'cmp-ces', templateType: 'board' },
+      { pageId: 'page.workflows', label: 'Workflows Library', routePattern: '/workflows', componentGroup: 'cmp-ces', templateType: 'registry-table' },
+      { pageId: 'page.master-controls', label: 'Master Control Inventory', routePattern: '/compliance/master-controls', componentGroup: 'cmp-ces', templateType: 'registry-table' },
+      { pageId: 'page.pm-tasks', label: 'PM — My Tasks', routePattern: '/pm/my-tasks', componentGroup: 'cmp-ces', templateType: 'board' },
+      { pageId: 'page.pm-sprint-plan', label: 'PM — Sprint Plan', routePattern: '/pm/sprint-plan', componentGroup: 'cmp-ces', templateType: 'board' },
+      { pageId: 'page.pm-sprint-review', label: 'PM — Sprint Review', routePattern: '/pm/sprint-review', componentGroup: 'cmp-ces', templateType: 'board' },
+      { pageId: 'page.pm-approvals', label: 'PM — Approvals', routePattern: '/pm/approvals', componentGroup: 'cmp-ces', templateType: 'board' },
+      { pageId: 'page.pm-dashboard', label: 'PM — Dashboard', routePattern: '/pm/dashboard', componentGroup: 'cmp-ces', templateType: 'dashboard' },
+      { pageId: 'page.calendar', label: 'Master Calendar', routePattern: '/calendar', componentGroup: 'cmp-calendar', templateType: 'calendar' },
+      { pageId: 'page.evidence', label: 'Evidence Center', routePattern: '/evidence', componentGroup: 'cmp-evidence', templateType: 'evidence' },
+      { pageId: 'page.audit', label: 'Audit Mode', routePattern: '/audit', componentGroup: 'cmp-audit', templateType: 'registry-table' },
+      { pageId: 'page.journey-home', label: 'Journey Home', routePattern: '/journey', componentGroup: 'cmp-journey', templateType: 'journey' },
+      { pageId: 'page.journey-v1', label: 'Journey v1', routePattern: '/journey/v1-journey', componentGroup: 'cmp-journey', templateType: 'journey' },
+      { pageId: 'page.journey-appendix-f', label: 'Journey — Appendix F', routePattern: '/journey/appendix-f', componentGroup: 'cmp-journey', templateType: 'journey' },
+      { pageId: 'page.journey-module', label: 'Journey Module Player', routePattern: '/journey/module/:moduleId', componentGroup: 'cmp-journey', templateType: 'detail' },
+      { pageId: 'page.journey-supervisor', label: 'Journey Supervisor View', routePattern: '/journey/supervisor', componentGroup: 'cmp-journey', templateType: 'journey' },
+      { pageId: 'page.journey-admin', label: 'Journey Admin', routePattern: '/journey/admin', componentGroup: 'cmp-journey', templateType: 'journey' },
+      { pageId: 'page.journey-guide', label: 'Journey User Guide', routePattern: '/journey/guide', componentGroup: 'cmp-journey', templateType: 'documentation' },
+      { pageId: 'page.onboarding-v2', label: 'Onboarding v2', routePattern: '/onboarding-v2', componentGroup: 'cmp-journey', templateType: 'journey' },
+      { pageId: 'page.clinicians', label: 'Clinician Profiles', routePattern: '/clinicians', componentGroup: 'cmp-staffing', templateType: 'profile-list' },
+      { pageId: 'page.clinician-detail', label: 'Clinician Detail', routePattern: '/clinicians/:clinicianId', componentGroup: 'cmp-staffing', templateType: 'detail' },
+      { pageId: 'page.patients', label: 'Patient Profiles', routePattern: '/patients', componentGroup: 'cmp-staffing', templateType: 'profile-list' },
+      { pageId: 'page.patient-detail', label: 'Patient Detail', routePattern: '/patients/:patientId', componentGroup: 'cmp-staffing', templateType: 'detail' },
+      { pageId: 'page.staffing-calendar', label: 'Staffing Calendar', routePattern: '/staffing-calendar', componentGroup: 'cmp-staffing', templateType: 'calendar' },
+      { pageId: 'page.iadministrator', label: 'iAdministrator (Brad)', routePattern: '/iadministrator', componentGroup: 'cmp-iadministrator', templateType: 'dashboard' },
+      { pageId: 'page.user-assignments', label: 'User Assignments', routePattern: '/admin/users', componentGroup: 'cmp-user-management', templateType: 'admin-matrix' },
+      { pageId: 'page.user-groups', label: 'User Groups', routePattern: '/admin/user-groups', componentGroup: 'cmp-user-management', templateType: 'admin-matrix' },
+      { pageId: 'page.admin-roles', label: 'Roles', routePattern: '/admin/roles', componentGroup: 'cmp-user-management', templateType: 'admin-matrix' },
+      { pageId: 'page.admin-permissions', label: 'Permissions', routePattern: '/admin/permissions', componentGroup: 'cmp-user-management', templateType: 'admin-matrix' },
+      { pageId: 'page.page-access', label: 'Page View Access', routePattern: '/admin/users#page-access', componentGroup: 'cmp-user-management', templateType: 'admin-matrix' },
+      { pageId: 'page.help-center', label: 'Help Center', routePattern: '/help', componentGroup: 'cmp-system', templateType: 'documentation' },
+      { pageId: 'page.system-documentation', label: 'System Documentation', routePattern: '/system-documentation', componentGroup: 'cmp-system', templateType: 'documentation' },
+      { pageId: 'page.demo', label: 'Demo Page', routePattern: '/demo', componentGroup: 'cmp-system', templateType: 'documentation' },
+      { pageId: 'page.hubstaff', label: 'Hubstaff Staging', routePattern: '/hubstaff', componentGroup: 'cmp-system', templateType: 'documentation' },
+    ];
+
+    const PAGE_BY_ID = Object.fromEntries(PAGE_REGISTRY.map(p => [p.pageId, p]));
+    const GROUP_BY_ID = Object.fromEntries(COMPONENT_GROUPS.map(g => [g.componentId, g]));
+    function getPagesForComponent(cid) { return PAGE_REGISTRY.filter(p => p.componentGroup === cid); }
+
+    function createSampleData() {
+      return {
+        policies: [
+          {id:'GV-GB-001', title:'Governing Body — Board Operations', domain:'Governance', updated:'2026-05-12', status:'Active', owner:'Board Secretary'},
+          {id:'QA-PI-001', title:'QAPI Program — Quality Assurance', domain:'QAPI', updated:'2026-06-01', status:'Active', owner:'QAPI Coordinator'},
+          {id:'CL-OA-006', title:'Clinical Record Audit Standards', domain:'Clinical', updated:'2026-04-28', status:'Active', owner:'Director of Nursing'},
+          {id:'CO-CP-001', title:'Compliance Program — Core Policies', domain:'Compliance', updated:'2026-05-22', status:'Active', owner:'Compliance Officer'},
+          {id:'RM-IC-001', title:'Infection Prevention & Control', domain:'Risk', updated:'2026-03-15', status:'Active', owner:'Risk Manager'},
+        ],
+        forms: [
+          {id:'FRM-GV-001', title:'Board Agenda Template', type:'Governance', lastUsed:'2026-06-09', instances:14, status:'Active'},
+          {id:'FRM-QA-002', title:'QAPI Metrics Report', type:'Quality', lastUsed:'2026-06-08', instances:27, status:'Active'},
+          {id:'FRM-CL-010', title:'Clinical Record Audit Checklist', type:'Clinical', lastUsed:'2026-06-04', instances:19, status:'Active'},
+        ],
+        kpis: [
+          {label:'Active Policies', value:'187', trend:'+4', tone:'teal'},
+          {label:'Open Evidence Items', value:'31', trend:'-8', tone:'orange'},
+          {label:'Forms Completed (30d)', value:'214', trend:'+22', tone:'teal'},
+          {label:'Audit Readiness', value:'94%', trend:'+2', tone:'teal'},
+        ],
+        events: [
+          {id:'e1', title:'QAPI Committee Meeting', domain:'QAPI', due:'Jun 18', status:'Scheduled', owner:'QAPI Coordinator'},
+          {id:'e2', title:'Monthly Clinical Record Audit', domain:'Clinical', due:'Jun 20', status:'In Progress', owner:'Director of Nursing'},
+          {id:'e3', title:'Governing Body Quarterly', domain:'Governance', due:'Jun 11', status:'Completed', owner:'Board Chair'},
+        ],
+        recent: [
+          {id:1, action:'Policy GV-GB-001 updated', user:'L. Patel', time:'12m ago'},
+          {id:2, action:'Evidence packet submitted for RCA-472', user:'M. Torres', time:'41m ago'},
+          {id:3, action:'Form FRM-QA-002 signed by 4 members', user:'System', time:'2h ago'},
+        ],
+        clinicians: [
+          {id:'c1', name:'Dr. Elena Vargas', role:'RN - Case Manager', status:'Active', location:'San Jose', exp:'8y'},
+          {id:'c2', name:'Michael Chen, PT', role:'Physical Therapist', status:'Active', location:'Fremont', exp:'5y'},
+          {id:'c3', name:'Aisha Patel, RN', role:'Clinical Supervisor', status:'Active', location:'San Jose', exp:'11y'},
+        ],
+        patients: [
+          {id:'p1', name:'R. Thompson', program:'Home Health', status:'Active', next:'Jun 17'},
+          {id:'p2', name:'S. Ramirez', program:'Skilled Nursing', status:'Active', next:'Jun 19'},
+        ],
+        tasks: [
+          {id:'t1', title:'Review GV-GB-001 appendix', status:'In Progress', due:'Today', owner:'Olivia P.'},
+          {id:'t2', title:'Upload Q2 evidence for ACHC', status:'To Do', due:'Jun 18', owner:'J. Rivera'},
+          {id:'t3', title:'Sign clinical audit forms', status:'Done', due:'Jun 14', owner:'Team'},
+        ],
+        evidence: [
+          {id:'EVD-041', title:'Infection control incident packet', type:'Incident', verified:'Verified'},
+          {id:'EVD-042', title:'QAPI metric submission', type:'Report', verified:'Pending'},
+        ],
+        modules: [
+          {id:'m01', title:'Module 1: Orientation', progress:100, status:'Complete'},
+          {id:'m02', title:'Module 2: Infection Control', progress:68, status:'In Progress'},
+          {id:'m03', title:'Module 3: Documentation', progress:0, status:'Locked'},
+        ]
+      };
+    }
+
+    function StatusBadge({ status }) {
+      const tone = status === 'Active' || status === 'Verified' || status === 'Completed' || status === 'Done' ? 'teal' : (status === 'In Progress' || status === 'Scheduled' ? 'orange' : 'default');
+      const cls = tone === 'teal' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : tone === 'orange' ? 'bg-amber-400/10 text-amber-400 border-amber-400/20' : 'bg-white/5 text-v3-text-secondary border-white/10';
+      return h('span', { className: `status-badge border ${cls}` }, status);
+    }
+
+    function KpiCard({ kpi, onClick }) {
+      return h('div', {
+        className: 'glass-panel kpi-card p-5 border border-v3-border-subtle spotlight-card cursor-pointer metric-lift',
+        onClick: onClick || (() => {}),
+        onMouseMove: (e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          e.currentTarget.style.setProperty('--mouse-x', `${((e.clientX - r.left)/r.width)*100}%`);
+          e.currentTarget.style.setProperty('--mouse-y', `${((e.clientY - r.top)/r.height)*100}%`);
+        }
+      },
+        h('div', { className: 'flex justify-between items-start' },
+          h('div', { className: 'text-[10px] uppercase tracking-[0.16em] text-v3-text-tertiary font-semibold' }, kpi.label),
+          h('div', { className: `text-xs font-medium ${kpi.tone === 'teal' ? 'text-v3-teal-light' : 'text-v3-orange'}` }, kpi.trend)
+        ),
+        h('div', { className: 'kpi-value mt-3', style: { color: kpi.tone === 'teal' ? 'var(--v3-teal-light)' : 'var(--v3-orange)' } }, kpi.value)
+      );
+    }
+
+    function SurfaceCard({ children, className = '', onClick }) {
+      const ref = useRef(null);
+      const handleMove = (e) => {
+        if (!ref.current) return;
+        const r = ref.current.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width) * 100;
+        const y = ((e.clientY - r.top) / r.height) * 100;
+        ref.current.style.setProperty('--mouse-x', `${x}%`);
+        ref.current.style.setProperty('--mouse-y', `${y}%`);
+      };
+      const handleLeave = () => { if (ref.current) { ref.current.style.setProperty('--mouse-x', '50%'); ref.current.style.setProperty('--mouse-y', '50%'); } };
+      return h('div', {
+        ref, className: `surface-card spotlight-card ${className}`,
+        onClick, onMouseMove: handleMove, onMouseLeave: handleLeave
+      }, children);
+    }
+
+    function DataTable({ columns, rows, onRowClick }) {
+      return h('div', { className: 'glass-panel border border-v3-border-subtle overflow-hidden' },
+        h('table', { className: 'proto-table w-full' },
+          h('thead', null, h('tr', { className: 'border-b border-v3-border-subtle' },
+            columns.map((c,i) => h('th', { key:i, className: 'text-left' }, c))
+          )),
+          h('tbody', null, rows.map((row, ri) =>
+            h('tr', { key:ri, className: 'cursor-pointer hover:bg-white/5', onClick: () => onRowClick && onRowClick(row) },
+              Object.values(row).map((val, vi) => h('td', { key:vi }, typeof val === 'string' && (val.length < 18) && (val.match(/Active|In Progress|Verified|Done/)) ? h(StatusBadge, {status:val}) : val))
+            )
+          ))
+        )
+      );
+    }
+
+    function FilterTray({ open, onToggle, children }) {
+      return h('div', { className: 'mb-4' },
+        h('button', {
+          onClick: onToggle,
+          className: 'flex items-center gap-2 text-xs uppercase tracking-[1px] font-semibold text-v3-text-tertiary hover:text-v3-text-primary px-2 py-1.5'
+        },
+          h('span', null, open ? 'HIDE FILTERS' : 'SHOW FILTERS'),
+          h(Icons.chevronRight, { width:13, height:13, className: open ? 'rotate-90' : '' })
+        ),
+        h('div', {
+          className: `filter-tray glass-panel border border-v3-border-subtle p-4 mt-1 ${open ? 'max-h-[260px] opacity-100' : 'max-h-0 opacity-0'}`
+        }, children)
+      );
+    }
+
+    function Drawer({ isOpen, onClose, title, children }) {
+      if (!isOpen) return null;
+      return h('div', { className: 'fixed inset-0 z-[95] flex justify-end bg-black/70', onClick: onClose },
+        h('div', {
+          className: 'drawer w-full max-w-[420px] h-full glass-surface border-l border-v3-border flex flex-col',
+          onClick: e => e.stopPropagation()
+        },
+          h('div', { className: 'flex items-center justify-between px-6 py-4 border-b border-v3-border-subtle flex-shrink-0' },
+            h('div', { className: 'font-semibold tracking-tight text-lg' }, title),
+            h('button', { onClick: onClose, className: 'p-2 text-v3-text-tertiary hover:text-v3-text-primary focus-ring rounded-xl' }, h(Icons.close, {width:19, height:19}))
+          ),
+          h('div', { className: 'p-6 flex-1 overflow-auto custom-scroll text-sm leading-relaxed' }, children),
+          h('div', { className: 'px-6 py-4 border-t border-v3-border-subtle text-[10px] text-v3-text-tertiary flex-shrink-0' }, 'Prototype surface • All data generic')
+        )
+      );
+    }
+
+    function Modal({ isOpen, onClose, title, children }) {
+      if (!isOpen) return null;
+      return h('div', { className: 'fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-6', onClick: onClose },
+        h('div', { className: 'glass-surface border border-v3-border w-full max-w-lg rounded-3xl p-7', onClick: e => e.stopPropagation() },
+          h('div', { className: 'flex justify-between items-center mb-4' },
+            h('div', { className: 'font-semibold text-xl' }, title),
+            h('button', { onClick: onClose, className: 'text-v3-text-tertiary hover:text-white' }, h(Icons.close, {width:18,height:18}))
+          ),
+          children
+        )
+      );
+    }
+
+    function PageHeader({ title, subtitle, actions }) {
+      return h('div', { className: 'flex items-end justify-between mb-6' },
+        h('div', null,
+          h('div', { className: 'eyebrow tracking-[0.18em] mb-1' }, subtitle || 'PAGE'),
+          h('h1', { className: 'text-[27px] font-semibold tracking-[-0.015em]' }, title)
+        ),
+        actions
+      );
+    }
+
+    function DashboardTemplate({ setActiveDrawer, data }) {
+      return h('div', { className: 'space-y-7 fade-in' },
+        h('div', { className: 'flex items-end justify-between' },
+          h('div', null, h('div', { className: 'eyebrow' }, 'OPERATIONS OVERVIEW'), h('h1', { className: 'text-4xl font-semibold tracking-[-0.02em]' }, 'Agency Command Center')),
+          h('div', { className: 'text-xs text-v3-text-tertiary' }, 'Last sync • moments ago')
+        ),
+        h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4' },
+          data.kpis.map((k,i) => h(KpiCard, { key:i, kpi:k, onClick: () => setActiveDrawer({type:'kpi', data:k}) }))
+        ),
+        h('div', { className: 'grid grid-cols-1 xl:grid-cols-5 gap-5' },
+          h(SurfaceCard, { className: 'xl:col-span-3 p-6', onClick: () => setActiveDrawer({type:'event', data:data.events[0]}) },
+            h('div', { className: 'section-header mb-4' }, 'UPCOMING REGULATORY EVENTS'),
+            h('div', { className: 'space-y-3' }, data.events.map(ev => h('div', { key:ev.id, className: 'flex items-center justify-between p-3 rounded-xl hover:bg-white/5 cursor-pointer transition' },
+              h('div', null, h('div', { className: 'font-medium' }, ev.title), h('div', { className: 'text-xs text-v3-text-tertiary' }, `${ev.domain} • ${ev.owner}`)),
+              h(StatusBadge, { status: ev.status })
+            )))
+          ),
+          h(SurfaceCard, { className: 'xl:col-span-2 p-6' },
+            h('div', { className: 'section-header mb-4' }, 'LIVE ACTIVITY'),
+            h('div', { className: 'space-y-3.5' }, data.recent.map(act => h('div', { key:act.id, className: 'flex gap-3 text-sm' },
+              h('div', { className: 'w-1.5 h-1.5 mt-2 rounded-full bg-v3-teal-light flex-shrink-0' }),
+              h('div', null, h('div', { className: 'text-v3-text-primary' }, act.action), h('div', { className: 'text-[11px] text-v3-text-tertiary' }, `${act.user} • ${act.time}`))
+            )))
+          )
+        )
+      );
+    }
+
+    function BoardTemplate({ setActiveDrawer, data }) {
+      const cols = ['To Do', 'In Progress', 'Done'];
+      return h('div', { className: 'space-y-5 fade-in' },
+        h(PageHeader, { title: 'CES Sprint Board', subtitle: 'COMPLIANCE EXECUTION' }),
+        h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
+          cols.map((col, idx) => h('div', { key:idx, className: 'glass-panel border border-v3-border-subtle p-4 rounded-2xl' },
+            h('div', { className: 'font-semibold text-sm mb-3 px-1 flex items-center justify-between' }, col, h('span', { className: 'text-[10px] text-v3-text-tertiary' }, idx===0 ? '8' : idx===1 ? '5' : '14')),
+            data.tasks.filter((_,i) => (idx===0 && i%3===0) || (idx===1 && i%3===1) || (idx===2 && i%3===2)).map(task =>
+              h(SurfaceCard, { key:task.id, className: 'p-4 mb-3 cursor-pointer', onClick: () => setActiveDrawer({type:'task', data:task}) },
+                h('div', { className: 'font-medium' }, task.title),
+                h('div', { className: 'mt-3 flex items-center justify-between text-xs' },
+                  h('div', { className: 'text-v3-text-tertiary' }, task.owner),
+                  h(StatusBadge, { status: task.status })
+                )
+              )
+            )
+          ))
+        )
+      );
+    }
+
+    function CalendarTemplate({ setActiveDrawer }) {
+      const days = Array.from({length:28}, (_,i)=>i+1);
+      return h('div', { className: 'fade-in space-y-5' },
+        h(PageHeader, { title: 'Master Calendar', subtitle: 'REGULATORY & OPERATIONS' }),
+        h(SurfaceCard, { className: 'p-7' },
+          h('div', { className: 'text-sm text-v3-text-secondary mb-3' }, 'June 2026'),
+          h('div', { className: 'grid grid-cols-7 gap-px bg-v3-border-subtle rounded-xl overflow-hidden' },
+            ['S','M','T','W','T','F','S'].map(d => h('div', { key:d, className: 'text-center py-1 text-[10px] text-v3-text-tertiary bg-[var(--v3-base-bg)]' }, d)),
+            days.map((d, i) => h('div', { key:i, className: `text-center py-4 text-sm cursor-pointer hover:bg-white/5 transition border border-transparent ${[9,16,23].includes(d) ? 'bg-v3-teal/10 text-v3-teal-light font-semibold' : ''}`, onClick: () => setActiveDrawer({type:'event', data:{title:`Event on Jun ${d}`}}) }, d))
+          )
+        )
+      );
+    }
+
+    function EvidenceTemplate({ setActiveDrawer, data }) {
+      return h('div', { className: 'fade-in space-y-5' },
+        h(PageHeader, { title: 'Evidence Center', subtitle: 'COMPLIANCE EXECUTION', actions: h('button', { onClick: () => setActiveDrawer({type:'evidence-new'}), className: 'px-5 py-2 text-xs rounded-2xl border border-v3-teal-light text-v3-teal-light' }, 'CAPTURE NEW') }),
+        h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
+          data.evidence.map(e => h(SurfaceCard, { key:e.id, className: 'p-5 cursor-pointer', onClick: () => setActiveDrawer({type:'evidence', data:e}) },
+            h('div', { className: 'flex justify-between' }, h('div', { className: 'font-semibold' }, e.title), h(StatusBadge, {status:e.verified})),
+            h('div', { className: 'text-xs text-v3-text-tertiary mt-4' }, e.type + ' • ' + e.id)
+          ))
+        )
+      );
+    }
+
+    function ProfileDirectoryTemplate({ setActiveDrawer, type }) {
+      const list = type === 'clinicians' ? createSampleData().clinicians : createSampleData().patients;
+      return h('div', { className: 'fade-in space-y-5' },
+        h(PageHeader, { title: type === 'clinicians' ? 'Clinician Profiles' : 'Patient Profiles', subtitle: 'STAFFING / CLINICAL' }),
+        h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
+          list.map(item => h(SurfaceCard, { key:item.id, className: 'p-5 cursor-pointer', onClick: () => setActiveDrawer({type:'profile', data:item}) },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'w-9 h-9 rounded-full bg-v3-teal/70 flex items-center justify-center text-xs font-bold tracking-widest flex-shrink-0' }, item.name ? item.name.split(' ').map(w=>w[0]).join('').slice(0,2) : 'PT'),
+              h('div', { className: 'flex-1 min-w-0' },
+                h('div', { className: 'font-semibold' }, item.name),
+                h('div', { className: 'text-xs text-v3-text-secondary mt-0.5' }, item.role || item.program),
+                h('div', { className: 'mt-2 flex gap-2' }, h(StatusBadge, {status:item.status}))
+              )
+            )
+          ))
+        )
+      );
+    }
+
+    function DetailPageTemplate({ currentPageId }) {
+      const page = PAGE_BY_ID[currentPageId];
+      return h('div', { className: 'fade-in space-y-6 max-w-3xl' },
+        h(PageHeader, { title: page.label, subtitle: 'DETAIL VIEW' }),
+        h(SurfaceCard, { className: 'p-8' },
+          h('div', { className: 'text-v3-text-secondary leading-relaxed' }, 'Fully interactive detail surface. All actions (version history, attachments, approvals) are live in the prototype shell.'),
+          h('div', { className: 'mt-6 grid grid-cols-2 gap-4 text-sm' },
+            h('div', { className: 'glass-panel p-4 border border-v3-border-subtle' }, 'Version: 4.2 • Last approved Jun 11'),
+            h('div', { className: 'glass-panel p-4 border border-v3-border-subtle' }, 'Linked evidence: 7 items')
+          )
+        )
+      );
+    }
+
+    function AdminMatrixTemplate({ setActiveDrawer }) {
+      const [matrix, setMatrix] = useState({
+        'page.user-assignments': 'read', 'page.user-groups': 'none', 'page.admin-roles': 'read', 'page.admin-permissions': 'none', 'page.page-access': 'read'
+      });
+      const pages = PAGE_REGISTRY.filter(p => p.componentGroup === 'cmp-user-management');
+      function toggle(pid) {
+        const next = matrix[pid] === 'read' ? 'none' : 'read';
+        const updated = {...matrix, [pid]: next};
+        setMatrix(updated);
+        setActiveDrawer({type:'matrix-update', data: {page: pid, access: next}});
+      }
+      return h('div', { className: 'fade-in space-y-5' },
+        h(PageHeader, { title: 'Page View Access Matrix', subtitle: 'USER MANAGEMENT' }),
+        h('div', { className: 'glass-panel p-1 border border-v3-border-subtle' },
+          h('table', { className: 'w-full text-sm' },
+            h('thead', null, h('tr', { className: 'border-b border-v3-border-subtle' }, h('th', { className: 'p-4 text-left' }, 'PAGE'), h('th', { className: 'p-4 text-left' }, 'ACCESS'), h('th', { className: 'p-4 text-left' }, 'TOGGLE'))),
+            h('tbody', null, pages.map(p => h('tr', { key:p.pageId, className: 'border-b border-v3-border-subtle last:border-0' },
+              h('td', { className: 'p-4 font-medium' }, p.label),
+              h('td', { className: 'p-4' }, h(StatusBadge, { status: matrix[p.pageId] === 'read' ? 'Read' : 'None' })),
+              h('td', { className: 'p-4' }, h('button', { onClick: () => toggle(p.pageId), className: 'px-4 py-1 text-xs rounded-xl border border-v3-border-subtle hover:border-v3-teal-light transition' }, matrix[p.pageId] === 'read' ? 'Revoke' : 'Grant Read'))
+            )))
+          )
+        ),
+        h('div', { className: 'text-xs text-v3-text-tertiary' }, 'Changes are reflected live in prototype state. In production this drives PageAccessRouteGuard.')
+      );
+    }
+
+    function RegistryTableTemplate({ setActiveDrawer, data, type }) {
+      const rows = type === 'forms' ? data.forms : data.policies;
+      const cols = type === 'forms' ? ['FORM', 'DOMAIN', 'LAST USED', 'STATUS'] : ['ID', 'TITLE', 'DOMAIN', 'STATUS'];
+      return h('div', { className: 'fade-in space-y-5' },
+        h(PageHeader, { title: type === 'forms' ? 'Forms Library' : 'Policy Library', subtitle: type.toUpperCase() }),
+        h(DataTable, {
+          columns: cols,
+          rows: rows.map(r => type==='forms' ? ({FORM:r.title, DOMAIN:r.type, 'LAST USED':r.lastUsed, STATUS:r.status}) : ({ID:r.id, TITLE:r.title, DOMAIN:r.domain, STATUS:r.status})),
+          onRowClick: (row) => setActiveDrawer({type: type==='forms' ? 'form' : 'policy', data: rows.find(x => (type==='forms'?x.title:x.id) === (type==='forms'?row.FORM:row.ID)) || rows[0]})
+        })
+      );
+    }
+
+    function DocumentationTemplate({ currentPageId }) {
+      const page = PAGE_BY_ID[currentPageId];
+      return h('div', { className: 'fade-in max-w-3xl space-y-6' },
+        h(PageHeader, { title: page.label, subtitle: 'DOCUMENTATION' }),
+        h(SurfaceCard, { className: 'p-8' },
+          h('div', { className: 'prose prose-invert text-v3-text-secondary' },
+            h('p', null, 'This surface contains the full content, appendices, and linked evidence for the selected documentation item. All navigation and filters remain live.')
+          ),
+          h('div', { className: 'mt-8 pt-6 border-t border-v3-border-subtle text-xs flex gap-8 text-v3-text-tertiary' },
+            h('div', null, 'Last updated: 2026-06-09'),
+            h('div', null, 'Version 3.8')
+          )
+        )
+      );
+    }
+
+    function JourneyTemplate({ setActiveDrawer, data }) {
+      return h('div', { className: 'fade-in space-y-6' },
+        h(PageHeader, { title: 'Journey Home', subtitle: 'TRAINING & ONBOARDING' }),
+        h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
+          data.modules.map(m => h(SurfaceCard, { key:m.id, className: 'p-5 cursor-pointer', onClick: () => setActiveDrawer({type:'journey', data:m}) },
+            h('div', { className: 'font-medium' }, m.title),
+            h('div', { className: 'mt-4 h-1.5 bg-white/10 rounded' }, h('div', { className: 'h-1.5 rounded bg-v3-teal-light', style: { width: m.progress + '%' } })),
+            h('div', { className: 'mt-2 text-xs text-v3-text-tertiary' }, m.status + ' • ' + m.progress + '%')
+          ))
+        )
+      );
+    }
+
+    function renderTemplate({ templateType, currentPageId, setActiveDrawer, data }) {
+      const page = PAGE_BY_ID[currentPageId];
+      switch (templateType) {
+        case 'dashboard': return h(DashboardTemplate, { setActiveDrawer, data });
+        case 'board': return h(BoardTemplate, { setActiveDrawer, data });
+        case 'calendar': return h(CalendarTemplate, { setActiveDrawer });
+        case 'evidence': return h(EvidenceTemplate, { setActiveDrawer, data });
+        case 'profile-list': return h(ProfileDirectoryTemplate, { setActiveDrawer, type: currentPageId.includes('clinician') ? 'clinicians' : 'patients' });
+        case 'detail': return h(DetailPageTemplate, { currentPageId });
+        case 'admin-matrix': return h(AdminMatrixTemplate, { setActiveDrawer });
+        case 'registry-table': return h(RegistryTableTemplate, { setActiveDrawer, data, type: currentPageId.includes('form') ? 'forms' : 'policies' });
+        case 'documentation': return h(DocumentationTemplate, { currentPageId });
+        case 'journey': return h(JourneyTemplate, { setActiveDrawer, data });
+        case 'directory': return h(ProfileDirectoryTemplate, { setActiveDrawer, type:'clinicians' });
+        default: return h('div', { className: 'glass-panel p-8 border border-v3-border-subtle' },
+          h('div', { className: 'text-xl font-semibold' }, page.label),
+          h('div', { className: 'text-v3-text-secondary mt-2' }, 'Fully functional page registered in the complete 48+ entry PAGE_REGISTRY. All shell interactions, theme, drawer, and command palette are live.')
+        );
+      }
+    }
+
+    function SidebarItem({ page, active, collapsed, onClick }) {
+      const iconKey = page.pageId.includes('dashboard') ? 'dashboard' : (page.pageId.includes('library') || page.pageId.includes('policy') ? 'library' : (page.pageId.includes('form') ? 'forms' : (page.pageId.includes('calendar') ? 'calendar' : (page.pageId.includes('evidence') ? 'evidence' : (page.pageId.includes('journey') ? 'users' : (page.pageId.includes('clinician') || page.pageId.includes('patient') ? 'users' : (page.pageId.includes('iadmin') ? 'shield' : 'help')))))));
+      const icon = Icons[iconKey] || Icons.dashboard;
+      return h('button', {
+        onClick,
+        'aria-current': active ? 'page' : undefined,
+        className: `nav-item w-full text-left mb-px ${active ? 'active' : ''}`,
+        title: collapsed ? page.label : undefined
+      },
+        h(icon, { className: 'nav-icon', width: 17, height: 17 }),
+        h('span', { className: 'truncate' }, page.label)
+      );
+    }
+
+    function TopBar({ currentPage, onCommand, onThemeToggle, isDark, onNotifications, onProfile, sidebarCollapsed, setSidebarCollapsed }) {
+      const logoSrc = isDark ? LOGO_DARK : LOGO_LIGHT;
+      const dateStr = new Date().toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+      return h('header', { className: 'topbar flex items-center justify-between px-5 flex-shrink-0 z-40' },
+        h('div', { className: 'flex items-center gap-3' },
+          h('button', { onClick: () => setSidebarCollapsed(!sidebarCollapsed), className: 'p-2 text-v3-text-secondary hover:text-v3-text-primary lg:hidden rounded-xl focus-ring' }, h(Icons.menu, {width:19, height:19})),
+          h('img', { src: logoSrc, alt: 'Care Indeed', className: 'topbar-logo h-[26px] w-auto', onError: (e) => { e.target.style.display='none'; } })
+        ),
+        h('div', { className: 'flex-1 flex justify-center px-4' },
+          h('button', {
+            onClick: onCommand,
+            className: 'hidden md:flex items-center gap-2.5 px-5 py-[9px] rounded-3xl text-sm border border-v3-border bg-white/5 hover:bg-white/10 text-v3-text-secondary focus-ring'
+          },
+            h(Icons.search, { width:15, height:15 }),
+            h('span', { className: 'text-[13px] opacity-80' }, currentPage.label),
+            h('span', { className: 'ml-1 text-[9px] px-1.5 py-px rounded bg-white/10 font-mono tracking-[1.5px]' }, '⌘K')
+          )
+        ),
+        h('div', { className: 'flex items-center gap-1.5' },
+          h('div', { className: 'hidden lg:block text-xs px-3 py-1 text-v3-text-tertiary border border-v3-border-subtle rounded-2xl' }, dateStr),
+          h('button', { onClick: onNotifications, className: 'p-2.5 rounded-2xl border border-v3-border-subtle text-v3-text-secondary hover:text-v3-text-primary relative focus-ring' },
+            h(Icons.bell, { width:17, height:17 }),
+            h('span', { className: 'absolute top-2 right-2 w-2 h-2 bg-v3-orange rounded-full' })
+          ),
+          h('button', { onClick: onThemeToggle, className: 'p-2.5 rounded-2xl border border-v3-border-subtle text-v3-text-secondary hover:text-v3-text-primary focus-ring' },
+            isDark ? h(Icons.sun, {width:17, height:17}) : h(Icons.moon, {width:17, height:17})
+          ),
+          h('div', { onClick: onProfile, className: 'flex items-center gap-2 ml-1 pl-2 cursor-pointer' },
+            h('div', { className: 'w-8 h-8 rounded-full bg-gradient-to-br from-v3-teal to-v3-teal-light flex items-center justify-center text-[10px] font-bold text-black' }, 'OP'),
+            h('div', { className: 'hidden md:block text-xs leading-tight' },
+              h('div', { className: 'font-medium' }, 'Olivia Park'),
+              h('div', { className: 'text-v3-text-tertiary -mt-px' }, 'Administrator')
+            )
+          )
+        )
+      );
+    }
+
+    function Sidebar({ collapsed, setCollapsed, currentPageId, navigateToPage }) {
+      const groups = [...COMPONENT_GROUPS].sort((a,b)=>a.order-b.order);
+      return h('aside', {
+        className: `sidebar-rail flex-shrink-0 hidden lg:flex flex-col py-3 ${collapsed ? 'collapsed' : 'expanded'}`
+      },
+        h('div', { className: 'px-2.5 flex flex-col flex-1 overflow-y-auto custom-scroll' },
+          h('div', { className: 'px-2.5 mb-2 flex justify-between items-center' },
+            !collapsed && h('div', { className: 'text-[10px] tracking-[1.5px] text-v3-text-tertiary font-semibold' }, 'COMMAND CENTER'),
+            h('button', { onClick: () => setCollapsed(!collapsed), className: 'text-v3-text-tertiary hover:text-v3-text-primary p-1', 'aria-label': collapsed ? 'Expand sidebar' : 'Collapse sidebar' },
+              h(collapsed ? Icons.chevronRight : Icons.arrowUp, {width:13, height:13})
+            )
+          ),
+          groups.map(group => {
+            const pages = getPagesForComponent(group.componentId);
+            if (!pages.length) return null;
+            return h('div', { key: group.componentId },
+              !collapsed && h('div', { className: 'sidebar-group-label mt-3' }, group.label),
+              pages.map(page => h(SidebarItem, {
+                key: page.pageId,
+                page: {...page, icon: page.pageId.includes('dashboard') ? 'dashboard' : (page.pageId.includes('library') || page.pageId.includes('policy') ? 'library' : (page.pageId.includes('form') ? 'forms' : (page.pageId.includes('calendar') ? 'calendar' : (page.pageId.includes('evidence') ? 'evidence' : (page.pageId.includes('journey') ? 'users' : (page.pageId.includes('clinician') || page.pageId.includes('patient') ? 'users' : (page.pageId.includes('iadmin') ? 'shield' : 'help')))))))},
+                active: currentPageId === page.pageId,
+                collapsed,
+                onClick: () => navigateToPage(page.pageId)
+              }))
+            );
+          })
+        )
+      );
+    }
+
+    function CommandSearch({ isOpen, onClose, navigateToPage, query, setQuery, activeIndex, setActiveIndex }) {
+      const filtered = useMemo(() => {
+        const q = query.toLowerCase().trim();
+        if (!q) return PAGE_REGISTRY;
+        return PAGE_REGISTRY.filter(p => p.label.toLowerCase().includes(q) || p.pageId.toLowerCase().includes(q));
+      }, [query]);
+
+      const handleKeyDown = useCallback((e) => {
+        if (!isOpen) return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIndex(Math.min(activeIndex + 1, filtered.length - 1)); }
+        if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIndex(Math.max(activeIndex - 1, 0)); }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const sel = filtered[activeIndex];
+          if (sel) { navigateToPage(sel.pageId); onClose(); setQuery(''); setActiveIndex(0); }
+        }
+        if (e.key === 'Escape') { onClose(); setQuery(''); }
+      }, [isOpen, filtered, activeIndex, navigateToPage, onClose, setQuery, setActiveIndex]);
+
+      useEffect(() => {
+        if (isOpen) window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [isOpen, handleKeyDown]);
+
+      if (!isOpen) return null;
+
+      return h('div', { className: 'fixed inset-0 z-[90] flex items-start justify-center pt-[12vh] bg-black/70 backdrop-blur-sm', onClick: () => { onClose(); setQuery(''); } },
+        h('div', { className: 'command-modal w-full max-w-[620px] mx-4 glass-surface border border-v3-border rounded-3xl overflow-hidden shadow-2xl', onClick: e => e.stopPropagation() },
+          h('div', { className: 'flex items-center gap-3 px-5 py-4 border-b border-v3-border-subtle' },
+            h(Icons.search, { width:18, height:18, className: 'text-v3-text-tertiary' }),
+            h('input', { autoFocus: true, value: query, onChange: e => { setQuery(e.target.value); setActiveIndex(0); }, placeholder: 'Jump to any page in the registry…', className: 'flex-1 bg-transparent outline-none text-lg placeholder:text-v3-text-tertiary' }),
+            h('div', { className: 'text-[10px] px-1.5 py-px border border-v3-border-subtle rounded font-mono text-v3-text-tertiary' }, 'ESC')
+          ),
+          h('div', { className: 'max-h-[360px] overflow-y-auto custom-scroll py-1' },
+            filtered.length === 0 ? h('div', { className: 'px-5 py-9 text-center text-sm text-v3-text-tertiary' }, 'No matches found.') :
+            filtered.map((page, idx) => h('div', {
+              key: page.pageId,
+              onClick: () => { navigateToPage(page.pageId); onClose(); setQuery(''); setActiveIndex(0); },
+              className: `command-result flex items-center gap-3.5 px-5 py-[10px] mx-1 cursor-pointer rounded-2xl ${idx === activeIndex ? 'active' : ''}`
+            },
+              h(Icons[page.pageId.includes('dashboard')?'dashboard':(page.pageId.includes('library')?'library':'help')], { width:16, height:16, className:'text-v3-text-secondary flex-shrink-0' }),
+              h('div', { className: 'flex-1 font-medium tracking-tight' }, page.label),
+              h('div', { className: 'text-xs text-v3-text-tertiary font-mono' }, page.pageId)
+            ))
+          ),
+          h('div', { className: 'px-5 py-[9px] border-t border-v3-border-subtle text-[10px] flex gap-5 text-v3-text-tertiary bg-black/10' }, h('span', null, '↑↓ Navigate'), h('span', null, '↵ Select'), h('span', null, '⌘K / Ctrl+K'))
+        )
+      );
+    }
+
+    function LoginPage({ onEnter, isDark, toggleTheme }) {
+      const [email, setEmail] = useState('robert@careindeed.com');
+      const [password, setPassword] = useState('demo2026');
+      const [loading, setLoading] = useState(false);
+      const [message, setMessage] = useState(null);
+
+      const logoSrc = isDark ? LOGO_DARK : LOGO_LIGHT;
+
+      const handleEnter = () => {
+        setLoading(true);
+        setTimeout(() => {
+          setLoading(false);
+          if (typeof onEnter === 'function') onEnter();
+        }, 460);
+      };
+
+      return h('div', { className: 'min-h-screen w-full flex items-center justify-center px-5 relative', style: { background: isDark ? 'linear-gradient(160deg, #05060A 0%, #0C1220 65%)' : '#FAF9F6' } },
+        isDark && h('div', { style: { position:'absolute', inset:0, background:'radial-gradient(ellipse at 40% 18%, rgba(0,209,193,0.035) 0%, transparent 58%)', pointerEvents:'none' } }),
+        h('div', { className: 'absolute top-6 right-6' },
+          h('button', { onClick: toggleTheme, className: 'flex items-center gap-2 px-4 py-1.5 rounded-2xl text-xs border border-v3-border-subtle text-v3-text-secondary hover:text-v3-text-primary' },
+            isDark ? h(Icons.sun, {width:14,height:14}) : h(Icons.moon, {width:14,height:14}),
+            h('span', null, isDark ? 'Light' : 'Dark')
+          )
+        ),
+        h('div', { className: 'w-full max-w-[430px] relative z-10' },
+          h('div', { className: 'login-glass border border-v3-border rounded-3xl p-9' },
+            h('div', { className: 'flex justify-center mb-8' },
+              h('img', { src: logoSrc, alt: 'Care Indeed', style: { height: '44px', width: 'auto' }, onError: e => e.target.style.display = 'none' })
+            ),
+            h('div', { className: 'text-center mb-8' },
+              h('div', { className: 'eyebrow text-v3-text-tertiary tracking-[2.6px]' }, 'HOME HEALTH • COMPLIANCE'),
+              h('h1', { className: 'text-[29px] font-semibold tracking-[-0.02em] mt-2.5' }, 'Sign in'),
+              h('p', { className: 'text-v3-text-secondary mt-1' }, 'Secure access to the Command Center')
+            ),
+            message && h('div', { className: `mb-5 px-4 py-2.5 text-sm rounded-2xl border ${message.type==='success' ? 'border-emerald-400/30 bg-emerald-400/5 text-emerald-400' : ''}` }, message.text),
+            h('div', { className: 'space-y-4' },
+              h('div', null,
+                h('div', { className: 'text-xs uppercase tracking-widest text-v3-text-tertiary mb-1.5 ml-0.5' }, 'EMAIL'),
+                h('input', { value: email, onChange: e=>setEmail(e.target.value), className: 'w-full bg-transparent border border-v3-border px-4 py-[13px] rounded-2xl text-sm focus:border-v3-teal-light focus:outline-none', placeholder: 'you@careindeed.com' })
+              ),
+              h('div', null,
+                h('div', { className: 'text-xs uppercase tracking-widest text-v3-text-tertiary mb-1.5 ml-0.5' }, 'PASSWORD'),
+                h('input', { type:'password', value: password, onChange: e=>setPassword(e.target.value), className: 'w-full bg-transparent border border-v3-border px-4 py-[13px] rounded-2xl text-sm focus:border-v3-teal-light focus:outline-none', placeholder: '••••••••' })
+              )
+            ),
+            h('button', { onClick: handleEnter, disabled: loading, className: 'mt-7 w-full py-[15px] rounded-2xl font-semibold text-sm tracking-[0.6px] transition-all active:scale-[0.985] bg-gradient-to-r from-v3-teal to-[#009E8F] text-black' }, loading ? 'ENTERING…' : 'SIGN IN'),
+            h('div', { className: 'h-px bg-v3-border-subtle my-6' }),
+            h('button', {
+              onClick: onEnter,
+              className: 'w-full py-3.5 rounded-2xl border border-v3-border text-sm tracking-[0.4px] font-medium hover:border-v3-teal-light hover:text-v3-teal-light transition-all'
+            }, 'ENTER PROTOTYPE')
+          ),
+          h('div', { className: 'text-center text-[10px] mt-5 text-v3-text-tertiary tracking-[1px]' }, 'Dark is default • Full registry • Keyboard ready')
+        )
+      );
+    }
+
+    function App() {
+      const [showLogin, setShowLogin] = useState(true);
+      const [currentPageId, setCurrentPageId] = useState('page.dashboard');
+      const [isDark, setIsDark] = useState(true);
+      const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+        try { return localStorage.getItem(SIDEBAR_KEY) === 'true'; } catch { return false; }
+      });
+      const [commandOpen, setCommandOpen] = useState(false);
+      const [commandQuery, setCommandQuery] = useState('');
+      const [activeCommandIndex, setActiveCommandIndex] = useState(0);
+      const [activeDrawer, setActiveDrawer] = useState(null);
+      const [activeModal, setActiveModal] = useState(null);
+      const [filtersOpen, setFiltersOpen] = useState(false);
+      const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+      const data = useMemo(() => createSampleData(), []);
+      const currentPage = PAGE_BY_ID[currentPageId] || PAGE_REGISTRY[0];
+
+      useEffect(() => {
+        const root = document.documentElement;
+        if (isDark) {
+          root.removeAttribute('data-theme');
+        } else {
+          root.setAttribute('data-theme', 'light');
+        }
+        try { localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); } catch {}
+      }, [isDark]);
+
+      useEffect(() => {
+        try { localStorage.setItem(SIDEBAR_KEY, sidebarCollapsed); } catch {}
+      }, [sidebarCollapsed]);
+
+      useEffect(() => {
+        document.documentElement.classList.add('dark');
+        const saved = localStorage.getItem(THEME_KEY);
+        if (saved === 'light') setIsDark(false);
+      }, []);
+
+      useEffect(() => {
+        function globalKey(e) {
+          if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            setCommandOpen(o => !o);
+            setCommandQuery('');
+            setActiveCommandIndex(0);
+          }
+          if (e.key === 'Escape') {
+            if (commandOpen) { setCommandOpen(false); setCommandQuery(''); }
+            else if (activeDrawer) setActiveDrawer(null);
+            else if (notificationsOpen) setNotificationsOpen(false);
+          }
+        }
+        window.addEventListener('keydown', globalKey);
+        return () => window.removeEventListener('keydown', globalKey);
+      }, [commandOpen, activeDrawer, notificationsOpen]);
+
+      const navigateToPage = useCallback((pageId) => {
+        setCurrentPageId(pageId);
+        setCommandOpen(false);
+        setCommandQuery('');
+        const pg = PAGE_BY_ID[pageId];
+        if (pg && Math.random() > 0.72 && ['registry-table', 'profile-list', 'board'].includes(pg.templateType)) {
+          setTimeout(() => setActiveDrawer({ type: pg.templateType === 'registry-table' ? 'policy' : 'profile', data: data.policies[0] || data.clinicians[0] }), 300);
+        }
+      }, [data]);
+
+      function toggleTheme() { setIsDark(!isDark); }
+      function enterPrototype() { setShowLogin(false); setCurrentPageId('page.dashboard'); }
+      function closeDrawer() { setActiveDrawer(null); }
+
+      if (showLogin) {
+        return h(LoginPage, { onEnter: enterPrototype, isDark, toggleTheme });
+      }
+
+      return h('div', { className: 'shell-root flex flex-col', 'data-theme': isDark ? undefined : 'light' },
+        h(TopBar, {
+          currentPage,
+          onCommand: () => { setCommandOpen(true); setCommandQuery(''); setActiveCommandIndex(0); },
+          onThemeToggle: toggleTheme,
+          isDark,
+          onNotifications: () => setNotificationsOpen(true),
+          onProfile: () => setActiveModal({title: 'Profile', content: 'Olivia Park • Administrator • Full registry access'}),
+          sidebarCollapsed,
+          setSidebarCollapsed
+        }),
+
+        h('div', { className: 'flex flex-1 min-h-0' },
+          h(Sidebar, {
+            collapsed: sidebarCollapsed,
+            setCollapsed: setSidebarCollapsed,
+            currentPageId,
+            navigateToPage
+          }),
+
+          h('main', { className: 'flex-1 min-w-0 flex flex-col bg-[var(--v3-base-bg)] relative' },
+            h('div', { className: 'content-frame custom-scroll' },
+              h('div', { className: 'max-w-[1190px] mx-auto' },
+                h(PageHeader, {
+                  title: currentPage.label,
+                  subtitle: (GROUP_BY_ID[currentPage.componentGroup] || {}).label || 'OPERATIONS',
+                  actions: h('div', { className: 'hidden sm:flex items-center gap-2 text-xs text-v3-text-tertiary' }, 'Prototype • All pages live')
+                }),
+                renderTemplate({
+                  templateType: currentPage.templateType,
+                  currentPageId,
+                  setActiveDrawer,
+                  data
+                })
+              )
+            ),
+
+            h('div', { className: 'px-8 py-2.5 border-t border-v3-border-subtle text-[10px] text-v3-text-tertiary flex-shrink-0 flex items-center justify-between' },
+              h('div', null, 'Care Indeed • Policies & Procedures • Prototype — 12 groups, ' + PAGE_REGISTRY.length + ' pages'),
+              h('div', { className: 'font-mono opacity-40' }, 'ESC • ⌘K')
+            )
+          )
+        ),
+
+        h(CommandSearch, {
+          isOpen: commandOpen,
+          onClose: () => { setCommandOpen(false); setCommandQuery(''); },
+          navigateToPage,
+          query: commandQuery,
+          setQuery: setCommandQuery,
+          activeIndex: activeCommandIndex,
+          setActiveIndex: setActiveCommandIndex
+        }),
+
+        h(Drawer, {
+          isOpen: !!activeDrawer,
+          onClose: closeDrawer,
+          title: activeDrawer ? (activeDrawer.type.charAt(0).toUpperCase() + activeDrawer.type.slice(1)) : '',
+          children: activeDrawer && h('div', null,
+            activeDrawer.type === 'policy' && h('div', null, h('div', { className: 'text-xs text-v3-text-tertiary' }, activeDrawer.data.id), h('div', { className: 'text-xl font-semibold mt-1' }, activeDrawer.data.title), h('div', { className: 'mt-6 text-sm text-v3-text-secondary' }, 'All versions, appendices, and cross-links are accessible via the live registry.')),
+            activeDrawer.type === 'task' && h('div', null, h('div', { className: 'font-semibold text-xl' }, activeDrawer.data.title), h('div', { className: 'mt-4' }, h(StatusBadge, { status: activeDrawer.data.status }))),
+            activeDrawer.type === 'profile' && h('div', null, h('div', { className: 'font-semibold text-xl' }, activeDrawer.data.name), h('div', { className: 'text-sm mt-1 text-v3-text-secondary' }, activeDrawer.data.role || activeDrawer.data.program)),
+            activeDrawer.type === 'evidence-new' && h('div', null, h('div', { className: 'text-lg font-semibold mb-3' }, 'Capture Evidence'), h('div', { className: 'space-y-3 text-sm' }, h('div', { className: 'glass-panel p-4 border border-v3-border-subtle' }, 'Upload supporting file or link'), h('button', { onClick: closeDrawer, className: 'w-full py-3 border border-v3-teal-light text-v3-teal-light rounded-2xl text-sm' }, 'SUBMIT TO CES'))),
+            (activeDrawer.type === 'kpi' || activeDrawer.type === 'event' || activeDrawer.type === 'journey') && h('pre', { className: 'text-xs p-4 rounded-xl bg-black/30' }, JSON.stringify(activeDrawer.data, null, 2)),
+            activeDrawer.type === 'matrix-update' && h('div', null, 'Access for ', activeDrawer.data.page, ' updated to ', h('span', { className: 'font-semibold' }, activeDrawer.data.access))
+          )
+        }),
+
+        notificationsOpen && h('div', { className: 'fixed inset-0 z-[92] flex justify-end', onClick: () => setNotificationsOpen(false) },
+          h('div', { className: 'w-full max-w-xs glass-surface border-l border-v3-border p-5', onClick: e => e.stopPropagation() },
+            h('div', { className: 'font-semibold mb-4 flex justify-between' }, 'Notifications', h('button', { onClick: () => setNotificationsOpen(false) }, h(Icons.close, {width:15,height:15}))),
+            h('div', { className: 'space-y-4 text-sm' },
+              h('div', { className: 'p-3 border border-v3-border-subtle rounded-2xl' }, 'QAPI review completed by Marites'),
+              h('div', { className: 'p-3 border border-v3-border-subtle rounded-2xl' }, 'New evidence packet ready for verification'),
+              h('div', { className: 'p-3 border border-v3-border-subtle rounded-2xl' }, 'ACHC survey alignment updated')
+            )
+          )
+        ),
+
+        activeModal && h(Modal, { isOpen: true, onClose: () => setActiveModal(null), title: activeModal.title },
+          h('div', { className: 'text-sm text-v3-text-secondary' }, activeModal.content)
+        )
+      );
+    }
+
+    function bootstrap() {
+      const root = createRoot(document.getElementById('root'));
+      root.render(h(App));
+      document.documentElement.style.setProperty('--v3-base-bg', '#05060A');
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootstrap);
+    } else {
+      bootstrap();
+    }
+  </script>
+</body>
+</html>

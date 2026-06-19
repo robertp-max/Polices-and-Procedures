@@ -17,6 +17,7 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { CATEGORIES, articlesByCategory, findArticle, searchArticles, type HelpArticle } from './articles';
+import { PageHeader } from '@/policy/components/ui';
 
 type IconType = typeof BookOpen;
 
@@ -72,7 +73,7 @@ function TopNav({ onHomeClick }: {
         <div className="h-6 w-px bg-[#E5E4E3] mx-2" />
         <button
           onClick={onHomeClick}
-          className="text-[#52404B] font-roboto font-medium text-sm hover:text-[#1F1C1B] transition-colors"
+          className="text-[#52404B] font-roboto font-medium text-sm hover:text-[var(--brand-primary,#007970)] transition-colors"
         >
           Help Center
         </button>
@@ -91,7 +92,7 @@ function SearchHero({ query, setQuery }: { query: string; setQuery: (query: stri
           <HelpCircle className="w-4 h-4" />
           Help Center
         </div>
-        <h1 className="text-3xl md:text-4xl font-montserrat font-bold text-[#1F1C1B] mb-4 tracking-tight">
+        <h1 className="text-3xl md:text-4xl font-montserrat font-bold mb-4 tracking-tight" style={{ color: '#00797D' }}>
           How can we help you today?
         </h1>
         <p className="text-[#52404B] font-roboto mb-8 max-w-2xl text-sm md:text-base leading-relaxed">
@@ -105,7 +106,7 @@ function SearchHero({ query, setQuery }: { query: string; setQuery: (query: stri
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search for articles, guides, or policies..."
-            className="w-full pl-12 pr-4 py-4 bg-white border border-[#E5E4E3] rounded-[8px] text-base text-[#1F1C1B] font-roboto focus:bg-white focus:border-[#C74601] focus:ring-1 focus:ring-[#C74601] outline-none transition-all placeholder:text-[#52404B]/70"
+            className="w-full pl-12 pr-4 py-4 bg-white border border-[#E5E4E3] rounded-[8px] text-base text-[var(--brand-primary,#007970)] font-roboto focus:bg-white focus:border-[#C74601] focus:ring-1 focus:ring-[#C74601] outline-none transition-all placeholder:text-[#52404B]/70"
           />
         </div>
       </div>
@@ -132,7 +133,7 @@ function CategoryCard({
           <Icon className="w-6 h-6" strokeWidth={1.5} />
         </div>
         <button className="flex-1 text-left" onClick={() => onSelectCategory(category.id)}>
-          <h2 className="text-lg font-montserrat font-semibold text-[#1F1C1B] group-hover:text-[#C74601] transition-colors">
+          <h2 className="text-lg font-montserrat font-semibold text-[var(--brand-primary,#007970)] group-hover:text-[#C74601] transition-colors">
             {category.title}
           </h2>
           <span className="text-xs font-roboto font-medium text-[#52404B]/70 mt-1 block">
@@ -193,7 +194,7 @@ function CategoryView({
       <div className="flex items-center gap-2 text-sm font-roboto mb-8">
         <button className="text-[#52404B] hover:text-[#C74601] transition-colors" onClick={onHomeClick}>Help Center</button>
         <span className="text-[#E5E4E3]">/</span>
-        <span className="text-[#1F1C1B] font-medium">{category.title}</span>
+        <span className="text-[var(--brand-primary,#007970)] font-medium">{category.title}</span>
       </div>
 
       <div className="flex items-center gap-4 mb-10 pb-10 border-b border-[#E5E4E3]">
@@ -201,7 +202,7 @@ function CategoryView({
           <Icon className="w-8 h-8" strokeWidth={1.5} />
         </div>
         <div>
-          <h1 className="text-3xl md:text-[32px] font-montserrat font-bold text-[#1F1C1B] mb-2">{category.title}</h1>
+          <h1 className="text-3xl md:text-[32px] font-montserrat font-bold mb-2" style={{ color: '#00797D' }}>{category.title}</h1>
           <p className="text-[#52404B] font-roboto text-[15px]">{category.count} Articles available in this category.</p>
         </div>
       </div>
@@ -216,7 +217,7 @@ function CategoryView({
             >
               <div className="flex items-center gap-4">
                 <Book className="w-5 h-5 text-[#E5E4E3] group-hover:text-[#FFD5BF] transition-colors shrink-0" />
-                <span className="text-[17px] font-roboto font-medium text-[#1F1C1B] group-hover:text-[#C74601] transition-colors">{article.title}</span>
+                <span className="text-[17px] font-roboto font-medium text-[var(--brand-primary,#007970)] group-hover:text-[#C74601] transition-colors">{article.title}</span>
               </div>
               <ArrowRight className="w-5 h-5 text-[#E5E4E3] group-hover:text-[#C74601] transition-colors shrink-0 ml-4" />
             </button>
@@ -248,6 +249,7 @@ function ArticleViewer({
     purpose: true,
     usage: true,
     steps: true,
+    screenshots: true,
     behavior: true,
     impact: true,
     evidence: true,
@@ -282,14 +284,14 @@ function ArticleViewer({
         <span className="text-[#E5E4E3]">/</span>
         <button className="text-[#52404B] hover:text-[#C74601] transition-colors" onClick={() => onCategoryClick(category.id)}>{category.title}</button>
         <span className="text-[#E5E4E3]">/</span>
-          <span className="text-[#1F1C1B] font-medium truncate max-w-[250px] md:max-w-md">{article.title}</span>
+          <span className="text-[var(--brand-primary,#007970)] font-medium truncate max-w-[250px] md:max-w-md">{article.title}</span>
       </div>
 
       <div className="mb-10">
         <span className="text-[#C74601] font-montserrat font-semibold text-[10px] tracking-widest uppercase mb-3 block">
           {category.title}
         </span>
-        <h1 className="text-3xl md:text-[32px] leading-tight font-montserrat font-bold text-[#1F1C1B]">
+        <h1 className="text-3xl md:text-[32px] leading-tight font-montserrat font-bold" style={{ color: '#00797D' }}>
           {article.title}
         </h1>
       </div>
@@ -297,23 +299,48 @@ function ArticleViewer({
       <div className={`${isMobile ? 'space-y-3' : 'space-y-10'}`}>
         <section className={sectionWrap}>
           {sectionTitle('purpose', 'Purpose')}
-          {(openSections.purpose || !isMobile) ? <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed mt-3">{article.purpose}</p> : null}
+          {(openSections.purpose || !isMobile) ? <p className="text-[#111316] font-roboto text-[15px] leading-relaxed mt-3">{article.purpose}</p> : null}
         </section>
 
         <section className={sectionWrap}>
           {sectionTitle('usage', 'When To Use It')}
-          {(openSections.usage || !isMobile) ? <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed mt-3">{article.whenToUse}</p> : null}
+          {(openSections.usage || !isMobile) ? <p className="text-[#111316] font-roboto text-[15px] leading-relaxed mt-3">{article.whenToUse}</p> : null}
         </section>
 
         {!!article.steps?.length && (
           <section className={sectionWrap}>
             {sectionTitle('steps', 'Step By Step')}
             {(openSections.steps || !isMobile) ? (
-              <ol className="list-decimal list-outside ml-4 mt-3 space-y-2 text-[#1F1C1B] font-roboto text-[15px] leading-relaxed marker:text-[#52404B]">
+              <ol className="list-decimal list-outside ml-4 mt-3 space-y-2 text-[#111316] font-roboto text-[15px] leading-relaxed marker:text-[#52404B]">
                 {article.steps.map((step, i) => (
                   <li key={i} className="pl-2">{step}</li>
                 ))}
               </ol>
+            ) : null}
+          </section>
+        )}
+
+        {!!article.screenshots?.length && (
+          <section className={sectionWrap}>
+            {sectionTitle('screenshots', 'Screenshots')}
+            {(openSections.screenshots || !isMobile) ? (
+              <div className={`${isMobile ? 'mt-3 space-y-4' : 'mt-4 grid grid-cols-1 gap-5'}`}>
+                {article.screenshots.map(screenshot => (
+                  <figure key={screenshot.src} className="overflow-hidden rounded-[10px] border border-[#E5E4E3] bg-[#FAFBF8]">
+                    <img
+                      src={screenshot.src}
+                      alt={screenshot.alt}
+                      loading="lazy"
+                      className="w-full bg-[#00151a] object-contain"
+                    />
+                    {screenshot.caption ? (
+                      <figcaption className="border-t border-[#E5E4E3] px-4 py-3 text-sm font-roboto text-[#52404B]">
+                        {screenshot.caption}
+                      </figcaption>
+                    ) : null}
+                  </figure>
+                ))}
+              </div>
             ) : null}
           </section>
         )}
@@ -329,12 +356,12 @@ function ArticleViewer({
 
         <section className={sectionWrap}>
           {sectionTitle('impact', 'Compliance Impact')}
-          {(openSections.impact || !isMobile) ? <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed mt-3">{article.complianceImpact}</p> : null}
+          {(openSections.impact || !isMobile) ? <p className="text-[#111316] font-roboto text-[15px] leading-relaxed mt-3">{article.complianceImpact}</p> : null}
         </section>
 
         <section className={sectionWrap}>
           {sectionTitle('evidence', 'Evidence Generated')}
-          {(openSections.evidence || !isMobile) ? <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed mt-3 break-words">{article.evidence}</p> : null}
+          {(openSections.evidence || !isMobile) ? <p className="text-[#111316] font-roboto text-[15px] leading-relaxed mt-3 break-words">{article.evidence}</p> : null}
         </section>
 
         {!!article.complianceRequirement && (
@@ -346,7 +373,7 @@ function ArticleViewer({
                   <ShieldCheck className="w-4 h-4 text-[#C74601]" />
                   <h3 className="text-[#C74601] font-montserrat font-semibold text-xs tracking-widest uppercase">Compliance Requirement</h3>
                 </div>
-                <p className="text-[#1F1C1B] font-roboto text-[15px] leading-relaxed">{article.complianceRequirement}</p>
+                <p className="text-[#111316] font-roboto text-[15px] leading-relaxed">{article.complianceRequirement}</p>
               </>
             ) : null}
           </section>
@@ -358,7 +385,7 @@ function ArticleViewer({
             {(openSections.enforcement || !isMobile) ? (
               <ul className="space-y-2 mt-3">
                 {article.enforcementRules.map((rule: string, i: number) => (
-                  <li key={i} className="flex items-start gap-2 text-[15px] font-roboto text-[#1F1C1B] leading-relaxed">
+                  <li key={i} className="flex items-start gap-2 text-[15px] font-roboto text-[#111316] leading-relaxed">
                     <span className="text-[#C74601] font-bold shrink-0 mt-0.5">&rsaquo;</span>
                     <span>{rule}</span>
                   </li>
@@ -374,7 +401,7 @@ function ArticleViewer({
             {(openSections.actions || !isMobile) ? (
               <ul className="space-y-2 mt-3">
                 {article.requiredActions.map((action: string, i: number) => (
-                  <li key={i} className="flex items-start gap-2 text-[15px] font-roboto text-[#1F1C1B] leading-relaxed">
+                  <li key={i} className="flex items-start gap-2 text-[15px] font-roboto text-[#111316] leading-relaxed">
                     <span className="w-5 h-5 rounded-full bg-[#007970] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                     <span>{action}</span>
                   </li>
@@ -399,7 +426,7 @@ function ArticleViewer({
           <section className={sectionWrap}>
             {sectionTitle('failure', 'Failure Impact')}
             {(openSections.failure || !isMobile) ? (
-              <div className="bg-[#FFF5F0] border border-[#FFD5BF] rounded-[8px] p-4 mt-3 text-[15px] font-roboto text-[#1F1C1B] leading-relaxed">
+              <div className="bg-[#FFF5F0] border border-[#FFD5BF] rounded-[8px] p-4 mt-3 text-[15px] font-roboto text-[var(--brand-primary,#007970)] leading-relaxed">
                 {article.failureImpact}
               </div>
             ) : null}
@@ -441,7 +468,7 @@ function SearchResults({ query, onSelectArticle }: { query: string; onSelectArti
             onClick={() => onSelectArticle(article.slug)}
             className="w-full text-left bg-white border border-[#E5E4E3] rounded-[10px] p-4 hover:border-[#C74601] transition-colors"
           >
-            <div className="font-semibold text-[#1F1C1B] mb-1">{article.title}</div>
+            <div className="font-semibold text-[var(--brand-primary,#007970)] mb-1">{article.title}</div>
             <p className="text-sm text-[#52404B] line-clamp-2">{article.purpose}</p>
           </button>
         ))}
@@ -487,7 +514,7 @@ function HelpHome({
               <div className="w-12 h-12 bg-white border border-[#E5E4E3] rounded-[8px] flex items-center justify-center mb-4 text-[#007970]">
                 <Mail className="w-6 h-6" strokeWidth={1.5} />
               </div>
-              <h3 className="text-xl font-montserrat font-semibold text-[#1F1C1B] mb-2">Can't find what you're looking for?</h3>
+              <h3 className="text-xl font-montserrat font-semibold text-[var(--brand-primary,#007970)] mb-2">Can't find what you're looking for?</h3>
               <p className="text-[#52404B] font-roboto mb-6 text-sm">Our support team is available to help you with any specific questions.</p>
               <button className="bg-[#C74601] text-white hover:bg-[#421700] px-6 py-2.5 rounded-[8px] text-sm font-roboto font-medium transition-colors">
                 Contact Support
@@ -584,7 +611,14 @@ export function HelpCenterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans">
+    <div className="h-full w-full flex flex-col" style={{ background: 'transparent' }}>
+      <div className="px-6 pt-2">
+        <PageHeader
+          eyebrow="KNOWLEDGE BASE"
+          title="Help Center"
+          description="Search and browse operational guides, compliance workflows, and developer references."
+        />
+      </div>
       <TopNav onHomeClick={handleHomeClick} />
       <Routes>
         <Route

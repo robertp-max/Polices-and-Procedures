@@ -25,6 +25,11 @@ export interface HelpArticle {
   systemBehavior: string;
   complianceImpact: string;
   evidence:    string;
+  screenshots?: Array<{
+    src: string;
+    alt: string;
+    caption?: string;
+  }>;
   related: {
     policies?:  string[];
     workflows?: string[];
@@ -95,6 +100,8 @@ export function searchArticles(q: string): HelpArticle[] {
   return ARTICLES.filter(a =>
     a.title.toLowerCase().includes(t) ||
     a.purpose.toLowerCase().includes(t) ||
+    a.whenToUse.toLowerCase().includes(t) ||
+    (a.steps ?? []).some(step => step.toLowerCase().includes(t)) ||
     a.systemBehavior.toLowerCase().includes(t) ||
     a.complianceImpact.toLowerCase().includes(t),
   );

@@ -6,6 +6,8 @@ import {
   normalizeEmail,
   parseBody,
   respondToNewPasswordChallenge,
+  upsertAuthenticatedIdentity,
+  userFromCognitoAttributes,
 } from './common.js';
 
 export async function handler(event: APIGatewayProxyEventV2) {
@@ -51,6 +53,8 @@ export async function handler(event: APIGatewayProxyEventV2) {
 
     const me = await getUser(auth.AccessToken);
     const attrs = Object.fromEntries((me.UserAttributes ?? []).map(a => [a.Name ?? '', a.Value ?? '']));
+    const user = userFromCognitoAttributes(attrs, me.Username);
+    await upsertAuthenticatedIdentity({ ...user, email: user.email || email }).catch(() => undefined);
 
     return json(200, {
       session: {
@@ -60,12 +64,7 @@ export async function handler(event: APIGatewayProxyEventV2) {
         expiresIn: auth.ExpiresIn,
         tokenType: auth.TokenType,
       },
-      user: {
-        email: attrs.email ?? email,
-        firstName: attrs.given_name,
-        lastName: attrs.family_name,
-        emailVerified: attrs.email_verified === 'true',
-      },
+      user: { ...user, email: user.email || email },
     });
   } catch {
     return json(401, { error: { code: 'auth_error', message: 'Unable to complete password challenge.' } });

@@ -42,7 +42,7 @@ export const GROUP_DEFAULT_PERMISSIONS: Record<string, PermissionId[]> = {
   Compliance:  ['policy.view', 'policy.draft', 'policy.publish', 'form.view', 'ceu.view', 'ceu.assign',
                 'ceu.override', 'audit.read', 'audit.export', 'user.suspend'],
   Auditor:     ['policy.view', 'form.view', 'ceu.view', 'audit.read', 'audit.export'],
-  Onboarding:  ['policy.view', 'form.view', 'ceu.view', 'ceu.assign', 'user.provision'],
+  Onboarding:  [],
   Billing:     ['policy.view', 'form.view', 'ceu.view', 'ceu.execute', 'ceu.complete'],
   Director:    ['policy.view', 'policy.approve', 'form.view', 'ceu.view', 'ceu.assign', 'ceu.override'],
   Executive:   ['policy.view', 'policy.approve', 'policy.publish', 'form.view', 'ceu.view', 'ceu.override', 'audit.read'],

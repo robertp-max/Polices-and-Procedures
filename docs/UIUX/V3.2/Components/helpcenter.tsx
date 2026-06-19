@@ -27,6 +27,24 @@ type SpotlightCardProps = {
   onClick?: () => void;
 };
 
+type HelpArticle = {
+  id: string;
+  title: string;
+  categoryLabel: string;
+  purpose: string;
+  whenToUse: string;
+  steps?: string[];
+  screenshots?: Array<{
+    src: string;
+    alt: string;
+    caption: string;
+  }>;
+  systemBehavior: string;
+  complianceImpact: string;
+  evidence: string;
+  supportNotes?: string[];
+};
+
 const SpotlightCard = ({
   children,
   className = '',
@@ -67,8 +85,13 @@ const HELP_CATEGORIES = [
     id: 'getting-started',
     title: 'Getting Started',
     icon: BookOpen,
-    count: 3,
-    previews: ['Welcome to CI-App eCIgn', 'Roles, Tiers & Permissions', 'Navigation & Workspace Layout'],
+    count: 4,
+    previews: [
+      'First Login: Set Your Permanent Password',
+      'Welcome to CI-App eCIgn',
+      'Roles, Tiers & Permissions',
+      'Navigation & Workspace Layout',
+    ],
   },
   {
     id: 'policy-lifecycle',
@@ -196,14 +219,113 @@ const HELP_CATEGORIES = [
   },
 ];
 
-const HELP_ARTICLES = [
-  { id: 'welcome', title: 'Welcome to CI-App eCIgn' },
-  { id: 'roles', title: 'Roles, Tiers & Permissions' },
-  { id: 'navigation', title: 'Navigation & Workspace Layout' },
+const HELP_ARTICLES: HelpArticle[] = [
+  {
+    id: 'first-login-set-permanent-password',
+    title: 'First Login: Set Your Permanent Password',
+    categoryLabel: 'Getting Started',
+    purpose: 'Use this guide when an administrator gives you a one-time temporary password for your first sign-in.',
+    whenToUse: 'Use this flow after your account has been created or reset and you must replace the temporary password before using the app.',
+    steps: [
+      'Open the Care Indeed sign-in page.',
+      'Enter your registered email address exactly as provided by the administrator.',
+      'Enter the one-time temporary password, then select Sign In.',
+      'When the Set New Password page opens, enter a new permanent password.',
+      'Enter the same permanent password again in Confirm Password.',
+      'Select Set Password & Continue.',
+      'After the password is accepted, continue into the dashboard. If the app returns to sign-in, sign in again with the new permanent password.',
+    ],
+    screenshots: [
+      {
+        src: '/help/auth-new-password-flow/first-login-email.png',
+        alt: 'Sign-in page with registered email entered.',
+        caption: 'Enter the registered email address on the sign-in page.',
+      },
+      {
+        src: '/help/auth-new-password-flow/first-login-temp-password.png',
+        alt: 'Sign-in page with temporary password masked.',
+        caption: 'Enter the administrator-provided temporary password. The field is masked for security.',
+      },
+      {
+        src: '/help/auth-new-password-flow/set-new-password-empty.png',
+        alt: 'Set New Password page with empty password fields.',
+        caption: 'A valid temporary password opens the Set New Password page.',
+      },
+      {
+        src: '/help/auth-new-password-flow/set-new-password-filled.png',
+        alt: 'Set New Password page with both password fields masked.',
+        caption: 'Enter and confirm the permanent password, then continue.',
+      },
+    ],
+    systemBehavior: 'A valid temporary password returns a Cognito NEW_PASSWORD_REQUIRED challenge. The app sends the user to the Set New Password page and completes the challenge through the deployed respond-challenge auth route.',
+    complianceImpact: 'Forces administrator-issued temporary credentials to be replaced before normal access. This keeps first-login setup independent of email delivery and avoids reuse of temporary passwords.',
+    evidence: 'Cognito changes the user from FORCE_CHANGE_PASSWORD to CONFIRMED after the password challenge succeeds. No temporary password or permanent password is stored in Help Center content.',
+    supportNotes: [
+      'Do not use Forgot Password for first-login setup.',
+      'If the temporary password was already used, expired, or copied incorrectly, ask an administrator for a fresh one-time temporary password.',
+      'Never share temporary passwords in screenshots, tickets, reports, or source files.',
+    ],
+  },
+  {
+    id: 'welcome',
+    title: 'Welcome to CI-App eCIgn',
+    categoryLabel: 'Getting Started',
+    purpose: 'CI-App eCIgn is the legally enforceable, audit-ready electronic signature subsystem of CI-App for Care Indeed Home Health Care, Inc.',
+    whenToUse: 'Any time a Care Indeed document requires a signature: Plans of Care, physician orders, policy acknowledgments, QAPI minutes, HR onboarding records, or mandatory event reports.',
+    systemBehavior: 'eCIgn enforces a six-step workflow: Disclosure, Identity, Review, Signature, Attestation, and Lock. Templates are byte-preserved; evidence is added via a footer watermark and appended certificate/audit pages.',
+    complianceImpact: 'Aligns with ESIGN Act, UETA, HIPAA access-control requirements, and CMS Home Health Conditions of Participation.',
+    evidence: 'Every signing event produces a signed PDF, audit trail report, signature certificate page, and survey packet.',
+  },
+  {
+    id: 'roles',
+    title: 'Roles, Tiers & Permissions',
+    categoryLabel: 'Getting Started',
+    purpose: 'Explains how CI-App roles govern access, signing authority, and approval responsibilities.',
+    whenToUse: 'Review before assigning approvers, granting admin access, or troubleshooting access-denied screens.',
+    systemBehavior: 'The app evaluates the current user role and feature permissions before rendering protected routes and privileged actions.',
+    complianceImpact: 'Supports least-privilege access and separation of duties.',
+    evidence: 'Successful and denied access decisions are represented by app state and admin access records.',
+  },
+  {
+    id: 'navigation',
+    title: 'Navigation & Workspace Layout',
+    categoryLabel: 'Getting Started',
+    purpose: 'Explains the main app shell, left command rail, dashboard, Help Center, and operational workspaces.',
+    whenToUse: 'Use when orienting a new user to the app layout and primary navigation paths.',
+    systemBehavior: 'Primary routes include Dashboard, Help Center, Workflows, Library, Calendar, Evidence, Forms, and Admin workspaces.',
+    complianceImpact: 'Consistent navigation keeps critical compliance and evidence workflows discoverable.',
+    evidence: 'No persisted artifact is generated by navigation alone.',
+  },
 ];
 
+function initialArticleFromPath(): string | null {
+  if (typeof window === 'undefined') return null;
+  const match = window.location.pathname.match(/^\/help\/([^/?#]+)/);
+  const slug = match?.[1];
+  return slug && HELP_ARTICLES.some(article => article.id === slug) ? slug : null;
+}
+
 export default function HelpCenterApp() {
-  const [currentView, setCurrentView] = useState<'home' | 'list' | 'article'>('home');
+  const initialArticleId = initialArticleFromPath();
+  const [currentView, setCurrentView] = useState<'home' | 'list' | 'article'>(initialArticleId ? 'article' : 'home');
+  const [selectedArticleId, setSelectedArticleId] = useState(initialArticleId ?? HELP_ARTICLES[0].id);
+  const selectedArticle = HELP_ARTICLES.find(article => article.id === selectedArticleId) ?? HELP_ARTICLES[0];
+
+  const goHome = () => {
+    setCurrentView('home');
+    if (typeof window !== 'undefined') window.history.pushState(null, '', '/help');
+  };
+
+  const goList = () => {
+    setCurrentView('list');
+    if (typeof window !== 'undefined') window.history.pushState(null, '', '/help/category/getting-started');
+  };
+
+  const openArticle = (articleId: string) => {
+    setSelectedArticleId(articleId);
+    setCurrentView('article');
+    if (typeof window !== 'undefined') window.history.pushState(null, '', `/help/${articleId}`);
+  };
 
   return (
     <div className="flex h-screen w-full bg-[#0B0F15] text-slate-200 font-sans overflow-hidden selection:bg-[#007970]/30 selection:text-white">
@@ -288,7 +410,7 @@ export default function HelpCenterApp() {
           <div className="flex items-center gap-4 text-xs font-medium text-[#8A94A6]">
             <span
               className="text-[#C74600] font-bold tracking-wide cursor-pointer hover:text-[#E2E8F0] transition-colors"
-              onClick={() => setCurrentView('home')}
+              onClick={goHome}
             >
               CareIndeed
             </span>
@@ -340,7 +462,7 @@ export default function HelpCenterApp() {
                       return (
                         <SpotlightCard
                           key={category.id}
-                          onClick={() => setCurrentView('list')}
+                          onClick={goList}
                           className="flex flex-col p-6 group h-full"
                           spotlightColor="rgba(0, 121, 112, 0.15)"
                         >
@@ -398,7 +520,7 @@ export default function HelpCenterApp() {
               ) : currentView === 'list' ? (
                 <div className="max-w-4xl mx-auto">
                   <div className="flex items-center gap-2 text-xs font-medium text-[#5E6A7F] mb-6">
-                    <span onClick={() => setCurrentView('home')} className="hover:text-white cursor-pointer transition-colors">
+                    <span onClick={goHome} className="hover:text-white cursor-pointer transition-colors">
                       Help Center
                     </span>
                     <ChevronRight size={14} />
@@ -411,7 +533,7 @@ export default function HelpCenterApp() {
                     </div>
                     <div>
                       <h1 className="text-3xl font-semibold text-white tracking-tight mb-1">Getting Started</h1>
-                      <p className="text-sm text-[#8A94A6]">3 Articles available in this category.</p>
+                      <p className="text-sm text-[#8A94A6]">{HELP_ARTICLES.length} Articles available in this category.</p>
                     </div>
                   </div>
 
@@ -419,7 +541,7 @@ export default function HelpCenterApp() {
                     {HELP_ARTICLES.map(article => (
                       <SpotlightCard
                         key={article.id}
-                        onClick={() => setCurrentView('article')}
+                        onClick={() => openArticle(article.id)}
                         className="px-6 py-5 flex items-center justify-between group"
                         spotlightColor="rgba(0, 121, 112, 0.1)"
                       >
@@ -437,42 +559,79 @@ export default function HelpCenterApp() {
               ) : (
                 <div className="max-w-4xl mx-auto">
                   <div className="flex items-center gap-2 text-xs font-medium text-[#5E6A7F] mb-12">
-                    <span onClick={() => setCurrentView('home')} className="hover:text-white cursor-pointer transition-colors">
+                    <span onClick={goHome} className="hover:text-white cursor-pointer transition-colors">
                       Help Center
                     </span>
                     <ChevronRight size={14} />
-                    <span onClick={() => setCurrentView('list')} className="hover:text-white cursor-pointer transition-colors">
-                      Getting Started
+                    <span onClick={goList} className="hover:text-white cursor-pointer transition-colors">
+                      {selectedArticle.categoryLabel}
                     </span>
                     <ChevronRight size={14} />
-                    <span className="text-white">Welcome to CI-App eCIgn</span>
+                    <span className="text-white">{selectedArticle.title}</span>
                   </div>
 
                   <div className="mb-10">
                     <div className="text-[10px] font-bold text-[#C74600] uppercase tracking-widest mb-3">GETTING STARTED</div>
-                    <h1 className="text-4xl font-semibold text-white tracking-tight">Welcome to CI-App eCIgn</h1>
+                    <h1 className="text-4xl font-semibold text-white tracking-tight">{selectedArticle.title}</h1>
                   </div>
 
                   <div className="space-y-12">
                     <section>
                       <h2 className="text-[11px] font-bold text-[#5E6A7F] uppercase tracking-widest mb-3">PURPOSE</h2>
                       <p className="text-[15px] text-[#E2E8F0] leading-relaxed">
-                        CI-App eCIgn is the legally enforceable, audit-ready electronic signature subsystem of CI-App for Care Indeed Home Health Care, Inc.
+                        {selectedArticle.purpose}
                       </p>
                     </section>
 
                     <section>
                       <h2 className="text-[11px] font-bold text-[#5E6A7F] uppercase tracking-widest mb-3">WHEN TO USE IT</h2>
                       <p className="text-[15px] text-[#E2E8F0] leading-relaxed">
-                        Any time a Care Indeed document requires a signature: Plans of Care, physician orders, policy acknowledgments, QAPI minutes, HR onboarding records, or mandatory event reports.
+                        {selectedArticle.whenToUse}
                       </p>
                     </section>
+
+                    {!!selectedArticle.steps?.length && (
+                      <section>
+                        <h2 className="text-[11px] font-bold text-[#5E6A7F] uppercase tracking-widest mb-3">STEP BY STEP</h2>
+                        <ol className="space-y-3">
+                          {selectedArticle.steps.map((step, index) => (
+                            <li key={step} className="flex gap-3 text-[15px] text-[#E2E8F0] leading-relaxed">
+                              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#007970] text-xs font-bold text-white">
+                                {index + 1}
+                              </span>
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </section>
+                    )}
+
+                    {!!selectedArticle.screenshots?.length && (
+                      <section>
+                        <h2 className="text-[11px] font-bold text-[#5E6A7F] uppercase tracking-widest mb-4">SCREENSHOTS</h2>
+                        <div className="space-y-6">
+                          {selectedArticle.screenshots.map(screenshot => (
+                            <figure key={screenshot.src} className="overflow-hidden rounded-xl border border-[#1C2433] bg-[#141A23]">
+                              <img
+                                src={screenshot.src}
+                                alt={screenshot.alt}
+                                loading="lazy"
+                                className="w-full bg-[#00151a] object-contain"
+                              />
+                              <figcaption className="border-t border-[#1C2433] px-5 py-3 text-sm text-[#8A94A6]">
+                                {screenshot.caption}
+                              </figcaption>
+                            </figure>
+                          ))}
+                        </div>
+                      </section>
+                    )}
 
                     <section>
                       <h2 className="text-[11px] font-bold text-[#5E6A7F] uppercase tracking-widest mb-3">SYSTEM BEHAVIOR</h2>
                       <div className="p-6 border border-[#1C2433] rounded-xl bg-[#141A23] shadow-inner">
                         <p className="font-mono text-xs text-[#8A94A6] leading-relaxed">
-                          eCIgn enforces a six-step workflow (Disclosure - Identity - Review - Signature - Attestation - Lock) at the server boundary. Templates are byte-preserved; evidence is added via a footer watermark and four appended pages (Certificate, Identity &amp; Device, Audit Trail, Hash Manifest).
+                          {selectedArticle.systemBehavior}
                         </p>
                       </div>
                     </section>
@@ -480,16 +639,32 @@ export default function HelpCenterApp() {
                     <section>
                       <h2 className="text-[11px] font-bold text-[#5E6A7F] uppercase tracking-widest mb-3">COMPLIANCE IMPACT</h2>
                       <p className="text-[15px] text-[#E2E8F0] leading-relaxed">
-                        Aligns with ESIGN Act (15 U.S.C. SS 7001-7031), UETA, HIPAA (45 CFR SS 164.308 / 164.312), and CMS Home Health Conditions of Participation (42 CFR Part 484).
+                        {selectedArticle.complianceImpact}
                       </p>
                     </section>
 
                     <section>
                       <h2 className="text-[11px] font-bold text-[#5E6A7F] uppercase tracking-widest mb-3">EVIDENCE GENERATED</h2>
                       <p className="text-[15px] text-[#E2E8F0] leading-relaxed">
-                        Every signing event produces: signed PDF (template + watermark + appended pages), audit trail report, signature certificate page, and a survey packet ZIP.
+                        {selectedArticle.evidence}
                       </p>
                     </section>
+
+                    {!!selectedArticle.supportNotes?.length && (
+                      <section>
+                        <h2 className="text-[11px] font-bold text-[#5E6A7F] uppercase tracking-widest mb-3">SUPPORT NOTES</h2>
+                        <div className="p-6 border border-[#1C2433] rounded-xl bg-[#141A23]">
+                          <ul className="space-y-3">
+                            {selectedArticle.supportNotes.map(note => (
+                              <li key={note} className="flex items-start gap-2 text-[15px] text-[#E2E8F0] leading-relaxed">
+                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#C74600]" />
+                                <span>{note}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </section>
+                    )}
                   </div>
                 </div>
               )}

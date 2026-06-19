@@ -3,6 +3,7 @@ import { FileText, Printer, Loader2 } from 'lucide-react';
 import type { ReferencePreview } from '../lib/responseTypes';
 import { FormRenderer } from './FormRenderer';
 import { RightDrawer, UtilityButton } from '@/policy/components/ui';
+import { uniqueResolvedReferenceIds } from '../lib/referenceResolver';
 import { ReferenceLink } from './ReferenceLink';
 import { ReferenceText } from './ReferenceText';
 
@@ -41,6 +42,9 @@ export function RightPanelPreview({
   const accent = isLight ? '#C74601' : '#FFC107';
   const muted = isLight ? '#747474' : 'rgba(255,255,255,0.45)';
   const text = isLight ? '#1F1C1B' : '#E0E0E0';
+  const linkedIds = reference
+    ? uniqueResolvedReferenceIds(reference.linkedIds, null, 'RightPanelPreview.linkedIds')
+    : [];
 
   // Scroll to top whenever a new reference loads.
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -119,7 +123,7 @@ export function RightPanelPreview({
               </>
             )}
 
-            {reference.linkedIds.length > 0 && reference.type !== 'form' && (
+            {linkedIds.length > 0 && reference.type !== 'form' && (
               <section className="mt-6 pt-4" style={{ borderTop: `1px solid ${border}` }}>
                 <h3
                   className="text-[10px] font-bold uppercase tracking-[0.24em] mb-2"
@@ -128,7 +132,7 @@ export function RightPanelPreview({
                   Linked from this document
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
-                  {reference.linkedIds.map(id => (
+                  {linkedIds.map(id => (
                     <ReferenceLink
                       key={id}
                       id={id}

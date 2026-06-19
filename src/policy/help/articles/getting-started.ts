@@ -2,6 +2,73 @@ import type { HelpArticle } from './index';
 
 export const GETTING_STARTED: HelpArticle[] = [
   {
+    slug: 'first-login-set-permanent-password',
+    title: 'First Login: Set Your Permanent Password',
+    category: 'getting-started',
+    purpose: 'Guides a newly approved user through signing in with an administrator-provided one-time temporary password and replacing it with a permanent password.',
+    whenToUse: 'Use this article when a user has been created or reset by an administrator and their Cognito account is in the first-login password-change state.',
+    steps: [
+      'Open the Care Indeed sign-in page.',
+      'Enter the registered email address exactly as provided by the administrator.',
+      'Enter the one-time temporary password provided by the administrator, then select Sign In.',
+      'When the Set New Password page opens, enter a new permanent password.',
+      'Re-enter the same permanent password in Confirm Password.',
+      'Select Set Password & Continue.',
+      'After the password is accepted, continue into the dashboard. If the app returns to sign-in, sign in again with the new permanent password.',
+    ],
+    screenshots: [
+      {
+        src: '/help/auth-new-password-flow/first-login-email.png',
+        alt: 'Sign-in page with the registered email address entered.',
+        caption: 'Enter the registered email address on the sign-in page.',
+      },
+      {
+        src: '/help/auth-new-password-flow/first-login-temp-password.png',
+        alt: 'Sign-in page with the temporary password field masked.',
+        caption: 'Enter the administrator-provided temporary password. The field is masked for security.',
+      },
+      {
+        src: '/help/auth-new-password-flow/set-new-password-empty.png',
+        alt: 'Set New Password page with empty password fields.',
+        caption: 'A valid temporary password opens the Set New Password page.',
+      },
+      {
+        src: '/help/auth-new-password-flow/set-new-password-filled.png',
+        alt: 'Set New Password page with both password fields masked.',
+        caption: 'Enter and confirm the permanent password, then continue.',
+      },
+    ],
+    systemBehavior: 'The login API returns a Cognito NEW_PASSWORD_REQUIRED challenge for a valid temporary password. The app routes the user to /set-new-password with the opaque challenge session held only in route state. The set-new-password form sends the email, challenge session, and new password to /auth/respond-challenge. On success, Cognito confirms the user and the app receives a normal authenticated session.',
+    complianceImpact: 'Supports controlled account provisioning by forcing users to replace administrator-issued temporary credentials before normal use. This avoids email-dependent reset workflows and preserves least-privilege authentication controls.',
+    evidence: 'Cognito changes the user from FORCE_CHANGE_PASSWORD to CONFIRMED after the password challenge is completed. No temporary password, permanent password, or Cognito challenge session is stored in Help Center content.',
+    complianceRequirement: 'Temporary passwords must be single-use and administrator-delivered through an approved channel. Users must set a permanent password before accessing protected app content.',
+    enforcementRules: [
+      'Do not use the forgot-password flow for first-login setup.',
+      'Do not reuse old temporary passwords.',
+      'Do not share temporary passwords in screenshots, tickets, reports, or source files.',
+      'Do not store the Cognito challenge session in localStorage or sessionStorage.',
+    ],
+    requiredActions: [
+      'Confirm the user is using the exact registered email address.',
+      'Confirm the temporary password was copied exactly.',
+      'Generate a fresh temporary password if the first-login challenge does not appear.',
+      'After successful setup, instruct the user to sign in only with the new permanent password.',
+    ],
+    auditLogging: 'Administrators should record the target email, actor, timestamp, reset/recovery method, and forceChangeOnFirstLogin=true. Audit entries must never include temporary or permanent password values.',
+    failureImpact: 'If the temporary password is expired, already consumed, copied incorrectly, or replaced by a newer reset, the user will not reach the Set New Password page. Generate a new one-time temporary password and retry.',
+    traceability: {
+      policy_id: 'IT-AC-001',
+      workflow_id: 'IT-WF-02',
+      evidence_id: 'Cognito UserStatus and active registration record',
+    },
+    related: {
+      policies: ['IT-AC-001'],
+      workflows: ['IT-WF-02'],
+      endpoints: ['POST /auth/login', 'POST /auth/respond-challenge'],
+      components: ['LoginPage', 'SetNewPasswordPage', 'AuthProvider'],
+    },
+  },
+  {
     slug: 'overview',
     title: 'Welcome to CI-App eCIgn',
     category: 'getting-started',

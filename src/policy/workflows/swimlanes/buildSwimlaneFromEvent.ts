@@ -9,6 +9,8 @@ import { buildCanonicalEventSwimlaneNodeId, buildCanonicalEventSwimlaneTaskId } 
 import { buildSwimlaneInstructions, inferSwimlaneTaskPurpose } from './swimlaneInstructions';
 import type { SwimlaneBuildContext, SwimlaneLane, SwimlaneModel, SwimlaneNode, SwimlaneStatus } from './types';
 import { resolveCanonicalSignaturePath } from '@/policy/ecign/signaturePathResolver';
+import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
+import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 
 function unique(values: Array<string | undefined | null>): string[] {
   return Array.from(new Set(values.filter((value): value is string => Boolean(value?.trim()))));
@@ -25,9 +27,12 @@ function laneForRole(role: string, lanes: SwimlaneLane[]): SwimlaneLane {
   return lane;
 }
 
-function statusForEventStep(step: Pick<EventProcessStep, 'status' | 'requiredFormIds'>): SwimlaneStatus {
-  if (step.status === 'complete') return 'complete';
-  if (step.status === 'in-progress') return 'in_progress';
+function statusForEventStep(step: Pick<EventProcessStep, 'status' | 'requiredFormIds' | 'id'>, event: RegulatoryEvent, exec: ReturnType<typeof useRegulatoryExecutionStore.getState>): SwimlaneStatus {
+  // Prefer live store state over seed template status for actual execution data
+  const live = exec.effectiveStepStatus ? exec.effectiveStepStatus(event, (step as any).id || step.id || '') : undefined;
+  const s = (live as any) || step.status;
+  if (s === 'complete') return 'complete';
+  if (s === 'in-progress') return 'in_progress';
   if (step.requiredFormIds?.length) return 'needs_evidence';
   return 'pending';
 }
@@ -128,6 +133,12 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
   const minuteSignerRoles = event.minutes?.signOffRoles?.map(normalizeRole) ?? [];
   const sequenceByEventForm = new Map<string, number>();
   const canonicalFormInstanceIds = new Map<string, string>();
+  // Use design-matched live display model (matches calendar Ces* + design #4 contract for canonical refs)
+  const display = getEventDisplayModel(event);
+  const canonicalPolicyRefs = display.canonicalPolicyRefs.length ? display.canonicalPolicyRefs : event.policyRefs;
+
+  // Pull live execution state from store (actual live data, not seed template status)
+  const exec = useRegulatoryExecutionStore.getState();
 
   const nodes: SwimlaneNode[] = sourceSteps.map((step, index) => {
     const roleFromAgenda = event.agenda?.standingTopics.find(topic => topic.id === step.id || step.label.includes(topic.title))?.owner;
@@ -170,6 +181,16 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
       sequenceByEventForm,
       canonicalFormInstanceIds,
     });
+    // Overlay live form status from regulatoryExecutionStore (ensure calendar/swimlane match on live data)
+    if (exec.effectiveFormStatus) {
+      formInstances.forEach((fi: any) => {
+        const liveF = exec.effectiveFormStatus(event, fi.formId);
+        if (liveF) {
+          fi.status = (liveF === 'complete' ? 'complete' : liveF === 'in-progress' ? 'in_progress' : liveF === 'missing' ? 'blocked' : 'needs_evidence') as any;
+          if (liveF === 'complete') fi.missing = false;
+        }
+      });
+    }
     const signaturePath = resolveCanonicalSignaturePath({
       domain: event.domain,
       workflowId,
@@ -220,7 +241,7 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
       title: step.label,
       shortDescription: step.description || step.instructions || 'Generated event execution step.',
       ownerRole,
-      status: statusWithSignaturePath(statusForEventStep(step), signaturePath.signatureTasks.length, signaturePath.reviewerRoles.length),
+      status: statusWithSignaturePath(statusForEventStep(step, event, exec), signaturePath.signatureTasks.length, signaturePath.reviewerRoles.length),
       requiredForms: stepForms,
       formInstances,
       requiredEvidence,
@@ -247,7 +268,7 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
         stepOrder: index + 2,
       })] : [],
       auditPurpose: event.regulatoryDriver ?? event.complianceFlags?.surveyorNote ?? 'Maintains an auditable mandated-event execution trail.',
-      policyRefs: event.policyRefs,
+      policyRefs: canonicalPolicyRefs,
       regulatoryRefs: unique([event.complianceFlags?.citation, ...(workflow?.regulatoryAnchors ?? [])]),
       sourceType: event.processFlow.length ? 'event' : 'generated',
     };
@@ -312,7 +333,7 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
       dependencies: last ? [last.nodeId] : [],
       nextNodeIds: [],
       auditPurpose: 'Creates the final locked evidence package for survey defensibility.',
-      policyRefs: event.policyRefs,
+      policyRefs: canonicalPolicyRefs,
       regulatoryRefs: unique([event.complianceFlags?.citation, ...(workflow?.regulatoryAnchors ?? [])]),
       sourceType: 'generated',
     });
@@ -341,7 +362,7 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
     nodes,
     edges,
     requiredForms: allForms,
-    policyRefs: event.policyRefs,
+    policyRefs: canonicalPolicyRefs,
     evidenceRequirements: evidenceLabels(event),
     missingContext,
   };

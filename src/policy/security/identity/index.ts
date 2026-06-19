@@ -4,6 +4,7 @@ export * from './userGroups';
 export * from './roleAssignments';
 export * from './separationOfDuties';
 export * from './demoUsers';
+export * from './identityNormalization';
 export * from './authorize';
 export * from './access';
 export * from './AccessDeniedPage';

@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, Printer, Download, Building2, User, Briefcase, HeartPulse, Info, CheckCircle2, Shield, ShieldCheck } from 'lucide-react';
-// App logo - using the single specified file via import for data URL compatibility in forms
-import ciLogoWhite from '@/assets/ci-logo-white.png';
+import { ChevronLeft, Printer, Download, Building2, User, Briefcase, HeartPulse, Info, CheckCircle2, ShieldCheck } from 'lucide-react';
+// Document logo - imported for data URL compatibility in forms.
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { useShellStore } from '@/policy/stores/uiStore';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import {
@@ -26,16 +27,19 @@ import {
   useSignatureCtx,
   type SignatureRecord,
   type SecondSigTask,
+  type FormSignerSlot,
   type SignFlowState,
   type GeoInfo,
   type FieldEdit,
-  DEMO_STAFF,
   signerNanoid,
   fmtSignTs,
 } from './FormSignatureContext';
 import {
+  deriveCanonicalSignerRequirements,
+  minTierForRequiredSlot,
+} from '@/policy/ecign/signerAuthority';
+import {
   emitPolicyLinkAudit,
-  resolvePolicyMetaList,
   validateAcknowledgmentLinks,
 } from '@/policy/services/policyLinkService';
 import { ecignApi } from '@/policy/ecign/api';
@@ -44,268 +48,6 @@ import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
 function isCanonicalCesFormInstanceId(value: string, eventId: string, formId: string): boolean {
   if (!value || value.startsWith('fi_')) return false;
   return value.startsWith(`${eventId}-${formId}-`);
-}
-
-// ─── FormCertificatePage ───────────────────────────────────────────
-// CI-App Internal Attestation Certificate.
-// Rendered below the form card on screen after signing.
-// Includes geo/network data and document edit trail.
-
-interface FormCertificatePageProps {
-  certId:         string;   // lifted from FormViewer so workspace can share it
-  formId:         string;
-  formTitle:      string;
-  formVersion:    string;
-  formInstanceId: string;
-  signatures:     Map<string, SignatureRecord>;
-  secondSigTask:  SecondSigTask | null;
-  policies:       string[];
-  geoInfo:        GeoInfo;
-  fieldEdits:     FieldEdit[];
-}
-
-function FormCertificatePage({
-  certId, formId, formTitle, formVersion, formInstanceId,
-  signatures, secondSigTask, policies, geoInfo, fieldEdits,
-}: FormCertificatePageProps) {
-  const certAt  = useMemo(() => new Date().toISOString(), []);
-  const sigList = Array.from(signatures.values());
-  if (sigList.length === 0) return null;
-
-  // Phase 11 — resolve linked policies to their full meta for display.
-  const linkedPolicyMeta = resolvePolicyMetaList(policies);
-
-  const metaRows: [string, string][] = [
-    ['Certificate ID',   certId],
-    ['Form ID',          formId],
-    ['Form Version',     `v${formVersion}`],
-    ['Form Title',       formTitle],
-    ['Form Instance ID', formInstanceId],
-    ['System',           'CI-App'],
-    ['Certified At',     fmtSignTs(certAt)],
-  ];
-  if (linkedPolicyMeta.length > 0) metaRows.push(['Linked Policies', `${linkedPolicyMeta.length} selected`]);
-  if (secondSigTask)               metaRows.push(['Task ID',         secondSigTask.taskId]);
-
-  const LabelCls = 'font-montserrat font-semibold text-[9px] uppercase tracking-[0.14em] text-[#747470] mb-0.5';
-  const ValueCls = 'font-roboto text-[13px] text-[#1F1C1B] break-all';
-
-  return (
-    <div
-      className="bg-white border border-[#E5E4E3] rounded-[12px] px-8 py-10 md:px-12 md:py-12 avoid-break"
-      style={{ borderLeft: '4px solid #007970', breakBefore: 'page' }}
-    >
-      {/* Title */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: '#E5FEFF', color: '#007970' }}>
-            <Shield size={14} />
-          </div>
-          <span className="font-montserrat font-semibold text-[10px] tracking-[0.2em] uppercase text-[#007970]">CI-App · Internal Attestation</span>
-        </div>
-        <h2 className="font-montserrat font-bold text-[22px] text-[#1F1C1B] leading-tight">CI-App Internal Attestation Certificate</h2>
-        <p className="font-roboto text-[13px] text-[#747470] mt-2 leading-relaxed">
-          This certificate records completion, acknowledgment, and signature activity captured within the CI-App workflow system.
-        </p>
-      </div>
-
-      {/* Certificate metadata */}
-      <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-5 pb-8 border-b border-[#E5E4E3] mb-8">
-        {metaRows.map(([label, value]) => (
-          <div key={label} className="flex flex-col">
-            <dt className={LabelCls}>{label}</dt>
-            <dd className={ValueCls}>{value}</dd>
-          </div>
-        ))}
-      </dl>
-
-      {/* Phase 11 — Linked Policies / Procedures */}
-      {linkedPolicyMeta.length > 0 && (
-        <div className="mb-8 pb-8 border-b border-[#E5E4E3]">
-          <h3 className="font-montserrat font-semibold text-[11px] uppercase tracking-[0.18em] text-[#1F1C1B] mb-4">
-            Linked Policies / Procedures ({linkedPolicyMeta.length})
-          </h3>
-          <div className="overflow-x-auto rounded-lg border border-[#E5E4E3]">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#FAFBF8] border-b border-[#E5E4E3]">
-                  <th className="px-3 py-2 font-montserrat font-bold text-[9px] uppercase tracking-[0.1em] text-[#747470]">Policy ID</th>
-                  <th className="px-3 py-2 font-montserrat font-bold text-[9px] uppercase tracking-[0.1em] text-[#747470]">Title</th>
-                  <th className="px-3 py-2 font-montserrat font-bold text-[9px] uppercase tracking-[0.1em] text-[#747470]">Version</th>
-                  <th className="px-3 py-2 font-montserrat font-bold text-[9px] uppercase tracking-[0.1em] text-[#747470]">Effective Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {linkedPolicyMeta.map(m => (
-                  <tr key={m.id} className="border-b last:border-0 border-[#F0F0EE]">
-                    <td className="px-3 py-2 font-mono text-[11px] text-[#1A3778] font-bold">{m.id}</td>
-                    <td className="px-3 py-2 font-roboto text-[12px] text-[#1F1C1B]">{m.title}</td>
-                    <td className="px-3 py-2 font-roboto text-[11px] text-[#747470]">{m.version}</td>
-                    <td className="px-3 py-2 font-roboto text-[11px] text-[#747470]">{m.effectiveDate || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Signature records */}
-      <div className="mb-8 pb-8 border-b border-[#E5E4E3]">
-        <h3 className="font-montserrat font-semibold text-[11px] uppercase tracking-[0.18em] text-[#1F1C1B] mb-5">
-          Signature Record{sigList.length > 1 ? 's' : ''}
-        </h3>
-        <div className="space-y-6">
-          {sigList.map(sig => (
-            <div key={sig.fieldId} className="flex flex-col sm:flex-row sm:items-start gap-6 pb-6 border-b border-[#E5E4E3] last:border-0 last:pb-0">
-              <div className="shrink-0 border border-[#E5E4E3] rounded-lg p-3 bg-[#FAFBF8] w-[200px]">
-                <img src={sig.signatureDataUrl} alt={`Signature of ${sig.signerName}`} className="w-full h-12 object-contain object-left" />
-              </div>
-              <dl className="grid grid-cols-2 gap-x-8 gap-y-2 flex-1">
-                {([['Signer', sig.signerName], ['Role', sig.signerRole], ['Email', sig.signerEmail], ['Signed At', fmtSignTs(sig.signedAt)]] as [string, string][]).map(([label, value]) => (
-                  <div key={label} className="flex flex-col">
-                    <dt className={LabelCls}>{label}</dt>
-                    <dd className="font-roboto text-[12px] text-[#1F1C1B]">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Location & Network */}
-      {!geoInfo.loading && !geoInfo.error && geoInfo.ip && (
-        <div className="mb-8 pb-8 border-b border-[#E5E4E3]">
-          <h3 className="font-montserrat font-semibold text-[11px] uppercase tracking-[0.18em] text-[#1F1C1B] mb-4">Location &amp; Network</h3>
-          <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
-            {([
-              ['IP Address',     geoInfo.ip],
-              ['City',          geoInfo.city],
-              ['State / Region', geoInfo.region],
-              ['Country',       geoInfo.country],
-              ['ZIP / Postal',  geoInfo.postal],
-              ...(geoInfo.org ? [['Network Org', geoInfo.org]] as [string, string][] : []),
-            ] as [string, string][]).map(([label, value]) => (
-              <div key={label} className="flex flex-col">
-                <dt className={LabelCls}>{label}</dt>
-                <dd
-                  className="font-roboto font-mono text-[11px] text-[#1F1C1B]"
-                  style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}
-                >
-                  {value || '—'}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      )}
-
-      {/* Second signature task */}
-      {secondSigTask && (
-        <div className="mb-8 pb-8 border-b border-[#E5E4E3]">
-          <h3 className="font-montserrat font-semibold text-[11px] uppercase tracking-[0.18em] text-[#1F1C1B] mb-3">Second Signature Request</h3>
-          <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3">
-            {([
-              ['Task ID',     secondSigTask.taskId],
-              ['Assigned To', DEMO_STAFF.find(u => u.id === secondSigTask.assignedTo)?.name ?? secondSigTask.assignedTo],
-              ['Assigned By', DEMO_STAFF.find(u => u.id === secondSigTask.assignedBy)?.name ?? secondSigTask.assignedBy],
-              ['Status',      secondSigTask.status],
-              ['Created At',  fmtSignTs(secondSigTask.createdAt)],
-            ] as [string, string][]).map(([label, value]) => (
-              <div key={label} className="flex flex-col">
-                <dt className={LabelCls}>{label}</dt>
-                <dd className="font-roboto text-[12px] text-[#1F1C1B]">{value}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      )}
-
-      {/* Document edit trail */}
-      {fieldEdits.length > 0 && (
-        <div className="mb-8 pb-8 border-b border-[#E5E4E3]">
-          <h3 className="font-montserrat font-semibold text-[11px] uppercase tracking-[0.18em] text-[#1F1C1B] mb-3">
-            Document Edit Trail ({fieldEdits.length} change{fieldEdits.length !== 1 ? 's' : ''})
-          </h3>
-          <div className="overflow-x-auto rounded-[8px] border border-[#E5E4E3]">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#FAFBF8] border-b border-[#E5E4E3]">
-                  {['#', 'Field', 'Previous Value', 'New Value', 'Changed At', 'Changed By'].map(h => (
-                    <th key={h} className="px-3 py-2 font-montserrat font-semibold text-[9px] uppercase tracking-[0.1em] text-[#747470]">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {fieldEdits.map(e => (
-                  <tr key={e.seq} className="border-b border-[#F0F0EE] last:border-0 hover:bg-[#FAFBF8]">
-                    <td className="px-3 py-2 font-mono text-[10px] text-[#747470]">{e.seq}</td>
-                    <td className="px-3 py-2 font-roboto text-[11px] text-[#1F1C1B]">{e.fieldLabel}</td>
-                    <td className="px-3 py-2 font-roboto text-[11px] text-[#747470]">{e.oldValue || '—'}</td>
-                    <td className="px-3 py-2 font-roboto text-[11px] text-[#1F1C1B]">{e.newValue || '—'}</td>
-                    <td className="px-3 py-2 font-roboto text-[10px] text-[#747470]">{fmtSignTs(e.changedAt)}</td>
-                    <td className="px-3 py-2 font-roboto text-[11px] text-[#747470]">{e.changedBy}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* eCIgn print stamp — fixed footer visible only @media print */}
-      {sigList.length > 0 && (() => {
-        const sig = sigList[0];
-        return (
-          <div
-            className="ecign-print-stamp hidden print:flex fixed bottom-0 left-0 right-0 items-center gap-3 px-5"
-            style={{
-              height:      '36px',
-              background:  'white',
-              borderTop:   '2px solid #F04B22',
-              fontSize:    '9px',
-              color:       '#1A3778',
-              zIndex:      9999,
-            }}
-          >
-            <img src={eCIgnLogo} alt="eCIgn" style={{ height: 18, objectFit: 'contain' }} />
-            <span style={{ color: '#F04B22' }}>·</span>
-            <span className="font-mono text-[9px]">{certId}</span>
-            <span style={{ color: '#F04B22' }}>·</span>
-            <span>{sig.signerName}</span>
-            <span style={{ color: '#F04B22' }}>·</span>
-            <span>{fmtSignTs(sig.signedAt)}</span>
-          </div>
-        );
-      })()}
-    </div>
-  );
-}
-
-function DocumentAuditStamp({
-  certId,
-  signerName,
-  signedAt,
-}: {
-  certId: string;
-  signerName: string;
-  signedAt: string;
-}) {
-  return (
-    <div
-      className="mt-6 rounded-[10px] border bg-white px-4 py-3 flex flex-wrap items-center gap-3 print:hidden"
-      style={{ borderColor: '#E5E4E3', borderLeft: '4px solid #F04B22' }}
-    >
-      <img src={eCIgnLogo} alt="eCIgn" className="h-6 w-auto object-contain" />
-      <span style={{ color: '#F04B22' }}>·</span>
-      <span className="font-mono text-[10px]" style={{ color: '#1A3778' }}>{certId}</span>
-      <span style={{ color: '#F04B22' }}>·</span>
-      <span className="font-roboto text-[11px]" style={{ color: '#1A3778' }}>{signerName}</span>
-      <span style={{ color: '#F04B22' }}>·</span>
-      <span className="font-roboto text-[11px]" style={{ color: '#1A3778' }}>{fmtSignTs(signedAt)}</span>
-    </div>
-  );
 }
 
 // ─── Org Chart Components (GV-FM-003 Section 2) ───────────────────
@@ -377,15 +119,15 @@ const ComplianceOfficerCard = () => (
     <div className="flex justify-center mb-2">
       <div className="bg-[#FAFBF8] border border-[#E5E4E3] p-1.5 rounded-full text-[#524D4B]"><Briefcase size={15} /></div>
     </div>
-    <h3 className="font-montserrat font-bold text-[#1F1C1B] text-[11px] tracking-widest mb-3 leading-tight">COMPLIANCE OFFICER</h3>
-    <input type="text" placeholder="Enter Name..." className="mt-auto w-full text-center border-b-2 border-[#E5E4E3] pb-1 text-[#1F1C1B] focus:outline-none focus:border-[#C74601] transition-colors bg-transparent placeholder-[#747470] font-roboto text-[11px]" />
+    <h3 className="font-montserrat font-bold text-[#004142] text-[11px] tracking-widest mb-3 leading-tight">COMPLIANCE OFFICER</h3>
+    <input type="text" placeholder="Enter Name..." className="mt-auto w-full text-center border-b-2 border-[#E5E4E3] pb-1 text-[#263C3D] focus:outline-none focus:border-[#C74601] transition-colors bg-transparent placeholder-[#747470] font-roboto text-[11px]" />
   </div>
 );
 
 const ClinicalManagerCard = () => (
   <div className="bg-white rounded-[12px] p-3 w-40 text-center border border-[#E5E4E3] flex flex-col">
     <h4 className="font-montserrat font-bold text-[#007970] text-[11px] tracking-wide mb-3 leading-tight">CLINICAL MANAGER</h4>
-    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-1 text-[#1F1C1B] focus:outline-none focus:border-[#007970] transition-colors bg-transparent placeholder-[#747470] mb-3 font-roboto text-[11px]" />
+    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-1 text-[#263C3D] focus:outline-none focus:border-[#007970] transition-colors bg-transparent placeholder-[#747470] mb-3 font-roboto text-[11px]" />
     <div className="mt-auto bg-[#FAFBF8] border border-[#E5E4E3] rounded-md py-1.5 px-2 text-[9px] font-medium tracking-wide text-[#524D4B] font-roboto leading-tight">
       RN, PT, OT, ST, MSW, CHHA
     </div>
@@ -398,16 +140,16 @@ const MedicalDirectorCard = () => (
       <HeartPulse size={11} />
       <h4 className="font-montserrat font-bold text-[9px] tracking-widest uppercase">MEDICAL DIRECTOR</h4>
     </div>
-    <input type="text" placeholder="Enter Name..." className="w-full mt-auto text-center border-b-2 border-[#E5E4E3] pb-1 text-[#1F1C1B] focus:outline-none focus:border-[#004142] transition-colors bg-transparent placeholder-[#747470] text-[11px] font-roboto" />
+    <input type="text" placeholder="Enter Name..." className="w-full mt-auto text-center border-b-2 border-[#E5E4E3] pb-1 text-[#263C3D] focus:outline-none focus:border-[#004142] transition-colors bg-transparent placeholder-[#747470] text-[11px] font-roboto" />
   </div>
 );
 
 const BusinessOpsCard = () => (
   <div className="bg-white rounded-[12px] p-3 w-40 text-center border border-[#E5E4E3] flex flex-col">
-    <div className="bg-[#1F1C1B] text-white rounded-md py-1.5 px-2 mb-3 mx-auto shadow-sm">
+    <div className="bg-[#004142] text-white rounded-md py-1.5 px-2 mb-3 mx-auto shadow-sm">
       <h4 className="font-montserrat font-bold text-[9px] tracking-widest uppercase">BUSINESS OPS</h4>
     </div>
-    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-1 text-[#1F1C1B] focus:outline-none focus:border-[#1F1C1B] transition-colors bg-transparent placeholder-[#747470] mb-3 text-[11px] font-roboto" />
+    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-1 text-[#263C3D] focus:outline-none focus:border-[#004142] transition-colors bg-transparent placeholder-[#747470] mb-3 text-[11px] font-roboto" />
     <div className="mt-auto bg-[#FAFBF8] border border-[#E5E4E3] rounded-md py-1.5 px-2 text-[9px] font-medium tracking-wide text-[#524D4B] font-roboto leading-tight">
       HR, Finance, Intake, Scheduling
     </div>
@@ -417,7 +159,7 @@ const BusinessOpsCard = () => (
 function OrgChartSection({ sectionTitle }: { sectionTitle: string }) {
   return (
     <section className="mb-12 avoid-break">
-      <h3 className="font-montserrat font-semibold text-[13px] text-[#1F1C1B] tracking-[0.22em] uppercase mb-6 flex items-center gap-4">
+      <h3 className="font-montserrat font-semibold text-[13px] text-[#004142] tracking-[0.22em] uppercase mb-6 flex items-center gap-4">
         <span className="shrink-0">{sectionTitle}</span>
         <span className="flex-grow h-px bg-[#007970]" />
       </h3>
@@ -428,7 +170,7 @@ function OrgChartSection({ sectionTitle }: { sectionTitle: string }) {
           <Info size={18} strokeWidth={2.5} />
         </div>
         <p className="text-[#524D4B] leading-relaxed text-[14px] font-roboto">
-          <strong className="font-montserrat font-bold text-[#1F1C1B] tracking-wide mr-1">Agency Organizational Structure:</strong>
+          <strong className="font-montserrat font-bold text-[#004142] tracking-wide mr-1">Agency Organizational Structure:</strong>
           This chart illustrates the reporting relationships and accountability framework from the Governing Body through senior administrative and clinical leadership, as required by 42 CFR § 484.105.
         </p>
       </div>
@@ -458,8 +200,8 @@ function OrgChartSection({ sectionTitle }: { sectionTitle: string }) {
 // ─── Brand tokens (light-mode) ────────────────────────────────────
 const CI_TEAL   = '#007970';
 const CI_ORANGE = '#C74601';
-const CI_INK    = '#1F1C1B';
-const CI_MUTED  = '#747470';
+const CI_INK    = '#263C3D';
+const CI_MUTED  = '#607C7D';
 
 // ─── Shared CSS class tokens ──────────────────────────────────────
 // Every label and input references these so all elements share one
@@ -473,20 +215,20 @@ const LABEL_CLS =
 /** Full-border box input — regular field sections */
 const INPUT_CLS =
   'w-full h-11 border border-[#E5E4E3] rounded-[8px] px-3 bg-white ' +
-  'font-roboto text-[14px] text-[#1F1C1B] ' +
+  'font-roboto text-[14px] text-[#263C3D] ' +
   'focus:border-[#007970] focus:ring-1 focus:ring-[#007970] ' +
   'outline-none transition-all';
 
 /** Underline-only input — signature rows, Printed Name column */
 const SIG_INPUT_CLS =
   'w-full h-8 border-b border-[#C8C6C5] px-0 bg-transparent ' +
-  'font-roboto text-[14px] text-[#1F1C1B] ' +
+  'font-roboto text-[14px] text-[#263C3D] ' +
   'focus:border-[#007970] outline-none transition-all';
 
 /** Dashed underline — signature rows, Signature column */
 const SIG_DASHED_CLS =
   'w-full h-8 border-b border-dashed border-[#C8C6C5] px-0 bg-transparent ' +
-  'font-roboto text-[14px] text-[#1F1C1B] ' +
+  'font-roboto text-[14px] text-[#263C3D] ' +
   'focus:border-[#007970] outline-none transition-all';
 
 // ─── Field ────────────────────────────────────────────────────────
@@ -703,7 +445,7 @@ function SectionRenderer({ s, idx }: { s: FormSection; idx: number }) {
     <section className="mb-12 avoid-break">
       {/* Section header — title + teal flex-grow rule (design spec) */}
       <h3
-        className="font-montserrat font-semibold text-[13px] text-[#1F1C1B]
+        className="font-montserrat font-semibold text-[13px] text-[#004142]
                    tracking-[0.22em] uppercase mb-4 flex items-center gap-4"
       >
         <span className="shrink-0">{s.title || `Section ${idx + 1}`}</span>
@@ -752,7 +494,7 @@ function SectionRenderer({ s, idx }: { s: FormSection; idx: number }) {
                     <td key={c} className="py-3 px-3 h-11 border-b border-[#E5E4E3] last:border-b-0">
                       <input
                         className="w-full bg-transparent font-roboto text-[13px]
-                                   text-[#1F1C1B] focus:outline-none"
+                                   text-[#263C3D] focus:outline-none"
                       />
                     </td>
                   ))}
@@ -776,7 +518,7 @@ function SectionRenderer({ s, idx }: { s: FormSection; idx: number }) {
                   className="shrink-0 mt-[3px] w-[6px] h-[6px] rounded-full bg-[#007970]"
                   aria-hidden="true"
                 />
-                <span className="font-roboto text-[12px] text-[#1F1C1B] leading-relaxed">
+                <span className="font-roboto text-[12px] text-[#263C3D] leading-relaxed">
                   {item}
                 </span>
               </li>
@@ -804,12 +546,12 @@ function SectionRenderer({ s, idx }: { s: FormSection; idx: number }) {
       {s.layout === 'attestation' && (
         <div>
           {s.body && (
-            <p className="font-roboto text-[12px] text-[#1F1C1B] mb-4 leading-relaxed font-medium">
+            <p className="font-roboto text-[12px] text-[#263C3D] mb-4 leading-relaxed font-medium">
               {s.body}
             </p>
           )}
           {s.acknowledgments && (
-            <ol className="list-decimal list-outside ml-6 space-y-3 font-roboto text-[12px] text-[#1F1C1B]">
+            <ol className="list-decimal list-outside ml-6 space-y-3 font-roboto text-[12px] text-[#263C3D]">
               {s.acknowledgments.map((a, i) => (
                 <li key={i} className="leading-relaxed pl-2">
                   {a}
@@ -871,7 +613,7 @@ function SectionRenderer({ s, idx }: { s: FormSection; idx: number }) {
                   key={r}
                   className="border-b border-[#E5E4E3] last:border-0 hover:bg-[#F7FEFF] transition-colors"
                 >
-                  <td className="px-3 py-2 font-roboto text-[12px] font-medium text-[#1F1C1B]">
+                  <td className="px-3 py-2 font-roboto text-[12px] font-medium text-[#263C3D]">
                     {row}
                   </td>
                   {s.matrixCols!.map((_, c) => (
@@ -900,46 +642,43 @@ export function FormBody({ content, isEmbedded = false }: { content: FormContent
            the content sections so the host panel controls the chrome. */}
       {!isEmbedded && (
         <>
-          {/* ── HEADER: logo left, library info right ── */}
-          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <img
-              src={ciLogoWhite}
-              alt="Care Indeed — The Heart of Home Health"
-              className="h-12 w-auto select-none"
-              draggable={false}
-            />
-            <div className="flex flex-col sm:items-end">
-              <span
-                className="font-montserrat font-semibold text-[10px] tracking-[0.2em] uppercase"
-                style={{ color: CI_MUTED }}
-              >
-                Enterprise Forms Library
-              </span>
-              <span className="font-roboto font-medium text-[13px] mt-0.5" style={{ color: CI_INK }}>
-                {content.id} · v{content.version}
-              </span>
+          {/* Print-aligned document header for the screen viewer. */}
+          <header className="mb-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <img
+                src={ciLogoGray}
+                alt="Care Indeed - The Heart of Home Health"
+                className="h-12 w-auto select-none object-contain"
+                draggable={false}
+              />
+              <div className="sm:text-right">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#607C7D]">Enterprise Forms Library</div>
+                <div className="mt-1 font-mono text-[11px] font-semibold text-[#007970]">{content.id} · v{content.version}</div>
+              </div>
+            </div>
+            <div className="mt-5 h-px w-full" style={{ background: CI_TEAL }} />
+            <div className="mt-7">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#607C7D]">{content.domainCode || 'Enterprise Form'}</div>
+              <h1 className="mt-1 font-roboto text-3xl font-semibold tracking-tight text-[#004142]">
+                {content.title}
+              </h1>
+              <div className="mt-2 flex items-center gap-2.5 text-[11px] font-mono text-[#007970]">
+                <span>FORM {content.id}</span>
+                <span className="inline-block h-3 w-px bg-slate-300" />
+                <span>v{content.version}</span>
+                {content.type && (
+                  <>
+                    <span className="inline-block h-3 w-px bg-slate-300" />
+                    <span className="uppercase tracking-wider text-[#356D70]">{content.type}</span>
+                  </>
+                )}
+              </div>
             </div>
           </header>
 
-          {/* Solid teal rule */}
-          <div className="h-px w-full mb-10" style={{ background: CI_TEAL }} />
-
-          {/* ── TITLE & METADATA ── */}
-          <section className="mb-10">
-            <h1
-              className="font-montserrat font-semibold leading-tight mb-1"
-              style={{ fontSize: 'clamp(22px, 4vw, 32px)', color: CI_INK }}
-            >
-              {content.title}
-            </h1>
-            <p
-              className="font-montserrat font-medium text-[11px] tracking-[0.22em] uppercase mb-8"
-              style={{ color: CI_TEAL }}
-            >
-              {content.type} · Form {content.id}
-            </p>
-
-            <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-5 mb-6">
+          {/* ── TITLE & METADATA (simplified for V5 clarity) ── */}
+          <section className="mb-8">
+            <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 mb-6 text-sm">
               {[
                 ['Form ID', content.id],
                 ['Version', `v${content.version}`],
@@ -948,16 +687,15 @@ export function FormBody({ content, isEmbedded = false }: { content: FormContent
               ].map(([k, v]) => (
                 <div key={k} className="flex flex-col">
                   <dt
-                    className="font-montserrat font-semibold text-[10px] tracking-[0.16em] uppercase mb-1"
+                    className="font-semibold text-[10px] tracking-[0.16em] uppercase mb-0.5"
                     style={{ color: CI_MUTED }}
                   >
                     {k}
                   </dt>
-                  <dd className="font-roboto text-[14px]" style={{ color: CI_INK }}>{v}</dd>
+                  <dd className="font-medium" style={{ color: CI_INK }}>{v}</dd>
                 </div>
               ))}
             </dl>
-
           </section>
 
           {/* ── PURPOSE callout ── */}
@@ -1043,6 +781,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
   const navigate = useNavigate();
   const signer = useEcignSignerIdentity();
   const getOrCreateFormInstance = useRegulatoryExecutionStore(state => state.getOrCreateFormInstance);
+  const signerTasksByFormInstanceId = useRegulatoryExecutionStore(state => state.signerTasksByFormInstanceId);
   // If formId prop is supplied → embedded inside a parent panel (no shell)
   const isEmbedded = formId !== undefined;
   const signatureEnabled = !isEmbedded || enableEmbeddedSigning;
@@ -1098,6 +837,48 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
   const [autoFills,       setAutoFills]     = useState<Map<string, string>>(new Map());
   const [enfmLinkedPolicyIds, setEnfmLinkedPolicyIds] = useState<string[]>([]);
   const [enfmPolicyError, setEnfmPolicyError] = useState<string | null>(null);
+  const activeSignerTasks = signerTasksByFormInstanceId[formInstanceId] ?? [];
+  const activeSignerTask = useMemo(() => {
+    return activeSignerTasks
+      .filter(task => task.status === 'pending' || task.status === 'opened')
+      .find(task => task.assignedTo === signer.id);
+  }, [activeSignerTasks, signer.id]);
+
+  const resolvedSignerSlots = useMemo<FormSignerSlot[]>(() => {
+    if (!content?.id) return [];
+    if (content.signerSlots?.length) {
+      return content.signerSlots.map(slot => ({
+        ...slot,
+        tier: minTierForRequiredSlot(slot.role, slot.tier),
+      }));
+    }
+    if (!effectiveEventContext) return [];
+    const requirements = deriveCanonicalSignerRequirements({
+      formId: content.id,
+      workflowId: effectiveWorkflowContext,
+      eventId: effectiveEventContext,
+      taskId: parentTaskId ?? queryTaskId ?? undefined,
+      domain: content.domainCode,
+    });
+    if (requirements.length <= 1) return [];
+    return requirements.map((requirement, index) => ({
+      field_id: index === 0 && activeFieldId ? activeFieldId : requirement.slotFieldId,
+      role: requirement.allowedRoles[0] ?? requirement.slotPurpose,
+      tier: requirement.minTier,
+      required: requirement.required,
+      resolver: index === 0 ? 'self' : { role_id: requirement.allowedRoles[0] ?? requirement.slotPurpose },
+      sequence_group: requirement.slotOrder,
+    }));
+  }, [
+    activeFieldId,
+    content?.domainCode,
+    content?.id,
+    content?.signerSlots,
+    effectiveEventContext,
+    effectiveWorkflowContext,
+    parentTaskId,
+    queryTaskId,
+  ]);
 
   useEffect(() => {
     if (!content?.id) return;
@@ -1204,10 +985,10 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
   }, []);
 
   // ── Canonical logo data URL (base64) ─────────────────────────────
-  // The Vite asset URL (e.g. /assets/ci-logo-white-abc123.png) is
+  // The Vite asset URL (e.g. /assets/ci-logo-gray-abc123.png) is
   // localhost-relative and breaks in saved-HTML packets. We convert it
   // to a base64 data URL once at mount so it embeds inline in the packet.
-  const ciLogoDataUrlRef = useRef<string>(ciLogoWhite);
+  const ciLogoDataUrlRef = useRef<string>(ciLogoGray);
   useEffect(() => {
     let cancelled = false;
     const img = new Image();
@@ -1225,7 +1006,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
         }
       } catch { /* keep original URL on CORS failure */ }
     };
-    img.src = ciLogoWhite;
+    img.src = ciLogoGray;
     return () => { cancelled = true; };
   }, []);
 
@@ -1233,6 +1014,34 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
   // Listens to focusin (capture old value) + change (record diff).
   const [fieldEdits, setFieldEdits] = useState<FieldEdit[]>([]);
   const formPaperRef = useRef<HTMLDivElement>(null);
+  const requiredFieldCount = useMemo(() => {
+    if (!content) return 0;
+    return content.sections.reduce((total, section) => (
+      total + (section.fields?.filter(field => field.required).length ?? 0)
+    ), 0);
+  }, [content]);
+  const signatureFieldCount = useMemo(() => {
+    if (!content) return 0;
+    return content.sections.reduce((total, section) => (
+      total + (section.fields?.filter(field => field.type === 'signature').length ?? 0)
+    ), 0);
+  }, [content]);
+  const completionPercent = useMemo(() => {
+    if (hasSigned) return 100;
+    const denominator = Math.max(requiredFieldCount + signatureFieldCount, 1);
+    const visibleProgress = fieldEdits.length + signatures.size;
+    return Math.min(96, Math.max(18, Math.round((visibleProgress / denominator) * 100)));
+  }, [fieldEdits.length, hasSigned, requiredFieldCount, signatureFieldCount, signatures.size]);
+  const validationSummary = hasSigned
+    ? 'Signed artifact available from the signed package viewer'
+    : requiredFieldCount > 0
+      ? `${requiredFieldCount} required field${requiredFieldCount === 1 ? '' : 's'} tracked`
+      : 'No required fields flagged';
+  const signerSummary = resolvedSignerSlots.length > 1
+    ? `${resolvedSignerSlots.length} signer sequence`
+    : signatureFieldCount > 0
+      ? `${signatureFieldCount} signature field${signatureFieldCount === 1 ? '' : 's'}`
+      : 'No signature required';
 
   // ── Form field persistence (localStorage keyed by form_instance_id) ──
   // On mount: restore previously-saved field values into the DOM.
@@ -1490,7 +1299,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
     // Preserve the actual Forms Library DOM. Only inline the logo asset so
     // downloaded/saved eCIgn packets do not depend on localhost asset URLs.
     Array.from(clone.querySelectorAll('img')).forEach(img => {
-      if (img.getAttribute('src') === ciLogoWhite || img.alt.includes('Care Indeed')) {
+      if (img.getAttribute('src') === ciLogoGray || img.alt.includes('Care Indeed')) {
         img.setAttribute('src', ciLogoDataUrlRef.current);
       }
     });
@@ -1527,11 +1336,11 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
   if (isEmbedded) {
     return (
       <SignatureCtx.Provider value={ctxValue}>
-        <style>{`.ci-form-viewer-paper > section > h3 { color: #1F1C1B !important; }`}</style>
+        <style>{`.ci-form-viewer-paper > section > h3 { color: #004142 !important; }`}</style>
         <div
           ref={formPaperRef}
-          className="ci-form-viewer-paper form-frame border border-[#E5E4E3] rounded-[12px] shadow-sm px-8 py-10 md:px-12 md:py-14 font-roboto"
-          style={{ backgroundColor: '#FFFFFF', color: '#1F1C1B' }}
+          className="ci-form-viewer-paper form-frame px-8 py-10 md:px-12 md:py-14 font-roboto"
+          style={{ backgroundColor: '#FFFFFF', color: '#263C3D' }}
         >
           <FormBody content={content} />
           {cesSignBlock && (
@@ -1566,6 +1375,9 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
             onConfirm={handleConfirmSign}
             onClose={handleCancelSign}
             onRequestSecond={handleRequestSecond}
+            signerSlots={resolvedSignerSlots.length > 1 ? resolvedSignerSlots : undefined}
+            signerIndex={activeSignerTask?.signerIndex ?? 1}
+            totalSigners={resolvedSignerSlots.length || 1}
           />
         )}
       </SignatureCtx.Provider>
@@ -1576,13 +1388,61 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
   const orientation = content.orientation;
   const maxW = orientation === 'landscape' ? 'max-w-[11in]' : 'max-w-[8.5in]';
 
-  return (
+  const standaloneDocument = (
     <SignatureCtx.Provider value={ctxValue}>
-      <style>{`.ci-form-viewer-paper > section > h3 { color: #1F1C1B !important; }`}</style>
-      <div className="min-h-screen overflow-auto bg-[#050A12] font-roboto text-[#E2E8F0]">
+      <style>{`
+        .ci-form-viewer-paper > section > h3 { color: #004142 !important; }
+        .ci-form-shell-bg {
+          background:
+            radial-gradient(circle at 78% -8%, rgba(255,255,255,0.95), transparent 30%),
+            radial-gradient(circle at 8% 8%, rgba(0,121,112,0.08), transparent 34%),
+            linear-gradient(135deg, #EEF9F9 0%, #F8FFFF 52%, #F2FAFA 100%);
+        }
+        .ci-form-utility {
+          background: rgba(255,255,255,0.84);
+          border: 1px solid rgba(184,220,220,0.74);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), 0 18px 42px -34px rgba(0,65,66,0.42);
+          backdrop-filter: blur(18px) saturate(1.08);
+        }
+        .ci-form-page-shell {
+          animation: ciFormEnter 220ms cubic-bezier(.22,1,.36,1) both;
+        }
+        .ci-form-page {
+          min-height: 11in;
+          border: 1px solid #D7E0E0;
+          box-shadow: 0 30px 80px -52px rgba(0,65,66,0.54);
+        }
+        .ci-form-action {
+          transition: transform 160ms cubic-bezier(.22,1,.36,1), box-shadow 160ms cubic-bezier(.22,1,.36,1), border-color 160ms cubic-bezier(.22,1,.36,1), background-color 160ms cubic-bezier(.22,1,.36,1);
+        }
+        .ci-form-action:hover { transform: translateY(-1px); box-shadow: 0 16px 34px -28px rgba(0,65,66,0.45); }
+        .ci-form-action:active { transform: scale(.985); }
+        @keyframes ciFormEnter {
+          from { opacity: 0; transform: translateY(7px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ci-form-page-shell,
+          .ci-form-action,
+          .ci-form-action:hover,
+          .ci-form-action:active {
+            animation: none !important;
+            transition: none !important;
+            transform: none !important;
+          }
+        }
+        @media print {
+          .ci-form-shell-bg { background: #fff !important; }
+          .ci-form-page { border: 0 !important; box-shadow: none !important; }
+        }
+      `}</style>
+      <div
+        data-form-shell
+        className="ci-form-shell-bg fixed inset-0 z-[80] min-h-screen overflow-auto font-roboto text-[#263C3D]"
+      >
         {effectiveSource === 'task' && !parentTaskId && !queryTaskId && (
           <div className={`no-print mx-auto ${maxW} px-4 md:px-8 pt-5`}>
-            <div className="rounded-[10px] border border-rose-400/40 bg-rose-950/40 px-3 py-2 text-[12px] text-rose-100">
+            <div className="rounded-[12px] border border-rose-300 bg-rose-50 px-3 py-2 text-[12px] text-rose-800">
               <div className="font-semibold">Missing taskId — form/evidence/signature operations blocked.</div>
               <div className="mt-1 text-[11px]">
                 event_id={effectiveEventContext || '—'} · form_id={content.id} · formSource=task
@@ -1593,9 +1453,9 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
         )}
         {hasTaskLinkedContext && (
           <div className={`no-print mx-auto ${maxW} px-4 md:px-8 pt-5`}>
-            <div className="rounded-[10px] border border-[#007970]/40 bg-[#0B1D24] px-3 py-2 text-[12px] text-[#B8FFF5]">
+            <div className="rounded-[12px] border border-[#B8E9E7] bg-[#F0FBFB] px-3 py-2 text-[12px] text-[#004142]">
               <div className="font-semibold">Task-linked form context detected.</div>
-              <div className="mt-1 text-[11px]">
+              <div className="mt-1 text-[11px] text-[#426768]">
                 event_id={queryEventIdV2 || effectiveEventContext || '—'} · task_id={queryTaskId || parentTaskId || '—'} · form_id={queryFormId || content.id} · policy_id={queryPolicyId || content.policies[0] || '—'} · workflow_id={queryWorkflowIdV2 || effectiveWorkflowContext || '—'} · requirement_id={queryRequirementId || '—'}
               </div>
               <div className="mt-2">
@@ -1612,7 +1472,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                     if (queryRequirementId) q.set('requirement_id', queryRequirementId);
                     navigate(`/calendar/event/${encodeURIComponent(eventForRoute)}${q.toString() ? `?${q.toString()}` : ''}`);
                   }}
-                  className="rounded-[8px] border border-[#007970]/50 bg-[#007970]/10 px-2 py-1 text-[11px] font-semibold text-[#B8FFF5] hover:bg-[#007970]/20"
+                  className="rounded-[8px] border border-[#B8E9E7] bg-white px-2 py-1 text-[11px] font-semibold text-[#007970] hover:bg-[#E9FAFA]"
                 >
                   Return to Event Task Workspace
                 </button>
@@ -1620,17 +1480,52 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
             </div>
           </div>
         )}
-        {/* ── No-print action bar ── */}
-        <div className={`no-print flex flex-wrap items-center justify-between gap-4 px-4 md:px-6 py-3 mt-5 mx-auto ${maxW} rounded-[14px] border border-[#1C2433] bg-[#0B111B] shadow-2xl`}>
-          <button
-            type="button"
-            onClick={() => navigate('/forms')}
-            className="flex items-center gap-2 rounded-[8px] border border-[#1C2433] bg-[#111827] px-3 py-2 text-[12px] font-semibold text-[#CBD5E1] hover:border-[#007970]/50 hover:text-white transition-colors"
-          >
-            <ChevronLeft size={15} /> Return to Forms Library
-          </button>
-          <div className="flex items-center gap-3">
-            <span className="rounded-[8px] border border-[#007970]/30 bg-[#007970]/10 px-3 py-2 text-[11px] text-[#27D4C4] font-mono">{content.id} · v{content.version}</span>
+        <div className="no-print sticky top-0 z-20 px-4 pt-4 md:px-8">
+          <div className={`ci-form-utility mx-auto ${maxW} rounded-[18px] px-4 py-3 md:px-5`}>
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate('/forms')}
+                  className="ci-form-action flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#DDEBEB] bg-white/78 text-[#007970] hover:border-[#B8E9E7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
+                  aria-label="Return to Forms Library"
+                >
+                  <ChevronLeft size={17} />
+                </button>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-[#B8E9E7] bg-[#F0FBFB] px-2.5 py-1 font-mono text-[11px] font-semibold text-[#007970]">{content.id} · v{content.version}</span>
+                    <span className="rounded-full border border-[#DDEBEB] bg-white/72 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#426768]">{content.type}</span>
+                  </div>
+                  <h1 className="mt-1 truncate font-montserrat text-lg font-semibold tracking-tight text-[#004142]">{content.title}</h1>
+                  <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-[#607C7D]">
+                    <span>{submitBusy ? 'Saving...' : submitMsg ? 'Saved just now' : 'Draft saved locally'}</span>
+                    <span>{validationSummary}</span>
+                    <span>{signerSummary}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="mr-1 min-w-[132px]">
+                  <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.14em] text-[#607C7D]">
+                    <span>Completion</span>
+                    <span>{completionPercent}%</span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#DDEBEB]">
+                    <div className="h-full rounded-full bg-[#007970] transition-[width] duration-[520ms]" style={{ width: `${completionPercent}%` }} />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const target = formPaperRef.current?.querySelector<HTMLElement>('[data-testid="ecign-sign-btn"]');
+                    target?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+                    target?.focus();
+                  }}
+                  className="ci-form-action flex items-center gap-2 rounded-full border border-[#B8E9E7] bg-white/78 px-3.5 py-2 text-[12px] font-semibold text-[#007970] hover:bg-[#F0FBFB]"
+                >
+                  {hasSigned ? 'Signature Status' : 'Continue Signing'}
+                </button>
             <button
               type="button"
               onClick={() => {
@@ -1640,9 +1535,9 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                 }
                 printForm(content.id);
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#007970] hover:bg-[#009085] text-white text-[12px] font-semibold transition-colors shadow-[0_10px_24px_rgba(0,121,112,0.22)]"
+                  className="ci-form-action flex items-center gap-2 rounded-full bg-[#007970] px-4 py-2 text-[12px] font-semibold text-white shadow-[0_14px_28px_-18px_rgba(0,121,112,0.8)] hover:bg-[#00696A]"
             >
-              <Printer size={14} /> Print
+                  <Printer size={14} /> Print Form
             </button>
             <button
               type="button"
@@ -1667,7 +1562,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                     source_system:    'hhc',
                   });
                   setSubmitMsg(
-                    `Saved (${r.status}) \u2014 evidence_id=${r.evidence_id}, sha256=${r.sha256.slice(0, 12)}\u2026`
+                    `Saved as compliance evidence (${r.status}).`
                   );
                 } catch (e) {
                   setSubmitErr((e as Error).message);
@@ -1676,10 +1571,10 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                 }
               }}
               disabled={submitBusy}
-              className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-[#2563EB]/45 bg-[#1D4ED8] text-white text-[12px] font-semibold hover:bg-[#2563EB] disabled:opacity-50 transition-colors"
-              title="Capture this form's current field values as compliance evidence (writes S3 + DDB + audit)"
+                  className="ci-form-action flex items-center gap-2 rounded-full border border-[#DDEBEB] bg-white/78 px-3.5 py-2 text-[12px] font-semibold text-[#426768] hover:border-[#B8E9E7] hover:text-[#004142] disabled:opacity-50"
+              title="Capture this form's current field values as compliance evidence."
             >
-              <ShieldCheck size={14} /> {submitBusy ? 'Saving…' : 'Save as Evidence'}
+                  <ShieldCheck size={14} /> {submitBusy ? 'Saving...' : 'Save Evidence'}
             </button>
             <button
               type="button"
@@ -1692,10 +1587,12 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                 a.click();
                 URL.revokeObjectURL(url);
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-[#1C2433] bg-[#111827] text-[#CBD5E1] text-[12px] font-semibold hover:border-[#007970]/50 hover:text-white transition-colors"
+                  className="ci-form-action flex items-center gap-2 rounded-full border border-[#DDEBEB] bg-white/78 px-3.5 py-2 text-[12px] font-semibold text-[#426768] hover:border-[#B8E9E7] hover:text-[#004142]"
             >
-              <Download size={14} /> Download
+                  <Download size={14} /> Download
             </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1769,40 +1666,16 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
           </div>
         )}
 
-        {/* ── Screen shell (paper gutter) ── */}
-        <div className={`screen-shell mx-auto ${maxW} px-4 py-8 md:px-8 md:py-12`}>
+        {/* ── Screen document root ── */}
+        <div ref={formRootRef} className={`screen-shell ci-form-page-shell mx-auto ${maxW} px-4 py-8 md:px-8`}>
           <div
             ref={formPaperRef}
-            className="ci-form-viewer-paper form-page border border-[#D8DEE8] rounded-[12px] ring-1 ring-white/5 px-8 py-10 md:px-12 md:py-14 shadow-2xl"
-            style={{ backgroundColor: '#FFFFFF', color: '#1F1C1B' }}
+            className="ci-form-viewer-paper ci-form-page form-page w-full rounded-[4px] px-8 py-10 md:px-12 md:py-14"
+            style={{ backgroundColor: '#FFFFFF', color: '#263C3D' }}
           >
             <FormBody content={content} />
-            {hasSigned && Array.from(signatures.values())[0] && (
-              <DocumentAuditStamp
-                certId={certId}
-                signerName={Array.from(signatures.values())[0].signerName}
-                signedAt={Array.from(signatures.values())[0].signedAt}
-              />
-            )}
           </div>
         </div>
-
-        {hasSigned && (
-          <div className={`mx-auto ${maxW} px-4 md:px-8 pb-10`}>
-            <FormCertificatePage
-              certId={certId}
-              formId={content.id}
-              formTitle={content.title}
-              formVersion={content.version}
-              formInstanceId={formInstanceId}
-              signatures={signatures}
-              secondSigTask={secondSigTask}
-              policies={isEnfm001Standalone ? enfmLinkedPolicyIds : content.policies}
-              geoInfo={geoInfo}
-              fieldEdits={fieldEdits}
-            />
-          </div>
-        )}
       </div>
 
       {/* ── eCIgn full-screen signing workspace ── */}
@@ -1828,10 +1701,17 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
           onConfirm={handleConfirmSign}
           onClose={handleCancelSign}
           onRequestSecond={handleRequestSecond}
+          signerSlots={resolvedSignerSlots.length > 1 ? resolvedSignerSlots : undefined}
+          signerIndex={activeSignerTask?.signerIndex ?? 1}
+          totalSigners={resolvedSignerSlots.length || 1}
         />
       )}
     </SignatureCtx.Provider>
   );
+
+  return typeof document === 'undefined'
+    ? standaloneDocument
+    : createPortal(standaloneDocument, document.body);
 }
 
 export default FormViewer;

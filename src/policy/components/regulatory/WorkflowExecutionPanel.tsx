@@ -1009,7 +1009,7 @@ function EventTasksTab({
                       rel="noopener noreferrer"
                       className="rounded border px-1.5 py-0.5 text-amber-200"
                     >
-                      View Artifact (demo-local warning)
+                      View Artifact
                     </a>
                   )}
                 </span>
@@ -2050,7 +2050,7 @@ function InlineTaskActionPanel({
 
               {requirement.type === 'SIGNATURE_REQUIRED' && (
                 <div className="rounded border border-white/10 bg-black/25 p-3 text-[11px] text-slate-200">
-                  <p className="mb-2 font-semibold text-white/90">Required signers (demo)</p>
+                  <p className="mb-2 font-semibold text-white/90">Required signers</p>
                   {signatureApprovalRows.length === 0 ? (
                     <p className="text-white/55">No signature requests are registered for this task yet. Use the action button to request signatures; assigned approvers will appear here with status.</p>
                   ) : (
@@ -2093,7 +2093,7 @@ function InlineTaskActionPanel({
                     </>
                   )}
                   <p className="mt-2 text-white/45">
-                    Reassignment / escalation: use Approvals for this event or create a new signature request from this drawer after updating assignees in your org workflow (demo).
+                    Reassignment / escalation: use Approvals for this event or create a new signature request from this drawer after updating assignees in your org workflow.
                   </p>
                 </div>
               )}
@@ -2159,7 +2159,7 @@ function InlineTaskActionPanel({
                   </ul>
                   <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-white/45">Signatures / signed artifacts</div>
                   <ul className="space-y-1">
-                    {signingArtifactRows.length === 0 ? <li className="text-white/45">None yet (complete signing to generate signed HTML/PDF-class artifacts in demo-local).</li> : signingArtifactRows.map(doc => (
+                    {signingArtifactRows.length === 0 ? <li className="text-white/45">None yet (complete signing to generate signed HTML/PDF-class artifacts).</li> : signingArtifactRows.map(doc => (
                       <li key={doc.id} className="flex flex-wrap items-center gap-2 text-[10px] text-white/80">
                         <span>{doc.artifactType || doc.kind}</span>
                         <span className="truncate">{doc.name}</span>
@@ -2182,12 +2182,12 @@ function InlineTaskActionPanel({
                   </ul>
                   {requirement.type === 'CERTIFICATION_REQUIRED' && (
                     <p className="mt-3 border-t border-white/10 pt-2 text-white/55">
-                      Attestation (summary): By certifying, you confirm the listed package items match the regulatory workflow for this task in the demo environment. This is not represented as CMS-grade attestation while evidence bytes are demo-local only.
+                      Attestation (summary): By certifying, you confirm the listed package items match the regulatory workflow for this task. This is not represented as CMS-grade attestation while evidence bytes require backend persistence.
                     </p>
                   )}
                   {requirement.type === 'LOCK_REQUIRED' && (
                     <p className="mt-3 border-t border-white/10 pt-2 text-amber-100/80">
-                      Lock makes the current evidence set immutable in the CES demo store. Review each linked artifact above before confirming lock.
+                      Lock makes the current evidence set immutable in the CES store. Review each linked artifact above before confirming lock.
                     </p>
                   )}
                 </div>

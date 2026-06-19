@@ -1,3 +1,9 @@
+import {
+  resolveIaReference,
+  warnUnresolvedIaReference,
+  type IaReferenceType,
+} from './referenceResolver';
+
 export type ResolvedReferenceType = 'policy' | 'form' | 'workflow' | 'event' | 'task' | 'viewer';
 
 export interface ResolvedReferenceRoute {
@@ -26,14 +32,23 @@ function detectReferenceType(id: string): ResolvedReferenceType {
 
 export function resolveReferenceRoute(id: string): ResolvedReferenceRoute {
   const normalized = id.trim().toUpperCase();
+  const resolved = resolveIaReference({ id: normalized, source: 'referenceRouting.resolveReferenceRoute' });
+  if (resolved.resolved) {
+    return {
+      type: resolved.resolvedType === 'appendix' ? 'viewer' : resolved.resolvedType,
+      route: resolved.openRoute,
+    };
+  }
   const type = detectReferenceType(normalized);
 
-  if (type === 'policy') return { type, route: `/policies/${encodeURIComponent(normalized)}` };
-  if (type === 'form') return { type, route: `/forms/${encodeURIComponent(normalized)}` };
-  if (type === 'workflow') return { type, route: `/workflows/${encodeURIComponent(normalized)}` };
-  if (type === 'event') return { type, route: `/events/${encodeURIComponent(normalized)}` };
-  if (type === 'task') return { type, route: `/tasks/${encodeURIComponent(normalized)}` };
-  return { type: 'viewer', route: `/viewer/${encodeURIComponent(normalized)}` };
+  return { type, route: '' };
+}
+
+export function isResolvedReferenceRoute(
+  id: string,
+  claimedType?: IaReferenceType | string | null,
+): boolean {
+  return resolveIaReference({ id, claimedType, source: 'referenceRouting.isResolvedReferenceRoute' }).resolved;
 }
 
 export function resolveReferenceKindLabel(type: ResolvedReferenceType): string {
@@ -46,6 +61,10 @@ export function resolveReferenceKindLabel(type: ResolvedReferenceType): string {
 }
 
 export function openReferenceInNewTab(id: string): void {
-  const { route } = resolveReferenceRoute(id);
-  window.open(route, '_blank', 'noopener,noreferrer');
+  const resolved = resolveIaReference({ id, source: 'referenceRouting.openReferenceInNewTab' });
+  if (!resolved.resolved) {
+    warnUnresolvedIaReference(resolved);
+    return;
+  }
+  window.open(resolved.openRoute, '_blank', 'noopener,noreferrer');
 }

@@ -16,7 +16,7 @@ const ACUITY_CONFIG: Record<
     style: {
       background: 'rgba(34,197,94,0.12)',
       color: '#15803d',
-      border: '1px solid rgba(34,197,94,0.25)',
+      border: 'none',
     },
   },
   a2_moderate: {
@@ -25,7 +25,7 @@ const ACUITY_CONFIG: Record<
     style: {
       background: 'rgba(245,158,11,0.12)',
       color: '#b45309',
-      border: '1px solid rgba(245,158,11,0.25)',
+      border: 'none',
     },
   },
   a3_high: {
@@ -34,7 +34,7 @@ const ACUITY_CONFIG: Record<
     style: {
       background: 'rgba(249,115,22,0.12)',
       color: '#c2410c',
-      border: '1px solid rgba(249,115,22,0.25)',
+      border: 'none',
     },
   },
   a4_critical_complex: {
@@ -43,7 +43,7 @@ const ACUITY_CONFIG: Record<
     style: {
       background: 'rgba(239,68,68,0.12)',
       color: '#b91c1c',
-      border: '1px solid rgba(239,68,68,0.25)',
+      border: 'none',
     },
   },
 };
@@ -54,7 +54,6 @@ export function AcuityBadge({ level, shorthand, className }: AcuityBadgeProps) {
     <span
       className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${className ?? ''}`}
       style={config.style}
-      title={config.label}
       aria-label={config.label}
     >
       {shorthand ? config.short : config.label}

@@ -27,7 +27,9 @@ export const TEMPLATE_REGISTRY: EventTemplate[] = [
     ownerRole: 'Governing Body',
     urgency: 'scheduled',
     summary: 'Quarterly oversight meeting covering QAPI, compliance, financial, clinical quality, and strategic risk.',
-    recurrence: { frequency: 'quarterly', quarterMonths: [2, 5, 8, 11], nth: 2, dayOfWeek: 3, time: '14:00', timeEnd: '16:00' },
+    recurrence: { frequency: 'quarterly', quarterMonths: [1, 4, 7, 10], nth: 2, dayOfWeek: 5, time: '10:00', timeEnd: '12:00' }, // second Friday 10am per schedule alignment (QAPI governance)
+    preferredScheduleRule: 'second Friday of January, April, July, October at 10:00 AM',
+    scopeType: 'previous_calendar_quarter',
     processFlow: [
       step({ id: 'gb-prep',    label: 'Prepare board packet',      description: 'Assemble QAPI summary, financials, compliance dashboard, clinical quality report.', dueOffsetDays: -7 }),
       step({ id: 'gb-notice',  label: 'Distribute meeting notice', description: 'Send packet + agenda to all board members.', dueOffsetDays: -5 }),
@@ -99,7 +101,9 @@ export const TEMPLATE_REGISTRY: EventTemplate[] = [
     ownerRole: 'QAPI Coordinator',
     urgency: 'scheduled',
     summary: 'Monthly QAPI committee — OASIS outcomes, adverse events, PIP progress, Governing Body packet.',
-    recurrence: { frequency: 'monthly', dayOfWeek: 2, nth: 2, time: '13:00', timeEnd: '14:30' },
+    recurrence: { frequency: 'monthly', dayOfWeek: 5, nth: 1, time: '10:00', timeEnd: '12:00' }, // first Friday 10am per schedule alignment
+    preferredScheduleRule: 'first Friday of the month at 10:00 AM',
+    scopeType: 'previous_calendar_month',
     processFlow: [
       step({ id: 'qapi-data',    label: 'Pull metrics',         description: 'Pull OASIS, HHVBP, clinical quality metrics.', dueOffsetDays: -4 }),
       step({ id: 'qapi-packet',  label: 'Assemble QAPI packet', description: 'Compile metrics, PIP status, incident trends into packet.', dueOffsetDays: -2 }),

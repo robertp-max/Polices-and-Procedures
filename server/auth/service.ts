@@ -564,10 +564,18 @@ export class DemoAuthService {
   async getCurrentUser(accessToken: string): Promise<DemoUser> {
     const me = await this.cognito.send(new GetUserCommand({ AccessToken: accessToken }));
     const attrs = Object.fromEntries((me.UserAttributes ?? []).map(a => [a.Name ?? '', a.Value ?? '']));
+    const firstName = attrs.given_name;
+    const lastName = attrs.family_name;
+    const name = attrs.name || [firstName, lastName].filter(Boolean).join(' ').trim() || undefined;
+    const authSubject = attrs.sub || me.Username;
     return {
+      id: authSubject,
+      authSubject,
+      provider: 'cognito',
       email: attrs.email ?? '',
-      firstName: attrs.given_name,
-      lastName: attrs.family_name,
+      name,
+      firstName,
+      lastName,
       emailVerified: attrs.email_verified === 'true',
     };
   }

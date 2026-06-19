@@ -98,6 +98,11 @@ export interface StoredMessage {
 
 export type CaseStatus = 'active' | 'resolved' | 'requires_followup' | 'closed';
 
+export type SafetyStatus = 'unknown' | 'active_danger' | 'safe' | 'resolved';
+export type LocationStatus = 'in_home' | 'outside_home' | 'unknown';
+export type ThreatStatus = 'weapon_present' | 'threat_left' | 'unknown';
+export type DocumentationStage = 'not_started' | 'incident_needed' | 'incident_started' | 'completed';
+
 export interface BradSessionState {
   sessionId: string;
   threadId: string;
@@ -131,6 +136,16 @@ export interface BradSessionState {
   pendingTasks: string[];
   completedTasks: string[];
   openQuestions: string[];
+
+  // Active safety case memory (for clinician threat multi-turn continuity)
+  safetyStatus: SafetyStatus;
+  locationStatus: LocationStatus;
+  threatStatus: ThreatStatus;
+  documentationStage: DocumentationStage;
+  followUpQuestion: string | null;
+  followUpAnswer: string | null;
+  peopleInvolved: string[]; // roles only, no PHI
+  whatBradTold: string[];   // key instructions already given this case
 
   timeline: BradTimelineEvent[];
   recentMessages: StoredMessage[];   // last 6 messages for context assembly
@@ -170,6 +185,10 @@ export interface SessionSummary {
   pendingTasks: string[];
   activePolicies: string[];
   activeForms: string[];
+  safetyStatus: SafetyStatus;
+  locationStatus: LocationStatus;
+  threatStatus: ThreatStatus;
+  documentationStage: DocumentationStage;
   messageCount: number;
   createdAt: string;
   updatedAt: string;

@@ -4,10 +4,10 @@
 
 import { useMemo } from 'react';
 import { Users } from 'lucide-react';
-import { CES_TOKENS } from '../../theme';
 import { useComplianceExecution } from '@/policy/compliance-execution';
 import type { OwnerAssignment } from '../../types';
-import { CesCard, DomainRiskDot, UserAvatar } from '../primitives';
+import { PageHeader, SurfaceCard, DataGrid } from '@/policy/components/ui';
+import { DomainRiskDot, UserAvatar } from '../primitives';
 
 const RISK_LABEL = { green: 'Healthy', yellow: 'Watch', red: 'Overloaded' } as const;
 
@@ -30,158 +30,107 @@ export function WorkloadDistribution() {
   }, [OWNER_ASSIGNMENTS, EXECUTION_UNITS]);
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-[22px] font-bold" style={{ color: CES_TOKENS.navy }}>
-          Workload Distribution
-        </h1>
-        <p className="text-[13px] mt-1" style={{ color: CES_TOKENS.muted }}>
-          Owner-level accountability. Capacity risk reflects load, overdue items, and pending signatures.
-        </p>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="CES WORKLOADS"
+        title="Workload Distribution"
+        description="Owner-level accountability. Capacity risk reflects load, overdue items, and pending signatures. Data from live compliance execution units."
+        actions={<div className="text-[11px] uppercase tracking-[0.2em] text-[var(--v3-text-tertiary)]">{enriched.length} owners</div>}
+      />
+
+      {/* Clean stat pills / cards per corporate designs */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <SurfaceCard padding="md" className="flex items-center gap-3">
+          <div className="text-[var(--v3-teal-light)]"><Users size={18} /></div>
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.16em] text-[var(--v3-text-tertiary)]">Total Owners</div>
+            <div className="text-2xl font-semibold tabular-nums">{enriched.length}</div>
+          </div>
+        </SurfaceCard>
+        <SurfaceCard padding="md" className="flex items-center gap-3">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.16em] text-[var(--v3-text-tertiary)]">Owners Overloaded</div>
+            <div className="text-2xl font-semibold tabular-nums text-[var(--v3-orange)]">{enriched.filter(e => e.capacityRisk === 'red').length}</div>
+          </div>
+        </SurfaceCard>
+        <SurfaceCard padding="md" className="flex items-center gap-3">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.16em] text-[var(--v3-text-tertiary)]">Owners On Watch</div>
+            <div className="text-2xl font-semibold tabular-nums text-[#F4C95D]">{enriched.filter(e => e.capacityRisk === 'yellow').length}</div>
+          </div>
+        </SurfaceCard>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <SummaryStat
-          label="Total Owners"
-          value={enriched.length}
-          icon={<Users size={14} />}
-        />
-        <SummaryStat
-          label="Owners Overloaded"
-          value={enriched.filter(e => e.capacityRisk === 'red').length}
-          tone="red"
-        />
-        <SummaryStat
-          label="Owners On Watch"
-          value={enriched.filter(e => e.capacityRisk === 'yellow').length}
-          tone="amber"
-        />
-      </div>
-
-      <CesCard title="Owner Assignments" padding={false}>
+      <SurfaceCard padding="none">
         <div className="overflow-x-auto">
-          <table className="w-full text-[12.5px]">
-            <thead>
-              <tr style={{ background: CES_TOKENS.canvas, borderBottom: `1px solid ${CES_TOKENS.border}` }}>
-                <Th>Owner</Th>
-                <Th>Role</Th>
-                <Th align="right">Allocated</Th>
-                <Th align="right">In Flight</Th>
-                <Th align="right">Awaiting Signature</Th>
-                <Th align="right">Blocked</Th>
-                <Th align="right">Overdue</Th>
-                <Th>Capacity Risk</Th>
-              </tr>
-            </thead>
-            <tbody>
+          <DataGrid>
+            <DataGrid.Head>
+              <DataGrid.HeaderRow>
+                <DataGrid.HeaderCell>Owner</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell>Role</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell align="right">Allocated</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell align="right">In Flight</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell align="right">Awaiting Sig</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell align="right">Blocked</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell align="right">Overdue</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell>Capacity Risk</DataGrid.HeaderCell>
+              </DataGrid.HeaderRow>
+            </DataGrid.Head>
+            <DataGrid.Body>
               {enriched
                 .sort((a, b) => riskRank(b.capacityRisk) - riskRank(a.capacityRisk))
                 .map(row => (
-                  <tr
-                    key={row.owner.userId}
-                    style={{ borderBottom: `1px solid ${CES_TOKENS.border}` }}
-                  >
-                    <Td>
-                      <div className="flex items-center gap-2">
-                        <UserAvatar initials={row.owner.initials} size={26} />
-                        <span className="font-semibold" style={{ color: CES_TOKENS.ink }}>{row.owner.name}</span>
+                  <DataGrid.Row key={row.owner.userId}>
+                    <DataGrid.Cell>
+                      <div className="flex items-center gap-2.5">
+                        <UserAvatar initials={row.owner.initials} size={22} />
+                        <span className="font-semibold">{row.owner.name}</span>
                       </div>
-                    </Td>
-                    <Td><span style={{ color: CES_TOKENS.muted }}>{row.owner.role}</span></Td>
-                    <Td align="right">
-                      <CapacityBar value={row.allocatedUnitCount} max={Math.max(...enriched.map(e => e.allocatedUnitCount), 1)} />
-                    </Td>
-                    <Td align="right" mono>{row.inFlight}</Td>
-                    <Td align="right" mono>{row.pendingSignatureCount}</Td>
-                    <Td align="right" mono>
-                      <span style={{ color: row.blocked > 0 ? CES_TOKENS.red : CES_TOKENS.ink }}>{row.blocked}</span>
-                    </Td>
-                    <Td align="right" mono>
-                      <span style={{ color: row.overdueUnitCount > 0 ? CES_TOKENS.red : CES_TOKENS.ink }}>{row.overdueUnitCount}</span>
-                    </Td>
-                    <Td>
+                    </DataGrid.Cell>
+                    <DataGrid.Cell>
+                      <span className="text-[var(--v3-text-secondary)] text-sm">{row.owner.role}</span>
+                    </DataGrid.Cell>
+                    <DataGrid.Cell align="right">
+                      <CapacityBar value={row.allocatedUnitCount} max={Math.max(1, ...enriched.map(e => e.allocatedUnitCount))} />
+                    </DataGrid.Cell>
+                    <DataGrid.Cell align="right" className="font-mono tabular-nums text-sm">{row.inFlight}</DataGrid.Cell>
+                    <DataGrid.Cell align="right" className="font-mono tabular-nums text-sm">{row.pendingSignatureCount}</DataGrid.Cell>
+                    <DataGrid.Cell align="right" className="font-mono tabular-nums text-sm" style={{ color: row.blocked > 0 ? 'var(--v3-orange)' : undefined }}>{row.blocked}</DataGrid.Cell>
+                    <DataGrid.Cell align="right" className="font-mono tabular-nums text-sm" style={{ color: row.overdueUnitCount > 0 ? 'var(--v3-orange)' : undefined }}>{row.overdueUnitCount}</DataGrid.Cell>
+                    <DataGrid.Cell>
                       <CapacityRiskCell row={row} />
-                    </Td>
-                  </tr>
+                    </DataGrid.Cell>
+                  </DataGrid.Row>
                 ))}
-            </tbody>
-          </table>
+            </DataGrid.Body>
+          </DataGrid>
         </div>
-      </CesCard>
+      </SurfaceCard>
     </div>
   );
 }
 
 function riskRank(r: OwnerAssignment['capacityRisk']) { return r === 'red' ? 2 : r === 'yellow' ? 1 : 0; }
 
-function Th({ children, align }: { children: React.ReactNode; align?: 'right' | 'left' }) {
-  return (
-    <th
-      className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em]"
-      style={{ color: CES_TOKENS.muted, textAlign: align ?? 'left' }}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({ children, align, mono }: { children: React.ReactNode; align?: 'right' | 'left'; mono?: boolean }) {
-  return (
-    <td
-      className="px-4 py-3"
-      style={{ textAlign: align ?? 'left', fontFamily: mono ? 'ui-monospace, monospace' : undefined }}
-    >
-      {children}
-    </td>
-  );
-}
-
 function CapacityBar({ value, max }: { value: number; max: number }) {
   const pct = Math.min(100, (value / max) * 100);
   return (
     <div className="flex items-center gap-2 justify-end">
-      <div className="w-24 h-1.5 rounded-full" style={{ background: CES_TOKENS.canvas }}>
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: CES_TOKENS.navy }} />
+      <div className="w-24 h-1.5 rounded-full bg-white/10">
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'var(--v3-teal)' }} />
       </div>
-      <span className="font-mono w-6 text-right" style={{ color: CES_TOKENS.ink }}>{value}</span>
+      <span className="font-mono w-6 text-right text-sm tabular-nums">{value}</span>
     </div>
   );
 }
 
 function CapacityRiskCell({ row }: { row: OwnerAssignment }) {
-  const fg =
-    row.capacityRisk === 'red'    ? CES_TOKENS.red :
-    row.capacityRisk === 'yellow' ? CES_TOKENS.amber : CES_TOKENS.green;
-  const bg =
-    row.capacityRisk === 'red'    ? CES_TOKENS.redSoft :
-    row.capacityRisk === 'yellow' ? CES_TOKENS.amberSoft : CES_TOKENS.greenSoft;
+  const risk = row.capacityRisk;
+  const toneClass = risk === 'red' ? 'text-[var(--v3-orange)]' : risk === 'yellow' ? 'text-[#F4C95D]' : 'text-[var(--v3-teal-light)]';
   return (
-    <span
-      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-[0.12em]"
-      style={{ background: bg, color: fg }}
-    >
-      <DomainRiskDot level={row.capacityRisk} size={8} />
-      {RISK_LABEL[row.capacityRisk]}
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-[0.12em] ${toneClass}`} style={{ background: risk === 'red' ? 'rgba(224,123,44,0.12)' : risk === 'yellow' ? 'rgba(244,201,93,0.12)' : 'rgba(0,209,193,0.1)' }}>
+      <DomainRiskDot level={risk} size={8} />
+      {RISK_LABEL[risk]}
     </span>
-  );
-}
-
-function SummaryStat({ label, value, icon, tone }: {
-  label: string; value: number; icon?: React.ReactNode; tone?: 'red' | 'amber';
-}) {
-  const accent =
-    tone === 'red'   ? CES_TOKENS.red :
-    tone === 'amber' ? CES_TOKENS.amber : CES_TOKENS.navy;
-  return (
-    <div
-      className="rounded-xl p-5"
-      style={{ background: CES_TOKENS.white, border: `1px solid ${CES_TOKENS.border}` }}
-    >
-      <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: CES_TOKENS.muted }}>
-        {icon && <span style={{ color: accent }}>{icon}</span>}
-        {label}
-      </div>
-      <div className="mt-2 text-[26px] font-bold leading-none" style={{ color: accent }}>{value}</div>
-    </div>
   );
 }

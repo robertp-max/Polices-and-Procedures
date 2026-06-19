@@ -450,7 +450,7 @@ export const PAGE_REGISTRY: PageRegistryEntry[] = [
   },
   {
     pageId: 'page.demo',
-    label: 'Demo Page',
+    label: 'Preview Page',
     routePattern: '/demo',
     componentGroup: 'cmp-system',
     defaultAccess: 'read',

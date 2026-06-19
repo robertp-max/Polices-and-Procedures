@@ -57,8 +57,8 @@ export const STATE_LABEL: Record<InstanceState, string> = {
    border + background tints. Hex literals are the contract those consumers
    depend on. The semantic tokens `--ci-state-on-track` and `--ci-action`
    mirror these values in src/index.css so direct-CSS authors stay in sync. */
-export const TEAL_PRIMARY = '#14B8A6';
-export const ACTION_COLOR = '#F97316';
+export const TEAL_PRIMARY = '#007970';
+export const ACTION_COLOR = '#E07B2C';
 
 type ExecStore = ReturnType<typeof useRegulatoryExecutionStore.getState>;
 
