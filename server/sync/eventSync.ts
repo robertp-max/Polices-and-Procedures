@@ -1,8 +1,9 @@
 import crypto from 'node:crypto';
 import {
-  findByEventId, getEventByGoogleId, createEvent, updateEvent, deleteEvent,
+  findByEventId, findByTitleAndDate, getEventByGoogleId, createEvent, updateEvent, deleteEvent,
   listCiEvents,
 } from '../googleCalendar.js';
+import { getCesEnrichment } from '../cesCalendarEventBuilder.js';
 import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
 import {
@@ -326,21 +327,38 @@ async function performWrite(
   hash: string,
   version: number,
 ): Promise<PlannerEventResponse> {
+  const event_id = normalizeEventId(payload);
+
   if (existingRow?.google_event_id) {
     const snap = await getEventByGoogleId(existingRow.google_event_id);
     if (snap) {
       return updateEvent(existingRow.google_event_id, payload, { hash, version });
     }
     log.warn('sync.cache_miss.google_event', {
-      event_id: normalizeEventId(payload),
+      event_id,
       google_event_id: existingRow.google_event_id,
     });
+    patchRow(event_id, { google_event_id: null, status: 'pending' });
   }
-  // Authoritative Google-side lookup by event_id — never by title/time/body.
-  const remote = await findByEventId(normalizeEventId(payload));
+
+  // Authoritative Google-side lookup by event_id.
+  const remote = await findByEventId(event_id);
   if (remote?.googleEventId) {
     return updateEvent(remote.googleEventId, payload, { hash, version });
   }
+
+  // Title + date fallback before creating a duplicate.
+  const enrichment = getCesEnrichment(event_id);
+  const title = payload.title ?? enrichment?.title;
+  const date = payload.date ?? enrichment?.date;
+  if (title && date) {
+    const fallback = await findByTitleAndDate(title, date);
+    if (fallback?.googleEventId) {
+      log.info('sync.heal.title_date_fallback', { event_id, googleEventId: fallback.googleEventId });
+      return updateEvent(fallback.googleEventId, payload, { hash, version });
+    }
+  }
+
   return createEvent(payload, { hash, version });
 }
 

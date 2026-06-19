@@ -57,11 +57,11 @@ export const env = {
    * stores files; Calendar attaches/indexes them. */
   evidenceStorageProvider: process.env.GOOGLE_EVIDENCE_STORAGE_PROVIDER ?? 'google_calendar_drive',
   calendarEvidenceEnabled: (process.env.GOOGLE_CALENDAR_EVIDENCE_ENABLED ?? 'true').toLowerCase() === 'true',
-  driveEvidenceSharedDriveId: process.env.GOOGLE_DRIVE_EVIDENCE_SHARED_DRIVE_ID ?? '0AFWjpId3CYL3Uk9PVA',
+  driveEvidenceSharedDriveId: process.env.GOOGLE_DRIVE_EVIDENCE_SHARED_DRIVE_ID ?? '0AMhwVb2RmU-fUk9PVA',
   driveEvidenceRootFolderId:
     process.env.GOOGLE_DRIVE_EVIDENCE_ROOT_FOLDER_ID
     ?? process.env.GOOGLE_DRIVE_EVIDENCE_SHARED_DRIVE_ID
-    ?? '0AFWjpId3CYL3Uk9PVA',
+    ?? '0AMhwVb2RmU-fUk9PVA',
 
   /** ───── CES metadata backend (NON-PHI metadata; NO file bytes) ─────
    * `file_local` (default) writes to .cache/ces-metadata for local/dev so the
