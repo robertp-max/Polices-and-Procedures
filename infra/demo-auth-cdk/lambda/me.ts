@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { getUser, json } from './common.js';
+import { getUser, json, upsertAuthenticatedIdentity, userFromCognitoAttributes } from './common.js';
 
 export async function handler(event: APIGatewayProxyEventV2) {
   const auth = event.headers.authorization || event.headers.Authorization || '';
@@ -11,13 +11,10 @@ export async function handler(event: APIGatewayProxyEventV2) {
   try {
     const me = await getUser(accessToken);
     const attrs = Object.fromEntries((me.UserAttributes ?? []).map(a => [a.Name ?? '', a.Value ?? '']));
+    const user = userFromCognitoAttributes(attrs, me.Username);
+    await upsertAuthenticatedIdentity(user).catch(() => undefined);
     return json(200, {
-      user: {
-        email: attrs.email ?? '',
-        firstName: attrs.given_name,
-        lastName: attrs.family_name,
-        emailVerified: attrs.email_verified === 'true',
-      },
+      user,
     });
   } catch {
     return json(401, { error: { code: 'auth_error', message: 'Not authenticated.' } });

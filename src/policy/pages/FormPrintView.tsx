@@ -55,10 +55,8 @@ export function FormPrintView() {
     );
   }
 
-  const paperWidth = content.orientation === 'landscape' ? '11in' : '8.5in';
-
   return (
-    <div className="min-h-screen bg-[#F2F2F0] font-roboto text-[#1F1C1B]">
+    <div className="min-h-screen font-roboto text-[#1F1C1B]" style={{ backgroundColor: '#FFFFFF', color: '#1F1C1B' }}>
       <style>{`
         @media print {
           html, body { margin: 0 !important; padding: 0 !important; }
@@ -104,8 +102,8 @@ export function FormPrintView() {
         </button>
       </div>
 
-      <div className="screen-shell mx-auto px-4 py-8 md:px-8 md:py-12 pt-24" style={{ maxWidth: paperWidth }}>
-        <div className="form-frame bg-white border border-[#E5E4E3] rounded-[12px] shadow-sm px-8 py-10 md:px-12 md:py-14">
+      <div className="screen-shell w-full px-0 pb-0 pt-20">
+        <div className="form-frame w-full bg-white px-8 py-10 md:px-12 md:py-14">
           <PrintFrame
             documentTitle={content.title}
             documentId={content.id}

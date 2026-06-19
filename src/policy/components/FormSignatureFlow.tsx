@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import eCignLogo from '@/assets/eCIgn.png';
 import {
   CheckCircle2, Clock, Send, Printer,
@@ -42,6 +42,8 @@ interface SecondSigModalProps {
 function SecondSignatureModal({ formInstanceId, onConfirm, onClose }: SecondSigModalProps) {
   const [selected, setSelected] = useState<DemoUser | null>(null);
   const signer = useEcignSignerIdentity();
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
 
   // Only users exactly one tier above current session user are valid approvers
   const isApprover = (u: DemoUser) => u.tier === signer.tier - 1;
@@ -66,21 +68,51 @@ function SecondSignatureModal({ formInstanceId, onConfirm, onClose }: SecondSigM
     });
   }, [formInstanceId, onConfirm, selected, signer.id]);
 
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const focusable = Array.from(
+      dialog.querySelectorAll<HTMLElement>('button:not(:disabled), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+    );
+    focusable[0]?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+      if (event.key !== 'Tab' || focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      openerRef.current?.focus?.();
+    };
+  }, [onClose]);
+
   return (
     <div
       className="fixed inset-0 z-[80] flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
     >
-      {/* Light backdrop */}
-      <div className="absolute inset-0 bg-black/20" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#004142]/18 backdrop-blur-[2px]" onClick={onClose} />
 
-      <div className="relative z-10 bg-white rounded-2xl border border-[#E5E4E3] shadow-lg w-full max-w-[480px] overflow-hidden">
+      <div ref={dialogRef} className="relative z-10 w-full max-w-[480px] overflow-hidden rounded-2xl border border-[#DDEBEB] bg-white shadow-[0_28px_70px_-38px_rgba(0,65,66,0.58)]">
 
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#E5E4E3] flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-[#E5E4E3] px-6 py-4">
           <div>
-            <h2 className="font-montserrat font-bold text-[14px] tracking-[0.06em] text-[#1F1C1B]">
+            <h2 className="font-montserrat font-bold text-[14px] tracking-[0.06em] text-[#004142]">
               Send for Second Signature
             </h2>
             <p className="font-roboto text-[11px] text-[#747470] mt-0.5">
@@ -100,7 +132,7 @@ function SecondSignatureModal({ formInstanceId, onConfirm, onClose }: SecondSigM
         <div className="px-6 py-2.5 bg-[#F8FAF9] border-b border-[#E5E4E3]">
           <p className="font-roboto text-[11px] text-[#747470]">
             Signed as&nbsp;
-            <strong className="font-semibold text-[#1F1C1B]">{signer.name}</strong>
+            <strong className="font-semibold text-[#004142]">{signer.name}</strong>
             &nbsp;·&nbsp;{signer.role}. Only one-tier-above approvers are selectable.
           </p>
         </div>
@@ -123,7 +155,7 @@ function SecondSignatureModal({ formInstanceId, onConfirm, onClose }: SecondSigM
                     disabled={!selectable}
                     onClick={() => selectable && setSelected(user)}
                     className={[
-                      'w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors border',
+              'w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors border',
                       selectable
                         ? chosen
                           ? 'bg-[#E5FEFF] border-[#007970]'
@@ -144,7 +176,7 @@ function SecondSignatureModal({ formInstanceId, onConfirm, onClose }: SecondSigM
 
                     {/* Name + role */}
                     <div className="flex-1 min-w-0">
-                      <div className="font-roboto font-semibold text-[13px] text-[#1F1C1B] leading-tight">
+                      <div className="font-roboto font-semibold text-[13px] text-[#004142] leading-tight">
                         {user.name}
                       </div>
                       <div className="font-roboto text-[11px] text-[#747470]">{user.role}</div>
@@ -259,8 +291,8 @@ export function FormSignatureFlow({
     <>
       <div className={`no-print mx-auto ${maxW} px-4 md:px-8 pb-4`}>
         <div
-          className="rounded-[10px] border bg-[#081120] px-4 py-3 flex flex-wrap items-center gap-2 shadow-xl"
-          style={{ borderColor: isComplete ? '#22C55E66' : isPending ? '#F59E0B66' : '#1D4ED866' }}
+          className="flex flex-wrap items-center gap-2 rounded-[16px] border bg-white/82 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_18px_42px_-34px_rgba(0,65,66,0.42)] backdrop-blur-[18px]"
+          style={{ borderColor: isComplete ? '#86EFAC' : isPending ? '#FDBA74' : '#B8E9E7' }}
         >
           {/* ── State badge ── */}
           <div className="flex items-center gap-1.5 shrink-0">
@@ -286,7 +318,7 @@ export function FormSignatureFlow({
             )}
           </div>
 
-          {hasSigned && <div className="w-px h-4 bg-[#1C2433] shrink-0" />}
+              {hasSigned && <div className="h-4 w-px shrink-0 bg-[#DDEBEB]" />}
 
           {/* ── Post-sign actions ── */}
           {hasSigned && (
@@ -297,7 +329,7 @@ export function FormSignatureFlow({
                   type="button"
                   disabled={!effectiveSignDecision.allow}
                   onClick={() => setShowSecondSig(true)}
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-[7px] text-white font-roboto text-[12px] font-semibold hover:opacity-90 transition-opacity disabled:opacity-45 disabled:cursor-not-allowed shadow-[0_10px_24px_rgba(0,121,112,0.22)]"
+                  className="flex items-center gap-1.5 rounded-full px-4 py-1.5 font-roboto text-[12px] font-semibold text-white shadow-[0_12px_24px_-18px_rgba(0,121,112,0.85)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45"
                   style={{ background: CI_TEAL }}
                   title={!effectiveSignDecision.allow ? effectiveSignDecision.reason : undefined}
                 >
@@ -328,16 +360,16 @@ export function FormSignatureFlow({
               <button
                 type="button"
                 onClick={onPrint}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-[#1C2433] bg-[#111827] font-roboto text-[12px] text-[#CBD5E1] hover:border-[#007970]/50 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 rounded-full border border-[#DDEBEB] bg-white/78 px-3 py-1.5 font-roboto text-[12px] font-semibold text-[#426768] transition-colors hover:border-[#B8E9E7] hover:text-[#004142]"
               >
-                <Printer size={13} /> Print / Download
+                <Printer size={13} /> Print Form
               </button>
 
               {/* Save Draft */}
               <button
                 type="button"
                 onClick={handleSaveDraft}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-[#1C2433] bg-[#111827] font-roboto text-[12px] text-[#CBD5E1] hover:border-[#007970]/50 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 rounded-full border border-[#DDEBEB] bg-white/78 px-3 py-1.5 font-roboto text-[12px] font-semibold text-[#426768] transition-colors hover:border-[#B8E9E7] hover:text-[#004142]"
               >
                 <Save size={13} /> {savedDraft ? 'Saved' : 'Save Draft'}
               </button>
@@ -346,7 +378,7 @@ export function FormSignatureFlow({
 
           {/* ── Powered by eCign ── */}
           <div className="ml-auto flex items-center gap-1.5 shrink-0 pl-2">
-            <span className="font-roboto text-[10px] text-[#64748B] select-none">
+            <span className="select-none font-roboto text-[10px] text-[#607C7D]">
               Powered by
             </span>
             <img src={eCignLogo} alt="eCign" className="h-10 w-auto" />

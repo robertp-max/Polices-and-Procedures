@@ -1,0 +1,416 @@
+import React, { useState } from 'react';
+import { 
+  Building, HeartPulse, Award, Users, ShieldCheck, 
+  CircleDollarSign, Settings, Server, AlertTriangle, Globe,
+  Network, FileText, Briefcase, ClipboardList, Activity,
+  Stethoscope, FileEdit, Shield, FileDigit, Scale,
+  TrendingUp, AlertOctagon, Eye, UserPlus, GraduationCap,
+  HeartHandshake, Clock, FileBadge, Search, Lock,
+  FileCheck, Receipt, Tags, PieChart, LogIn,
+  Truck, MessageSquare, Key, DatabaseBackup, MonitorCog,
+  Smartphone, BarChart2, UserCheck, Home, Siren,
+  FolderTree, RefreshCw, BarChart, ChevronRight, ArrowLeft,
+  Database
+} from 'lucide-react';
+
+// Custom CSS for animations
+const styles = `
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.15); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.15); }
+    60% { transform: scale(1); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-8deg); }
+    75% { transform: rotate(8deg); }
+  }
+  @keyframes flip {
+    0% { transform: perspective(400px) rotateY(0); }
+    100% { transform: perspective(400px) rotateY(360deg); }
+  }
+  @keyframes spin-slow {
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes bounce-subtle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  
+  .group:hover .anim-heartbeat { animation: heartbeat 1.2s ease-in-out infinite; }
+  .group:hover .anim-float { animation: float 2s ease-in-out infinite; }
+  .group:hover .anim-wiggle { animation: wiggle 0.5s ease-in-out infinite; }
+  .group:hover .anim-spin { animation: spin-slow 3s linear infinite; }
+  .group:hover .anim-flip { animation: flip 1s ease-in-out; }
+  .group:hover .anim-bounce { animation: bounce-subtle 1s ease-in-out infinite; }
+  
+  /* Custom scrollbar for policy list */
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 8px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 8px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+`;
+
+// Helper to assign icons dynamically to the 244 policies based on keywords
+const getPolicyIcon = (title) => {
+  const t = title.toLowerCase();
+  if (t.includes('review') || t.includes('audit') || t.includes('investigation') || t.includes('screening')) return Search;
+  if (t.includes('security') || t.includes('privacy') || t.includes('hipaa') || t.includes('protection') || t.includes('fraud')) return Shield;
+  if (t.includes('approval') || t.includes('compliance') || t.includes('consent') || t.includes('accuracy')) return FileCheck;
+  if (t.includes('management') || t.includes('governance') || t.includes('operations')) return Settings;
+  if (t.includes('data') || t.includes('record') || t.includes('log')) return Database;
+  if (t.includes('safety') || t.includes('risk') || t.includes('emergency') || t.includes('incident') || t.includes('hazard')) return AlertTriangle;
+  if (t.includes('finance') || t.includes('billing') || t.includes('payment') || t.includes('cost')) return CircleDollarSign;
+  if (t.includes('clinical') || t.includes('care') || t.includes('therapy') || t.includes('assessment')) return Activity;
+  if (t.includes('staff') || t.includes('employee') || t.includes('workforce') || t.includes('personnel')) return Users;
+  return FileText;
+};
+
+// Raw Policy Data (244 Policies Extracted)
+const rawPolicies = {
+  'GV-GB': ['001: Governing Body Authority & Responsibilities', '002: Board Meeting & Minutes Requirements', '003: Conflict of Interest Disclosure', '004: Succession Planning for Key Leadership', '005: Annual Governance Self-Assessment'],
+  'GV-OG': ['001: Organizational Structure & Reporting', '002: Administrator Qualifications & Responsibilities', '003: Scope of Services Definition', '004: Strategic Planning & Annual Goals', '005: Delegation of Authority'],
+  'GV-PM': ['001: Policy Development & Approval Process', '002: Policy Review & Revision Cycle', '003: Policy Acknowledgment & Staff Attestation', '004: Communication & Notification Standards', '005: Stakeholder Grievance & Feedback Management'],
+  'GV-EA': ['001: Interagency Agreements & Contracts', '002: Community Liaison & Public Relations', '003: Legal Counsel Engagement & Oversight', '004: Agency Licensure & Certification Maintenance', '005: Agency Closure or Change of Ownership'],
+  'CL-CP': ['001: Plan of Care Development & Approval', '002: Plan of Care Review & Update', '003: Physician Orders & Order Management', '004: Verbal Order Receipt & Authentication', '005: Coordination of Care', '006: Discharge Planning & Criteria', '007: Transfer & Referral Procedures', '008: Physician Recertification Timing Compliance', '009: Physician Order Signature Tracking & Escalation'],
+  'CL-SD': ['001: Skilled Nursing Assessment & Services', '002: Physical Therapy Services', '003: Occupational Therapy Services', '004: Speech-Language Pathology Services', '005: Medical Social Work Services', '006: Home Health Aide Services & Supervision', '007: Home Health Aide Competency Evaluation', '008: Clinical Supervision & Oversight', '009: Telehealth & Remote Monitoring Services', '010: IV Therapy & Infusion Services', '011: Wound Care Assessment & Management', '012: Medication Management & Administration', '013: Medication Reconciliation at Transitions', '014: Pain Assessment & Management', '015: Fall Risk Assessment & Prevention', '016: Infection Prevention & Control', '017: Patient Education & Self-Management', '018: Diabetic Management & Monitoring', '019: Cardiac Care & Monitoring', '020: Respiratory Care & Management', '021: Pediatric Home Health Services', '022: Behavioral Health Screening & Referral', '023: Palliative & End-of-Life Care', '024: Missed Visit & Rescheduling', '025: Ordered Visit Frequency Compliance & Monitoring'],
+  'CL-CA': ['001: Patient Assessment — Comprehensive', '002: OASIS Data Collection & Accuracy', '003: OASIS Transmission & Correction', '004: Recertification Assessment & Process', '005: Homebound Status Determination & Documentation', '006: Face-to-Face Encounter Compliance', '007: Face-to-Face Encounter Tracking & Expiration Monitoring'],
+  'CL-CD': ['001: Clinical Documentation Standards', '002: Clinical Record Content & Organization', '003: Clinical Record Authentication & Signature Requirements', '004: Timely Documentation Completion & Lock Requirements'],
+  'CL-PR': ['001: Patient Rights & Responsibilities', '002: Advance Directive Compliance', '003: Informed Consent', '004: Restraint & Seclusion Prohibition', '005: Emergency Preparedness — Clinical', '006: Abuse, Neglect & Exploitation Reporting'],
+  'CL-OA': ['001: OASIS Completion Timeliness & Accountability', '002: OASIS Quality Review & Error Correction', '003: OASIS Clinician Authorization & Competency', '004: OASIS Item-Level Guidance Compliance', '005: OASIS Data Integrity & Security', '006: Documentation Hierarchy and Evidence Source Prioritization', '007: Evidence-Based OASIS Coding Substantiation', '008: Conflicting Documentation Source Resolution', '009: Point-in-Time Assessment at Start of Care', '010: CMS Look-Back Period Compliance for Assessment Items', '011: Standardized Assessment Tool Administration and Validity', '012: Clinical Reasoning Documentation for Coding Decisions', '013: Cross-Document Verification Prior to Assessment Finalization', '014: Medication Reconciliation — Prescribed Regimen vs. Actual Patient Behavior', '015: Assessment Completion Timeframe Compliance', '016: Scoring Methodology Integrity for Multi-Item Assessments', '017: Contemporaneous Documentation Requirement', '018: Clinician Competency Validation for OASIS Assessment', '019: Pre-Submission Quality Review for Comprehensive Assessments'],
+  'QA-PG': ['001: QAPI Program Establishment & Governance', '002: QAPI Plan Development & Annual Review', '003: QAPI Committee Structure & Meeting Requirements'],
+  'QA-PI': ['001: Performance Improvement Project Management', '002: Quality Indicator Monitoring & Reporting', '003: Clinical Outcome Benchmarking', '004: Data-Driven Decision Making', '005: Staff Competency Integration with QAPI', '006: Visit Utilization & LUPA Risk Management Program', '007: Staff Competency Impact on Patient Outcomes'],
+  'QA-AE': ['001: Adverse Event Identification & Reporting', '002: Root Cause Analysis Process', '003: Corrective Action Plan Development & Tracking', '004: Patient Safety Program'],
+  'QA-SM': ['001: Utilization Review & Management', '002: Infection Surveillance & Trending', '003: Patient Satisfaction Survey & Analysis', '004: Home Health Compare & Star Rating Monitoring', '005: Policy Effectiveness Monitoring and Outcome Validation'],
+  'HR-TA': ['001: Recruitment & Hiring Standards', '002: Criminal Background Check & Screening', '003: OIG/SAM Exclusion Screening', '004: Licensure & Certification Verification', '005: Employee Orientation & Onboarding', '006: Job Description & Role Definition'],
+  'HR-TD': ['001: Annual Mandatory Training Requirements', '002: Continuing Education & Professional Development', '003: Clinical Staff Competency Evaluation', '004: Student & Intern Supervision', '005: Emergency Preparedness Training & Drills'],
+  'HR-ER': ['001: Performance Evaluation & Review', '002: Disciplinary Action & Progressive Discipline', '003: Employee Grievance & Complaint Process', '004: Anti-Harassment & Non-Discrimination', '005: Substance Abuse & Drug-Free Workplace', '006: Separation & Exit Process', '007: Workforce Diversity & Inclusion', '008: Remote Work & Flexible Scheduling', '009: Mandatory Abuse Reporting by Staff'],
+  'HR-WM': ['001: Staffing Levels & Workload Management', '002: Contractor & Per Diem Staff Management', '003: Employee Health & Immunization Requirements', '004: Workplace Safety & Injury Prevention', '005: Employee Personnel File Management', '006: Volunteer Management & Oversight', '007: Personnel File Content & Compliance Requirements'],
+  'HR-JD': ['000: Governing Body Structure & Responsibilities', '001: Administrator', '002: Administrator Designee', '003: Director of Nursing / Clinical Manager', '004: Clinical Designee', '005: Registered Nurse (RN)', '006: Licensed Vocational Nurse (LVN)', '007: Home Health Aide (HHA)', '008: Medical Social Worker (MSW)', '009: Physical Therapist (PT)', '010: Occupational Therapist (OT)', '011: Speech-Language Pathologist (SLP)'],
+  'CO-CP': ['001: Corporate Compliance Program', '002: Compliance Officer Designation & Authority', '003: Compliance Committee Structure & Function', '004: Code of Conduct & Ethics', '005: Whistleblower Protection & Non-Retaliation', '006: Compliance Hotline & Reporting Mechanisms', '007: Compliance Investigation Process', '008: Compliance Training & Education'],
+  'CO-RA': ['001: Regulatory Change Monitoring & Implementation', '002: Internal Compliance Auditing Program', '003: External Audit & Survey Readiness', '004: Medicare Conditions of Participation Compliance', '005: State Licensure & Regulatory Compliance', '006: Accreditation Standards Compliance', '007: Sanctions & Enforcement Response'],
+  'CO-FA': ['001: Anti-Kickback & Stark Law Compliance', '002: False Claims Act Awareness & Prevention', '003: Fraud, Waste & Abuse Prevention'],
+  'CO-HP': ['001: HIPAA Privacy Program', '002: HIPAA Security Program', '003: HIPAA Breach Notification', '004: Minimum Necessary Standard', '005: Business Associate Agreement Management', '006: Patient Access to Records', '007: Record Retention & Destruction'],
+  'CO-DC': ['001: Assessment Audit Trail and Data Integrity', '002: Documentation Audit & Monitoring Program', '003: Late Entry, Correction & Amendment Standards', '004: Clinical, Documentation, and Billing Alignment Audit'],
+  'FN-BC': ['001: Medicare Billing & Claims Submission', '002: Claims Denial Management & Appeals', '003: Patient Billing & Financial Responsibility', '004: Overpayment Identification & Refund', '005: Pre-Claim Review Compliance', '006: Request for Anticipated Payment (RAP) Management', '007: Payment & Reimbursement Reconciliation'],
+  'FN-CM': ['001: PDGM Classification & Coding Accuracy', '002: ICD-10 Coding Standards & Accuracy', '003: Medical Necessity Documentation', '004: Episode Management & Authorization', '005: LUPA Prevention & Monitoring'],
+  'FN-FP': ['001: Payer Contract Management', '002: Charge Capture & Fee Schedule Management', '003: Revenue Cycle Performance Monitoring', '004: Bad Debt & Charity Care', '005: Annual Budget & Financial Planning', '006: Supply & Equipment Cost Management', '007: Financial Compliance & Fraud Monitoring Controls'],
+  'OP-IM': ['001: Referral & Intake Management', '002: Patient Acceptance & Admission Criteria', '003: Service Area Definition & Coverage'],
+  'OP-SL': ['001: Scheduling & Visit Management', '002: After-Hours & On-Call Services', '003: Vehicle & Transportation Safety', '004: Equipment & Supply Management', '005: Communication & Documentation Systems', '006: Service Delivery During Public Health Emergencies', '007: Inclement Weather & Hazardous Conditions'],
+  'OP-PA': ['001: Patient Complaint & Grievance Resolution', '002: Patient Identification & Verification', '003: Interpreter & Language Access Services', '004: Cultural Competency in Service Delivery', '005: Patient Property & Belongings'],
+  'OP-FM': ['001: Office Operations & Facility Management', '002: Branch Office & Satellite Operations', '003: Vendor & Supplier Management', '004: Mail & Correspondence Management', '005: Emergency Operations & Business Continuity'],
+  'IT-SC': ['001: Information Security Program', '002: Access Control & User Authentication', '003: Data Encryption Standards', '004: Network Security & Firewall Management', '005: Endpoint Security & Malware Protection', '006: Data Classification & Handling'],
+  'IT-DR': ['001: Data Backup & Recovery', '002: Disaster Recovery & IT Continuity', '003: Audit Log Management & Monitoring', '004: Cloud Services & Data Storage', '005: Security Incident Response'],
+  'IT-SA': ['001: Electronic Health Record System Management', '002: Software Acquisition & License Management', '003: System Change Management', '004: Vendor & Third-Party Security Assessment', '005: Physical Security of IT Assets'],
+  'IT-UP': ['001: Mobile Device & BYOD Security', '002: Internet & Email Acceptable Use', '003: Social Media & Public Communications', '004: Security Awareness Training'],
+  'RM-ER': ['001: Enterprise Risk Management Program', '002: Incident Reporting & Investigation', '003: Risk Assessment & Prioritization', '004: Liability & Insurance Management', '005: Risk Trending & Pattern Analysis', '006: Claims Management & Litigation Support'],
+  'RM-SS': ['001: Staff Safety & Personal Security', '002: Workplace Violence Prevention', '003: Motor Vehicle Safety & Accident Reporting'],
+  'RM-PS': ['001: Environmental Safety Assessment', '002: Hazardous Materials & Waste Management', '003: Product & Equipment Safety Recall Management', '004: Patient Elopement & Wandering Risk', '005: High-Risk Medication Safety'],
+  'RM-EP': ['001: Pandemic & Infectious Disease Response', '002: Emergency Preparedness Training & Testing Program', '003: Patient Emergency Communication Plan'],
+  'EN-TG': ['001: Enterprise Policy Taxonomy & Classification Governance', '002: Regulatory Cross-Reference & Mapping'],
+  'EN-LC': ['001: Policy Lifecycle Management & Version Control', '002: Policy Exception & Waiver Management', '003: Policy Assignment and Role-Based Applicability Governance', '004: Policy Retirement and Obsolescence Management'],
+  'EN-CM': ['001: Policy Compliance Metrics & Dashboard Reporting', '002: Inter-Domain Policy Coordination & Conflict Resolution']
+};
+
+const getPoliciesForSubdomain = (domainId, subId) => {
+  const list = rawPolicies[`${domainId}-${subId}`] || [];
+  return list.map(item => {
+    const [idNum, ...titleParts] = item.split(': ');
+    const title = titleParts.join(': ');
+    return { id: `${domainId}-${subId}-${idNum}`, title, icon: getPolicyIcon(title) };
+  });
+};
+
+// Domain & Subdomain Mapping
+const taxonomy = [
+  {
+    id: 'GV', name: 'Governance & Administration', icon: Building, color: 'text-blue-300', bg: 'bg-blue-500/20', animation: 'anim-float',
+    subdomains: [
+      { id: 'GB', name: 'Governing Body', icon: Users, animation: 'anim-bounce' },
+      { id: 'OG', name: 'Organizational Governance', icon: Network, animation: 'anim-wiggle' },
+      { id: 'PM', name: 'Policy Management', icon: FileText, animation: 'anim-float' },
+      { id: 'EA', name: 'External Affairs', icon: Briefcase, animation: 'anim-bounce' }
+    ]
+  },
+  {
+    id: 'CL', name: 'Clinical Operations', icon: HeartPulse, color: 'text-red-300', bg: 'bg-red-500/20', animation: 'anim-heartbeat',
+    subdomains: [
+      { id: 'CP', name: 'Care Planning', icon: ClipboardList, animation: 'anim-float' },
+      { id: 'SD', name: 'Service Delivery', icon: Activity, animation: 'anim-heartbeat' },
+      { id: 'CA', name: 'Clinical Assessment', icon: Stethoscope, animation: 'anim-wiggle' },
+      { id: 'CD', name: 'Clinical Documentation', icon: FileEdit, animation: 'anim-bounce' },
+      { id: 'PR', name: 'Patient Rights & Safety', icon: Shield, animation: 'anim-float' },
+      { id: 'OA', name: 'OASIS & Assessment', icon: FileDigit, animation: 'anim-bounce' }
+    ]
+  },
+  {
+    id: 'QA', name: 'Quality Assurance', icon: Award, color: 'text-purple-300', bg: 'bg-purple-500/20', animation: 'anim-wiggle',
+    subdomains: [
+      { id: 'PG', name: 'Program Governance', icon: Scale, animation: 'anim-wiggle' },
+      { id: 'PI', name: 'Performance Improvement', icon: TrendingUp, animation: 'anim-bounce' },
+      { id: 'AE', name: 'Adverse Events', icon: AlertOctagon, animation: 'anim-heartbeat' },
+      { id: 'SM', name: 'Surveillance & Monitoring', icon: Eye, animation: 'anim-float' }
+    ]
+  },
+  {
+    id: 'HR', name: 'Human Resources', icon: Users, color: 'text-pink-300', bg: 'bg-pink-500/20', animation: 'anim-bounce',
+    subdomains: [
+      { id: 'TA', name: 'Talent Acquisition', icon: UserPlus, animation: 'anim-bounce' },
+      { id: 'TD', name: 'Training & Development', icon: GraduationCap, animation: 'anim-float' },
+      { id: 'ER', name: 'Employee Relations', icon: HeartHandshake, animation: 'anim-heartbeat' },
+      { id: 'WM', name: 'Workforce Management', icon: Clock, animation: 'anim-spin' },
+      { id: 'JD', name: 'Job Descriptions', icon: FileBadge, animation: 'anim-wiggle' }
+    ]
+  },
+  {
+    id: 'CO', name: 'Compliance & Regulatory', icon: ShieldCheck, color: 'text-emerald-300', bg: 'bg-emerald-500/20', animation: 'anim-float',
+    subdomains: [
+      { id: 'CP', name: 'Compliance Program', icon: Shield, animation: 'anim-float' },
+      { id: 'RA', name: 'Regulatory Affairs', icon: Scale, animation: 'anim-wiggle' },
+      { id: 'FA', name: 'Fraud & Abuse', icon: Search, animation: 'anim-bounce' },
+      { id: 'HP', name: 'HIPAA & Privacy', icon: Lock, animation: 'anim-wiggle' },
+      { id: 'DC', name: 'Documentation Compliance', icon: FileCheck, animation: 'anim-float' }
+    ]
+  },
+  {
+    id: 'FN', name: 'Finance & Revenue', icon: CircleDollarSign, color: 'text-green-300', bg: 'bg-green-500/20', animation: 'anim-flip',
+    subdomains: [
+      { id: 'BC', name: 'Billing & Claims', icon: Receipt, animation: 'anim-float' },
+      { id: 'CM', name: 'Coding & Classification', icon: Tags, animation: 'anim-bounce' },
+      { id: 'FP', name: 'Financial Planning', icon: PieChart, animation: 'anim-spin' }
+    ]
+  },
+  {
+    id: 'OP', name: 'Operations', icon: Settings, color: 'text-slate-300', bg: 'bg-slate-500/20', animation: 'anim-spin',
+    subdomains: [
+      { id: 'IM', name: 'Intake Management', icon: LogIn, animation: 'anim-float' },
+      { id: 'SL', name: 'Service Logistics', icon: Truck, animation: 'anim-bounce' },
+      { id: 'PA', name: 'Patient Access', icon: MessageSquare, animation: 'anim-wiggle' },
+      { id: 'FM', name: 'Facility & Admin', icon: Building, animation: 'anim-float' }
+    ]
+  },
+  {
+    id: 'IT', name: 'Technology & InfoSec', icon: Server, color: 'text-cyan-300', bg: 'bg-cyan-500/20', animation: 'anim-float',
+    subdomains: [
+      { id: 'SC', name: 'Security Controls', icon: Key, animation: 'anim-wiggle' },
+      { id: 'DR', name: 'Data & Recovery', icon: DatabaseBackup, animation: 'anim-spin' },
+      { id: 'SA', name: 'Systems Admin', icon: MonitorCog, animation: 'anim-float' },
+      { id: 'UP', name: 'Use Policies', icon: Smartphone, animation: 'anim-bounce' }
+    ]
+  },
+  {
+    id: 'RM', name: 'Risk Management', icon: AlertTriangle, color: 'text-orange-300', bg: 'bg-orange-500/20', animation: 'anim-heartbeat',
+    subdomains: [
+      { id: 'ER', name: 'Enterprise Risk', icon: BarChart2, animation: 'anim-float' },
+      { id: 'SS', name: 'Staff Safety', icon: UserCheck, animation: 'anim-bounce' },
+      { id: 'PS', name: 'Patient Safety', icon: Home, animation: 'anim-float' },
+      { id: 'EP', name: 'Emergency Response', icon: Siren, animation: 'anim-heartbeat' }
+    ]
+  },
+  {
+    id: 'EN', name: 'Enterprise Control', icon: Globe, color: 'text-indigo-300', bg: 'bg-indigo-500/20', animation: 'anim-spin',
+    subdomains: [
+      { id: 'TG', name: 'Taxonomy Governance', icon: FolderTree, animation: 'anim-float' },
+      { id: 'LC', name: 'Lifecycle Control', icon: RefreshCw, animation: 'anim-spin' },
+      { id: 'CM', name: 'Compliance Metrics', icon: BarChart, animation: 'anim-bounce' }
+    ]
+  }
+];
+
+export default function App() {
+  const [activeDomain, setActiveDomain] = useState(taxonomy[0]);
+  const [activeSubdomain, setActiveSubdomain] = useState(null);
+
+  const handleDomainClick = (domain) => {
+    setActiveDomain(domain);
+    setActiveSubdomain(null); // Reset drill-down when changing domains
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-950 text-white font-sans p-6 relative overflow-hidden">
+      <style>{styles}</style>
+      
+      {/* Ambient Glassmorphism Background Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/30 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-fuchsia-600/30 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-[30%] left-[40%] w-[30%] h-[30%] bg-cyan-400/20 rounded-full blur-[120px] pointer-events-none" />
+
+      <header className="max-w-[1400px] mx-auto mb-10 relative z-10">
+        <h1 className="text-3xl font-semibold tracking-tight text-white flex items-center gap-3 drop-shadow-md">
+          <Building className="w-8 h-8 text-blue-400" />
+          Enterprise Policy Taxonomy
+        </h1>
+        <p className="text-white/80 mt-2 text-lg font-normal max-w-2xl leading-relaxed">
+          Hover over any card to view its unique animation. Click a Subdomain to drill down into its individual policies.
+        </p>
+      </header>
+
+      <main className="max-w-[1400px] mx-auto flex flex-col lg:flex-row gap-8 relative z-10 h-[calc(100vh-180px)]">
+        
+        {/* DOMAINS SECTION (Left Column) */}
+        <section className="w-full lg:w-[400px] flex flex-col">
+          <h2 className="text-xl font-semibold mb-6 flex items-center gap-3 border-b border-white/20 pb-3 text-white/90 shrink-0">
+            Primary Domains 
+            <span className="text-sm font-medium text-white bg-white/20 px-3 py-0.5 rounded-full backdrop-blur-md border border-white/10">
+              {taxonomy.length}
+            </span>
+          </h2>
+          <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-6 space-y-3">
+            {taxonomy.map((domain) => {
+              const Icon = domain.icon;
+              const isActive = activeDomain.id === domain.id;
+              
+              return (
+                <div 
+                  key={domain.id}
+                  onClick={() => handleDomainClick(domain)}
+                  className={`group relative flex items-center p-3.5 rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden backdrop-blur-md
+                    ${isActive 
+                      ? 'bg-white/20 border-white/40 shadow-[0_8px_32px_rgba(255,255,255,0.1)]' 
+                      : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30 hover:shadow-lg'
+                    }`}
+                >
+                  <div className={`flex items-center justify-center w-12 h-12 rounded-xl shrink-0 ${domain.bg} ${domain.color} border border-white/5 shadow-inner`}>
+                    <Icon className={`w-6 h-6 ${domain.animation}`} strokeWidth={2} />
+                  </div>
+                  <div className="ml-4 flex-1">
+                    <p className="text-[10px] font-semibold text-white/50 tracking-wider mb-0.5 uppercase">{domain.id}</p>
+                    <h3 className={`font-medium text-sm leading-tight ${isActive ? 'text-white' : 'text-white/80 group-hover:text-white'}`}>
+                      {domain.name}
+                    </h3>
+                  </div>
+                  {isActive && (
+                    <ChevronRight className="w-5 h-5 text-white/90 absolute right-4 drop-shadow-md" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* DETAILS SECTION (Right Column - Glass Panel) */}
+        <section className="flex-1 flex flex-col bg-white/10 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden">
+          
+          {/* HEADER AREA */}
+          <div className="p-6 md:p-8 shrink-0 bg-white/5 border-b border-white/10">
+            {activeSubdomain ? (
+              <div className="flex flex-col items-start gap-4">
+                <button 
+                  onClick={() => setActiveSubdomain(null)}
+                  className="flex items-center gap-2 text-sm font-medium text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-lg transition"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Back to Subdomains
+                </button>
+                <div className="flex items-center gap-4">
+                  <div className={`p-2.5 rounded-xl ${activeDomain.bg} border border-white/10 shadow-inner`}>
+                    <activeSubdomain.icon className={`w-7 h-7 ${activeDomain.color} ${activeSubdomain.animation}`} strokeWidth={2} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold tracking-wider text-white/50 uppercase">
+                      Domain {activeDomain.id} &gt; {activeDomain.id}-{activeSubdomain.id}
+                    </p>
+                    <h2 className="text-2xl font-semibold text-white drop-shadow-md">
+                      {activeSubdomain.name}
+                    </h2>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm font-semibold tracking-wider text-white/50 uppercase mb-3">Subdomains for</p>
+                <h2 className="text-2xl font-semibold text-white flex items-center gap-4 drop-shadow-md">
+                  <div className={`p-2.5 rounded-xl ${activeDomain.bg} border border-white/10 shadow-inner`}>
+                    <activeDomain.icon className={`w-7 h-7 ${activeDomain.color} ${activeDomain.animation}`} strokeWidth={2} />
+                  </div>
+                  {activeDomain.name}
+                </h2>
+              </div>
+            )}
+          </div>
+
+          {/* SCROLLABLE CONTENT AREA */}
+          <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
+            
+            {/* VIEW 1: Subdomain Grid */}
+            {!activeSubdomain && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {activeDomain.subdomains.map((sub) => {
+                  const SubIcon = sub.icon;
+                  const policiesCount = (rawPolicies[`${activeDomain.id}-${sub.id}`] || []).length;
+                  
+                  return (
+                    <div 
+                      key={sub.id} 
+                      onClick={() => setActiveSubdomain(sub)}
+                      className="group flex flex-col p-5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/15 hover:border-white/30 hover:shadow-xl transition-all duration-300 cursor-pointer backdrop-blur-md"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className={`flex items-center justify-center w-10 h-10 rounded-xl bg-black/20 shadow-inner border border-white/5 ${activeDomain.color}`}>
+                          <SubIcon className={`w-5 h-5 ${sub.animation}`} strokeWidth={2} />
+                        </div>
+                        <span className="text-xs font-semibold text-white/70 tracking-wider bg-black/20 px-2.5 py-1 rounded-md border border-white/5">
+                          {activeDomain.id}-{sub.id}
+                        </span>
+                      </div>
+                      <h4 className="font-medium text-white/90 text-[15px] tracking-wide leading-tight mb-3">
+                        {sub.name}
+                      </h4>
+                      <p className="text-xs font-medium text-white/50 mt-auto flex items-center justify-between">
+                        <span>{policiesCount} Policies included</span>
+                        <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* VIEW 2: Individual Policy Grid (The 244 Policies Level) */}
+            {activeSubdomain && (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {getPoliciesForSubdomain(activeDomain.id, activeSubdomain.id).map((policy) => {
+                  const PolicyIcon = policy.icon;
+                  return (
+                    <div key={policy.id} className="group flex items-start gap-4 p-4 rounded-xl border border-white/10 bg-black/10 hover:bg-white/10 transition-all duration-300 cursor-default">
+                      <div className={`flex items-center justify-center w-10 h-10 mt-1 rounded-lg shadow-inner border border-white/5 bg-white/5 ${activeDomain.color}`}>
+                        {/* Smooth float animation applied on hover to policy icons */}
+                        <PolicyIcon className="w-5 h-5 anim-float" strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="text-[11px] font-bold text-white/50 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                            {policy.id}
+                          </span>
+                        </div>
+                        <h5 className="text-sm font-medium text-white/90 leading-snug pr-2">
+                          {policy.title}
+                        </h5>
+                      </div>
+                    </div>
+                  );
+                })}
+                {getPoliciesForSubdomain(activeDomain.id, activeSubdomain.id).length === 0 && (
+                  <p className="text-white/50">No policies found for this subdomain.</p>
+                )}
+              </div>
+            )}
+            
+          </div>
+
+          {/* FOOTER AREA */}
+          <div className="p-4 md:px-8 shrink-0 border-t border-white/10 bg-white/5 flex items-center justify-between text-xs font-medium text-white/50">
+            <span className="tracking-wide">IBM Watson Knowledge Catalog Validated</span>
+            <span className="bg-white/10 px-3 py-1 rounded-full border border-white/5 shadow-inner">244 Policies Active</span>
+          </div>
+
+        </section>
+      </main>
+    </div>
+  );
+}

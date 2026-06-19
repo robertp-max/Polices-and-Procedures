@@ -17,6 +17,7 @@ import { getPolicyBody, getPolicyContent } from '@/policy/data/policyContentMap'
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import { buildFormContent } from '@/policy/data/formsLibraryContent';
 import { printForm } from '@/policy/utils/printForm';
+import { formatCaliforniaDateTime } from '@/policy/utils/californiaTime';
 import { ALL_MODULES } from '@/policy/journey/data/modules';
 import { V3_ExecutionUnitsSeed, V3_SprintContextSeed } from '@/policy/ces/data/V3_CES_SeedData';
 import { V3_AUDIT_LOG, V3_FORMS } from '@/policy/ces/data/V3_AppSeedPrimitives';
@@ -540,6 +541,8 @@ function KpiCard({ label, value, trend, alert }: KpiCardData) {
 
 // --- THE DASHBOARD VIEW ---
 const DashboardWorkspace = ({ setIsPlannerView, isMobile }: any) => {
+  const [clockNow, setClockNow] = useState(() => new Date());
+  const todayLabel = useMemo(() => formatCaliforniaDateTime(clockNow), [clockNow]);
   const kpis: KpiCardData[] = [
     { label: 'Active Sprint', value: 'Sprint 9', trend: `2 due within 48h` },
     { label: 'Sprint %', value: `88%`, trend: `0 blockers` },
@@ -549,6 +552,11 @@ const DashboardWorkspace = ({ setIsPlannerView, isMobile }: any) => {
     { label: 'Critical Actions', value: `121`, trend: `0 at risk`, alert: true },
     { label: 'Audit Open', value: `1041`, trend: `0 awaiting sig` },
   ];
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setClockNow(new Date()), 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   return (
     <div className="animate-butter-shift" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -577,7 +585,7 @@ const DashboardWorkspace = ({ setIsPlannerView, isMobile }: any) => {
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', borderLeft: isMobile ? 'none' : `1px solid ${V3.borderDefault}`, paddingLeft: isMobile ? '0' : '20px', width: isMobile ? '100%' : 'auto' }}>
             <span style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', color: V3.textTertiary, letterSpacing: '0.4px' }}>Today</span>
-            <span style={{ fontWeight: 500, color: V3.textSecondary, fontSize: '13px' }}>Wed, May 20, 2026</span>
+            <span style={{ fontWeight: 500, color: V3.textSecondary, fontSize: '13px' }}>{todayLabel}</span>
             <div style={{ marginTop: '4px' }}><span style={{ fontSize: '10px', fontWeight: 600, padding: '4px 8px', background: 'rgba(0, 209, 193, 0.1)', border: '1px solid rgba(0, 209, 193, 0.3)', borderRadius: '20px', color: V3.tealLight, letterSpacing: '0.5px' }}>AGENCY VIEW</span></div>
           </div>
         </section>
@@ -926,17 +934,17 @@ const toEvidenceRecordFromDoc = (doc: EvidenceDoc): V3EvidenceRecord => {
     formIds,
     status: doc.status,
     artifactStatus: artifactActionState === 'real-local-artifact'
-      ? 'Demo-local artifact available'
+      ? 'Artifact metadata may be cached locally'
       : artifactActionState === 'real-route-only'
-        ? 'Artifact route available; local bytes may not survive refresh'
+        ? 'Artifact route available; metadata only'
         : artifactActionState === 'metadata-placeholder'
           ? 'Metadata is available, but no artifact file is available for this record'
           : 'metadata placeholder only',
     auditStatus: (doc.auditEventRefs ?? []).length ? `${(doc.auditEventRefs ?? []).length} app-store audit refs` : 'app-store audit refs not available',
     blockerState: artifactActionState === 'real-local-artifact'
-      ? 'Demo-local artifact available'
+      ? 'Artifact metadata may be cached locally'
       : artifactActionState === 'real-route-only'
-        ? 'Artifact route available; local bytes may not survive refresh'
+        ? 'Artifact route available; metadata only'
         : blocker.label,
     persistenceMode: 'local persisted app-store evidence',
     detail: doc.note || 'Evidence metadata read from reg-execution-v2. Backend evidence persistence is not implemented in V3.',
@@ -945,7 +953,7 @@ const toEvidenceRecordFromDoc = (doc: EvidenceDoc): V3EvidenceRecord => {
     artifactBlockerCode: artifactActionState === 'real-local-artifact' ? undefined : blocker.code,
     artifactBlockerLabel: artifactActionState === 'real-local-artifact' ? undefined : blocker.label,
     artifactSourceLabel: artifactActionState === 'real-local-artifact'
-      ? 'demo-local data URL/blob artifact'
+      ? 'locally cached artifact data'
       : artifactActionState === 'real-route-only'
         ? 'local app-store object path / artifact route'
         : 'metadata only',
@@ -1595,7 +1603,7 @@ const EvidenceCenterWorkspace = () => {
             Reads local app-store metadata and CES seed evidence relationships. Backend persistence not implemented; artifact integrity is not verified in V3.
           </p>
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            {['local persisted app-store evidence', 'explicit artifact route only', 'local/demo download only when bytes exist', 'validation/promote blocked'].map((tag, i) => (
+            {['local persisted app-store evidence', 'explicit artifact route only', 'local download only when bytes exist', 'validation/promote blocked'].map((tag, i) => (
               <span key={i} style={{ fontSize: '10.5px', padding: '4px 10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: V3.textSecondary }}>{tag}</span>
             ))}
           </div>
@@ -1694,7 +1702,7 @@ const EvidenceCenterWorkspace = () => {
                 data-qa-integrity-mode={selected.artifactMode === 'real-artifact' ? 'local-metadata' : 'not-verified'}
                 style={{ padding: '10px', background: 'rgba(224,123,44,0.06)', borderRadius: '8px', border: '1px solid rgba(224,123,44,0.24)', fontSize: '11px', color: V3.orangeLight, lineHeight: 1.45 }}
               >
-                Artifact integrity not verified in V3. Local/demo artifact access is not backend persistence or a production S3 download API; this is not production evidence certification.
+                Artifact integrity not verified in V3. Local artifact access is not backend persistence or a production S3 download API; this is not production evidence certification.
               </div>
 
               {(selected.artifactActionState === 'real-local-artifact' || selected.artifactActionState === 'real-route-only') && selected.artifactRoute ? (
@@ -1733,7 +1741,7 @@ const EvidenceCenterWorkspace = () => {
                       data-qa-artifact-blocker-code={selected.artifactBlockerCode}
                       style={{ fontSize: '10.5px', color: V3.orangeLight, lineHeight: 1.4 }}
                     >
-                      {selected.artifactBlockerLabel}; download unavailable in demo-local after refresh.
+                      {selected.artifactBlockerLabel}; download unavailable after refresh.
                     </div>
                   )}
                 </div>

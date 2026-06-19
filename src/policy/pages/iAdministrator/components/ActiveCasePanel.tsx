@@ -21,6 +21,7 @@ import {
 import type { SessionSummary, BradMode, BradUrgency, CaseStatus } from '../lib/sessionTypes';
 import { MODE_LABELS, MODE_COLORS, URGENCY_COLORS } from '../lib/sessionTypes';
 import { iaClient } from '../lib/iaClient';
+import { uniqueResolvedReferenceIds } from '../lib/referenceResolver';
 import { ReferenceLink } from './ReferenceLink';
 
 const ACCENT = '#C8A96E';
@@ -206,6 +207,8 @@ export function ActiveCasePanel({
     next.has(i) ? next.delete(i) : next.add(i);
     return next;
   });
+  const activeForms = uniqueResolvedReferenceIds(session.activeForms, 'form', 'ActiveCasePanel.activeForms');
+  const activePolicies = uniqueResolvedReferenceIds(session.activePolicies, 'policy', 'ActiveCasePanel.activePolicies');
 
   return (
     <div
@@ -353,14 +356,14 @@ export function ActiveCasePanel({
         )}
 
         {/* Required forms */}
-        {session.activeForms.length > 0 && (
+        {activeForms.length > 0 && (
           <Section
-            title={`Required Forms (${session.activeForms.length})`}
+            title={`Required Forms (${activeForms.length})`}
             icon={<FileText size={12} strokeWidth={2} />}
             isLight={isLight}
           >
             <div className="flex flex-wrap gap-1.5">
-              {session.activeForms.map(formId => (
+              {activeForms.map(formId => (
                 <ReferenceLink
                   key={formId}
                   id={formId}
@@ -381,7 +384,7 @@ export function ActiveCasePanel({
         )}
 
         {/* Policy basis */}
-        {session.activePolicies.length > 0 && (
+        {activePolicies.length > 0 && (
           <Section
             title="Policy Basis"
             icon={<BookOpen size={12} strokeWidth={2} />}
@@ -389,7 +392,7 @@ export function ActiveCasePanel({
             defaultOpen={false}
           >
             <div className="flex flex-wrap gap-1.5">
-              {session.activePolicies.map(pId => (
+              {activePolicies.map(pId => (
                 <ReferenceLink
                   key={pId}
                   id={pId}

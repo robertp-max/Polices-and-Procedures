@@ -75,6 +75,7 @@
     body,
     .prototype-shell {
       font-weight: 300;
+      background-color: #F7FEFF;
     }
 
     .prototype-shell :where(.font-medium, .font-semibold, .font-bold, .font-extrabold) {
@@ -98,10 +99,20 @@
       border-color: rgba(255, 255, 255, 0.94) !important;
     }
 
+    .hover-lift {
+      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.25s ease;
+    }
+
+    .hover-lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px -8px rgba(0, 65, 66, 0.12);
+    }
+
     .prototype-shell {
       background:
-        radial-gradient(circle at 82% 2%, rgba(255, 255, 255, 0.82), transparent 28%),
-        linear-gradient(135deg, #EEF9F9 0%, #F8FFFF 48%, #F1FAFA 100%);
+        radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.95), transparent 40%),
+        radial-gradient(circle at 100% 100%, rgba(6, 166, 171, 0.06), transparent 50%),
+        linear-gradient(135deg, #F0FAFA 0%, #FFFFFF 50%, #E7F3F3 100%);
     }
   </style>
 </head>
@@ -1060,9 +1071,9 @@
 
     const VIEW_GROUPS = [
       {
-        title: 'Primary Operations',
+        title: 'Dashboard',
         items: [
-          view('dashboard', 'Primary Operations', 'Dashboard', '/dashboard', 'layout-dashboard', 'dashboard', {
+          view('dashboard', 'Dashboard', 'Dashboard', '/dashboard', 'layout-dashboard', 'dashboard', {
             eyebrow: 'Command Center',
             description: 'Primary operations command center for census pressure, staffing coverage, urgent tasks, and clinical risk.',
             metrics: [
@@ -1081,28 +1092,12 @@
             cta: 'Open command',
             secondary: 'Export snapshot',
           }),
-          view('master-calendar', 'Primary Operations', 'Master Calendar', '/calendar', 'calendar-days', 'calendar', {
-            description: 'Daily operations calendar for SOC starts, recertification locks, staffing huddles, audits, and coverage checkpoints.',
-            events: primaryOpsCalendarEvents,
-            metrics: [
-              metric('Events', '8', 'June operations focus', 'teal'),
-              metric('Coverage checks', '3', 'Two need attention', 'orange'),
-              metric('Clinical reviews', '4', 'Chart and recert work', 'green'),
-              metric('Credential watch', '2', 'Renewal windows', 'amber'),
-            ],
-          }),
-          view('my-tasks', 'Primary Operations', 'My Tasks', '/my-tasks', 'list-checks', 'board', {
-            metrics: [
-              metric('Assigned', '31', '9 due this week', 'teal'),
-              metric('Blocked', '4', 'Evidence or signature missing', 'orange'),
-              metric('Ready to close', '12', 'All requirements complete', 'green'),
-              metric('Escalated', '2', 'Needs manager decision', 'amber'),
-            ],
-            columns: myTaskColumns,
-            cta: 'Add task',
-            secondary: 'Filter queue',
-          }),
-          view('clinicians', 'Primary Operations', 'Clinician Profiles', '/clinicians', 'users', 'profiles', {
+        ],
+      },
+      {
+        title: 'Clinician Profiles',
+        items: [
+          view('clinicians', 'Clinician Profiles', 'Clinician Profiles', '/clinicians', 'users', 'profiles', {
             records: clinicianRecords,
             tableHeaders: ['ID', 'Clinician', 'Coverage', 'Status'],
             metrics: [
@@ -1123,7 +1118,7 @@
               ['Schedule load', 74, 'orange'],
             ],
           }),
-          view('clinician-detail', 'Primary Operations', 'Clinician Detail', '/clinicians/:clinicianId', 'user-round-check', 'detail', {
+          view('clinician-detail', 'Clinician Profiles', 'Clinician Detail', '/clinicians/:clinicianId', 'user-round-check', 'detail', {
             title: 'Maria Delgado, RN',
             description: 'Credential posture, assigned patients, training status, and active compliance requirements.',
             records: clinicianRecords,
@@ -1133,7 +1128,12 @@
               card('Documentation', 'Three visit notes need same-day completion before route close.', 'orange', 'clipboard-list', 68),
             ],
           }),
-          view('patients', 'Primary Operations', 'Patient Profiles', '/patients', 'heart-pulse', 'profiles', {
+        ],
+      },
+      {
+        title: 'Patient Profiles',
+        items: [
+          view('patients', 'Patient Profiles', 'Patient Profiles', '/patients', 'heart-pulse', 'profiles', {
             records: patientRecords,
             tableHeaders: ['ID', 'Patient', 'Clinical focus', 'Status'],
             metrics: [
@@ -1154,7 +1154,7 @@
               ['Visit coverage', 64, 'orange'],
             ],
           }),
-          view('patient-detail', 'Primary Operations', 'Patient Detail', '/patients/:patientId', 'clipboard-plus', 'detail', {
+          view('patient-detail', 'Patient Profiles', 'Patient Detail', '/patients/:patientId', 'clipboard-plus', 'detail', {
             title: 'Elena Vargas - SOC Active',
             description: 'Care plan, clinician assignments, documentation gaps, visit cadence, and high-risk indicators.',
             records: patientRecords,
@@ -1164,7 +1164,22 @@
               card('Clinical risk', 'CHF and diabetes monitoring require medication teaching and follow-up call within 48 hours.', 'orange', 'heart-pulse', 72),
             ],
           }),
-          view('staffing-calendar', 'Primary Operations', 'Staffing Calendar', '/staffing-calendar', 'calendar-range', 'calendar', {
+        ],
+      },
+      {
+        title: 'Calendar',
+        items: [
+          view('master-calendar', 'Calendar', 'Master Calendar', '/calendar', 'calendar-days', 'calendar', {
+            description: 'Daily operations calendar for SOC starts, recertification locks, staffing huddles, audits, and coverage checkpoints.',
+            events: primaryOpsCalendarEvents,
+            metrics: [
+              metric('Events', '8', 'June operations focus', 'teal'),
+              metric('Coverage checks', '3', 'Two need attention', 'orange'),
+              metric('Clinical reviews', '4', 'Chart and recert work', 'green'),
+              metric('Credential watch', '2', 'Renewal windows', 'amber'),
+            ],
+          }),
+          view('staffing-calendar', 'Calendar', 'Staffing Calendar', '/staffing-calendar', 'calendar-range', 'calendar', {
             events: staffingEvents,
             description: 'Internal staffing preview for shift coverage, clinician availability, acuity, and visit conflicts.',
             metrics: [
@@ -1174,7 +1189,12 @@
               metric('Swaps', '3', 'Next 7 days', 'amber'),
             ],
           }),
-          view('brad', 'Primary Operations', 'Brad', '/iadministrator', 'bot', 'chat', {
+        ],
+      },
+      {
+        title: 'Brad',
+        items: [
+          view('brad', 'Brad', 'Brad', '/iadministrator', 'bot', 'chat', {
             description: 'Decision-support workspace for primary operations triage, staffing risk, coverage decisions, and generated work products.',
             metrics: [
               metric('Risk signals', '3', '1 high severity', 'orange'),
@@ -1192,9 +1212,9 @@
         ],
       },
       {
-        title: 'Compliance Execution',
+        title: 'Compliance Execution (CES)',
         items: [
-          view('ces-calendar', 'Compliance Execution', 'CES Calendar', '/ces/calendar', 'calendar-check', 'calendar', {
+          view('ces-calendar', 'Compliance Execution (CES)', 'CES Calendar', '/ces/calendar', 'calendar-check', 'calendar', {
             description: 'Sprint compliance calendar for mandatory events, evidence windows, signature cutoffs, and survey packet milestones.',
             events: complianceCalendarEvents,
             metrics: [
@@ -1204,7 +1224,7 @@
               metric('Survey critical', '3', 'Needs owner action', 'orange'),
             ],
           }),
-          view('ces-board', 'Compliance Execution', 'Kanban Board', '/ces/board', 'columns-3', 'kanban', {
+          view('ces-board', 'Compliance Execution (CES)', 'Kanban Board', '/ces/board', 'columns-3', 'kanban', {
             description: 'Operational Kanban board for sprint execution, blockers, evidence, signatures, and owner handoffs.',
             kanbanLanes: complianceBoardColumns,
             kanbanSummary: 'Sprint 12 - 33 cards - 4 blocked',
@@ -1217,27 +1237,7 @@
             cta: 'Create card',
             secondary: 'Board filters',
           }),
-          view('survey-packet', 'Compliance Execution', 'Survey Packet', '/audit/packet/:eventId', 'scan-search', 'survey-packet', {
-            description: 'Surveyor-ready audit packet with summary checks, deficiency logic, evidence chain, and export posture.',
-            metrics: [
-              metric('Readiness', '71%', 'ACHC survey posture', 'orange'),
-              metric('Open gaps', '2', 'PARTIAL and GAP rows', 'orange'),
-              metric('Evidence', '18', 'Locked artifacts', 'green'),
-              metric('Export', 'Ready', 'HTML and markdown', 'teal'),
-            ],
-            packetBadge: 'Survey packet - AU-2026-0618',
-            packetTitle: 'QAPI Committee Review Packet',
-            packetDescription: 'A fixed-order packet lets surveyors review summary, checks, evidence, deficiency reasoning, and certification without switching tools.',
-            packetSections: surveyPacketSections,
-            deficiencyRows: surveyDeficiencies,
-            cards: [
-              card('Evidence chain', '18 locked artifacts include content hash, uploader, source policy, workflow instance, and retention state.', 'teal', 'folder-open', 96),
-              card('Certification state', 'Administrator approval is ready; governing body minutes signature remains the only open control.', 'orange', 'badge-check', 74),
-            ],
-            cta: 'Export packet',
-            secondary: 'Copy link',
-          }),
-          view('workflows', 'Compliance Execution', 'Workflows Library', '/workflows', 'workflow', 'matrix', {
+          view('workflows', 'Compliance Execution (CES)', 'Workflows Library', '/workflows', 'workflow', 'matrix', {
             records: workflowRecords,
             tableHeaders: ['Workflow ID', 'Workflow title', 'Domain / owner', 'Status'],
             metrics: [
@@ -1252,7 +1252,7 @@
               card('Governance cadence', 'Quarterly governing body packet links calendar, policy, forms, minutes, and eCIgn certificate.', 'teal', 'landmark', 84),
             ],
           }),
-          view('workflow-swimlane', 'Compliance Execution', 'Workflow Swimlane', '/workflows/:workflowId/swimlane', 'git-branch', 'board', {
+          view('workflow-swimlane', 'Compliance Execution (CES)', 'Workflow Swimlane', '/workflows/:workflowId/swimlane', 'git-branch', 'board', {
             description: 'Swimlane execution view for a mandatory event from intake through evidence build, approval, and final packet lock.',
             columns: workflowSwimlaneColumns,
             metrics: [
@@ -1262,7 +1262,7 @@
               metric('Lock state', '64%', 'Pending chair signature', 'orange'),
             ],
           }),
-          view('master-controls', 'Compliance Execution', 'Master Controls', '/compliance/master-controls', 'shield-check', 'matrix', {
+          view('master-controls', 'Compliance Execution (CES)', 'Master Controls', '/compliance/master-controls', 'shield-check', 'matrix', {
             records: masterControlRecords,
             tableHeaders: ['Control ID', 'Control name', 'Risk tier', 'Source status'],
             metrics: [
@@ -1277,7 +1277,7 @@
               card('Control domains', 'After-hours, OASIS, physician orders, infection prevention, emergency prep, and OSHA controls are visible.', 'teal', 'layers', 74),
             ],
           }),
-          view('audit-mode', 'Compliance Execution', 'Audit Mode', '/audit', 'scan-search', 'evidence', {
+          view('audit-mode', 'Compliance Execution (CES)', 'Audit Mode', '/audit', 'scan-search', 'evidence', {
             description: 'Read-only audit queue for readiness states, missing evidence, pending approvals, and certified locked packets.',
             evidenceRows: auditEvidenceRows,
             evidenceTitle: 'Audit health queue',
@@ -1289,7 +1289,7 @@
               metric('Certified locked', '12', 'Final audit state', 'green'),
             ],
           }),
-          view('evidence-center', 'Compliance Execution', 'Evidence Center', '/evidence', 'folder-open', 'evidence', {
+          view('evidence-center', 'Compliance Execution (CES)', 'Evidence Center', '/evidence', 'folder-open', 'evidence', {
             description: 'Evidence repository for policies, forms, eCIgn certificates, source files, audit indexes, and retention state.',
             evidenceRows: evidenceCenterRows,
             evidenceTitle: 'Evidence hierarchy',
@@ -1301,7 +1301,7 @@
               metric('Retention', '7 yrs', 'Default compliance window', 'teal'),
             ],
           }),
-          view('ces-reports', 'Compliance Execution', 'CES Reports', '/ces/reports', 'bar-chart-3', 'reports', {
+          view('ces-reports', 'Compliance Execution (CES)', 'CES Reports', '/ces/reports', 'bar-chart-3', 'reports', {
             description: 'Executive CES reporting for sprint readiness, blockers, evidence throughput, signature aging, and survey exposure.',
             cards: cesReportCards,
             reportTitle: 'Sprint readiness trend',
@@ -1314,7 +1314,7 @@
               metric('Signature SLA', '1 miss', 'Code-computed exception', 'teal'),
             ],
           }),
-          view('mobile-incident', 'Compliance Execution', 'Mobile Incident Execution', '/calendar/event/:eventId/task/:taskId', 'smartphone', 'detail', {
+          view('mobile-incident', 'Compliance Execution (CES)', 'Mobile Incident Execution', '/calendar/event/:eventId/task/:taskId', 'smartphone', 'detail', {
             description: 'Mobile-first action surface for event context, task proof, signature, evidence capture, and approval.',
             title: 'Mobile Incident Execution - Field Intake',
             cards: mobileIncidentCards,
@@ -1325,12 +1325,23 @@
               metric('Packet state', 'Draft', 'Not survey-ready', 'amber'),
             ],
           }),
+          view('my-tasks', 'Compliance Execution (CES)', 'My Tasks', '/my-tasks', 'list-checks', 'board', {
+            metrics: [
+              metric('Assigned', '31', '9 due this week', 'teal'),
+              metric('Blocked', '4', 'Evidence or signature missing', 'orange'),
+              metric('Ready to close', '12', 'All requirements complete', 'green'),
+              metric('Escalated', '2', 'Needs manager decision', 'amber'),
+            ],
+            columns: myTaskColumns,
+            cta: 'Add task',
+            secondary: 'Filter queue',
+          }),
         ],
       },
       {
-        title: 'Policy, Forms, Taxonomy',
+        title: 'Taxonomy',
         items: [
-          view('framework', 'Policy, Forms, Taxonomy', 'Framework', '/framework', 'network', 'framework', {
+          view('framework', 'Taxonomy', 'Framework', '/framework', 'network', 'framework', {
             description: 'Architecture map tying domains, subdomains, policies, forms, workflows, and regulatory authorities together.',
             frameworkDomains,
             frameworkMetrics: [
@@ -1340,7 +1351,7 @@
               metric('Lifecycle corpus', '279', 'Draft records tracked separately', 'green'),
             ],
           }),
-          view('achc-survey', 'Policy, Forms, Taxonomy', 'ACHC Survey Alignment', '/framework/achc-survey', 'award', 'achc-survey', {
+          view('achc-survey', 'Taxonomy', 'ACHC Survey Alignment', '/framework/achc-survey', 'award', 'achc-survey', {
             description: 'Surveyor evidence explorer for ACHC HH standards, policy support, open gaps, and readiness notes.',
             achcRows: achcSurveyRowsSeed,
             surveyPrompt: 'Show evidence that governing body authority, comprehensive assessment, and HIPAA controls are active.',
@@ -1354,7 +1365,7 @@
             cta: 'Open evidence',
             secondary: 'Filter standards',
           }),
-          view('achc-crosswalk', 'Policy, Forms, Taxonomy', 'ACHC Crosswalk', '/framework/achc-survey?view=crosswalk', 'network', 'achc-crosswalk', {
+          view('achc-crosswalk', 'Taxonomy', 'ACHC Crosswalk', '/framework/achc-survey?view=crosswalk', 'network', 'achc-crosswalk', {
             description: 'Crosswalk table connecting ACHC standards, CMS/Title 22 references, policies, forms, and evidence type.',
             crosswalkRows: achcCrosswalkRowsSeed,
             metrics: [
@@ -1366,7 +1377,7 @@
             cta: 'Export crosswalk',
             secondary: 'Open filters',
           }),
-          view('policy-library', 'Policy, Forms, Taxonomy', 'Policy Library', '/library', 'book-open', 'matrix', {
+          view('policy-library', 'Taxonomy', 'Policy Library', '/library', 'book-open', 'matrix', {
             records: policyRecords,
             tableHeaders: ['Policy ID', 'Policy title', 'Owner steward', 'Status'],
             metrics: [
@@ -1381,7 +1392,7 @@
               card('Version control', 'Published records retain effective date, next review, source provenance, and acknowledgement posture.', 'teal', 'history', 86),
             ],
           }),
-          view('policy-detail', 'Policy, Forms, Taxonomy', 'Policy Viewer', '/library/:policyId', 'file-text', 'policy-viewer', {
+          view('policy-detail', 'Taxonomy', 'Policy Viewer', '/library/:policyId', 'file-text', 'policy-viewer', {
             title: 'GV-GB-001 - Governing Body Authority',
             description: 'Policy reader with version, approval status, appendices, linked forms, and audit-safe print actions.',
             policyBadge: 'GV-GB-001 - v6.0',
@@ -1399,17 +1410,7 @@
               ['CoP', '42 CFR 484.105'],
             ],
           }),
-          view('policy-lifecycle', 'Policy, Forms, Taxonomy', 'Policy Lifecycle', '/policy-lifecycle', 'file-edit', 'lifecycle', {
-            description: 'Unified lifecycle workspace for draft, review, approval, publication, archival, and state-machine transitions.',
-            lifecycleStages: policyLifecycleStages,
-            metrics: [
-              metric('DRAFT', '279', 'Seed lifecycle records', 'orange'),
-              metric('REVIEW', '0', 'Awaiting submit intent', 'teal'),
-              metric('APPROVED', '0', 'Awaiting approve intent', 'green'),
-              metric('PUBLISHED', '0', 'Lifecycle state only', 'teal'),
-            ],
-          }),
-          view('forms-library', 'Policy, Forms, Taxonomy', 'Forms Library', '/forms', 'clipboard-list', 'matrix', {
+          view('forms-library', 'Taxonomy', 'Forms Library', '/forms', 'clipboard-list', 'matrix', {
             records: formRecords,
             tableHeaders: ['Form ID', 'Form title', 'Type', 'Status'],
             metrics: [
@@ -1424,7 +1425,7 @@
               card('Signature readiness', 'Attestation and approval forms expose signer slots before routing into eCIgn.', 'orange', 'pen-line', 72),
             ],
           }),
-          view('form-viewer', 'Policy, Forms, Taxonomy', 'Form Viewer', '/forms/:formId', 'clipboard-list', 'form-viewer', {
+          view('form-viewer', 'Taxonomy', 'Form Viewer', '/forms/:formId', 'clipboard-list', 'form-viewer', {
             title: 'GV-FM-006 - Conflict of Interest Disclosure',
             description: 'Structured form renderer with sections, validation, signer requirements, and linked policy context.',
             formSections: formViewerSections,
@@ -1445,7 +1446,7 @@
             cta: 'Validate form',
             secondary: 'Save draft',
           }),
-          view('ecign-workspace', 'Policy, Forms, Taxonomy', 'eCIgn Signing', '/forms/:formId', 'pen-line', 'ecign', {
+          view('ecign-workspace', 'Taxonomy', 'eCIgn Signing', '/forms/:formId', 'pen-line', 'ecign', {
             title: 'eCIgn Signing Workspace',
             description: 'Signature workflow for signer assignment, typed signature, attestation, certificate, and audit trail.',
             signingSequence: ecignSigners,
@@ -1461,7 +1462,7 @@
             cta: 'Send signature',
             secondary: 'Preview certificate',
           }),
-          view('artifact-viewer', 'Policy, Forms, Taxonomy', 'Artifact Viewer', '/artifacts/:artifactId', 'file-search', 'detail', {
+          view('artifact-viewer', 'Taxonomy', 'Artifact Viewer', '/artifacts/:artifactId', 'file-search', 'detail', {
             title: 'Artifact Viewer - Evidence Package Summary',
             description: 'Read-only artifact surface for form instances, evidence, signature packets, audit packets, and evidence packages.',
             cards: [
@@ -1470,7 +1471,7 @@
               card('Status posture', 'Examples include VALIDATED, PROMOTED, EVIDENCE_LOCKED, SUPERSEDED, SIGNED, and LOCKED.', 'orange', 'shield-check', 72),
             ],
           }),
-          view('generic-reference', 'Policy, Forms, Taxonomy', 'Reference Viewer', '/viewer/:referenceId', 'panel-right-open', 'reference-viewer', {
+          view('generic-reference', 'Taxonomy', 'Reference Viewer', '/viewer/:referenceId', 'panel-right-open', 'reference-viewer', {
             title: 'Reference Viewer',
             description: 'Structured reference reader with source context, linked policies, citations, and artifact handoff.',
             referenceBadge: 'Operational guide',
@@ -1486,25 +1487,12 @@
             cta: 'Open source',
             secondary: 'Copy citation',
           }),
-          view('governance', 'Policy, Forms, Taxonomy', 'Governance', '/governance', 'landmark', 'reports', {
-            description: 'Governance command view for policy council queue, lifecycle approvals, crosswalk stewardship, and acknowledgment oversight.',
-            cards: governanceReportCards,
-            reportTitle: 'Governance operating posture',
-            reportBars: [64, 68, 71, 74, 73, 78, 81, 83, 86, 88],
-            reportLabels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
-            metrics: [
-              metric('Total policies', '269', 'Governance page scope', 'teal'),
-              metric('Drafts', '269', 'Store-derived governance state', 'orange'),
-              metric('Under review', '0', 'No submitted records', 'teal'),
-              metric('Published', '0', 'Governance lifecycle state', 'slate'),
-            ],
-          }),
         ],
       },
       {
-        title: 'Onboarding and Training',
+        title: 'Onboarding',
         items: [
-          view('journey-overview', 'Onboarding and Training', 'Journey Overview', '/journey', 'route', 'journey', {
+          view('journey-overview', 'Onboarding', 'Journey Overview', '/journey', 'route', 'journey', {
             description: 'Phase-gated competency journey for new hires. GAO + role-specific modules with gating, evidence, and supervisor sign-off.',
             learner: journeyLearner,
             modules: journeyModules,
@@ -1522,7 +1510,7 @@
               card('Evidence & sigs', 'ReturnDemo and SupervisedVisit require dual signature capture.', 'teal', 'pen-line', 55),
             ],
           }),
-          view('journey-v1', 'Onboarding and Training', 'Journey v1', '/journey/v1-journey', 'map', 'journey', {
+          view('journey-v1', 'Onboarding', 'Journey v1', '/journey/v1-journey', 'map', 'journey', {
             description: 'Legacy topic/lesson view with onboarding and annual ACHC tracks. Lesson cards and assessments.',
             learner: journeyLearner,
             modules: journeyModules.slice(0, 7),
@@ -1532,7 +1520,7 @@
               metric('ACHC', '2', 'Annual refresh', 'orange'),
             ],
           }),
-          view('module-player', 'Onboarding and Training', 'Module Player', '/journey/module/:moduleId', 'play-circle', 'journey', {
+          view('module-player', 'Onboarding', 'Module Player', '/journey/module/:moduleId', 'play-circle', 'journey', {
             description: 'SCORM or EvidenceCapture player. Method-aware: Quiz vs ReturnDemo/SkillsCheckoff vs SupervisedVisit.',
             learner: journeyLearner,
             modules: journeyModules,
@@ -1544,7 +1532,7 @@
               metric('Score', '100%', 'Supervisor signed', 'teal'),
             ],
           }),
-          view('appendix-f', 'Onboarding and Training', 'Appendix F', '/journey/appendix-f', 'scroll-text', 'matrix', {
+          view('appendix-f', 'Onboarding', 'Appendix F', '/journey/appendix-f', 'scroll-text', 'matrix', {
             description: 'HR-TA-001 Appendix F — Pre-Employment Screening Checklist (HARD STOP). Every item must be PASS or N/A + HR Director signature before any work or orientation begins.',
             records: [
               ['1', 'Criminal background check completed & CLEARED', 'HR-TA-002', 'PASS'],
@@ -1573,7 +1561,7 @@
               card('HR Director signoff', 'Only HR Director role can finalize Appendix F. Dual signature not required here.', 'teal', 'pen-line', 100),
             ],
           }),
-          view('supervisor', 'Onboarding and Training', 'Supervisor View', '/journey/supervisor', 'user-check', 'profiles', {
+          view('supervisor', 'Onboarding', 'Supervisor View', '/journey/supervisor', 'user-check', 'profiles', {
             description: 'DON / preceptor roster. Progress by GAO/Role/Supervised/Annual, clearance gates (HR-TA-005 App B), supervised visit logging, escalations, and remediation.',
             records: [
               ['EMP-1001', 'Maria Santos, RN', 'RN', '60%', '25%', '0/2', '1', 'In progress'],
@@ -1605,7 +1593,7 @@
               card('Quick actions', 'Log supervised visit (rating + sigs), open remediation plan, acknowledge escalations.', 'orange', 'user-plus', 70),
             ],
           }),
-          view('journey-admin', 'Onboarding and Training', 'Journey Admin', '/journey/admin', 'settings-2', 'admin', {
+          view('journey-admin', 'Onboarding', 'Journey Admin', '/journey/admin', 'settings-2', 'admin', {
             description: 'Onboarding command center for catalog, escalations, evidence readiness, and annual cycle oversight (HR-TA-005, HR-TD-003).',
             records: [
               ['GAO-001..EXAM', '28 modules', 'ALL roles', 'Active'],
@@ -1627,7 +1615,7 @@
               card('Escalations', 'LICENSE_EXPIRING, COMPETENCY_FAIL, MISSING_SUPERVISED_VISIT, APPENDIX_F_INCOMPLETE. Acknowledge/resolve workflow.', 'orange', 'alert-triangle', 65),
             ],
           }),
-          view('user-guide', 'Onboarding and Training', 'User Guide', '/journey/guide', 'book-marked', 'docs', {
+          view('user-guide', 'Onboarding', 'User Guide', '/journey/guide', 'book-marked', 'docs', {
             description: 'Step-by-step procedures, policy citations and survey-ready expectations. Persona-specific guides. Contextual links to full Help Center articles.',
             docs: [
               ['Day 0 — Pre-Day-1 (Appendix F hard stop)', 'All items PASS/NA + HR Director signature before any work (HR-TA-001). See /help/ov2-overview and /help/getting-started.'],
@@ -1638,7 +1626,12 @@
               ['Contextual User-Guide Links', 'Dashboard → /help/dashboard-overview; Calendar → /help/calendar-overview; Forms/Signing → /help/signing-step-1-disclosure; Audit → /help/audit-mode-overview; Evidence → /help/evidence-center-overview; Master Controls → /help/master-controls-overview.'],
             ],
           }),
-          view('onboarding-v2-dashboard', 'Onboarding and Training', 'Onboarding v2 Dashboard', '/onboarding-v2/dashboard', 'sparkles', 'dashboard', {
+        ],
+      },
+      {
+        title: 'Onboarding v2',
+        items: [
+          view('onboarding-v2-dashboard', 'Onboarding v2', 'Onboarding v2 Dashboard', '/onboarding-v2/dashboard', 'sparkles', 'dashboard', {
             description: 'Audit-grade Compliance Activation Dashboard. Live KPIs from batch/unit state, subject gates (5 fixed), phase distribution, reconciled evidence, hash-chained audit feed. Powered by engine ingest + reconcile.',
             metrics: onboardingV2DashboardKpis.map(k => metric(k.label, k.value, k.note, k.tone || 'teal')),
             actionTitle: 'Compliance activation queue',
@@ -1657,7 +1650,7 @@
             ],
             gateTiles: onboardingV2Gates,
           }),
-          view('onboarding-v2-activate', 'Onboarding and Training', 'Activate Subject', '/onboarding-v2/activate', 'user-plus', 'form', {
+          view('onboarding-v2-activate', 'Onboarding v2', 'Activate Subject', '/onboarding-v2/activate', 'user-plus', 'form', {
             description: 'Ingest deterministic trigger (NEW_HIRE / ROLE_CHANGE / ANNUAL_REVALIDATION / POLICY_VERSION_CHANGE / VENDOR_ONBOARD). Live reconciliation preview (suppressed vs. emit per requirementsForRole + reconcile). Emits batch + units (hash-chained).',
             formSections: ['Subject', 'Trigger', 'Roles', 'Reconciliation Preview', 'Activate'],
             formFields: [
@@ -1674,25 +1667,25 @@
             records: [['WM-001 + NEW_HIRE + RN', '12 new units', '3 signatures (HIPAA/COC/AUP)', 'FieldClearance gate impacted']],
             tableHeaders: ['Selection', 'Units Emitted', 'Signatures/Evidence', 'Downstream Gates'],
           }),
-          view('onboarding-v2-batches', 'Onboarding and Training', 'Batches', '/onboarding-v2/batches', 'package-check', 'matrix', {
+          view('onboarding-v2-batches', 'Onboarding v2', 'Batches', '/onboarding-v2/batches', 'package-check', 'matrix', {
             records: onboardingV2Batches,
             tableHeaders: ['Batch', 'Subject', 'Trigger', 'Role', 'Effective', 'Units', 'Status'],
             metrics: [metric('Active', '5', 'Not completed', 'teal'), metric('Blocked', '1', 'Pre-condition', 'orange')],
           }),
-          view('onboarding-v2-batch', 'Onboarding and Training', 'Batch View', '/onboarding-v2/batches/:batchId', 'package-open', 'detail', {
+          view('onboarding-v2-batch', 'Onboarding v2', 'Batch View', '/onboarding-v2/batches/:batchId', 'package-open', 'detail', {
             description: 'Subject roster, gate status (Field/SystemAccess etc.), phase accordions, units with evidence/signature tabs, audit timeline. Dynamic per batchId.',
             records: onboardingV2Subjects,
             tableHeaders: ['ID', 'Subject', 'Role', 'Batch', 'Progress', 'Gate', 'Status'],
             gateTiles: onboardingV2Gates,
             batchDetail: onboardingV2BatchDetail,
           }),
-          view('onboarding-v2-audit', 'Onboarding and Training', 'Audit Readiness', '/onboarding-v2/audit', 'clipboard-check', 'evidence', {
+          view('onboarding-v2-audit', 'Onboarding v2', 'Audit Readiness', '/onboarding-v2/audit', 'clipboard-check', 'evidence', {
             description: 'Subject dossier, hash-chain verification, GateTiles, UnitTables by evidence type, overrides, full AuditTimeline.',
             records: onboardingV2AuditItems,
             tableHeaders: ['Requirement', 'Subject', 'Status', 'Policy Ref', 'Action'],
             metrics: [metric('Chain', 'Verified', '14 events', 'teal'), metric('Blockers', '3', 'Signatures', 'orange')],
           }),
-          view('onboarding-v2-governance', 'Onboarding and Training', 'Onboarding Governance', '/onboarding-v2/governance', 'shield', 'reports', {
+          view('onboarding-v2-governance', 'Onboarding v2', 'Onboarding Governance', '/onboarding-v2/governance', 'shield', 'reports', {
             description: 'Override grants (dual-sig), active vendors, policy version bindings, readiness reports.',
             records: onboardingV2ActiveOverrides,
             tableHeaders: ['Override', 'Gate', 'Reason', 'Valid Window'],
@@ -1701,78 +1694,38 @@
         ],
       },
       {
-        title: 'PM and Administration',
+        title: 'Policy Lifecycle',
         items: [
-          view('pm-my-tasks', 'PM and Administration', 'PM My Tasks', '/pm/my-tasks', 'list-todo', 'board', {
-            description: 'Sprint-scoped task board. CES projected + personal tasks. Tabbed filters and DnD. Full status columns + realistic CES/personal mix.',
-            columns: pmMyTasksColumns,
-            kanbanBoardColumns: pmKanbanBoardColumns,
-            seedPmTasks: pmSeedPmTasks,
+          view('policy-lifecycle', 'Policy Lifecycle', 'Policy Lifecycle', '/policy-lifecycle', 'file-edit', 'lifecycle', {
+            description: 'Unified lifecycle workspace for draft, review, approval, publication, archival, and state-machine transitions.',
+            lifecycleStages: policyLifecycleStages,
             metrics: [
-              metric('Sprint', '2026-12', 'Jun 7-20', 'teal'),
-              metric('Assigned', '8', 'My queue', 'orange'),
-              metric('In review', '1', 'Approvals', 'amber'),
-              metric('Blocked', '2', 'Deps', 'orange'),
+              metric('DRAFT', '279', 'Seed lifecycle records', 'orange'),
+              metric('REVIEW', '0', 'Awaiting submit intent', 'teal'),
+              metric('APPROVED', '0', 'Awaiting approve intent', 'green'),
+              metric('PUBLISHED', '0', 'Lifecycle state only', 'teal'),
             ],
           }),
-          view('pm-dashboard', 'PM and Administration', 'PM Dashboard', '/pm/dashboard', 'line-chart', 'reports', {
-            description: 'Burndown (14-day ideal vs actual), throughput (last 6 sprints), status mix for current and recent sprints.',
+        ],
+      },
+      {
+        title: 'Hubstaff',
+        items: [
+          view('hubstaff', 'Hubstaff', 'Hubstaff', '/hubstaff', 'arrow-up-circle', 'reports', {
+            description: 'Time tracking integration for field visits, mileage, and compliance with visit note timeliness.',
             metrics: [
-              metric('Current pts', '23', 'Remaining', 'orange'),
-              metric('Throughput', '7', 'Current sprint', 'teal'),
-              metric('Velocity', '3.2', 'Story pts/day', 'green'),
-              metric('Max throughput', '19', 'Last 6 sprints', 'teal'),
+              metric('Hours logged', '1248', 'This period', 'teal'),
+              metric('Field visits', '312', 'Matched to tasks', 'orange'),
+              metric('Note timeliness', '94%', 'Within SLA', 'green'),
             ],
-            cards: [
-              card('Burndown', 'Ideal vs actual remaining points. Current sprint 2026-12.', 'teal', 'line-chart', 68),
-            ],
-            burndownData: pmBurndownData,
-            statusMix: pmStatusMixMetrics,
+            cards: [card('Integration', 'Visit clusters auto-create tasks. Gaps flagged in Primary Ops.', 'teal', 'arrow-up-circle', 82)],
           }),
-          view('pm-sprint-plan', 'PM and Administration', 'Sprint Plan', '/pm/sprint-plan', 'calendar-plus', 'board', {
-            description: 'Allocator view. Capacity, proposed allocation, commit to sprint. Uses sprint windows, projected tasks, overlays for pins.',
-            metrics: [
-              metric('Sprint', currentSprintSeed.id, currentSprintSeed.startDate + '–' + currentSprintSeed.endDate, 'teal'),
-              metric('Capacity total', '65', 'Across assignees', 'teal'),
-              metric('Tasks in window', pmProjectedTasksSeed.filter(t => t.sprint_id === '2026-12').length.toString(), 'Candidates + pinned', 'green'),
-            ],
-            sprintWindows: pmSprintWindowsSeed,
-            currentSprint: currentSprintSeed,
-            projectedTasks: pmProjectedTasksSeed,
-            overlays: pmOverlaySeed,
-            columns: pmSprintPlanColumns,
-            cards: [
-              card('Allocator ready', 'Greedy by priority/due/points. Demo proposals would pin high-risk to assignees within capacity.', 'teal', 'calendar-plus', 40),
-            ],
-          }),
-          view('pm-gantt', 'PM and Administration', 'Gantt Timeline', '/calendar?view=gantt', 'calendar-range', 'gantt', {
-            description: 'Project Gantt for CES projected tasks, event pipelines, dependency timing, and blocked handoffs.',
-            metrics: [
-              metric('Sprint span', '14d', currentSprintSeed.startDate + '–' + currentSprintSeed.endDate, 'teal'),
-              metric('Event groups', '3', 'Risk + QAPI + personal', 'green'),
-              metric('Blocked links', '1', 'Dependency attention', 'orange'),
-              metric('Complete', '20%', 'In window', 'teal'),
-            ],
-            cta: 'Open task',
-            secondary: 'Sprint filters',
-            sprint: currentSprintSeed,
-            ganttTasks: pmProjectedTasksSeed.filter(t => t.sprint_id === '2026-12' || !t.sprint_id),
-          }),
-          view('pm-sprint-review', 'PM and Administration', 'Sprint Review', '/pm/sprint-review', 'presentation', 'reports', {
-            description: 'Delivered vs committed, carry-over, per-assignee performance.',
-            metrics: [
-              metric('Committed', '22', 'Pts', 'teal'),
-              metric('Delivered', '15', 'Pts', 'green'),
-              metric('Carry over', '4', 'Tasks', 'orange'),
-            ],
-          }),
-          view('pm-approvals', 'PM and Administration', 'Approvals Queue', '/pm/approvals', 'badge-check', 'matrix', {
-            description: 'in_review tasks requiring sign-off or packet decision.',
-            records: pmApprovals,
-            tableHeaders: ['Task', 'Title', 'Assignee', 'Due', 'Status', 'Pts'],
-            metrics: [metric('Queue', '2', 'Awaiting decision', 'amber')],
-          }),
-          view('system-docs', 'PM and Administration', 'System Documentation', '/system-documentation/:sectionId', 'folder-open-dot', 'docs', {
+        ],
+      },
+      {
+        title: 'System Documentation',
+        items: [
+          view('system-docs', 'System Documentation', 'System Documentation', '/system-documentation/:sectionId', 'folder-open-dot', 'docs', {
             docs: [
               ['CES Execution', 'State machine, event tasks, evidence hierarchy, and signer flows.'],
               ['Journey & Onboarding', 'Phases (GAO/ROLE/SUPERVISED), gating, Appendix F, competency methods.'],
@@ -1781,7 +1734,7 @@
               ['Audit & Evidence', 'Retention, export packets, surveyor views, escalation engine.'],
             ],
           }),
-          view('help-center', 'PM and Administration', 'Help Center', '/help/*', 'help-circle', 'docs', {
+          view('help-center', 'System Documentation', 'Help Center', '/help/*', 'help-circle', 'docs', {
             docs: [
               ['Getting Started', 'First login, roles/tiers, navigation, overview of CI-App eCIgn.'],
               ['Onboarding v2', 'Role-based flows, CES integration, evidence/forms, competency (12-subject HHA), policy acknowledgments, eCIgn signatures, audit readiness, revalidation, vendor/governance, overrides, troubleshooting, surveyor answers.'],
@@ -1798,16 +1751,25 @@
               ['iAdministrator (Brad)', 'Overview and usage for AI-assisted operational guidance.'],
             ],
           }),
-          view('hubstaff', 'PM and Administration', 'Hubstaff', '/hubstaff', 'arrow-up-circle', 'reports', {
-            description: 'Time tracking integration for field visits, mileage, and compliance with visit note timeliness.',
+          view('governance', 'System Documentation', 'Governance', '/governance', 'landmark', 'reports', {
+            description: 'Governance command view for policy council queue, lifecycle approvals, crosswalk stewardship, and acknowledgment oversight.',
+            cards: governanceReportCards,
+            reportTitle: 'Governance operating posture',
+            reportBars: [64, 68, 71, 74, 73, 78, 81, 83, 86, 88],
+            reportLabels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
             metrics: [
-              metric('Hours logged', '1248', 'This period', 'teal'),
-              metric('Field visits', '312', 'Matched to tasks', 'orange'),
-              metric('Note timeliness', '94%', 'Within SLA', 'green'),
+              metric('Total policies', '269', 'Governance page scope', 'teal'),
+              metric('Drafts', '269', 'Store-derived governance state', 'orange'),
+              metric('Under review', '0', 'No submitted records', 'teal'),
+              metric('Published', '0', 'Governance lifecycle state', 'slate'),
             ],
-            cards: [card('Integration', 'Visit clusters auto-create tasks. Gaps flagged in Primary Ops.', 'teal', 'arrow-up-circle', 82)],
           }),
-          view('admin-groups', 'PM and Administration', 'Admin User Groups', '/admin/user-groups', 'users-round', 'admin', {
+        ],
+      },
+      {
+        title: 'Admin',
+        items: [
+          view('admin-groups', 'Admin', 'Admin User Groups', '/admin/user-groups', 'users-round', 'admin', {
             records: [
               ['Super Admin', '8', 'Full platform', 'Enabled'],
               ['Compliance', '12', 'Policy, CES, Evidence', 'Enabled'],
@@ -1816,19 +1778,19 @@
             ],
             tableHeaders: ['Group', 'Users', 'Access scope', 'Status'],
           }),
-          view('admin-roles', 'PM and Administration', 'Admin Roles', '/admin/roles', 'key-round', 'admin', {
+          view('admin-roles', 'Admin', 'Admin Roles', '/admin/roles', 'key-round', 'admin', {
             records: [['Clinical Manager', 'Policy + CES', 'Enabled'], ['QAPI Lead', 'Reports + Evidence', 'Enabled']],
             tableHeaders: ['Role', 'Scope', 'Status'],
           }),
-          view('admin-permissions', 'PM and Administration', 'Permission Catalog', '/admin/permissions', 'shield-check', 'admin', {
+          view('admin-permissions', 'Admin', 'Permission Catalog', '/admin/permissions', 'shield-check', 'admin', {
             records: [['pmTasks.view', 'PM board access', 'Granted'], ['journey.admin', 'Catalog edits', 'Dual approval']],
             tableHeaders: ['Permission', 'Description', 'State'],
           }),
-          view('admin-users', 'PM and Administration', 'User Assignments', '/admin/users', 'user-cog', 'admin', {
+          view('admin-users', 'Admin', 'User Assignments', '/admin/users', 'user-cog', 'admin', {
             records: [['u-don-01', 'Maria Gonzalez', 'DON', 'All clinical'], ['demo-user-careindeed', 'Ops Lead', 'Primary Ops', 'Active']],
             tableHeaders: ['ID', 'Name', 'Role', 'Assignments'],
           }),
-          view('surveyor-viewer', 'PM and Administration', 'Surveyor Policy Viewer', '/surveyor/policy/:policyId', 'eye', 'surveyor-policy', {
+          view('surveyor-viewer', 'Admin', 'Surveyor Policy Viewer', '/surveyor/policy/:policyId', 'eye', 'surveyor-policy', {
             title: 'Surveyor Policy Viewer',
             description: 'Read-only surveyor lens for policy content, evidence support, crosswalk anchors, and deficiency prompts.',
             metrics: [
@@ -1843,9 +1805,9 @@
         ],
       },
       {
-        title: 'Interaction Surfaces',
+        title: 'Prototypes & Overlays',
         items: [
-          view('modal-system', 'Interaction Surfaces', 'Modal System', 'prototype://modal', 'panel-top-open', 'overlays', {
+          view('modal-system', 'Prototypes & Overlays', 'Modal System', 'prototype://modal', 'panel-top-open', 'overlays', {
             description: 'Blocking policy/evidence review modals and confirmation dialogs. V3 veil glass, spotlight, orange primary on compliance workflows. States: idle/open/exiting.',
             metrics: [metric('Modal states', '3', 'Review, confirm, override', 'teal'), metric('Blocking', 'Yes', 'Policy gate', 'orange'), metric('Glass', 'v3-veil', 'Spotlight shell', 'teal')],
             cards: [
@@ -1860,7 +1822,7 @@
               { title: 'Sign QAPI Minutes', subtitle: 'E-SIGNATURE', icon: 'pen-line', tone: 'teal', content: 'SignaturePad + attest. Transitions: draft → signing → signed.' },
             ],
           }),
-          view('drawer-system', 'Interaction Surfaces', 'Drawer System', 'prototype://drawer', 'panel-right-open', 'overlays', {
+          view('drawer-system', 'Prototypes & Overlays', 'Drawer System', 'prototype://drawer', 'panel-right-open', 'overlays', {
             description: 'Right drawer (md/lg) and bottom sheets for task detail, evidence, workflow execution. Responsive (VeilDrawer). Stacked layers for progressive disclosure. V3 glass + 0.7s ease.',
             metrics: [metric('Drawer depth', '1-2', 'Event/task/evidence/form/audit layers', 'teal'), metric('Responsive', 'Right/Bottom', 'md breakpoint', 'orange')],
             cards: [
@@ -1875,21 +1837,14 @@
               { layer: 2, title: 'Task detail', eyebrow: 'T-8841', width: 'lg', content: 'OASIS packet. Evidence status verified/review. Artifact link via buildArtifactRoute.' },
             ],
           }),
-          view('popover-system', 'Interaction Surfaces', 'Popover and Menu System', 'prototype://popover', 'message-square-more', 'overlays', {
+          view('popover-system', 'Prototypes & Overlays', 'Popover and Menu System', 'prototype://popover', 'message-square-more', 'overlays', {
             description: 'Popover, command palette (search policies/tasks), toast notifications, hover cards with compliance context.',
             metrics: [metric('Command palette', 'Search', 'Policies, tasks, evidence', 'teal'), metric('Toasts', 'Non-blocking', 'Success, warn, info', 'orange')],
             cards: [card('Command palette', 'Type to filter routes, policies (GV-*, CL-*), open forms or evidence.', 'teal', 'message-square-more', 85)],
             cta: 'Show popover',
             secondary: 'View menu',
           }),
-          view('personal-ops-panel', 'Interaction Surfaces', 'Personal Ops Panel', 'prototype://personal-ops', 'panel-right', 'personal-ops', {
-            title: "Personal Operations Panel",
-            description: "Right-side personal focus surface with Today's Focus, work queue, calendar, quick actions, and secure-session posture.",
-            metrics: [metric('Focus items', '4', 'Overdue + due soon', 'orange'), metric('Work groups', 'Signatures 3, Evidence 7', 'teal')],
-            cards: [card('Today\'s Focus', 'Missing disclosure signature (GV-FM-006), QAPI packet, credential upload.', 'orange', 'panel-right', 65)],
-            cta: 'Open panel',
-            secondary: 'Review queue',
-          }),
+          
         ],
       },
     ];
@@ -4287,12 +4242,296 @@
       }
     }
 
+
+    function MetricCard({ item }) {
+      return (
+        <div className="hover-lift transition-all duration-300">
+          <MetricTile item={item} />
+        </div>
+      );
+    }
+
+    function RightRail({ children }) {
+      return (
+        <aside className="hidden xl:block w-80 shrink-0 border-l border-brand-teal-100/50 bg-white/40 backdrop-blur-xl p-6 overflow-y-auto">
+          {children}
+        </aside>
+      );
+    }
+
+    function UpcomingEventCard({ title, date, tone }) {
+      return (
+        <div className="bg-white/80 backdrop-blur-lg hover:shadow-md hover-lift p-4 rounded-xl mb-3 border border-brand-teal-100/60 cursor-pointer">
+          <div className="flex items-center gap-2 mb-2">
+            <ToneBadge tone={tone}>{date}</ToneBadge>
+          </div>
+          <p className="text-sm font-bold text-brand-teal-700 leading-snug">{title}</p>
+        </div>
+      );
+    }
+
+    function StatusChip({ status, tone }) {
+      return <ToneBadge tone={tone}>{status}</ToneBadge>;
+    }
+
+    function ActionIconButton({ icon, onClick, title, tone = 'teal' }) {
+      return (
+        <button title={title} onClick={onClick} className={`flex h-8 w-8 items-center justify-center rounded-full hover-lift transition bg-white/60 backdrop-blur-md border border-brand-teal-100/50 text-brand-${tone}-600 hover:bg-white`}>
+          <Icon name={icon} className="h-4 w-4" />
+        </button>
+      );
+    }
+
+    function StatusLegend({ items }) {
+      return (
+        <div className="flex flex-wrap gap-4 mt-5 p-4 rounded-xl bg-white/40 border border-brand-teal-100/30 text-xs font-semibold text-slate-500">
+          {items.map(item => (
+            <div key={item.label} className="flex items-center gap-2">
+              <span className={`h-2.5 w-2.5 rounded-full bg-brand-${item.tone}-500 shadow-sm`}></span>
+              {item.label}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function AppShell({ children }) {
+      return (
+        <div className="prototype-shell min-h-screen">
+          <div className="flex min-h-screen">
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    function Sidebar({ activeView, visibleGroups, sidebarCollapsed, setSidebarCollapsed, query, setQuery, goTo }) {
+      return (
+        <aside className={`bg-white/70 backdrop-blur-xl sticky top-0 hidden h-screen shrink-0 overflow-y-auto border-r border-[#004142]/10 shadow-[10px_0_28px_rgba(0,65,66,0.06)] transition-[width] duration-300 lg:block ${sidebarCollapsed ? 'w-[88px]' : 'w-[292px]'}`}>
+          <div className={`flex items-center gap-3 pb-4 pt-6 ${sidebarCollapsed ? 'flex-col px-3' : 'justify-between px-6'}`}>
+            <img
+              src={sidebarCollapsed ? CAREINDEED_MARK_SRC : '/src/assets/ci-logo-gray.png'}
+              alt="Care Indeed"
+              className={`${sidebarCollapsed ? 'h-11 w-11 rounded-full object-contain' : 'h-12 w-auto object-contain'} transition-all duration-300`}
+            />
+            <button
+              type="button"
+              title={sidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+              onClick={() => {
+                if (!sidebarCollapsed) setQuery('');
+                setSidebarCollapsed(!sidebarCollapsed);
+              }}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-brand-teal-100/50 bg-white hover-lift text-brand-teal-600 shadow-sm transition"
+            >
+              <Icon name={sidebarCollapsed ? 'panel-left-open' : 'panel-left-close'} className="h-4 w-4" />
+            </button>
+          </div>
+          {!sidebarCollapsed && <div className="border-b border-transparent px-6 pb-5">
+            <div className="rounded-2xl border border-brand-teal-100/50 bg-white/80 hover-lift p-4 shadow-sm flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-heading font-extrabold text-brand-teal-700">{ALL_VIEWS.length}</div>
+                <div className="text-[10px] font-heading font-extrabold uppercase tracking-wider text-slate-500">Views</div>
+              </div>
+              <Icon name="activity" className="h-6 w-6 text-brand-teal-400 opacity-50" />
+            </div>
+          </div>}
+          <div className={`${sidebarCollapsed ? 'px-3 pb-4 pt-2' : 'p-4'}`}>
+            {!sidebarCollapsed && <div className="relative mb-5">
+              <Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Filter views..." className="w-full rounded-xl border border-brand-teal-100/50 bg-white/80 py-2.5 pl-9 pr-3 text-sm shadow-sm outline-none focus:border-brand-teal-500 focus:bg-white transition-all duration-300 hover:shadow-md" />
+            </div>}
+            <nav className={sidebarCollapsed ? 'space-y-4' : 'space-y-6'}>
+              {visibleGroups.map((group) => (
+                <div key={group.title}>
+                  {!sidebarCollapsed && <div className="mb-2 px-2 text-[10px] font-heading font-extrabold uppercase tracking-[0.2em] text-slate-400">{group.title}</div>}
+                  <div className={sidebarCollapsed ? 'flex flex-col items-center gap-2' : 'space-y-1'}>
+                    {group.items.map((item) => {
+                      const active = item.id === activeView.id;
+                      return (
+                        <button
+                          key={item.id}
+                          title={item.label}
+                          onClick={() => goTo(item.id)}
+                          className={`flex items-center rounded-xl text-xs font-bold transition ${sidebarCollapsed ? 'h-11 w-11 justify-center px-0 py-0' : 'w-full gap-3 px-3 py-2.5 text-left'} ${active ? 'bg-[#004142] text-white shadow-md hover-lift' : 'text-slate-600 hover:bg-brand-teal-50 hover:text-brand-teal-700 hover:translate-x-1'}`}
+                        >
+                          <Icon name={item.icon} className="h-4 w-4 shrink-0" />
+                          {!sidebarCollapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+          </div>
+        </aside>
+      );
+    }
+
+    function PageHeader({ activeView, isPersonalOpsOpen, setIsPersonalOpsOpen }) {
+      return (
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <ToneBadge tone="teal">{activeView.group || 'MODULE'}</ToneBadge>
+              
+            </div>
+            <h2 className="mt-3 font-heading text-2xl font-extrabold tracking-tight text-brand-teal-700 md:text-3xl">{activeView.title}</h2>
+            <p className="mt-1 max-w-4xl text-sm leading-relaxed text-slate-500 font-medium">{activeView.description}</p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
+            {[
+              ['calendar-days', 'Calendar'],
+              ['bell', 'Notifications'],
+              ['user-round', 'User profile'],
+            ].map(([icon, label], index) => (
+              <button key={label} title={label} onClick={index === 2 ? () => setIsPersonalOpsOpen(!isPersonalOpsOpen) : undefined} className={`relative flex items-center justify-center shadow-sm transition hover-lift h-10 w-10 ${index === 2 ? 'rounded-full' : 'rounded-xl'} ${(index === 2 && isPersonalOpsOpen) ? 'bg-[#004142] text-white border-transparent ring-2 ring-brand-teal-400 ring-offset-2' : 'border border-brand-teal-100/50 text-brand-teal-600 bg-white/70 hover:bg-white'}`}>
+                <Icon name={icon} className={`h-5 w-5`} />
+                {index === 1 && <span className="absolute right-2 top-2 h-2.5 w-2.5 border-2 border-white rounded-full bg-brand-orange-500 animate-pulse"></span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function TopBar({ activeView, isPersonalOpsOpen, setIsPersonalOpsOpen }) {
+      return (
+        <section className="px-4 py-6 md:px-8 z-10 relative">
+          <PageHeader activeView={activeView} isPersonalOpsOpen={isPersonalOpsOpen} setIsPersonalOpsOpen={setIsPersonalOpsOpen} />
+        </section>
+      );
+    }
+
+    
+    function PersonalOpsDrawer({ onClose, onLogout }) {
+      const focusItems = [
+        ['Missing disclosure signature', 'GV-FM-006 - Due today', 'Critical', 'orange'],
+        ['QAPI minutes packet', 'QA-WF-03 - Due Jun 15', 'Review', 'teal'],
+        ['Credential evidence upload', 'HR-PE-001 - Due Jun 16', 'Evidence', 'orange'],
+        ['Emergency drill artifact', 'OP-FM-005 - Due Jun 20', 'Ready', 'green'],
+      ];
+      const workGroups = [
+        ['Signatures', 3, 'pen-line', 'orange'],
+        ['Evidence', 7, 'folder-open', 'teal'],
+        ['Approvals', 4, 'badge-check', 'teal'],
+        ['Security', 1, 'key-round', 'orange'],
+      ];
+
+      return (
+        <aside className="w-[380px] shrink-0 border-l border-[#004142]/10 bg-white shadow-[-10px_0_28px_rgba(0,65,66,0.06)] flex flex-col h-full relative z-20">
+          <header className="border-b border-[#004142]/10 p-5 flex items-start justify-between shrink-0 bg-[#F7FEFF]">
+            <div>
+              <p className="font-heading text-[10px] font-extrabold uppercase tracking-[0.2em] text-brand-teal-500">Personal Operations</p>
+              <h3 className="mt-1 font-heading text-xl font-extrabold text-brand-teal-800">Today's Focus</h3>
+            </div>
+            
+          </header>
+          
+          <div className="p-5 flex-1 overflow-y-auto bg-[#F7FEFF]">
+            <div className="grid grid-cols-5 gap-1.5 mb-6">
+              {['2', '5', '3', '7', '4'].map((value, index) => (
+                <div key={index} className="rounded-lg border border-brand-teal-100 bg-white p-2 text-center shadow-sm">
+                  <div className="text-sm font-heading font-extrabold text-brand-teal-600">{value}</div>
+                  <div className="text-[8px] font-bold uppercase tracking-wider text-brand-neutral-400">{['Late', 'Soon', 'Sign', 'Ev', 'Rev'][index]}</div>
+                </div>
+              ))}
+            </div>
+
+            <section className="mt-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Icon name="alert-circle" className="h-4 w-4 text-brand-orange-500" />
+                <h4 className="font-heading text-xs font-extrabold uppercase tracking-wider text-brand-teal-800">Today's focus</h4>
+              </div>
+              <div className="space-y-2">
+                {focusItems.slice(0, 3).map(([title, meta, status, toneName]) => (
+                  <div key={title} className="rounded-xl border border-brand-teal-100 bg-white p-3 shadow-sm hover-lift cursor-pointer">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-bold text-brand-teal-600">{title}</div>
+                        <div className="mt-1 text-[10px] text-brand-neutral-400">{meta}</div>
+                      </div>
+                      <Icon name="chevron-right" className="h-4 w-4 text-brand-teal-500" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="mt-6">
+              <div className="mb-2 flex items-center gap-2">
+                <Icon name="list-checks" className="h-4 w-4 text-brand-teal-500" />
+                <h4 className="font-heading text-xs font-extrabold uppercase tracking-wider text-brand-teal-800">My work queue</h4>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {workGroups.map(([label, value, icon, toneName]) => (
+                  <button key={label} className="rounded-xl border border-brand-teal-100 bg-white p-3 text-left shadow-sm hover-lift">
+                    <div className="flex items-center justify-between">
+                      <Icon name={icon} className={`h-4 w-4 ${toneName === 'orange' ? 'text-brand-orange-500' : 'text-brand-teal-500'}`} />
+                      <span className="font-heading text-lg font-extrabold text-brand-teal-600">{value}</span>
+                    </div>
+                    <div className="mt-2 text-[10px] font-bold uppercase tracking-wider text-brand-neutral-400">{label}</div>
+                  </button>
+                ))}
+              </div>
+            </section>
+          </div>
+          
+          <footer className="border-t border-[#004142]/10 p-5 shrink-0 bg-white">
+            <button onClick={onLogout} className="w-full rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200 border border-slate-200 shadow-sm flex justify-center items-center gap-2">
+              <Icon name="log-out" className="h-4 w-4" />
+              Log Out (Demo)
+            </button>
+          </footer>
+        </aside>
+      );
+    }
+
     function App() {
       const [activeId, setActiveId] = useState(getInitialViewId);
       const [query, setQuery] = useState('');
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
       const [calendarSwimlaneOpen, setCalendarSwimlaneOpen] = useState(false);
+      
+      const [isPersonalOpsOpen, setIsPersonalOpsOpen] = useState(window.location.hash === '#personal-ops-panel');
+      const [toastMessage, setToastMessage] = useState(null);
+
       const activeView = VIEW_BY_ID[activeId] || VIEW_BY_ID.dashboard;
+
+      useEffect(() => {
+        const onHashChange = () => {
+          if (window.location.hash === '#personal-ops-panel') {
+            setIsPersonalOpsOpen(true);
+          } else {
+            setActiveId(getInitialViewId());
+          }
+        };
+        window.addEventListener('hashchange', onHashChange);
+        return () => window.removeEventListener('hashchange', onHashChange);
+      }, []);
+      
+      useEffect(() => {
+        if (isPersonalOpsOpen) {
+          window.location.hash = 'personal-ops-panel';
+        } else if (window.location.hash === '#personal-ops-panel') {
+          window.location.hash = activeId;
+        }
+      }, [isPersonalOpsOpen, activeId]);
+
+      useEffect(() => {
+        if (toastMessage) {
+          const t = setTimeout(() => setToastMessage(null), 3000);
+          return () => clearTimeout(t);
+        }
+      }, [toastMessage]);
+
+      useEffect(() => {
+        const onKeyDown = (e) => {
+          if (e.key === 'Escape') setIsPersonalOpsOpen(false);
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+      }, []);
 
       useEffect(() => {
         const onHashChange = () => setActiveId(getInitialViewId());
@@ -4337,107 +4576,30 @@
       };
 
       return (
-        <div className="prototype-shell min-h-screen">
-          <div className="flex min-h-screen">
-          <aside className={`sticky top-0 hidden h-screen shrink-0 overflow-y-auto border-r border-white/70 bg-[#E7F3F3]/95 transition-[width] duration-300 lg:block ${sidebarCollapsed ? 'w-[88px]' : 'w-[292px]'}`}>
-            <div className={`flex items-center gap-3 pb-4 pt-6 ${sidebarCollapsed ? 'flex-col px-3' : 'justify-between px-6'}`}>
-              <img
-                src={sidebarCollapsed ? CAREINDEED_MARK_SRC : '/src/assets/ci-logo-gray.png'}
-                alt="Care Indeed"
-                className={`${sidebarCollapsed ? 'h-11 w-11 rounded-full object-contain' : 'h-12 w-auto object-contain'} transition-all duration-300`}
-              />
-              <button
-                type="button"
-                title={sidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'}
-                aria-label={sidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'}
-                onClick={() => {
-                  if (!sidebarCollapsed) setQuery('');
-                  setSidebarCollapsed(!sidebarCollapsed);
-                }}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/95 bg-white/70 text-brand-teal-600 shadow-soft transition hover:bg-white"
-              >
-                <Icon name={sidebarCollapsed ? 'panel-left-open' : 'panel-left-close'} className="h-4 w-4" />
-              </button>
-            </div>
-            {!sidebarCollapsed && <div className="border-b border-transparent px-6 pb-5">
-              <div className="rounded-2xl border border-white/95 bg-white/62 p-4 shadow-soft">
-                <div className="text-2xl font-heading font-extrabold text-brand-teal-500">{ALL_VIEWS.length}</div>
-                <div className="text-[10px] font-heading font-extrabold uppercase tracking-wider text-brand-neutral-400">Active page views covered</div>
-              </div>
-            </div>}
-            <div className={`${sidebarCollapsed ? 'px-3 pb-4 pt-2' : 'p-4'}`}>
-              {!sidebarCollapsed && <div className="relative mb-4">
-                <Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-neutral-400" />
-                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Filter views..." className="w-full rounded-xl border border-white/90 bg-white/70 py-2.5 pl-9 pr-3 text-sm shadow-soft outline-none focus:border-brand-teal-500 focus:bg-white" />
-              </div>}
-              <nav className={sidebarCollapsed ? 'space-y-4' : 'space-y-6'}>
-                {visibleGroups.map((group) => (
-                  <div key={group.title}>
-                    {!sidebarCollapsed && <div className="mb-2 px-2 text-[10px] font-heading font-extrabold uppercase tracking-[0.2em] text-brand-neutral-400">{group.title}</div>}
-                    <div className={sidebarCollapsed ? 'flex flex-col items-center gap-2' : 'space-y-1'}>
-                      {group.items.map((item) => {
-                        const active = item.id === activeView.id;
-                        return (
-                          <button
-                            key={item.id}
-                            title={item.label}
-                            aria-label={item.label}
-                            onClick={() => goTo(item.id)}
-                            className={`flex items-center rounded-xl text-xs font-bold transition ${sidebarCollapsed ? 'h-11 w-11 justify-center px-0 py-0' : 'w-full gap-3 px-3 py-2.5 text-left'} ${active ? 'bg-brand-teal-500 text-white shadow-soft' : 'text-brand-neutral-500 hover:bg-brand-teal-50 hover:text-brand-teal-500'}`}
-                          >
-                            <Icon name={item.icon} className="h-4 w-4 shrink-0" />
-                            {!sidebarCollapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </nav>
-            </div>
-          </aside>
+        <AppShell>
+          <Sidebar 
+            activeView={activeView}
+            visibleGroups={visibleGroups}
+            sidebarCollapsed={sidebarCollapsed}
+            setSidebarCollapsed={setSidebarCollapsed}
+            query={query}
+            setQuery={setQuery}
+            goTo={goTo}
+          />
 
-          <main className="min-w-0 flex-1">
-            {!calendarSwimlaneOpen && (
-            <section className="px-4 py-6 md:px-8">
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <ToneBadge tone="teal">{activeView.eyebrow}</ToneBadge>
-                    <ToneBadge tone="slate">{activeView.route}</ToneBadge>
-                  </div>
-                  <h2 className="mt-3 font-heading text-2xl font-extrabold tracking-tight text-brand-teal-600 md:text-3xl">{activeView.title}</h2>
-                  <p className="mt-1 max-w-4xl text-sm leading-relaxed text-brand-neutral-400">{activeView.description}</p>
-                </div>
-                <div className="flex shrink-0 flex-wrap items-center gap-2">
-                  {[
-                    ['calendar-days', 'Calendar'],
-                    ['bell', 'Notifications'],
-                    ['user-round', 'User profile'],
-                    ['external-link', activeView.cta],
-                    ['download', activeView.secondary],
-                  ].map(([icon, label], index) => (
-                    <button key={label} title={label} className={`relative flex h-11 w-11 items-center justify-center rounded-full border border-white/95 bg-white/80 shadow-soft ${index === 3 ? 'text-brand-orange-500' : 'text-brand-teal-600'}`}>
-                      <Icon name={icon} className="h-5 w-5" />
-                      {index === 1 && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-brand-orange-400"></span>}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </section>
-            )}
+          <main className="min-w-0 flex-1 flex flex-col h-screen overflow-y-auto">
+            {!calendarSwimlaneOpen && <TopBar activeView={activeView} />}
 
-            <div className={`${calendarSwimlaneOpen ? 'p-4 md:p-8' : 'p-4 pt-2 md:p-8 md:pt-2'}`}>
-              {activeView.template !== 'dashboard' && !calendarSwimlaneOpen && (
+            <div className={`flex-1 ${calendarSwimlaneOpen ? 'p-4 md:p-8' : 'p-4 pt-6 md:p-8 md:pt-6'}`}>
+              {activeView.template !== 'dashboard' && !calendarSwimlaneOpen && activeView.metrics && activeView.metrics.length > 0 && (
                 <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                  {activeView.metrics.map((item) => <MetricTile key={item.label} item={item} />)}
+                  {activeView.metrics.map((item) => <MetricCard key={item.label} item={item} />)}
                 </div>
               )}
               {renderTemplate(activeView)}
             </div>
           </main>
-          </div>
-        </div>
+        </AppShell>
       );
     }
 

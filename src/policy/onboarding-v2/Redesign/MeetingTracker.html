@@ -1,0 +1,375 @@
+import React, { useState } from 'react';
+import { 
+  LayoutDashboard, Calendar, Library, Network, FileEdit, 
+  CheckSquare, Send, FileBarChart, HelpCircle, Settings, 
+  ShieldCheck, Search, Bell, ArrowLeft, Printer,
+  Target, UserPlus, PlayCircle, Users, CheckCircle2, 
+  Clock, Bold, Italic, List, Link2, Download, FileText,
+  ChevronRight, MoreVertical, FileCheck, Shield
+} from 'lucide-react';
+
+/**
+ * Governing Body Meeting Minute Tracker
+ * Flagship Component for "Policy Command"
+ * Designed for 16:9 Aspect Ratio / No Scrolling
+ * Strictly aligns with GV-GB-001 (Section 4.5/4.6 Oversight)
+ */
+
+// Meeting context derived from GV-GB-001 standards
+const meetingContext = {
+  id: 'MTG-GB-2026-Q1',
+  title: 'Q1 Governing Body Oversight Session',
+  date: 'Thursday, March 26, 2026',
+  time: '14:00 - 16:00 PST',
+  type: 'Regular Quarterly Meeting',
+  location: 'Executive Boardroom / Secure Video Link',
+  minuteTaker: 'JD • John Doe (Administrator)'
+};
+
+const gbMembers = [
+  { id: 1, name: 'Dr. Sarah Connor', role: 'Governing Body Chair', status: 'Present' },
+  { id: 2, name: 'Marcus Wright', role: 'Financial Advisor (CFO)', status: 'Present' },
+  { id: 3, name: 'Jane Smith', role: 'Director of Nursing', status: 'Present' },
+  { id: 4, name: 'John Doe', role: 'Administrator', status: 'Present' },
+  { id: 5, name: 'Dr. Kyle Reese', role: 'Medical Director', status: 'Pending' },
+];
+
+// Mandatory Approval List (Policy GV-GB-001 Section 4.5)
+const initialMandatoryApprovals = [
+  { id: 'GV-OG-003', title: 'Agency Scope of Services', status: 'Pending' },
+  { id: 'FN-FP-005', title: 'Annual Operating Budget', status: 'Pending' },
+  { id: 'QA-PG-001', title: 'QAPI Program Framework', status: 'Pending' },
+  { id: 'CO-CP-001', title: 'Corporate Compliance Program', status: 'Pending' },
+  { id: 'GV-OG-004', title: 'Annual Strategic Plan', status: 'Pending' }
+];
+
+// Mandatory Report Reviews (Policy GV-GB-001 Section 4.6 & 6.2.3/6.2.4)
+const initialAggregateReports = [
+  { id: 'REP-CL-Q1', title: 'Clinical Record Aggregate', reviewed: false },
+  { id: 'REP-QA-Q1', title: 'QAPI Performance Metrics', reviewed: false },
+  { id: 'REP-CO-Q1', title: 'Quarterly Compliance Report', reviewed: false },
+  { id: 'REP-FN-Q1', title: 'Financial Variance Report', reviewed: false }
+];
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('minutes'); // 'agenda', 'minutes', 'tasks', 'review'
+  const [attendance, setAttendance] = useState(gbMembers);
+  const [approvals, setApprovals] = useState(initialMandatoryApprovals);
+  const [reports, setReports] = useState(initialAggregateReports);
+  const [discussionText, setDiscussionText] = useState("Meeting called to order. Quorum verified per Policy GV-GB-002.\n\n[ADMINISTRATOR REPORT]:\nJD presented the quarterly operational summary...");
+  const [generalMotion, setGeneralMotion] = useState('');
+
+  // Compliance Engine Calculations
+  const totalMandatory = approvals.length + reports.length;
+  const completedMandatory = 
+    approvals.filter(a => a.status.includes('APPROVED')).length + 
+    reports.filter(r => r.reviewed).length;
+  const isSurveyReady = completedMandatory === totalMandatory;
+
+  // Autopilot Logic: Injects formal parliamentary language into minutes
+  const logAction = (type, id, title, action) => {
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    let entry = "";
+    
+    if (type === 'APPROVAL') {
+      entry = `\n\n[${timestamp} - FORMAL VOTE]: Motion made to approve ${id} (${title}). Status: ${action}. \nDiscussion: Governing Body members reviewed the proposed changes and confirmed alignment with 42 CFR § 484.105. \nVote Result: Unanimous Pass.`;
+    } else if (type === 'REPORT') {
+      entry = `\n\n[${timestamp} - OVERSIGHT REVIEW]: The Governing Body received and discussed the ${title} (Ref: ${id}). \nAction: The board verified findings and directed continued monitoring.`;
+    }
+
+    setDiscussionText(prev => prev + entry);
+  };
+
+  const handleAttendance = (id, status) => {
+    setAttendance(attendance.map(m => m.id === id ? { ...m, status } : m));
+  };
+
+  const handleApproval = (id, status) => {
+    const item = approvals.find(a => a.id === id);
+    setApprovals(approvals.map(a => a.id === id ? { ...a, status } : a));
+    if (status.includes('APPROVED')) logAction('APPROVAL', id, item.title, status);
+  };
+
+  const handleReport = (id) => {
+    const item = reports.find(r => r.id === id);
+    if (!item.reviewed) logAction('REPORT', id, item.title, 'REVIEWED');
+    setReports(reports.map(r => r.id === id ? { ...r, reviewed: !r.reviewed } : r));
+  };
+
+  return (
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@400;500;700&display=swap');
+          .font-montserrat { font-family: 'Montserrat', sans-serif; }
+          .font-roboto { font-family: 'Roboto', sans-serif; }
+          ::-webkit-scrollbar { display: none; }
+          body { overflow: hidden; }
+        `}
+      </style>
+
+      <div className="min-h-screen w-full bg-[#111827] flex items-center justify-center overflow-hidden p-2 lg:p-4">
+        
+        {/* 16:9 Display Container */}
+        <div className="flex w-full aspect-video max-h-[95vh] max-w-[calc(95vh*16/9)] mx-auto bg-[#E8EDF2] font-roboto text-gray-900 overflow-hidden relative z-0 shadow-2xl rounded-[12px] ring-1 ring-white/10">
+      
+          {/* Background Visuals */}
+          <div className="absolute top-[-10%] left-[-5%] w-[45vw] h-[45vw] bg-[#007970] rounded-full mix-blend-multiply filter blur-[140px] opacity-[0.12] -z-10 pointer-events-none"></div>
+          <div className="absolute bottom-[-15%] right-[-10%] w-[50vw] h-[50vw] bg-[#C74600] rounded-full mix-blend-multiply filter blur-[160px] opacity-[0.10] -z-10 pointer-events-none"></div>
+
+          {/* Sidebar */}
+          <aside className="w-[180px] bg-white/40 backdrop-blur-3xl flex flex-col shrink-0 z-20 border-r border-white/70 shadow-[4px_0_32px_rgba(0,0,0,0.03)]">
+            <div className="h-10 flex items-center px-3 border-b border-white/60">
+              <ShieldCheck className="w-4 h-4 text-[#C74600] mr-2 drop-shadow-sm" />
+              <div className="flex flex-col">
+                <span className="font-montserrat font-bold text-gray-900 text-[11px] tracking-wide leading-tight">Care Indeed</span>
+                <span className="font-montserrat font-bold text-[#007970] text-[7px] uppercase tracking-widest">Policy Command</span>
+              </div>
+            </div>
+            
+            <nav className="flex-1 py-2 space-y-0.5 overflow-hidden px-2">
+              <SidebarItem icon={<LayoutDashboard size={12} />} label="Dashboard" />
+              <SidebarItem icon={<Calendar size={12} />} label="Compliance Calendar" />
+              <SidebarItem icon={<Library size={12} />} label="Policy Library" />
+              <SidebarItem icon={<Network size={12} />} label="Taxonomy" />
+              <SidebarItem icon={<FileCheck size={12} />} label="Meeting Tracker" active />
+              <SidebarItem icon={<FileEdit size={12} />} label="Drafts" badge="2" />
+              <SidebarItem icon={<CheckSquare size={12} />} label="Review" badge="1" />
+            </nav>
+
+            <div className="p-2 border-t border-white/60 space-y-0.5">
+              <SidebarItem icon={<Settings size={12} />} label="Settings" />
+              <SidebarItem icon={<HelpCircle size={12} />} label="Help Center" />
+              <div className="mt-2 pt-2 border-t border-white/60 px-2 flex items-center">
+                <div className="w-5 h-5 rounded-full bg-[#007970] flex items-center justify-center text-[9px] text-white font-montserrat font-bold">JD</div>
+                <div className="ml-2 flex flex-col">
+                  <span className="text-[9px] text-gray-900 font-bold">John Doe</span>
+                  <span className="text-[7px] text-[#007970] font-bold">Administrator</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Content Area */}
+          <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
+            
+            {/* Top Bar with Time Tracker */}
+            <header className="h-10 bg-white/40 backdrop-blur-2xl border-b border-white/70 flex items-center justify-between px-4 shrink-0 z-10">
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center text-[#007970] bg-[#007970]/10 px-2 py-0.5 rounded border border-[#007970]/20">
+                  <Clock size={10} className="mr-1.5 animate-pulse"/>
+                  <span className="text-[9px] font-montserrat font-extrabold tracking-widest uppercase">Live Session: 01:42:08</span>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="text-[9px] font-montserrat font-bold text-gray-500 uppercase tracking-widest">Administrator View</div>
+                <Bell size={12} className="text-gray-400" />
+              </div>
+            </header>
+
+            {/* Application Content */}
+            <div className="flex-1 flex flex-col p-4 overflow-hidden relative">
+              
+              <div className="absolute inset-4 bg-white shadow-xl rounded-[8px] border border-white/80 overflow-hidden flex flex-col">
+                
+                {/* Tracker Context Header */}
+                <div className="bg-[#007970] text-white p-3 shrink-0 flex flex-col">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h1 className="text-lg font-montserrat font-bold leading-none mb-1">{meetingContext.title}</h1>
+                      <div className="flex items-center text-[9px] font-roboto text-white/80 space-x-3">
+                        <span className="flex items-center"><Calendar size={8} className="mr-1"/> {meetingContext.date}</span>
+                        <span>•</span>
+                        <span className="bg-[#C74600] px-1.5 py-0.5 rounded-[2px] font-bold text-[7px] uppercase tracking-widest">{meetingContext.type}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col items-end">
+                      <div className="flex items-center bg-black/20 px-2 py-1 rounded-[4px] border border-white/10 mb-1">
+                        <div className="flex flex-col items-end mr-3">
+                          <span className="text-[7px] font-montserrat font-bold uppercase tracking-widest text-white/70">Oversight Progress</span>
+                          <span className="text-[10px] font-bold text-white">{completedMandatory} / {totalMandatory} Mandatory Actions</span>
+                        </div>
+                        {isSurveyReady ? <CheckCircle2 size={16} className="text-[#10B981]"/> : <div className="w-3 h-3 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DEDICATED TRACKER NAVIGATION (Tab Bar) */}
+                <div className="flex px-4 bg-gray-50 border-b border-gray-200 shrink-0 overflow-x-auto no-scrollbar">
+                  <TabButton id="agenda" label="Agenda & Pre-reads" active={activeTab} onClick={setActiveTab} icon={<List size={10}/>} />
+                  <TabButton id="minutes" label="Live Minute Tracker" active={activeTab} onClick={setActiveTab} icon={<FileEdit size={10}/>} />
+                  <TabButton id="tasks" label="Action Item Tracker" active={activeTab} onClick={setActiveTab} icon={<CheckSquare size={10}/>} />
+                  <TabButton id="review" label="Review & Authentication" active={activeTab} onClick={setActiveTab} icon={<ShieldCheck size={10}/>} />
+                </div>
+
+                {/* DYNAMIC TRACKER CONTENT */}
+                <div className="flex-1 flex overflow-hidden bg-gray-50/50">
+                  
+                  {activeTab === 'minutes' && (
+                    <div className="flex-1 flex overflow-hidden p-3 gap-3">
+                      {/* Left: Discussion Canvas */}
+                      <div className="w-2/3 flex flex-col gap-3">
+                        <div className="bg-white border border-gray-200 rounded-[6px] p-2 flex flex-col shrink-0 shadow-sm">
+                           <span className="text-[8px] font-montserrat font-bold text-gray-500 uppercase tracking-widest mb-1.5 px-1">Governing Body Attendance (Policy 4.11)</span>
+                           <div className="flex flex-wrap gap-1.5">
+                              {attendance.map(m => (
+                                <button key={m.id} onClick={() => handleAttendance(m.id, m.status === 'Present' ? 'Absent' : 'Present')} className={`px-2 py-1 rounded-[4px] border text-[8px] font-bold transition-all flex items-center ${m.status === 'Present' ? 'bg-[#007970]/10 border-[#007970] text-[#007970]' : 'bg-gray-100 border-gray-200 text-gray-400'}`}>
+                                  <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${m.status === 'Present' ? 'bg-[#007970]' : 'bg-gray-300'}`}></div>
+                                  {m.name}
+                                </button>
+                              ))}
+                           </div>
+                        </div>
+
+                        <div className="flex-1 bg-white border border-gray-200 rounded-[6px] shadow-sm flex flex-col overflow-hidden">
+                          <div className="bg-gray-50 border-b border-gray-200 px-3 py-1.5 flex items-center justify-between shrink-0">
+                            <div className="flex items-center space-x-2">
+                              <Bold size={11} className="text-gray-400 cursor-pointer hover:text-gray-600"/><Italic size={11} className="text-gray-400 cursor-pointer hover:text-gray-600"/><List size={11} className="text-gray-400 cursor-pointer hover:text-gray-600"/>
+                            </div>
+                            <span className="text-[7px] text-gray-400 font-montserrat font-bold uppercase tracking-widest">Auto-Linking Enabled: #GV</span>
+                          </div>
+                          <textarea 
+                            className="flex-1 p-4 text-[10px] text-gray-800 font-roboto focus:outline-none resize-none leading-relaxed bg-white"
+                            value={discussionText}
+                            onChange={(e) => setDiscussionText(e.target.value)}
+                            placeholder="Type minutes here. Autopilot will inject formal motions automatically..."
+                          />
+                        </div>
+                      </div>
+
+                      {/* Right: Compliance Engine (Derived from Section 4.5/4.6) */}
+                      <div className="w-1/3 flex flex-col gap-3 overflow-y-auto pr-1">
+                        
+                        {/* Approvals Widget */}
+                        <div className="bg-white border border-red-200 rounded-[6px] overflow-hidden shadow-sm">
+                          <div className="bg-red-50 px-2 py-1.5 border-b border-red-100 flex justify-between items-center">
+                            <h3 className="text-[9px] font-montserrat font-bold text-[#DC2626] flex items-center"><Target size={10} className="mr-1.5"/> Mandatory Approvals</h3>
+                            <span className="text-[7px] font-bold text-red-300">4.5</span>
+                          </div>
+                          <div className="p-2 space-y-1.5">
+                            {approvals.map(item => (
+                              <div key={item.id} className="flex flex-col gap-1 border-b border-gray-50 pb-1.5 last:border-0">
+                                <span className="text-[8px] font-bold text-gray-700 leading-none">{item.title}</span>
+                                <select 
+                                  value={item.status} 
+                                  onChange={(e) => handleApproval(item.id, e.target.value)}
+                                  className={`text-[8px] border rounded py-1 px-1 transition-colors cursor-pointer outline-none ${item.status.includes('APPROVED') ? 'bg-[#007970]/10 border-[#007970] text-[#007970]' : 'bg-white border-gray-300 text-gray-500'}`}
+                                >
+                                  <option value="Pending">Action Required...</option>
+                                  <option value="APPROVED BY VOTE">APPROVED BY VOTE</option>
+                                  <option value="APPROVED WITH MODS">APPROVED WITH MODS</option>
+                                  <option value="DENIED">DENIED</option>
+                                </select>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Aggregates Widget */}
+                        <div className="bg-white border border-amber-200 rounded-[6px] overflow-hidden shadow-sm">
+                          <div className="bg-amber-50 px-2 py-1.5 border-b border-amber-100 flex justify-between items-center">
+                            <h3 className="text-[9px] font-montserrat font-bold text-[#D97706] flex items-center"><FileBarChart size={10} className="mr-1.5"/> Report Reviews</h3>
+                            <span className="text-[7px] font-bold text-amber-300">4.6</span>
+                          </div>
+                          <div className="p-2 space-y-1">
+                            {reports.map(r => (
+                              <button key={r.id} onClick={() => handleReport(r.id)} className={`w-full text-left p-1.5 rounded flex justify-between items-center border transition-all ${r.reviewed ? 'bg-[#007970]/5 text-[#007970] border-[#007970]/20' : 'bg-gray-50 text-gray-400 border-transparent hover:border-gray-200'}`}>
+                                <div className="flex flex-col">
+                                  <span className="text-[8px] font-bold leading-none">{r.title}</span>
+                                  <span className="text-[6px] uppercase tracking-widest mt-0.5">{r.id}</span>
+                                </div>
+                                {r.reviewed && <CheckCircle2 size={10}/>}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Appointments Widget */}
+                        <div className="bg-white border border-gray-200 rounded-[6px] overflow-hidden shadow-sm">
+                          <div className="bg-gray-50 px-2 py-1.5 border-b border-gray-100 flex justify-between items-center">
+                            <h3 className="text-[9px] font-montserrat font-bold text-gray-600 flex items-center"><UserPlus size={10} className="mr-1.5"/> Key Appointments</h3>
+                          </div>
+                          <div className="p-2 space-y-1.5">
+                            <div className="flex items-center justify-between text-[8px] font-bold text-gray-700">
+                              <span>Administrator Oversight</span>
+                              <input type="checkbox" className="rounded text-[#007970] focus:ring-[#007970] cursor-pointer"/>
+                            </div>
+                            <div className="flex items-center justify-between text-[8px] font-bold text-gray-700">
+                              <span>Director of Nursing Oversight</span>
+                              <input type="checkbox" className="rounded text-[#007970] focus:ring-[#007970] cursor-pointer"/>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Other Tabs (Agenda / Task / Review Views) */}
+                  {activeTab !== 'minutes' && (
+                    <div className="flex-1 flex flex-col items-center justify-center opacity-40">
+                      <FileText size={40} className="text-gray-300 mb-2"/>
+                      <p className="text-[10px] font-montserrat font-bold text-gray-400 uppercase tracking-widest">Navigation Context Switch</p>
+                    </div>
+                  )}
+
+                </div>
+
+                {/* Final Review Submission Bar */}
+                <div className="p-3 bg-white border-t border-gray-100 flex justify-between items-center shrink-0">
+                  <div className="flex items-center">
+                    <Shield size={12} className={isSurveyReady ? "text-[#10B981] mr-2" : "text-gray-300 mr-2"}/>
+                    <span className="text-[9px] font-roboto text-gray-500 font-medium">
+                      {isSurveyReady ? "All mandatory oversight duties documented." : "Complete all approvals to generate final minutes."}
+                    </span>
+                  </div>
+                  <div className="flex space-x-2">
+                     <button className="flex items-center px-4 py-1.5 bg-white border border-gray-300 text-gray-600 rounded-[4px] text-[9px] font-montserrat font-bold hover:bg-gray-50 transition-colors">
+                      <Printer size={10} className="mr-1.5"/> Save Draft
+                    </button>
+                    <button 
+                      disabled={!isSurveyReady}
+                      className={`flex items-center px-6 py-1.5 rounded-[4px] text-[9px] font-montserrat font-bold shadow-md transition-all
+                        ${isSurveyReady ? "bg-[#007970] text-white hover:bg-[#005e57] animate-pulse" : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"}`}
+                    >
+                      <Download size={10} className="mr-1.5"/> DRAFT MINUTES COMPLETED
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </main>
+          
+        </div>
+      </div>
+    </>
+  );
+}
+
+// Subcomponents
+
+function SidebarItem({ icon, label, active = false, badge }) {
+  return (
+    <button className={`w-full flex items-center justify-between px-2 py-1.5 rounded-[4px] mb-0.5 transition-all font-montserrat font-bold text-[9px] ${active ? 'bg-white/70 text-[#007970] shadow-[0_1px_4px_rgba(0,0,0,0.04)] border border-white/90' : 'bg-transparent text-gray-500 hover:bg-white/30 hover:text-gray-900'}`}>
+      <div className="flex items-center space-x-2">
+        <span className={`${active ? 'text-[#007970]' : 'text-gray-400'}`}>{icon}</span>
+        <span className="truncate block">{label}</span>
+      </div>
+      {badge && <span className={`text-[7px] font-bold px-1 py-0.5 rounded-[2px] shadow-sm ${active ? 'bg-[#C74600] text-white' : 'bg-white/60 border border-white/80 text-gray-600'}`}>{badge}</span>}
+    </button>
+  );
+}
+
+function TabButton({ id, label, active, onClick, icon }) {
+  const isActive = active === id;
+  return (
+    <button onClick={() => onClick(id)} className={`flex items-center px-5 py-2.5 border-b-2 text-[9px] font-montserrat font-bold transition-all whitespace-nowrap ${isActive ? 'border-[#007970] text-[#007970] bg-[#007970]/5' : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-white'}`}>
+      <span className={`mr-2 ${isActive ? 'opacity-100' : 'opacity-60'}`}>{icon}</span>
+      {label}
+    </button>
+  );
+}

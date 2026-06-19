@@ -13,7 +13,7 @@ import { resolveCalendarEvent } from '../server/googleCalendar.js';
 import { attachDriveFileToEvent } from '../server/googleCalendar.js';
 import { syncEvent } from '../server/sync/eventSync.js';
 import {
-  buildEnrichedPlannerPayload,
+  buildEnrichedPlannerPayloadLive,
   getCesEnrichment,
 } from '../server/cesCalendarEventBuilder.js';
 import { getCesMetadataStore, type CesEvidenceRef } from '../server/cesMetadataStore.js';
@@ -42,7 +42,10 @@ async function main() {
     process.exit(1);
   }
 
-  const payload = buildEnrichedPlannerPayload(enrichment, { version: 99 });
+  const { payload, snapshot } = await buildEnrichedPlannerPayloadLive(enrichment, { version: 99 });
+  console.log('Completion %:', snapshot.completionPercent);
+  console.log('Evidence attached:', snapshot.evidenceAttachedCount);
+  console.log('eCign:', snapshot.ecignStatus);
 
   console.log('── Resolving / resyncing Calendar event ──');
   const resolved = await resolveCalendarEvent(EVENT_ID, payload);
@@ -104,6 +107,7 @@ async function main() {
   const verify = await resolveCalendarEvent(EVENT_ID, payload);
   console.log('Post-verify Google event ID:', verify?.event.googleEventId);
   console.log('Description includes CES EVENT:', verify?.event.description?.includes('CES EVENT') ?? false);
+  console.log('Description includes Completion:', verify?.event.description?.includes('Completion:') ?? false);
   console.log('Evidence items:', items.length);
   console.log('Attachments:', attachResults.map(r => `${r.fileName}=${r.status}`).join(', '));
 
@@ -118,6 +122,8 @@ async function main() {
     duplicateAvoided: resolved.duplicateAvoided,
     attachments: attachResults,
     evidenceCount: items.length,
+    completionPercent: snapshot.completionPercent,
+    ecignStatus: snapshot.ecignStatus,
   };
   console.log('\n' + JSON.stringify(out, null, 2));
 }

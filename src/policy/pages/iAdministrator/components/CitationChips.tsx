@@ -1,5 +1,6 @@
 import { Quote } from 'lucide-react';
 import type { Citation } from '../lib/responseTypes';
+import { sanitizeCitations } from '../lib/referenceSanitizer';
 import { ReferenceLink } from './ReferenceLink';
 import { ReferenceText } from './ReferenceText';
 
@@ -10,7 +11,8 @@ export interface CitationChipsProps {
 }
 
 export function CitationChips({ citations, isLight, onOpenReference: _onOpenReference }: CitationChipsProps) {
-  if (citations.length === 0) return null;
+  const resolvedCitations = sanitizeCitations(citations, 'CitationChips');
+  if (resolvedCitations.length === 0) return null;
 
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
   const surface = isLight ? '#FFFFFF' : 'rgba(255,255,255,0.025)';
@@ -35,12 +37,12 @@ export function CitationChips({ citations, isLight, onOpenReference: _onOpenRefe
           className="text-[10px] font-semibold uppercase tracking-[0.2em]"
           style={{ color: muted, fontFamily: "'JetBrains Mono', monospace" }}
         >
-          · {citations.length}
+          · {resolvedCitations.length}
         </span>
       </div>
 
       <div className="flex flex-col gap-2">
-        {citations.map(c => {
+        {resolvedCitations.map(c => {
           const isPrimary = c.relevance === 'primary';
           return (
             <div

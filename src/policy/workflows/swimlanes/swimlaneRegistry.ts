@@ -1,4 +1,8 @@
 import { REGULATORY_EVENTS, type RegulatoryEvent } from '@/policy/data/regulatoryEvents';
+// Live data source: canonical REGULATORY_EVENTS (post alignment from mandated/audit/multiYear) + store overlays.
+// Never mock; events + swimlanes derive from this + autogenStore (generated/triggered live) + regulatoryExecutionStore for execution state.
+import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
+import { useAutogenStore } from '@/policy/stores/autogenStore';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { buildSwimlaneFromEvent } from './buildSwimlaneFromEvent';
 import { buildSwimlaneFromWorkflow } from './buildSwimlaneFromWorkflow';
@@ -6,7 +10,7 @@ import { buildFallbackSwimlane } from './buildFallbackSwimlane';
 import { buildEventSwimlaneRoute, buildWorkflowSwimlaneRoute } from './swimlaneRoutes';
 import type { SwimlaneBuildContext, SwimlaneModel } from './types';
 
-export type SwimlaneRegistryState = 'custom' | 'generated' | 'disabled' | 'unavailable';
+export type SwimlaneRegistryState = 'generated' | 'disabled' | 'unavailable';
 
 export interface SwimlaneRegistryEntry {
   workflowId?: string;
@@ -16,15 +20,24 @@ export interface SwimlaneRegistryEntry {
   build: (context?: SwimlaneBuildContext) => SwimlaneModel | null;
 }
 
-const CUSTOM_WORKFLOW_IDS = new Set(['QA-WF-03']);
-
-export function hasCustomSwimlane(workflowId?: string | null): boolean {
-  return Boolean(workflowId && CUSTOM_WORKFLOW_IDS.has(workflowId));
-}
-
 export function getEventById(eventId?: string | null): RegulatoryEvent | undefined {
   if (!eventId) return undefined;
-  return REGULATORY_EVENTS.find(event => event.id === eventId);
+  let ev = REGULATORY_EVENTS.find(event => event.id === eventId);
+  if (!ev) {
+    try {
+      const auto = useAutogenStore.getState();
+      ev = [...(auto.generatedEvents || []), ...(auto.triggeredEvents || [])].find(e => e.id === eventId);
+    } catch {
+      // non-reactive getState safe; fallthrough to undefined
+    }
+  }
+  return ev;
+}
+
+/** Design-matched display wrapper for live event content (used by calendar + swimlane surfaces). */
+export function getLiveEventDisplay(eventId?: string | null) {
+  const ev = getEventById(eventId);
+  return ev ? getEventDisplayModel(ev) : null;
 }
 
 export function getSwimlaneRegistryEntry(input: { workflowId?: string | null; eventId?: string | null; taskId?: string | null }): SwimlaneRegistryEntry {
@@ -32,22 +45,6 @@ export function getSwimlaneRegistryEntry(input: { workflowId?: string | null; ev
   const workflowId = input.workflowId ?? event?.workflowId;
   const workflow = workflowId ? WORKFLOWS[workflowId] : undefined;
   const eventId = event?.id ?? input.eventId ?? undefined;
-
-  if (workflowId && hasCustomSwimlane(workflowId)) {
-    return {
-      workflowId,
-      eventId,
-      state: 'custom',
-      route: event
-        ? buildEventSwimlaneRoute(event.id, { workflowId, taskId: input.taskId ?? undefined })
-        : buildWorkflowSwimlaneRoute(workflowId, { eventId, taskId: input.taskId ?? undefined }),
-      build: context => event
-        ? buildSwimlaneFromEvent(event, { eventId: event.id, taskId: context?.taskId ?? input.taskId ?? undefined })
-        : workflow
-          ? buildSwimlaneFromWorkflow(workflow, { eventId, taskId: context?.taskId ?? input.taskId ?? undefined })
-          : null,
-    };
-  }
 
   if (event) {
     return {
@@ -78,7 +75,7 @@ export function getSwimlaneRegistryEntry(input: { workflowId?: string | null; ev
       eventId: input.eventId ?? undefined,
       taskId: input.taskId ?? undefined,
       reason: input.eventId
-        ? `Event ID ${input.eventId} did not resolve in REGULATORY_EVENTS.`
+        ? `Event ID ${input.eventId} did not resolve in live REGULATORY_EVENTS + autogen generated/triggered.`
         : `Workflow ID ${workflowId ?? 'unknown'} did not resolve in WORKFLOWS.`,
     }),
   };

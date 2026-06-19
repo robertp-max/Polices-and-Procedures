@@ -5,8 +5,7 @@
  * No sidebar / CommandCenterLayout.
  */
 import React, { useEffect, useMemo } from 'react';
-// Single app logo - the one file for the entire application
-import ciLogoWhite from '@/assets/ci-logo-white.png';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { buildFormContent } from '@/policy/data/formsLibraryContent';
 import { FormBody } from '@/policy/components/FormViewer';
 import { getFormsForPolicy } from '@/policy/utils/policyFormLinks';
@@ -348,8 +347,8 @@ const Cover = () => (
     }}
   >
     <img
-      src={ciLogoWhite}
-      alt="Care Indeed — The Heart of Home Health"
+      src={ciLogoGray}
+      alt="Care Indeed"
       style={{ height: 40, width: 'auto', display: 'block' }}
     />
     <p
@@ -793,7 +792,7 @@ export function GVGBPrintDocument() {
       </div>
 
       {/* Document content */}
-      <div style={{ maxWidth: 850, margin: '0 auto', padding: '0' }}>
+      <div style={{ width: '100%', maxWidth: 'none', margin: 0, padding: 0 }}>
         <Cover />
 
         {/* Main policy body */}

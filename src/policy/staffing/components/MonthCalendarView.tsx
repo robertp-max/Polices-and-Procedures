@@ -1,4 +1,5 @@
 import type { Shift } from '../types-calendar';
+import { useIsLight } from '@/policy/stores/uiStore';
 
 // ── pure-JS date helpers ──────────────────────────────────────────────────────
 function toISODate(d: Date): string {
@@ -24,12 +25,12 @@ function addDays(d: Date, n: number): Date {
 
 const DOW_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// color-coded status dots
+// color-coded status dots — teal/orange per design #4 for staffing calendar
 const STATUS_DOT_COLORS: Record<Shift['status'], string> = {
-  open:             '#a16207',
-  filled:           '#15803d',
-  pending_coverage: '#c2410c',
-  cancelled:        '#9ca3af',
+  open:             'var(--ci-warning-fg, #E07B2C)',
+  filled:           'var(--ci-success-fg, #007970)',
+  pending_coverage: 'var(--v3-orange, #E07B2C)',
+  cancelled:        'var(--ci-text-subtle, #9ca3af)',
 };
 
 function statusCounts(dayShifts: Shift[]) {
@@ -49,6 +50,7 @@ export interface MonthCalendarViewProps {
 }
 
 export function MonthCalendarView({ shifts, anchorDate, selectedDay, onSelectDay }: MonthCalendarViewProps) {
+  const isLight = useIsLight();
   const todayISO = toISODate(new Date());
   const currentMonth = anchorDate.getMonth();
   const currentYear = anchorDate.getFullYear();
@@ -67,13 +69,13 @@ export function MonthCalendarView({ shifts, anchorDate, selectedDay, onSelectDay
   }
 
   return (
-    <div>
+    <div className="w-full max-w-full overflow-x-hidden">
       {/* Column headers */}
       <div className="grid grid-cols-7 mb-1">
         {DOW_HEADERS.map((h) => (
           <div
             key={h}
-            className="text-center text-xs font-semibold py-1"
+            className="text-center text-[10px] sm:text-xs font-semibold py-1"
             style={{ color: 'var(--ci-text-muted-2)', letterSpacing: '0.05em' }}
           >
             {h}
@@ -81,10 +83,10 @@ export function MonthCalendarView({ shifts, anchorDate, selectedDay, onSelectDay
         ))}
       </div>
 
-      {/* 6-row grid */}
+      {/* 6-row grid — no borders / full clean per coordinator polish */}
       <div
-        className="grid grid-cols-7"
-        style={{ gap: '1px', background: 'var(--ci-border)' }}
+        className="grid grid-cols-7 gap-px w-full max-w-full"
+        style={{ background: 'transparent' }}
       >
         {cells.map((cell) => {
           const iso = toISODate(cell);
@@ -97,20 +99,20 @@ export function MonthCalendarView({ shifts, anchorDate, selectedDay, onSelectDay
           const chips = dayShifts.slice(0, 2);
           const overflow = total > 2 ? total - 2 : 0;
 
-          let bg = 'var(--ci-bg)';
-          if (!inCurrentMonth) bg = 'var(--ci-surface-muted)';
-          if (isSelected) bg = 'rgba(79,70,229,0.08)';
+          let bg = isLight ? 'var(--ci-bg, #FAFBF8)' : 'var(--ci-bg)';
+          if (!inCurrentMonth) bg = isLight ? 'var(--ci-surface-muted, #F4F4F2)' : 'var(--ci-surface-muted)';
+          if (isSelected) bg = isLight ? 'rgba(0,121,112,0.08)' : 'rgba(0,121,112,0.10)'; // teal per design #4, no indigo bleed
 
           return (
             <button
               key={iso}
               type="button"
               onClick={() => onSelectDay(isSelected ? null : iso)}
-              className="text-left p-1.5 flex flex-col gap-0.5 transition-colors min-h-[88px] max-h-[120px] overflow-hidden"
+              className="text-left p-1 sm:p-1.5 flex flex-col gap-0.5 transition-colors min-h-[64px] sm:min-h-[88px] max-h-[120px] overflow-hidden"
               style={{
                 background: bg,
-                outline: isToday ? '2px solid #4f46e5' : isSelected ? '2px solid rgba(79,70,229,0.5)' : 'none',
-                outlineOffset: '-2px',
+                border: 'none',
+                outline: 'none',
                 cursor: 'pointer',
                 opacity: inCurrentMonth ? 1 : 0.45,
               }}
@@ -120,10 +122,10 @@ export function MonthCalendarView({ shifts, anchorDate, selectedDay, onSelectDay
               {/* date number + shift count */}
               <div className="flex items-start justify-between">
                 <span
-                  className="text-xs font-semibold leading-none"
+                  className="text-[10px] sm:text-xs font-semibold leading-none"
                   style={{
-                    color: isToday ? '#fff' : 'var(--ci-text-primary)',
-                    background: isToday ? '#4f46e5' : 'transparent',
+                    color: isToday ? (isLight ? '#fff' : 'var(--v3-text-primary, #fff)') : 'var(--ci-text-primary)',
+                    background: isToday ? 'var(--v3-teal, #007970)' : 'transparent',
                     borderRadius: isToday ? '50%' : undefined,
                     width: isToday ? '1.25rem' : undefined,
                     height: isToday ? '1.25rem' : undefined,
@@ -136,8 +138,8 @@ export function MonthCalendarView({ shifts, anchorDate, selectedDay, onSelectDay
                 </span>
                 {total > 0 && (
                   <span
-                    className="text-xs font-bold leading-none"
-                    style={{ color: 'var(--ci-text-muted-2)', fontSize: '0.65rem' }}
+                    className="text-[10px] sm:text-xs font-bold leading-none"
+                    style={{ color: isLight ? 'var(--ci-text-muted-2, #52404B)' : 'var(--ci-text-muted-2)', fontSize: '0.6rem' }}
                   >
                     {total}
                   </span>
@@ -152,7 +154,7 @@ export function MonthCalendarView({ shifts, anchorDate, selectedDay, onSelectDay
                       <span
                         className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0"
                         style={{ background: STATUS_DOT_COLORS[status] }}
-                        title={`${status}: ${count}`}
+                        aria-label={`${status}: ${count}`}
                       />
                       <span style={{ fontSize: '0.6rem', color: STATUS_DOT_COLORS[status], fontWeight: 600 }}>{count}</span>
                     </span>
@@ -167,10 +169,10 @@ export function MonthCalendarView({ shifts, anchorDate, selectedDay, onSelectDay
                   className="rounded px-1 py-0.5 truncate"
                   style={{
                     background: 'var(--ci-surface)',
-                    border: '1px solid var(--ci-border)',
-                    fontSize: '0.6rem',
+                    border: 'none',
+                    fontSize: '0.55rem',
                     color: 'var(--ci-text-muted-2)',
-                    lineHeight: 1.2,
+                    lineHeight: 1.1,
                   }}
                 >
                   {s.startTime} {s.requiredDiscipline}
@@ -179,7 +181,7 @@ export function MonthCalendarView({ shifts, anchorDate, selectedDay, onSelectDay
 
               {/* overflow indicator */}
               {overflow > 0 && (
-                <span style={{ fontSize: '0.6rem', color: 'var(--ci-link)', fontWeight: 600 }}>
+                <span style={{ fontSize: '0.55rem', color: 'var(--ci-link)', fontWeight: 600 }}>
                   +{overflow} more
                 </span>
               )}

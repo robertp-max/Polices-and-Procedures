@@ -52,7 +52,7 @@ export function SetNewPasswordPage() {
 
   return (
     <AuthCard
-      eyebrow="Care Indeed Compliance Demo"
+      eyebrow="Care Indeed Compliance"
       title="Set New Password"
       subtitle={`Welcome${email ? `, ${email}` : ''}. Please set a permanent password to continue.`}
     >

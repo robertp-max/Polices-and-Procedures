@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
-import { useShellStore } from '@/policy/stores/uiStore';
+import { useIsLight } from '@/policy/stores/uiStore';
 import {
   classifyInstance,
   type InstanceState,
@@ -11,6 +11,7 @@ import {
   CesEventOverviewCard,
   CesSpotlightCard,
   getCesEventSpotlightTone,
+  getCesHoverCardPosition,
 } from '@/policy/ces/components/calendar/CesEventInteraction';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -38,25 +39,54 @@ export interface TimelineMonthProps {
 
 const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-function getReferenceCalendarTone(state: InstanceState, certified: boolean) {
+function getReferenceCalendarTone(state: InstanceState, certified: boolean, isLight?: boolean) {
+  // Match design #4 (CES clean light grid, subtle tints like #ccfbf1 teal / #ffedd5 orange for pills, no dark bleed).
+  // Light uses clean tints + colored text. Dark keeps high-contrast solid fills.
+  const teal = '#007970';
+  const tealLight = '#00D1C1';
+  const orange = '#E07B2C';
+  const orangeLight = '#FFA059';
+  const red = '#D70101';
   if (certified || state === 'complete' || state === 'on-track') {
+    if (isLight) {
+      return {
+        fill: '#CCFBF1',
+        text: teal,
+        border: 'rgba(0,121,112,0.35)',
+      };
+    }
     return {
       fill: '#0F766E',
-      text: '#ECFEFF',
+      text: tealLight,
       border: '#115E59',
     };
   }
   if (state === 'due-soon') {
+    if (isLight) {
+      return {
+        fill: '#FFEDD5',
+        text: orange,
+        border: 'rgba(224,123,44,0.40)',
+      };
+    }
     return {
       fill: '#854D0E',
-      text: '#FEF3C7',
+      text: orangeLight,
       border: '#A16207',
     };
   }
+  // overdue / blocked
+  if (isLight) {
+    return {
+      fill: '#FEE2E2',
+      text: red,
+      border: 'rgba(215,1,1,0.35)',
+    };
+  }
   return {
-    fill: '#FFE4E6',
-    text: '#BE123C',
-    border: '#FDA4AF',
+    fill: '#3F1F29',
+    text: '#FCA5A5',
+    border: '#7F1D1D',
   };
 }
 
@@ -71,7 +101,7 @@ export function TimelineMonth({
   year, month, events, activeId, onSelect, onOpenSwimlane, today,
 }: TimelineMonthProps) {
   const store = useRegulatoryExecutionStore();
-  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
+  const isLight = useIsLight(); // from audited useShellStore (isLight/isLightMode)
   const [hoveredEvent, setHoveredEvent] = useState<RegulatoryEvent | null>(null);
   const [hoverAnchor, setHoverAnchor] = useState<DOMRect | null>(null);
   const closeTimerRef = useRef<number | null>(null);
@@ -149,28 +179,35 @@ export function TimelineMonth({
   }, [year, month, events, today]);
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col bg-[#0B0F15]">
-      {/* Weekday header */}
+    <div className="ces-calendar-grid flex h-full min-h-0 flex-1 flex-col w-full overflow-hidden" style={{ background: isLight ? 'var(--ces-canvas)' : 'var(--v3-base-bg)', border: 'none' }}>
+      {/* Month label — clean corporate exact to #4 CES design, no borders, uses live year/month */}
       <div
-        className="grid grid-cols-7 border-b border-l"
-        style={{ borderColor: '#1C2433', background: '#0B0F15' }}
+        className="px-2 pt-1 pb-0.5 text-[12px] font-semibold tracking-[0.06em] text-[var(--v3-text-primary)]"
+        style={{ border: 'none', background: 'inherit' }}
+      >
+        {new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+      </div>
+      {/* Weekday header — clean corporate, no hairline bleed per Image #4 */}
+      <div
+        className="grid grid-cols-7 w-full overflow-hidden"
+        style={{ border: 'none', background: isLight ? 'var(--ces-canvas)' : 'var(--v3-base-bg)' }}
       >
         {WEEKDAYS.map(w => (
           <div
             key={w}
-            className={`border-r px-2 py-3 text-center font-montserrat font-bold uppercase tracking-[0.24em] last:border-r-0 ${isLight ? 'text-slate-500' : 'text-white/40'}`}
-            style={{ fontSize: 9, borderColor: '#1C2433' }}
+            className={`px-2 py-2.5 text-center font-montserrat font-bold uppercase tracking-[0.2em] ${isLight ? 'text-slate-500' : 'text-white/40'} overflow-hidden`}
+            style={{ fontSize: 9, border: 'none' }}
           >
             {w}
           </div>
         ))}
       </div>
 
-      {/* Month grid */}
+      {/* Month grid — clean full-area corporate, no borders/grid-lines, full bleed per Image #4 */}
       <div
-        className="grid min-h-0 flex-1 grid-cols-7 border-l"
+        className="grid min-h-0 flex-1 grid-cols-7 w-full h-full max-w-full overflow-x-hidden overflow-hidden"
         style={{
-          borderColor: '#1C2433',
+          border: 'none',
           gridTemplateRows: `repeat(${weeks}, minmax(138px, 1fr))`,
         }}
       >
@@ -227,38 +264,36 @@ function DayCell({
 
   return (
     <div
-      className="relative flex min-h-0 flex-col border-r border-b px-2 py-2 transition-colors duration-200"
+      className="calendar-day-cell relative flex min-h-0 flex-col px-2 py-2 transition-colors duration-200 w-full h-full overflow-hidden"
       style={{
-        borderColor: '#1C2433',
+        border: 'none',
         background: cell.outOfMonth
-          ? '#0B0F15'
+          ? (isLight ? 'var(--ces-canvas)' : 'rgba(255,255,255,0.02)')
           : cell.isToday
-            ? '#101722'
-            : '#0B0F15',
+            ? 'rgba(0, 121, 112, 0.08)'
+            : (isLight ? 'var(--ces-canvas)' : 'rgba(255,255,255,0.015)'),
       }}
     >
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-1.5 flex items-center justify-between">
         {cell.outOfMonth ? (
           <span aria-hidden className="h-6 w-6" />
         ) : (
           <span
             className={`inline-flex items-center justify-center font-montserrat font-bold transition-colors ${
               cell.isToday
-                ? 'h-6 w-6 rounded-full text-white'
-                : isLight
-                  ? 'text-slate-700'
-                  : 'text-white/60'
+                ? 'h-5 w-5 rounded-full text-white'
+                : 'text-[var(--ci-text-muted-2,#52404B)]'
             }`}
             style={{
-              fontSize: 11,
-              background: cell.isToday ? '#007970' : undefined,
+              fontSize: 10,
+              background: cell.isToday ? 'var(--v3-teal, #007970)' : undefined,
             }}
           >
             {cell.day}
           </span>
         )}
       </div>
-      <div className="flex min-h-0 flex-col gap-1 overflow-y-auto custom-scrollbar">
+      <div className="flex min-h-0 flex-col gap-1 overflow-y-auto custom-scrollbar overflow-hidden">
         {eventsToShow.map(ev => (
           <TimelineChip
             key={ev.id}
@@ -275,7 +310,7 @@ function DayCell({
         ))}
         {overflow > 0 && (
           <button
-            className={`self-start px-1 font-montserrat font-bold ${isLight ? 'text-slate-500 hover:text-slate-800' : 'text-white/50 hover:text-white'}`}
+            className={`self-start px-1 font-montserrat font-bold text-[var(--ci-text-muted-2,#52404B)] hover:text-[var(--ci-text-primary,#1F1C1B)]`}
             style={{ fontSize: 9 }}
             onClick={() => { if (cell.events[eventsToShow.length]) onSelect(cell.events[eventsToShow.length]); }}
           >
@@ -291,7 +326,7 @@ function DayCell({
 
 /* ─── Timeline chip (state-colored only) ────────────────── */
 function TimelineChip({
-  event, active, today, store, onClick,
+  event, active: _active, today, store, onClick,
   onOpenSwimlane,
   onOpenHover,
   onCloseHover,
@@ -309,7 +344,7 @@ function TimelineChip({
 }) {
   const state: InstanceState = classifyInstance(event, today, store);
   const certified = store.isCertified(event.id);
-  const tone = getReferenceCalendarTone(state, certified);
+  const tone = getReferenceCalendarTone(state, certified, isLight);
   const spotlightColor = getCesEventSpotlightTone(state, certified);
   const toneClassName =
     certified || state === 'complete' ? 'ces-card-spotlight-complete'
@@ -319,11 +354,10 @@ function TimelineChip({
   return (
     <CesSpotlightCard
       onClick={onClick}
-      title={certified ? `${event.title} — Certified & Locked` : event.title}
       ariaLabel={`Open ${event.title}`}
       spotlightColor={spotlightColor}
       toneClassName={toneClassName}
-      className="group relative w-full rounded-md px-2 py-1 text-left transition-colors duration-150"
+      className="ces-event-pill group relative w-full overflow-hidden px-2 py-[3px] text-left transition-colors duration-150"
       onMouseEnter={eventTarget => onOpenHover(event, eventTarget.currentTarget)}
       onMouseLeave={onCloseHover}
       onFocus={eventTarget => onOpenHover(event, eventTarget.currentTarget)}
@@ -340,29 +374,26 @@ function TimelineChip({
       }}
       style={{
         background: tone.fill,
-        border: `1px solid ${active ? tone.text : tone.border}`,
+        border: 'none', // clean corporate no border on event pills per Image #4
+        borderRadius: '999px', // pills use radius 999px
+        boxShadow: 'none', // eliminate spotlight bleed/overlap on event pill
       }}
     >
-      <div className="flex items-start gap-1 pr-2">
+      <div className="flex items-center gap-1.5 pr-1 overflow-hidden" style={{ minHeight: '16px' }}>
         <span
           aria-hidden
-          className="mt-[4px] h-1 w-1 shrink-0 rounded-full"
-          style={{ background: tone.text, opacity: 0.8 }}
+          className="h-1.5 w-1.5 shrink-0 rounded-full"
+          style={{ background: tone.text, opacity: 0.85 }}
         />
-        <div className="min-w-0">
-          <p
-            className={`font-montserrat font-bold leading-tight ${isLight ? 'text-slate-800' : ''}`}
-            style={{
-              fontSize: 10,
-              color: tone.text,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {event.title}
-          </p>
-        </div>
+        <p
+          className={`font-montserrat font-semibold leading-none truncate tracking-[0.08em]`}
+          style={{
+            fontSize: 9.5,
+            color: tone.text,
+          }}
+        >
+          {event.title}
+        </p>
       </div>
     </CesSpotlightCard>
   );
@@ -385,19 +416,25 @@ function TimelineHoverCard({
   onMouseLeave: () => void;
   onClose: () => void;
 }) {
-  const width = 460;
-  const viewportPadding = 16;
-  const preferredLeft = anchorRect.right + 12;
-  const left = preferredLeft + width <= window.innerWidth - viewportPadding
-    ? preferredLeft
-    : Math.max(viewportPadding, Math.min(window.innerWidth - width - viewportPadding, anchorRect.left - width - 12));
-  const maxTop = Math.max(viewportPadding, window.innerHeight - 560);
-  const top = Math.max(viewportPadding, Math.min(anchorRect.top, maxTop));
+  // BEFORE (old local logic): duplicated viewport calc with 520px hardcoded estH, no reuse
+  // AFTER (improved): delegates to getCesHoverCardPosition (left flip + top adjust + maxH overflow)
+  // Ensures consistent positioning across hover cards; prevents viewport clipping + bleed.
+  const pos = getCesHoverCardPosition(anchorRect);
+  // also apply bleed containment inline for robustness in dark/light
+  const hoverStyle: React.CSSProperties = {
+    top: pos.top,
+    left: pos.left,
+    width: pos.width,
+    maxHeight: pos.maxHeight,
+    overflow: 'auto',
+    contain: 'layout paint style',
+    isolation: 'isolate',
+  };
 
   return createPortal(
     <div
-      className="fixed z-[80] hidden md:block"
-      style={{ top, left, width }}
+      className="fixed z-[122] hidden md:block ces-hover-card"
+      style={hoverStyle}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onFocusCapture={onMouseEnter}

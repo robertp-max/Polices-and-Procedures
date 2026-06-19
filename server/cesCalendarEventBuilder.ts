@@ -12,6 +12,10 @@ import {
   buildEvidenceCenterPath,
   buildWorkflowSwimlanePath,
 } from './cesCalendarRoutes.js';
+import {
+  loadCesExecutionSnapshot,
+  type CesExecutionSnapshot,
+} from './cesCalendarCompletion.js';
 
 /* ═══════════════════════════════════════════════════════════════
    CES Calendar event description + extendedProperties builder.
@@ -44,6 +48,13 @@ export interface CesCalendarEnrichment {
   requiredAttendeeRoles?: string[];
   requiredTasks?: string[];
   requiredEvidence?: string[];
+  requiredApprovals?: Array<{
+    id: string;
+    targetKind: 'event' | 'minutes' | 'report' | 'form';
+    targetLabel: string;
+    approverRole: string;
+    required?: boolean;
+  }>;
   agenda?: string[];
   completionExpectations?: string[];
   driveFolderId?: string;
@@ -118,6 +129,22 @@ const CES_EVENT_ENRICHMENTS: Record<string, CesCalendarEnrichment> = {
       'Minutes signed by QAPI Committee Chair',
       'GB summary package prepared for next governing body meeting',
     ],
+    requiredApprovals: [
+      {
+        id: 'qapi-rule-minutes',
+        targetKind: 'minutes',
+        targetLabel: 'QAPI Minutes',
+        approverRole: 'QAPI Committee Chair',
+        required: true,
+      },
+      {
+        id: 'qapi-rule-event',
+        targetKind: 'event',
+        targetLabel: 'Close QAPI meeting',
+        approverRole: 'QAPI Committee Chair',
+        required: true,
+      },
+    ],
     driveFolderId: '1BVjBzFqLDVUHibfPXUz4vA1soJxUJyGR',
     driveFolderUrl: 'https://drive.google.com/drive/folders/1BVjBzFqLDVUHibfPXUz4vA1soJxUJyGR',
     env: 'SANDBOX',
@@ -149,10 +176,38 @@ function numberedLines(items: string[] | undefined): string[] {
   return items.map((item, i) => `${i + 1}. ${item}`);
 }
 
+export interface CesCalendarHubMeta {
+  completionPercent: number;
+  evidenceCount: number;
+  evidenceAttachedCount: number;
+  ecignStatus: string;
+  ecignDetail: string;
+  calendarAttachmentStatus: string;
+  driveLinked: boolean;
+  statusLabel: string;
+  auditReadyPercent: number;
+  workflowId?: string;
+  policyRefs?: string;
+  driveFolderId?: string;
+  driveFolderUrl?: string;
+  swimlanePath?: string;
+  eventWorkspacePath?: string;
+  workflowPath?: string;
+  evidenceCenterPath?: string;
+  auditModePath?: string;
+  requiredForms?: string;
+  requiredSignerRoles?: string;
+  requiredEvidence?: string;
+  agenda?: string;
+}
+
 /**
  * Build a concise, human-readable Google Calendar description for a CES event.
  */
-export function buildCesCalendarDescription(enrichment: CesCalendarEnrichment): string {
+export function buildCesCalendarDescription(
+  enrichment: CesCalendarEnrichment,
+  snapshot?: CesExecutionSnapshot,
+): string {
   const eventId = enrichment.eventId;
   const workflowId = enrichment.workflowId;
   const policySection = (enrichment.policyRefs ?? [])
@@ -174,7 +229,34 @@ export function buildCesCalendarDescription(enrichment: CesCalendarEnrichment): 
   }
 
   if (policySection) {
-    lines.push('', 'Policies / PPs:', policySection);
+    lines.push('', 'Policy / PP:', policySection);
+  }
+
+  if (snapshot) {
+    lines.push(
+      '',
+      'Completion:',
+      `${snapshot.completionPercent}%`,
+      '',
+      'Evidence:',
+      `${snapshot.evidenceAttachedCount} attached Drive-backed evidence items`,
+      '',
+      'eCign:',
+      snapshot.ecignStatus === 'Missing canonical form instance'
+        ? 'Not complete — canonical form instance required'
+        : snapshot.ecignStatus === 'Complete'
+          ? 'Complete'
+          : `Not complete — ${snapshot.ecignDetail}`,
+      '',
+      'Calendar:',
+      snapshot.calendarAttachmentStatus,
+      '',
+      'Drive:',
+      snapshot.driveLinked ? 'Linked' : 'Not linked',
+      '',
+      'Status:',
+      snapshot.statusLabel,
+    );
   }
 
   if (enrichment.requiredForms?.length) {
@@ -232,7 +314,7 @@ export function buildCesCalendarDescription(enrichment: CesCalendarEnrichment): 
 /** Machine-readable extendedProperties.private bag for CES Calendar events. */
 export function buildCesExtendedProperties(
   enrichment: CesCalendarEnrichment,
-  extras: { hash?: string; version?: number } = {},
+  extras: { hash?: string; version?: number; snapshot?: CesExecutionSnapshot } = {},
 ): Record<string, string> {
   const eventId = enrichment.eventId;
   const workflowId = enrichment.workflowId;
@@ -273,16 +355,59 @@ export function buildCesExtendedProperties(
   set('regulatoryDriver', enrichment.regulatoryDriver);
   set('auditRisk', enrichment.auditRisk);
   if (enrichment.noPhi) set('noPhi', 'true');
+  if (extras.snapshot) {
+    set('completionPercent', extras.snapshot.completionPercent);
+    set('evidenceCount', extras.snapshot.evidenceCount);
+    set('evidenceAttachedCount', extras.snapshot.evidenceAttachedCount);
+    set('ecignStatus', extras.snapshot.ecignStatus);
+    set('calendarAttachmentStatus', extras.snapshot.calendarAttachmentStatus);
+    set('auditReadyPct', extras.snapshot.auditReadyPercent);
+    set('eventStatus', extras.snapshot.statusLabel);
+  }
   set('hash', extras.hash);
   set('version', extras.version != null ? String(extras.version) : undefined);
 
   return out;
 }
 
+/** Parse hub metadata from Google extendedProperties for API/UI consumers. */
+export function parseCesHubMeta(
+  enrichment: CesCalendarEnrichment,
+  ext: Record<string, string> = {},
+): CesCalendarHubMeta {
+  return {
+    completionPercent: Number(ext.completionPercent ?? 0),
+    evidenceCount: Number(ext.evidenceCount ?? 0),
+    evidenceAttachedCount: Number(ext.evidenceAttachedCount ?? 0),
+    ecignStatus: ext.ecignStatus ?? 'Not started',
+    ecignDetail: ext.ecignStatus === 'Missing canonical form instance'
+      ? 'canonical form instance required'
+      : ext.ecignStatus ?? '',
+    calendarAttachmentStatus: ext.calendarAttachmentStatus ?? 'Unknown',
+    driveLinked: Boolean(ext.driveFolderId || enrichment.driveFolderId),
+    statusLabel: ext.eventStatus ?? 'Scheduled',
+    auditReadyPercent: Number(ext.auditReadyPct ?? 0),
+    workflowId: ext.workflowId ?? enrichment.workflowId,
+    policyRefs: ext.policyRefs ?? (enrichment.policyRefs ?? []).map(p => p.id).join(','),
+    driveFolderId: ext.driveFolderId ?? enrichment.driveFolderId,
+    driveFolderUrl: ext.driveFolderUrl ?? enrichment.driveFolderUrl,
+    swimlanePath: ext.swimlanePath,
+    eventWorkspacePath: ext.eventWorkspacePath,
+    workflowPath: ext.workflowPath,
+    evidenceCenterPath: ext.evidenceCenterPath,
+    auditModePath: ext.auditModePath,
+    requiredForms: ext.requiredForms,
+    requiredSignerRoles: ext.requiredSignerRoles,
+    requiredEvidence: ext.requiredEvidence,
+    agenda: ext.agenda,
+  };
+}
+
 /** Merge CES enrichment into a PlannerEventPayload for sync/create. */
 export function buildEnrichedPlannerPayload(
   enrichment: CesCalendarEnrichment,
   overrides: Partial<PlannerEventPayload> = {},
+  snapshot?: CesExecutionSnapshot,
 ): PlannerEventPayload {
   return {
     event_id: enrichment.eventId,
@@ -300,13 +425,27 @@ export function buildEnrichedPlannerPayload(
     policyRefs: (enrichment.policyRefs ?? []).map(p => p.id),
     ownerRole: enrichment.ownerRole,
     owner: enrichment.ownerRole,
-    status: enrichment.status,
+    status: snapshot?.statusLabel ?? enrichment.status,
     mandateType: enrichment.mandateType,
     regulatoryDriver: enrichment.regulatoryDriver,
     auditRisk: enrichment.auditRisk,
     env: enrichment.env ?? 'SANDBOX',
-    description: buildCesCalendarDescription(enrichment),
+    completionState: snapshot ? `${snapshot.completionPercent}%` : undefined,
+    evidenceStatus: snapshot?.calendarAttachmentStatus,
+    description: buildCesCalendarDescription(enrichment, snapshot),
     ...overrides,
+  };
+}
+
+/** Build enriched payload with live completion/evidence/ecign snapshot. */
+export async function buildEnrichedPlannerPayloadLive(
+  enrichment: CesCalendarEnrichment,
+  overrides: Partial<PlannerEventPayload> = {},
+): Promise<{ payload: PlannerEventPayload; snapshot: CesExecutionSnapshot }> {
+  const snapshot = await loadCesExecutionSnapshot(enrichment);
+  return {
+    payload: buildEnrichedPlannerPayload(enrichment, overrides, snapshot),
+    snapshot,
   };
 }
 
@@ -345,7 +484,9 @@ export const CES_EXT_PROP_ALLOWLIST = new Set([
   'event_id', 'appEventId', 'source', 'env', 'noPhi',
   'workflowId', 'policyRefs', 'requiredForms', 'requiredSignerRoles',
   'requiredAttendeeRoles', 'requiredTasks', 'requiredEvidence', 'agenda',
-  'completionExpectations',
+  'completionExpectations', 'completionPercent',
+  'evidenceCount', 'evidenceAttachedCount', 'ecignStatus',
+  'calendarAttachmentStatus',
   'eventWorkspacePath', 'swimlanePath', 'workflowPath',
   'evidenceCenterPath', 'auditModePath',
   'driveFolderId', 'driveFolderUrl',

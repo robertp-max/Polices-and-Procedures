@@ -17,9 +17,9 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   FileEdit, CheckSquare, ShieldCheck, Send, Archive,
   ArrowRight, ArrowLeft, RotateCcw, Clock, User, Hash,
-  AlertTriangle, ChevronRight, Search, Mail,
+  AlertTriangle, ChevronRight,
   ClipboardCheck, FileSignature, ListChecks, History as HistoryIcon,
-  Rocket, Users, Database, Filter,
+  Rocket, Users, Database,
 } from 'lucide-react';
 import {
   getCorpusPolicy,
@@ -49,6 +49,7 @@ import type {
   WorkspaceMode,
   PolicyLifecycleEnvelope,
 } from '@/policy/lifecycle';
+import { PageHeader, SurfaceCard, Tabs, SearchField } from '@/policy/components/ui';
 
 const INTENT_LABEL: Record<LifecycleIntent, string> = {
   submitForReview:   'Submit for Review',
@@ -243,55 +244,51 @@ export function PolicyLifecyclePage() {
   }
 
   return (
-    <div className="h-full w-full flex flex-col font-sans bg-[#FAFBFC]">
-      {/* ── Top bar ─────────────────────────────────────── */}
-      <header className="px-6 py-4 flex items-center gap-6 bg-white border-b border-gray-200">
-        <div>
-          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">
-            Policy Lifecycle Workspace
-          </div>
-          <h1 className="text-[18px] font-bold text-gray-900">
-            Drafting · Review · Approval · Publish · Archive
-          </h1>
-        </div>
-        {envelope && (
-          <div className="hidden lg:flex items-center gap-3 pl-6 border-l border-gray-200">
-            <div
-              className="px-2 py-0.5 rounded-md font-bold text-[10.5px] tracking-wider uppercase"
-              style={{
-                background: STATE_COLOR[envelope.state].bg,
-                color:      STATE_COLOR[envelope.state].fg,
-                border:     `1px solid ${STATE_COLOR[envelope.state].border}`,
-              }}
-            >
-              {STATE_LABEL[envelope.state]}
-            </div>
-            <div className="text-[11.5px] text-gray-700 leading-tight">
-              <div className="font-semibold text-gray-900 truncate max-w-[260px]">
-                {envelope.policyId} · {policy?.title ?? '—'}
+    <div className="h-full w-full flex flex-col" style={{ background: 'transparent' }}>
+      <div className="px-6 pt-6">
+        <PageHeader
+          eyebrow="COMPLIANCE"
+          title="Policy Lifecycle"
+          description="Drafting · Review · Approval · Publish · Archive"
+          actions={
+            envelope ? (
+              <div className="hidden lg:flex items-center gap-3 pl-4 border-l border-[var(--v3-border-subtle)]">
+                <div
+                  className="px-2.5 py-0.5 rounded-full font-bold text-[10px] tracking-[0.14em] uppercase"
+                  style={{
+                    background: STATE_COLOR[envelope.state].bg,
+                    color: STATE_COLOR[envelope.state].fg,
+                    border: `1px solid ${STATE_COLOR[envelope.state].border}`,
+                  }}
+                >
+                  {STATE_LABEL[envelope.state]}
+                </div>
+                <div className="text-xs leading-tight text-[var(--v3-text-secondary)]">
+                  <div className="font-semibold tracking-tight truncate max-w-[240px] text-[var(--v3-text-primary)]">
+                    {envelope.policyId} · {policy?.title ?? '—'}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px] text-[var(--v3-text-tertiary)] mt-px">
+                    <User size={10} /> {envelope.createdBy.name}
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-gray-500">
-                <User size={10} />
-                {envelope.createdBy.name}
-                <span>·</span>
-                {envelope.createdBy.role}
-                <Mail size={10} />
-                {envelope.createdBy.email}
-              </div>
-            </div>
-          </div>
-        )}
-        <div className="ml-auto flex items-center gap-3 text-[11.5px]">
+            ) : null
+          }
+        />
+
+        {/* Premium corporate state filter pills */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
           {STATE_ORDER.map(s => {
             const C = STATE_COLOR[s];
+            const isActive = stageFilter === s;
             return (
               <button
                 key={s}
                 onClick={() => setStageFilter(prev => prev === s ? 'ALL' : s)}
-                className="px-2.5 py-1 rounded-md border font-bold uppercase tracking-wider transition"
+                className="px-3 py-1 rounded-full text-xs font-semibold border tracking-[0.5px] transition"
                 style={{
-                  background: stageFilter === s ? C.fg : C.bg,
-                  color:      stageFilter === s ? '#fff' : C.fg,
+                  background: isActive ? C.fg : 'transparent',
+                  color: isActive ? '#fff' : C.fg,
                   borderColor: C.border,
                 }}
                 title={`${counts[s]} in ${STATE_LABEL[s]}`}
@@ -301,43 +298,38 @@ export function PolicyLifecyclePage() {
             );
           })}
           {stageFilter !== 'ALL' && (
-            <button
-              onClick={() => setStageFilter('ALL')}
-              className="text-[11px] text-gray-500 underline underline-offset-2"
-            >
-              clear
-            </button>
+            <button onClick={() => setStageFilter('ALL')} className="ml-1 text-xs text-[var(--v3-text-tertiary)] underline underline-offset-2">clear filter</button>
           )}
         </div>
-      </header>
+      </div>
 
       {auditorMode && (
-        <div className="px-6 py-2 bg-amber-50 border-b border-amber-200 flex items-center gap-2 text-[12px] text-amber-900">
+        <div className="mx-6 mb-2 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs" style={{ background: 'rgba(245,158,11,0.1)', color: '#b45309', border: '1px solid rgba(245,158,11,0.3)' }}>
           <AlertTriangle size={14} />
           Auditor Mode is on — every transition is blocked. Toggle off to enact changes.
         </div>
       )}
 
-      {/* Provenance strip */}
-      <div className="px-6 py-1.5 flex items-center gap-2 bg-[#f0f4fa] border-b border-gray-200 text-[10.5px] text-[#1a3357]">
-        <Database size={11} className="text-[#e6720a]" />
-        <span className="font-semibold">Source:</span>
-        {Object.keys(envelopes).length > 0 ? CORPUS_PROVENANCE : CORPUS_EMPTY_MESSAGE}
+      {/* Provenance strip (premium token) */}
+      <div className="mx-6 mb-2 px-3 py-1 flex items-center gap-2 text-[10px] rounded border" style={{ background: 'var(--v3-glass-card)', borderColor: 'var(--v3-border-subtle)', color: 'var(--v3-text-secondary)' }}>
+        <Database size={11} />
+        <span className="font-semibold tracking-wider text-[var(--v3-text-tertiary)]">SOURCE</span>
+        <span>{Object.keys(envelopes).length > 0 ? CORPUS_PROVENANCE : CORPUS_EMPTY_MESSAGE}</span>
       </div>
 
-      {/* ── Three-pane body ──────────────────────────────── */}
-      <div className="flex-1 grid grid-cols-[280px_1fr_320px] min-h-0 overflow-hidden">
+      {/* ── Three-pane body (card grid + rails) ──────────────────────────────── */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[260px_1fr_300px] min-h-0 gap-4 px-6 pb-6 overflow-hidden">
 
-        {/* Left rail: queues */}
-        <aside className="border-r border-gray-200 bg-white overflow-y-auto">
-          <div className="px-3 py-2 border-b border-gray-100 sticky top-0 bg-white z-10 flex flex-col gap-1.5">
-            {/* Domain filter */}
-            <div className="relative">
-              <Filter size={11} className="absolute left-2 top-[9px] text-gray-400 pointer-events-none" />
+        {/* Left rail: queues — SurfaceCard */}
+        <SurfaceCard padding="sm" className="overflow-y-auto flex flex-col">
+          <div className="sticky top-0 z-10 pb-2 bg-[var(--v3-glass-card)]">
+            {/* Domain filter + search using ui primitives */}
+            <div className="mb-2">
               <select
                 value={domainFilter}
                 onChange={e => setDomainFilter(e.target.value)}
-                className="w-full pl-6 pr-2 py-1.5 text-[11.5px] border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white appearance-none"
+                className="w-full text-xs px-3 py-1.5 rounded-lg border bg-transparent"
+                style={{ borderColor: 'var(--v3-border-subtle)', color: 'var(--v3-text-primary)' }}
               >
                 <option value="ALL">All domains</option>
                 {LIFECYCLE_DOMAIN_ORDER.map(code => {
@@ -351,30 +343,25 @@ export function PolicyLifecyclePage() {
                 })}
               </select>
             </div>
-            {/* Search */}
-            <div className="relative">
-              <Search size={12} className="absolute left-2 top-2 text-gray-400" />
-              <input
-                type="text"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder="Search id · title · owner · domain…"
-                className="w-full pl-7 pr-2 py-1.5 text-[11.5px] border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-300"
-              />
-            </div>
+            <SearchField
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search id · title · owner…"
+              className="w-full"
+            />
           </div>
           {queues.map(({ state, items }) => {
             const Icon = STATE_ICON[state];
             const C = STATE_COLOR[state];
             return (
-              <section key={state} className="border-b border-gray-100">
+              <section key={state} className="mb-2 last:mb-0">
                 <div
-                  className="px-3 py-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em]"
-                  style={{ color: C.fg, background: C.bg }}
+                  className="px-3 py-1.5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] rounded"
+                  style={{ color: C.fg, background: C.bg + '22' }}
                 >
                   <Icon size={13} />
                   {STATE_LABEL[state]}
-                  <span className="ml-auto opacity-70">{items.length}</span>
+                  <span className="ml-auto opacity-70 font-mono">{items.length}</span>
                 </div>
                 <ul>
                   {items.length === 0 && (
@@ -421,7 +408,7 @@ export function PolicyLifecyclePage() {
               </section>
             );
           })}
-        </aside>
+        </SurfaceCard>
 
         {/* Center: header + history */}
         <main className="overflow-y-auto">
@@ -432,10 +419,10 @@ export function PolicyLifecyclePage() {
           )}
         </main>
 
-        {/* Right rail: mode-aware actions */}
-        <aside className="border-l border-gray-200 bg-white overflow-y-auto">
+        {/* Right rail: mode-aware actions — SurfaceCard */}
+        <SurfaceCard padding="sm" className="overflow-y-auto">
           {!envelope ? (
-            <div className="px-4 py-6 text-[12px] text-gray-500">
+            <div className="px-4 py-6 text-[12px] text-[var(--v3-text-tertiary)]">
               Select a policy to see available actions.
             </div>
           ) : (
@@ -449,7 +436,7 @@ export function PolicyLifecyclePage() {
               clearMessage={() => setActionMsg(null)}
             />
           )}
-        </aside>
+        </SurfaceCard>
       </div>
     </div>
   );
@@ -459,12 +446,12 @@ export function PolicyLifecyclePage() {
 
 function EmptyCenter({ isEmpty }: { isEmpty?: boolean }) {
   return (
-    <div className="h-full flex flex-col items-center justify-center gap-2 text-gray-400 text-[13px] px-8 text-center">
+    <div className="h-full flex flex-col items-center justify-center gap-2 text-[var(--v3-text-tertiary)] text-[13px] px-8 text-center">
       {isEmpty ? (
         <>
-          <Database size={28} className="text-[#e6720a] opacity-60" />
-          <div className="font-semibold text-gray-600">No lifecycle corpus loaded</div>
-          <div className="text-[12px]">
+          <Database size={28} style={{ color: 'var(--v3-text-muted)' }} />
+          <div className="font-semibold text-[var(--v3-text-secondary)]">No lifecycle corpus loaded</div>
+          <div className="text-xs text-[var(--v3-text-tertiary)]">
             No lifecycle-ready policies found. Import real policy corpus to begin.
           </div>
         </>
@@ -487,56 +474,38 @@ function PolicyDetailCenter({
   const allowedModes = MODES_BY_STATE[envelope.state];
 
   return (
-    <div className="px-6 py-5 flex flex-col gap-4">
+    <div className="p-4 flex flex-col gap-4">
 
-      {/* Header card */}
-      <div
-        className="rounded-lg p-4 border-l-4"
-        style={{ borderLeftColor: C.border, background: C.bg }}
-      >
+      {/* Header card — premium token surface */}
+      <SurfaceCard padding="md" style={{ borderLeft: `4px solid ${C.border}` }}>
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: C.fg }}>
               {STATE_LABEL[envelope.state]} · {policy.tier}
             </div>
-            <div className="text-[16px] font-bold text-gray-900 mt-0.5">{policy.title}</div>
-            <div className="text-[11.5px] text-gray-600 mt-0.5">
+            <div className="text-[15px] font-semibold tracking-tight mt-0.5 text-[var(--v3-text-primary)]">{policy.title}</div>
+            <div className="text-xs text-[var(--v3-text-secondary)] mt-0.5">
               {policy.id} · Owner: {policy.ownerSteward}
             </div>
           </div>
-          <div className="text-right text-[11px] text-gray-700">
-            <div className="flex items-center gap-1 justify-end">
+          <div className="text-right text-xs text-[var(--v3-text-secondary)]">
+            <div className="flex items-center gap-1 justify-end text-[var(--v3-text-primary)]">
               <User size={11} /> Created by {envelope.createdBy.name}
             </div>
-            <div className="text-gray-500">{envelope.createdBy.role}</div>
-            <div className="text-gray-500">{envelope.createdBy.email}</div>
+            <div className="text-[10px]">{envelope.createdBy.role}</div>
+            <div className="text-[10px]">{envelope.createdBy.email}</div>
           </div>
         </div>
 
-        <div className="mt-3 flex items-center gap-1 text-[11px]">
-          {(['edit','review','approve','publish','view'] as WorkspaceMode[]).map(m => {
-            const enabled = allowedModes.includes(m);
-            const active  = m === mode;
-            return (
-              <button
-                key={m}
-                disabled={!enabled}
-                onClick={() => enabled && onMode(m)}
-                className={`px-2.5 py-1 rounded-md border font-semibold uppercase tracking-wider transition ${
-                  enabled ? 'cursor-pointer' : 'opacity-40 cursor-not-allowed'
-                }`}
-                style={{
-                  background: active ? C.fg : '#fff',
-                  color:      active ? '#fff' : C.fg,
-                  borderColor: C.border,
-                }}
-              >
-                {m}
-              </button>
-            );
-          })}
+        <div className="mt-3">
+          <Tabs
+            items={allowedModes.map(m => ({ id: m, label: m }))}
+            value={mode}
+            onChange={(m) => onMode(m as WorkspaceMode)}
+            variant="segmented"
+          />
         </div>
-      </div>
+      </SurfaceCard>
 
       {/* Description is not in CorpusPolicy — omit section intentionally */}
 

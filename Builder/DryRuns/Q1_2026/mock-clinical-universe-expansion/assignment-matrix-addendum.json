@@ -1,0 +1,1167 @@
+{
+  "schemaVersion": 1,
+  "universeId": "q1-2026-mock-clinical-universe-expansion",
+  "noPhi": true,
+  "assignmentRules": {
+    "RN required": "Every patient has an assigned RN. RN-only signature tasks exclude LVN/HHA/CNA/MSW/PT/OT.",
+    "Unsafe staff blocked": "Pending, incomplete, expired, inactive, on-leave, and out-of-scope staff are flagged and not treated as valid independent performers.",
+    "Synthetic only": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE"
+  },
+  "patientAssignments": [
+    {
+      "patientId": "MOCK-PT-0007",
+      "mrn": "MOCK-MRN-0007",
+      "patientName": "Leona Ashford",
+      "acuity": "Level 1 Routine",
+      "zone": "North Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0023",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STF-0009",
+        "MOCK-STF-0007"
+      ],
+      "assignedRn": "MOCK-STAFF-0023",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": "MOCK-STF-0009",
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0007",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0023",
+        "pocSignature": "MOCK-STAFF-0023",
+        "medicationReconciliation": "MOCK-STAFF-0023",
+        "hhaSupervision": "MOCK-STAFF-0023",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STF-0007"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0008",
+      "mrn": "MOCK-MRN-0008",
+      "patientName": "Ravi Menon",
+      "acuity": "Level 1 Routine",
+      "zone": "East Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0024",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0009"
+      ],
+      "assignedRn": "MOCK-STAFF-0024",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0009",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0024",
+        "pocSignature": "MOCK-STAFF-0024",
+        "medicationReconciliation": "MOCK-STAFF-0024",
+        "hhaSupervision": "MOCK-STAFF-0024",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STF-0009"
+      },
+      "intentionalExceptions": []
+    },
+    {
+      "patientId": "MOCK-PT-0009",
+      "mrn": "MOCK-MRN-0009",
+      "patientName": "Imani Duarte",
+      "acuity": "Level 1 Routine",
+      "zone": "Peninsula",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0025",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STAFF-0032"
+      ],
+      "assignedRn": "MOCK-STAFF-0025",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": null,
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STAFF-0032",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0025",
+        "pocSignature": "MOCK-STAFF-0025",
+        "medicationReconciliation": "MOCK-STAFF-0025",
+        "hhaSupervision": "MOCK-STAFF-0025",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STAFF-0032"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0025",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        },
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0010",
+      "mrn": "MOCK-MRN-0010",
+      "patientName": "Nils Bergstrom",
+      "acuity": "Level 1 Routine",
+      "zone": "North Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0023",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0007"
+      ],
+      "assignedRn": "MOCK-STAFF-0023",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0007",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0023",
+        "pocSignature": "MOCK-STAFF-0023",
+        "medicationReconciliation": "MOCK-STAFF-0023",
+        "hhaSupervision": "MOCK-STAFF-0023",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STF-0007"
+      },
+      "intentionalExceptions": [
+        {
+          "issueType": "missing_supervisory_visit",
+          "reason": "Missing supervisory visit",
+          "expectedWorkflowTrigger": "Supervisory visit review"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0011",
+      "mrn": "MOCK-MRN-0011",
+      "patientName": "Sofia Kwan",
+      "acuity": "Level 1 Routine",
+      "zone": "East Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0024",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STF-0009",
+        "MOCK-STF-0009"
+      ],
+      "assignedRn": "MOCK-STAFF-0024",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": "MOCK-STF-0009",
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0009",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0024",
+        "pocSignature": "MOCK-STAFF-0024",
+        "medicationReconciliation": "MOCK-STAFF-0024",
+        "hhaSupervision": "MOCK-STAFF-0024",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STF-0009"
+      },
+      "intentionalExceptions": [
+        {
+          "issueType": "wrong_visit_schedule",
+          "reason": "Wrong visit schedule",
+          "expectedWorkflowTrigger": "Scheduling exception review"
+        },
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0012",
+      "mrn": "MOCK-MRN-0012",
+      "patientName": "Jamal Whitaker",
+      "acuity": "Level 1 Routine",
+      "zone": "North Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0025",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STAFF-0032"
+      ],
+      "assignedRn": "MOCK-STAFF-0025",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STAFF-0032",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0025",
+        "pocSignature": "MOCK-STAFF-0025",
+        "medicationReconciliation": "MOCK-STAFF-0025",
+        "hhaSupervision": "MOCK-STAFF-0025",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STAFF-0032"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0025",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0013",
+      "mrn": "MOCK-MRN-0013",
+      "patientName": "Eleni Papadakis",
+      "acuity": "Level 1 Routine",
+      "zone": "Peninsula",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0023",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STF-0007"
+      ],
+      "assignedRn": "MOCK-STAFF-0023",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": null,
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0007",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0023",
+        "pocSignature": "MOCK-STAFF-0023",
+        "medicationReconciliation": "MOCK-STAFF-0023",
+        "hhaSupervision": "MOCK-STAFF-0023",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STF-0007"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0014",
+      "mrn": "MOCK-MRN-0014",
+      "patientName": "Hana Ibrahim",
+      "acuity": "Level 1 Routine",
+      "zone": "East Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0024",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0014",
+        "MOCK-STF-0009"
+      ],
+      "assignedRn": "MOCK-STAFF-0024",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": "MOCK-STF-0014",
+      "accm": "MOCK-STF-0009",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0024",
+        "pocSignature": "MOCK-STAFF-0024",
+        "medicationReconciliation": "MOCK-STAFF-0024",
+        "hhaSupervision": "MOCK-STAFF-0024",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STF-0009"
+      },
+      "intentionalExceptions": []
+    },
+    {
+      "patientId": "MOCK-PT-0015",
+      "mrn": "MOCK-MRN-0015",
+      "patientName": "Mateo Alvarez",
+      "acuity": "Level 2 Moderate",
+      "zone": "North Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0025",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STF-0009",
+        "MOCK-STAFF-0032"
+      ],
+      "assignedRn": "MOCK-STAFF-0025",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": "MOCK-STF-0009",
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STAFF-0032",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0025",
+        "pocSignature": "MOCK-STAFF-0025",
+        "medicationReconciliation": "MOCK-STAFF-0025",
+        "hhaSupervision": "MOCK-STAFF-0025",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STAFF-0032"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0025",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        },
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0016",
+      "mrn": "MOCK-MRN-0016",
+      "patientName": "Ingrid Solberg",
+      "acuity": "Level 2 Moderate",
+      "zone": "Peninsula",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0023",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0007"
+      ],
+      "assignedRn": "MOCK-STAFF-0023",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0007",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0023",
+        "pocSignature": "MOCK-STAFF-0023",
+        "medicationReconciliation": "MOCK-STAFF-0023",
+        "hhaSupervision": "MOCK-STAFF-0023",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STF-0007"
+      },
+      "intentionalExceptions": []
+    },
+    {
+      "patientId": "MOCK-PT-0017",
+      "mrn": "MOCK-MRN-0017",
+      "patientName": "Keiko Tanaka",
+      "acuity": "Level 2 Moderate",
+      "zone": "East Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0024",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STF-0009"
+      ],
+      "assignedRn": "MOCK-STAFF-0024",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": null,
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0009",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0024",
+        "pocSignature": "MOCK-STAFF-0024",
+        "medicationReconciliation": "MOCK-STAFF-0024",
+        "hhaSupervision": "MOCK-STAFF-0024",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STF-0009"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0018",
+      "mrn": "MOCK-MRN-0018",
+      "patientName": "Omar Haddad",
+      "acuity": "Level 2 Moderate",
+      "zone": "Peninsula",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0025",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STAFF-0032"
+      ],
+      "assignedRn": "MOCK-STAFF-0025",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STAFF-0032",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0025",
+        "pocSignature": "MOCK-STAFF-0025",
+        "medicationReconciliation": "MOCK-STAFF-0025",
+        "hhaSupervision": "MOCK-STAFF-0025",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STAFF-0032"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0025",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0019",
+      "mrn": "MOCK-MRN-0019",
+      "patientName": "Celeste Nguyen",
+      "acuity": "Level 2 Moderate",
+      "zone": "North Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0023",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STF-0009",
+        "MOCK-STF-0007"
+      ],
+      "assignedRn": "MOCK-STAFF-0023",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": "MOCK-STF-0009",
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0007",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0023",
+        "pocSignature": "MOCK-STAFF-0023",
+        "medicationReconciliation": "MOCK-STAFF-0023",
+        "hhaSupervision": "MOCK-STAFF-0023",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STF-0007"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0020",
+      "mrn": "MOCK-MRN-0020",
+      "patientName": "Abram Tesfaye",
+      "acuity": "Level 2 Moderate",
+      "zone": "East Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0024",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0009"
+      ],
+      "assignedRn": "MOCK-STAFF-0024",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": null,
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0009",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0024",
+        "pocSignature": "MOCK-STAFF-0024",
+        "medicationReconciliation": "MOCK-STAFF-0024",
+        "hhaSupervision": "MOCK-STAFF-0024",
+        "therapyReview": null,
+        "careCoordination": "MOCK-STF-0009"
+      },
+      "intentionalExceptions": []
+    },
+    {
+      "patientId": "MOCK-PT-0021",
+      "mrn": "MOCK-MRN-0021",
+      "patientName": "Mira Kowalski",
+      "acuity": "Level 2 Moderate",
+      "zone": "Peninsula",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0025",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STAFF-0028",
+        "MOCK-STAFF-0029",
+        "MOCK-STAFF-0032"
+      ],
+      "assignedRn": "MOCK-STAFF-0025",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STAFF-0028",
+      "assignedOt": "MOCK-STAFF-0029",
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STAFF-0032",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0025",
+        "pocSignature": "MOCK-STAFF-0025",
+        "medicationReconciliation": "MOCK-STAFF-0025",
+        "hhaSupervision": "MOCK-STAFF-0025",
+        "therapyReview": "MOCK-STAFF-0028",
+        "careCoordination": "MOCK-STAFF-0032"
+      },
+      "intentionalExceptions": [
+        {
+          "issueType": "wrong_discipline_assigned",
+          "reason": "Wrong discipline assigned",
+          "expectedWorkflowTrigger": "Staffing exception"
+        },
+        {
+          "staffId": "MOCK-STAFF-0025",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        },
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0022",
+      "mrn": "MOCK-MRN-0022",
+      "patientName": "Lucien Moreau",
+      "acuity": "Level 2 Moderate",
+      "zone": "North Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0023",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0005",
+        "MOCK-STF-0007"
+      ],
+      "assignedRn": "MOCK-STAFF-0023",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STF-0005",
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0007",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0023",
+        "pocSignature": "MOCK-STAFF-0023",
+        "medicationReconciliation": "MOCK-STAFF-0023",
+        "hhaSupervision": "MOCK-STAFF-0023",
+        "therapyReview": "MOCK-STF-0005",
+        "careCoordination": "MOCK-STF-0007"
+      },
+      "intentionalExceptions": [
+        {
+          "issueType": "outside_scope_service",
+          "reason": "Service provided outside clinician scope",
+          "expectedWorkflowTrigger": "Staffing exception"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0023",
+      "mrn": "MOCK-MRN-0023",
+      "patientName": "Asha Raman",
+      "acuity": "Level 3 High",
+      "zone": "East Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0024",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STF-0009",
+        "MOCK-STAFF-0028",
+        "MOCK-STAFF-0029",
+        "MOCK-STF-0009"
+      ],
+      "assignedRn": "MOCK-STAFF-0024",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": "MOCK-STF-0009",
+      "assignedPt": "MOCK-STAFF-0028",
+      "assignedOt": "MOCK-STAFF-0029",
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0009",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0024",
+        "pocSignature": "MOCK-STAFF-0024",
+        "medicationReconciliation": "MOCK-STAFF-0024",
+        "hhaSupervision": "MOCK-STAFF-0024",
+        "therapyReview": "MOCK-STAFF-0028",
+        "careCoordination": "MOCK-STF-0009"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0024",
+      "mrn": "MOCK-MRN-0024",
+      "patientName": "Greta Lindholm",
+      "acuity": "Level 3 High",
+      "zone": "Peninsula",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0025",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0005",
+        "MOCK-STAFF-0032"
+      ],
+      "assignedRn": "MOCK-STAFF-0025",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STF-0005",
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STAFF-0032",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0025",
+        "pocSignature": "MOCK-STAFF-0025",
+        "medicationReconciliation": "MOCK-STAFF-0025",
+        "hhaSupervision": "MOCK-STAFF-0025",
+        "therapyReview": "MOCK-STF-0005",
+        "careCoordination": "MOCK-STAFF-0032"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0025",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0025",
+      "mrn": "MOCK-MRN-0025",
+      "patientName": "Theo Baptiste",
+      "acuity": "Level 3 High",
+      "zone": "North Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0023",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STAFF-0028",
+        "MOCK-STAFF-0029",
+        "MOCK-STF-0007"
+      ],
+      "assignedRn": "MOCK-STAFF-0023",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STAFF-0028",
+      "assignedOt": "MOCK-STAFF-0029",
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0007",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0023",
+        "pocSignature": "MOCK-STAFF-0023",
+        "medicationReconciliation": "MOCK-STAFF-0023",
+        "hhaSupervision": "MOCK-STAFF-0023",
+        "therapyReview": "MOCK-STAFF-0028",
+        "careCoordination": "MOCK-STF-0007"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0026",
+      "mrn": "MOCK-MRN-0026",
+      "patientName": "Mei Lin Zhang",
+      "acuity": "Level 3 High",
+      "zone": "East Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0024",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0005",
+        "MOCK-STF-0009"
+      ],
+      "assignedRn": "MOCK-STAFF-0024",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STF-0005",
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0009",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0024",
+        "pocSignature": "MOCK-STAFF-0024",
+        "medicationReconciliation": "MOCK-STAFF-0024",
+        "hhaSupervision": "MOCK-STAFF-0024",
+        "therapyReview": "MOCK-STF-0005",
+        "careCoordination": "MOCK-STF-0009"
+      },
+      "intentionalExceptions": [
+        {
+          "issueType": "wrong_visit_schedule",
+          "reason": "Wrong visit schedule",
+          "expectedWorkflowTrigger": "Scheduling exception review"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0027",
+      "mrn": "MOCK-MRN-0027",
+      "patientName": "Pavel Orlov",
+      "acuity": "Level 3 High",
+      "zone": "Peninsula",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0025",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STF-0009",
+        "MOCK-STAFF-0028",
+        "MOCK-STAFF-0029",
+        "MOCK-STAFF-0032"
+      ],
+      "assignedRn": "MOCK-STAFF-0025",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": "MOCK-STF-0009",
+      "assignedPt": "MOCK-STAFF-0028",
+      "assignedOt": "MOCK-STAFF-0029",
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STAFF-0032",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0025",
+        "pocSignature": "MOCK-STAFF-0025",
+        "medicationReconciliation": "MOCK-STAFF-0025",
+        "hhaSupervision": "MOCK-STAFF-0025",
+        "therapyReview": "MOCK-STAFF-0028",
+        "careCoordination": "MOCK-STAFF-0032"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0025",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        },
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0028",
+      "mrn": "MOCK-MRN-0028",
+      "patientName": "Noura El-Sayed",
+      "acuity": "Level 3 High",
+      "zone": "East Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0023",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0005",
+        "MOCK-STF-0007"
+      ],
+      "assignedRn": "MOCK-STAFF-0023",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STF-0005",
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0007",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0023",
+        "pocSignature": "MOCK-STAFF-0023",
+        "medicationReconciliation": "MOCK-STAFF-0023",
+        "hhaSupervision": "MOCK-STAFF-0023",
+        "therapyReview": "MOCK-STF-0005",
+        "careCoordination": "MOCK-STF-0007"
+      },
+      "intentionalExceptions": []
+    },
+    {
+      "patientId": "MOCK-PT-0029",
+      "mrn": "MOCK-MRN-0029",
+      "patientName": "Dalia Okafor",
+      "acuity": "Level 3 High",
+      "zone": "North Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0024",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STAFF-0028",
+        "MOCK-STAFF-0029",
+        "MOCK-STF-0009"
+      ],
+      "assignedRn": "MOCK-STAFF-0024",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STAFF-0028",
+      "assignedOt": "MOCK-STAFF-0029",
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0009",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0024",
+        "pocSignature": "MOCK-STAFF-0024",
+        "medicationReconciliation": "MOCK-STAFF-0024",
+        "hhaSupervision": "MOCK-STAFF-0024",
+        "therapyReview": "MOCK-STAFF-0028",
+        "careCoordination": "MOCK-STF-0009"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0030",
+      "mrn": "MOCK-MRN-0030",
+      "patientName": "Kenji Sato",
+      "acuity": "Level 3 High",
+      "zone": "Peninsula",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0025",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0005",
+        "MOCK-STAFF-0032"
+      ],
+      "assignedRn": "MOCK-STAFF-0025",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STF-0005",
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STAFF-0032",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0025",
+        "pocSignature": "MOCK-STAFF-0025",
+        "medicationReconciliation": "MOCK-STAFF-0025",
+        "hhaSupervision": "MOCK-STAFF-0025",
+        "therapyReview": "MOCK-STF-0005",
+        "careCoordination": "MOCK-STAFF-0032"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0025",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0031",
+      "mrn": "MOCK-MRN-0031",
+      "patientName": "Zola Mensah",
+      "acuity": "Level 4 Critical / Complex",
+      "zone": "East Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0023",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STF-0009",
+        "MOCK-STAFF-0028",
+        "MOCK-STAFF-0029",
+        "MOCK-STAFF-0030",
+        "MOCK-STF-0007"
+      ],
+      "assignedRn": "MOCK-STAFF-0023",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": "MOCK-STF-0009",
+      "assignedPt": "MOCK-STAFF-0028",
+      "assignedOt": "MOCK-STAFF-0029",
+      "assignedSlp": null,
+      "assignedMsw": "MOCK-STAFF-0030",
+      "accm": "MOCK-STF-0007",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0023",
+        "pocSignature": "MOCK-STAFF-0023",
+        "medicationReconciliation": "MOCK-STAFF-0023",
+        "hhaSupervision": "MOCK-STAFF-0023",
+        "therapyReview": "MOCK-STAFF-0028",
+        "careCoordination": "MOCK-STF-0007"
+      },
+      "intentionalExceptions": [
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        },
+        {
+          "staffId": "MOCK-STAFF-0030",
+          "reason": "Scheduled outside scope for seeded exception; not valid care",
+          "expectedWorkflowTrigger": "staffing exception"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0032",
+      "mrn": "MOCK-MRN-0032",
+      "patientName": "Anika Rao",
+      "acuity": "Level 4 Critical / Complex",
+      "zone": "North Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0024",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0005",
+        "MOCK-STF-0009"
+      ],
+      "assignedRn": "MOCK-STAFF-0024",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STF-0005",
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0009",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0024",
+        "pocSignature": "MOCK-STAFF-0024",
+        "medicationReconciliation": "MOCK-STAFF-0024",
+        "hhaSupervision": "MOCK-STAFF-0024",
+        "therapyReview": "MOCK-STF-0005",
+        "careCoordination": "MOCK-STF-0009"
+      },
+      "intentionalExceptions": []
+    },
+    {
+      "patientId": "MOCK-PT-0033",
+      "mrn": "MOCK-MRN-0033",
+      "patientName": "Henrik Larsen",
+      "acuity": "Level 4 Critical / Complex",
+      "zone": "Peninsula",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0025",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STAFF-0028",
+        "MOCK-STAFF-0029",
+        "MOCK-STAFF-0030",
+        "MOCK-STAFF-0032"
+      ],
+      "assignedRn": "MOCK-STAFF-0025",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STAFF-0028",
+      "assignedOt": "MOCK-STAFF-0029",
+      "assignedSlp": null,
+      "assignedMsw": "MOCK-STAFF-0030",
+      "accm": "MOCK-STAFF-0032",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0025",
+        "pocSignature": "MOCK-STAFF-0025",
+        "medicationReconciliation": "MOCK-STAFF-0025",
+        "hhaSupervision": "MOCK-STAFF-0025",
+        "therapyReview": "MOCK-STAFF-0028",
+        "careCoordination": "MOCK-STAFF-0032"
+      },
+      "intentionalExceptions": [
+        {
+          "issueType": "wrong_discipline_assigned",
+          "reason": "Wrong discipline assigned",
+          "expectedWorkflowTrigger": "Staffing exception"
+        },
+        {
+          "staffId": "MOCK-STAFF-0025",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        },
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        },
+        {
+          "staffId": "MOCK-STAFF-0030",
+          "reason": "Scheduled outside scope for seeded exception; not valid care",
+          "expectedWorkflowTrigger": "staffing exception"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0034",
+      "mrn": "MOCK-MRN-0034",
+      "patientName": "Laila Haddad",
+      "acuity": "Level 4 Critical / Complex",
+      "zone": "East Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0023",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0005",
+        "MOCK-STF-0007"
+      ],
+      "assignedRn": "MOCK-STAFF-0023",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STF-0005",
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0007",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0023",
+        "pocSignature": "MOCK-STAFF-0023",
+        "medicationReconciliation": "MOCK-STAFF-0023",
+        "hhaSupervision": "MOCK-STAFF-0023",
+        "therapyReview": "MOCK-STF-0005",
+        "careCoordination": "MOCK-STF-0007"
+      },
+      "intentionalExceptions": []
+    },
+    {
+      "patientId": "MOCK-PT-0035",
+      "mrn": "MOCK-MRN-0035",
+      "patientName": "Jonas Petrov",
+      "acuity": "Level 4 Critical / Complex",
+      "zone": "North Bay",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0024",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0031",
+        "MOCK-STF-0009",
+        "MOCK-STAFF-0028",
+        "MOCK-STAFF-0029",
+        "MOCK-STF-0009"
+      ],
+      "assignedRn": "MOCK-STAFF-0024",
+      "assignedLvn": "MOCK-STAFF-0026",
+      "assignedHha": "MOCK-STAFF-0031",
+      "assignedCna": "MOCK-STF-0009",
+      "assignedPt": "MOCK-STAFF-0028",
+      "assignedOt": "MOCK-STAFF-0029",
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STF-0009",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0024",
+        "pocSignature": "MOCK-STAFF-0024",
+        "medicationReconciliation": "MOCK-STAFF-0024",
+        "hhaSupervision": "MOCK-STAFF-0024",
+        "therapyReview": "MOCK-STAFF-0028",
+        "careCoordination": "MOCK-STF-0009"
+      },
+      "intentionalExceptions": [
+        {
+          "issueType": "wrong_visit_schedule",
+          "reason": "Wrong visit schedule",
+          "expectedWorkflowTrigger": "Scheduling exception review"
+        },
+        {
+          "staffId": "MOCK-STAFF-0026",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    },
+    {
+      "patientId": "MOCK-PT-0036",
+      "mrn": "MOCK-MRN-0036",
+      "patientName": "Serena Vale",
+      "acuity": "Level 4 Critical / Complex",
+      "zone": "Peninsula",
+      "assignedStaffIds": [
+        "MOCK-STAFF-0025",
+        "MOCK-STAFF-0027",
+        "MOCK-STF-0007",
+        "MOCK-STF-0005",
+        "MOCK-STAFF-0032"
+      ],
+      "assignedRn": "MOCK-STAFF-0025",
+      "assignedLvn": "MOCK-STAFF-0027",
+      "assignedHha": "MOCK-STF-0007",
+      "assignedCna": null,
+      "assignedPt": "MOCK-STF-0005",
+      "assignedOt": null,
+      "assignedSlp": null,
+      "assignedMsw": null,
+      "accm": "MOCK-STAFF-0032",
+      "clinicalTaskCoverage": {
+        "oasis": "MOCK-STAFF-0025",
+        "pocSignature": "MOCK-STAFF-0025",
+        "medicationReconciliation": "MOCK-STAFF-0025",
+        "hhaSupervision": "MOCK-STAFF-0025",
+        "therapyReview": "MOCK-STF-0005",
+        "careCoordination": "MOCK-STAFF-0032"
+      },
+      "intentionalExceptions": [
+        {
+          "issueType": "outside_scope_service",
+          "reason": "Service provided outside clinician scope",
+          "expectedWorkflowTrigger": "Staffing exception"
+        },
+        {
+          "staffId": "MOCK-STAFF-0025",
+          "reason": "Assigned only as intentional scenario exception or precepted/administrative role"
+        }
+      ]
+    }
+  ],
+  "excludedStaff": [
+    {
+      "staffId": "MOCK-STAFF-0025",
+      "name": "Kofi Mensah",
+      "reason": "onboarding-incomplete"
+    },
+    {
+      "staffId": "MOCK-STAFF-0026",
+      "name": "Bianca Rossi",
+      "reason": "credential-expiring-q1"
+    },
+    {
+      "staffId": "MOCK-STAFF-0030",
+      "name": "Mika Shah",
+      "reason": "outside-scope assignment; not valid for seeded care task"
+    }
+  ]
+}

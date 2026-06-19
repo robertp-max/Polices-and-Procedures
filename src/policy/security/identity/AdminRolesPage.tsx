@@ -1,9 +1,13 @@
 import { useMemo, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { PageHeader, SurfaceCard, DataGrid, SearchField } from '@/policy/components/ui';
 import { USER_GROUPS } from './userGroups';
 
-const navClass = ({ isActive }: { isActive: boolean }) =>
-  `px-3 py-1.5 rounded-md text-xs font-semibold border ${isActive ? 'bg-[#0f766e] text-white border-[#0f766e]' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`;
+const ADMIN_TABS = [
+  { id: 'user-groups', label: 'User Groups' },
+  { id: 'roles', label: 'Roles' },
+  { id: 'permissions', label: 'Permissions' },
+  { id: 'users', label: 'User Assignments' },
+] as const;
 
 export function AdminRolesPage() {
   const [roleFilter, setRoleFilter] = useState('');
@@ -15,53 +19,74 @@ export function AdminRolesPage() {
   }, [roleFilter]);
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-[#f8fafc] text-slate-900">
-      <div className="max-w-6xl mx-auto px-6 py-6 space-y-4">
-        <header className="flex flex-wrap items-center gap-3">
-          <h1 className="text-lg font-bold">Admin - Roles</h1>
-          <div className="ml-auto flex items-center gap-2">
-            <NavLink to="/admin/user-groups" className={navClass}>User Groups</NavLink>
-            <NavLink to="/admin/roles" className={navClass}>Roles</NavLink>
-            <NavLink to="/admin/permissions" className={navClass}>Permissions</NavLink>
-            <NavLink to="/admin/users" className={navClass}>User Assignments</NavLink>
-          </div>
-        </header>
+    <div className="h-full w-full overflow-y-auto p-6" style={{ background: 'transparent' }}>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <PageHeader
+          eyebrow="ADMIN / IDENTITY"
+          title="Roles"
+          description="Browse seeded role definitions and permission cardinality. Filter to locate groups for assignments."
+        />
 
-        <div className="rounded-lg border border-slate-200 bg-white p-3">
-          <label className="text-sm text-slate-700">Filter roles</label>
-          <input
-            value={roleFilter}
-            onChange={event => setRoleFilter(event.target.value)}
-            placeholder="Search role name or description"
-            className="mt-1 w-full border border-slate-300 rounded px-2 py-1.5 text-sm"
-          />
+        {/* Corporate sub nav pills (Tabs variant) */}
+        <div className="flex flex-wrap gap-2">
+          {ADMIN_TABS.map(t => {
+            const active = t.id === 'roles';
+            return (
+              <a
+                key={t.id}
+                href={`/admin/${t.id === 'user-groups' ? 'user-groups' : t.id}`}
+                className={`px-3.5 py-1 rounded-full text-xs font-semibold border transition ${active ? 'bg-[var(--brand-primary,#00797D)] text-white border-[var(--brand-primary,#00797D)]' : 'border-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)] hover:text-[var(--v3-text-primary)] hover:bg-[var(--v3-surface-elevated, rgba(255,255,255,0.03))]'}`}
+              >
+                {t.label}
+              </a>
+            );
+          })}
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-600">
-              <tr>
-                <th className="text-left px-3 py-2">Role</th>
-                <th className="text-left px-3 py-2">Description</th>
-                <th className="text-left px-3 py-2">Permission Count</th>
-              </tr>
-            </thead>
-            <tbody>
+        <SurfaceCard padding="md">
+          <SearchField
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            placeholder="Filter roles by name or description…"
+            className="w-full max-w-sm"
+          />
+        </SurfaceCard>
+
+        <SurfaceCard padding="lg">
+          <DataGrid>
+            <DataGrid.Head>
+              <DataGrid.HeaderRow>
+                <DataGrid.HeaderCell>Role</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell>Description</DataGrid.HeaderCell>
+                <DataGrid.HeaderCell align="right">Permission Count</DataGrid.HeaderCell>
+              </DataGrid.HeaderRow>
+            </DataGrid.Head>
+            <DataGrid.Body>
               {filteredRoles.map(group => (
-                <tr key={group.id} className="border-t border-slate-100">
-                  <td className="px-3 py-2 font-semibold">{group.name}</td>
-                  <td className="px-3 py-2 text-slate-600">{group.description}</td>
-                  <td className="px-3 py-2">{group.permissions.length}</td>
-                </tr>
+                <DataGrid.Row key={group.id}>
+                  <DataGrid.Cell>
+                    <span className="font-semibold tracking-tight">{group.name}</span>
+                  </DataGrid.Cell>
+                  <DataGrid.Cell>
+                    <span className="text-[var(--v3-text-secondary)]">{group.description}</span>
+                  </DataGrid.Cell>
+                  <DataGrid.Cell align="right">
+                    <span className="inline-block min-w-[2em] rounded bg-[var(--v3-teal-light, #00D1C1)]/10 px-2 py-px text-xs font-mono text-[var(--v3-text-primary)]">
+                      {group.permissions.length}
+                    </span>
+                  </DataGrid.Cell>
+                </DataGrid.Row>
               ))}
               {filteredRoles.length === 0 && (
-                <tr className="border-t border-slate-100">
-                  <td className="px-3 py-3 text-slate-500" colSpan={3}>No roles match your filter.</td>
-                </tr>
+                <DataGrid.Row>
+                  <DataGrid.Cell colSpan={3}>
+                    <span className="text-[var(--v3-text-tertiary)]">No roles match your filter.</span>
+                  </DataGrid.Cell>
+                </DataGrid.Row>
               )}
-            </tbody>
-          </table>
-        </div>
+            </DataGrid.Body>
+          </DataGrid>
+        </SurfaceCard>
       </div>
     </div>
   );

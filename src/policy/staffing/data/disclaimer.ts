@@ -1,5 +1,5 @@
 export const DEMO_DISCLAIMER =
-  'Demonstration environment. Synthetic data. Not production-validated.';
+  'Phase 1 read-only synthetic data. Not production-validated.';
 
 export const MOCK_DATA_NOTICE =
   'ALL NAMES ARE FICTIONAL. Any resemblance to real persons is coincidental.';

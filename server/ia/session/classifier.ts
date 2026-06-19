@@ -37,6 +37,17 @@ const LIFE_SAFETY_KEYWORDS = [
   'anaphylaxis', 'allergic reaction', 'epipen', 'swelling throat',
   'life threatening', 'life-threatening', 'emergency', 'call 911', '911',
   'dying', 'is dying', 'may die',
+  // Clinician / field worker active danger (first-person threat with weapon/trap)
+  'chasing me', 'chasing us', 'after me', 'has a knife', 'has a gun', 'has knife', 'has gun',
+  'holding a knife', 'holding a gun', 'brandishing', 'waving a knife', 'waving a gun',
+  'trapped', 'hiding', 'locked in', 'cannot leave', 'can\'t leave', 'not safe', 'unsafe',
+  'blocking the door', 'blocking door', 'won\'t let me leave', 'cornered',
+  'attacking me', 'attacking the nurse', 'attacking us', 'threatening me', 'threatening the nurse',
+  'client has a knife', 'patient has a gun', 'family member blocking', 'caregiver attacking',
+  'i am not safe', 'i\'m not safe', 'im not safe', 'we are not safe',
+  'do not feel safe', 'dont feel safe', "don't feel safe", 'feel unsafe', 'not feel safe',
+  'violent', 'trying to hurt me', 'coming at me', 'attacking me',
+  'has a weapon', 'has weapon', 'weapon in', 'knife in the',
 ];
 
 /* ── High urgency keywords (not immediately life-threatening) ─────── */

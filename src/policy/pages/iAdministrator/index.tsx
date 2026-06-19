@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, SlidersHorizontal, HelpCircle, MessageSquare, Search } from 'lucide-react';
 import { useShellStore } from '@/policy/stores/uiStore';
+
 import { CommandBar } from './components/CommandBar';
 import { StructuredAnswer } from './components/StructuredAnswer';
 import { RequirementsSnapshot } from './components/RequirementsSnapshot';
@@ -22,7 +23,7 @@ import { ActiveCasePanel } from './components/ActiveCasePanel';
 import { DemoCriticalEmergencyResponse } from './components/DemoCriticalEmergencyResponse';
 import { DemoCriticalOrchestrationPanel } from './components/DemoCriticalOrchestrationPanel';
 import { classifyScenario } from './lib/classifyScenario';
-import { getComplianceActionDefinition, type ResolvedComplianceActionDefinition } from './lib/complianceActionMap';
+import { COMPLIANCE_ACTION_MAP, getComplianceActionDefinition, type ResolvedComplianceActionDefinition } from './lib/complianceActionMap';
 import {
   acknowledgeDemoCriticalEmergency,
   createDemoCriticalEmergencyState,
@@ -35,6 +36,7 @@ import { iaClient } from './lib/iaClient';
 import { consumePendingMissionQuery } from '@/policy/components/onboarding/missionHandoff';
 import { useComplianceExecution } from '@/policy/compliance-execution/complianceExecutionStore';
 import { openReferenceInNewTab } from './lib/referenceRouting';
+import { resolveIaReference, warnUnresolvedIaReference } from './lib/referenceResolver';
 import type { BradRuntimeSnapshot } from '@/services/bradAppContext';
 import type { AvailableAction, IntentKind, StructuredResponse } from './lib/responseTypes';
 
@@ -113,10 +115,13 @@ export function IAdministratorPage() {
     () => (query.lastInput ? classifyScenario(query.lastInput) : null),
     [query.lastInput],
   );
-  const localScenarioActionDefinition = useMemo<ResolvedComplianceActionDefinition | null>(
-    () => (localScenarioClassification ? getComplianceActionDefinition(localScenarioClassification.scenarioId) : null),
-    [localScenarioClassification],
-  );
+  const localScenarioActionDefinition = useMemo<ResolvedComplianceActionDefinition | null>(() => {
+    if (!localScenarioClassification) return null;
+    if (!Object.prototype.hasOwnProperty.call(COMPLIANCE_ACTION_MAP, localScenarioClassification.scenarioId)) {
+      return null;
+    }
+    return getComplianceActionDefinition(localScenarioClassification.scenarioId);
+  }, [localScenarioClassification]);
 
   /* ── Submit handler ─────────────────────────────────────────── */
   const submitCommand = useCallback((input: string, explicitIntent?: IntentKind) => {
@@ -242,13 +247,20 @@ export function IAdministratorPage() {
     const r = query.response;
     if (!r || r.noAnswerFound) return;
     if (reference.reference) return; // don't override a user selection
-    const auto =
+    const autoCandidates = [
       localScenarioActionDefinition?.relatedPolicies[0]?.id ??
       localScenarioActionDefinition?.relatedForms[0]?.id ??
-      localScenarioActionDefinition?.relatedWorkflows[0]?.id ??
-      r.linkedReferences[0]?.id ??
-      r.citations[0]?.policyId ??
-      r.availableActions.find(a => a.type.startsWith('open_'))?.targetId;
+      localScenarioActionDefinition?.relatedWorkflows[0]?.id,
+      r.linkedReferences[0]?.id,
+      r.citations[0]?.policyId,
+      r.availableActions.find(a => a.type.startsWith('open_'))?.targetId,
+    ].filter((id): id is string => Boolean(id));
+    const auto = autoCandidates.find((id) => {
+      const resolved = resolveIaReference({ id, source: 'IAdministratorPage.autoSelectReference' });
+      if (resolved.resolved) return true;
+      warnUnresolvedIaReference(resolved);
+      return false;
+    });
     if (auto) void reference.load(auto);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.response?.id, localScenarioActionDefinition, demoCriticalState, isMockDemoMode]);
@@ -260,6 +272,7 @@ export function IAdministratorPage() {
 
   /* ── Render ─────────────────────────────────────────────────── */
   const bgText = isLight ? '#1F1C1B' : '#E0E0E0';
+  const titleColor = isLight ? '#00797D' : '#E0E0E0'; /* teal for Brad/iAdmin titles in light per spec */
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
   const subtle = isLight ? '#747474' : 'rgba(255,255,255,0.45)';
 
@@ -271,7 +284,7 @@ export function IAdministratorPage() {
           <div>
             <h1
               className="text-[20px] md:text-[22px] font-semibold"
-              style={{ fontFamily: "'Outfit', 'Inter', system-ui, sans-serif" }}
+              style={{ fontFamily: "'Outfit', 'Inter', system-ui, sans-serif", color: titleColor }}
             >
               Brad iAdministrator
             </h1>
@@ -531,7 +544,6 @@ export function IAdministratorPage() {
         type="button"
         onDoubleClick={() => navigate('/brad-proposal')}
         aria-label="Hidden executive proposal"
-        title=""
         tabIndex={-1}
         className="fixed bottom-0 left-0 w-10 h-10 z-50 cursor-default"
         style={{ background: 'transparent', border: 'none', outline: 'none' }}

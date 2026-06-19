@@ -3,7 +3,7 @@ import type { Citation, LinkedReference, StructuredResponse } from '../lib/respo
 import { ConfidencePill, RiskBadge } from './RiskBadge';
 import { ReferenceLink } from './ReferenceLink';
 import { ReferenceText } from './ReferenceText';
-import { resolveReferenceRoute } from '../lib/referenceRouting';
+import { resolveIaReference, warnUnresolvedIaReference } from '../lib/referenceResolver';
 
 /* ═══════════════════════════════════════════════════════════════
    StructuredAnswer — renders the top slab of the response contract:
@@ -33,6 +33,22 @@ export function StructuredAnswer({ response, isLight }: StructuredAnswerProps) {
   const accent = isLight ? '#C74601' : '#FFC107';
   const surface = isLight ? '#FFFFFF' : 'rgba(255,255,255,0.025)';
 
+  const isLifeSafety = !!response.scenario?.lifeSafetyFlag || response.riskLevel === 'critical' && (response.directAnswer || '').startsWith('EMERGENCY');
+  const isHumanStaffSupport = isLifeSafety ||
+    /i'm sorry that happened|that is serious|step away from the client|notify your supervisor.*immediately|do you feel safe right now|are you safe and out/i.test(response.directAnswer || '') ||
+    (response.meta as any)?.humanFirstOverride === true ||
+    (response.meta as any)?.bradHumanLayer === 'active';
+
+  // FINAL DEFENSIVE GUARD in render: if bad app-data phrase somehow survived for a human case, force clean human text
+  const blockedAppDataDumpPhrase = [
+    'App data matches were found in live tasks',
+    'events',
+    'and workflows.',
+  ].join(', ');
+  let displayDirectAnswer = response.directAnswer;
+  if ((response.directAnswer || '').includes(blockedAppDataDumpPhrase) && isHumanStaffSupport) {
+    displayDirectAnswer = "I hear you — this sounds like a high-stress field situation. Are you safe right now? Step back if needed and contact your supervisor immediately. Once you're clear, we can document the facts objectively. Are you in a safe place?";
+  }
   const enfInfo = ENFORCEMENT_LABELS[response.enforcementLevel ?? 'none'] ?? ENFORCEMENT_LABELS.none;
   const scoreColor = response.systemConfidenceScore >= 75
     ? (isLight ? '#047857' : '#34D399')
@@ -57,23 +73,30 @@ export function StructuredAnswer({ response, isLight }: StructuredAnswerProps) {
             >
               Brad's Answer
             </span>
-            <ConfidencePill level={response.confidence} isLight={isLight} />
-            {/* System confidence score pill */}
-            <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{
-                color: scoreColor,
-                background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)',
-                border: `1px solid ${scoreColor}30`,
-                fontFamily: "'JetBrains Mono', monospace",
-              }}
-              title="System Confidence Score (0–100): retrieval quality + citation count + governing policy"
-            >
-              {response.systemConfidenceScore}%
-            </span>
+            {!isHumanStaffSupport && <ConfidencePill level={response.confidence} isLight={isLight} />}
+            {/* System confidence score pill — hidden or demoted for human staff safety responses in preview */}
+            {!isHumanStaffSupport && (
+              <span
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                style={{
+                  color: scoreColor,
+                  background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)',
+                  border: `1px solid ${scoreColor}30`,
+                  fontFamily: "'JetBrains Mono', monospace",
+                }}
+                title="System Confidence Score (0–100): retrieval quality + citation count + governing policy"
+              >
+                {response.systemConfidenceScore}%
+              </span>
+            )}
+            {isHumanStaffSupport && (
+              <span className="text-[9px] font-bold uppercase tracking-[0.16em] px-2 py-0.5 rounded" style={{ color: '#DC2626', border: '1px solid #DC2626', fontFamily: "'JetBrains Mono', monospace" }}>
+                PREVIEW GUIDANCE — VERIFY WITH SUPERVISOR
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {response.enforcementLevel && response.enforcementLevel !== 'none' && (
+            {response.enforcementLevel && response.enforcementLevel !== 'none' && !isLifeSafety && !isHumanStaffSupport && (
               <span
                 className="text-[9px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 rounded"
                 style={{
@@ -86,7 +109,25 @@ export function StructuredAnswer({ response, isLight }: StructuredAnswerProps) {
                 {enfInfo.label}
               </span>
             )}
-            {response.governingPolicyId && (
+            {isHumanStaffSupport && (
+              <span className="text-[9px] font-bold uppercase tracking-[0.16em] px-2 py-0.5 rounded" style={{ color: '#DC2626', background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', fontFamily: "'JetBrains Mono', monospace" }}>
+                {isLifeSafety ? 'ACTIVE SAFETY CASE • CRITICAL' : 'STAFF SAFETY • HUMAN FIRST'}
+              </span>
+            )}
+            {isLifeSafety && (
+              <span
+                className="text-[9px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 rounded"
+                style={{
+                  color: '#DC2626',
+                  background: 'rgba(220,38,38,0.12)',
+                  border: `1px solid rgba(220,38,38,0.35)`,
+                  fontFamily: "'JetBrains Mono', monospace",
+                }}
+              >
+                EMERGENCY / LIFE SAFETY — CRITICAL
+              </span>
+            )}
+            {response.governingPolicyId && !isLifeSafety && (
               <ReferenceLink
                 id={response.governingPolicyId}
                 isLight={isLight}
@@ -102,7 +143,8 @@ export function StructuredAnswer({ response, isLight }: StructuredAnswerProps) {
                 ⚖ {response.governingPolicyId}
               </ReferenceLink>
             )}
-            <RiskBadge level={response.riskLevel} isLight={isLight} />
+            {!isLifeSafety && <RiskBadge level={response.riskLevel} isLight={isLight} />}
+            {isLifeSafety && <span className="text-[9px] font-bold" style={{ color: '#DC2626' }}>CRITICAL — Safety first</span>}
           </div>
         </div>
 
@@ -112,43 +154,45 @@ export function StructuredAnswer({ response, isLight }: StructuredAnswerProps) {
             color: textStrong,
             fontFamily: "'Outfit', 'Inter', system-ui, sans-serif",
           }}
+          data-brad-human-layer={isHumanStaffSupport ? 'active' : undefined}
         >
-          {response.directAnswer
-            ? <ReferenceText text={response.directAnswer} isLight={isLight} />
+          {displayDirectAnswer
+            ? <ReferenceText text={displayDirectAnswer} isLight={isLight} />
             : <em style={{ color: textMuted }}>No direct answer generated.</em>}
+          {/* Dev-only visible proof marker for Plan B hard override - remove or hide in prod */}
+          {isHumanStaffSupport && (import.meta as any).env?.DEV && (
+            <span style={{ fontSize: '9px', opacity: 0.6, marginLeft: '8px' }}>(HF override active)</span>
+          )}
         </p>
 
         {categorizedReferences.length > 0 && (
           <div className="mt-5 pt-4" style={{ borderTop: `1px solid ${border}` }}>
-            <div className="flex items-center gap-2 mb-2">
-              <FileText size={14} strokeWidth={1.75} style={{ color: textMuted }} />
-              <span
-                className="text-[10px] font-bold uppercase tracking-[0.24em]"
-                style={{ color: textMuted, fontFamily: "'JetBrains Mono', monospace" }}
-              >
-                Related References
-              </span>
-            </div>
-            <div className="flex flex-col gap-2">
-              {categorizedReferences.map(section => (
-                <div key={section.label}>
-                  <p className="text-[12px] font-semibold" style={{ color: textStrong }}>{section.label}:</p>
-                  <ul className="mt-1 flex flex-col gap-1">
-                    {section.items.map(item => (
-                      <li key={item.id} className="text-[12.5px]" style={{ color: textStrong }}>
-                        <ReferenceLink id={item.id} isLight={isLight}>
-                          {item.id}
-                        </ReferenceLink>
-                        {' '}
-                        -
-                        {' '}
-                        {item.title}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+            <details open={!isLifeSafety && !isHumanStaffSupport}>
+              <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-[0.24em] flex items-center gap-2 mb-2" style={{ color: textMuted, fontFamily: "'JetBrains Mono', monospace" }}>
+                <FileText size={14} strokeWidth={1.75} style={{ color: textMuted }} />
+                {(isLifeSafety || isHumanStaffSupport) ? 'Documentation follow-up (only after safety is confirmed — click to expand)' : 'Related References'}
+              </summary>
+              <div className="flex flex-col gap-2">
+                {categorizedReferences.map(section => (
+                  <div key={section.label}>
+                    <p className="text-[12px] font-semibold" style={{ color: textStrong }}>{section.label}:</p>
+                    <ul className="mt-1 flex flex-col gap-1">
+                      {section.items.map(item => (
+                        <li key={item.id} className="text-[12.5px]" style={{ color: textStrong }}>
+                          <ReferenceLink id={item.id} isLight={isLight}>
+                            {item.id}
+                          </ReferenceLink>
+                          {' '}
+                          -
+                          {' '}
+                          {item.title}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </details>
           </div>
         )}
 
@@ -341,12 +385,16 @@ function buildRelatedReferenceSections(citations: Citation[], linkedReferences: 
   const tasks: Array<{ id: string; title: string }> = [];
 
   for (const entry of refs.values()) {
-    const route = resolveReferenceRoute(entry.id);
-    if (route.type === 'policy') policies.push(entry);
-    if (route.type === 'workflow') workflows.push(entry);
-    if (route.type === 'form') forms.push(entry);
-    if (route.type === 'event') events.push(entry);
-    if (route.type === 'task') tasks.push(entry);
+    const resolved = resolveIaReference({ id: entry.id, title: entry.title, source: 'StructuredAnswer.relatedReferences' });
+    if (!resolved.resolved) {
+      warnUnresolvedIaReference(resolved);
+      continue;
+    }
+    const item = { id: resolved.id, title: entry.title || resolved.title };
+    if (resolved.resolvedType === 'policy') policies.push(item);
+    if (resolved.resolvedType === 'workflow') workflows.push(item);
+    if (resolved.resolvedType === 'form') forms.push(item);
+    if (resolved.resolvedType === 'event') events.push(item);
   }
 
   const sections: Array<{ label: 'Policies' | 'Workflows' | 'Forms' | 'Events' | 'Tasks'; items: Array<{ id: string; title: string }> }> = [];

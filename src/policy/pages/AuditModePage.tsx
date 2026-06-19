@@ -7,6 +7,7 @@ import {
   GitBranch, ListChecks, Table2, LayoutList, Filter,
   AlertCircle, CheckCircle2, BadgeCheck, FileWarning,
 } from 'lucide-react';
+
 import {
   REGULATORY_EVENTS, DOMAIN_PALETTE, formatEventDate, TODAY_ANCHOR, daysUntil,
   type RegulatoryEvent,
@@ -1420,6 +1421,9 @@ function EvidenceTab({
                         >
                           View Artifact
                         </a>
+                        {d.driveFileId && d.webViewLink && (
+                          <a href={d.webViewLink} target="_blank" rel="noopener noreferrer" className="rounded border border-emerald-300/45 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-montserrat font-bold uppercase tracking-[0.1em] text-emerald-200">Drive</a>
+                        )}
                         {d.localDataUrl && (
                           <>
                             <a

@@ -15,11 +15,11 @@ export function CalendarViewToggle({ value, onChange }: CalendarViewToggleProps)
   return (
     <div
       className="inline-flex items-center rounded-md overflow-hidden"
-      style={{ border: '1px solid var(--ci-border-strong)' }}
+      style={{ border: 'none', background: 'transparent' }}
       role="group"
       aria-label="Calendar view"
     >
-      {OPTIONS.map((opt, idx) => {
+      {OPTIONS.map((opt, _idx) => {
         const active = opt.value === value;
         return (
           <button
@@ -29,9 +29,9 @@ export function CalendarViewToggle({ value, onChange }: CalendarViewToggleProps)
             aria-pressed={active}
             className="h-9 px-4 text-sm font-medium transition-colors"
             style={{
-              background: active ? 'var(--ci-accent, #4f46e5)' : 'var(--ci-surface)',
+              background: active ? 'var(--v3-teal, #007970)' : 'var(--ci-surface)',
               color: active ? '#fff' : 'var(--ci-text-muted-2)',
-              borderRight: idx < OPTIONS.length - 1 ? '1px solid var(--ci-border-strong)' : undefined,
+              borderRight: 'none',
               cursor: 'pointer',
             }}
           >

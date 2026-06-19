@@ -3,6 +3,8 @@
    Drives the Regulatory Execution Center (Dashboard + Calendar).
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
+import { getCaliforniaNow } from '@/policy/utils/californiaTime';
+
 export type RegulatoryDomain =
   | 'Governance'
   | 'QAPI'
@@ -47,6 +49,14 @@ export type MandateType =
   | 'conditional-federal'   // federal trigger only when condition is met (e.g. low-volume HHCAHPS)
   | 'policy-driven'         // agency policy cadence, not a universal federal mandate
   | 'state-required';       // state-specific regulation
+
+export type EventScopeType =
+  | "previous_calendar_month"
+  | "previous_calendar_quarter"
+  | "current_calendar_month"
+  | "rolling_since_last_event"
+  | "custom"
+  | "needs_review";
 
 export interface EventEvidenceItem {
   id: string;
@@ -274,6 +284,18 @@ export interface RegulatoryEvent {
     | 'missing_workflow_link'
     | 'context_marker_only'
     | 'needs_manual_review';
+
+  /* â”€â”€ Reporting scope alignment (added for 2026 schedule update) â”€â”€ */
+  scopeType?: EventScopeType;
+  reportingPeriodStart?: string;
+  reportingPeriodEnd?: string;
+  executionWindowStart?: string;
+  executionWindowEnd?: string;
+  scheduledDate?: string;
+  preferredScheduleRule?: string;
+  rescheduleRule?: string;
+  lateRule?: string;
+  scopeLabel?: string;
 }
 
 /* â”€â”€â”€ Domain visual palette (maroon-safe â€” NO blue) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -308,9 +330,8 @@ export const URGENCY_PALETTE: Record<UrgencyLevel, {
   'missing-evidence':{ color: '#F97316', soft: 'rgba(249,115,22,0.18)', label: 'Missing Evidence' },
 };
 
-/* â”€â”€â”€ Anchor "today" (controls relative urgency in the demo) â”€â”€
-   Keeping this stable so the dashboard/calendar story is consistent. */
-export const TODAY_ANCHOR = new Date('2026-05-10T10:00:00');
+/* Anchor "today" to California business time for dashboard, audit, and calendar urgency. */
+export const TODAY_ANCHOR = getCaliforniaNow();
 
 /* â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export function daysUntil(dateISO: string, today: Date = TODAY_ANCHOR): number {
@@ -414,7 +435,7 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
     eventSubType: 'qapi_meeting',
     title: 'QAPI Committee Meeting',
     domain: 'QAPI',
-    date: '2026-05-12',
+    date: '2026-05-01',  // first Friday per alignment
     time: '10:00',
     timeEnd: '12:00',
     cadence: 'Monthly',
@@ -498,6 +519,14 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
       signOffRoles: ['QAPI Committee Chair', 'QAPI Coordinator'],
     },
     category: 'Monthly QAPI Committee',
+    scopeType: 'previous_calendar_month',
+    reportingPeriodStart: '2026-04-01',
+    reportingPeriodEnd: '2026-04-30',
+    executionWindowStart: '2026-05-01',
+    executionWindowEnd: '2026-05-01',
+    scheduledDate: '2026-05-01',
+    preferredScheduleRule: 'first Friday of the month at 10:00 AM',
+    scopeLabel: 'Previous calendar month (Apr 2026)',
     agenda: {
       distributeBusinessDaysBefore: 5,
       standingTopics: [
@@ -1180,7 +1209,7 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
     eventSubType: 'qapi_meeting',
     title: 'QAPI Committee Meeting',
     domain: 'QAPI',
-    date: '2026-06-09',
+    date: '2026-06-05',  // first Friday
     time: '10:00',
     timeEnd: '12:00',
     cadence: 'Monthly',
@@ -1189,7 +1218,18 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
     owner: 'M. Chen',
     ownerRole: 'QAPI Coordinator',
     location: 'Main Office / Conference Room A',
+    workflowId: 'TPL-QA-MONTHLY-QAPI',
+    category: 'committee',
+    scopeType: 'previous_calendar_month',
+    reportingPeriodStart: '2026-05-01',
+    reportingPeriodEnd: '2026-05-31',
+    executionWindowStart: '2026-06-05',
+    executionWindowEnd: '2026-06-05',
+    scheduledDate: '2026-06-05',
+    preferredScheduleRule: 'first Friday of the month at 10:00 AM',
+    scopeLabel: 'Previous calendar month (May 2026)',
     summary: 'Monthly QAPI review.',
+    regulatoryDriver: 'CoP §484.65 QAPI',
     processFlow: [],
     requiredForms: [],
   },

@@ -46,7 +46,7 @@ export function LoginPage() {
 
   return (
     <AuthCard
-      eyebrow="Care Indeed Compliance Demo"
+      eyebrow="Care Indeed Compliance"
       title="Sign In"
       subtitle="Use your approved email and password to enter the dashboard."
     >
@@ -54,7 +54,7 @@ export function LoginPage() {
         {notice && <p className={t.isLight ? 'text-sm text-[#2E7D32] bg-green-50 border border-green-200 rounded-xl px-3 py-2' : 'text-sm text-green-300 bg-green-900/20 border border-green-700/40 rounded-xl px-3 py-2'}>{notice}</p>}
         {bypassAuth && (
           <p className={t.isLight ? 'text-sm text-[#0f766e] bg-teal-50 border border-teal-200 rounded-xl px-3 py-2' : 'text-sm text-teal-200 bg-teal-950/30 border border-teal-700/40 rounded-xl px-3 py-2'}>
-            Vercel demo mode is active. Click <span className="font-semibold">Sign In</span> to enter without email or password verification.
+            Preview mode is active. Click <span className="font-semibold">Sign In</span> to enter without email or password verification.
           </p>
         )}
         <label className={t.labelClass}>
@@ -67,7 +67,7 @@ export function LoginPage() {
             autoComplete="email"
             required={!bypassAuth}
             readOnly={bypassAuth}
-            placeholder={bypassAuth ? 'Not required in Vercel demo mode' : undefined}
+            placeholder={bypassAuth ? 'Not required in preview mode' : undefined}
           />
         </label>
 
@@ -81,7 +81,7 @@ export function LoginPage() {
             autoComplete="current-password"
             required={!bypassAuth}
             readOnly={bypassAuth}
-            placeholder={bypassAuth ? 'Not required in Vercel demo mode' : undefined}
+            placeholder={bypassAuth ? 'Not required in preview mode' : undefined}
           />
         </label>
 

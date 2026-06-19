@@ -8,6 +8,7 @@ import { AuditTimeline } from '../components/AuditTimeline';
 import { verifyChain } from '../engine/audit';
 import type { GateResult } from '../engine/gates';
 import type { OnboardingExecutionUnit } from '../types';
+import { PageHeader } from '@/policy/components/ui/PageHeader';
 
 type Tab = 'credentials' | 'acknowledgments' | 'competencies' | 'trainings' | 'gates' | 'overrides' | 'evidence' | 'audit';
 
@@ -60,20 +61,17 @@ export function AuditReadinessPage() {
   }
 
   return (
-    <div className="p-6 space-y-5 overflow-y-auto h-full">
-      <header className="flex items-end justify-between gap-4">
-        <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6B7280]">Onboarding v2</div>
-          <h1 className="text-[22px] font-semibold text-[#0B2545]">Audit Readiness</h1>
-          <p className="text-[12px] text-[#4B5563] mt-1 max-w-2xl">Surveyor-grade per-subject dossier. All artifacts hash-bound to policy versions and chained in an immutable audit log.</p>
-        </div>
-        <button
-          onClick={exportDossier}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-[#0B2545] text-white font-semibold text-[12px] hover:bg-[#13355E]"
-        >
-          <Download size={14} /> Export dossier (JSON)
-        </button>
-      </header>
+    <div className="p-5 md:p-6 space-y-5 overflow-y-auto h-full">
+      <PageHeader
+        eyebrow="ONBOARDING V2 · AUDIT"
+        title="Audit Readiness"
+        description="Surveyor-grade per-subject dossier. All artifacts hash-bound to policy versions and chained in an immutable audit log."
+        actions={
+          <button onClick={exportDossier} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[var(--v3-border-subtle)] text-xs font-semibold uppercase tracking-[0.12em]">
+            <Download size={14} /> Export dossier
+          </button>
+        }
+      />
 
       {/* Subject picker + chain */}
       <section className="grid grid-cols-12 gap-3">

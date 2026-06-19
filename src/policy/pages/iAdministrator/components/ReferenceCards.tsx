@@ -1,5 +1,6 @@
 import { FileText, ClipboardList, Boxes, Workflow } from 'lucide-react';
 import type { LinkedReference, ReferenceIntent } from '../lib/responseTypes';
+import { sanitizeLinkedReferences } from '../lib/referenceSanitizer';
 import { ReferenceLink } from './ReferenceLink';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -16,10 +17,11 @@ export interface ReferenceCardsProps {
 }
 
 export function ReferenceCards({ references, isLight, activeId, onOpenReference: _onOpenReference }: ReferenceCardsProps) {
-  if (references.length === 0) return null;
+  const resolvedReferences = sanitizeLinkedReferences(references, 'ReferenceCards');
+  if (resolvedReferences.length === 0) return null;
 
-  const critical = references.filter(r => isCriticalIntent(r.intent) || r.required);
-  const supporting = references.filter(r => !critical.includes(r));
+  const critical = resolvedReferences.filter(r => isCriticalIntent(r.intent) || r.required);
+  const supporting = resolvedReferences.filter(r => !critical.includes(r));
 
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
   const surface = isLight ? '#FFFFFF' : 'rgba(255,255,255,0.025)';
@@ -42,7 +44,7 @@ export function ReferenceCards({ references, isLight, activeId, onOpenReference:
           className="text-[10px] font-semibold uppercase tracking-[0.2em]"
           style={{ color: muted, fontFamily: "'JetBrains Mono', monospace" }}
         >
-          {references.length} {references.length === 1 ? 'item' : 'items'}
+          {resolvedReferences.length} {resolvedReferences.length === 1 ? 'item' : 'items'}
         </span>
       </header>
 

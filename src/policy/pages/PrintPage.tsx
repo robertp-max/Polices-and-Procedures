@@ -7,8 +7,7 @@ import { loadFrameworkSeed } from '@/policy/adapters/frameworkSeedAdapter';
 import type { PolicyContentSection } from '@/policy/types';
 import { achcSurveyByPolicyId } from '@/policy/data/achcSurveyProjection.generated';
 import { formatAnchorRefsForDisplay, getSupportRefsForPolicy } from '@/policy/data/achcSupportAnchors';
-// Single app logo - the one file specified for the entire application
-import ciLogoWhite from '@/assets/ci-logo-white.png';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 
 // Pre-load seed data for domain / subdomain name lookups and version metadata
 const { domains, subdomains, policyVersions } = loadFrameworkSeed();
@@ -202,7 +201,7 @@ export function PrintPage() {
     : [];
 
   return (
-    <div className="policy-print-page bg-[#E5E4E3] py-8 print:bg-white print:p-0">
+    <div className="policy-print-page py-0 print:bg-white print:p-0" style={{ backgroundColor: '#FFFFFF', color: '#1F1C1B' }}>
       <style>{`
         @page { size: letter; margin: 0.5in; }
         @media print {
@@ -271,7 +270,7 @@ export function PrintPage() {
       </div>
 
       {/* DOCUMENT CONTAINER */}
-      <article className="print-document mx-auto max-w-[850px] bg-white shadow-xl print:max-w-full print:shadow-none px-12 py-16 text-[#1F1C1B]">
+      <article className="print-document w-full max-w-none bg-white shadow-none print:max-w-full print:shadow-none px-12 py-16 text-[#1F1C1B]">
 
         {/* COVER BLOCK — matches PolicyPrintDocument / Documents PDF brand */}
         <div className="avoid-break" style={{ borderBottom: '2px solid #007970', paddingBottom: '32px', marginBottom: '40px' }}>
@@ -279,8 +278,8 @@ export function PrintPage() {
           {/* Logo + document type */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
             <img
-              src={ciLogoWhite}
-              alt="Care Indeed — The Heart of Home Health"
+              src={ciLogoGray}
+              alt="Care Indeed"
               style={{ height: '40px', width: 'auto' }}
             />
             <div style={{ textAlign: 'right' }}>

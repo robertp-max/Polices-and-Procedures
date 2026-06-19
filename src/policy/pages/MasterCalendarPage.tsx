@@ -33,6 +33,7 @@ import {
   useCesInfiniteZoom,
 } from '@/policy/ces/components/calendar/CesEventInteraction';
 import { getSwimlaneRegistryEntry, getLiveEventDisplay } from '@/policy/workflows/swimlanes/swimlaneRegistry';
+import { dedupeCanonicalCalendarEvents } from '@/policy/ces/calendar/canonicalEventDedup';
 
 export type PmView = 'calendar' | 'sprint' | 'kanban' | 'gantt';
 
@@ -46,6 +47,16 @@ const CES_ROLE_FALLBACK = [
   'Scribe',
   'Governing Body',
 ];
+
+const CES_COCKPIT_FIRST_EVENT_IDS = new Set([
+  'qapi_meeting-20260609-10',
+  'infection_control_review_quarterly-20260624-02',
+]);
+
+function shouldOpenCesCockpitFirst(event: RegulatoryEvent) {
+  return CES_COCKPIT_FIRST_EVENT_IDS.has(event.id)
+    || (event.title === 'Q2 Infection Control Review' && event.date === '2026-06-24');
+}
 
 function normalizeRoleLabel(value?: string | null) {
   return (value ?? '').replace(/\s+/g, ' ').trim();
@@ -103,9 +114,8 @@ export function MasterCalendarPage() {
   /* ── All workflow instances (base + autogen + triggered) ── */
   const generatedEvents = useAutogenStore(s => s.generatedEvents);
   const triggeredEvents = useAutogenStore(s => s.triggeredEvents);
-  const allInstances = useMemo(
-    () => [...REGULATORY_EVENTS, ...generatedEvents, ...triggeredEvents]
-      .filter(e => !e.isContext),
+  const { events: allInstances } = useMemo(
+    () => dedupeCanonicalCalendarEvents(REGULATORY_EVENTS, generatedEvents, triggeredEvents),
     [generatedEvents, triggeredEvents],
   );
 
@@ -195,6 +205,11 @@ export function MasterCalendarPage() {
     if (view !== 'calendar') {
       store.openWorkflow(e.id);
       setDetailsOpen(true);
+      return;
+    }
+
+    if (shouldOpenCesCockpitFirst(e)) {
+      openPreview(e);
       return;
     }
 
@@ -573,6 +588,7 @@ export function MasterCalendarPage() {
           onOpenSwimlane={() => {
             if (zoomState.event) openEventSwimlane(zoomState.event);
           }}
+          actionLabel="Open Full Swimlane"
         />
       )}
 

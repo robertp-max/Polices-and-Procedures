@@ -113,6 +113,17 @@ export interface SwimlaneModel {
   evidenceRequirements: string[];
   missingContext?: string[];
   routePath?: string;
+  readOnly?: boolean;
+  completionPercent?: number;
+  auditReadinessPercent?: number;
+  evidenceAttachedCount?: number;
+  evidenceCount?: number;
+  ecignStatus?: string;
+  ecignDisplayStatus?: string;
+  calendarAttachmentStatus?: string;
+  driveLinked?: boolean;
+  driveFolderUrl?: string;
+  blockerText?: string;
 }
 
 export interface SwimlaneBuildContext {

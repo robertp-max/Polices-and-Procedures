@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, ShieldCheck, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, X } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
+import { PageHeader } from '@/policy/components/ui';
 import {
   achcSurveyByPolicyId,
   achcSurveyRows,
@@ -381,17 +382,13 @@ export function AchcSurveyAlignmentPage() {
   };
 
   return (
-    <div className="relative flex h-full flex-col bg-white text-[#1f2937]">
-      <div className="border-b border-[#e2e8f0] px-6 py-4">
-        <div className="flex items-center gap-3">
-          <ShieldCheck size={22} className="text-[#0f766e]" />
-          <h1 className="text-xl font-semibold">ACHC Survey Alignment</h1>
-          <span className="text-xs text-slate-500">Manual tagging source locked</span>
-        </div>
-        <p className="mt-1 text-sm text-slate-600">
-          Surveyor evidence explorer for HH standard support, with matrix and crosswalk retained as secondary views.
-        </p>
-      </div>
+    <div className="relative flex h-full flex-col">
+      <PageHeader
+        eyebrow="SURVEYOR TOOLS"
+        title="ACHC Survey Alignment"
+        description="Surveyor evidence explorer for HH standard support, with matrix and crosswalk retained as secondary views."
+        actions={<span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--v3-text-tertiary)]">Manual tagging source locked</span>}
+      />
 
       <div className="border-b border-[#e2e8f0] px-6 py-3">
         <div className="inline-flex overflow-hidden rounded-lg border border-[#99f6e4] bg-[#f0fdfa]">

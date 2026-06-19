@@ -10,6 +10,7 @@
 
 import { useMemo, type ReactElement } from 'react';
 import type { PmTaskStatus, Task, TaskSource } from '@/policy/pm/types';
+import { useShellStore } from '@/policy/stores/uiStore';
 
 export interface PmFilterState {
   q?: string;                   // free-text title search
@@ -66,6 +67,8 @@ const ALL_STATUSES: PmTaskStatus[] = ['todo', 'in_progress', 'in_review', 'block
 const ALL_SOURCES: TaskSource[] = ['ces', 'personal'];
 
 export function PmFilterBar({ value, onChange, tasks }: PmFilterBarProps): ReactElement {
+  const theme = useShellStore(s => s.theme);
+  const isLight = theme === 'care-indeed-light';
   const sprintOptions = useMemo(
     () => Array.from(new Set(tasks.map(t => t.sprint_id).filter(Boolean) as string[])).sort(),
     [tasks],
@@ -89,33 +92,36 @@ export function PmFilterBar({ value, onChange, tasks }: PmFilterBarProps): React
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+    <div className="flex flex-wrap items-center gap-2 rounded-lg px-3 py-2" style={{ border: 'none', background: isLight ? 'var(--ci-surface-muted)' : 'rgba(255,255,255,0.02)' }}>
       <input
         type="search"
         placeholder="Search tasks…"
         value={value.q ?? ''}
         onChange={e => onChange({ ...value, q: e.target.value })}
-        className="bg-white/[0.05] text-white text-[12px] font-outfit rounded-md px-2 py-1 placeholder:text-white/35 outline-none focus:bg-white/[0.08] min-w-[160px]"
+        className="text-[12px] font-outfit rounded-md px-2 py-1 outline-none min-w-[160px]"
+        style={{ background: isLight ? 'var(--ci-surface-2)' : 'rgba(255,255,255,0.05)', color: isLight ? 'var(--ci-text)' : 'white', border: isLight ? '1px solid var(--ci-border)' : 'none' }}
       />
 
-      <FacetGroup label="Status">
+      <FacetGroup label="Status" isLight={isLight}>
         {ALL_STATUSES.map(s => (
           <Chip
             key={s}
             active={value.statuses?.includes(s) ?? false}
             onClick={() => toggle('statuses', s)}
+            isLight={isLight}
           >
             {s.replace('_', ' ')}
           </Chip>
         ))}
       </FacetGroup>
 
-      <FacetGroup label="Source">
+      <FacetGroup label="Source" isLight={isLight}>
         {ALL_SOURCES.map(s => (
           <Chip
             key={s}
             active={value.sources?.includes(s) ?? false}
             onClick={() => toggle('sources', s)}
+            isLight={isLight}
           >
             {s}
           </Chip>
@@ -123,12 +129,13 @@ export function PmFilterBar({ value, onChange, tasks }: PmFilterBarProps): React
       </FacetGroup>
 
       {sprintOptions.length > 0 && (
-        <FacetGroup label="Sprint">
+        <FacetGroup label="Sprint" isLight={isLight}>
           {sprintOptions.slice(0, 6).map(s => (
             <Chip
               key={s}
               active={value.sprintIds?.includes(s) ?? false}
               onClick={() => toggle('sprintIds', s)}
+              isLight={isLight}
             >
               {s}
             </Chip>
@@ -137,12 +144,13 @@ export function PmFilterBar({ value, onChange, tasks }: PmFilterBarProps): React
       )}
 
       {eventOptions.length > 0 && (
-        <FacetGroup label="Event">
+        <FacetGroup label="Event" isLight={isLight}>
           {eventOptions.slice(0, 5).map(e => (
             <Chip
               key={e}
               active={value.eventIds?.includes(e) ?? false}
               onClick={() => toggle('eventIds', e)}
+              isLight={isLight}
             >
               {e}
             </Chip>
@@ -150,12 +158,13 @@ export function PmFilterBar({ value, onChange, tasks }: PmFilterBarProps): React
         </FacetGroup>
       )}
 
-      <FacetGroup label="Due">
+      <FacetGroup label="Due" isLight={isLight}>
         {(['overdue', 'today', 'this_week', 'this_sprint', 'all'] as const).map(w => (
           <Chip
             key={w}
             active={(value.dueWindow ?? 'all') === w}
             onClick={() => onChange({ ...value, dueWindow: w })}
+            isLight={isLight}
           >
             {w.replace('_', ' ')}
           </Chip>
@@ -171,7 +180,8 @@ export function PmFilterBar({ value, onChange, tasks }: PmFilterBarProps): React
         <button
           type="button"
           onClick={() => onChange({})}
-          className="ml-auto text-[10px] uppercase tracking-[0.18em] text-white/55 hover:text-white/85"
+          className="ml-auto text-[10px] uppercase tracking-[0.18em]"
+          style={{ color: isLight ? 'var(--ci-text-muted)' : 'rgba(255,255,255,0.55)' }}
         >
           Clear
         </button>
@@ -180,10 +190,10 @@ export function PmFilterBar({ value, onChange, tasks }: PmFilterBarProps): React
   );
 }
 
-function FacetGroup({ label, children }: { label: string; children: React.ReactNode }) {
+function FacetGroup({ label, children, isLight }: { label: string; children: React.ReactNode; isLight: boolean }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-[9px] font-montserrat font-bold uppercase tracking-[0.22em] text-white/45">
+      <span className="text-[9px] font-montserrat font-bold uppercase tracking-[0.22em]" style={{ color: isLight ? 'var(--ci-text-muted)' : 'rgba(255,255,255,0.45)' }}>
         {label}
       </span>
       <div className="flex flex-wrap gap-1">{children}</div>
@@ -195,20 +205,25 @@ function Chip({
   active,
   onClick,
   children,
+  isLight,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  isLight: boolean;
 }) {
+  // Match ces-filter-pill style: rounded-full, no borders in active, teal/orange-ish fills in light, purged dark fallbacks.
+  const chipStyle: React.CSSProperties = active
+    ? { background: isLight ? 'rgba(0,121,112,0.12)' : 'rgba(0,209,193,0.25)', color: isLight ? '#007970' : '#5EEAD4', border: 'none' }
+    : { background: isLight ? 'var(--ci-surface-2)' : 'rgba(255,255,255,0.05)', color: isLight ? 'var(--ci-text-muted)' : 'rgba(255,255,255,0.55)', border: 'none' };
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`text-[10px] font-mono px-1.5 py-0.5 rounded-sm transition-colors ${
-        active
-          ? 'bg-cyan-500/30 text-cyan-100'
-          : 'bg-white/5 text-white/55 hover:bg-white/10 hover:text-white/85'
-      }`}
+      className="text-[10px] font-mono px-1.5 py-0.5 rounded-full transition-colors"
+      style={chipStyle}
+      onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = isLight ? 'var(--ci-overlay-faint)' : 'rgba(255,255,255,0.1)'; }}
+      onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = isLight ? 'var(--ci-surface-2)' : 'rgba(255,255,255,0.05)'; }}
     >
       {children}
     </button>

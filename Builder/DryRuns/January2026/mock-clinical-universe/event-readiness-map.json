@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "universeId": "jan-2026-mock-clinical-universe",
+  "noPhi": true,
+  "doNotRunEventsYet": true,
+  "events": [
+    {
+      "eventId": "january-oasis-soc-roc-recert-readiness",
+      "title": "January 2026 OASIS Readiness Review",
+      "eventType": "OASIS",
+      "supportedPatients": ["MOCK-PT-0001", "MOCK-PT-0002", "MOCK-PT-0003", "MOCK-PT-0004", "MOCK-PT-0005", "MOCK-PT-0006"],
+      "requiredClinicians": ["MOCK-STF-0001", "MOCK-STF-0002", "MOCK-STF-0012", "MOCK-STF-0019"],
+      "documentsToGenerate": ["OASIS SOC", "OASIS recertification", "OASIS QA worksheet", "OASIS discrepancy log"],
+      "signersAndApprovers": {
+        "oasisCompleters": ["MOCK-STF-0001", "MOCK-STF-0002"],
+        "qaReviewer": "MOCK-STF-0012",
+        "submissionCoordinator": "MOCK-STF-0019"
+      },
+      "readiness": "ready",
+      "warnings": ["Pending LVN MOCK-STF-0004 cannot complete OASIS", "On-leave/inactive staff excluded from performer pools"]
+    },
+    {
+      "eventId": "january-plan-of-care-signature-tracking",
+      "title": "January 2026 Plan of Care / Physician Signature Tracking",
+      "eventType": "POC_SIGNATURE",
+      "supportedPatients": ["MOCK-PT-0001", "MOCK-PT-0002", "MOCK-PT-0003", "MOCK-PT-0004", "MOCK-PT-0005", "MOCK-PT-0006"],
+      "requiredClinicians": ["MOCK-STF-0001", "MOCK-STF-0002", "MOCK-STF-0012", "MOCK-STF-0017", "MOCK-STF-0018", "MOCK-STF-0019"],
+      "documentsToGenerate": ["Plan of Care", "Physician order tracker", "Order clarification log", "Unsigned orders aging report"],
+      "signersAndApprovers": {
+        "agencyClinicalSigners": ["MOCK-STF-0001", "MOCK-STF-0002", "MOCK-STF-0012"],
+        "orderingProviders": ["MOCK-STF-0017", "MOCK-STF-0018"],
+        "recordsCoordinator": "MOCK-STF-0019"
+      },
+      "readiness": "ready-with-known-defects",
+      "warnings": ["MOCK-PT-0005 and MOCK-PT-0006 have blocking order/POC inconsistencies until corrected or tracked in CAPA"]
+    },
+    {
+      "eventId": "january-clinical-record-audit",
+      "title": "January 2026 Clinical Record Audit",
+      "eventType": "AUDIT",
+      "supportedPatients": ["MOCK-PT-0001", "MOCK-PT-0002", "MOCK-PT-0003", "MOCK-PT-0004", "MOCK-PT-0005", "MOCK-PT-0006"],
+      "requiredClinicians": ["MOCK-STF-0012", "MOCK-STF-0014", "MOCK-STF-0019", "MOCK-STF-0021"],
+      "documentsToGenerate": ["Chart audit worksheet", "Medication reconciliation audit", "Wound care audit", "Fall-risk audit", "Therapy recertification audit"],
+      "signersAndApprovers": {
+        "clinicalReviewer": "MOCK-STF-0012",
+        "complianceReviewer": "MOCK-STF-0014",
+        "riskReviewer": "MOCK-STF-0021",
+        "recordsCoordinator": "MOCK-STF-0019"
+      },
+      "readiness": "ready-with-known-defects",
+      "warnings": ["DEF-JAN2026-0005 and DEF-JAN2026-0006 should block final clean audit closeout unless CAPA is opened"]
+    },
+    {
+      "eventId": "january-qapi-committee",
+      "title": "January 2026 QAPI Committee Evidence Package",
+      "eventType": "QAPI",
+      "supportedPatients": ["MOCK-PT-0002", "MOCK-PT-0003", "MOCK-PT-0004", "MOCK-PT-0005", "MOCK-PT-0006"],
+      "requiredClinicians": ["MOCK-STF-0011", "MOCK-STF-0012", "MOCK-STF-0013", "MOCK-STF-0014", "MOCK-STF-0016", "MOCK-STF-0021"],
+      "documentsToGenerate": ["QAPI agenda", "QAPI metrics report", "Active PIP status", "QAPI meeting minutes", "Governing Body summary package"],
+      "signersAndApprovers": {
+        "qapiChair": "MOCK-STF-0013",
+        "clinicalLeader": "MOCK-STF-0012",
+        "administrator": "MOCK-STF-0011",
+        "governingBodyChair": "MOCK-STF-0016",
+        "complianceOfficer": "MOCK-STF-0014"
+      },
+      "readiness": "ready-with-known-defects",
+      "warnings": ["QAPI minutes should discuss high-risk medication, wound, fall-risk, and therapy-frequency findings"]
+    },
+    {
+      "eventId": "january-capa-pip-follow-up",
+      "title": "January 2026 CAPA / PIP Follow-up",
+      "eventType": "CAPA",
+      "supportedPatients": ["MOCK-PT-0003", "MOCK-PT-0004", "MOCK-PT-0005", "MOCK-PT-0006"],
+      "requiredClinicians": ["MOCK-STF-0012", "MOCK-STF-0013", "MOCK-STF-0014", "MOCK-STF-0021"],
+      "documentsToGenerate": ["CAPA tracker", "PIP status report", "Corrective action evidence checklist", "Leadership approval record"],
+      "signersAndApprovers": {
+        "capaOwner": "MOCK-STF-0014",
+        "riskOwner": "MOCK-STF-0021",
+        "qapiChair": "MOCK-STF-0013",
+        "clinicalLeader": "MOCK-STF-0012"
+      },
+      "readiness": "ready-with-blocking-defects",
+      "warnings": ["MOCK-PT-0005 and MOCK-PT-0006 require CAPA tracking before final QAPI/audit closeout"]
+    },
+    {
+      "eventId": "january-staffing-training-credentialing",
+      "title": "January 2026 Staffing, Training, and Credentialing Review",
+      "eventType": "STAFFING_TRAINING",
+      "supportedPatients": ["MOCK-PT-0001", "MOCK-PT-0002", "MOCK-PT-0003", "MOCK-PT-0004", "MOCK-PT-0005", "MOCK-PT-0006"],
+      "requiredClinicians": ["MOCK-STF-0001", "MOCK-STF-0002", "MOCK-STF-0003", "MOCK-STF-0005", "MOCK-STF-0006", "MOCK-STF-0007", "MOCK-STF-0009", "MOCK-STF-0020"],
+      "documentsToGenerate": ["Staffing coverage grid", "Credential exception report", "Training assignment summary", "Availability report"],
+      "signersAndApprovers": {
+        "credentialingReviewer": "MOCK-STF-0020",
+        "clinicalLeader": "MOCK-STF-0012",
+        "administrator": "MOCK-STF-0011"
+      },
+      "readiness": "ready",
+      "warnings": ["Priya Patel, Lena Quiñones, and Pierre Lemoine are exceptions only and must not be counted as available performers"]
+    },
+    {
+      "eventId": "january-incident-risk-review",
+      "title": "January 2026 Incident and Risk Review",
+      "eventType": "INCIDENT_RISK",
+      "supportedPatients": ["MOCK-PT-0003", "MOCK-PT-0004", "MOCK-PT-0005", "MOCK-PT-0006"],
+      "requiredClinicians": ["MOCK-STF-0012", "MOCK-STF-0014", "MOCK-STF-0021"],
+      "documentsToGenerate": ["Incident trend worksheet", "Fall-risk trend summary", "High-risk medication trend note", "Risk manager follow-up log"],
+      "signersAndApprovers": {
+        "riskManager": "MOCK-STF-0021",
+        "clinicalLeader": "MOCK-STF-0012",
+        "complianceOfficer": "MOCK-STF-0014"
+      },
+      "readiness": "ready-with-known-defects",
+      "warnings": ["Adaeze, Tobias, Blessing, and Fumiko are the expected risk sample cases"]
+    },
+    {
+      "eventId": "january-policy-access-security-review",
+      "title": "January 2026 Policy, Access, and Security Review",
+      "eventType": "POLICY_IT",
+      "supportedPatients": [],
+      "requiredClinicians": ["MOCK-STF-0015", "MOCK-STF-0020", "MOCK-STF-0022"],
+      "documentsToGenerate": ["Policy attestation report", "Access review export", "User exception report"],
+      "signersAndApprovers": {
+        "policyAdmin": "MOCK-STF-0015",
+        "credentialingReviewer": "MOCK-STF-0020",
+        "itSecurityOwner": "MOCK-STF-0022"
+      },
+      "readiness": "ready",
+      "warnings": ["No patient data required for this event; use staff IDs only"]
+    }
+  ],
+  "globalReadiness": {
+    "canGenerateOasis": true,
+    "canGeneratePoc": true,
+    "canGenerateAuditEvidence": true,
+    "canGenerateQapiEvidence": true,
+    "canGenerateCapaEvidence": true,
+    "canGeneratePhysicianSignatureEvidence": true,
+    "canGenerateStaffingTrainingEvidence": true,
+    "canGenerateIncidentCommitteeEvidence": true,
+    "knownBlockingBeforeFullDryRun": [
+      "Correct or track DEF-JAN2026-0005 before clean wound/med-reconciliation closeout",
+      "Correct or track DEF-JAN2026-0006 before clean high-priority audit/QAPI closeout"
+    ]
+  }
+}

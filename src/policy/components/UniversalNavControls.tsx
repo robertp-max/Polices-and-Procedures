@@ -51,7 +51,7 @@ export function UniversalNavControls() {
       <button
         type="button"
         aria-label="Go back"
-        title="Back"
+        title="Go back"
         disabled={!canGoBack}
         onClick={handleBack}
         className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
@@ -66,7 +66,7 @@ export function UniversalNavControls() {
       <button
         type="button"
         aria-label="Go forward"
-        title="Forward"
+        title="Go forward"
         disabled={!canGoForward}
         onClick={handleForward}
         className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${

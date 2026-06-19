@@ -23,7 +23,7 @@ const P3_CHAPTERS: P3Chapter[] = [
   { id: 2, number: '02', label: 'Serverless Design',        subtitle: 'Event-Driven System',      icon: Zap },
   { id: 3, number: '03', label: 'Data & Evidence Flow',     subtitle: 'Traceability Pipeline',    icon: GitBranch },
   { id: 4, number: '04', label: 'Security & HIPAA',         subtitle: 'Compliance Readiness',     icon: Shield },
-  { id: 5, number: '05', label: 'Environment Strategy',     subtitle: 'Demo → Production',        icon: Layers },
+  { id: 5, number: '05', label: 'Environment Strategy',     subtitle: 'Preview → Production',        icon: Layers },
   { id: 6, number: '06', label: 'Deployment & Scale',       subtitle: 'Global Infrastructure',    icon: Globe },
   { id: 7, number: '07', label: 'Operational Monitoring',   subtitle: 'Visibility & Alerts',      icon: Activity },
   { id: 8, number: '08', label: 'From System to Platform',  subtitle: 'Enterprise Close',         icon: BarChart3 },
@@ -117,7 +117,7 @@ function P3Ch01() {
 
   return (
     <div className="p-8 max-w-[960px] mx-auto">
-      <P3Head number="01" subtitle="System Overview" title="Enterprise AWS Architecture" badge="DEMO ENVIRONMENT" />
+      <P3Head number="01" subtitle="System Overview" title="Enterprise AWS Architecture" badge="PREVIEW ENVIRONMENT" />
 
       <p className="text-[15px] text-[#52404B] leading-relaxed mb-7 max-w-[620px] font-roboto">
         Serverless, scalable, and audit-ready infrastructure powering Care Indeed.
@@ -171,11 +171,11 @@ function P3Ch01() {
         </div>
       </div>
 
-      {/* Demo environment notice */}
+      {/* Environment notice */}
       <div className="rounded-2xl bg-[#FFF8F5] border border-[#C74601]/15 p-4 flex items-start gap-3">
         <AlertCircle size={15} className="text-[#C74601] shrink-0 mt-0.5" />
         <div>
-          <div className="text-[10px] font-bold text-[#C74601] tracking-[0.15em] uppercase font-montserrat mb-0.5">Demo Environment (Current)</div>
+          <div className="text-[10px] font-bold text-[#C74601] tracking-[0.15em] uppercase font-montserrat mb-0.5">Current Environment</div>
           <p className="text-[11px] text-[#52404B] leading-relaxed">
             This environment demonstrates system behavior and architecture. Production deployment enforces full security and compliance controls.
           </p>
@@ -371,7 +371,7 @@ function P3Ch04() {
     'HTTPS transport encryption',
     'Role-based access control (RBAC)',
     'Session management + expiry',
-    'Demo environment isolation',
+    'Environment isolation',
   ];
   const prodControls = [
     { label: 'Encryption at rest (KMS)',         icon: Lock,    color: '#8b5cf6' },
@@ -400,7 +400,7 @@ function P3Ch04() {
               <AlertCircle size={11} className="text-[#C74601]" />
             </div>
             <div>
-              <div className="text-[10px] font-bold text-[#C74601] font-montserrat uppercase tracking-[0.12em]">Demo State</div>
+              <div className="text-[10px] font-bold text-[#C74601] font-montserrat uppercase tracking-[0.12em]">Preview State</div>
               <div className="text-[9px] text-[#747474]">Current environment</div>
             </div>
           </div>
@@ -458,8 +458,8 @@ function P3Ch04() {
 function P3Ch05() {
   const envs = [
     {
-      stage: 'DEMO',
-      label: 'Demo',
+      stage: 'PREVIEW',
+      label: 'Preview',
       purpose: 'Feature Validation',
       color: '#C74601',
       bg: '#FFF0E8',
@@ -494,7 +494,7 @@ function P3Ch05() {
 
   return (
     <div className="p-8 max-w-[960px] mx-auto">
-      <P3Head number="05" subtitle="Demo → Production" title="Environment Strategy" />
+      <P3Head number="05" subtitle="Preview → Production" title="Environment Strategy" />
       <p className="text-[14px] text-[#52404B] leading-relaxed mb-7 max-w-[620px] font-roboto">
         A structured three-stage path from demonstration to full production compliance enforcement.
         Each stage has a distinct purpose and control profile.
@@ -695,7 +695,7 @@ function P3Ch07() {
       <div className="rounded-2xl border-l-4 border-[#1d4ed8] bg-[#EFF6FF] p-4">
         <div className="text-[9px] font-bold text-[#1d4ed8] tracking-[0.25em] uppercase font-montserrat mb-1.5">Infrastructure Maturity</div>
         <p className="text-[12px] text-[#52404B] leading-relaxed">
-          Monitoring architecture is production-parity designed. Demo environment captures core metrics;
+          Monitoring architecture is production-parity designed. This environment captures core metrics;
           full observability stack activates at production deployment without code changes.
         </p>
       </div>
@@ -846,7 +846,7 @@ export function InfrastructurePresentation({ onBack }: { onBack: () => void }) {
           <div className="p-3.5 border-t border-[#E5E4E3]">
             <button onClick={onBack}
               className="flex items-center gap-2 text-[9px] font-bold text-[#747474] hover:text-[#1F1C1B] uppercase tracking-[0.12em] font-montserrat transition-colors w-full">
-              <ArrowLeft size={10} /> Back to Live Demo
+              <ArrowLeft size={10} /> Back to Overview
             </button>
           </div>
         </div>

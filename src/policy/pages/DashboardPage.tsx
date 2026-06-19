@@ -6,7 +6,7 @@ import {
   Clock, ShieldX,
 } from 'lucide-react';
 import {
-  REGULATORY_EVENTS, daysUntil, TODAY_ANCHOR, relativeLabel,
+  REGULATORY_EVENTS, daysUntil, relativeLabel,
   type RegulatoryEvent,
 } from '@/policy/data/regulatoryEvents';
 import { FORM_TITLES } from '@/policy/data/formTitles.generated';
@@ -27,6 +27,7 @@ import {
 } from '@/policy/components/ui';
 import { PlannerViewToggle, type ViewMode } from '@/policy/components/dashboard/PlannerViewToggle';
 import { MyPlannerView } from '@/policy/components/dashboard/MyPlannerView';
+import { formatCaliforniaDateTime, getCaliforniaNow, toCaliforniaISODate } from '@/policy/utils/californiaTime';
 
 type KpiCardData = {
   label: string;
@@ -47,7 +48,10 @@ type AwaitingBoardItem = {
 
 export function DashboardPage() {
   const navigate = useNavigate();
-  const today = TODAY_ANCHOR;
+  const [clockNow, setClockNow] = useState(() => new Date());
+  const today = useMemo(() => getCaliforniaNow(clockNow), [clockNow]);
+  const todayIso = useMemo(() => toCaliforniaISODate(clockNow), [clockNow]);
+  const todayLabel = useMemo(() => formatCaliforniaDateTime(clockNow), [clockNow]);
   const store = useRegulatoryExecutionStore();
   const [viewportWidth, setViewportWidth] = useState(() => (typeof window === 'undefined' ? 1920 : window.innerWidth));
   const isMobile = viewportWidth < 768;
@@ -281,38 +285,38 @@ export function DashboardPage() {
     if (items.length < 3) {
       const qapiEvent = [...eventById.values()].find(e => /qapi/i.test(e.title));
       const governingBodyEvent = [...eventById.values()].find(e => /governing body|governance/i.test(e.title));
-      const demoDefaults: Array<{ title: string; route: string; domain: RegulatoryEvent['domain']; owner: string; date: string }> = [
+      const defaultAwaiting: Array<{ title: string; route: string; domain: RegulatoryEvent['domain']; owner: string; date: string }> = [
         {
           title: 'Missed Visit Documentation Form awaiting signature',
           route: '/forms/CL-FM-011',
           domain: 'Clinical',
           owner: 'Clinical Manager',
-          date: today.toISOString().slice(0, 10),
+          date: todayIso,
         },
         {
           title: 'Physician Orders pending signature',
           route: '/forms/CL-FM-006',
           domain: 'Clinical',
           owner: 'Clinical Manager',
-          date: today.toISOString().slice(0, 10),
+          date: todayIso,
         },
         {
           title: 'QAPI meeting evidence pending upload',
           route: qapiEvent ? `/calendar?event=${encodeURIComponent(qapiEvent.id)}&workflow=1` : '/pm/my-tasks',
           domain: qapiEvent?.domain ?? 'Compliance',
           owner: qapiEvent?.owner ?? 'QAPI Coordinator',
-          date: qapiEvent?.date ?? today.toISOString().slice(0, 10),
+          date: qapiEvent?.date ?? todayIso,
         },
         {
           title: 'Governing Body packet pending approval',
           route: governingBodyEvent ? `/calendar?event=${encodeURIComponent(governingBodyEvent.id)}&workflow=1` : '/forms/GV-FM-005',
           domain: governingBodyEvent?.domain ?? 'Governance',
           owner: governingBodyEvent?.owner ?? 'Administrator',
-          date: governingBodyEvent?.date ?? today.toISOString().slice(0, 10),
+          date: governingBodyEvent?.date ?? todayIso,
         },
       ];
 
-      for (const fallback of demoDefaults) {
+      for (const fallback of defaultAwaiting) {
         addItem(fallback.route, {
           id: `fallback-${fallback.title}`,
           title: fallback.title,
@@ -325,7 +329,7 @@ export function DashboardPage() {
     }
 
     return items.slice(0, 5);
-  }, [eventById, pipeline.awaitingApproval, snap, today]);
+  }, [eventById, pipeline.awaitingApproval, snap, todayIso]);
 
   const openAwaitingActionItem = (id: string) => {
     const target = awaitingBoardItems.find(item => item.id === id);
@@ -436,6 +440,11 @@ export function DashboardPage() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  useEffect(() => {
+    const interval = window.setInterval(() => setClockNow(new Date()), 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
   const dashboardKpis = isMobile
     ? [
         ...mobilePrimaryKpis,
@@ -444,21 +453,17 @@ export function DashboardPage() {
     : kpis;
 
   return (
-    <div className="v3-dashboard-reference min-h-full bg-background text-text-primary" data-surface="dashboard">
-      <div className="mx-auto flex w-full max-w-[1920px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+    <div className="min-h-full bg-transparent text-[var(--v3-text-primary)]" data-surface="dashboard">
+      <div className="mx-auto flex w-full w-full flex-col gap-6 px-6 py-6 lg:px-8">
         <V32PageHeader
-          eyebrow="Command Center"
+          eyebrow="COMMAND CENTER"
           title="What needs action now"
-          description="Executive operational narrative for compliance execution, evidence readiness, and escalation control. Prioritize critical controls, clear risk queues, and lock evidence-ready workflows."
+          description="Executive view. Prioritize critical controls, clear risk, lock evidence-ready workflows."
           meta={
             <div className="flex flex-col items-start gap-3 sm:items-end">
               <div className="text-left sm:text-right">
-                <div className="font-montserrat text-[10px] font-bold uppercase tracking-[0.22em] text-text-disabled">
-                  Today
-                </div>
-                <div className="mt-1 text-sm font-semibold text-text-primary">
-                  {TODAY_ANCHOR.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                </div>
+                <div className="font-montserrat text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--v3-text-tertiary)]">Today</div>
+                <div className="mt-1 text-sm font-semibold">{todayLabel}</div>
               </div>
               <PlannerViewToggle value={viewMode} onChange={setViewMode} />
             </div>
@@ -534,7 +539,7 @@ export function DashboardPage() {
 
             <GlassPanel className="flex flex-wrap items-center justify-between gap-4 p-5">
               <div>
-                <h2 className="font-montserrat text-xl font-semibold tracking-[-0.03em] text-text-primary">My Planner</h2>
+                <h2 className="font-montserrat text-xl font-semibold tracking-[-0.03em] text-[var(--v3-heading-primary)]">My Planner</h2>
                 <p className="mt-1 text-sm text-text-muted">
                   Switch to your personal lane when you need assigned CES work and private tasks only.
                 </p>

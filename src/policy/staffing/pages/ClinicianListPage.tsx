@@ -72,7 +72,7 @@ export function ClinicianListPage() {
           description="Synthetic demonstration data only."
         />
 
-        {/* Search & Filters */}
+        {/* Search & Filters — clean premium corporate per V5 ref */}
         <div className="flex flex-wrap items-center gap-3">
           <SearchField
             placeholder="Search by name…"
@@ -80,22 +80,21 @@ export function ClinicianListPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search clinicians by name"
           />
-
-          <select
-            value={filterDiscipline ?? ''}
-            onChange={(e) => setFilterDiscipline((e.target.value as Discipline) || null)}
-            aria-label="Filter by discipline"
-            className="h-9 px-3 rounded-md text-sm border"
-            style={{
-              background: 'var(--ci-surface)',
-              border: '1px solid var(--ci-border-strong)',
-              color: 'var(--ci-text-primary)',
-            }}
-          >
-            <option value="">All Disciplines</option>
-            {ALL_DISCIPLINES.map((d) => (
-              <option key={d} value={d}>{d}</option>
+          <div className="flex flex-wrap gap-1.5">
+            <button onClick={() => setFilterDiscipline(null)} className={`text-xs px-3 py-1 rounded-full border transition ${!filterDiscipline ? 'bg-[var(--v3-teal)] text-white border-transparent' : 'border-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)] hover:bg-white/5'}`}>All</button>
+            {ALL_DISCIPLINES.slice(0,6).map((d) => (
+              <button key={d} onClick={() => setFilterDiscipline(d)} className={`text-xs px-3 py-1 rounded-full border transition ${filterDiscipline === d ? 'bg-[var(--v3-teal)] text-white border-transparent' : 'border-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)] hover:bg-white/5'}`}>{d}</button>
             ))}
+          </div>
+          <select
+            value={filterStatus ?? ''}
+            onChange={(e) => setFilterStatus((e.target.value as ClinicianStatus) || null)}
+            aria-label="Filter by status"
+            className="h-9 px-3 rounded-md text-sm border"
+            style={{ background: 'var(--ci-surface)', border: '1px solid var(--ci-border-strong)', color: 'var(--ci-text-primary)' }}
+          >
+            <option value="">All Status</option>
+            {ALL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
 
           <select

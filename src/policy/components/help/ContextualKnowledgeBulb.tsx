@@ -336,7 +336,6 @@ export function ContextualKnowledgeBulb() {
         <button
           type="button"
           aria-label="View knowledge article"
-          title=""
           onClick={handleOpen}
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}

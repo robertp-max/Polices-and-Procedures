@@ -1,0 +1,635 @@
+import React, { useState } from 'react';
+import { 
+  LayoutDashboard, Calendar, Library, Network, FileEdit, 
+  CheckSquare, Send, FileBarChart, HelpCircle, Settings, 
+  ShieldCheck, Search, Bell, Shield, Database, Lock, 
+  RefreshCcw, FileText, Layers, Target, CheckCircle2,
+  ArrowDown, Archive, Clock, Eye, Tag, AlertCircle, PlayCircle
+} from 'lucide-react';
+
+export default function Taxonomy() {
+  // State to manage the active architecture view
+  const [activeView, setActiveView] = useState('hierarchy'); // 'hierarchy', 'lifecycle', 'dictionary'
+
+  return (
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@400;500;700&display=swap');
+          
+          .font-montserrat {
+            font-family: 'Montserrat', sans-serif;
+          }
+          .font-roboto {
+            font-family: 'Roboto', sans-serif;
+          }
+
+          /* Absolute prevention of scrollbars to enforce single-pane 16:9 layout */
+          ::-webkit-scrollbar {
+            display: none;
+          }
+          body {
+            overflow: hidden;
+          }
+        `}
+      </style>
+
+      {/* Outer container for letterboxing to 16:9 aspect ratio */}
+      <div className="min-h-screen w-full bg-[#111827] flex items-center justify-center overflow-hidden p-2 lg:p-4">
+        
+        {/* 16:9 Display Container - perfectly constrained */}
+        <div className="flex w-full aspect-video max-h-[95vh] max-w-[calc(95vh*16/9)] mx-auto bg-[#E8EDF2] font-roboto text-gray-900 overflow-hidden relative z-0 shadow-2xl rounded-[12px] ring-1 ring-white/10">
+      
+          {/* Vibrant Ambient Orbs for Glassmorphism Background */}
+          <div className="absolute top-[-10%] left-[-5%] w-[45vw] h-[45vw] bg-[#007970] rounded-full mix-blend-multiply filter blur-[140px] opacity-[0.12] -z-10 pointer-events-none"></div>
+          <div className="absolute bottom-[-15%] right-[-10%] w-[50vw] h-[50vw] bg-[#C74600] rounded-full mix-blend-multiply filter blur-[160px] opacity-[0.10] -z-10 pointer-events-none"></div>
+          <div className="absolute top-[30%] left-[30%] w-[35vw] h-[35vw] bg-[#00bdae] rounded-full mix-blend-multiply filter blur-[130px] opacity-[0.08] -z-10 pointer-events-none"></div>
+
+          {/* Sidebar */}
+          <aside className="w-[180px] bg-white/40 backdrop-blur-3xl flex flex-col shrink-0 z-20 border-r border-white/70 shadow-[4px_0_32px_rgba(0,0,0,0.03)]">
+            <div className="h-10 flex items-center px-3 border-b border-white/60">
+              <ShieldCheck className="w-4 h-4 text-[#C74600] mr-2 drop-shadow-sm" />
+              <div className="flex flex-col">
+                <span className="font-montserrat font-bold text-gray-900 text-[11px] tracking-wide leading-tight">
+                  Care Indeed
+                </span>
+                <span className="font-montserrat font-bold text-[#007970] text-[7px] uppercase tracking-widest">
+                  Policy Command
+                </span>
+              </div>
+            </div>
+            
+            <nav className="flex-1 py-2 space-y-0.5 overflow-hidden px-2">
+              <SidebarItem icon={<LayoutDashboard size={12} />} label="Dashboard" />
+              <SidebarItem icon={<Calendar size={12} />} label="Compliance Calendar" />
+              <SidebarItem icon={<Library size={12} />} label="Policy Library" />
+              <SidebarItem icon={<Network size={12} />} label="Taxonomy" active />
+              <SidebarItem icon={<FileEdit size={12} />} label="Drafts" badge="2" />
+              <SidebarItem icon={<CheckSquare size={12} />} label="Review" badge="1" />
+              <SidebarItem icon={<Send size={12} />} label="Publish" />
+              <SidebarItem icon={<FileBarChart size={12} />} label="Master Report" />
+            </nav>
+
+            <div className="p-2 border-t border-white/60 space-y-0.5">
+              <SidebarItem icon={<Settings size={12} />} label="Settings" />
+              <SidebarItem icon={<HelpCircle size={12} />} label="Help Center" />
+              <div className="mt-2 pt-2 border-t border-white/60 px-2 flex items-center cursor-pointer group">
+                <div className="w-5 h-5 rounded-full bg-[#007970] flex items-center justify-center text-[9px] text-white font-montserrat font-bold shadow-md transition-transform group-hover:scale-105">JD</div>
+                <div className="ml-2 flex flex-col flex-1">
+                  <span className="text-[9px] text-gray-900 font-montserrat font-bold group-hover:text-[#C74600] transition-colors">John Doe</span>
+                  <span className="text-[7px] text-[#007970] font-roboto font-bold flex items-center mt-0.5">
+                    <span className="w-1 h-1 rounded-full bg-[#007970] mr-1 shadow-sm"></span> Online
+                  </span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Content Area */}
+          <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
+            
+            {/* Top Header */}
+            <header className="h-10 bg-white/40 backdrop-blur-2xl border-b border-white/70 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex items-center justify-between px-4 shrink-0 z-10">
+              <div className="relative w-56">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" size={10} />
+                <input 
+                  type="text" 
+                  placeholder="Search taxonomy index..." 
+                  className="w-full pl-7 pr-2 py-1 bg-white/50 border border-white/80 rounded-[4px] text-[10px] text-gray-900 placeholder-gray-500 font-roboto focus:outline-none focus:bg-white/80 focus:border-[#007970] focus:ring-1 focus:ring-[#007970] shadow-inner transition-all"
+                />
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="text-[9px] font-montserrat font-bold text-gray-600 hidden md:block">
+                  System Architecture View
+                </div>
+                <button className="relative p-1 text-gray-500 hover:text-[#C74600] transition-colors">
+                  <Bell size={12} />
+                  <span className="absolute top-0.5 right-0.5 w-1 h-1 bg-[#C74600] rounded-full border border-white shadow-sm"></span>
+                </button>
+              </div>
+            </header>
+
+            {/* Architecture Content */}
+            <div className="flex-1 overflow-hidden p-3 flex flex-col">
+              
+              {/* Header Title & Toggles */}
+              <div className="flex justify-between items-end mb-2 shrink-0">
+                <div>
+                  <h1 className="text-xl font-montserrat font-bold text-gray-900 leading-none mb-0.5">Enterprise Policy Architecture</h1>
+                  <p className="text-[10px] text-gray-600 font-roboto flex items-center">
+                    HHA Framework v6.0 <span className="mx-1.5 text-gray-300">•</span> IBM Watson Knowledge Catalog Alignment
+                  </p>
+                </div>
+                
+                {/* Dynamic Tab Navigation */}
+                <div className="flex bg-white/50 border border-white/80 p-0.5 rounded-[4px] shadow-sm">
+                  <button 
+                    onClick={() => setActiveView('hierarchy')}
+                    className={`px-3 py-1 rounded-[3px] text-[8px] font-montserrat font-bold transition-all shadow-sm ${activeView === 'hierarchy' ? 'bg-[#111827] text-white' : 'text-gray-600 hover:text-gray-900 bg-transparent shadow-none'}`}
+                  >
+                    System Hierarchy
+                  </button>
+                  <button 
+                    onClick={() => setActiveView('lifecycle')}
+                    className={`px-3 py-1 rounded-[3px] text-[8px] font-montserrat font-bold transition-all shadow-sm ${activeView === 'lifecycle' ? 'bg-[#111827] text-white' : 'text-gray-600 hover:text-gray-900 bg-transparent shadow-none'}`}
+                  >
+                    Governance Lifecycle
+                  </button>
+                  <button 
+                    onClick={() => setActiveView('dictionary')}
+                    className={`px-3 py-1 rounded-[3px] text-[8px] font-montserrat font-bold transition-all shadow-sm ${activeView === 'dictionary' ? 'bg-[#111827] text-white' : 'text-gray-600 hover:text-gray-900 bg-transparent shadow-none'}`}
+                  >
+                    Classification Dictionary
+                  </button>
+                </div>
+              </div>
+
+              {/* KPI Architecture Row (Persistent across all tabs) */}
+              <div className="grid grid-cols-4 gap-2 mb-2 shrink-0">
+                <KpiCard title="TAXONOMY DOMAINS" value="10" sub="TOP-LEVEL CATEGORIES" color="border-t-[#C74600]" valColor="text-[#C74600]" icon={<Layers size={10} className="text-[#C74600]"/>} />
+                <KpiCard title="SUBDOMAINS" value="42" sub="STRUCTURAL PILLARS" color="border-t-[#D97706]" valColor="text-[#D97706]" icon={<Network size={10} className="text-[#D97706]"/>} />
+                <KpiCard title="TOTAL POLICIES" value="244" sub="MANAGED ARTIFACTS" color="border-t-[#007970]" valColor="text-[#007970]" icon={<FileText size={10} className="text-[#007970]"/>} />
+                <KpiCard title="GOVERNANCE" value="100%" sub="IBM WATSON LOGIC" color="border-t-[#059669]" valColor="text-[#059669]" icon={<ShieldCheck size={10} className="text-[#059669]"/>} bg="bg-[#059669]/5" />
+              </div>
+
+              {/* Main Split View Content Area */}
+              <div className="flex-1 flex gap-3 overflow-hidden">
+                
+                {/* -------------------------------------------------------------------------
+                    TAB 1: SYSTEM HIERARCHY
+                    ------------------------------------------------------------------------- */}
+                {activeView === 'hierarchy' && (
+                  <>
+                    {/* LEFT PANE: Hierarchy Infographic */}
+                    <div className="w-[58%] bg-white/50 backdrop-blur-3xl rounded-[8px] border border-white/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center p-3 relative overflow-hidden">
+                      
+                      {/* Layer 0 */}
+                      <div className="w-full border border-green-200/60 bg-green-50/40 rounded-[6px] p-2 flex flex-col shadow-sm shrink-0">
+                        <div className="flex items-center text-[#059669] mb-1.5">
+                          <ShieldCheck size={10} className="mr-1.5" />
+                          <span className="text-[8px] font-montserrat font-bold uppercase tracking-widest">Layer 0: Regulatory Compliance Foundation</span>
+                        </div>
+                        <div className="flex gap-1.5 justify-between">
+                          <Pill label="42 CFR Part 484" />
+                          <Pill label="HIPAA Privacy/Security" />
+                          <Pill label="OSHA Standards" />
+                          <Pill label="OIG Compliance" />
+                          <Pill label="CMS State Operations" />
+                        </div>
+                      </div>
+
+                      <div className="w-px h-3 bg-[#C74600] opacity-50 shrink-0"></div>
+
+                      {/* Level 1 */}
+                      <div className="bg-gradient-to-r from-[#7C2D12] to-[#C2410C] text-white rounded-[4px] py-1.5 px-4 shadow-md flex items-center justify-center shrink-0 w-[60%]">
+                        <Layers size={10} className="mr-1.5 opacity-80" />
+                        <span className="text-[9px] font-montserrat font-bold tracking-widest uppercase">Architecture Level 1: 10 Strategic Domains</span>
+                      </div>
+                      
+                      <div className="flex gap-1.5 mt-2 shrink-0">
+                        <DomainCard code="GV" label="DOMAIN MODULE" />
+                        <DomainCard code="CL" label="DOMAIN MODULE" />
+                        <DomainCard code="QA" label="DOMAIN MODULE" />
+                        <DomainCard code="HR" label="DOMAIN MODULE" />
+                        <DomainCard code="CO" label="DOMAIN MODULE" />
+                      </div>
+
+                      <div className="w-px h-3 bg-[#D97706] opacity-50 shrink-0 mt-1"></div>
+
+                      {/* Level 2 */}
+                      <div className="bg-gradient-to-r from-[#D97706] to-[#F59E0B] text-white rounded-[4px] py-1.5 px-4 shadow-md flex items-center justify-center shrink-0 w-[60%]">
+                        <Network size={10} className="mr-1.5 opacity-80" />
+                        <span className="text-[9px] font-montserrat font-bold tracking-widest uppercase">Architecture Level 2: 42 Pillar Subdomains</span>
+                      </div>
+
+                      <div className="flex w-[85%] bg-yellow-50/50 border border-yellow-200/60 rounded-[6px] p-2 mt-2 shadow-sm shrink-0 divide-x divide-yellow-200/60">
+                        <div className="flex-1 px-2 flex items-start">
+                          <Target size={10} className="text-[#D97706] mt-0.5 mr-1.5 shrink-0"/>
+                          <div className="flex flex-col">
+                            <span className="text-[7px] font-montserrat font-bold text-gray-800">STEWARDSHIP</span>
+                            <span className="text-[7px] text-gray-500 leading-tight mt-0.5">Named owners (DON, CFO, HR Dir) assigned at subdomain level.</span>
+                          </div>
+                        </div>
+                        <div className="flex-1 px-2 flex items-start">
+                          <Lock size={10} className="text-[#D97706] mt-0.5 mr-1.5 shrink-0"/>
+                          <div className="flex flex-col">
+                            <span className="text-[7px] font-montserrat font-bold text-gray-800">ACCESS TIERS</span>
+                            <span className="text-[7px] text-gray-500 leading-tight mt-0.5">Tiers 1-4 visibility logic inherited from subdomain parent.</span>
+                          </div>
+                        </div>
+                        <div className="flex-1 px-2 flex items-start">
+                          <RefreshCcw size={10} className="text-[#D97706] mt-0.5 mr-1.5 shrink-0"/>
+                          <div className="flex flex-col">
+                            <span className="text-[7px] font-montserrat font-bold text-gray-800">REVIEW CYCLE</span>
+                            <span className="text-[7px] text-gray-500 leading-tight mt-0.5">Annual/Biennial frequency determined by risk profile.</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="w-px h-3 bg-[#007970] opacity-50 shrink-0 mt-1"></div>
+
+                      {/* Level 3 */}
+                      <div className="bg-gradient-to-r from-[#007970] to-[#0F766E] text-white rounded-[4px] py-1.5 px-4 shadow-md flex items-center justify-center shrink-0 w-[60%]">
+                        <FileText size={10} className="mr-1.5 opacity-80" />
+                        <span className="text-[9px] font-montserrat font-bold tracking-widest uppercase">Architecture Level 3: 244 Managed Artifacts</span>
+                      </div>
+
+                      <div className="flex gap-1.5 mt-2 shrink-0">
+                        {[1,2,3,4,5,6].map(i => (
+                          <div key={i} className="w-[45px] h-[35px] bg-white border border-[#007970]/30 rounded-[3px] shadow-sm flex flex-col p-1 opacity-80">
+                            <div className="w-1/2 h-0.5 bg-gray-200 rounded-full mb-1"></div>
+                            <div className="w-full h-0.5 bg-gray-100 rounded-full mb-0.5"></div>
+                            <div className="w-3/4 h-0.5 bg-gray-100 rounded-full"></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* RIGHT PANE: System Hierarchy Narrative */}
+                    <div className="w-[42%] flex flex-col gap-2 overflow-hidden pr-1">
+                      <div className="bg-white/60 backdrop-blur-3xl rounded-[8px] border border-white/80 p-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] shrink-0">
+                        <h3 className="text-[10px] font-montserrat font-bold text-gray-900 mb-1 border-b border-gray-200 pb-1">Why This Architecture Exists</h3>
+                        <p className="text-[9px] text-gray-600 font-roboto leading-relaxed">
+                          This taxonomy replaces fragmented, ad-hoc documentation with a rigid, scalable <strong>enterprise ontology</strong>. By structuring policies into distinct Domains and Subdomains, the agency ensures zero regulatory blind spots exist across the HHA lifecycle. It provides an undeniable, single source of truth for all operational, clinical, and compliance controls.
+                        </p>
+                      </div>
+
+                      <div className="bg-[#059669]/5 rounded-[8px] border border-[#059669]/20 p-3 shadow-sm flex-1 overflow-y-auto">
+                        <div className="flex items-center mb-1.5 border-b border-[#059669]/20 pb-1 shrink-0">
+                          <Database size={12} className="text-[#059669] mr-1.5" />
+                          <h3 className="text-[10px] font-montserrat font-bold text-[#059669]">100% IBM Knowledge Catalog Alignment</h3>
+                        </div>
+                        <p className="text-[8px] text-gray-700 font-roboto mb-2 leading-snug shrink-0">
+                          The framework is fully integrated with IBM Watson governance standards, transforming static text into <strong>managed data artifacts</strong>.
+                        </p>
+                        <ul className="space-y-1.5">
+                          <li className="flex items-start">
+                            <CheckCircle2 size={8} className="text-[#059669] mt-0.5 mr-1.5 shrink-0" />
+                            <div>
+                              <span className="text-[9px] font-bold text-gray-900 block leading-none">Metadata Standardization</span>
+                              <span className="text-[8px] text-gray-600 leading-tight">Every artifact enforces mandatory metadata: Owner, Status, and Taxonomy Mapping.</span>
+                            </div>
+                          </li>
+                          <li className="flex items-start">
+                            <CheckCircle2 size={8} className="text-[#059669] mt-0.5 mr-1.5 shrink-0" />
+                            <div>
+                              <span className="text-[9px] font-bold text-gray-900 block leading-none">Governance Lifecycle</span>
+                              <span className="text-[8px] text-gray-600 leading-tight">Strict progression tracked from <span className="text-gray-400 italic">Draft → Under Review → Active → Deprecated</span>.</span>
+                            </div>
+                          </li>
+                          <li className="flex items-start">
+                            <CheckCircle2 size={8} className="text-[#059669] mt-0.5 mr-1.5 shrink-0" />
+                            <div>
+                              <span className="text-[9px] font-bold text-gray-900 block leading-none">Role-Based Access Control (RBAC)</span>
+                              <span className="text-[8px] text-gray-600 leading-tight">Inherited visibility logic applying Tier 1 (Public) through Tier 4 (Privileged) access restrictions.</span>
+                            </div>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-white/60 backdrop-blur-3xl rounded-[8px] border border-white/80 p-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] shrink-0">
+                        <h3 className="text-[10px] font-montserrat font-bold text-gray-900 mb-1 border-b border-gray-200 pb-1">Control & Audit Defensibility</h3>
+                        <p className="text-[9px] text-gray-600 font-roboto leading-relaxed">
+                          This hierarchy enforces accountability from the top down. By assigning <strong>Named Stewardship</strong> to specific subdomains, compliance responsibility is unambiguous. Coupled with automated <strong>Review Cycles</strong> based on risk profile, the architecture guarantees continuous survey readiness and absolute audit traceability.
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* -------------------------------------------------------------------------
+                    TAB 2: GOVERNANCE LIFECYCLE
+                    ------------------------------------------------------------------------- */}
+                {activeView === 'lifecycle' && (
+                  <>
+                    {/* LEFT PANE: Lifecycle Diagram */}
+                    <div className="w-[58%] bg-white/50 backdrop-blur-3xl rounded-[8px] border border-white/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex p-4 relative overflow-hidden items-center justify-center">
+                      
+                      <div className="flex flex-col items-center w-full max-w-[300px] relative">
+                        {/* Return Loop Line (Review Cycle) */}
+                        <div className="absolute right-[-20px] top-[35%] bottom-[15%] w-10 border-r-2 border-b-2 border-t-2 border-dashed border-[#007970]/40 rounded-r-[8px]">
+                          <div className="absolute top-1/2 right-[-14px] -translate-y-1/2 bg-white/80 px-1 py-0.5 rounded shadow-sm text-[#007970] flex items-center border border-[#007970]/20">
+                            <RefreshCcw size={8} className="mr-1"/>
+                            <span className="text-[6px] font-bold uppercase tracking-widest">Review Cycle</span>
+                          </div>
+                          {/* Arrow heads for the loop */}
+                          <div className="absolute top-[-3px] left-[-3px] w-2 h-2 border-l-2 border-t-2 border-[#007970]/40 transform -rotate-45"></div>
+                        </div>
+
+                        <LifecycleNode 
+                          title="1. DRAFT STATUS" 
+                          desc="Initial development. Artifact created and assigned mandatory IBM metadata (Domain, Subdomain, Access Tier, Owner)."
+                          color="amber" 
+                          icon={<FileEdit size={12} />} 
+                        />
+                        <div className="w-0.5 h-6 bg-[#D97706]/30"></div>
+                        
+                        <LifecycleNode 
+                          title="2. UNDER REVIEW" 
+                          desc="Stakeholder validation, SME review, and Compliance Officer quality assurance check against federal/state regulations."
+                          color="indigo" 
+                          icon={<Search size={12} />} 
+                        />
+                        <div className="w-0.5 h-6 bg-[#4F46E5]/30"></div>
+                        
+                        <LifecycleNode 
+                          title="3. ACTIVE STATUS" 
+                          desc="Policy approved by Governing Body/Admin. Operationally enforced, distributed to staff, and actively audited."
+                          color="emerald" 
+                          icon={<CheckCircle2 size={12} />} 
+                        />
+                        <div className="w-0.5 h-6 bg-[#059669]/30"></div>
+
+                        <LifecycleNode 
+                          title="4. DEPRECATED" 
+                          desc="Artifact retired, superseded, or made obsolete. Archived permanently per record retention schedules for audit."
+                          color="slate" 
+                          icon={<Archive size={12} />} 
+                        />
+                      </div>
+                    </div>
+
+                    {/* RIGHT PANE: Lifecycle Narrative */}
+                    <div className="w-[42%] flex flex-col gap-2 overflow-hidden pr-1">
+                      <div className="bg-white/60 backdrop-blur-3xl rounded-[8px] border border-white/80 p-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] shrink-0">
+                        <h3 className="text-[10px] font-montserrat font-bold text-gray-900 mb-1 border-b border-gray-200 pb-1">The Artifact Lifecycle</h3>
+                        <p className="text-[9px] text-gray-600 font-roboto leading-relaxed">
+                          Care Indeed does not treat policies as static documents. They are managed as <strong>living governance artifacts</strong> progressing through a strict lifecycle. This ensures that no standard is implemented without proper vetting, and no policy remains active once it becomes obsolete.
+                        </p>
+                      </div>
+
+                      <div className="bg-[#007970]/5 rounded-[8px] border border-[#007970]/20 p-3 shadow-sm flex-1 overflow-y-auto">
+                        <div className="flex items-center mb-1.5 border-b border-[#007970]/20 pb-1 shrink-0">
+                          <RefreshCcw size={12} className="text-[#007970] mr-1.5" />
+                          <h3 className="text-[10px] font-montserrat font-bold text-[#007970]">Automated Review Cycles</h3>
+                        </div>
+                        <p className="text-[8px] text-gray-700 font-roboto mb-2 leading-snug shrink-0">
+                          To maintain CMS and OIG compliance, active policies cannot remain stagnant. The framework automatically triggers a transition back to "Under Review" based on defined cycles:
+                        </p>
+                        <ul className="space-y-2">
+                          <li className="flex flex-col">
+                            <span className="text-[9px] font-bold text-gray-900 leading-none mb-0.5">Annual Cycle (86.9% of Policies)</span>
+                            <span className="text-[8px] text-gray-600 leading-tight">Mandatory review every 12 months. Applied to all high-risk, regulatory, and clinical operations policies.</span>
+                          </li>
+                          <li className="flex flex-col">
+                            <span className="text-[9px] font-bold text-gray-900 leading-none mb-0.5">Biennial Cycle (10.7% of Policies)</span>
+                            <span className="text-[8px] text-gray-600 leading-tight">Mandatory review every 24 months. Applied to lower-risk operational and administrative standards.</span>
+                          </li>
+                          <li className="flex flex-col">
+                            <span className="text-[9px] font-bold text-gray-900 leading-none mb-0.5">Triggered Reviews (2.5% of Policies)</span>
+                            <span className="text-[8px] text-gray-600 leading-tight">Immediate review initiated out-of-cycle due to regulatory changes, adverse events, or audit findings.</span>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-white/60 backdrop-blur-3xl rounded-[8px] border border-white/80 p-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] shrink-0">
+                        <h3 className="text-[10px] font-montserrat font-bold text-gray-900 mb-1 border-b border-gray-200 pb-1">Version Control & Traceability</h3>
+                        <p className="text-[9px] text-gray-600 font-roboto leading-relaxed">
+                          Every iteration of a policy generates a new Version Number. Deprecated or superseded artifacts are never deleted; they are archived as <span className="italic">"SUPERSEDED — NOT FOR USE"</span> to provide an absolute audit trail for historical litigation and CMS survey look-back periods.
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* -------------------------------------------------------------------------
+                    TAB 3: CLASSIFICATION DICTIONARY
+                    ------------------------------------------------------------------------- */}
+                {activeView === 'dictionary' && (
+                  <>
+                    {/* LEFT PANE: Tiers Grid */}
+                    <div className="w-[58%] bg-white/50 backdrop-blur-3xl rounded-[8px] border border-white/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-3 relative overflow-hidden flex flex-col">
+                      
+                      <div className="flex-1 flex flex-col mb-2">
+                        <div className="flex items-center text-gray-800 mb-1.5 shrink-0">
+                          <Lock size={12} className="text-[#C74600] mr-1.5" />
+                          <h3 className="text-[10px] font-montserrat font-bold uppercase tracking-widest border-b border-gray-300 pb-0.5 w-full">Access Tiers (RBAC)</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5 flex-1">
+                          <DictionaryCard 
+                            title="Tier 1 — Public" 
+                            subtitle="27.9% of Policies"
+                            desc="Visible to all agency staff. General operational policies, patient rights, workplace standards." 
+                            icon={<Eye size={10}/>}
+                          />
+                          <DictionaryCard 
+                            title="Tier 2 — Restricted" 
+                            subtitle="46.7% of Policies"
+                            desc="Visible to role-specific staff only. Clinical, HR, Finance policies with PHI/personnel implications." 
+                            icon={<Shield size={10}/>}
+                          />
+                          <DictionaryCard 
+                            title="Tier 3 — Confidential" 
+                            subtitle="24.2% of Policies"
+                            desc="Leadership & Compliance Officer only. Litigation, sanctions response, whistleblower." 
+                            icon={<Lock size={10}/>}
+                          />
+                          <DictionaryCard 
+                            title="Tier 4 — Privileged" 
+                            subtitle="1.2% of Policies"
+                            desc="Governing Body & Legal Counsel only. Board governance, conflict of interest, attorney-client." 
+                            icon={<ShieldCheck size={10}/>}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex-1 flex flex-col mt-1">
+                        <div className="flex items-center text-gray-800 mb-1.5 shrink-0">
+                          <Tag size={12} className="text-[#007970] mr-1.5" />
+                          <h3 className="text-[10px] font-montserrat font-bold uppercase tracking-widest border-b border-gray-300 pb-0.5 w-full">Classification Tiers</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5 flex-1">
+                          <DictionaryCard 
+                            title="REQUIRED" 
+                            subtitle="79.1% of Policies"
+                            desc="Mandated by federal/state law, CMS CoPs, or OIG. Must be approved by the Governing Body." 
+                            icon={<AlertCircle size={10} className="text-red-600"/>}
+                          />
+                          <DictionaryCard 
+                            title="ESSENTIAL" 
+                            subtitle="15.2% of Policies"
+                            desc="Critical operational standard. Highly recommended by accreditation bodies. Administrator approved." 
+                            icon={<Target size={10} className="text-amber-600"/>}
+                          />
+                          <DictionaryCard 
+                            title="RECOMMENDED" 
+                            subtitle="4.5% of Policies"
+                            desc="Industry best practice for high-performing agencies. Not strictly mandated." 
+                            icon={<CheckCircle2 size={10} className="text-emerald-600"/>}
+                          />
+                          <DictionaryCard 
+                            title="GOOD TO HAVE" 
+                            subtitle="1.2% of Policies"
+                            desc="Internal administrative guidelines supporting agency culture or soft operational preferences." 
+                            icon={<FileText size={10} className="text-gray-500"/>}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* RIGHT PANE: IBM Meta & Domains */}
+                    <div className="w-[42%] flex flex-col gap-2 overflow-hidden pr-1">
+                      
+                      {/* IBM Metadata Block */}
+                      <div className="bg-[#111827] text-white rounded-[8px] border border-gray-700 p-3 shadow-md shrink-0">
+                        <div className="flex items-center mb-1.5 border-b border-gray-700 pb-1">
+                          <Database size={12} className="text-[#4FD1C5] mr-1.5" />
+                          <h3 className="text-[10px] font-montserrat font-bold text-[#4FD1C5]">IBM Policy Metadata Standards</h3>
+                        </div>
+                        <p className="text-[8px] text-gray-300 font-roboto mb-2 leading-snug">
+                          Global definitions applied uniformly to the header of every policy in the framework:
+                        </p>
+                        <div className="space-y-1.5">
+                          <div className="bg-white/5 p-1.5 rounded-[4px] border border-white/10">
+                            <span className="text-[9px] font-bold block leading-none text-white">Policy Owner / Steward</span>
+                            <span className="text-[8px] text-gray-400 leading-tight">The specific named role (e.g., Director of Nursing, CFO) accountable for the policy's content and enforcement.</span>
+                          </div>
+                          <div className="bg-white/5 p-1.5 rounded-[4px] border border-white/10">
+                            <span className="text-[9px] font-bold block leading-none text-white">Policy Status & Review Cycle</span>
+                            <span className="text-[8px] text-gray-400 leading-tight">Current lifecycle position (Active) and the automated expiration/review trigger (Annual/Biennial).</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Top Level Domains Summary */}
+                      <div className="bg-white/60 backdrop-blur-3xl rounded-[8px] border border-white/80 p-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex-1 overflow-y-auto">
+                        <h3 className="text-[10px] font-montserrat font-bold text-gray-900 mb-1 border-b border-gray-200 pb-1">The 10 Top-Level Domains</h3>
+                        <p className="text-[8px] text-gray-600 font-roboto leading-relaxed mb-2">
+                          All 244 policies are categorized into one of 10 strategic domains, which are further divided into 42 functional subdomains.
+                        </p>
+                        
+                        <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
+                          <DomainListItem code="GV" name="Governance & Admin" count="20" />
+                          <DomainListItem code="CL" name="Clinical Operations" count="70" />
+                          <DomainListItem code="QA" name="Quality Assurance" count="19" />
+                          <DomainListItem code="HR" name="Human Resources" count="38" />
+                          <DomainListItem code="CO" name="Compliance & Reg" count="29" />
+                          <DomainListItem code="FN" name="Finance & Revenue" count="19" />
+                          <DomainListItem code="OP" name="Operations" count="20" />
+                          <DomainListItem code="IT" name="Tech & Info Security" count="20" />
+                          <DomainListItem code="RM" name="Risk Mgmt & Safety" count="18" />
+                          <DomainListItem code="EN" name="Enterprise Control" count="8" />
+                        </div>
+                      </div>
+
+                    </div>
+                  </>
+                )}
+
+              </div>
+
+            </div>
+          </main>
+          
+        </div> {/* End of 16:9 Container */}
+      </div> {/* End of Letterboxing Container */}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SUBCOMPONENTS
+// ---------------------------------------------------------------------------
+
+function SidebarItem({ icon, label, active = false, badge }) {
+  return (
+    <button 
+      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-[4px] mb-0.5 transition-all font-montserrat font-bold text-[9px]
+        ${active 
+          ? 'bg-white/70 text-[#007970] shadow-[0_1px_4px_rgba(0,0,0,0.04)] border border-white/90' 
+          : 'bg-transparent text-gray-500 hover:bg-white/30 hover:text-gray-900'
+        }`}
+    >
+      <div className="flex items-center space-x-2">
+        <span className={`${active ? 'text-[#007970]' : 'text-gray-400'}`}>{icon}</span>
+        <span className="truncate block">{label}</span>
+      </div>
+      {badge && (
+        <span className={`text-[7px] font-bold px-1 py-0.5 rounded-[2px] shadow-sm ${active ? 'bg-[#C74600] text-white' : 'bg-white/60 border border-white/80 text-gray-600'}`}>
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function KpiCard({ title, value, sub, color, valColor, icon, bg = "bg-white/50" }) {
+  return (
+    <div className={`${bg} backdrop-blur-3xl rounded-[6px] border border-white/70 border-t-2 ${color} shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-2.5 flex flex-col justify-between`}>
+      <div className="flex justify-between items-start">
+        <div className="flex flex-col">
+          <span className="text-[7px] font-montserrat font-bold text-gray-500 uppercase tracking-widest">{title}</span>
+          <span className={`text-xl font-montserrat font-bold ${valColor} leading-none mt-1`}>{value}</span>
+        </div>
+        <div className="p-1 rounded-[4px] bg-white/60 shadow-sm border border-white/80">
+          {icon}
+        </div>
+      </div>
+      <p className="text-[6px] font-montserrat font-bold text-gray-400 uppercase tracking-widest mt-1.5">{sub}</p>
+    </div>
+  );
+}
+
+function Pill({ label }) {
+  return (
+    <div className="bg-white/80 border border-[#059669]/20 text-[#059669] px-2 py-0.5 rounded-[3px] text-[6.5px] font-montserrat font-bold whitespace-nowrap shadow-sm">
+      {label}
+    </div>
+  );
+}
+
+function DomainCard({ code, label }) {
+  return (
+    <div className="bg-white border border-[#C74600]/30 rounded-[4px] shadow-sm flex flex-col items-center justify-center p-1 w-[45px]">
+      <span className="text-[#C74600] font-montserrat font-bold text-[10px] leading-none">{code}</span>
+      <span className="text-gray-400 font-montserrat font-bold text-[5px] uppercase mt-0.5 whitespace-nowrap">{label}</span>
+    </div>
+  );
+}
+
+function LifecycleNode({ title, desc, color, icon }) {
+  // Color mapping utility for tailwind classes to avoid dynamic string issues
+  const colorMap = {
+    amber: "bg-amber-100 border-amber-300 text-amber-700",
+    indigo: "bg-indigo-100 border-indigo-300 text-indigo-700",
+    emerald: "bg-emerald-100 border-emerald-300 text-emerald-700",
+    slate: "bg-slate-100 border-slate-300 text-slate-700",
+  };
+
+  const bgClass = colorMap[color];
+
+  return (
+    <div className={`w-full ${bgClass} border rounded-[6px] p-2 flex items-start shadow-sm z-10`}>
+      <div className="mr-2 mt-0.5 opacity-80">{icon}</div>
+      <div className="flex flex-col">
+        <span className="text-[9px] font-montserrat font-bold uppercase tracking-widest mb-0.5 leading-none">{title}</span>
+        <span className="text-[8px] font-roboto leading-tight opacity-90">{desc}</span>
+      </div>
+    </div>
+  );
+}
+
+function DictionaryCard({ title, subtitle, desc, icon }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-[6px] p-2 shadow-sm flex flex-col">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[9px] font-montserrat font-bold text-gray-900 leading-none">{title}</span>
+        {icon}
+      </div>
+      <span className="text-[6.5px] font-montserrat font-bold text-[#C74600] uppercase tracking-widest mb-1">{subtitle}</span>
+      <span className="text-[8px] text-gray-600 font-roboto leading-tight">{desc}</span>
+    </div>
+  );
+}
+
+function DomainListItem({ code, name, count }) {
+  return (
+    <div className="flex items-center justify-between bg-gray-50 border border-gray-100 p-1.5 rounded-[4px]">
+      <div className="flex items-center">
+        <span className="text-[#C74600] font-montserrat font-bold text-[8px] mr-1.5">{code}</span>
+        <span className="text-[8px] font-roboto font-medium text-gray-700 truncate">{name}</span>
+      </div>
+      <span className="bg-white border border-gray-200 text-[7px] font-bold px-1.5 py-0.5 rounded-[2px] text-gray-500">{count}</span>
+    </div>
+  );
+}

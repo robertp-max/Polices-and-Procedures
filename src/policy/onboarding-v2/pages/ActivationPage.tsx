@@ -7,6 +7,7 @@ import { ROLES } from '../catalog/roles';
 import { selectTemplate } from '../catalog/templates';
 import { reconcile } from '../engine/reconciler';
 import { useFormDraft } from '@/policy/utils/useFormDraft';
+import { PageHeader } from '@/policy/components/ui/PageHeader';
 
 // Stabilization R-06: discard drafts older than 24h on rehydrate. Activation
 // drafts older than a day are almost always stale (the workforce list, role
@@ -160,14 +161,12 @@ export function ActivationPage() {
   }
 
   return (
-    <div className="p-6 space-y-6 overflow-y-auto h-full">
-      <header>
-        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6B7280]">Onboarding v2</div>
-        <h1 className="text-[22px] font-semibold text-[#0B2545]">Activate Subject</h1>
-        <p className="text-[12px] text-[#4B5563] mt-1 max-w-2xl">
-          Activation ingests a deterministic trigger (NEW_HIRE, ROLE_CHANGE, ANNUAL_REVALIDATION, POLICY_VERSION_UPDATE, VENDOR_ONBOARD) and emits a single execution batch with reconciled requirements.
-        </p>
-      </header>
+    <div className="p-5 md:p-6 space-y-5 overflow-y-auto h-full">
+      <PageHeader
+        eyebrow="ONBOARDING V2"
+        title="Activate Subject"
+        description="Activation ingests a deterministic trigger (NEW_HIRE, ROLE_CHANGE, ANNUAL_REVALIDATION, POLICY_VERSION_UPDATE, VENDOR_ONBOARD) and emits a single execution batch with reconciled requirements."
+      />
 
       {/* Stabilization R-06: long-idle session recovery notice */}
       {showStaleNotice && (
