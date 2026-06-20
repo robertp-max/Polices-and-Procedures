@@ -9,24 +9,14 @@ import { SpotlightCard } from '@/components/ui/SpotlightCard';
 
 type Tone = 'neutral' | 'teal' | 'orange' | 'muted' | 'success' | 'warning' | 'danger';
 
-const toneText: Record<Tone, string> = {
-  neutral: 'text-text-secondary',
-  teal: 'text-brand-teal',
-  orange: 'text-brand-orange',
-  muted: 'text-text-muted',
-  success: 'text-brand-teal',
-  warning: 'text-brand-orange',
-  danger: 'text-brand-orange',
-};
-
 const spotlightByTone: Record<Tone, string> = {
-  neutral: 'rgba(226, 232, 240, 0.10)',
-  teal: 'rgba(0, 121, 112, 0.22)',
-  orange: 'rgba(199, 70, 0, 0.22)',
-  muted: 'rgba(138, 148, 166, 0.12)',
-  success: 'rgba(0, 121, 112, 0.22)',
-  warning: 'rgba(199, 70, 0, 0.20)',
-  danger: 'rgba(199, 70, 0, 0.24)',
+  neutral: 'var(--spotlight-neutral, rgba(226, 232, 240, 0.10))',
+  teal: 'var(--spotlight-teal, rgba(0, 121, 125, 0.22))',
+  orange: 'var(--spotlight-orange, rgba(199, 70, 1, 0.22))',
+  muted: 'var(--spotlight-muted, rgba(138, 148, 166, 0.12))',
+  success: 'var(--spotlight-teal, rgba(0, 121, 125, 0.22))',
+  warning: 'var(--spotlight-orange, rgba(199, 70, 1, 0.20))',
+  danger: 'var(--spotlight-orange, rgba(199, 70, 1, 0.24))',
 };
 
 export interface GlassPanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 'style'> {
@@ -63,41 +53,56 @@ export interface V32MetricTileProps extends Omit<ButtonHTMLAttributes<HTMLButton
   label: ReactNode;
   value: ReactNode;
   trend?: ReactNode;
+  note?: ReactNode;
   tone?: Tone;
   icon?: ReactNode;
+  /** When true, wraps in SpotlightCard (preserves legacy V32 spotlight behavior). Default false for direct tone tile per redesign prototype. */
+  spotlight?: boolean;
 }
+
+const toneTileClass: Record<Tone, string> = {
+  neutral: 'border-border bg-[var(--surface-elevated)] text-text-primary',
+  teal: 'border-[var(--tone-teal-bdr)] bg-[var(--tone-teal-bg)] text-[var(--tone-teal-fg)]',
+  orange: 'border-[var(--tone-orange-bdr)] bg-[var(--tone-orange-bg)] text-[var(--tone-orange-fg)]',
+  muted: 'border-border bg-[var(--surface-elevated)]/50 text-text-muted',
+  success: 'border-[var(--tone-green-bdr)] bg-[var(--tone-green-bg)] text-[var(--tone-green-fg)]',
+  warning: 'border-[var(--tone-amber-bdr)] bg-[var(--tone-amber-bg)] text-[var(--tone-amber-fg)]',
+  danger: 'border-[var(--tone-orange-bdr)] bg-[var(--tone-orange-bg)] text-[var(--tone-orange-fg)]',
+};
 
 export function V32MetricTile({
   label,
   value,
   trend,
+  note,
   tone = 'neutral',
   icon,
   className,
+  spotlight = false,
   ...rest
 }: V32MetricTileProps) {
+  const noteContent = note ?? trend;
+  const commonTile = 'metric-tile rounded-2xl border p-4 sm:p-5 shadow-soft min-h-[92px] touch-manipulation relative';
+  const toneCls = toneTileClass[tone];
+  const mergedClasses = `${commonTile} ${toneCls} ${className ?? ''}`;
+
   const content = (
     <>
       <div className="flex items-center justify-between gap-3">
-        <span className="font-montserrat text-[10px] font-bold uppercase tracking-[0.22em] text-text-disabled">
+        <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] opacity-70">
           {label}
         </span>
-        {icon ? <span className={toneText[tone]}>{icon}</span> : null}
+        {icon ? <span className="shrink-0 opacity-80">{icon}</span> : null}
       </div>
-      <div className="mt-3 flex items-baseline gap-2">
-        <span className={`font-montserrat text-3xl font-semibold leading-none tracking-[-0.03em] ${toneText[tone]}`}>
-          {value}
-        </span>
+      <div className="mt-3 text-3xl font-extrabold tracking-tight">
+        {value}
       </div>
-      {trend ? <div className="mt-2 text-[11px] font-medium text-text-muted">{trend}</div> : null}
+      {noteContent ? <div className="mt-1 text-xs font-medium opacity-70">{noteContent}</div> : null}
     </>
   );
 
-  return (
-    <SpotlightCard
-      spotlightColor={spotlightByTone[tone]}
-      className={`min-h-[132px] p-4 text-left ${className ?? ''}`}
-    >
+  const tileInner = (
+    <>
       <button
         {...rest}
         type={rest.type ?? 'button'}
@@ -105,7 +110,27 @@ export function V32MetricTile({
         aria-label={typeof label === 'string' ? label : undefined}
       />
       <div className="pointer-events-none relative z-30">{content}</div>
-    </SpotlightCard>
+    </>
+  );
+
+  if (spotlight) {
+    return (
+      <SpotlightCard
+        spotlightColor={spotlightByTone[tone]}
+        className={`p-0 text-left ${className ?? ''}`}
+      >
+        <div className={`${commonTile} ${toneCls}`}>
+          {tileInner}
+        </div>
+      </SpotlightCard>
+    );
+  }
+
+  // Direct tone tile (exact redesign prototype structure, supports .metric-tile + token defaults; not wrapped in Spotlight by default)
+  return (
+    <div className={mergedClasses}>
+      {tileInner}
+    </div>
   );
 }
 
@@ -130,6 +155,26 @@ export function StatusPill({ tone = 'neutral', className, children, ...rest }: S
       {...rest}
       className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-montserrat text-[10px] font-bold uppercase tracking-[0.16em] ${toneClass} ${className ?? ''}`}
     >
+      {children}
+    </span>
+  );
+}
+
+export interface ToneBadgeProps extends HTMLAttributes<HTMLSpanElement> {
+  tone?: string;
+  children: ReactNode;
+}
+
+/** Exact ToneBadge from prototype: dot + uppercase pill using .tone-* classes. */
+export function ToneBadge({ tone = 'teal', className, children, ...rest }: ToneBadgeProps) {
+  const t = String(tone || 'teal').toLowerCase();
+  const toneKey = ['teal', 'orange', 'green', 'amber', 'slate', 'red', 'violet', 'blue', 'muted', 'neutral', 'success', 'warning', 'danger'].includes(t) ? t : 'teal';
+  return (
+    <span
+      {...rest}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider tone-${toneKey} ${className ?? ''}`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-current"></span>
       {children}
     </span>
   );
@@ -239,10 +284,10 @@ export function V32ActionButton({
   ...rest
 }: V32ActionButtonProps) {
   const variantClass = {
-    primary: 'border-brand-teal bg-brand-teal text-white hover:border-[#00988e] hover:bg-[#00988e]',
+    primary: 'border-brand-teal bg-brand-teal text-white hover:border-[color:var(--teal-primary,#00988e)] hover:bg-[color:var(--teal-primary,#00988e)]',
     secondary: 'border-border bg-surface-elevated text-text-secondary hover:border-border-hover hover:text-text-primary',
     ghost: 'border-transparent bg-transparent text-text-muted hover:text-text-primary',
-    danger: 'border-brand-orange bg-brand-orange text-white hover:border-[#A33900] hover:bg-[#A33900]',
+    danger: 'border-brand-orange bg-brand-orange text-white hover:border-[color:var(--orange-primary,#A33900)] hover:bg-[color:var(--orange-primary,#A33900)]',
   }[variant];
 
   return (

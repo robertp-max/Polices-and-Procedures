@@ -341,7 +341,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error('useAuth must be used within AuthProvider');
+    // Defensive: do not crash the shell if rendered outside provider (e.g. standalone demos, HMR, or mis-wrapped routes).
+    // Return a safe unauthenticated default. Real usage is always under the provider in the main tree.
+    if (import.meta.env.DEV) {
+      console.warn('[useAuth] called outside AuthProvider — returning demo default. Ensure AuthProvider wraps the tree.');
+    }
+    return {
+      user: null,
+      loading: false,
+      isAuthenticated: false,
+      login: async () => {},
+      completeNewPassword: async () => {},
+      logout: async () => {},
+      getAccessToken: async () => null,
+    };
   }
   return ctx;
 }

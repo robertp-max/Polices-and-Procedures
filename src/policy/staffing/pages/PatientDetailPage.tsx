@@ -4,6 +4,7 @@ import { Tabs } from '@/policy/components/ui/Tabs';
 import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
 import { SectionHeader } from '@/policy/components/ui/SectionHeader';
 import { EmptyState } from '@/policy/components/ui/EmptyState';
+import { BorderGlow, ToneBadge, SpotlightCard } from '@/policy/components/ui';
 import { Heart } from 'lucide-react';
 import { DemoBanner } from '../components/DemoBanner';
 import { AcuityBadge } from '../components/AcuityBadge';
@@ -110,6 +111,7 @@ export function PatientDetailPage() {
         {/* Tab: Overview */}
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <BorderGlow borderRadius={16} glowIntensity={0.75}>
             <SurfaceCard>
               <SectionHeader title="Patient Information" />
               <dl className="space-y-2 text-sm">
@@ -143,7 +145,9 @@ export function PatientDetailPage() {
                 </div>
               </dl>
             </SurfaceCard>
+            </BorderGlow>
 
+            <BorderGlow borderRadius={16} glowIntensity={0.75}>
             <SurfaceCard>
               <SectionHeader title="Care Team" />
               <dl className="space-y-2 text-sm">
@@ -173,12 +177,14 @@ export function PatientDetailPage() {
                 )}
               </dl>
             </SurfaceCard>
+            </BorderGlow>
           </div>
         )}
 
         {/* Tab: Care Needs */}
         {activeTab === 'care_needs' && (
           <div className="flex flex-col gap-4">
+            <BorderGlow borderRadius={16} glowIntensity={0.7}>
             <SurfaceCard>
               <SectionHeader title="Required Disciplines" />
               <div className="flex flex-wrap gap-2">
@@ -209,12 +215,11 @@ export function PatientDetailPage() {
               {patient.continuityPriority && (
                 <div className="mt-4 text-sm">
                   <span className="font-medium" style={{ color: 'var(--ci-text-muted-2)' }}>Continuity Priority: </span>
-                  <span className="capitalize font-semibold" style={{ color: 'var(--ci-text-primary)' }}>
-                    {patient.continuityPriority}
-                  </span>
+                  <ToneBadge tone="orange">{patient.continuityPriority}</ToneBadge>
                 </div>
               )}
             </SurfaceCard>
+            </BorderGlow>
 
             <div>
               <SectionHeader title="Shift Needs" className="mb-3" />
@@ -233,6 +238,7 @@ export function PatientDetailPage() {
 
         {/* Tab: Assignments */}
         {activeTab === 'assignments' && (
+          <SpotlightCard variant="border-glow">
           <SurfaceCard>
             <SectionHeader title="Assignments" />
             {patientConnections.length === 0 ? (
@@ -280,6 +286,7 @@ export function PatientDetailPage() {
               </div>
             )}
           </SurfaceCard>
+          </SpotlightCard>
         )}
       </div>
     </div>

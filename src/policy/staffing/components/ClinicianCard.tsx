@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
+import { BorderGlow, ToneBadge } from '@/policy/components/ui';
 import { DisciplineBadge } from './DisciplineBadge';
 import { StatusBadge } from './StatusBadge';
 import type { Clinician } from '../types';
@@ -18,6 +19,7 @@ export function ClinicianCard({ clinician }: ClinicianCardProps) {
   ).length;
 
   return (
+    <BorderGlow borderRadius={12} glowIntensity={0.65}>
     <SurfaceCard
       padding="md"
       className="cursor-pointer hover:shadow-md transition-shadow"
@@ -44,9 +46,7 @@ export function ClinicianCard({ clinician }: ClinicianCardProps) {
 
       <div className="flex items-center gap-2 flex-wrap mt-1">
         <DisciplineBadge discipline={clinician.primaryDiscipline} />
-        <span className="text-xs" style={{ color: 'var(--ci-text-muted-2)' }}>
-          {clinician.employmentType}
-        </span>
+        <ToneBadge tone="muted">{clinician.employmentType}</ToneBadge>
       </div>
 
       <div className="mt-2 flex items-center gap-3 text-xs" style={{ color: 'var(--ci-text-muted-2)' }}>
@@ -64,5 +64,6 @@ export function ClinicianCard({ clinician }: ClinicianCardProps) {
         </span>
       </div>
     </SurfaceCard>
+    </BorderGlow>
   );
 }

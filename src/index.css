@@ -92,7 +92,8 @@
   --ci-glass-layer1-inset-desktop: 0px; /* full screen main content, no outer framing per coordinator task */
   --ci-glass-layer1-border-radius-desktop: 2rem;
   /* Phase 2 — ShellNavRail width token (replaces raw Tailwind w-64). */
-  --ci-shell-navrail-width: 16rem;
+  /* Enforced 292px expanded / 88px collapsed per V6_Final §3 + prototype */
+  --ci-shell-navrail-width: 292px;
   /* Phase 2 — Account-menu surfaces (replaces final raw hex pair in CCL).
      Avatar dark = CI-light brand dark-mode neutral; menu overlay dark
      = near-opaque on deep-maroon. Light theme uses bg + neutral-200. */
@@ -399,6 +400,50 @@
   }
   html[data-theme="care-indeed-light"] .ces-date-nav {
     border-radius: 10px !important;
+
+/* === Prototype New UI Card Styles (injected for live app to match redesign prototype visual language)
+   .metric-tile / .surface-card / .hover-lift / .tone-*  from prototype + spec
+   This makes the live Dashboard KPIs and Events board pick up the exact prototype look while keeping live data.
+*/
+html[data-theme="care-indeed-light"] .metric-tile,
+html[data-theme="care-indeed-light"] .surface-card {
+  background: #FFFFFF;
+  border: 1px solid #E9E5E3;
+  border-radius: 16px; /* closer to prototype 24px/2xl feel */
+  box-shadow: 0 10px 32px -18px rgba(0,65,66,0.12), 0 4px 12px -6px rgba(0,65,66,0.06);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html[data-theme="care-indeed-light"] .metric-tile:hover,
+html[data-theme="care-indeed-light"] .surface-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 45px -24px rgba(0,65,66,0.18);
+}
+
+html[data-theme="care-indeed-light"] .hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+html[data-theme="care-indeed-light"] .tone-teal {
+  background: #F7FEFF;
+  color: #00797D;
+  border-color: #E5F0EF;
+}
+html[data-theme="care-indeed-light"] .tone-orange {
+  background: #FFFAF7;
+  color: #C74601;
+  border-color: #FFEEE5;
+}
+html[data-theme="care-indeed-light"] .tone-amber {
+  background: #fff8e6;
+  color: #8a5c00;
+  border-color: #f0d9a3;
+}
+html[data-theme="care-indeed-light"] .tone-slate {
+  background: #FAF8F8;
+  color: #524D4B;
+  border-color: #E9E5E3;
+}
     border: none !important;
     background: #F8FAFC !important;
     padding: 1px !important;
@@ -896,84 +941,141 @@ select:focus-visible {
    • Bold contrast, no pastels on UI surfaces.
    Light mode remaps the legacy CI-ION "gold" token onto TEAL so every
    downstream component that reads var(--ci-gold) auto-switches. */
-html[data-theme="care-indeed-light"] {
-  /* V3 frame / outer shell overrides — ShellFrame uses --v3-base-bg directly for the
-     4-sided constrained backdrop. Without this, the page gutters/outer frame stay
-     dark (#05060A) even when topbar/sidebar and inner tokens are light. */
+html[data-theme="care-indeed-light"],
+html[data-theme="care-indeed-light"] .light-shell,
+html[data-theme="care-indeed-light"].ci-redesign-light {
+  /* CONSOLIDATED SINGLE LIGHT TOKEN BLOCK (PHASE 0) — moved here for parse stability.
+     Covers html[data-theme="care-indeed-light"] + .light-shell + .ci-redesign-light
+     per plan §2. Unified #00797D / #F7FEFF / radii 8-32 / --shadow-soft / --shadow-lift
+     restrained --glass only for shells. Removed duplicate --ci-* defs + early V3 leaks.
+     Central (Agent 1 ownership map: index.css primary; redesign-page.css for co-exist classes).
+     Reference redesign-page.css for .metric-tile/.surface-card/.tone-* /.hover-lift .
+     Follows pale atm + white + teal + orange. No raw hex in this block.
+  */
+  /* V3 frame override kept (non-token) */
   --v3-base-bg: #F4F8F7;
   --v3-bg-gradient: linear-gradient(180deg, #F4F8F7 0%, #F8FBFA 100%);
 
-  /* === Exact required light-mode semantic tokens per spec ========= */
-  --brand-primary: #007970;       /* teal for H1/H2 page/workspace/card/modal titles, active nav, accents in light (production light mode / V3-compatible) */
-  --brand-primary-dark: #005F62;
-  --brand-accent: #C74601;        /* orange for urgency/primary CTA emphasis */
+  /* (dangling canonical brand tokens from removed duplicate purged) */
 
-  --app-bg: #F8F3F0;              /* warm paper / soft peach-teal background */
+  --orange-50: #FFFAF7;
+  --orange-100: #FFEEE5;
+  --orange-200: #FFD5BF;
+  --orange-400: #E56E2E;
+  --orange-500: #C74601; /* Primary action / urgency - unified */
+  --orange-600: #421700;
+
+  --neutral-50: #FAF8F8;
+  --neutral-100: #F3F0EF;
+  --neutral-200: #E9E5E3;
+  --neutral-300: #D9D6D5;
+  --neutral-400: #7A7470;
+  --neutral-500: #524D4B;
+  --neutral-600: #1F1C1B;
+
+  /* === Pastel Tile Tokens (for .tone-* / MetricTile) === */
+  --tone-teal-bg: var(--teal-50);
+  --tone-teal-fg: var(--teal-600);
+  --tone-teal-bdr: var(--teal-200);
+
+  --tone-orange-bg: var(--orange-50);
+  --tone-orange-fg: var(--orange-600);
+  --tone-orange-bdr: var(--orange-200);
+
+  --tone-green-bg: #e6f4ed;
+  --tone-green-fg: #006B3A;
+  --tone-green-bdr: #a3d9b8;
+
+  --tone-amber-bg: #fff8e6;
+  --tone-amber-fg: #8a5c00;
+  --tone-amber-bdr: #f0d9a3;
+
+  --tone-slate-bg: var(--neutral-50);
+  --tone-slate-fg: var(--neutral-500);
+  --tone-slate-bdr: var(--neutral-200);
+
+  /* === Semantic === */
+  --success-300: #00854D;
+  --warning-300: #FFC700;
+  --danger-300: #D70101;
+  --amber-500: #E56E2E;
+
+  /* === Core Text (teal-cast neutrals) === */
+  --text-primary: #063F43;
+  --text-secondary: #245F62;
+  --text-tertiary: #527679;
+  --text-muted: #6D8B8D;
+
+  /* === Surfaces (Layered: pale atm + white crisp cards) === */
+  --surface-page: #F7FEFF;         /* Layer 0: pale atmospheric base (teal cast) */
+  --surface-base: #FFFFFF;         /* Layer 1: main application plane */
+  --surface-card: #FFFFFF;         /* Layer 2: elevated content cards - crisp, opaque */
+  --surface-elevated: #FFFFFF;
+  --surface-popover: #FFFFFF;
+  --surface-glass: rgba(255, 255, 255, 0.72); /* Restrained glass ONLY for shells/modals (no every-card glassmorphism) */
+  --border-subtle: rgba(0, 65, 66, 0.12); /* 1px neutral hairline */
+  --border-card: #E9E5E3;
+
+  /* === Brand Semantic (teal/orange) === */
+  --teal-primary: #00797D;
+  --teal-deep: #063F43;
+  --orange-primary: #C74601;
+  --orange-wash: rgba(199, 70, 1, 0.08);
+  --orange-border: rgba(199, 70, 1, 0.18);
+
+  /* === Typography (Montserrat/Roboto) === */
+  --font-heading: 'Montserrat', system-ui, -apple-system, sans-serif;
+  --font-body: 'Roboto', system-ui, -apple-system, sans-serif;
+
+  /* === Radii (spec scale: 8/12/16/24/32 - full) === */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+
+  /* === Shadows (soft, restrained per redesign-page.css + spec; --shadow-soft/lift) === */
+  --shadow-soft: 0 10px 32px -18px rgba(0, 65, 66, 0.12),
+                 0 4px 12px -6px rgba(0, 65, 66, 0.06);
+  --shadow-lift: 0 18px 45px -24px rgba(0, 65, 66, 0.18),
+                 0 10px 28px -16px rgba(0, 65, 66, 0.10);
+  --shadow-premium: 0 18px 52px -30px rgba(0, 121, 125, 0.12),
+                    0 10px 30px -26px rgba(0, 121, 125, 0.06),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-glass: 0 18px 44px -34px rgba(0, 121, 125, 0.12),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  /* === Spacing === */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* === Glass specific (restrained per spec + plan) === */
+  --glass-bg: var(--surface-glass);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-blur: blur(12px) saturate(140%);
+
+  /* === Spotlight / glow === */
+  --spotlight-teal: rgba(0, 121, 125, 0.22);
+  --spotlight-orange: rgba(199, 70, 1, 0.22);
+  --spotlight-neutral: rgba(226, 232, 240, 0.10);
+  --spotlight-muted: rgba(138, 148, 166, 0.12);
+
+  /* === Legacy compat aliases (minimal, point to canonical) === */
+  --brand-primary: #00797D;
+  --brand-teal: #00797D;
+  --brand-orange: #C74601;
+  --ci-bg: var(--surface-page);
+  --ci-surface: var(--surface-card);
+  --ci-text-primary: #1F1C1B;
+  --ci-glass-bg: #FFFFFF;
+  --ci-glass-border: #E5E4E3;
   --surface: #FFFFFF;
-  --surface-elevated: #FFFDFB;
-  --surface-muted: #F6F1EE;
-
-  --text-primary: #1F1C1B;        /* body dark neutral */
-  --text-secondary: #5F5855;
-  --text-tertiary: #74706F;
-
-  --border: rgba(31, 28, 27, 0.09);
-  --shadow-soft: 0 18px 45px rgba(31, 28, 27, 0.08);
-
-  /* === Care Indeed brand-kit tokens (CIHHCBRANDKIT.HTML) ========= */
-  /* Primary (orange) — reserved for CTAs on light backgrounds */
-  --ci-primary-100:   #FFFAF7;
-  --ci-primary-200:   #FFEEE5;
-  --ci-primary-300:   #FFD5BF;
-  --ci-primary-400:   #E56E2E;
-  --ci-primary-500:   #C74601;   /* base CTA */
-  --ci-primary-600:   #421700;   /* hover / pressed */
-  /* Secondary (teal) — brand accent for highlights/active states  */
-  --ci-secondary-100: #F7FEFF;
-  --ci-secondary-200: #E5FEFF;
-  --ci-secondary-300: #C4F4F5;
-  --ci-secondary-400: #7ADEDF;
-  --ci-secondary-500: #007970;   /* base */
-  --ci-secondary-600: #004142;   /* hover / pressed */
-  /* Neutrals */
-  --ci-neutral-100:   #FAFBF8;   /* surface */
-  --ci-neutral-200:   #E5E4E3;   /* hairline borders */
-  --ci-neutral-300:   #D1D1D1;   /* heavier borders / divider */
-  --ci-neutral-400:   #747474;   /* placeholder, tertiary */
-  --ci-neutral-500:   #52404B;   /* body secondary */
-  --ci-neutral-600:   #1F1C1B;   /* primary body / headings */
-  /* Sentiment */
-  --ci-success-100:   #E5F4EE;
-  --ci-success-200:   #85D4B2;
-  --ci-success-300:   #008540;
-  --ci-warning-100:   #FFF0E5;
-  --ci-warning-200:   #FFE073;
-  --ci-warning-300:   #FFC700;
-  --ci-error-100:     #FBE6E6;
-  --ci-error-200:     #F49E9E;
-  --ci-error-300:     #D70101;
-
-  /* Legacy CI-ION token remaps so existing inline styles auto-switch.
-     Data highlights (progress bars, active chips, tags, tiles) use
-     brand SECONDARY TEAL #007970. Primary orange is reserved for the
-     CTA buttons at call-site (splash "Enter Environment", etc.). */
-  --ci-gold:          #007970;   /* brand secondary (data accents) */
-  --ci-gold-dark:     #C74601;   /* brand primary (CTA) */
-  --ci-gold-deep:     #004142;   /* secondary-600 hover */
-  --ci-accent-rgb:    0, 121, 112;       /* CI secondary teal */
-  --ci-accent-rgb-2:  0, 65, 66;         /* CI secondary-600 */
-  --ci-cell-out:      #FAFBF8;           /* out-of-month neutral wash */
-  --ci-cell-today:    linear-gradient(180deg, rgba(0,121,112,0.08) 0%, #FFFFFF 100%); /* teal per design #4 */
-  --ci-cell-day:      #FFFFFF;
-
-  --ci-text:          #1F1C1B;           /* neutral-600 body */
-  --ci-text-muted:    #52404B;           /* neutral-500 (≥7:1 on #FFF) */
-  --ci-border:        #E5E4E3;
-  --ci-border-strong: #D1D1D1;
-  --ci-hairline:      #E5E4E3;
-  --glass-main:       #FFFFFF;           /* card surface is SOLID white */
-  --glass-panel:      #FFFFFF;
-  --shadow-glass:     none;
+  --app-bg: #F7FEFF;
 }
 html[data-theme="care-indeed-light"] body {
   background: transparent;
@@ -1683,6 +1785,7 @@ main[data-shell-main] {
 [data-shell-navrail] {
   z-index: 40 !important;
   border-right: none !important;
+  transition: width 200ms ease;
 }
 [data-shell-main],
 main[data-shell-main],
@@ -1832,92 +1935,33 @@ html[data-theme="care-indeed-light"] .spotlight-inner-glow {
   --ci-color-on-primary:                 #FFFFFF;
 }
 
-/* ── Semantic tokens — Care Indeed LIGHT (Production Design Spec) ─────────────────────
-   Pale atmospheric base + white work surfaces + clinical teal structure + orange action
-   Layer 0: atmospheric #F7FEFF / #FAF8F8
-   Layer 1: plane #FFFFFF
-   Layer 2: card/elevated #FFFFFF with soft elevation
-*/
-html[data-theme="care-indeed-light"] {
-  /* Production Light Design Tokens from spec */
-  --surface-page: #F7FEFF;          /* pale atmospheric teal-tinted base (Layer 0) */
-  --surface-plane: #FFFFFF;         /* main application plane (Layer 1) */
-  --surface-card: #FFFFFF;          /* elevated cards and panels (Layer 2) */
-  --surface-elevated: #FFFFFF;
-  --surface-popover: #FFFFFF;
-  --text-primary: #1F1C1B;
-  --text-muted: #524D4B;
-  --border-subtle: #E5E4E3;
-  --brand-teal: #00797D;            /* clinical teal for structure, nav, progress, selection */
-  --brand-orange: #C74601;          /* primary action only */
+/* (removed duplicate consolidated light block; single authoritative version is above in html[data-theme...] rule) */
 
-  --ci-bg:            var(--surface-page);
-  --ci-surface:       var(--surface-card);
-  --ci-surface-2:     #FAFBF8;
-  --ci-surface-muted: #F4F4F2;
-  --ci-text-primary:  #111316; /* dark neutral body text for production light mode */
-  --ci-text-muted-2:  #52404B;
-  --ci-text-subtle:   #747474;
-  --brand-primary:    #007970; /* clinical teal for production light mode */
-  --text-primary:     var(--ci-text-primary);
-  --text-secondary:   #5F5855;
-  --ci-link:          #007970;
-  --ci-link-hover:    #004142;
-  --ci-accent:        #007970;
-  --ci-cta:           #C74601;
-  --ci-cta-text:      #FFFFFF;
-  --ci-focus-ring:    rgba(0,121,112,0.26);
-  --ci-glass-bg:      #FFFFFF;
-  --ci-glass-border:  #E5E4E3;
-  --ci-shadow-sm:     0 1px 2px rgba(31,28,27,0.06);
-  --ci-shadow-md:     0 4px 12px rgba(31,28,27,0.08);
-  --ci-shadow-lg:     0 12px 32px rgba(31,28,27,0.10);
-
-  /* Care Indeed LIGHT — shell-glass contract overrides.
-     Solid white surface, no backdrop blur, minimal shadow. */
-  --ci-color-glass-main:        #FFFFFF;
-  --ci-color-glass-main-detail: #FFFFFF;
-  --ci-color-glass-border:      var(--ci-neutral-200, #E5E4E3);
-  --ci-color-glass-blur:        none;
-  --ci-color-glass-shadow:      0 1px 2px rgba(0,0,0,0.04);
-  --ci-color-shell-topbar-bg:   #FFFFFF;
-  --ci-color-shell-navrail-bg:  var(--surface-page); /* pale atmospheric for sidebar per design spec */
-  --ci-color-border-subtle:     #E5E4E3;
-  --ci-color-glass-light-main:  var(--ci-color-glass-main);
-  --ci-color-glass-dark-main:   var(--ci-color-glass-main);
-  --ci-color-border-subtle-light: var(--ci-color-border-subtle);
-  --ci-color-border-subtle-dark:  var(--ci-color-border-subtle);
-
-  /* Overlay tokens — Care Indeed LIGHT. On a near-white canvas
-     the glass-on-glass tint must invert to black-on-white so the
-     same primitives produce a visible-but-subtle separation. */
-  --ci-overlay-faint:         rgba(31,28,27,0.025);
-  --ci-overlay-soft:          rgba(31,28,27,0.05);
-  --ci-overlay-strong:        rgba(31,28,27,0.09);
-  --ci-overlay-border:        rgba(31,28,27,0.08);
-  --ci-overlay-border-strong: rgba(31,28,27,0.14);
-  --ci-overlay-active-bg:     rgba(0,121,112,0.10);
-  --ci-overlay-active-border: rgba(0,121,112,0.32);
-  --ci-text-on-surface-strong: #1F1C1B;
-  --ci-text-on-surface-soft:   #2B2826;
-  --ci-text-on-surface-muted:  #52404B;
-  --ci-text-on-surface-faint:  #747474;
-  --ci-text-on-surface-ghost:  #9A9A99;
-  --ci-text-on-surface-quiet:  #C6C6C5;
-
-  /* Phase 2 closure (2026-05-17) — shell chrome + CTA tokens. */
-  --ci-color-shell-account-avatar-bg:    var(--ci-secondary-500);
-  --ci-color-shell-mobile-tabbar-bg:     rgba(255,255,255,0.95);
-  --ci-color-shell-overlay-shadow:       0 12px 28px rgba(0,0,0,0.12);
-  --ci-color-cta-primary-border-soft:    rgba(199,70,1,0.45);
-  --ci-color-on-primary:                 #FFFFFF;
-}
+/* (purged remaining duplicate light token decls + closing) */
 
 /* Production light atmospheric base for the entire page (Layer 0) */
 html[data-theme="care-indeed-light"] body,
 html[data-theme="care-indeed-light"] #root,
 html[data-theme="care-indeed-light"] .app-root {
   background-color: var(--surface-page);
+}
+
+/* no-black :where (consolidated central; mirrors redesign-page.css for index light usage) */
+html[data-theme="care-indeed-light"] #root :where(
+  .text-black,
+  .text-neutral-950,
+  .text-neutral-900,
+  .text-neutral-800,
+  .text-slate-900,
+  .text-slate-800,
+  .text-gray-900,
+  .text-gray-800,
+  .text-\[\#1F1C1B\],
+  .text-\[\#111827\],
+  .text-\[\#1F2937\],
+  .text-\[\#0F172A\]
+) {
+  color: var(--text-primary, #063F43) !important;
 }
 
 /* Elevated content cards per design spec (Layer 2) - soft white, subtle elevation, 16px radius */
@@ -4588,7 +4632,7 @@ html[data-theme="care-indeed-light"] .swimlane-corner {
   --v3-text-primary: #FFFFFF;
   --v3-text-secondary: #E2E8F0;
   --v3-text-tertiary: #8A94A6;
-  --ci-shell-navrail-width: 260px;
+  --ci-shell-navrail-width: 292px; /* enforced expanded width (collapsed uses 88px) */
 }
 
 /* SpotlightCard architecture shared by V3.2 primitives. */
@@ -5048,6 +5092,7 @@ html[data-theme="care-indeed-light"] .v32-command-center-app .v3-app-shell-base 
   color-scheme: light;
 
   --ci-light-teal-primary: #00797D;
+  --ci-light-teal-strong: #004142;   /* approved prototype strong Care Indeed teal — active nav + headings */
   --ci-light-orange-primary: #C74601;
   --ci-light-text-primary: #1F1C1B;
   --ci-light-text-secondary: #5F5855;
@@ -5055,30 +5100,35 @@ html[data-theme="care-indeed-light"] .v32-command-center-app .v3-app-shell-base 
   --brand-primary: var(--ci-light-teal-primary);
   --text-primary: var(--ci-light-text-primary);
   --text-secondary: var(--ci-light-text-secondary);
-  --ci-light-paper-base: #F8F6F1;
-  --ci-light-paper-soft: #F3F0EA;
-  --ci-light-paper-teal: #EEF6F4;
+  /* Cool teal-forward atmosphere per the approved Redesign prototype
+     (was warm paper #F8F6F1). Pale teal base + white cards on top. */
+  --ci-light-paper-base: #F7FEFF;
+  --ci-light-paper-soft: #EAF6F6;
+  --ci-light-paper-teal: #E7F3F3;
   --ci-light-overlay-warm: rgba(255, 255, 255, 0.62);
   --ci-light-card-surface: #FFFFFF;
-  --ci-light-card-surface-soft: #FCFAF6;
+  --ci-light-card-surface-soft: #F6FBFB;
   --ci-light-drawer-bg: rgba(255, 255, 255, 0.96);
   --ci-light-tab-pill-bg: rgba(255, 255, 255, 0.68);
   --ci-light-card-border: rgba(82, 77, 75, 0.14);
   --ci-light-card-border-hover: rgba(0, 121, 125, 0.34);
   --ci-light-shell-border: rgba(0, 121, 125, 0.16);
-  --ci-light-shadow-soft: 0 10px 28px rgba(82, 77, 75, 0.08);
-  --ci-light-shadow-panel: 0 18px 45px rgba(82, 77, 75, 0.14);
-  --ci-light-shadow-floating: 0 22px 54px rgba(82, 77, 75, 0.16);
+  /* Prototype elevation: teal-tinted soft depth (rgba 0,65,66), not warm gray. */
+  --ci-light-shadow-soft: 0 10px 32px -18px rgba(0, 65, 66, 0.237);
+  --ci-light-shadow-panel: 0 18px 45px -24px rgba(0, 65, 66, 0.28);
+  --ci-light-shadow-floating: 0 22px 54px -24px rgba(0, 65, 66, 0.30);
   --ci-light-focus-ring: rgba(0, 121, 125, 0.24);
 
   /* — Re-light the V3 primitives (all --ci-* aliases inherit these) —
        Soft light-teal page base (NOT pure white) so the signed-in shell
        reads as Care Indeed day mode; white cards sit on top for contrast. */
   --v3-base-bg: var(--ci-light-paper-base);
+  /* Approved prototype atmospheric gradient: soft white radial highlight +
+     faint teal corner glow over a cool teal linear wash. Airy, never muddy. */
   --v3-bg-gradient:
-    radial-gradient(circle at 18% 0%, rgba(0, 121, 125, 0.10) 0%, transparent 32%),
-    radial-gradient(circle at 86% 6%, rgba(199, 70, 1, 0.07) 0%, transparent 30%),
-    linear-gradient(180deg, #FBF9F4 0%, var(--ci-light-paper-teal) 100%);
+    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.95) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(6, 166, 171, 0.06) 0%, transparent 50%),
+    linear-gradient(135deg, #F0FAFA 0%, #FFFFFF 50%, #E7F3F3 100%);
   --v3-grid-line: rgba(0, 121, 125, 0.045);
   --v3-glass-card: var(--ci-light-card-surface);
   --v3-glass-blur: none;
@@ -5107,8 +5157,8 @@ html[data-theme="care-indeed-light"] .v32-command-center-app .v3-app-shell-base 
   --ci-color-glass-main-detail: var(--ci-light-card-surface);
   --ci-color-glass-blur: none;
   --ci-color-glass-shadow: var(--ci-light-shadow-soft);
-  --ci-color-shell-topbar-bg: rgba(255, 255, 255, 0.90);
-  --ci-color-shell-navrail-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(238, 246, 244, 0.92) 100%);
+  --ci-color-shell-topbar-bg: transparent;   /* prototype: top bar container visually invisible */
+  --ci-color-shell-navrail-bg: rgba(255, 255, 255, 0.78);   /* prototype: airy white rail over the atmospheric base */
   --ci-color-shell-mobile-tabbar-bg: rgba(255, 255, 255, 0.96);
   --ci-color-shell-account-avatar-bg: var(--ci-light-teal-primary);
   --ci-color-shell-overlay-shadow: var(--ci-light-shadow-panel);
@@ -5203,22 +5253,37 @@ html[data-theme="care-indeed-light"] [data-shell-content-frame] {
   width: 100% !important;
 }
 html[data-theme="care-indeed-light"] [data-shell-topbar] {
+  /* Prototype: top bar container is visually invisible — transparent, no
+     border, no shadow, no blur. Logo + account controls float on the base. */
   background: var(--ci-color-shell-topbar-bg) !important;
   border: none !important;
   border-bottom: none !important;
   box-shadow: none !important;
-  -webkit-backdrop-filter: blur(18px) saturate(132%) !important;
-  backdrop-filter: blur(18px) saturate(132%) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] {
+  /* Prototype: airy white rail separated from the canvas by a hairline teal
+     right border + a soft directional shadow (was flat, borderless). */
   background: var(--ci-color-shell-navrail-bg) !important;
-  /* STRENGTHENED (Agent 7): ensure no border on side nav for bleed-free light calendar surfaces */
   border: none !important;
   border-top: none !important;
-  border-right: none !important;
+  border-right: 1px solid rgba(0, 65, 66, 0.10) !important;
   border-bottom: none !important;
   border-left: none !important;
-  box-shadow: none !important;
+  box-shadow: 10px 0 28px rgba(0, 65, 66, 0.06) !important;
+}
+/* Active nav item — approved prototype strong Care Indeed teal:
+   solid #004142 fill + white text + soft teal-tinted lift. Keyed on the
+   data-active attribute the nav rail already emits; dark mode keeps its own
+   subtle Tailwind bg-brand-teal/10 tint and is entirely unaffected. */
+html[data-theme="care-indeed-light"] [data-shell-navrail] a[data-active="true"] {
+  background: #004142 !important;
+  color: #FFFFFF !important;
+  box-shadow: var(--ci-light-shadow-soft) !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] a[data-active="true"] * {
+  color: #FFFFFF !important;
 }
 /* Topbar search field reads on the white bar */
 html[data-theme="care-indeed-light"] [data-shell-topbar] input {

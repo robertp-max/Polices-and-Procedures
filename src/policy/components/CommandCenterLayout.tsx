@@ -492,7 +492,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
             └─ ShellContentFrame (glass canvas, in-flow)
                  ├─ ShellTopbar  (top bar)
                  └─ Body
-                      ├─ ShellNavRail  (desktop left rail, ShellCommandGroup inside)
+                      ├─ ShellNavRail  (desktop left rail; 292px/88px, 4 groups: PRIMARY OPERATIONS / COMPLIANCE EXECUTION / ADMINISTRATION / KNOWLEDGE, filter + collapse per V6 §3)
                       └─ Main content region
          ═══════════════════════════════════════════════════════════ */}
       <ShellContentFrame
@@ -677,7 +677,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
           {/* ── Phase 2 Body: ShellNavRail + content ─────────────── */}
           <div className="flex flex-1 min-h-0 overflow-hidden relative">
 
-            {/* Desktop: Phase 2 ShellNavRail with ShellCommandGroup grouping */}
+            {/* Desktop: ShellNavRail (exact 4 uppercase groups + filter + "X Views" badge + collapse; gates/isActive/subnav preserved upstream) */}
             {!isMobile && !hideChrome && !showSplash && (
               <ShellNavRail
                 items={VISIBLE_NAV}
