@@ -5,6 +5,17 @@ dist
 *.mp3
 *.docx
 
+# Compiled TS emit accidentally written into the source tree.
+# This is a TS+Vite project (noEmit:true); any *.js under src/ is stale
+# output that SHADOWS the .tsx (Vite resolves .js before .tsx) and hides
+# real changes. Never commit these. Type-check with `npm run build`, not
+# raw `tsc <file>` (which ignores noEmit and emits these).
+src/**/*.js
+
+# Agent run litter
+build-*.log
+agent-tools/
+
 # Environment & secrets
 .env
 .env.*.local
