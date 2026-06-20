@@ -1,0 +1,304 @@
+# CES / PROCESS-LOGIC KEEP MANIFEST
+# Preserved on disk, EXCLUDED from active build, NOT imported by the scaffold.
+# total preserved: 299
+# CONFIRM: none of these appear in DELETE_LIST.txt
+# overlap with delete set: 0 (must be 0)
+KEEP  src/auth/api.ts  — Preserved non-visual logic
+KEEP  src/auth/bypass.ts  — Preserved non-visual logic
+KEEP  src/policy/adapters/frameworkSeedAdapter.ts  — Data adapters
+KEEP  src/policy/artifacts/artifactRoute.ts  — Preserved process/data module
+KEEP  src/policy/artifacts/artifactToFormInstance.ts  — Preserved process/data module
+KEEP  src/policy/audit/auditAggregate.ts  — Audit/completion state + survey packet logic
+KEEP  src/policy/audit/auditState.ts  — Audit/completion state + survey packet logic
+KEEP  src/policy/audit/dependencyCheck.ts  — Audit/completion state + survey packet logic
+KEEP  src/policy/audit/exportReport.ts  — Audit/completion state + survey packet logic
+KEEP  src/policy/audit/riskScoring.ts  — Audit/completion state + survey packet logic
+KEEP  src/policy/audit/surveyPacket.ts  — Audit/completion state + survey packet logic
+KEEP  src/policy/audit/workflowInstance.ts  — Audit/completion state + survey packet logic
+KEEP  src/policy/auth/permissions.ts  — Preserved process/data module
+KEEP  src/policy/autogen/annualGenerator.ts  — Auto-generation scheduler/trigger process
+KEEP  src/policy/autogen/conflictResolver.ts  — Auto-generation scheduler/trigger process
+KEEP  src/policy/autogen/dependencyResolver.ts  — Auto-generation scheduler/trigger process
+KEEP  src/policy/autogen/scheduler.ts  — Auto-generation scheduler/trigger process
+KEEP  src/policy/autogen/templateRegistry.ts  — Auto-generation scheduler/trigger process
+KEEP  src/policy/autogen/triggerEngine.ts  — Auto-generation scheduler/trigger process
+KEEP  src/policy/autogen/types.ts  — Auto-generation scheduler/trigger process
+KEEP  src/policy/brad/useBradWorkflow.ts  — Brad workflow runtime logic
+KEEP  src/policy/brad/workflowKnowledge.ts  — Brad workflow runtime logic
+KEEP  src/policy/brad/workflowRuntime.ts  — Brad workflow runtime logic
+KEEP  src/policy/brad/workflowSchedule.ts  — Brad workflow runtime logic
+KEEP  src/policy/ces/calendar/canonicalEventDedup.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/cesExecutionMode.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/cesReviewMode.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/cesRoles.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/data/V3_AppSeedPrimitives.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/data/V3_CES_SeedData.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/data/V3_CES_SnapshotBuilder.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/eventExecution/buildCesEventExecutionViewModel.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/hooks/useEvidenceTracker.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/hooks/useExecutionEnforcement.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/obligations/index.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/obligations/obligationSelectors.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/obligations/useObligations.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/services/canonicalEventTaskFilter.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/signerTaskFactory.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/ces/types.ts  — CES event/board/calendar PROCESS model + execution chain
+KEEP  src/policy/compliance-execution/cesFormInstanceId.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/complianceExecutionAdapters.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/complianceExecutionEvents.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/complianceExecutionSelectors.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/complianceExecutionStore.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/complianceExecutionTypes.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/eventFolders.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/eventInstanceId.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/eventStateEvaluator.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/eventTaskAdapter.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/index.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/stateMachine.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/supersedeChain.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/taskIdentity.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/types.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance-execution/useEventExecutionDataflow.ts  — CES compliance execution: event→task→instance state machine
+KEEP  src/policy/compliance/complianceEngine.ts  — Preserved process/data module
+KEEP  src/policy/compliance/evaluateEvent.ts  — Preserved process/data module
+KEEP  src/policy/compliance/index.ts  — Preserved process/data module
+KEEP  src/policy/compliance/useComplianceMap.ts  — Preserved process/data module
+KEEP  src/policy/data/achcAttachmentCrosswalk.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/achcHhEvidenceMap.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/achcPrintCrosswalk.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/achcStandardTargetResolver.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/achcSupportAnchors.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/achcSurveyProjection.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/achcSurveyTags.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/allPoliciesContent.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/auditRegulatoryEvents.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/corridorAlignment.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/eventAlignmentPolicy.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/eventDisplayModel.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/eventWorkflowAlignment.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/extractedSeedArrays.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/formAddendumBindings.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/formIdAliases.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/formTitles.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/formsCatalog.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/formsLibraryContent.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/formsLibraryContentCO_More.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/formsLibraryContentHR_CL.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/formsLibraryContentJD.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/formsLibraryDataset.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/frameworkSeed.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/frameworkSeedData.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/helpArticles.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/hubstaffTasks.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/mandatedEventsExpanded.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/masterControlInventory.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/multiYearEvents.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/policyContentMap.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/policyCorpus.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/policy_hh_section_map.csv  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/regulatoryEvents.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/specimenContent.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/workflowGraph.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/workflowTemplates.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/data/workflows.generated.ts  — Seed/data contracts (policies, forms, events)
+KEEP  src/policy/ecign/api.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/buildSignerRosterHtml.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/captureSignedFormSnapshot.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/demoLocalApi.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/ecignAgreement.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/ecignCertificateBuilder.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/ecignConsentStore.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/ecignSignatureProfileStore.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/ecignSignatureRecordStore.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/ecignSigning.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/hhcEvidence.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/pdfAppendUtil.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/permissionRoles.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/resolveCanonicalSignedPackage.test.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/resolveCanonicalSignedPackage.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/roleKey.test.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/roleKey.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/signaturePathResolver.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/signatureTaskBuilder.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/signerAuthority.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/signerHierarchy.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/signerIdentity.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/types.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/useEcignInstance.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/useEcignSession.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/ecign/validateRequiredFields.ts  — eCign sign-form / signer hierarchy / signature process
+KEEP  src/policy/enforcement/enforcementEngine.ts  — Enforcement / escalation process logic
+KEEP  src/policy/enforcement/escalationEngine.ts  — Enforcement / escalation process logic
+KEEP  src/policy/enforcement/roleHierarchy.ts  — Enforcement / escalation process logic
+KEEP  src/policy/enforcement/types.ts  — Enforcement / escalation process logic
+KEEP  src/policy/enforcement/useEnforcement.ts  — Enforcement / escalation process logic
+KEEP  src/policy/evidence/cesEvidenceHierarchy.ts  — Evidence metadata + storage contracts (audit trail)
+KEEP  src/policy/evidence/demoEvidenceRuntimeCache.ts  — Evidence metadata + storage contracts (audit trail)
+KEEP  src/policy/evidence/evidenceModel.ts  — Evidence metadata + storage contracts (audit trail)
+KEEP  src/policy/evidence/storage/EVIDENCE_BLOB_VERSION.ts  — Evidence metadata + storage contracts (audit trail)
+KEEP  src/policy/evidence/storage/awsStagingAdapter.ts  — Evidence metadata + storage contracts (audit trail)
+KEEP  src/policy/evidence/storage/indexedDbEvidenceBlobStore.ts  — Evidence metadata + storage contracts (audit trail)
+KEEP  src/policy/evidence/storage/localDemoAdapter.ts  — Evidence metadata + storage contracts (audit trail)
+KEEP  src/policy/evidence/storageMode.ts  — Evidence metadata + storage contracts (audit trail)
+KEEP  src/policy/evidence/storageProviders/types.ts  — Evidence metadata + storage contracts (audit trail)
+KEEP  src/policy/hooks/useRovingTabIndex.ts  — Preserved process/data module
+KEEP  src/policy/journey/data/achcAnnualTests.data.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/achcContentTypes.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/achcFinalAssessmentLessons.data.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/achcLessons_M01_M04.data.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/achcLessons_M05_M08.data.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/achcLessons_M09_M12.data.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/achcModuleIntroPatch.data.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/achcPreAssessDebriefPatch.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/appendices.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/employees.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/modules.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/stagingM01Slides.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/trainingContent.gao.001-007.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/trainingContent.gao.008-014.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/trainingContent.gao.015-021.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/trainingContent.gao.022-028.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/data/trainingContent.types.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/scorm/ScormRuntime.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/stores/journeyStore.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/types/journey.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/utils/achcTrainingCalculations.test.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/utils/achcTrainingCalculations.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/utils/escalation.ts  — Journey/training data + calc logic
+KEEP  src/policy/journey/utils/gating.ts  — Journey/training data + calc logic
+KEEP  src/policy/lifecycle/index.ts  — Policy lifecycle state machine
+KEEP  src/policy/lifecycle/lifecycleSeed.ts  — Policy lifecycle state machine
+KEEP  src/policy/lifecycle/lifecycleStore.ts  — Policy lifecycle state machine
+KEEP  src/policy/lifecycle/stateMachine.ts  — Policy lifecycle state machine
+KEEP  src/policy/lifecycle/types.ts  — Policy lifecycle state machine
+KEEP  src/policy/onboarding-v2/catalog/policies.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/catalog/requirements.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/catalog/roles.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/catalog/templates.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/engine/audit.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/engine/engine.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/engine/gates.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/engine/hash.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/engine/reconciler.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/index.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/pages/batchHelpers.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/store/onboardingV2Store.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/store/seed.ts  — Preserved process/data module
+KEEP  src/policy/onboarding-v2/types.ts  — Preserved process/data module
+KEEP  src/policy/onboarding/onboardingEvents.ts  — Preserved process/data module
+KEEP  src/policy/onboarding/onboardingExecutionEngine.ts  — Preserved process/data module
+KEEP  src/policy/personal-ops/personalOpsModel.ts  — Preserved process/data module
+KEEP  src/policy/pm/api/pmApiClient.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/currentUser.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/ecignStatusMap.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/featureFlags.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/formInstances.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/formInstancesCore.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/notificationStore.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/notificationTicker.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/notifications/decider.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/personalStore.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/pmOverlayStore.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/pmOverlayStore.types.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/pmViewSprintStore.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/scheduling/dependencyGraph.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/scheduling/sprintAllocator.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/selectedTaskStore.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/sprintId.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/sprintWindows.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/taskProjection.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/taskProjectionCore.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/types.ts  — Task projection / sprint process logic
+KEEP  src/policy/pm/weekendRule.ts  — Task projection / sprint process logic
+KEEP  src/policy/security/auditLog.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/authorize.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/ceuStore.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/features/catalog.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/features/featureAccess.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/features/index.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/features/types.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/features/useFeatureAccess.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/hash.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/access.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/authorize.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/demoUsers.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/identityNormalization.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/index.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/pageAccess.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/pageAccessStore.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/pageAccessTypes.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/pageRegistry.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/permissionCatalog.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/roleAssignments.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/separationOfDuties.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/types.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/userAssignmentsStore.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/identity/userGroups.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/index.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/middleware.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/override.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/permissions.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/phiAndSession.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/stateMachine.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/security/types.ts  — Identity/permission/audit-log logic
+KEEP  src/policy/services/calendarApi.ts  — API/data service contracts
+KEEP  src/policy/services/complianceExecutionApi.ts  — API/data service contracts
+KEEP  src/policy/services/evidenceApi.ts  — API/data service contracts
+KEEP  src/policy/services/hhcFormEvidence.ts  — API/data service contracts
+KEEP  src/policy/services/hhcWorkflowCompletion.ts  — API/data service contracts
+KEEP  src/policy/services/policyLinkService.ts  — API/data service contracts
+KEEP  src/policy/staffing/data/disclaimer.ts  — Preserved process/data module
+KEEP  src/policy/staffing/data/mockClinicians.ts  — Preserved process/data module
+KEEP  src/policy/staffing/data/mockPatients.ts  — Preserved process/data module
+KEEP  src/policy/staffing/data/mockShifts.ts  — Preserved process/data module
+KEEP  src/policy/staffing/stores/clinicianStore.ts  — Preserved process/data module
+KEEP  src/policy/staffing/stores/patientStore.ts  — Preserved process/data module
+KEEP  src/policy/staffing/stores/shiftStore.ts  — Preserved process/data module
+KEEP  src/policy/staffing/types-calendar.ts  — Preserved process/data module
+KEEP  src/policy/staffing/types.ts  — Preserved process/data module
+KEEP  src/policy/stores/auditorModeStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/autogenStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/calendarStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/calendarSyncStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/ciModeStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/dashboardStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/enforcementStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/frameworkStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/personalOpsStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/policyStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/regulatoryExecutionStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/reviewStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/stores/uiStore.ts  — Zustand process stores (regulatory execution, calendar sync, etc.)
+KEEP  src/policy/types/index.ts  — Shared type/data contracts
+KEEP  src/policy/types/masterControlInventory.ts  — Shared type/data contracts
+KEEP  src/policy/types/types.ts  — Shared type/data contracts
+KEEP  src/policy/types/workflow.ts  — Shared type/data contracts
+KEEP  src/policy/utils/appInitializer.ts  — Pure utility logic
+KEEP  src/policy/utils/californiaTime.ts  — Pure utility logic
+KEEP  src/policy/utils/complianceClassification.ts  — Pure utility logic
+KEEP  src/policy/utils/lifecycleGuards.ts  — Pure utility logic
+KEEP  src/policy/utils/nextDueDateEngine.ts  — Pure utility logic
+KEEP  src/policy/utils/openPolicyPrintRoute.ts  — Pure utility logic
+KEEP  src/policy/utils/policyFormLinks.ts  — Pure utility logic
+KEEP  src/policy/utils/printForm.ts  — Pure utility logic
+KEEP  src/policy/utils/reminderEngine.ts  — Pure utility logic
+KEEP  src/policy/utils/selectors.ts  — Pure utility logic
+KEEP  src/policy/utils/useDataFreshness.ts  — Pure utility logic
+KEEP  src/policy/utils/useFormDraft.ts  — Pure utility logic
+KEEP  src/policy/workflows/swimlanes/buildFallbackSwimlane.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/buildSwimlaneFromEvent.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/buildSwimlaneFromWorkflow.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/eventSwimlaneIdentity.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/formInstanceResolver.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/phaseTemplates.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/roleNormalizer.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/swimlaneInstructions.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/swimlaneRegistry.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/swimlaneRoutes.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/types.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/useSwimlaneModalPosition.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/swimlanes/useSwimlaneViewportPan.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/policy/workflows/utils/resolveWorkflowPolicyRefs.ts  — Workflow/task graph process logic (non-UI)
+KEEP  src/services/bradAppContext.ts  — Preserved non-visual logic
+KEEP  src/services/mockBradEngine.ts  — Preserved non-visual logic
+KEEP  src/vite-env.d.ts  — Preserved non-visual logic

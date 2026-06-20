@@ -2,48 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="https://careindeed.com/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, viewport-fit=cover" />
-    <meta name="theme-color" content="#05060A" />
-    <title>Care Indeed Home Health Care, Inc. - Policies and Procedures</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-    <!-- Critical paint-blocking background — theme-aware first paint.
-         Dark V3 is the default; Day / Normal mode paints the soft-teal
-         surface. Auth + detail routes always paint dark (set by the
-         bootstrap script below). No !important so the app's own CSS
-         (which resolves --v3-base-bg per theme) can take over cleanly. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Care Indeed — Clean Baseline</title>
     <style>
-      html, body, #root { min-height: 100vh; margin: 0; padding: 0; }
-      html { background-color: #05060A; color-scheme: dark; }
-      html:not([data-theme="care-indeed-light"]) body,
-      html:not([data-theme="care-indeed-light"]) #root { background-color: #05060A; }
-      html[data-theme="care-indeed-light"] { background-color: #F4F8F7; color-scheme: light; }
-      html[data-theme="care-indeed-light"] body,
-      html[data-theme="care-indeed-light"] #root { background-color: #F4F8F7; }
+      /* Neutral first paint only. No legacy palette, no web fonts, no theme
+         bootstrap script. V6 owns first-paint theming later. */
+      html, body, #root { margin: 0; min-height: 100vh; }
+      html { background-color: #fafafa; color-scheme: light; }
     </style>
-    <!-- App-shell theme bootstrap (anti-FOUC).
-         Reads the persisted preference and applies it on first paint so the
-         Day/Normal toggle survives refreshes without flashing the wrong shell.
-         Auth pages (/login, /forgot-password, …) and opened detail viewers
-         (policy / form) ALWAYS paint on the dark shell, mirroring the React
-         guards in App.tsx (PublicAuthRoute) and CommandCenterLayout. -->
-    <script>
-      try {
-        var p = location.pathname;
-        var isAuth = p === '/' || /^\/(login|forgot-password|register|check-email|setup-account|reset-password|set-new-password)(\/|$)/.test(p);
-        var isDetail = /^\/(library|gv-policy|forms)\/.+/.test(p);
-        var stored = localStorage.getItem('ci-shell-theme');
-        var theme = (!isAuth && !isDetail && stored === 'care-indeed-light') ? 'care-indeed-light' : 'v3-veil';
-        document.documentElement.setAttribute('data-theme', theme);
-        document.documentElement.setAttribute('data-ci-mode', 'v3');
-        // Keep the orthogonal Care-Indeed mode axis pinned to V3.
-        localStorage.setItem('ci-care-indeed-mode', 'v3');
-      } catch (e) { /* ignore */ }
-    </script>
   </head>
-  <body style="background-color:#05060A;">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -30,9 +30,11 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"],
-  "exclude": [
-    "src/policy/pages/TaxonomyPage.old.tsx",
-    "src/ui-staging/_archive"
+  "//": "Designless baseline: build compiles ONLY the neutral scaffold. The preserved process-logic files under src/policy/** are intentionally NOT in include — kept on disk (headless) but not type-checked, bundled, or reachable from the active app. V6 re-includes what it needs.",
+  "include": [
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/_scaffold",
+    "src/vite-env.d.ts"
   ]
 }

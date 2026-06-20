@@ -11,6 +11,8 @@
     "server": "tsx server/index.ts",
     "prebuild": "node scripts/cleanEmittedJs.mjs && node scripts/syncMasterControlInventory.mjs",
     "build": "tsc -b && vite build",
+    "check:designless": "node scripts/check-designless.mjs",
+    "verify:designless": "npm run build && node scripts/check-designless.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "sync:master-control-inventory": "node scripts/syncMasterControlInventory.mjs",
