@@ -64,3 +64,18 @@ current_state_*.txt
 *_part3.md
 *_part4.md
 *_part5.md
+
+# Python virtualenv — run venv OUTSIDE the repo; never commit it
+.venv/
+
+# CDK synth output
+infra/**/cdk.out/
+
+# Dev/build scratch litter (keep the tree clean)
+npm-run-*
+build_*.txt
+build*.log
+*.pid
+temp-*
+current-*.png
+fresh-*.png
