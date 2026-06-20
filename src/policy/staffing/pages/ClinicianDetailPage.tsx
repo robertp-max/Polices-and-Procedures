@@ -4,6 +4,7 @@ import { Tabs } from '@/policy/components/ui/Tabs';
 import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
 import { SectionHeader } from '@/policy/components/ui/SectionHeader';
 import { EmptyState } from '@/policy/components/ui/EmptyState';
+import { BorderGlow, ToneBadge, SpotlightCard } from '@/policy/components/ui';
 import { UserX } from 'lucide-react';
 import { DemoBanner } from '../components/DemoBanner';
 import { DisciplineBadge } from '../components/DisciplineBadge';
@@ -114,8 +115,9 @@ export function ClinicianDetailPage() {
         {/* Tab: Overview */}
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SurfaceCard>
-              <SectionHeader title="Personal Information" />
+            <BorderGlow borderRadius={16} glowIntensity={0.75}>
+              <SurfaceCard>
+                <SectionHeader title="Personal Information" />
               <dl className="space-y-2 text-sm">
                 <div className="flex gap-2">
                   <dt className="font-medium w-36 shrink-0" style={{ color: 'var(--ci-text-muted-2)' }}>Email</dt>
@@ -147,7 +149,9 @@ export function ClinicianDetailPage() {
                 )}
               </dl>
             </SurfaceCard>
+            </BorderGlow>
 
+            <BorderGlow borderRadius={16} glowIntensity={0.75}>
             <SurfaceCard>
               <SectionHeader title="Disciplines & Areas" />
               <div className="flex flex-wrap gap-2 mb-3">
@@ -163,20 +167,16 @@ export function ClinicianDetailPage() {
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {clinician.serviceAreas.map((a) => (
-                      <span
-                        key={a}
-                        className="inline-flex items-center px-2 py-0.5 rounded text-xs"
-                        style={{ background: 'var(--ci-surface-muted)', color: 'var(--ci-text-primary)', border: '1px solid var(--ci-border)' }}
-                      >
-                        {a}
-                      </span>
+                      <ToneBadge key={a} tone="muted">{a}</ToneBadge>
                     ))}
                   </div>
                 </>
               )}
             </SurfaceCard>
+            </BorderGlow>
 
             {hasAccommodations && (
+              <BorderGlow borderRadius={16} glowIntensity={0.75} className="md:col-span-2">
               <SurfaceCard className="md:col-span-2">
                 <SectionHeader
                   eyebrow="FEHA Compliance"
@@ -244,6 +244,7 @@ export function ClinicianDetailPage() {
                   )}
                 </div>
               </SurfaceCard>
+              </BorderGlow>
             )}
           </div>
         )}
@@ -251,6 +252,7 @@ export function ClinicianDetailPage() {
         {/* Tab: Credentials & Competencies */}
         {activeTab === 'credentials' && (
           <div className="flex flex-col gap-4">
+            <BorderGlow borderRadius={16} glowIntensity={0.7}>
             <SurfaceCard>
               <SectionHeader title="Credentials" />
               {clinician.credentials.length === 0 ? (
@@ -291,7 +293,9 @@ export function ClinicianDetailPage() {
                 </div>
               )}
             </SurfaceCard>
+            </BorderGlow>
 
+            <BorderGlow borderRadius={16} glowIntensity={0.7}>
             <SurfaceCard>
               <SectionHeader title="Competencies" />
               {clinician.competencies.length === 0 ? (
@@ -321,11 +325,13 @@ export function ClinicianDetailPage() {
                 </div>
               )}
             </SurfaceCard>
+            </BorderGlow>
           </div>
         )}
 
         {/* Tab: Assignments */}
         {activeTab === 'assignments' && (
+          <SpotlightCard variant="border-glow">
           <SurfaceCard>
             <SectionHeader title="Assignments" />
             {visibleConnections.length === 0 ? (
@@ -373,6 +379,7 @@ export function ClinicianDetailPage() {
               </div>
             )}
           </SurfaceCard>
+          </SpotlightCard>
         )}
       </div>
     </div>

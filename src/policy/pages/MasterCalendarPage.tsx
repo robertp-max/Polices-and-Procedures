@@ -14,7 +14,7 @@ import { useToastStore } from '@/policy/components/regulatory/Toast';
 import { TimelineMonth } from '@/policy/components/regulatory/TimelineMonth';
 import { WorkflowExecutionPanel } from '@/policy/components/regulatory/WorkflowExecutionPanel';
 import {
-  STATE_COLOR, STATE_LABEL, STATE_SOFT, classifyInstance,
+  STATE_LABEL, classifyInstance,
 } from '@/policy/components/regulatory/timelineState';
 import { SprintTaskPanel } from '@/policy/ces/components/details/SprintTaskPanel';
 import { regulatoryEventOverlapsSprint } from '@/policy/pm/sprintWindows';
@@ -24,8 +24,9 @@ import { SprintBoardView, KanbanView, GanttView } from '@/policy/components/pm/P
 import { V3TaskDetailPanel } from '@/policy/components/pm/V3TaskDetailPanel';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { useCalendarSyncStore } from '@/policy/stores/calendarSyncStore';
-import { SurfaceCard, EmptyState, PageHeader, ActionButton } from '@/policy/components/ui';
+import { SurfaceCard, EmptyState, PageHeader, ActionButton, SpotlightCard, ToneBadge } from '@/policy/components/ui';
 import { VeilDrawer } from '@/policy/components/ui/VeilDrawer';
+import BorderGlow from '@/policy/components/ui/BorderGlow';
 import { useIsLightMode } from '@/policy/stores/uiStore';
 import {
   CesEventPreviewModal,
@@ -475,16 +476,37 @@ export function MasterCalendarPage() {
                     />
                   </div>
                 </div>
-                {/* Right upcoming panel — clean corporate light, live regulatory, NO borders/edges/z bleed per Image #4 CES */}
-                <div className="hidden lg:flex w-72 flex-col overflow-y-auto custom-scrollbar flex-shrink-0" style={{ border: 'none', background: isLightMode ? '#FFFFFF' : 'transparent', boxShadow: 'none' }}>
-                  <div className="px-3 py-2 text-[9px] font-montserrat font-bold tracking-[0.16em] text-[var(--v3-text-tertiary)] sticky top-0 bg-inherit" style={{ zIndex: 1, border: 'none' }}>Upcoming · {liveRollupTotal}</div>
-                  {filteredMonthInstances.slice(0, 6).map(ev => (
-                    <button key={ev.id} onClick={() => selectInstance(ev)} className="text-left px-3 py-1.5 text-[11px] hover:bg-[var(--v3-teal)]/5 truncate" style={{ border: 'none', color: 'var(--v3-text-primary)', borderBottom: 'none', background: 'transparent' }}>
-                      {new Date(ev.date).toLocaleDateString('en-US', {month:'short',day:'numeric'})} — {ev.title}
-                    </button>
-                  ))}
-                  {filteredMonthInstances.length === 0 && <div className="px-3 py-2 text-[10px] text-[var(--v3-text-tertiary)]">No events this month.</div>}
-                </div>
+                {/* Right upcoming panel — clean corporate light, live regulatory, NO borders/edges/z bleed per Image #4 CES. Wrapped with new BorderGlow primitive for Phase 2 CES event workspace premium UI. */}
+                <BorderGlow className="hidden lg:block w-72 flex-shrink-0 rounded-2xl" glowColor="0 121 112" backgroundColor="#FFFFFF" glowIntensity={0.65} style={{ border: 'none', boxShadow: 'none' }}>
+                  <div className="flex h-full w-72 flex-col overflow-y-auto custom-scrollbar" style={{ border: 'none' }}>
+                    <div className="px-3 py-2 text-[9px] font-montserrat font-bold tracking-[0.16em] text-[var(--v3-text-tertiary)] sticky top-0 bg-inherit" style={{ zIndex: 1, border: 'none' }}>Upcoming · {liveRollupTotal}</div>
+                    {filteredMonthInstances.slice(0, 6).map(ev => {
+                      const dateStr = new Date(ev.date).toLocaleDateString('en-US', {month:'short',day:'numeric'});
+                      return (
+                        <SpotlightCard key={ev.id} className="mx-2 my-1 rounded-xl group" variant="border-glow" spotlightColor="rgba(0,209,193,0.08)">
+                          <button
+                            type="button"
+                            onClick={() => selectInstance(ev)}
+                            className="absolute inset-0 z-20 rounded-[inherit] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70"
+                            aria-label={`Open ${ev.title}`}
+                          />
+                          <div className="pointer-events-none">
+                            <SurfaceCard padding="sm" className="p-2.5">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="min-w-0 flex-1">
+                                  <div className="text-[9px] font-montserrat font-bold tracking-[0.14em] text-[var(--v3-text-tertiary)]">{dateStr}</div>
+                                  <div className="text-[11px] font-semibold text-[var(--v3-text-primary)] truncate mt-0.5">{ev.title}</div>
+                                </div>
+                                <ToneBadge tone="teal" className="shrink-0 text-[8px] px-1.5 py-px">CES</ToneBadge>
+                              </div>
+                            </SurfaceCard>
+                          </div>
+                        </SpotlightCard>
+                      );
+                    })}
+                    {filteredMonthInstances.length === 0 && <div className="px-3 py-2 text-[10px] text-[var(--v3-text-tertiary)]">No events this month.</div>}
+                  </div>
+                </BorderGlow>
               </div>
             )
           ) : view === 'sprint' ? (
@@ -695,25 +717,9 @@ function StateLegend({
   const teal = rollup.onTrack + rollup.complete;
   return (
     <div className="ces-state-legend flex gap-2 text-[10px] font-bold tracking-wider">
-      <LegendPill color="#BE123C" label="BLOCK" value={red} />
-      <LegendPill color="#E07B2C" label="DUE" value={amber} />
-      <LegendPill color="#00D1C1" label="TRACK" value={teal} />
-    </div>
-  );
-}
-
-function LegendPill({ color, label, value }: { color: string; label: string; value: number }) {
-  // Exact replica of design #4 / img4 — rounded pills, uppercase labels, NO borders/edges, clean light grid friendly
-  return (
-    <div
-      className="ces-legend-pill px-2 py-0.5 rounded flex gap-2 overflow-hidden"
-      style={{
-        border: 'none',
-        background: 'transparent',
-        color,
-      }}
-    >
-      <span className="opacity-60 text-[9px] tracking-[0.1em]">{label}</span> <span className="font-semibold tabular-nums">{value}</span>
+      <ToneBadge tone="danger" className="px-2 py-0.5 text-[10px]">{red} BLOCK</ToneBadge>
+      <ToneBadge tone="warning" className="px-2 py-0.5 text-[10px]">{amber} DUE</ToneBadge>
+      <ToneBadge tone="teal" className="px-2 py-0.5 text-[10px]">{teal} TRACK</ToneBadge>
     </div>
   );
 }
@@ -741,7 +747,7 @@ function MobileAgendaList({
   }
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full max-w-full overflow-x-hidden overflow-hidden">
+    <BorderGlow className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full max-w-full overflow-x-hidden overflow-hidden rounded-2xl" glowColor="0 121 112" glowIntensity={0.4}>
       {sorted.map(event => {
         const isActive = event.id === activeId;
         const state = classifyInstance(event, today, store);
@@ -752,36 +758,33 @@ function MobileAgendaList({
           day: 'numeric',
         });
         return (
-          <button
-            key={event.id}
-            type="button"
-            onClick={() => onSelect(event)}
-            className="flex w-full items-start justify-between gap-2 sm:gap-3 border-b px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 text-left transition-colors focus:outline-none focus-visible:ring-1 overflow-hidden"
-            style={{
-              borderColor: 'var(--v3-border-subtle)',
-              background: isActive ? 'rgba(0,209,193,0.06)' : 'transparent',
-            }}
-          >
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] sm:text-[11px] font-montserrat font-bold uppercase tracking-[0.14em] text-[var(--v3-text-tertiary)] truncate">{dateLabel}</p>
-              <p className="mt-0.5 sm:mt-1 text-[13px] sm:text-[14px] font-semibold text-[var(--v3-text-primary)] truncate">{event.title}</p>
-              <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] truncate" style={{ color: 'var(--v3-text-secondary)' }}>
-                {event.ownerRole} · {event.time ? `${event.time}${event.timeEnd ? ` - ${event.timeEnd}` : ''}` : 'All day'} · {event.cadence}
-              </p>
+          <SpotlightCard key={event.id} className="mx-1 my-0.5 rounded-2xl group" variant="border-glow" spotlightColor={isActive ? 'rgba(0,209,193,0.12)' : 'rgba(0,121,112,0.06)'}>
+            <button
+              type="button"
+              onClick={() => onSelect(event)}
+              className="absolute inset-0 z-20 rounded-[inherit] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70"
+              aria-label={`Open ${event.title}`}
+            />
+            <div className="pointer-events-none">
+              <SurfaceCard padding="sm" className="p-2.5 sm:p-3">
+                <div className="flex w-full items-start justify-between gap-2 sm:gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] sm:text-[11px] font-montserrat font-bold uppercase tracking-[0.14em] text-[var(--v3-text-tertiary)] truncate">{dateLabel}</p>
+                    <p className="mt-0.5 sm:mt-1 text-[13px] sm:text-[14px] font-semibold text-[var(--v3-text-primary)] truncate">{event.title}</p>
+                    <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] truncate" style={{ color: 'var(--v3-text-secondary)' }}>
+                      {event.ownerRole} · {event.time ? `${event.time}${event.timeEnd ? ` - ${event.timeEnd}` : ''}` : 'All day'} · {event.cadence}
+                    </p>
+                  </div>
+                  <ToneBadge tone={certified ? 'teal' : (state === 'overdue' || state === 'blocked' ? 'orange' : state === 'due-soon' ? 'warning' : 'teal')}>
+                    {certified ? 'Certified' : STATE_LABEL[state]}
+                  </ToneBadge>
+                </div>
+              </SurfaceCard>
             </div>
-            <span
-              className="mt-0.5 sm:mt-1 inline-flex shrink-0 rounded-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-[8px] sm:text-[9px] font-semibold uppercase tracking-[0.14em] overflow-hidden"
-              style={{
-                background: certified ? 'rgba(0,121,112,0.12)' : STATE_SOFT[state],
-                color: certified ? 'var(--v3-teal, #007970)' : STATE_COLOR[state],
-              }}
-            >
-              {certified ? 'Certified' : STATE_LABEL[state]}
-            </span>
-          </button>
+          </SpotlightCard>
         );
       })}
-    </div>
+    </BorderGlow>
   );
 }
 

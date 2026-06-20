@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
+import { BorderGlow, ToneBadge } from '@/policy/components/ui';
 import { AcuityBadge } from './AcuityBadge';
 import { StatusBadge } from './StatusBadge';
 import type { Patient } from '../types';
@@ -23,6 +24,7 @@ export function PatientCard({ patient }: PatientCardProps) {
     : patient.accmOwnerId;
 
   return (
+    <BorderGlow borderRadius={12} glowIntensity={0.65}>
     <SurfaceCard
       padding="md"
       className="cursor-pointer hover:shadow-md transition-shadow"
@@ -44,9 +46,7 @@ export function PatientCard({ patient }: PatientCardProps) {
 
       <div className="flex items-center gap-2 flex-wrap mt-1">
         <AcuityBadge level={patient.acuityLevel} />
-        <span className="text-xs capitalize" style={{ color: 'var(--ci-text-muted-2)' }}>
-          {patient.serviceSetting}
-        </span>
+        <ToneBadge tone="teal">{patient.serviceSetting}</ToneBadge>
         {patient.serviceZone && (
           <span className="text-xs" style={{ color: 'var(--ci-text-muted-2)' }}>
             · {patient.serviceZone}
@@ -65,5 +65,6 @@ export function PatientCard({ patient }: PatientCardProps) {
         {assignmentCount === 1 ? 'assignment' : 'assignments'}
       </div>
     </SurfaceCard>
+    </BorderGlow>
   );
 }

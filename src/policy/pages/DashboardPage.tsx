@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle, Activity, ShieldCheck,
-  CheckCircle2, FileText, MoreHorizontal, ArrowRight,
+  CheckCircle2, FileText, ArrowRight,
   Clock, ShieldX,
 } from 'lucide-react';
 import {
@@ -21,10 +21,13 @@ import {
   V32ActionButton,
   V32EmptyState,
   V32GlassPanel as GlassPanel,
-  V32MetricTile,
+  MetricTile,
   V32PageHeader,
   V32SectionHeader,
+  SurfaceCard,
 } from '@/policy/components/ui';
+import { ToneBadge } from '@/policy/components/ui/V32DesignSystem'; // dot ToneBadge for SurfaceCard structure matching prototype
+import BorderGlow from '@/policy/components/ui/BorderGlow';
 import { PlannerViewToggle, type ViewMode } from '@/policy/components/dashboard/PlannerViewToggle';
 import { MyPlannerView } from '@/policy/components/dashboard/MyPlannerView';
 import { formatCaliforniaDateTime, getCaliforniaNow, toCaliforniaISODate } from '@/policy/utils/californiaTime';
@@ -470,11 +473,14 @@ export function DashboardPage() {
           }
         />
 
-        <section className={isMobile ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7'}>
-          {dashboardKpis.map((kpi, idx) => (
-            <KpiCard key={`${kpi.label}-${idx}`} {...kpi} emphasize={idx < 2 || kpi.label === 'Missing Evidence'} />
-          ))}
-        </section>
+        {/* Phase 3 polish: wrap metrics in BorderGlow + prototype-style header to match redesign visual language */}
+        <BorderGlow className="rounded-2xl" glowColor="181 72 58" backgroundColor="#F7FEFF" glowIntensity={0.6}>
+          <section className={isMobile ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-7 gap-3 p-1'}>
+            {dashboardKpis.map((kpi, idx) => (
+              <KpiCard key={`${kpi.label}-${idx}`} {...kpi} emphasize={idx < 2 || kpi.label === 'Missing Evidence'} />
+            ))}
+          </section>
+        </BorderGlow>
 
         <AgencyReadinessBanner
           ready={readiness.agencyReady}
@@ -568,7 +574,7 @@ export function DashboardPage() {
 
 function KpiCard({ label, value, trend, tone = 'default', alert, onClick, emphasize = false }: KpiCardData & { emphasize?: boolean }) {
   return (
-    <V32MetricTile
+    <MetricTile
       label={label}
       value={value}
       trend={trend}
@@ -596,19 +602,20 @@ function AgencyReadinessBanner({
   onClickNotReady: () => void;
 }) {
   const Icon = ready ? ShieldCheck : ShieldX;
-  const status = ready ? 'Agency Readiness - Ready' : 'Agency Readiness - Not Ready';
+  const status = ready ? 'AGENCY READINESS - READY' : 'AGENCY READINESS - NOT READY';
   const supporting = ready
     ? 'All workflows compliant or certification-ready.'
     : `${reasons.join(' · ')}. Immediate action needed to avoid compliance risk.`;
   const accentClass = ready ? 'text-brand-teal' : 'text-brand-orange';
-  const iconShellClass = ready ? 'text-brand-teal' : 'text-brand-orange';
+  const iconShellClass = ready ? 'tone-teal' : 'tone-orange';
 
   return (
     <SpotlightCard
+      variant="border-glow"
       className="flex flex-wrap items-center gap-4 p-5"
-      spotlightColor={ready ? 'rgba(0, 121, 112, 0.20)' : 'rgba(199, 70, 0, 0.22)'}
+      glowColor={ready ? '181 72 58' : '21 99 39'}
     >
-      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconShellClass}`}>
+      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border ${iconShellClass}`}>
         <Icon size={18} />
       </span>
       <div className="flex-1 min-w-0">
@@ -684,8 +691,9 @@ function BoardColumn({
   } as const;
   const column = meta[tone];
   const Icon = column.icon;
+  const isColumnPremium = tone === 'critical';
 
-  return (
+  const columnInner = (
     <GlassPanel className="flex min-h-[520px] flex-col p-3">
       <header className="mb-3 flex items-center justify-between px-1">
         <div className="flex items-center gap-2 min-w-0">
@@ -710,6 +718,17 @@ function BoardColumn({
       </div>
     </GlassPanel>
   );
+
+  return isColumnPremium ? (
+    <BorderGlow
+      className="rounded-2xl"
+      glowColor="181 72 58"
+      backgroundColor="#F7FEFF"
+      glowIntensity={0.9}
+    >
+      {columnInner}
+    </BorderGlow>
+  ) : columnInner;
 }
 
 function TaskCard({
@@ -736,8 +755,51 @@ function TaskCard({
   } as const;
   const dueTone = badgeTone[tone];
 
+  const toneMap: Record<BoardTone, string> = {
+    critical: 'orange',
+    warning: 'amber',
+    progress: 'teal',
+    pending: 'muted',
+  };
+  const toneKey = toneMap[tone];
+
+  const iconMap = {
+    critical: AlertTriangle,
+    warning: Clock,
+    progress: Activity,
+    pending: FileText,
+  } as const;
+  const IconComp = iconMap[tone];
+
+  const metaText = (event as any).meta || event.summary || event.category || '';
+  const chips: string[] = Array.isArray((event as any).chips)
+    ? (event as any).chips
+    : (event.policyRefs || []).slice(0, 3);
+
+  // derive progress purely for visual h-2 density (no change to any stored/pipeline/critical data or memos)
+  const delta = daysUntil(event.date, today);
+  let progress = 55;
+  if (delta < 0) progress = 25;
+  else if (delta === 0) progress = 42;
+  else if (delta <= 3) progress = 65;
+  else if (delta <= 10) progress = 78;
+  else progress = 88;
+
+  const titleLower = (event.title || '').toLowerCase();
+  const isAwaitingCol = tone === 'pending';
+  const awaitingBadgeText = (isAwaitingCol || /await|pending|signature|evidence|action/i.test(titleLower))
+    ? (/evidence|missing|upload|form|requires|doc/i.test(titleLower) ? '⏳ Awaiting Evidence' : '📋 Awaiting Action')
+    : null;
+  const missingText = (event as any).missing || (isAwaitingCol && /missing|RCA|log|sign-off|docs/i.test(titleLower + ' ' + metaText) ? 'needs attention' : null);
+
+  const isPremium = tone === 'critical';
+
   return (
-    <SpotlightCard className="group p-4" spotlightColor={spotlightColor}>
+    <SpotlightCard
+      className="group"
+      spotlightColor={spotlightColor}
+      variant={isPremium ? 'border-glow' : 'simple-radial'}
+    >
       <button
         type="button"
         onClick={() => {
@@ -751,31 +813,77 @@ function TaskCard({
         aria-label={`Open ${event.title}`}
       />
       <div className="pointer-events-none">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="mb-1 font-montserrat text-[9px] font-bold uppercase tracking-[0.22em] text-text-muted">
-              {event.domain}
+        <SurfaceCard padding="none" className="p-4">
+          {/* SurfaceCard structure: icon tone shell + ToneBadge */}
+          <div className="flex items-start justify-between gap-3">
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl tone-${toneKey}`}>
+              <IconComp size={18} />
             </div>
-            <h4 className="font-montserrat text-sm font-semibold leading-snug text-text-primary transition-colors group-hover:text-brand-teal">
-              {event.title}
-            </h4>
+            <ToneBadge tone={toneKey}>{toneKey}</ToneBadge>
           </div>
-          <MoreHorizontal size={16} className="text-text-disabled opacity-70" aria-hidden="true" />
-        </div>
 
-        <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border-hover bg-background font-montserrat text-[9px] font-bold text-text-secondary">
-              {getInitials(event.owner)}
+          {/* title + meta */}
+          <h4 className="mt-3 font-montserrat text-sm font-semibold leading-snug text-text-primary transition-colors group-hover:text-brand-teal">
+            {event.title}
+          </h4>
+          {metaText && (
+            <div className="mt-1 text-[10px] leading-relaxed text-brand-neutral-400">{metaText}</div>
+          )}
+
+          {/* owner + due */}
+          <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-brand-neutral-400">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border-hover bg-background font-montserrat text-[9px] font-bold text-text-secondary">
+                {getInitials(event.owner)}
+              </span>
+              <span className="truncate text-xs font-medium text-text-muted">{event.owner}</span>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <StatusPill tone={dueTone}>{dueLabel}</StatusPill>
+              <ArrowRight size={14} className="text-text-disabled" aria-hidden="true" />
+            </div>
+          </div>
+
+          {/* domain (kept for density) */}
+          {event.domain && (
+            <div className="mt-1 text-[9px] text-brand-neutral-400">{event.domain}</div>
+          )}
+
+          {/* chips */}
+          {chips.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {chips.map((chip, idx) => (
+                <span key={idx} className="rounded-full border border-brand-teal-100 bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-brand-teal-600">
+                  {chip}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* awaiting badges (⏳ Awaiting Evidence / 📋 Awaiting Action) */}
+          {awaitingBadgeText && (
+            <span className={`inline-block mt-1.5 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${awaitingBadgeText.includes('Evidence') ? 'border border-teal-200 bg-teal-50 text-teal-700' : 'border border-orange-200 bg-orange-50 text-orange-700'}`}>
+              {awaitingBadgeText}
             </span>
-            <span className="truncate text-xs font-medium text-text-muted">{event.owner}</span>
-          </div>
+          )}
 
-          <div className="flex shrink-0 items-center gap-2">
-            <StatusPill tone={dueTone}>{dueLabel}</StatusPill>
-            <ArrowRight size={14} className="text-text-disabled" aria-hidden="true" />
+          {/* missing indicators */}
+          {missingText && <div className="text-[9px] text-orange-600 font-bold mt-1">{missingText}</div>}
+
+          {/* progress h-2 */}
+          <div className="mt-3">
+            <div className="mb-1 flex justify-between text-[10px] font-bold uppercase tracking-wider text-brand-neutral-400">
+              <span>Completion</span>
+              <span>{progress}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-brand-neutral-100">
+              <div
+                className={`h-2 rounded-full tone-${toneKey}`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
-        </div>
+        </SurfaceCard>
       </div>
     </SpotlightCard>
   );

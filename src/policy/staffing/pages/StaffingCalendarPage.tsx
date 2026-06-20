@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageHeader } from '@/policy/components/ui/PageHeader';
 import { EmptyState } from '@/policy/components/ui/EmptyState';
+import { MetricTile, BorderGlow, ToneBadge, SpotlightCard } from '@/policy/components/ui';
 import { DemoBanner } from '../components/DemoBanner';
 import { ShiftCard } from '../components/ShiftCard';
 import { CalendarFilters } from '../components/CalendarFilters';
@@ -117,6 +118,11 @@ export function StaffingCalendarPage() {
   const filtered = filterShifts(filters);
   const total = shifts.length;
 
+  // Phase 3 staffing: MetricTile stats (derived display only)
+  const filledCount = shifts.filter((s) => s.status === 'filled').length;
+  const openCount = shifts.filter((s) => s.status === 'open').length;
+  const cancelledCount = shifts.filter((s) => s.status === 'cancelled').length;
+
   // Navigation handlers
   function handlePrev() {
     if (view === 'week') setAnchor((a) => addDays(a, -7));
@@ -157,16 +163,23 @@ export function StaffingCalendarPage() {
           title={
             <span className="flex items-center gap-2">
               Calendar
-              <span
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-sm font-normal"
-                style={{ background: 'var(--ci-surface-muted)', color: 'var(--ci-text-muted-2)', fontSize: 14 }}
-              >
-                {filtered.length}/{total}
-              </span>
+              <ToneBadge tone="teal">{filtered.length}/{total}</ToneBadge>
             </span>
           }
           description="iStaffing operational view: open shifts, filled shifts, pending coverage, cancelled"
         />
+
+        {/* PHASE 3: MetricTiles + BorderGlow + ToneBadge + Spotlight variant on staffing calendar (no data changes) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <BorderGlow borderRadius={16} glowIntensity={0.65}>
+            <MetricTile label="Total Shifts" value={total} note="In period" tone="teal" />
+          </BorderGlow>
+          <MetricTile label="Filled" value={filledCount} note="Assigned" tone="success" />
+          <MetricTile label="Open" value={openCount} note="Needs coverage" tone="warning" />
+          <SpotlightCard variant="border-glow" className="rounded-2xl">
+            <MetricTile label="Cancelled" value={cancelledCount} note="This window" tone="danger" />
+          </SpotlightCard>
+        </div>
 
         {/* Filters + view toggle row */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 justify-between">
@@ -258,11 +271,13 @@ export function StaffingCalendarPage() {
                     >
                       {formatDateHeading(date)}
                     </h2>
+                    <BorderGlow borderRadius={10} glowIntensity={0.5} className="w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3">
                       {byDate[date].map((shift) => (
                         <ShiftCard key={shift.id} shift={shift} />
                       ))}
                     </div>
+                    </BorderGlow>
                   </section>
                 ))}
               </div>
@@ -298,11 +313,13 @@ export function StaffingCalendarPage() {
                     >
                       {formatDateHeading(selectedDay)}
                     </h2>
+                    <BorderGlow borderRadius={10} glowIntensity={0.5} className="w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3">
                       {selectedDayShifts.map((shift) => (
                         <ShiftCard key={shift.id} shift={shift} />
                       ))}
                     </div>
+                    </BorderGlow>
                   </div>
                 )}
 

@@ -4,6 +4,7 @@ import { PageHeader } from '@/policy/components/ui/PageHeader';
 import { SearchField } from '@/policy/components/ui/SearchField';
 import { DataGrid } from '@/policy/components/ui/DataGrid';
 import { EmptyState } from '@/policy/components/ui/EmptyState';
+import { MetricTile, BorderGlow, ToneBadge, SpotlightCard } from '@/policy/components/ui';
 import { Users } from 'lucide-react';
 import { DemoBanner } from '../components/DemoBanner';
 import { DisciplineBadge } from '../components/DisciplineBadge';
@@ -44,6 +45,12 @@ export function ClinicianListPage() {
   const filtered = getFilteredClinicians();
   const total = useClinicianStore((s) => s.clinicians.length);
 
+  // Phase 3: derive display metrics only from store (no data, store, or click changes)
+  const allClinicians = useClinicianStore((s) => s.clinicians);
+  const activeCount = allClinicians.filter((c) => c.status === 'active').length;
+  const assignedConnections = useClinicianStore((s) => s.connections.filter((c) => c.connectionStatus === 'assigned').length);
+  const uniqueDisciplines = new Set(allClinicians.map((c) => c.primaryDiscipline)).size;
+
   const handleClearFilters = () => {
     setFilterDiscipline(null);
     setFilterStatus(null);
@@ -61,16 +68,23 @@ export function ClinicianListPage() {
           title={
             <span className="flex items-center gap-2">
               Clinician Profiles
-              <span
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-sm font-normal"
-                style={{ background: 'var(--ci-surface-muted)', color: 'var(--ci-text-muted-2)', fontSize: 14 }}
-              >
-                {filtered.length}/{total}
-              </span>
+              <ToneBadge tone="teal">{filtered.length}/{total}</ToneBadge>
             </span>
           }
           description="Synthetic demonstration data only."
         />
+
+        {/* PHASE 3 ONLY: Apply SurfaceCard/MetricTile/BorderGlow/ToneBadge/Spotlight variant (no data/click/store mods) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <BorderGlow borderRadius={16} glowIntensity={0.7}>
+            <MetricTile label="Active Clinicians" value={activeCount} note="of total roster" tone="teal" />
+          </BorderGlow>
+          <MetricTile label="Active Assignments" value={assignedConnections} note="Current caseloads" tone="orange" />
+          <MetricTile label="Disciplines" value={uniqueDisciplines} note="Coverage breadth" tone="success" />
+          <SpotlightCard variant="border-glow" className="rounded-2xl">
+            <MetricTile label="Visible" value={filtered.length} note="after filters" tone="muted" />
+          </SpotlightCard>
+        </div>
 
         {/* Search & Filters — clean premium corporate per V5 ref */}
         <div className="flex flex-wrap items-center gap-3">
@@ -147,13 +161,15 @@ export function ClinicianListPage() {
           />
         )}
 
-        {/* Mobile: card stack */}
+        {/* Mobile: card stack (wrapped BorderGlow for Phase 3 premium cards) */}
         {filtered.length > 0 && isMobile && (
-          <div className="grid grid-cols-1 gap-3">
-            {filtered.map((c) => (
-              <ClinicianCard key={c.id} clinician={c} />
-            ))}
-          </div>
+          <BorderGlow borderRadius={12} glowIntensity={0.6} className="w-full">
+            <div className="grid grid-cols-1 gap-3">
+              {filtered.map((c) => (
+                <ClinicianCard key={c.id} clinician={c} />
+              ))}
+            </div>
+          </BorderGlow>
         )}
 
         {/* Desktop: table */}

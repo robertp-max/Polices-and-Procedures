@@ -13,7 +13,7 @@ import { useComplianceExecution } from '@/policy/compliance-execution';
 import { usePmViewSprintStore } from '@/policy/pm/pmViewSprintStore';
 import { useExecutionEnforcement } from '../../hooks/useExecutionEnforcement';
 import { ExecutionUnitCard } from './ExecutionUnitCard';
-import { AriaLiveRegion } from '@/policy/components/ui';
+import { AriaLiveRegion, ToneBadge, BorderGlow } from '@/policy/components/ui';
 import { useProjectedTasks } from '@/policy/pm/taskProjection';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { useShellStore } from '@/policy/stores/uiStore';
@@ -145,16 +145,18 @@ export function SprintExecutionBoard() {
   return (
     <div className="space-y-4 ces-sprint-board w-full" data-ces-board data-full-bleed>
       {/* Clean corporate summary — matches V3 header language, no heavy CES navy. Full bleed friendly, isLight v3 tokens. */}
-      <div
-        className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] px-3 py-1 rounded-md"
-        style={{
-          background: isLight ? '#F1F5F4' : 'rgba(255,255,255,0.02)',
-          color: 'var(--v3-text-secondary)',
-          border: 'none',
-        }}
-      >
-        {units.filter(u => u.complianceState !== 'completed').length} open · {units.filter(u => u.complianceState === 'completed').length} closed
-      </div>
+      <BorderGlow borderRadius={8} glowIntensity={0.6} className="inline-block">
+        <div
+          className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] px-3 py-1 rounded-md"
+          style={{
+            background: isLight ? '#F1F5F4' : 'rgba(255,255,255,0.02)',
+            color: 'var(--v3-text-secondary)',
+            border: 'none',
+          }}
+        >
+          {units.filter(u => u.complianceState !== 'completed').length} open · {units.filter(u => u.complianceState === 'completed').length} closed
+        </div>
+      </BorderGlow>
 
       {/* ── Inline warning bar — clean corporate red soft. isLight + v3 tokens, no raw dark bleed. */}
       {flash && (
@@ -197,9 +199,9 @@ export function SprintExecutionBoard() {
                   className="px-3 py-2 rounded-t-xl flex items-center justify-between"
                   style={{ background: tint.hd, borderBottom: `1px solid ${tint.bd}` }}
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: tint.hdfg }}>
+                  <ToneBadge tone={state === 'blocked' ? 'danger' : state === 'awaiting_signature' ? 'orange' : state === 'completed' ? 'success' : 'teal'}>
                     {COMPLIANCE_STATE_LABEL[state]}
-                  </span>
+                  </ToneBadge>
                   <span
                     className="text-[10px] font-semibold rounded-full px-2 py-px"
                     style={{ background: isLight ? 'rgba(0,121,112,0.08)' : 'rgba(255,255,255,0.06)', color: tint.hdfg, border: 'none' }}
