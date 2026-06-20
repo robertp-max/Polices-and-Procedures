@@ -1,4 +1,0 @@
-{
-  "error": "locator.check: Timeout 10000ms exceeded.\nCall log:\n  - waiting for getByLabel(/I agree to use an electronic signature/i)\n",
-  "stack": "locator.check: Timeout 10000ms exceeded.\nCall log:\n  - waiting for getByLabel(/I agree to use an electronic signature/i)\n\n    at main (C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\UAT_AGENT_FINDINGS\\agent04-forms-instance-identity-signing-smoke.mjs:71:68)"
-}
