@@ -6,6 +6,7 @@ import { AcuityBadge } from './AcuityBadge';
 import { usePatientStore } from '../stores/patientStore';
 import { useClinicianStore } from '../stores/clinicianStore';
 import type { Discipline } from '../types';
+import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
 
 // ── pure-JS date helpers ──────────────────────────────────────────────────────
 function toISODate(d: Date): string {
@@ -52,13 +53,7 @@ function WeekShiftItem({ shift }: { shift: Shift }) {
     : null;
 
   return (
-    <div
-      className="rounded p-1 sm:p-1.5 flex flex-col gap-1 text-[10px] sm:text-xs overflow-hidden"
-      style={{
-        background: 'var(--ci-surface)',
-        border: 'none',
-      }}
-    >
+    <SurfaceCard padding="none" className="rounded p-1 sm:p-1.5 flex flex-col gap-1 text-[10px] sm:text-xs overflow-hidden">
       {/* time + discipline + status + priority */}
       <div className="flex flex-wrap items-center gap-1 min-w-0">
         {shift.priority && shift.priority !== 'standard' && (
@@ -101,7 +96,7 @@ function WeekShiftItem({ shift }: { shift: Shift }) {
           <span className="italic">Open Shift</span>
         )}
       </div>
-    </div>
+    </SurfaceCard>
   );
 }
 

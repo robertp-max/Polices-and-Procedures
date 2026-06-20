@@ -24,7 +24,7 @@ import { SprintBoardView, KanbanView, GanttView } from '@/policy/components/pm/P
 import { V3TaskDetailPanel } from '@/policy/components/pm/V3TaskDetailPanel';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
 import { useCalendarSyncStore } from '@/policy/stores/calendarSyncStore';
-import { SurfaceCard, EmptyState, PageHeader, ActionButton, SpotlightCard, ToneBadge } from '@/policy/components/ui';
+import { SurfaceCard, EmptyState, PageHeader, ActionButton, SpotlightCard, ToneBadge, MetricTile } from '@/policy/components/ui';
 import { VeilDrawer } from '@/policy/components/ui/VeilDrawer';
 import BorderGlow from '@/policy/components/ui/BorderGlow';
 import { useIsLightMode } from '@/policy/stores/uiStore';
@@ -366,6 +366,18 @@ export function MasterCalendarPage() {
             </ActionButton>
           }
         />
+      </div>
+
+      {/* Adopt card and tile style (matching ref 30-master-calendar.png + staffing + supervisor patterns): 4 MetricTiles using primitives */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-3 sm:px-5 mt-1 mb-2">
+        <BorderGlow borderRadius={16} glowIntensity={0.65}>
+          <MetricTile label="Events" value={filteredMonthInstances.length} note="This month" tone="teal" />
+        </BorderGlow>
+        <MetricTile label="Overdue / Blocked" value={filteredRollup.overdue + filteredRollup.blocked} note="Needs attention" tone="danger" />
+        <MetricTile label="Due Soon" value={filteredRollup.dueSoon} note="Action window" tone="warning" />
+        <SpotlightCard variant="border-glow" className="rounded-2xl">
+          <MetricTile label="On Track" value={filteredRollup.onTrack + filteredRollup.complete} note="Ready / Certified" tone="success" />
+        </SpotlightCard>
       </div>
 
       {/* View tabs Calendar/Kanban/Gantt + assignee filter pills — premium clean, no bleed per design #4. Full width for occupy entire card. */}

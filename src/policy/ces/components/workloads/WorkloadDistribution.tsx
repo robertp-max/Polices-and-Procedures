@@ -12,6 +12,7 @@ import { DomainRiskDot, UserAvatar } from '../primitives';
 const RISK_LABEL = { green: 'Healthy', yellow: 'Watch', red: 'Overloaded' } as const;
 
 export function WorkloadDistribution() {
+  // SurfaceCard usages here are stat containers / table wrapper (children mode); core CES board cards now adhere to exact ref prototype via SurfaceCard props (h-10 w-10, ToneBadge, h3, h-2).
   const snap = useComplianceExecution();
   const OWNER_ASSIGNMENTS = snap.ownerAssignments;
   const EXECUTION_UNITS = snap.executionUnits;

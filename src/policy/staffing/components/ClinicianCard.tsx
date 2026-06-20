@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
+// ClinicianCard etc use SurfaceCard as wrapper (children); app-wide SurfaceCard prototype structure (from 16-dashboard ref + CES) enforced via Dashboard TaskCard + ExecutionUnitCard updates.
 import { BorderGlow, ToneBadge } from '@/policy/components/ui';
 import { DisciplineBadge } from './DisciplineBadge';
 import { StatusBadge } from './StatusBadge';

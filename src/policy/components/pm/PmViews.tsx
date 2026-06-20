@@ -403,7 +403,7 @@ export function GanttView({
                     <span className="text-[10px] ci-text-muted">{bar.durationDays}d</span>
                   </div>
                   <p className="text-[10px] ci-text-muted mt-1">{bar.task.assignee ?? bar.task.owner ?? 'Unassigned'} · {bar.task.due_date}</p>
-                  <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: isLight ? 'var(--ci-surface-2)' : 'rgba(255,255,255,0.08)' }}>
+                  <div className="mt-2 h-2 rounded-full overflow-hidden" style={{ background: isLight ? 'var(--ci-surface-2)' : 'rgba(255,255,255,0.08)' }}>
                     {/* Wave 7 T3: untoned-tone fallback uses canonical --ci-border-strong instead of
                        the slate-pinned palette to clear the pm.slate-pin verifier warning. */}
                     <div className={`h-full ${bar.tone === 'red' ? 'bg-red-500' : bar.tone === 'orange' ? 'bg-orange-500' : bar.tone === 'teal' ? 'bg-teal-600' : 'bg-[var(--ci-border-strong)]'}`} style={{ width: `${bar.progressPct}%` }} />

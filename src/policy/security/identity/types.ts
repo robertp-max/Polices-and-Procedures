@@ -96,6 +96,8 @@ export interface UserGroup {
     | 'Pending User';
   description: string;
   permissions: PermissionId[];
+  /** Optional count for aggregate KPI display (falls back in UI) */
+  users?: number;
 }
 
 export interface RoleAssignment {

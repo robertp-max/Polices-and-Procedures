@@ -18,7 +18,7 @@ import type { PermissionId } from './types';
 import { USER_GROUPS, USER_GROUP_BY_ID } from './userGroups';
 import { PageAccessMatrix } from './PageAccessMatrix';
 import { canManagePageAccess, canWritePage } from './pageAccess';
-import { PageHeader, SurfaceCard, DataGrid } from '@/policy/components/ui';
+import { PageHeader, SurfaceCard, DataGrid, MetricTile, BorderGlow, ToneBadge } from '@/policy/components/ui';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `px-3.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
@@ -680,25 +680,37 @@ export function UserAssignmentsPage() {
           <NavLink to="/admin/users" className={navClass}>User Assignments</NavLink>
         </div>
 
-        <SurfaceCard padding="md">
-          <div className="flex flex-wrap items-center gap-3 text-sm">
-            <div>
-              <div className="font-semibold tracking-tight">Current session user</div>
-              <div className="text-[var(--v3-text-secondary)] mt-0.5">
-                {currentUser?.name ?? 'Unknown'} ({currentUser?.email ?? 'n/a'})
+        {/* Adopt primitives for admin consistency (MetricTile + BorderGlow + ToneBadge) matching dashboard/ces refs */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <BorderGlow borderRadius={16} glowIntensity={0.6}>
+            <MetricTile label="Users" value={USER_GROUPS.length * 3} note="Demo seeded" tone="teal" />
+          </BorderGlow>
+          <MetricTile label="Groups" value={USER_GROUPS.length} note="Assigned" tone="success" />
+          <MetricTile label="Preview Perms" value={PREVIEW_PERMISSIONS.length} note="Matrix" tone="orange" />
+          <BorderGlow borderRadius={16} glowIntensity={0.5}>
+            <MetricTile label="Access" value={3} note="Matrices" tone="muted" />
+          </BorderGlow>
+        </div>
+
+        <BorderGlow borderRadius={12} glowIntensity={0.45}>
+          <SurfaceCard padding="md">
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <div>
+                <div className="font-semibold tracking-tight">Current session user</div>
+                <div className="text-[var(--v3-text-secondary)] mt-0.5">
+                  {currentUser?.name ?? 'Unknown'} ({currentUser?.email ?? 'n/a'})
+                </div>
               </div>
+              <ToneBadge tone={currentUser?.status === 'active' ? 'success' : 'warning'} className="text-[10px]">{currentUser?.status ?? 'unknown'}</ToneBadge>
+              {canWriteUserManagement
+                ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><ShieldCheck size={10}/> UM write</span>
+                : <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)] border border-[var(--v3-border-subtle)]"><Lock size={10}/> UM read-only</span>}
+              {canManageAccess && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-sky-500/10 text-sky-400 border border-sky-500/30"><ShieldCheck size={10}/> page-access manager</span>
+              )}
             </div>
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[currentUser?.status ?? 'active']}`}>
-              {currentUser?.status ?? 'unknown'}
-            </span>
-            {canWriteUserManagement
-              ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><ShieldCheck size={10}/> UM write</span>
-              : <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)] border border-[var(--v3-border-subtle)]"><Lock size={10}/> UM read-only</span>}
-            {canManageAccess && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-sky-500/10 text-sky-400 border border-sky-500/30"><ShieldCheck size={10}/> page-access manager</span>
-            )}
-          </div>
-        </SurfaceCard>
+          </SurfaceCard>
+        </BorderGlow>
 
         {/* Tab navigation: User Assignments | Page View Access — corporate pills */}
         <div role="tablist" className="flex items-center gap-2">

@@ -92,12 +92,12 @@ function TreeNode({ card, children }: { card: React.ReactNode; children?: React.
 }
 
 const GoverningBodyCard = () => (
-  <div className="bg-[#007970] rounded-[16px] p-4 w-48 text-center flex flex-col items-center justify-center relative overflow-hidden shadow-lg border border-[#004142]/20">
+  <div className="bg-[#00797D] rounded-[16px] p-4 w-48 text-center flex flex-col items-center justify-center relative overflow-hidden shadow-lg border border-[#004142]/20">
     <div className="absolute -top-10 -right-10 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
     <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-black/10 rounded-full blur-2xl" />
     <Building2 size={22} className="text-[#E5FEFF] mb-2 opacity-90" />
     <h2 className="text-white font-montserrat font-bold text-[13px] tracking-[0.12em] mb-3 leading-tight">GOVERNING BODY</h2>
-    <div className="bg-[#E5FEFF] text-[#007970] rounded-full px-3 py-1 text-[9px] font-montserrat font-bold tracking-wide uppercase shadow-sm leading-tight">
+    <div className="bg-[#E5FEFF] text-[#00797D] rounded-full px-3 py-1 text-[9px] font-montserrat font-bold tracking-wide uppercase shadow-sm leading-tight">
       Ultimate Legal Authority
     </div>
   </div>
@@ -126,8 +126,8 @@ const ComplianceOfficerCard = () => (
 
 const ClinicalManagerCard = () => (
   <div className="bg-white rounded-[12px] p-3 w-40 text-center border border-[#E5E4E3] flex flex-col">
-    <h4 className="font-montserrat font-bold text-[#007970] text-[11px] tracking-wide mb-3 leading-tight">CLINICAL MANAGER</h4>
-    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-1 text-[#263C3D] focus:outline-none focus:border-[#007970] transition-colors bg-transparent placeholder-[#747470] mb-3 font-roboto text-[11px]" />
+    <h4 className="font-montserrat font-bold text-[#00797D] text-[11px] tracking-wide mb-3 leading-tight">CLINICAL MANAGER</h4>
+    <input type="text" placeholder="Enter Name..." className="w-full text-center border-b-2 border-[#E5E4E3] pb-1 text-[#263C3D] focus:outline-none focus:border-[#00797D] transition-colors bg-transparent placeholder-[#747470] mb-3 font-roboto text-[11px]" />
     <div className="mt-auto bg-[#FAFBF8] border border-[#E5E4E3] rounded-md py-1.5 px-2 text-[9px] font-medium tracking-wide text-[#524D4B] font-roboto leading-tight">
       RN, PT, OT, ST, MSW, CHHA
     </div>
@@ -161,12 +161,12 @@ function OrgChartSection({ sectionTitle }: { sectionTitle: string }) {
     <section className="mb-12 avoid-break">
       <h3 className="font-montserrat font-semibold text-[13px] text-[#004142] tracking-[0.22em] uppercase mb-6 flex items-center gap-4">
         <span className="shrink-0">{sectionTitle}</span>
-        <span className="flex-grow h-px bg-[#007970]" />
+        <span className="flex-grow h-px bg-[#00797D]" />
       </h3>
 
       {/* Info callout */}
       <div className="bg-white border border-[#E5E4E3] rounded-[16px] p-5 mb-8 flex items-start gap-4 shadow-sm">
-        <div className="bg-[#E5FEFF] p-2.5 rounded-full text-[#007970] shrink-0 mt-0.5">
+        <div className="bg-[#E5FEFF] p-2.5 rounded-full text-[#00797D] shrink-0 mt-0.5">
           <Info size={18} strokeWidth={2.5} />
         </div>
         <p className="text-[#524D4B] leading-relaxed text-[14px] font-roboto">
@@ -198,7 +198,7 @@ function OrgChartSection({ sectionTitle }: { sectionTitle: string }) {
    ═══════════════════════════════════════════════════════════════════ */
 
 // ─── Brand tokens (light-mode) ────────────────────────────────────
-const CI_TEAL   = '#007970';
+const CI_TEAL   = '#00797D';
 const CI_ORANGE = '#C74601';
 const CI_INK    = '#263C3D';
 const CI_MUTED  = '#607C7D';
@@ -216,20 +216,20 @@ const LABEL_CLS =
 const INPUT_CLS =
   'w-full h-11 border border-[#E5E4E3] rounded-[8px] px-3 bg-white ' +
   'font-roboto text-[14px] text-[#263C3D] ' +
-  'focus:border-[#007970] focus:ring-1 focus:ring-[#007970] ' +
+  'focus:border-[#00797D] focus:ring-1 focus:ring-[#00797D] ' +
   'outline-none transition-all';
 
 /** Underline-only input — signature rows, Printed Name column */
 const SIG_INPUT_CLS =
   'w-full h-8 border-b border-[#C8C6C5] px-0 bg-transparent ' +
   'font-roboto text-[14px] text-[#263C3D] ' +
-  'focus:border-[#007970] outline-none transition-all';
+  'focus:border-[#00797D] outline-none transition-all';
 
 /** Dashed underline — signature rows, Signature column */
 const SIG_DASHED_CLS =
   'w-full h-8 border-b border-dashed border-[#C8C6C5] px-0 bg-transparent ' +
   'font-roboto text-[14px] text-[#263C3D] ' +
-  'focus:border-[#007970] outline-none transition-all';
+  'focus:border-[#00797D] outline-none transition-all';
 
 // ─── Field ────────────────────────────────────────────────────────
 // sig=true  → signature-row mode:
@@ -293,7 +293,7 @@ function Field({ f, sig = false, fieldId }: { f: FormField; sig?: boolean; field
             className="h-7 max-w-[200px] object-contain object-left"
           />
           <span className="font-roboto text-[10px] text-[#747470]">{fmtSignTs(sigRec.signedAt)}</span>
-          <CheckCircle2 size={13} className="text-[#007970] shrink-0" />
+          <CheckCircle2 size={13} className="text-[#00797D] shrink-0" />
         </div>
       );
     }
@@ -306,14 +306,14 @@ function Field({ f, sig = false, fieldId }: { f: FormField; sig?: boolean; field
         onClick={() => requestSign(fId)}
         className="h-14 w-full flex items-center justify-center gap-2 px-3 rounded-md transition-colors"
         style={{
-          border:     '1px dashed #007970',
+          border:     '1px dashed #00797D',
           background: 'transparent',
         }}
         onMouseEnter={e => (e.currentTarget.style.background = '#F0FFFE')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
         <img src={eCIgnLogo} alt="Sign with eCign" className="h-10 w-auto object-contain pointer-events-none" />
-        <span className="text-[11px] font-semibold text-[#007970] pointer-events-none">Sign</span>
+        <span className="text-[11px] font-semibold text-[#00797D] pointer-events-none">Sign</span>
       </button>
     );
   };
@@ -337,7 +337,7 @@ function Field({ f, sig = false, fieldId }: { f: FormField; sig?: boolean; field
                 data-field-id={fieldId}
                 aria-required={ariaRequired}
                 aria-describedby={helpId}
-                className="w-4 h-4 accent-[#007970]"
+                className="w-4 h-4 accent-[#00797D]"
               />{' '}
               {o}
             </label>
@@ -415,7 +415,7 @@ function Field({ f, sig = false, fieldId }: { f: FormField; sig?: boolean; field
           data-field-id={fieldId}
           aria-required={ariaRequired}
           aria-describedby={helpId}
-          className="w-5 h-5 accent-[#007970] mt-1"
+          className="w-5 h-5 accent-[#00797D] mt-1"
         />
       ) : (
         <input
@@ -449,7 +449,7 @@ function SectionRenderer({ s, idx }: { s: FormSection; idx: number }) {
                    tracking-[0.22em] uppercase mb-4 flex items-center gap-4"
       >
         <span className="shrink-0">{s.title || `Section ${idx + 1}`}</span>
-        <span className="flex-grow h-px bg-[#007970]" />
+        <span className="flex-grow h-px bg-[#00797D]" />
       </h3>
 
       {s.description && (
@@ -515,7 +515,7 @@ function SectionRenderer({ s, idx }: { s: FormSection; idx: number }) {
                 className="flex items-start gap-3 py-2 border-b border-[#E5E4E3]"
               >
                 <span
-                  className="shrink-0 mt-[3px] w-[6px] h-[6px] rounded-full bg-[#007970]"
+                  className="shrink-0 mt-[3px] w-[6px] h-[6px] rounded-full bg-[#00797D]"
                   aria-hidden="true"
                 />
                 <span className="font-roboto text-[12px] text-[#263C3D] leading-relaxed">
@@ -527,14 +527,14 @@ function SectionRenderer({ s, idx }: { s: FormSection; idx: number }) {
           {s.sectionAck && (
             <div className="mt-4 pt-4 border-t border-[#E5E4E3] flex flex-wrap items-center gap-6">
               <label className="flex items-center gap-2 font-roboto text-[12px] text-[#52404B] cursor-pointer select-none">
-                <input type="checkbox" className="w-4 h-4 accent-[#007970] shrink-0" />
+                <input type="checkbox" className="w-4 h-4 accent-[#00797D] shrink-0" />
                 <span>Section reviewed and acknowledged</span>
               </label>
               <div className="flex flex-col">
                 <span className={LABEL_CLS}>Initials</span>
                 <input
                   placeholder="___"
-                  className="w-16 font-roboto text-[12px] border-b border-[#C8C6C5] bg-transparent focus:outline-none focus:border-[#007970] text-center"
+                  className="w-16 font-roboto text-[12px] border-b border-[#C8C6C5] bg-transparent focus:outline-none focus:border-[#00797D] text-center"
                 />
               </div>
             </div>
@@ -653,7 +653,7 @@ export function FormBody({ content, isEmbedded = false }: { content: FormContent
               />
               <div className="sm:text-right">
                 <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#607C7D]">Enterprise Forms Library</div>
-                <div className="mt-1 font-mono text-[11px] font-semibold text-[#007970]">{content.id} · v{content.version}</div>
+                <div className="mt-1 font-mono text-[11px] font-semibold text-[#00797D]">{content.id} · v{content.version}</div>
               </div>
             </div>
             <div className="mt-5 h-px w-full" style={{ background: CI_TEAL }} />
@@ -662,7 +662,7 @@ export function FormBody({ content, isEmbedded = false }: { content: FormContent
               <h1 className="mt-1 font-roboto text-3xl font-semibold tracking-tight text-[#004142]">
                 {content.title}
               </h1>
-              <div className="mt-2 flex items-center gap-2.5 text-[11px] font-mono text-[#007970]">
+              <div className="mt-2 flex items-center gap-2.5 text-[11px] font-mono text-[#00797D]">
                 <span>FORM {content.id}</span>
                 <span className="inline-block h-3 w-px bg-slate-300" />
                 <span>v{content.version}</span>
@@ -1472,7 +1472,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                     if (queryRequirementId) q.set('requirement_id', queryRequirementId);
                     navigate(`/calendar/event/${encodeURIComponent(eventForRoute)}${q.toString() ? `?${q.toString()}` : ''}`);
                   }}
-                  className="rounded-[8px] border border-[#B8E9E7] bg-white px-2 py-1 text-[11px] font-semibold text-[#007970] hover:bg-[#E9FAFA]"
+                  className="rounded-[8px] border border-[#B8E9E7] bg-white px-2 py-1 text-[11px] font-semibold text-[#00797D] hover:bg-[#E9FAFA]"
                 >
                   Return to Event Task Workspace
                 </button>
@@ -1487,14 +1487,14 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                 <button
                   type="button"
                   onClick={() => navigate('/forms')}
-                  className="ci-form-action flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#DDEBEB] bg-white/78 text-[#007970] hover:border-[#B8E9E7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970]"
+                  className="ci-form-action flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#DDEBEB] bg-white/78 text-[#00797D] hover:border-[#B8E9E7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00797D]"
                   aria-label="Return to Forms Library"
                 >
                   <ChevronLeft size={17} />
                 </button>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-[#B8E9E7] bg-[#F0FBFB] px-2.5 py-1 font-mono text-[11px] font-semibold text-[#007970]">{content.id} · v{content.version}</span>
+                    <span className="rounded-full border border-[#B8E9E7] bg-[#F0FBFB] px-2.5 py-1 font-mono text-[11px] font-semibold text-[#00797D]">{content.id} · v{content.version}</span>
                     <span className="rounded-full border border-[#DDEBEB] bg-white/72 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#426768]">{content.type}</span>
                   </div>
                   <h1 className="mt-1 truncate font-montserrat text-lg font-semibold tracking-tight text-[#004142]">{content.title}</h1>
@@ -1512,7 +1512,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                     <span>{completionPercent}%</span>
                   </div>
                   <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#DDEBEB]">
-                    <div className="h-full rounded-full bg-[#007970] transition-[width] duration-[520ms]" style={{ width: `${completionPercent}%` }} />
+                    <div className="h-full rounded-full bg-[#00797D] transition-[width] duration-[520ms]" style={{ width: `${completionPercent}%` }} />
                   </div>
                 </div>
                 <button
@@ -1522,7 +1522,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                     target?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
                     target?.focus();
                   }}
-                  className="ci-form-action flex items-center gap-2 rounded-full border border-[#B8E9E7] bg-white/78 px-3.5 py-2 text-[12px] font-semibold text-[#007970] hover:bg-[#F0FBFB]"
+                  className="ci-form-action flex items-center gap-2 rounded-full border border-[#B8E9E7] bg-white/78 px-3.5 py-2 text-[12px] font-semibold text-[#00797D] hover:bg-[#F0FBFB]"
                 >
                   {hasSigned ? 'Signature Status' : 'Continue Signing'}
                 </button>
@@ -1535,7 +1535,7 @@ export function FormViewer({ formId, formInstanceId: formInstanceIdProp, enableE
                 }
                 printForm(content.id);
               }}
-                  className="ci-form-action flex items-center gap-2 rounded-full bg-[#007970] px-4 py-2 text-[12px] font-semibold text-white shadow-[0_14px_28px_-18px_rgba(0,121,112,0.8)] hover:bg-[#00696A]"
+                  className="ci-form-action flex items-center gap-2 rounded-full bg-[#00797D] px-4 py-2 text-[12px] font-semibold text-white shadow-[0_14px_28px_-18px_rgba(0,121,112,0.8)] hover:bg-[#00696A]"
             >
                   <Printer size={14} /> Print Form
             </button>

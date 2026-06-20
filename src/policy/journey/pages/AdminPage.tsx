@@ -12,6 +12,7 @@ import { openEscalationsCount, humanEscalation } from '@/policy/journey/utils/es
 import {
   ShieldCheck, AlertTriangle, FileSearch, Users, FileText, Clock, ChevronRight,
 } from 'lucide-react';
+import { PageHeader, MetricTile, BorderGlow, SurfaceCard, ToneBadge } from '@/policy/components/ui';
 
 export function AdminPage() {
   const employees = useJourneyStore(s => s.employees);
@@ -35,29 +36,40 @@ export function AdminPage() {
 
   return (
     <div className="h-full overflow-y-auto custom-scrollbar p-6 md:p-10">
-      <div className="mb-6">
-        <div className="text-xs font-montserrat font-bold text-[#FFC107] uppercase tracking-widest mb-2">Admin · HR · Compliance</div>
-        <h1 className="text-2xl font-montserrat font-bold text-white">Onboarding Command Center</h1>
-        <div className="text-sm text-white/55 font-light mt-1">42 CFR Part 484 · HR-TA-001 §8.2 · HR-TD-001 · HR-TD-003</div>
+      <PageHeader
+        eyebrow="Admin · HR · Compliance"
+        title={
+          <span className="flex items-center gap-2">
+            Onboarding Command Center
+            <ToneBadge tone="teal">{agg.totalEmp} emp</ToneBadge>
+          </span>
+        }
+        description="42 CFR Part 484 · HR-TA-001 §8.2 · HR-TD-001 · HR-TD-003"
+      />
+
+      {/* PHASE: adopt MetricTile + BorderGlow to match dashboard style (no data/func changes) */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-8">
+        <BorderGlow borderRadius={12} glowIntensity={0.5}>
+          <MetricTile label="Employees" value={agg.totalEmp} note="Total roster" tone="teal" icon={<Users size={16} />} />
+        </BorderGlow>
+        <MetricTile label="Cleared" value={agg.cleared} note="Independent" tone="success" icon={<ShieldCheck size={16} />} />
+        <MetricTile label="Open Escalations" value={agg.open} note="Active" tone="warning" icon={<AlertTriangle size={16} />} />
+        <MetricTile label="CRITICAL" value={agg.critical} note="Urgent" tone="danger" icon={<AlertTriangle size={16} />} />
+        <MetricTile label="Apx F Missing" value={agg.apxFMissing} note="Pre-Day1" tone="danger" icon={<FileText size={16} />} />
+        <BorderGlow borderRadius={12} glowIntensity={0.5}>
+          <MetricTile label="Annual Overdue" value={agg.overdueAnnual} note="Training" tone="warning" icon={<Clock size={16} />} />
+        </BorderGlow>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-        <Kpi label="Employees"         value={agg.totalEmp}    icon={<Users size={16} />}          color="#FFC107" />
-        <Kpi label="Cleared"           value={agg.cleared}     icon={<ShieldCheck size={16} />}    color="#34D399" />
-        <Kpi label="Open Escalations"  value={agg.open}        icon={<AlertTriangle size={16} />}  color="#ff8e52" />
-        <Kpi label="CRITICAL"          value={agg.critical}    icon={<AlertTriangle size={16} />}  color="#DC2626" />
-        <Kpi label="Apx F Missing"     value={agg.apxFMissing} icon={<FileText size={16} />}       color="#DC2626" />
-        <Kpi label="Annual Overdue"    value={agg.overdueAnnual} icon={<Clock size={16} />}        color="#FFC107" />
-      </div>
-
-      {/* Escalations table */}
-      <div className="border border-white/10 rounded-2xl overflow-hidden mb-8">
-        <div className="px-5 py-3 border-b border-white/10 flex items-center gap-2 text-xs uppercase tracking-widest font-bold text-white/60">
+      {/* Escalations table — wrapped for new UI */}
+      <BorderGlow borderRadius={16} glowIntensity={0.45} className="mb-8">
+      <SurfaceCard padding="none" className="overflow-hidden">
+        <div className="px-5 py-3 border-b border-[color:var(--ci-border)] flex items-center gap-2 text-xs uppercase tracking-[0.18em] font-bold" style={{ color: 'var(--ci-text-secondary)' }}>
           <AlertTriangle size={14} className="text-[#DC2626]" /> Active escalations
         </div>
         <div className="max-h-[40vh] overflow-y-auto">
           <table className="w-full text-xs">
-            <thead className="text-[10px] text-white/40 uppercase tracking-widest">
+            <thead className="text-[10px] text-white/40 uppercase tracking-[0.18em]">
               <tr>
                 {['Severity', 'Employee', 'Type', 'Policy', 'Action required', 'Status', ''].map(h => (
                   <th key={h} className="px-4 py-2 text-left font-bold">{h}</th>
@@ -102,11 +114,13 @@ export function AdminPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </SurfaceCard>
+      </BorderGlow>
 
-      {/* Survey Evidence Map */}
-      <div className="border border-white/10 rounded-2xl p-5">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-widest font-bold text-white/60 mb-3">
+      {/* Survey Evidence Map — use SurfaceCard + BorderGlow */}
+      <BorderGlow borderRadius={16} glowIntensity={0.45}>
+      <SurfaceCard padding="lg">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-widest font-bold mb-3" style={{ color: 'var(--ci-text-secondary)' }}>
           <FileSearch size={14} className="text-[#FFC107]" /> Audit-defensible evidence map (HR-TA-001 §8.2)
         </div>
         <table className="w-full text-xs">
@@ -133,20 +147,8 @@ export function AdminPage() {
         <div className="text-[10px] text-white/35 mt-3 flex items-center gap-1">
           <ChevronRight size={12} /> Each evidence row traces to a signed appendix with timestamps in the audit log.
         </div>
-      </div>
-    </div>
-  );
-}
-
-function Kpi({ label, value, icon, color }: { label: string; value: number; icon: React.ReactNode; color: string }) {
-  return (
-    <div className="border border-white/10 rounded-2xl p-4 relative overflow-hidden"
-         style={{ borderLeftColor: color, borderLeftWidth: 2 }}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] uppercase tracking-widest font-bold" style={{ color }}>{label}</div>
-        <span style={{ color }}>{icon}</span>
-      </div>
-      <div className="text-3xl font-light text-white">{value}</div>
+      </SurfaceCard>
+      </BorderGlow>
     </div>
   );
 }

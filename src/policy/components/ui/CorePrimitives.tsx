@@ -215,7 +215,7 @@ html[data-theme="care-indeed-light"],
   gap: 4px;
   padding: 3px 10px;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 300;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
@@ -258,7 +258,7 @@ html[data-theme="care-indeed-light"],
   text-align: left;
   padding: 11px 14px;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 300;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--ci-text-tertiary);
@@ -418,9 +418,9 @@ html[data-theme="care-indeed-light"] .ci-data-table tbody tr:hover,
 }
 
 .ci-drawer-title {
-  font-family: 'Montserrat', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--ci-heading-primary);
 }
@@ -477,9 +477,9 @@ html[data-theme="care-indeed-light"] .ci-data-table tbody tr:hover,
 }
 
 .ci-modal-title {
-  font-family: 'Montserrat', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ci-heading-primary);
 }
 
@@ -509,9 +509,9 @@ html[data-theme="care-indeed-light"] .ci-data-table tbody tr:hover,
 }
 
 .ci-page-header-title {
-  font-family: 'Montserrat', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
   font-size: 23px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.15;
   letter-spacing: -0.015em;
   color: var(--ci-heading-primary);
@@ -547,9 +547,9 @@ html[data-theme="care-indeed-light"] .ci-data-table tbody tr:hover,
 }
 
 .ci-page-view-card-title {
-  font-family: 'Montserrat', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ci-heading-primary);
   margin-bottom: 4px;
 }
@@ -589,16 +589,16 @@ html[data-theme="care-indeed-light"] .ci-data-table tbody tr:hover,
 
 .ci-kpi-card .kpi-value {
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1;
   letter-spacing: -0.025em;
-  font-family: 'Montserrat', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
   margin-top: 4px;
 }
 
 .ci-kpi-card .kpi-label {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 300;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ci-text-tertiary);
@@ -609,7 +609,7 @@ html[data-theme="care-indeed-light"] .ci-data-table tbody tr:hover,
   bottom: 12px;
   right: 16px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 300;
   padding: 2px 9px;
   border-radius: 999px;
   background: var(--ci-accent-teal);

@@ -20,7 +20,7 @@ export function EmptyState({ icon, title, description, action, className }: Empt
         <div style={{ color: 'var(--v3-text-tertiary)', marginBottom: 12 }}>{icon}</div>
       )}
       <div
-        className="font-montserrat"
+        className="font-roboto"
         style={{ color: 'var(--v3-text-primary)', fontSize: 16, fontWeight: 600 }}
       >
         {title}

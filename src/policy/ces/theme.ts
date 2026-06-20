@@ -4,7 +4,7 @@
   DESIGN AUTHORITY — Lead 16 C14 amendment (2026-05-16):
   ----------------------------------------------------------------
   CES retains NAVY as its approved sub-brand identity color.
-  Care Indeed teal (#007970) remains available as a highlight /
+  Care Indeed teal (#00797D) remains available as a highlight /
   accent where appropriate but does NOT replace navy on CES
   surfaces. The CES vertical's visual identity is intentionally
   distinct from the broader Care Indeed brand.

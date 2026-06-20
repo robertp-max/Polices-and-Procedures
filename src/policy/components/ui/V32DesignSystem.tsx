@@ -7,7 +7,7 @@ import {
 import { Search } from 'lucide-react';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 
-type Tone = 'neutral' | 'teal' | 'orange' | 'muted' | 'success' | 'warning' | 'danger';
+type Tone = 'neutral' | 'teal' | 'orange' | 'muted' | 'success' | 'warning' | 'danger' | 'green' | 'amber' | 'slate' | 'red';
 
 const spotlightByTone: Record<Tone, string> = {
   neutral: 'var(--spotlight-neutral, rgba(226, 232, 240, 0.10))',
@@ -17,6 +17,10 @@ const spotlightByTone: Record<Tone, string> = {
   success: 'var(--spotlight-teal, rgba(0, 121, 125, 0.22))',
   warning: 'var(--spotlight-orange, rgba(199, 70, 1, 0.20))',
   danger: 'var(--spotlight-orange, rgba(199, 70, 1, 0.24))',
+  green: 'var(--spotlight-teal, rgba(0, 121, 125, 0.22))',
+  amber: 'var(--spotlight-orange, rgba(199, 70, 1, 0.20))',
+  slate: 'var(--spotlight-muted, rgba(138, 148, 166, 0.12))',
+  red: 'var(--spotlight-orange, rgba(199, 70, 1, 0.24))',
 };
 
 export interface GlassPanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 'style'> {
@@ -32,18 +36,22 @@ export function GlassPanel({
   spotlightColor,
   ...rest
 }: GlassPanelProps) {
-  const classes = `rounded-2xl border border-border bg-surface-elevated/88 text-text-primary backdrop-blur-xl ${className ?? ''}`;
+  // MATCH TO REF DASHBOARDS (16-dashboard.png, 40-onboarding-v2-dashboard.png):
+  // Clean white #FFFFFF cards, pale #F7FEFF base. Restrained glass ONLY on shells/overlays (not content cards).
+  // Exact radii 8-32 via --radius or rounded-2xl (16px default card), shadow-soft, no dark bleed.
+  // Always clean opaque in prod light (care-indeed-light). Glass/88/blur killed for cards.
+  const base = `surface-card hover-lift shadow-soft rounded-2xl border border-[var(--border-card,#E9E5E3)] bg-[#FFFFFF] text-text-primary ${className ?? ''}`;
 
   if (spotlight) {
     return (
-      <SpotlightCard {...rest} spotlightColor={spotlightColor} className={classes}>
+      <SpotlightCard {...rest} spotlightColor={spotlightColor} className={base}>
         {children}
       </SpotlightCard>
     );
   }
 
   return (
-    <div {...rest} className={classes}>
+    <div {...rest} className={base}>
       {children}
     </div>
   );
@@ -56,18 +64,22 @@ export interface V32MetricTileProps extends Omit<ButtonHTMLAttributes<HTMLButton
   note?: ReactNode;
   tone?: Tone;
   icon?: ReactNode;
-  /** When true, wraps in SpotlightCard (preserves legacy V32 spotlight behavior). Default false for direct tone tile per redesign prototype. */
+  /** When true, wraps in SpotlightCard (preserves legacy V32 spotlight behavior). Default false for direct tone tile per redesign prototype. (no wrapper) */
   spotlight?: boolean;
 }
 
 const toneTileClass: Record<Tone, string> = {
-  neutral: 'border-border bg-[var(--surface-elevated)] text-text-primary',
+  neutral: 'border-[var(--tone-slate-bdr)] bg-[var(--tone-slate-bg)] text-[var(--tone-slate-fg)]',
   teal: 'border-[var(--tone-teal-bdr)] bg-[var(--tone-teal-bg)] text-[var(--tone-teal-fg)]',
   orange: 'border-[var(--tone-orange-bdr)] bg-[var(--tone-orange-bg)] text-[var(--tone-orange-fg)]',
-  muted: 'border-border bg-[var(--surface-elevated)]/50 text-text-muted',
+  muted: 'border-[var(--tone-slate-bdr)] bg-[var(--tone-slate-bg)] text-[var(--tone-slate-fg)]',
   success: 'border-[var(--tone-green-bdr)] bg-[var(--tone-green-bg)] text-[var(--tone-green-fg)]',
   warning: 'border-[var(--tone-amber-bdr)] bg-[var(--tone-amber-bg)] text-[var(--tone-amber-fg)]',
   danger: 'border-[var(--tone-orange-bdr)] bg-[var(--tone-orange-bg)] text-[var(--tone-orange-fg)]',
+  green: 'border-[var(--tone-green-bdr)] bg-[var(--tone-green-bg)] text-[var(--tone-green-fg)]',
+  amber: 'border-[var(--tone-amber-bdr)] bg-[var(--tone-amber-bg)] text-[var(--tone-amber-fg)]',
+  slate: 'border-[var(--tone-slate-bdr)] bg-[var(--tone-slate-bg)] text-[var(--tone-slate-fg)]',
+  red: 'border-[var(--tone-orange-bdr)] bg-[var(--tone-orange-bg)] text-[var(--tone-orange-fg)]',
 };
 
 export function V32MetricTile({
@@ -82,34 +94,26 @@ export function V32MetricTile({
   ...rest
 }: V32MetricTileProps) {
   const noteContent = note ?? trend;
-  const commonTile = 'metric-tile rounded-2xl border p-4 sm:p-5 shadow-soft min-h-[92px] touch-manipulation relative';
+  const commonTile = 'metric-tile hover-lift rounded-2xl border p-4 md:p-5 shadow-soft min-h-[92px] touch-manipulation w-full font-roboto'; /* EXACT per task: 10px uppercase tracking-[0.18em] label (Light), 3xl value (Medium), xs note (Light), direct tone pastel bg #F7FEFF etc (via toneCls + .tone-* in css), rounded-2xl p-4/5 shadow-soft min-h-[92px], radii 8-32, hover-lift, #F7FEFF base + white cards, restrained glass */
   const toneCls = toneTileClass[tone];
-  const mergedClasses = `${commonTile} ${toneCls} ${className ?? ''}`;
+  // Attach .tone-xxx (normalized to prototype tones teal,orange,amber,slate,green) so that index.css .tone-* exact pastels (with !important) + vars inject directly onto KPI/MetricTile for ref match (16-dashboard.png, 11-ces-board.png)
+  const toneKey = normalizeTone(String(tone));
+  const mergedClasses = `${commonTile} ${toneCls} tone-${toneKey} ${className ?? ''}`;
 
   const content = (
     <>
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] opacity-70">
-          {label}
+        {/* EXACT per task + ref: 10px uppercase tracking-[0.18em] label using Roboto Light, not medium */}
+        <span className="text-[10px] font-roboto font-light uppercase tracking-[0.18em] opacity-70">
+          {typeof label === 'string' ? label.toUpperCase() : label}
         </span>
         {icon ? <span className="shrink-0 opacity-80">{icon}</span> : null}
       </div>
-      <div className="mt-3 text-3xl font-extrabold tracking-tight">
+      {/* 3xl value (Roboto Medium), mt-3 per spec; tone pastels #F7FEFF applied via .tone-* + css; rounded-2xl shadow-soft in commonTile */}
+      <div className="mt-3 text-3xl font-roboto font-medium tracking-tight leading-none">
         {value}
       </div>
-      {noteContent ? <div className="mt-1 text-xs font-medium opacity-70">{noteContent}</div> : null}
-    </>
-  );
-
-  const tileInner = (
-    <>
-      <button
-        {...rest}
-        type={rest.type ?? 'button'}
-        className="absolute inset-0 z-20 rounded-[inherit] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70 disabled:cursor-not-allowed disabled:opacity-60"
-        aria-label={typeof label === 'string' ? label : undefined}
-      />
-      <div className="pointer-events-none relative z-30">{content}</div>
+      {noteContent ? <div className="mt-1 text-xs font-roboto font-light opacity-70">{noteContent}</div> : null}
     </>
   );
 
@@ -119,18 +123,29 @@ export function V32MetricTile({
         spotlightColor={spotlightByTone[tone]}
         className={`p-0 text-left ${className ?? ''}`}
       >
-        <div className={`${commonTile} ${toneCls}`}>
-          {tileInner}
-        </div>
+        <button
+          {...(rest as unknown as React.ButtonHTMLAttributes<HTMLButtonElement>)}
+          type={(rest as any).type ?? 'button'}
+          className={`${commonTile} ${toneCls} tone-${toneKey} text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70 disabled:cursor-not-allowed disabled:opacity-60`}
+          aria-label={typeof label === 'string' ? label : undefined}
+        >
+          {content}
+        </button>
       </SpotlightCard>
     );
   }
 
-  // Direct tone tile (exact redesign prototype structure, supports .metric-tile + token defaults; not wrapped in Spotlight by default)
+  // Direct button root (exact match to ref MetricTile: direct children for label/value/note, 10px uppercase tracking-[0.18em], 3xl, xs, tone pastels, rounded-2xl etc; no internal absolute/z wrappers).
+  // Button ensures semantics + handlers.
   return (
-    <div className={mergedClasses}>
-      {tileInner}
-    </div>
+    <button
+      {...(rest as unknown as React.ButtonHTMLAttributes<HTMLButtonElement>)}
+      type={(rest as any).type ?? 'button'}
+      className={`${mergedClasses} text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70 disabled:cursor-not-allowed disabled:opacity-60`}
+      aria-label={typeof label === 'string' ? label : undefined}
+    >
+      {content}
+    </button>
   );
 }
 
@@ -139,22 +154,38 @@ export interface StatusPillProps extends HTMLAttributes<HTMLSpanElement> {
   children: ReactNode;
 }
 
-export function StatusPill({ tone = 'neutral', className, children, ...rest }: StatusPillProps) {
-  const toneClass = {
-    neutral: 'border-border text-text-secondary',
-    teal: 'border-brand-teal/35 text-brand-teal',
-    orange: 'border-brand-orange/45 text-brand-orange',
-    muted: 'border-border text-text-muted',
-    success: 'border-brand-teal/35 text-brand-teal',
-    warning: 'border-brand-orange/45 text-brand-orange',
-    danger: 'border-brand-orange/45 text-brand-orange',
-  }[tone];
+function normalizeTone(tone: string | undefined): string {
+  const t = String(tone || 'teal').toLowerCase();
+  const allowed = ['teal', 'orange', 'green', 'amber', 'slate', 'red', 'violet', 'blue', 'muted', 'neutral', 'success', 'warning', 'danger'];
+  let key = allowed.includes(t) ? t : 'teal';
+  if (key === 'success') key = 'green';
+  if (key === 'warning') key = 'amber';
+  if (key === 'danger' || key === 'red') key = 'orange';
+  if (key === 'muted' || key === 'neutral' || key === 'violet' || key === 'blue') key = 'slate';
+  return key;
+}
 
+// Exact badge styles from prototype tones.badge + dot (small uppercase, dots, colors from tones).
+// Uses arbitrary values for exact visual match to ref cards (16-dashboard.png) independent of .tone-* (which target tile/icon shells).
+const protoBadgeStyles: Record<string, { badge: string; dot: string }> = {
+  teal:   { badge: 'bg-[#F7FEFF] text-[#00797D] border-[#E5F0EF]',   dot: '#00797D' },
+  orange: { badge: 'bg-[#FFFAF7] text-[#C74601] border-[#FFEEE5]',   dot: '#C74601' },
+  amber:  { badge: 'bg-[#fff8e6] text-[#8a5c00] border-[#f0d9a3]',   dot: '#E56E2E' },
+  green:  { badge: 'bg-[#e6f4ed] text-[#006B3A] border-[#a3d9b8]',   dot: '#008540' },
+  slate:  { badge: 'bg-[#FAF8F8] text-[#524D4B] border-[#E9E5E3]',   dot: '#524D4B' },
+  red:    { badge: 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]',   dot: '#D70101' },
+};
+
+export function StatusPill({ tone = 'neutral', className, children, ...rest }: StatusPillProps) {
+  // Exact to prototype ToneBadge (small [10px] uppercase, dot, colors from tones)
+  const toneKey = normalizeTone(tone);
+  const styles = protoBadgeStyles[toneKey] || protoBadgeStyles.teal;
   return (
     <span
       {...rest}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-montserrat text-[10px] font-bold uppercase tracking-[0.16em] ${toneClass} ${className ?? ''}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-roboto font-light uppercase tracking-wider ${styles.badge} ${className ?? ''}`}
     >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: styles.dot }}></span>
       {children}
     </span>
   );
@@ -165,16 +196,16 @@ export interface ToneBadgeProps extends HTMLAttributes<HTMLSpanElement> {
   children: ReactNode;
 }
 
-/** Exact ToneBadge from prototype: dot + uppercase pill using .tone-* classes. */
+/** Exact ToneBadge from prototype: dot + uppercase pill. Small uppercase, dots, colors from tones. */
 export function ToneBadge({ tone = 'teal', className, children, ...rest }: ToneBadgeProps) {
-  const t = String(tone || 'teal').toLowerCase();
-  const toneKey = ['teal', 'orange', 'green', 'amber', 'slate', 'red', 'violet', 'blue', 'muted', 'neutral', 'success', 'warning', 'danger'].includes(t) ? t : 'teal';
+  const toneKey = normalizeTone(tone);
+  const styles = protoBadgeStyles[toneKey] || protoBadgeStyles.teal;
   return (
     <span
       {...rest}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider tone-${toneKey} ${className ?? ''}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-roboto font-light uppercase tracking-wider ${styles.badge} ${className ?? ''}`}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-current"></span>
+      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: styles.dot }}></span>
       {children}
     </span>
   );
@@ -217,19 +248,17 @@ export function V32PageHeader({
   ...rest
 }: V32PageHeaderProps) {
   return (
-    <section {...rest} className={`flex flex-wrap items-end justify-between gap-5 ${className ?? ''}`}>
+    <section {...rest} className={`flex flex-wrap items-start justify-between gap-4 ${className ?? ''}`}>
       <div className="min-w-0 max-w-4xl">
         {eyebrow ? (
-          <div className="mb-2 font-montserrat text-[10px] font-bold uppercase tracking-[0.28em] text-brand-teal">
-            {eyebrow}
-          </div>
+          <ToneBadge tone="teal" className="mb-1">{eyebrow}</ToneBadge>
         ) : null}
-        <h1 className="font-montserrat text-3xl font-semibold leading-tight tracking-[-0.04em] text-[var(--v3-heading-primary)] md:text-4xl">
+        <h1 className="font-roboto text-2xl font-medium tracking-tight text-[var(--v3-heading-primary)] md:text-3xl">
           {title}
         </h1>
-        {description ? <p className="mt-3 max-w-3xl font-roboto text-sm leading-6 text-text-muted">{description}</p> : null}
+        {description ? <p className="mt-1.5 max-w-3xl font-roboto text-sm font-light leading-6 text-text-muted">{description}</p> : null}
       </div>
-      <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
+      <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
         {meta}
         {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
       </div>
@@ -256,12 +285,12 @@ export function V32SectionHeader({
     <div {...rest} className={`flex flex-wrap items-end justify-between gap-3 ${className ?? ''}`}>
       <div>
         {eyebrow ? (
-          <div className="mb-1 font-montserrat text-[10px] font-bold uppercase tracking-[0.22em] text-text-disabled">
+          <div className="mb-1 font-roboto text-[10px] font-medium uppercase tracking-[0.22em] text-text-disabled">
             {eyebrow}
           </div>
         ) : null}
-        <h2 className="font-montserrat text-xl font-semibold tracking-[-0.03em] text-[var(--v3-heading-primary)]">{title}</h2>
-        {description ? <p className="mt-1 font-roboto text-xs text-text-muted">{description}</p> : null}
+        <h2 className="font-roboto text-xl font-medium tracking-[-0.03em] text-[var(--v3-heading-primary)]">{title}</h2>
+        {description ? <p className="mt-1 font-roboto text-xs font-light text-text-muted">{description}</p> : null}
       </div>
       {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
     </div>
@@ -294,7 +323,7 @@ export function V32ActionButton({
     <button
       {...rest}
       type={rest.type ?? 'button'}
-      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full border px-4 font-montserrat text-xs font-bold uppercase tracking-[0.14em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70 disabled:cursor-not-allowed disabled:opacity-60 ${variantClass} ${className ?? ''}`}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full border px-4 font-roboto text-xs font-light uppercase tracking-[0.14em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70 disabled:cursor-not-allowed disabled:opacity-60 ${variantClass} ${className ?? ''}`}
     >
       {leftIcon ? <span className="inline-flex shrink-0">{leftIcon}</span> : null}
       <span>{children}</span>
@@ -314,7 +343,7 @@ export function V32EmptyState({ icon, title, description, action, className, ...
   return (
     <GlassPanel {...rest} className={`flex min-h-[220px] flex-col items-center justify-center p-8 text-center ${className ?? ''}`}>
       {icon ? <div className="mb-4 text-brand-teal">{icon}</div> : null}
-      <div className="font-montserrat text-base font-semibold text-[var(--v3-heading-primary)]">{title}</div>
+      <div className="font-roboto text-base font-light text-[var(--v3-heading-primary)]">{title}</div>
       {description ? <p className="mt-2 max-w-sm text-sm leading-6 text-text-muted">{description}</p> : null}
       {action ? <div className="mt-5">{action}</div> : null}
     </GlassPanel>

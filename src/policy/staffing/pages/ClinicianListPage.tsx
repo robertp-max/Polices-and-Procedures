@@ -4,7 +4,7 @@ import { PageHeader } from '@/policy/components/ui/PageHeader';
 import { SearchField } from '@/policy/components/ui/SearchField';
 import { DataGrid } from '@/policy/components/ui/DataGrid';
 import { EmptyState } from '@/policy/components/ui/EmptyState';
-import { MetricTile, BorderGlow, ToneBadge, SpotlightCard } from '@/policy/components/ui';
+import { MetricTile, BorderGlow } from '@/policy/components/ui';
 import { Users } from 'lucide-react';
 import { DemoBanner } from '../components/DemoBanner';
 import { DisciplineBadge } from '../components/DisciplineBadge';
@@ -43,7 +43,6 @@ export function ClinicianListPage() {
   });
 
   const filtered = getFilteredClinicians();
-  const total = useClinicianStore((s) => s.clinicians.length);
 
   // Phase 3: derive display metrics only from store (no data, store, or click changes)
   const allClinicians = useClinicianStore((s) => s.clinicians);
@@ -64,26 +63,17 @@ export function ClinicianListPage() {
       <DemoBanner />
       <div className="p-4 md:p-6 lg:p-8 flex flex-col gap-4 flex-1 min-h-0">
         <PageHeader
-          eyebrow="Phase 1 · Read-only"
-          title={
-            <span className="flex items-center gap-2">
-              Clinician Profiles
-              <ToneBadge tone="teal">{filtered.length}/{total}</ToneBadge>
-            </span>
-          }
+          eyebrow="CLINICIAN PROFILES"
+          title="Clinician Profiles"
           description="Synthetic demonstration data only."
         />
 
-        {/* PHASE 3 ONLY: Apply SurfaceCard/MetricTile/BorderGlow/ToneBadge/Spotlight variant (no data/click/store mods) */}
+        {/* Direct MetricTiles per ref 15-clinicians.png (no BorderGlow/Spotlight wrappers for flat pastel tiles, #F7FEFF tones, rounded-2xl p-4/5 min-h-92) */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <BorderGlow borderRadius={16} glowIntensity={0.7}>
-            <MetricTile label="Active Clinicians" value={activeCount} note="of total roster" tone="teal" />
-          </BorderGlow>
+          <MetricTile label="Active Clinicians" value={activeCount} note="of total roster" tone="teal" />
           <MetricTile label="Active Assignments" value={assignedConnections} note="Current caseloads" tone="orange" />
           <MetricTile label="Disciplines" value={uniqueDisciplines} note="Coverage breadth" tone="success" />
-          <SpotlightCard variant="border-glow" className="rounded-2xl">
-            <MetricTile label="Visible" value={filtered.length} note="after filters" tone="muted" />
-          </SpotlightCard>
+          <MetricTile label="Visible" value={filtered.length} note="after filters" tone="muted" />
         </div>
 
         {/* Search & Filters — clean premium corporate per V5 ref */}

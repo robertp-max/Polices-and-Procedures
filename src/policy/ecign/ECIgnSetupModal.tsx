@@ -17,7 +17,7 @@ import type { ECIgnSignatureMethod } from './types';
    profile. It never auto-consents and never signs a document.
    ═══════════════════════════════════════════════════════════════════ */
 
-const CI_TEAL = '#007970';
+const CI_TEAL = '#00797D';
 const CI_INK = '#1F1C1B';
 const CI_MUTED = '#747470';
 const CI_LINE = '#E5E4E3';
@@ -384,7 +384,7 @@ export function ECIgnSetupModal({ open, onClose, onComplete }: ECIgnSetupModalPr
 
           {/* Enrollment checkbox */}
           <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-3" style={{ borderColor: agreed ? CI_TEAL : CI_LINE, background: agreed ? '#F0FDFC' : 'white' }}>
-            <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#007970]" />
+            <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#00797D]" />
             <span className="font-roboto text-[12px] leading-5" style={{ color: CI_INK }}>
               I have read and agree to use eCIgn electronic signatures as described above. I understand that clicking an eCIgn icon or
               signature field on an assigned document is my intent to electronically sign that specific document.

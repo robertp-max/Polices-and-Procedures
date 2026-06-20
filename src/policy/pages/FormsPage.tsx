@@ -6,7 +6,7 @@ import {
   Share2, Flame, Copy,
   FileCheck
 } from 'lucide-react';
-import { EmptyState, SearchField, V32PageHeader, GlassPanel } from '@/policy/components/ui';
+import { EmptyState, SearchField, V32PageHeader, SurfaceCard, MetricTile, BorderGlow } from '@/policy/components/ui';
 
 // ══════════════════════════════════════════════════════════════
 // ENTERPRISE FORMS LIBRARY – 361 ARTIFACTS ACROSS 10 DOMAINS
@@ -107,6 +107,24 @@ export function FormsPage() {
           />
         </div>
 
+        {/* Forms Library Metrics (pick up new UI tokens Surface/Metric/Border per image refs e.g. 21-forms-library.png + 10-forms-ecign.md) */}
+        <div className="mx-auto w-full w-full px-6 md:px-8 py-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <BorderGlow borderRadius={16} glowIntensity={0.6}>
+              <MetricTile label="Runtime Records" value={410} note="Full dataset" tone="teal" />
+            </BorderGlow>
+            <BorderGlow borderRadius={16} glowIntensity={0.55}>
+              <MetricTile label="Canonical" value={361} note="Enterprise forms" tone="success" />
+            </BorderGlow>
+            <BorderGlow borderRadius={16} glowIntensity={0.6}>
+              <MetricTile label="Domains" value={10} note="Coverage breadth" tone="warning" />
+            </BorderGlow>
+            <BorderGlow borderRadius={16} glowIntensity={0.55}>
+              <MetricTile label="Digital Candidates" value={74} note="eCIgn ready" tone="muted" />
+            </BorderGlow>
+          </div>
+        </div>
+
         {/* Domain pills — clean corporate */}
         <div className="mx-auto w-full w-full px-6 md:px-8 pt-1">
           <div className="flex flex-wrap gap-1.5 pb-2 border-b border-[var(--v3-border-subtle)]">
@@ -141,7 +159,7 @@ export function FormsPage() {
               const domain = DOMAINS.find(d => d.code === form.domainCode);
               const color = domain?.accentToken || '#a1a1aa';
               return (
-                <GlassPanel key={form.id} onClick={() => navigate(`/forms/${form.id}`)} className="p-4 cursor-pointer group flex flex-col hover:border-[var(--v3-border-hover)]">
+                <SurfaceCard key={form.id} onClick={() => navigate(`/forms/${form.id}`)} className="p-4 cursor-pointer group flex flex-col hover:border-[var(--v3-border-hover)]">
                   <div className="flex justify-between">
                     <span className="font-mono text-[10px] font-semibold tracking-widest" style={{color}}>{form.id}</span>
                     <span className="text-[10px] opacity-60">{form.type}</span>
@@ -151,7 +169,7 @@ export function FormsPage() {
                     {form.classifications.slice(0,2).map(c => <span key={c} className="border px-1 rounded text-[8px]">{c}</span>)}
                     <span className="ml-auto">{form.policies.length} policies</span>
                   </div>
-                </GlassPanel>
+                </SurfaceCard>
               );
             })}
           </div>

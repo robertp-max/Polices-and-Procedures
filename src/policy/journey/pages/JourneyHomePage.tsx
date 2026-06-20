@@ -10,8 +10,7 @@ import { GateBanner } from '@/policy/journey/components/GateBanner';
 import { EmployeePicker } from '@/policy/journey/components/EmployeePicker';
 import { BookOpen, GraduationCap, FlaskConical, Play, Clock } from 'lucide-react';
 import type { JourneyModule } from '@/policy/journey/types/journey';
-import { PageHeader } from '@/policy/components/ui/PageHeader';
-import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
+import { PageHeader, SurfaceCard, MetricTile, BorderGlow, SpotlightCard } from '@/policy/components/ui';
 
 /* ─── Staging module catalogue ─────────────────────────────────────────── */
 
@@ -208,6 +207,18 @@ export function JourneyHomePage() {
         }
       />
 
+      {/* Adopt dashboard style: MetricTiles + BorderGlow for key journey progress (no logic/func/data changes) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2">
+        <BorderGlow borderRadius={14} glowIntensity={0.55}>
+          <MetricTile label="GAO Progress" value={`${Math.round(progress.gaoCompletePct * 100)}%`} note="Core orientation" tone="teal" />
+        </BorderGlow>
+        <MetricTile label="Role Progress" value={`${Math.round(progress.roleCompletePct * 100)}%`} note="Discipline specific" tone="orange" />
+        <MetricTile label="Appendix F" value={employee.appendixFCleared ? 'CLEARED' : 'PENDING'} note="Pre-Day-1 gate" tone={employee.appendixFCleared ? 'success' : 'danger'} />
+        <SpotlightCard variant="border-glow" className="rounded-2xl">
+          <MetricTile label="Cleared Status" value={progress.clearedForIndependentWork ? 'YES' : 'NO'} note="Independent work" tone={progress.clearedForIndependentWork ? 'success' : 'warning'} />
+        </SpotlightCard>
+      </div>
+
       {/* Hard-stop banner — Appendix F */}
       {!employee.appendixFCleared && (
         <GateBanner
@@ -284,20 +295,24 @@ export function JourneyHomePage() {
       <div className="grid grid-cols-12 gap-6">
         <aside className="col-span-12 lg:col-span-3 space-y-6">
           <PhaseRail progress={progress} active={phase} onSelect={setPhase} />
-          <div className="space-y-2">
-            <div
-              className="flex items-center gap-2 text-[10px] font-montserrat font-bold tracking-[0.22em] uppercase text-[#FFC107] pb-2"
-              style={{ borderBottom: '1px solid rgba(var(--ci-accent-rgb),0.22)' }}
-            >
-              <GraduationCap size={14} strokeWidth={1.75} /> Competency snapshot
-            </div>
-            <MiniStat label="GAO modules"     value={`${Math.round(progress.gaoCompletePct * 100)}%`} />
-            <MiniStat label="GAO-EXAM"        value={progress.gaoExamPassed ? 'PASS' : '—'} emph={progress.gaoExamPassed} />
-            <MiniStat label="Role modules"    value={`${Math.round(progress.roleCompletePct * 100)}%`} />
-            <MiniStat label="Supervised"      value={`${progress.supervisedVisitsCompleted}/${progress.supervisedVisitsRequired}`} />
-            <MiniStat label="Annual training" value={`${Math.round(progress.annualCompletePct * 100)}%`} />
-            <MiniStat label="Escalations"     value={String(progress.openEscalations)} warn={progress.openEscalations > 0} />
-          </div>
+          <BorderGlow borderRadius={14} glowIntensity={0.4}>
+            <SurfaceCard padding="md">
+              <div className="space-y-2">
+                <div
+                  className="flex items-center gap-2 text-[10px] font-montserrat font-bold tracking-[0.22em] uppercase pb-2"
+                  style={{ color: '#FFC107', borderBottom: '1px solid rgba(var(--ci-accent-rgb),0.22)' }}
+                >
+                  <GraduationCap size={14} strokeWidth={1.75} /> Competency snapshot
+                </div>
+                <MiniStat label="GAO modules"     value={`${Math.round(progress.gaoCompletePct * 100)}%`} />
+                <MiniStat label="GAO-EXAM"        value={progress.gaoExamPassed ? 'PASS' : '—'} emph={progress.gaoExamPassed} />
+                <MiniStat label="Role modules"    value={`${Math.round(progress.roleCompletePct * 100)}%`} />
+                <MiniStat label="Supervised"      value={`${progress.supervisedVisitsCompleted}/${progress.supervisedVisitsRequired}`} />
+                <MiniStat label="Annual training" value={`${Math.round(progress.annualCompletePct * 100)}%`} />
+                <MiniStat label="Escalations"     value={String(progress.openEscalations)} warn={progress.openEscalations > 0} />
+              </div>
+            </SurfaceCard>
+          </BorderGlow>
         </aside>
 
         <section className="col-span-12 lg:col-span-9">
@@ -341,9 +356,11 @@ export function JourneyHomePage() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {section.modules.map(module => <ModuleCard key={module.id} module={module} />)}
-                  </div>
+                  <BorderGlow borderRadius={12} glowIntensity={0.4}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {section.modules.map(module => <ModuleCard key={module.id} module={module} />)}
+                    </div>
+                  </BorderGlow>
                 </div>
               ))}
             </div>

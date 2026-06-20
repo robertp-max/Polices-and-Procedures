@@ -33,7 +33,7 @@ import {
 
 import {
   PageHeader,
-  SurfaceCard,
+  SurfaceCard, // legacy container usages here; prototype exact structure enforced for dashboard/CES/other card usages
   SearchField,
   DataGrid,
   RightDrawer,

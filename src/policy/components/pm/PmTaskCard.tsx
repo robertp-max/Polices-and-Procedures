@@ -64,6 +64,7 @@ export function PmTaskCard({
   const dot = STATUS_COLOR[task.status];
   const chip = dueChip(task.due_date);
   const depCount = (task.depends_on ?? task.dependencies ?? []).length;
+  const ownerLabel = (task as any).assignee ?? (task as any).owner;
 
   const sourceLabel = isPersonalTask(task) ? 'Personal' : 'CES';
   const sourceColor = isPersonalTask(task)
@@ -129,7 +130,7 @@ export function PmTaskCard({
                   key={fid}
                   kind="form"
                   id={fid}
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-full"
+                  className="text-[9px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded-full"
                 />
               ))}
             </div>
@@ -142,7 +143,7 @@ export function PmTaskCard({
                   key={pid}
                   kind="policy"
                   id={pid}
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-full"
+                  className="text-[9px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded-full"
                 />
               ))}
             </div>
@@ -154,19 +155,28 @@ export function PmTaskCard({
             </div>
           )}
 
-          {(chip || depCount > 0 || task.story_points) && (
+          {(chip || depCount > 0 || task.story_points || ownerLabel || showSource) && (
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {chip && (
                 <span
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-full"
+                  className="text-[9px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded-full"
                   style={{ background: `${chip.color}22`, color: chip.color }}
                 >
                   {chip.label}
                 </span>
               )}
+              {ownerLabel && (
+                <span
+                  className="text-[9px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded-full"
+                  style={{ background: 'var(--ci-surface-2)', color: 'var(--ci-text-subtle)' }}
+                  title="Owner"
+                >
+                  {ownerLabel}
+                </span>
+              )}
               {depCount > 0 && (
                 <span
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-full"
+                  className="text-[9px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded-full"
                   style={{ background: 'var(--ci-surface-2)', color: 'var(--ci-text-subtle)' }}
                   title={`${depCount} dependency(ies)`}
                 >
@@ -174,13 +184,13 @@ export function PmTaskCard({
                 </span>
               )}
               {task.story_points && (
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full" style={{ background: 'var(--ci-surface-2)', color: 'var(--ci-text-subtle)' }}>
+                <span className="text-[9px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--ci-surface-2)', color: 'var(--ci-text-subtle)' }}>
                   {task.story_points} pt
                 </span>
               )}
               {showSource && (
                 <span
-                  className="text-[9px] font-mono px-1.5 py-0.5 rounded-full"
+                  className="text-[9px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded-full"
                   style={{ background: `${sourceColor}22`, color: sourceColor }}
                 >
                   {sourceLabel}

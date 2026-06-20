@@ -16,7 +16,8 @@ import { AlertTriangle } from 'lucide-react';
 
 import { frameworkPolicies } from '../data/frameworkSeed.generated';
 import { achcSurveyByPolicyId, type AchcMappingType, type AchcSurveyMetadata } from '@/policy/data/achcSurveyProjection.generated';
-import { EmptyState, SearchField, V32PageHeader, GlassPanel } from '@/policy/components/ui';
+import { EmptyState, SearchField, V32PageHeader, SurfaceCard } from '@/policy/components/ui';
+import { V32MetricTile as MetricTile } from '@/policy/components/ui/V32DesignSystem';
 
 
 
@@ -407,6 +408,16 @@ export function LibraryPage() {
           />
         </div>
 
+        {/* Policy Library Metrics (pick up new UI: MetricTile + BorderGlow tokens from image refs 45-policy-library.png) */}
+        <div className="mx-auto w-full w-full px-6 md:px-8 py-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <MetricTile label="Framework Policies" value={269} note="Library architecture scope" tone="teal" />
+            <MetricTile label="Library State" value={renderedPolicies.length} note="Active policies" tone="success" />
+            <MetricTile label="Review Cycle" value="Annual" note="Required policy cadence" tone="warning" />
+            <MetricTile label="Regulatory Boards" value={7} note="External mandate groups" tone="muted" />
+          </div>
+        </div>
+
         {/* Clean corporate view toggle + filters bar */}
         <div className="mx-auto w-full w-full px-6 md:px-8 pb-3 pt-1 shrink-0">
           <div className="flex items-center gap-2 pb-3">
@@ -478,7 +489,7 @@ export function LibraryPage() {
                 const SubIcon = sub.icon;
                 const count = renderedPolicies.filter(p => p.domainCode === sub.domainCode && p.subdomainCode === sub.code).length;
                 return (
-                  <GlassPanel key={`${sub.domainCode}-${sub.code}`} onClick={() => { if (selectedDomain==='ALL') setSelectedDomain(sub.domainCode); handleSubdomainSelect(sub.code); }} className="p-5 cursor-pointer">
+                  <SurfaceCard key={`${sub.domainCode}-${sub.code}`} onClick={() => { if (selectedDomain === 'ALL') { setSelectedDomain(sub.domainCode); } handleSubdomainSelect(sub.code); }} className="p-5 cursor-pointer">
                     <div className="flex gap-3">
                       <div className="mt-0.5 rounded-lg border border-white/10 p-2"><SubIcon size={18} /></div>
                       <div>
@@ -487,7 +498,7 @@ export function LibraryPage() {
                         <div className="text-xs text-[var(--v3-text-secondary)] mt-1">{count} policies</div>
                       </div>
                     </div>
-                  </GlassPanel>
+                  </SurfaceCard>
                 );
               })}
             </div>
@@ -497,7 +508,7 @@ export function LibraryPage() {
                 const domain = DOMAINS.find(d => d.code === policy.domainCode);
                 const color = domain?.color || 'var(--v3-teal)';
                 return (
-                  <GlassPanel key={policy.id} onClick={() => navigate(`/library/${policy.policyId}`)} className="p-4 flex flex-col gap-2 cursor-pointer group">
+                  <SurfaceCard key={policy.id} onClick={() => navigate(`/library/${policy.policyId}`)} className="p-4 flex flex-col gap-2 cursor-pointer group">
                     <div className="flex justify-between items-start">
                       <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded" style={{color}}>{policy.policyId}</span>
                       <span className="text-[10px] text-[var(--v3-text-tertiary)]">{policy.domainCode}</span>
@@ -507,7 +518,7 @@ export function LibraryPage() {
                       <span>{policy.subdomainCode}</span>
                       {policy.regulatoryTags?.length > 0 && <span className="text-[8px] px-1 rounded">{policy.regulatoryTags.slice(0,2).join(' ')}</span>}
                     </div>
-                  </GlassPanel>
+                  </SurfaceCard>
                 );
               })}
               {renderedPolicies.length === 0 && (

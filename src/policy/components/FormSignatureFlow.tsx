@@ -27,7 +27,7 @@ import { isDonAssistant } from '@/policy/ces/cesRoles';
      • Save Draft
    ═══════════════════════════════════════════════════════════════════ */
 
-const CI_TEAL   = '#007970';
+const CI_TEAL   = '#00797D';
 const CI_MUTED  = '#747470';
 const CI_AMBER  = '#B45309';
 
@@ -158,7 +158,7 @@ function SecondSignatureModal({ formInstanceId, onConfirm, onClose }: SecondSigM
               'w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors border',
                       selectable
                         ? chosen
-                          ? 'bg-[#E5FEFF] border-[#007970]'
+                          ? 'bg-[#E5FEFF] border-[#00797D]'
                           : 'hover:bg-[#F8FAF9] border-transparent'
                         : 'opacity-40 cursor-not-allowed border-transparent',
                     ].join(' ')}

@@ -6,6 +6,7 @@ import { ShiftStatusChip } from './ShiftStatusChip';
 import { usePatientStore } from '../stores/patientStore';
 import { useClinicianStore } from '../stores/clinicianStore';
 import type { Discipline } from '../types';
+import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
 
 interface ShiftCardProps {
   shift: Shift;
@@ -34,13 +35,7 @@ export function ShiftCard({ shift }: ShiftCardProps) {
     : null;
 
   return (
-    <div
-      className="rounded-lg p-4 flex flex-col gap-2"
-      style={{
-        background: 'var(--ci-surface)',
-        border: '1px solid var(--ci-border)',
-      }}
-    >
+    <SurfaceCard padding="md" className="flex flex-col gap-2 hover:shadow-md transition-shadow">
       {/* Top row: time range, discipline, status, priority */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-semibold" style={{ color: 'var(--ci-text-primary)', fontFamily: "'JetBrains Mono', monospace" }}>
@@ -121,6 +116,6 @@ export function ShiftCard({ shift }: ShiftCardProps) {
           {shift.notes}
         </p>
       )}
-    </div>
+    </SurfaceCard>
   );
 }
