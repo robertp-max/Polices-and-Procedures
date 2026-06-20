@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -k -n web,api -c cyan,magenta \"npm:dev:web\" \"npm:dev:api\"",
-    "predev:web": "node scripts/syncMasterControlInventory.mjs",
+    "predev:web": "node scripts/cleanEmittedJs.mjs && node scripts/syncMasterControlInventory.mjs",
     "dev:web": "vite",
     "dev:api": "tsx watch server/index.ts",
     "server": "tsx server/index.ts",
-    "prebuild": "node scripts/syncMasterControlInventory.mjs",
+    "prebuild": "node scripts/cleanEmittedJs.mjs && node scripts/syncMasterControlInventory.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
