@@ -31,6 +31,19 @@ const app = express();
 
 app.disable('x-powered-by');
 app.use(cors({ origin: env.allowedOrigin, credentials: false }));
+
+// Signed-artifact publish carries a FULLY self-contained signed package (signed
+// form HTML + embedded eCIgn certificate + signature images + audit metadata)
+// base64-encoded into a JSON body, which routinely exceeds the 4mb default. Mount
+// a larger JSON parser for ONLY this endpoint, BEFORE the global parser below:
+// body-parser sets `req._body` once it parses, so the global 4mb parser then
+// short-circuits and does not re-reject this route. The global limit (and every
+// other endpoint) is unchanged.
+app.use(
+  '/api/calendar/events/:eventId/signed-artifact/publish',
+  express.json({ limit: '32mb' }),
+);
+
 app.use(express.json({ limit: '4mb' })); // signature PNG payloads
 
 // Identity / session must run BEFORE the PEP, the bearer gate, and any
