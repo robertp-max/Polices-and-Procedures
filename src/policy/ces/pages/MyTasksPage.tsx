@@ -20,7 +20,9 @@ import type { MergedExecutionUnit } from '@/policy/compliance-execution/complian
 import { useDataFreshness } from '@/policy/utils/useDataFreshness';
 import { StalenessBanner } from '@/policy/components/ui/StalenessBanner';
 import { ActionButton, CiStatusBadge, EmptyState, PageHeader, SurfaceCard } from '@/policy/components/ui';
+// Note: SurfaceCard here used for compact status (legacy children); dashboard+board CES cards standardized to exact prototype structure (ref 16-dashboard, 11-ces).
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
+import { useShellStore } from '@/policy/stores/uiStore';
 
 type TaskFilter = 'all' | 'open' | 'awaiting_signature' | 'blocked' | 'overdue';
 
@@ -80,6 +82,7 @@ interface DiagnosticsProps {
 }
 
 function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOpen, onToggle }: DiagnosticsProps) {
+  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const assignedCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const u of backfilled) {
@@ -102,8 +105,8 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
 
   const row = (label: string, value: string | number, accent?: boolean) => (
     <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 11, padding: '2px 0' }}>
-      <span style={{ color: '#94A3B8' }}>{label}</span>
-      <span style={{ fontWeight: 700, color: accent ? '#FFC107' : '#F1F5F9', fontFamily: 'monospace' }}>{value}</span>
+      <span style={{ color: isLight ? '#5F5855' : '#94A3B8' }}>{label}</span>
+      <span style={{ fontWeight: 700, color: accent ? '#C74601' : (isLight ? '#1F1C1B' : '#F1F5F9'), fontFamily: 'monospace' }}>{value}</span>
     </div>
   );
 
@@ -117,9 +120,9 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
         zIndex: 9998,
         width: isOpen ? 340 : 'auto',
         borderRadius: 10,
-        border: '1px solid #1E3A5F',
-        background: '#0F172A',
-        color: '#F1F5F9',
+        border: isLight ? '1px solid #E9E5E3' : '1px solid #1E3A5F',
+        background: isLight ? '#FFFFFF' : '#0F172A',
+        color: isLight ? '#1F1C1B' : '#F1F5F9',
         fontFamily: 'system-ui, sans-serif',
         overflow: 'hidden',
       }}
@@ -133,9 +136,9 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
           gap: 8,
           width: '100%',
           padding: '7px 12px',
-          background: '#1E3A5F',
+          background: isLight ? '#F3F0EF' : '#1E3A5F',
           border: 'none',
-          color: '#F1F5F9',
+          color: isLight ? '#1F1C1B' : '#F1F5F9',
           cursor: 'pointer',
           fontSize: 10,
           fontWeight: 700,
@@ -146,7 +149,7 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
         <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#FFC107', display: 'inline-block' }} />
         CES Role Diagnostics
         {reviewRole && (
-          <span style={{ marginLeft: 4, padding: '1px 6px', borderRadius: 4, background: '#FFC107', color: '#0F172A', fontSize: 9, fontWeight: 800 }}>
+          <span style={{ marginLeft: 4, padding: '1px 6px', borderRadius: 4, background: '#FFC107', color: '#1F1C1B', fontSize: 9, fontWeight: 800 }}>
             {reviewRole}
           </span>
         )}
@@ -156,7 +159,7 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
       {isOpen && (
         <div style={{ padding: 12 }}>
           {/* Pipeline counts */}
-          <div style={{ fontSize: 9, color: '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>
+          <div style={{ fontSize: 9, color: isLight ? '#524D4B' : '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>
             Pipeline
           </div>
           {row('Source tasks (all obligations)', allTasks.length)}
@@ -166,7 +169,7 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
           {row('Selected review role', reviewRole ?? '— (real user)' )}
 
           {/* assignedRole distribution */}
-          <div style={{ fontSize: 9, color: '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 10, marginBottom: 6 }}>
+          <div style={{ fontSize: 9, color: isLight ? '#524D4B' : '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 10, marginBottom: 6 }}>
             By assignedRole (post-backfill)
           </div>
           {Object.entries(assignedCounts).sort((a, b) => b[1] - a[1]).map(([role, n]) =>
@@ -177,14 +180,14 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
           )}
 
           {/* accountableRole distribution */}
-          <div style={{ fontSize: 9, color: '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 10, marginBottom: 6 }}>
+          <div style={{ fontSize: 9, color: isLight ? '#524D4B' : '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 10, marginBottom: 6 }}>
             By accountableRole
           </div>
           {Object.entries(accountableCounts).sort((a, b) => b[1] - a[1]).map(([role, n]) =>
             row(role, n),
           )}
 
-          <div style={{ marginTop: 10, fontSize: 9, color: '#475569', textAlign: 'center', letterSpacing: '0.1em' }}>
+          <div style={{ marginTop: 10, fontSize: 9, color: isLight ? '#524D4B' : '#475569', textAlign: 'center', letterSpacing: '0.1em' }}>
             ROBERT_REVIEW_MODE · diagnostics only
           </div>
         </div>

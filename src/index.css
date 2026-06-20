@@ -68,7 +68,7 @@
   --v3-border: rgba(255, 255, 255, 0.33);
   --v3-border-hover: rgba(255, 255, 255, 0.45);
   --v3-border-subtle: rgba(255, 255, 255, 0.12);
-  --v3-teal: #007970;
+  --v3-teal: #00797D;
   --v3-teal-light: #00D1C1;
   --v3-orange: #E07B2C;
   --v3-orange-light: #FFA059;
@@ -269,8 +269,8 @@
     gap: 6px;
     padding: 2px 9px;
     font-size: 10px;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
     letter-spacing: 0.16em;
     text-transform: none;
     color: var(--v3-text-tertiary);
@@ -292,8 +292,8 @@
     background: transparent;
     color: var(--v3-text-secondary);
     font-size: 9.5px;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
     letter-spacing: 0.11em;
     text-transform: none;
     padding: 3px 11px;
@@ -317,8 +317,8 @@
     background: rgba(224, 123, 44, 0.08);
     color: var(--v3-orange-light);
     font-size: 9.5px;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
     letter-spacing: 0.11em;
     text-transform: none;
     padding: 3px 10px;
@@ -345,7 +345,7 @@
     display: inline-flex;
     align-items: center;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 300;
     letter-spacing: 0.02em;
     border: none;
     background: transparent;
@@ -390,65 +390,246 @@
   }
   html[data-theme="care-indeed-light"] .ces-filter-pill:hover {
     background: rgba(0, 121, 112, 0.08) !important;
-    color: #007970 !important;
+    color: #00797D !important;
     border: none !important;
   }
   html[data-theme="care-indeed-light"] .ces-filter-pill.active {
     background: #FFFFFF !important;
-    border: 1px solid #007970 !important;
-    color: #007970 !important;
+    border: 1px solid #00797D !important;
+    color: #00797D !important;
   }
   html[data-theme="care-indeed-light"] .ces-date-nav {
     border-radius: 10px !important;
+  }
 
 /* === Prototype New UI Card Styles (injected for live app to match redesign prototype visual language)
    .metric-tile / .surface-card / .hover-lift / .tone-*  from prototype + spec
-   This makes the live Dashboard KPIs and Events board pick up the exact prototype look while keeping live data.
+   KPI/MetricTile: exact 10px upper tracking 0.18em, 3xl value, tone pastels #F7FEFF, rounded-2xl, shadow-soft (live vs ref QA)
+   This makes the live Dashboard (7 KPI tiles) + CES board (4 MetricTiles) match ref 16-dashboard.png / 11-ces-board.png while keeping live data/numbers/clicks.
+   Pale #F7FEFF base, radii 16px, .tone-* exact pastels, direct no blur.
 */
 html[data-theme="care-indeed-light"] .metric-tile,
-html[data-theme="care-indeed-light"] .surface-card {
-  background: #FFFFFF;
-  border: 1px solid #E9E5E3;
-  border-radius: 16px; /* closer to prototype 24px/2xl feel */
-  box-shadow: 0 10px 32px -18px rgba(0,65,66,0.12), 0 4px 12px -6px rgba(0,65,66,0.06);
+html[data-theme="care-indeed-light"] .surface-card,
+html[data-theme="care-indeed-light"] .hover-lift {
+  border-radius: 16px !important; /* radii 8-32 contract, exact 2xl=16px for tiles/cards */
+  border: 1px solid #E5E4E3 !important; /* pixel-close subtle hairline to ref 16-dashboard / 11-ces-board cards */
+  box-shadow: var(--shadow-soft) !important; /* exact soft per spec/ref */
   transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* restrained per AGENT-45 scope: direct solid, NO heavy glass blur on cards/tiles. 
+     metric-tile uses pale #F7FEFF tones; surface-card = flat #FFFFFF */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  min-height: 92px !important;
+}
+/* Exact metric tile per ref QA (16-dashboard.png + 11-ces-board.png, prototype): 10px upper tracking 0.18em, 3xl value, tone pastels #F7FEFF, rounded-2xl, shadow-soft. Relaxed family override (ref uses font-heading); sizing+tracking+weight preserved. */
+html[data-theme="care-indeed-light"] .metric-tile .text-\[10px\] {
+  font-size: 10px !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important; /* prototype ref medium */
+}
+html[data-theme="care-indeed-light"] .metric-tile .text-3xl {
+  font-size: 1.875rem !important; /* 3xl */
+  line-height: 2.25rem !important;
+  font-weight: 500 !important;
+}
+html[data-theme="care-indeed-light"] .metric-tile .text-xs,
+html[data-theme="care-indeed-light"] .metric-tile .mt-1 {
+  font-size: 0.75rem !important;
+  font-weight: 300 !important;
+}
+/* Direct tone pastels + radii/hover for MetricTile (and Surface) per spec */
+html[data-theme="care-indeed-light"] .metric-tile {
+  border-radius: 16px !important;
+  padding: 1rem 1.25rem !important; /* p-4/5 */
+  min-height: 92px !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+/* universal (non-theme-scoped) enforcement for MetricTile spec (10px upper track 0.18em, 3xl med, xs light) + direct #F7FEFF pastels + rounded-2xl min-h-92 p-4/5 shadow-soft to match ref. No Roboto family force (allows heading match to ref screenshots). */
+.metric-tile .text-\[10px\] {
+  font-size: 10px !important; letter-spacing: 0.18em !important; text-transform: uppercase !important; font-weight: 500 !important;
+}
+.metric-tile .text-3xl {
+  font-size: 1.875rem !important; font-weight: 500 !important;
+}
+.metric-tile .text-xs {
+  font-size: 0.75rem !important; font-weight: 300 !important;
+}
+/* Typography contract per task: main header/nav = Roboto Medium (500), else = Roboto Light (300). */
+html[data-theme="care-indeed-light"] h1,
+html[data-theme="care-indeed-light"] .page-header-title,
+html[data-theme="care-indeed-light"] .nav-item-label {
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 500 !important;
+}
+html[data-theme="care-indeed-light"] .metric-tile .text-xs,
+html[data-theme="care-indeed-light"] .surface-card p,
+html[data-theme="care-indeed-light"] .body-text,
+html[data-theme="care-indeed-light"] .note-text {
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 300 !important;
+}
+
+/* AGENT-05 + tightened (AGENT-45): hard kill glass leaks on content. Glass/restrained ONLY on shells/overlays.
+   cards/tiles: flat #FFFFFF or pale #F7FEFF tones, exact radii 8-32, no heavy blur. */
+html[data-theme="care-indeed-light"] .v3-surface--glass,
+html[data-theme="care-indeed-light"] .v3-surface,
+html[data-theme="care-indeed-light"] .GlassPanel,
+html[data-theme="care-indeed-light"] .glass-panel:not(.glass-shell):not(.overlay-glass):not(.modal-glass):not(.shell-glass):not([data-glass="shell"]):not(.v3-veil-glass):not(.DrawerSurface),
+html[data-theme="care-indeed-light"] [class*="glass"]:not(.glass-shell):not(.overlay-glass):not(.modal-glass):not(.shell-glass):not([data-glass="shell"]):not(.v3-veil-glass):not(.DrawerSurface) {
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
 }
 
 html[data-theme="care-indeed-light"] .metric-tile:hover,
-html[data-theme="care-indeed-light"] .surface-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 45px -24px rgba(0,65,66,0.18);
-}
-
+html[data-theme="care-indeed-light"] .surface-card:hover,
 html[data-theme="care-indeed-light"] .hover-lift:hover {
   transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: rgba(0, 121, 125, 0.15);
+}
+/* brand-teal-50 hover support for sidebar non-active items */
+html[data-theme="care-indeed-light"] .hover\:bg-brand-teal-50:hover {
+  background-color: #E6F4F2 !important;
+}
+/* Sidebar exact per ref (292/88px, 4 UPPER groups PRIMARY OPERATIONS/COMPLIANCE EXECUTION/ADMINISTRATION/KNOWLEDGE, active bg-[#004142] text-white, filter input, X VIEWS badge, restrained glass on rail) */
+html[data-theme="care-indeed-light"] [data-shell-navrail] {
+  width: var(--ci-shell-navrail-width, 292px) !important;
+  font-family: 'Roboto', sans-serif !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] [data-active="true"] {
+  background-color: #004142 !important;
+  color: #fff !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] input[placeholder="Filter views..."] {
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 300 !important;
+}
+/* X VIEWS badge exact per ref: clean rounded-2xl, 2xl count Medium, 10px upper Light tracking on VIEWS label */
+html[data-theme="care-indeed-light"] [data-shell-navrail] .text-2xl {
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 500 !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] .text-\[10px\].uppercase {
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 300 !important;
+}
+
+/* Sidebar nav: main header/nav Roboto Medium (500), else Light (300) per spec; groups PRIMARY OPERATIONS/COMPLIANCE EXECUTION/ADMINISTRATION/KNOWLEDGE uppercase 10px tracking-[0.18em] */
+html[data-theme="care-indeed-light"] [data-shell-navrail] a,
+html[data-theme="care-indeed-light"] [data-shell-navrail] .font-medium,
+html[data-theme="care-indeed-light"] [data-shell-navrail] .font-light {
+  font-family: 'Roboto', system-ui, sans-serif !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] a {
+  font-weight: 300 !important; /* else = Light for nav items */
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] a.text-xs[data-active="true"] {
+  font-weight: 500 !important; /* active nav = Medium per typography */
+  background-color: #004142 !important;
+  color: #fff !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] .text-\[10px\] {
+  font-weight: 300 !important; /* groups/VIEWS/else = Light */
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] a[data-active="true"] {
+  font-weight: 500 !important;
+  background-color: #004142 !important;
+  color: #fff !important;
+}
+/* Enforce exact 292/88 sidebar + uppercase items + tracking on groups per task */
+html[data-theme="care-indeed-light"] [data-shell-navrail] {
+  width: 292px !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail][data-collapsed="true"] {
+  width: 88px !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] span {
+  text-transform: none; /* items uppered in jsx */
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] .text-\[10px\].uppercase {
+  letter-spacing: 0.18em !important;
+  font-weight: 300 !important; /* groups = Light (else per typography spec); main/nav active use Medium */
+}
+/* Ensure non-active nav items use Roboto Light (300), active Medium (500) per typography contract; groups/else also light */
+html[data-theme="care-indeed-light"] [data-shell-navrail] a:not([data-active="true"]) {
+  font-weight: 300 !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] a {
+  font-family: 'Roboto', system-ui, sans-serif !important;
+}
+
+/* #F7FEFF base + white cards, glass restrained (shell only), radii 8-32, hover-lift, chips/badges 10px uppercase tracking-[0.18em], header (Roboto Medium), metrics (direct pastel MetricTile), board density (tight grids/cards) per V6 spec for 05-admin-roles + all views */
+html[data-theme="care-indeed-light"],
+html[data-theme="care-indeed-light"] body,
+html[data-theme="care-indeed-light"] [data-shell-content-frame] {
+  background: #F7FEFF !important;
+}
+/* reinforce restrained: no glass on content cards/metrics, only shells; radii 8-32 contract; #F7FEFF base + white cards */
+html[data-theme="care-indeed-light"] .surface-card,
+html[data-theme="care-indeed-light"] .metric-tile {
+  background: #FFFFFF !important; /* white cards default; tone- overrides for metrics */
+  border-radius: 16px !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-theme="care-indeed-light"] .border-glow-card:not(.border-glow-overlay) {
+  background: transparent !important; /* restrained glass - no bg bleed on BorderGlow default wrapping content */
+  backdrop-filter: none !important;
+}
+html[data-theme="care-indeed-light"] .surface-card:not(.tone-teal):not(.tone-orange):not(.tone-amber):not(.tone-slate):not(.tone-green) {
+  background: #FFFFFF !important;
+}
+
+html[data-theme="care-indeed-light"] .hover-lift {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.25s ease;
+}
+html[data-theme="care-indeed-light"] .hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* Utility classes for shadow-soft / shadow-lift / hover-lift base (ensure they resolve in main app even without side-loading redesign-page.css; match redesign-page.css + spec exactly) */
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+.shadow-lift {
+  box-shadow: var(--shadow-lift);
+}
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.25s ease;
 }
 
 html[data-theme="care-indeed-light"] .tone-teal {
-  background: #F7FEFF;
-  color: #00797D;
-  border-color: #E5F0EF;
+  background: var(--tone-teal-bg, #F7FEFF);
+  color: var(--tone-teal-fg, #00797D);
+  border-color: var(--tone-teal-bdr, #E5F0EF);
 }
 html[data-theme="care-indeed-light"] .tone-orange {
-  background: #FFFAF7;
-  color: #C74601;
-  border-color: #FFEEE5;
+  background: var(--tone-orange-bg, #FFFAF7);
+  color: var(--tone-orange-fg, #C74601);
+  border-color: var(--tone-orange-bdr, #FFEEE5);
 }
 html[data-theme="care-indeed-light"] .tone-amber {
-  background: #fff8e6;
-  color: #8a5c00;
-  border-color: #f0d9a3;
+  background: var(--tone-amber-bg, #fff8e6);
+  color: var(--tone-amber-fg, #8a5c00);
+  border-color: var(--tone-amber-bdr, #f0d9a3);
 }
 html[data-theme="care-indeed-light"] .tone-slate {
-  background: #FAF8F8;
-  color: #524D4B;
-  border-color: #E9E5E3;
+  background: var(--tone-slate-bg, #FAF8F8);
+  color: var(--tone-slate-fg, #524D4B);
+  border-color: var(--tone-slate-bdr, #E9E5E3);
 }
-    border: none !important;
-    background: #F8FAFC !important;
-    padding: 1px !important;
-    height: 28px !important;
-  }
+html[data-theme="care-indeed-light"] .tone-green {
+  background: var(--tone-green-bg, #e6f4ed);
+  color: var(--tone-green-fg, #006B3A);
+  border-color: var(--tone-green-bdr, #a3d9b8);
+}
   html[data-theme="care-indeed-light"] .ces-date-nav button,
   html[data-theme="care-indeed-light"] .ces-date-nav span {
     padding-left: 6px !important;
@@ -533,7 +714,7 @@ html[data-theme="care-indeed-light"] .tone-slate {
 
   /* LibraryPage view-switch brand colors. `teal` = IBM Framework
      active, `coral` = ACHC Survey active, `grey` = inactive label. */
-  --ci-brand-teal:   #007970;
+  --ci-brand-teal:   #00797D;
   --ci-brand-coral:  #EA580C;
   --ci-brand-grey:   #747470;
 }
@@ -602,8 +783,13 @@ html[data-theme="care-indeed-light"] .tone-slate {
     background-color: #f8fafc;
   }
   h1, h2, h3, h4 {
-    font-family: 'Outfit', 'Montserrat', sans-serif;
+    font-family: 'Roboto', 'Outfit', sans-serif;
     letter-spacing: 0.015em;
+  }
+  /* main header/nav: Roboto Medium (500) for titles/h1 ; else Light(300) */
+  h1 {
+    font-weight: 500 !important; /* Medium for main headers */
+    font-family: 'Roboto', sans-serif !important;
   }
   /* iOS Safari auto-zooms form inputs whose computed font-size is
      <16px when focused. Force a 16px minimum on phones only — desktop
@@ -870,7 +1056,7 @@ html[data-theme="care-indeed-light"] .tone-slate {
 .pres-scrollbar::-webkit-scrollbar { width: 6px; }
 .pres-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .pres-scrollbar::-webkit-scrollbar-thumb { background: #D1D1D1; border-radius: 8px; }
-.pres-scrollbar::-webkit-scrollbar-thumb:hover { background: #007970; }
+.pres-scrollbar::-webkit-scrollbar-thumb:hover { background: #00797D; }
 
 /* Legacy animations (kept for compatibility) */
 @keyframes wiggle {
@@ -936,7 +1122,7 @@ select:focus-visible {
    Dark mode (ci-ion-dark) keeps every token above unchanged.
    ══════════════════════════════════════════════════════════════ */
 /* Care Indeed Brand Kit (per CI Brand.md):
-   • Primary Teal  #007970  ← highlights, accents, headings, focus
+   • Primary Teal  #00797D  ← highlights, accents, headings, focus
    • Secondary     #C74600  ← CTA buttons ONLY (and critical alerts)
    • Bold contrast, no pastels on UI surfaces.
    Light mode remaps the legacy CI-ION "gold" token onto TEAL so every
@@ -958,6 +1144,15 @@ html[data-theme="care-indeed-light"].ci-redesign-light {
 
   /* (dangling canonical brand tokens from removed duplicate purged) */
 
+  /* === Full Brand Scales (added for .tone-* + V32Metric/Surface to resolve in live light; match redesign-page.css + spec exactly) */
+  --teal-50: #F7FEFF;
+  --teal-100: #E5F0EF;
+  --teal-200: #C4F4F5;
+  --teal-300: #C4F4F5;
+  --teal-400: #06A6AB;
+  --teal-500: #00797D;
+  --teal-600: #004142;
+
   --orange-50: #FFFAF7;
   --orange-100: #FFEEE5;
   --orange-200: #FFD5BF;
@@ -975,11 +1170,11 @@ html[data-theme="care-indeed-light"].ci-redesign-light {
 
   /* === Pastel Tile Tokens (for .tone-* / MetricTile) === */
   --tone-teal-bg: var(--teal-50);
-  --tone-teal-fg: var(--teal-600);
+  --tone-teal-fg: var(--teal-500);
   --tone-teal-bdr: var(--teal-200);
 
   --tone-orange-bg: var(--orange-50);
-  --tone-orange-fg: var(--orange-600);
+  --tone-orange-fg: var(--orange-500);
   --tone-orange-bdr: var(--orange-200);
 
   --tone-green-bg: #e6f4ed;
@@ -1007,14 +1202,14 @@ html[data-theme="care-indeed-light"].ci-redesign-light {
   --text-muted: #6D8B8D;
 
   /* === Surfaces (Layered: pale atm + white crisp cards) === */
-  --surface-page: #F7FEFF;         /* Layer 0: pale atmospheric base (teal cast) */
+  --surface-page: #F7FEFF;         /* Layer 0: pale atmospheric base (teal cast) EXACT per spec/refs */
   --surface-base: #FFFFFF;         /* Layer 1: main application plane */
-  --surface-card: #FFFFFF;         /* Layer 2: elevated content cards - crisp, opaque */
+  --surface-card: #FFFFFF;         /* Layer 2: elevated content cards - crisp, opaque, DIRECT no blur */
   --surface-elevated: #FFFFFF;
   --surface-popover: #FFFFFF;
-  --surface-glass: rgba(255, 255, 255, 0.72); /* Restrained glass ONLY for shells/modals (no every-card glassmorphism) */
+  --surface-glass: rgba(255, 255, 255, 0.72); /* Restrained glass ONLY for shells/overlays/modals (NOT cards/metric) */
   --border-subtle: rgba(0, 65, 66, 0.12); /* 1px neutral hairline */
-  --border-card: #E9E5E3;
+  --border-card: #E5E4E3; /* subtle hairline per ref cards */
 
   /* === Brand Semantic (teal/orange) === */
   --teal-primary: #00797D;
@@ -1035,10 +1230,10 @@ html[data-theme="care-indeed-light"].ci-redesign-light {
   --radius-2xl: 32px;
 
   /* === Shadows (soft, restrained per redesign-page.css + spec; --shadow-soft/lift) === */
-  --shadow-soft: 0 10px 32px -18px rgba(0, 65, 66, 0.12),
-                 0 4px 12px -6px rgba(0, 65, 66, 0.06);
-  --shadow-lift: 0 18px 45px -24px rgba(0, 65, 66, 0.18),
-                 0 10px 28px -16px rgba(0, 65, 66, 0.10);
+  --shadow-soft: 0 8px 24px -16px rgba(0, 65, 66, 0.10),
+                 0 3px 10px -5px rgba(0, 65, 66, 0.05); /* final softer neutral for pixel-close to ref card surfaces */
+  --shadow-lift: 0 14px 36px -20px rgba(0, 65, 66, 0.14),
+                 0 8px 20px -12px rgba(0, 65, 66, 0.08); /* tuned lift to match ref hover surface */
   --shadow-premium: 0 18px 52px -30px rgba(0, 121, 125, 0.12),
                     0 10px 30px -26px rgba(0, 121, 125, 0.06),
                     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -1069,6 +1264,7 @@ html[data-theme="care-indeed-light"].ci-redesign-light {
   --brand-primary: #00797D;
   --brand-teal: #00797D;
   --brand-orange: #C74601;
+  --v3-teal: #00797D; /* enforce canonical in light */
   --ci-bg: var(--surface-page);
   --ci-surface: var(--surface-card);
   --ci-text-primary: #1F1C1B;
@@ -1077,10 +1273,26 @@ html[data-theme="care-indeed-light"].ci-redesign-light {
   --surface: #FFFFFF;
   --app-bg: #F7FEFF;
 }
-html[data-theme="care-indeed-light"] body {
-  background: transparent;
+html[data-theme="care-indeed-light"] body,
+html[data-theme="care-indeed-light"] #root,
+html[data-theme="care-indeed-light"] [data-shell-content-frame],
+html[data-theme="care-indeed-light"] .ArtifactViewerPage,
+html[data-theme="care-indeed-light"] [class*="artifact"] {
+  background: #F7FEFF !important;
   color: var(--ci-text);
   font-family: 'Roboto', 'Outfit', sans-serif;
+}
+/* Final no-black + canonical teal enforcement for all redesign visual elements (tiles, cards, sidebar, text, borders) */
+html[data-theme="care-indeed-light"] :where(.text-black, .text-neutral-950, .text-neutral-900, .text-neutral-800, .text-slate-900, .text-slate-800, .text-gray-900, .text-gray-800, .text-brand-teal-600, .text-teal-600, [style*="color:#000"], [style*="color: #000"], [style*="color:#111"], [style*="color: #111"]) {
+  color: var(--text-primary, #063F43) !important;
+}
+html[data-theme="care-indeed-light"] :where([style*="border-color:#000"], [style*="border-color: #000"]) {
+  border-color: #E9E5E3 !important;
+}
+html[data-theme="care-indeed-light"] .border-glow-card,
+html[data-theme="care-indeed-light"] .surface-card,
+html[data-theme="care-indeed-light"] .metric-tile {
+  border-color: var(--border-card, #E9E5E3) !important;
 }
 html[data-theme="care-indeed-light"] h1,
 html[data-theme="care-indeed-light"] h2,
@@ -1092,8 +1304,57 @@ html[data-theme="care-indeed-light"] .page-title,
 html[data-theme="care-indeed-light"] .section-title,
 html[data-theme="care-indeed-light"] [data-header],
 html[data-theme="care-indeed-light"] .font-heading {
-  font-family: 'Montserrat', 'Outfit', sans-serif;
-  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode. Use clinical teal, not black */
+  font-family: 'Roboto', 'Outfit', sans-serif;
+  color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode. Use clinical teal, not black */
+}
+/* Per QA typography contract: main headers and nav use Roboto Medium 500; everything else Roboto Light 300.
+   Main header = primary page titles (h1). Nav uses explicit classes in ShellNavRail. */
+html[data-theme="care-indeed-light"] h1 {
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 500 !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] {
+  font-family: 'Roboto', sans-serif !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] a,
+html[data-theme="care-indeed-light"] [data-shell-navrail] span {
+  font-weight: 500 !important; /* nav items = Roboto Medium per typography spec (main header/nav Roboto Medium); groups use light via explicit; active also 500 */
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] a[data-active="true"] {
+  font-weight: 500 !important;
+  background-color: #004142 !important;
+  color: #ffffff !important;
+}
+/* X VIEWS number = Medium per main/nav contract; label remains light upper 10px 0.18em */
+html[data-theme="care-indeed-light"] [data-shell-navrail] .text-2xl {
+  font-weight: 500 !important;
+  font-family: 'Roboto', sans-serif !important;
+}
+/* group headers (PRIMARY OPERATIONS/COMPLIANCE EXECUTION/ADMINISTRATION/KNOWLEDGE) = Roboto Light (else) per typography spec + 10px upper tracking; nav items = Medium */
+html[data-theme="care-indeed-light"] [data-shell-navrail] .mb-2.px-2 {
+  font-weight: 300 !important;
+}
+/* Sidebar views badge + group labels exact Roboto + tracking per V6 ref + 01-main-shell */
+html[data-theme="care-indeed-light"] [data-shell-navrail] .rounded-2xl.border.border-\[\#004142\]\/10 {
+  font-family: 'Roboto', sans-serif !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] .text-\[10px\].uppercase {
+  letter-spacing: 0.18em !important;
+  font-weight: 300 !important; /* groups = Roboto Light (else); nav items use explicit Medium when active or label */
+}
+/* Ensure 4 uppercase groups exact per spec (PRIMARY OPERATIONS etc) + filter + X VIEWS */
+html[data-theme="care-indeed-light"] [data-shell-navrail] .text-\[10px\].font-roboto.uppercase {
+  text-transform: uppercase !important;
+  font-weight: 300 !important;
+}
+html[data-theme="care-indeed-light"] body,
+html[data-theme="care-indeed-light"] p,
+html[data-theme="care-indeed-light"] li,
+html[data-theme="care-indeed-light"] .text-sm,
+html[data-theme="care-indeed-light"] .text-xs,
+html[data-theme="care-indeed-light"] .text-base {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
 }
 html[data-theme="care-indeed-light"] .custom-scrollbar::-webkit-scrollbar-thumb,
 html[data-theme="care-indeed-light"] .custom-scrollbar-x::-webkit-scrollbar-thumb {
@@ -1104,7 +1365,7 @@ html[data-theme="care-indeed-light"] .custom-scrollbar-x::-webkit-scrollbar-thum
   background: #C74601;
 }
 html[data-theme="care-indeed-light"] *:focus-visible {
-  outline: 2px solid var(--ci-accent, #007970);
+  outline: 2px solid var(--ci-accent, #00797D);
   outline-offset: 2px;
 }
 html[data-theme="care-indeed-light"] button:focus-visible,
@@ -1112,7 +1373,7 @@ html[data-theme="care-indeed-light"] input:focus-visible,
 html[data-theme="care-indeed-light"] select:focus-visible,
 html[data-theme="care-indeed-light"] textarea:focus-visible,
 html[data-theme="care-indeed-light"] a:focus-visible {
-  outline: 2px solid var(--ci-accent, #007970);
+  outline: 2px solid var(--ci-accent, #00797D);
   box-shadow: 0 0 0 4px var(--ci-focus-ring, rgba(0,121,112,0.22)) !important;
 }
 html[data-theme="care-indeed-light"] input:focus,
@@ -1201,13 +1462,13 @@ html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#141a23\],
 html[data-theme="care-indeed-light"] [data-ces-calendar] .bg-\[\#0d1a2d\] {
   background-color: #FFFFFF !important;
   background: #F8FAFC !important;
-  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+  color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
   border: none !important;
   padding: 0 !important;
 }
 html[data-theme="care-indeed-light"] [data-ces-calendar] .text-white,
 html[data-theme="care-indeed-light"] [data-ces-calendar] [class*="text-white/"] {
-  color: var(--v3-teal, #007970) !important; /* teal per design #4 */
+  color: var(--v3-teal, #00797D) !important; /* teal per design #4 */
 }
 html[data-theme="care-indeed-light"] [data-ces-calendar] .text-\[\#A0ABC0\],
 html[data-theme="care-indeed-light"] [data-ces-calendar] .text-\[\#5E6A7F\],
@@ -1255,25 +1516,18 @@ html[data-theme="care-indeed-light"] [data-pm-shell] .bg-\[\#0f1420\] {
 }
 html[data-theme="care-indeed-light"] [data-regulatory-drawer] .bg-\[\#0d1a2d\] {
   background-color: #FFFFFF !important;
-  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+  color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
 }
 
-/* Sidebar (data-shell-navrail already present) — slightly deeper soft teal than
-   the page base, high contrast text. */
+/* Sidebar (data-shell-navrail already present) — defer to prototype-matching rules below for exact ref visual
+   (airy white rail + right hairline border + directional shadow per V6_Final/16-dashboard + 01-main-shell.md). */
 html[data-theme="care-indeed-light"] [data-shell-navrail] {
-  background-color: #DCEAE6 !important;
-  /* no borders on four sides — production light mode flat light surfaces, no left/right/top/bottom framing lines. Side nav correct, no bleed. */
-  border: none !important;
-  border-top: none !important;
-  border-right: none !important;
-  border-bottom: none !important;
-  border-left: none !important;
-  box-shadow: none !important;
+  /* background/border/shadow intentionally not forced here; see rules near line 5291 that match ref sidebar. */
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] .text-text-muted,
 html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="text-text-muted"],
 html[data-theme="care-indeed-light"] [data-shell-navrail] .text-text-primary {
-  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+  color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] .text-text-disabled {
   color: #16201F !important;
@@ -1282,13 +1536,13 @@ html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="hover:bg-bord
   background-color: rgba(0, 121, 112, 0.08) !important;
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="hover:text-text-primary"]:hover {
-  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+  color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="bg-brand-teal/10"] {
   background-color: rgba(0, 121, 112, 0.10) !important;
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] [class*="text-brand-teal"] {
-  color: #007970 !important;
+  color: #00797D !important;
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail]::after {
   background: transparent !important; /* no side border simulation — production light mode */
@@ -1448,7 +1702,7 @@ html[data-theme="care-indeed-light"] .ces-filter-pill {
 }
 html[data-theme="care-indeed-light"] .ces-filter-pill.active {
   background: rgba(0, 209, 193, 0.12) !important;
-  color: #007970 !important;
+  color: #00797D !important;
 }
 html[data-theme="care-indeed-light"] .ces-filter-clear {
   background: rgba(224, 123, 44, 0.09) !important;
@@ -1531,7 +1785,7 @@ html[data-theme="care-indeed-light"] .ces-filter-pill {
 }
 html[data-theme="care-indeed-light"] .ces-filter-pill.active {
   background: rgba(0, 121, 112, 0.12) !important;
-  color: #007970 !important;
+  color: #00797D !important;
 }
 html[data-theme="care-indeed-light"] .ces-filter-clear {
   background: rgba(224, 123, 44, 0.09) !important;
@@ -1726,7 +1980,6 @@ html[data-theme="care-indeed-light"] .card-spotlight {
 /* Coordinator final polish: universal no-borders + full-screen main for shell + all views (prevents bleed, matches design contract #4). Side nav correct, main card full occupy.
    STRENGTHENED (Agent 7): purge ALL stray borders on calendar surfaces globally. */
 [data-shell-app],
-[data-shell-navrail],
 [data-shell-topbar],
 [data-shell-content-frame],
 [data-shell-main],
@@ -1784,8 +2037,8 @@ main[data-shell-main] {
 /* Confirm full screen main card + side nav (Agent 16 coord): no right edge from nav, calendar/main full bleed z=auto contained */
 [data-shell-navrail] {
   z-index: 40 !important;
-  border-right: none !important;
   transition: width 200ms ease;
+  /* border-right provided by light theme ref rule + proto class for 1px hairline match to ref image */
 }
 [data-shell-main],
 main[data-shell-main],
@@ -1841,13 +2094,13 @@ html[data-theme="care-indeed-light"] .spotlight-inner-glow {
   --ci-danger-fg:    #D70101;
   --ci-danger-bdr:   #F49E9E;
   --ci-info-bg:      #E5FEFF;
-  --ci-info-fg:      #007970;
+  --ci-info-fg:      #00797D;
   --ci-info-bdr:     #7ADEDF;
 
   /* Phase 3 — execution-timeline / board state tokens (theme-aware).
      on-track = teal, action = orange. Distinct from --ci-accent because
      --ci-accent varies (gold on CI-ION, teal on Care Indeed). */
-  --ci-state-on-track:    #007970;
+  --ci-state-on-track:    #00797D;
   --ci-state-on-track-bg: rgba(0,121,112,0.12);
   --ci-action:            #E07B2C; /* design #4 orange */
 }
@@ -1956,28 +2209,43 @@ html[data-theme="care-indeed-light"] #root :where(
   .text-slate-800,
   .text-gray-900,
   .text-gray-800,
-  .text-\[\#1F1C1B\],
   .text-\[\#111827\],
   .text-\[\#1F2937\],
   .text-\[\#0F172A\]
 ) {
-  color: var(--text-primary, #063F43) !important;
+  color: var(--ci-text-primary, #1F1C1B) !important;
 }
 
-/* Elevated content cards per design spec (Layer 2) - soft white, subtle elevation, 16px radius */
-html[data-theme="care-indeed-light"] .rounded-xl,
+/* AGENT-35: Enforce #1F1C1B (or proper muted) body text + kill any remaining black/dark bleed specifically on dashboard + CES surfaces */
+html[data-theme="care-indeed-light"] [data-surface="dashboard"],
+html[data-theme="care-indeed-light"] .metric-tile,
+html[data-theme="care-indeed-light"] .surface-card,
+html[data-theme="care-indeed-light"] .ces-sprint-board,
+html[data-theme="care-indeed-light"] [data-ces-board],
+html[data-theme="care-indeed-light"] .ces-premium-filter-bar {
+  color: var(--ci-text-primary, #1F1C1B) !important;
+}
+html[data-theme="care-indeed-light"] [data-surface="dashboard"] .text-slate-700,
+html[data-theme="care-indeed-light"] [data-surface="dashboard"] .text-slate-800,
+html[data-theme="care-indeed-light"] [data-surface="dashboard"] .text-slate-900 {
+  color: var(--ci-text-primary, #1F1C1B) !important;
+}
+
+/* Elevated content cards per design spec (Layer 2) - soft white, subtle elevation, 16px radius (standard cards) */
+html[data-theme="care-indeed-light"] .rounded-xl:not(.surface-card):not(.metric-tile),
 html[data-theme="care-indeed-light"] .swimlane-card,
 html[data-theme="care-indeed-light"] .card,
 html[data-theme="care-indeed-light"] .spotlight-card {
+  /* Agent 12: restrained glass — spotlight for content is now surface (opaque); BorderGlow+glass reserved for premium overlays/modals/drawers per V6 15-modals-overlays */
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 10px rgba(0,0,0,0.03);
+  box-shadow: var(--shadow-soft);
 }
 
-/* Major panels / large cards: 24px radius */
-html[data-theme="care-indeed-light"] .rounded-2xl,
-html[data-theme="care-indeed-light"] .major-panel {
+/* Major panels / large cards: 24px radius (use rounded-3xl or .major-panel to avoid clobbering standard rounded-2xl cards which expect 16px per ref + usage in SurfaceCard/MetricTile) */
+html[data-theme="care-indeed-light"] .major-panel,
+html[data-theme="care-indeed-light"] .rounded-3xl {
   border-radius: 24px;
 }
 
@@ -2772,7 +3040,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
     overflow: visible !important;
     font-size: 11pt !important;
     line-height: 1.4 !important;
-    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+    color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
   }
 
   /* ── 3. Shell layer reset ── */
@@ -2824,7 +3092,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
   }
   .policy-page {
     background: #ffffff !important;
-    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+    color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
     border: none !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -2978,7 +3246,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
     padding: 5px 8px !important;
     font-weight: 700 !important;
     font-size: 8.5pt !important;
-    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+    color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
     text-transform: uppercase !important;
     letter-spacing: 0.08em !important;
     vertical-align: bottom !important;
@@ -2987,14 +3255,14 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
     border: 1px solid #ccc !important;
     padding: 5px 8px !important;
     font-size: 9.5pt !important;
-    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+    color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
     background: transparent !important;
     vertical-align: top !important;
   }
   /* First cell (step number) — slightly bolder; allow wrap to prevent clipping */
   .policy-print-only td:first-child {
     font-weight: 600 !important;
-    color: #007970 !important;
+    color: #00797D !important;
     white-space: normal !important;
     word-break: break-word !important;
   }
@@ -3129,7 +3397,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
   body:has(.form-page) .form-page input,
   body:has(.form-page) .form-page textarea,
   body:has(.form-page) .form-page select {
-    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+    color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
     border-color: #999 !important;
     background: transparent !important;
   }
@@ -3154,7 +3422,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
   .ia-form-print-root textarea,
   .ia-form-print-root select {
     border-color: #aaa !important;
-    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+    color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
     background: transparent !important;
   }
 
@@ -3186,7 +3454,7 @@ html[data-theme="care-indeed-light"][data-ci-mode="dark"] .ci-executive-shell::a
   .policy-page input,
   .policy-page textarea,
   .policy-page select {
-    color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+    color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
     border-color: #999 !important;
     background: transparent !important;
   }
@@ -3240,7 +3508,7 @@ html[data-theme="care-indeed-light"] .text-white,
 html[data-theme="care-indeed-light"] .text-white\/95,
 html[data-theme="care-indeed-light"] .text-white\/90,
 html[data-theme="care-indeed-light"] .text-white\/85,
-html[data-theme="care-indeed-light"] .text-white\/80 { color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }   /* neutral-600 */
+html[data-theme="care-indeed-light"] .text-white\/80 { color: var(--brand-primary, #00797D) !important; /* teal for headers in production light mode — no black */ }   /* neutral-600 */
 html[data-theme="care-indeed-light"] .text-white\/75,
 html[data-theme="care-indeed-light"] .text-white\/70,
 html[data-theme="care-indeed-light"] .text-white\/65,
@@ -3278,7 +3546,7 @@ html[data-theme="care-indeed-light"] .bg-white\/20,
 html[data-theme="care-indeed-light"] .bg-white\/10,
 html[data-theme="care-indeed-light"] .bg-white\/5,
 html[data-theme="care-indeed-light"] .bg-white\/\[0\.03\],
-html[data-theme="care-indeed-light"] .bg-white\/\[0\.02\] { background-color: #FAFBF8 !important; color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
+html[data-theme="care-indeed-light"] .bg-white\/\[0\.02\] { background-color: #FAFBF8 !important; color: var(--brand-primary, #00797D) !important; /* teal for headers in production light mode — no black */ }
 
 /* Dividers — neutral-200 */
 html[data-theme="care-indeed-light"] .divide-white\/5 > :not([hidden]) ~ :not([hidden]),
@@ -3294,8 +3562,8 @@ html[data-theme="care-indeed-light"] .placeholder-white\/60::placeholder { color
    contrast on the light glass. These are darker variants of the
    same hues, not new colors. */
 html[data-theme="care-indeed-light"] .text-\[\#00e59b\],
-html[data-theme="care-indeed-light"] .text-\[\#00a370\] { color: #007970 !important; }
-html[data-theme="care-indeed-light"] .border-\[\#00e59b\] { border-color: #007970 !important; }
+html[data-theme="care-indeed-light"] .text-\[\#00a370\] { color: #00797D !important; }
+html[data-theme="care-indeed-light"] .border-\[\#00e59b\] { border-color: #00797D !important; }
 html[data-theme="care-indeed-light"] .bg-\[\#00e59b\]\/10,
 html[data-theme="care-indeed-light"] .bg-\[\#00e59b\]\/15,
 html[data-theme="care-indeed-light"] .bg-\[\#00e59b\]\/20 { background-color: rgba(0,121,112,0.10) !important; }
@@ -3395,18 +3663,18 @@ html[data-theme="care-indeed-light"] .bg-black\/50,
 html[data-theme="care-indeed-light"] .bg-black\/40,
 html[data-theme="care-indeed-light"] .bg-black\/30,
 html[data-theme="care-indeed-light"] .bg-black\/25,
-html[data-theme="care-indeed-light"] .bg-black\/20 { background-color: #FAFBF8 !important; color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ border-color: #E5E4E3 !important; }
+html[data-theme="care-indeed-light"] .bg-black\/20 { background-color: #FAFBF8 !important; color: var(--brand-primary, #00797D) !important; /* teal for headers in production light mode — no black */ border-color: #E5E4E3 !important; }
 html[data-theme="care-indeed-light"] .bg-black\/15,
 html[data-theme="care-indeed-light"] .bg-black\/10,
-html[data-theme="care-indeed-light"] .bg-black\/5  { background-color: #FFFFFF !important; color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
-html[data-theme="care-indeed-light"] .bg-black     { background-color: #FFFFFF !important; color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
+html[data-theme="care-indeed-light"] .bg-black\/5  { background-color: #FFFFFF !important; color: var(--brand-primary, #00797D) !important; /* teal for headers in production light mode — no black */ }
+html[data-theme="care-indeed-light"] .bg-black     { background-color: #FFFFFF !important; color: var(--brand-primary, #00797D) !important; /* teal for headers in production light mode — no black */ }
 
 /* Form inputs — brand kit spec (white surface, neutral-300 border,
    neutral-600 text, neutral-400 placeholder, primary-500 focus ring) */
 html[data-theme="care-indeed-light"] input,
 html[data-theme="care-indeed-light"] select,
 html[data-theme="care-indeed-light"] textarea {
-  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+  color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
 }
 html[data-theme="care-indeed-light"] input.bg-black\/30,
 html[data-theme="care-indeed-light"] input.bg-black\/20,
@@ -3415,7 +3683,7 @@ html[data-theme="care-indeed-light"] select.bg-black\/20,
 html[data-theme="care-indeed-light"] textarea.bg-black\/30,
 html[data-theme="care-indeed-light"] textarea.bg-black\/20 {
   background-color: #FFFFFF !important;
-  color: var(--brand-primary, #007970) !important; /* teal for headers — production light mode, no black */
+  color: var(--brand-primary, #00797D) !important; /* teal for headers — production light mode, no black */
   border-color: #D1D1D1 !important;
 }
 html[data-theme="care-indeed-light"] input::placeholder,
@@ -3582,7 +3850,7 @@ html[data-theme="care-indeed-light"] .text-stone-600,
 html[data-theme="care-indeed-light"] .text-stone-700,
 html[data-theme="care-indeed-light"] .text-stone-800,
 html[data-theme="care-indeed-light"] .text-stone-900,
-html[data-theme="care-indeed-light"] .text-black { color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
+html[data-theme="care-indeed-light"] .text-black { color: var(--brand-primary, #00797D) !important; /* teal for headers in production light mode — no black */ }
 
 /* Slate/gray backgrounds on light → neutral-100 surface */
 html[data-theme="care-indeed-light"] .bg-slate-50,
@@ -3644,7 +3912,7 @@ html[data-theme="care-indeed-light"] .text-cyan-400,
 html[data-theme="care-indeed-light"] .text-sky-300,
 html[data-theme="care-indeed-light"] .text-sky-400,
 html[data-theme="care-indeed-light"] .text-teal-300,
-html[data-theme="care-indeed-light"] .text-teal-400 { color: #007970 !important; } /* brand teal */
+html[data-theme="care-indeed-light"] .text-teal-400 { color: #00797D !important; } /* brand teal */
 html[data-theme="care-indeed-light"] .text-orange-400,
 html[data-theme="care-indeed-light"] .text-orange-500 { color: #C74601 !important; } /* brand primary orange */
 html[data-theme="care-indeed-light"] .text-indigo-300,
@@ -3697,7 +3965,7 @@ html[data-theme="care-indeed-light"] .text-\[\#F59E0B\] { color: #C74601 !import
 html[data-theme="care-indeed-light"] .text-\[\#10b981\],
 html[data-theme="care-indeed-light"] .text-\[\#10B981\] { color: #008540 !important; }
 html[data-theme="care-indeed-light"] .text-\[\#06b6d4\],
-html[data-theme="care-indeed-light"] .text-\[\#06B6D4\] { color: #007970 !important; }
+html[data-theme="care-indeed-light"] .text-\[\#06B6D4\] { color: #00797D !important; }
 
 /* Labels on SOLID brand-colored pills/buttons must stay WHITE.
    The broad .text-white → neutral-600 cascade above would otherwise
@@ -3709,8 +3977,8 @@ html[data-theme="care-indeed-light"] .bg-\[\#C74600\],
 html[data-theme="care-indeed-light"] .bg-\[\#C74600\] *,
 html[data-theme="care-indeed-light"] .bg-\[\#421700\],
 html[data-theme="care-indeed-light"] .bg-\[\#421700\] *,
-html[data-theme="care-indeed-light"] .bg-\[\#007970\],
-html[data-theme="care-indeed-light"] .bg-\[\#007970\] *,
+html[data-theme="care-indeed-light"] .bg-\[\#00797D\],
+html[data-theme="care-indeed-light"] .bg-\[\#00797D\] *,
 html[data-theme="care-indeed-light"] .bg-\[\#004142\],
 html[data-theme="care-indeed-light"] .bg-\[\#004142\] *,
 html[data-theme="care-indeed-light"] .bg-\[\#008540\],
@@ -3763,8 +4031,8 @@ html.ci-theme-transitioning *::after {
    wrapper so all tab content sections automatically switch to
    light-mode colors without touching each heading individually.
    ══════════════════════════════════════════════════════════════ */
-[data-theme="light"] .text-white { color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
-[data-theme="light"] .text-white\/90 { color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
+[data-theme="light"] .text-white { color: var(--brand-primary, #00797D) !important; /* teal for headers in production light mode — no black */ }
+[data-theme="light"] .text-white\/90 { color: var(--brand-primary, #00797D) !important; /* teal for headers in production light mode — no black */ }
 [data-theme="light"] .text-white\/80 { color: #524D4B !important; }
 [data-theme="light"] .text-white\/70 { color: #524D4B !important; }
 [data-theme="light"] .text-white\/60 { color: #747470 !important; }
@@ -3781,7 +4049,7 @@ html.ci-theme-transitioning *::after {
 [data-theme="light"] .bg-white\/10 { background-color: #F2F2F0 !important; }
 [data-theme="light"] .bg-white\/\[0\.05\] { background-color: #F5F5F3 !important; }
 [data-theme="light"] .hover\:bg-white\/10:hover { background-color: #F2F2F0 !important; }
-[data-theme="light"] .hover\:text-white:hover { color: var(--brand-primary, #007970) !important; /* teal for headers in production light mode — no black */ }
+[data-theme="light"] .hover\:text-white:hover { color: var(--brand-primary, #00797D) !important; /* teal for headers in production light mode — no black */ }
 [data-theme="light"] .divide-white\/5 > * { border-color: #EDECEB !important; }
 [data-theme="light"] .divide-white\/10 > * { border-color: #E5E4E3 !important; }
 
@@ -3844,7 +4112,7 @@ html.ci-theme-transitioning *::after {
   --v3-border: rgba(255, 255, 255, 0.33);
   --v3-border-hover: rgba(255, 255, 255, 0.45);
   --v3-border-subtle: rgba(255, 255, 255, 0.12);
-  --v3-teal: #007970;
+  --v3-teal: #00797D;
   --v3-teal-light: #00D1C1;
   --v3-orange: #E07B2C;
   --v3-orange-light: #FFA059;
@@ -4119,7 +4387,7 @@ html[data-ci-mode] {
   --v3-border: rgba(255, 255, 255, 0.33);
   --v3-border-hover: rgba(255, 255, 255, 0.45);
   --v3-border-subtle: rgba(255, 255, 255, 0.12);
-  --v3-teal: #007970;
+  --v3-teal: #00797D;
   --v3-teal-light: #00D1C1;
   --v3-orange: #E07B2C;
   --v3-orange-light: #FFA059;
@@ -4579,7 +4847,7 @@ html[data-theme="care-indeed-light"] .swimlane-corner {
 .policy-page--v3 .text-\[\#1F1C1B\],
 .policy-page--v3 .text-\[\#524048\],
 .policy-page--v3 .text-\[\#747474\],
-.policy-page--v3 .text-\[\#007970\] {
+.policy-page--v3 .text-\[\#00797D\] {
   color: var(--v3-text-primary) !important;
 }
 
@@ -4625,8 +4893,8 @@ html[data-theme="care-indeed-light"] .swimlane-corner {
   height: 100% !important;
   width: 100% !important;
   --v3-border-subtle: rgba(28, 36, 51, 0.84);
-  --v3-teal: #007970;
-  --v3-teal-light: #007970;
+  --v3-teal: #00797D;
+  --v3-teal-light: #00797D;
   --v3-orange: #C74600;
   --v3-orange-light: #C74600;
   --v3-text-primary: #FFFFFF;
@@ -4931,7 +5199,7 @@ html[data-theme="care-indeed-light"] .swimlane-corner {
 
 [data-shell-navrail] {
   position: relative;
-  border-right: none !important;
+  /* border-right provided by light theme ref rule + proto matching class for exact ref hairline */
 }
 
 [data-shell-navrail]::after {
@@ -5114,7 +5382,7 @@ html[data-theme="care-indeed-light"] .v32-command-center-app .v3-app-shell-base 
   --ci-light-card-border-hover: rgba(0, 121, 125, 0.34);
   --ci-light-shell-border: rgba(0, 121, 125, 0.16);
   /* Prototype elevation: teal-tinted soft depth (rgba 0,65,66), not warm gray. */
-  --ci-light-shadow-soft: 0 10px 32px -18px rgba(0, 65, 66, 0.237);
+  --ci-light-shadow-soft: 0 10px 32px -18px rgba(0, 65, 66, 0.12), 0 4px 12px -6px rgba(0, 65, 66, 0.06); /* sync to --shadow-soft exact */
   --ci-light-shadow-panel: 0 18px 45px -24px rgba(0, 65, 66, 0.28);
   --ci-light-shadow-floating: 0 22px 54px -24px rgba(0, 65, 66, 0.30);
   --ci-light-focus-ring: rgba(0, 121, 125, 0.24);
@@ -5158,7 +5426,8 @@ html[data-theme="care-indeed-light"] .v32-command-center-app .v3-app-shell-base 
   --ci-color-glass-blur: none;
   --ci-color-glass-shadow: var(--ci-light-shadow-soft);
   --ci-color-shell-topbar-bg: transparent;   /* prototype: top bar container visually invisible */
-  --ci-color-shell-navrail-bg: rgba(255, 255, 255, 0.78);   /* prototype: airy white rail over the atmospheric base */
+  --ci-shell-navrail-width: 292px; /* enforced expanded 292px / 88px collapsed per ref V6 01-main-shell.md + 02-achc-survey.png + task spec; 4 uppercase groups, active #004142 white, filter, X VIEWS */
+  --ci-color-shell-navrail-bg: rgba(255, 255, 255, 0.70);   /* prototype: airy white rail over the atmospheric base; backdrop in rule for exact ref match */
   --ci-color-shell-mobile-tabbar-bg: rgba(255, 255, 255, 0.96);
   --ci-color-shell-account-avatar-bg: var(--ci-light-teal-primary);
   --ci-color-shell-overlay-shadow: var(--ci-light-shadow-panel);
@@ -5263,15 +5532,27 @@ html[data-theme="care-indeed-light"] [data-shell-topbar] {
   backdrop-filter: none !important;
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] {
-  /* Prototype: airy white rail separated from the canvas by a hairline teal
-     right border + a soft directional shadow (was flat, borderless). */
-  background: var(--ci-color-shell-navrail-bg) !important;
+  /* Exact match ref (V6_Final/16-dashboard.png + prototype aside): airy white/70 + blur + hairline right border + directional shadow.
+     Widths gated exactly 292px / 88px via data-collapsed. */
+  background: rgba(255, 255, 255, 0.70) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   border: none !important;
   border-top: none !important;
   border-right: 1px solid rgba(0, 65, 66, 0.10) !important;
   border-bottom: none !important;
   border-left: none !important;
   box-shadow: 10px 0 28px rgba(0, 65, 66, 0.06) !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail]:not([data-collapsed="true"]) {
+  width: 292px !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail][data-collapsed="true"] {
+  width: 88px !important;
+}
+/* Enforce via var too for 292/88 contract in all contexts (V6 + task sidebar) */
+html[data-theme="care-indeed-light"] [data-shell-navrail]:not([data-collapsed="true"]) {
+  width: var(--ci-shell-navrail-width, 292px) !important;
 }
 /* Active nav item — approved prototype strong Care Indeed teal:
    solid #004142 fill + white text + soft teal-tinted lift. Keyed on the
@@ -5281,9 +5562,33 @@ html[data-theme="care-indeed-light"] [data-shell-navrail] a[data-active="true"] 
   background: #004142 !important;
   color: #FFFFFF !important;
   box-shadow: var(--ci-light-shadow-soft) !important;
+  border-radius: 0.75rem !important;
 }
 html[data-theme="care-indeed-light"] [data-shell-navrail] a[data-active="true"] * {
   color: #FFFFFF !important;
+}
+/* Hover states on non-active items — exact to ref 16-dashboard.png sidebar (subtle teal tint, no global color bleed). */
+html[data-theme="care-indeed-light"] [data-shell-navrail] a:not([data-active="true"]):hover {
+  background: #E6F4F2 !important; /* keep consistent with prior; prototype uses brand-teal-50 equiv for hover per ref */
+  color: #00797D !important;
+  border-radius: 0.75rem !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] a:not([data-active="true"]):hover * {
+  color: #00797D !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] a {
+  border-radius: 0.75rem !important;
+}
+/* Sidebar filter input exact to ref 16-dashboard.png (rounded, airy bg, subtle border, focus ring on #004142) */
+html[data-theme="care-indeed-light"] [data-shell-navrail] input[placeholder="Filter views..."] {
+  border-color: rgba(0, 65, 66, 0.10) !important;
+  background-color: rgba(255, 255, 255, 0.80) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+html[data-theme="care-indeed-light"] [data-shell-navrail] input[placeholder="Filter views..."]:focus {
+  border-color: #004142 !important;
+  background-color: #FFFFFF !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 /* Topbar search field reads on the white bar */
 html[data-theme="care-indeed-light"] [data-shell-topbar] input {
@@ -5356,6 +5661,7 @@ html[data-theme="care-indeed-light"] .v3-veil-glass-panel {
   color: var(--ci-light-text-primary) !important;
   border-color: var(--ci-light-card-border) !important;
   box-shadow: var(--ci-light-shadow-floating) !important;
+  /* v3-veil panels (shells/drawers) keep light restrained blur */
   -webkit-backdrop-filter: blur(18px) saturate(132%) !important;
   backdrop-filter: blur(18px) saturate(132%) !important;
 }
@@ -5374,3 +5680,139 @@ html[data-theme="care-indeed-light"] .v3-backdrop {
   -webkit-backdrop-filter: blur(4px) saturate(112%) !important;
   backdrop-filter: blur(4px) saturate(112%) !important;
 }
+
+/* === GlassPanel + light overrides for exact ref clean look (AGENT-05) ===
+   Ref dashboards (Reference/V6_Final/16-dashboard.png + 40-onboarding-v2-dashboard.png):
+   clean white #FFFFFF content, pale #F7FEFF base, restrained glass ONLY shells/overlays (NOT content cards),
+   exact radii 8/12/16/24/32, shadow-soft, no dark bleed.
+   GlassPanel (and aliases) now always clean surface-card in light; glass/blur only for explicit shell/overlay classes.
+*/
+html[data-theme="care-indeed-light"] .v3-surface,
+html[data-theme="care-indeed-light"] .v3-surface--glass,
+html[data-theme="care-indeed-light"] .GlassPanel,
+html[data-theme="care-indeed-light"] .glass-panel:not(.glass-shell):not(.overlay-glass):not(.modal-glass):not(.shell-glass):not([data-glass="shell"]):not(.v3-veil-glass):not(.DrawerSurface):not(.tone-teal):not(.tone-orange):not(.tone-amber):not(.tone-slate):not(.tone-green),
+html[data-theme="care-indeed-light"] .ci-glass-panel:not(.glass-shell):not(.overlay-glass):not(.modal-glass):not(.shell-glass):not([data-glass="shell"]):not(.v3-veil-glass):not(.DrawerSurface):not(.tone-teal):not(.tone-orange):not(.tone-amber):not(.tone-slate):not(.tone-green) {
+  /* Tightened: cards/tiles/GlassPanel content = flat #FFFFFF (or pale tone), no heavy blur */
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  border-color: #E9E5E3 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: var(--shadow-soft, 0 10px 32px -18px rgba(0, 65, 66, 0.12)) !important;
+  border-radius: var(--radius-lg, 16px) !important;
+}
+
+/* Restrained glass ONLY for shells/overlays/modals/drawers (not .GlassPanel content cards) */
+html[data-theme="care-indeed-light"] .glass-shell,
+html[data-theme="care-indeed-light"] .shell-glass,
+html[data-theme="care-indeed-light"] .overlay-glass,
+html[data-theme="care-indeed-light"] .modal-glass,
+html[data-theme="care-indeed-light"] [data-glass="shell"],
+html[data-theme="care-indeed-light"] .v3-veil-glass,
+html[data-theme="care-indeed-light"] .DrawerSurface {
+  background: var(--surface-glass, rgba(255,255,255,0.72)) !important;
+  backdrop-filter: var(--glass-blur, blur(12px) saturate(140%)) !important;
+  -webkit-backdrop-filter: var(--glass-blur, blur(12px) saturate(140%)) !important;
+  box-shadow: var(--shadow-soft) !important;
+  border-color: var(--border-card, #E9E5E3) !important;
+}
+
+/* Ensure .surface-card + .hover-lift are ALWAYS direct (no blur) even if GlassPanel wraps or Tailwind /88 leaks.
+   .metric-tile EXCLUDED from bg-white so tone pastels from .tone-* + V32MetricTile apply exactly (ref: 4 pastel MetricTiles in 16/11 pngs).
+*/
+html[data-theme="care-indeed-light"] .surface-card:not(.tone-teal):not(.tone-orange):not(.tone-amber):not(.tone-slate):not(.tone-green),
+html[data-theme="care-indeed-light"] .hover-lift:not(.tone-teal):not(.tone-orange):not(.tone-amber):not(.tone-slate):not(.tone-green) {
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+}
+html[data-theme="care-indeed-light"] .metric-tile,
+html[data-theme="care-indeed-light"] .surface-card,
+html[data-theme="care-indeed-light"] .hover-lift {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Final surface alignment (AGENT-53): neutralize glow-wrapper static shadow/border in light content cards
+   so they use canonical neutral --shadow-soft + exact ref border. Glow edges (::before) remain for interactive.
+   Matches ref 16-dashboard.png + CES images card treatment while live wrappers + data stay. */
+html[data-theme="care-indeed-light"] .border-glow-card:not(.border-glow-overlay) {
+  border-color: #E5E4E3 !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+/* .tone-* pastels EXACT (hard # per spec for direct pastel bg on MetricTile / KPI tiles + Surface icon shells: #F7FEFF/#FFFAF7/#e6f4ed/#fff8e6/#FAF8F8 etc; !imp + fallbacks; injected for ref match) */
+html[data-theme="care-indeed-light"] .tone-teal {
+  background: #F7FEFF !important;
+  background-color: #F7FEFF !important;
+  color: #00797D !important;
+  border-color: #E5F0EF !important;
+}
+html[data-theme="care-indeed-light"] .tone-orange {
+  background: #FFFAF7 !important;
+  background-color: #FFFAF7 !important;
+  color: #C74601 !important;
+  border-color: #FFEEE5 !important;
+}
+html[data-theme="care-indeed-light"] .tone-amber {
+  background: #fff8e6 !important;
+  background-color: #fff8e6 !important;
+  color: #8a5c00 !important;
+  border-color: #f0d9a3 !important;
+}
+html[data-theme="care-indeed-light"] .tone-slate {
+  background: #FAF8F8 !important;
+  background-color: #FAF8F8 !important;
+  color: #524D4B !important;
+  border-color: #E9E5E3 !important;
+}
+html[data-theme="care-indeed-light"] .tone-green {
+  background: #e6f4ed !important;
+  background-color: #e6f4ed !important;
+  color: #006B3A !important;
+  border-color: #a3d9b8 !important;
+}
+
+/* Reinforce pale #F7FEFF base + clean white #FFFFFF cards + no dark bleed (ref dashboards) */
+html[data-theme="care-indeed-light"],
+html[data-theme="care-indeed-light"] body,
+html[data-theme="care-indeed-light"] #root,
+html[data-theme="care-indeed-light"] [data-shell-scroll],
+html[data-theme="care-indeed-light"] [data-shell-main],
+html[data-theme="care-indeed-light"] .prototype-shell {
+  background-color: #F7FEFF !important;
+  background: #F7FEFF !important;
+}
+/* Explicit white cards for SurfaceCard / metrics etc (restrained glass only on shell) */
+html[data-theme="care-indeed-light"] .surface-card,
+html[data-theme="care-indeed-light"] .metric-tile:not(.tone-teal):not(.tone-orange):not(.tone-amber):not(.tone-slate):not(.tone-green) {
+  background-color: #FFFFFF !important;
+}
+html[data-theme="care-indeed-light"] .surface-card:not(.tone-teal):not(.tone-orange):not(.tone-amber):not(.tone-slate):not(.tone-green),
+html[data-theme="care-indeed-light"] .metric-tile:not(.tone-teal):not(.tone-orange):not(.tone-amber):not(.tone-slate):not(.tone-green),
+html[data-theme="care-indeed-light"] .GlassPanel:not(.tone-teal):not(.tone-orange):not(.tone-amber):not(.tone-slate):not(.tone-green),
+html[data-theme="care-indeed-light"] .hover-lift:not(.tone-teal):not(.tone-orange):not(.tone-amber):not(.tone-slate):not(.tone-green) {
+  background-color: #FFFFFF !important;
+}
+
+/* Radii exact scale 8-32 (per spec + ref images: 16-dashboard, onboarding dashboards). Tightened !important for override strength. */
+html[data-theme="care-indeed-light"] .surface-card,
+html[data-theme="care-indeed-light"] .metric-tile,
+html[data-theme="care-indeed-light"] .GlassPanel,
+html[data-theme="care-indeed-light"] .data-table,
+html[data-theme="care-indeed-light"] .hover-lift,
+html[data-theme="care-indeed-light"] [data-shell-navrail] {
+  border-radius: var(--radius-lg, 16px) !important;
+}
+html[data-theme="care-indeed-light"] .rounded-2xl,
+html[data-theme="care-indeed-light"] .metric-tile,
+html[data-theme="care-indeed-light"] .surface-card {
+  border-radius: 16px !important; /* 2xl ~16-32 per contract */
+}
+html[data-theme="care-indeed-light"] .radius-sm,
+html[data-theme="care-indeed-light"] [data-radius="sm"] { border-radius: var(--radius-sm, 8px) !important; }
+html[data-theme="care-indeed-light"] .radius-md,
+html[data-theme="care-indeed-light"] [data-radius="md"] { border-radius: var(--radius-md, 12px) !important; }
+html[data-theme="care-indeed-light"] .radius-xl,
+html[data-theme="care-indeed-light"] [data-radius="xl"] { border-radius: var(--radius-xl, 24px) !important; }
+html[data-theme="care-indeed-light"] .radius-2xl,
+html[data-theme="care-indeed-light"] [data-radius="2xl"] { border-radius: var(--radius-2xl, 32px) !important; }

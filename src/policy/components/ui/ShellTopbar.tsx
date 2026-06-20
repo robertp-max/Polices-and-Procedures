@@ -44,7 +44,7 @@ export const ShellTopbar: React.FC<ShellTopbarProps> = ({
           </button>
         )}
 
-        <div className="flex items-center gap-2 font-montserrat text-[15px] font-semibold tracking-tight text-[var(--v3-text-primary)]">
+        <div className="flex items-center gap-2 font-roboto text-[15px] font-medium tracking-tight text-[var(--v3-text-primary)]">
           {logo || 'Care Indeed'}
         </div>
       </div>

@@ -636,8 +636,7 @@ export function ArtifactViewerPage() {
     <div
       className="h-full overflow-auto px-6 py-6 font-roboto text-[#263C3D]"
       style={{
-        background:
-          'radial-gradient(circle at 76% -10%, rgba(255,255,255,0.95), transparent 30%), radial-gradient(circle at 8% 8%, rgba(0,121,112,0.08), transparent 34%), linear-gradient(135deg, #EEF9F9 0%, #F8FFFF 52%, #F2FAFA 100%)',
+        background: '#F7FEFF', /* exact #F7FEFF base per ref + spec (restrained, no heavy glass on content) */
       }}
     >
       <div className="mb-6">
@@ -658,7 +657,7 @@ export function ArtifactViewerPage() {
 
       <div className="grid grid-cols-12 gap-4">
         <section className="col-span-12 lg:col-span-8">
-          <div className="rounded-[22px] border border-[#DDEBEB] bg-white/84 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_26px_70px_-48px_rgba(0,65,66,0.50)] backdrop-blur-[18px]">
+          <div className="surface-card rounded-2xl border border-[#E9E5E3] bg-white p-5 shadow-soft"> {/* SurfaceCard + #F7FEFF white + radii + hover-lift + restrained glass per 08-artifact-viewer ref */}
           {metadata.kind === 'form_instance' && resolved.kind === 'form_instance' && (
             <div className="mb-4 rounded-[16px] border border-[#B8E9E7] bg-[#F0FBFB] p-4 text-sm text-[#263C3D]">
               <div className="font-semibold text-[#004142]">Completed form instance record</div>

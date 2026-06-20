@@ -13,6 +13,7 @@ import {
 } from '@/policy/journey/utils/achcTrainingCalculations';
 import { PageHeader } from '@/policy/components/ui/PageHeader';
 import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
+// SurfaceCard in onboarding uses legacy padding children (metrics/sections); prototype exact structure (shell/ToneBadge/h3/h-2) used in dashboard/CES.
 import { StatusPill } from '../components/StatusPill'; // domain-specialized pill for status mapping
 import { AUDIT_LABEL } from '../engine/audit';
 import { PHASE_LABEL } from '../types';

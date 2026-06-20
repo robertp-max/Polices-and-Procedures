@@ -8,6 +8,7 @@ import type { SprintTrendPoint } from '../../types';
 import { PageHeader, SurfaceCard } from '@/policy/components/ui';
 
 export function ExecutiveReports() {
+  // Uses SurfaceCard (container mode) for charts; main CES cards (ExecutionUnit) use exact prototype structure.
   const snap = useComplianceExecution();
   const SPRINT_TRENDS = snap.sprintTrends;
   return (

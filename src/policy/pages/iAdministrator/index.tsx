@@ -283,12 +283,12 @@ export function IAdministratorPage() {
         <div className="flex items-center justify-between gap-4 mb-3">
           <div>
             <h1
-              className="text-[20px] md:text-[22px] font-semibold"
-              style={{ fontFamily: "'Outfit', 'Inter', system-ui, sans-serif", color: titleColor }}
+              className="text-[20px] md:text-[22px] font-roboto font-medium"
+              style={{ color: titleColor }}
             >
               Brad iAdministrator
             </h1>
-            <p className="text-[11px] uppercase tracking-[0.24em]" style={{ color: subtle, fontFamily: "'JetBrains Mono', monospace" }}>
+            <p className="text-[11px] uppercase tracking-[0.18em] font-roboto font-light" style={{ color: subtle }}>
               Compliance Intelligence · Brad Internal Corpus · Grounded Answers Only
             </p>
           </div>
@@ -380,7 +380,7 @@ export function IAdministratorPage() {
       </div>
 
       {/* ── Two-column workspace ─────────────────────────────────── */}
-      <div className="flex-1 w-full px-6 md:px-8 py-4 md:py-6 overflow-hidden grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] xl:grid-cols-[minmax(0,1fr)_minmax(0,480px)] gap-4 md:gap-6">
+      <div className="flex-1 w-full px-6 md:px-8 py-4 md:py-6 overflow-hidden grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] xl:grid-cols-[minmax(0,1fr)_minmax(0,480px)] gap-3 md:gap-4">
 
         {/* ── CHAT MODE ─────────────────────────────────────────── */}
         {chatMode ? (
@@ -706,12 +706,12 @@ function WelcomeState({ isLight }: { isLight: boolean }) {
 
   return (
     <div
-      className="rounded-2xl p-6"
+      className="surface-card hover-lift rounded-2xl p-5 shadow-soft border border-neutral-200 bg-white"
       style={{ background: surface, border: `1px solid ${border}` }}
     >
       <div
-        className="text-[10px] font-bold uppercase tracking-[0.3em] mb-3"
-        style={{ color: accent, fontFamily: "'JetBrains Mono', monospace" }}
+        className="text-[10px] font-roboto font-light uppercase tracking-[0.18em] mb-3"
+        style={{ color: accent }}
       >
         Brad · Ready
       </div>

@@ -194,7 +194,7 @@ function Legend({ swatch, label, icon, isLight = false }: { swatch: string; labe
     >
       <span className="w-2.5 h-2.5 rounded-sm" style={{ background: swatch }} />
       <span style={{ color: swatch }}>{icon}</span>
-      <span style={{ color: isLight ? '#1F1C1B' : 'var(--ces-ink)' }}>{label}</span>
+      <span style={{ color: isLight ? 'var(--ci-text-primary, #1F1C1B)' : 'var(--ces-ink)' }}>{label}</span>
     </span>
   );
 }

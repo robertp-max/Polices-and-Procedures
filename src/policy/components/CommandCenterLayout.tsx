@@ -1,9 +1,9 @@
-﻿import { useState, useEffect, useRef, useMemo, useCallback, type PropsWithChildren } from 'react';
+﻿import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, type PropsWithChildren } from 'react';
 import { createPortal } from 'react-dom';
-import ciLogoWhite from '@/assets/ci-logo-white.png';
 import ciLogoGray from '@/assets/ci-logo-gray.png';
+import _ciLogoWhite from '@/assets/ci-logo-white.png'; // preserved for future dark V3 (referenced only via asset; never rendered in light shell)
 // Single app logo for the entire application - bundled from src/assets.
-// Light (Day/Normal) signed-in shell uses the gray asset; dark V3 keeps white.
+// Production: light shell uses gray; (white asset preserved in src for future dark V3).
 // Auth pages never reach this component (see App.tsx PublicAuthRoute + index.html bootstrap).
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -262,15 +262,16 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
   const theme = 'care-indeed-light';
   toggleTheme = () => {};
   const ciMode = useCiModeStore(s => s.mode);
-  const isCareIndeedDark = false;
-  // Day / Normal mode — forced for production.
+  // Day / Normal mode — forced for production (care-indeed-light).
+  // Dark V3 source preserved for later rebuild. isVisualLight kept true for logo + CesRoleReviewSwitcher prop.
+  // Sidebar integration + all theme surfaces now delegate to index.css rules under data-theme="care-indeed-light" / data-ci-mode="light".
   const isVisualLight = true;
   void theme; void toggleTheme; // prevent TS unused after force-light override
   // Use the app logo bundled from src/assets.
   // Day / Normal (care-indeed-light) signed-in shell → gray logo.
   // Dark V3 (v3-veil) → white logo.
   // Auth pages are outside CommandCenterLayout and always dark (never see this).
-  const logo = isVisualLight ? ciLogoGray : ciLogoWhite;
+  const logo = ciLogoGray; // Production light: gray logo (white reserved for dark V3)
   const accountDisplayName = useMemo(() => {
     const firstName = user?.firstName?.trim();
     const lastName = user?.lastName?.trim();
@@ -358,16 +359,20 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
     setExpandedNavId(routeScopedItem?.id ?? null);
   }, [VISIBLE_NAV, location.pathname]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // TEMP: Production forced to care-indeed-light. Dark V3 preserved in source.
     // Detail viewers kept light too for consistency in this force-light fallback.
     // Auth pages untouched (outside this layout).
+    // useLayoutEffect ensures data-theme (and thus all html[data-theme="care-indeed-light"] light CSS rules) applies before paint.
     document.documentElement.dataset.theme = 'care-indeed-light';
   }, [hideChrome]);
 
   // ── Care Indeed Light/Dark mode (orthogonal to brand toggle) ──────────────
-  useEffect(() => {
-    document.documentElement.dataset.ciMode = 'v3';
+  useLayoutEffect(() => {
+    // Use 'light' (not 'v3') so ALL light-mode CSS selectors activate:
+    // html[data-theme="care-indeed-light"][data-ci-mode="light"], :root[data-ci-mode="light"], etc.
+    // (dark submode rules still skipped since !== "dark"; store remains v3 internally).
+    document.documentElement.dataset.ciMode = 'light';
   }, [ciMode]);
 
   useEffect(() => {
@@ -492,7 +497,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
             └─ ShellContentFrame (glass canvas, in-flow)
                  ├─ ShellTopbar  (top bar)
                  └─ Body
-                      ├─ ShellNavRail  (desktop left rail; 292px/88px, 4 groups: PRIMARY OPERATIONS / COMPLIANCE EXECUTION / ADMINISTRATION / KNOWLEDGE, filter + collapse per V6 §3)
+                      ├─ ShellNavRail  (desktop left rail; 292px via --ci-shell-navrail-width /88px collapsed, exact 4 GROUP_DEFS uppercase, filter input, views count, active bg-[#004142] text-white + hovers per ref 16-dashboard.png)
                       └─ Main content region
          ═══════════════════════════════════════════════════════════ */}
       <ShellContentFrame
@@ -549,11 +554,8 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                   onClick={handleAccountMenuToggle}
                   className="glass-interactive ci-subtle-hover flex items-center justify-center w-11 h-11 sm:w-10 sm:h-10 rounded-full text-white font-bold text-sm cursor-pointer relative border border-transparent"
                   style={{
-                    background: isVisualLight
-                      ? 'var(--ci-secondary-500)'
-                      : isCareIndeedDark
-                        ? 'var(--ci-shell-account-avatar-bg-ci-light-dark)'
-                        : 'var(--ci-color-shell-account-avatar-bg)',
+                    // Always light in production (sidebar/theme integration uses CSS tokens); dark branches preserved in source only.
+                    background: 'var(--ci-secondary-500)',
                   }}
                 >
                   {accountInitials}
@@ -577,21 +579,19 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     zIndex: 2147483000,
                     maxHeight: 'min(70vh, 520px)',
                     overflowY: 'auto',
-                    background: isVisualLight
-                      ? 'var(--ci-shell-account-menu-bg-light)'
-                      : 'var(--ci-shell-account-menu-bg-dark)',
-                    border: isVisualLight ? '1px solid var(--ci-neutral-200)' : '1px solid var(--ci-overlay-border-strong)',
+                    background: 'var(--ci-shell-account-menu-bg-light)',
+                    border: '1px solid var(--ci-neutral-200)',
                     boxShadow: 'var(--ci-color-shell-overlay-shadow)',
                   }}
                 >
                   <div
                     className="px-3.5 py-3 border-b"
-                    style={{ borderColor: isVisualLight ? 'var(--ci-neutral-200)' : 'var(--ci-overlay-border-strong)' }}
+                    style={{ borderColor: 'var(--ci-neutral-200)' }}
                   >
-                    <p className={`text-[13px] font-semibold ${isVisualLight ? 'text-slate-900' : 'text-white'}`}>
+                    <p className="text-[13px] font-semibold" style={{ color: 'var(--ci-text-primary, #1F1C1B)' }}>
                       {accountDisplayName}
                     </p>
-                    <p className={`text-[11px] mt-0.5 ${isVisualLight ? 'text-slate-500' : 'text-white/65'}`}>
+                    <p className="text-[11px] mt-0.5" style={{ color: 'var(--ci-text-primary, #1F1C1B)' }}>
                       {accountRole}
                     </p>
                   </div>
@@ -600,11 +600,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     type="button"
                     role="menuitem"
                     onClick={handleMyTasksClick}
-                    className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
-                      isVisualLight
-                        ? 'text-slate-700 hover:bg-slate-100'
-                        : 'text-white/85 hover:bg-white/10'
-                    }`}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors" style={{ color: 'var(--ci-text-primary, #1F1C1B)' }}
                   >
                     <ListChecks size={16} />
                     My Tasks
@@ -614,11 +610,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     type="button"
                     role="menuitem"
                     onClick={() => { setIsAccountMenuOpen(false); restartGuidedTour(); }}
-                    className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
-                      isVisualLight
-                        ? 'text-slate-700 hover:bg-slate-100'
-                        : 'text-white/85 hover:bg-white/10'
-                    }`}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors" style={{ color: 'var(--ci-text-primary, #1F1C1B)' }}
                   >
                     <Compass size={16} />
                     Restart Guided Tour
@@ -643,11 +635,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                             window.location.reload();
                           }
                         }}
-                        className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
-                          isVisualLight
-                            ? 'text-red-700 hover:bg-red-50'
-                            : 'text-red-400 hover:bg-red-500/15'
-                        }`}
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] font-semibold transition-colors text-red-700 hover:bg-red-50"
                       >
                         <Trash2 size={16} />
                         Reset All Data
@@ -659,11 +647,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     type="button"
                     role="menuitem"
                     onClick={() => { void handleLogoutClick(); }}
-                    className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors ${
-                      isVisualLight
-                        ? 'text-[var(--ci-primary-500)] hover:bg-orange-50'
-                        : 'text-[var(--ci-gold)] hover:bg-white/10'
-                    }`}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] transition-colors text-[var(--ci-primary-500)] hover:bg-orange-50"
                   >
                     <LogOut size={16} />
                     Logout
@@ -677,7 +661,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
           {/* ── Phase 2 Body: ShellNavRail + content ─────────────── */}
           <div className="flex flex-1 min-h-0 overflow-hidden relative">
 
-            {/* Desktop: ShellNavRail (exact 4 uppercase groups + filter + "X Views" badge + collapse; gates/isActive/subnav preserved upstream) */}
+            {/* Desktop: ShellNavRail (exact 4 uppercase GROUP_DEFS: PRIMARY OPERATIONS / COMPLIANCE EXECUTION / ADMINISTRATION / KNOWLEDGE + filter "Filter views..." + views count badge + 292px via --ci-shell-navrail-width + collapse; active bg-[#004142] text-white + hover states pixel-matched to ref 16-dashboard.png) */}
             {!isMobile && !hideChrome && !showSplash && (
               <ShellNavRail
                 items={VISIBLE_NAV}
@@ -701,7 +685,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                   transition: 'opacity 700ms cubic-bezier(.22,1,.36,1)',
                   opacity: splashExit ? 0 : 1,
                   pointerEvents: splashExit ? ('none' as const) : ('auto' as const),
-                  background: isVisualLight ? '#FAFBF8' : '#0E1B1C',
+                  background: 'var(--v3-base-bg)',
                 }}
               >
                 {/* Splash inner card — brand-aligned enterprise panel.
@@ -716,7 +700,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                     minHeight: 580,
                     padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem)',
                     borderRadius: '24px',
-                    background: isVisualLight ? '#FAFBF8' : '#0E1B1C',
+                    background: 'var(--ci-light-card-surface, #FFFFFF)',
                     border: '1px solid var(--ci-neutral-200)',
                   }}
                 >
@@ -912,7 +896,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                         fontSize: 10,
                         letterSpacing: '.1em',
                         fontWeight: 400,
-                        color: isVisualLight ? 'var(--ci-neutral-400)' : 'var(--ci-text-on-surface-muted)',
+                        color: 'var(--ci-neutral-400)',
                       }}
                     >
                       © 2026 CareIndeed · Policy Command Center
@@ -1002,7 +986,7 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                                   : 'var(--ci-overlay-faint)',
                                 color: sub.active
                                   ? 'var(--ci-accent)'
-                                  : (isVisualLight ? 'var(--ci-neutral-500)' : 'var(--ci-text-on-surface-muted)'),
+                                  : 'var(--ci-neutral-500)',
                                 border: `1px solid ${sub.active
                                   ? 'rgba(var(--ci-accent-rgb), 0.28)'
                                   : 'transparent'}`,
@@ -1050,8 +1034,8 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
                               className="ci-touch-target ci-subtle-hover flex flex-col items-center justify-center gap-0.5 rounded-md px-1 text-[9px] font-montserrat font-bold uppercase tracking-[0.08em]"
                               style={{
                                 color: active
-                                  ? isVisualLight ? 'var(--ci-secondary-600)' : 'var(--ci-accent)'
-                                  : isVisualLight ? 'var(--ci-neutral-500)' : 'var(--ci-text-on-surface-soft)',
+                                  ? 'var(--ci-secondary-600)'
+                                  : 'var(--ci-neutral-500)',
                                 background: active
                                   ? 'rgba(var(--ci-accent-rgb), 0.14)'
                                   : 'transparent',

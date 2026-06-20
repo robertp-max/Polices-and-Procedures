@@ -520,8 +520,8 @@ export function CesEventOverviewCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]">
             <span style={{ color: STATE_COLOR[state] }}>{STATE_LABEL[state]}</span>
-            <span className="ces-filter-pill ces-preview-pill rounded-full border px-2 py-0.5" style={{borderColor: cardBorder, background: isLight ? 'var(--ci-surface-muted, #F4F4F2)' : 'rgba(0,121,112,0.06)', color: isLight ? 'var(--ci-accent, #007970)' : 'var(--v3-teal-light)'}}>{event.id}</span>
-            <span className="ces-filter-pill ces-preview-pill rounded-full border px-2 py-0.5" style={{borderColor: cardBorder, background: isLight ? 'var(--ci-surface-muted, #F4F4F2)' : 'rgba(0,121,112,0.06)', color: isLight ? 'var(--ci-accent, #007970)' : 'var(--v3-teal-light)'}}>{event.domain}</span>
+            <span className="ces-filter-pill ces-preview-pill rounded-full border px-2 py-0.5" style={{borderColor: cardBorder, background: isLight ? 'var(--ci-surface-muted, #F4F4F2)' : 'rgba(0,121,112,0.06)', color: isLight ? 'var(--ci-accent, #00797D)' : 'var(--v3-teal-light)'}}>{event.id}</span>
+            <span className="ces-filter-pill ces-preview-pill rounded-full border px-2 py-0.5" style={{borderColor: cardBorder, background: isLight ? 'var(--ci-surface-muted, #F4F4F2)' : 'rgba(0,121,112,0.06)', color: isLight ? 'var(--ci-accent, #00797D)' : 'var(--v3-teal-light)'}}>{event.domain}</span>
             {mode !== 'production' && <Badge>{CES_EXECUTION_MODE_LABEL[mode]}</Badge>}
             {certified && <Badge><Lock size={10} /> Locked</Badge>}
           </div>
@@ -747,7 +747,7 @@ export function CesEventDetailModal({
                 {certified && <Badge><Lock size={10} /> Certified / Locked</Badge>}
                 <Badge>{event.domain}</Badge>
               </div>
-              <h2 className="mt-3 font-outfit text-3xl font-light leading-tight" style={{ color: isLight ? '#1F1C1B' : '#fff' }}>
+              <h2 className="mt-3 font-outfit text-3xl font-light leading-tight" style={{ color: isLight ? 'var(--ci-text-primary, #1F1C1B)' : '#fff' }}>
                 {event.title}
               </h2>
             </div>
@@ -804,7 +804,7 @@ export function CesAuditTrailView({
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-xl border p-5 text-[12px]" style={{borderColor:'var(--ci-border, rgba(255,255,255,0.10))', background: isLight ? '#F8FAFC' : 'var(--ci-surface)', color: isLight ? '#1F1C1B' : 'var(--ci-text-muted, rgba(255,255,255,0.6))'}}>
+      <div className="rounded-xl border p-5 text-[12px]" style={{borderColor:'var(--ci-border, rgba(255,255,255,0.10))', background: isLight ? '#F8FAFC' : 'var(--ci-surface)', color: isLight ? 'var(--ci-text-primary, #1F1C1B)' : 'var(--ci-text-muted, rgba(255,255,255,0.6))'}}>
         No audit trail entries exist for this event yet. No placeholder audit records have been generated.
       </div>
     );
@@ -934,7 +934,7 @@ function TasksTab({
 }) {
   if (tasks.length === 0) {
     return (
-      <div className="rounded-xl border p-5 text-[12px]" style={{borderColor:'var(--ci-border, rgba(255,255,255,0.10))', background: isLight ? '#F8FAFC' : 'var(--ci-surface)', color: isLight ? '#1F1C1B' : 'var(--ci-text-muted, rgba(255,255,255,0.6))'}}>
+      <div className="rounded-xl border p-5 text-[12px]" style={{borderColor:'var(--ci-border, rgba(255,255,255,0.10))', background: isLight ? '#F8FAFC' : 'var(--ci-surface)', color: isLight ? 'var(--ci-text-primary, #1F1C1B)' : 'var(--ci-text-muted, rgba(255,255,255,0.6))'}}>
         No executable tasks are available for this event.
       </div>
     );
@@ -956,7 +956,7 @@ function TasksTab({
                 <span>{task.status.replace(/_/g, ' ')}</span>
                 {task.workflowId && <span>{task.workflowId}</span>}
               </div>
-              <h3 className="text-[13px] font-semibold" style={{ color: isLight ? '#1F1C1B' : '#fff' }}>{task.title}</h3>
+              <h3 className="text-[13px] font-semibold" style={{ color: isLight ? 'var(--ci-text-primary, #1F1C1B)' : '#fff' }}>{task.title}</h3>
               {task.description && <p className="mt-1 text-[11px]" style={{ color: isLight ? '#52404B' : 'rgba(255,255,255,0.55)' }}>{task.description}</p>}
             </div>
             <ChevronRight size={15} style={{ color: isLight ? '#9CA3AF' : 'rgba(255,255,255,0.35)' }} />

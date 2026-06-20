@@ -101,7 +101,7 @@ export function GlobalModalShell() {
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="mb-2 text-[10px] font-mono uppercase tracking-[0.22em]" style={{ color: isLight ? 'var(--ci-link, #007970)' : 'var(--v3-teal-light)' }}>
+            <div className="mb-2 text-[10px] font-mono uppercase tracking-[0.18em]" style={{ color: isLight ? 'var(--ci-link, #00797D)' : 'var(--v3-teal-light)' }}>
               {modal.eyebrow ?? (
                 <span className="inline-flex items-center gap-1">
                   <Maximize2 size={10} />

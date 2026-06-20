@@ -46,6 +46,8 @@ DataGrid.HeaderCell = function HeaderCell({
         color: 'var(--v3-text-tertiary)',
         borderBottom: '1px solid var(--v3-border-subtle)',
         whiteSpace: 'nowrap',
+        background: '#F7FEFF', /* match ref DataTable header neutral-50-ish pastel */
+        fontWeight: 700,
         ...rest.style,
       }}
     >
@@ -67,7 +69,7 @@ DataGrid.Row = function Row({
   return (
     <tr
       {...rest}
-      className={className}
+      className={`${className ?? ''} hover:bg-brand-teal-50/40`} /* match ref DataTable row hover */
       style={{
         background: selected ? 'rgba(0, 209, 193, 0.06)' : 'transparent',
         boxShadow: 'none',

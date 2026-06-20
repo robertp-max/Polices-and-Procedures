@@ -606,14 +606,14 @@ function PlaceholderPanel({
   body: string;
 }) {
   return (
-    <div className="rounded-md border border-dashed border-gray-300 bg-white p-3">
+    <SurfaceCard padding="sm" className="border border-dashed border-gray-300">
       <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[#1a3357]">
         <Icon size={13} className="text-[#e6720a]" />
         {title}
       </div>
       <div className="mt-1 text-[11.5px] text-gray-600 leading-relaxed">{body}</div>
       <div className="mt-1 text-[10px] uppercase tracking-wider text-gray-400">Pending wiring</div>
-    </div>
+    </SurfaceCard>
   );
 }
 
@@ -629,31 +629,31 @@ function ModeBody({ mode, envelope }: { mode: WorkspaceMode; envelope: PolicyLif
   switch (mode) {
     case 'edit':
       return (
-        <div className="rounded-md border border-gray-200 bg-white p-3 text-[12px] text-gray-700">
+        <SurfaceCard padding="sm" className="text-[12px] text-gray-700">
           Section editor renders here when wired to <code>policyContentMap</code>.
           Author edits are auto-saved while the policy is in <strong>DRAFT</strong>.
-        </div>
+        </SurfaceCard>
       );
     case 'review':
       return (
-        <div className="rounded-md border border-gray-200 bg-white p-3 text-[12px] text-gray-700">
+        <SurfaceCard padding="sm" className="text-[12px] text-gray-700">
           Highlight-to-comment overlay activates here. All required comments must be
           resolved before this policy can be approved.
-        </div>
+        </SurfaceCard>
       );
     case 'approve':
       return (
-        <div className="rounded-md border border-gray-200 bg-white p-3 text-[12px] text-gray-700">
+        <SurfaceCard padding="sm" className="text-[12px] text-gray-700">
           Required signatures appear here. The original author cannot self-approve;
           a reviewer with appropriate authority must capture each signature via eCIgn.
-        </div>
+        </SurfaceCard>
       );
     case 'publish':
       return (
-        <div className="rounded-md border border-gray-200 bg-white p-3 text-[12px] text-gray-700">
+        <SurfaceCard padding="sm" className="text-[12px] text-gray-700">
           Publish readiness checklist. Confirms effective date, distribution channels,
           and acknowledgment audience before atomic activation.
-        </div>
+        </SurfaceCard>
       );
     case 'view':
     default: {

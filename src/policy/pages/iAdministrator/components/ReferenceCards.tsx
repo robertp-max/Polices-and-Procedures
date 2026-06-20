@@ -2,6 +2,7 @@ import { FileText, ClipboardList, Boxes, Workflow } from 'lucide-react';
 import type { LinkedReference, ReferenceIntent } from '../lib/responseTypes';
 import { sanitizeLinkedReferences } from '../lib/referenceSanitizer';
 import { ReferenceLink } from './ReferenceLink';
+import { SurfaceCard } from '@/policy/components/ui';
 
 /* ═══════════════════════════════════════════════════════════════
    ReferenceCards — renders `linkedReferences` as action-ready cards
@@ -29,10 +30,7 @@ export function ReferenceCards({ references, isLight, activeId, onOpenReference:
   const muted = isLight ? '#747474' : 'rgba(255,255,255,0.45)';
 
   return (
-    <section
-      className="rounded-2xl"
-      style={{ background: surface, border: `1px solid ${border}` }}
-    >
+    <SurfaceCard className="rounded-2xl" style={{ background: surface, border: `1px solid ${border}` }}>
       <header className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: `1px solid ${border}` }}>
         <span
           className="text-[10px] font-bold uppercase tracking-[0.3em]"
@@ -65,7 +63,7 @@ export function ReferenceCards({ references, isLight, activeId, onOpenReference:
           activeId={activeId}
         />
       )}
-    </section>
+    </SurfaceCard>
   );
 }
 

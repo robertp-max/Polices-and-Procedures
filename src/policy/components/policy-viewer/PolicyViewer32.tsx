@@ -22,6 +22,7 @@ import {
 } from './PolicyViewer32SectionRenderer';
 import { usePolicyStore } from '@/policy/stores/policyStore';
 import { openPolicyPrintRoute } from '@/policy/utils/openPolicyPrintRoute';
+import { SurfaceCard, BorderGlow } from '@/policy/components/ui';
 
 export interface PolicyViewer32Props {
   policyId?: string;
@@ -61,11 +62,12 @@ function StatusPill({ children, tone = 'teal' }: { children: string; tone?: 'tea
 }
 
 function InfoTile({ label, value }: { label: string; value: string }) {
+  // Apply SurfaceCard for canonical surface/border token (per redesign image refs 44-policy-detail.png, 09-policy-library-viewer.md)
   return (
-    <div className="rounded-[12px] border border-[#E2EEEE] bg-white/78 px-3 py-3 shadow-[0_12px_28px_-24px_rgba(0,65,66,0.35)]">
-      <div className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#668183]">{label}</div>
-      <div className="mt-1 text-[13px] font-semibold leading-snug text-[#004142]">{value || 'Unavailable'}</div>
-    </div>
+    <SurfaceCard padding="sm" className="px-3 py-3">
+      <div className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[var(--v3-text-tertiary)]">{label}</div>
+      <div className="mt-1 text-[13px] font-semibold leading-snug text-[var(--v3-text-primary)]">{value || 'Unavailable'}</div>
+    </SurfaceCard>
   );
 }
 
@@ -453,14 +455,14 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
                   <h2 className="text-sm font-semibold text-[#004142]">Policy Metadata</h2>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-3">
-                  <InfoTile label="Owner" value={metadata.owner} />
-                  <InfoTile label="Review" value={metadata.reviewCycle} />
-                  <InfoTile label="Effective" value={metadata.effectiveDate} />
-                  <InfoTile label="Next Review" value={metadata.nextReview} />
+                  <BorderGlow borderRadius={12} glowIntensity={0.5}><InfoTile label="Owner" value={metadata.owner} /></BorderGlow>
+                  <BorderGlow borderRadius={12} glowIntensity={0.5}><InfoTile label="Review" value={metadata.reviewCycle} /></BorderGlow>
+                  <BorderGlow borderRadius={12} glowIntensity={0.5}><InfoTile label="Effective" value={metadata.effectiveDate} /></BorderGlow>
+                  <BorderGlow borderRadius={12} glowIntensity={0.5}><InfoTile label="Next Review" value={metadata.nextReview} /></BorderGlow>
                 </div>
               </section>
 
-              <section className="rounded-[16px] border border-[#DDEBEB] bg-white/76 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.94)]">
+              <SurfaceCard padding="md" className="border border-[#DDEBEB] bg-white/76">
                 <div className="flex items-center gap-2">
                   <ShieldCheck size={16} className="text-[#007970]" aria-hidden="true" />
                   <h3 className="text-sm font-semibold text-[#004142]">Next Required Action</h3>
@@ -475,7 +477,7 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
                 >
                   <Download size={13} /> Complete Packet
                 </button>
-              </section>
+              </SurfaceCard>
 
               <section>
                 <div className="flex items-center justify-between gap-3">
@@ -536,7 +538,7 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
                 )}
               </section>
 
-              <section className="rounded-[16px] border border-[#DDEBEB] bg-white/76 p-4">
+              <SurfaceCard padding="md" className="border border-[#DDEBEB] bg-white/76">
                 <h3 className="text-sm font-semibold text-[#004142]">Audit Readiness</h3>
                 <div className="mt-3 space-y-2 text-sm text-[#426768]">
                   <div className="flex items-center justify-between gap-3">
@@ -552,7 +554,7 @@ export function PolicyViewer32({ policyId: propPolicyId, embedded = false, onBac
                     <span className="font-semibold text-[#007970]">Complete</span>
                   </div>
                 </div>
-              </section>
+              </SurfaceCard>
             </div>
           </aside>
         </div>

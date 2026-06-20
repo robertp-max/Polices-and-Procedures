@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, X } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { PageHeader } from '@/policy/components/ui';
+import { V32PageHeader as PageHeader, MetricTile } from '@/policy/components/ui';
 import {
   achcSurveyByPolicyId,
   achcSurveyRows,
@@ -384,11 +384,19 @@ export function AchcSurveyAlignmentPage() {
   return (
     <div className="relative flex h-full flex-col">
       <PageHeader
-        eyebrow="SURVEYOR TOOLS"
-        title="ACHC Survey Alignment"
-        description="Surveyor evidence explorer for HH standard support, with matrix and crosswalk retained as secondary views."
+        eyebrow="TAXONOMY"
+        title="ACHC Crosswalk"
+        description="Crosswalk table connecting ACHC standards, CMS/Title 22 references, policies, forms, and evidence type."
         actions={<span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--v3-text-tertiary)]">Manual tagging source locked</span>}
       />
+
+      {/* MetricTiles exact for VIEW 01 per ref png: 312 rows teal, 218 exact green, 64 partial orange, 9 unmapped; label 10px u/c track0.18em Light, 3xl Med value, xs Light note; direct pastel + .tone + css, rounded-2xl p-4/5 shadow-soft min-h92 */}
+      <div className="mb-4 grid grid-cols-2 gap-3 px-6 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MetricTile label="Crosswalk rows" value={312} note="Policy mappings" tone="teal" />
+        <MetricTile label="Exact matches" value={218} note="High confidence" tone="green" />
+        <MetricTile label="Partial" value={64} note="Needs reviewer note" tone="orange" />
+        <MetricTile label="Unmapped" value={9} note="Governance queue" tone="orange" />
+      </div>
 
       <div className="border-b border-[#e2e8f0] px-6 py-3">
         <div className="inline-flex overflow-hidden rounded-lg border border-[#99f6e4] bg-[#f0fdfa]">
@@ -496,20 +504,20 @@ export function AchcSurveyAlignmentPage() {
 
       <div className="flex-1 overflow-auto px-6 py-4">
         {mode === 'EVIDENCE' ? (
-          /* MVP-P1-A11Y-004 (Wave 4) — tree ARIA on the ACHC evidence hierarchy.
-             Outer container = role="tree". Each HH-standard section is a
-             level-1 treeitem with aria-expanded; its rows are level-2
-             treeitems inside a role="group". aria-level / aria-posinset /
-             aria-setsize provide positional context for screen readers
-             without changing visible layout or keyboard focus model.
-             Full roving-tabindex keyboard nav is tracked separately (A11Y-006
-             targets PolicyLinkSelector first; tree-roving is a follow-on). */
           <div
             className="space-y-4"
             role="tree"
             aria-label="ACHC evidence hierarchy by HH standard"
             aria-orientation="vertical"
           >
+            {/* MVP-P1-A11Y-004 (Wave 4) — tree ARIA on the ACHC evidence hierarchy.
+               Outer container = role="tree". Each HH-standard section is a
+               level-1 treeitem with aria-expanded; its rows are level-2
+               treeitems inside a role="group". aria-level / aria-posinset /
+               aria-setsize provide positional context for screen readers
+               without changing visible layout or keyboard focus model.
+               Full roving-tabindex keyboard nav is tracked separately (A11Y-006
+               targets PolicyLinkSelector first; tree-roving is a follow-on). */}
             {evidenceGroups.map((group, groupIdx) => {
               const groupCollapsed = !!evidenceHhCollapsed[group.hhStandard];
               return (

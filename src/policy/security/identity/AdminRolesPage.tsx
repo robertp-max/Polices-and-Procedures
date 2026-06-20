@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { PageHeader, SurfaceCard, DataGrid, SearchField } from '@/policy/components/ui';
+import { PageHeader, SurfaceCard, DataGrid, SearchField, MetricTile, ToneBadge } from '@/policy/components/ui';
 import { USER_GROUPS } from './userGroups';
 
 const ADMIN_TABS = [
@@ -22,10 +22,18 @@ export function AdminRolesPage() {
     <div className="h-full w-full overflow-y-auto p-6" style={{ background: 'transparent' }}>
       <div className="max-w-6xl mx-auto space-y-6">
         <PageHeader
-          eyebrow="ADMIN / IDENTITY"
-          title="Roles"
-          description="Browse seeded role definitions and permission cardinality. Filter to locate groups for assignments."
+          eyebrow="ADMIN"
+          title="Admin Roles"
+          description="Admin Roles prototype for the active app route /admin/roles."
         />
+
+        {/* Ref style: plain MetricTile tone pastels (no extra BorderGlow on metrics per 05-admin-roles.png + generic metrics row); uniform gap-4, preserve live data/func */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <MetricTile label="Roles" value={filteredRoles.length} note="Visible" tone="teal" />
+          <MetricTile label="Total Perms" value={filteredRoles.reduce((sum, g) => sum + g.permissions.length, 0)} note="Across roles" tone="success" />
+          <MetricTile label="Avg per Role" value={filteredRoles.length ? Math.round(filteredRoles.reduce((sum, g) => sum + g.permissions.length, 0) / filteredRoles.length) : 0} note="Cardinality" tone="orange" />
+          <MetricTile label="Groups" value={USER_GROUPS.length} note="Seeded" tone="muted" />
+        </div>
 
         {/* Corporate sub nav pills (Tabs variant) */}
         <div className="flex flex-wrap gap-2">
@@ -65,15 +73,13 @@ export function AdminRolesPage() {
               {filteredRoles.map(group => (
                 <DataGrid.Row key={group.id}>
                   <DataGrid.Cell>
-                    <span className="font-semibold tracking-tight">{group.name}</span>
+                    <span className="font-heading text-xs font-extrabold text-brand-teal-500">{group.name}</span>
                   </DataGrid.Cell>
                   <DataGrid.Cell>
-                    <span className="text-[var(--v3-text-secondary)]">{group.description}</span>
+                    <span className="text-xs font-medium text-brand-teal-600">{group.description}</span>
                   </DataGrid.Cell>
                   <DataGrid.Cell align="right">
-                    <span className="inline-block min-w-[2em] rounded bg-[var(--v3-teal-light, #00D1C1)]/10 px-2 py-px text-xs font-mono text-[var(--v3-text-primary)]">
-                      {group.permissions.length}
-                    </span>
+                    <ToneBadge tone="teal">{group.permissions.length}</ToneBadge>
                   </DataGrid.Cell>
                 </DataGrid.Row>
               ))}

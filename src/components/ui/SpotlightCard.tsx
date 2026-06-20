@@ -25,7 +25,7 @@ export function SpotlightCard({
   children,
   className,
   spotlightColor = 'rgba(0, 121, 112, 0.15)',
-  variant = 'simple-radial',
+  variant = 'border-glow', // default full edge proximity/angle/conic/7-stack exactly per prototype refs for cards/cols/banners
   // BorderGlow pass-throughs (PHASE 0; keep existing simple radial default)
   edgeSensitivity,
   glowColor,
@@ -48,7 +48,7 @@ export function SpotlightCard({
         className={className}
         backgroundColor={backgroundColor ?? '#F7FEFF'}
         glowColor={glowColor ?? '181 72 58'}
-        glowIntensity={glowIntensity ?? 0.85}
+        glowIntensity={glowIntensity ?? 0.94}
         edgeSensitivity={edgeSensitivity}
         borderRadius={borderRadius}
         glowRadius={glowRadius}

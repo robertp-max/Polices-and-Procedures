@@ -129,14 +129,14 @@ export function PersonalOperationsPanel({
         >
           <p
             className="font-montserrat text-[10px] font-bold uppercase"
-            style={{ color: 'var(--brand-primary, #007970)', letterSpacing: '0.18em' }}
+            style={{ color: 'var(--brand-primary, #00797D)', letterSpacing: '0.18em' }}
           >
             Personal Operations
           </p>
           <h2
             id="personal-ops-title"
             className="mt-1 font-montserrat text-[17px] font-semibold leading-tight"
-            style={{ color: 'var(--brand-primary, #007970)' }}
+            style={{ color: 'var(--brand-primary, #00797D)' }}
           >
             Today's Focus
           </h2>
@@ -204,9 +204,9 @@ export function PersonalOperationsPanel({
                 className="ci-subtle-hover flex min-h-[38px] items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-[11px] font-semibold"
                 style={{
                   background: action.primary
-                    ? 'var(--brand-primary, #007970)'
+                    ? 'var(--brand-primary, #00797D)'
                     : 'color-mix(in srgb, var(--ci-surface, #FFFFFF) 86%, transparent)',
-                  borderColor: action.primary ? 'var(--brand-primary, #007970)' : 'var(--v3-border-subtle)',
+                  borderColor: action.primary ? 'var(--brand-primary, #00797D)' : 'var(--v3-border-subtle)',
                   color: action.primary ? '#FFFFFF' : 'var(--v3-text-primary)',
                 }}
               >
@@ -339,7 +339,7 @@ function SummaryStrip({ pills }: { pills: SummaryPill[] }): ReactElement {
           <p
             className="text-[8px] font-bold uppercase leading-none"
             style={{
-              color: pill.urgent ? 'var(--ci-primary-500, #C74601)' : 'var(--brand-primary, #007970)',
+              color: pill.urgent ? 'var(--ci-primary-500, #C74601)' : 'var(--brand-primary, #00797D)',
               letterSpacing: '0.02em',
             }}
           >
@@ -367,10 +367,10 @@ function SectionBlock({
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
-          <Icon size={14} strokeWidth={2} aria-hidden="true" style={{ color: 'var(--brand-primary, #007970)' }} />
+          <Icon size={14} strokeWidth={2} aria-hidden="true" style={{ color: 'var(--brand-primary, #00797D)' }} />
           <h3
             className="truncate font-montserrat text-[11px] font-bold uppercase"
-            style={{ color: 'var(--brand-primary, #007970)', letterSpacing: '0.12em' }}
+            style={{ color: 'var(--brand-primary, #00797D)', letterSpacing: '0.12em' }}
           >
             {title}
           </h3>
@@ -410,8 +410,8 @@ function WorkQueueGroupBlock({
         <span
           className="rounded-full px-2 py-0.5 text-[10px] font-bold"
           style={{
-            background: 'color-mix(in srgb, var(--brand-primary, #007970) 11%, transparent)',
-            color: 'var(--brand-primary, #007970)',
+            background: 'color-mix(in srgb, var(--brand-primary, #00797D) 11%, transparent)',
+            color: 'var(--brand-primary, #00797D)',
           }}
         >
           {formatCount(group.count)}
@@ -479,7 +479,7 @@ function PersonalOpsRow({
         </span>
         <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] leading-tight" style={{ color: 'var(--v3-text-tertiary)' }}>
           <span className="inline-flex items-center gap-1">
-            <Icon size={11} strokeWidth={2} aria-hidden="true" style={{ color: 'var(--brand-primary, #007970)' }} />
+            <Icon size={11} strokeWidth={2} aria-hidden="true" style={{ color: 'var(--brand-primary, #00797D)' }} />
             {item.source}
           </span>
           {item.dueDate && <span>Due {formatDue(item.dueDate)}</span>}
@@ -515,7 +515,7 @@ function ViewAllButton({ label, onClick, compact = false }: { label: string; onC
       onClick={onClick}
       className="ci-subtle-hover rounded-full font-semibold"
       style={{
-        color: 'var(--brand-primary, #007970)',
+        color: 'var(--brand-primary, #00797D)',
         fontSize: compact ? 11 : 12,
         padding: compact ? '2px 0' : '4px 0',
       }}
@@ -545,15 +545,15 @@ function SecurityFooter({ model }: { model: PersonalOpsModel }): ReactElement {
     <footer
       className="rounded-lg border px-3 py-2.5"
       style={{
-        background: 'color-mix(in srgb, var(--brand-primary, #007970) 7%, var(--ci-surface, #FFFFFF))',
-        borderColor: 'color-mix(in srgb, var(--brand-primary, #007970) 22%, var(--v3-border-subtle))',
+        background: 'color-mix(in srgb, var(--brand-primary, #00797D) 7%, var(--ci-surface, #FFFFFF))',
+        borderColor: 'color-mix(in srgb, var(--brand-primary, #00797D) 22%, var(--v3-border-subtle))',
       }}
     >
       <div className="mb-1.5 flex items-center gap-2">
-        <ShieldCheck size={14} aria-hidden="true" style={{ color: 'var(--brand-primary, #007970)' }} />
+        <ShieldCheck size={14} aria-hidden="true" style={{ color: 'var(--brand-primary, #00797D)' }} />
         <p
           className="font-montserrat text-[10px] font-bold uppercase"
-          style={{ color: 'var(--brand-primary, #007970)', letterSpacing: '0.1em' }}
+          style={{ color: 'var(--brand-primary, #00797D)', letterSpacing: '0.1em' }}
         >
           Secure Session
         </p>
@@ -604,7 +604,7 @@ function toneForItem(item: PersonalOpsDisplayItem): { color: string; soft: strin
   if (status.includes('complete') || status.includes('active')) {
     return { color: '#008540', soft: 'rgba(0, 133, 64, 0.12)' };
   }
-  return { color: 'var(--brand-primary, #007970)', soft: 'color-mix(in srgb, var(--brand-primary, #007970) 10%, transparent)' };
+  return { color: 'var(--brand-primary, #00797D)', soft: 'color-mix(in srgb, var(--brand-primary, #00797D) 10%, transparent)' };
 }
 
 function statusLabel(status: string): string {
