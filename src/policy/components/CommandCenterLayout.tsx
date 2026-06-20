@@ -1057,8 +1057,6 @@ export function CommandCenterLayout({ children }: PropsWithChildren) {
         </div>
       </div>
       </ShellContentFrame>
-      <GuidedUatWidget />
-      <GuidedTourGate />
     </ShellFrame>
   );
 }

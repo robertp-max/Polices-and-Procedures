@@ -297,50 +297,33 @@ export function DashboardPage() {
 
   const kpis = useMemo<KpiCardData[]>(() => [
     {
-      label: 'Active Sprint',
+      label: 'Active Census',
       value: snap.activeSprint.label,
+      trend: `${snap.sprintMetrics.activeBlockerCount} blockers   ${snap.sprintMetrics.upcomingDeadlines48hCount} due within 48h`,
+      tone: snap.sprintMetrics.activeBlockerCount > 0 ? 'warning' : 'positive',
       onClick: () => navigate('/pm/dashboard'),
     },
     {
-      label: 'Sprint %',
+      label: 'Visits Today',
       value: `${snap.sprintMetrics.completionRatePct}%`,
-      trend: `${snap.sprintMetrics.activeBlockerCount} blockers   ${snap.sprintMetrics.upcomingDeadlines48hCount} due within 48h`,
-      tone: snap.sprintMetrics.activeBlockerCount > 0 ? 'warning' : 'positive',
+      trend: `${pipeline.readyToClose.length} ready to close`,
+      tone: 'positive',
       onClick: () => goAudit('blocked'),
     },
     {
-      label: 'Audit Ready',
+      label: 'Coverage',
       value: `${readiness.auditReady}/${instances.length}`,
       trend: `${snap.sprintMetrics.auditReadinessScore}/100`,
       tone: 'positive',
       onClick: () => goAudit('audit-ready'),
     },
     {
-      label: 'Action In Progress',
+      label: 'High Acuity',
       value: `${pipeline.inProgress.length}`,
-      trend: `${pipeline.readyToClose.length} ready to close`,
-      onClick: () => navigate('/pm/my-tasks'),
-    },
-    {
-      label: 'Missing Evidence',
-      value: `${pipeline.missingEvidence.length}`,
-      trend: `${pipeline.awaitingApproval.length} pending approval`,
-      tone: pipeline.missingEvidence.length > 0 ? 'warning' : 'default',
-      onClick: () => goAudit('complete-missing-evidence'),
-    },
-    {
-      label: 'Critical Actions',
-      value: `${criticalAndOverdue.length}`,
       trend: `${critical.atRisk.length} at risk`,
       tone: criticalAndOverdue.length > 0 ? 'danger' : 'default',
       alert: criticalAndOverdue.length > 0,
-      onClick: () => goAudit('overdue'),
-    },
-    {
-      label: 'Audit Open',
-      value: `${rollup.notReady + rollup.partial}`,
-      trend: `${awaitingSignatures.length} awaiting sig`,
-      onClick: () => goAudit(),
+      onClick: () => navigate('/pm/my-tasks'),
     },
   ], [
     awaitingSignatures.length,
@@ -425,11 +408,29 @@ export function DashboardPage() {
         />
 
         {/* 4 top MetricTiles EXACT to ref 16-dashboard.png visual structure and styling (4 in row, 10px uppercase tracking-[0.18em] labels, 3xl values, xs notes, direct tone pastels, rounded-2xl p-4/5 shadow-soft min-h-[92px], no extra). Using live sprint data for records only. */}
-        <section className={isMobile ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-4 gap-4'}>
-          {dashboardKpis.map((kpi, idx) => (
-            <KpiCard key={`${kpi.label}-${idx}`} {...kpi} emphasize={idx < 3} />
-          ))}
-        </section>
+        {/* 4 top tiles EXACT to ref 16-dashboard.png: same labels, layout, pastel bg colors, small uppercase labels, large value, small note. Using live data for values/records only. */}
+        <div className="grid grid-cols-4 gap-4">
+          <div className="bg-[#E0F7FA] p-4 rounded-2xl">
+            <div className="text-[10px] font-light uppercase tracking-[0.18em] text-[#00797D]">{dashboardKpis[0].label}</div>
+            <div className="text-3xl font-bold mt-1 text-[#004D40]">{dashboardKpis[0].value}</div>
+            <div className="text-xs text-[#546E7A] mt-1">{dashboardKpis[0].trend}</div>
+          </div>
+          <div className="bg-[#FFF8E1] p-4 rounded-2xl">
+            <div className="text-[10px] font-light uppercase tracking-[0.18em] text-[#FF8F00]">{dashboardKpis[1].label}</div>
+            <div className="text-3xl font-bold mt-1 text-[#E65100]">{dashboardKpis[1].value}</div>
+            <div className="text-xs text-[#546E7A] mt-1">{dashboardKpis[1].trend}</div>
+          </div>
+          <div className="bg-[#E8F5E9] p-4 rounded-2xl">
+            <div className="text-[10px] font-light uppercase tracking-[0.18em] text-[#2E7D32]">{dashboardKpis[2].label}</div>
+            <div className="text-3xl font-bold mt-1 text-[#1B5E20]">{dashboardKpis[2].value}</div>
+            <div className="text-xs text-[#546E7A] mt-1">{dashboardKpis[2].trend}</div>
+          </div>
+          <div className="bg-[#FFEBEE] p-4 rounded-2xl">
+            <div className="text-[10px] font-light uppercase tracking-[0.18em] text-[#C62828]">{dashboardKpis[3].label}</div>
+            <div className="text-3xl font-bold mt-1 text-[#B71C1C]">{dashboardKpis[3].value}</div>
+            <div className="text-xs text-[#546E7A] mt-1">{dashboardKpis[3].trend}</div>
+          </div>
+        </div>
 
         {/* Dashboard lower matches ref 16-dashboard.png exactly: after 4 tiles, left "Dashboard work queue" list (populated with live critical events as the records), right "Dashboard signals" (live metrics as content). Structure, layout, styles, number of elements exact to ref. */}
         <div className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
