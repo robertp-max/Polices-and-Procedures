@@ -4,6 +4,7 @@ import { FORM_TITLES } from '@/policy/data/formTitles.generated';
 import type { EventEvidenceItem, EventProcessStep, RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import type { CesCalendarHubMeta } from '@/policy/services/calendarApi';
+import { formatCesFormInstanceId } from '@/policy/compliance-execution/cesFormInstanceId';
 import { buildCanonicalEventSwimlaneNodeId, buildCanonicalEventSwimlaneTaskId } from '@/policy/workflows/swimlanes/eventSwimlaneIdentity';
 import type { SwimlaneLane, SwimlaneModel, SwimlaneNode, SwimlaneStatus } from '@/policy/workflows/swimlanes/types';
 
@@ -302,19 +303,37 @@ function taskStatus(step: SourceStep, index: number, event?: RegulatoryEvent | n
   return index === 0 ? 'ready' : 'pending';
 }
 
-function buildRoutes(eventId: string, workflowId: string | undefined, hub?: CesCalendarHubMeta | null, firstFormId?: string): CesEventExecutionRoutes {
+function buildRoutes(
+  eventId: string,
+  workflowId: string | undefined,
+  hub?: CesCalendarHubMeta | null,
+  firstForm?: {
+    formId: string;
+    taskId: string;
+    formInstanceId: string;
+    requirementId: string;
+    policyId?: string;
+  },
+): CesEventExecutionRoutes {
   const event = encodeURIComponent(eventId);
   const workflowQuery = workflowId ? `?workflowId=${encodeURIComponent(workflowId)}` : '';
   const formQuery = new URLSearchParams();
   formQuery.set('event_id', eventId);
   if (workflowId) formQuery.set('workflow_id', workflowId);
+  if (firstForm) {
+    formQuery.set('task_id', firstForm.taskId);
+    formQuery.set('form_id', firstForm.formId);
+    formQuery.set('form_instance_id', firstForm.formInstanceId);
+    formQuery.set('requirement_id', firstForm.requirementId);
+    if (firstForm.policyId) formQuery.set('policy_id', firstForm.policyId);
+  }
 
   return {
     eventWorkspace: hub?.eventWorkspacePath ?? `/calendar/event/${event}`,
     fullSwimlane: hub?.swimlanePath ?? `/events/${event}/swimlane${workflowQuery}`,
     evidenceCenter: hub?.evidenceCenterPath ?? `/evidence?eventId=${event}`,
     auditMode: hub?.auditModePath ?? `/audit?eventId=${event}`,
-    ecignSigning: firstFormId ? `/forms/${encodeURIComponent(firstFormId)}?${formQuery.toString()}` : `/forms?eventId=${event}`,
+    ecignSigning: firstForm?.formId ? `/forms/${encodeURIComponent(firstForm.formId)}?${formQuery.toString()}` : `/forms?eventId=${event}`,
     packetPreview: `/audit?eventId=${event}&packet=preview`,
     driveFolder: hub?.driveFolderUrl,
   };
@@ -413,8 +432,17 @@ export function buildCesEventExecutionViewModel(input: BuildCesEventExecutionVie
   const auditCloseoutRatio = event && input.executionState?.isCertified?.(event.id) ? 1 : event?.urgency === 'complete' ? 1 : 0;
   const completion = weightedCompletion({ taskRatio, evidenceRatio, formRatio, signatureRatio, auditCloseoutRatio });
   const blockerText = ecign.blockerText ?? (forms.some(form => form.status === 'missing') ? 'Required form evidence is missing.' : undefined);
-  const firstFormId = forms.find(form => form.formId)?.formId;
-  const routes = buildRoutes(input.eventId, workflowId ?? undefined, input.hub, firstFormId);
+  const firstTaskWithForm = tasks.find(task => task.requiredForms.some(form => form.formId || form.id));
+  const firstTaskForm = firstTaskWithForm?.requiredForms.find(form => form.formId || form.id);
+  const firstFormId = firstTaskForm ? (firstTaskForm.formId ?? firstTaskForm.id) : undefined;
+  const firstFormRouteContext = firstTaskWithForm && firstFormId ? {
+    formId: firstFormId,
+    taskId: firstTaskWithForm.id,
+    formInstanceId: firstTaskForm?.formInstanceId ?? formatCesFormInstanceId(input.eventId, firstFormId, 1),
+    requirementId: `${firstTaskWithForm.id}::FORM_COMPLETION::${firstFormId}`,
+    policyId: event?.policyRefs?.[0],
+  } : undefined;
+  const routes = buildRoutes(input.eventId, workflowId ?? undefined, input.hub, firstFormRouteContext);
   const statusLabel = input.hub?.statusLabel ?? statusLabelFor(completion.percent, blockerText);
   const policyRefs = event?.policyRefs?.length
     ? unique([...event.policyRefs, ...splitMetaList(input.hub?.policyRefs)])

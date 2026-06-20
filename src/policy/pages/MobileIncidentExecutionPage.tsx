@@ -7,6 +7,8 @@ import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecution
 import { useProjectedTasks } from '@/policy/pm/taskProjection';
 import { isEvidenceImmutable } from '@/policy/evidence/evidenceModel';
 import { buildArtifactRoute } from '@/policy/artifacts/artifactRoute';
+import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
+import { formatCesFormInstanceId } from '@/policy/compliance-execution/cesFormInstanceId';
 
 type MobileFlowStage = 'event' | 'workflow' | 'task' | 'evidence' | 'approval';
 
@@ -35,6 +37,90 @@ type MobileWorkflowView = {
   currentStepId: string | null;
   steps: MobileWorkflowStep[];
 };
+
+const FORM_TEMPLATE_IDS = new Set(FORMS_DATASET.map(form => form.id));
+
+function normalizeFormTemplateId(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  if (FORM_TEMPLATE_IDS.has(value)) return value;
+  const withoutGeneratedPrefix = value.replace(/^f-/, '');
+  if (FORM_TEMPLATE_IDS.has(withoutGeneratedPrefix)) return withoutGeneratedPrefix;
+  return undefined;
+}
+
+function taskStepIndex(event: RegulatoryEvent, task: ProjectedTask): number {
+  const explicitStepId = 'step_id' in task ? task.step_id : undefined;
+  const byId = explicitStepId ? event.processFlow.findIndex(step => step.id === explicitStepId) : -1;
+  if (byId >= 0) return byId;
+  const byTitle = event.processFlow.findIndex(step => step.label === task.title);
+  if (byTitle >= 0) return byTitle;
+  const match = task.task_id.match(/-(\d+)$/);
+  const ordinal = match ? Number(match[1]) - 1 : -1;
+  return ordinal >= 0 && ordinal < event.processFlow.length ? ordinal : -1;
+}
+
+function fallbackTaskFormIds(event: RegulatoryEvent, task: ProjectedTask): string[] {
+  const idx = taskStepIndex(event, task);
+  const stepForms = idx >= 0 ? (event.processFlow[idx]?.requiredFormIds ?? []) : [];
+  const eventForms = event.requiredForms
+    .filter(form => stepForms.includes(form.id) || (form.formId ? stepForms.includes(form.formId) || stepForms.includes(`f-${form.formId}`) : false))
+    .map(form => form.formId ?? form.id);
+  const raw = [...stepForms, ...eventForms];
+  return Array.from(new Set(raw.map(normalizeFormTemplateId).filter((value): value is string => Boolean(value))));
+}
+
+function taskFormIds(task: ProjectedTask, event?: RegulatoryEvent): string[] {
+  const values = [
+    ...(('form_ids' in task && Array.isArray(task.form_ids)) ? task.form_ids : []),
+    ...(('form_refs' in task && Array.isArray(task.form_refs)) ? task.form_refs : []),
+    ('form_id' in task ? task.form_id : undefined),
+    ('source_form_id' in task ? task.source_form_id : undefined),
+  ];
+  const direct = Array.from(new Set(values.map(normalizeFormTemplateId).filter((value): value is string => Boolean(value))));
+  if (direct.length > 0 || !event) return direct;
+  return fallbackTaskFormIds(event, task);
+}
+
+function fallbackFormSequence(event: RegulatoryEvent, task: ProjectedTask, formId: string): number {
+  const idx = taskStepIndex(event, task);
+  if (idx < 0) return 1;
+  let count = 0;
+  for (let i = 0; i <= idx; i += 1) {
+    const forms = (event.processFlow[i]?.requiredFormIds ?? [])
+      .map(normalizeFormTemplateId)
+      .filter((value): value is string => Boolean(value));
+    for (const current of forms) {
+      if (current === formId) count += 1;
+    }
+  }
+  return Math.max(1, count);
+}
+
+function taskFormInstanceId(task: ProjectedTask, formId: string, event?: RegulatoryEvent): string | undefined {
+  const ids = ('generated_form_instance_ids' in task && Array.isArray(task.generated_form_instance_ids))
+    ? task.generated_form_instance_ids
+    : [];
+  const forms = taskFormIds(task, event);
+  const idx = forms.indexOf(formId);
+  const projected = ids[idx >= 0 ? idx : 0];
+  if (projected) return projected;
+  return event ? formatCesFormInstanceId(event.id, formId, fallbackFormSequence(event, task, formId)) : undefined;
+}
+
+function buildTaskLinkedFormRoute(event: RegulatoryEvent, task: ProjectedTask, formId: string): string {
+  const params = new URLSearchParams();
+  const workflowId = task.workflow_id || event.workflowId || '';
+  const formInstanceId = taskFormInstanceId(task, formId, event);
+  params.set('event_id', event.id);
+  if (workflowId) params.set('workflow_id', workflowId);
+  params.set('task_id', task.task_id);
+  params.set('form_id', formId);
+  if (formInstanceId) params.set('form_instance_id', formInstanceId);
+  params.set('requirement_id', `${task.task_id}::FORM_COMPLETION::${formId}`);
+  const policyId = task.policy_id || event.policyRefs[0];
+  if (policyId) params.set('policy_id', policyId);
+  return `/forms/${encodeURIComponent(formId)}?${params.toString()}`;
+}
 
 export function MobileIncidentExecutionPage({ stage }: MobileIncidentExecutionPageProps) {
   const navigate = useNavigate();
@@ -255,9 +341,10 @@ function MobileWorkflowStepper({
 function MobileTaskDetail({ event, task, evidenceCount, approvals }: { event: RegulatoryEvent; task: ProjectedTask; evidenceCount: number; approvals: number }) {
   const navigate = useNavigate();
   const store = useRegulatoryExecutionStore();
-  const requiredForms = ('form_ids' in task ? task.form_ids : []) ?? [];
+  const requiredForms = taskFormIds(task, event);
   const stepId = ('step_id' in task ? task.step_id : undefined) ?? task.task_id;
-  const formId = ('form_id' in task ? task.form_id : undefined) ?? requiredForms[0];
+  const formId = requiredForms[0] ?? ('form_id' in task ? task.form_id : undefined);
+  const formInstanceId = formId ? taskFormInstanceId(task, formId, event) : undefined;
   const hasMissingForms = requiredForms.some(formId => store.effectiveFormStatus(event, formId) !== 'complete');
   const requiresEvidence = (task.task_type === 'evidence' || task.blockers?.some(b => /evidence/i.test(b))) ?? false;
   const evidenceMissing = requiresEvidence && evidenceCount === 0;
@@ -274,7 +361,7 @@ function MobileTaskDetail({ event, task, evidenceCount, approvals }: { event: Re
 
   const onPrimary = () => {
     if (cta === 'Attach Evidence') navigate(`/calendar/event/${encodeURIComponent(event.id)}/evidence/${encodeURIComponent(task.task_id)}`);
-    else if (cta === 'Open Required Form') navigate('/forms');
+    else if (cta === 'Open Required Form' && formId) navigate(buildTaskLinkedFormRoute(event, task, formId));
     else if (cta === 'Send for Approval') navigate(`/calendar/event/${encodeURIComponent(event.id)}/approval`);
     else if (stepId) store.setStepStatus(event.id, stepId, 'complete');
   };
@@ -291,7 +378,23 @@ function MobileTaskDetail({ event, task, evidenceCount, approvals }: { event: Re
         <p><span className="font-semibold">Workflow step:</span> {stepId}</p>
         <p><span className="font-semibold">Owner:</span> {task.assignee ?? task.owner ?? 'Unassigned'}</p>
         <p><span className="font-semibold">Instructions:</span> Complete required forms/evidence and resolve blockers before closure.</p>
-        <p><span className="font-semibold">Required forms:</span> {requiredForms.join(', ') || 'None'}</p>
+        <div>
+          <span className="font-semibold">Required forms:</span>{' '}
+          {requiredForms.length ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {requiredForms.map(requiredFormId => (
+                <button
+                  key={requiredFormId}
+                  type="button"
+                  onClick={() => navigate(buildTaskLinkedFormRoute(event, task, requiredFormId))}
+                  className="rounded-lg border border-teal-300/70 px-2 py-1 text-xs font-semibold text-teal-700"
+                >
+                  Complete Form · {requiredFormId}
+                </button>
+              ))}
+            </div>
+          ) : 'None'}
+        </div>
         <p><span className="font-semibold">Required evidence:</span> {requiresEvidence ? 'Required' : 'Not required'}</p>
         <p><span className="font-semibold">Approvals in flight:</span> {approvals}</p>
         <p><span className="font-semibold">Completion blockers:</span> {task.blockers?.join(' · ') || 'None'}</p>
@@ -328,6 +431,8 @@ function MobileTaskDetail({ event, task, evidenceCount, approvals }: { event: Re
         <p>workflow_id: {task.workflow_id || event.workflowId || 'N/A'}</p>
         <p>policy_id: {task.policy_id || event.policyRefs[0] || 'N/A'}</p>
         <p>form_id: {requiredForms[0] || formId || 'N/A'}</p>
+        <p>form_instance_id: {formInstanceId || 'N/A'}</p>
+        <p>requirement_id: {formId ? `${task.task_id}::FORM_COMPLETION::${formId}` : 'N/A'}</p>
       </details>
     </section>
   );

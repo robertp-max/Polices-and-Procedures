@@ -966,14 +966,16 @@ export function ECIgnWorkspace({
     fieldId: ecignSignatureFieldId,
     eventId: hhcEventId,
     workflowInstanceId: hhcWorkflowId,
-    ...(isMultiSigner ? {
+    ...(hhcEventId ? {
       formInstanceId: canonicalFormInstanceId,
       sharedInstance: true,
+      parentTaskId,
+      totalSigners,
+    } : {}),
+    ...(isMultiSigner ? {
       signerSlots: signerSlots?.map(s => ({ field_id: s.field_id, role: s.role, tier: s.tier })),
       signerRequirements: requiredSignerPayloadList,
-      parentTaskId,
       signerIndex,
-      totalSigners,
     } : {}),
   });
   const emittedAuditActionsRef = useRef<Set<string>>(new Set());
