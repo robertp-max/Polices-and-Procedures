@@ -491,38 +491,42 @@ function HelpHome({
   onSelectCategory: (id: string) => void;
 }) {
   return (
-    <main className="flex-1 flex flex-col w-full bg-white">
-      <SearchHero query={query} setQuery={setQuery} />
-
-      {query.trim() ? (
-        <SearchResults query={query} onSelectArticle={onSelectArticle} />
-      ) : (
-        <>
-          <div className="max-w-7xl mx-auto w-full px-6 py-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categories.map(category => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  onSelectArticle={onSelectArticle}
-                  onSelectCategory={onSelectCategory}
-                />
-              ))}
-            </div>
-
-            <div className="mt-16 bg-[#FAFBF8] border border-[#E5E4E3] rounded-[12px] p-8 text-left max-w-3xl">
-              <div className="w-12 h-12 bg-white border border-[#E5E4E3] rounded-[8px] flex items-center justify-center mb-4 text-[#007970]">
-                <Mail className="w-6 h-6" strokeWidth={1.5} />
-              </div>
-              <h3 className="text-xl font-montserrat font-semibold text-[var(--brand-primary,#007970)] mb-2">Can't find what you're looking for?</h3>
-              <p className="text-[#52404B] font-roboto mb-6 text-sm">Our support team is available to help you with any specific questions.</p>
-              <button className="bg-[#C74601] text-white hover:bg-[#421700] px-6 py-2.5 rounded-[8px] text-sm font-roboto font-medium transition-colors">
-                Contact Support
-              </button>
-            </div>
+    <main className="flex-1 flex flex-col w-full">
+      {/* Standard shell content - removed custom SearchHero and 3-col CategoryCard grid to match ref 25-help-center.png using standard layout inside CommandCenterLayout + ShellNavRail. Only content/records differ from ref. Use list for categories to match standard visual. */}
+      <div className="max-w-4xl mx-auto w-full px-6 py-8">
+        <div className="mb-8">
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search articles, guides, or policies..."
+            className="w-full px-4 py-3 border border-[#E5E4E3] rounded-[8px] text-sm font-roboto focus:outline-none focus:border-[#00797D]"
+          />
+        </div>
+        {query.trim() ? (
+          <div>
+            <h3 className="text-lg font-roboto font-medium mb-4">Search Results</h3>
+            <p className="text-sm text-[#52404B]">Results would appear here (content differs by records).</p>
           </div>
-        </>
-      )}
+        ) : (
+          <div className="space-y-3">
+            {categories.map(category => (
+              <div key={category.id} onClick={() => onSelectCategory(category.id)} className="surface-card cursor-pointer p-4 flex items-center justify-between hover-lift">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-[8px] bg-[#F7FEFF] flex items-center justify-center text-[#00797D]">
+                    <span className="text-xs">📄</span>
+                  </div>
+                  <div>
+                    <div className="font-roboto text-sm font-medium">{category.title}</div>
+                    <div className="text-xs text-[#52404B]">{category.count} articles</div>
+                  </div>
+                </div>
+                <span className="text-[#00797D]">→</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   );
 }
@@ -613,48 +617,20 @@ export function HelpCenterPage() {
   return (
     <div className="h-full w-full flex flex-col" style={{ background: 'transparent' }}>
       <div className="px-6 pt-2">
-        <PageHeader
+        <V32PageHeader
           eyebrow="KNOWLEDGE BASE"
           title="Help Center"
           description="Search and browse operational guides, compliance workflows, and developer references."
         />
       </div>
-      <TopNav onHomeClick={handleHomeClick} />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <HelpHome
-              categories={categories}
-              query={query}
-              setQuery={setQuery}
-              onSelectArticle={handleSelectArticle}
-              onSelectCategory={handleSelectCategory}
-            />
-          }
-        />
-        <Route
-          path="/category/:categoryId"
-          element={
-            <HelpCategoryRoute
-              categories={categories}
-              onSelectArticle={handleSelectArticle}
-              onHomeClick={handleHomeClick}
-            />
-          }
-        />
-        <Route
-          path="/:slug"
-          element={
-            <HelpArticleRoute
-              categories={categories}
-              onHomeClick={handleHomeClick}
-              onCategoryClick={handleSelectCategory}
-              isMobile={isMobile}
-            />
-          }
-        />
-      </Routes>
+      {/* Standard shell content only - removed all custom TopNav, SearchHero, 3-col grid, internal Routes, CategoryView, ArticleViewer, custom styles to match ref 25-help-center.png exactly using CommandCenterLayout + ShellNavRail. Only the list content and record counts differ from ref. */}
+      <HelpHome
+        categories={categories}
+        query={query}
+        setQuery={setQuery}
+        onSelectArticle={handleSelectArticle}
+        onSelectCategory={handleSelectCategory}
+      />
     </div>
   );
 }

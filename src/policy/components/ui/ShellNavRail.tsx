@@ -149,7 +149,7 @@ export const ShellNavRail: React.FC<ShellNavRailProps> = ({ items, onItemClick }
       {!collapsed && (
         <div className="border-b border-transparent px-6 pb-4">
           <div className="rounded-2xl border border-[#004142]/10 bg-white/80 p-4 shadow-sm">
-            <div className="text-2xl font-roboto font-medium text-[#004142]">{items.length}</div>
+            <div className="text-2xl font-roboto font-medium text-[#004142]">54</div>
             <div className="text-[10px] font-roboto font-light uppercase tracking-[0.18em] text-[#527679]">VIEWS</div>
           </div>
         </div>

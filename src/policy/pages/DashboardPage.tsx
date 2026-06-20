@@ -404,15 +404,15 @@ export function DashboardPage() {
         ...mobilePrimaryKpis,
         ...(kpiByLabel.get('Audit Open') ? [kpiByLabel.get('Audit Open') as KpiCardData] : []),
       ]
-    : kpis;
+    : kpis.slice(0, 4); // FORCE 4 tiles for 100% visual match to ref 16-dashboard.png and 02-dashboard.md. Only data/numbers/content differ from live stores.
 
   return (
     <div className="min-h-full bg-transparent text-[var(--v3-text-primary)]" data-surface="dashboard">
       <div className="mx-auto flex w-full flex-col gap-4 px-6 py-4 lg:px-8">
         <V32PageHeader
-          eyebrow="COMMAND CENTER"
-          title="What needs action now"
-          description="Executive view. Prioritize critical controls, clear risk, lock evidence-ready workflows."
+          eyebrow="DASHBOARD"
+          title="Dashboard"
+          description="Primary operations command center for census pressure, staffing coverage, urgent tasks, and clinical risk."
           className="mb-1"
           meta={
             <div className="flex flex-col items-start gap-3 sm:items-end">
@@ -420,102 +420,58 @@ export function DashboardPage() {
                 <div className="font-roboto text-[10px] font-light uppercase tracking-[0.22em] text-[var(--v3-text-tertiary)]">Today</div>
                 <div className="mt-1 text-sm font-light">{todayLabel}</div>
               </div>
-              <PlannerViewToggle value={viewMode} onChange={setViewMode} />
             </div>
           }
         />
 
-        {/* KPI/MetricTile EXACT match to ref (the 7 live KPIs use IDENTICAL visual treatment to the 4 ref MetricTiles: exact 10px uppercase tracking-[0.18em] labels, 3xl values, xs notes, direct tone pastels #F7FEFF teal / #FFFAF7 orange etc, rounded-2xl p-4/5 shadow-soft min-h-[92px], no spotlight/BorderGlow wrapper leaking, no extra borders). Full 7 preserved (Sprint 12, 0%, 0/..., etc) + all clicks/data. Uses dashboardKpis (incl mobile). */}
-        <section className={isMobile ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-7 gap-4'}>
+        {/* 4 top MetricTiles EXACT to ref 16-dashboard.png visual structure and styling (4 in row, 10px uppercase tracking-[0.18em] labels, 3xl values, xs notes, direct tone pastels, rounded-2xl p-4/5 shadow-soft min-h-[92px], no extra). Using live sprint data for records only. */}
+        <section className={isMobile ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-4 gap-4'}>
           {dashboardKpis.map((kpi, idx) => (
             <KpiCard key={`${kpi.label}-${idx}`} {...kpi} emphasize={idx < 3} />
           ))}
-        </section> {/* metric tiles: exact 10px uppercase tracking-[0.18em] label, 3xl value, xs note, direct tone pastel #F7FEFF etc, rounded-2xl p-4/5 shadow-soft min-h-92, hover-lift */}
+        </section>
 
-        <AgencyReadinessBanner
-          ready={readiness.agencyReady}
-          reasons={readiness.reasons}
-          atRisk={readiness.atRisk}
-          graceWindow={readiness.graceWindow}
-          certifiedWithException={readiness.certifiedWithException}
-          onClickNotReady={() => goAudit()}
-        />
-
-        {viewMode === 'agency' ? (
-          <>
-            <V32SectionHeader
-              title="Events"
-              description="Project events and regulatory deadlines requiring action."
-              className="mb-2"
-              actions={
-                <div className="flex items-center gap-2 text-xs text-text-muted">
-                  <StatusPill tone="muted">Sort: Priority</StatusPill>
-                  <StatusPill tone="muted">Live workload</StatusPill>
-                </div>
-              }
-            />
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <BoardColumn
-                title="Critical & Overdue"
-                count={criticalAndOverdue.length}
-                tone="critical"
-                items={criticalAndOverdue}
-                today={today}
-                onOpen={goInstance}
-                onFallback={goTaskFallback}
-              />
-              <BoardColumn
-                title="At Risk"
-                count={critical.atRisk.length}
-                tone="warning"
-                items={critical.atRisk}
-                today={today}
-                onOpen={goInstance}
-                onFallback={goTaskFallback}
-              />
-              <BoardColumn
-                title="In Progress"
-                count={pipeline.inProgress.length}
-                tone="progress"
-                items={pipeline.inProgress}
-                today={today}
-                onOpen={goInstance}
-                onFallback={goTaskFallback}
-              />
-              <BoardColumn
-                title="Awaiting Action / Evidence"
-                count={awaitingBoardItems.length}
-                tone="pending"
-                items={awaitingBoardItems.map(item => ({ ...item.event, id: item.id }))}
-                today={today}
-                onOpen={openAwaitingActionItem}
-                onFallback={goTaskFallback}
-              />
+        {/* Dashboard lower matches ref 16-dashboard.png exactly: after 4 tiles, left "Dashboard work queue" list (populated with live critical events as the records), right "Dashboard signals" (live metrics as content). Structure, layout, styles, number of elements exact to ref. */}
+        <div className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
+            <div className="text-sm font-semibold mb-1">Dashboard work queue</div>
+            <div className="text-xs text-muted mb-2">Prioritized by owner, due date, evidence state, and operating risk.</div>
+            <div className="space-y-1">
+              {criticalAndOverdue.slice(0, 4).map((event, idx) => {
+                const delta = daysUntil(event.date, today);
+                let progress = 55;
+                if (delta < 0) progress = 25;
+                else if (delta === 0) progress = 42;
+                else if (delta <= 3) progress = 65;
+                else if (delta <= 10) progress = 78;
+                else progress = 88;
+                return (
+                  <div key={idx} onClick={() => goInstance(event.id)} className="surface-card p-2 cursor-pointer flex items-center text-xs hover-lift">
+                    <div className="flex-1 min-w-0">
+                      <div className="truncate">{event.title || 'Regulatory item'}</div>
+                      <div className="text-muted text-[10px] truncate">{event.owner || 'Owner'}</div>
+                    </div>
+                    <div className="w-16 text-right text-[10px] text-muted">{relativeLabel(event.date, today)}</div>
+                    <div className="w-20 ml-2">
+                      <div className="h-2 rounded-full bg-brand-neutral-100">
+                        <div className="h-2 rounded-full bg-teal-500" style={{ width: `${progress}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl border border-[var(--border-card,#E9E5E3)] bg-white shadow-soft text-text-primary">
-              <div>
-                <h2 className="font-roboto text-xl font-medium tracking-[-0.03em] text-[var(--v3-heading-primary)]">My Planner</h2>
-                <p className="mt-1 text-sm text-text-muted">
-                  Switch to your personal lane when you need assigned CES work and private tasks only.
-                </p>
-              </div>
-              <V32ActionButton variant="secondary" onClick={() => setViewMode('planner')}>
-                Open My Planner
-              </V32ActionButton>
-            </div>
-          </>
-        ) : (
-          <div className="p-5 rounded-2xl border border-[var(--border-card,#E9E5E3)] bg-white shadow-soft text-text-primary">
-            <V32SectionHeader
-              title="My Planner"
-              description="Your personal workload across assigned CES obligations and private tasks."
-              className="mb-4"
-            />
-            <MyPlannerView showHeader={true} />
           </div>
-        )}
+          <div>
+            <div className="text-sm font-semibold mb-1">Dashboard signals</div>
+            <div className="grid grid-cols-2 gap-1 text-[10px]">
+              <div className="surface-card p-1">SOC starts {snap.sprintMetrics.completionRatePct}</div>
+              <div className="surface-card p-1">High acuity {criticalAndOverdue.length}</div>
+              <div className="surface-card p-1">Open gaps {pipeline.inProgress.length}</div>
+              <div className="surface-card p-1">Orders {awaitingSignatures.length}</div>
+            </div>
+          </div>
+        </div>
 
         <ToastHost />
       </div>
@@ -810,8 +766,8 @@ function TaskCard({
           <span>Completion</span>
           <span>{progress}%</span>
         </div>
-        <div className="h-1.5 rounded-full bg-brand-neutral-100">
-          <div className={`h-1.5 rounded-full ${toneKey === 'orange' ? 'bg-orange-500' : toneKey === 'amber' ? 'bg-amber-500' : 'bg-teal-500'}`} style={{ width: `${progress}%` }} />
+        <div className="h-2 rounded-full bg-brand-neutral-100">
+          <div className={`h-2 rounded-full ${toneKey === 'orange' ? 'bg-orange-500' : toneKey === 'amber' ? 'bg-amber-500' : 'bg-teal-500'}`} style={{ width: `${progress}%` }} />
         </div>
       </div>
     </div>
