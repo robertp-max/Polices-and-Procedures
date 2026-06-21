@@ -4,6 +4,7 @@ import { LoginPlaceholder } from './LoginPlaceholder';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { V6RoutePlaceholder } from './V6RoutePlaceholder';
 import { routeToChildPath, V6_ROUTES } from './routeRegistry';
+import { isRepresentativeRoute, RepresentativeScreen } from '../screens';
 
 const shellRoutes = V6_ROUTES.filter((route) => route.group !== 'Auth');
 const loginRoute = V6_ROUTES.find((route) => route.hashId === 'login-page');
@@ -21,7 +22,7 @@ export const v6Router = createBrowserRouter([
       { index: true, element: <Navigate replace to="/dashboard" /> },
       ...shellRoutes.map((route) => ({
         path: routeToChildPath(route.path),
-        element: <V6RoutePlaceholder route={route} />,
+        element: isRepresentativeRoute(route) ? <RepresentativeScreen route={route} /> : <V6RoutePlaceholder route={route} />,
         errorElement: <RouteErrorBoundary />,
       })),
       {

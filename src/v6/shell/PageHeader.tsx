@@ -8,9 +8,9 @@ export interface PageHeaderProps {
 
 export function PageHeader({ badge, description, title }: PageHeaderProps) {
   return (
-    <header className="grid gap-xs border-b border-hairline bg-canvas px-2xl py-lg">
+    <header className="grid gap-xs bg-canvas px-3xl pb-lg pt-2xl">
       {badge ? <div className="text-xs font-light text-muted">{badge}</div> : null}
-      <h1 className="text-display font-medium text-ink">{title}</h1>
+      <h1 className="text-display font-medium text-brand-teal-deep">{title}</h1>
       {description ? <p className="max-w-content text-body font-light text-secondary">{description}</p> : null}
     </header>
   );

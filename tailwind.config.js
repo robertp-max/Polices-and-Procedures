@@ -214,6 +214,8 @@ export default {
         tap: "var(--tap-min)",
       },
       minHeight: {
+        row: "var(--row-h)",
+        "row-compact": "var(--row-h-compact)",
         tap: "var(--tap-min)",
       },
       maxWidth: {

@@ -2,7 +2,7 @@ import { Outlet, matchPath, useLocation } from 'react-router-dom';
 import { PageHeader } from './PageHeader';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import { Badge } from '../primitives';
+import { DRAWER_SYSTEM_CHROME, getRouteChrome } from '../routing/routePresentation';
 import { V6_ROUTES } from '../routing/routeRegistry';
 
 function resolveCurrentRoute(pathname: string) {
@@ -15,23 +15,25 @@ function resolveCurrentRoute(pathname: string) {
 export function V6Shell() {
   const location = useLocation();
   const route = resolveCurrentRoute(location.pathname);
+  const searchParams = new URLSearchParams(location.search);
+  const chrome = searchParams.get('v6-overlay') === 'drawer-system' ? DRAWER_SYSTEM_CHROME : getRouteChrome(route);
 
   return (
     <div className="flex min-h-screen bg-canvas font-light text-ink">
       <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-w-0 flex-1 flex-col">
         <Topbar />
         <PageHeader
           badge={
-            <span className="flex flex-wrap items-center gap-sm">
-              <Badge>{route?.group ?? 'System'}</Badge>
-              <Badge>{route?.hashId ?? 'unregistered'}</Badge>
+            <span className="inline-flex items-center gap-xs rounded-sm border border-tone-teal-border bg-tone-teal-bg px-sm py-xs text-tag uppercase tracking-tag text-brand-teal">
+              <span className="h-xs w-xs rounded-sm bg-brand-teal" />
+              {chrome.eyebrow}
             </span>
           }
-          description={route?.description ?? 'Route placeholder outside the canonical V6 table.'}
-          title={route?.title ?? 'Route Not Found'}
+          description={chrome.description}
+          title={chrome.title}
         />
-        <main className="flex-1 px-2xl py-lg" id="main-content">
+        <main className="flex-1 px-3xl pb-3xl pt-xl" id="main-content">
           <Outlet />
         </main>
       </div>
