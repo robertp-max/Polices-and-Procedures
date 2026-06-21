@@ -166,6 +166,74 @@ const tableColumns: readonly DataTableColumn<BasicRow>[] = [
   { key: 'status', label: 'Status', status: true },
 ];
 
+const clinicianMetrics: readonly MetricTileData[] = [
+  { label: 'Active clinicians', value: '42', helper: 'RN, LVN, PT, OT, MSW', tone: 'teal' },
+  { label: 'Credential compliance', value: '96%', helper: '2 renewals due', tone: 'green' },
+  { label: 'Open caseload', value: '184', helper: 'Bay Area service area', tone: 'blue' },
+  { label: 'Training due', value: '7', helper: 'Before next field visit', tone: 'orange' },
+];
+
+const patientListMetrics: readonly MetricTileData[] = [
+  { label: 'Active census', value: '128', helper: '36 recert windows open', tone: 'teal' },
+  { label: 'SOC starts', value: '9', helper: 'Next 7 days', tone: 'orange' },
+  { label: 'High acuity', value: '17', helper: 'CHF, wounds, post-CVA', tone: 'orange' },
+  { label: 'Plan alignment', value: '94%', helper: 'Signed and current', tone: 'green' },
+];
+
+const clinicianRows: readonly BasicRow[] = [
+  { id: 'CLN-2041', title: 'Maria Delgado, RN', owner: '18-patient caseload', status: 'compliant' },
+  { id: 'CLN-2049', title: 'James Kwon, PT', owner: '12-patient caseload', status: 'renewal due' },
+  { id: 'CLN-2055', title: 'Aisha Rahman, OT', owner: '8-patient caseload', status: 'compliant' },
+  { id: 'CLN-2060', title: 'Priya Singh, RN', owner: '14-patient caseload', status: 'training due' },
+  { id: 'CLN-2068', title: 'Luis Mendez, LVN', owner: 'Weekend coverage pool', status: 'compliant' },
+  { id: 'CLN-2072', title: 'Nora Patel, MSW', owner: 'Discharge planning support', status: 'watch' },
+];
+
+const patientRows: readonly BasicRow[] = [
+  { id: 'HH-88291', title: 'Elena Vargas', owner: 'CHF, Type 2 DM', status: 'soc active' },
+  { id: 'HH-88402', title: 'Robert Hale', owner: 'Post-CVA', status: 'recert due' },
+  { id: 'HH-88701', title: 'Amina Yusuf', owner: 'Diabetic wound care', status: 'active' },
+  { id: 'HH-88910', title: 'George Lin', owner: 'Post-op hip', status: 'discharge prep' },
+  { id: 'HH-89012', title: 'Marisol Chen', owner: 'COPD exacerbation', status: 'high acuity' },
+  { id: 'HH-89104', title: 'Anthony Bell', owner: 'Medication teaching', status: 'visit gap' },
+];
+
+const profileColumns: readonly DataTableColumn<BasicRow>[] = [
+  { key: 'id', label: 'ID' },
+  { key: 'title', label: 'Name' },
+  { key: 'owner', label: 'Coverage' },
+  { key: 'status', label: 'Status', status: true },
+];
+
+const profileFocus = {
+  clinicians: {
+    bars: [
+      ['Credentials', 100, 'teal'],
+      ['Training', 92, 'teal'],
+      ['Visit documentation', 86, 'teal'],
+      ['Schedule load', 74, 'orange'],
+    ],
+    metrics: clinicianMetrics,
+    rows: clinicianRows,
+    status: 'field ready',
+    subtitle: '18-patient caseload - CHF and SOC-heavy route',
+    title: 'Maria Delgado, RN',
+  },
+  patients: {
+    bars: [
+      ['Care plan', 94, 'teal'],
+      ['Signed orders', 78, 'orange'],
+      ['Medication reconciliation', 88, 'teal'],
+      ['Visit coverage', 64, 'orange'],
+    ],
+    metrics: patientListMetrics,
+    rows: patientRows,
+    status: 'needs coverage',
+    subtitle: 'CHF, Type 2 DM - SOC active - RN backup pending',
+    title: 'Elena Vargas',
+  },
+} as const;
+
 const policyCards: readonly SurfaceCardData[] = [
   {
     body: 'The policy library keeps every framework record in one searchable corpus.',
@@ -227,6 +295,33 @@ const patientCards: readonly SurfaceCardData[] = [
   },
 ];
 
+const clinicianDetailCards: readonly SurfaceCardData[] = [
+  {
+    body: 'RN license, BLS, OASIS competency, and annual training are current with one renewal watch.',
+    icon: ShieldCheck,
+    progress: 96,
+    status: 'compliant',
+    title: 'Credential file',
+    tone: 'green',
+  },
+  {
+    body: '18-patient caseload with CHF and SOC-heavy route balancing weekday coverage pressure.',
+    icon: Users,
+    progress: 82,
+    status: 'active',
+    title: 'Assigned patients',
+    tone: 'teal',
+  },
+  {
+    body: 'Visit documentation is trending ready; two notes still need final QA review before lock.',
+    icon: FileCheck2,
+    progress: 68,
+    status: 'review-required',
+    title: 'Documentation',
+    tone: 'orange',
+  },
+];
+
 const detailRail = [
   { label: 'Version chain', status: 'ready', icon: History },
   { label: 'Linked forms', status: 'ready', icon: ClipboardList },
@@ -251,6 +346,69 @@ const calendarEvents = [
   { day: 22, label: 'Visit note timeliness review', owner: 'Compliance Officer', progress: 66, tone: 'teal' },
   { day: 26, label: 'Weekend coverage confirmation', owner: 'Operations Lead', progress: 70, tone: 'teal' },
 ] as const satisfies readonly { day: number; label: string; owner: string; progress: number; tone: Tone }[];
+
+const staffingCalendarMetrics: readonly MetricTileData[] = [
+  { label: 'Coverage', value: '92%', helper: 'Weekend pool pending', tone: 'green' },
+  { label: 'Visit gaps', value: '6', helper: '2 high-acuity routes', tone: 'orange' },
+  { label: 'Available clinicians', value: '38', helper: 'RN, LVN, PT, OT, MSW', tone: 'teal' },
+  { label: 'Swaps', value: '3', helper: 'Next 7 days', tone: 'amber' },
+];
+
+const staffingCalendarEvents = [
+  { day: 2, label: 'RN coverage', owner: 'Maria Delgado, RN', progress: 86, tone: 'teal' },
+  { day: 4, label: 'PT visit cluster', owner: 'James Kwon, PT', progress: 70, tone: 'blue' },
+  { day: 8, label: 'CHHA gap', owner: 'Scheduling Lead', progress: 42, tone: 'orange' },
+  { day: 12, label: 'SOC start', owner: 'Priya Singh, RN', progress: 90, tone: 'green' },
+  { day: 17, label: 'LVN swap', owner: 'Operations Lead', progress: 58, tone: 'amber' },
+  { day: 19, label: 'Recert visit', owner: 'Clinical Manager', progress: 82, tone: 'teal' },
+  { day: 23, label: 'Wound care route', owner: 'Aisha Rahman, OT', progress: 48, tone: 'orange' },
+  { day: 28, label: 'Weekend pool', owner: 'Scheduler', progress: 74, tone: 'blue' },
+] as const satisfies readonly { day: number; label: string; owner: string; progress: number; tone: Tone }[];
+
+const cesCalendarMetrics: readonly MetricTileData[] = [
+  { label: 'Sprint events', value: '12', helper: 'Evidence and review locks', tone: 'teal' },
+  { label: 'Lock windows', value: '4', helper: 'Two need owner action', tone: 'orange' },
+  { label: 'Reviews', value: '7', helper: 'Survey packet work', tone: 'green' },
+  { label: 'Signature holds', value: '3', helper: 'Board packet timing', tone: 'amber' },
+];
+
+const cesCalendarEvents = [
+  { day: 3, label: 'Evidence upload target', owner: 'Compliance Officer', progress: 62, tone: 'orange' },
+  { day: 5, label: 'QAPI review', owner: 'QAPI Nurse', progress: 84, tone: 'teal' },
+  { day: 9, label: 'Board minutes packet', owner: 'Administrator', progress: 48, tone: 'orange' },
+  { day: 13, label: 'Workflow lock', owner: 'Systems', progress: 76, tone: 'teal' },
+  { day: 16, label: 'Signature sweep', owner: 'Governing Body', progress: 58, tone: 'amber' },
+  { day: 20, label: 'Audit packet export', owner: 'Compliance Officer', progress: 90, tone: 'green' },
+  { day: 24, label: 'Surveyor preview', owner: 'Administrator', progress: 72, tone: 'teal' },
+  { day: 27, label: 'Final lock', owner: 'Operations Lead', progress: 66, tone: 'orange' },
+] as const satisfies readonly { day: number; label: string; owner: string; progress: number; tone: Tone }[];
+
+const calendarConfigs = {
+  'ces-calendar': {
+    events: cesCalendarEvents,
+    legend: 'Teal events are ready; orange events need owner action before packet lock.',
+    metrics: cesCalendarMetrics,
+    railTone: 'orange',
+    railTitle: 'CES Milestones',
+    title: 'June 2026',
+  },
+  'master-calendar': {
+    events: calendarEvents,
+    legend: 'Teal events are ready; orange events need owner action.',
+    metrics: calendarMetrics,
+    railTone: 'orange',
+    railTitle: 'Upcoming Events',
+    title: 'June 2026',
+  },
+  'staffing-calendar': {
+    events: staffingCalendarEvents,
+    legend: 'Staffing coverage, swaps, and high-acuity visit gaps remain visible by day.',
+    metrics: staffingCalendarMetrics,
+    railTone: 'orange',
+    railTitle: 'Shift Gaps',
+    title: 'June 2026',
+  },
+} as const;
 
 const boardMetrics: readonly MetricTileData[] = [
   { label: 'Upcoming', value: '6', helper: 'Not yet opened', tone: 'slate' },
@@ -428,6 +586,107 @@ const evidenceRows = [
   ['Survey rollup export', 'AU-2026-0618', 'uploaded', 'teal'],
 ] as const satisfies readonly (readonly [string, string, string, Tone])[];
 
+const auditMetrics: readonly MetricTileData[] = [
+  { label: 'Audit ready', value: '18', helper: 'Instances in view', tone: 'teal' },
+  { label: 'Missing evidence', value: '2', helper: 'Requires upload', tone: 'orange' },
+  { label: 'Pending approval', value: '4', helper: 'Awaiting approver', tone: 'amber' },
+  { label: 'Certified locked', value: '12', helper: 'Final audit state', tone: 'green' },
+];
+
+const auditRows = [
+  ['QAPI Committee Review Packet', 'QA-WF-03', 'ready to certify', 'teal'],
+  ['Governing Body minutes signature', 'GV-FM-005', 'pending approval', 'orange'],
+  ['TB screening contractor file', 'HR-FM-012', 'missing evidence', 'orange'],
+  ['Emergency drill after-action', 'RM-WF-04', 'certified locked', 'green'],
+  ['HIPAA training completion roster', 'HR-TR-101', 'ready to certify', 'teal'],
+] as const satisfies readonly (readonly [string, string, string, Tone])[];
+
+const evidenceConfigs = {
+  'audit-mode': {
+    description: 'Survey-facing readiness queue with missing evidence, pending approvals, and certified locked packets.',
+    metrics: auditMetrics,
+    rows: auditRows,
+    tileTone: 'orange',
+    tiles: [
+      ['18', 'Ready'],
+      ['2', 'Missing'],
+      ['4', 'Pending'],
+      ['12', 'Locked'],
+    ],
+    title: 'Audit health queue',
+  },
+  'evidence-center': {
+    description: 'Every item links to policy, workflow, owner, source file, content hash, and retention state.',
+    metrics: evidenceMetrics,
+    rows: evidenceRows,
+    tileTone: 'teal',
+    tiles: [
+      ['269', 'Policies'],
+      ['128', 'Forms'],
+      ['445', 'Evidence'],
+      ['72', 'Approvals'],
+    ],
+    title: 'Evidence hierarchy',
+  },
+} as const;
+
+const artifactMetrics: readonly MetricTileData[] = [
+  { label: 'Artifact', value: 'EV-4519', helper: 'Evidence package summary', tone: 'teal' },
+  { label: 'Status', value: 'Valid', helper: 'Hash verified', tone: 'green' },
+  { label: 'Linked docs', value: '7', helper: 'Policies and forms', tone: 'teal' },
+  { label: 'Review', value: '1 gap', helper: 'Needs approver note', tone: 'orange' },
+];
+
+const achcMetrics: readonly MetricTileData[] = [
+  { label: 'Standards', value: '42', helper: 'ACHC items tracked', tone: 'teal' },
+  { label: 'Mapped', value: '38', helper: 'Policy support attached', tone: 'green' },
+  { label: 'Needs action', value: '4', helper: 'Evidence or owner gap', tone: 'orange' },
+  { label: 'Packet state', value: '92%', helper: 'Survey-ready posture', tone: 'teal' },
+];
+
+const achcRows: readonly BasicRow[] = [
+  { id: 'ACHC-HH4-1A', title: 'Governing body oversight evidence', owner: 'GV-GB-001', status: 'validated' },
+  { id: 'ACHC-HH5-2B', title: 'Clinical record review cadence', owner: 'CL-SD-010', status: 'ready' },
+  { id: 'ACHC-HH6-1C', title: 'QAPI performance indicators', owner: 'QA-QM-004', status: 'review-required' },
+  { id: 'ACHC-HH7-3A', title: 'Personnel file completeness', owner: 'HR-CG-021', status: 'validated' },
+  { id: 'ACHC-HH8-2D', title: 'Emergency drill after-action', owner: 'RM-EM-003', status: 'pending' },
+];
+
+const crosswalkRows: readonly BasicRow[] = [
+  { id: '42 CFR 484.105', title: 'Organization and administration', owner: 'ACHC HH4-1A', status: 'direct' },
+  { id: '42 CFR 484.55', title: 'Comprehensive assessment', owner: 'ACHC HH5-2B', status: 'partial' },
+  { id: '42 CFR 484.65', title: 'QAPI program', owner: 'ACHC HH6-1C', status: 'direct' },
+  { id: 'Title 22 74723', title: 'Personnel records', owner: 'ACHC HH7-3A', status: 'direct' },
+  { id: 'OSHA 1910.1030', title: 'Exposure control', owner: 'ACHC HH8-2D', status: 'review-required' },
+];
+
+const achcCards: readonly SurfaceCardData[] = [
+  {
+    body: 'Policy support is attached for most survey standards, with owner gaps visible in the matrix.',
+    icon: ShieldCheck,
+    progress: 92,
+    status: 'validated',
+    title: 'Survey alignment',
+    tone: 'teal',
+  },
+  {
+    body: 'Open standards need updated evidence files before packet export.',
+    icon: AlertTriangle,
+    progress: 64,
+    status: 'review-required',
+    title: 'Evidence needs',
+    tone: 'orange',
+  },
+  {
+    body: 'ACHC, CMS, and Title 22 support levels are tracked without query-string view modes.',
+    icon: BookOpen,
+    progress: 78,
+    status: 'ready',
+    title: 'Regulatory crosswalk',
+    tone: 'teal',
+  },
+];
+
 const formFields = [
   ['Full legal name', 'Thomas Parker', 'complete'],
   ['Title / Role', 'Compliance Officer', 'complete'],
@@ -537,6 +796,20 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   if (overlay === 'drawer-system') return <OverlaySystemScreen />;
 
   switch (route.hashId) {
+    case 'achc-crosswalk':
+      return <AchcScreen mode="crosswalk" />;
+    case 'achc-survey':
+      return <AchcScreen mode="survey" />;
+    case 'artifact-viewer':
+      return <ArtifactViewerScreen />;
+    case 'audit-mode':
+      return <EvidenceScreen mode="audit-mode" />;
+    case 'ces-calendar':
+      return <CalendarScreen mode="ces-calendar" />;
+    case 'clinicians':
+      return <ProfileListScreen mode="clinicians" />;
+    case 'clinician-detail':
+      return <ClinicianDetailScreen />;
     case 'dashboard':
       return <DashboardScreen />;
     case 'policy-library':
@@ -544,11 +817,13 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     case 'patient-detail':
       return <PatientDetailScreen />;
     case 'master-calendar':
-      return <CalendarScreen />;
+      return <CalendarScreen mode="master-calendar" />;
+    case 'patients':
+      return <ProfileListScreen mode="patients" />;
     case 'ces-board':
       return <BoardScreen />;
     case 'evidence-center':
-      return <EvidenceScreen />;
+      return <EvidenceScreen mode="evidence-center" />;
     case 'form-viewer':
       return <FormWorkspaceScreen />;
     case 'brad':
@@ -557,6 +832,8 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       return <DocsScreen />;
     case 'ces-reports':
       return <ReportsScreen />;
+    case 'staffing-calendar':
+      return <CalendarScreen mode="staffing-calendar" />;
     default:
       return null;
   }
@@ -564,10 +841,19 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 
 export function isRepresentativeRoute(route: RouteLike): boolean {
   return [
+    'achc-crosswalk',
+    'achc-survey',
+    'artifact-viewer',
+    'audit-mode',
+    'ces-calendar',
+    'clinicians',
+    'clinician-detail',
     'dashboard',
     'policy-library',
+    'patients',
     'patient-detail',
     'master-calendar',
+    'staffing-calendar',
     'ces-board',
     'evidence-center',
     'form-viewer',
@@ -662,6 +948,91 @@ function DashboardScreen() {
   );
 }
 
+function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
+  const profile = profileFocus[mode];
+  const coverageLabel = mode === 'clinicians' ? 'Coverage' : 'Clinical focus';
+
+  return (
+    <ScreenStack metrics={profile.metrics}>
+      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(320px,1fr)]">
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <div className="mb-lg">
+            <h2 className="text-h2 font-medium text-ink">{mode === 'clinicians' ? 'Clinician roster' : 'Patient roster'}</h2>
+            <p className="mt-xs text-sm text-muted">
+              {mode === 'clinicians'
+                ? 'Credential posture, caseload, coverage, and training status for active field staff.'
+                : 'Clinical focus, coverage gaps, and high-risk indicators for the active census.'}
+            </p>
+          </div>
+          <DataTable
+            columns={profileColumns.map((column) => (column.key === 'owner' ? { ...column, label: coverageLabel } : column))}
+            label={mode === 'clinicians' ? 'Clinician roster' : 'Patient roster'}
+            rows={profile.rows}
+          />
+        </section>
+        <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <div className="mb-xl flex items-start justify-between gap-md">
+            <div>
+              <h2 className="text-h2 font-medium text-ink">{profile.title}</h2>
+              <p className="mt-sm text-sm text-muted">{profile.subtitle}</p>
+            </div>
+            <ToneBadge size="sm" status={profile.status} />
+          </div>
+          <div className="grid gap-lg">
+            {profile.bars.map(([label, value, tone]) => (
+              <ProgressMeter key={label} label={label} tone={tone as Tone} value={value as number} />
+            ))}
+          </div>
+          <Button className="mt-xl w-full border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange">
+            Open detail
+          </Button>
+        </aside>
+      </section>
+    </ScreenStack>
+  );
+}
+
+function ClinicianDetailScreen() {
+  return (
+    <ScreenStack metrics={clinicianMetrics}>
+      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <div className="mb-xl flex items-start justify-between gap-lg">
+            <div>
+              <ToneTag>/clinicians/:clinicianId</ToneTag>
+              <h2 className="mt-lg text-h2 font-medium text-ink">Maria Delgado, RN</h2>
+              <p className="mt-md text-sm text-muted">
+                Credential posture, assigned patients, training status, active compliance requirements, and schedule load.
+              </p>
+            </div>
+            <Button className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange" size="sm">
+              Review file
+            </Button>
+          </div>
+          <div className="grid gap-lg tablet-l:grid-cols-3">
+            {clinicianDetailCards.map((card) => (
+              <SurfaceCard card={card} key={card.title} />
+            ))}
+          </div>
+        </section>
+        <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <h2 className="mb-lg text-h2 font-medium text-ink">Assigned caseload</h2>
+          <DataTable
+            columns={[
+              { key: 'id', label: 'Patient ID' },
+              { key: 'title', label: 'Patient' },
+              { key: 'owner', label: 'Clinical focus' },
+              { key: 'status', label: 'Status', status: true },
+            ]}
+            label="Assigned clinician caseload"
+            rows={patientRows.slice(0, 4)}
+          />
+        </aside>
+      </section>
+    </ScreenStack>
+  );
+}
+
 function PolicyMatrixScreen() {
   return (
     <ScreenStack metrics={policyMetrics}>
@@ -729,11 +1100,12 @@ function PatientDetailScreen() {
   );
 }
 
-function CalendarScreen() {
+function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
+  const config = calendarConfigs[mode];
   const days = Array.from({ length: 30 }, (_, index) => index + 1);
 
   return (
-    <ScreenStack metrics={calendarMetrics}>
+    <ScreenStack metrics={config.metrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_320px]">
         <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
           <div className="mb-xl flex flex-wrap items-center justify-between gap-lg">
@@ -760,8 +1132,8 @@ function CalendarScreen() {
             </div>
           </div>
           <div className="mb-lg">
-            <h2 className="text-h2 font-medium text-ink">June 2026</h2>
-            <p className="mt-xs text-sm text-muted">Teal events are ready; orange events need owner action.</p>
+            <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
+            <p className="mt-xs text-sm text-muted">{config.legend}</p>
           </div>
           <div className="grid grid-cols-7 border-l border-t border-card text-xs">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
@@ -773,7 +1145,7 @@ function CalendarScreen() {
               <div className="min-h-[112px] border-b border-r border-card bg-surface p-sm" key={day}>
                 <p className="mb-sm text-sm text-brand-teal">{day}</p>
                 <div className="grid gap-xs">
-                  {calendarEvents
+                  {config.events
                     .filter((event) => event.day === day)
                     .map((event) => (
                       <span
@@ -793,11 +1165,11 @@ function CalendarScreen() {
         </section>
         <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
           <div className="mb-lg flex items-center justify-between gap-md">
-            <h2 className="text-h2 font-medium text-ink">Upcoming Events</h2>
-            <ToneTag tone="orange">8 active</ToneTag>
+            <h2 className="text-h2 font-medium text-ink">{config.railTitle}</h2>
+            <ToneTag tone={config.railTone as Tone}>{config.events.length} active</ToneTag>
           </div>
           <div className="grid gap-md">
-            {calendarEvents.slice(0, 7).map((event) => (
+            {config.events.slice(0, 7).map((event) => (
               <article className="rounded-lg border border-card bg-tone-slate-bg p-md" key={`${event.day}-${event.label}`}>
                 <div className="flex items-start gap-md">
                   <span className={cx('mt-xs h-[76px] w-xs rounded-sm', toneBarClasses[event.tone])} />
@@ -852,15 +1224,17 @@ function BoardScreen() {
   );
 }
 
-function EvidenceScreen() {
+function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
+  const config = evidenceConfigs[mode];
+
   return (
-    <ScreenStack metrics={evidenceMetrics}>
+    <ScreenStack metrics={config.metrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-          <h2 className="text-h2 font-medium text-ink">Evidence hierarchy</h2>
-          <p className="mt-xs text-sm text-muted">Every item links to policy, workflow, owner, source file, content hash, and retention state.</p>
+          <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
+          <p className="mt-xs text-sm text-muted">{config.description}</p>
           <div className="mt-lg grid gap-md">
-            {evidenceRows.map(([title, ref, status, tone]) => (
+            {config.rows.map(([title, ref, status, tone]) => (
               <div className="flex items-center justify-between gap-lg rounded-lg border border-card bg-tone-slate-bg p-lg" key={ref}>
                 <div>
                   <h3 className="text-body font-light text-ink">{title}</h3>
@@ -874,14 +1248,11 @@ function EvidenceScreen() {
         <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
           <h2 className="mb-lg text-h2 font-medium text-ink">Audit packet</h2>
           <div className="grid gap-md tablet-p:grid-cols-2">
-            {[
-              ['269', 'Policies'],
-              ['128', 'Forms'],
-              ['445', 'Evidence'],
-              ['72', 'Approvals'],
-            ].map(([value, label]) => (
+            {config.tiles.map(([value, label]) => (
               <div className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={label}>
-                <p className="text-display text-brand-teal">{value}</p>
+                <p className={cx('text-display', config.tileTone === 'orange' ? 'text-brand-orange' : 'text-brand-teal')}>
+                  {value}
+                </p>
                 <p className="text-tag uppercase tracking-tag text-ink">{label}</p>
               </div>
             ))}
@@ -889,6 +1260,101 @@ function EvidenceScreen() {
           <Button className="mt-lg w-full" variant="secondary">
             Generate packet
           </Button>
+        </aside>
+      </section>
+    </ScreenStack>
+  );
+}
+
+function ArtifactViewerScreen() {
+  return (
+    <ScreenStack metrics={artifactMetrics}>
+      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <div className="mb-xl flex items-start justify-between gap-lg">
+            <div>
+              <ToneTag>/artifacts/:artifactId</ToneTag>
+              <h2 className="mt-lg text-h2 font-medium text-ink">Evidence Package Summary</h2>
+              <p className="mt-md text-sm text-muted">
+                Stored artifact packet with document lineage, hash status, linked policy, form instance, and audit export context.
+              </p>
+            </div>
+            <ToneBadge size="sm" status="validated" />
+          </div>
+          <div className="grid gap-md">
+            {[
+              ['Artifact ID', 'EV-4519'],
+              ['Requirement', 'GV-GB-001 / Governing Body packet'],
+              ['Source', 'Signed policy packet + meeting minutes + eCIgn certificate'],
+              ['Retention', '7 years from final packet lock'],
+              ['Hash', 'sha256: 8d9a...f42c'],
+            ].map(([label, value]) => (
+              <div className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={label}>
+                <p className="text-tag uppercase tracking-tag text-brand-teal">{label}</p>
+                <p className="mt-sm text-body text-ink">{value}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+        <aside className="grid gap-lg">
+          <SurfaceCard
+            card={{
+              body: 'Hash verification, certificate roster, and source file references are ready for survey packet inclusion.',
+              icon: ShieldCheck,
+              progress: 94,
+              status: 'validated',
+              title: 'Verification status',
+              tone: 'teal',
+            }}
+          />
+          <SurfaceCard
+            card={{
+              body: 'One reviewer note should be sealed before export to external surveyor packet.',
+              icon: AlertTriangle,
+              progress: 72,
+              status: 'review-required',
+              title: 'Review gap',
+              tone: 'orange',
+            }}
+          />
+          <Button variant="secondary">Download packet</Button>
+        </aside>
+      </section>
+    </ScreenStack>
+  );
+}
+
+function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
+  const isCrosswalk = mode === 'crosswalk';
+  const rows = isCrosswalk ? crosswalkRows : achcRows;
+
+  return (
+    <ScreenStack metrics={achcMetrics}>
+      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <div className="mb-lg">
+            <h2 className="text-h2 font-medium text-ink">{isCrosswalk ? 'ACHC regulatory crosswalk' : 'ACHC survey checklist'}</h2>
+            <p className="mt-xs text-sm text-muted">
+              {isCrosswalk
+                ? 'CMS, Title 22, OSHA, and ACHC support levels stay visible as a distinct route, not a query-param view.'
+                : 'Policies, standards, evidence readiness, and owner action are aligned for survey review.'}
+            </p>
+          </div>
+          <DataTable
+            columns={[
+              { key: 'id', label: isCrosswalk ? 'Regulation' : 'ACHC Standard' },
+              { key: 'title', label: 'Requirement' },
+              { key: 'owner', label: isCrosswalk ? 'ACHC Ref' : 'Policy Support' },
+              { key: 'status', label: 'Support', status: true },
+            ]}
+            label={isCrosswalk ? 'ACHC regulatory crosswalk' : 'ACHC survey checklist'}
+            rows={rows}
+          />
+        </section>
+        <aside className="grid gap-lg">
+          {achcCards.map((card) => (
+            <SurfaceCard card={card} key={card.title} />
+          ))}
         </aside>
       </section>
     </ScreenStack>

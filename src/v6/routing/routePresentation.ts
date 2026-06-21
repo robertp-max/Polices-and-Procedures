@@ -132,14 +132,34 @@ export const SIDEBAR_SECTIONS = [
 ] as const satisfies readonly SidebarSection[];
 
 const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
-  'achc-crosswalk': { eyebrow: 'Taxonomy', icon: Workflow },
-  'achc-survey': { eyebrow: 'Taxonomy', icon: ShieldCheck },
+  'achc-crosswalk': {
+    description: 'Regulatory crosswalk tying CMS, Title 22, ACHC standards, policy owners, and evidence support levels.',
+    eyebrow: 'Taxonomy',
+    icon: Workflow,
+    title: 'ACHC Crosswalk',
+  },
+  'achc-survey': {
+    description: 'Survey alignment workspace for policy readiness, ACHC standards, evidence checklists, and owner action.',
+    eyebrow: 'Taxonomy',
+    icon: ShieldCheck,
+    title: 'ACHC Survey Alignment',
+  },
   'admin-groups': { eyebrow: 'Admin', icon: Users },
   'admin-permissions': { eyebrow: 'Admin', icon: LockKeyhole },
   'admin-roles': { eyebrow: 'Admin', icon: Shield },
   'admin-users': { eyebrow: 'Admin', icon: UserCog },
-  'artifact-viewer': { eyebrow: 'Taxonomy', icon: FileSearch },
-  'audit-mode': { eyebrow: 'Compliance Execution (CES)', icon: ScanSearch },
+  'artifact-viewer': {
+    description: 'Read-only artifact packet with verification state, linked policies, evidence hash, and source metadata.',
+    eyebrow: 'Taxonomy',
+    icon: FileSearch,
+    title: 'Artifact Viewer',
+  },
+  'audit-mode': {
+    description: 'Read-only audit queue for missing evidence, pending approvals, certified packets, and survey readiness.',
+    eyebrow: 'Compliance Execution (CES)',
+    icon: ScanSearch,
+    title: 'Audit Mode',
+  },
   brad: {
     description:
       'Decision-support workspace for primary operations triage, staffing risk, coverage decisions, and generated work products.',
@@ -156,15 +176,31 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     navLabel: 'Kanban Board',
     title: 'Kanban Board',
   },
-  'ces-calendar': { eyebrow: 'Compliance Execution (CES)', icon: CalendarDays },
+  'ces-calendar': {
+    description: 'Sprint calendar for evidence-upload targets, lock milestones, survey packets, and compliance checkpoints.',
+    eyebrow: 'Compliance Execution (CES)',
+    icon: CalendarDays,
+    title: 'CES Calendar',
+  },
   'ces-reports': {
     description:
       'Executive CES reporting for sprint readiness, blockers, evidence throughput, signature aging, and survey exposure.',
     eyebrow: 'Compliance Execution (CES)',
     icon: BarChart3,
   },
-  clinicians: { eyebrow: 'Clinician Profiles', icon: Users },
-  'clinician-detail': { eyebrow: 'Clinician Profiles', icon: UserRoundCheck },
+  clinicians: {
+    description: 'Clinician roster with caseload capacity, credential posture, training state, and coverage assignments.',
+    eyebrow: 'Clinician Profiles',
+    icon: Users,
+    navLabel: 'Clinician Profiles',
+    title: 'Clinician Profiles',
+  },
+  'clinician-detail': {
+    description: 'Credential posture, assigned patients, training status, and active compliance requirements.',
+    eyebrow: 'Clinician Profiles',
+    icon: UserRoundCheck,
+    title: 'Maria Delgado, RN',
+  },
   dashboard: {
     description: 'Primary operations command center for census pressure, staffing coverage, urgent tasks, and clinical risk.',
     eyebrow: 'Dashboard',
@@ -208,7 +244,13 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
   'onboarding-v2-batches': { eyebrow: 'Onboarding v2', icon: ListChecks },
   'onboarding-v2-dashboard': { eyebrow: 'Onboarding v2', icon: LayoutDashboard },
   'onboarding-v2-governance': { eyebrow: 'Onboarding v2', icon: Shield, navLabel: 'Onboarding Overrides' },
-  patients: { eyebrow: 'Patient Profiles', icon: HeartPulse },
+  patients: {
+    description: 'Patient roster with clinical focus, coverage gaps, schedule state, and high-risk indicators.',
+    eyebrow: 'Patient Profiles',
+    icon: HeartPulse,
+    navLabel: 'Patient Profiles',
+    title: 'Patient Profiles',
+  },
   'patient-detail': {
     description: 'Care plan, clinician assignments, documentation gaps, visit cadence, and high-risk indicators.',
     eyebrow: 'Patient Profiles',
@@ -223,7 +265,12 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
   },
   'policy-lifecycle': { eyebrow: 'System', icon: History },
   'policy-lifecycle-detail': { eyebrow: 'System', icon: History },
-  'staffing-calendar': { eyebrow: 'Calendar', icon: CalendarDays },
+  'staffing-calendar': {
+    description: 'Staffing calendar for clinician availability, visit conflicts, shift coverage, and acuity pressure.',
+    eyebrow: 'Calendar',
+    icon: CalendarDays,
+    title: 'Staffing Calendar',
+  },
   supervisor: { eyebrow: 'Onboarding', icon: UserCheck },
   'surveyor-viewer': { eyebrow: 'Admin', icon: FileSearch },
   'system-docs': { eyebrow: 'System', icon: BookMarked },
