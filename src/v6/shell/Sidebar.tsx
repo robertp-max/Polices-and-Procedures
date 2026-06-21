@@ -75,6 +75,7 @@ export function Sidebar() {
                         : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',
                     )
                   }
+                  end
                   key={route.hashId}
                   to={routeToPreviewPath(route.path)}
                 >

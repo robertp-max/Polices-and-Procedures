@@ -25,7 +25,10 @@ export function V6Shell() {
         <Topbar />
         <PageHeader
           badge={
-            <span className="inline-flex items-center gap-xs rounded-sm border border-tone-teal-border bg-tone-teal-bg px-sm py-xs text-tag uppercase tracking-tag text-brand-teal">
+            <span
+              className="inline-flex items-center gap-xs rounded-sm border border-tone-teal-border bg-tone-teal-bg px-sm py-xs text-tag uppercase tracking-tag text-brand-teal"
+              data-v6-eyebrow={chrome.eyebrow}
+            >
               <span className="h-xs w-xs rounded-sm bg-brand-teal" />
               {chrome.eyebrow}
             </span>

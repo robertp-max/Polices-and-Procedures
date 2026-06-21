@@ -24,17 +24,17 @@ export interface BoardLaneData {
 
 export function BoardLane({ lane }: { lane: BoardLaneData }) {
   return (
-    <section className="min-w-[232px] rounded-lg border border-card bg-surface p-lg shadow-rest">
-      <header className="mb-lg flex items-start justify-between gap-md">
+    <section className="min-w-[224px] rounded-lg border border-card bg-surface p-md shadow-rest">
+      <header className="mb-md flex items-start justify-between gap-md">
         <div>
-          <h2 className="text-h3 font-light text-ink">{lane.title}</h2>
+          <h2 className="text-body font-medium text-ink">{lane.title}</h2>
           <p className="text-sm text-muted">{lane.count} active cards</p>
         </div>
         <ToneTag tone={lane.tone}>{lane.count}</ToneTag>
       </header>
       <div className="grid gap-md">
         {lane.cards.map((card) => (
-          <article className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={card.id}>
+          <article className="rounded-lg border border-card bg-tone-slate-bg p-md" key={card.id}>
             <div className="mb-md flex items-center justify-between gap-md">
               <ToneTag tone={card.tone}>{card.id}</ToneTag>
               <button
@@ -54,7 +54,12 @@ export function BoardLane({ lane }: { lane: BoardLaneData }) {
               <div className="flex flex-wrap gap-xs">
                 {card.chips.map((chip) => (
                   <span
-                    className={cx('rounded-sm border px-sm py-xs text-tag uppercase tracking-tag', toneSurfaceClasses.slate)}
+                    className={cx(
+                      'rounded-sm border px-sm py-xs text-tag uppercase tracking-tag',
+                      card.tone === 'orange' || card.tone === 'amber'
+                        ? toneSurfaceClasses.orange
+                        : 'border-tone-teal-border bg-surface text-brand-teal',
+                    )}
                     key={`${card.id}-${chip}`}
                   >
                     {chip}
@@ -69,4 +74,3 @@ export function BoardLane({ lane }: { lane: BoardLaneData }) {
     </section>
   );
 }
-

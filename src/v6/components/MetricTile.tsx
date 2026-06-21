@@ -17,10 +17,10 @@ export function MetricTile({ metric }: MetricTileProps) {
   return (
     <article className={cx('min-h-[124px] rounded-lg border p-xl shadow-rest', toneSurfaceClasses[metric.tone])}>
       <div className="grid h-full content-between gap-md">
-        <p className="text-tag uppercase tracking-tag text-ink">{metric.label}</p>
+        <p className="text-tag uppercase tracking-tag text-secondary">{metric.label}</p>
         <div className="grid gap-xs">
           <p className="text-[30px] leading-display text-ink">{metric.value}</p>
-          <p className="text-sm text-secondary">{metric.helper}</p>
+          <p className="text-sm text-muted">{metric.helper}</p>
         </div>
       </div>
     </article>
@@ -36,4 +36,3 @@ export function MetricGrid({ metrics }: { metrics: readonly MetricTileData[] }) 
     </section>
   );
 }
-
