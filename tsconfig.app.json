@@ -35,6 +35,7 @@
     "src/main.tsx",
     "src/App.tsx",
     "src/_scaffold",
+    "src/v6",
     "src/vite-env.d.ts"
   ]
 }
