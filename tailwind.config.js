@@ -124,6 +124,7 @@ export default {
       boxShadow: {
         rest: "var(--shadow-rest)",
         hover: "var(--shadow-hover)",
+        soft: "var(--shadow-rest)",
         focus: "var(--focus-ring)",
       },
       fontSize: {

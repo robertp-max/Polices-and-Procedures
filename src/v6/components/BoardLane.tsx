@@ -22,7 +22,12 @@ export interface BoardLaneData {
   tone: Tone;
 }
 
-export function BoardLane({ lane }: { lane: BoardLaneData }) {
+export interface BoardLaneProps {
+  lane: BoardLaneData;
+  onCardClick?: (card: BoardCardData) => void;
+}
+
+export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
   return (
     <section className="min-w-[224px] rounded-lg border border-card bg-surface p-md shadow-rest">
       <header className="mb-md flex items-start justify-between gap-md">
@@ -34,13 +39,26 @@ export function BoardLane({ lane }: { lane: BoardLaneData }) {
       </header>
       <div className="grid gap-md">
         {lane.cards.map((card) => (
-          <article className="rounded-lg border border-card bg-tone-slate-bg p-md" key={card.id}>
+          <article
+            className={cx(
+              'rounded-lg border border-card bg-tone-slate-bg p-md transition duration-fast ease-standard',
+              onCardClick && 'cursor-pointer hover:bg-surface-hover'
+            )}
+            key={card.id}
+            onClick={onCardClick ? () => onCardClick(card) : undefined}
+          >
             <div className="mb-md flex items-center justify-between gap-md">
               <ToneTag tone={card.tone}>{card.id}</ToneTag>
               <button
                 aria-label={`More actions for ${card.title}`}
                 className="rounded-sm p-xs text-brand-teal transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
                 type="button"
+                onClick={(e) => {
+                  if (onCardClick) {
+                    e.stopPropagation();
+                    onCardClick(card);
+                  }
+                }}
               >
                 <MoreHorizontal aria-hidden="true" className="h-icon-sm w-icon-sm" />
               </button>

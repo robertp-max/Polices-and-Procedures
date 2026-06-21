@@ -1,27 +1,6 @@
-import {
-  CheckCircle2,
-  Clock3,
-  Download,
-  FileCheck2,
-  Fingerprint,
-  IdCard,
-  LockKeyhole,
-  PenLine,
-  RotateCcw,
-  Send,
-  ShieldCheck,
-  Stamp,
-  type LucideIcon,
-} from 'lucide-react';
-import {
-  MetricGrid,
-  ProgressMeter,
-  SurfaceCard,
-  ToneTag,
-  toneSurfaceClasses,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
+import { useState } from 'react';
+import { CheckCircle2, Download, FileCheck2, Fingerprint, IdCard, LockKeyhole, PenLine, RotateCcw, Send, ShieldCheck, Stamp, type LucideIcon } from 'lucide-react';
+import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilModal, toneSurfaceClasses, toneGlassSurfaceClasses, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, Checkbox, FormField, Input, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
@@ -243,7 +222,7 @@ const certificateRows = [
 
 const formContextRows = [
   ['Form', 'GV-FM-006 Conflict of Interest Disclosure'],
-  ['Route marker', '/forms/:formId/esign'],
+  ['Signing workspace', 'eCIgn route context'],
   ['Hash pageview', 'ecign-workspace'],
   ['Template family', 'ecign'],
   ['Linked policy', 'GV-COI-003 Business Ethics'],
@@ -251,44 +230,12 @@ const formContextRows = [
 ] as const;
 
 export function EcignWorkspaceScreen() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [signatureStaged, setSignatureStaged] = useState(false);
+  const [attestationChecked, setAttestationChecked] = useState(false);
+
   return (
     <section className="grid gap-xl" data-hash-id="ecign-workspace" data-route="/forms/:formId/esign" data-template="ecign">
-      <section className="rounded-lg border border-ecign-navy bg-surface p-lg shadow-rest" aria-labelledby="ecign-workspace-heading">
-        <div className="flex flex-wrap items-start justify-between gap-lg">
-          <div className="grid gap-md">
-            <div className="flex flex-wrap gap-sm">
-              <ToneTag tone="slate">/forms/:formId/esign</ToneTag>
-              <ToneTag tone="slate">ecign-workspace</ToneTag>
-              <ToneTag tone="slate">Taxonomy</ToneTag>
-              <span className="inline-flex items-center rounded-sm border border-ecign-navy bg-ecign-navy px-sm py-xs text-tag font-light uppercase tracking-tag text-on-brand">
-                eCIgn
-              </span>
-            </div>
-            <div>
-              <h2 className="text-h2 font-medium text-ink" id="ecign-workspace-heading">
-                eCIgn signing workspace
-              </h2>
-              <p className="mt-xs max-w-content text-sm text-muted">
-                Signature collection for a conflict disclosure form with ordered consent, identity, review, signature,
-                attestation, and certificate lock checkpoints.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-sm">
-            <Button iconLeft={<Clock3 aria-hidden="true" className="h-icon-sm w-icon-sm" />} size="sm" variant="secondary">
-              Signing window
-            </Button>
-            <Button
-              className="border-ecign-orange bg-ecign-orange text-on-brand hover:bg-ecign-orange"
-              iconLeft={<Stamp aria-hidden="true" className="h-icon-sm w-icon-sm" />}
-              size="sm"
-            >
-              Seal signature
-            </Button>
-          </div>
-        </div>
-      </section>
-
       <MetricGrid metrics={ecignMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(280px,1fr)_minmax(0,2fr)_minmax(320px,1fr)]">
@@ -324,7 +271,7 @@ export function EcignWorkspaceScreen() {
           </section>
         </aside>
 
-        <section className="grid gap-lg" aria-label="Document review and signature readiness">
+        <section className="grid content-start gap-lg" aria-label="Document review and signature readiness">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
               <div>
@@ -339,7 +286,7 @@ export function EcignWorkspaceScreen() {
 
             <div className="grid gap-md">
               {documentLines.map((line) => (
-                <article className={cx('rounded-lg border p-lg', toneSurfaceClasses[line.tone])} key={line.label}>
+                <article className={cx('rounded-lg p-lg', toneGlassSurfaceClasses[line.tone])} key={line.label}>
                   <div className="mb-sm flex flex-wrap items-center justify-between gap-sm">
                     <h3 className="text-body font-light text-ink">{line.label}</h3>
                     <ToneBadge size="sm" status={line.status} />
@@ -383,12 +330,36 @@ export function EcignWorkspaceScreen() {
                     />
                   )}
                 </FormField>
-                <div className="grid min-h-[150px] place-items-center rounded-lg border border-dashed border-ecign-navy bg-tone-slate-bg p-lg text-center">
-                  <div>
-                    <PenLine aria-hidden="true" className="mx-auto h-icon-lg w-icon-lg text-ecign-navy" />
-                    <p className="mt-md text-h3 font-light text-ink">Signature pad ready</p>
-                    <p className="mt-xs text-sm text-muted">Hand signature capture is available after typed name verification.</p>
-                  </div>
+                <div className="grid min-h-[150px] w-full place-items-center rounded-lg border border-dashed border-card bg-tone-slate-bg p-lg text-center">
+                  {signatureStaged ? (
+                    <div>
+                      <CheckCircle2 aria-hidden="true" className="mx-auto h-icon-lg w-icon-lg text-tone-green-text" />
+                      <p className="mt-md text-h3 font-medium text-tone-green-text">Hand Signature Staged</p>
+                      <Button
+                        className="mt-md"
+                        iconLeft={<PenLine aria-hidden="true" className="h-icon-sm w-icon-sm" />}
+                        onClick={() => setIsModalOpen(true)}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        Redraw signature
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <PenLine aria-hidden="true" className="mx-auto h-icon-lg w-icon-lg text-brand-teal" />
+                      <p className="mt-md text-h3 font-light text-ink">Signature pad ready</p>
+                      <p className="mt-xs text-sm text-muted">Hand signature drawing overlay is ready.</p>
+                      <Button
+                        className="mt-md"
+                        iconLeft={<PenLine aria-hidden="true" className="h-icon-sm w-icon-sm" />}
+                        onClick={() => setIsModalOpen(true)}
+                        size="sm"
+                      >
+                        Draw signature
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -400,6 +371,80 @@ export function EcignWorkspaceScreen() {
             </div>
           </section>
         </section>
+
+        {/* eCIgn Mobile Signature Drawing Overlay Modal */}
+        <VeilModal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          eyebrow="eCIgn Signature Pad"
+          title="Draw Your Signature"
+          tone="orange"
+          footer={
+            <div className="flex gap-md">
+              <Button size="sm" variant="secondary" onClick={() => setIsModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="border-ecign-orange bg-ecign-orange text-on-brand hover:bg-ecign-orange/95 font-light"
+                disabled={!attestationChecked}
+                size="sm"
+                onClick={() => {
+                  setSignatureStaged(true);
+                  setIsModalOpen(false);
+                }}
+              >
+                Confirm & Complete eCIgn
+              </Button>
+            </div>
+          }
+        >
+          <div className="grid gap-md text-sm">
+            <div className="grid gap-xs">
+              <span className="text-[10px] font-medium text-brand-teal uppercase tracking-wider">Signer Profile</span>
+              <div className="rounded-md bg-tone-slate-bg p-md border border-hairline text-xs font-light text-secondary">
+                <p><span className="font-medium text-ink">Name:</span> Thomas Parker</p>
+                <p className="mt-xs"><span className="font-medium text-ink">Role:</span> Compliance Officer</p>
+                <p className="mt-xs"><span className="font-medium text-ink">IP:</span> 192.0.2.44 (Managed Workstation)</p>
+              </div>
+            </div>
+
+            <div className="grid gap-xs">
+              <span className="text-[10px] font-medium text-brand-teal uppercase tracking-wider">Drawing Canvas</span>
+              <div className="w-full h-[180px] rounded-lg border border-dashed border-ecign-navy bg-tone-slate-bg/50 relative overflow-hidden flex items-center justify-center">
+                {/* Mock Drawn Signature representation */}
+                <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none">
+                  <span className="text-h1 font-heading text-ecign-navy rotate-[-6deg] opacity-75 font-medium italic select-none">
+                    Thomas Parker
+                  </span>
+                </div>
+                <div className="absolute bottom-md right-md flex gap-xs">
+                  <button
+                    className="px-sm py-xs text-[10px] bg-surface text-secondary hover:text-ink rounded border border-card shadow-rest"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      alert('Canvas cleared.');
+                    }}
+                    type="button"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <label className="flex items-start gap-md rounded-md bg-tone-slate-bg p-md text-xs text-secondary mt-sm">
+              <input
+                type="checkbox"
+                checked={attestationChecked}
+                onChange={(e) => setAttestationChecked(e.target.checked)}
+                className="mt-xs"
+              />
+              <span className="font-light">
+                I attest that this signature represents my formal execution stamp for the associated GV-FM-006 Conflict disclosure packet.
+              </span>
+            </label>
+          </div>
+        </VeilModal>
 
         <aside className="grid content-start gap-lg" aria-label="Certificate and signing actions">
           <SurfaceCard card={certificateCard}>
@@ -436,7 +481,7 @@ export function EcignWorkspaceScreen() {
 
 function SignerCard({ signer }: { signer: Signer }) {
   return (
-    <article className={cx('rounded-lg border p-lg', toneSurfaceClasses[signer.tone])}>
+    <article className={cx('rounded-lg p-lg', toneGlassSurfaceClasses[signer.tone])}>
       <div className="flex flex-wrap items-start justify-between gap-md">
         <div className="min-w-0">
           <div className="mb-sm flex flex-wrap items-center gap-sm">
@@ -485,7 +530,7 @@ function ActionPanelCard({ panel }: { panel: ActionPanel }) {
   const Icon = panel.icon;
 
   return (
-    <article className={cx('rounded-lg border p-lg', toneSurfaceClasses[panel.tone])}>
+    <article className={cx('rounded-lg p-lg', toneGlassSurfaceClasses[panel.tone])}>
       <div className="mb-md flex flex-wrap items-start justify-between gap-md">
         <span className="grid h-tap w-tap place-items-center rounded-md bg-surface">
           <Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />

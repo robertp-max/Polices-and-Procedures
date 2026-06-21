@@ -12,14 +12,15 @@ export interface DataTableProps<Row extends Record<string, string>> {
   columns: readonly DataTableColumn<Row>[];
   label: string;
   rows: readonly Row[];
+  onRowClick?: (row: Row) => void;
 }
 
-export function DataTable<Row extends Record<string, string>>({ columns, label, rows }: DataTableProps<Row>) {
+export function DataTable<Row extends Record<string, string>>({ columns, label, rows, onRowClick }: DataTableProps<Row>) {
   return (
-    <div className="overflow-hidden rounded-lg border border-card bg-surface shadow-rest">
+    <div className="overflow-hidden rounded-lg border border-hairline bg-transparent">
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-xs" aria-label={label}>
-          <thead className="bg-tone-slate-bg text-tag uppercase tracking-tag text-muted">
+          <thead className="bg-tone-slate-bg text-tag uppercase tracking-tag text-secondary">
             <tr>
               {columns.map((column) => (
                 <th className="border-b border-card px-lg py-md font-light" key={String(column.key)} scope="col">
@@ -30,7 +31,14 @@ export function DataTable<Row extends Record<string, string>>({ columns, label, 
           </thead>
           <tbody>
             {rows.map((row, rowIndex) => (
-              <tr className="transition duration-fast ease-standard hover:bg-surface-hover" key={`${label}-${rowIndex}`}>
+              <tr
+                className={cx(
+                  'transition duration-fast ease-standard hover:bg-surface-hover',
+                  onRowClick && 'cursor-pointer',
+                )}
+                key={`${label}-${rowIndex}`}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+              >
                 {columns.map((column, columnIndex) => {
                   const value = column.render ? column.render(row) : row[column.key];
 
@@ -59,3 +67,4 @@ export function DataTable<Row extends Record<string, string>>({ columns, label, 
     </div>
   );
 }
+

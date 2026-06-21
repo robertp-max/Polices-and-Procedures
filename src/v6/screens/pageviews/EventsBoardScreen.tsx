@@ -1,24 +1,6 @@
-import {
-  AlertTriangle,
-  CalendarClock,
-  FileCheck2,
-  Filter,
-  LockKeyhole,
-  ShieldCheck,
-  Upload,
-  Users,
-} from 'lucide-react';
-import {
-  BoardLane,
-  MetricGrid,
-  ProgressMeter,
-  SurfaceCard,
-  ToneTag,
-  toneSurfaceClasses,
-  type BoardLaneData,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
+import { useState } from 'react';
+import { AlertTriangle, FileCheck2, Filter, LockKeyhole, ShieldCheck, Users } from 'lucide-react';
+import { BoardLane, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneGlassSurfaceClasses, type BoardLaneData, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
@@ -266,121 +248,122 @@ const eventLanes: readonly BoardLaneData[] = [
 ];
 
 export function EventsBoardScreen() {
+  const [activeTab, setActiveTab] = useState<'board' | 'evidence'>('board');
+
   return (
     <div className="grid gap-xl">
       <MetricGrid metrics={eventMetrics} />
 
       <section className="grid gap-lg">
-        <div className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-          <div className="grid gap-md">
+        {/* Premium Segmented Tab Control */}
+        <div className="flex justify-start">
+          <div className="flex rounded-lg border border-hairline bg-tone-slate-bg/30 p-xs gap-xs">
+            <button
+              onClick={() => setActiveTab('board')}
+              className={cx(
+                'px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast',
+                activeTab === 'board'
+                  ? 'bg-brand-teal text-on-brand shadow-rest'
+                  : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
+              )}
+            >
+              Events Board
+            </button>
+            <button
+              onClick={() => setActiveTab('evidence')}
+              className={cx(
+                'px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast',
+                activeTab === 'evidence'
+                  ? 'bg-brand-teal text-on-brand shadow-rest'
+                  : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
+              )}
+            >
+              Evidence & Status Signals
+            </button>
+          </div>
+        </div>
+
+        {activeTab === 'board' && (
+          <div className="flex flex-wrap items-center justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
+            <div aria-label="Event status filters" className="flex flex-wrap gap-sm">
+              {eventFilters.map((filter) => {
+                const Icon = filter.icon;
+
+                return (
+                  <Button
+                    iconLeft={<Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />}
+                    key={filter.label}
+                    selected={filter.selected}
+                    size="sm"
+                    variant={filter.selected ? 'primary' : 'secondary'}
+                  >
+                    {filter.label}
+                  </Button>
+                );
+              })}
+            </div>
             <div className="flex flex-wrap gap-sm">
-              <ToneTag tone="teal">/ces/events</ToneTag>
-              <ToneTag tone="slate">events-board</ToneTag>
-              <ToneTag tone="slate">board</ToneTag>
-              <ToneBadge size="sm" status="review-required" />
-            </div>
-            <div>
-              <h2 className="text-h2 font-medium text-ink">CES events board</h2>
-              <p className="mt-xs max-w-content text-sm text-secondary">
-                Operational compliance events grouped by risk, evidence readiness, and final-lock posture.
-              </p>
+              <ToneTag tone="orange">4 critical</ToneTag>
+              <ToneTag tone="amber">7 at risk</ToneTag>
+              <ToneTag tone="green">6 lock ready</ToneTag>
             </div>
           </div>
-          <div className="flex flex-wrap gap-sm">
-            <Button
-              iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />}
-              size="sm"
-              variant="secondary"
-            >
-              June window
-            </Button>
-            <Button
-              className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
-              iconLeft={<Upload aria-hidden="true" className="h-icon-sm w-icon-sm" />}
-              size="sm"
-            >
-              Packet queue
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-          <div aria-label="Event status filters" className="flex flex-wrap gap-sm">
-            {eventFilters.map((filter) => {
-              const Icon = filter.icon;
-
-              return (
-                <Button
-                  iconLeft={<Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />}
-                  key={filter.label}
-                  selected={filter.selected}
-                  size="sm"
-                  variant={filter.selected ? 'primary' : 'secondary'}
-                >
-                  {filter.label}
-                </Button>
-              );
-            })}
-          </div>
-          <div className="flex flex-wrap gap-sm">
-            <ToneTag tone="orange">4 critical</ToneTag>
-            <ToneTag tone="amber">7 at risk</ToneTag>
-            <ToneTag tone="green">6 lock ready</ToneTag>
-          </div>
-        </div>
+        )}
       </section>
 
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(320px,1fr)]">
-        <div aria-label="Events board lanes" className="overflow-x-auto pb-sm" role="region" tabIndex={0}>
-          <div className="grid gap-lg laptop:flex laptop:min-w-[960px] laptop:items-stretch">
-            {eventLanes.map((lane) => (
-              <div className="laptop:w-[240px] laptop:flex-none" key={lane.title}>
-                <BoardLane lane={lane} />
+      {activeTab === 'board' ? (
+        <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(320px,1fr)]">
+          <div aria-label="Events board lanes" className="overflow-x-auto pb-sm" role="region" tabIndex={0}>
+            <div className="grid gap-lg laptop:flex laptop:min-w-[960px] laptop:items-stretch">
+              {eventLanes.map((lane) => (
+                <div className="laptop:w-[240px] laptop:flex-none" key={lane.title}>
+                  <BoardLane lane={lane} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <aside className="grid content-start gap-lg">
+            {eventHealthCards.map((card) => (
+              <SurfaceCard card={card} key={card.title} />
+            ))}
+          </aside>
+        </section>
+      ) : (
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
+            <div>
+              <h2 className="text-h2 font-medium text-ink">Evidence and status signals</h2>
+              <p className="mt-xs max-w-content text-sm text-muted">
+                Event-level evidence chips, owner state, and progress mirror the active board cards.
+              </p>
+            </div>
+            <Badge variant="count">30 expected artifacts</Badge>
+          </div>
+          <div className="grid gap-md">
+            {evidenceSignals.map((signal) => (
+              <div className="border-t border-card pt-md first:border-t-0 first:pt-0" key={signal.id}>
+                <div className="grid gap-md tablet-l:grid-cols-[minmax(0,1fr)_minmax(220px,320px)] tablet-l:items-center">
+                  <div className="min-w-0">
+                    <div className="mb-sm flex flex-wrap items-center gap-sm">
+                      <ToneTag tone={signal.tone}>{signal.id}</ToneTag>
+                      <ToneBadge size="sm" status={signal.status} />
+                      <Badge size="sm">{signal.artifacts}</Badge>
+                    </div>
+                    <h3 className="text-body font-light text-ink">{signal.title}</h3>
+                    <p className="mt-xs text-xs text-muted">
+                      {signal.owner} - {signal.due}
+                    </p>
+                  </div>
+                  <div className={cx('rounded-lg p-md', toneGlassSurfaceClasses[signal.tone])}>
+                    <ProgressMeter label="Readiness" tone={signal.tone} value={signal.progress} />
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-        </div>
-
-        <aside className="grid gap-lg">
-          {eventHealthCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
-          ))}
-        </aside>
-      </section>
-
-      <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-        <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
-          <div>
-            <h2 className="text-h2 font-medium text-ink">Evidence and status signals</h2>
-            <p className="mt-xs max-w-content text-sm text-muted">
-              Event-level evidence chips, owner state, and progress mirror the active board cards.
-            </p>
-          </div>
-          <Badge variant="count">30 expected artifacts</Badge>
-        </div>
-        <div className="grid gap-md">
-          {evidenceSignals.map((signal) => (
-            <div className="border-t border-card pt-md first:border-t-0 first:pt-0" key={signal.id}>
-              <div className="grid gap-md tablet-l:grid-cols-[minmax(0,1fr)_minmax(220px,320px)] tablet-l:items-center">
-                <div className="min-w-0">
-                  <div className="mb-sm flex flex-wrap items-center gap-sm">
-                    <ToneTag tone={signal.tone}>{signal.id}</ToneTag>
-                    <ToneBadge size="sm" status={signal.status} />
-                    <Badge size="sm">{signal.artifacts}</Badge>
-                  </div>
-                  <h3 className="text-body font-light text-ink">{signal.title}</h3>
-                  <p className="mt-xs text-xs text-muted">
-                    {signal.owner} - {signal.due}
-                  </p>
-                </div>
-                <div className={cx('rounded-lg border p-md', toneSurfaceClasses[signal.tone])}>
-                  <ProgressMeter label="Readiness" tone={signal.tone} value={signal.progress} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

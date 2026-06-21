@@ -1,6 +1,6 @@
 import { Search, Info } from 'lucide-react';
-import { DataTable, ToneTag, type DataTableColumn } from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { DataTable, type DataTableColumn } from '../../components';
+
 
 interface DocSectionRow extends Record<string, string> {
   sectionId: string;
@@ -34,29 +34,8 @@ export function SystemDocsScreen() {
       data-route="/system-documentation/:sectionId"
       data-template="docs"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/system-documentation/:sectionId</ToneTag>
-            <ToneTag tone="slate">system-docs</ToneTag>
-            <ToneTag tone="slate">docs</ToneTag>
-            <ToneTag tone="teal">System</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">System Documentation Index</h2>
-            <p className="max-w-content text-sm text-secondary">
-              Platform administration, design tokens, security policies, and workflow integration guides.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="active" />
-          <Badge variant="count">SYS-DOCS</Badge>
-        </div>
-      </section>
-
       <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid gap-lg desktop:col-span-8">
+        <div className="grid content-start gap-lg desktop:col-span-8">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
               <div>

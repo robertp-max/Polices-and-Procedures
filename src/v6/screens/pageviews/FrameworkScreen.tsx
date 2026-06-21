@@ -1,17 +1,7 @@
-import {
-  ArrowRight,
-  BookOpen,
-  ClipboardCheck,
-  FileCheck2,
-  Landmark,
-  Layers3,
-  Network,
-  ShieldCheck,
-  Workflow,
-  type LucideIcon,
-} from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, BookOpen, ClipboardCheck, FileCheck2, Landmark, Layers3, Network, ShieldCheck, Workflow, type LucideIcon } from 'lucide-react';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, type MetricTileData, type SurfaceCardData } from '../../components';
-import { Badge, Button, ToneBadge } from '../../primitives';
+import { Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
 
@@ -246,161 +236,186 @@ const alignmentCards = [
 ] as const satisfies readonly (readonly [string, string, string, Tone])[];
 
 export function FrameworkScreen() {
+  const [activeTab, setActiveTab] = useState<'taxonomy' | 'mapping'>('taxonomy');
+
   return (
     <div className="grid gap-xl" data-hash-id="framework" data-route="/framework" data-template="framework">
-      <section className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneTag>/framework</ToneTag>
-          <Badge>hash: framework</Badge>
-          <Badge>Taxonomy</Badge>
-        </div>
-        <ToneBadge size="sm" status="active" />
-      </section>
+
 
       <MetricGrid metrics={frameworkMetrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="grid gap-lg">
-          <div className="flex flex-wrap items-end justify-between gap-md">
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink">Framework domains</h2>
-              <p className="max-w-content text-sm text-muted">
-                Top-level taxonomy tiles show domain ownership, policy scope, ACHC anchor density, and survey-readiness signals.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-sm" aria-label="Framework view modes">
-              <Button selected size="sm" variant="secondary">
-                Grid
-              </Button>
-              <Button size="sm" variant="tertiary">
-                Tree
-              </Button>
-              <Button size="sm" variant="tertiary">
-                Heat
-              </Button>
-            </div>
-          </div>
+      {/* Premium Segmented Tab Control */}
+      <div className="flex justify-start">
+        <div className="flex rounded-lg border border-hairline bg-tone-slate-bg/30 p-xs gap-xs">
+          <button
+            onClick={() => setActiveTab('taxonomy')}
+            className={cx(
+              'px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast',
+              activeTab === 'taxonomy'
+                ? 'bg-brand-teal text-on-brand shadow-rest'
+                : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
+            )}
+          >
+            Taxonomy Structure
+          </button>
+          <button
+            onClick={() => setActiveTab('mapping')}
+            className={cx(
+              'px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast',
+              activeTab === 'mapping'
+                ? 'bg-brand-teal text-on-brand shadow-rest'
+                : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
+            )}
+          >
+            Standard Mapping Snapshot
+          </button>
+        </div>
+      </div>
 
-          <div className="grid gap-lg tablet-l:grid-cols-2 laptop:grid-cols-3" role="list">
-            {frameworkDomains.map((domain) => (
-              <DomainTile domain={domain} key={domain.code} />
-            ))}
-          </div>
-        </section>
-
-        <aside className="grid content-start gap-lg">
-          {contextCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
-          ))}
-
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-            <div className="mb-lg flex items-start justify-between gap-md">
-              <div>
-                <ToneTag tone="orange">Authority context</ToneTag>
-                <h2 className="mt-md text-h2 font-medium text-ink">ACHC / CMS / Title 22</h2>
+      {activeTab === 'taxonomy' ? (
+        <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+          <section className="grid content-start gap-lg">
+            <div className="flex flex-wrap items-end justify-between gap-md">
+              <div className="grid gap-xs">
+                <h2 className="text-h2 font-medium text-ink">Framework domains</h2>
+                <p className="max-w-content text-sm text-muted">
+                  Top-level taxonomy tiles show domain ownership, policy scope, ACHC anchor density, and survey-readiness signals.
+                </p>
               </div>
-              <ToneBadge size="sm" status="ready" />
+              <div className="flex flex-wrap gap-sm" aria-label="Framework view modes">
+                <Button selected size="sm" variant="secondary">
+                  Grid
+                </Button>
+                <Button size="sm" variant="tertiary">
+                  Tree
+                </Button>
+                <Button size="sm" variant="tertiary">
+                  Heat
+                </Button>
+              </div>
             </div>
-            <div className="grid gap-md">
-              {alignmentCards.map(([label, value, helper, tone]) => (
-                <div className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={label}>
-                  <div className="flex items-start justify-between gap-md">
-                    <div>
-                      <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
-                      <p className="mt-xs text-h2 text-ink">{value}</p>
-                    </div>
-                    <ToneTag tone={tone}>{tone === 'orange' ? 'Review' : 'Mapped'}</ToneTag>
-                  </div>
-                  <p className="mt-md text-sm text-secondary">{helper}</p>
-                </div>
+
+            <div className="grid gap-lg tablet-l:grid-cols-2 laptop:grid-cols-3" role="list">
+              {frameworkDomains.map((domain) => (
+                <DomainTile domain={domain} key={domain.code} />
               ))}
             </div>
           </section>
-        </aside>
-      </section>
 
-      <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-        <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">Standard mapping snapshot</h2>
-            <p className="max-w-content text-sm text-muted">
-              Representative rows connect ACHC standards to CMS Conditions of Participation, Title 22 references, policy IDs, forms,
-              and evidence methods.
-            </p>
+          <aside className="grid content-start gap-lg">
+            {contextCards.map((card) => (
+              <SurfaceCard card={card} key={card.title} />
+            ))}
+
+            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+              <div className="mb-lg flex items-start justify-between gap-md">
+                <div>
+                  <ToneTag tone="orange">Authority context</ToneTag>
+                  <h2 className="mt-md text-h2 font-medium text-ink">ACHC / CMS / Title 22</h2>
+                </div>
+                <ToneBadge size="sm" status="ready" />
+              </div>
+              <div className="grid gap-md">
+                {alignmentCards.map(([label, value, helper, tone]) => (
+                  <div className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={label}>
+                    <div className="flex items-start justify-between gap-md">
+                      <div>
+                        <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
+                        <p className="mt-xs text-h2 text-ink">{value}</p>
+                      </div>
+                      <ToneTag tone={tone}>{tone === 'orange' ? 'Review' : 'Mapped'}</ToneTag>
+                    </div>
+                    <p className="mt-md text-sm text-secondary">{helper}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </aside>
+        </section>
+      ) : (
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
+            <div className="grid gap-xs">
+              <h2 className="text-h2 font-medium text-ink">Standard mapping snapshot</h2>
+              <p className="max-w-content text-sm text-muted">
+                Representative rows connect ACHC standards to CMS Conditions of Participation, Title 22 references, policy IDs, forms,
+                and evidence methods.
+              </p>
+            </div>
+            <Button
+              className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
+              iconRight={<ArrowRight aria-hidden="true" className="h-icon-sm w-icon-sm" />}
+              size="sm"
+            >
+              Open crosswalk
+            </Button>
           </div>
-          <Button
-            className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
-            iconRight={<ArrowRight aria-hidden="true" className="h-icon-sm w-icon-sm" />}
-            size="sm"
-          >
-            Open crosswalk
-          </Button>
-        </div>
 
-        <div className="hidden overflow-x-auto laptop:block">
-          <table className="min-w-full border-collapse text-left text-xs" aria-label="Framework standard mapping snapshot">
-            <thead className="bg-tone-slate-bg text-tag uppercase tracking-tag text-muted">
-              <tr>
-                <th className="border-b border-card px-lg py-md font-light" scope="col">
-                  ACHC
-                </th>
-                <th className="border-b border-card px-lg py-md font-light" scope="col">
-                  Standard focus
-                </th>
-                <th className="border-b border-card px-lg py-md font-light" scope="col">
-                  CMS / Title 22
-                </th>
-                <th className="border-b border-card px-lg py-md font-light" scope="col">
-                  Policy / Form
-                </th>
-                <th className="border-b border-card px-lg py-md font-light" scope="col">
-                  Evidence
-                </th>
-                <th className="border-b border-card px-lg py-md font-light" scope="col">
-                  Support
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {mappingRows.map((row) => (
-                <tr className="transition duration-fast ease-standard hover:bg-surface-hover" key={row.achc}>
-                  <td className="border-b border-hairline px-lg py-md">
-                    <ToneTag tone={row.tone}>{row.achc}</ToneTag>
-                  </td>
-                  <td className="border-b border-hairline px-lg py-md text-secondary">{row.standard}</td>
-                  <td className="border-b border-hairline px-lg py-md text-muted">{row.cmsTitle22}</td>
-                  <td className="border-b border-hairline px-lg py-md text-secondary">
-                    <span className="text-brand-teal">{row.policy}</span>
-                    <span className="block text-muted">{row.forms}</span>
-                  </td>
-                  <td className="border-b border-hairline px-lg py-md text-muted">{row.evidence}</td>
-                  <td className="border-b border-hairline px-lg py-md">
-                    <ToneBadge size="sm" status={row.status} />
-                  </td>
+          <div className="hidden overflow-x-auto laptop:block">
+            <table className="min-w-full border-collapse text-left text-xs" aria-label="Framework standard mapping snapshot">
+              <thead className="bg-tone-slate-bg text-tag uppercase tracking-tag text-muted">
+                <tr>
+                  <th className="border-b border-card px-lg py-md font-light" scope="col">
+                    ACHC
+                  </th>
+                  <th className="border-b border-card px-lg py-md font-light" scope="col">
+                    Standard focus
+                  </th>
+                  <th className="border-b border-card px-lg py-md font-light" scope="col">
+                    CMS / Title 22
+                  </th>
+                  <th className="border-b border-card px-lg py-md font-light" scope="col">
+                    Policy / Form
+                  </th>
+                  <th className="border-b border-card px-lg py-md font-light" scope="col">
+                    Evidence
+                  </th>
+                  <th className="border-b border-card px-lg py-md font-light" scope="col">
+                    Support
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {mappingRows.map((row) => (
+                  <tr className="transition duration-fast ease-standard hover:bg-surface-hover" key={row.achc}>
+                    <td className="border-b border-hairline px-lg py-md">
+                      <ToneTag tone={row.tone}>{row.achc}</ToneTag>
+                    </td>
+                    <td className="border-b border-hairline px-lg py-md text-secondary">{row.standard}</td>
+                    <td className="border-b border-hairline px-lg py-md text-muted">{row.cmsTitle22}</td>
+                    <td className="border-b border-hairline px-lg py-md text-secondary">
+                      <span className="text-brand-teal">{row.policy}</span>
+                      <span className="block text-muted">{row.forms}</span>
+                    </td>
+                    <td className="border-b border-hairline px-lg py-md text-muted">{row.evidence}</td>
+                    <td className="border-b border-hairline px-lg py-md">
+                      <ToneBadge size="sm" status={row.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-        <div className="grid gap-md laptop:hidden">
-          {mappingRows.map((row) => (
-            <article className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={row.achc}>
-              <div className="mb-md flex flex-wrap items-start justify-between gap-sm">
-                <ToneTag tone={row.tone}>{row.achc}</ToneTag>
-                <ToneBadge size="sm" status={row.status} />
-              </div>
-              <h3 className="text-body font-light text-ink">{row.standard}</h3>
-              <p className="mt-sm text-sm text-muted">{row.cmsTitle22}</p>
-              <div className="mt-md grid gap-sm text-sm text-secondary">
-                <span>{row.policy}</span>
-                <span>{row.forms}</span>
-                <span>{row.evidence}</span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+          <div className="grid gap-md laptop:hidden">
+            {mappingRows.map((row) => (
+              <article className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={row.achc}>
+                <div className="mb-md flex flex-wrap items-start justify-between gap-sm">
+                  <ToneTag tone={row.tone}>{row.achc}</ToneTag>
+                  <ToneBadge size="sm" status={row.status} />
+                </div>
+                <h3 className="text-body font-light text-ink">{row.standard}</h3>
+                <p className="mt-sm text-sm text-muted">{row.cmsTitle22}</p>
+                <div className="mt-md grid gap-sm text-sm text-secondary">
+                  <span>{row.policy}</span>
+                  <span>{row.forms}</span>
+                  <span>{row.evidence}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

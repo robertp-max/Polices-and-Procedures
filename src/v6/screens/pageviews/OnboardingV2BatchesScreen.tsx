@@ -1,14 +1,6 @@
 import { Layers, Calendar } from 'lucide-react';
-import {
-  MetricGrid,
-  DataTable,
-  SurfaceCard,
-  ToneTag,
-  type MetricTileData,
-  type SurfaceCardData,
-  type DataTableColumn,
-} from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { MetricGrid, DataTable, SurfaceCard, type MetricTileData, type SurfaceCardData, type DataTableColumn } from '../../components';
+;
 
 interface BatchRow extends Record<string, string> {
   batchId: string;
@@ -69,31 +61,10 @@ export function OnboardingV2BatchesScreen() {
       data-route="/onboarding-v2/batches"
       data-template="matrix"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/onboarding-v2/batches</ToneTag>
-            <ToneTag tone="slate">onboarding-v2-batches</ToneTag>
-            <ToneTag tone="slate">matrix</ToneTag>
-            <ToneTag tone="teal">Onboarding v2</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">Activation Batches</h2>
-            <p className="max-w-content text-sm text-secondary">
-              Roster of generated activation batches, triggers, subject counts, and gate completions.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="active" />
-          <Badge variant="count">BAT-MATRIX</Badge>
-        </div>
-      </section>
-
       <MetricGrid metrics={metrics} />
 
       <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid gap-lg desktop:col-span-8">
+        <div className="grid content-start gap-lg desktop:col-span-8">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
               <div>

@@ -1,26 +1,5 @@
-import {
-  BookOpenCheck,
-  CheckCircle2,
-  ClipboardCheck,
-  FileCheck2,
-  LockKeyhole,
-  Map,
-  PlayCircle,
-  Route,
-  ShieldCheck,
-  UserCheck,
-  type LucideIcon,
-} from 'lucide-react';
-import {
-  MetricGrid,
-  ProgressMeter,
-  SurfaceCard,
-  ToneTag,
-  toneSoftTileClasses,
-  toneSurfaceClasses,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
+import { BookOpenCheck, CheckCircle2, ClipboardCheck, FileCheck2, LockKeyhole, Map, PlayCircle, Route, ShieldCheck, UserCheck, type LucideIcon } from 'lucide-react';
+import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, toneGlassSurfaceClasses, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
@@ -238,37 +217,6 @@ const selectedModule = lessonModules[4];
 export function JourneyV1Screen() {
   return (
     <section className="grid gap-xl" data-hash-id="journey-v1" data-route="/journey/v1-journey" data-template="journey">
-      <header className="rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="flex flex-wrap items-start justify-between gap-lg">
-          <div className="grid gap-md">
-            <div className="flex flex-wrap items-center gap-sm">
-              <ToneTag tone="teal">/journey/v1-journey</ToneTag>
-              <Badge>hash: journey-v1</Badge>
-              <Badge>template: journey</Badge>
-              <Badge>Onboarding</Badge>
-            </div>
-            <div className="grid gap-xs">
-              <h1 className="text-display font-medium text-brand-teal-deep">Journey Legacy (v1)</h1>
-              <p className="max-w-content text-body font-light text-secondary">
-                Legacy topic and lesson view reframed as V6 onboarding phases, with readiness gates, evidence anchors, and
-                module sequencing visible in one review surface.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-sm">
-            <Button
-              iconLeft={<BookOpenCheck aria-hidden="true" className="h-icon-sm w-icon-sm" />}
-              size="sm"
-              variant="secondary"
-            >
-              Onboarding
-            </Button>
-            <Button iconLeft={<ShieldCheck aria-hidden="true" className="h-icon-sm w-icon-sm" />} size="sm" variant="tertiary">
-              Annual ACHC
-            </Button>
-          </div>
-        </div>
-      </header>
 
       <MetricGrid metrics={journeyMetrics} />
 
@@ -308,7 +256,7 @@ export function JourneyV1Screen() {
           </SurfaceCard>
         </aside>
 
-        <main className="grid gap-lg" aria-label="Journey v1 lesson modules">
+        <main className="grid content-start gap-lg" aria-label="Journey v1 lesson modules">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
               <div className="grid gap-xs">
@@ -348,7 +296,7 @@ export function JourneyV1Screen() {
 
             <div className="grid gap-lg tablet-l:grid-cols-[minmax(0,1fr)_minmax(220px,320px)]">
               <div className="grid gap-md">
-                <div className={cx('rounded-lg border p-lg', toneSurfaceClasses[selectedModule.tone])}>
+                <div className={cx('rounded-lg p-lg', toneGlassSurfaceClasses[selectedModule.tone])}>
                   <h3 className="text-body font-light text-ink">Readiness note</h3>
                   <p className="mt-xs text-sm text-secondary">{selectedModule.readiness}</p>
                 </div>
@@ -389,7 +337,7 @@ function PhaseCard({ phase }: { phase: LegacyPhase }) {
   const Icon = phase.icon;
 
   return (
-    <article className={cx('rounded-lg border p-lg', toneSurfaceClasses[phase.tone])}>
+    <article className={cx('rounded-lg p-lg', toneGlassSurfaceClasses[phase.tone])}>
       <div className="mb-md flex items-start justify-between gap-md">
         <span className="grid h-tap w-tap flex-none place-items-center rounded-md bg-surface">
           <Icon aria-hidden="true" className="h-icon-md w-icon-md" />

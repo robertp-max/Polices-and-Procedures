@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>V6 Design Reconciliation Dashboard</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f7fafc; color: #2d3748; margin: 0; padding: 24px; line-height: 1.5; }
+    .container { max-width: 1400px; margin: 0 auto; background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    h1 { color: #004142; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; font-weight: 500; }
+    h2 { color: #004142; margin-top: 32px; font-weight: 500; }
+    h3 { color: #0f766e; margin-top: 24px; font-weight: 500; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    th { background-color: #f1f5f9; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; }
+    tr:hover { background-color: #f8fafc; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 500; text-transform: uppercase; }
+    .badge-teal { background-color: #ccfbf1; color: #0f766e; }
+    .badge-orange { background-color: #ffedd5; color: #c2410c; }
+    .badge-green { background-color: #dcfce7; color: #15803d; }
+    .badge-amber { background-color: #fef3c7; color: #b45309; }
+    .badge-slate { background-color: #f1f5f9; color: #475569; }
+    .priority-p0 { color: #dc2626; font-weight: 600; }
+    .priority-p1 { color: #d97706; font-weight: 600; }
+    .priority-p2 { color: #0f766e; font-weight: 500; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 8px; }
+    .alert { background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 4px; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <div class='container'>
+    <h1>V6 Design Reconciliation Dashboard</h1>
+    <div class='alert'>
+      <strong>Reconciliation Scope:</strong> 54 active routes verified. 51 matched to visual prototype references, 3 inferred from system patterns. Seeding paused until navigation cleanup and canvas gaps are reconciled.
+    </div>
+    <h2>1. Route Registry & Match Status</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Route</th>
+          <th>Hash ID</th>
+          <th>Component</th>
+          <th>Status</th>
+          <th>PNG Reference</th>
+          <th>Design Status</th>
+          <th>Next Action</th>
+          <th>Priority</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td><code>/dashboard</code></td>
+          <td><code>dashboard</code></td>
+          <td><code>DashboardScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>16-dashboard.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/clinicians</code></td>
+          <td><code>clinicians</code></td>
+          <td><code>ProfileListScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>15-clinicians.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/clinicians/:clinicianId</code></td>
+          <td><code>clinician-detail</code></td>
+          <td><code>ClinicianDetailScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>14-clinician-detail.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/patients</code></td>
+          <td><code>patients</code></td>
+          <td><code>ProfileListScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>43-patients.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/patients/:patientId</code></td>
+          <td><code>patient-detail</code></td>
+          <td><code>PatientDetailScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>42-patient-detail.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/calendar</code></td>
+          <td><code>master-calendar</code></td>
+          <td><code>CalendarScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>30-master-calendar.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/staffing-calendar</code></td>
+          <td><code>staffing-calendar</code></td>
+          <td><code>CalendarScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>48-staffing-calendar.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/iadministrator</code></td>
+          <td><code>brad</code></td>
+          <td><code>BradScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>10-brad.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Align sidebar label (Brad -> iAdministrator); safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/ces/calendar</code></td>
+          <td><code>ces-calendar</code></td>
+          <td><code>CalendarScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>12-ces-calendar.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Consider merging calendar views or keep separate under compliance; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/ces/board</code></td>
+          <td><code>ces-board</code></td>
+          <td><code>BoardScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>11-ces-board.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/ces/events</code></td>
+          <td><code>events-board</code></td>
+          <td><code>EventsBoardScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>none</code></td>
+          <td><span class='badge badge-amber'>GENERIC_IMPLEMENTATION_ONLY</span></td>
+          <td>Create Gemini Canvas design reference to refine specific Event Board card designs; defer seeding.</td>
+          <td><span class='priority-p1'>P1</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/workflows</code></td>
+          <td><code>workflows</code></td>
+          <td><code>WorkflowsScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>54-workflows.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/workflows/:workflowId/swimlane</code></td>
+          <td><code>workflow-swimlane</code></td>
+          <td><code>WorkflowSwimlaneScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>53-workflow-swimlane.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/compliance/master-controls</code></td>
+          <td><code>master-controls</code></td>
+          <td><code>MasterControlsScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>31-master-controls.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/audit</code></td>
+          <td><code>audit-mode</code></td>
+          <td><code>EvidenceScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>09-audit-mode.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/evidence</code></td>
+          <td><code>evidence-center</code></td>
+          <td><code>EvidenceScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>19-evidence-center.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/ces/reports</code></td>
+          <td><code>ces-reports</code></td>
+          <td><code>ReportsScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>13-ces-reports.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/calendar/event/:eventId/task/:taskId</code></td>
+          <td><code>mobile-incident</code></td>
+          <td><code>MobileIncidentScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>32-mobile-incident.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/my-tasks</code></td>
+          <td><code>my-tasks</code></td>
+          <td><code>MyTasksScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>35-my-tasks.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/framework</code></td>
+          <td><code>framework</code></td>
+          <td><code>FrameworkScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>22-framework.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/framework/achc-survey</code></td>
+          <td><code>achc-survey</code></td>
+          <td><code>AchcScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>02-achc-survey.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/framework/achc-survey/crosswalk</code></td>
+          <td><code>achc-crosswalk</code></td>
+          <td><code>AchcScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>01-achc-crosswalk.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/library</code></td>
+          <td><code>policy-library</code></td>
+          <td><code>PolicyMatrixScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>45-policy-library.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/library/:policyId</code></td>
+          <td><code>policy-detail</code></td>
+          <td><code>PolicyDetailScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>44-policy-detail.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/forms</code></td>
+          <td><code>forms-library</code></td>
+          <td><code>FormsLibraryScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>21-forms-library.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/forms/:formId</code></td>
+          <td><code>form-viewer</code></td>
+          <td><code>FormWorkspaceScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>20-form-viewer.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/forms/:formId/esign</code></td>
+          <td><code>ecign-workspace</code></td>
+          <td><code>EcignWorkspaceScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>18-ecign-workspace.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/artifacts/:artifactId</code></td>
+          <td><code>artifact-viewer</code></td>
+          <td><code>ArtifactViewerScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>08-artifact-viewer.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/viewer/:referenceId</code></td>
+          <td><code>generic-reference</code></td>
+          <td><code>GenericReferenceScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>23-generic-reference.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/journey</code></td>
+          <td><code>journey-overview</code></td>
+          <td><code>JourneyOverviewScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>28-journey-overview.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/journey/v1-journey</code></td>
+          <td><code>journey-v1</code></td>
+          <td><code>JourneyV1Screen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>29-journey-v1.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Merge candidate with journey-overview or keep for legacy compatibility; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/journey/module/:moduleId</code></td>
+          <td><code>module-player</code></td>
+          <td><code>ModulePlayerScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>34-module-player.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/journey/appendix-f</code></td>
+          <td><code>appendix-f</code></td>
+          <td><code>AppendixFScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>07-appendix-f.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/journey/supervisor</code></td>
+          <td><code>supervisor</code></td>
+          <td><code>SupervisorScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>49-supervisor.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/journey/admin</code></td>
+          <td><code>journey-admin</code></td>
+          <td><code>JourneyAdminScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>27-journey-admin.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/journey/guide</code></td>
+          <td><code>user-guide</code></td>
+          <td><code>DocsScreen (inline)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>52-user-guide.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/onboarding-v2/dashboard</code></td>
+          <td><code>onboarding-v2-dashboard</code></td>
+          <td><code>OnboardingV2DashboardScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>40-onboarding-v2-dashboard.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/onboarding-v2/activate</code></td>
+          <td><code>onboarding-v2-activate</code></td>
+          <td><code>OnboardingV2ActivateScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>36-onboarding-v2-activate.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation (access via button); safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/onboarding-v2/batches</code></td>
+          <td><code>onboarding-v2-batches</code></td>
+          <td><code>OnboardingV2BatchesScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>39-onboarding-v2-batches.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/onboarding-v2/batches/:batchId</code></td>
+          <td><code>onboarding-v2-batch</code></td>
+          <td><code>OnboardingV2BatchScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>38-onboarding-v2-batch.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation; safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/onboarding-v2/audit</code></td>
+          <td><code>onboarding-v2-audit</code></td>
+          <td><code>OnboardingV2AuditScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>37-onboarding-v2-audit.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/onboarding-v2/governance</code></td>
+          <td><code>onboarding-v2-governance</code></td>
+          <td><code>OnboardingV2GovernanceScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>41-onboarding-v2-governance.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding. Verify 'Onboarding Overrides' display label.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/policy-lifecycle</code></td>
+          <td><code>policy-lifecycle</code></td>
+          <td><code>PolicyLifecycleScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>46-policy-lifecycle.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/hubstaff</code></td>
+          <td><code>hubstaff</code></td>
+          <td><code>HubstaffScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>26-hubstaff.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/system-documentation/:sectionId</code></td>
+          <td><code>system-docs</code></td>
+          <td><code>SystemDocsScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>51-system-docs.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/help/*</code></td>
+          <td><code>help-center</code></td>
+          <td><code>HelpCenterScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>25-help-center.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/governance</code></td>
+          <td><code>governance</code></td>
+          <td><code>GovernanceScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>24-governance.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/admin/user-groups</code></td>
+          <td><code>admin-groups</code></td>
+          <td><code>AdminGroupsScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>03-admin-groups.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/admin/roles</code></td>
+          <td><code>admin-roles</code></td>
+          <td><code>AdminRolesScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>05-admin-roles.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/admin/permissions</code></td>
+          <td><code>admin-permissions</code></td>
+          <td><code>AdminPermissionsScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>04-admin-permissions.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/admin/users</code></td>
+          <td><code>admin-users</code></td>
+          <td><code>AdminUsersScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>06-admin-users.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/surveyor/policy/:policyId</code></td>
+          <td><code>surveyor-viewer</code></td>
+          <td><code>SurveyorViewerScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>50-surveyor-viewer.png</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation (surveyor-only view); safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/policy-lifecycle/:policyId</code></td>
+          <td><code>policy-lifecycle-detail</code></td>
+          <td><code>PolicyLifecycleDetailScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>none</code></td>
+          <td><span class='badge badge-amber'>GENERIC_IMPLEMENTATION_ONLY</span></td>
+          <td>Create Gemini Canvas design reference to refine specific Policy Lifecycle Detail metrics/timeline; defer seeding.</td>
+          <td><span class='priority-p1'>P1</span></td>
+        </tr>
+    
+
+        <tr>
+          <td><code>/login</code></td>
+          <td><code>login-page</code></td>
+          <td><code>LoginScreen (imported)</code></td>
+          <td><span class='badge badge-teal'>implemented</span></td>
+          <td><code>none</code></td>
+          <td><span class='badge badge-teal'>MATCHED_REFERENCE</span></td>
+          <td>Hide from sidebar navigation (rendered outside shell); safe for seeding.</td>
+          <td><span class='priority-p2'>P2</span></td>
+        </tr>
+    
+      </tbody>
+    </table>
+
+    <h2>2. Navigation & Sidebar Reconciliation</h2>
+    <h3>Expected Sidebar Exclusions (Subpages/Details)</h3>
+    <p>The left sidebar navigation is currently cluttered with 53 links. The following 14 detail and workspace screens should be hidden from the primary sidebar and accessed contextually:</p>
+    <ul>
+      <li><code>/clinicians/:clinicianId</code> (clinician-detail) - Accessed via Clinician roster row click.</li>
+      <li><code>/patients/:patientId</code> (patient-detail) - Accessed via Patient roster row click.</li>
+      <li><code>/workflows/:workflowId/swimlane</code> (workflow-swimlane) - Accessed via Workflows list click.</li>
+      <li><code>/calendar/event/:eventId/task/:taskId</code> (mobile-incident) - Accessed via task/alert links.</li>
+      <li><code>/library/:policyId</code> (policy-detail) - Accessed via Policy Library row click.</li>
+      <li><code>/forms/:formId</code> (form-viewer) - Accessed via Forms Library row click.</li>
+      <li><code>/forms/:formId/esign</code> (ecign-workspace) - Accessed via Form Viewer signing actions.</li>
+      <li><code>/artifacts/:artifactId</code> (artifact-viewer) - Accessed via Evidence Center or Policy links.</li>
+      <li><code>/viewer/:referenceId</code> (generic-reference) - Accessed via Crosswalk links.</li>
+      <li><code>/journey/module/:moduleId</code> (module-player) - Accessed via Journey Overview timeline nodes.</li>
+      <li><code>/onboarding-v2/activate</code> (onboarding-v2-activate) - Accessed via 'Activate' button on Dashboard.</li>
+      <li><code>/onboarding-v2/batches/:batchId</code> (onboarding-v2-batch) - Accessed via Batches list row click.</li>
+      <li><code>/surveyor/policy/:policyId</code> (surveyor-viewer) - Read-only view for auditors.</li>
+      <li><code>/policy-lifecycle/:policyId</code> (policy-lifecycle-detail) - Accessed via Lifecycle board card click.</li>
+    </ul>
+
+    <h3>Duplicate & Overlapping Destinations</h3>
+    <ul>
+      <li><strong>Multiple Calendars:</strong> Master Calendar, Staffing Calendar, and CES Calendar should be merged into a single dashboard view with switchable filters rather than listed as separate top-level links.</li>
+      <li><strong>Onboarding Version Divergence:</strong> Deprecate legacy Journey v1 in favour of Onboarding v2 activation dashboard once user transfer completes.</li>
+    </ul>
+
+    <h3>Mismatched Labels</h3>
+    <ul>
+      <li>Rename <code>/onboarding-v2/governance</code> label from <em>Onboarding Governance</em> to <strong>Onboarding Overrides</strong> to avoid collision with System's Governance view.</li>
+      <li>Rename <code>Brad</code> sidebar link to <strong>iAdministrator</strong> for brand consistency.</li>
+    </ul>
+
+    <h2>3. Strategic Action Plan</h2>
+    <h3>Canvas Design Required (2 Views)</h3>
+    <ul>
+      <li><code>/ces/events</code> (events-board) - Inferred card layout details.</li>
+      <li><code>/policy-lifecycle/:policyId</code> (policy-lifecycle-detail) - Audit and revision timeline layouts.</li>
+    </ul>
+    <h3>Safe for Seeding Now</h3>
+    <p>All other 51 routes are verified compliant with reference PNG files and are safe for seed data populating.</p>
+  </div>
+</body>
+</html>

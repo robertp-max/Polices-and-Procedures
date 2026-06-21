@@ -126,7 +126,7 @@ export const SIDEBAR_SECTIONS = [
   },
   {
     label: 'System',
-    hashIds: ['policy-lifecycle', 'hubstaff', 'system-docs', 'help-center', 'governance', 'policy-lifecycle-detail'],
+    hashIds: ['policy-lifecycle', 'policy-lifecycle-detail', 'hubstaff', 'system-docs', 'help-center', 'governance'],
   },
   { label: 'Admin', hashIds: ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'surveyor-viewer'] },
 ] as const satisfies readonly SidebarSection[];

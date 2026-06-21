@@ -199,6 +199,44 @@ All blocking/floating overlays: portal to `document.body`, focus-trap, return fo
 
 ---
 
+## 4A. Phase 12.2.a Missing State Map
+
+This map is the manual reconciliation bridge between the canonical 56-view route table and the Phase 12.2.a prototype work. These entries are page states inside existing parent routes. They are not new routes, not seed contracts, and not backend wiring.
+
+**Manual reconciliation status:** completed from `V6_DESIGN.html`, `V6_PAGEVIEW_INVENTORY.md`, `V6_UI_STATE_MATRIX.md`, this app map, the current Phase 12.2.a docs, and the parent template renderers. No script-generated reconciliation was used.
+
+| Worker | Missing state / state family | Parent hash-id | Parent path | Existing state in `V6_DESIGN.html` | Map decision | Shared component candidate |
+|---:|---|---|---|---|---|---|
+| 1 | Supervised Visit Logging Drawer | `supervisor` | `/journey/supervisor` | Partial trigger/context only | Add as drawer over the real supervisor journey layout | Yes, VeilDrawer variant |
+| 1 | Learner / Employee Picker | `supervisor`, `journey-overview` | `/journey/supervisor`, `/journey` | Not present | Add as popover/panel attached to existing learner context | Yes, EmployeePicker/Popover |
+| 2 | Journey Signature Canvas | `appendix-f`, `module-player` | `/journey/appendix-f`, `/journey/module/:moduleId` | Signature facts exist, drawn canvas absent | Add as normal V6 modal, no separate signature brand | Yes, SignatureCanvasOverlay |
+| 2 | Appendix F / Guide active TOC navigation | `appendix-f`, `user-guide` | `/journey/appendix-f`, `/journey/guide` | Static or partial active state only | Add active/read/required state inside existing docs pages | Yes, TableOfContentsList |
+| 2 | Module Player failure / retry state | `module-player` | `/journey/module/:moduleId` | Not present | Add inline supportive orange retry state inside player | No |
+| 3 | Syllabus / Course Path Builder | `journey-admin` | `/journey/admin` | Catalog/report table exists, builder absent | Add builder panel inside existing Journey Admin page | No |
+| 4 | Workflow domain filter tabs | `workflows` | `/workflows` | Not present | Add above existing workflows matrix | No |
+| 4 | Workflow search / filter inputs | `workflows` | `/workflows` | Not present | Add inside existing workflows matrix shell | No |
+| 4 | Workflow Detail Drawer | `workflows` | `/workflows` | Not present | Add drawer over actual Workflows Library page | Yes, VeilDrawer variant |
+| 5 | Swimlane card detail modal | `workflow-swimlane` | `/workflows/:workflowId/swimlane` | Not present | Add modal over actual swimlane board | Yes, VeilModal variant |
+| 5 | Evidence / checklist / eCIgn status on swimlane card | `workflow-swimlane` | `/workflows/:workflowId/swimlane` | Partial task chips only | Add compact status rows in card modal and preserve board style | No |
+| 5 | Drag / empty / selected visual states | `workflow-swimlane` | `/workflows/:workflowId/swimlane` | Mostly absent | Add simple selected/empty visuals; defer drag mechanics | Yes, BoardLane |
+| 6 | Gate Checklist Expander | `onboarding-v2-batch` | `/onboarding-v2/batches/:batchId` | Gate data exists, expander absent | Add inline expansion in actual batch detail page | Yes, GateChecklistExpander |
+| 6 | Evidence / Signature Sub-tabs | `onboarding-v2-batch` | `/onboarding-v2/batches/:batchId` | Not present | Add tabs inside existing detail/right-panel style | No |
+| 7 | Override Request Modal | `onboarding-v2-governance` | `/onboarding-v2/governance` | Active overrides table only | Add V6 modal over Onboarding Overrides parent page | Yes, VeilModal variant |
+| 8 | Calendar Weekly / Daily Agenda View | `master-calendar`, `staffing-calendar` | `/calendar`, `/staffing-calendar` | Day/week buttons are static; month grid only | Add agenda state using existing calendar shell and events | Yes, AgendaListView |
+| 8 | Staffing Conflict Resolver Drawer | `staffing-calendar` | `/staffing-calendar` | Not present | Add drawer over existing staffing calendar | Yes, VeilDrawer variant |
+| 8 | CES Calendar Inline Flowchart Swimlane | `ces-calendar` | `/ces/calendar` | Present as selected-event `CalendarSwimlaneView` | Preserve; validate/port only if absent in runtime | No |
+| 9 | PDF / Image Preview Toolbar | `audit-mode`, `evidence-center`, `artifact-viewer`, `generic-reference` | `/audit`, `/evidence`, `/artifacts/:artifactId`, `/viewer/:referenceId` | Not rendered inside viewer frame | Add toolbar inside actual evidence/reference viewer frame | Yes, DocumentPreviewToolbar |
+| 9 | eCIgn Mobile Signature Drawing Overlay | `ecign-workspace` | `/forms/:formId/esign` | Typed signature exists, drawing overlay absent | Add overlay inside eCIgn signing flow using app palette | Yes, SignatureCanvasOverlay |
+| 10 | Admin User Permission Override Matrix | `admin-users` | `/admin/users` | Placeholder matrix exists with raw keys | Replace with human-label matrix inside Admin Users | Yes, PermissionMatrix |
+
+**Implementation-ready now:** all rows marked Add above, except the CES Calendar inline flowchart which already exists in the standalone prototype and should be preserved.
+
+**Deferred in this map:** backend persistence, seed data, drag-and-drop mechanics, runtime route wiring, permission enforcement, official `V6_Final` assets, and any production component edits outside a later implementation phase.
+
+**Cohesion guardrails for these states:** embed every state inside the parent route listed above; preserve the current V6 app shell, Roboto typography, teal/orange app palette, card/table/drawer/modal language, and shell rhythm; do not add standalone blueprint boards, fake top nav, generic dashboards, dark/neon styling, separate eCIgn branding, or raw permission keys as primary labels.
+
+---
+
 ## 5. Template → Pages Reuse Map
 
 ~28 templates dispatched off a single `view.template` switch, fed by the shared kit (MetricTile, SurfaceCard, ToneBadge, DataTable, BoardLane) inside one AppShell/Sidebar/Topbar shell. **No screen may define a catalog primitive or fork a template.** State, responsive, and a11y contracts are specified **once per template** (~28), not per page (56).

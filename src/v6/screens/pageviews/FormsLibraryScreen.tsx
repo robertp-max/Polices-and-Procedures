@@ -1,13 +1,5 @@
 import { Archive, ClipboardCheck, ClipboardList, FileCheck2, Link2, PenLine, ShieldCheck, Users } from 'lucide-react';
-import {
-  DataTable,
-  MetricGrid,
-  SurfaceCard,
-  ToneTag,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
+import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, ToneBadge } from '../../primitives';
 
 interface FormLibraryRow extends Record<string, string> {
@@ -149,7 +141,7 @@ const rightRailCards = [
     meta: [
       ['Primary filters', 'All, Governance, Clinical, Quality, HR, Operations'],
       ['Classification', 'Master template, shared enterprise, high risk'],
-      ['Digital path', 'Candidate rows flow to /forms/:formId/esign'],
+      ['Digital path', 'Candidate rows flow to the eCIgn signing workspace'],
     ],
     progress: 86,
     status: 'active',
@@ -196,25 +188,9 @@ export function FormsLibraryScreen() {
     <section className="grid gap-xl" data-hash-id="forms-library" data-route="/forms">
       <MetricGrid metrics={formsMetrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-5" aria-labelledby="forms-library-matrix-heading">
-        <div className="grid gap-lg desktop:col-span-3">
-          <div className="grid gap-md">
-            <div className="flex flex-wrap items-center gap-sm">
-              <ToneTag>/forms</ToneTag>
-              <ToneTag tone="slate">forms-library</ToneTag>
-              <ToneTag tone="orange">Taxonomy matrix</ToneTag>
-              <Badge>Reference: 21-forms-library.png</Badge>
-            </div>
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink" id="forms-library-matrix-heading">
-                Forms library matrix
-              </h2>
-              <p className="max-w-content text-sm font-light text-muted">
-                Agency templates and digital checklist sheets mapped by form ID, domain, signer requirements, evidence
-                posture, and linked policy coverage.
-              </p>
-            </div>
-          </div>
+      <section className="grid gap-xl desktop:grid-cols-5" aria-label="Forms library matrix and evidence readiness">
+        <div className="grid content-start gap-lg desktop:col-span-3">
+
 
           <div className="flex flex-wrap gap-sm" aria-label="Forms classification filters">
             {classificationFilters.map((filter) => (

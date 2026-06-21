@@ -1,30 +1,10 @@
-import {
-  AlertTriangle,
-  Archive,
-  CheckCircle2,
-  ClipboardCheck,
-  ClipboardList,
-  FileSignature,
-  Link2,
-  LockKeyhole,
-  ShieldCheck,
-  Upload,
-  UserCheck,
-  type LucideIcon,
-} from 'lucide-react';
-import {
-  DataTable,
-  MetricGrid,
-  SurfaceCard,
-  ToneTag,
-  toneSoftTileClasses,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { useState } from 'react';
+import { AlertTriangle, Archive, CheckCircle2, ClipboardCheck, FileSignature, Link2, LockKeyhole, ShieldCheck, Upload, UserCheck, PenLine, type LucideIcon } from 'lucide-react';
+import { DataTable, MetricGrid, SurfaceCard, ToneTag, toneSoftTileClasses, VeilModal, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+
 
 interface ProcedureSection {
   body: string;
@@ -73,15 +53,6 @@ const appendixMetrics = [
   { label: 'Pending', value: '2', helper: 'License and immunization follow-up', tone: 'orange' },
   { label: 'Signature', value: 'Required', helper: 'HR Director hard-stop release', tone: 'amber' },
 ] satisfies readonly MetricTileData[];
-
-const contents = [
-  { href: '#hard-stop', label: 'Hard stop gate' },
-  { href: '#procedures', label: 'Procedure sections' },
-  { href: '#checklist', label: 'Screening checklist' },
-  { href: '#citations', label: 'Citation panels' },
-  { href: '#evidence', label: 'Evidence expectations' },
-  { href: '#signature', label: 'HR Director signoff' },
-] as const;
 
 const procedureSections = [
   {
@@ -357,6 +328,11 @@ const signatureFacts = [
 ] as const;
 
 export function AppendixFScreen() {
+  const [activeTab, setActiveTab] = useState<'checklist' | 'procedures' | 'evidence'>('checklist');
+  const [isSignatureOpen, setIsSignatureOpen] = useState(false);
+  const [signatureStrokes, setSignatureStrokes] = useState<boolean>(false);
+  const [attested, setAttested] = useState<boolean>(false);
+
   return (
     <section
       aria-labelledby="appendix-f-title"
@@ -366,82 +342,120 @@ export function AppendixFScreen() {
       data-route={routeMarker.path}
       data-template={routeMarker.template}
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>{routeMarker.path}</ToneTag>
-            <ToneTag tone="slate">{routeMarker.hashId}</ToneTag>
-            <ToneTag tone="blue">{routeMarker.template}</ToneTag>
-            <ToneTag tone="teal">{routeMarker.group}</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink" id="appendix-f-title">
-              Appendix F pre-employment screening checklist
-            </h2>
-            <p className="max-w-content text-sm text-secondary">
-              HR-TA-001 Appendix F docs view for the Pre-Day-1 hard stop, checklist review, citations, evidence expectations,
-              and HR Director release signature.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="blocked" />
-          <Badge variant="count">EMP-1001</Badge>
-        </div>
-      </section>
-
       <MetricGrid metrics={appendixMetrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-[240px_minmax(0,1fr)_340px]">
-        <aside className="grid content-start gap-lg desktop:sticky desktop:top-xl" aria-label="Appendix F contents">
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
-            <div className="mb-lg flex items-center gap-sm">
-              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
-                <ClipboardList aria-hidden="true" className="h-icon-md w-icon-md" />
-              </span>
-              <h2 className="text-h2 font-medium text-ink">Contents</h2>
+      {/* Premium Segmented Tab Control */}
+      <div className="flex justify-start">
+        <div className="flex rounded-lg border border-hairline bg-tone-slate-bg/30 p-xs gap-xs">
+          <button
+            onClick={() => setActiveTab('checklist')}
+            className={cx(
+              'px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast',
+              activeTab === 'checklist'
+                ? 'bg-brand-teal text-on-brand shadow-rest'
+                : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
+            )}
+          >
+            Checklist & Signoff
+          </button>
+          <button
+            onClick={() => setActiveTab('procedures')}
+            className={cx(
+              'px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast',
+              activeTab === 'procedures'
+                ? 'bg-brand-teal text-on-brand shadow-rest'
+                : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
+            )}
+          >
+            Procedures & Guidance
+          </button>
+          <button
+            onClick={() => setActiveTab('evidence')}
+            className={cx(
+              'px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast',
+              activeTab === 'evidence'
+                ? 'bg-brand-teal text-on-brand shadow-rest'
+                : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
+            )}
+          >
+            Evidence & Citations
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'checklist' && (
+        <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_340px]">
+          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" id="checklist">
+            <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
+              <div className="grid gap-xs">
+                <h2 className="text-h2 font-medium text-ink">Screening checklist</h2>
+                <p className="max-w-content text-sm text-muted">
+                  Every row must resolve to PASS or N/A before HR Director signoff releases the learner from Pre-Day-1 hold.
+                </p>
+              </div>
+              <Badge variant="count">15 rows</Badge>
             </div>
-            <nav className="grid gap-sm" aria-label="Appendix F sections">
-              {contents.map((item, index) => (
-                <a
-                  aria-current={index === 0 ? 'page' : undefined}
-                  className={cx(
-                    'min-h-row rounded-md px-md py-sm text-sm text-ink transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus',
-                    index === 0 && 'bg-tone-orange-bg text-tone-orange-text',
-                  )}
-                  href={item.href}
-                  key={item.href}
+            <DataTable columns={checklistColumns} label="Appendix F screening checklist" rows={checklistRows} />
+          </section>
+
+          <aside className="grid gap-lg content-start">
+            <section className="rounded-lg border border-card bg-surface p-lg shadow-rest" aria-label="Learner clearance snapshot">
+              <div className="mb-md flex items-start justify-between gap-md">
+                <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-orange-bg text-tone-orange-text">
+                  <UserCheck aria-hidden="true" className="h-icon-md w-icon-md" />
+                </span>
+                <ToneBadge size="sm" status="blocked" />
+              </div>
+              <div className="grid gap-xs">
+                <p className="text-tag uppercase tracking-tag text-muted">Learner</p>
+                <h2 className="text-h2 font-medium text-ink">Maria Santos, RN</h2>
+                <p className="text-sm text-secondary">Start date Apr 20, 2026</p>
+              </div>
+              <dl className="mt-lg grid gap-sm">
+                {signatureFacts.slice(1, 5).map(([label, value]) => (
+                  <div className="rounded-md bg-tone-slate-bg p-md" key={label}>
+                    <dt className="text-tag uppercase tracking-tag text-muted">{label}</dt>
+                    <dd className="mt-xs text-sm text-ink">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+
+            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" id="signature">
+              <div className="mb-lg flex items-start justify-between gap-md">
+                <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
+                  <FileSignature aria-hidden="true" className="h-icon-md w-icon-md" />
+                </span>
+                <ToneBadge size="sm" status="awaiting" />
+              </div>
+              <div className="grid gap-xs">
+                <h2 className="text-h2 font-medium text-ink">HR Director signoff</h2>
+                <p className="text-sm text-muted">Final release cannot be sealed until every checklist row is PASS or N/A.</p>
+              </div>
+              <dl className="mt-lg grid gap-sm">
+                {signatureFacts.map(([label, value]) => (
+                  <div className="rounded-md border border-card bg-tone-slate-bg p-md" key={label}>
+                    <dt className="text-tag uppercase tracking-tag text-muted">{label}</dt>
+                    <dd className="mt-xs text-sm text-secondary">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="mt-lg">
+                <Button
+                  className="w-full border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange font-light"
+                  onClick={() => setIsSignatureOpen(true)}
+                  size="sm"
                 >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-          </section>
+                  Open signature canvas
+                </Button>
+              </div>
+            </section>
+          </aside>
+        </section>
+      )}
 
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest" aria-label="Learner clearance snapshot">
-            <div className="mb-md flex items-start justify-between gap-md">
-              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-orange-bg text-tone-orange-text">
-                <UserCheck aria-hidden="true" className="h-icon-md w-icon-md" />
-              </span>
-              <ToneBadge size="sm" status="blocked" />
-            </div>
-            <div className="grid gap-xs">
-              <p className="text-tag uppercase tracking-tag text-muted">Learner</p>
-              <h2 className="text-h2 font-medium text-ink">Maria Santos, RN</h2>
-              <p className="text-sm text-secondary">Start date Apr 20, 2026</p>
-            </div>
-            <dl className="mt-lg grid gap-sm">
-              {signatureFacts.slice(1, 5).map(([label, value]) => (
-                <div className="rounded-md bg-tone-slate-bg p-md" key={label}>
-                  <dt className="text-tag uppercase tracking-tag text-muted">{label}</dt>
-                  <dd className="mt-xs text-sm text-ink">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        </aside>
-
-        <main className="grid gap-xl">
+      {activeTab === 'procedures' && (
+        <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_340px]">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" id="procedures">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
               <div className="grid gap-xs">
@@ -462,114 +476,178 @@ export function AppendixFScreen() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" id="checklist">
-            <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
-              <div className="grid gap-xs">
-                <h2 className="text-h2 font-medium text-ink">Screening checklist</h2>
-                <p className="max-w-content text-sm text-muted">
-                  Every row must resolve to PASS or N/A before HR Director signoff releases the learner from Pre-Day-1 hold.
-                </p>
-              </div>
-              <Badge variant="count">15 rows</Badge>
-            </div>
-            <DataTable columns={checklistColumns} label="Appendix F screening checklist" rows={checklistRows} />
-          </section>
-
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" id="citations">
-            <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
-              <div className="grid gap-xs">
-                <h2 className="text-h2 font-medium text-ink">Citations and authority</h2>
-                <p className="max-w-content text-sm text-muted">
-                  Checklist items remain tied to the personnel, compliance, health, and source-verification controls that support the
-                  onboarding gate.
-                </p>
-              </div>
-              <ToneBadge size="sm" status="validated" />
-            </div>
-            <div className="grid gap-md tablet-l:grid-cols-2">
-              {citationPanels.map((panel) => (
-                <CitationPanelCard panel={panel} key={panel.label} />
-              ))}
-            </div>
-          </section>
-        </main>
-
-        <aside className="grid content-start gap-lg" aria-label="Appendix F gate cards">
-          {readinessCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
-          ))}
-
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" id="signature">
-            <div className="mb-lg flex items-start justify-between gap-md">
-              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
-                <FileSignature aria-hidden="true" className="h-icon-md w-icon-md" />
-              </span>
-              <ToneBadge size="sm" status="awaiting" />
-            </div>
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink">HR Director signoff</h2>
-              <p className="text-sm text-muted">Final release cannot be sealed until every checklist row is PASS or N/A.</p>
-            </div>
-            <dl className="mt-lg grid gap-sm">
-              {signatureFacts.map(([label, value]) => (
-                <div className="rounded-md border border-card bg-tone-slate-bg p-md" key={label}>
-                  <dt className="text-tag uppercase tracking-tag text-muted">{label}</dt>
-                  <dd className="mt-xs text-sm text-secondary">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        </aside>
-      </section>
-
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,1fr)_340px]" id="evidence">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-          <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink">Evidence expectations</h2>
-              <p className="max-w-content text-sm text-muted">
-                Evidence requirements are written as packet acceptance checks so HR, clinical leadership, and audit reviewers agree on
-                what counts as clearance.
-              </p>
-            </div>
-            <ToneTag tone="blue">Evidence Center</ToneTag>
-          </div>
-
-          <div className="grid gap-md tablet-l:grid-cols-2">
-            {evidenceExpectations.map((expectation) => (
-              <EvidenceExpectationCard expectation={expectation} key={expectation.label} />
+          <aside className="grid content-start gap-lg" aria-label="Appendix F gate cards">
+            {readinessCards.map((card) => (
+              <SurfaceCard card={card} key={card.title} />
             ))}
-          </div>
+          </aside>
         </section>
+      )}
 
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-label="Release checklist panel">
-          <div className="mb-lg flex items-start gap-md">
-            <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-orange-bg text-tone-orange-text">
-              <AlertTriangle aria-hidden="true" className="h-icon-md w-icon-md" />
+      {activeTab === 'evidence' && (
+        <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_340px]">
+          <div className="grid content-start gap-xl">
+            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+              <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
+                <div className="grid gap-xs">
+                  <h2 className="text-h2 font-medium text-ink">Evidence expectations</h2>
+                  <p className="max-w-content text-sm text-muted">
+                    Evidence requirements are written as packet acceptance checks so HR, clinical leadership, and audit reviewers agree on
+                    what counts as clearance.
+                  </p>
+                </div>
+                <ToneTag tone="blue">Evidence Center</ToneTag>
+              </div>
+
+              <div className="grid gap-md tablet-l:grid-cols-2">
+                {evidenceExpectations.map((expectation) => (
+                  <EvidenceExpectationCard expectation={expectation} key={expectation.label} />
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" id="citations">
+              <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
+                <div className="grid gap-xs">
+                  <h2 className="text-h2 font-medium text-ink">Citations and authority</h2>
+                  <p className="max-w-content text-sm text-muted">
+                    Checklist items remain tied to the personnel, compliance, health, and source-verification controls that support the
+                    onboarding gate.
+                  </p>
+                </div>
+                <ToneBadge size="sm" status="validated" />
+              </div>
+              <div className="grid gap-md tablet-l:grid-cols-2">
+                {citationPanels.map((panel) => (
+                  <CitationPanelCard panel={panel} key={panel.label} />
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <aside className="grid gap-lg content-start">
+            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-label="Release checklist panel">
+              <div className="mb-lg flex items-start gap-md">
+                <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-orange-bg text-tone-orange-text">
+                  <AlertTriangle aria-hidden="true" className="h-icon-md w-icon-md" />
+                </span>
+                <div className="grid gap-xs">
+                  <h2 className="text-h2 font-medium text-ink">Release checklist</h2>
+                  <p className="text-sm text-muted">The coordinator-owned route can import this screen once routing is wired.</p>
+                </div>
+              </div>
+              <div className="grid gap-sm">
+                {[
+                  ['All checklist rows', 'PASS or N/A only', 'pending'],
+                  ['HR Director signature', 'Required before GAO opens', 'awaiting'],
+                  ['Evidence packet', 'Attach sealed Appendix F snapshot', 'uploaded'],
+                  ['Journey handoff', 'Unlock only after hard stop clears', 'locked'],
+                ].map(([label, detail, status]) => (
+                  <div className="rounded-md border border-card bg-tone-slate-bg p-md" key={label}>
+                    <div className="mb-sm flex flex-wrap items-center justify-between gap-sm">
+                      <p className="text-tag uppercase tracking-tag text-secondary">{label}</p>
+                      <ToneBadge size="sm" status={status} />
+                    </div>
+                    <p className="text-sm text-ink">{detail}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </aside>
+        </section>
+      )}
+
+      <VeilModal
+        open={isSignatureOpen}
+        onClose={() => setIsSignatureOpen(false)}
+        eyebrow="Verify Identity & Sign"
+        title="Preceptor Signature Drawing Overlay"
+        tone="orange"
+        footer={
+          <div className="flex justify-end gap-md">
+            <Button
+              onClick={() => setIsSignatureOpen(false)}
+              variant="secondary"
+              size="sm"
+            >
+              Close
+            </Button>
+            <Button
+              className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange font-light"
+              disabled={!signatureStrokes || !attested}
+              onClick={() => {
+                setIsSignatureOpen(false);
+              }}
+              size="sm"
+            >
+              Confirm Signature
+            </Button>
+          </div>
+        }
+      >
+        <div className="grid gap-md">
+          <div className="grid grid-cols-2 gap-md text-sm">
+            <div className="rounded-md bg-tone-slate-bg p-md">
+              <span className="text-tag uppercase tracking-tag text-muted">Signer</span>
+              <p className="mt-xs font-medium text-ink">HR Director</p>
+            </div>
+            <div className="rounded-md bg-tone-slate-bg p-md">
+              <span className="text-tag uppercase tracking-tag text-muted">Role</span>
+              <p className="mt-xs font-medium text-ink">HR Director</p>
+            </div>
+          </div>
+          <div className="rounded-md bg-tone-slate-bg p-md text-sm">
+            <span className="text-tag uppercase tracking-tag text-muted">Time</span>
+            <p className="mt-xs font-medium text-ink">Jun 21, 2026 12:15 UTC</p>
+          </div>
+
+          <div
+            className="grid min-h-[180px] place-items-center rounded-lg border border-dashed border-brand-teal bg-tone-slate-bg p-lg text-center cursor-pointer relative"
+            onClick={() => setSignatureStrokes(true)}
+          >
+            {signatureStrokes ? (
+              <div className="font-mono text-xl text-brand-teal italic select-none">
+                ✓ HR Director Signature (Staged)
+              </div>
+            ) : (
+              <div>
+                <PenLine className="mx-auto h-icon-lg w-icon-lg text-brand-teal" />
+                <p className="mt-md text-h3 font-light text-ink">Draw signature here</p>
+                <p className="mt-xs text-sm text-secondary">Click to simulate drawing signature</p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-sm">
+            <button
+              onClick={() => setSignatureStrokes(false)}
+              className="text-xs text-brand-teal hover:underline font-light"
+              type="button"
+            >
+              Clear Canvas
+            </button>
+            <button
+              onClick={() => setSignatureStrokes(true)}
+              className="text-xs text-brand-teal hover:underline font-light"
+              type="button"
+            >
+              Restore Default Signature
+            </button>
+          </div>
+
+          <label className="flex items-start gap-md rounded-md bg-tone-slate-bg p-md text-sm text-secondary">
+            <input
+              type="checkbox"
+              checked={attested}
+              onChange={(e) => setAttested(e.target.checked)}
+              className="mt-xs"
+            />
+            <span className="font-light">
+              I declare under penalty of perjury that this signature matches my credential identity and validates the logged competency items.
             </span>
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink">Release checklist</h2>
-              <p className="text-sm text-muted">The coordinator-owned route can import this screen once routing is wired.</p>
-            </div>
-          </div>
-          <div className="grid gap-sm">
-            {[
-              ['All checklist rows', 'PASS or N/A only', 'pending'],
-              ['HR Director signature', 'Required before GAO opens', 'awaiting'],
-              ['Evidence packet', 'Attach sealed Appendix F snapshot', 'uploaded'],
-              ['Journey handoff', 'Unlock only after hard stop clears', 'locked'],
-            ].map(([label, detail, status]) => (
-              <div className="rounded-md border border-card bg-tone-slate-bg p-md" key={label}>
-                <div className="mb-sm flex flex-wrap items-center justify-between gap-sm">
-                  <p className="text-tag uppercase tracking-tag text-secondary">{label}</p>
-                  <ToneBadge size="sm" status={status} />
-                </div>
-                <p className="text-sm text-ink">{detail}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      </section>
+          </label>
+        </div>
+      </VeilModal>
     </section>
   );
 }

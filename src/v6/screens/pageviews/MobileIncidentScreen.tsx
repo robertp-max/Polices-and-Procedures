@@ -1,12 +1,6 @@
-import { AlertCircle, FileText, Upload, Save } from 'lucide-react';
-import {
-  MetricGrid,
-  SurfaceCard,
-  ToneTag,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
-import { Button, FormField, Input, Textarea } from '../../primitives';
+import { AlertCircle, FileText, Upload } from 'lucide-react';
+import { MetricGrid, SurfaceCard, type MetricTileData, type SurfaceCardData } from '../../components';
+import { FormField, Input, Textarea } from '../../primitives';
 
 const metrics = [
   { label: 'Priority', value: 'High', helper: 'Requires 24-hour sweep lock', tone: 'orange' },
@@ -32,28 +26,6 @@ export function MobileIncidentScreen() {
       data-route="/calendar/event/:eventId/task/:taskId"
       data-template="detail"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/calendar/event/:eventId/task/:taskId</ToneTag>
-            <ToneTag tone="slate">mobile-incident</ToneTag>
-            <ToneTag tone="slate">detail</ToneTag>
-            <ToneTag tone="teal">CES</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">Mobile Incident Intake</h2>
-            <p className="max-w-content text-sm text-secondary">
-              Upload evidence, complete exposure details, and confirm incident reports from mobile devices.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <Button iconLeft={<Save aria-hidden="true" className="h-icon-sm w-icon-sm" />}>
-            Submit Report
-          </Button>
-        </div>
-      </section>
-
       <MetricGrid metrics={metrics} />
 
       <section className="grid gap-lg">

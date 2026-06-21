@@ -11,16 +11,12 @@ export function LoginScreen() {
       data-template="login"
     >
       <section className="grid w-full max-w-modal-sm gap-lg rounded-xl border border-card bg-surface-glass p-2xl shadow-rest">
-        <div className="flex items-center justify-center gap-sm text-brand-orange mb-md">
-          <span className="relative block h-[52px] w-[36px] shrink-0 text-brand-orange">
-            <span className="absolute left-sm top-0 h-lg w-lg rounded-lg border-2 border-brand-orange" />
-            <span className="absolute left-xs top-lg h-xl w-xl rounded-xl border-2 border-brand-orange" />
-            <span className="absolute bottom-sm left-0 h-lg w-lg rounded-lg border-2 border-brand-orange" />
-          </span>
-          <span className="grid gap-xs">
-            <span className="text-[21px] leading-none text-ink">CareIndeed</span>
-            <span className="text-[6px] leading-none text-secondary">The Heart of Home Health</span>
-          </span>
+        <div className="flex justify-center mb-8">
+          <img
+            src="/ci-logo-gray.png"
+            alt="Care Indeed"
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
         <div className="grid gap-xs text-center mb-md">

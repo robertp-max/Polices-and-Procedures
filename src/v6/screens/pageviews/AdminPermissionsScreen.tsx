@@ -1,14 +1,6 @@
 import { AlertTriangle, ClipboardCheck, FileCheck2, KeyRound, LockKeyhole, ShieldCheck, UserCog } from 'lucide-react';
-import {
-  DataTable,
-  MetricGrid,
-  SurfaceCard,
-  ToneTag,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 
 interface PermissionRow extends Record<string, string> {
@@ -258,44 +250,10 @@ export function AdminPermissionsScreen() {
       data-route="/admin/permissions"
       data-template="matrix"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/admin/permissions</ToneTag>
-            <ToneTag tone="slate">admin-permissions</ToneTag>
-            <ToneTag tone="slate">matrix</ToneTag>
-            <ToneTag tone="teal">Admin</ToneTag>
-            <Badge>Reference: 04-admin-permissions.png</Badge>
-            <Badge>Caption: 08-admin-roles-permissions.md</Badge>
-          </div>
-          <p className="max-w-content text-sm font-light text-secondary">
-            Permission catalog matrix mapping capabilities to scope, roles using each permission, and typed risk and
-            readiness status for RBAC governance.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="validated" />
-          <Badge variant="count">64 permissions</Badge>
-        </div>
-      </section>
-
       <MetricGrid metrics={permissionMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="grid gap-lg" aria-labelledby="admin-permissions-matrix-title">
-          <div className="flex flex-wrap items-start justify-between gap-lg">
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink" id="admin-permissions-matrix-title">
-                Permissions matrix
-              </h2>
-              <p className="max-w-content text-sm font-light text-muted">
-                Permission rows use dot-notation keys and keep risk posture separate from implementation readiness so
-                administrators can review sensitive capabilities without expanding every role.
-              </p>
-            </div>
-            <ToneTag tone="orange">3 need owner review</ToneTag>
-          </div>
-
+        <section className="grid content-start gap-lg" aria-label="Admin permissions catalog matrix">
           <DataTable columns={permissionColumns} label="Admin permissions catalog matrix" rows={permissionRows} />
 
           <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Permission scope summary">

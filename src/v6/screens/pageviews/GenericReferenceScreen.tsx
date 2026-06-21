@@ -1,27 +1,5 @@
-import {
-  AlertTriangle,
-  ClipboardCheck,
-  Download,
-  ExternalLink,
-  FileCheck2,
-  FileText,
-  History,
-  Link2,
-  LockKeyhole,
-  ShieldCheck,
-  Workflow,
-  type LucideIcon,
-} from 'lucide-react';
-import {
-  DataTable,
-  MetricGrid,
-  SurfaceCard,
-  ToneTag,
-  toneSoftTileClasses,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
+import { AlertTriangle, ClipboardCheck, Download, ExternalLink, FileCheck2, FileText, History, Link2, LockKeyhole, ShieldCheck, Workflow, type LucideIcon } from 'lucide-react';
+import { DataTable, MetricGrid, SurfaceCard, ToneTag, toneSoftTileClasses, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
@@ -237,20 +215,46 @@ export function GenericReferenceScreen() {
       data-route="/viewer/:referenceId"
       data-template="reference-viewer"
     >
-      <section className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneTag>/viewer/:referenceId</ToneTag>
-          <Badge>hash: generic-reference</Badge>
-          <Badge>template: reference-viewer</Badge>
-          <Badge>Taxonomy</Badge>
-        </div>
-        <ToneBadge size="sm" status="validated" />
-      </section>
+
 
       <MetricGrid metrics={referenceMetrics} />
 
+      {/* PDF / Image Preview Toolbar */}
+      <section className="rounded-lg border border-card bg-surface p-md shadow-rest flex flex-wrap items-center justify-between gap-md sticky top-[88px] z-sticky backdrop-blur-md">
+        <div className="flex items-center gap-md">
+          <div className="flex items-center gap-xs border-r border-hairline pr-md">
+            <Button size="sm" variant="secondary">Zoom Out (-)</Button>
+            <span className="text-xs text-secondary font-medium px-xs">100%</span>
+            <Button size="sm" variant="secondary">Zoom In (+)</Button>
+          </div>
+          <div className="flex items-center gap-xs border-r border-hairline pr-md">
+            <Button size="sm" variant="secondary">Rotate ↺</Button>
+            <Button size="sm" variant="secondary">Rotate ↻</Button>
+          </div>
+          <div className="flex items-center gap-xs">
+            <Button
+              className="border-brand-teal text-brand-teal hover:bg-surface-hover font-light"
+              size="sm"
+              variant="secondary"
+              onClick={() => alert('SHA-256: 7f4c9d21b8a0147afbf4c8996fb92427ae41e4649b934ca495991b7852b855a\nStatus: Verified Integrity Anchor')}
+            >
+              Verify Hash SHA-256
+            </Button>
+          </div>
+        </div>
+        <div>
+          <Button
+            className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange/95 font-light"
+            size="sm"
+            iconLeft={<Download className="h-icon-sm w-icon-sm" />}
+          >
+            Download Source PDF
+          </Button>
+        </div>
+      </section>
+
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <div className="grid gap-xl">
+        <div className="grid content-start gap-xl">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="reference-source-title">
             <div className="mb-xl flex flex-wrap items-start justify-between gap-lg">
               <div className="grid gap-sm">

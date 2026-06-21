@@ -1,14 +1,6 @@
 import { ClipboardCheck, FileCheck2, LockKeyhole, ShieldCheck, UserCog } from 'lucide-react';
-import {
-  DataTable,
-  MetricGrid,
-  SurfaceCard,
-  ToneTag,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 
 interface AdminRoleRow extends Record<string, string> {
@@ -199,40 +191,10 @@ export function AdminRolesScreen() {
       data-route="/admin/roles"
       data-template="matrix"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/admin/roles</ToneTag>
-            <ToneTag tone="slate">admin-roles</ToneTag>
-            <ToneTag tone="slate">matrix</ToneTag>
-            <ToneTag tone="teal">Admin</ToneTag>
-          </div>
-          <p className="max-w-content text-sm text-secondary">
-            RBAC role catalog linking privilege scope, user-group membership, and permission posture for administrative review.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="active" />
-          <Badge variant="count">8 roles</Badge>
-        </div>
-      </section>
-
       <MetricGrid metrics={roleMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="grid gap-lg" aria-labelledby="admin-roles-matrix-title">
-          <div className="flex flex-wrap items-start justify-between gap-lg">
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink" id="admin-roles-matrix-title">
-                Admin roles matrix
-              </h2>
-              <p className="max-w-content text-sm text-muted">
-                Role rows show privilege boundaries, linked user groups, review cadence, and the current permission posture.
-              </p>
-            </div>
-            <ToneTag tone="orange">2 roles need review</ToneTag>
-          </div>
-
+        <section className="grid content-start gap-lg" aria-label="Admin roles permission matrix">
           <DataTable columns={roleColumns} label="Admin roles permission matrix" rows={roleRows} />
 
           <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Privilege scope summary">

@@ -1,28 +1,9 @@
-import {
-  AlertTriangle,
-  BarChart3,
-  CalendarClock,
-  CheckCircle2,
-  ClipboardCheck,
-  Download,
-  FileCheck2,
-  LockKeyhole,
-  ShieldCheck,
-  Users,
-} from 'lucide-react';
-import {
-  DataTable,
-  MetricGrid,
-  ProgressMeter,
-  SurfaceCard,
-  ToneTag,
-  toneBarClasses,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
-import { Badge, Button, ToneBadge } from '../../primitives';
+import { useState } from 'react';
+import { AlertTriangle, ArrowDown, ArrowUp, BarChart3, CalendarClock, CheckCircle2, FileCheck2, GripVertical, LockKeyhole, Plus, ShieldCheck, Trash2, Users } from 'lucide-react';
+import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneBarClasses, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { Button, ToneBadge, Input, Textarea } from '../../primitives';
 import { type Tone } from '../../tokens';
+import { cx } from '../../utils/classNames';
 
 interface SyllabusRow extends Record<string, string> {
   catalogId: string;
@@ -300,6 +281,71 @@ const cohortPanels = [
 ] as const;
 
 export function JourneyAdminScreen() {
+  const [activeTab, setActiveTab] = useState<'overview' | 'syllabus' | 'review' | 'governance' | 'builder'>('overview');
+  const [courseTitle, setCourseTitle] = useState('RN General Orientation and supervised clearance');
+  const [roleTrack, setRoleTrack] = useState('Registered Nurse - new hire');
+  const [targetTimeline, setTargetTimeline] = useState('30 calendar days with 2 supervised visits');
+  const [builderNotes, setBuilderNotes] = useState(
+    'Uses existing Journey modules, policy references, and eCIgn-ready attestation forms.'
+  );
+
+  const [sequence, setSequence] = useState<readonly {
+    readonly order: number;
+    readonly code: string;
+    readonly title: string;
+    readonly requirement: 'Required' | 'Optional';
+    readonly refs: readonly string[];
+  }[]>([
+    { order: 1, code: 'GAO-001', title: 'Agency mission and patient rights', requirement: 'Required', refs: ['HR-TA-005', 'EN-FM-001'] },
+    { order: 2, code: 'GAO-013', title: 'Infection prevention and PPE', requirement: 'Required', refs: ['CL-SD-016', 'HR-FM-016'] },
+    { order: 3, code: 'RN-SUP', title: 'Supervised patient visits', requirement: 'Required', refs: ['HR-TA-005', 'HRTA005_E'] },
+    { order: 4, code: 'ANN-001', title: 'Annual refresh bundle', requirement: 'Optional', refs: ['HR-TD-003', 'EN-FM-014'] },
+  ]);
+
+  const moveUp = (index: number) => {
+    if (index === 0) return;
+    const newSeq = [...sequence];
+    const temp = newSeq[index];
+    newSeq[index] = newSeq[index - 1];
+    newSeq[index - 1] = temp;
+    setSequence(newSeq.map((item, i) => ({ ...item, order: i + 1 })));
+  };
+
+  const moveDown = (index: number) => {
+    if (index === sequence.length - 1) return;
+    const newSeq = [...sequence];
+    const temp = newSeq[index];
+    newSeq[index] = newSeq[index + 1];
+    newSeq[index + 1] = temp;
+    setSequence(newSeq.map((item, i) => ({ ...item, order: i + 1 })));
+  };
+
+  const removeModule = (index: number) => {
+    const newSeq = sequence.filter((_, i) => i !== index);
+    setSequence(newSeq.map((item, i) => ({ ...item, order: i + 1 })));
+  };
+
+  const addModule = () => {
+    const nextNum = sequence.length + 1;
+    const newModule = {
+      order: nextNum,
+      code: `GAO-0${nextNum + 10}`,
+      title: 'New Onboarding Module',
+      requirement: 'Required' as const,
+      refs: ['HR-TA-005'],
+    };
+    setSequence([...sequence, newModule]);
+  };
+
+  const toggleRequirement = (index: number) => {
+    const newSeq = [...sequence];
+    newSeq[index] = {
+      ...newSeq[index],
+      requirement: newSeq[index].requirement === 'Required' ? 'Optional' : 'Required',
+    };
+    setSequence(newSeq);
+  };
+
   return (
     <section
       className="grid gap-xl"
@@ -308,174 +354,336 @@ export function JourneyAdminScreen() {
       data-route="/journey/admin"
       data-template="reports"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/journey/admin</ToneTag>
-            <ToneTag tone="slate">journey-admin</ToneTag>
-            <ToneTag tone="slate">reports</ToneTag>
-            <ToneTag tone="teal">Onboarding</ToneTag>
-            <Badge>Reference: 27-journey-admin.png</Badge>
-            <Badge>Caption: DETAILED_CAPTIONS_PER_SCREENSHOT.md</Badge>
-          </div>
-          <p className="max-w-content text-sm font-light text-secondary">
-            Onboarding catalog administration report for cohort progress, syllabus triggers, expiring requirements,
-            override governance, and review queues.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <Button iconLeft={<Download aria-hidden="true" className="h-icon-sm w-icon-sm" />} variant="secondary">
-            Export report
-          </Button>
-          <Button iconLeft={<ClipboardCheck aria-hidden="true" className="h-icon-sm w-icon-sm" />}>Review queue</Button>
-        </div>
-      </section>
-
-      <MetricGrid metrics={journeyAdminMetrics} />
-
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="grid gap-xl" aria-label="Journey admin reporting workspace">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="cohort-trend-title">
-            <div className="flex flex-wrap items-start justify-between gap-lg">
-              <div className="grid gap-xs">
-                <h2 className="text-h2 font-medium text-ink" id="cohort-trend-title">
-                  Cohort completion trend
-                </h2>
-                <p className="max-w-content text-sm font-light text-muted">
-                  Chart-style completion report across onboarding gates, showing where catalog administrators need to tune
-                  triggers or review evidence.
-                </p>
-              </div>
-              <ToneBadge size="sm" status="active" />
-            </div>
-
-            <div className="mt-lg rounded-lg bg-tone-slate-bg p-lg">
-              <div className="flex h-[220px] items-end gap-md" aria-label="Cohort completion percentages">
-                {completionTrend.map((point) => (
-                  <div className="flex h-full min-w-tap flex-1 flex-col justify-end gap-sm" key={point.label}>
-                    <div
-                      aria-label={`${point.label}: ${point.value}% ${point.detail}`}
-                      className={`${toneBarClasses[point.tone]} min-h-sm rounded-sm`}
-                      role="img"
-                      style={{ height: `${point.value}%` }}
-                    />
-                    <div className="grid gap-xs text-center">
-                      <span className="text-xs font-light text-ink">{point.label}</span>
-                      <span className="text-xs font-light tabular-nums text-muted">{point.value}%</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Gate readiness progress">
-            {gatePanels.map((gate) => (
-              <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={gate.label}>
-                <div className="mb-md flex flex-wrap items-start justify-between gap-md">
-                  <div className="grid gap-xs">
-                    <p className="text-tag font-light uppercase tracking-tag text-muted">{gate.label}</p>
-                    <p className="text-sm font-light text-secondary">{gate.detail}</p>
-                  </div>
-                  <ToneBadge size="sm" status={gate.status} />
-                </div>
-                <ProgressMeter label="Gate readiness" tone={gate.tone} value={gate.value} />
-              </article>
-            ))}
-          </section>
-
-          <section className="grid gap-lg" aria-labelledby="syllabus-report-title">
-            <div className="flex flex-wrap items-start justify-between gap-lg">
-              <div className="grid gap-xs">
-                <h2 className="text-h2 font-medium text-ink" id="syllabus-report-title">
-                  Onboarding syllabus report
-                </h2>
-                <p className="max-w-content text-sm font-light text-muted">
-                  Static catalog rows for certifications, triggers, owners, evidence requirements, and expiration logic.
-                </p>
-              </div>
-              <ToneTag tone="orange">2 items need review</ToneTag>
-            </div>
-            <DataTable columns={syllabusColumns} label="Journey admin onboarding syllabus report" rows={syllabusRows} />
-          </section>
-
-          <section className="grid gap-lg" aria-labelledby="review-queue-title">
-            <div className="flex flex-wrap items-start justify-between gap-lg">
-              <div className="grid gap-xs">
-                <h2 className="text-h2 font-medium text-ink" id="review-queue-title">
-                  Review queues
-                </h2>
-                <p className="max-w-content text-sm font-light text-muted">
-                  Catalog changes, evidence holds, expiration QA, and dual-signature items queued for onboarding governance.
-                </p>
-              </div>
-              <ToneBadge size="sm" status="review-required" />
-            </div>
-            <DataTable columns={reviewQueueColumns} label="Journey admin review queue" rows={reviewQueueRows} />
-          </section>
-        </section>
-
-        <aside className="grid content-start gap-lg" aria-label="Journey admin governance and regulatory references">
-          <section className="grid gap-md tablet-p:grid-cols-2 desktop:grid-cols-1" aria-label="Cohort operating metrics">
-            {cohortPanels.map((panel) => {
-              const Icon = panel.icon;
-
-              return (
-                <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={panel.label}>
-                  <div className="mb-md flex items-start justify-between gap-md">
-                    <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-brand-teal">
-                      <Icon aria-hidden="true" className="h-icon-md w-icon-md" />
-                    </span>
-                    <ToneBadge size="sm" status={panel.status} />
-                  </div>
-                  <p className="text-tag font-light uppercase tracking-tag text-muted">{panel.label}</p>
-                  <p className="mt-xs text-h3 font-light text-ink">{panel.value}</p>
-                </article>
-              );
-            })}
-          </section>
-
-          {governanceCards.map((card) => (
-            <SurfaceCard card={card} key={card.title}>
-              <dl className="grid gap-sm border-t border-hairline pt-md">
-                {card.meta.map(([label, value]) => (
-                  <div className="grid gap-xs" key={label}>
-                    <dt className="text-tag font-light uppercase tracking-tag text-brand-teal">{label}</dt>
-                    <dd className="text-sm font-light text-secondary">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </SurfaceCard>
+      {/* Tab Segment Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-lg mb-sm">
+        <div className="inline-flex rounded-lg bg-tone-slate-bg p-xs">
+          {[
+            { id: 'overview', label: 'Overview' },
+            { id: 'syllabus', label: 'Syllabus Catalog' },
+            { id: 'review', label: 'Review Queues' },
+            { id: 'governance', label: 'Governance & Refs' },
+            { id: 'builder', label: 'Syllabus Builder' },
+          ].map((tab) => (
+            <button
+              className={cx(
+                'min-h-tap rounded-md px-lg text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                activeTab === tab.id
+                  ? 'bg-surface text-brand-teal shadow-rest'
+                  : 'text-secondary hover:bg-surface-hover',
+              )}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as 'overview' | 'syllabus' | 'review' | 'governance' | 'builder')}
+              type="button"
+            >
+              {tab.label}
+            </button>
           ))}
+        </div>
+      </div>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="mapped-regulatory-title">
-            <div className="mb-lg flex items-start gap-md">
-              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
-                <BarChart3 aria-hidden="true" className="h-icon-md w-icon-md" />
-              </span>
-              <div className="grid gap-xs">
-                <h2 className="text-h2 font-medium text-ink" id="mapped-regulatory-title">
-                  Mapped regulatory refs
-                </h2>
-                <p className="text-sm font-light text-muted">
-                  Right-rail reference summary for the reports template and journey admin catalog.
-                </p>
+      {activeTab === 'builder' ? (
+        <section className="grid gap-xl desktop:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+          {/* Left Column: Course details */}
+          <div className="rounded-lg border border-card bg-surface p-xl shadow-rest flex flex-col justify-between">
+            <div className="grid gap-md">
+              <div className="flex items-center gap-sm">
+                <ToneBadge status="active" />
+                <h3 className="text-h2 font-medium text-ink">Course path builder</h3>
+              </div>
+              <p className="text-xs font-light text-muted">
+                Define the onboarding path, course details, timeline parameters, and reference notes.
+              </p>
+              <div className="grid gap-md">
+                <div className="grid gap-xs">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">Course title</span>
+                  <Input
+                    value={courseTitle}
+                    onChange={(e) => setCourseTitle(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-xs">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">Role track</span>
+                  <Input
+                    value={roleTrack}
+                    onChange={(e) => setRoleTrack(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-xs">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">Target timeline</span>
+                  <Input
+                    value={targetTimeline}
+                    onChange={(e) => setTargetTimeline(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-xs">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">Builder notes</span>
+                  <Textarea
+                    className="h-24 resize-none"
+                    value={builderNotes}
+                    onChange={(e) => setBuilderNotes(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
-            <div className="grid gap-sm">
-              {regulatoryRefs.map(([label, detail, status]) => (
-                <div className="grid gap-sm rounded-md bg-tone-slate-bg p-md" key={label}>
+            <div className="mt-xl flex flex-wrap gap-sm">
+              <Button
+                onClick={() => setActiveTab('overview')}
+                variant="primary"
+                className="border-tone-orange-border bg-tone-orange-bg text-tone-orange-text hover:bg-tone-orange-bg/80"
+              >
+                Publish syllabus
+              </Button>
+              <Button onClick={() => setActiveTab('overview')} variant="secondary">
+                Save draft
+              </Button>
+            </div>
+          </div>
+
+          {/* Right Column: Module sequence */}
+          <div className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+            <div className="flex flex-wrap items-center justify-between gap-md mb-lg">
+              <div className="grid gap-xs">
+                <h3 className="text-h2 font-medium text-ink">Module sequence</h3>
+                <p className="text-xs font-light text-muted">
+                  Drag, reorder, or toggle sequence options.
+                </p>
+              </div>
+              <Button
+                iconLeft={<Plus className="h-icon-sm w-icon-sm" />}
+                size="sm"
+                onClick={addModule}
+              >
+                Add module
+              </Button>
+            </div>
+            <div className="grid gap-md">
+              {sequence.map((item, index) => (
+                <div
+                  key={item.code}
+                  className="rounded-md border border-card bg-tone-slate-bg p-md flex flex-col gap-sm"
+                >
                   <div className="flex flex-wrap items-start justify-between gap-md">
-                    <p className="text-tag font-light uppercase tracking-tag text-brand-teal">{label}</p>
-                    <ToneBadge size="sm" status={status} />
+                     <div className="flex items-start gap-sm">
+                      <GripVertical className="mt-xs h-icon-sm w-icon-sm text-muted cursor-grab" />
+                      <div className="grid gap-xs">
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-tone-orange-text">
+                          Step {item.order} - {item.code}
+                        </span>
+                        <h4 className="text-sm font-medium text-ink">{item.title}</h4>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => toggleRequirement(index)}
+                      className="focus:outline-none"
+                    >
+                      <ToneTag tone={item.requirement === 'Required' ? 'orange' : 'teal'}>
+                        {item.requirement}
+                      </ToneTag>
+                    </button>
                   </div>
-                  <p className="text-sm font-light text-secondary">{detail}</p>
+                  <div className="flex flex-wrap gap-xs">
+                    {item.refs.map((ref) => (
+                      <span
+                        key={ref}
+                        className="rounded-full border border-card bg-surface px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-brand-teal"
+                      >
+                        {ref}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-xs mt-xs pt-sm border-t border-hairline">
+                    <Button
+                      size="sm"
+                      variant="tertiary"
+                      iconLeft={<ArrowUp className="h-icon-xs w-icon-xs" />}
+                      onClick={() => moveUp(index)}
+                      disabled={index === 0}
+                    >
+                      Move up
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="tertiary"
+                      iconLeft={<ArrowDown className="h-icon-xs w-icon-xs" />}
+                      onClick={() => moveDown(index)}
+                      disabled={index === sequence.length - 1}
+                    >
+                      Move down
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      iconLeft={<Trash2 className="h-icon-xs w-icon-xs" />}
+                      onClick={() => removeModule(index)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
-          </section>
-        </aside>
-      </section>
+          </div>
+        </section>
+      ) : (
+        <>
+          {activeTab === 'overview' && (
+            <div className="grid gap-xl">
+              <MetricGrid metrics={journeyAdminMetrics} />
+              <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+                <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="cohort-trend-title">
+                  <div className="flex flex-wrap items-start justify-between gap-lg">
+                    <div className="grid gap-xs">
+                      <h2 className="text-h2 font-medium text-ink" id="cohort-trend-title">
+                        Cohort completion trend
+                      </h2>
+                      <p className="max-w-content text-sm font-light text-muted">
+                        Chart-style completion report across onboarding gates, showing where catalog administrators need to tune
+                        triggers or review evidence.
+                      </p>
+                    </div>
+                    <ToneBadge size="sm" status="active" />
+                  </div>
+
+                  <div className="mt-lg rounded-lg bg-tone-slate-bg p-lg">
+                    <div className="flex h-[220px] items-end gap-md" aria-label="Cohort completion percentages">
+                      {completionTrend.map((point) => (
+                        <div className="flex h-full min-w-tap flex-1 flex-col justify-end gap-sm" key={point.label}>
+                          <div
+                            aria-label={`${point.label}: ${point.value}% ${point.detail}`}
+                            className={`${toneBarClasses[point.tone]} min-h-sm rounded-t-md`}
+                            role="img"
+                            style={{ height: `${point.value}%` }}
+                          />
+                          <div className="grid gap-xs text-center">
+                            <span className="text-xs font-light text-ink">{point.label}</span>
+                            <span className="text-xs font-light tabular-nums text-muted">{point.value}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+
+                <section className="grid gap-md" aria-label="Gate readiness progress">
+                  {gatePanels.map((gate) => (
+                    <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={gate.label}>
+                      <div className="mb-md flex flex-wrap items-start justify-between gap-md">
+                        <div className="grid gap-xs">
+                          <p className="text-tag font-light uppercase tracking-tag text-muted">{gate.label}</p>
+                          <p className="text-sm font-light text-secondary">{gate.detail}</p>
+                        </div>
+                        <ToneBadge size="sm" status={gate.status} />
+                      </div>
+                      <ProgressMeter label="Gate readiness" tone={gate.tone} value={gate.value} />
+                    </article>
+                  ))}
+                </section>
+              </section>
+            </div>
+          )}
+
+          {activeTab === 'syllabus' && (
+            <section className="grid gap-lg" aria-labelledby="syllabus-report-title">
+              <div className="flex flex-wrap items-start justify-between gap-lg">
+                <div className="grid gap-xs">
+                  <h2 className="text-h2 font-medium text-ink" id="syllabus-report-title">
+                    Onboarding syllabus report
+                  </h2>
+                  <p className="max-w-content text-sm font-light text-muted">
+                    Static catalog rows for certifications, triggers, owners, evidence requirements, and expiration logic.
+                  </p>
+                </div>
+                <ToneTag tone="orange">2 items need review</ToneTag>
+              </div>
+              <DataTable columns={syllabusColumns} label="Journey admin onboarding syllabus report" rows={syllabusRows} />
+            </section>
+          )}
+
+          {activeTab === 'review' && (
+            <section className="grid gap-lg" aria-labelledby="review-queue-title">
+              <div className="flex flex-wrap items-start justify-between gap-lg">
+                <div className="grid gap-xs">
+                  <h2 className="text-h2 font-medium text-ink" id="review-queue-title">
+                    Review queues
+                  </h2>
+                  <p className="max-w-content text-sm font-light text-muted">
+                    Catalog changes, evidence holds, expiration QA, and dual-signature items queued for onboarding governance.
+                  </p>
+                </div>
+                <ToneBadge size="sm" status="review-required" />
+              </div>
+              <DataTable columns={reviewQueueColumns} label="Journey admin review queue" rows={reviewQueueRows} />
+            </section>
+          )}
+
+          {activeTab === 'governance' && (
+            <section className="grid gap-xl desktop:grid-cols-12">
+              <div className="grid content-start gap-lg desktop:col-span-8">
+                <section className="grid gap-md tablet-p:grid-cols-2" aria-label="Cohort operating metrics">
+                  {cohortPanels.map((panel) => {
+                    const Icon = panel.icon;
+
+                    return (
+                      <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={panel.label}>
+                        <div className="mb-md flex items-start justify-between gap-md">
+                          <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-brand-teal">
+                            <Icon aria-hidden="true" className="h-icon-md w-icon-md" />
+                          </span>
+                          <ToneBadge size="sm" status={panel.status} />
+                        </div>
+                        <p className="text-tag font-light uppercase tracking-tag text-muted">{panel.label}</p>
+                        <p className="mt-xs text-h3 font-light text-ink">{panel.value}</p>
+                      </article>
+                    );
+                  })}
+                </section>
+
+                <section className="rounded-lg border border-card bg-surface p-xl shadow-rest mt-lg" aria-labelledby="mapped-regulatory-title">
+                  <div className="mb-lg flex items-start gap-md">
+                    <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
+                      <BarChart3 aria-hidden="true" className="h-icon-md w-icon-md" />
+                    </span>
+                    <div className="grid gap-xs">
+                      <h2 className="text-h2 font-medium text-ink" id="mapped-regulatory-title">
+                        Mapped regulatory refs
+                      </h2>
+                      <p className="text-sm font-light text-muted">
+                        Right-rail reference summary for the reports template and journey admin catalog.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid gap-sm">
+                    {regulatoryRefs.map(([label, detail, status]) => (
+                      <div className="grid gap-sm rounded-md bg-tone-slate-bg p-md" key={label}>
+                        <div className="flex flex-wrap items-start justify-between gap-md">
+                          <p className="text-tag font-light uppercase tracking-tag text-brand-teal">{label}</p>
+                          <ToneBadge size="sm" status={status} />
+                        </div>
+                        <p className="text-sm font-light text-secondary">{detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+
+              <aside className="grid content-start gap-lg desktop:col-span-4" aria-label="Journey admin governance and regulatory references">
+                {governanceCards.map((card) => (
+                  <SurfaceCard card={card} key={card.title}>
+                    <dl className="grid gap-sm border-t border-hairline pt-md">
+                      {card.meta.map(([label, value]) => (
+                        <div className="grid gap-xs" key={label}>
+                          <dt className="text-tag font-light uppercase tracking-tag text-brand-teal">{label}</dt>
+                          <dd className="text-sm font-light text-secondary">{value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </SurfaceCard>
+                ))}
+              </aside>
+            </section>
+          )}
+        </>
+      )}
     </section>
   );
 }

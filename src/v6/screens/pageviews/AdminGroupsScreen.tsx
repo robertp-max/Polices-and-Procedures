@@ -1,14 +1,6 @@
 import { ClipboardCheck, FileCheck2, LockKeyhole, ShieldCheck, UserCog } from 'lucide-react';
-import {
-  DataTable,
-  MetricGrid,
-  SurfaceCard,
-  ToneTag,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 
 interface AdminGroupRow extends Record<string, string> {
@@ -184,41 +176,10 @@ export function AdminGroupsScreen() {
       data-route="/admin/user-groups"
       data-template="matrix"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/admin/user-groups</ToneTag>
-            <ToneTag tone="slate">admin-groups</ToneTag>
-            <ToneTag tone="slate">matrix</ToneTag>
-            <ToneTag tone="teal">Admin</ToneTag>
-          </div>
-          <p className="max-w-content text-sm text-secondary">
-            User group membership and scope management for RBAC cohorts, linked roles, and permission governance.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="active" />
-          <Badge variant="count">92 members</Badge>
-        </div>
-      </section>
-
       <MetricGrid metrics={groupMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="grid gap-lg" aria-labelledby="admin-groups-matrix-title">
-          <div className="flex flex-wrap items-start justify-between gap-lg">
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink" id="admin-groups-matrix-title">
-                Admin user-groups matrix
-              </h2>
-              <p className="max-w-content text-sm text-muted">
-                Group rows show member counts, access scope, linked role names, and the typed permission posture for each
-                administrative cohort.
-              </p>
-            </div>
-            <ToneTag tone="orange">2 scopes need review</ToneTag>
-          </div>
-
+        <section className="grid content-start gap-lg" aria-label="Admin user groups permission matrix">
           <DataTable columns={groupColumns} label="Admin user groups permission matrix" rows={groupRows} />
 
           <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Admin scope summary">

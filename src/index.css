@@ -17,22 +17,22 @@
   --ecign-orange: #F04B22;
 
   /* Surfaces */
-  --surface-canvas: #F7FEFF;
-  --surface-base: #FFFFFF;
-  --surface-glass: rgba(255,255,255,0.70);
-  --surface-hover-teal: #F7FEFF;
+  --surface-canvas: transparent;
+  --surface-base: rgba(255, 255, 255, 0.78);
+  --surface-glass: rgba(255, 255, 255, 0.70);
+  --surface-hover-teal: rgba(247, 254, 255, 0.86);
 
   /* Text */
   --text-primary: #1C2422;
   --text-secondary: #524D4B;
-  --text-muted: #8A8583;
+  --text-muted: #6F7775;
   --text-disabled: #B8B3B1;
   --text-on-brand: #FFFFFF;
 
   /* Borders */
-  --border-hairline: rgba(0,65,66,0.10);
-  --border-card: #E5E4E3;
-  --border-strong: rgba(0,65,66,0.18);
+  --border-hairline: rgba(0, 65, 66, 0.06);
+  --border-card: rgba(0, 65, 66, 0.10);
+  --border-strong: rgba(0, 65, 66, 0.16);
 
   /* Base semantic aliases */
   --background: var(--surface-canvas);
@@ -154,8 +154,8 @@
   --radius-2xl: 32px;
 
   /* Shadows */
-  --shadow-rest: 0 8px 24px -16px rgba(0,65,66,0.10), 0 3px 10px -5px rgba(0,65,66,0.05);
-  --shadow-hover: 0 14px 36px -20px rgba(0,65,66,0.14), 0 8px 20px -12px rgba(0,65,66,0.08);
+  --shadow-rest: 0 10px 32px -18px rgba(0, 65, 66, 0.18), 0 4px 12px -6px rgba(0, 65, 66, 0.10);
+  --shadow-hover: 0 16px 44px -20px rgba(0, 65, 66, 0.22), 0 10px 24px -12px rgba(0, 65, 66, 0.12);
 
   /* Motion */
   --motion-fast: 120ms;
@@ -218,7 +218,11 @@
 
 html {
   min-height: 100%;
-  background: var(--surface-canvas);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.95), transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(6, 166, 171, 0.08), transparent 50%),
+    linear-gradient(135deg, #F0FAFA 0%, #FFFFFF 50%, #E7F3F3 100%);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-family: var(--font-family);
   font-size: var(--text-body);
@@ -237,7 +241,11 @@ body,
 
 body {
   margin: 0;
-  background: var(--surface-canvas);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.95), transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(6, 166, 171, 0.08), transparent 50%),
+    linear-gradient(135deg, #F0FAFA 0%, #FFFFFF 50%, #E7F3F3 100%);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-family: var(--font-family);
   font-size: var(--text-body);
@@ -245,6 +253,35 @@ body {
   letter-spacing: var(--tracking-normal);
   line-height: var(--leading-body);
 }
+
+.bg-canvas {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+.bg-surface {
+  background-color: var(--surface-base) !important;
+  backdrop-filter: blur(18px) saturate(118%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(118%) !important;
+}
+
+.bg-surface-glass {
+  background-color: var(--surface-glass) !important;
+  backdrop-filter: blur(22px) saturate(122%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(122%) !important;
+}
+
+.glass-toned {
+  backdrop-filter: blur(16px) saturate(118%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(118%) !important;
+}
+
+.shadow-rest,
+.shadow-soft,
+.shadow-hover {
+  border-color: rgba(255, 255, 255, 0.94) !important;
+}
+
 
 * {
   -ms-overflow-style: none;
@@ -277,7 +314,11 @@ h2,
 h3,
 h4,
 h5,
-h6,
+h6 {
+  margin: 0;
+  color: var(--brand-teal-deep);
+}
+
 p {
   margin: 0;
 }
@@ -335,4 +376,57 @@ th {
     transition-delay: 0ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.bar-teal {
+  background-color: var(--brand-teal) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.bar-green {
+  background-color: var(--tone-green-text) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.bar-orange {
+  background-color: var(--brand-orange) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.bar-amber {
+  background-color: var(--tone-amber-text) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.bar-slate {
+  background-color: var(--tone-slate-text) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.bar-blue {
+  background-color: var(--tone-blue-text) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.bar-violet {
+  background-color: var(--tone-violet-text) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.bar-red {
+  background-color: var(--tone-red-text) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Prevent accidental text caret cursors from appearing on non-editable text during caret browsing */
+*:not(input):not(textarea):not([contenteditable]):not([contenteditable="true"]) {
+  caret-color: transparent !important;
 }

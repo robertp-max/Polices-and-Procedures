@@ -1,5 +1,5 @@
 import { AlertTriangle, ClipboardCheck, FileCheck2, FolderOpen, ShieldCheck } from 'lucide-react';
-import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 
 type MasterControlRow = Record<string, string>;
@@ -129,24 +129,8 @@ export function MasterControlsScreen() {
     <section className="grid gap-xl" data-hash-id="master-controls" data-route="/compliance/master-controls">
       <MetricGrid metrics={masterControlMetrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-5" aria-labelledby="master-controls-matrix-heading">
-        <div className="grid gap-lg desktop:col-span-3">
-          <div className="grid gap-md">
-            <div className="flex flex-wrap items-center gap-sm">
-              <ToneTag>/compliance/master-controls</ToneTag>
-              <ToneTag tone="slate">master-controls</ToneTag>
-              <ToneTag tone="orange">CES matrix</ToneTag>
-            </div>
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink" id="master-controls-matrix-heading">
-                Master controls matrix
-              </h2>
-              <p className="max-w-content text-sm text-muted">
-                Platform controls mapped to operational risk tier, inventory source state, evidence posture, and audit readiness.
-              </p>
-            </div>
-          </div>
-
+      <section className="grid gap-xl desktop:grid-cols-5" aria-label="Master controls inventory and readiness">
+        <div className="grid content-start gap-lg desktop:col-span-3">
           <DataTable columns={masterControlColumns} label="Master controls inventory matrix" rows={masterControlRows} />
 
           <section className="grid gap-md tablet-l:grid-cols-3" aria-label="Readiness status summary">

@@ -1,12 +1,4 @@
-import {
-  BoardLane,
-  MetricGrid,
-  SurfaceCard,
-  ToneTag,
-  type BoardLaneData,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
+import { BoardLane, MetricGrid, SurfaceCard, ToneTag, type BoardLaneData, type MetricTileData, type SurfaceCardData } from '../../components';
 import { type Tone } from '../../tokens';
 
 interface ActionSummaryItem {
@@ -163,26 +155,8 @@ export function MyTasksScreen() {
       <MetricGrid metrics={taskMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,1fr)_340px]">
-        <section className="grid gap-lg">
-          <div className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-            <div className="grid gap-sm">
-              <ToneTag tone="teal">/my-tasks</ToneTag>
-              <div>
-                <h2 className="text-h2 font-medium text-ink">Personal CES task board</h2>
-                <p className="mt-xs max-w-content text-sm text-muted">
-                  Persona-gated compliance work assigned to the current user, grouped by execution state with due dates,
-                  owners, and evidence markers.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-sm">
-              <ToneTag tone="teal">my-tasks</ToneTag>
-              <ToneTag tone="slate">board</ToneTag>
-              <ToneTag tone="orange">CES</ToneTag>
-            </div>
-          </div>
-
-          <div className="grid gap-lg desktop:grid-cols-3">
+        <section className="grid content-start gap-lg">
+      <div className="grid gap-lg desktop:grid-cols-3">
             {taskLanes.map((lane) => (
               <BoardLane key={lane.title} lane={lane} />
             ))}

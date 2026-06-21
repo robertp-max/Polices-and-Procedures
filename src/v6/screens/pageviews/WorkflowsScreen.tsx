@@ -1,14 +1,91 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ClipboardCheck, GitBranch, Landmark, Workflow } from 'lucide-react';
-import {
-  DataTable,
-  MetricGrid,
-  SurfaceCard,
-  ToneTag,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
-import { Badge } from '../../primitives';
+import { DataTable, MetricGrid, SurfaceCard, VeilDrawer, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { Button, ToneBadge } from '../../primitives';
+
+const getWorkflowDetail = (id: string) => {
+  const details: Record<string, { purpose: string; policies: string; forms: string; evidence: string; history: { item: string; status: string; tone: 'orange' | 'teal' }[] }> = {
+    'QA-WF-03': {
+      purpose: 'Coordinates agenda, attendance, minutes, action tracker, evidence packet, eCIgn routing, and final survey lock for QAPI quarterly board reviews.',
+      policies: 'QA-PG-001, GV-GB-001',
+      forms: 'GV-FM-005, EN-FM-008',
+      evidence: 'Minutes draft, dashboard export, eCIgn certificate',
+      history: [
+        { item: 'Agenda packet locked', status: 'Ready', tone: 'teal' },
+        { item: 'Minutes draft awaiting eCIgn signing', status: 'Awaiting', tone: 'orange' },
+        { item: 'Hash manifest verified', status: 'Ready', tone: 'teal' },
+        { item: 'Survey packet export queued', status: 'Ready', tone: 'teal' },
+      ],
+    },
+    'CO-WF-02': {
+      purpose: 'Standardizes corporate response to safety, operational, or legal incidents, routing intake to executive review.',
+      policies: 'CO-IP-002, RM-FL-005',
+      forms: 'CO-FM-012, CO-FM-014',
+      evidence: 'Intake statement, audit trail, executive sign-off',
+      history: [
+        { item: 'Intake form submitted', status: 'Ready', tone: 'teal' },
+        { item: 'Supervisor review complete', status: 'Ready', tone: 'teal' },
+        { item: 'Regulatory notice drafted', status: 'Awaiting', tone: 'orange' },
+      ],
+    },
+    'GV-WF-01': {
+      purpose: 'Compiles and signs off the quarterly governing body packets including annual disclosures and conflict reports.',
+      policies: 'GV-GB-001, GV-CD-002',
+      forms: 'GV-FM-002, GV-FM-009',
+      evidence: 'Signed attestation packet, disclosures index, meeting minutes',
+      history: [
+        { item: 'Disclosure checklist complete', status: 'Ready', tone: 'teal' },
+        { item: 'Conflict audit run', status: 'Ready', tone: 'teal' },
+        { item: 'Governing board sign-off complete', status: 'Ready', tone: 'teal' },
+      ],
+    },
+    'HR-WF-05': {
+      purpose: 'Controls new hire license validation, OIG/SAM exclusion verification, and pre-day-1 checklist clearance.',
+      policies: 'HR-TA-001, HR-TA-005',
+      forms: 'HR-FM-001, HR-FM-003',
+      evidence: 'Background check clearance, primary source verification, offer letter',
+      history: [
+        { item: 'OIG verification run', status: 'Ready', tone: 'teal' },
+        { item: 'SAM verification run', status: 'Ready', tone: 'teal' },
+        { item: 'License active check pending', status: 'Awaiting', tone: 'orange' },
+      ],
+    },
+    'RM-WF-04': {
+      purpose: 'Manages emergency drills and simulated response after-action review logs to comply with annual survey mandates.',
+      policies: 'RM-ED-004, CO-EP-009',
+      forms: 'RM-FM-022, RM-FM-025',
+      evidence: 'After-action notes, participant roster, signature audit',
+      history: [
+        { item: 'Drill simulation completed', status: 'Ready', tone: 'teal' },
+        { item: 'Participants log locked', status: 'Ready', tone: 'teal' },
+        { item: 'Director attestation complete', status: 'Ready', tone: 'teal' },
+      ],
+    },
+    'CL-WF-08': {
+      purpose: 'Orchestrates clinical chart review, medication reconciliation audit, and plan of care verification by supervising clinicians.',
+      policies: 'CL-SD-012, CL-SD-013',
+      forms: 'CL-FM-055, CL-FM-058',
+      evidence: 'Reconciliation log, competency rubric, supervisor sign-off',
+      history: [
+        { item: 'Medication checks run', status: 'Ready', tone: 'teal' },
+        { item: 'Preceptor checklist validated', status: 'Ready', tone: 'teal' },
+        { item: 'Director sign-off complete', status: 'Ready', tone: 'teal' },
+      ],
+    },
+  };
+
+  return details[id] || {
+    purpose: 'Coordinates active CES processes, linking policies, forms, and evidence history.',
+    policies: 'QA-PG-001',
+    forms: 'GV-FM-005',
+    evidence: 'Audit notes, signature hashes',
+    history: [
+      { item: 'Pre-check completed', status: 'Ready', tone: 'teal' },
+      { item: 'eCIgn pending', status: 'Awaiting', tone: 'orange' },
+    ],
+  };
+};
 
 interface WorkflowRow extends Record<string, string> {
   domainOwner: string;
@@ -130,42 +207,26 @@ const matrixNotes = [
 ] as const;
 
 export default function WorkflowsScreen() {
+  const navigate = useNavigate();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowRow | null>(null);
+
   return (
     <section className="grid gap-xl" data-hash-id="workflows">
-      <header className="grid gap-md">
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneTag>/workflows</ToneTag>
-          <Badge>hash: workflows</Badge>
-          <Badge>template: matrix</Badge>
-          <Badge>group: CES</Badge>
-        </div>
-        <div className="grid gap-sm">
-          <h1 className="text-display font-medium text-brand-teal-deep">Workflows Library</h1>
-          <p className="max-w-content text-body font-light text-secondary">
-            Matrix linking active CES workflows to policy owners, required calendar events, evidence capture, and swimlane
-            packet readiness.
-          </p>
-        </div>
-      </header>
 
       <MetricGrid metrics={workflowMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="workflow-matrix-title">
-          <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink" id="workflow-matrix-title">
-                Workflow matrix
-              </h2>
-              <p className="max-w-content text-sm font-light text-muted">
-                Static V6 library rows showing the workflow ID, operating owner, and typed status for survey-readiness
-                checks.
-              </p>
-            </div>
-            <ToneTag tone="orange">6 need review</ToneTag>
-          </div>
-
-          <DataTable columns={workflowColumns} label="Workflows library matrix" rows={workflowRows} />
+        <section aria-label="Workflows library matrix" className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <DataTable
+            columns={workflowColumns}
+            label="Workflows library matrix"
+            rows={workflowRows}
+            onRowClick={(row) => {
+              setSelectedWorkflow(row);
+              setDrawerOpen(true);
+            }}
+          />
 
           <div className="mt-lg grid gap-md tablet-l:grid-cols-2">
             {matrixNotes.map((note) => {
@@ -186,7 +247,7 @@ export default function WorkflowsScreen() {
           </div>
         </section>
 
-        <aside className="grid gap-lg" aria-label="Workflow swimlane cards">
+        <aside className="grid content-start gap-lg" aria-label="Workflow swimlane cards">
           {workflowCards.map((card) => (
             <SurfaceCard card={card} key={card.title}>
               <dl className="grid gap-sm border-t border-hairline pt-md">
@@ -201,6 +262,61 @@ export default function WorkflowsScreen() {
           ))}
         </aside>
       </section>
+
+      {selectedWorkflow && (
+        <VeilDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          eyebrow="Workflows Library"
+          title={selectedWorkflow.title}
+          tone="orange"
+          footer={
+            <div className="flex flex-wrap justify-end gap-sm">
+              <Button onClick={() => setDrawerOpen(false)} variant="secondary">
+                Close drawer
+              </Button>
+              <Button
+                onClick={() => {
+                  setDrawerOpen(false);
+                  navigate(`/workflows/${selectedWorkflow.workflowId}/swimlane`);
+                }}
+              >
+                Open Swimlane Board
+              </Button>
+            </div>
+          }
+        >
+          <div className="grid gap-md">
+            <p className="text-sm font-light leading-relaxed text-secondary">
+              {getWorkflowDetail(selectedWorkflow.workflowId).purpose}
+            </p>
+            <div className="grid grid-cols-2 gap-sm">
+              {[
+                ['Owner', selectedWorkflow.domainOwner],
+                ['Status', selectedWorkflow.status],
+                ['Policies', getWorkflowDetail(selectedWorkflow.workflowId).policies],
+                ['Forms', getWorkflowDetail(selectedWorkflow.workflowId).forms],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-md border border-card bg-tone-slate-bg p-md">
+                  <div className="text-[10px] font-medium uppercase tracking-wider text-muted">{label}</div>
+                  <div className="mt-xs text-xs font-medium text-brand-teal">{value}</div>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-md border border-card bg-surface p-md">
+              <h4 className="text-sm font-medium text-ink mb-sm">Linked evidence and history</h4>
+              <div className="grid gap-xs">
+                {getWorkflowDetail(selectedWorkflow.workflowId).history.map((hist, index) => (
+                  <div key={index} className="flex items-center justify-between rounded-md bg-tone-slate-bg px-3 py-2 text-xs">
+                    <span className="font-light text-secondary">{hist.item}</span>
+                    <ToneBadge status={hist.status === 'Ready' ? 'ready' : 'review-required'} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </VeilDrawer>
+      )}
     </section>
   );
 }

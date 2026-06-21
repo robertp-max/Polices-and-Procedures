@@ -1552,7 +1552,7 @@
             cta: 'Validate form',
             secondary: 'Save draft',
           }),
-          view('ecign-workspace', 'Taxonomy', 'eCIgn Signing', '/forms/:formId', 'pen-line', 'ecign', {
+          view('ecign-workspace', 'Taxonomy', 'eCIgn Signing', '/forms/:formId/esign', 'pen-line', 'ecign', {
             title: 'eCIgn Signing Workspace',
             description: 'Signature workflow for signer assignment, typed signature, attestation, certificate, and audit trail.',
             signingSequence: ecignSigners,
@@ -1791,7 +1791,7 @@
             tableHeaders: ['Requirement', 'Subject', 'Status', 'Policy Ref', 'Action'],
             metrics: [metric('Chain', 'Verified', '14 events', 'teal'), metric('Blockers', '3', 'Signatures', 'orange')],
           }),
-          view('onboarding-v2-governance', 'Onboarding v2', 'Onboarding Governance', '/onboarding-v2/governance', 'shield', 'reports', {
+          view('onboarding-v2-governance', 'Onboarding v2', 'Onboarding Overrides', '/onboarding-v2/governance', 'shield', 'reports', {
             description: 'Override grants (dual-sig), active vendors, policy version bindings, readiness reports.',
             records: onboardingV2ActiveOverrides,
             tableHeaders: ['Override', 'Gate', 'Reason', 'Valid Window'],
@@ -1895,8 +1895,8 @@
             tableHeaders: ['Role', 'Scope', 'Status'],
           }),
           view('admin-permissions', 'Admin', 'Permission Catalog', '/admin/permissions', 'shield-check', 'admin', {
-            records: [['pmTasks.view', 'PM board access', 'Granted'], ['journey.admin', 'Catalog edits', 'Dual approval']],
-            tableHeaders: ['Permission', 'Description', 'State'],
+            records: [['Task board access', 'PM board access and assigned work review', 'Granted'], ['Journey administration', 'Catalog edits and syllabus governance', 'Dual approval']],
+            tableHeaders: ['Permission area', 'Description', 'State'],
           }),
           view('admin-users', 'Admin', 'User Assignments', '/admin/users', 'user-cog', 'admin', {
             records: [['u-don-01', 'Maria Gonzalez', 'DON', 'All clinical'], ['demo-user-careindeed', 'Ops Lead', 'Primary Ops', 'Active']],
@@ -2067,6 +2067,818 @@
                 </div>
               );
             })}
+          </div>
+        </div>
+      );
+    }
+
+    function PhaseBModal({ open = true, onClose, eyebrow, title, tone = 'teal', children, footer }) {
+      if (!open) return null;
+      return ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-brand-teal-600/20 p-4 backdrop-blur-sm">
+          <section className="max-h-[92vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/95 bg-white p-5 shadow-lift">
+            <div className="flex items-start justify-between gap-4 border-b border-brand-neutral-100 pb-4">
+              <div>
+                <ToneBadge tone={tone}>{eyebrow}</ToneBadge>
+                <h3 className="mt-3 font-heading text-xl font-extrabold text-brand-teal-600">{title}</h3>
+              </div>
+              <button onClick={onClose} className="rounded-xl border border-brand-neutral-200 bg-white p-2 text-brand-neutral-400 hover:text-brand-teal-600" aria-label="Close modal">
+                <Icon name="x" className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-5">{children}</div>
+            {footer && <div className="mt-5 border-t border-brand-neutral-100 pt-4">{footer}</div>}
+          </section>
+        </div>,
+        document.body
+      );
+    }
+
+    function PhaseBDrawer({ open = true, onClose, eyebrow, title, tone = 'teal', children, footer }) {
+      if (!open) return null;
+      return ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[65] bg-brand-teal-600/15 backdrop-blur-sm">
+          <aside className="ml-auto flex h-full w-full max-w-md flex-col border-l border-white/95 bg-white shadow-lift">
+            <div className="flex items-start justify-between gap-4 border-b border-brand-neutral-100 p-5">
+              <div>
+                <ToneBadge tone={tone}>{eyebrow}</ToneBadge>
+                <h3 className="mt-3 font-heading text-xl font-extrabold text-brand-teal-600">{title}</h3>
+              </div>
+              <button onClick={onClose} className="rounded-xl border border-brand-neutral-200 bg-white p-2 text-brand-neutral-400 hover:text-brand-teal-600" aria-label="Close drawer">
+                <Icon name="x" className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto p-5">{children}</div>
+            {footer && <div className="border-t border-brand-neutral-100 p-5">{footer}</div>}
+          </aside>
+        </div>,
+        document.body
+      );
+    }
+
+    function PhaseBField({ label, value, as = 'input' }) {
+      return (
+        <label className="block space-y-1.5">
+          <span className="text-[10px] font-heading font-extrabold uppercase tracking-wider text-brand-teal-600">{label}</span>
+          {as === 'textarea' ? (
+            <textarea className="h-20 w-full resize-none rounded-xl border border-brand-neutral-200 bg-brand-neutral-50 px-3 py-2.5 text-sm text-brand-neutral-500 outline-none focus:border-brand-teal-500" value={value} readOnly />
+          ) : (
+            <input className="w-full rounded-xl border border-brand-neutral-200 bg-brand-neutral-50 px-3 py-2.5 text-sm text-brand-neutral-500 outline-none focus:border-brand-teal-500" value={value} readOnly />
+          )}
+        </label>
+      );
+    }
+
+    function DocumentPreviewToolbar({ compact = false }) {
+      return (
+        <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 border-b border-brand-neutral-100 bg-white/95 p-3 backdrop-blur">
+          <div className="flex items-center gap-1.5">
+            {[
+              ['zoom-out', 'Zoom out'],
+              ['zoom-in', 'Zoom in'],
+              ['rotate-cw', 'Rotate'],
+            ].map(([icon, label]) => (
+              <button key={label} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-brand-neutral-200 bg-white text-brand-teal-600" aria-label={label}>
+                <Icon name={icon} className="h-4 w-4" />
+              </button>
+            ))}
+            <button className="rounded-xl border border-brand-neutral-200 bg-brand-neutral-50 px-3 py-2 text-xs font-bold text-brand-teal-600">125%</button>
+          </div>
+          <ToneBadge tone="teal">SHA-256 verified</ToneBadge>
+          <div className="flex items-center gap-1.5">
+            <button className="inline-flex h-9 items-center gap-2 rounded-xl border border-brand-teal-100 bg-brand-teal-50 px-3 text-xs font-bold text-brand-teal-600">
+              <Icon name="copy" className="h-4 w-4" />
+              {!compact && <span>Copy hash</span>}
+            </button>
+            <button className="inline-flex h-9 items-center gap-2 rounded-xl border border-brand-orange-100 bg-brand-orange-50 px-3 text-xs font-bold text-brand-orange-500">
+              <Icon name="download" className="h-4 w-4" />
+              {!compact && <span>Download</span>}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function DocumentPreviewFrame({ title = 'Evidence document preview', subtitle = 'Verified PDF package - SHA-256 locked', compact = false }) {
+      return (
+        <div className="overflow-hidden rounded-2xl border border-brand-neutral-200 bg-white shadow-soft">
+          <DocumentPreviewToolbar compact={compact} />
+          <div className="grid min-h-[260px] place-items-center bg-brand-neutral-50 p-5">
+            <div className="w-full max-w-md rounded-2xl border border-white/95 bg-white p-5 shadow-soft">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-teal-50 text-brand-teal-600">
+                  <Icon name="file-text" className="h-6 w-6" />
+                </div>
+                <div>
+                  <h4 className="font-heading text-base font-extrabold text-brand-teal-600">{title}</h4>
+                  <p className="mt-1 text-xs text-brand-neutral-400">{subtitle}</p>
+                </div>
+              </div>
+              <div className="mt-5 space-y-2">
+                {['Document identity', 'Source workflow', 'Signer certificate', 'Retention metadata'].map((row, index) => (
+                  <div key={row} className="flex items-center justify-between rounded-xl bg-brand-neutral-50 px-3 py-2 text-xs">
+                    <span className="font-bold text-brand-teal-600">{row}</span>
+                    <ToneBadge tone={index === 1 ? 'orange' : 'teal'}>{index === 1 ? 'Review' : 'Ready'}</ToneBadge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function SignatureDrawingOverlay({ open, onClose, title = 'Draw eCIgn signature' }) {
+      return (
+        <PhaseBModal
+          open={open}
+          onClose={onClose}
+          eyebrow="eCIgn signing"
+          title={title}
+          tone="orange"
+          footer={
+            <div className="flex flex-wrap justify-end gap-2">
+              <button onClick={onClose} className="rounded-xl border border-brand-teal-100 bg-white px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-brand-teal-600">Close overlay</button>
+              <button className="rounded-xl bg-brand-orange-500 px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Confirm signature</button>
+            </div>
+          }
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              {[
+                ['Signer', 'Administrator'],
+                ['Role', 'Agency executive'],
+                ['Time', 'Jun 18, 2026 - 4:12 PM'],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-xl border border-brand-neutral-100 bg-brand-neutral-50 p-3">
+                  <div className="text-[10px] font-heading font-extrabold uppercase tracking-wider text-brand-neutral-400">{label}</div>
+                  <div className="mt-1 text-xs font-bold text-brand-teal-600">{value}</div>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-2xl border border-brand-teal-100 bg-brand-teal-50 p-4">
+              <div className="grid h-52 place-items-center rounded-xl border border-dashed border-brand-teal-200 bg-white">
+                <div className="text-center">
+                  <Icon name="pen-line" className="mx-auto h-8 w-8 text-brand-teal-500" />
+                  <p className="mt-3 text-sm font-bold text-brand-teal-600">Draw signature here</p>
+                  <p className="mt-1 text-xs text-brand-neutral-400">Finger, stylus, or mouse input uses the standard V6 capture surface.</p>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button className="rounded-xl border border-brand-neutral-200 bg-white px-3 py-2 text-xs font-bold text-brand-teal-600">Clear canvas</button>
+                <button className="rounded-xl border border-brand-neutral-200 bg-white px-3 py-2 text-xs font-bold text-brand-teal-600">Restore typed signature</button>
+              </div>
+            </div>
+            <label className="flex items-start gap-3 rounded-2xl border border-brand-orange-100 bg-brand-orange-50 p-4">
+              <input type="checkbox" checked readOnly className="mt-1 accent-brand-orange-500" />
+              <span className="text-xs leading-relaxed text-brand-neutral-500">I attest this eCIgn signature belongs to the named signer and may be retained with the audit certificate.</span>
+            </label>
+          </div>
+        </PhaseBModal>
+      );
+    }
+
+    const phaseBLearners = [
+      ['EMP-1001', 'Maria Santos, RN', 'RN residency', '8/11 steps', 'In progress', 'orange'],
+      ['EMP-1002', 'Grace Abella, HHA', 'HHA annual cycle', '10/12 steps', 'Supervised', 'teal'],
+      ['EMP-1003', 'Jonathan Park, LVN', 'LVN clearance', '12/12 steps', 'Cleared', 'green'],
+      ['EMP-1005', 'Aisha Rahman, OT', 'OT onboarding', '4/11 steps', 'Blocked', 'orange'],
+    ];
+
+    function LearnerPickerPanel({ open = true }) {
+      if (!open) return null;
+      return (
+        <div className="mt-4 rounded-2xl border border-brand-neutral-200 bg-white p-4 shadow-soft">
+          <div className="flex items-center gap-2 rounded-xl border border-brand-neutral-200 bg-brand-neutral-50 px-3 py-2">
+            <Icon name="search" className="h-4 w-4 text-brand-neutral-400" />
+            <span className="text-xs text-brand-neutral-400">Search learners by name, role, or employee ID</span>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {['All', 'GAO', 'Clinical RN', 'HHA'].map((item, index) => (
+              <button key={item} className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider ${index === 0 ? 'bg-brand-teal-500 text-white' : 'border border-brand-teal-100 bg-brand-teal-50 text-brand-teal-600'}`}>{item}</button>
+            ))}
+          </div>
+          <div className="mt-4 space-y-2">
+            {phaseBLearners.map(([id, name, track, steps, status, toneName]) => (
+              <div key={id} className="flex items-center justify-between gap-3 rounded-xl border border-brand-neutral-100 bg-brand-neutral-50 p-3">
+                <div>
+                  <div className="text-sm font-bold text-brand-teal-600">{name}</div>
+                  <div className="mt-1 text-[11px] text-brand-neutral-400">{id} - {track}</div>
+                </div>
+                <div className="text-right">
+                  <ToneBadge tone={toneName}>{status}</ToneBadge>
+                  <div className="mt-1 text-[10px] font-bold text-brand-neutral-400">{steps}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 rounded-xl border border-brand-teal-100 bg-brand-teal-50 p-3 text-xs text-brand-neutral-500">
+            Current context: Maria Santos, RN - supervised by Elena Navarro, DON.
+          </div>
+        </div>
+      );
+    }
+
+    function VisitLoggingDrawer({ open, onClose }) {
+      const checklist = ['Patient identity verified', 'Visit documentation completed', 'Infection prevention observed', 'Medication teaching reviewed', 'Supervisor attestation captured'];
+      return (
+        <PhaseBDrawer
+          open={open}
+          onClose={onClose}
+          eyebrow="Journey supervisor"
+          title="Log supervised checkoff"
+          tone="orange"
+          footer={
+            <div className="flex flex-wrap justify-end gap-2">
+              <button onClick={onClose} className="rounded-xl border border-brand-teal-100 bg-white px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-brand-teal-600">Cancel</button>
+              <button className="rounded-xl bg-brand-orange-500 px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Log and validate visit</button>
+            </div>
+          }
+        >
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-brand-teal-100 bg-brand-teal-50 p-4">
+              <div className="text-sm font-bold text-brand-teal-600">Maria Santos, RN</div>
+              <p className="mt-1 text-xs text-brand-neutral-500">EMP-1001 - RN pathway - 0 of 2 supervised visits completed.</p>
+            </div>
+            <PhaseBField label="Visit date and time" value="Jun 20, 2026 - 9:00 AM" />
+            <PhaseBField label="Preceptor" value="Elena Navarro, DON" />
+            <PhaseBField label="Patient / visit context" value="SOC observation for medication reconciliation and documentation cadence." as="textarea" />
+            <div className="rounded-2xl border border-brand-neutral-200 bg-white p-4">
+              <h4 className="font-heading text-sm font-extrabold text-brand-teal-600">Competency checklist</h4>
+              <div className="mt-3 space-y-2">
+                {checklist.map((item, index) => (
+                  <div key={item} className="flex items-center justify-between rounded-xl bg-brand-neutral-50 px-3 py-2 text-xs">
+                    <span className="font-bold text-brand-teal-600">{item}</span>
+                    <ToneBadge tone={index === 3 ? 'orange' : 'teal'}>{index === 3 ? 'Review' : 'Pass'}</ToneBadge>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {['Pass', 'Remediation', 'Incomplete'].map((item, index) => (
+                <button key={item} className={`rounded-xl border px-3 py-2 text-xs font-bold ${index === 0 ? 'border-brand-teal-100 bg-brand-teal-50 text-brand-teal-600' : 'border-brand-neutral-200 bg-white text-brand-neutral-400'}`}>{item}</button>
+              ))}
+            </div>
+            <label className="flex items-start gap-3 rounded-2xl border border-brand-orange-100 bg-brand-orange-50 p-4">
+              <input type="checkbox" checked readOnly className="mt-1 accent-brand-orange-500" />
+              <span className="text-xs leading-relaxed text-brand-neutral-500">Preceptor attests the visit was observed and the checklist reflects actual performance.</span>
+            </label>
+          </div>
+        </PhaseBDrawer>
+      );
+    }
+
+    function ModuleFailureRetryState({ onOpenSignature }) {
+      return (
+        <div className="rounded-2xl border border-brand-orange-100 bg-brand-orange-50 p-5 shadow-soft">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <ToneBadge tone="orange">Remediation review required</ToneBadge>
+              <h3 className="mt-3 font-heading text-lg font-extrabold text-brand-orange-600">Score: 68% - retry available</h3>
+              <p className="mt-2 text-sm leading-relaxed text-brand-neutral-500">The learner did not reach the 80% threshold. The next attempt is available after review of the missed competency areas.</p>
+            </div>
+            <Icon name="rotate-ccw" className="h-6 w-6 text-brand-orange-500" />
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+            {['Infection control', 'Documentation SLA', 'Escalation timing'].map((item, index) => (
+              <div key={item} className="rounded-xl border border-white/95 bg-white p-3">
+                <div className="text-xs font-bold text-brand-teal-600">{item}</div>
+                <div className="mt-1 text-[11px] text-brand-neutral-400">{index + 1} items missed</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button className="rounded-xl bg-brand-teal-500 px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Retry quiz</button>
+            <button onClick={onOpenSignature} className="rounded-xl border border-brand-orange-200 bg-white px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-brand-orange-500">Request preceptor review</button>
+          </div>
+        </div>
+      );
+    }
+
+    function JourneySupervisorPhaseB({ view, visitDrawerOpen, setVisitDrawerOpen, learnerPickerOpen, setLearnerPickerOpen }) {
+      return (
+        <div className="relative grid grid-cols-1 gap-6 xl:grid-cols-5">
+          <div className="xl:col-span-3">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-neutral-200 bg-white p-4 shadow-soft">
+              <div>
+                <h3 className="font-heading text-base font-extrabold text-brand-teal-600">Supervisor learner roster</h3>
+                <p className="mt-1 text-xs text-brand-neutral-400">Context switcher and supervised visit actions stay inside the Journey supervisor page.</p>
+              </div>
+              <button onClick={() => setLearnerPickerOpen(!learnerPickerOpen)} className="inline-flex items-center gap-2 rounded-xl border border-brand-teal-100 bg-brand-teal-50 px-3 py-2 text-xs font-bold text-brand-teal-600">
+                <Icon name="users" className="h-4 w-4" />
+                Learner picker
+              </button>
+            </div>
+            <DataTable view={view} />
+          </div>
+          <div className="xl:col-span-2 rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-heading text-base font-extrabold text-brand-teal-600">Maria Santos, RN</h3>
+                <p className="mt-1 text-xs text-brand-neutral-400">EMP-1001 - Appendix F cleared - RN pathway.</p>
+              </div>
+              <ToneBadge tone="orange">In progress</ToneBadge>
+            </div>
+            <LearnerPickerPanel open={learnerPickerOpen} />
+            <div className="mt-5 space-y-3">
+              {['GAO complete', 'Role modules', 'Supervised visits', 'Annual training'].map((label, index) => (
+                <div key={label}>
+                  <div className="mb-1 flex justify-between text-[10px] font-bold uppercase tracking-wider text-brand-neutral-400">
+                    <span>{label}</span>
+                    <span>{[60, 25, 0, 10][index]}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-brand-neutral-100">
+                    <div className={`${tones[index === 2 ? 'orange' : 'teal'].bar} h-2 rounded-full`} style={{ width: `${[60, 25, 8, 10][index]}%` }}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => setVisitDrawerOpen(true)} className="mt-5 w-full rounded-xl bg-brand-orange-500 px-4 py-3 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Log supervised visit</button>
+          </div>
+          <VisitLoggingDrawer open={visitDrawerOpen} onClose={() => setVisitDrawerOpen(false)} />
+        </div>
+      );
+    }
+
+    function JourneyAdminBuilderState() {
+      const sequence = [
+        ['1', 'GAO-001', 'Agency mission and patient rights', 'Required', ['HR-TA-005', 'EN-FM-001']],
+        ['2', 'GAO-013', 'Infection prevention and PPE', 'Required', ['CL-SD-016', 'HR-FM-016']],
+        ['3', 'RN-SUP', 'Supervised patient visits', 'Required', ['HR-TA-005', 'HRTA005_E']],
+        ['4', 'ANN-001', 'Annual refresh bundle', 'Optional', ['HR-TD-003', 'EN-FM-014']],
+      ];
+      return (
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
+          <div className="xl:col-span-2 rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft">
+            <ToneBadge tone="teal">Course path builder</ToneBadge>
+            <h3 className="mt-3 font-heading text-lg font-extrabold text-brand-teal-600">RN onboarding syllabus</h3>
+            <div className="mt-4 space-y-3">
+              <PhaseBField label="Course title" value="RN General Orientation and supervised clearance" />
+              <PhaseBField label="Role track" value="Registered Nurse - new hire" />
+              <PhaseBField label="Target timeline" value="30 calendar days with 2 supervised visits" />
+              <PhaseBField label="Builder notes" value="Uses existing Journey modules, policy references, and eCIgn-ready attestation forms." as="textarea" />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button className="rounded-xl bg-brand-orange-500 px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Publish syllabus</button>
+              <button className="rounded-xl border border-brand-teal-100 bg-white px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-brand-teal-600">Save draft</button>
+            </div>
+          </div>
+          <div className="xl:col-span-3 rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="font-heading text-base font-extrabold text-brand-teal-600">Module sequence</h3>
+              <button className="inline-flex items-center gap-2 rounded-xl border border-brand-teal-100 bg-brand-teal-50 px-3 py-2 text-xs font-bold text-brand-teal-600">
+                <Icon name="plus" className="h-4 w-4" />
+                Add module
+              </button>
+            </div>
+            <div className="mt-4 space-y-3">
+              {sequence.map(([order, code, title, requirement, refs], index) => (
+                <div key={code} className="rounded-2xl border border-brand-neutral-100 bg-brand-neutral-50 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <Icon name="grip-vertical" className="mt-1 h-4 w-4 text-brand-neutral-400" />
+                      <div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-brand-orange-500">Step {order} - {code}</div>
+                        <div className="mt-1 text-sm font-bold text-brand-teal-600">{title}</div>
+                      </div>
+                    </div>
+                    <ToneBadge tone={requirement === 'Required' ? 'orange' : 'teal'}>{requirement}</ToneBadge>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {refs.map((ref) => <span key={ref} className="rounded-full border border-brand-teal-100 bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-brand-teal-600">{ref}</span>)}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {['Move up', 'Move down', 'Remove'].map((action, actionIndex) => (
+                      <button key={action} className={`rounded-lg border px-2.5 py-1.5 text-[10px] font-bold ${actionIndex === 2 ? 'border-brand-orange-100 bg-white text-brand-orange-500' : 'border-brand-neutral-200 bg-white text-brand-teal-600'}`}>{action}</button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function WorkflowsLibraryPhaseB({ view, drawerOpen, setDrawerOpen }) {
+      const selectedWorkflow = {
+        id: 'WF-QAPI-01',
+        title: 'QAPI quarterly board review',
+        owner: 'QAPI Lead',
+        status: 'Needs review',
+        purpose: 'Coordinates agenda, attendance, minutes, action tracker, evidence packet, eCIgn routing, and final survey lock.',
+      };
+      return (
+        <div className="relative grid grid-cols-1 gap-6 xl:grid-cols-5">
+          <div className="xl:col-span-3">
+            <div className="mb-4 rounded-2xl border border-brand-neutral-200 bg-white p-4 shadow-soft">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap gap-2">
+                  {['All', 'Clinical', 'HR', 'Governance', 'Compliance'].map((tab, index) => (
+                    <button key={tab} className={`rounded-xl px-3 py-2 text-xs font-bold ${index === 0 ? 'bg-brand-teal-500 text-white' : 'border border-brand-neutral-200 bg-white text-brand-teal-600'}`}>{tab}</button>
+                  ))}
+                </div>
+                <button onClick={() => setDrawerOpen(true)} className="inline-flex items-center gap-2 rounded-xl bg-brand-orange-500 px-3 py-2 text-xs font-heading font-extrabold uppercase tracking-wider text-white">
+                  <Icon name="panel-right-open" className="h-4 w-4" />
+                  Open workflow detail
+                </button>
+              </div>
+              <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_180px]">
+                <div className="flex items-center gap-2 rounded-xl border border-brand-neutral-200 bg-brand-neutral-50 px-3 py-2">
+                  <Icon name="search" className="h-4 w-4 text-brand-neutral-400" />
+                  <span className="text-xs text-brand-neutral-400">Search workflow title, owner, policy, or evidence state</span>
+                </div>
+                <button className="rounded-xl border border-brand-neutral-200 bg-white px-3 py-2 text-xs font-bold text-brand-teal-600">Status: all</button>
+              </div>
+            </div>
+            <DataTable view={view} />
+          </div>
+          <div className="xl:col-span-2 space-y-4">
+            {view.cards.map((item) => <SurfaceCard key={item.title} item={item} />)}
+          </div>
+          <PhaseBDrawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            eyebrow="Workflows Library"
+            title={selectedWorkflow.title}
+            tone="orange"
+            footer={
+              <div className="flex flex-wrap justify-end gap-2">
+                <button onClick={() => setDrawerOpen(false)} className="rounded-xl border border-brand-teal-100 bg-white px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-brand-teal-600">Close drawer</button>
+                <button className="rounded-xl bg-brand-orange-500 px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Open swimlane</button>
+              </div>
+            }
+          >
+            <div className="space-y-4">
+              <p className="text-sm leading-relaxed text-brand-neutral-500">{selectedWorkflow.purpose}</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  ['Owner', selectedWorkflow.owner],
+                  ['Status', selectedWorkflow.status],
+                  ['Policies', 'QA-PG-001, GV-GB-001'],
+                  ['Forms', 'GV-FM-005, EN-FM-008'],
+                ].map(([label, value], index) => (
+                  <div key={label} className="rounded-xl border border-brand-neutral-100 bg-brand-neutral-50 p-3">
+                    <div className="text-[10px] font-heading font-extrabold uppercase tracking-wider text-brand-neutral-400">{label}</div>
+                    <div className="mt-1 text-xs font-bold text-brand-teal-600">{value}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-2xl border border-brand-neutral-200 bg-white p-4">
+                <h4 className="font-heading text-sm font-extrabold text-brand-teal-600">Linked evidence and history</h4>
+                <div className="mt-3 space-y-2">
+                  {['Agenda packet locked', 'Minutes draft awaiting eCIgn signing', 'Hash manifest verified', 'Survey packet export queued'].map((item, index) => (
+                    <div key={item} className="flex items-center justify-between rounded-xl bg-brand-neutral-50 px-3 py-2 text-xs">
+                      <span className="font-bold text-brand-teal-600">{item}</span>
+                      <ToneBadge tone={index === 1 ? 'orange' : 'teal'}>{index === 1 ? 'Awaiting' : 'Ready'}</ToneBadge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </PhaseBDrawer>
+        </div>
+      );
+    }
+
+    function WorkflowSwimlanePhaseB({ view, selectedCardOpen, setSelectedCardOpen }) {
+      const columns = view.columns || [];
+      return (
+        <div className="relative space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {columns.map((column, columnIndex) => (
+              <section key={column.title} className={`rounded-2xl border bg-white p-4 shadow-soft ${columnIndex === 1 ? 'border-brand-teal-100' : 'border-brand-neutral-200'}`}>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="font-heading text-sm font-extrabold text-brand-teal-600">{column.title}</h3>
+                  <ToneBadge tone={column.tone}>{column.cards.length}</ToneBadge>
+                </div>
+                <div className="space-y-3">
+                  {column.cards.length === 0 && (
+                    <div className="rounded-xl border border-dashed border-brand-neutral-200 bg-brand-neutral-50 p-4 text-xs text-brand-neutral-400">No cards in this lane.</div>
+                  )}
+                  {column.cards.map((task, index) => (
+                    <button key={`${task.title}-${index}`} onClick={() => setSelectedCardOpen(true)} className={`block w-full rounded-2xl border p-4 text-left shadow-soft transition hover:-translate-y-0.5 ${columnIndex === 1 && index === 0 ? 'border-brand-teal-200 bg-brand-teal-50' : 'border-brand-neutral-100 bg-brand-neutral-50'}`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-bold text-brand-teal-600">{task.title}</div>
+                          <div className="mt-1 text-[11px] text-brand-neutral-400">{task.meta || 'Evidence, checklist, and eCIgn state available.'}</div>
+                        </div>
+                        <ToneBadge tone={task.tone || column.tone}>{task.status || 'Open'}</ToneBadge>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {(task.chips || ['Checklist']).map((chip) => (
+                          <span key={chip} className="rounded-full border border-brand-teal-100 bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-brand-teal-600">{chip}</span>
+                        ))}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+          <PhaseBModal
+            open={selectedCardOpen}
+            onClose={() => setSelectedCardOpen(false)}
+            eyebrow="Workflow task detail"
+            title="Route chair signature"
+            tone="orange"
+            footer={
+              <div className="flex flex-wrap justify-end gap-2">
+                <button onClick={() => setSelectedCardOpen(false)} className="rounded-xl border border-brand-teal-100 bg-white px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-brand-teal-600">Close modal</button>
+                <button className="rounded-xl bg-brand-orange-500 px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Validate step</button>
+              </div>
+            }
+          >
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-3">
+                {['Checklist complete', 'Evidence packet attached', 'eCIgn signing ready', 'Audit note reviewed'].map((item, index) => (
+                  <label key={item} className="flex items-center justify-between rounded-xl border border-brand-neutral-100 bg-brand-neutral-50 p-3">
+                    <span className="text-xs font-bold text-brand-teal-600">{item}</span>
+                    <ToneBadge tone={index === 2 ? 'orange' : 'teal'}>{index === 2 ? 'Awaiting' : 'Ready'}</ToneBadge>
+                  </label>
+                ))}
+              </div>
+              <div className="rounded-2xl border border-brand-neutral-200 bg-white p-4">
+                <h4 className="font-heading text-sm font-extrabold text-brand-teal-600">Evidence and signature status</h4>
+                <div className="mt-3 space-y-2 text-xs">
+                  <div className="rounded-xl bg-brand-neutral-50 p-3">Required file: Q2_QAPI_minutes_packet.pdf</div>
+                  <div className="rounded-xl bg-brand-neutral-50 p-3">eCIgn sequence: Administrator, Governing Body Chair</div>
+                  <div className="rounded-xl bg-brand-orange-50 p-3 text-brand-neutral-500">Chair signature is pending before final lock.</div>
+                </div>
+              </div>
+            </div>
+          </PhaseBModal>
+        </div>
+      );
+    }
+
+    function OnboardingBatchPhaseB({ view }) {
+      const gateRows = [
+        ['OIG sanctions list check', 'PASS', 'teal'],
+        ['SAM exclusion sweep', 'PASS', 'teal'],
+        ['Active licensure verification', 'PENDING', 'orange'],
+        ['Signed offer letter', 'MISSING', 'orange'],
+      ];
+      return (
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
+          <div className="xl:col-span-3 rounded-2xl border border-brand-neutral-200 bg-white p-6 shadow-soft">
+            <ToneBadge tone="orange">{view.route}</ToneBadge>
+            <h3 className="mt-4 font-heading text-2xl font-extrabold text-brand-teal-600">Maria Hernandez batch detail</h3>
+            <p className="mt-3 text-sm leading-relaxed text-brand-neutral-400">{view.description}</p>
+            <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+              {(view.gateTiles || onboardingV2Gates).map((gate, index) => (
+                <div key={gate.gateId} className={`rounded-2xl border p-4 ${index === 1 ? 'border-brand-orange-100 bg-brand-orange-50' : 'border-brand-teal-100 bg-brand-teal-50'}`}>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-brand-teal-600">{gate.gateId}</h4>
+                    <ToneBadge tone={/Fail|Awaiting|missing/i.test(gate.outcome) ? 'orange' : 'teal'}>{gate.outcome}</ToneBadge>
+                  </div>
+                  <p className="mt-2 text-xs text-brand-neutral-500">{gate.missing} missing criteria.</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 rounded-2xl border border-brand-neutral-200 bg-white p-4 shadow-soft">
+              <div className="flex items-center justify-between">
+                <h4 className="font-heading text-base font-extrabold text-brand-teal-600">SystemAccessClearance checklist</h4>
+                <button className="inline-flex items-center gap-2 rounded-xl border border-brand-teal-100 bg-brand-teal-50 px-3 py-2 text-xs font-bold text-brand-teal-600">
+                  <Icon name="rotate-cw" className="h-4 w-4" />
+                  Rerun checks
+                </button>
+              </div>
+              <div className="mt-4 space-y-2">
+                {gateRows.map(([item, status, toneName]) => (
+                  <div key={item} className="flex items-center justify-between rounded-xl bg-brand-neutral-50 px-3 py-2 text-xs">
+                    <span className="font-bold text-brand-teal-600">{item}</span>
+                    <ToneBadge tone={toneName}>{status}</ToneBadge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="xl:col-span-2 rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft">
+            <h3 className="font-heading text-base font-extrabold text-brand-teal-600">Unit evidence detail</h3>
+            <div className="mt-4 flex rounded-xl border border-brand-neutral-200 bg-brand-neutral-50 p-1 text-xs font-bold">
+              <button className="flex-1 rounded-lg bg-white px-3 py-2 text-brand-teal-600 shadow-soft">Evidence file</button>
+              <button className="flex-1 rounded-lg px-3 py-2 text-brand-neutral-500">Signature log</button>
+            </div>
+            <div className="mt-4 space-y-3">
+              <DocumentPreviewFrame title="TB screening evidence" subtitle="Uploaded Jun 11, 2026 - 1.2 MB" compact />
+              {[
+                ['Document hash', '7f41...a92c'],
+                ['Signature sequence', 'Learner signed, director pending'],
+                ['eCIgn audit token', 'ECG-2026-0618-004'],
+              ].map(([label, value], index) => (
+                <div key={label} className="flex items-center justify-between rounded-xl bg-brand-neutral-50 px-3 py-2 text-xs">
+                  <span className="font-bold text-brand-teal-600">{label}</span>
+                  <span className="text-brand-neutral-400">{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function OnboardingOverridesPhaseB({ view, modalOpen, setModalOpen }) {
+      return (
+        <div className="relative grid grid-cols-1 gap-6 xl:grid-cols-5">
+          <div className="xl:col-span-3 rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="font-heading text-lg font-extrabold text-brand-teal-600">Active overrides</h3>
+                <p className="mt-1 text-xs text-brand-neutral-400">Dual-approver exceptions remain visible inside Onboarding Overrides.</p>
+              </div>
+              <button onClick={() => setModalOpen(true)} className="rounded-xl bg-brand-orange-500 px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Request override</button>
+            </div>
+            <div className="mt-4">
+              <DataTable view={view} />
+            </div>
+          </div>
+          <div className="xl:col-span-2 space-y-4">
+            {[
+              card('Audit posture', 'Overrides require reason, expiration, two approvers, and attestation before issue.', 'orange', 'shield-alert', 64),
+              card('Governance review', 'Active exceptions are reviewed in readiness reports and survey packets.', 'teal', 'clipboard-check', 82),
+            ].map((item) => <SurfaceCard key={item.title} item={item} />)}
+          </div>
+          <PhaseBModal
+            open={modalOpen}
+            onClose={() => setModalOpen(false)}
+            eyebrow="Override request"
+            title="Request compliance override"
+            tone="orange"
+            footer={
+              <div className="flex flex-wrap justify-end gap-2">
+                <button onClick={() => setModalOpen(false)} className="rounded-xl border border-brand-teal-100 bg-white px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-brand-teal-600">Cancel</button>
+                <button className="rounded-xl bg-brand-orange-500 px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Issue override</button>
+              </div>
+            }
+          >
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <PhaseBField label="Target learner" value="Maria Hernandez, RN" />
+              <PhaseBField label="Target gate" value="SystemAccessClearance" />
+              <PhaseBField label="Reason" value="Credential delay" />
+              <PhaseBField label="Expiration" value="30 days - expires Jul 18, 2026" />
+              <PhaseBField label="Approver 1" value="Director of Nursing" />
+              <PhaseBField label="Approver 2" value="Administrator" />
+            </div>
+            <label className="mt-4 flex items-start gap-3 rounded-2xl border border-brand-orange-100 bg-brand-orange-50 p-4">
+              <input type="checkbox" checked readOnly className="mt-1 accent-brand-orange-500" />
+              <span className="text-xs leading-relaxed text-brand-neutral-500">This override is recorded in the permanent agency audit trail and may be reviewed during surveys.</span>
+            </label>
+          </PhaseBModal>
+        </div>
+      );
+    }
+
+    function AgendaListView({ view, events, mode }) {
+      const times = mode === 'Day' ? ['8:00 AM', '10:30 AM', '1:00 PM', '3:30 PM'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      return (
+        <div className="rounded-b-2xl border-x border-b border-white/90 bg-white/45 p-3">
+          <div className="space-y-3">
+            {times.map((time, index) => {
+              const event = events[index % events.length];
+              return (
+                <div key={`${time}-${event.label}`} className="grid grid-cols-[72px_minmax(0,1fr)] gap-3 rounded-2xl border border-white/95 bg-white/80 p-3 shadow-soft">
+                  <div className="text-xs font-bold text-brand-teal-600">{time}</div>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h4 className="text-sm font-bold text-brand-teal-600">{event.label}</h4>
+                      <ToneBadge tone={event.tone || 'teal'}>{event.tone === 'orange' ? 'Needs owner' : 'Ready'}</ToneBadge>
+                    </div>
+                    <p className="mt-1 text-xs text-brand-neutral-400">{event.owner || 'Clinical Manager'} - Jun {event.day}</p>
+                    <div className="mt-3 h-1.5 rounded-full bg-brand-neutral-100">
+                      <div className={`${event.tone === 'orange' ? 'bg-brand-orange-500' : 'bg-brand-teal-500'} h-1.5 rounded-full`} style={{ width: `${event.tone === 'orange' ? 52 : 78}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    function StaffingConflictDrawer({ open, onClose, event }) {
+      const candidates = [
+        ['Priya Singh, RN', '96% match', '3.4 miles', '2/5 visits'],
+        ['Luis Mendez, LVN', '88% match', '5.8 miles', '3/5 visits'],
+        ['Maria Delgado, RN', '84% match', '7.1 miles', '4/5 visits'],
+      ];
+      return (
+        <PhaseBDrawer
+          open={open}
+          onClose={onClose}
+          eyebrow="Staffing calendar"
+          title="Resolve staffing conflict"
+          tone="orange"
+          footer={
+            <div className="flex flex-wrap justify-end gap-2">
+              <button onClick={onClose} className="rounded-xl border border-brand-teal-100 bg-white px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-brand-teal-600">Close drawer</button>
+              <button className="rounded-xl border border-brand-teal-100 bg-brand-teal-50 px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-brand-teal-600">Escalate to director</button>
+            </div>
+          }
+        >
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-brand-orange-100 bg-brand-orange-50 p-4">
+              <h4 className="font-heading text-base font-extrabold text-brand-orange-600">{event?.label || 'CHHA gap'}</h4>
+              <p className="mt-2 text-xs leading-relaxed text-brand-neutral-500">Clinician coverage needs reassignment before the visit window. Candidate ranking uses discipline match, distance, and current caseload.</p>
+            </div>
+            {candidates.map(([name, match, distance, load], index) => (
+              <div key={name} className="rounded-2xl border border-brand-neutral-100 bg-brand-neutral-50 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-bold text-brand-teal-600">{name}</div>
+                    <div className="mt-1 text-xs text-brand-neutral-400">{distance} - {load}</div>
+                  </div>
+                  <ToneBadge tone={index === 0 ? 'teal' : 'orange'}>{match}</ToneBadge>
+                </div>
+                <button className="mt-3 w-full rounded-xl bg-brand-orange-500 px-3 py-2 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Assign and dispatch</button>
+              </div>
+            ))}
+          </div>
+        </PhaseBDrawer>
+      );
+    }
+
+    function AppendixFPhaseB({ view, signatureOpen, setSignatureOpen }) {
+      const records = view.records || [];
+      const toc = ['Screening checklist', 'Policy source', 'Pending items', 'HR Director signature'];
+      return (
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
+          <aside className="xl:col-span-1 rounded-2xl border border-brand-neutral-200 bg-white p-4 shadow-soft">
+            <h3 className="font-heading text-sm font-extrabold text-brand-teal-600">Contents</h3>
+            <div className="mt-4 space-y-2">
+              {toc.map((item, index) => (
+                <button key={item} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold ${index === 0 ? 'bg-brand-teal-50 text-brand-teal-600' : index === 2 ? 'bg-brand-orange-50 text-brand-orange-500' : 'bg-brand-neutral-50 text-brand-teal-600'}`}>
+                  <Icon name={index < 2 ? 'check-circle' : index === 2 ? 'alert-circle' : 'circle'} className="h-4 w-4" />
+                  {item}
+                </button>
+              ))}
+            </div>
+          </aside>
+          <section className="xl:col-span-4 rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <ToneBadge tone="orange">Appendix F hard stop</ToneBadge>
+                <h3 className="mt-3 font-heading text-xl font-extrabold text-brand-teal-600">{view.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-brand-neutral-400">{view.description}</p>
+              </div>
+              <button onClick={() => setSignatureOpen(true)} className="rounded-xl bg-brand-orange-500 px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Open signature canvas</button>
+            </div>
+            <div className="mt-5">
+              <DataTable view={view} />
+            </div>
+          </section>
+          <SignatureDrawingOverlay open={signatureOpen} onClose={() => setSignatureOpen(false)} title="Draw Appendix F signature" />
+        </div>
+      );
+    }
+
+    function PermissionMatrixPhaseB({ view }) {
+      const rows = [
+        ['Policy Management', 'Policy writing', 'Inherited granted', 'Default'],
+        ['Evidence Logs', 'Evidence upload', 'Inherited granted', 'Force Grant'],
+        ['eCIgn Forms', 'eCIgn signing', 'Requires approval', 'Default'],
+        ['Supervisor Actions', 'Surveyor viewer access', 'Inherited revoked', 'Force Revoke'],
+        ['User Administration', 'User administration', 'Requires approval', 'Default'],
+      ];
+      return (
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
+          <div className="xl:col-span-2">
+            <DataTable view={view} />
+          </div>
+          <div className="xl:col-span-3 rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <ToneBadge tone="teal">Role inheritance</ToneBadge>
+                <h3 className="mt-3 font-heading text-lg font-extrabold text-brand-teal-600">Maria Gonzalez permission overrides</h3>
+                <p className="mt-1 text-xs text-brand-neutral-400">DON role - user-specific overrides remain inside Admin Users.</p>
+              </div>
+              <ToneBadge tone="orange">2 overrides</ToneBadge>
+            </div>
+            <div className="mt-5 overflow-hidden rounded-2xl border border-brand-neutral-200">
+              <div className="grid grid-cols-[1fr_1.1fr_.9fr_1.4fr] bg-brand-neutral-50 px-4 py-3 text-[10px] font-heading font-extrabold uppercase tracking-wider text-brand-neutral-400">
+                <div>Group</div>
+                <div>Permission</div>
+                <div>Inherited</div>
+                <div>Override</div>
+              </div>
+              {rows.map(([group, label, inherited, selected], index) => (
+                <div key={label} className={`grid grid-cols-[1fr_1.1fr_.9fr_1.4fr] items-center gap-2 border-t border-brand-neutral-100 px-4 py-3 text-xs ${selected !== 'Default' ? 'bg-brand-orange-50/70' : 'bg-white'}`}>
+                  <div className="font-bold text-brand-neutral-500">{group}</div>
+                  <div className="font-bold text-brand-teal-600">{label}</div>
+                  <div><ToneBadge tone={/revoked|approval/i.test(inherited) ? 'orange' : 'teal'}>{inherited}</ToneBadge></div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['Default', 'Force Grant', 'Force Revoke'].map((choice) => (
+                      <span key={choice} className={`rounded-full border px-2 py-1 text-[9px] font-bold uppercase tracking-wider ${choice === selected ? 'border-brand-teal-100 bg-brand-teal-50 text-brand-teal-600' : 'border-brand-neutral-200 bg-white text-brand-neutral-400'}`}>{choice}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button className="rounded-xl border border-brand-teal-100 bg-white px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-brand-teal-600">Restore role defaults</button>
+              <button className="rounded-xl bg-brand-teal-500 px-4 py-2.5 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Save matrix overrides</button>
+            </div>
           </div>
         </div>
       );
@@ -2399,8 +3211,16 @@
 
     function CalendarPrototype({ view }) {
       const [selectedEvent, setSelectedEvent] = useState(null);
+      const [agendaMode, setAgendaMode] = useState(view.id === 'master-calendar' || view.id === 'staffing-calendar' ? 'Week' : 'Month');
+      const [resolverEvent, setResolverEvent] = useState(view.id === 'staffing-calendar' ? (view.events || staffingEvents).find((event) => event.tone === 'orange' || event.tone === 'amber') : null);
       const events = [...(view.events || prototypeEvents)].sort((a, b) => a.day - b.day);
-      const openSwimlane = (event) => setSelectedEvent(event);
+      const openSwimlane = (event) => {
+        if (view.id === 'staffing-calendar' && (event.tone === 'orange' || event.tone === 'amber')) {
+          setResolverEvent(event);
+          return;
+        }
+        setSelectedEvent(event);
+      };
       useEffect(() => {
         if (window.lucide) {
           window.requestAnimationFrame(() => window.lucide.createIcons());
@@ -2415,6 +3235,7 @@
         acc[event.day].push(event);
         return acc;
       }, {});
+      const staffingConflictEvent = resolverEvent || (view.id === 'staffing-calendar' ? events.find((event) => event.tone === 'orange' || event.tone === 'amber') : null);
       const pillClass = (event) => event.tone === 'orange' || event.tone === 'amber'
         ? 'border-brand-orange-400 bg-brand-orange-400 text-white'
         : 'border-brand-teal-500 bg-brand-teal-500 text-white';
@@ -2429,9 +3250,9 @@
           <div data-calendar-board className="rounded-2xl border border-white/95 bg-white/75 p-4 shadow-soft backdrop-blur-xl">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex rounded-xl border border-white/90 bg-brand-neutral-100/70 p-1 text-xs font-bold">
-                <button className="rounded-lg px-4 py-2 text-brand-neutral-500">Day</button>
-                <button className="rounded-lg px-4 py-2 text-brand-neutral-500">Week</button>
-                <button className="rounded-lg bg-white px-4 py-2 text-brand-teal-600 shadow-soft">Month</button>
+                {['Day', 'Week', 'Month'].map((mode) => (
+                  <button key={mode} onClick={() => setAgendaMode(mode)} className={`rounded-lg px-4 py-2 ${agendaMode === mode ? 'bg-white text-brand-teal-600 shadow-soft' : 'text-brand-neutral-500'}`}>{mode}</button>
+                ))}
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {['Staff', 'Patient', 'Event Type'].map((filter) => (
@@ -2447,26 +3268,38 @@
                 <h3 className="font-heading text-lg font-extrabold">June 2026</h3>
                 <p className="text-xs text-brand-neutral-400">Teal events are ready; orange events need owner action.</p>
               </div>
+              {view.id === 'staffing-calendar' && (
+                <button onClick={() => setResolverEvent(staffingConflictEvent)} className="inline-flex items-center gap-2 rounded-xl bg-brand-orange-500 px-3 py-2 text-xs font-heading font-extrabold uppercase tracking-wider text-white">
+                  <Icon name="user-plus" className="h-4 w-4" />
+                  Resolve staffing conflict
+                </button>
+              )}
             </div>
-            <div className="grid grid-cols-7 border-b border-brand-neutral-200/60 pb-3 text-center text-[10px] font-heading font-extrabold uppercase tracking-widest text-brand-teal-600">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => <span key={day}>{day}</span>)}
-            </div>
-            <div className="mt-0 grid grid-cols-7 overflow-visible rounded-b-2xl border-x border-b border-white/90 bg-white/40">
-              {Array.from({ length: 30 }, (_, i) => i + 1).map((day) => (
-                <div key={day} className="min-h-[112px] border-r border-b border-brand-neutral-200/60 bg-white/45 p-2 last:border-r-0">
-                  <div className="text-xs font-bold text-brand-teal-600">{day}</div>
-                  <div className="mt-3 space-y-1">
-                    {(byDay[day] || []).map((event, index) => (
-                      <CalendarEventItem key={`${event.label}-${index}`} view={view} event={event} index={index} surface="calendar-board" onOpenSwimlane={openSwimlane}>
-                        <button data-calendar-event={event.label} className={`w-full truncate rounded-md border px-1.5 py-1 text-left text-[9px] font-bold shadow-sm ${pillClass(event)}`}>
-                          {event.label}
-                        </button>
-                      </CalendarEventItem>
-                    ))}
-                  </div>
+            {agendaMode === 'Month' ? (
+              <>
+                <div className="grid grid-cols-7 border-b border-brand-neutral-200/60 pb-3 text-center text-[10px] font-heading font-extrabold uppercase tracking-widest text-brand-teal-600">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => <span key={day}>{day}</span>)}
                 </div>
-              ))}
-            </div>
+                <div className="mt-0 grid grid-cols-7 overflow-visible rounded-b-2xl border-x border-b border-white/90 bg-white/40">
+                  {Array.from({ length: 30 }, (_, i) => i + 1).map((day) => (
+                    <div key={day} className="min-h-[112px] border-r border-b border-brand-neutral-200/60 bg-white/45 p-2 last:border-r-0">
+                      <div className="text-xs font-bold text-brand-teal-600">{day}</div>
+                      <div className="mt-3 space-y-1">
+                        {(byDay[day] || []).map((event, index) => (
+                          <CalendarEventItem key={`${event.label}-${index}`} view={view} event={event} index={index} surface="calendar-board" onOpenSwimlane={openSwimlane}>
+                            <button data-calendar-event={event.label} className={`w-full truncate rounded-md border px-1.5 py-1 text-left text-[9px] font-bold shadow-sm ${pillClass(event)}`}>
+                              {event.label}
+                            </button>
+                          </CalendarEventItem>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <AgendaListView view={view} events={events} mode={agendaMode} />
+            )}
           </div>
           <div data-calendar-upcoming className="rounded-2xl border border-white/95 bg-white/82 p-5 shadow-soft backdrop-blur-xl">
             <div className="flex items-center justify-between border-b border-brand-neutral-100 pb-3">
@@ -2492,11 +3325,16 @@
               ))}
             </div>
           </div>
+          <StaffingConflictDrawer open={view.id === 'staffing-calendar' && Boolean(staffingConflictEvent)} onClose={() => setResolverEvent(null)} event={staffingConflictEvent} />
         </div>
       );
     }
 
     function BoardPrototype({ view }) {
+      const [selectedCardOpen, setSelectedCardOpen] = useState(view.id === 'workflow-swimlane');
+      if (view.id === 'workflow-swimlane') {
+        return <WorkflowSwimlanePhaseB view={view} selectedCardOpen={selectedCardOpen} setSelectedCardOpen={setSelectedCardOpen} />;
+      }
       const colCount = (view.columns && view.columns.length) || 5;
       const gridCols = colCount === 4 ? 'xl:grid-cols-4' : colCount === 5 ? 'xl:grid-cols-5' : 'xl:grid-cols-4';
       return (
@@ -2691,6 +3529,11 @@
     }
 
     function ProfilesPrototype({ view }) {
+      const [visitDrawerOpen, setVisitDrawerOpen] = useState(view.id === 'supervisor');
+      const [learnerPickerOpen, setLearnerPickerOpen] = useState(view.id === 'supervisor');
+      if (view.id === 'supervisor') {
+        return <JourneySupervisorPhaseB view={view} visitDrawerOpen={visitDrawerOpen} setVisitDrawerOpen={setVisitDrawerOpen} learnerPickerOpen={learnerPickerOpen} setLearnerPickerOpen={setLearnerPickerOpen} />;
+      }
       const selected = view.selectedRecord || {
         title: 'Selected record',
         subtitle: 'Pinned context for quick verification.',
@@ -2763,6 +3606,14 @@
                 </div>
               ))}
             </div>
+            {(view.id === 'audit-mode' || view.id === 'evidence-center') && (
+              <div className="mt-5">
+                <DocumentPreviewFrame
+                  title={view.id === 'audit-mode' ? 'Audit packet PDF preview' : 'Evidence source preview'}
+                  subtitle={view.id === 'audit-mode' ? 'Survey packet artifact - hash verified' : 'Locked source artifact - content hash verified'}
+                />
+              </div>
+            )}
           </div>
           <div className="xl:col-span-2 rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft">
             <h3 className="font-heading text-base font-extrabold">{view.auditPacketTitle || 'Audit packet'}</h3>
@@ -2815,6 +3666,28 @@
     }
 
     function DetailPrototype({ view }) {
+      if (view.id === 'onboarding-v2-batch') {
+        return <OnboardingBatchPhaseB view={view} />;
+      }
+      if (view.id === 'artifact-viewer') {
+        return (
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
+            <div className="xl:col-span-3 rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft">
+              <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <ToneBadge tone="teal">{view.route}</ToneBadge>
+                  <h3 className="mt-3 font-heading text-xl font-extrabold text-brand-teal-600">{view.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-brand-neutral-400">{view.description}</p>
+                </div>
+              </div>
+              <DocumentPreviewFrame title="Artifact package preview" subtitle="Evidence package summary - source PDF and image controls" />
+            </div>
+            <div className="xl:col-span-2 space-y-4">
+              {view.cards.map((item) => <SurfaceCard key={item.title} item={item} />)}
+            </div>
+          </div>
+        );
+      }
       return (
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
           <div className="xl:col-span-3 rounded-2xl border border-brand-neutral-200 bg-white p-6 shadow-soft">
@@ -3118,6 +3991,7 @@
     }
 
     function EcignPrototype({ view }) {
+      const [drawingOpen, setDrawingOpen] = useState(true);
       const signers = view.signingSequence || [
         ['Thomas Parker', 'Signed', 'teal'],
         ['Administrator', 'Awaiting signature', 'orange'],
@@ -3181,12 +4055,13 @@
                 <div className="text-[10px] font-heading font-extrabold uppercase tracking-wider text-brand-orange-500">Attestation</div>
                 <p className="mt-2 text-xs leading-relaxed text-brand-neutral-500">{view.attestationText || 'Signing certifies this disclosure is complete and ready for audit retention.'}</p>
               </div>
-              <button className="mt-4 w-full rounded-xl bg-brand-orange-500 px-4 py-3 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Seal signature</button>
+              <button onClick={() => setDrawingOpen(true)} className="mt-4 w-full rounded-xl bg-brand-orange-500 px-4 py-3 text-xs font-heading font-extrabold uppercase tracking-wider text-white">Open drawing overlay</button>
             </div>
             {(view.signatureCards || [
               card('Signature certificate', 'Hash, signer, timestamp, IP posture, and linked form instance are retained.', 'teal', 'shield-check', 88),
             ]).map((item) => <SurfaceCard key={item.title} item={item} />)}
           </aside>
+          <SignatureDrawingOverlay open={drawingOpen} onClose={() => setDrawingOpen(false)} title="Draw eCIgn signature" />
         </div>
       );
     }
@@ -3198,6 +4073,9 @@
       const phases = view.phases || journeyPhases;
       const progress = view.progress || { gao: 60, role: 25 };
       const selectedModuleId = view.selectedModule || 'GAO-013';
+      const [visitDrawerOpen, setVisitDrawerOpen] = useState(id === 'supervisor');
+      const [learnerPickerOpen, setLearnerPickerOpen] = useState(id === 'supervisor' || id === 'journey-overview');
+      const [signatureOpen, setSignatureOpen] = useState(false);
 
       if (id === 'module-player') {
         const mod = modules.find(m => m.id === selectedModuleId) || modules[3];
@@ -3215,6 +4093,7 @@
                 <div className="ml-auto"><ToneBadge tone={isLocked ? 'orange' : 'green'}>{isLocked ? 'Locked' : 'Unlocked'}</ToneBadge></div>
               </div>
             </div>
+            <ModuleFailureRetryState onOpenSignature={() => setSignatureOpen(true)} />
             {isLocked ? (
               <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">Module locked. Complete prerequisites and gates first.</div>
             ) : isNonScorm ? (
@@ -3232,8 +4111,17 @@
             ) : (
               <div className="rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft">ScormPlayer / Quiz surface (score {mod.score || 85}%). Commit + finalize flow.</div>
             )}
+            <SignatureDrawingOverlay open={signatureOpen} onClose={() => setSignatureOpen(false)} title="Draw preceptor review signature" />
           </div>
         );
+      }
+
+      if (id === 'supervisor') {
+        return <JourneySupervisorPhaseB view={view} visitDrawerOpen={visitDrawerOpen} setVisitDrawerOpen={setVisitDrawerOpen} learnerPickerOpen={learnerPickerOpen} setLearnerPickerOpen={setLearnerPickerOpen} />;
+      }
+
+      if (id === 'journey-admin') {
+        return <JourneyAdminBuilderState />;
       }
 
       if (id === 'journey-v1') {
@@ -3262,9 +4150,15 @@
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
           <div className="xl:col-span-3 rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft">
             <div className="text-xs uppercase tracking-widest font-extrabold text-brand-teal-600">Learner</div>
-            <div className="mt-1 font-heading text-xl font-extrabold">{learner.name}</div>
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <div className="font-heading text-xl font-extrabold">{learner.name}</div>
+              <button onClick={() => setLearnerPickerOpen(!learnerPickerOpen)} className="rounded-lg border border-brand-teal-100 bg-brand-teal-50 p-2 text-brand-teal-600" aria-label="Open learner picker">
+                <Icon name="chevrons-up-down" className="h-4 w-4" />
+              </button>
+            </div>
             <div className="text-xs text-brand-neutral-400">{learner.role} · Start {learner.startDate}</div>
             <div className="mt-3 text-[10px] flex items-center gap-2"><span className={`inline-block w-2 h-2 rounded-full ${learner.appendixFCleared ? 'bg-emerald-500' : 'bg-orange-500'}`}></span>Appendix F {learner.appendixFCleared ? 'cleared' : 'pending'}</div>
+            <LearnerPickerPanel open={learnerPickerOpen} />
             <div className="mt-4 space-y-2">
               {phases.map((p, idx) => (
                 <div key={idx} className="flex items-center justify-between rounded-xl bg-brand-neutral-50 px-3 py-2 text-xs">
@@ -3316,6 +4210,12 @@
     function AdminPrototype({ view }) {
       const records = view.records || adminRows;
       const headers = view.tableHeaders || ['Group', 'Users', 'Access scope', 'Status'];
+      if (view.id === 'journey-admin') {
+        return <JourneyAdminBuilderState />;
+      }
+      if (view.id === 'admin-users') {
+        return <PermissionMatrixPhaseB view={{ ...view, records, tableHeaders: headers }} />;
+      }
       return (
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
           <div className="xl:col-span-3">
@@ -3324,9 +4224,9 @@
           <div className="xl:col-span-2 rounded-2xl border border-brand-neutral-200 bg-white p-5 shadow-soft" style={{borderRadius:'var(--radius-lg,16px)', backdropFilter:'none'}}>
             <h3 className="font-heading text-base font-extrabold">Permission matrix preview</h3>
             <div className="mt-4 space-y-3">
-              {['policy.view', 'form.sign', 'ceu.override', 'audit.export', 'user.provision'].map((perm, index) => (
+              {['Policy writing', 'eCIgn signing', 'Override review', 'Audit export', 'User administration'].map((perm, index) => (
                 <div key={perm} className="flex items-center justify-between rounded-xl bg-brand-neutral-50 p-3" style={{borderRadius:'8px'}}>
-                  <span className="font-mono text-xs text-brand-neutral-500">{perm}</span>
+                  <span className="text-xs font-bold text-brand-teal-600">{perm}</span>
                   <ToneBadge tone={index < 2 ? 'teal' : index === 2 ? 'orange' : 'slate'}>{index < 2 ? 'Granted' : index === 2 ? 'Dual approval' : 'Restricted'}</ToneBadge>
                 </div>
               ))}
@@ -3354,7 +4254,10 @@
             <h3 className="font-heading text-base font-extrabold">Contents</h3>
             <div className="mt-4 space-y-2">
               {docs.map((doc, index) => (
-                <button key={doc[0]} className={`w-full rounded-xl px-4 py-3 text-left text-xs font-bold ${index === 0 ? 'bg-brand-teal-50 text-brand-teal-500' : 'bg-brand-neutral-50 text-brand-neutral-500'}`}>{doc[0]}</button>
+                <button key={doc[0]} className={`flex w-full items-center gap-2 rounded-xl px-4 py-3 text-left text-xs font-bold ${index === 0 ? 'bg-brand-teal-50 text-brand-teal-500' : index === 2 ? 'bg-brand-orange-50 text-brand-orange-500' : 'bg-brand-neutral-50 text-brand-neutral-500'}`}>
+                  <Icon name={index === 0 ? 'check-circle' : index === 2 ? 'alert-circle' : 'circle'} className="h-4 w-4" />
+                  {doc[0]}
+                </button>
               ))}
             </div>
           </div>
@@ -4096,6 +4999,9 @@
                 </section>
               ))}
             </div>
+            <div className="mt-6">
+              <DocumentPreviewFrame title="Reference attachment preview" subtitle="Viewer source artifact - image/PDF controls embedded in reader" />
+            </div>
           </article>
 
           <aside className="xl:col-span-2 space-y-4">
@@ -4260,6 +5166,10 @@
     }
 
     function ReportsPrototype({ view }) {
+      const [overrideModalOpen, setOverrideModalOpen] = useState(view.id === 'onboarding-v2-governance');
+      if (view.id === 'onboarding-v2-governance') {
+        return <OnboardingOverridesPhaseB view={view} modalOpen={overrideModalOpen} setModalOpen={setOverrideModalOpen} />;
+      }
       const bars = view.reportBars || [42, 58, 51, 72, 66, 84, 78, 92, 87, 96];
       const labels = view.reportLabels || bars.map((_, index) => `${index + 1}`);
       return (
@@ -4359,6 +5269,14 @@
     }
 
     function MatrixPrototype({ view }) {
+      const [workflowDrawerOpen, setWorkflowDrawerOpen] = useState(view.id === 'workflows');
+      const [appendixSignatureOpen, setAppendixSignatureOpen] = useState(view.id === 'appendix-f');
+      if (view.id === 'workflows') {
+        return <WorkflowsLibraryPhaseB view={view} drawerOpen={workflowDrawerOpen} setDrawerOpen={setWorkflowDrawerOpen} />;
+      }
+      if (view.id === 'appendix-f') {
+        return <AppendixFPhaseB view={view} signatureOpen={appendixSignatureOpen} setSignatureOpen={setAppendixSignatureOpen} />;
+      }
       return (
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
           <div className="xl:col-span-3"><DataTable view={view} /></div>

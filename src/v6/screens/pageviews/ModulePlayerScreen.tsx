@@ -1,28 +1,6 @@
-import {
-  AlertTriangle,
-  BookOpen,
-  CheckCircle2,
-  ClipboardCheck,
-  ClipboardList,
-  FileCheck2,
-  LockKeyhole,
-  NotebookText,
-  PlayCircle,
-  ShieldCheck,
-  Signature,
-  type LucideIcon,
-} from 'lucide-react';
-import {
-  DataTable,
-  MetricGrid,
-  ProgressMeter,
-  SurfaceCard,
-  ToneTag,
-  toneSurfaceClasses,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
+import { useState } from 'react';
+import { AlertTriangle, BookOpen, CheckCircle2, ClipboardCheck, ClipboardList, FileCheck2, LockKeyhole, NotebookText, PlayCircle, ShieldCheck, Signature, type LucideIcon } from 'lucide-react';
+import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneGlassSurfaceClasses, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, Checkbox, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
@@ -249,6 +227,8 @@ const attestationRows = [
 ] as const;
 
 export function ModulePlayerScreen() {
+  const [showQuizFailure, setShowQuizFailure] = useState(true);
+
   return (
     <section
       aria-labelledby="module-player-title"
@@ -257,46 +237,10 @@ export function ModulePlayerScreen() {
       data-route={routeMarker.path}
       data-template={routeMarker.template}
     >
-      <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-        <div className="flex flex-wrap items-start justify-between gap-lg">
-          <div className="grid gap-md">
-            <div className="flex flex-wrap gap-sm">
-              <ToneTag tone="teal">{routeMarker.path}</ToneTag>
-              <ToneTag tone="slate">{routeMarker.hashId}</ToneTag>
-              <ToneTag tone="slate">{routeMarker.template}</ToneTag>
-              <ToneTag tone="orange">{routeMarker.group}</ToneTag>
-              <ToneBadge size="sm" status={moduleRecord.status} />
-            </div>
-            <div>
-              <p className="text-tag uppercase tracking-tag text-muted">{moduleRecord.id} - {moduleRecord.method}</p>
-              <h2 className="mt-xs text-h2 font-medium text-ink" id="module-player-title">
-                {moduleRecord.title}
-              </h2>
-              <p className="mt-xs max-w-content text-sm text-secondary">
-                Focused onboarding module player for skills checkoff, lesson progress, assessment readiness, evidence capture,
-                and right-side policy resources.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-sm">
-            <Button
-              iconLeft={<BookOpen aria-hidden="true" className="h-icon-sm w-icon-sm" />}
-              size="sm"
-              variant="secondary"
-            >
-              Previous step
-            </Button>
-            <Button iconLeft={<Signature aria-hidden="true" className="h-icon-sm w-icon-sm" />} size="sm">
-              Submit review
-            </Button>
-          </div>
-        </div>
-      </section>
-
       <MetricGrid metrics={moduleMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="grid gap-xl">
+        <div className="grid content-start gap-xl">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="player-stage-title">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
               <div>
@@ -312,25 +256,83 @@ export function ModulePlayerScreen() {
             </div>
 
             <div className="grid gap-lg tablet-l:grid-cols-[minmax(0,1fr)_minmax(240px,320px)]">
-              <div className="grid min-h-[320px] place-items-center rounded-lg border border-card bg-tone-slate-bg p-xl text-center">
-                <div className="max-w-content">
-                  <span className="mx-auto grid h-[72px] w-[72px] place-items-center rounded-lg border border-tone-teal-border bg-tone-teal-bg text-tone-teal-text">
-                    <PlayCircle aria-hidden="true" className="h-icon-xl w-icon-xl" />
-                  </span>
-                  <h3 className="mt-lg text-h3 font-light text-ink">Scenario player paused</h3>
-                  <p className="mt-sm text-sm text-secondary">
-                    Review the discrepancy, choose the escalation path, and attach the teaching note before final attestation.
-                  </p>
-                  <div className="mt-lg flex flex-wrap justify-center gap-sm">
-                    <Button iconLeft={<PlayCircle aria-hidden="true" className="h-icon-sm w-icon-sm" />} size="sm">
-                      Resume lesson
-                    </Button>
-                    <Button size="sm" variant="secondary">
-                      Save progress
-                    </Button>
+              {showQuizFailure ? (
+                <div className="grid min-h-[320px] rounded-lg border border-card bg-surface p-xl">
+                  <div className="grid gap-lg">
+                    {/* Soft orange box */}
+                    <div className="rounded-md bg-tone-orange-bg border border-tone-orange-border p-md text-sm text-tone-orange-text flex items-start gap-sm">
+                      <AlertTriangle className="h-icon-sm w-icon-sm shrink-0 mt-xs text-brand-orange" />
+                      <div>
+                        <p className="font-medium text-ink">Remediation review required</p>
+                        <p className="text-xs mt-xs text-secondary font-light">Score: 68% — Minimum passing threshold is 80%. A retry is available after review.</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-medium text-ink">Missed competency topics</h4>
+                      {/* Three-column grid */}
+                      <div className="mt-md grid grid-cols-3 gap-md">
+                        <div className="rounded-md bg-tone-slate-bg p-md text-left">
+                          <span className="text-xs text-secondary font-light">Infection control</span>
+                          <p className="mt-xs text-sm font-medium text-ink">2 missed</p>
+                        </div>
+                        <div className="rounded-md bg-tone-slate-bg p-md text-left">
+                          <span className="text-xs text-secondary font-light">Documentation SLA</span>
+                          <p className="mt-xs text-sm font-medium text-ink">1 missed</p>
+                        </div>
+                        <div className="rounded-md bg-tone-slate-bg p-md text-left">
+                          <span className="text-xs text-secondary font-light">Escalation timing</span>
+                          <p className="mt-xs text-sm font-medium text-ink">1 missed</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-md bg-tone-slate-bg p-md text-sm text-secondary">
+                      <p className="font-light">Supervisor has been notified of the attempt. An override or log of supervised visit may clear this milestone.</p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-sm">
+                      <Button
+                        className="font-light"
+                        onClick={() => setShowQuizFailure(false)}
+                        size="sm"
+                      >
+                        Retry quiz
+                      </Button>
+                      <Button
+                        className="border-brand-orange text-brand-orange hover:bg-tone-orange-bg font-light"
+                        onClick={() => setShowQuizFailure(false)}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        Request preceptor review
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="grid min-h-[320px] place-items-center rounded-lg border border-card bg-tone-slate-bg p-xl text-center">
+                  <div className="max-w-content">
+                    <span className="mx-auto grid h-[72px] w-[72px] place-items-center rounded-lg border border-tone-teal-border bg-tone-teal-bg text-tone-teal-text">
+                      <PlayCircle aria-hidden="true" className="h-icon-xl w-icon-xl" />
+                    </span>
+                    <h3 className="mt-lg text-h3 font-light text-ink">Scenario player paused</h3>
+                    <p className="mt-sm text-sm text-secondary">
+                      Review the discrepancy, choose the escalation path, and attach the teaching note before final attestation.
+                    </p>
+                    <div className="mt-lg flex flex-wrap justify-center gap-sm">
+                      <Button iconLeft={<PlayCircle aria-hidden="true" className="h-icon-sm w-icon-sm" />} size="sm">
+                        Resume lesson
+                      </Button>
+                      <Button size="sm" variant="secondary">
+                        Save progress
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
 
               <div className="grid content-start gap-md">
                 <section className="rounded-lg border border-card bg-surface p-lg">
@@ -469,7 +471,7 @@ function LessonStepCard({ step }: { step: LessonStep }) {
   const Icon = step.icon;
 
   return (
-    <article className={cx('rounded-lg border p-lg', toneSurfaceClasses[step.tone])}>
+    <article className={cx('rounded-lg p-lg', toneGlassSurfaceClasses[step.tone])}>
       <div className="mb-md flex items-start justify-between gap-md">
         <span className="grid h-tap w-tap place-items-center rounded-md bg-surface">
           <Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />
@@ -487,7 +489,7 @@ function EvidenceGateCard({ gate }: { gate: EvidenceGate }) {
   const Icon = gate.icon;
 
   return (
-    <article className={cx('rounded-lg border p-md', toneSurfaceClasses[gate.tone])}>
+    <article className={cx('rounded-lg p-md', toneGlassSurfaceClasses[gate.tone])}>
       <div className="flex items-start gap-md">
         <span className="grid h-tap w-tap flex-none place-items-center rounded-md bg-surface">
           <Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />
@@ -507,7 +509,7 @@ function EvidenceGateCard({ gate }: { gate: EvidenceGate }) {
 
 function ResourceCard({ resource }: { resource: ResourceLink }) {
   return (
-    <article className={cx('rounded-lg border p-md', toneSurfaceClasses[resource.tone])}>
+    <article className={cx('rounded-lg p-md', toneGlassSurfaceClasses[resource.tone])}>
       <div className="mb-sm flex flex-wrap items-start justify-between gap-sm">
         <h3 className="text-sm font-light text-ink">{resource.label}</h3>
         <ToneBadge size="sm" status={resource.status} />

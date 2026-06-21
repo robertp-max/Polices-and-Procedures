@@ -1,88 +1,62 @@
-import {
-  AlertTriangle,
-  BarChart3,
-  Bot,
-  BookOpen,
-  CalendarClock,
-  Camera,
-  CheckCircle2,
-  ClipboardCheck,
-  ClipboardList,
-  ClipboardPlus,
-  FileCheck2,
-  FileText,
-  FolderOpen,
-  History,
-  PanelRightOpen,
-  ShieldCheck,
-  Sparkles,
-  Stethoscope,
-  Upload,
-  Users,
-  type LucideIcon,
-} from 'lucide-react';
-import { type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
+import { AlertTriangle, BarChart3, Bot, BookOpen, CalendarClock, CalendarRange, Camera, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, Route, ShieldCheck, Sparkles, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
+import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, ToneBadge } from '../primitives';
 import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
-import {
-  BoardLane,
-  ChatThread,
-  DataTable,
-  MetricGrid,
-  ProgressMeter,
-  SurfaceCard,
-  ToneTag,
-  toneBarClasses,
-  toneSoftTileClasses,
-  toneSurfaceClasses,
-  type BoardLaneData,
-  type ChatMessageData,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../components';
-import {
-  AdminGroupsScreen,
-  AdminPermissionsScreen,
-  AdminRolesScreen,
-  AdminUsersScreen,
-  EcignWorkspaceScreen,
-  EventsBoardScreen,
-  FormsLibraryScreen,
-  FrameworkScreen,
-  GenericReferenceScreen,
-  MasterControlsScreen,
-  MyTasksScreen,
-  PolicyDetailScreen,
-  WorkflowsScreen,
-  AppendixFScreen,
-  JourneyAdminScreen,
-  JourneyOverviewScreen,
-  JourneyV1Screen,
-  ModulePlayerScreen,
-  SupervisorScreen,
-  OnboardingV2DashboardScreen,
-  OnboardingV2ActivateScreen,
-  OnboardingV2BatchesScreen,
-  OnboardingV2BatchScreen,
-  OnboardingV2AuditScreen,
-  OnboardingV2GovernanceScreen,
-  PolicyLifecycleScreen,
-  PolicyLifecycleDetailScreen,
-  HubstaffScreen,
-  SystemDocsScreen,
-  HelpCenterScreen,
-  GovernanceScreen,
-  SurveyorViewerScreen,
-  LoginScreen,
-  MobileIncidentScreen,
-} from './pageviews';
+import { BoardLane, ChatThread, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type ChatMessageData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen } from './pageviews';
 
 type RouteLike = Omit<V6RouteDefinition, 'phase'>;
 type BasicRow = Record<string, string>;
+
+const displayAcronyms: Record<string, string> = {
+  capa: 'CAPA',
+  ces: 'CES',
+  chha: 'CHHA',
+  don: 'DON',
+  ecign: 'eCIgn',
+  er: 'ER',
+  hipaa: 'HIPAA',
+  hr: 'HR',
+  lvn: 'LVN',
+  oasis: 'OASIS',
+  ot: 'OT',
+  pt: 'PT',
+  q1: 'Q1',
+  q2: 'Q2',
+  q3: 'Q3',
+  q4: 'Q4',
+  qa: 'QA',
+  qapi: 'QAPI',
+  rn: 'RN',
+  soc: 'SOC',
+  tb: 'TB',
+};
+
+function titleCaseToken(token: string) {
+  const normalized = token.toLowerCase();
+  if (displayAcronyms[normalized]) {
+    return displayAcronyms[normalized];
+  }
+
+  return token.charAt(0).toUpperCase() + token.slice(1).toLowerCase();
+}
+
+function formatSwimlaneTitle(label: string) {
+  return label
+    .split(/(\s+)/)
+    .map((part) => {
+      if (/^\s+$/.test(part)) {
+        return part;
+      }
+
+      return part.split('-').map(titleCaseToken).join('-');
+    })
+    .join('');
+}
 
 interface ActionRow {
   body: string;
@@ -111,40 +85,40 @@ const dashboardMetrics: readonly MetricTileData[] = [
 
 const dashboardActions: readonly ActionRow[] = [
   {
-    body: 'Same-day RN backup needs owner confirmation before the SOC visit window closes.',
-    due: 'Today',
-    icon: ClipboardPlus,
-    owner: 'Clinical Manager',
+    body: 'Start-of-care visit needs RN backup before 3:00 PM',
+    due: 'TODAY',
+    icon: Route,
+    owner: 'CLINICAL MANAGER',
     progress: 64,
     status: 'review-required',
     title: 'Reassign SOC coverage for Elena Vargas',
     tone: 'orange',
   },
   {
-    body: 'Recert review packet is ready after the plan-of-care attachment is confirmed.',
-    due: 'Jun 22',
-    icon: FileCheck2,
-    owner: 'QAPI Nurse',
+    body: 'Signed order and visit cadence need final confirmation',
+    due: 'JUN 19',
+    icon: ClipboardCheck,
+    owner: 'MARIA DELGADO, RN',
     progress: 82,
     status: 'ready',
     title: 'Close Robert Hale recert plan review',
     tone: 'teal',
   },
   {
-    body: 'Weekend CHHA pool has one route without a confirmed backup assignee.',
-    due: 'Jun 24',
-    icon: Users,
-    owner: 'Scheduler',
+    body: 'Two high-acuity patients need weekend pool assignment',
+    due: 'JUN 20',
+    icon: CalendarRange,
+    owner: 'SCHEDULING LEAD',
     progress: 48,
     status: 'blocked',
     title: 'Resolve CHHA weekend coverage gap',
     tone: 'orange',
   },
   {
-    body: 'Wound photo protocol evidence is captured and waiting for compliance approval.',
-    due: 'Jun 26',
+    body: 'Amna Yusuf route requires evidence lock after field upload',
+    due: 'JUN 21',
     icon: Camera,
-    owner: 'Compliance Officer',
+    owner: 'QAPI NURSE',
     progress: 76,
     status: 'uploaded',
     title: 'Approve wound photo protocol evidence',
@@ -367,6 +341,7 @@ const detailRail = [
 
 interface CalendarEventData {
   attendees?: readonly string[];
+  detail?: string;
   day: number;
   evidenceStatus?: string;
   formsCount?: number;
@@ -377,9 +352,36 @@ interface CalendarEventData {
   progress: number;
   readiness?: string;
   risk?: string;
+  steps?: string;
+  swimlane?: CalendarSwimlaneData;
   taskCount?: number;
   tone: Tone;
+  workflow?: string;
   workflowId?: string;
+}
+
+interface CalendarSwimlaneTask {
+  chips: readonly string[];
+  due: string;
+  id: string;
+  owner: string;
+  progress: number;
+  status: string;
+  title: string;
+  tone: Tone;
+}
+
+interface CalendarSwimlaneLane {
+  cards: readonly CalendarSwimlaneTask[];
+  note: string;
+  title: string;
+  tone: Tone;
+}
+
+interface CalendarSwimlaneData {
+  lanes: readonly CalendarSwimlaneLane[];
+  metrics: readonly MetricTileData[];
+  summary: string;
 }
 
 const calendarMetrics: readonly MetricTileData[] = [
@@ -394,10 +396,10 @@ const calendarEvents = [
   { day: 4, label: 'Clinician case conference', owner: 'Director of Nursing', progress: 72, tone: 'teal' },
   { day: 7, label: 'Medication reconciliation audit', owner: 'QAPI Nurse', progress: 82, tone: 'teal' },
   { day: 11, label: 'High-acuity staffing huddle', owner: 'Scheduler', progress: 52, tone: 'orange' },
-  { day: 15, label: 'Recertification window lock', owner: 'Clinical Manager', progress: 72, tone: 'orange' },
+  { day: 15, label: 'Recertification window lock', owner: 'Clinical Manager', progress: 72, tone: 'amber' },
   { day: 18, label: 'Credential renewal checkpoint', owner: 'HR Credentialing', progress: 76, tone: 'orange' },
   { day: 22, label: 'Visit note timeliness review', owner: 'Compliance Officer', progress: 66, tone: 'teal' },
-  { day: 26, label: 'Weekend coverage confirmation', owner: 'Operations Lead', progress: 70, tone: 'teal' },
+  { day: 26, label: 'Weekend coverage confirmation', owner: 'Operations Lead', progress: 70, tone: 'blue' },
 ] as const satisfies readonly CalendarEventData[];
 
 const staffingCalendarMetrics: readonly MetricTileData[] = [
@@ -424,6 +426,88 @@ const cesCalendarMetrics: readonly MetricTileData[] = [
   { label: 'Ready to certify', value: '9', helper: 'Awaiting final lock', tone: 'green' },
   { label: 'Survey critical', value: '3', helper: 'Needs owner action', tone: 'orange' },
 ];
+
+const q2QapiSwimlane: CalendarSwimlaneData = {
+  summary: 'Quarterly QAPI is the largest June event: indicators, adverse events, chart audits, CAPA, committee approval, and survey packet lock all converge here.',
+  metrics: [
+    { label: 'Tasks', value: '21', helper: 'All Q2 QAPI work units', tone: 'teal' },
+    { label: 'Owners', value: '7', helper: 'DON, QAPI, Clinical, Compliance', tone: 'orange' },
+    { label: 'Evidence', value: '18', helper: 'Artifacts before packet lock', tone: 'green' },
+    { label: 'Due window', value: 'Jun 10-21', helper: 'Quarterly committee cadence', tone: 'teal' },
+  ],
+  lanes: [
+    {
+      title: 'Event Intake',
+      tone: 'teal',
+      note: 'Open the quarterly QAPI event and bind policy, forms, owners, and due windows.',
+      cards: [
+        { id: 'Q2-QAPI-01', title: 'Create Q2 QAPI event shell', owner: 'Compliance Officer', due: 'Jun 10', status: 'Ready', chips: ['CES', 'QA-WF-03'], progress: 100, tone: 'green' },
+        { id: 'Q2-QAPI-02', title: 'Bind QAPI policies and committee charter', owner: 'Policy Admin', due: 'Jun 10', status: 'Ready', chips: ['QA-PG-001', 'GV-GB-001'], progress: 92, tone: 'teal' },
+        { id: 'Q2-QAPI-03', title: 'Confirm committee quorum and attendee list', owner: 'Administrator', due: 'Jun 11', status: 'In progress', chips: ['Roster', 'Minutes'], progress: 76, tone: 'teal' },
+      ],
+    },
+    {
+      title: 'Data Pull',
+      tone: 'orange',
+      note: 'Gather indicator exports, clinical samples, and patient-safety inputs for the quarter.',
+      cards: [
+        { id: 'Q2-QAPI-04', title: 'Export hospitalization and ER transfer trends', owner: 'QAPI Nurse', due: 'Jun 11', status: 'In progress', chips: ['Outcomes'], progress: 70, tone: 'teal' },
+        { id: 'Q2-QAPI-05', title: 'Compile infection-control surveillance log', owner: 'Clinical Manager', due: 'Jun 12', status: 'In progress', chips: ['CL-IC-001'], progress: 64, tone: 'teal' },
+        { id: 'Q2-QAPI-06', title: 'Pull medication reconciliation exception sample', owner: 'DON', due: 'Jun 12', status: 'Needs review', chips: ['Chart Audit'], progress: 58, tone: 'orange' },
+        { id: 'Q2-QAPI-07', title: 'Summarize incident and complaint themes', owner: 'Compliance Officer', due: 'Jun 13', status: 'Ready', chips: ['Risk'], progress: 82, tone: 'teal' },
+      ],
+    },
+    {
+      title: 'Clinical Review',
+      tone: 'teal',
+      note: 'Convert raw indicators into committee-ready findings and confirm responsible owners.',
+      cards: [
+        { id: 'Q2-QAPI-08', title: 'Review 60-day recert and care-plan sample', owner: 'Clinical Manager', due: 'Jun 14', status: 'In progress', chips: ['Recert'], progress: 66, tone: 'teal' },
+        { id: 'Q2-QAPI-09', title: 'Score OASIS accuracy variance report', owner: 'QA Analyst', due: 'Jun 14', status: 'Watch', chips: ['OASIS'], progress: 48, tone: 'orange' },
+        { id: 'Q2-QAPI-10', title: 'Validate supervisory visit completion rate', owner: 'DON', due: 'Jun 15', status: 'Ready', chips: ['HR', 'Clinical'], progress: 86, tone: 'teal' },
+      ],
+    },
+    {
+      title: 'CAPA Build',
+      tone: 'orange',
+      note: 'Create corrective actions for material gaps before the committee packet is routed.',
+      cards: [
+        { id: 'Q2-QAPI-11', title: 'Draft CAPA for medication documentation gaps', owner: 'QAPI Lead', due: 'Jun 16', status: 'Needs owner', chips: ['CAPA'], progress: 42, tone: 'orange' },
+        { id: 'Q2-QAPI-12', title: 'Assign infection-control retraining action', owner: 'Clinical Educator', due: 'Jun 16', status: 'In progress', chips: ['Training'], progress: 61, tone: 'teal' },
+        { id: 'Q2-QAPI-13', title: 'Set target dates for chart-audit recheck', owner: 'Clinical Manager', due: 'Jun 17', status: 'Ready', chips: ['Follow-up'], progress: 78, tone: 'teal' },
+      ],
+    },
+    {
+      title: 'Committee Packet',
+      tone: 'amber',
+      note: 'Assemble agenda, dashboard, minutes, attachments, and required signatures.',
+      cards: [
+        { id: 'Q2-QAPI-14', title: 'Build Q2 dashboard slide packet', owner: 'QAPI Lead', due: 'Jun 17', status: 'In progress', chips: ['Dashboard'], progress: 69, tone: 'teal' },
+        { id: 'Q2-QAPI-15', title: 'Attach aggregate report and evidence index', owner: 'Compliance Officer', due: 'Jun 18', status: 'In progress', chips: ['Evidence'], progress: 74, tone: 'teal' },
+        { id: 'Q2-QAPI-16', title: 'Prepare committee agenda and attendance log', owner: 'Administrator', due: 'Jun 18', status: 'Ready', chips: ['Form'], progress: 88, tone: 'teal' },
+        { id: 'Q2-QAPI-17', title: 'Draft committee minutes for post-meeting lock', owner: 'QAPI Lead', due: 'Jun 19', status: 'Watch', chips: ['Minutes'], progress: 46, tone: 'orange' },
+      ],
+    },
+    {
+      title: 'Approval & eCIgn',
+      tone: 'orange',
+      note: 'Route the packet through administrator, DON, and committee chair sign-off.',
+      cards: [
+        { id: 'Q2-QAPI-18', title: 'Route QAPI packet to DON for attestation', owner: 'DON', due: 'Jun 19', status: 'Awaiting signature', chips: ['eCIgn'], progress: 52, tone: 'orange' },
+        { id: 'Q2-QAPI-19', title: 'Administrator final certification', owner: 'Administrator', due: 'Jun 20', status: 'Pending', chips: ['Approval'], progress: 38, tone: 'orange' },
+        { id: 'Q2-QAPI-20', title: 'Committee chair lock and timestamp', owner: 'Committee Chair', due: 'Jun 20', status: 'Pending', chips: ['Signature'], progress: 34, tone: 'orange' },
+      ],
+    },
+    {
+      title: 'Survey Lock',
+      tone: 'green',
+      note: 'Finalize packet manifest, hash evidence, and expose surveyor-ready output.',
+      cards: [
+        { id: 'Q2-QAPI-21', title: 'Publish Q2 QAPI survey packet manifest', owner: 'Compliance Officer', due: 'Jun 21', status: 'Ready to certify', chips: ['Survey Packet'], progress: 80, tone: 'green' },
+      ],
+    },
+  ],
+};
 
 const cesCalendarEvents = [
   {
@@ -476,6 +560,7 @@ const cesCalendarEvents = [
   },
   {
     attendees: ['QAPI Lead', 'Administrator', 'Compliance Officer'],
+    detail: 'Quarterly QAPI combines clinical indicators, CAPA, committee packet assembly, eCIgn routing, and survey-ready lock.',
     day: 10,
     evidenceStatus: 'QAPI packet awaiting approval lane',
     formsCount: 7,
@@ -485,9 +570,12 @@ const cesCalendarEvents = [
     owner: 'QAPI Lead',
     progress: 58,
     readiness: 'Needs review',
-    risk: 'High',
+    risk: 'High risk',
+    steps: '21 tasks',
+    swimlane: q2QapiSwimlane,
     taskCount: 21,
     tone: 'orange',
+    workflow: 'QAPI quarterly swimlane',
     workflowId: 'q2-qapi-quarterly-review',
   },
   {
@@ -503,7 +591,7 @@ const cesCalendarEvents = [
     readiness: 'Ready',
     risk: 'Low',
     taskCount: 4,
-    tone: 'teal',
+    tone: 'green',
     workflowId: 'emergency-drill-after-action',
   },
   {
@@ -562,7 +650,7 @@ const cesCalendarEvents = [
     id: 'ces-event-incident-procedure',
     label: 'Incident procedure approval',
     nextAction: 'Open approval lane and collect eCIgn',
-    owner: 'Governing Body',
+    owner: 'Administrator',
     progress: 56,
     readiness: 'Signature hold',
     risk: 'High',
@@ -611,7 +699,13 @@ function getWorkflowEvent(workflowId: string | undefined): CalendarEventData {
   return cesCalendarEvents.find((event) => event.workflowId === workflowId) ?? cesCalendarEvents[0];
 }
 
-function CalendarEventPreview({ event }: { event: CalendarEventData }) {
+function CalendarEventPreview({
+  event,
+  anchor,
+}: {
+  event: CalendarEventData;
+  anchor: { left: number; top: number; placement: 'left' | 'right' | 'left-sidebar' };
+}) {
   const formsCount = event.formsCount ?? 0;
   const taskCount = event.taskCount ?? 0;
   const attendees = event.attendees?.join(' / ') ?? 'Owner and reviewer roles pending';
@@ -620,45 +714,358 @@ function CalendarEventPreview({ event }: { event: CalendarEventData }) {
   const evidenceStatus = event.evidenceStatus ?? 'Evidence status pending';
   const nextAction = event.nextAction ?? 'Open workspace and review next task';
 
-  return (
+  const positionStyle = {
+    left: `${anchor.left}px`,
+    top: `${anchor.top}px`,
+  };
+
+  return createPortal(
     <aside
       aria-live="polite"
-      className="pointer-events-none mt-lg rounded-lg border border-card bg-surface p-lg shadow-hover desktop:absolute desktop:right-[var(--space-xl)] desktop:top-[156px] desktop:z-20 desktop:w-[340px]"
+      className="fixed z-popover w-[340px] pointer-events-none rounded-lg border border-card bg-surface p-lg shadow-hover text-ink"
       id="ces-event-preview"
+      style={positionStyle}
     >
       <div className="mb-md flex items-start justify-between gap-md">
         <ToneTag tone={event.tone}>{readiness}</ToneTag>
         <ToneTag tone={event.tone}>Click opens swimlane</ToneTag>
       </div>
-      <h3 className="text-h2 font-medium text-ink">{event.label}</h3>
-      <p className="mt-sm text-sm text-muted">
+      <h3 className="text-h3 font-medium text-ink leading-tight">{event.label}</h3>
+      <p className="mt-xs text-xs text-muted">
         Jun {event.day} - {event.owner}
       </p>
-      <div className="mt-lg grid gap-sm tablet-p:grid-cols-2">
+      <div className="mt-md grid gap-xs grid-cols-2">
         {[
           ['Risk', risk],
           ['Required forms', `${formsCount}`],
           ['Evidence', evidenceStatus],
           ['Tasks', `${taskCount}`],
         ].map(([label, value]) => (
-          <div className={cx('rounded-md border p-md', toneSurfaceClasses[event.tone])} key={label}>
-            <p className="text-tag uppercase tracking-tag">{label}</p>
-            <p className="mt-xs text-sm font-medium">{value}</p>
+          <div className={cx('rounded-md border p-sm', toneSurfaceClasses[event.tone])} key={label}>
+            <p className="text-[9px] uppercase tracking-tag text-secondary">{label}</p>
+            <p className="mt-xs text-xs font-medium">{value}</p>
           </div>
         ))}
       </div>
-      <div className="mt-lg grid gap-sm">
-        <p className="text-xs text-secondary">
+      <div className="mt-md grid gap-xs text-[11px]">
+        <p className="text-secondary">
           <span className="font-medium text-ink">Attendees:</span> {attendees}
         </p>
-        <p className="text-xs text-secondary">
+        <p className="text-secondary">
           <span className="font-medium text-ink">Next action:</span> {nextAction}
         </p>
       </div>
-      <p className="mt-lg rounded-md border border-tone-teal-border bg-tone-teal-bg px-md py-sm text-xs font-medium text-brand-teal">
+      <p className={cx(
+        "mt-md rounded-md border px-sm py-xs text-[11px] font-medium text-center",
+        event.tone === 'orange' || event.tone === 'amber'
+          ? 'border-tone-orange-border bg-tone-orange-bg text-brand-orange'
+          : 'border-tone-teal-border bg-tone-teal-bg text-brand-teal'
+      )}>
         Click to open event workspace/swimlane
       </p>
-    </aside>
+    </aside>,
+    document.body
+  );
+}
+
+const calendarAgendaDayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const;
+
+function CalendarFilterButton({ label }: { label: string }) {
+  return (
+    <button className="inline-flex min-h-tap items-center gap-sm rounded-md px-md text-sm text-secondary transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus" type="button">
+      {label}
+      <ChevronDown aria-hidden="true" className="h-icon-xs w-icon-xs text-muted" />
+    </button>
+  );
+}
+
+function getCalendarAgendaStatus(event: CalendarEventData): { label: string; tone: Tone } {
+  if (event.tone === 'orange' || event.tone === 'red') {
+    return { label: 'Needs owner', tone: 'orange' };
+  }
+
+  if (event.tone === 'amber') {
+    return { label: 'Ready', tone: 'amber' };
+  }
+
+  return { label: 'Ready', tone: 'teal' };
+}
+
+function CalendarAgendaList({
+  events,
+  legend,
+  onOpenEvent,
+  title,
+}: {
+  events: readonly CalendarEventData[];
+  legend: string;
+  onOpenEvent: (event: CalendarEventData) => void;
+  title: string;
+}) {
+  return (
+    <div className="grid gap-xl">
+      <div>
+        <h2 className="text-h2 font-medium text-ink">{title}</h2>
+        <p className="mt-xs text-sm text-muted">{legend}</p>
+      </div>
+      <div className="grid gap-lg">
+        {events.slice(0, 5).map((event, index) => {
+          const status = getCalendarAgendaStatus(event);
+
+          return (
+            <button className="grid gap-md rounded-lg border border-card bg-surface p-lg text-left shadow-rest transition duration-fast hover:translate-y-[-1px] hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus" key={getCalendarEventKey(event)} onClick={() => onOpenEvent(event)} type="button">
+              <div className="grid items-center gap-lg tablet-p:grid-cols-[56px_minmax(0,1fr)]">
+                <div className="text-sm font-medium text-brand-teal-deep">{calendarAgendaDayLabels[index] ?? 'Day'}</div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-start justify-between gap-md">
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-medium leading-snug text-brand-teal-deep">{event.label}</h3>
+                      <p className="mt-xs text-xs text-muted">{event.owner} - Jun {event.day}</p>
+                    </div>
+                    <ToneTag tone={status.tone}>{status.label}</ToneTag>
+                  </div>
+                  <ProgressMeter className="mt-md" tone={event.tone} value={event.progress} />
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function buildDefaultCalendarSwimlane(event: CalendarEventData): CalendarSwimlaneData {
+  const formsCount = event.formsCount ?? 2;
+  const eventTitle = formatSwimlaneTitle(event.label);
+  const taskTotal = event.taskCount ?? (event.tone === 'orange' ? 8 : 6);
+
+  return {
+    summary: `${eventTitle} opens as a focused compliance swimlane with intake, evidence, review, signature, and final lock tasks.`,
+    metrics: [
+      { label: 'Tasks', value: `${taskTotal}`, helper: 'Generated from event context', tone: 'teal' },
+      { label: 'Owner', value: event.owner, helper: 'Primary accountable party', tone: event.tone === 'orange' ? 'orange' : 'teal' },
+      { label: 'Risk', value: event.risk ?? (event.tone === 'orange' ? 'High' : 'Low'), helper: 'Calendar-derived signal', tone: event.tone === 'orange' ? 'orange' : 'green' },
+      { label: 'Due', value: `Jun ${event.day}`, helper: 'Event target date', tone: 'teal' },
+    ],
+    lanes: [
+      {
+        title: 'Intake',
+        tone: 'teal',
+        note: 'Open the event record and confirm source policies, forms, and owner.',
+        cards: [
+          { id: 'EVT-01', title: `Confirm ${eventTitle} Scope`, owner: event.owner, due: `Jun ${event.day}`, status: 'Ready', chips: ['Event'], progress: 88, tone: 'teal' },
+          { id: 'EVT-02', title: 'Bind source policy and required forms', owner: 'Policy Admin', due: `Jun ${event.day}`, status: 'Ready', chips: ['Policy', `${formsCount} forms`], progress: 72, tone: 'teal' },
+        ],
+      },
+      {
+        title: 'Evidence',
+        tone: event.tone === 'orange' ? 'orange' : 'teal',
+        note: 'Collect artifacts and check the evidence packet for gaps.',
+        cards: [
+          { id: 'EVT-03', title: 'Collect required evidence artifacts', owner: event.owner, due: `Jun ${event.day + 1}`, status: event.tone === 'orange' ? 'Needs review' : 'In progress', chips: ['Evidence'], progress: event.tone === 'orange' ? 46 : 74, tone: event.tone === 'orange' ? 'orange' : 'teal' },
+          { id: 'EVT-04', title: event.evidenceStatus ?? 'Validate content hash and retention metadata', owner: 'Audit Lead', due: `Jun ${event.day + 1}`, status: 'In progress', chips: ['Audit'], progress: 63, tone: 'teal' },
+        ],
+      },
+      {
+        title: 'Review',
+        tone: 'amber',
+        note: 'Route review decisions before signature or certification.',
+        cards: [
+          { id: 'EVT-05', title: 'Manager review and exception note', owner: 'Clinical Manager', due: `Jun ${event.day + 2}`, status: 'Pending', chips: ['Review'], progress: 42, tone: 'orange' },
+          { id: 'EVT-06', title: 'Compliance sign-off readiness check', owner: 'Compliance Officer', due: `Jun ${event.day + 2}`, status: 'Watch', chips: ['Checklist'], progress: 58, tone: 'teal' },
+        ],
+      },
+      {
+        title: 'Lock',
+        tone: 'green',
+        note: 'Finalize the packet and expose the event to audit/survey workflows.',
+        cards: [
+          { id: 'EVT-07', title: 'Route eCIgn certificate and lock packet', owner: 'Administrator', due: `Jun ${event.day + 3}`, status: 'Pending', chips: ['eCIgn'], progress: 36, tone: 'orange' },
+          { id: 'EVT-08', title: 'Publish survey-ready event manifest', owner: 'Compliance Officer', due: `Jun ${event.day + 3}`, status: 'Queued', chips: ['Survey'], progress: 24, tone: 'teal' },
+        ],
+      },
+    ],
+  };
+}
+
+function CalendarSwimlaneInline({
+  event,
+  events,
+  onBack,
+  onSelectEvent,
+}: {
+  event: CalendarEventData;
+  events: readonly CalendarEventData[];
+  onBack: () => void;
+  onSelectEvent: (event: CalendarEventData) => void;
+}) {
+  const swimlane = event.swimlane ?? buildDefaultCalendarSwimlane(event);
+  const eventTitle = formatSwimlaneTitle(event.label);
+  const lanes = swimlane.lanes;
+  const totalTasks = lanes.reduce((sum, lane) => sum + lane.cards.length, 0);
+
+  return (
+    <section className="grid gap-2xl pt-2xl" data-calendar-swimlane>
+      <div className="border-b border-hairline pb-xl">
+        <div className="grid gap-md">
+          <div className="min-w-0 max-w-[760px] flex-1">
+            <div className="flex flex-wrap gap-sm">
+              <ToneTag tone={event.tone}>{event.readiness ?? 'Swimlane open'}</ToneTag>
+              <ToneTag tone="slate">Jun {event.day}</ToneTag>
+              <ToneTag tone="teal">{totalTasks} tasks</ToneTag>
+            </div>
+            <h1 className="mt-lg text-3xl font-medium leading-tight text-brand-teal-deep">{eventTitle}</h1>
+            <p className="mt-sm max-w-5xl text-sm leading-relaxed text-muted">{swimlane.summary}</p>
+          </div>
+          <div className="flex flex-wrap gap-md">
+            <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={onBack} size="sm" variant="secondary">
+              Back to month
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <MetricGrid metrics={swimlane.metrics} />
+
+      <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+        <div className="mb-md flex items-center justify-between gap-md">
+          <h2 className="text-sm font-medium text-brand-teal-deep">QAPI flowchart auto-fits to calendar width</h2>
+          <span className="text-[10px] font-medium uppercase tracking-wider text-muted">Vertical swimlane</span>
+        </div>
+        <div className="grid gap-sm [grid-template-columns:repeat(auto-fit,minmax(130px,1fr))]">
+          {lanes.map((lane, index) => (
+            <article className={cx('rounded-lg border p-md shadow-rest', toneSurfaceClasses[lane.tone])} key={lane.title}>
+              <div className="flex items-center justify-between gap-sm">
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-surface text-xs font-medium">{index + 1}</span>
+                <span className="text-[10px] font-medium uppercase tracking-wider opacity-75">{lane.cards.length} tasks</span>
+              </div>
+              <h3 className="mt-md text-xs font-medium leading-tight">{lane.title}</h3>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <div className="flex flex-wrap gap-sm">
+        {events.filter((item) => item.label !== event.label).slice(0, 8).map((item) => (
+          <button
+            className={cx(
+              'rounded-md border px-md py-sm text-[10px] font-medium uppercase tracking-wider shadow-rest transition duration-fast hover:translate-y-[-1px] hover:shadow-hover',
+              item.tone === 'orange' || item.tone === 'amber'
+                ? 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text'
+                : 'border-tone-teal-border bg-tone-teal-bg text-brand-teal'
+            )}
+            key={item.label}
+            onClick={() => onSelectEvent(item)}
+            type="button"
+          >
+            Jun {item.day} - {item.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid gap-xl">
+        {lanes.map((lane, laneIndex) => (
+          <section className="grid gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest laptop:grid-cols-[150px_minmax(0,1fr)] desktop:grid-cols-[180px_minmax(0,1fr)]" key={lane.title}>
+            <aside className={cx('rounded-lg border p-lg', toneSurfaceClasses[lane.tone])}>
+              <div className="flex items-center justify-between gap-md">
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-surface text-sm font-medium">{laneIndex + 1}</span>
+                <ToneTag tone={lane.tone}>{lane.cards.length}</ToneTag>
+              </div>
+              <h2 className="mt-lg text-base font-medium">{lane.title}</h2>
+              <p className="mt-sm text-xs leading-relaxed opacity-75">{lane.note}</p>
+            </aside>
+            <div
+              className="grid gap-md [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))] laptop:[grid-template-columns:repeat(var(--lane-card-count),minmax(0,1fr))]"
+              style={{ '--lane-card-count': lane.cards.length } as CSSProperties}
+            >
+              {lane.cards.map((task) => (
+                <article className="min-w-0 rounded-lg border border-card bg-surface p-lg shadow-rest" key={task.id}>
+                  <div className="flex items-start justify-between gap-md">
+                    <ToneTag tone={task.tone}>{task.id}</ToneTag>
+                    <span className={cx('h-2.5 w-2.5 shrink-0 rounded-full', task.tone === 'orange' ? 'bg-brand-orange' : 'bg-brand-teal')} />
+                  </div>
+                  <h3 className="mt-md text-sm font-medium leading-snug text-brand-teal-deep">{task.title}</h3>
+                  <div className="mt-md grid grid-cols-2 gap-md text-[11px] text-muted">
+                    <div>
+                      <div className="text-[9px] font-medium uppercase tracking-wider text-brand-teal">Owner</div>
+                      <div className="mt-xs truncate">{task.owner}</div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] font-medium uppercase tracking-wider text-brand-teal">Due</div>
+                      <div className="mt-xs">{task.due}</div>
+                    </div>
+                  </div>
+                  <div className="mt-md flex flex-wrap gap-xs">
+                    {task.chips.map((chip) => (
+                      <span className="rounded-sm border border-tone-teal-border bg-tone-teal-bg px-sm py-xs text-[9px] font-medium uppercase tracking-wider text-brand-teal" key={`${task.id}-${chip}`}>
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-md flex items-center justify-between text-[10px] font-medium text-muted">
+                    <span>{task.status}</span>
+                    <span>{task.progress}%</span>
+                  </div>
+                  <ProgressMeter className="mt-xs" tone={task.tone} value={task.progress} />
+                </article>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function StaffingConflictDrawer({
+  event,
+  onClose,
+  open,
+}: {
+  event: CalendarEventData | null;
+  onClose: () => void;
+  open: boolean;
+}) {
+  const candidates = [
+    ['Priya Singh, RN', '96% match', '3.4 miles', '2/5 visits'],
+    ['Luis Mendez, LVN', '88% match', '5.8 miles', '3/5 visits'],
+    ['Maria Delgado, RN', '84% match', '7.1 miles', '4/5 visits'],
+  ];
+
+  return (
+    <VeilDrawer
+      eyebrow="Staffing calendar"
+      footer={
+        <div className="flex flex-wrap justify-end gap-sm">
+          <Button onClick={onClose} variant="secondary">Close drawer</Button>
+          <Button>Escalate to director</Button>
+        </div>
+      }
+      onClose={onClose}
+      open={open}
+      title="Resolve staffing conflict"
+      tone="orange"
+    >
+      <div className="grid gap-lg">
+        <div className="rounded-lg border border-tone-orange-border bg-tone-orange-bg p-lg text-tone-orange-text">
+          <h3 className="text-base font-medium text-tone-orange-text">{event?.label ?? 'CHHA gap'}</h3>
+          <p className="mt-sm text-xs leading-relaxed">Clinician coverage needs reassignment before the visit window. Candidate ranking uses discipline match, distance, and current caseload.</p>
+        </div>
+        {candidates.map(([name, match, distance, load], index) => (
+          <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={name}>
+            <div className="flex items-start justify-between gap-md">
+              <div>
+                <h4 className="text-sm font-medium text-brand-teal-deep">{name}</h4>
+                <p className="mt-xs text-xs text-muted">{distance} - {load}</p>
+              </div>
+              <ToneTag tone={index === 0 ? 'teal' : 'orange'}>{match}</ToneTag>
+            </div>
+            <Button className="mt-md w-full" size="sm">Assign and dispatch</Button>
+          </article>
+        ))}
+      </div>
+    </VeilDrawer>
   );
 }
 
@@ -1047,118 +1454,179 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 
   if (overlay === 'drawer-system') return <OverlaySystemScreen />;
 
+  let child: ReactNode = null;
   switch (route.hashId) {
     case 'admin-groups':
-      return <AdminGroupsScreen />;
+      child = <AdminGroupsScreen />;
+      break;
     case 'admin-permissions':
-      return <AdminPermissionsScreen />;
+      child = <AdminPermissionsScreen />;
+      break;
     case 'admin-roles':
-      return <AdminRolesScreen />;
+      child = <AdminRolesScreen />;
+      break;
     case 'admin-users':
-      return <AdminUsersScreen />;
+      child = <AdminUsersScreen />;
+      break;
     case 'achc-crosswalk':
-      return <AchcScreen mode="crosswalk" />;
+      child = <AchcScreen mode="crosswalk" />;
+      break;
     case 'achc-survey':
-      return <AchcScreen mode="survey" />;
+      child = <AchcScreen mode="survey" />;
+      break;
     case 'artifact-viewer':
-      return <ArtifactViewerScreen />;
+      child = <ArtifactViewerScreen />;
+      break;
     case 'audit-mode':
-      return <EvidenceScreen mode="audit-mode" />;
+      child = <EvidenceScreen mode="audit-mode" />;
+      break;
     case 'ces-calendar':
-      return <CalendarScreen mode="ces-calendar" />;
+      child = <CalendarScreen mode="ces-calendar" />;
+      break;
     case 'clinicians':
-      return <ProfileListScreen mode="clinicians" />;
+      child = <ProfileListScreen mode="clinicians" />;
+      break;
     case 'clinician-detail':
-      return <ClinicianDetailScreen />;
+      child = <ClinicianDetailScreen />;
+      break;
     case 'dashboard':
-      return <DashboardScreen />;
+      child = <DashboardScreen />;
+      break;
     case 'ecign-workspace':
-      return <EcignWorkspaceScreen />;
+      child = <EcignWorkspaceScreen />;
+      break;
     case 'events-board':
-      return <EventsBoardScreen />;
+      child = <EventsBoardScreen />;
+      break;
     case 'policy-library':
-      return <PolicyMatrixScreen />;
+      child = <PolicyMatrixScreen />;
+      break;
     case 'policy-detail':
-      return <PolicyDetailScreen />;
+      child = <PolicyDetailScreen />;
+      break;
     case 'patient-detail':
-      return <PatientDetailScreen />;
+      child = <PatientDetailScreen />;
+      break;
     case 'forms-library':
-      return <FormsLibraryScreen />;
+      child = <FormsLibraryScreen />;
+      break;
     case 'framework':
-      return <FrameworkScreen />;
+      child = <FrameworkScreen />;
+      break;
     case 'generic-reference':
-      return <GenericReferenceScreen />;
+      child = <GenericReferenceScreen />;
+      break;
     case 'master-calendar':
-      return <CalendarScreen mode="master-calendar" />;
+      child = <CalendarScreen mode="master-calendar" />;
+      break;
     case 'master-controls':
-      return <MasterControlsScreen />;
+      child = <MasterControlsScreen />;
+      break;
     case 'my-tasks':
-      return <MyTasksScreen />;
+      child = <MyTasksScreen />;
+      break;
     case 'patients':
-      return <ProfileListScreen mode="patients" />;
+      child = <ProfileListScreen mode="patients" />;
+      break;
     case 'ces-board':
-      return <BoardScreen />;
+      child = <BoardScreen />;
+      break;
     case 'evidence-center':
-      return <EvidenceScreen mode="evidence-center" />;
+      child = <EvidenceScreen mode="evidence-center" />;
+      break;
     case 'form-viewer':
-      return <FormWorkspaceScreen />;
+      child = <FormWorkspaceScreen />;
+      break;
     case 'brad':
-      return <BradScreen />;
+      child = <BradScreen />;
+      break;
     case 'user-guide':
-      return <DocsScreen />;
+      child = <DocsScreen />;
+      break;
     case 'ces-reports':
-      return <ReportsScreen />;
+      child = <ReportsScreen />;
+      break;
     case 'staffing-calendar':
-      return <CalendarScreen mode="staffing-calendar" />;
+      child = <CalendarScreen mode="staffing-calendar" />;
+      break;
     case 'workflows':
-      return <WorkflowsScreen />;
+      child = <WorkflowsScreen />;
+      break;
     case 'workflow-swimlane':
-      return <WorkflowSwimlaneScreen />;
+      child = <WorkflowSwimlaneScreen />;
+      break;
     case 'journey-overview':
-      return <JourneyOverviewScreen />;
+      child = <JourneyOverviewScreen />;
+      break;
     case 'journey-v1':
-      return <JourneyV1Screen />;
+      child = <JourneyV1Screen />;
+      break;
     case 'module-player':
-      return <ModulePlayerScreen />;
+      child = <ModulePlayerScreen />;
+      break;
     case 'appendix-f':
-      return <AppendixFScreen />;
+      child = <AppendixFScreen />;
+      break;
     case 'supervisor':
-      return <SupervisorScreen />;
+      child = <SupervisorScreen />;
+      break;
     case 'journey-admin':
-      return <JourneyAdminScreen />;
+      child = <JourneyAdminScreen />;
+      break;
     case 'onboarding-v2-dashboard':
-      return <OnboardingV2DashboardScreen />;
+      child = <OnboardingV2DashboardScreen />;
+      break;
     case 'onboarding-v2-activate':
-      return <OnboardingV2ActivateScreen />;
+      child = <OnboardingV2ActivateScreen />;
+      break;
     case 'onboarding-v2-batches':
-      return <OnboardingV2BatchesScreen />;
+      child = <OnboardingV2BatchesScreen />;
+      break;
     case 'onboarding-v2-batch':
-      return <OnboardingV2BatchScreen />;
+      child = <OnboardingV2BatchScreen />;
+      break;
     case 'onboarding-v2-audit':
-      return <OnboardingV2AuditScreen />;
+      child = <OnboardingV2AuditScreen />;
+      break;
     case 'onboarding-v2-governance':
-      return <OnboardingV2GovernanceScreen />;
+      child = <OnboardingV2GovernanceScreen />;
+      break;
     case 'policy-lifecycle':
-      return <PolicyLifecycleScreen />;
+      child = <PolicyLifecycleScreen />;
+      break;
     case 'policy-lifecycle-detail':
-      return <PolicyLifecycleDetailScreen />;
+      child = <PolicyLifecycleDetailScreen />;
+      break;
     case 'hubstaff':
-      return <HubstaffScreen />;
+      child = <HubstaffScreen />;
+      break;
     case 'system-docs':
-      return <SystemDocsScreen />;
+      child = <SystemDocsScreen />;
+      break;
     case 'help-center':
-      return <HelpCenterScreen />;
+      child = <HelpCenterScreen />;
+      break;
     case 'governance':
-      return <GovernanceScreen />;
+      child = <GovernanceScreen />;
+      break;
     case 'surveyor-viewer':
-      return <SurveyorViewerScreen />;
+      child = <SurveyorViewerScreen />;
+      break;
     case 'login-page':
-      return <LoginScreen />;
+      child = <LoginScreen />;
+      break;
     case 'mobile-incident':
-      return <MobileIncidentScreen />;
+      child = <MobileIncidentScreen />;
+      break;
     default:
       return null;
   }
+
+  if (route.group === 'Auth') {
+    return child;
+  }
+
+  return <div className="grid">{child}</div>;
 }
 
 export function isRepresentativeRoute(route: RouteLike): boolean {
@@ -1222,10 +1690,22 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
 
 function ScreenStack({ children, metrics }: { children: ReactNode; metrics: readonly MetricTileData[] }) {
   return (
-    <div className="grid gap-xl">
+    <div className="grid gap-2xl">
       <MetricGrid metrics={metrics} />
       {children}
     </div>
+  );
+}
+
+function DesignBadge({ tone = 'teal', children }: { tone?: Tone; children: ReactNode }) {
+  return (
+    <span className={cx(
+      'inline-flex items-center gap-1.5 rounded-full border px-sm py-xs text-tag font-medium uppercase tracking-tag',
+      toneSurfaceClasses[tone]
+    )}>
+      <span className={cx('h-1.5 w-1.5 rounded-full', tone === 'orange' ? 'bg-brand-orange' : 'bg-brand-teal')} />
+      {children}
+    </span>
   );
 }
 
@@ -1236,25 +1716,40 @@ function ActionList({ rows }: { rows: readonly ActionRow[] }) {
         const Icon = row.icon;
 
         return (
-          <article className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={row.title}>
-            <div className="flex items-start gap-lg">
-              <span className={cx('grid h-tap w-tap place-items-center rounded-md', toneSoftTileClasses[row.tone])}>
-                <Icon aria-hidden="true" className="h-icon-md w-icon-md" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="mb-sm flex flex-wrap items-start justify-between gap-sm">
-                  <div>
-                    <h2 className="text-h3 font-light text-ink">{row.title}</h2>
-                    <p className="mt-xs text-sm text-muted">{row.body}</p>
-                  </div>
-                  <ToneBadge size="sm" status={row.status} />
+          <article 
+            className="rounded-lg border border-card bg-tone-slate-bg p-lg transition duration-fast ease-standard hover:shadow-hover" 
+            key={row.title}
+          >
+            <div className="flex items-start justify-between gap-lg">
+              <div className="flex min-w-0 items-start gap-lg">
+                <span className={cx(
+                  'grid h-9 w-9 shrink-0 place-items-center rounded-xl border',
+                  toneSurfaceClasses[row.tone]
+                )}>
+                  <Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />
+                </span>
+
+                <div className="min-w-0">
+                  <h3 className="text-sm font-medium text-brand-teal-deep leading-snug">{row.title}</h3>
+                  <p className="mt-xs text-xs text-muted leading-relaxed">{row.body}</p>
                 </div>
-                <div className="mb-md flex flex-wrap gap-md text-xs text-secondary">
-                  <span>{row.owner}</span>
-                  <span>{row.due}</span>
-                </div>
-                <ProgressMeter tone={row.tone} value={row.progress} />
               </div>
+
+              <div className="flex min-h-[58px] shrink-0 flex-col items-end justify-between text-right">
+                <DesignBadge tone={row.tone}>
+                  {row.due}
+                </DesignBadge>
+                <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">
+                  {row.owner}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-md h-1.5 w-full rounded-full bg-white/85">
+              <div 
+                className={cx('h-full rounded-full', row.tone === 'orange' ? 'bg-brand-orange' : 'bg-brand-teal')} 
+                style={{ width: `${row.progress}%` }} 
+              />
             </div>
           </article>
         );
@@ -1265,43 +1760,61 @@ function ActionList({ rows }: { rows: readonly ActionRow[] }) {
 
 function DashboardScreen() {
   return (
-    <ScreenStack metrics={dashboardMetrics}>
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+    <div className="grid gap-2xl">
+      <MetricGrid metrics={dashboardMetrics} />
+
+      <section className="grid gap-2xl desktop:grid-cols-5">
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest desktop:col-span-3">
           <div className="mb-lg flex items-center justify-between gap-lg">
             <div>
-              <h2 className="text-h2 font-medium text-ink">Dashboard work queue</h2>
-              <p className="mt-xs text-sm text-muted">Primary operations action queue with owners and due state.</p>
+              <h2 className="text-h2 font-medium text-brand-teal-deep">Dashboard work queue</h2>
+              <p className="mt-xs text-sm text-muted">Prioritized by owner, due date, evidence state, and operating risk.</p>
             </div>
-            <ToneBadge status="review-required" />
+            <DesignBadge tone="orange">
+              {dashboardActions.filter((row) => row.tone === 'orange').length} action items
+            </DesignBadge>
           </div>
           <ActionList rows={dashboardActions} />
         </section>
-        <aside className="grid gap-lg">
+
+        <aside className="grid gap-lg desktop:col-span-2">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-            <h2 className="mb-lg text-h2 font-medium text-ink">Dashboard signals</h2>
-            <div className="mb-lg grid gap-md tablet-p:grid-cols-2">
+            <div className="mb-lg flex items-center justify-between gap-lg">
+              <h2 className="text-h2 font-medium text-brand-teal-deep">Dashboard signals</h2>
+              <DesignBadge tone="teal">
+                6 tracked
+              </DesignBadge>
+            </div>
+            <div className="grid gap-md tablet-p:grid-cols-2">
               {[
-                ['SOC starts', '9', 'orange'],
-                ['High-acuity census', '17', 'teal'],
-                ['Credential watch', '2', 'orange'],
-                ['Ready packets', '18', 'teal'],
-              ].map(([label, value, tone]) => (
-                <div className={cx('rounded-lg border p-lg', toneSurfaceClasses[tone as Tone])} key={label}>
-                  <p className="text-tag uppercase tracking-tag text-ink">{label}</p>
-                  <p className="mt-md text-display text-ink">{value}</p>
+                ['SOC starts', '9', '4 need RN confirmation', 'orange'],
+                ['High-acuity census', '17', 'CHF, wounds, post-CVA', 'teal'],
+                ['Open visit gaps', '6', '2 weekend coverage gaps', 'orange'],
+                ['Orders pending', '14', '5 physician signatures', 'amber'],
+                ['Credential risk', '2', 'PT and LVN renewal windows', 'orange'],
+                ['Discharge prep', '8', 'MSW coordination active', 'green'],
+              ].map(([label, value, note, tone]) => (
+                <div 
+                  className={cx(
+                    'rounded-lg border p-md shadow-rest transition duration-base ease-standard hover:translate-y-[-2px] hover:shadow-hover active:scale-[0.997]', 
+                    toneSurfaceClasses[tone as Tone]
+                  )} 
+                  key={label}
+                >
+                  <div className="text-tag font-medium uppercase tracking-tag opacity-80">{label}</div>
+                  <div className="mt-2 text-2xl font-medium tracking-tight">{value}</div>
+                  <div className="mt-1 text-xs font-light leading-relaxed opacity-80">{note}</div>
                 </div>
               ))}
             </div>
-            <div className="grid gap-md">
-              {dashboardCards.map((card) => (
-                <SurfaceCard card={card} key={card.title} />
-              ))}
-            </div>
           </section>
+
+          {dashboardCards.slice(0, 2).map((card) => (
+            <SurfaceCard card={card} key={card.title} />
+          ))}
         </aside>
       </section>
-    </ScreenStack>
+    </div>
   );
 }
 
@@ -1394,11 +1907,7 @@ function PolicyMatrixScreen() {
   return (
     <ScreenStack metrics={policyMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-          <div className="mb-lg">
-            <h2 className="text-h2 font-medium text-ink">Policy library matrix</h2>
-            <p className="mt-xs text-sm text-muted">Canonical rows expose owner stewardship, review state, and survey posture.</p>
-          </div>
+        <section aria-label="Policy library matrix" className="rounded-lg border border-card bg-surface p-xl shadow-rest">
           <DataTable columns={tableColumns} label="Policy library matrix" rows={policyRows} />
         </section>
         <aside className="grid gap-lg">
@@ -1460,10 +1969,51 @@ function PatientDetailScreen() {
 function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
   const config = calendarConfigs[mode];
   const isCesCalendar = mode === 'ces-calendar';
-  const navigate = useNavigate();
+  const events = [...config.events].sort((a, b) => a.day - b.day);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEventData | null>(null);
+  const [agendaMode, setAgendaMode] = useState(isCesCalendar ? 'Month' : 'Week');
+  const [resolverEvent, setResolverEvent] = useState<CalendarEventData | null>(
+    mode === 'staffing-calendar'
+      ? events.find((event) => event.tone === 'orange' || event.tone === 'amber') ?? null
+      : null
+  );
   const [activeEventKey, setActiveEventKey] = useState<string | null>(null);
+  const [activeEventAnchor, setActiveEventAnchor] = useState<{ left: number; top: number; placement: 'left' | 'right' | 'left-sidebar' } | null>(null);
   const days = Array.from({ length: 30 }, (_, index) => index + 1);
-  const activeEvent = activeEventKey ? config.events.find((event) => getCalendarEventKey(event) === activeEventKey) : undefined;
+
+  const positionEventCard = (element: HTMLElement, event: CalendarEventData, isSidebar: boolean) => {
+    const rect = element.getBoundingClientRect();
+    const cardWidth = 340;
+    const cardHeight = 340;
+    const margin = 12;
+
+    let left = 0;
+    let top = 0;
+    let placement: 'left' | 'right' | 'left-sidebar' = 'right';
+
+    if (isSidebar) {
+      // Position to the left of the sidebar button
+      left = rect.left - cardWidth - 16;
+      top = Math.max(16, Math.min(rect.top - 30, window.innerHeight - cardHeight - 16));
+      placement = 'left-sidebar';
+    } else {
+      // Month grid positioning
+      const day = event.day;
+      const colIndex = (day - 1) % 7;
+      if (colIndex < 4) {
+        // Place on the right of the cell button
+        left = rect.right + margin;
+        placement = 'right';
+      } else {
+        // Place on the left of the cell button
+        left = rect.left - cardWidth - margin;
+        placement = 'left';
+      }
+      top = Math.max(16, Math.min(rect.top - 60, window.innerHeight - cardHeight - 16));
+    }
+
+    setActiveEventAnchor({ left, top, placement });
+  };
 
   useEffect(() => {
     if (!isCesCalendar) return undefined;
@@ -1476,15 +2026,39 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
     return () => window.removeEventListener('keydown', dismissPreview);
   }, [isCesCalendar]);
 
-  const openEventWorkspace = (event: CalendarEventData) => {
-    if (!isCesCalendar) return;
-    navigate(toWorkflowSwimlanePath(event));
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('redesign-calendar-swimlane', { detail: { open: Boolean(selectedEvent) } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('redesign-calendar-swimlane', { detail: { open: false } }));
+    };
+  }, [selectedEvent]);
+
+  useEffect(() => {
+    setAgendaMode(isCesCalendar ? 'Month' : 'Week');
+    setSelectedEvent(null);
+    setResolverEvent(
+      mode === 'staffing-calendar'
+        ? events.find((event) => event.tone === 'orange' || event.tone === 'amber') ?? null
+        : null
+    );
+  }, [isCesCalendar, mode]);
+
+  const openCalendarEvent = (event: CalendarEventData) => {
+    setActiveEventKey(null);
+    setActiveEventAnchor(null);
+
+    if (mode === 'staffing-calendar' && (event.tone === 'orange' || event.tone === 'amber')) {
+      setResolverEvent(event);
+      return;
+    }
+
+    setSelectedEvent(event);
   };
 
   const handleEventKeyDown = (keyboardEvent: ReactKeyboardEvent<HTMLButtonElement>, event: CalendarEventData) => {
     if (keyboardEvent.key === 'Enter') {
       keyboardEvent.preventDefault();
-      openEventWorkspace(event);
+      openCalendarEvent(event);
       return;
     }
 
@@ -1494,9 +2068,21 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
     }
   };
 
+  if (selectedEvent) {
+    return (
+      <CalendarSwimlaneInline
+        event={selectedEvent}
+        events={events}
+        onBack={() => setSelectedEvent(null)}
+        onSelectEvent={setSelectedEvent}
+      />
+    );
+  }
+
   return (
     <ScreenStack metrics={config.metrics}>
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_320px]">
+      <section className="grid gap-2xl laptop:grid-cols-[minmax(0,3fr)_300px] desktop:grid-cols-[minmax(0,3fr)_320px]">
+
         <section
           className="relative rounded-lg border border-card bg-surface p-xl shadow-rest"
           onMouseLeave={isCesCalendar ? () => setActiveEventKey(null) : undefined}
@@ -1507,9 +2093,10 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                 <button
                   className={cx(
                     'min-h-tap rounded-md px-lg text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                    label === 'Month' ? 'bg-surface text-brand-teal shadow-rest' : 'text-secondary hover:bg-surface-hover',
+                    label === agendaMode ? 'bg-surface text-brand-teal shadow-rest' : 'text-secondary hover:bg-surface-hover',
                   )}
                   key={label}
+                  onClick={() => setAgendaMode(label)}
                   type="button"
                 >
                   {label}
@@ -1518,104 +2105,199 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
             </div>
             <div className="flex flex-wrap gap-md">
               {['Staff', 'Patient', 'Event Type'].map((label) => (
-                <button className="min-h-tap rounded-md px-md text-sm text-secondary hover:bg-surface-hover" key={label} type="button">
-                  {label}
-                </button>
+                <CalendarFilterButton key={label} label={label} />
               ))}
             </div>
           </div>
-          <div className="mb-lg">
-            <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
-            <p className="mt-xs text-sm text-muted">{config.legend}</p>
-          </div>
-          <div className="grid grid-cols-7 border-l border-t border-card text-xs">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div className="border-b border-r border-card p-sm text-center text-tag uppercase tracking-tag text-brand-teal" key={day}>
-                {day}
+          {isCesCalendar ? (
+            <>
+              <div className="mb-lg">
+                <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
+                <p className="mt-xs text-sm text-muted">{config.legend}</p>
               </div>
-            ))}
-            {days.map((day) => (
-              <div className="min-h-[112px] border-b border-r border-card bg-surface p-sm" key={day}>
-                <p className="mb-sm text-sm text-brand-teal">{day}</p>
-                <div className="grid gap-xs">
-                  {config.events
-                    .filter((event) => event.day === day)
-                    .map((event) => {
-                      const key = getCalendarEventKey(event);
-                      const pillClasses = cx(
-                        'truncate rounded-sm px-sm py-xs text-left text-[10px] text-on-brand transition duration-fast ease-standard',
-                        event.tone === 'orange' || event.tone === 'amber' ? 'bg-brand-orange' : 'bg-brand-teal',
-                      );
+              <div className="grid grid-cols-7 border-l border-t border-card text-xs">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <div className="border-b border-r border-card p-sm text-center text-tag uppercase tracking-tag text-brand-teal" key={day}>
+                    {day}
+                  </div>
+                ))}
+                {days.map((day) => (
+                  <div className="relative min-w-0 overflow-hidden min-h-[112px] border-b border-r border-card bg-surface p-sm !shadow-none" key={day}>
+                    <p className="mb-sm text-sm text-brand-teal">{day}</p>
+                    <div className="grid gap-xs">
+                      {events
+                        .filter((event) => event.day === day)
+                        .map((event) => {
+                          const key = getCalendarEventKey(event);
+                          const pillClasses = cx(
+                            'truncate rounded-sm px-sm py-xs text-left text-[10px] text-on-brand transition duration-fast ease-standard',
+                            event.tone === 'orange' || event.tone === 'amber' ? 'bg-brand-orange' : 'bg-brand-teal',
+                          );
+                          const isHovered = activeEventKey === key;
 
-                      return isCesCalendar ? (
+                          return (
+                            <div className="relative min-w-0 overflow-hidden" key={key}>
+                              <button
+                                aria-describedby={isHovered ? 'ces-event-preview' : undefined}
+                                aria-label={`${event.label}, Jun ${event.day}. Click to open event workspace/swimlane.`}
+                                className={cx(
+                                  pillClasses,
+                                  'block min-w-0 max-w-full w-full overflow-hidden hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus',
+                                  isHovered && (event.tone === 'orange' || event.tone === 'amber'
+                                    ? 'border border-brand-orange ring-1 ring-brand-orange'
+                                    : 'border border-brand-teal ring-1 ring-brand-teal')
+                                )}
+                                onBlur={() => {
+                                  setActiveEventKey(null);
+                                  setActiveEventAnchor(null);
+                                }}
+                                onClick={() => openCalendarEvent(event)}
+                                onFocus={(e) => {
+                                  setActiveEventKey(key);
+                                  positionEventCard(e.currentTarget, event, false);
+                                }}
+                                onKeyDown={(keyboardEvent) => handleEventKeyDown(keyboardEvent, event)}
+                                onMouseEnter={(e) => {
+                                  setActiveEventKey(key);
+                                  positionEventCard(e.currentTarget, event, false);
+                                }}
+                                onMouseLeave={() => {
+                                  setActiveEventKey(null);
+                                  setActiveEventAnchor(null);
+                                }}
+                                type="button"
+                              >
+                                {event.label}
+                              </button>
+                              {isHovered && activeEventAnchor && (
+                                <CalendarEventPreview
+                                  event={event}
+                                  anchor={activeEventAnchor}
+                                />
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : agendaMode === 'Month' ? (
+            <div className="grid grid-cols-7 border-l border-t border-card text-xs">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <div className="border-b border-r border-card p-sm text-center text-tag uppercase tracking-tag text-brand-teal" key={day}>
+                  {day}
+                </div>
+              ))}
+              {days.map((day) => (
+                <div className="relative min-w-0 overflow-hidden min-h-[112px] border-b border-r border-card bg-surface p-sm !shadow-none" key={day}>
+                  <p className="mb-sm text-sm text-brand-teal">{day}</p>
+                  <div className="grid gap-xs">
+                    {events
+                      .filter((event) => event.day === day)
+                      .map((event) => (
                         <button
-                          aria-describedby={activeEventKey === key ? 'ces-event-preview' : undefined}
-                          aria-label={`${event.label}, Jun ${event.day}. Click to open event workspace/swimlane.`}
-                          className={cx(pillClasses, 'hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus')}
-                          key={key}
-                          onBlur={() => setActiveEventKey(null)}
-                          onClick={() => openEventWorkspace(event)}
-                          onFocus={() => setActiveEventKey(key)}
-                          onKeyDown={(keyboardEvent) => handleEventKeyDown(keyboardEvent, event)}
-                          onMouseEnter={() => setActiveEventKey(key)}
+                          className={cx(
+                            'block min-w-0 max-w-full w-full overflow-hidden truncate rounded-sm px-sm py-xs text-left text-[10px] text-on-brand transition duration-fast ease-standard hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus',
+                            event.tone === 'orange' || event.tone === 'amber' ? 'bg-brand-orange' : 'bg-brand-teal'
+                          )}
+                          key={getCalendarEventKey(event)}
+                          onClick={() => openCalendarEvent(event)}
                           type="button"
                         >
                           {event.label}
                         </button>
-                      ) : (
-                        <span className={pillClasses} key={key}>
-                          {event.label}
-                        </span>
-                      );
-                    })}
+                      ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          {isCesCalendar && activeEvent ? <CalendarEventPreview event={activeEvent} /> : null}
+              ))}
+            </div>
+          ) : (
+            <CalendarAgendaList events={events} legend={config.legend} onOpenEvent={openCalendarEvent} title={config.title} />
+          )}
         </section>
         <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
           <div className="mb-lg flex items-center justify-between gap-md">
             <h2 className="text-h2 font-medium text-ink">{config.railTitle}</h2>
-            <ToneTag tone={config.railTone as Tone}>{config.events.length} active</ToneTag>
+            <ToneTag tone={config.railTone as Tone}>{events.length} active</ToneTag>
           </div>
           <div className="grid gap-md">
-            {config.events.slice(0, 7).map((event) => {
+            {events.slice(0, 7).map((event) => {
               const key = getCalendarEventKey(event);
               const cardContent = (
                 <div className="flex items-start gap-md">
                   <span className={cx('mt-xs h-[76px] w-xs rounded-sm', toneBarClasses[event.tone])} />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs text-brand-teal">Jun {event.day}</p>
-                    <h3 className="mt-sm text-sm font-light text-ink">{event.label}</h3>
+                    <h3 className="mt-sm text-sm font-medium leading-snug text-brand-teal-deep">{event.label}</h3>
                     <p className="mt-xs text-xs text-muted">{event.owner}</p>
                     <ProgressMeter className="mt-md" tone={event.tone} value={event.progress} />
                   </div>
                 </div>
               );
 
+              const isHovered = isCesCalendar && activeEventKey === key;
+
               return isCesCalendar ? (
+                <div className="relative" key={key}>
+                  <button
+                    aria-label={`${event.label}, Jun ${event.day}. Click to open event workspace/swimlane.`}
+                    className={cx(
+                      'rounded-lg border p-md text-left transition duration-fast ease-standard hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus w-full',
+                      isHovered
+                        ? (event.tone === 'orange' || event.tone === 'amber'
+                          ? 'border-brand-orange ring-1 ring-brand-orange bg-surface'
+                          : 'border-brand-teal ring-1 ring-brand-teal bg-surface')
+                        : 'border-card bg-tone-slate-bg'
+                    )}
+                    onBlur={() => {
+                      setActiveEventKey(null);
+                      setActiveEventAnchor(null);
+                    }}
+                    onClick={() => openCalendarEvent(event)}
+                    onFocus={(e) => {
+                      setActiveEventKey(key);
+                      positionEventCard(e.currentTarget, event, true);
+                    }}
+                    onKeyDown={(keyboardEvent) => handleEventKeyDown(keyboardEvent, event)}
+                    onMouseEnter={(e) => {
+                      setActiveEventKey(key);
+                      positionEventCard(e.currentTarget, event, true);
+                    }}
+                    onMouseLeave={() => {
+                      setActiveEventKey(null);
+                      setActiveEventAnchor(null);
+                    }}
+                    type="button"
+                  >
+                    {cardContent}
+                  </button>
+                  {isHovered && activeEventAnchor && (
+                    <CalendarEventPreview 
+                      event={event} 
+                      anchor={activeEventAnchor}
+                    />
+                  )}
+                </div>
+              ) : (
                 <button
-                  aria-label={`${event.label}, Jun ${event.day}. Click to open event workspace/swimlane.`}
-                  className="rounded-lg border border-card bg-tone-slate-bg p-md text-left transition duration-fast ease-standard hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus"
+                  className="rounded-lg border border-card bg-surface p-md text-left shadow-rest transition duration-fast hover:translate-y-[-1px] hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus"
                   key={key}
-                  onBlur={() => setActiveEventKey(null)}
-                  onClick={() => openEventWorkspace(event)}
-                  onFocus={() => setActiveEventKey(key)}
-                  onKeyDown={(keyboardEvent) => handleEventKeyDown(keyboardEvent, event)}
-                  onMouseEnter={() => setActiveEventKey(key)}
+                  onClick={() => openCalendarEvent(event)}
                   type="button"
                 >
                   {cardContent}
                 </button>
-              ) : (
-                <article className="rounded-lg border border-card bg-tone-slate-bg p-md" key={key}>
-                  {cardContent}
-                </article>
               );
             })}
           </div>
         </aside>
+        <StaffingConflictDrawer
+          event={resolverEvent}
+          onClose={() => setResolverEvent(null)}
+          open={mode === 'staffing-calendar' && Boolean(resolverEvent)}
+        />
       </section>
     </ScreenStack>
   );
@@ -1767,10 +2449,12 @@ function WorkflowSwimlaneScreen() {
     { label: 'Due', value: `Jun ${event.day}`, helper: 'Event target date', tone: 'teal' },
   ];
 
+  const [selectedCard, setSelectedCard] = useState<BoardCardData | null>(null);
+
   return (
     <ScreenStack metrics={metrics}>
       <section className="grid gap-xl">
-        <header className="flex flex-wrap items-start justify-between gap-xl">
+        <div className="grid gap-md mb-lg">
           <div className="grid gap-xs">
             <div className="flex flex-wrap gap-sm">
               <ToneTag className="font-medium" tone={event.tone}>
@@ -1781,27 +2465,17 @@ function WorkflowSwimlaneScreen() {
               </ToneTag>
               <ToneTag className="font-medium">{event.taskCount ?? 7} tasks</ToneTag>
             </div>
-            <h2 className="text-display font-medium text-brand-teal-deep">{event.label}</h2>
-            <p className="max-w-content text-body font-light text-secondary">
-              {event.label} opens as a focused compliance swimlane with intake, evidence, review, signature, and final lock tasks.
-            </p>
           </div>
-          <div className="flex flex-wrap gap-md pt-sm">
+          <div className="flex flex-wrap gap-md">
             <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={() => navigate('/ces/calendar')} variant="secondary">
               Back to month
             </Button>
-            <Button
-              className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
-              iconLeft={<FileText aria-hidden="true" className="h-icon-sm w-icon-sm" />}
-            >
-              Packet preview
-            </Button>
           </div>
-        </header>
+        </div>
         <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
           <div className="grid gap-md desktop:grid-cols-4">
             {lanes.map((lane, index) => (
-              <div className={cx('rounded-lg border p-lg', toneSurfaceClasses[lane.tone])} key={lane.title}>
+              <div className={cx('rounded-lg p-lg', toneGlassSurfaceClasses[lane.tone])} key={lane.title}>
                 <div className="mb-md flex items-center justify-between gap-md">
                   <span className="grid h-tap w-tap place-items-center rounded-md bg-surface text-brand-teal">{index + 1}</span>
                   <span className="text-tag uppercase tracking-tag">{lane.count} cards</span>
@@ -1831,10 +2505,67 @@ function WorkflowSwimlaneScreen() {
         </div>
         <div className="grid gap-lg desktop:grid-cols-4">
           {lanes.map((lane) => (
-            <BoardLane key={lane.title} lane={lane} />
+            <BoardLane key={lane.title} lane={lane} onCardClick={setSelectedCard} />
           ))}
         </div>
       </section>
+
+      {selectedCard && (
+        <VeilModal
+          open={!!selectedCard}
+          onClose={() => setSelectedCard(null)}
+          eyebrow="Workflow task detail"
+          title={selectedCard.title}
+          tone="orange"
+          footer={
+            <div className="flex flex-wrap justify-end gap-sm">
+              <Button onClick={() => setSelectedCard(null)} variant="secondary">
+                Close modal
+              </Button>
+              <Button
+                className="border-tone-orange-border bg-tone-orange-bg text-tone-orange-text hover:bg-tone-orange-bg/85"
+                onClick={() => {
+                  setSelectedCard(null);
+                }}
+              >
+                Validate & Complete Step
+              </Button>
+            </div>
+          }
+        >
+          <div className="grid gap-md md:grid-cols-2">
+            <div className="grid gap-xs">
+              {[
+                ['Checklist complete', 'Ready'],
+                ['Evidence packet attached', 'Ready'],
+                ['eCIgn signing ready', 'Awaiting'],
+                ['Audit note reviewed', 'Ready'],
+              ].map(([item, status]) => (
+                <div key={item} className="flex items-center justify-between rounded-md bg-tone-slate-bg p-md text-xs">
+                  <span className="font-light text-secondary">{item}</span>
+                  <ToneBadge status={status === 'Ready' ? 'validated' : 'awaiting'} />
+                </div>
+              ))}
+            </div>
+            <div className="rounded-md border border-card bg-surface p-md flex flex-col gap-sm">
+              <h4 className="text-sm font-medium text-ink">Evidence and signature status</h4>
+              <div className="grid gap-xs text-xs font-light text-secondary">
+                <div className="rounded-md bg-tone-slate-bg p-md">
+                  <span className="text-[10px] font-medium text-brand-teal uppercase block mb-xs">Required file</span>
+                  Q2_QAPI_minutes_packet.pdf
+                </div>
+                <div className="rounded-md bg-tone-slate-bg p-md">
+                  <span className="text-[10px] font-medium text-brand-teal uppercase block mb-xs">eCIgn sequence</span>
+                  Administrator, Governing Body Chair
+                </div>
+                <div className="rounded-md bg-tone-orange-bg border border-tone-orange-border text-tone-orange-text p-md">
+                  Chair signature is pending before final lock.
+                </div>
+              </div>
+            </div>
+          </div>
+        </VeilModal>
+      )}
     </ScreenStack>
   );
 }
@@ -1946,15 +2677,10 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
   return (
     <ScreenStack metrics={achcMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-          <div className="mb-lg">
-            <h2 className="text-h2 font-medium text-ink">{isCrosswalk ? 'ACHC regulatory crosswalk' : 'ACHC survey checklist'}</h2>
-            <p className="mt-xs text-sm text-muted">
-              {isCrosswalk
-                ? 'CMS, Title 22, OSHA, and ACHC support levels stay visible as a distinct route, not a query-param view.'
-                : 'Policies, standards, evidence readiness, and owner action are aligned for survey review.'}
-            </p>
-          </div>
+        <section
+          aria-label={isCrosswalk ? 'ACHC regulatory crosswalk matrix' : 'ACHC survey checklist matrix'}
+          className="rounded-lg border border-card bg-surface p-xl shadow-rest"
+        >
           <DataTable
             columns={[
               { key: 'id', label: isCrosswalk ? 'Regulation' : 'ACHC Standard' },

@@ -1,25 +1,6 @@
-import {
-  Award,
-  BookOpenCheck,
-  ClipboardCheck,
-  FileSignature,
-  LockKeyhole,
-  Route,
-  ShieldCheck,
-  Stethoscope,
-  UserCheck,
-  type LucideIcon,
-} from 'lucide-react';
-import {
-  MetricGrid,
-  ProgressMeter,
-  SurfaceCard,
-  ToneTag,
-  toneSoftTileClasses,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { Award, BookOpenCheck, ClipboardCheck, FileSignature, LockKeyhole, Route, ShieldCheck, Stethoscope, UserCheck, type LucideIcon } from 'lucide-react';
+import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, type MetricTileData, type SurfaceCardData } from '../../components';
+import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
 
@@ -315,28 +296,6 @@ export function JourneyOverviewScreen() {
       data-route="/journey"
       data-template="journey"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/journey</ToneTag>
-            <ToneTag tone="slate">journey-overview</ToneTag>
-            <ToneTag tone="slate">journey</ToneTag>
-            <ToneTag tone="teal">Onboarding</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">Journey overview</h2>
-            <p className="max-w-content text-sm text-secondary">
-              Phase-gated competency path for Maria Santos, RN, connecting GAO modules, role-specific clinical training,
-              evidence capture, and supervisor clearance.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="active" />
-          <Badge variant="count">EMP-1001</Badge>
-        </div>
-      </section>
-
       <MetricGrid metrics={journeyMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-12">
@@ -389,7 +348,7 @@ export function JourneyOverviewScreen() {
           </section>
         </aside>
 
-        <section className="grid gap-lg desktop:col-span-6" aria-labelledby="journey-modules-title">
+        <section className="grid content-start gap-lg desktop:col-span-6" aria-labelledby="journey-modules-title">
           <div className="flex flex-wrap items-end justify-between gap-md">
             <div className="grid gap-xs">
               <h2 className="text-h2 font-medium text-ink" id="journey-modules-title">

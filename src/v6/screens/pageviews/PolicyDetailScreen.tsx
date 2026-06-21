@@ -1,28 +1,6 @@
-import {
-  AlertTriangle,
-  CalendarClock,
-  CheckCircle2,
-  ClipboardCheck,
-  ClipboardList,
-  FileCheck2,
-  FileText,
-  History,
-  Link2,
-  Printer,
-  ShieldCheck,
-  Upload,
-} from 'lucide-react';
+import { AlertTriangle, CalendarClock, CheckCircle2, ClipboardCheck, ClipboardList, FileCheck2, FileText, History, Link2, ShieldCheck, Upload } from 'lucide-react';
 import { Button, ToneBadge } from '../../primitives';
-import {
-  DataTable,
-  MetricGrid,
-  ProgressMeter,
-  SurfaceCard,
-  ToneTag,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
+import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { cx } from '../../utils/classNames';
 
 const routeMarker = {
@@ -195,36 +173,10 @@ export function PolicyDetailScreen() {
       data-route={routeMarker.path}
       data-template={routeMarker.template}
     >
-      <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-label="Route marker">
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneTag>{routeMarker.path}</ToneTag>
-          <ToneTag tone="slate">{routeMarker.hashId}</ToneTag>
-          <ToneTag tone="blue">{routeMarker.template}</ToneTag>
-          <ToneTag tone="teal">{routeMarker.group}</ToneTag>
-        </div>
-        <div className="mt-lg flex flex-wrap items-end justify-between gap-lg">
-          <div className="grid gap-sm">
-            <h2 id="policy-detail-title" className="text-h2 font-medium text-ink">
-              {policy.title}
-            </h2>
-            <p className="max-w-content text-body text-secondary">
-              Print-friendly policy viewer with section navigation, approval metadata, linked forms, ACHC mappings, evidence posture,
-              and lifecycle readiness.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-sm">
-            <Button iconLeft={<Printer aria-hidden="true" className="h-icon-sm w-icon-sm" />} variant="secondary">
-              Print packet
-            </Button>
-            <Button iconLeft={<CheckCircle2 aria-hidden="true" className="h-icon-sm w-icon-sm" />}>Acknowledge</Button>
-          </div>
-        </div>
-      </section>
-
       <MetricGrid metrics={policyMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[240px_minmax(0,1fr)_340px]">
-        <aside className="grid gap-lg desktop:sticky desktop:top-xl desktop:self-start">
+        <aside className="grid content-start gap-lg desktop:sticky desktop:top-xl desktop:self-start">
           <section className="rounded-lg border border-card bg-surface p-lg shadow-rest" aria-label="Policy contents">
             <div className="mb-lg flex items-center gap-sm">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-brand-teal">
@@ -313,7 +265,7 @@ export function PolicyDetailScreen() {
           </div>
         </article>
 
-        <aside className="grid gap-lg desktop:self-start">
+        <aside className="grid content-start gap-lg desktop:self-start">
           <section className="rounded-lg border border-card bg-surface p-lg shadow-rest" aria-label="Policy metadata">
             <div className="mb-lg flex items-center gap-sm">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-blue-bg text-tone-blue-text">

@@ -1,12 +1,6 @@
 import { BookOpen, AlertTriangle, FileText, ArrowRight } from 'lucide-react';
-import {
-  MetricGrid,
-  SurfaceCard,
-  ToneTag,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { MetricGrid, SurfaceCard, type MetricTileData, type SurfaceCardData } from '../../components';
+import { ToneBadge } from '../../primitives';
 
 const metrics = [
   { label: 'Total policies', value: '279', helper: 'Active and archived corpus', tone: 'teal' },
@@ -52,31 +46,10 @@ export function PolicyLifecycleScreen() {
       data-route="/policy-lifecycle"
       data-template="lifecycle"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/policy-lifecycle</ToneTag>
-            <ToneTag tone="slate">policy-lifecycle</ToneTag>
-            <ToneTag tone="slate">lifecycle</ToneTag>
-            <ToneTag tone="teal">System</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">Policy Lifecycle States</h2>
-            <p className="max-w-content text-sm text-secondary">
-              Track regulatory corpus revisions from draft, committee review, consensus approval, publication, to archivation.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="active" />
-          <Badge variant="count">279 Policies</Badge>
-        </div>
-      </section>
-
       <MetricGrid metrics={metrics} />
 
       <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid gap-lg desktop:col-span-8">
+        <div className="grid content-start gap-lg desktop:col-span-8">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-lg">Horizontal Stage Board</h3>
             <div className="flex flex-wrap gap-md items-center justify-between">

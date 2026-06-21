@@ -1,27 +1,8 @@
-import {
-  AlertTriangle,
-  CalendarCheck2,
-  ClipboardCheck,
-  FileCheck2,
-  ListChecks,
-  MessageSquareText,
-  PenLine,
-  ShieldCheck,
-  Stethoscope,
-  UserCheck,
-  Users,
-} from 'lucide-react';
-import {
-  DataTable,
-  MetricGrid,
-  ProgressMeter,
-  SurfaceCard,
-  ToneTag,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
-import { Badge, Button, ToneBadge } from '../../primitives';
+import { useState } from 'react';
+import { cx } from '../../utils/classNames';
+import { AlertTriangle, CalendarCheck2, ChevronsUpDown, ClipboardCheck, FileCheck2, ListChecks, MessageSquareText, PenLine, Search, ShieldCheck, Stethoscope, UserCheck, Users } from 'lucide-react';
+import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 
 interface SupervisorLearnerRow extends Record<string, string> {
@@ -138,45 +119,6 @@ const learnerColumns: readonly DataTableColumn<SupervisorLearnerRow>[] = [
   { key: 'nextReview', label: 'Next review' },
 ];
 
-const selectedProfileBars: readonly ProfileBar[] = [
-  { label: 'GAO complete', tone: 'teal', value: 60 },
-  { label: 'Role modules', tone: 'orange', value: 25 },
-  { label: 'Supervised visits', tone: 'orange', value: 0 },
-  { label: 'Annual readiness', tone: 'slate', value: 10 },
-];
-
-const clearanceGateRows: readonly ClearanceGateRow[] = [
-  {
-    evidence: 'Signed before orientation release',
-    gateId: 'APP-F',
-    requirement: 'Appendix F hard-stop cleared',
-    status: 'signed',
-  },
-  {
-    evidence: 'GAO-001, 004, 007, 013 complete; GAO-014 in progress',
-    gateId: 'GAO-PRQ',
-    requirement: 'GAO prerequisites for HR-TA-005 Appendix D',
-    status: 'active',
-  },
-  {
-    evidence: 'General Orientation Competency Quiz awaiting DON review',
-    gateId: 'GAO-EXAM',
-    requirement: 'Supervisor signature required',
-    status: 'pending',
-  },
-  {
-    evidence: '0 of 2 supervised patient visits logged',
-    gateId: 'HRTA005-E',
-    requirement: 'Supervised visit evidence capture',
-    status: 'locked',
-  },
-  {
-    evidence: 'Independent work blocked until Appendix B attestation',
-    gateId: 'APP-B',
-    requirement: 'Clearance for independent field work',
-    status: 'locked',
-  },
-];
 
 const clearanceGateColumns: readonly DataTableColumn<ClearanceGateRow>[] = [
   { key: 'gateId', label: 'Gate' },
@@ -264,7 +206,67 @@ const supervisorActions = [
   { icon: PenLine, label: 'Request signature' },
 ] as const;
 
+const phaseBLearners = [
+  { id: 'EMP-1001', name: 'Maria Santos, RN', track: 'RN pathway', steps: '0 of 2 visits', status: 'In progress', tone: 'orange' as Tone, startDate: 'Apr 20, 2026', clearanceStatus: 'active', exceptions: '0', visits: '0/2', gao: 60, role: 25, visitsProgress: 0, annual: 10 },
+  { id: 'EMP-1002', name: 'Dani Lopez, HHA', track: 'HHA pathway', steps: '2 of 2 visits', status: 'Cleared', tone: 'green' as Tone, startDate: 'May 12, 2026', clearanceStatus: 'signed', exceptions: '0', visits: '2/2', gao: 100, role: 80, visitsProgress: 100, annual: 90 },
+  { id: 'EMP-1003', name: 'Kevin Huang, LVN', track: 'LVN pathway', steps: '1 of 2 visits', status: 'Remediation', tone: 'orange' as Tone, startDate: 'May 18, 2026', clearanceStatus: 'attention', exceptions: '1', visits: '1/2', gao: 83, role: 50, visitsProgress: 50, annual: 40 },
+  { id: 'EMP-1004', name: 'Aisha Patel, OT', track: 'OT pathway', steps: '2 of 2 visits', status: 'Cleared', tone: 'green' as Tone, startDate: 'Jun 1, 2026', clearanceStatus: 'signed', exceptions: '0', visits: '2/2', gao: 100, role: 100, visitsProgress: 100, annual: 100 },
+  { id: 'EMP-1005', name: 'Rowan Chen, DON', track: 'DON pathway', steps: 'N/A', status: 'Review Required', tone: 'slate' as Tone, startDate: 'Jun 10, 2026', clearanceStatus: 'review-required', exceptions: '0', visits: 'N/A', gao: 100, role: 75, visitsProgress: 100, annual: 100 },
+];
+
 export function SupervisorScreen() {
+  const [selectedLearner, setSelectedLearner] = useState(phaseBLearners[0]);
+  const [learnerPickerOpen, setLearnerPickerOpen] = useState(true);
+  const [visitDrawerOpen, setVisitDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('All');
+
+  const selectedProfileBars: readonly ProfileBar[] = [
+    { label: 'GAO complete', tone: 'teal' as Tone, value: selectedLearner.gao },
+    { label: 'Role modules', tone: 'orange' as Tone, value: selectedLearner.role },
+    { label: 'Supervised visits', tone: 'orange' as Tone, value: selectedLearner.visitsProgress },
+    { label: 'Annual readiness', tone: 'slate' as Tone, value: selectedLearner.annual },
+  ];
+
+  const dynamicClearanceGates = [
+    {
+      evidence: 'Signed before orientation release',
+      gateId: 'APP-F',
+      requirement: 'Appendix F hard-stop cleared',
+      status: selectedLearner.clearanceStatus === 'attention' ? 'review-required' : 'signed',
+    },
+    {
+      evidence: `GAO complete: ${selectedLearner.gao}%`,
+      gateId: 'GAO-PRQ',
+      requirement: 'GAO prerequisites for HR-TA-005 Appendix D',
+      status: selectedLearner.gao === 100 ? 'passed' : 'active',
+    },
+    {
+      evidence: 'General Orientation quiz review',
+      gateId: 'GAO-EXAM',
+      requirement: 'Supervisor signature required',
+      status: selectedLearner.gao === 100 ? 'passed' : 'pending',
+    },
+    {
+      evidence: `${selectedLearner.visits} supervised patient visits logged`,
+      gateId: 'HRTA005-E',
+      requirement: 'Supervised visit evidence capture',
+      status: selectedLearner.visitsProgress === 100 ? 'passed' : 'locked',
+    },
+  ];
+
+  // Map rows for the main roster table, linking them to selection handler
+  const displayRows = learnerRows.map(row => {
+    const matched = phaseBLearners.find(l => l.name === row.name);
+    return matched ? {
+      ...row,
+      gaoProgress: `${matched.gao}%`,
+      roleProgress: `${matched.role}%`,
+      supervisedVisits: matched.visits,
+      clearanceStatus: matched.clearanceStatus
+    } : row;
+  });
+
   return (
     <section
       className="grid gap-xl"
@@ -273,44 +275,21 @@ export function SupervisorScreen() {
       data-route="/journey/supervisor"
       data-template="journey"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/journey/supervisor</ToneTag>
-            <ToneTag tone="slate">supervisor</ToneTag>
-            <ToneTag tone="slate">journey</ToneTag>
-            <ToneTag tone="teal">Onboarding</ToneTag>
-            <Badge>Reference: 49-supervisor.png</Badge>
-          </div>
-          <p className="max-w-content text-sm font-light text-secondary">
-            DON and preceptor oversight for learner progress, readiness queues, exceptions, supervised-visit evidence,
-            and clearance sign-off.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="active" />
-          <Badge variant="count">journey.supervise</Badge>
-        </div>
-      </section>
-
       <MetricGrid metrics={supervisorMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(360px,2fr)]">
-        <section className="grid gap-lg" aria-labelledby="supervisor-roster-title">
-          <div className="flex flex-wrap items-start justify-between gap-lg">
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink" id="supervisor-roster-title">
-                Learner oversight roster
-              </h2>
-              <p className="max-w-content text-sm font-light text-muted">
-                Cohort rows show GAO, role-track, supervised-visit, exception, and clearance posture for supervisor
-                review.
-              </p>
-            </div>
-            <ToneTag tone="orange">1 active exception</ToneTag>
-          </div>
-
-          <DataTable columns={learnerColumns} label="Supervisor onboarding learner roster" rows={learnerRows} />
+        <section className="grid content-start gap-lg" aria-labelledby="supervisor-roster-title">
+          <DataTable 
+            columns={learnerColumns} 
+            label="Supervisor onboarding learner roster" 
+            rows={displayRows} 
+            onRowClick={(row) => {
+              const matched = phaseBLearners.find(l => l.name === row.name);
+              if (matched) {
+                setSelectedLearner(matched);
+              }
+            }}
+          />
 
           <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Supervisor readiness queues">
             {readinessQueues.map((queue) => (
@@ -373,13 +352,84 @@ export function SupervisorScreen() {
                 <div className="grid gap-xs">
                   <p className="text-tag uppercase tracking-tag text-muted">Selected learner</p>
                   <h2 className="text-h2 font-medium text-ink" id="selected-learner-title">
-                    Maria Santos, RN
+                    {selectedLearner.name}
                   </h2>
-                  <p className="text-sm font-light text-secondary">EMP-1001 - Start date Apr 20, 2026</p>
+                  <p className="text-sm font-light text-secondary">{selectedLearner.id} - Start date {selectedLearner.startDate}</p>
                 </div>
               </div>
-              <ToneBadge size="sm" status="active" />
+              <button 
+                onClick={() => setLearnerPickerOpen(!learnerPickerOpen)}
+                className="rounded-lg border border-hairline bg-surface p-sm text-brand-teal hover:bg-surface-hover"
+                aria-label="Open learner picker"
+                type="button"
+              >
+                <ChevronsUpDown className="h-icon-sm w-icon-sm" />
+              </button>
             </div>
+
+            {/* Learner / Employee Picker Subview */}
+            {learnerPickerOpen && (
+              <div className="mb-lg rounded-lg border border-card bg-surface p-md shadow-soft">
+                <div className="flex items-center gap-sm rounded-md border border-hairline bg-tone-slate-bg px-md py-sm">
+                  <Search className="h-icon-sm w-icon-sm text-muted" />
+                  <input
+                    type="text"
+                    placeholder="Search learners by name or ID..."
+                    className="w-full bg-transparent text-xs text-ink outline-none"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <div className="mt-md flex flex-wrap gap-xs">
+                  {['All', 'GAO', 'Clinical RN', 'HHA'].map((filter) => (
+                    <button
+                      key={filter}
+                      onClick={() => setSelectedFilter(filter)}
+                      className={cx(
+                        'rounded-full px-sm py-xs text-[10px] uppercase font-medium border transition',
+                        selectedFilter === filter
+                          ? 'bg-brand-teal text-on-brand border-brand-teal'
+                          : 'bg-tone-slate-bg text-secondary border-hairline hover:bg-surface-hover'
+                      )}
+                      type="button"
+                    >
+                      {filter}
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-md space-y-xs max-h-56 overflow-y-auto">
+                  {phaseBLearners
+                    .filter((l) => {
+                      if (searchQuery && !l.name.toLowerCase().includes(searchQuery.toLowerCase()) && !l.id.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                      if (selectedFilter === 'GAO' && l.gao < 100) return true;
+                      if (selectedFilter === 'Clinical RN' && !l.track.toLowerCase().includes('rn')) return false;
+                      if (selectedFilter === 'HHA' && !l.track.toLowerCase().includes('hha')) return false;
+                      return true;
+                    })
+                    .map((l) => (
+                      <div
+                        key={l.id}
+                        onClick={() => setSelectedLearner(l)}
+                        className={cx(
+                          'flex items-center justify-between gap-sm rounded-md border p-sm cursor-pointer transition',
+                          selectedLearner.id === l.id
+                            ? 'border-brand-teal bg-tone-teal-bg'
+                            : 'border-hairline bg-tone-slate-bg hover:bg-surface-hover'
+                        )}
+                      >
+                        <div>
+                          <div className="text-xs font-medium text-ink">{l.name}</div>
+                          <div className="text-[10px] text-muted">{l.id} · {l.track}</div>
+                        </div>
+                        <div className="text-right">
+                          <ToneBadge size="sm" status={l.clearanceStatus} />
+                          <div className="text-[9px] text-muted mt-xs">{l.steps}</div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
 
             <div className="grid gap-md">
               {selectedProfileBars.map((bar) => (
@@ -394,11 +444,11 @@ export function SupervisorScreen() {
               </div>
               <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-tone-slate-bg p-md">
                 <span className="text-sm font-light text-secondary">Appendix F</span>
-                <ToneBadge size="sm" status="signed" />
+                <ToneBadge size="sm" status={selectedLearner.clearanceStatus === 'attention' ? 'review-required' : 'signed'} />
               </div>
               <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-tone-slate-bg p-md">
                 <span className="text-sm font-light text-secondary">Independent work</span>
-                <ToneBadge size="sm" status="locked" />
+                <ToneBadge size="sm" status={selectedLearner.visitsProgress === 100 ? 'active' : 'locked'} />
               </div>
             </div>
 
@@ -407,7 +457,13 @@ export function SupervisorScreen() {
                 const Icon = action.icon;
 
                 return (
-                  <Button iconLeft={<Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />} key={action.label} size="sm" variant="secondary">
+                  <Button 
+                    iconLeft={<Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />} 
+                    key={action.label} 
+                    size="sm" 
+                    variant="secondary"
+                    onClick={action.label === 'Log visit' ? () => setVisitDrawerOpen(true) : undefined}
+                  >
                     {action.label}
                   </Button>
                 );
@@ -430,7 +486,7 @@ export function SupervisorScreen() {
               </div>
             </div>
 
-            <DataTable columns={clearanceGateColumns} label="Supervisor clearance gate checklist" rows={clearanceGateRows} />
+            <DataTable columns={clearanceGateColumns} label="Supervisor clearance gate checklist" rows={dynamicClearanceGates} />
           </section>
 
           <section className="grid gap-lg" aria-label="Coaching and supervisor review cards">
@@ -484,6 +540,118 @@ export function SupervisorScreen() {
           </section>
         </aside>
       </section>
+
+      {/* Supervised Visit Logging Drawer */}
+      <VeilDrawer
+        open={visitDrawerOpen}
+        onClose={() => setVisitDrawerOpen(false)}
+        eyebrow="Journey supervisor"
+        title="Log supervised checkoff"
+        tone="orange"
+        footer={
+          <div className="flex justify-end gap-md">
+            <Button variant="secondary" onClick={() => setVisitDrawerOpen(false)}>Cancel</Button>
+            <Button 
+              className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
+              onClick={() => {
+                // Simulate saving the visit checkoff
+                setSelectedLearner(prev => ({
+                  ...prev,
+                  visits: prev.visits === '0/2' ? '1/2' : '2/2',
+                  visitsProgress: prev.visits === '0/2' ? 50 : 100,
+                  clearanceStatus: prev.visits === '0/2' ? 'active' : 'signed'
+                }));
+                setVisitDrawerOpen(false);
+              }}
+            >
+              Log and validate visit
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-lg">
+          <div className="rounded-lg border border-hairline bg-tone-teal-bg p-lg">
+            <div className="text-sm font-medium text-brand-teal">{selectedLearner.name}</div>
+            <p className="mt-xs text-xs text-muted">
+              {selectedLearner.id} · {selectedLearner.track} · {selectedLearner.visits} supervised visits completed.
+            </p>
+          </div>
+
+          <div className="grid gap-md">
+            <label className="block space-y-xs">
+              <span className="text-tag uppercase tracking-tag text-muted">Visit date and time</span>
+              <input 
+                type="text" 
+                defaultValue="Jun 20, 2026 - 9:00 AM" 
+                className="w-full rounded-md border border-hairline bg-tone-slate-bg px-md py-sm text-sm text-ink outline-none focus:border-brand-teal"
+                readOnly
+              />
+            </label>
+
+            <label className="block space-y-xs">
+              <span className="text-tag uppercase tracking-tag text-muted">Preceptor</span>
+              <input 
+                type="text" 
+                defaultValue="Elena Navarro, DON" 
+                className="w-full rounded-md border border-hairline bg-tone-slate-bg px-md py-sm text-sm text-ink outline-none focus:border-brand-teal"
+                readOnly
+              />
+            </label>
+
+            <label className="block space-y-xs">
+              <span className="text-tag uppercase tracking-tag text-muted">Patient / visit context</span>
+              <textarea 
+                defaultValue="SOC observation for medication reconciliation and documentation cadence."
+                rows={3} 
+                className="w-full rounded-md border border-hairline bg-tone-slate-bg px-md py-sm text-sm text-ink outline-none focus:border-brand-teal resize-none"
+                readOnly
+              />
+            </label>
+          </div>
+
+          <div className="rounded-lg border border-card bg-surface p-lg">
+            <h4 className="text-sm font-medium text-brand-teal mb-md">Competency checklist</h4>
+            <div className="space-y-sm">
+              {[
+                ['Patient identity verified', 'passed'],
+                ['Visit documentation completed', 'passed'],
+                ['Infection prevention observed', 'passed'],
+                ['Medication teaching reviewed', 'review-required'],
+                ['Supervisor attestation captured', 'passed'],
+              ].map(([item, status]) => (
+                <div key={item} className="flex items-center justify-between rounded-md bg-tone-slate-bg px-md py-sm text-xs">
+                  <span className="font-medium text-ink">{item}</span>
+                  <ToneBadge size="sm" status={status} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-sm">
+            {['Pass', 'Remediation', 'Incomplete'].map((item, index) => (
+              <button 
+                key={item} 
+                className={cx(
+                  'rounded-md border py-sm text-xs font-medium transition',
+                  index === 0 
+                    ? 'border-brand-teal bg-tone-teal-bg text-brand-teal' 
+                    : 'border-hairline bg-surface text-muted hover:bg-surface-hover'
+                )}
+                type="button"
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+
+          <label className="flex items-start gap-md rounded-lg border border-tone-orange-border bg-tone-orange-bg p-lg">
+            <input type="checkbox" defaultChecked className="mt-xs accent-brand-orange" />
+            <span className="text-xs leading-relaxed text-secondary">
+              Preceptor attests the visit was observed and the checklist reflects actual performance.
+            </span>
+          </label>
+        </div>
+      </VeilDrawer>
     </section>
   );
 }

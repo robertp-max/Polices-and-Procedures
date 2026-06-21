@@ -1,6 +1,6 @@
 import { Search, HelpCircle, FileText } from 'lucide-react';
-import { ToneTag } from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+;
+import { Badge } from '../../primitives';
 
 const categories = [
   { label: 'Overview & Commands', count: '12 articles', desc: 'Primary commands, dashboard widgets, and user settings.' },
@@ -18,29 +18,8 @@ export function HelpCenterScreen() {
       data-route="/help/*"
       data-template="docs"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/help/*</ToneTag>
-            <ToneTag tone="slate">help-center</ToneTag>
-            <ToneTag tone="slate">docs</ToneTag>
-            <ToneTag tone="teal">System</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">Operator Help Center</h2>
-            <p className="max-w-content text-sm text-secondary">
-              Operator reference manuals, compliance walkthroughs, and troubleshooting guides.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="active" />
-          <Badge variant="count">HELP-CENTER</Badge>
-        </div>
-      </section>
-
       <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid gap-lg desktop:col-span-8">
+        <div className="grid content-start gap-lg desktop:col-span-8">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-lg">Help Manual Categories</h3>
             <div className="grid gap-md tablet-l:grid-cols-2">

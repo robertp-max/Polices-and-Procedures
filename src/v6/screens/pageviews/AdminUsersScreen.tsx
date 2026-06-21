@@ -1,14 +1,7 @@
+import { useState } from 'react';
 import { BadgeCheck, ClipboardCheck, KeyRound, LockKeyhole, ShieldCheck, Smartphone, UserCog } from 'lucide-react';
-import {
-  DataTable,
-  MetricGrid,
-  SurfaceCard,
-  ToneTag,
-  type DataTableColumn,
-  type MetricTileData,
-  type SurfaceCardData,
-} from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 
 interface AdminUserRow extends Record<string, string> {
@@ -193,6 +186,19 @@ const assignmentLanes: readonly AssignmentLane[] = [
 ];
 
 export function AdminUsersScreen() {
+  const [selectedUserId, setSelectedUserId] = useState<string | null>('u-compliance-tp');
+
+  const selectedUser = userRows.find(r => r.userId === selectedUserId);
+
+  const handleRowClick = (row: AdminUserRow) => {
+    setSelectedUserId(row.userId === selectedUserId ? null : row.userId);
+  };
+
+  const handleOverrideChange = (permissionKey: string, value: string) => {
+    // UI feedback only for prototype
+    console.log(`Setting override: ${permissionKey} = ${value}`);
+  };
+
   return (
     <section
       className="grid gap-xl"
@@ -201,43 +207,107 @@ export function AdminUsersScreen() {
       data-route="/admin/users"
       data-template="matrix"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/admin/users</ToneTag>
-            <ToneTag tone="slate">admin-users</ToneTag>
-            <ToneTag tone="slate">matrix</ToneTag>
-            <ToneTag tone="teal">Admin</ToneTag>
-          </div>
-          <p className="max-w-content text-sm text-secondary">
-            User assignment matrix for account administration, role and group membership, MFA posture, audit evidence,
-            and survey-readiness access review.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="validated" />
-          <Badge variant="count">96 users</Badge>
-        </div>
-      </section>
-
       <MetricGrid metrics={userMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="grid gap-lg" aria-labelledby="admin-users-matrix-title">
-          <div className="flex flex-wrap items-start justify-between gap-lg">
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink" id="admin-users-matrix-title">
-                User assignments matrix
-              </h2>
-              <p className="max-w-content text-sm text-muted">
-                User rows map identities to roles, assignment groups, MFA posture, access state, audit evidence, and
-                readiness status for administrative review.
-              </p>
-            </div>
-            <ToneTag tone="orange">4 reviews due soon</ToneTag>
-          </div>
+        <section className="grid content-start gap-lg" aria-label="Admin users role and access assignment matrix">
+          <DataTable 
+            columns={userColumns} 
+            label="Admin users role and access assignment matrix" 
+            rows={userRows} 
+            onRowClick={handleRowClick}
+          />
 
-          <DataTable columns={userColumns} label="Admin users role and access assignment matrix" rows={userRows} />
+          {/* User Permission Override Matrix */}
+          {selectedUser && (
+            <section className="rounded-lg border border-brand-orange/30 bg-surface p-xl shadow-rest transition duration-normal mt-md">
+              <div className="mb-lg border-b border-hairline pb-sm flex justify-between items-center">
+                <div>
+                  <div className="flex items-center gap-sm">
+                    <h3 className="text-h3 font-medium text-ink">Permission Override Matrix</h3>
+                    <span className="text-xs text-muted font-mono">{selectedUser.name} ({selectedUser.userId})</span>
+                  </div>
+                  <p className="text-xs text-secondary mt-xs">Configure granular access exceptions and dual-signature authorizations.</p>
+                </div>
+                <button
+                  onClick={() => setSelectedUserId(null)}
+                  className="text-xs font-medium text-brand-teal hover:underline"
+                  type="button"
+                >
+                  Collapse Override Matrix
+                </button>
+              </div>
+
+              <div className="rounded-lg border border-hairline bg-transparent overflow-hidden">
+                <table className="min-w-full border-collapse text-left text-xs" aria-label="Permission Override Grid">
+                  <thead className="bg-tone-slate-bg text-tag uppercase tracking-tag text-muted">
+                    <tr>
+                      <th className="border-b border-card px-lg py-md font-light" scope="col">Scope / Permission</th>
+                      <th className="border-b border-card px-lg py-md font-light text-center" scope="col">Default (Inherited)</th>
+                      <th className="border-b border-card px-lg py-md font-light text-center" scope="col">Force Grant</th>
+                      <th className="border-b border-card px-lg py-md font-light text-center" scope="col">Force Revoke</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { key: 'policy.write', label: 'Policy writing', desc: 'Draft and submit policy revisions' },
+                      { key: 'evidence.upload', label: 'Evidence upload', desc: 'Upload documents and audit packets' },
+                      { key: 'ecign.sign', label: 'eCIgn signing', desc: 'Clinical preceptor and coordinator signoff' },
+                      { key: 'surveyor.view', label: 'Surveyor viewer access', desc: 'Read-only timeline view for surveyors' },
+                      { key: 'admin.users', label: 'User administration', desc: 'Manage user profiles and group roles' }
+                    ].map((row) => (
+                      <tr key={row.key} className="border-b border-hairline hover:bg-surface-hover transition duration-fast">
+                        <td className="px-lg py-md leading-body text-secondary">
+                          <div className="font-medium text-ink">{row.label}</div>
+                          <div className="text-[10px] text-muted font-mono mt-xs">{row.key}</div>
+                        </td>
+                        <td className="px-lg py-md text-center">
+                          <input
+                            type="radio"
+                            name={`override-${row.key}`}
+                            value="default"
+                            defaultChecked
+                            onChange={() => handleOverrideChange(row.key, 'default')}
+                          />
+                        </td>
+                        <td className="px-lg py-md text-center">
+                          <input
+                            type="radio"
+                            name={`override-${row.key}`}
+                            value="grant"
+                            onChange={() => handleOverrideChange(row.key, 'grant')}
+                          />
+                        </td>
+                        <td className="px-lg py-md text-center">
+                          <input
+                            type="radio"
+                            name={`override-${row.key}`}
+                            value="revoke"
+                            onChange={() => handleOverrideChange(row.key, 'revoke')}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-md flex justify-end gap-md">
+                <Button size="sm" variant="secondary" onClick={() => setSelectedUserId(null)}>
+                  Discard Changes
+                </Button>
+                <Button
+                  className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange/95 font-light"
+                  size="sm"
+                  onClick={() => {
+                    alert('Override matrix updated. Event audit log updated.');
+                    setSelectedUserId(null);
+                  }}
+                >
+                  Apply & Log Exception
+                </Button>
+              </div>
+            </section>
+          )}
 
           <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Admin user security summary">
             {securitySummaries.map((summary) => (

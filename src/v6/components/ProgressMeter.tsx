@@ -14,7 +14,7 @@ export function ProgressMeter({ className, label = 'Progress', tone = 'teal', va
 
   return (
     <div className={cx('grid gap-xs', className)}>
-      <div className="flex items-center justify-between gap-sm text-tag uppercase tracking-tag text-ink">
+      <div className="flex items-center justify-between gap-sm text-[10px] font-light uppercase tracking-wider text-muted">
         <span>{label}</span>
         <span className="tabular-nums">{boundedValue}%</span>
       </div>
@@ -23,12 +23,11 @@ export function ProgressMeter({ className, label = 'Progress', tone = 'teal', va
         aria-valuemax={100}
         aria-valuemin={0}
         aria-valuenow={boundedValue}
-        className="h-sm overflow-hidden rounded-sm bg-tone-slate-bg"
+        className="h-2 overflow-hidden rounded-full bg-tone-slate-bg"
         role="progressbar"
       >
-        <div className={cx('h-full rounded-sm', toneBarClasses[tone])} style={{ width: `${boundedValue}%` }} />
+        <div className={cx('h-full rounded-full', toneBarClasses[tone])} style={{ width: `${boundedValue}%` }} />
       </div>
     </div>
   );
 }
-

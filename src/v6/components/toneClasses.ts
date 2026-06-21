@@ -11,6 +11,17 @@ export const toneSurfaceClasses: Record<Tone, string> = {
   violet: 'border-tone-violet-border bg-tone-violet-bg text-tone-violet-text',
 };
 
+export const toneGlassSurfaceClasses: Record<Tone, string> = {
+  amber: 'glass-toned bg-tone-amber-bg text-tone-amber-text',
+  blue: 'glass-toned bg-tone-blue-bg text-tone-blue-text',
+  green: 'glass-toned bg-tone-green-bg text-tone-green-text',
+  orange: 'glass-toned bg-tone-orange-bg text-tone-orange-text',
+  red: 'glass-toned bg-tone-red-bg text-tone-red-text',
+  slate: 'glass-toned bg-tone-slate-bg text-tone-slate-text',
+  teal: 'glass-toned bg-tone-teal-bg text-tone-teal-text',
+  violet: 'glass-toned bg-tone-violet-bg text-tone-violet-text',
+};
+
 export const toneTextClasses: Record<Tone, string> = {
   amber: 'text-tone-amber-text',
   blue: 'text-tone-blue-text',
@@ -23,14 +34,14 @@ export const toneTextClasses: Record<Tone, string> = {
 };
 
 export const toneBarClasses: Record<Tone, string> = {
-  amber: 'bg-tone-amber-text',
-  blue: 'bg-tone-blue-text',
-  green: 'bg-tone-green-text',
-  orange: 'bg-tone-orange-text',
-  red: 'bg-tone-red-text',
-  slate: 'bg-tone-slate-text',
-  teal: 'bg-tone-teal-text',
-  violet: 'bg-tone-violet-text',
+  amber: 'bar-amber',
+  blue: 'bar-blue',
+  green: 'bar-green',
+  orange: 'bar-orange',
+  red: 'bar-red',
+  slate: 'bar-slate',
+  teal: 'bar-teal',
+  violet: 'bar-violet',
 };
 
 export const toneSoftTileClasses: Record<Tone, string> = {

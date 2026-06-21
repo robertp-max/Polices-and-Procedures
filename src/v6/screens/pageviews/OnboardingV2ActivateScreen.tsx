@@ -1,6 +1,5 @@
-import { UserPlus, Save, AlertCircle } from 'lucide-react';
-import { ToneTag } from '../../components';
-import { Button, FormField, Input, Select, ToneBadge } from '../../primitives';
+import { UserPlus, AlertCircle } from 'lucide-react';
+import { FormField, Input, Select, ToneBadge } from '../../primitives';
 
 const triggerOptions = [
   { value: 'offer', label: 'Offer Letter Signed' },
@@ -24,30 +23,8 @@ export function OnboardingV2ActivateScreen() {
       data-route="/onboarding-v2/activate"
       data-template="detail"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/onboarding-v2/activate</ToneTag>
-            <ToneTag tone="slate">onboarding-v2-activate</ToneTag>
-            <ToneTag tone="slate">detail</ToneTag>
-            <ToneTag tone="teal">Onboarding v2</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">Onboarding Activation Form</h2>
-            <p className="max-w-content text-sm text-secondary">
-              Activate subject with pre-creation reconciliation and role gating configurations.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <Button iconLeft={<Save aria-hidden="true" className="h-icon-sm w-icon-sm" />}>
-            Activate Subject
-          </Button>
-        </div>
-      </section>
-
       <div className="grid gap-xl desktop:grid-cols-3">
-        <div className="grid gap-lg desktop:col-span-2">
+        <div className="grid content-start gap-lg desktop:col-span-2">
           <form className="grid gap-lg rounded-lg border border-card bg-surface p-xl shadow-rest">
             <h3 className="text-h3 font-medium text-ink border-b border-hairline pb-sm flex items-center gap-sm">
               <UserPlus aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
@@ -109,3 +86,5 @@ export function OnboardingV2ActivateScreen() {
     </section>
   );
 }
+
+export default OnboardingV2ActivateScreen;

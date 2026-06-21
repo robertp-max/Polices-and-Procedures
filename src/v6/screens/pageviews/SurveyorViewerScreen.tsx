@@ -1,6 +1,6 @@
 import { ShieldCheck, FileText } from 'lucide-react';
-import { ToneTag } from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+;
+import { Badge } from '../../primitives';
 
 export function SurveyorViewerScreen() {
   return (
@@ -11,29 +11,8 @@ export function SurveyorViewerScreen() {
       data-route="/surveyor/policy/:policyId"
       data-template="detail"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/surveyor/policy/:policyId</ToneTag>
-            <ToneTag tone="slate">surveyor-viewer</ToneTag>
-            <ToneTag tone="slate">detail</ToneTag>
-            <ToneTag tone="teal">Admin</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">External Surveyor Policy Viewer</h2>
-            <p className="max-w-content text-sm text-secondary">
-              Read-only policy detail interface for external auditors and surveyors to verify compliance without exposing PHI.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="active" />
-          <Badge variant="count">SURVEYOR-MODE</Badge>
-        </div>
-      </section>
-
       <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid gap-lg desktop:col-span-8">
+        <div className="grid content-start gap-lg desktop:col-span-8">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md">Policy Body Text</h3>
             <div className="rounded-md border border-hairline bg-tone-slate-bg p-lg text-sm text-secondary leading-relaxed max-h-[400px] overflow-y-auto">

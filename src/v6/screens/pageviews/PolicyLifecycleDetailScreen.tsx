@@ -1,10 +1,5 @@
 import { Calendar, User, ShieldCheck } from 'lucide-react';
-import {
-  MetricGrid,
-  ToneTag,
-  type MetricTileData,
-} from '../../components';
-import { Button } from '../../primitives';
+import { MetricGrid, type MetricTileData } from '../../components';
 
 const metrics = [
   { label: 'Current Phase', value: 'Review', helper: 'Awaiting board approval', tone: 'amber' },
@@ -21,30 +16,10 @@ export function PolicyLifecycleDetailScreen() {
       data-route="/policy-lifecycle/:policyId"
       data-template="lifecycle"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/policy-lifecycle/:policyId</ToneTag>
-            <ToneTag tone="slate">policy-lifecycle-detail</ToneTag>
-            <ToneTag tone="slate">lifecycle</ToneTag>
-            <ToneTag tone="teal">System</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">ADM-HR-004 - Staffing Qualifications</h2>
-            <p className="max-w-content text-sm text-secondary">
-              Lifecycle audits, version comparisons, and review logs for the selected policy record.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <Button>Approve Policy</Button>
-        </div>
-      </section>
-
       <MetricGrid metrics={metrics} />
 
       <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid gap-lg desktop:col-span-8">
+        <div className="grid content-start gap-lg desktop:col-span-8">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md">Policy Draft Content Preview</h3>
             <div className="rounded-md border border-hairline bg-tone-slate-bg p-lg text-sm text-secondary leading-relaxed">

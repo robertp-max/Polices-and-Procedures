@@ -1,12 +1,7 @@
-import { ShieldAlert, BookOpen, AlertTriangle } from 'lucide-react';
-import {
-  MetricGrid,
-  DataTable,
-  ToneTag,
-  type MetricTileData,
-  type DataTableColumn,
-} from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { ShieldAlert, BookOpen, AlertTriangle, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { MetricGrid, DataTable, VeilModal, type MetricTileData, type DataTableColumn } from '../../components';
+import { Button } from '../../primitives';
 
 interface OverrideRow extends Record<string, string> {
   overrideId: string;
@@ -32,13 +27,36 @@ const columns: readonly DataTableColumn<OverrideRow>[] = [
   { key: 'status', label: 'State', status: true },
 ];
 
-const rows: readonly OverrideRow[] = [
+const initialRows: readonly OverrideRow[] = [
   { overrideId: 'OVR-101', subject: 'James Carter', gate: 'Gate 3: Health', reason: 'TB Screening delay', approvers: 'DON / HR Director', status: 'review-required' },
   { overrideId: 'OVR-102', subject: 'Liam O\'Connor', gate: 'Gate 2: Credentials', reason: 'License verification delay', approvers: 'DON / Compliance Officer', status: 'awaiting' },
   { overrideId: 'OVR-103', subject: 'Emma Watson', gate: 'Gate 4: Training', reason: 'Orientation module transfer', approvers: 'HR Coordinator / DON', status: 'complete' },
 ];
 
 export function OnboardingV2GovernanceScreen() {
+  const [rows, setRows] = useState<readonly OverrideRow[]>(initialRows);
+  const [isOverrideOpen, setIsOverrideOpen] = useState(false);
+  const [targetLearner, setTargetLearner] = useState('James Carter');
+  const [targetGate, setTargetGate] = useState('Gate 3: Health & Safety');
+  const [overrideReason, setOverrideReason] = useState('Primary source latency');
+  const [expirationWindow, setExpirationWindow] = useState('30');
+  const [dualApprover1, setDualApprover1] = useState('Dr. Elena Navarro, RN DON');
+  const [dualApprover2, setDualApprover2] = useState('Compliance Officer');
+  const [attested, setAttested] = useState(false);
+
+  const handleCreateOverride = () => {
+    const newOverride: OverrideRow = {
+      overrideId: `OVR-${Math.floor(104 + Math.random() * 100)}`,
+      subject: targetLearner,
+      gate: targetGate,
+      reason: overrideReason,
+      approvers: `${dualApprover1.split(',')[0]} / ${dualApprover2}`,
+      status: 'awaiting',
+    };
+    setRows([newOverride, ...rows]);
+    setIsOverrideOpen(false);
+  };
+
   return (
     <section
       className="grid gap-xl"
@@ -47,37 +65,25 @@ export function OnboardingV2GovernanceScreen() {
       data-route="/onboarding-v2/governance"
       data-template="reports"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/onboarding-v2/governance</ToneTag>
-            <ToneTag tone="slate">onboarding-v2-governance</ToneTag>
-            <ToneTag tone="slate">reports</ToneTag>
-            <ToneTag tone="teal">Onboarding v2</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">Onboarding Overrides</h2>
-            <p className="max-w-content text-sm text-secondary">
-              Management panel for active dual-signature overrides, safety limits, and regulatory bypass validation.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="active" />
-          <Badge variant="count">Onboarding Overrides</Badge>
-        </div>
-      </section>
-
       <MetricGrid metrics={metrics} />
 
       <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid gap-lg desktop:col-span-8">
+        <div className="grid content-start gap-lg desktop:col-span-8">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
               <div>
                 <h3 className="text-h3 font-medium text-ink">Override Authorizations</h3>
                 <p className="mt-xs text-sm text-muted">Auditable logs of active and signed bypass settings.</p>
               </div>
+              <Button
+                className="border-brand-orange text-brand-orange hover:bg-tone-orange-bg font-light"
+                iconLeft={<Plus aria-hidden="true" className="h-icon-sm w-icon-sm" />}
+                onClick={() => setIsOverrideOpen(true)}
+                size="sm"
+                variant="secondary"
+              >
+                Request override
+              </Button>
             </div>
             <DataTable columns={columns} label="Override authorizations table" rows={rows} />
           </section>
@@ -109,6 +115,119 @@ export function OnboardingV2GovernanceScreen() {
           </section>
         </aside>
       </section>
+
+      <VeilModal
+        open={isOverrideOpen}
+        onClose={() => setIsOverrideOpen(false)}
+        eyebrow="Governance Control"
+        title="Override Request Form"
+        tone="orange"
+        footer={
+          <div className="flex justify-end gap-md">
+            <Button onClick={() => setIsOverrideOpen(false)} variant="secondary" size="sm">
+              Cancel
+            </Button>
+            <Button
+              className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange font-light"
+              disabled={!attested || !targetLearner || !targetGate}
+              onClick={handleCreateOverride}
+              size="sm"
+            >
+              Issue Override
+            </Button>
+          </div>
+        }
+      >
+        <div className="grid gap-md text-sm">
+          <div className="grid gap-xs">
+            <label className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">Target Learner</label>
+            <input
+              type="text"
+              value={targetLearner}
+              onChange={(e) => setTargetLearner(e.target.value)}
+              className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+              placeholder="e.g. James Carter"
+            />
+          </div>
+
+          <div className="grid gap-xs">
+            <label className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">Target Gate</label>
+            <select
+              value={targetGate}
+              onChange={(e) => setTargetGate(e.target.value)}
+              className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+            >
+              <option value="Gate 1: Background & Screening">Gate 1: Background & Screening</option>
+              <option value="Gate 2: Credentials & License">Gate 2: Credentials & License</option>
+              <option value="Gate 3: Health & Safety">Gate 3: Health & Safety</option>
+              <option value="Gate 4: Orientation Training">Gate 4: Orientation Training</option>
+              <option value="Gate 5: Supervised Visit">Gate 5: Supervised Visit</option>
+            </select>
+          </div>
+
+          <div className="grid gap-xs">
+            <label className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">Override Reason</label>
+            <select
+              value={overrideReason}
+              onChange={(e) => setOverrideReason(e.target.value)}
+              className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+            >
+              <option value="Primary source latency">Primary source latency</option>
+              <option value="TB screening delay">TB screening delay</option>
+              <option value="Orientation module transfer">Orientation module transfer</option>
+              <option value="Temporary license extension">Temporary license extension</option>
+            </select>
+          </div>
+
+          <div className="grid gap-xs">
+            <label className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">Expiration Window (valid 30 days max)</label>
+            <input
+              type="number"
+              max={30}
+              min={1}
+              value={expirationWindow}
+              onChange={(e) => setExpirationWindow(e.target.value)}
+              className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-md">
+            <div className="grid gap-xs">
+              <label className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">Dual Approver 1</label>
+              <input
+                type="text"
+                value={dualApprover1}
+                onChange={(e) => setDualApprover1(e.target.value)}
+                className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+                readOnly
+              />
+            </div>
+            <div className="grid gap-xs">
+              <label className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">Dual Approver 2</label>
+              <select
+                value={dualApprover2}
+                onChange={(e) => setDualApprover2(e.target.value)}
+                className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+              >
+                <option value="Compliance Officer">Compliance Officer</option>
+                <option value="HR Director">HR Director</option>
+              </select>
+            </div>
+          </div>
+
+          <label className="flex items-start gap-md rounded-md bg-tone-slate-bg p-md text-xs text-secondary mt-sm">
+            <input
+              type="checkbox"
+              checked={attested}
+              onChange={(e) => setAttested(e.target.checked)}
+              className="mt-xs"
+            />
+            <span className="font-light">
+              I certify that this override carries active clinical supervision and does not violate any conditions of our home health agency participation.
+            </span>
+          </label>
+        </div>
+      </VeilModal>
     </section>
   );
 }

@@ -1,12 +1,6 @@
 import { FileText, ScanSearch, Check } from 'lucide-react';
-import {
-  MetricGrid,
-  DataTable,
-  ToneTag,
-  type MetricTileData,
-  type DataTableColumn,
-} from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { MetricGrid, DataTable, type MetricTileData, type DataTableColumn } from '../../components';
+import { ToneBadge } from '../../primitives';
 
 interface AuditRow extends Record<string, string> {
   subjectId: string;
@@ -48,31 +42,10 @@ export function OnboardingV2AuditScreen() {
       data-route="/onboarding-v2/audit"
       data-template="evidence"
     >
-      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="grid gap-sm">
-          <div className="flex flex-wrap items-center gap-sm">
-            <ToneTag>/onboarding-v2/audit</ToneTag>
-            <ToneTag tone="slate">onboarding-v2-audit</ToneTag>
-            <ToneTag tone="slate">evidence</ToneTag>
-            <ToneTag tone="teal">Onboarding v2</ToneTag>
-          </div>
-          <div className="grid gap-xs">
-            <h2 className="text-h2 font-medium text-ink">Readiness Audit</h2>
-            <p className="max-w-content text-sm text-secondary">
-              Verify subject hash-chains, activation audit trail, and supervisor overrides.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <ToneBadge size="sm" status="active" />
-          <Badge variant="count">V6-AUDIT</Badge>
-        </div>
-      </section>
-
       <MetricGrid metrics={metrics} />
 
       <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid gap-lg desktop:col-span-8">
+        <div className="grid content-start gap-lg desktop:col-span-8">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
               <div>

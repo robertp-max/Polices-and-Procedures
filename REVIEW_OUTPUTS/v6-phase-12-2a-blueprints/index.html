@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V6 Phase 12.2.a - Missing Subview Blueprints Review Board</title>
+  <!-- Load Roboto for exact weight rendering (300/500) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      /* Brand Tokens */
+      --brand-teal: #00797D;
+      --brand-teal-deep: #004142;
+      --brand-orange: #C74601;
+      --ecign-navy: #1A3778;
+      --ecign-orange: #F04B22;
+
+      /* Surfaces */
+      --surface-canvas: #F7FEFF;
+      --surface-base: #FFFFFF;
+      --surface-glass: rgba(255, 255, 255, 0.70);
+      --surface-hover-teal: #F7FEFF;
+
+      /* Text */
+      --text-primary: #1C2422;
+      --text-secondary: #524D4B;
+      --text-muted: #8A8583;
+      --text-disabled: #B8B3B1;
+      --text-on-brand: #FFFFFF;
+
+      /* Borders */
+      --border-hairline: rgba(0, 65, 66, 0.10);
+      --border-card: #E5E4E3;
+      --border-strong: rgba(0, 65, 66, 0.18);
+
+      /* Tone Set */
+      --tone-teal-bg: #F7FEFF;
+      --tone-teal-border: #C4F4F5;
+      --tone-teal-text: #00797D;
+
+      --tone-orange-bg: #FFFAF7;
+      --tone-orange-border: #FFD5BF;
+      --tone-orange-text: #C74601;
+
+      --tone-green-bg: #E6F4ED;
+      --tone-green-border: #A3D9B8;
+      --tone-green-text: #006B3A;
+
+      --tone-amber-bg: #FFF8E6;
+      --tone-amber-border: #F0D9A3;
+      --tone-amber-text: #8A5C00;
+
+      --tone-slate-bg: #FAF8F8;
+      --tone-slate-border: #F3F0EF;
+      --tone-slate-text: #524D4B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', system-ui, sans-serif;
+      font-weight: 300;
+      background-color: var(--surface-canvas);
+      color: var(--text-primary);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Layout Components */
+    .sidebar {
+      width: 280px;
+      background-color: var(--surface-base);
+      border-right: 1px solid var(--border-hairline);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--border-hairline);
+    }
+
+    .sidebar-logo {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--brand-teal);
+    }
+
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--brand-teal-deep);
+      margin-top: 4px;
+    }
+
+    .sidebar-menu {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 8px;
+    }
+
+    .sidebar-section-title {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 16px 8px 8px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 6px;
+      margin-bottom: 2px;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-item:hover {
+      background-color: var(--surface-hover-teal);
+      color: var(--brand-teal);
+    }
+
+    .sidebar-item.active {
+      background-color: var(--brand-teal);
+      color: var(--text-on-brand);
+      font-weight: 500;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+      height: 100%;
+    }
+
+    .header-banner {
+      background-color: var(--surface-base);
+      border: 1px solid var(--border-hairline);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+
+    .banner-title {
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--brand-teal-deep);
+      margin-bottom: 8px;
+    }
+
+    .banner-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Colors and Swatches Panel */
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px dashed var(--border-hairline);
+    }
+
+    .token-swatch {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
+      background: #FFFFFF;
+      border: 1px solid var(--border-card);
+      border-radius: 6px;
+    }
+
+    .swatch-color {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid var(--border-card);
+    }
+
+    .swatch-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .swatch-name {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .swatch-value {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Sections and Cards */
+    .section-anchor {
+      margin-bottom: 48px;
+      scroll-margin-top: 32px;
+    }
+
+    .blueprint-card {
+      background-color: var(--surface-base);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 65, 66, 0.02);
+    }
+
+    .card-header {
+      background-color: var(--surface-hover-teal);
+      border-bottom: 1px solid var(--border-hairline);
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .card-tracker {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--brand-teal);
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--brand-teal-deep);
+    }
+
+    .badge-container {
+      display: flex;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-teal { background-color: var(--tone-teal-bg); border: 1px solid var(--tone-teal-border); color: var(--tone-teal-text); }
+    .badge-orange { background-color: var(--tone-orange-bg); border: 1px solid var(--tone-orange-border); color: var(--tone-orange-text); }
+    .badge-amber { background-color: var(--tone-amber-bg); border: 1px solid var(--tone-amber-border); color: var(--tone-amber-text); }
+    .badge-slate { background-color: var(--tone-slate-bg); border: 1px solid var(--tone-slate-border); color: var(--tone-slate-text); }
+
+    .card-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding: 24px;
+    }
+
+    @media (max-width: 1100px) {
+      .card-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .spec-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .spec-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .spec-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .spec-value {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .spec-value code {
+      background-color: var(--surface-canvas);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      border: 1px solid var(--border-hairline);
+    }
+
+    .visual-pane {
+      background-color: var(--surface-canvas);
+      border: 1px dashed var(--border-hairline);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 380px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screenshot-img {
+      max-width: 100%;
+      max-height: 380px;
+      border-radius: 4px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      border: 1px solid var(--border-card);
+      object-fit: contain;
+    }
+
+    .asset-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    /* Inline CSS Mockup Controls & Styles */
+    .mockup-container {
+      width: 100%;
+      background: #FFFFFF;
+      border: 1px solid var(--border-card);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .mockup-header {
+      background: var(--surface-hover-teal);
+      border-bottom: 1px solid var(--border-hairline);
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mockup-title {
+      font-weight: 500;
+      color: var(--brand-teal-deep);
+      font-size: 12px;
+    }
+
+    .mockup-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Custom Form & Drawer Styling inside Mockups */
+    .mock-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .mock-input {
+      padding: 8px 10px;
+      border: 1px solid var(--border-card);
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 300;
+      color: var(--text-primary);
+      width: 100%;
+    }
+
+    .mock-input:focus {
+      outline: none;
+      border-color: var(--brand-teal);
+    }
+
+    .mock-btn {
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s;
+    }
+
+    .mock-btn-primary {
+      background-color: var(--brand-orange);
+      color: #FFFFFF;
+    }
+
+    .mock-btn-secondary {
+      background-color: transparent;
+      border: 1px solid var(--brand-teal);
+      color: var(--brand-teal);
+    }
+
+    .mock-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* Drawing Canvas Mockup styling */
+    .canvas-box {
+      border: 1px solid var(--border-card);
+      background-color: var(--tone-slate-bg);
+      border-radius: 4px;
+      height: 150px;
+      position: relative;
+      cursor: crosshair;
+    }
+
+    .canvas-watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 11px;
+      color: var(--text-disabled);
+      pointer-events: none;
+      text-align: center;
+    }
+
+    .canvas-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    /* Checklist Table Mockup styling */
+    .mock-checklist-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .mock-checklist-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border-hairline);
+      font-size: 12px;
+    }
+
+    .mock-checklist-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .mock-checkbox {
+      margin-right: 8px;
+      accent-color: var(--brand-teal);
+    }
+
+    /* Grid matrix */
+    .mock-matrix {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .mock-matrix th, .mock-matrix td {
+      padding: 6px 8px;
+      font-size: 11px;
+      text-align: left;
+      border: 1px solid var(--border-card);
+    }
+
+    .mock-matrix th {
+      background-color: var(--surface-hover-teal);
+      font-weight: 500;
+      color: var(--brand-teal-deep);
+    }
+
+    .mock-matrix-override {
+      background-color: var(--tone-amber-bg) !important;
+    }
+
+    /* Agenda item */
+    .agenda-item {
+      display: flex;
+      gap: 12px;
+      padding: 10px;
+      background: var(--surface-base);
+      border: 1px solid var(--border-card);
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .agenda-time {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--brand-teal);
+      width: 60px;
+      flex-shrink: 0;
+    }
+
+    .agenda-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .agenda-title {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .agenda-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* PDF Toolbar Mockup styling */
+    .mock-toolbar {
+      background-color: var(--surface-base);
+      border: 1px solid var(--border-card);
+      border-radius: 4px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-btn {
+      padding: 4px 8px;
+      background: var(--surface-canvas);
+      border: 1px solid var(--border-card);
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .toolbar-btn:hover {
+      background: var(--surface-hover-teal);
+    }
+
+    /* Tabs */
+    .mock-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-card);
+      margin-bottom: 12px;
+    }
+
+    .mock-tab {
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text-secondary);
+      border-bottom: 2px solid transparent;
+    }
+
+    .mock-tab.active {
+      color: var(--brand-teal);
+      border-bottom-color: var(--brand-teal);
+      font-weight: 500;
+    }
+
+    /* Flowchart Node */
+    .flow-steps {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .flow-step {
+      flex: 1;
+      text-align: center;
+      padding: 6px;
+      background: var(--surface-canvas);
+      border: 1px solid var(--border-card);
+      border-radius: 4px;
+      font-size: 11px;
+      position: relative;
+    }
+
+    .flow-step.active {
+      border-color: var(--brand-orange);
+      background-color: var(--tone-orange-bg);
+      color: var(--tone-orange-text);
+      font-weight: 500;
+    }
+
+    .flow-step.completed {
+      border-color: var(--brand-teal);
+      background-color: var(--tone-teal-bg);
+      color: var(--brand-teal);
+    }
+
+    .flow-arrow {
+      margin: 0 4px;
+      color: var(--text-muted);
+    }
+
+    /* Section divider in Spec Sheets */
+    .divider {
+      grid-column: 1 / -1;
+      height: 1px;
+      background-color: var(--border-hairline);
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Sidebar Navigation -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">CareIndeed HH V6</div>
+      <div class="sidebar-title">Blueprints Review</div>
+    </div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-title">A. Journey & Onboarding V1</div>
+      <a href="#bp1" class="sidebar-item active">Supervised Visit Drawer</a>
+      <a href="#bp2" class="sidebar-item">Learner & Employee Picker</a>
+      <a href="#bp3" class="sidebar-item">Journey Signature Canvas</a>
+      <a href="#bp4" class="sidebar-item">Appendix F TOC States</a>
+      <a href="#bp5" class="sidebar-item">Module Player Exam Failure</a>
+      <a href="#bp6" class="sidebar-item">Syllabus Path Builder</a>
+
+      <div class="sidebar-section-title">B. Workflows</div>
+      <a href="#bp7" class="sidebar-item">Workflow Detail Drawer</a>
+      <a href="#bp8" class="sidebar-item">Swimlane Card Modal</a>
+
+      <div class="sidebar-section-title">C. Onboarding V2</div>
+      <a href="#bp9" class="sidebar-item">Gate Checklist Expander</a>
+      <a href="#bp10" class="sidebar-item">Evidence & Signature Tabs</a>
+      <a href="#bp11" class="sidebar-item">Override Request Modal</a>
+
+      <div class="sidebar-section-title">D. Admin & RBAC</div>
+      <a href="#bp12" class="sidebar-item">User Permission Matrix</a>
+
+      <div class="sidebar-section-title">E. Calendar & Staffing</div>
+      <a href="#bp13" class="sidebar-item">Weekly/Daily Agenda View</a>
+      <a href="#bp14" class="sidebar-item">Staffing Conflict Drawer</a>
+      <a href="#bp15" class="sidebar-item">CES Flowchart Swimlane</a>
+
+      <div class="sidebar-section-title">F. Evidence & Viewer</div>
+      <a href="#bp16" class="sidebar-item">PDF/Image Preview Toolbar</a>
+
+      <div class="sidebar-section-title">G. Forms & eCIgn</div>
+      <a href="#bp17" class="sidebar-item">eCIgn Mobile Draw Pad</a>
+    </div>
+  </div>
+
+  <!-- Main Scrollable Content -->
+  <div class="main-content">
+    <div class="header-banner">
+      <h1 class="banner-title">Phase 12.2.a - Missing Subview Blueprints Board</h1>
+      <p class="banner-desc">
+        This contact board provides a visual presentation and specification audit for all 17 subviews and states identified during the deep manual reconciliation pass. 
+        Below you can review the triggers, layout guides, token rules, and interactive mockup previews for each blueprint before engineering implementation begins.
+      </p>
+      
+      <!-- Design Tokens Swatch Sheet -->
+      <div class="token-grid">
+        <div class="token-swatch">
+          <div class="swatch-color" style="background-color: #00797D;"></div>
+          <div class="swatch-info">
+            <span class="swatch-name">--brand-teal</span>
+            <span class="swatch-value">#00797D</span>
+          </div>
+        </div>
+        <div class="token-swatch">
+          <div class="swatch-color" style="background-color: #004142;"></div>
+          <div class="swatch-info">
+            <span class="swatch-name">--brand-teal-deep</span>
+            <span class="swatch-value">#004142</span>
+          </div>
+        </div>
+        <div class="token-swatch">
+          <div class="swatch-color" style="background-color: #C74601;"></div>
+          <div class="swatch-info">
+            <span class="swatch-name">--brand-orange</span>
+            <span class="swatch-value">#C74601</span>
+          </div>
+        </div>
+        <div class="token-swatch">
+          <div class="swatch-color" style="background-color: #1A3778;"></div>
+          <div class="swatch-info">
+            <span class="swatch-name">--ecign-navy</span>
+            <span class="swatch-value">#1A3778</span>
+          </div>
+        </div>
+        <div class="token-swatch">
+          <div class="swatch-color" style="background-color: #F7FEFF;"></div>
+          <div class="swatch-info">
+            <span class="swatch-name">--surface-canvas</span>
+            <span class="swatch-value">#F7FEFF</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP1: Supervised Visit Logging Drawer -->
+    <div id="bp1" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 01 • Journey / Onboarding V1</span>
+            <h2 class="card-title">Supervised Visit Logging Drawer</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Clicking <code>Log Visit</code> or preceptor validations in exception queue in <code>/journey/supervisor</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Provides preceptors a structured form to log dates, checkoff skills, and upload supervisor validations for active clinical learners.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Fits the V6 <code>VeilDrawer</code> pattern. Right-aligned overlay sheet, width <code>w-full max-w-[420px]</code>. Inputs formatted to weight 300 only. Divider borders utilize <code>rgba(0,65,66,0.10)</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--brand-teal</code> (accent headers), <code>--weight-body</code> (300 for normal labels/inputs), <code>--weight-title</code> (500 for drawer header).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Ensure state validation requires checklist items to be checked before the confirmation button shifts from disabled to orange state.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <!-- Inline Live CSS Mockup -->
+            <div class="mockup-container" style="max-width: 380px;">
+              <div class="mockup-header">
+                <span class="mockup-title">Log Supervised Checkoff</span>
+                <span style="cursor:pointer; color:var(--text-muted);">✕</span>
+              </div>
+              <div class="mockup-body">
+                <div style="background-color: var(--tone-teal-bg); border: 1px solid var(--tone-teal-border); padding: 8px; border-radius: 4px; display:flex; align-items:center; gap:8px;">
+                  <div style="width: 28px; height: 28px; background:#B8B3B1; border-radius:50%;"></div>
+                  <div>
+                    <div style="font-weight: 500; font-size:12px;">Sarah Jenkins, RN</div>
+                    <div style="font-size:10px; color:var(--text-muted);">Learner Track: Clinical Residency</div>
+                  </div>
+                </div>
+                
+                <div class="mock-field">
+                  <span style="font-size:11px; font-weight:500; color:var(--text-secondary);">Visit Date & Time</span>
+                  <input type="text" class="mock-input" value="2026-06-21 09:30 AM" placeholder="Select datetime">
+                </div>
+
+                <div class="mock-field">
+                  <span style="font-size:11px; font-weight:500; color:var(--text-secondary);">Preceptor Name</span>
+                  <input type="text" class="mock-input" value="Dr. Michael Vance" placeholder="Search preceptors">
+                </div>
+
+                <div class="mock-field">
+                  <span style="font-size:11px; font-weight:500; color:var(--text-secondary);">Competency Checklist</span>
+                  <table class="mock-checklist-table">
+                    <tr>
+                      <td><input type="checkbox" class="mock-checkbox" checked> Verification of client ID</td>
+                    </tr>
+                    <tr>
+                      <td><input type="checkbox" class="mock-checkbox" checked> Hand hygiene compliance</td>
+                    </tr>
+                    <tr>
+                      <td><input type="checkbox" class="mock-checkbox"> Documentation review</td>
+                    </tr>
+                  </table>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                  <button class="mock-btn mock-btn-secondary">Cancel</button>
+                  <button class="mock-btn mock-btn-primary" style="opacity:0.6;" disabled>Log Visit</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP2: Learner / Employee Picker -->
+    <div id="bp2" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 02 • Journey / Onboarding V1</span>
+            <h2 class="card-title">Learner / Employee Picker</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Clicking supervisor dropdown context indicator inside cohort overview pages.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Enables supervisors or preceptors to switch context to examine the records and checkoff statuses of different team members.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Searchable dropdown card overlay (width <code>300px</code>) styled in clean surface panel boxes, using light grey text placeholders and micro-badge trackers.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--surface-base</code> (container), <code>--surface-hover-teal</code> (active selection), <code>--weight-body</code> (300 for search query/results).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Should implement client-side fuzzy searching on first-name and role status strings, wrapping list rows in focus-traps.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <!-- Inline CSS Picker Mockup -->
+            <div class="mockup-container" style="max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+              <div class="mockup-header" style="background:#FFFFFF;">
+                <span class="mockup-title">Switch Active Learner</span>
+              </div>
+              <div style="padding:10px; border-bottom:1px solid var(--border-hairline);">
+                <input type="text" class="mock-input" placeholder="Search learner name..." style="background:#F3F4F6;">
+              </div>
+              <div style="max-height: 180px; overflow-y: auto; padding:4px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:var(--surface-hover-teal); border-radius:4px; margin-bottom:2px; cursor:pointer;">
+                  <div>
+                    <div style="font-weight:500; font-size:12px;">Sarah Jenkins, RN</div>
+                    <div style="font-size:10px; color:var(--text-muted);">Syllabus: RN-V1 (8/11 completed)</div>
+                  </div>
+                  <span class="badge badge-teal" style="font-size:8px;">Active</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:4px; margin-bottom:2px; cursor:pointer;">
+                  <div>
+                    <div style="font-weight:300; font-size:12px; color:var(--text-secondary);">Jeffrey Thompson, LPN</div>
+                    <div style="font-size:10px; color:var(--text-muted);">Syllabus: LPN-V1 (3/11 completed)</div>
+                  </div>
+                  <span class="badge badge-amber" style="font-size:8px;">Escalated</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:4px; margin-bottom:2px; cursor:pointer;">
+                  <div>
+                    <div style="font-weight:300; font-size:12px; color:var(--text-secondary);">Clara Oswald, GAO</div>
+                    <div style="font-size:10px; color:var(--text-muted);">Syllabus: GAO-Core (completed)</div>
+                  </div>
+                  <span class="badge badge-slate" style="font-size:8px;">Ready</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP3: Journey Signature Canvas -->
+    <div id="bp3" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 03 • Journey / Onboarding V1</span>
+            <h2 class="card-title">Journey Signature Canvas</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Clicking Appendix F signoff CTAs, preceptor checkoffs, or visit validation overlays.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Overlay canvas drawing zone allowing supervisors or employees to draw hand signatures for competency signoff.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Centered overlay modal card with clean dark border margins, containing clearing triggers, attestations, and timestamp displays.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--brand-teal</code> (action confirmation), <code>--tone-slate-bg</code> (canvas background), <code>--weight-body</code> (300 for legal disclaimer).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Implement touch listener bindings inside canvas references. Disable viewport scroll-bouncing when touching drawing panel area.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <!-- Interactive Live Drawing Canvas Demo! -->
+            <div class="mockup-container" style="max-width: 360px;">
+              <div class="mockup-header">
+                <span class="mockup-title">Capture Attestation Signature</span>
+              </div>
+              <div class="mockup-body">
+                <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">
+                  Signer: <strong>Michael Vance, Preceptor</strong>
+                </div>
+                <!-- Canvas Drawing Box -->
+                <div class="canvas-box" id="canvasBoxJourney">
+                  <canvas id="signatureCanvasJourney" width="326" height="150"></canvas>
+                  <div class="canvas-watermark" id="watermarkJourney">Draw signature here</div>
+                </div>
+                <div class="canvas-actions">
+                  <button class="toolbar-btn" onclick="clearCanvas('signatureCanvasJourney', 'watermarkJourney')">Clear</button>
+                  <button class="toolbar-btn" style="margin-left:auto;">Verify Identity</button>
+                </div>
+                <div style="margin-top:8px;">
+                  <label style="font-size:10px; color:var(--text-secondary); display:flex; gap:6px;">
+                    <input type="checkbox" style="margin-top:2px;"> I attest that the clinical competency evaluations logged are complete.
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP4: Guide / Appendix F TOC Active Navigation State -->
+    <div id="bp4" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 04 • Journey / Onboarding V1</span>
+            <h2 class="card-title">Guide / Appendix F TOC Active Navigation State</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Clicking a TOC anchor or scrolling document content segments in <code>/journey/guide</code> or <code>/journey/appendix-f</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Highlights current section location, showing completed/read indicators, and handles responsive layout collapse.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Matches left navigation rail style. Vertical links rendered with light 3px active-border on the left utilizing <code>--brand-teal</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--brand-teal</code> (active indicators), <code>--border-hairline</code> (dividers), <code>--weight-title</code> (500 for current active item).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Wired using standard browser intersection observers. Highlight triggers instantly as the top margin reaches 80px scroll offset.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <div class="mockup-container" style="max-width: 320px;">
+              <div class="mockup-header">
+                <span class="mockup-title">Table of Contents</span>
+              </div>
+              <div style="display:flex; flex-direction:column; padding:8px;">
+                <div style="display:flex; align-items:center; gap:8px; padding:8px; border-left: 3px solid var(--brand-teal); background:var(--surface-hover-teal); font-weight:500;">
+                  <span style="color:var(--brand-teal); font-size:12px;">●</span>
+                  <span style="font-size:12px; color:var(--brand-teal-deep);">1. Pre-screening Procedures</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; padding:8px; border-left: 3px solid transparent; opacity:0.7;">
+                  <span style="color:var(--text-muted); font-size:12px;">✓</span>
+                  <span style="font-size:12px;">2. Competency Frameworks</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; padding:8px; border-left: 3px solid transparent; opacity:0.7;">
+                  <span style="color:var(--text-muted); font-size:12px;">✓</span>
+                  <span style="font-size:12px;">3. Preceptor Signoffs</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; padding:8px; border-left: 3px solid transparent; opacity:0.5;">
+                  <span style="color:var(--text-muted); font-size:12px;">○</span>
+                  <span style="font-size:12px;">4. Appendix Review</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP5: Module Player Failure / Retry State -->
+    <div id="bp5" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 05 • Journey / Onboarding V1</span>
+            <h2 class="card-title">Module Player Failure / Retry State</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-orange">Needs Human Review</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Failing a competency quiz or timeline check challenge inside <code>/journey/module/:moduleId</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Displays failed criteria, recommended remediation resources, and triggers supervisor review flows.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Renders as supportive tone banner alert styled with orange-bg outlines, containing links to policy documentation.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--tone-orange-bg</code>, <code>--tone-orange-border</code>, <code>--tone-orange-text</code>, <code>--weight-body</code> (300 for feedback descriptions).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Must track attempts state locally or in user session. Provide 30-second locked cooldown timer before retry becomes clickable.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <div class="mockup-container" style="max-width: 360px;">
+              <div style="background-color: var(--tone-orange-bg); border-bottom: 1px solid var(--tone-orange-border); padding: 12px; text-align:center;">
+                <div style="font-weight:500; color:var(--tone-orange-text); font-size:14px;">Assessment Incomplete</div>
+                <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Score: 68% (Required: 80%)</div>
+              </div>
+              <div class="mockup-body" style="gap:8px;">
+                <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                  Please review the missed competency guidelines below before attempting the scenario again.
+                </p>
+                <div style="background:var(--surface-canvas); border:1px solid var(--border-card); border-radius:4px; padding:8px;">
+                  <div style="font-size:11px; font-weight:500; color:var(--brand-teal-deep);">Missed Areas:</div>
+                  <ul style="font-size:11px; color:var(--text-secondary); margin-left:14px; margin-top:4px;">
+                    <li>CMS Roster reporting intervals</li>
+                    <li>SLA compliance deadlines</li>
+                  </ul>
+                </div>
+                <div style="font-size:10px; color:var(--text-muted); display:flex; align-items:center; gap:4px; background:#F9FAFB; padding:6px; border-radius:4px;">
+                  <span>ℹ</span> Preceptor Michael Vance has been notified to sweep logs.
+                </div>
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                  <button class="mock-btn mock-btn-secondary" style="flex:1;">View Policies</button>
+                  <button class="mock-btn mock-btn-primary" style="flex:1;">Retry (Cooldown 0:24)</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP6: Syllabus / Course Path Builder -->
+    <div id="bp6" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 06 • Journey / Onboarding V1</span>
+            <h2 class="card-title">Syllabus / Course Path Builder</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-amber">Needs Human Review</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Admin triggers "Create Syllabus" or "Modify Modules" pathways in <code>/journey/admin</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Allows operational admins to dynamically sequence onboarding paths, modules, requirements, and policy references.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Standard administrative layout utilizing drag-and-drop handles, required toggle switches, and list remove CTA icons.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--border-card</code> (item containment), <code>--brand-teal</code> (item selection), <code>--weight-body</code> (300 for module items).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Wired using draggable layout trees. Use strict client-side validation rules to prevent saving if path titles are empty.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <div class="mockup-container" style="max-width: 360px;">
+              <div class="mockup-header">
+                <span class="mockup-title">Syllabus Sequence Builder</span>
+              </div>
+              <div class="mockup-body" style="gap:10px;">
+                <div class="mock-field">
+                  <span style="font-size:11px; font-weight:500;">Path Title</span>
+                  <input type="text" class="mock-input" value="GAO Onboarding Pathway 2026">
+                </div>
+                <div style="font-size:11px; font-weight:500;">Modules Sequence</div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <div style="display:flex; align-items:center; gap:8px; border:1px solid var(--border-card); padding:8px; border-radius:4px; background:#FAFAFA;">
+                    <span style="cursor:grab; color:var(--text-muted);">☰</span>
+                    <span style="font-size:11px; flex:1;">1. GAO-Core Introduction</span>
+                    <span class="badge badge-teal" style="font-size:8px;">Req</span>
+                    <span style="cursor:pointer; color:var(--brand-orange);">✕</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px; border:1px solid var(--border-card); padding:8px; border-radius:4px; background:#FAFAFA;">
+                    <span style="cursor:grab; color:var(--text-muted);">☰</span>
+                    <span style="font-size:11px; flex:1;">2. CMS Reporting Standards</span>
+                    <span class="badge badge-teal" style="font-size:8px;">Req</span>
+                    <span style="cursor:pointer; color:var(--brand-orange);">✕</span>
+                  </div>
+                </div>
+                <button class="mock-btn mock-btn-secondary" style="border-style:dashed;">+ Add Module Step</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP7: Workflow Detail Drawer -->
+    <div id="bp7" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 07 • Workflows</span>
+            <h2 class="card-title">Workflow Detail Drawer</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Clicking any row inside the primary workflows DataTable in <code>/workflows</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Displays detailed execution parameters, linked policies, hash histories, and timelines for a chosen compliance workflow.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Fits standard V6 <code>VeilDrawer</code> right drawer (width <code>w-full max-w-[420px] bg-surface-base shadow-lift</code>). Divider line margins utilize <code>var(--border-hairline)</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--brand-teal</code> (active links), <code>--surface-base</code> (container sheets), <code>--weight-body</code> (300 for lists/hashes).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Renders static drawer layouts in code. Clicking <code>Open Swimlane</code> should trigger router transition commands.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <img src="assets/57-workflow-detail-drawer.png" alt="Workflow Detail Drawer Mockup" class="screenshot-img">
+            <div class="asset-label">Generated Mockup: assets/57-workflow-detail-drawer.png</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP8: Workflow Swimlane Card Drill-down Modal -->
+    <div id="bp8" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 08 • Workflows</span>
+            <h2 class="card-title">Workflow Swimlane Card Drill-down Modal</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Clicking any task card inside columns in <code>/workflows/:workflowId/swimlane</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Provides detailed checkoff items, attestation checkoff boxes, and file upload fields for single task milestones.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Centered overlay box (width <code>w-full max-w-[560px]</code>), backdrop blur enabled, inputs styled in Roboto 300 only.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--brand-orange</code> (primary CTA button), <code>--border-card</code> (dropzone boundary), <code>--weight-body</code> (300 for compliance list).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Ensure confirmation button shifts from disabled to orange state only after checklist boxes and attestations are selected.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <div class="mockup-container" style="max-width: 400px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
+              <div class="mockup-header">
+                <span class="mockup-title">Task Checklist & Evidence</span>
+                <span style="cursor:pointer; color:var(--text-muted);">✕</span>
+              </div>
+              <div class="mockup-body" style="gap:10px;">
+                <div>
+                  <h4 style="font-weight:500; font-size:13px; color:var(--brand-teal-deep);">Log Committee Minutes</h4>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Due: 2026-06-30 • Owner: Sarah Jenkins</div>
+                </div>
+                
+                <table class="mock-checklist-table" style="background:#F9FAFB; border-radius:4px;">
+                  <tr>
+                    <td><input type="checkbox" class="mock-checkbox"> Confirm quorum was met</td>
+                  </tr>
+                  <tr>
+                    <td><input type="checkbox" class="mock-checkbox"> Record all active directives</td>
+                  </tr>
+                </table>
+
+                <div style="border: 1px dashed var(--brand-teal); padding: 12px; border-radius:4px; text-align:center; background:var(--tone-teal-bg); cursor:pointer;">
+                  <span style="font-size:11px; color:var(--brand-teal);">Drag & Drop Board Minutes PDF here</span>
+                </div>
+
+                <label style="font-size:10px; color:var(--text-secondary); display:flex; gap:6px; margin-top:4px;">
+                  <input type="checkbox"> I validate that this evidence matches required compliance parameters.
+                </label>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                  <button class="mock-btn mock-btn-secondary">Cancel</button>
+                  <button class="mock-btn mock-btn-primary" style="opacity:0.6;" disabled>Sign & Validate</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP9: Gate Checklist Expander -->
+    <div id="bp9" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 09 • Onboarding V2</span>
+            <h2 class="card-title">Gate Checklist Expander</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Clicking a gate tile (e.g. SystemAccess) in the progress row inside <code>/onboarding-v2/batches/:batchId</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Displays granular checklists, pass/fail status checks, and evidence references for single batch compliance gates.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Smooth accordion expander panel sliding directly below the grid tile block. Column headers aligned in Roboto 300.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--tone-green-bg</code> (pass indicator), <code>--tone-orange-bg</code> (missing elements), <code>--weight-body</code> (300 for criteria).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Integrate transitions for accordion height expansion. Links should trigger routing states on click.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <img src="assets/58-gate-checklist-expander.png" alt="Gate Checklist Expander Mockup" class="screenshot-img">
+            <div class="asset-label">Generated Mockup: assets/58-gate-checklist-expander.png</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP10: Evidence / Signature Sub-tabs -->
+    <div id="bp10" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 10 • Onboarding V2</span>
+            <h2 class="card-title">Evidence / Signature Sub-tabs</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Selecting an onboarding item row inside batch views.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Provides tabbed switches in details panels toggling between Document Previews and Signature/Certificate Logs.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Segmented tabs header formatted using weight 500 for active tab and weight 300 for secondary tags. Layout matches right rail pane.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--brand-teal</code> (active tab line), <code>--text-secondary</code> (unselected labels), <code>--weight-body</code> (300 for file details).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Ensure tab click changes selection states locally. PDF viewer triggers require toolbar inclusion.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <div class="mockup-container" style="max-width: 360px;">
+              <div class="mock-tabs">
+                <div class="mock-tab active">Evidence File</div>
+                <div class="mock-tab">Signature Log</div>
+              </div>
+              <div style="padding:10px; display:flex; flex-direction:column; gap:8px;">
+                <div style="background:#F3F4F6; border: 1px solid var(--border-card); border-radius:4px; height:120px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;">
+                  <span style="font-size:24px; color:var(--text-muted);">📄</span>
+                  <span style="font-size:11px; color:var(--text-secondary);">OIG_Clearance_SarahJ.pdf</span>
+                </div>
+                <div style="font-size:10px; color:var(--text-muted); word-break:break-all;">
+                  SHA-256: <code>a8d9f78a2e1d09f7a...</code>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:4px;">
+                  <button class="toolbar-btn" style="flex:1;">Verify Hash</button>
+                  <button class="toolbar-btn" style="flex:1;">Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP11: Override Request Modal -->
+    <div id="bp11" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 11 • Onboarding V2</span>
+            <h2 class="card-title">Override Request Modal</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Clicking "Request Override" inside `/onboarding-v2/governance` or batch view.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Allows administrative sweeps of blocked status gates for exception cases, requiring dual approvals and logging reasons.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Fits standard V6 <code>VeilModal</code> centered overlays. Warnings displayed in light-amber boxes, inputs set to Roboto 300 only.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--tone-amber-bg</code> (warning panel background), <code>--brand-orange</code> (primary CTA), <code>--weight-body</code> (300 for form inputs).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Must integrate audit-warning highlights. Confirmation triggers validation states to save overrides.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <div class="mockup-container" style="max-width: 380px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
+              <div class="mockup-header" style="border-bottom: 2px solid var(--brand-orange);">
+                <span class="mockup-title">Request Compliance Override</span>
+                <span style="cursor:pointer; color:var(--text-muted);">✕</span>
+              </div>
+              <div class="mockup-body" style="gap:10px;">
+                <div style="background-color: var(--tone-amber-bg); border: 1px solid var(--tone-amber-border); padding: 8px; border-radius:4px; font-size:10px; color:var(--tone-amber-text); line-height:1.4;">
+                  ⚠️ Overrides create audit exemptions logged directly to permanent state surveyor report lists.
+                </div>
+                
+                <div class="mock-field">
+                  <span style="font-size:11px; font-weight:500;">Reason for Override</span>
+                  <input type="text" class="mock-input" value="Temporary grace period (system delay)">
+                </div>
+
+                <div class="mock-field">
+                  <span style="font-size:11px; font-weight:500;">Dual Approvers Required</span>
+                  <input type="text" class="mock-input" value="DON Vance, Admin Oswald" readonly style="background:#F9FAFB;">
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                  <button class="mock-btn mock-btn-secondary">Cancel</button>
+                  <button class="mock-btn mock-btn-primary">Issue Override</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP12: Admin User Permission Override Matrix -->
+    <div id="bp12" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 12 • Admin / RBAC</span>
+            <h2 class="card-title">Admin User Permission Override Matrix</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Clicking "Edit Scopes" or "Override Permissions" inside <code>/admin/users</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Allows security sweeps and individual permission checkbox toggles, showing role defaults vs overrides clearly.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Follows V6 admin grid patterns. Overridden checkbox rows display a highlighted light amber background to flag overrides clearly.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--tone-amber-bg</code> (override highlights), <code>--border-hairline</code> (dividers), <code>--weight-body</code> (300 for scope text).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Permission saves require confirmation prompts. State matrices show warning indicators for any grants outside role parameters.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <div class="mockup-container" style="max-width: 380px;">
+              <div class="mockup-header">
+                <span class="mockup-title">Permission Overrides: Sarah Jenkins</span>
+              </div>
+              <div class="mockup-body" style="padding:10px;">
+                <table class="mock-matrix">
+                  <thead>
+                    <tr>
+                      <th>Scope ID</th>
+                      <th>Default</th>
+                      <th>Grant</th>
+                      <th>Revoke</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>policy.write</code></td>
+                      <td><input type="checkbox" disabled></td>
+                      <td><input type="checkbox"></td>
+                      <td><input type="checkbox"></td>
+                    </tr>
+                    <tr class="mock-matrix-override">
+                      <td><code>evidence.upload</code></td>
+                      <td><input type="checkbox" checked disabled></td>
+                      <td><input type="checkbox" checked></td>
+                      <td><input type="checkbox"></td>
+                    </tr>
+                    <tr>
+                      <td><code>esign.sign</code></td>
+                      <td><input type="checkbox" checked disabled></td>
+                      <td><input type="checkbox"></td>
+                      <td><input type="checkbox"></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+                  <button class="mock-btn mock-btn-secondary">Restore Defaults</button>
+                  <button class="mock-btn mock-btn-primary">Save Overrides</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP13: Calendar Weekly / Daily Agenda View -->
+    <div id="bp13" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 13 • Calendar / Staffing</span>
+            <h2 class="card-title">Calendar Weekly / Daily Agenda View</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Selecting <code>Week</code> or <code>Day</code> tab settings in calendar headers.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">List-based schedule of shifts, compliance deadlines, and milestones inside operational calendar tools.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Replaces Month grid. Left-aligned timeline rail representing hourly slots. Right column displays card items.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--border-card</code> (item outline), <code>--surface-base</code> (cards), <code>--weight-body</code> (300 for shift timings).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Agenda items render detail modals on click. Shift status highlights are mapped to tone badge rules.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <div class="mockup-container" style="max-width: 360px;">
+              <div class="mockup-header">
+                <span class="mockup-title">Today's Agenda (June 21)</span>
+              </div>
+              <div style="padding:10px;">
+                <div class="agenda-item">
+                  <div class="agenda-time">08:00 AM</div>
+                  <div class="agenda-details">
+                    <div class="agenda-title">QAPI Review Sweep</div>
+                    <div class="agenda-meta">Directives: 4 • Assignee: M. Vance</div>
+                  </div>
+                  <span class="badge badge-teal" style="align-self:center; font-size:8px;">Ready</span>
+                </div>
+                <div class="agenda-item">
+                  <div class="agenda-time">10:30 AM</div>
+                  <div class="agenda-details">
+                    <div class="agenda-title">Supervised Checkoff Visit</div>
+                    <div class="agenda-meta">Subject: Sarah Jenkins • Preceptor: Vance</div>
+                  </div>
+                  <span class="badge badge-amber" style="align-self:center; font-size:8px;">Pending</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP14: Staffing Conflict Resolver Drawer -->
+    <div id="bp14" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 14 • Calendar / Staffing</span>
+            <h2 class="card-title">Staffing Conflict Resolver Drawer</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Selecting conflict elements or schedule gap alerts inside <code>/staffing-calendar</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Displays candidate recommendations based on distance and scores, enabling dispatchers to resolve shift overlaps quickly.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Fits the V6 <code>VeilDrawer</code> right drawer (width <code>w-[380px]</code>). Content cards display metrics (caseloads, distances).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--brand-orange</code> (primary CTA), <code>--surface-hover-teal</code> (row hover background), <code>--weight-body</code> (300 for clinician info).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Wired to render local lists. Actioning "Assign" updates shift status and dismisses drawer.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <div class="mockup-container" style="max-width: 360px;">
+              <div class="mockup-header">
+                <span class="mockup-title">Resolve Staffing Conflict</span>
+              </div>
+              <div class="mockup-body" style="gap:10px;">
+                <div style="background-color: var(--tone-orange-bg); border: 1px solid var(--tone-orange-border); padding: 8px; border-radius:4px; font-size:11px; color:var(--tone-orange-text);">
+                  Conflict: Open visit gap (RN required) • Zip: 90210
+                </div>
+                <div style="font-size:11px; font-weight:500; color:var(--brand-teal-deep);">Recommended Clinicians</div>
+                
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <div style="border: 1px solid var(--border-card); padding:8px; border-radius:4px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <div style="font-weight:500; font-size:12px;">Sarah Jenkins, RN</div>
+                      <div style="font-size:10px; color:var(--text-muted);">Match: 95% • Distance: 2.1 mi</div>
+                    </div>
+                    <button class="mock-btn mock-btn-primary" style="padding:4px 8px; font-size:10px;">Assign</button>
+                  </div>
+                  <div style="border: 1px solid var(--border-card); padding:8px; border-radius:4px; display:flex; justify-content:space-between; align-items:center; opacity:0.8;">
+                    <div>
+                      <div style="font-weight:300; font-size:12px; color:var(--text-secondary);">Michael Vance, RN</div>
+                      <div style="font-size:10px; color:var(--text-muted);">Match: 88% • Distance: 5.4 mi</div>
+                    </div>
+                    <button class="mock-btn mock-btn-primary" style="padding:4px 8px; font-size:10px;">Assign</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP15: CES Calendar Inline Flowchart Swimlane -->
+    <div id="bp15" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 15 • Calendar / Staffing</span>
+            <h2 class="card-title">CES Calendar Inline Flowchart Swimlane</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Clicking any active event node inside the CES calendar at <code>/ces/calendar</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Visualizes the timeline sequence and checks inline below the calendar node, without redirection to separate boards.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Horizontal flowchart progress bar connected by chevrons, with detail cards list positioned vertically below it.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--tone-teal-bg</code> (completed step), <code>--brand-orange</code> (active step outline), <code>--weight-body</code> (300 for step details).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Wired inside table container blocks. Keep accordion animations smooth and focus traps active.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <div class="mockup-container" style="max-width: 380px;">
+              <div class="mockup-header">
+                <span class="mockup-title">Event Status: EVT-1002</span>
+              </div>
+              <div class="mockup-body" style="padding:12px;">
+                <div class="flow-steps">
+                  <div class="flow-step completed">Draft</div>
+                  <span class="flow-arrow">→</span>
+                  <div class="flow-step active">Review</div>
+                  <span class="flow-arrow">→</span>
+                  <div class="flow-step">Verify</div>
+                </div>
+                <div style="background:#F9FAFB; border:1px solid var(--border-card); border-radius:4px; padding:8px; font-size:11px;">
+                  <div style="font-weight:500;">Active Tasks under Review Stage:</div>
+                  <div style="display:flex; justify-content:space-between; margin-top:4px; color:var(--text-secondary);">
+                    <span>- Verify attendee signatures</span>
+                    <span class="badge badge-amber" style="font-size:7px; padding:2px 4px;">Pending</span>
+                  </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                  <a href="#" style="font-size:11px; color:var(--brand-teal); text-decoration:none;">Open Full Swimlane</a>
+                  <button class="toolbar-btn" style="font-size:10px;">Collapse</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP16: PDF / Image Preview Toolbar -->
+    <div id="bp16" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 16 • Evidence / Audit / Viewer</span>
+            <h2 class="card-title">PDF / Image Preview Toolbar</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Opening an artifact file or evidence sheet in <code>/audit</code> or <code>/viewer/:referenceId</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Displays zoom controls, rotations, and SHA-256 certificate hashes, enabling on-screen verification audits.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Sticky top control panel styled in dark text labels, utilizing hairline borders and icon-only indicators.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--surface-base</code> (toolbar panel background), <code>--border-hairline</code> (dividers), <code>--weight-body</code> (300 for options).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Wired directly above document iframes. Clicking "Verify SHA" checks hashes and displays verification success status.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <div class="mockup-container" style="max-width: 380px;">
+              <div class="mock-toolbar">
+                <div class="toolbar-group">
+                  <button class="toolbar-btn">🔍-</button>
+                  <span style="font-size:11px;">100%</span>
+                  <button class="toolbar-btn">🔍+</button>
+                </div>
+                <div class="toolbar-group">
+                  <button class="toolbar-btn">⟳ Rotate</button>
+                </div>
+                <div class="toolbar-group">
+                  <span class="badge badge-teal" style="font-size:8px;">SHA-256 Verified</span>
+                </div>
+              </div>
+              <div style="background:#ECECEC; height:120px; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:12px;">
+                [Document Frame Container]
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BP17: eCIgn Mobile Signature Drawing Overlay -->
+    <div id="bp17" class="section-anchor">
+      <div class="blueprint-card">
+        <div class="card-header">
+          <div class="card-title-block">
+            <span class="card-tracker">Blueprint 17 • Forms / eCIgn</span>
+            <h2 class="card-title">eCIgn Mobile Signature Drawing Overlay</h2>
+          </div>
+          <div class="badge-container">
+            <span class="badge badge-teal">Ready for Implementation</span>
+            <span class="badge badge-slate">Shared Component Candidate</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="spec-pane">
+            <div class="spec-group">
+              <span class="spec-label">Trigger</span>
+              <span class="spec-value">Signature wizard step inside touch/mobile forms at <code>/forms/:formId/esign</code>.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Component Purpose</span>
+              <span class="spec-value">Touch screen manual drawing panel tailored for mobile viewports inside eSign client sweeps.</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Layout & Style Guide</span>
+              <span class="spec-value">Utilizes specialized eCIgn token overrides (navy outlines colored in <code>#1A3778</code>, orange buttons colored in <code>#F04B22</code>).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">V6 Design Tokens</span>
+              <span class="spec-value"><code>--ecign-navy</code> (brand outline exception), <code>--ecign-orange</code> (action confirmation exception), <code>--weight-body</code> (300 for legal checkbox).</span>
+            </div>
+            <div class="spec-group">
+              <span class="spec-label">Implementation Boundaries</span>
+              <span class="spec-value">Share signature canvas controls with Journey primitive where possible, overriding only colors and attestation targets.</span>
+            </div>
+          </div>
+          <div class="visual-pane">
+            <!-- Touch/Mouse interactive eSign pad! -->
+            <div class="mockup-container" style="max-width: 360px; border-color: var(--ecign-navy);">
+              <div class="mockup-header" style="background:var(--ecign-navy); color:#FFFFFF;">
+                <span class="mockup-title" style="color:#FFFFFF;">eCIgn Signature Overlay</span>
+              </div>
+              <div class="mockup-body">
+                <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">
+                  Signer: <strong>Sarah Jenkins, RN</strong>
+                </div>
+                <!-- Drawing Canvas -->
+                <div class="canvas-box" id="canvasBoxEsign" style="border-color: var(--ecign-navy);">
+                  <canvas id="signatureCanvasEsign" width="326" height="150"></canvas>
+                  <div class="canvas-watermark" id="watermarkEsign" style="color:var(--ecign-navy); opacity:0.3;">Sign using touchscreen / mouse</div>
+                </div>
+                <div class="canvas-actions">
+                  <button class="toolbar-btn" onclick="clearCanvas('signatureCanvasEsign', 'watermarkEsign')">Clear</button>
+                  <button class="toolbar-btn" style="margin-left:auto; color:var(--ecign-navy); border-color:var(--ecign-navy);">eSign Hash</button>
+                </div>
+                <div style="margin-top:8px;">
+                  <label style="font-size:10px; color:var(--text-secondary); display:flex; gap:6px;">
+                    <input type="checkbox"> I electronically verify my signature hash under compliance codes.
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Javascript for Drawing Canvas Demos and Sidebar State -->
+  <script>
+    // Simple Drawing Canvas controller
+    function setupDrawingCanvas(canvasId, watermarkId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const watermark = document.getElementById(watermarkId);
+      const ctx = canvas.getContext('2d');
+      let drawing = false;
+
+      ctx.strokeStyle = canvasId === 'signatureCanvasEsign' ? '#1A3778' : '#00797D';
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      function startDraw(e) {
+        drawing = true;
+        watermark.style.display = 'none';
+        ctx.beginPath();
+        const coords = getCoords(e);
+        ctx.moveTo(coords.x, coords.y);
+      }
+
+      function draw(e) {
+        if (!drawing) return;
+        const coords = getCoords(e);
+        ctx.lineTo(coords.x, coords.y);
+        ctx.stroke();
+      }
+
+      function stopDraw() {
+        drawing = false;
+      }
+
+      function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        // Touch events
+        if (e.touches && e.touches.length > 0) {
+          return {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+          };
+        }
+        // Mouse events
+        return {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        };
+      }
+
+      // Mouse Listeners
+      canvas.addEventListener('mousedown', startDraw);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDraw);
+      canvas.addEventListener('mouseleave', stopDraw);
+
+      // Touch Listeners
+      canvas.addEventListener('touchstart', (e) => { startDraw(e); e.preventDefault(); });
+      canvas.addEventListener('touchmove', (e) => { draw(e); e.preventDefault(); });
+      canvas.addEventListener('touchend', (e) => { stopDraw(); e.preventDefault(); });
+    }
+
+    function clearCanvas(canvasId, watermarkId) {
+      const canvas = document.getElementById(canvasId);
+      const watermark = document.getElementById(watermarkId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      watermark.style.display = 'block';
+    }
+
+    // Initialize drawings
+    window.addEventListener('load', () => {
+      setupDrawingCanvas('signatureCanvasJourney', 'watermarkJourney');
+      setupDrawingCanvas('signatureCanvasEsign', 'watermarkEsign');
+    });
+
+    // Sidebar Active Highlighter based on scroll position
+    const menuItems = document.querySelectorAll('.sidebar-item');
+    const sections = document.querySelectorAll('.section-anchor');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        if (pageYOffset >= sectionTop - 120) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      menuItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === `#${current}`) {
+          item.classList.add('active');
+        }
+      });
+    });
+
+    // Handle menu clicks
+    menuItems.forEach(item => {
+      item.addEventListener('click', function(e) {
+        menuItems.forEach(el => el.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
