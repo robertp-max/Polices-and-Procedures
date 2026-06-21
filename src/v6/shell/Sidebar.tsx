@@ -1,5 +1,5 @@
 import { Activity, Search } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { Link, matchPath, useLocation } from 'react-router-dom';
 import { cx } from '../utils/classNames';
 import { getRouteChrome, SIDEBAR_SECTIONS } from '../routing/routePresentation';
 import { routeToPreviewPath, V6_REAL_ROUTE_COUNT, V6_ROUTES } from '../routing/routeRegistry';
@@ -7,6 +7,8 @@ import { routeToPreviewPath, V6_REAL_ROUTE_COUNT, V6_ROUTES } from '../routing/r
 const shellRoutes = V6_ROUTES.filter((route) => route.group !== 'Auth');
 
 export function Sidebar() {
+  const location = useLocation();
+
   return (
     <aside className="hidden h-screen w-sidebar shrink-0 overflow-y-auto border-r border-hairline bg-surface-glass px-lg py-lg text-ink laptop:block">
       <div className="mb-xl flex items-center justify-between gap-md">
@@ -63,25 +65,24 @@ export function Sidebar() {
               {sectionRoutes.map((route) => {
                 const chrome = getRouteChrome(route);
                 const Icon = chrome.icon;
+                const isCurrent = Boolean(matchPath({ path: route.path, end: !route.path.endsWith('/*') }, location.pathname));
 
                 return (
-                <NavLink
-                  className={({ isActive }) =>
-                    cx(
-                      'flex min-h-row-compact items-center gap-sm rounded-md px-sm py-sm text-sm font-medium transition duration-fast ease-standard',
-                      'focus-visible:outline-none focus-visible:shadow-focus',
-                      isActive
-                        ? 'bg-brand-teal text-on-brand shadow-rest'
-                        : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',
-                    )
-                  }
-                  end
+                <Link
+                  aria-current={isCurrent ? 'page' : undefined}
+                  className={cx(
+                    'flex min-h-row-compact items-center gap-sm rounded-md px-sm py-sm text-sm font-medium transition duration-fast ease-standard',
+                    'focus-visible:outline-none focus-visible:shadow-focus',
+                    isCurrent
+                      ? 'bg-brand-teal text-on-brand shadow-rest'
+                      : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',
+                  )}
                   key={route.hashId}
                   to={routeToPreviewPath(route.path)}
                 >
                   {Icon ? <Icon aria-hidden="true" className="h-icon-sm w-icon-sm shrink-0" /> : null}
                   <span>{chrome.navLabel}</span>
-                </NavLink>
+                </Link>
                 );
               })}
             </div>

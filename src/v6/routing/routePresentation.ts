@@ -281,7 +281,13 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     icon: BookMarked,
   },
   workflows: { eyebrow: 'Compliance Execution (CES)', icon: Workflow, navLabel: 'Workflows Library' },
-  'workflow-swimlane': { eyebrow: 'Compliance Execution (CES)', icon: Workflow },
+  'workflow-swimlane': {
+    description:
+      'Swimlane execution view for a mandatory event from intake through evidence build, review, signature, and final packet lock.',
+    eyebrow: 'Compliance Execution (CES)',
+    icon: Workflow,
+    title: 'Workflow Swimlane',
+  },
 };
 
 export function getRouteChrome(route: RouteLike | undefined): RouteChrome {

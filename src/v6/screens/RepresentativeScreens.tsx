@@ -21,8 +21,8 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import { type ReactNode } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, ToneBadge } from '../primitives';
 import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
@@ -329,6 +329,23 @@ const detailRail = [
   { label: 'Approval history', status: 'ready', icon: ShieldCheck },
 ] as const;
 
+interface CalendarEventData {
+  attendees?: readonly string[];
+  day: number;
+  evidenceStatus?: string;
+  formsCount?: number;
+  id?: string;
+  label: string;
+  nextAction?: string;
+  owner: string;
+  progress: number;
+  readiness?: string;
+  risk?: string;
+  taskCount?: number;
+  tone: Tone;
+  workflowId?: string;
+}
+
 const calendarMetrics: readonly MetricTileData[] = [
   { label: 'Events', value: '8', helper: 'June operations focus', tone: 'teal' },
   { label: 'Coverage checks', value: '3', helper: 'Two need attention', tone: 'orange' },
@@ -345,7 +362,7 @@ const calendarEvents = [
   { day: 18, label: 'Credential renewal checkpoint', owner: 'HR Credentialing', progress: 76, tone: 'orange' },
   { day: 22, label: 'Visit note timeliness review', owner: 'Compliance Officer', progress: 66, tone: 'teal' },
   { day: 26, label: 'Weekend coverage confirmation', owner: 'Operations Lead', progress: 70, tone: 'teal' },
-] as const satisfies readonly { day: number; label: string; owner: string; progress: number; tone: Tone }[];
+] as const satisfies readonly CalendarEventData[];
 
 const staffingCalendarMetrics: readonly MetricTileData[] = [
   { label: 'Coverage', value: '92%', helper: 'Weekend pool pending', tone: 'green' },
@@ -363,33 +380,169 @@ const staffingCalendarEvents = [
   { day: 19, label: 'Recert visit', owner: 'Clinical Manager', progress: 82, tone: 'teal' },
   { day: 23, label: 'Wound care route', owner: 'Aisha Rahman, OT', progress: 48, tone: 'orange' },
   { day: 28, label: 'Weekend pool', owner: 'Scheduler', progress: 74, tone: 'blue' },
-] as const satisfies readonly { day: number; label: string; owner: string; progress: number; tone: Tone }[];
+] as const satisfies readonly CalendarEventData[];
 
 const cesCalendarMetrics: readonly MetricTileData[] = [
-  { label: 'Sprint events', value: '12', helper: 'Evidence and review locks', tone: 'teal' },
-  { label: 'Lock windows', value: '4', helper: 'Two need owner action', tone: 'orange' },
-  { label: 'Reviews', value: '7', helper: 'Survey packet work', tone: 'green' },
-  { label: 'Signature holds', value: '3', helper: 'Board packet timing', tone: 'amber' },
+  { label: 'Sprint cards', value: '33', helper: 'Sprint 12 execution units', tone: 'teal' },
+  { label: 'Blocked', value: '4', helper: 'Signature or evidence gaps', tone: 'orange' },
+  { label: 'Ready to certify', value: '9', helper: 'Awaiting final lock', tone: 'green' },
+  { label: 'Survey critical', value: '3', helper: 'Needs owner action', tone: 'orange' },
 ];
 
 const cesCalendarEvents = [
-  { day: 3, label: 'Evidence upload target', owner: 'Compliance Officer', progress: 62, tone: 'orange' },
-  { day: 5, label: 'QAPI review', owner: 'QAPI Nurse', progress: 84, tone: 'teal' },
-  { day: 9, label: 'Board minutes packet', owner: 'Administrator', progress: 48, tone: 'orange' },
-  { day: 13, label: 'Workflow lock', owner: 'Systems', progress: 76, tone: 'teal' },
-  { day: 16, label: 'Signature sweep', owner: 'Governing Body', progress: 58, tone: 'amber' },
-  { day: 20, label: 'Audit packet export', owner: 'Compliance Officer', progress: 90, tone: 'green' },
-  { day: 24, label: 'Surveyor preview', owner: 'Administrator', progress: 72, tone: 'teal' },
-  { day: 27, label: 'Final lock', owner: 'Operations Lead', progress: 66, tone: 'orange' },
-] as const satisfies readonly { day: number; label: string; owner: string; progress: number; tone: Tone }[];
+  {
+    attendees: ['Governing Body Chair', 'Administrator', 'QAPI Lead'],
+    day: 3,
+    evidenceStatus: 'Owner packet pending source lock',
+    formsCount: 5,
+    id: 'ces-event-governing-body',
+    label: 'Governing Body pre-read packet',
+    nextAction: 'Confirm packet scope and open intake lane',
+    owner: 'Maria Gonzalez, RN',
+    progress: 54,
+    readiness: 'Needs review',
+    risk: 'High',
+    taskCount: 8,
+    tone: 'orange',
+    workflowId: 'governing-body-pre-read-packet',
+  },
+  {
+    attendees: ['DON', 'QAPI Nurse', 'Clinical Manager'],
+    day: 5,
+    evidenceStatus: 'Trend tables attached',
+    formsCount: 3,
+    id: 'ces-event-qapi-aggregate',
+    label: 'QAPI aggregate report review',
+    nextAction: 'Route the report summary for committee review',
+    owner: 'DON',
+    progress: 84,
+    readiness: 'Ready',
+    risk: 'Moderate',
+    taskCount: 5,
+    tone: 'teal',
+    workflowId: 'qapi-aggregate-report-review',
+  },
+  {
+    attendees: ['Admin Designee', 'HR Credentialing'],
+    day: 8,
+    evidenceStatus: 'Two screening records missing',
+    formsCount: 4,
+    id: 'ces-event-tb-gap',
+    label: 'TB screening gap remediation',
+    nextAction: 'Collect missing records and attach evidence',
+    owner: 'Admin Designee',
+    progress: 42,
+    readiness: 'Blocked',
+    risk: 'High',
+    taskCount: 6,
+    tone: 'orange',
+    workflowId: 'tb-screening-gap-remediation',
+  },
+  {
+    attendees: ['QAPI Lead', 'Administrator', 'Compliance Officer'],
+    day: 10,
+    evidenceStatus: 'QAPI packet awaiting approval lane',
+    formsCount: 7,
+    id: 'ces-event-q2-qapi',
+    label: 'Q2 QAPI quarterly review',
+    nextAction: 'Open review lane and route chair signature',
+    owner: 'QAPI Lead',
+    progress: 58,
+    readiness: 'Needs review',
+    risk: 'High',
+    taskCount: 21,
+    tone: 'orange',
+    workflowId: 'q2-qapi-quarterly-review',
+  },
+  {
+    attendees: ['Systems', 'Compliance Officer'],
+    day: 12,
+    evidenceStatus: 'After-action files linked',
+    formsCount: 2,
+    id: 'ces-event-emergency-drill',
+    label: 'Emergency drill after-action',
+    nextAction: 'Validate corrective action notes',
+    owner: 'Systems',
+    progress: 88,
+    readiness: 'Ready',
+    risk: 'Low',
+    taskCount: 4,
+    tone: 'teal',
+    workflowId: 'emergency-drill-after-action',
+  },
+  {
+    attendees: ['Compliance Officer', 'Training Coordinator'],
+    day: 16,
+    evidenceStatus: 'Three attestations missing',
+    formsCount: 3,
+    id: 'ces-event-hipaa-sweep',
+    label: 'HIPAA training completion sweep',
+    nextAction: 'Request missing attestations before lock',
+    owner: 'Compliance Officer',
+    progress: 62,
+    readiness: 'Action needed',
+    risk: 'Moderate',
+    taskCount: 6,
+    tone: 'orange',
+    workflowId: 'hipaa-training-completion-sweep',
+  },
+  {
+    attendees: ['Clinical Manager', 'DON'],
+    day: 19,
+    evidenceStatus: 'Care plan index ready',
+    formsCount: 4,
+    id: 'ces-event-recert-review',
+    label: '60-day care plan recert reviews',
+    nextAction: 'Review final clinical sign-off',
+    owner: 'Clinical Manager',
+    progress: 90,
+    readiness: 'Ready',
+    risk: 'Low',
+    taskCount: 7,
+    tone: 'teal',
+    workflowId: '60-day-care-plan-recert-reviews',
+  },
+  {
+    attendees: ['DON', 'Policy Admin'],
+    day: 23,
+    evidenceStatus: 'Policy source set attached',
+    formsCount: 2,
+    id: 'ces-event-wound-protocol',
+    label: 'Wound protocol annual update',
+    nextAction: 'Certify annual policy update',
+    owner: 'DON',
+    progress: 82,
+    readiness: 'Ready',
+    risk: 'Low',
+    taskCount: 4,
+    tone: 'teal',
+    workflowId: 'wound-protocol-annual-update',
+  },
+  {
+    attendees: ['Governing Body', 'Compliance Officer'],
+    day: 27,
+    evidenceStatus: 'Approval record waiting signature',
+    formsCount: 3,
+    id: 'ces-event-incident-procedure',
+    label: 'Incident procedure approval',
+    nextAction: 'Open approval lane and collect eCIgn',
+    owner: 'Governing Body',
+    progress: 56,
+    readiness: 'Signature hold',
+    risk: 'High',
+    taskCount: 5,
+    tone: 'orange',
+    workflowId: 'incident-procedure-approval',
+  },
+] as const satisfies readonly CalendarEventData[];
 
 const calendarConfigs = {
   'ces-calendar': {
     events: cesCalendarEvents,
-    legend: 'Teal events are ready; orange events need owner action before packet lock.',
+    legend: 'Teal events are ready; orange events need owner action.',
     metrics: cesCalendarMetrics,
     railTone: 'orange',
-    railTitle: 'CES Milestones',
+    railTitle: 'Upcoming Events',
     title: 'June 2026',
   },
   'master-calendar': {
@@ -409,6 +562,69 @@ const calendarConfigs = {
     title: 'June 2026',
   },
 } as const;
+
+function getCalendarEventKey(event: CalendarEventData): string {
+  return event.id ?? `calendar-event-${event.day}-${event.label}`;
+}
+
+function toWorkflowSwimlanePath(event: CalendarEventData): string {
+  return `/workflows/${event.workflowId ?? getCalendarEventKey(event)}/swimlane`;
+}
+
+function getWorkflowEvent(workflowId: string | undefined): CalendarEventData {
+  return cesCalendarEvents.find((event) => event.workflowId === workflowId) ?? cesCalendarEvents[0];
+}
+
+function CalendarEventPreview({ event }: { event: CalendarEventData }) {
+  const formsCount = event.formsCount ?? 0;
+  const taskCount = event.taskCount ?? 0;
+  const attendees = event.attendees?.join(' / ') ?? 'Owner and reviewer roles pending';
+  const readiness = event.readiness ?? (event.tone === 'orange' ? 'Needs review' : 'Ready');
+  const risk = event.risk ?? (event.tone === 'orange' ? 'High' : 'Low');
+  const evidenceStatus = event.evidenceStatus ?? 'Evidence status pending';
+  const nextAction = event.nextAction ?? 'Open workspace and review next task';
+
+  return (
+    <aside
+      aria-live="polite"
+      className="pointer-events-none mt-lg rounded-lg border border-card bg-surface p-lg shadow-hover desktop:absolute desktop:right-[var(--space-xl)] desktop:top-[156px] desktop:z-20 desktop:w-[340px]"
+      id="ces-event-preview"
+    >
+      <div className="mb-md flex items-start justify-between gap-md">
+        <ToneTag tone={event.tone}>{readiness}</ToneTag>
+        <ToneTag tone={event.tone}>Click opens swimlane</ToneTag>
+      </div>
+      <h3 className="text-h2 font-medium text-ink">{event.label}</h3>
+      <p className="mt-sm text-sm text-muted">
+        Jun {event.day} - {event.owner}
+      </p>
+      <div className="mt-lg grid gap-sm tablet-p:grid-cols-2">
+        {[
+          ['Risk', risk],
+          ['Required forms', `${formsCount}`],
+          ['Evidence', evidenceStatus],
+          ['Tasks', `${taskCount}`],
+        ].map(([label, value]) => (
+          <div className={cx('rounded-md border p-md', toneSurfaceClasses[event.tone])} key={label}>
+            <p className="text-tag uppercase tracking-tag">{label}</p>
+            <p className="mt-xs text-sm font-medium">{value}</p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-lg grid gap-sm">
+        <p className="text-xs text-secondary">
+          <span className="font-medium text-ink">Attendees:</span> {attendees}
+        </p>
+        <p className="text-xs text-secondary">
+          <span className="font-medium text-ink">Next action:</span> {nextAction}
+        </p>
+      </div>
+      <p className="mt-lg rounded-md border border-tone-teal-border bg-tone-teal-bg px-md py-sm text-xs font-medium text-brand-teal">
+        Click to open event workspace/swimlane
+      </p>
+    </aside>
+  );
+}
 
 const boardMetrics: readonly MetricTileData[] = [
   { label: 'Upcoming', value: '6', helper: 'Not yet opened', tone: 'slate' },
@@ -834,6 +1050,8 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       return <ReportsScreen />;
     case 'staffing-calendar':
       return <CalendarScreen mode="staffing-calendar" />;
+    case 'workflow-swimlane':
+      return <WorkflowSwimlaneScreen />;
     default:
       return null;
   }
@@ -854,6 +1072,7 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'patient-detail',
     'master-calendar',
     'staffing-calendar',
+    'workflow-swimlane',
     'ces-board',
     'evidence-center',
     'form-viewer',
@@ -1102,12 +1321,48 @@ function PatientDetailScreen() {
 
 function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
   const config = calendarConfigs[mode];
+  const isCesCalendar = mode === 'ces-calendar';
+  const navigate = useNavigate();
+  const [activeEventKey, setActiveEventKey] = useState<string | null>(null);
   const days = Array.from({ length: 30 }, (_, index) => index + 1);
+  const activeEvent = activeEventKey ? config.events.find((event) => getCalendarEventKey(event) === activeEventKey) : undefined;
+
+  useEffect(() => {
+    if (!isCesCalendar) return undefined;
+
+    const dismissPreview = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setActiveEventKey(null);
+    };
+
+    window.addEventListener('keydown', dismissPreview);
+    return () => window.removeEventListener('keydown', dismissPreview);
+  }, [isCesCalendar]);
+
+  const openEventWorkspace = (event: CalendarEventData) => {
+    if (!isCesCalendar) return;
+    navigate(toWorkflowSwimlanePath(event));
+  };
+
+  const handleEventKeyDown = (keyboardEvent: ReactKeyboardEvent<HTMLButtonElement>, event: CalendarEventData) => {
+    if (keyboardEvent.key === 'Enter') {
+      keyboardEvent.preventDefault();
+      openEventWorkspace(event);
+      return;
+    }
+
+    if (keyboardEvent.key === 'Escape') {
+      keyboardEvent.preventDefault();
+      setActiveEventKey(null);
+    }
+  };
 
   return (
     <ScreenStack metrics={config.metrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_320px]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section
+          className="relative rounded-lg border border-card bg-surface p-xl shadow-rest"
+          onMouseLeave={isCesCalendar ? () => setActiveEventKey(null) : undefined}
+        >
           <div className="mb-xl flex flex-wrap items-center justify-between gap-lg">
             <div className="inline-flex rounded-lg bg-tone-slate-bg p-xs">
               {['Day', 'Week', 'Month'].map((label) => (
@@ -1147,21 +1402,39 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                 <div className="grid gap-xs">
                   {config.events
                     .filter((event) => event.day === day)
-                    .map((event) => (
-                      <span
-                        className={cx(
-                          'truncate rounded-sm px-sm py-xs text-[10px] text-on-brand',
-                          event.tone === 'orange' ? 'bg-brand-orange' : 'bg-brand-teal',
-                        )}
-                        key={`${event.day}-${event.label}`}
-                      >
-                        {event.label}
-                      </span>
-                    ))}
+                    .map((event) => {
+                      const key = getCalendarEventKey(event);
+                      const pillClasses = cx(
+                        'truncate rounded-sm px-sm py-xs text-left text-[10px] text-on-brand transition duration-fast ease-standard',
+                        event.tone === 'orange' || event.tone === 'amber' ? 'bg-brand-orange' : 'bg-brand-teal',
+                      );
+
+                      return isCesCalendar ? (
+                        <button
+                          aria-describedby={activeEventKey === key ? 'ces-event-preview' : undefined}
+                          aria-label={`${event.label}, Jun ${event.day}. Click to open event workspace/swimlane.`}
+                          className={cx(pillClasses, 'hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus')}
+                          key={key}
+                          onBlur={() => setActiveEventKey(null)}
+                          onClick={() => openEventWorkspace(event)}
+                          onFocus={() => setActiveEventKey(key)}
+                          onKeyDown={(keyboardEvent) => handleEventKeyDown(keyboardEvent, event)}
+                          onMouseEnter={() => setActiveEventKey(key)}
+                          type="button"
+                        >
+                          {event.label}
+                        </button>
+                      ) : (
+                        <span className={pillClasses} key={key}>
+                          {event.label}
+                        </span>
+                      );
+                    })}
                 </div>
               </div>
             ))}
           </div>
+          {isCesCalendar && activeEvent ? <CalendarEventPreview event={activeEvent} /> : null}
         </section>
         <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
           <div className="mb-lg flex items-center justify-between gap-md">
@@ -1169,8 +1442,9 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
             <ToneTag tone={config.railTone as Tone}>{config.events.length} active</ToneTag>
           </div>
           <div className="grid gap-md">
-            {config.events.slice(0, 7).map((event) => (
-              <article className="rounded-lg border border-card bg-tone-slate-bg p-md" key={`${event.day}-${event.label}`}>
+            {config.events.slice(0, 7).map((event) => {
+              const key = getCalendarEventKey(event);
+              const cardContent = (
                 <div className="flex items-start gap-md">
                   <span className={cx('mt-xs h-[76px] w-xs rounded-sm', toneBarClasses[event.tone])} />
                   <div className="min-w-0 flex-1">
@@ -1180,8 +1454,28 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                     <ProgressMeter className="mt-md" tone={event.tone} value={event.progress} />
                   </div>
                 </div>
-              </article>
-            ))}
+              );
+
+              return isCesCalendar ? (
+                <button
+                  aria-label={`${event.label}, Jun ${event.day}. Click to open event workspace/swimlane.`}
+                  className="rounded-lg border border-card bg-tone-slate-bg p-md text-left transition duration-fast ease-standard hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus"
+                  key={key}
+                  onBlur={() => setActiveEventKey(null)}
+                  onClick={() => openEventWorkspace(event)}
+                  onFocus={() => setActiveEventKey(key)}
+                  onKeyDown={(keyboardEvent) => handleEventKeyDown(keyboardEvent, event)}
+                  onMouseEnter={() => setActiveEventKey(key)}
+                  type="button"
+                >
+                  {cardContent}
+                </button>
+              ) : (
+                <article className="rounded-lg border border-card bg-tone-slate-bg p-md" key={key}>
+                  {cardContent}
+                </article>
+              );
+            })}
           </div>
         </aside>
       </section>
@@ -1218,6 +1512,185 @@ function BoardScreen() {
               <BoardLane key={lane.title} lane={lane} />
             ))}
           </div>
+        </div>
+      </section>
+    </ScreenStack>
+  );
+}
+
+function buildWorkflowSwimlane(event: CalendarEventData): readonly BoardLaneData[] {
+  const formsCount = event.formsCount ?? 0;
+  const due = `Jun ${event.day}`;
+
+  return [
+    {
+      cards: [
+        {
+          chips: ['Event', 'Scope'],
+          due,
+          id: 'EVT-01',
+          owner: event.owner,
+          progress: 88,
+          title: `Confirm ${event.label} scope`,
+          tone: 'teal',
+        },
+        {
+          chips: ['Policy', `${formsCount} forms`],
+          due,
+          id: 'EVT-02',
+          owner: 'Policy Admin',
+          progress: 78,
+          title: 'Bind source policies and required forms',
+          tone: 'teal',
+        },
+      ],
+      count: 2,
+      title: 'Intake',
+      tone: 'teal',
+    },
+    {
+      cards: [
+        {
+          chips: ['Evidence', 'Packet'],
+          due: `Jun ${event.day + 1}`,
+          id: 'EVT-03',
+          owner: event.owner,
+          progress: event.progress,
+          title: 'Collect required evidence artifacts',
+          tone: event.tone === 'orange' ? 'orange' : 'teal',
+        },
+        {
+          chips: ['Forms', 'Audit trail'],
+          due: `Jun ${event.day + 1}`,
+          id: 'EVT-04',
+          owner: 'Compliance Officer',
+          progress: 66,
+          title: event.evidenceStatus ?? 'Validate evidence status',
+          tone: 'orange',
+        },
+      ],
+      count: 2,
+      title: 'Evidence',
+      tone: 'orange',
+    },
+    {
+      cards: [
+        {
+          chips: ['Readiness', 'Risk'],
+          due: `Jun ${event.day + 2}`,
+          id: 'EVT-05',
+          owner: 'QAPI Lead',
+          progress: 72,
+          title: `Resolve ${event.risk ?? 'current'} risk signal`,
+          tone: event.tone,
+        },
+        {
+          chips: ['Attendees', 'Roles'],
+          due: `Jun ${event.day + 2}`,
+          id: 'EVT-06',
+          owner: 'Administrator',
+          progress: 70,
+          title: 'Confirm attendees and role sequence',
+          tone: 'amber',
+        },
+      ],
+      count: 2,
+      title: 'Review',
+      tone: 'amber',
+    },
+    {
+      cards: [
+        {
+          chips: ['eCIgn', 'Lock'],
+          due: `Jun ${event.day + 3}`,
+          id: 'EVT-07',
+          owner: 'Governing Body',
+          progress: 64,
+          title: 'Route signatures and final packet lock',
+          tone: 'green',
+        },
+      ],
+      count: 1,
+      title: 'Lock',
+      tone: 'green',
+    },
+  ];
+}
+
+function WorkflowSwimlaneScreen() {
+  const { workflowId } = useParams();
+  const navigate = useNavigate();
+  const event = getWorkflowEvent(workflowId);
+  const lanes = buildWorkflowSwimlane(event);
+  const metrics: readonly MetricTileData[] = [
+    { label: 'Tasks', value: `${event.taskCount ?? 7}`, helper: 'Generated from event context', tone: 'teal' },
+    { label: 'Owner', value: event.owner, helper: 'Primary accountable party', tone: 'orange' },
+    { label: 'Risk', value: event.risk ?? 'Current', helper: 'Calendar-derived signal', tone: event.tone },
+    { label: 'Due', value: `Jun ${event.day}`, helper: 'Event target date', tone: 'teal' },
+  ];
+
+  return (
+    <ScreenStack metrics={metrics}>
+      <section className="grid gap-xl">
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <div className="flex flex-wrap items-start justify-between gap-xl">
+            <div>
+              <div className="flex flex-wrap gap-sm">
+                <ToneTag tone={event.tone}>Swimlane open</ToneTag>
+                <ToneTag tone="slate">Jun {event.day}</ToneTag>
+                <ToneTag>{event.taskCount ?? 7} tasks</ToneTag>
+              </div>
+              <h2 className="mt-lg text-h2 font-medium text-ink">{event.label}</h2>
+              <p className="mt-sm max-w-content text-sm text-muted">
+                {event.label} opens as a focused compliance swimlane with intake, evidence, review, signature, and final lock tasks.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-md">
+              <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={() => navigate('/ces/calendar')} variant="secondary">
+                Back to month
+              </Button>
+              <Button
+                className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
+                iconLeft={<FileText aria-hidden="true" className="h-icon-sm w-icon-sm" />}
+              >
+                Packet preview
+              </Button>
+            </div>
+          </div>
+          <div className="mt-xl grid gap-md desktop:grid-cols-4">
+            {lanes.map((lane, index) => (
+              <div className={cx('rounded-lg border p-lg', toneSurfaceClasses[lane.tone])} key={lane.title}>
+                <div className="mb-md flex items-center justify-between gap-md">
+                  <span className="grid h-tap w-tap place-items-center rounded-md bg-surface text-brand-teal">{index + 1}</span>
+                  <span className="text-tag uppercase tracking-tag">{lane.count} cards</span>
+                </div>
+                <h3 className="text-body font-medium">{lane.title}</h3>
+                <p className="mt-xs text-sm">{lane.cards.length} execution tasks</p>
+              </div>
+            ))}
+          </div>
+        </section>
+        <div className="flex flex-wrap gap-sm">
+          {cesCalendarEvents.map((calendarEvent) => (
+            <button
+              className={cx(
+                'min-h-tap rounded-sm border px-md text-xs font-medium uppercase tracking-tag transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                calendarEvent.workflowId === event.workflowId
+                  ? 'border-brand-teal bg-brand-teal text-on-brand'
+                  : 'border-card bg-surface text-brand-teal hover:bg-surface-hover',
+              )}
+              key={calendarEvent.id}
+              onClick={() => navigate(toWorkflowSwimlanePath(calendarEvent))}
+              type="button"
+            >
+              Jun {calendarEvent.day} - {calendarEvent.label}
+            </button>
+          ))}
+        </div>
+        <div className="grid gap-lg desktop:grid-cols-4">
+          {lanes.map((lane) => (
+            <BoardLane key={lane.title} lane={lane} />
+          ))}
         </div>
       </section>
     </ScreenStack>
