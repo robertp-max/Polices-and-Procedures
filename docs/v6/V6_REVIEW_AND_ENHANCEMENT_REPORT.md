@@ -236,3 +236,21 @@ Plan-level deltas: V6-0 builds all 14 families and authors `src/index.css`; `tok
 The corpus has a real foundation hiding inside it — the template/shell/reuse spine and the Stage A/B/C pipeline are correct and should be preserved exactly. But as written it is unbuildable: the gate rejects its own V6 routes, two components fight over one URL, the catalog is split three ways, the token home is duplicated, the typography LOCK is contradicted and unenforced, the shell depends on blocked CDNs, and the state/responsive/a11y layers are essentially empty. None of these are rewrites; each is a single decisive ruling already specified above.
 
 **Sequence the unblock as one V6-0 work item:** (1) land + pass the corrected gate on a router stub (P0-1); (2) make the route table singular and collision-free (P0-2, P0-3, P1-2); (3) ratify the 14-family catalog and author `src/index.css` + `statusTone.ts` (P0-4, P0-5); (4) self-host fonts/assets and enforce the typography LOCK (P0-6, P0-7); (5) author the per-template state/responsive/a11y matrix and the 56-row coverage matrix (P0-8, P0-9); (6) declare PLAN authoritative and demote SEQUENCE. When the gate is green on a stub with the positive fixture passing and the 56-row matrix exists, the corpus is a real foundation and fan-out is safe — **not before.**
+
+---
+
+## APPLICATION STATUS (post-review — applied this pass)
+
+| P0 | Status | What landed |
+|----|--------|-------------|
+| **P0-1** | ✅ APPLIED (code) | `scripts/check-designless.mjs`: removed `LEGACY_ROUTES` (reused public paths now allowed); added `\b` word boundaries to legacy component names (V6-native `FormViewerV6`/`LibraryPageV6` pass); source scan scoped to the active V6 namespace (scaffold + `src/v6`), not preserved headless code. Self-tested: `/library`+`LibraryPageV6` ALLOW, `FormViewer`/`CommandCenterLayout` BLOCK. |
+| **P0-2** | ✅ RESOLVED (docs) | Canonical route table: `form-viewer=/forms/:formId`, `ecign=/forms/:formId/esign`. No router exists yet to encode — enforced at V6-1. |
+| **P0-3** | ✅ RESOLVED (docs) | `achc-crosswalk` → distinct path `/framework/achc-survey/crosswalk`; no query-param variant. |
+| **P0-4** | ✅ RESOLVED (docs) | 14-family catalog ratified in `V6_COMPONENT_AND_COHESION_SPEC.md`; built in V6-0. |
+| **P0-5** | ✅ VERIFIED | Single token home `src/index.css`; no competing `src/v6/theme/tokens.css` present. Token registry authored in V6-0. |
+| **P0-6** | ✅ APPLIED (code) | Gate now enforces typography lock: bans `Inter`/`Montserrat` font refs and `font-(semibold\|bold\|extrabold\|black)` / weights 600–900 in active source + `dist/`. Self-hosting Roboto 300;500 happens in V6-0 build. |
+| **P0-7** | ✅ APPLIED (code) | Gate now bans CDN/external-asset strings (Google Fonts, Tailwind Play, FontAwesome, jsDelivr, unpkg, babel-standalone, cloudfront) in active source, `index.html`, and `dist/`. Self-hosting/inlining happens in V6-0. |
+| **P0-8** | ✅ RESOLVED (docs) | States/responsive/a11y authored in `V6_UI_STATE_MATRIX.md`, `V6_COMPONENT_AND_COHESION_SPEC.md`, `V6_INTERACTION_AND_MOTION_SPEC.md`; built per template in V6-0/V6-2. |
+| **P0-9** | ✅ RESOLVED (docs) | 56-row canonical matrix is the single route=coverage=state host; PLAN authoritative, SEQUENCE demoted; `events-board` + `login-page` added as INFERRED_FROM_V6_SYSTEM. |
+
+**Net:** the 3 P0s with a concrete code surface today (gate correctness P0-1/6/7) are **applied and verified green**. The other 6 are design/route/plan decisions now embodied in the reconciled docs — they get *encoded in code* during their V6 phase (router at V6-1, tokens/typography/components/states at V6-0/V6-2), where the upgraded gate enforces them.
