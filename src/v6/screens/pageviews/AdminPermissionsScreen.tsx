@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { AlertTriangle, ClipboardCheck, FileCheck2, KeyRound, LockKeyhole, ShieldCheck, UserCog } from 'lucide-react';
-import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { DataTable, SurfaceCard, type DataTableColumn, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
-import { type Tone } from '../../tokens';
+import { cx } from '../../utils/classNames';
 
 interface PermissionRow extends Record<string, string> {
   capability: string;
@@ -20,24 +21,19 @@ interface RoleUsageRow extends Record<string, string> {
   usage: string;
 }
 
-interface ScopePanel {
-  detail: string;
-  label: string;
-  status: string;
-  tone: Tone;
-  value: string;
-}
-
 interface PermissionGovernanceCard extends SurfaceCardData {
   meta: readonly [string, string][];
 }
 
-const permissionMetrics = [
-  { label: 'Permissions', value: '64', helper: 'Cataloged RBAC capabilities', tone: 'teal' },
-  { label: 'Privileged', value: '12', helper: 'Require elevated governance', tone: 'orange' },
-  { label: 'Dual control', value: '7', helper: 'Two-person approval required', tone: 'amber' },
-  { label: 'Survey ready', value: '91%', helper: 'Reviewed permission evidence', tone: 'green' },
-] satisfies readonly MetricTileData[];
+const permissionTabs = [
+  { id: 'matrix', label: 'Permission Matrix' },
+  { id: 'roles', label: 'Roles Using It' },
+  { id: 'governance', label: 'Governance' },
+  { id: 'evidence', label: 'Evidence' },
+  { id: 'control-path', label: 'Control Path' },
+] as const;
+
+type PermissionTabId = (typeof permissionTabs)[number]['id'];
 
 const permissionRows: readonly PermissionRow[] = [
   {
@@ -161,37 +157,6 @@ const roleUsageColumns: readonly DataTableColumn<RoleUsageRow>[] = [
   { key: 'readinessStatus', label: 'Readiness', status: true },
 ];
 
-const scopePanels = [
-  {
-    detail: 'User provisioning, role assignment, and policy approval stay locked behind owner confirmation and timestamped rationale.',
-    label: 'Privileged admin scope',
-    status: 'locked',
-    tone: 'slate',
-    value: '12 permissions',
-  },
-  {
-    detail: 'Audit export, report access, and survey packet evidence are read-mostly for QAPI and compliance reviewers.',
-    label: 'Survey packet scope',
-    status: 'ready',
-    tone: 'teal',
-    value: '18 permissions',
-  },
-  {
-    detail: 'Patient PHI permissions stay tied to assigned clinical roles and do not grant cross-roster administration.',
-    label: 'Clinical boundary',
-    status: 'attention',
-    tone: 'orange',
-    value: '9 permissions',
-  },
-  {
-    detail: 'Form signing and onboarding catalog controls keep signer actions separate from catalog administration.',
-    label: 'Journey and forms',
-    status: 'awaiting',
-    tone: 'amber',
-    value: '14 permissions',
-  },
-] satisfies readonly ScopePanel[];
-
 const governanceCards = [
   {
     body: 'High-risk capabilities require a named owner, reviewer, reason code, and audit timestamp before role changes apply.',
@@ -242,6 +207,8 @@ const auditTrailItems = [
 ] as const;
 
 export function AdminPermissionsScreen() {
+  const [activeTab, setActiveTab] = useState<PermissionTabId>('matrix');
+
   return (
     <section
       className="grid gap-xl"
@@ -250,30 +217,35 @@ export function AdminPermissionsScreen() {
       data-route="/admin/permissions"
       data-template="matrix"
     >
-      <MetricGrid metrics={permissionMetrics} />
+      <section className="grid gap-xl rounded-lg border border-card bg-surface/90 p-xl shadow-rest backdrop-blur-xl">
+        <nav aria-label="Permission detail tabs" className="flex gap-lg overflow-x-auto border-b border-hairline pb-xs">
+          {permissionTabs.map((tab) => (
+            <button
+              aria-selected={activeTab === tab.id}
+              className={cx(
+                'shrink-0 border-b-2 px-xs pb-md text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                activeTab === tab.id
+                  ? 'border-brand-teal text-brand-teal'
+                  : 'border-transparent text-secondary hover:border-tone-teal-border hover:text-brand-teal',
+              )}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              role="tab"
+              type="button"
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
 
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="grid content-start gap-lg" aria-label="Admin permissions catalog matrix">
-          <DataTable columns={permissionColumns} label="Admin permissions catalog matrix" rows={permissionRows} />
-
-          <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Permission scope summary">
-            {scopePanels.map((panel) => (
-              <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={panel.label}>
-                <div className="mb-md flex flex-wrap items-start justify-between gap-md">
-                  <div>
-                    <p className="text-tag font-light uppercase tracking-tag text-muted">{panel.label}</p>
-                    <div className="mt-xs">
-                      <ToneTag tone={panel.tone}>{panel.value}</ToneTag>
-                    </div>
-                  </div>
-                  <ToneBadge size="sm" status={panel.status} />
-                </div>
-                <p className="text-sm font-light text-secondary">{panel.detail}</p>
-              </article>
-            ))}
+        {activeTab === 'matrix' && (
+          <section className="grid gap-lg" aria-label="Admin permissions catalog matrix" role="tabpanel">
+            <DataTable columns={permissionColumns} label="Admin permissions catalog matrix" rows={permissionRows} />
           </section>
+        )}
 
-          <section className="grid gap-lg rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="roles-using-permissions-title">
+        {activeTab === 'roles' && (
+          <section className="grid gap-lg" aria-labelledby="roles-using-permissions-title" role="tabpanel">
             <div className="flex flex-wrap items-start justify-between gap-lg">
               <div className="grid gap-xs">
                 <h2 className="text-h2 font-medium text-ink" id="roles-using-permissions-title">
@@ -287,23 +259,27 @@ export function AdminPermissionsScreen() {
             </div>
             <DataTable columns={roleUsageColumns} label="Roles using permission sets" rows={roleUsageRows} />
           </section>
-        </section>
+        )}
 
-        <aside className="grid content-start gap-lg" aria-label="Permission governance cards">
-          {governanceCards.map((card) => (
-            <SurfaceCard card={card} key={card.title}>
-              <dl className="grid gap-sm border-t border-hairline pt-md">
-                {card.meta.map(([label, value]) => (
-                  <div className="grid gap-xs" key={label}>
-                    <dt className="text-tag font-light uppercase tracking-tag text-brand-teal">{label}</dt>
-                    <dd className="text-sm font-light text-secondary">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </SurfaceCard>
-          ))}
+        {activeTab === 'governance' && (
+          <section className="grid gap-lg desktop:grid-cols-3" aria-label="Permission governance cards" role="tabpanel">
+            {governanceCards.map((card) => (
+              <SurfaceCard card={card} key={card.title}>
+                <dl className="grid gap-sm border-t border-hairline pt-md">
+                  {card.meta.map(([label, value]) => (
+                    <div className="grid gap-xs" key={label}>
+                      <dt className="text-tag font-light uppercase tracking-tag text-brand-teal">{label}</dt>
+                      <dd className="text-sm font-light text-secondary">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </SurfaceCard>
+            ))}
+          </section>
+        )}
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="permission-audit-trail-title">
+        {activeTab === 'evidence' && (
+          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="permission-audit-trail-title" role="tabpanel">
             <div className="mb-lg flex items-start gap-md">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
                 <FileCheck2 aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -329,8 +305,10 @@ export function AdminPermissionsScreen() {
               ))}
             </div>
           </section>
+        )}
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="permission-control-path-title">
+        {activeTab === 'control-path' && (
+          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="permission-control-path-title" role="tabpanel">
             <div className="mb-lg flex items-start gap-md">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
                 <KeyRound aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -364,7 +342,7 @@ export function AdminPermissionsScreen() {
               })}
             </div>
           </section>
-        </aside>
+        )}
       </section>
     </section>
   );

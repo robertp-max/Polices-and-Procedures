@@ -1,12 +1,11 @@
-import { AlertCircle, ChevronRight, FolderOpen, KeyRound, LogOut, X, PenLine, BadgeCheck, ListChecks } from 'lucide-react';
-import { IconButton } from '../primitives';
+import { AlertCircle, ChevronRight, FolderOpen, KeyRound, PenLine, BadgeCheck, ListChecks } from 'lucide-react';
 import { ToneTag } from '../components';
 
 interface PersonalOpsPanelProps {
-  onClose: () => void;
+  onClose?: () => void;
 }
 
-export function PersonalOpsPanel({ onClose }: PersonalOpsPanelProps) {
+export function PersonalOpsPanel({}: PersonalOpsPanelProps) {
   const focusItems = [
     { title: 'Missing disclosure signature', meta: 'GV-FM-006 - Due today', status: 'Critical', tone: 'orange' as const },
     { title: 'QAPI minutes packet', meta: 'QA-WF-03 - Due Jun 15', status: 'Review', tone: 'teal' as const },
@@ -21,18 +20,12 @@ export function PersonalOpsPanel({ onClose }: PersonalOpsPanelProps) {
   ];
 
   return (
-    <aside className="w-[380px] shrink-0 border-l border-hairline bg-surface flex flex-col h-full overflow-y-auto relative z-20 shadow-[-10px_0_28px_rgba(0,65,66,0.04)] text-ink">
-      <header className="border-b border-hairline p-lg flex items-start justify-between bg-tone-teal-bg/60">
+    <aside className="relative z-20 flex h-screen w-[380px] shrink-0 flex-col overflow-y-auto border-l border-hairline bg-surface text-ink shadow-[-10px_0_28px_rgba(0,65,66,0.04)]">
+      <header className="border-b border-hairline bg-tone-teal-bg/60 p-lg">
         <div>
           <p className="font-heading text-[10px] font-medium uppercase tracking-[0.2em] text-brand-teal">Personal Operations</p>
           <h3 className="mt-xs text-xl font-medium text-brand-teal-deep">Today's Focus</h3>
         </div>
-        <IconButton
-          aria-label="Close Personal Operations"
-          icon={<X className="h-icon-sm w-icon-sm" />}
-          onClick={onClose}
-          variant="tertiary"
-        />
       </header>
 
       <div className="p-lg flex-1 space-y-xl overflow-y-auto bg-tone-teal-bg/30">
@@ -105,15 +98,6 @@ export function PersonalOpsPanel({ onClose }: PersonalOpsPanelProps) {
         </section>
       </div>
 
-      <footer className="border-t border-hairline p-lg shrink-0 bg-surface">
-        <button
-          onClick={onClose}
-          className="w-full rounded-md bg-tone-slate-bg hover:bg-surface-hover py-md text-sm font-medium text-secondary transition border border-hairline shadow-sm flex justify-center items-center gap-sm"
-        >
-          <LogOut className="h-icon-sm w-icon-sm" />
-          Close Operations
-        </button>
-      </footer>
     </aside>
   );
 }

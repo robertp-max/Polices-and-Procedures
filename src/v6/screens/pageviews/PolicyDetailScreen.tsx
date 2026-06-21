@@ -1,6 +1,7 @@
-import { AlertTriangle, CalendarClock, CheckCircle2, ClipboardCheck, ClipboardList, FileCheck2, FileText, History, Link2, ShieldCheck, Upload } from 'lucide-react';
+import { AlertTriangle, CalendarClock, CheckCircle2, ClipboardCheck, FileCheck2, FileText, History, Link2, ShieldCheck, Upload } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button, ToneBadge } from '../../primitives';
-import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { DataTable, ProgressMeter, SurfaceCard, ToneTag, type DataTableColumn, type SurfaceCardData } from '../../components';
 import { cx } from '../../utils/classNames';
 
 const routeMarker = {
@@ -20,13 +21,6 @@ const policy = {
   version: '6.0',
 } as const;
 
-const policyMetrics: readonly MetricTileData[] = [
-  { label: 'Policy ID', value: policy.id, helper: 'Canonical library record', tone: 'teal' },
-  { label: 'Lifecycle', value: 'Approved', helper: 'Publication packet ready', tone: 'green' },
-  { label: 'Evidence', value: '94%', helper: 'Survey-facing support', tone: 'teal' },
-  { label: 'Review', value: '2027', helper: 'Annual review cadence', tone: 'amber' },
-];
-
 const metadataItems: readonly (readonly [string, string])[] = [
   ['Domain', 'GV - Governance'],
   ['Subdomain', 'GB - Governing Body'],
@@ -38,14 +32,25 @@ const metadataItems: readonly (readonly [string, string])[] = [
   ['Regulatory anchors', '42 CFR 484.105, ACHC HH1-1A, Title 22'],
 ];
 
-const tableOfContents = [
-  'Purpose',
-  'Scope',
-  'Policy Statements',
-  'Procedures',
-  'Documentation',
-  'Compliance & Audit',
-  'References',
+const policyTabs = [
+  { href: '#overview-definitions', label: 'Overview & Definitions' },
+  { href: '#policy-statements', label: 'Policy Statements' },
+  { href: '#procedures', label: 'Procedures' },
+  { href: '#documentation', label: 'Documentation' },
+  { href: '#compliance-audit', label: 'Compliance & Audit' },
+  { href: '#references', label: 'References & Admin' },
+] as const;
+
+const requiredCodeHeader = [
+  ['Domain', 'GV - Governance & Administration'],
+  ['Tier', 'Required'],
+  ['Approved by', 'Governing Body Chair - Care Indeed Home Health Care, Inc.'],
+  ['Supersedes', 'N/A (Initial Version)'],
+  ['Required codes', '42 CFR 484.105, ACHC HH1-1A, Title 22'],
+  ['Effective date', policy.effective],
+  ['Last reviewed', '2026-06-01'],
+  ['Next review', policy.nextReview],
+  ['Version', `v${policy.version}`],
 ] as const;
 
 const policySections = [
@@ -173,83 +178,69 @@ export function PolicyDetailScreen() {
       data-route={routeMarker.path}
       data-template={routeMarker.template}
     >
-      <MetricGrid metrics={policyMetrics} />
+      <article className="grid gap-xl rounded-lg border border-card bg-surface/90 p-xl shadow-rest backdrop-blur-xl">
+        <nav
+          aria-label="Policy document sections"
+          className="sticky top-0 z-30 -mx-xl -mt-xl flex gap-xl overflow-x-auto rounded-t-lg border-b border-hairline bg-white px-xl pt-xl pb-xs shadow-[0_16px_30px_rgba(0,65,66,0.08)] after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-12 after:h-12 after:bg-gradient-to-b after:from-white after:via-white/95 after:to-transparent"
+          style={{
+            maskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
+          }}
+        >
+          {policyTabs.map((tab, index) => (
+            <a
+              aria-current={index === 0 ? 'page' : undefined}
+              className={cx(
+                'shrink-0 border-b-2 px-xs pb-md text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                index === 0
+                  ? 'border-brand-teal text-brand-teal'
+                  : 'border-transparent text-secondary hover:border-tone-teal-border hover:text-brand-teal',
+              )}
+              href={tab.href}
+              key={tab.label}
+            >
+              {tab.label}
+            </a>
+          ))}
+          <Link
+            className="shrink-0 border-b-2 border-transparent px-xs pb-md text-sm font-medium text-brand-teal transition duration-fast ease-standard hover:border-brand-teal focus-visible:outline-none focus-visible:shadow-focus"
+            to="/journey/appendix-f"
+          >
+            Appendices
+          </Link>
+        </nav>
 
-      <section className="grid gap-xl desktop:grid-cols-[240px_minmax(0,1fr)_340px]">
-        <aside className="grid content-start gap-lg desktop:sticky desktop:top-xl desktop:self-start">
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest" aria-label="Policy contents">
-            <div className="mb-lg flex items-center gap-sm">
-              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-brand-teal">
-                <ClipboardList aria-hidden="true" className="h-icon-md w-icon-md" />
-              </span>
-              <h2 className="text-h2 font-medium text-ink">Contents</h2>
+        <section className="grid gap-xl" id="overview-definitions">
+          <div className="grid gap-lg rounded-lg border border-card bg-tone-slate-bg/80 p-xl">
+            <div className="flex flex-wrap items-start justify-between gap-lg border-b border-hairline pb-lg">
+              <div className="grid gap-sm">
+                <ToneTag tone="teal">
+                  Policy ID: {policy.id} - Active
+                </ToneTag>
+                <h2 className="text-[28px] font-medium leading-tight text-ink">{policy.title}</h2>
+                <p className="max-w-measure text-sm text-secondary">
+                  Governing-body authority, delegation boundaries, required approvals, and survey-facing evidence controls for the canonical V6 policy library.
+                </p>
+              </div>
+              <ToneBadge size="sm" status="validated" />
             </div>
-            <nav className="grid gap-sm" aria-label="Policy sections">
-              {tableOfContents.map((section, index) => {
-                const sectionId = policySections[index].id;
-                const isActive = index === 0;
 
-                return (
-                  <a
-                    aria-current={isActive ? 'page' : undefined}
-                    className={cx(
-                      'min-h-row rounded-md px-md py-sm text-sm text-ink transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus',
-                      isActive && 'bg-tone-teal-bg text-brand-teal',
-                    )}
-                    href={`#${sectionId}`}
-                    key={section}
-                  >
-                    {section}
-                  </a>
-                );
-              })}
-            </nav>
-          </section>
-
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest" aria-label="Policy identity">
-            <div className="flex items-center justify-between gap-md">
-              <ToneTag>{policy.id}</ToneTag>
-              <ToneBadge size="sm" status="approved" />
-            </div>
-            <dl className="mt-lg grid gap-sm">
-              {metadataItems.slice(0, 5).map(([label, value]) => (
-                <div className="rounded-md bg-tone-slate-bg p-md" key={label}>
+            <dl className="grid gap-lg tablet:grid-cols-2 desktop:grid-cols-4">
+              {requiredCodeHeader.map(([label, value]) => (
+                <div className="min-h-row rounded-md border border-card bg-surface/80 p-md" key={label}>
                   <dt className="text-tag uppercase tracking-tag text-muted">{label}</dt>
-                  <dd className="mt-xs text-sm text-ink">{value}</dd>
+                  <dd className={cx('mt-xs text-sm font-medium text-ink', label === 'Tier' && 'text-brand-orange')}>{value}</dd>
                 </div>
               ))}
             </dl>
-          </section>
-        </aside>
-
-        <article className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-          <div className="flex flex-wrap items-start justify-between gap-lg border-b border-hairline pb-lg">
-            <div className="grid gap-sm">
-              <ToneTag tone="teal">
-                {policy.id} - v{policy.version}
-              </ToneTag>
-              <h2 className="text-h2 font-medium text-ink">Policy Text</h2>
-              <p className="max-w-content text-sm text-muted">
-                Static V6 content model for the policy detail route. The article body is arranged for print review and survey citation.
-              </p>
-            </div>
-            <ToneBadge size="sm" status="validated" />
           </div>
 
-          <div className="mt-xl grid gap-lg">
-            {policySections.map((section, index) => (
-              <section className="rounded-lg border border-card bg-tone-slate-bg p-lg" id={section.id} key={section.id}>
-                <div className="mb-md flex flex-wrap items-start justify-between gap-md">
-                  <div className="flex items-center gap-sm">
-                    <span className="grid h-tap w-tap place-items-center rounded-md bg-surface text-brand-teal">
-                      <FileText aria-hidden="true" className="h-icon-sm w-icon-sm" />
-                    </span>
-                    <div>
-                      <p className="text-tag uppercase tracking-tag text-muted">Section {index + 1}</p>
-                      <h3 className="text-h3 font-light text-ink">{section.title}</h3>
-                    </div>
-                  </div>
-                  <ToneBadge size="sm" status={section.status} />
+          <div className="grid gap-lg desktop:grid-cols-2">
+            {policySections.slice(0, 2).map((section, index) => (
+              <section className="rounded-lg border border-card bg-surface p-lg shadow-rest" id={section.id} key={section.id}>
+                <div className="mb-md flex items-center gap-sm">
+                  <ToneTag tone="teal">{index + 1}</ToneTag>
+                  <h3 className="text-h2 font-medium text-ink">{section.title}</h3>
                 </div>
                 <p className="text-body text-secondary">{section.body}</p>
                 <ul className="mt-md grid gap-sm">
@@ -263,53 +254,36 @@ export function PolicyDetailScreen() {
               </section>
             ))}
           </div>
-        </article>
+        </section>
 
-        <aside className="grid content-start gap-lg desktop:self-start">
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest" aria-label="Policy metadata">
-            <div className="mb-lg flex items-center gap-sm">
-              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-blue-bg text-tone-blue-text">
-                <FileCheck2 aria-hidden="true" className="h-icon-md w-icon-md" />
-              </span>
-              <h2 className="text-h2 font-medium text-ink">Metadata</h2>
-            </div>
-            <dl className="grid gap-sm">
-              {metadataItems.map(([label, value]) => (
-                <div className="rounded-md border border-card bg-tone-slate-bg p-md" key={label}>
-                  <dt className="text-tag uppercase tracking-tag text-muted">{label}</dt>
-                  <dd className="mt-xs text-sm text-secondary">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-
-          <SurfaceCard
-            card={{
-              body: 'DRAFT to REVIEW to APPROVED is complete; publication waits on the final disclosure form.',
-              icon: History,
-              progress: 84,
-              status: 'review-required',
-              title: 'Lifecycle panel',
-              tone: 'orange',
-            }}
-          >
-            <div className="grid gap-sm">
-              {lifecycleItems.map((item) => (
-                <div className="rounded-md border border-card bg-surface p-md" key={item.label}>
-                  <div className="flex items-start justify-between gap-md">
-                    <div>
-                      <p className="text-sm text-ink">{item.label}</p>
-                      <p className="mt-xs text-xs text-muted">{item.meta}</p>
-                    </div>
-                    <ToneBadge size="sm" status={item.status} />
+        <div className="grid gap-lg">
+          {policySections.slice(2).map((section, index) => (
+            <section className="rounded-lg border border-card bg-tone-slate-bg p-lg shadow-rest" id={section.id} key={section.id}>
+              <div className="mb-md flex flex-wrap items-start justify-between gap-md">
+                <div className="flex items-center gap-sm">
+                  <span className="grid h-tap w-tap place-items-center rounded-md bg-surface text-brand-teal">
+                    <FileText aria-hidden="true" className="h-icon-sm w-icon-sm" />
+                  </span>
+                  <div>
+                    <p className="text-tag uppercase tracking-tag text-muted">Section {index + 3}</p>
+                    <h3 className="text-h2 font-medium text-ink">{section.title}</h3>
                   </div>
-                  <ProgressMeter className="mt-md" label={item.label} tone={item.status === 'review-required' ? 'orange' : 'teal'} value={item.progress} />
                 </div>
-              ))}
-            </div>
-          </SurfaceCard>
-        </aside>
-      </section>
+                <ToneBadge size="sm" status={section.status} />
+              </div>
+              <p className="text-body text-secondary">{section.body}</p>
+              <ul className="mt-md grid gap-sm">
+                {section.bullets.map((bullet) => (
+                  <li className="flex gap-sm text-sm text-secondary" key={bullet}>
+                    <CheckCircle2 aria-hidden="true" className="mt-xs h-icon-xs w-icon-xs shrink-0 text-brand-teal" />
+                    <span>{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      </article>
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,1fr)_340px]">
         <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
@@ -353,6 +327,51 @@ export function PolicyDetailScreen() {
         {readinessCards.map((card) => (
           <SurfaceCard card={card} key={card.title} />
         ))}
+      </section>
+
+      <section className="grid gap-xl desktop:grid-cols-[minmax(0,1fr)_340px]">
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-label="Policy metadata">
+          <div className="mb-lg flex items-center gap-sm">
+            <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-blue-bg text-tone-blue-text">
+              <FileCheck2 aria-hidden="true" className="h-icon-md w-icon-md" />
+            </span>
+            <h2 className="text-h2 font-medium text-ink">Administrative Record</h2>
+          </div>
+          <dl className="grid gap-sm tablet:grid-cols-2">
+            {metadataItems.map(([label, value]) => (
+              <div className="rounded-md border border-card bg-tone-slate-bg p-md" key={label}>
+                <dt className="text-tag uppercase tracking-tag text-muted">{label}</dt>
+                <dd className="mt-xs text-sm text-secondary">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <SurfaceCard
+          card={{
+            body: 'DRAFT to REVIEW to APPROVED is complete; publication waits on the final disclosure form.',
+            icon: History,
+            progress: 84,
+            status: 'review-required',
+            title: 'Lifecycle panel',
+            tone: 'orange',
+          }}
+        >
+          <div className="grid gap-sm">
+            {lifecycleItems.map((item) => (
+              <div className="rounded-md border border-card bg-surface p-md" key={item.label}>
+                <div className="flex items-start justify-between gap-md">
+                  <div>
+                    <p className="text-sm text-ink">{item.label}</p>
+                    <p className="mt-xs text-xs text-muted">{item.meta}</p>
+                  </div>
+                  <ToneBadge size="sm" status={item.status} />
+                </div>
+                <ProgressMeter className="mt-md" label={item.label} tone={item.status === 'review-required' ? 'orange' : 'teal'} value={item.progress} />
+              </div>
+            ))}
+          </div>
+        </SurfaceCard>
       </section>
 
       <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-label="Readiness controls">

@@ -17,10 +17,10 @@ export interface DataTableProps<Row extends Record<string, string>> {
 
 export function DataTable<Row extends Record<string, string>>({ columns, label, rows, onRowClick }: DataTableProps<Row>) {
   return (
-    <div className="overflow-hidden rounded-lg border border-hairline bg-transparent">
+    <div className="overflow-hidden rounded-lg border border-hairline bg-white/[.30] shadow-none backdrop-blur-sm">
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-xs" aria-label={label}>
-          <thead className="bg-tone-slate-bg text-tag uppercase tracking-tag text-secondary">
+          <thead className="bg-white/[.38] text-tag uppercase tracking-tag text-secondary">
             <tr>
               {columns.map((column) => (
                 <th className="border-b border-card px-lg py-md font-light" key={String(column.key)} scope="col">
@@ -33,7 +33,7 @@ export function DataTable<Row extends Record<string, string>>({ columns, label, 
             {rows.map((row, rowIndex) => (
               <tr
                 className={cx(
-                  'transition duration-fast ease-standard hover:bg-surface-hover',
+                  'transition duration-fast ease-standard hover:bg-white/[.45]',
                   onRowClick && 'cursor-pointer',
                 )}
                 key={`${label}-${rowIndex}`}
@@ -67,4 +67,3 @@ export function DataTable<Row extends Record<string, string>>({ columns, label, 
     </div>
   );
 }
-

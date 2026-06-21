@@ -901,75 +901,78 @@ function CalendarSwimlaneInline({
   onSelectEvent: (event: CalendarEventData) => void;
 }) {
   const swimlane = event.swimlane ?? buildDefaultCalendarSwimlane(event);
-  const eventTitle = formatSwimlaneTitle(event.label);
   const lanes = swimlane.lanes;
   const totalTasks = lanes.reduce((sum, lane) => sum + lane.cards.length, 0);
+  const eventCarousel = [event, ...events.filter((item) => item.label !== event.label)];
 
   return (
-    <section className="grid gap-2xl pt-2xl" data-calendar-swimlane>
-      <div className="border-b border-hairline pb-xl">
-        <div className="grid gap-md">
-          <div className="min-w-0 max-w-[760px] flex-1">
-            <div className="flex flex-wrap gap-sm">
-              <ToneTag tone={event.tone}>{event.readiness ?? 'Swimlane open'}</ToneTag>
-              <ToneTag tone="slate">Jun {event.day}</ToneTag>
-              <ToneTag tone="teal">{totalTasks} tasks</ToneTag>
-            </div>
-            <h1 className="mt-lg text-3xl font-medium leading-tight text-brand-teal-deep">{eventTitle}</h1>
-            <p className="mt-sm max-w-5xl text-sm leading-relaxed text-muted">{swimlane.summary}</p>
-          </div>
-          <div className="flex flex-wrap gap-md">
-            <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={onBack} size="sm" variant="secondary">
-              Back to month
-            </Button>
-          </div>
-        </div>
-      </div>
+    <section className="grid gap-xl" data-calendar-swimlane>
+      <section className="grid gap-xl rounded-lg border border-card bg-surface-glass p-xl shadow-rest">
+        <div
+          aria-label="CES event carousel"
+          className="flex gap-sm overflow-x-auto rounded-lg border border-hairline bg-white/[.30] p-sm backdrop-blur-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{
+            maskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
+          }}
+        >
+          {eventCarousel.map((item) => {
+            const isSelected = item.label === event.label;
 
-      <MetricGrid metrics={swimlane.metrics} />
-
-      <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
-        <div className="mb-md flex items-center justify-between gap-md">
-          <h2 className="text-sm font-medium text-brand-teal-deep">QAPI flowchart auto-fits to calendar width</h2>
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted">Vertical swimlane</span>
+            return (
+              <button
+                aria-current={isSelected ? 'true' : undefined}
+                className={cx(
+                  'min-h-tap shrink-0 rounded-sm border px-md py-sm text-[10px] font-medium uppercase tracking-wider transition duration-fast hover:translate-y-[-1px]',
+                  isSelected
+                    ? 'border-brand-teal bg-brand-teal text-on-brand shadow-rest'
+                    : item.tone === 'orange' || item.tone === 'amber'
+                      ? 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text'
+                      : 'border-hairline bg-white/[.45] text-brand-teal hover:bg-white/[.60]'
+                )}
+                key={item.label}
+                onClick={() => onSelectEvent(item)}
+                type="button"
+              >
+                Jun {item.day} - {item.label}
+              </button>
+            );
+          })}
         </div>
-        <div className="grid gap-sm [grid-template-columns:repeat(auto-fit,minmax(130px,1fr))]">
+
+        <MetricGrid metrics={swimlane.metrics} />
+
+        <div className="flex flex-wrap items-center justify-between gap-lg border-t border-hairline pt-lg">
+          <div className="flex flex-wrap gap-sm">
+            <ToneTag tone={event.tone}>{event.readiness ?? 'Swimlane open'}</ToneTag>
+            <ToneTag tone="slate">Jun {event.day}</ToneTag>
+            <ToneTag tone="teal">{totalTasks} tasks</ToneTag>
+          </div>
+          <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={onBack} size="sm" variant="secondary">
+            Back to month
+          </Button>
+        </div>
+
+        <section aria-label="CES event stage summary" className="grid gap-md [grid-template-columns:repeat(auto-fit,minmax(130px,1fr))]">
           {lanes.map((lane, index) => (
-            <article className={cx('rounded-lg border p-md shadow-rest', toneSurfaceClasses[lane.tone])} key={lane.title}>
+            <article className={cx('rounded-lg p-lg shadow-none', toneGlassSurfaceClasses[lane.tone])} key={lane.title}>
               <div className="flex items-center justify-between gap-sm">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-surface text-xs font-medium">{index + 1}</span>
+                <span className="grid h-tap w-tap place-items-center rounded-full bg-white/[.55] text-sm font-medium">{index + 1}</span>
                 <span className="text-[10px] font-medium uppercase tracking-wider opacity-75">{lane.cards.length} tasks</span>
               </div>
-              <h3 className="mt-md text-xs font-medium leading-tight">{lane.title}</h3>
+              <h3 className="mt-md text-sm font-medium leading-tight">{lane.title}</h3>
+              <p className="mt-xs text-xs leading-relaxed opacity-75">{lane.cards.length} execution tasks</p>
             </article>
           ))}
-        </div>
+        </section>
       </section>
 
-      <div className="flex flex-wrap gap-sm">
-        {events.filter((item) => item.label !== event.label).slice(0, 8).map((item) => (
-          <button
-            className={cx(
-              'rounded-md border px-md py-sm text-[10px] font-medium uppercase tracking-wider shadow-rest transition duration-fast hover:translate-y-[-1px] hover:shadow-hover',
-              item.tone === 'orange' || item.tone === 'amber'
-                ? 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text'
-                : 'border-tone-teal-border bg-tone-teal-bg text-brand-teal'
-            )}
-            key={item.label}
-            onClick={() => onSelectEvent(item)}
-            type="button"
-          >
-            Jun {item.day} - {item.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid gap-xl">
+      <div className="grid gap-lg">
         {lanes.map((lane, laneIndex) => (
-          <section className="grid gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest laptop:grid-cols-[150px_minmax(0,1fr)] desktop:grid-cols-[180px_minmax(0,1fr)]" key={lane.title}>
-            <aside className={cx('rounded-lg border p-lg', toneSurfaceClasses[lane.tone])}>
+          <section className="grid gap-lg rounded-lg border border-card bg-surface-glass p-lg shadow-rest laptop:grid-cols-[150px_minmax(0,1fr)] desktop:grid-cols-[180px_minmax(0,1fr)]" key={lane.title}>
+            <aside className={cx('rounded-lg p-lg shadow-none', toneGlassSurfaceClasses[lane.tone])}>
               <div className="flex items-center justify-between gap-md">
-                <span className="grid h-10 w-10 place-items-center rounded-full bg-surface text-sm font-medium">{laneIndex + 1}</span>
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-white/[.55] text-sm font-medium">{laneIndex + 1}</span>
                 <ToneTag tone={lane.tone}>{lane.cards.length}</ToneTag>
               </div>
               <h2 className="mt-lg text-base font-medium">{lane.title}</h2>
@@ -980,7 +983,7 @@ function CalendarSwimlaneInline({
               style={{ '--lane-card-count': lane.cards.length } as CSSProperties}
             >
               {lane.cards.map((task) => (
-                <article className="min-w-0 rounded-lg border border-card bg-surface p-lg shadow-rest" key={task.id}>
+                <article className="min-w-0 rounded-lg border border-hairline bg-white/[.42] p-lg shadow-none backdrop-blur-sm transition duration-fast hover:bg-white/[.58] hover:shadow-rest" key={task.id}>
                   <div className="flex items-start justify-between gap-md">
                     <ToneTag tone={task.tone}>{task.id}</ToneTag>
                     <span className={cx('h-2.5 w-2.5 shrink-0 rounded-full', task.tone === 'orange' ? 'bg-brand-orange' : 'bg-brand-teal')} />
@@ -998,7 +1001,7 @@ function CalendarSwimlaneInline({
                   </div>
                   <div className="mt-md flex flex-wrap gap-xs">
                     {task.chips.map((chip) => (
-                      <span className="rounded-sm border border-tone-teal-border bg-tone-teal-bg px-sm py-xs text-[9px] font-medium uppercase tracking-wider text-brand-teal" key={`${task.id}-${chip}`}>
+                      <span className="rounded-sm border border-tone-teal-border bg-white/[.45] px-sm py-xs text-[9px] font-medium uppercase tracking-wider text-brand-teal" key={`${task.id}-${chip}`}>
                         {chip}
                       </span>
                     ))}
@@ -1691,7 +1694,7 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
 function ScreenStack({ children, metrics }: { children: ReactNode; metrics: readonly MetricTileData[] }) {
   return (
     <div className="grid gap-2xl">
-      <MetricGrid metrics={metrics} />
+      {metrics.length > 0 && <MetricGrid metrics={metrics} />}
       {children}
     </div>
   );
@@ -1944,13 +1947,16 @@ function PatientDetailScreen() {
           </div>
         </section>
         <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-          <h2 className="mb-lg text-h2 font-medium text-ink">Right panel preview</h2>
-          <div className="grid gap-md">
+          <div className="mb-lg grid gap-xs">
+            <h2 className="text-h2 font-medium text-ink">Care coordination</h2>
+            <p className="text-sm text-muted">Version history, linked forms, evidence, and approvals for the active SOC plan.</p>
+          </div>
+          <div className="grid gap-sm">
             {detailRail.map((item) => {
               const Icon = item.icon;
 
               return (
-                <div className="flex items-center justify-between gap-lg rounded-lg bg-tone-slate-bg p-md" key={item.label}>
+                <div className="flex items-center justify-between gap-lg rounded-lg border border-hairline bg-white/36 p-md backdrop-blur-sm" key={item.label}>
                   <span className="flex items-center gap-md text-sm text-ink">
                     <Icon aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
                     {item.label}
@@ -1959,6 +1965,10 @@ function PatientDetailScreen() {
                 </div>
               );
             })}
+          </div>
+          <div className="mt-lg rounded-lg border border-hairline bg-white/[.30] p-lg backdrop-blur-sm">
+            <p className="text-tag uppercase tracking-tag text-brand-teal">Next review</p>
+            <p className="mt-sm text-sm text-secondary">Clinical manager validates coverage and evidence before the afternoon SOC window closes.</p>
           </div>
         </aside>
       </section>
@@ -2080,14 +2090,20 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
   }
 
   return (
-    <ScreenStack metrics={config.metrics}>
-      <section className="grid gap-2xl laptop:grid-cols-[minmax(0,3fr)_300px] desktop:grid-cols-[minmax(0,3fr)_320px]">
+    <ScreenStack metrics={isCesCalendar ? [] : config.metrics}>
+      <section className={cx(
+        'grid gap-2xl',
+        isCesCalendar ? 'grid-cols-1' : 'laptop:grid-cols-[minmax(0,3fr)_300px] desktop:grid-cols-[minmax(0,3fr)_320px]',
+      )}>
 
         <section
-          className="relative rounded-lg border border-card bg-surface p-xl shadow-rest"
+          className={cx(
+            'relative rounded-lg border border-card bg-surface shadow-rest',
+            isCesCalendar ? 'p-2xl' : 'p-xl',
+          )}
           onMouseLeave={isCesCalendar ? () => setActiveEventKey(null) : undefined}
         >
-          <div className="mb-xl flex flex-wrap items-center justify-between gap-lg">
+          <div className={cx('flex flex-wrap items-center justify-between gap-lg', isCesCalendar ? 'mb-2xl' : 'mb-xl')}>
             <div className="inline-flex rounded-lg bg-tone-slate-bg p-xs">
               {['Day', 'Week', 'Month'].map((label) => (
                 <button
@@ -2115,22 +2131,23 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                 <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
                 <p className="mt-xs text-sm text-muted">{config.legend}</p>
               </div>
-              <div className="grid grid-cols-7 border-l border-t border-card text-xs">
+              <div className="overflow-hidden rounded-lg border border-card bg-white/65 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+              <div className="grid grid-cols-7 text-xs">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div className="border-b border-r border-card p-sm text-center text-tag uppercase tracking-tag text-brand-teal" key={day}>
+                  <div className="border-b border-r border-card bg-tone-teal-bg/45 p-md text-center text-tag uppercase tracking-tag text-brand-teal last:border-r-0" key={day}>
                     {day}
                   </div>
                 ))}
                 {days.map((day) => (
-                  <div className="relative min-w-0 overflow-hidden min-h-[112px] border-b border-r border-card bg-surface p-sm !shadow-none" key={day}>
-                    <p className="mb-sm text-sm text-brand-teal">{day}</p>
+                  <div className="relative min-w-0 overflow-hidden min-h-[156px] border-b border-r border-card bg-white/62 p-md !shadow-none transition duration-fast hover:bg-white/86" key={day}>
+                    <p className="mb-md text-base font-medium text-brand-teal">{day}</p>
                     <div className="grid gap-xs">
                       {events
                         .filter((event) => event.day === day)
                         .map((event) => {
                           const key = getCalendarEventKey(event);
                           const pillClasses = cx(
-                            'truncate rounded-sm px-sm py-xs text-left text-[10px] text-on-brand transition duration-fast ease-standard',
+                            'truncate rounded-md px-md py-sm text-left text-xs font-medium text-on-brand shadow-[0_6px_14px_rgba(0,65,66,0.08)] transition duration-fast ease-standard',
                             event.tone === 'orange' || event.tone === 'amber' ? 'bg-brand-orange' : 'bg-brand-teal',
                           );
                           const isHovered = activeEventKey === key;
@@ -2182,6 +2199,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                   </div>
                 ))}
               </div>
+              </div>
             </>
           ) : agendaMode === 'Month' ? (
             <div className="grid grid-cols-7 border-l border-t border-card text-xs">
@@ -2217,7 +2235,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
             <CalendarAgendaList events={events} legend={config.legend} onOpenEvent={openCalendarEvent} title={config.title} />
           )}
         </section>
-        <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        {!isCesCalendar && <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
           <div className="mb-lg flex items-center justify-between gap-md">
             <h2 className="text-h2 font-medium text-ink">{config.railTitle}</h2>
             <ToneTag tone={config.railTone as Tone}>{events.length} active</ToneTag>
@@ -2292,7 +2310,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
               );
             })}
           </div>
-        </aside>
+        </aside>}
         <StaffingConflictDrawer
           event={resolverEvent}
           onClose={() => setResolverEvent(null)}
@@ -2452,48 +2470,46 @@ function WorkflowSwimlaneScreen() {
   const [selectedCard, setSelectedCard] = useState<BoardCardData | null>(null);
 
   return (
-    <ScreenStack metrics={metrics}>
-      <section className="grid gap-xl">
-        <div className="grid gap-md mb-lg">
-          <div className="grid gap-xs">
-            <div className="flex flex-wrap gap-sm">
-              <ToneTag className="font-medium" tone={event.tone}>
-                Swimlane open
-              </ToneTag>
-              <ToneTag className="font-medium" tone="slate">
-                Jun {event.day}
-              </ToneTag>
-              <ToneTag className="font-medium">{event.taskCount ?? 7} tasks</ToneTag>
-            </div>
+    <div className="grid gap-xl">
+      <section className="grid gap-xl rounded-lg border border-card bg-surface-glass p-xl shadow-rest">
+        <MetricGrid metrics={metrics} />
+
+        <div className="flex flex-wrap items-center justify-between gap-lg border-t border-hairline pt-lg">
+          <div className="flex flex-wrap gap-sm">
+            <ToneTag className="font-medium" tone={event.tone}>
+              Swimlane open
+            </ToneTag>
+            <ToneTag className="font-medium" tone="slate">
+              Jun {event.day}
+            </ToneTag>
+            <ToneTag className="font-medium">{event.taskCount ?? 7} tasks</ToneTag>
           </div>
-          <div className="flex flex-wrap gap-md">
-            <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={() => navigate('/ces/calendar')} variant="secondary">
-              Back to month
-            </Button>
-          </div>
+          <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={() => navigate('/ces/calendar')} variant="secondary">
+            Back to month
+          </Button>
         </div>
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-          <div className="grid gap-md desktop:grid-cols-4">
-            {lanes.map((lane, index) => (
-              <div className={cx('rounded-lg p-lg', toneGlassSurfaceClasses[lane.tone])} key={lane.title}>
-                <div className="mb-md flex items-center justify-between gap-md">
-                  <span className="grid h-tap w-tap place-items-center rounded-md bg-surface text-brand-teal">{index + 1}</span>
-                  <span className="text-tag uppercase tracking-tag">{lane.count} cards</span>
-                </div>
-                <h3 className="text-body font-medium">{lane.title}</h3>
-                <p className="mt-xs text-sm">{lane.cards.length} execution tasks</p>
+
+        <section aria-label="Workflow stage summary" className="grid gap-md desktop:grid-cols-4">
+          {lanes.map((lane, index) => (
+            <div className={cx('rounded-lg p-lg shadow-none', toneGlassSurfaceClasses[lane.tone])} key={lane.title}>
+              <div className="mb-md flex items-center justify-between gap-md">
+                <span className="grid h-tap w-tap place-items-center rounded-md bg-white/[.55] text-brand-teal">{index + 1}</span>
+                <span className="text-tag uppercase tracking-tag">{lane.count} cards</span>
               </div>
-            ))}
-          </div>
+              <h3 className="text-body font-medium">{lane.title}</h3>
+              <p className="mt-xs text-sm">{lane.cards.length} execution tasks</p>
+            </div>
+          ))}
         </section>
-        <div className="flex flex-wrap gap-sm">
+
+        <div className="flex flex-wrap gap-sm rounded-lg border border-hairline bg-white/[.30] p-sm backdrop-blur-sm">
           {cesCalendarEvents.map((calendarEvent) => (
             <button
               className={cx(
                 'min-h-tap rounded-sm border px-md text-xs font-medium uppercase tracking-tag transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                 calendarEvent.workflowId === event.workflowId
                   ? 'border-brand-teal bg-brand-teal text-on-brand'
-                  : 'border-card bg-surface text-brand-teal hover:bg-surface-hover',
+                  : 'border-hairline bg-white/[.45] text-brand-teal hover:bg-white/[.60]',
               )}
               key={calendarEvent.id}
               onClick={() => navigate(toWorkflowSwimlanePath(calendarEvent))}
@@ -2503,6 +2519,9 @@ function WorkflowSwimlaneScreen() {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="grid gap-xl">
         <div className="grid gap-lg desktop:grid-cols-4">
           {lanes.map((lane) => (
             <BoardLane key={lane.title} lane={lane} onCardClick={setSelectedCard} />
@@ -2566,7 +2585,7 @@ function WorkflowSwimlaneScreen() {
           </div>
         </VeilModal>
       )}
-    </ScreenStack>
+    </div>
   );
 }
 
