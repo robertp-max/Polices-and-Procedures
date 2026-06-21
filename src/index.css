@@ -1,13 +1,320 @@
+@import "@fontsource/roboto/300.css";
+@import "@fontsource/roboto/500.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Designless clean baseline — neutral only. No brand, no theme, no tokens.
-   The future V6 design system replaces this file entirely. */
-:root { color-scheme: light; }
-html, body, #root { margin: 0; min-height: 100vh; }
+/* V6 token registry: single source of truth. Light mode. */
+:root {
+  color-scheme: light;
+
+  /* Brand */
+  --brand-teal: #00797D;
+  --brand-teal-deep: #004142;
+  --brand-orange: #C74601;
+  --ecign-navy: #1A3778;
+  --ecign-orange: #F04B22;
+
+  /* Surfaces */
+  --surface-canvas: #F7FEFF;
+  --surface-base: #FFFFFF;
+  --surface-glass: rgba(255,255,255,0.70);
+  --surface-hover-teal: #F7FEFF;
+
+  /* Text */
+  --text-primary: #1C2422;
+  --text-secondary: #524D4B;
+  --text-muted: #8A8583;
+  --text-disabled: #B8B3B1;
+  --text-on-brand: #FFFFFF;
+
+  /* Borders */
+  --border-hairline: rgba(0,65,66,0.10);
+  --border-card: #E5E4E3;
+  --border-strong: rgba(0,65,66,0.18);
+
+  /* Base semantic aliases */
+  --background: var(--surface-canvas);
+  --foreground: var(--text-primary);
+  --card: var(--surface-base);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-base);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--brand-teal);
+  --primary-foreground: var(--text-on-brand);
+  --secondary: var(--surface-hover-teal);
+  --secondary-foreground: var(--brand-teal-deep);
+  --muted: var(--tone-slate-bg);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--tone-teal-bg);
+  --accent-foreground: var(--brand-teal);
+  --destructive: var(--tone-red-text);
+  --destructive-foreground: var(--text-on-brand);
+  --border: var(--border-card);
+  --input: var(--border-card);
+  --ring: var(--focus-ring-color);
+
+  /* Tones: bg / border / text */
+  --tone-teal-bg: #F7FEFF;
+  --tone-teal-border: #C4F4F5;
+  --tone-teal-text: #00797D;
+  --tone-orange-bg: #FFFAF7;
+  --tone-orange-border: #FFD5BF;
+  --tone-orange-text: #C74601;
+  --tone-green-bg: #E6F4ED;
+  --tone-green-border: #A3D9B8;
+  --tone-green-text: #006B3A;
+  --tone-amber-bg: #FFF8E6;
+  --tone-amber-border: #F0D9A3;
+  --tone-amber-text: #8A5C00;
+  --tone-slate-bg: #FAF8F8;
+  --tone-slate-border: #F3F0EF;
+  --tone-slate-text: #524D4B;
+  --tone-blue-bg: #EAF2FB;
+  --tone-blue-border: #BBD6F2;
+  --tone-blue-text: #1A4E8A;
+  --tone-violet-bg: #F1ECFB;
+  --tone-violet-border: #D6C6F0;
+  --tone-violet-text: #5B3A9B;
+  --tone-red-bg: #FCEBEA;
+  --tone-red-border: #F2C4C0;
+  --tone-red-text: #B3261E;
+
+  /* Tone glyph aliases */
+  --tone-teal-dot: var(--tone-teal-text);
+  --tone-teal-bar: var(--tone-teal-text);
+  --tone-orange-dot: var(--tone-orange-text);
+  --tone-orange-bar: var(--tone-orange-text);
+  --tone-green-dot: var(--tone-green-text);
+  --tone-green-bar: var(--tone-green-text);
+  --tone-amber-dot: var(--tone-amber-text);
+  --tone-amber-bar: var(--tone-amber-text);
+  --tone-slate-dot: var(--tone-slate-text);
+  --tone-slate-bar: var(--tone-slate-text);
+  --tone-blue-dot: var(--tone-blue-text);
+  --tone-blue-bar: var(--tone-blue-text);
+  --tone-violet-dot: var(--tone-violet-text);
+  --tone-violet-bar: var(--tone-violet-text);
+  --tone-red-dot: var(--tone-red-text);
+  --tone-red-bar: var(--tone-red-text);
+
+  /* Chart and dataviz */
+  --chart-grid: rgba(0,65,66,0.08);
+  --chart-axis: #8A8583;
+  --chart-teal: #00797D;
+  --chart-teal-line: var(--chart-teal);
+  --chart-orange: #C74601;
+  --chart-green: #006B3A;
+  --chart-amber: #8A5C00;
+  --chart-blue: #1A4E8A;
+  --chart-violet: #5B3A9B;
+  --chart-series-1: var(--chart-teal);
+  --chart-series-2: var(--chart-orange);
+  --chart-series-3: var(--chart-green);
+  --chart-series-4: var(--chart-amber);
+  --chart-series-5: var(--chart-blue);
+  --chart-series-6: var(--chart-violet);
+
+  /* Typography */
+  --font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --weight-body: 300;
+  --weight-title: 500;
+  --text-display: 24px;
+  --leading-display: 1.25;
+  --text-h2: 20px;
+  --leading-h2: 1.3;
+  --text-h3: 16px;
+  --leading-h3: 1.4;
+  --text-body: 14px;
+  --leading-body: 1.5;
+  --text-sm: 13px;
+  --leading-sm: 1.45;
+  --text-xs: 12px;
+  --leading-xs: 1.4;
+  --text-tag: 11px;
+  --leading-tag: 1.2;
+  --tracking-tag: 0.06em;
+  --tracking-normal: 0;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+
+  /* Shadows */
+  --shadow-rest: 0 8px 24px -16px rgba(0,65,66,0.10), 0 3px 10px -5px rgba(0,65,66,0.05);
+  --shadow-hover: 0 14px 36px -20px rgba(0,65,66,0.14), 0 8px 20px -12px rgba(0,65,66,0.08);
+
+  /* Motion */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 280ms;
+  --ease-standard: cubic-bezier(0.2,0.8,0.2,1);
+  --ease-exit: cubic-bezier(0.4,0,1,1);
+  --duration-toast: 3000ms;
+  --press-scale: 0.98;
+  --hover-lift: -2px;
+
+  /* Z-index */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-shell: 1100;
+  --z-backdrop: 1200;
+  --z-drawer: 1300;
+  --z-modal: 1400;
+  --z-popover: 1500;
+  --z-toast: 1600;
+  --z-command: 1700;
+
+  /* Breakpoints */
+  --bp-narrow: 360px;
+  --bp-mobile: 480px;
+  --bp-tablet-p: 640px;
+  --bp-tablet-l: 768px;
+  --bp-laptop: 1024px;
+  --bp-desktop: 1280px;
+  --bp-large: 1536px;
+
+  /* Shell dimensions */
+  --sidebar-w: 292px;
+  --sidebar-collapsed: 88px;
+  --topbar-h: 64px;
+  --content-max: 1440px;
+  --drawer-w: 480px;
+  --modal-w-sm: 420px;
+  --modal-w-md: 640px;
+  --modal-w-lg: 880px;
+
+  /* Icons */
+  --icon-xs: 14px;
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --icon-lg: 24px;
+  --icon-xl: 32px;
+
+  /* Density and targets */
+  --row-h: 44px;
+  --row-h-compact: 36px;
+  --control-h: 40px;
+  --tap-min: 44px;
+
+  /* Focus */
+  --focus-ring-color: #00797D;
+  --focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--focus-ring-color);
+}
+
+html {
+  min-height: 100%;
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--text-body);
+  font-synthesis-weight: none;
+  font-weight: var(--weight-body);
+  line-height: var(--leading-body);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+#root {
+  min-height: 100vh;
+}
+
 body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: #fafafa;
-  color: #1a1a1a;
+  margin: 0;
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--text-body);
+  font-weight: var(--weight-body);
+  letter-spacing: var(--tracking-normal);
+  line-height: var(--leading-body);
+}
+
+button,
+input,
+select,
+textarea {
+  color: inherit;
+  font: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--text-display);
+  font-weight: var(--weight-title);
+  line-height: var(--leading-display);
+}
+
+h2 {
+  font-size: var(--text-h2);
+  font-weight: var(--weight-title);
+  line-height: var(--leading-h2);
+}
+
+h3 {
+  font-size: var(--text-h3);
+  font-weight: var(--weight-body);
+  line-height: var(--leading-h3);
+}
+
+h4,
+h5,
+h6 {
+  font-size: var(--text-body);
+  font-weight: var(--weight-body);
+  line-height: var(--leading-body);
+}
+
+small {
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
+strong,
+b,
+th {
+  font-weight: var(--weight-body);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
