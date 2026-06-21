@@ -1,0 +1,1 @@
+Distinct screenshots for dashboard, ces-calendar, ces-board, clinicians saved as PNGs in V6. Other views have detailed .md analysis. Use the hash URLs to see them live.
