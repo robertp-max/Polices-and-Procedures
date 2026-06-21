@@ -1632,32 +1632,36 @@ function WorkflowSwimlaneScreen() {
   return (
     <ScreenStack metrics={metrics}>
       <section className="grid gap-xl">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-          <div className="flex flex-wrap items-start justify-between gap-xl">
-            <div>
-              <div className="flex flex-wrap gap-sm">
-                <ToneTag tone={event.tone}>Swimlane open</ToneTag>
-                <ToneTag tone="slate">Jun {event.day}</ToneTag>
-                <ToneTag>{event.taskCount ?? 7} tasks</ToneTag>
-              </div>
-              <h2 className="mt-lg text-h2 font-medium text-ink">{event.label}</h2>
-              <p className="mt-sm max-w-content text-sm text-muted">
-                {event.label} opens as a focused compliance swimlane with intake, evidence, review, signature, and final lock tasks.
-              </p>
+        <header className="flex flex-wrap items-start justify-between gap-xl">
+          <div className="grid gap-xs">
+            <div className="flex flex-wrap gap-sm">
+              <ToneTag className="font-medium" tone={event.tone}>
+                Swimlane open
+              </ToneTag>
+              <ToneTag className="font-medium" tone="slate">
+                Jun {event.day}
+              </ToneTag>
+              <ToneTag className="font-medium">{event.taskCount ?? 7} tasks</ToneTag>
             </div>
-            <div className="flex flex-wrap gap-md">
-              <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={() => navigate('/ces/calendar')} variant="secondary">
-                Back to month
-              </Button>
-              <Button
-                className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
-                iconLeft={<FileText aria-hidden="true" className="h-icon-sm w-icon-sm" />}
-              >
-                Packet preview
-              </Button>
-            </div>
+            <h2 className="text-display font-medium text-brand-teal-deep">{event.label}</h2>
+            <p className="max-w-content text-body font-light text-secondary">
+              {event.label} opens as a focused compliance swimlane with intake, evidence, review, signature, and final lock tasks.
+            </p>
           </div>
-          <div className="mt-xl grid gap-md desktop:grid-cols-4">
+          <div className="flex flex-wrap gap-md pt-sm">
+            <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={() => navigate('/ces/calendar')} variant="secondary">
+              Back to month
+            </Button>
+            <Button
+              className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
+              iconLeft={<FileText aria-hidden="true" className="h-icon-sm w-icon-sm" />}
+            >
+              Packet preview
+            </Button>
+          </div>
+        </header>
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <div className="grid gap-md desktop:grid-cols-4">
             {lanes.map((lane, index) => (
               <div className={cx('rounded-lg border p-lg', toneSurfaceClasses[lane.tone])} key={lane.title}>
                 <div className="mb-md flex items-center justify-between gap-md">
