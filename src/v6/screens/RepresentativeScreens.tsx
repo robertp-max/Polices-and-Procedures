@@ -44,6 +44,27 @@ import {
   type MetricTileData,
   type SurfaceCardData,
 } from '../components';
+import {
+  AdminGroupsScreen,
+  AdminPermissionsScreen,
+  AdminRolesScreen,
+  AdminUsersScreen,
+  EcignWorkspaceScreen,
+  EventsBoardScreen,
+  FormsLibraryScreen,
+  FrameworkScreen,
+  GenericReferenceScreen,
+  MasterControlsScreen,
+  MyTasksScreen,
+  PolicyDetailScreen,
+  WorkflowsScreen,
+  AppendixFScreen,
+  JourneyAdminScreen,
+  JourneyOverviewScreen,
+  JourneyV1Screen,
+  ModulePlayerScreen,
+  SupervisorScreen,
+} from './pageviews';
 
 type RouteLike = Omit<V6RouteDefinition, 'phase'>;
 type BasicRow = Record<string, string>;
@@ -1012,6 +1033,14 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   if (overlay === 'drawer-system') return <OverlaySystemScreen />;
 
   switch (route.hashId) {
+    case 'admin-groups':
+      return <AdminGroupsScreen />;
+    case 'admin-permissions':
+      return <AdminPermissionsScreen />;
+    case 'admin-roles':
+      return <AdminRolesScreen />;
+    case 'admin-users':
+      return <AdminUsersScreen />;
     case 'achc-crosswalk':
       return <AchcScreen mode="crosswalk" />;
     case 'achc-survey':
@@ -1028,12 +1057,28 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       return <ClinicianDetailScreen />;
     case 'dashboard':
       return <DashboardScreen />;
+    case 'ecign-workspace':
+      return <EcignWorkspaceScreen />;
+    case 'events-board':
+      return <EventsBoardScreen />;
     case 'policy-library':
       return <PolicyMatrixScreen />;
+    case 'policy-detail':
+      return <PolicyDetailScreen />;
     case 'patient-detail':
       return <PatientDetailScreen />;
+    case 'forms-library':
+      return <FormsLibraryScreen />;
+    case 'framework':
+      return <FrameworkScreen />;
+    case 'generic-reference':
+      return <GenericReferenceScreen />;
     case 'master-calendar':
       return <CalendarScreen mode="master-calendar" />;
+    case 'master-controls':
+      return <MasterControlsScreen />;
+    case 'my-tasks':
+      return <MyTasksScreen />;
     case 'patients':
       return <ProfileListScreen mode="patients" />;
     case 'ces-board':
@@ -1050,8 +1095,22 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       return <ReportsScreen />;
     case 'staffing-calendar':
       return <CalendarScreen mode="staffing-calendar" />;
+    case 'workflows':
+      return <WorkflowsScreen />;
     case 'workflow-swimlane':
       return <WorkflowSwimlaneScreen />;
+    case 'journey-overview':
+      return <JourneyOverviewScreen />;
+    case 'journey-v1':
+      return <JourneyV1Screen />;
+    case 'module-player':
+      return <ModulePlayerScreen />;
+    case 'appendix-f':
+      return <AppendixFScreen />;
+    case 'supervisor':
+      return <SupervisorScreen />;
+    case 'journey-admin':
+      return <JourneyAdminScreen />;
     default:
       return null;
   }
@@ -1059,6 +1118,10 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 
 export function isRepresentativeRoute(route: RouteLike): boolean {
   return [
+    'admin-groups',
+    'admin-permissions',
+    'admin-roles',
+    'admin-users',
     'achc-crosswalk',
     'achc-survey',
     'artifact-viewer',
@@ -1067,11 +1130,20 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'clinicians',
     'clinician-detail',
     'dashboard',
+    'ecign-workspace',
+    'events-board',
     'policy-library',
+    'policy-detail',
+    'forms-library',
+    'framework',
+    'generic-reference',
     'patients',
     'patient-detail',
     'master-calendar',
+    'master-controls',
+    'my-tasks',
     'staffing-calendar',
+    'workflows',
     'workflow-swimlane',
     'ces-board',
     'evidence-center',
@@ -1079,6 +1151,12 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'brad',
     'user-guide',
     'ces-reports',
+    'journey-overview',
+    'journey-v1',
+    'module-player',
+    'appendix-f',
+    'supervisor',
+    'journey-admin',
   ].includes(route.hashId);
 }
 

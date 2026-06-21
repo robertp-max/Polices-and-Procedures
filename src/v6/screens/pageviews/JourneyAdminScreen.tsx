@@ -1,0 +1,483 @@
+import {
+  AlertTriangle,
+  BarChart3,
+  CalendarClock,
+  CheckCircle2,
+  ClipboardCheck,
+  Download,
+  FileCheck2,
+  LockKeyhole,
+  ShieldCheck,
+  Users,
+} from 'lucide-react';
+import {
+  DataTable,
+  MetricGrid,
+  ProgressMeter,
+  SurfaceCard,
+  ToneTag,
+  toneBarClasses,
+  type DataTableColumn,
+  type MetricTileData,
+  type SurfaceCardData,
+} from '../../components';
+import { Badge, Button, ToneBadge } from '../../primitives';
+import { type Tone } from '../../tokens';
+
+interface SyllabusRow extends Record<string, string> {
+  catalogId: string;
+  evidence: string;
+  expires: string;
+  owner: string;
+  policyRef: string;
+  status: string;
+  title: string;
+  trigger: string;
+}
+
+interface ReviewQueueRow extends Record<string, string> {
+  age: string;
+  cohort: string;
+  owner: string;
+  queueId: string;
+  status: string;
+  subject: string;
+  type: string;
+}
+
+interface TrendPoint {
+  detail: string;
+  label: string;
+  tone: Tone;
+  value: number;
+}
+
+interface GatePanel {
+  detail: string;
+  label: string;
+  status: string;
+  tone: Tone;
+  value: number;
+}
+
+interface GovernanceCard extends SurfaceCardData {
+  meta: readonly [string, string][];
+}
+
+const journeyAdminMetrics = [
+  { label: 'Active cohorts', value: '14', helper: 'RN, LVN, HHA, PT and OT tracks', tone: 'teal' },
+  { label: 'On track', value: '82%', helper: 'Cohort completion health', tone: 'green' },
+  { label: 'Overrides', value: '5', helper: 'Dual-signature reviews open', tone: 'orange' },
+  { label: 'Review queue', value: '9', helper: 'Catalog and evidence checks', tone: 'amber' },
+] satisfies readonly MetricTileData[];
+
+const syllabusRows: readonly SyllabusRow[] = [
+  {
+    catalogId: 'GAO-001',
+    evidence: 'Learner attestation',
+    expires: 'Annual refresh',
+    owner: 'Training Coordinator',
+    policyRef: 'HR-TA-005',
+    status: 'ready',
+    title: 'Agency mission, values, and care model',
+    trigger: 'All new hires',
+  },
+  {
+    catalogId: 'HR-APP-F',
+    evidence: 'HR Director signature',
+    expires: 'At hire',
+    owner: 'HR Credentialing',
+    policyRef: 'HR-TA-001 Appendix F',
+    status: 'locked',
+    title: 'Pre-employment hard-stop checklist',
+    trigger: 'Pre-Day-1 clearance',
+  },
+  {
+    catalogId: 'GAO-007',
+    evidence: 'Quiz certificate',
+    expires: 'Annual refresh',
+    owner: 'Compliance Officer',
+    policyRef: 'CO-HP-001',
+    status: 'active',
+    title: 'HIPAA privacy and minimum necessary',
+    trigger: 'All workforce members',
+  },
+  {
+    catalogId: 'RN-008',
+    evidence: 'Skills checkoff',
+    expires: '24 months',
+    owner: 'Director of Nursing',
+    policyRef: 'CL-SD-012',
+    status: 'review-required',
+    title: 'Medication management and reconciliation',
+    trigger: 'RN and LVN field role',
+  },
+  {
+    catalogId: 'RN-SUP',
+    evidence: 'Appendix E visit log',
+    expires: 'Before independent work',
+    owner: 'Preceptor Supervisor',
+    policyRef: 'HR-TA-005 App B',
+    status: 'awaiting',
+    title: 'Supervised patient visits',
+    trigger: 'Clinical clearance gate',
+  },
+  {
+    catalogId: 'ANN-001',
+    evidence: 'eCIgn attestation',
+    expires: 'Annual cycle',
+    owner: 'Onboarding Admin',
+    policyRef: 'CO-CP-001',
+    status: 'pending',
+    title: 'Code of conduct and compliance program',
+    trigger: 'Annual recertification',
+  },
+];
+
+const syllabusColumns: readonly DataTableColumn<SyllabusRow>[] = [
+  { key: 'catalogId', label: 'Catalog ID' },
+  { key: 'title', label: 'Syllabus item' },
+  { key: 'trigger', label: 'Trigger' },
+  { key: 'owner', label: 'Owner' },
+  { key: 'policyRef', label: 'Policy ref' },
+  { key: 'evidence', label: 'Evidence' },
+  { key: 'expires', label: 'Expires' },
+  { key: 'status', label: 'Status', status: true },
+];
+
+const completionTrend: readonly TrendPoint[] = [
+  { detail: 'Pre-Day-1 clearance', label: 'Week 0', tone: 'green', value: 94 },
+  { detail: 'GAO modules', label: 'Week 1', tone: 'teal', value: 86 },
+  { detail: 'Role modules', label: 'Week 2', tone: 'teal', value: 78 },
+  { detail: 'Supervised visits', label: 'Week 3', tone: 'orange', value: 62 },
+  { detail: 'Final clearance', label: 'Week 4', tone: 'amber', value: 58 },
+  { detail: 'Annual carry-forward', label: 'Annual', tone: 'teal', value: 81 },
+];
+
+const gatePanels = [
+  {
+    detail: 'Appendix F, background, OIG/SAM, license, and offer-letter checks before orientation access.',
+    label: 'Pre-Day-1 hard stop',
+    status: 'locked',
+    tone: 'slate',
+    value: 96,
+  },
+  {
+    detail: 'GAO completion, competency quiz, policy attestations, and evidence hashes for new-hire cohorts.',
+    label: 'GAO readiness',
+    status: 'ready',
+    tone: 'teal',
+    value: 84,
+  },
+  {
+    detail: 'Role-specific medication, OASIS, skills checkoff, and field-readiness assignments by discipline.',
+    label: 'Role modules',
+    status: 'review-required',
+    tone: 'orange',
+    value: 67,
+  },
+  {
+    detail: 'Preceptor visit logs and dual signatures before independent patient work is released.',
+    label: 'Supervisor sign-off',
+    status: 'awaiting',
+    tone: 'amber',
+    value: 52,
+  },
+] satisfies readonly GatePanel[];
+
+const reviewQueueRows: readonly ReviewQueueRow[] = [
+  {
+    age: '2 days',
+    cohort: 'June RN hires',
+    owner: 'Director of Nursing',
+    queueId: 'RQ-184',
+    status: 'review-required',
+    subject: 'Medication skills checkoff rubric',
+    type: 'Syllabus change',
+  },
+  {
+    age: 'Today',
+    cohort: 'All new hires',
+    owner: 'HR Credentialing',
+    queueId: 'RQ-187',
+    status: 'awaiting',
+    subject: 'Appendix F license verification evidence',
+    type: 'Evidence hold',
+  },
+  {
+    age: '1 day',
+    cohort: 'Annual refresh',
+    owner: 'Compliance Officer',
+    queueId: 'RQ-192',
+    status: 'ready',
+    subject: 'HIPAA annual certificate mapping',
+    type: 'Regulatory map',
+  },
+  {
+    age: '3 days',
+    cohort: 'Clinical clearance',
+    owner: 'Preceptor Supervisor',
+    queueId: 'RQ-204',
+    status: 'pending',
+    subject: 'Supervised visit attestation packet',
+    type: 'Dual signature',
+  },
+  {
+    age: '4 days',
+    cohort: 'HHA bridge',
+    owner: 'Onboarding Admin',
+    queueId: 'RQ-209',
+    status: 'warning',
+    subject: 'Catalog expiration rule QA',
+    type: 'Governance override',
+  },
+];
+
+const reviewQueueColumns: readonly DataTableColumn<ReviewQueueRow>[] = [
+  { key: 'queueId', label: 'Queue ID' },
+  { key: 'subject', label: 'Review subject' },
+  { key: 'type', label: 'Type' },
+  { key: 'cohort', label: 'Cohort' },
+  { key: 'owner', label: 'Owner' },
+  { key: 'age', label: 'Age' },
+  { key: 'status', label: 'Status', status: true },
+];
+
+const governanceCards = [
+  {
+    body: 'Five active exceptions keep catalog item, learner group, reason code, approver pair, and expiration visible before release.',
+    icon: AlertTriangle,
+    meta: [
+      ['Active exceptions', '5 open, 2 due today'],
+      ['Reason codes', 'Evidence hold, role transfer, annual grace'],
+      ['Release rule', 'Dual signature plus expiry date'],
+    ],
+    progress: 62,
+    status: 'review-required',
+    title: 'Override governance',
+    tone: 'orange',
+  },
+  {
+    body: 'Catalog edits require named owner review, effective date, impacted cohorts, and evidence-retention confirmation.',
+    icon: LockKeyhole,
+    meta: [
+      ['Approvers', 'Training Coordinator and Compliance Officer'],
+      ['Audit trail', 'Before and after rule snapshot'],
+      ['Current lock', 'Clinical clearance rules'],
+    ],
+    progress: 88,
+    status: 'locked',
+    title: 'Catalog change control',
+    tone: 'slate',
+  },
+  {
+    body: 'Syllabus rows stay mapped to HR, compliance, clinical, and ACHC support references for survey-ready reports.',
+    icon: ShieldCheck,
+    meta: [
+      ['Mapped rows', '47 of 51 required items'],
+      ['Evidence target', 'Certificate, attestation, checkoff, visit log'],
+      ['Survey export', 'Ready after open queue closure'],
+    ],
+    progress: 93,
+    status: 'validated',
+    title: 'Regulatory coverage',
+    tone: 'green',
+  },
+] satisfies readonly GovernanceCard[];
+
+const regulatoryRefs = [
+  ['HR-TA-001 Appendix F', 'Pre-employment hard stop and HR Director sign-off', 'locked'],
+  ['HR-TA-005 Appendix B', 'Clearance gates and supervisor sign-off', 'ready'],
+  ['CO-HP-001 / 45 CFR 164', 'HIPAA privacy and PHI handling', 'validated'],
+  ['CL-SD-012 / CL-SD-013', 'Medication management and reconciliation competencies', 'review-required'],
+] as const;
+
+const cohortPanels = [
+  { icon: Users, label: 'June RN cohort', status: 'active', value: '18 learners' },
+  { icon: CalendarClock, label: 'Next expiration sweep', status: 'pending', value: 'Jun 28, 2026' },
+  { icon: CheckCircle2, label: 'Ready for clearance', status: 'ready', value: '11 learners' },
+  { icon: FileCheck2, label: 'Evidence packets', status: 'uploaded', value: '41 attached' },
+] as const;
+
+export function JourneyAdminScreen() {
+  return (
+    <section
+      className="grid gap-xl"
+      data-group="Onboarding"
+      data-hash-id="journey-admin"
+      data-route="/journey/admin"
+      data-template="reports"
+    >
+      <section className="flex flex-wrap items-start justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
+        <div className="grid gap-sm">
+          <div className="flex flex-wrap items-center gap-sm">
+            <ToneTag>/journey/admin</ToneTag>
+            <ToneTag tone="slate">journey-admin</ToneTag>
+            <ToneTag tone="slate">reports</ToneTag>
+            <ToneTag tone="teal">Onboarding</ToneTag>
+            <Badge>Reference: 27-journey-admin.png</Badge>
+            <Badge>Caption: DETAILED_CAPTIONS_PER_SCREENSHOT.md</Badge>
+          </div>
+          <p className="max-w-content text-sm font-light text-secondary">
+            Onboarding catalog administration report for cohort progress, syllabus triggers, expiring requirements,
+            override governance, and review queues.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-sm">
+          <Button iconLeft={<Download aria-hidden="true" className="h-icon-sm w-icon-sm" />} variant="secondary">
+            Export report
+          </Button>
+          <Button iconLeft={<ClipboardCheck aria-hidden="true" className="h-icon-sm w-icon-sm" />}>Review queue</Button>
+        </div>
+      </section>
+
+      <MetricGrid metrics={journeyAdminMetrics} />
+
+      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+        <section className="grid gap-xl" aria-label="Journey admin reporting workspace">
+          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="cohort-trend-title">
+            <div className="flex flex-wrap items-start justify-between gap-lg">
+              <div className="grid gap-xs">
+                <h2 className="text-h2 font-medium text-ink" id="cohort-trend-title">
+                  Cohort completion trend
+                </h2>
+                <p className="max-w-content text-sm font-light text-muted">
+                  Chart-style completion report across onboarding gates, showing where catalog administrators need to tune
+                  triggers or review evidence.
+                </p>
+              </div>
+              <ToneBadge size="sm" status="active" />
+            </div>
+
+            <div className="mt-lg rounded-lg bg-tone-slate-bg p-lg">
+              <div className="flex h-[220px] items-end gap-md" aria-label="Cohort completion percentages">
+                {completionTrend.map((point) => (
+                  <div className="flex h-full min-w-tap flex-1 flex-col justify-end gap-sm" key={point.label}>
+                    <div
+                      aria-label={`${point.label}: ${point.value}% ${point.detail}`}
+                      className={`${toneBarClasses[point.tone]} min-h-sm rounded-sm`}
+                      role="img"
+                      style={{ height: `${point.value}%` }}
+                    />
+                    <div className="grid gap-xs text-center">
+                      <span className="text-xs font-light text-ink">{point.label}</span>
+                      <span className="text-xs font-light tabular-nums text-muted">{point.value}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Gate readiness progress">
+            {gatePanels.map((gate) => (
+              <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={gate.label}>
+                <div className="mb-md flex flex-wrap items-start justify-between gap-md">
+                  <div className="grid gap-xs">
+                    <p className="text-tag font-light uppercase tracking-tag text-muted">{gate.label}</p>
+                    <p className="text-sm font-light text-secondary">{gate.detail}</p>
+                  </div>
+                  <ToneBadge size="sm" status={gate.status} />
+                </div>
+                <ProgressMeter label="Gate readiness" tone={gate.tone} value={gate.value} />
+              </article>
+            ))}
+          </section>
+
+          <section className="grid gap-lg" aria-labelledby="syllabus-report-title">
+            <div className="flex flex-wrap items-start justify-between gap-lg">
+              <div className="grid gap-xs">
+                <h2 className="text-h2 font-medium text-ink" id="syllabus-report-title">
+                  Onboarding syllabus report
+                </h2>
+                <p className="max-w-content text-sm font-light text-muted">
+                  Static catalog rows for certifications, triggers, owners, evidence requirements, and expiration logic.
+                </p>
+              </div>
+              <ToneTag tone="orange">2 items need review</ToneTag>
+            </div>
+            <DataTable columns={syllabusColumns} label="Journey admin onboarding syllabus report" rows={syllabusRows} />
+          </section>
+
+          <section className="grid gap-lg" aria-labelledby="review-queue-title">
+            <div className="flex flex-wrap items-start justify-between gap-lg">
+              <div className="grid gap-xs">
+                <h2 className="text-h2 font-medium text-ink" id="review-queue-title">
+                  Review queues
+                </h2>
+                <p className="max-w-content text-sm font-light text-muted">
+                  Catalog changes, evidence holds, expiration QA, and dual-signature items queued for onboarding governance.
+                </p>
+              </div>
+              <ToneBadge size="sm" status="review-required" />
+            </div>
+            <DataTable columns={reviewQueueColumns} label="Journey admin review queue" rows={reviewQueueRows} />
+          </section>
+        </section>
+
+        <aside className="grid content-start gap-lg" aria-label="Journey admin governance and regulatory references">
+          <section className="grid gap-md tablet-p:grid-cols-2 desktop:grid-cols-1" aria-label="Cohort operating metrics">
+            {cohortPanels.map((panel) => {
+              const Icon = panel.icon;
+
+              return (
+                <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={panel.label}>
+                  <div className="mb-md flex items-start justify-between gap-md">
+                    <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-brand-teal">
+                      <Icon aria-hidden="true" className="h-icon-md w-icon-md" />
+                    </span>
+                    <ToneBadge size="sm" status={panel.status} />
+                  </div>
+                  <p className="text-tag font-light uppercase tracking-tag text-muted">{panel.label}</p>
+                  <p className="mt-xs text-h3 font-light text-ink">{panel.value}</p>
+                </article>
+              );
+            })}
+          </section>
+
+          {governanceCards.map((card) => (
+            <SurfaceCard card={card} key={card.title}>
+              <dl className="grid gap-sm border-t border-hairline pt-md">
+                {card.meta.map(([label, value]) => (
+                  <div className="grid gap-xs" key={label}>
+                    <dt className="text-tag font-light uppercase tracking-tag text-brand-teal">{label}</dt>
+                    <dd className="text-sm font-light text-secondary">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </SurfaceCard>
+          ))}
+
+          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="mapped-regulatory-title">
+            <div className="mb-lg flex items-start gap-md">
+              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
+                <BarChart3 aria-hidden="true" className="h-icon-md w-icon-md" />
+              </span>
+              <div className="grid gap-xs">
+                <h2 className="text-h2 font-medium text-ink" id="mapped-regulatory-title">
+                  Mapped regulatory refs
+                </h2>
+                <p className="text-sm font-light text-muted">
+                  Right-rail reference summary for the reports template and journey admin catalog.
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-sm">
+              {regulatoryRefs.map(([label, detail, status]) => (
+                <div className="grid gap-sm rounded-md bg-tone-slate-bg p-md" key={label}>
+                  <div className="flex flex-wrap items-start justify-between gap-md">
+                    <p className="text-tag font-light uppercase tracking-tag text-brand-teal">{label}</p>
+                    <ToneBadge size="sm" status={status} />
+                  </div>
+                  <p className="text-sm font-light text-secondary">{detail}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </aside>
+      </section>
+    </section>
+  );
+}
+
+export default JourneyAdminScreen;
