@@ -1,6 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { V6Shell } from '../shell/V6Shell';
-import { LoginPlaceholder } from './LoginPlaceholder';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { V6RoutePlaceholder } from './V6RoutePlaceholder';
 import { routeToChildPath, V6_ROUTES } from './routeRegistry';
@@ -33,7 +32,7 @@ export const v6Router = createBrowserRouter([
   },
   {
     path: routeToChildPath(loginRoute.path),
-    element: <LoginPlaceholder route={loginRoute} />,
+    element: <RepresentativeScreen route={loginRoute} />,
     errorElement: <RouteErrorBoundary />,
   },
 ]);

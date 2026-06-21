@@ -64,6 +64,21 @@ import {
   JourneyV1Screen,
   ModulePlayerScreen,
   SupervisorScreen,
+  OnboardingV2DashboardScreen,
+  OnboardingV2ActivateScreen,
+  OnboardingV2BatchesScreen,
+  OnboardingV2BatchScreen,
+  OnboardingV2AuditScreen,
+  OnboardingV2GovernanceScreen,
+  PolicyLifecycleScreen,
+  PolicyLifecycleDetailScreen,
+  HubstaffScreen,
+  SystemDocsScreen,
+  HelpCenterScreen,
+  GovernanceScreen,
+  SurveyorViewerScreen,
+  LoginScreen,
+  MobileIncidentScreen,
 } from './pageviews';
 
 type RouteLike = Omit<V6RouteDefinition, 'phase'>;
@@ -1111,6 +1126,36 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       return <SupervisorScreen />;
     case 'journey-admin':
       return <JourneyAdminScreen />;
+    case 'onboarding-v2-dashboard':
+      return <OnboardingV2DashboardScreen />;
+    case 'onboarding-v2-activate':
+      return <OnboardingV2ActivateScreen />;
+    case 'onboarding-v2-batches':
+      return <OnboardingV2BatchesScreen />;
+    case 'onboarding-v2-batch':
+      return <OnboardingV2BatchScreen />;
+    case 'onboarding-v2-audit':
+      return <OnboardingV2AuditScreen />;
+    case 'onboarding-v2-governance':
+      return <OnboardingV2GovernanceScreen />;
+    case 'policy-lifecycle':
+      return <PolicyLifecycleScreen />;
+    case 'policy-lifecycle-detail':
+      return <PolicyLifecycleDetailScreen />;
+    case 'hubstaff':
+      return <HubstaffScreen />;
+    case 'system-docs':
+      return <SystemDocsScreen />;
+    case 'help-center':
+      return <HelpCenterScreen />;
+    case 'governance':
+      return <GovernanceScreen />;
+    case 'surveyor-viewer':
+      return <SurveyorViewerScreen />;
+    case 'login-page':
+      return <LoginScreen />;
+    case 'mobile-incident':
+      return <MobileIncidentScreen />;
     default:
       return null;
   }
@@ -1157,6 +1202,21 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'appendix-f',
     'supervisor',
     'journey-admin',
+    'onboarding-v2-dashboard',
+    'onboarding-v2-activate',
+    'onboarding-v2-batches',
+    'onboarding-v2-batch',
+    'onboarding-v2-audit',
+    'onboarding-v2-governance',
+    'policy-lifecycle',
+    'policy-lifecycle-detail',
+    'hubstaff',
+    'system-docs',
+    'help-center',
+    'governance',
+    'surveyor-viewer',
+    'login-page',
+    'mobile-incident',
   ].includes(route.hashId);
 }
 
