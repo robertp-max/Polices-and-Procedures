@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareIndeed V6 Platform Map & Design Visualization</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Roboto', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              teal: {
+                50: '#F7FEFF',
+                100: '#E5F0EF',
+                200: '#C4F4F5',
+                500: '#00797D',
+                600: '#004142',
+              },
+              orange: {
+                50: '#FFFAF7',
+                100: '#FFEEE5',
+                200: '#FFD5BF',
+                500: '#C74601',
+                600: '#421700',
+              },
+              neutral: {
+                50: '#FAF8F8',
+                100: '#F3F0EF',
+                200: '#E9E5E3',
+                400: '#7A7470',
+                500: '#524D4B',
+                600: '#1F1C1B',
+              }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Strictly locking weights per Task 4: 500 for headers/nav, 300 for everything else */
+    h1, h2, h3, h4, h5, h6, nav, .font-medium {
+      font-weight: 500 !important;
+    }
+    body, p, span, li, .font-light {
+      font-weight: 300 !important;
+    }
+    .custom-shadow-soft {
+      box-shadow: 0 8px 24px -16px rgba(0, 65, 66, 0.10), 0 3px 10px -5px rgba(0, 65, 66, 0.05);
+    }
+    .custom-shadow-lift {
+      box-shadow: 0 14px 36px -20px rgba(0, 65, 66, 0.14), 0 8px 20px -12px rgba(0, 65, 66, 0.08);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body class="bg-brand-teal-50 text-brand-teal-600 min-h-screen flex flex-col md:flex-row">
+
+  <!-- Sidebar simulator -->
+  <aside class="w-full md:w-[292px] bg-white border-r border-brand-teal-600/10 p-6 flex flex-col shrink-0">
+    <div class="flex items-center gap-3 mb-6">
+      <img src="https://dovdry3t4njek.cloudfront.net/assets/ci-logo-gray-Dju7zS6k.png" alt="Care Indeed" class="h-8 w-auto object-contain" />
+      <div>
+        <h1 class="text-sm font-medium text-brand-teal-600 uppercase tracking-wider">CareIndeed V6</h1>
+        <p class="text-[10px] text-brand-neutral-400 uppercase tracking-widest font-light">Interactive App Map</p>
+      </div>
+    </div>
+
+    <!-- Active Views Badge -->
+    <div class="mb-5 rounded-2xl border border-brand-teal-600/10 bg-brand-teal-50 p-4">
+      <div class="text-2xl font-medium text-brand-teal-500">54</div>
+      <div class="text-[10px] uppercase tracking-wider text-brand-neutral-400 font-light">Active Pageviews</div>
+    </div>
+
+    <!-- Sidebar categories -->
+    <nav class="space-y-4 flex-1">
+      <div class="text-[10px] uppercase tracking-widest text-brand-neutral-400 px-2 font-medium">Navigation Areas</div>
+      <div class="space-y-1">
+        <a href="#area-dashboard" class="block w-full text-left px-3 py-2 rounded-xl text-xs text-brand-neutral-500 hover:bg-brand-teal-100 hover:text-brand-teal-500 transition font-medium">1. Command Center</a>
+        <a href="#area-profiles" class="block w-full text-left px-3 py-2 rounded-xl text-xs text-brand-neutral-500 hover:bg-brand-teal-100 hover:text-brand-teal-500 transition font-medium">2. Profiles</a>
+        <a href="#area-calendars" class="block w-full text-left px-3 py-2 rounded-xl text-xs text-brand-neutral-500 hover:bg-brand-teal-100 hover:text-brand-teal-500 transition font-medium">3. Calendars</a>
+        <a href="#area-brad" class="block w-full text-left px-3 py-2 rounded-xl text-xs text-brand-neutral-500 hover:bg-brand-teal-100 hover:text-brand-teal-500 transition font-medium">4. iAdministrator Brad</a>
+        <a href="#area-ces" class="block w-full text-left px-3 py-2 rounded-xl text-xs text-brand-neutral-500 hover:bg-brand-teal-100 hover:text-brand-teal-500 transition font-medium">5. Compliance Execution</a>
+        <a href="#area-taxonomy" class="block w-full text-left px-3 py-2 rounded-xl text-xs text-brand-neutral-500 hover:bg-brand-teal-100 hover:text-brand-teal-500 transition font-medium">6. Taxonomy</a>
+        <a href="#area-onboarding-gao" class="block w-full text-left px-3 py-2 rounded-xl text-xs text-brand-neutral-500 hover:bg-brand-teal-100 hover:text-brand-teal-500 transition font-medium">7. Onboarding GAO</a>
+        <a href="#area-onboarding-v2" class="block w-full text-left px-3 py-2 rounded-xl text-xs text-brand-neutral-500 hover:bg-brand-teal-100 hover:text-brand-teal-500 transition font-medium">8. Onboarding v2</a>
+        <a href="#area-lifecycle" class="block w-full text-left px-3 py-2 rounded-xl text-xs text-brand-neutral-500 hover:bg-brand-teal-100 hover:text-brand-teal-500 transition font-medium">9. Policy Lifecycle</a>
+        <a href="#area-admin" class="block w-full text-left px-3 py-2 rounded-xl text-xs text-brand-neutral-500 hover:bg-brand-teal-100 hover:text-brand-teal-500 transition font-medium">10. Administration</a>
+        <a href="#area-overlays" class="block w-full text-left px-3 py-2 rounded-xl text-xs text-brand-neutral-500 hover:bg-brand-teal-100 hover:text-brand-teal-500 transition font-medium">11. Prototypes & Overlays</a>
+      </div>
+    </nav>
+
+    <div class="mt-auto pt-6 text-[10px] text-brand-neutral-400 font-light border-t border-brand-teal-600/10">
+      CareIndeed V6 Redesign
+    </div>
+  </aside>
+
+  <!-- Main Canvas -->
+  <main class="flex-1 overflow-y-auto p-6 md:p-8">
+    <!-- Topbar simulator -->
+    <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <div class="inline-flex items-center gap-1 bg-brand-teal-100 text-brand-teal-500 text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-brand-teal-500"></span>
+          Application Architecture
+        </div>
+        <h2 class="text-2xl font-medium text-brand-teal-600 mt-2">V6 Interactive App Map</h2>
+        <p class="text-xs text-brand-neutral-400 mt-0.5 font-light">Complete visual map of routes, layout grids, data matrices, and design tokens.</p>
+      </div>
+      <div class="flex gap-2">
+        <a href="V6_APP_MAP.md" class="px-4 py-2 border border-brand-teal-600/20 text-brand-teal-500 text-xs font-medium rounded-xl bg-white hover:bg-brand-teal-100/50 transition">View App Map MD</a>
+        <a href="V6_DESIGN_VISUALIZATION.md" class="px-4 py-2 bg-brand-orange-500 text-white text-xs font-medium rounded-xl hover:bg-brand-orange-600 transition">View Design Spec MD</a>
+      </div>
+    </header>
+
+    <!-- Grid Layout Areas -->
+    <div class="space-y-12">
+
+      <!-- Area 1: Dashboard -->
+      <section id="area-dashboard" class="scroll-mt-8">
+        <h3 class="text-lg font-medium text-brand-teal-600 border-b border-brand-teal-600/10 pb-2 mb-6">1. Primary Operations Command Center</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <div class="flex justify-between items-start">
+              <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">16-dashboard.png</span>
+              <span class="text-xs text-brand-orange-500 font-medium">Critical</span>
+            </div>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/dashboard</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Top-level command center displaying Census, Visits, Coverage, and Acuity metrics. Split layout includes operations action queue and right-hand signals.</p>
+            <div class="mt-4 flex gap-2 text-[10px] font-light text-brand-neutral-400">
+              <span class="bg-brand-neutral-50 border border-brand-neutral-200 px-2 py-0.5 rounded">Template: dashboard</span>
+              <span class="bg-brand-neutral-50 border border-brand-neutral-200 px-2 py-0.5 rounded">Data: primaryOpsActionRows</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Area 2: Profiles -->
+      <section id="area-profiles" class="scroll-mt-8">
+        <h3 class="text-lg font-medium text-brand-teal-600 border-b border-brand-teal-600/10 pb-2 mb-6">2. Roster Profiles (Clinicians & Patients)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Clinicians List -->
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">15-clinicians.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/clinicians</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Roster tracking licenses, visit capacities, and progress meters. Displays profile card preview on the right.</p>
+          </div>
+          <!-- Clinician Detail -->
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">14-clinician-detail.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/clinicians/:clinicianId</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">In-depth view of clinician documentation tasks, assignments, and specific compliance posturing.</p>
+          </div>
+          <!-- Patients List -->
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">43-patients.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/patients</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Patient census list tracking medical focus domains, recert windows, and primary case managers.</p>
+          </div>
+          <!-- Patient Detail -->
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">42-patient-detail.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/patients/:patientId</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Detailed patient overview with care plan, active verbal orders, and nurse coverage checkoffs.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Area 3: Calendars -->
+      <section id="area-calendars" class="scroll-mt-8">
+        <h3 class="text-lg font-medium text-brand-teal-600 border-b border-brand-teal-600/10 pb-2 mb-6">3. Operations & Staffing Calendars</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">30-master-calendar.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/calendar</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Monthly calendar displaying agency events, safety drills, huddles, and compliance checks.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">48-staffing-calendar.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/staffing-calendar</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Internal scheduling grid for route coverage, shift availability, and scheduling conflicts.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">12-ces-calendar.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/ces/calendar</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Sprint compliance calendar displaying evidence capture timelines and packet lock deadlines.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Area 4: Brad -->
+      <section id="area-brad" class="scroll-mt-8">
+        <h3 class="text-lg font-medium text-brand-teal-600 border-b border-brand-teal-600/10 pb-2 mb-6">4. iAdministrator Brad (AI Assistant)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">10-brad.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/iadministrator</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Decision thread assistant providing grounded policy checks, dual-approval overrides, and catalog lookups.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Area 5: Compliance Execution (CES) -->
+      <section id="area-ces" class="scroll-mt-8">
+        <h3 class="text-lg font-medium text-brand-teal-600 border-b border-brand-teal-600/10 pb-2 mb-6">5. Compliance Execution (CES) System</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">11-ces-board.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/ces/board</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">6-column compliance Kanban board mapping tasks from Upcoming to Completed and Locked.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">35-my-tasks.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/my-tasks</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">3-column board tracking user-assigned tasks, missing evidence blockers, and warnings.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">54-workflows.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/workflows</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Interactive workflows index table connecting incident procedures to required forms.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">53-workflow-swimlane.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/workflows/:workflowId/swimlane</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Horizontal sequence board mapping event progress through intake, review, and lock phases.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">31-master-controls.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/compliance/master-controls</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Platforms controls catalog mapping compliance standards directly to regulatory risk tiers.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">09-audit-mode.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/audit</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Read-only surveyor audit table tracking evidence validation checks and locked packets.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">19-evidence-center.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/evidence</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Digital repository storing files, hash chains, signatures, and certificates.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">13-ces-reports.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/ces/reports</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Performance reports tracking sprint card velocity, blockers, and documentation timelogs.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">32-mobile-incident.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/calendar/event/:eventId/task/:taskId</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Mobile frameset simulator displaying task checklists and evidence uploads in the field.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Area 6: Taxonomy -->
+      <section id="area-taxonomy" class="scroll-mt-8">
+        <h3 class="text-lg font-medium text-brand-teal-600 border-b border-brand-teal-600/10 pb-2 mb-6">6. Taxonomy & Policy Library</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">22-framework.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/framework</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Interactive domains taxonomy tree mapping strategic pillars to structural subdomains.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">02-achc-survey.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/framework/achc-survey</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">ACHC standards alignment panel linking regulations to supporting files and text.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">01-achc-crosswalk.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/framework/achc-survey?view=crosswalk</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Regulation crosswalk table connecting ACHC, CMS, and Title 22 rules to agency items.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">45-policy-library.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/library</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Agency policy database table with right-side metadata catalog and lifecycle details.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">44-policy-detail.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/library/:policyId</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Print-ready policy text viewer showing active highlights, linked forms, and version dates.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">21-forms-library.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/forms</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Roster of structural forms with classification indicators (Audit, Dual signature candidate).</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">20-form-viewer.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/forms/:formId</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Form fields renderer showing completion checkmarks and pending validation warnings.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">18-ecign-workspace.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/forms/:formId/esign</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Dual-signature eCIgn workspace displaying typed attestations, signature pads, and certifications.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Area 7: Onboarding GAO -->
+      <section id="area-onboarding-gao" class="scroll-mt-8">
+        <h3 class="text-lg font-medium text-brand-teal-600 border-b border-brand-teal-600/10 pb-2 mb-6">7. Onboarding & GAO Competency Journeys</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">28-journey-overview.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/journey</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Phase-gated onboarding track displaying modular checklist nodes and clearance gates.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">49-supervisor.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/journey/supervisor</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Preceptor clearance portal for skills checklist ratings and supervised visit entries.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">07-appendix-f.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/journey/appendix-f</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Pre-employment HR screening checklist (Background check, OIG/SAM) enforcing hard stops.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Area 8: Onboarding v2 -->
+      <section id="area-onboarding-v2" class="scroll-mt-8">
+        <h3 class="text-lg font-medium text-brand-teal-600 border-b border-brand-teal-600/10 pb-2 mb-6">8. Onboarding v2 (Compliance Activation Engine)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">40-onboarding-v2-dashboard.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/onboarding-v2/dashboard</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Live activation dashboard showing open batches, blocked units, and 5 clearance gates (Field/Billing etc.).</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">38-onboarding-v2-batch.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/onboarding-v2/batches/:batchId</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Detailed batch view displaying subject rosters, timeline hash audits, and gate checks.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">36-onboarding-v2-activate.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/onboarding-v2/activate</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Activation trigger console displaying pre-creation unit reconciliation results.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Area 9: Policy Lifecycle -->
+      <section id="area-lifecycle" class="scroll-mt-8">
+        <h3 class="text-lg font-medium text-brand-teal-600 border-b border-brand-teal-600/10 pb-2 mb-6">9. Policy Lifecycle & Time Integrations</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">46-policy-lifecycle.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/policy-lifecycle</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Workflow stage lanes mapping policy drafts through review, approval, and publication cycles.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">26-hubstaff.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/hubstaff</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Hubstaff time log integrations flagging documentation timeliness and field visits.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">24-governance.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/governance</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Governance overview tracking policy council reviews and packet assembly states.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Area 10: Administration -->
+      <section id="area-admin" class="scroll-mt-8">
+        <h3 class="text-lg font-medium text-brand-teal-600 border-b border-brand-teal-600/10 pb-2 mb-6">10. Administration & Surveyor Views</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">03-admin-groups.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/admin/user-groups</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Roster tracking access groups (Super Admin, Compliance, Nurse caseloads).</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">05-admin-roles.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/admin/roles</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Platform security roles catalog displaying access scope rules.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">06-admin-users.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/admin/users</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Platform users assignment grid tracking credentials and field routes.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">50-surveyor-viewer.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">/surveyor/policy/:policyId</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Read-only surveyor viewer stripping out PHI indicators while keeping policy texts visible.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Area 11: Overlays -->
+      <section id="area-overlays" class="scroll-mt-8">
+        <h3 class="text-lg font-medium text-brand-teal-600 border-b border-brand-teal-600/10 pb-2 mb-6">11. Interactive Overlay & Popover Prototypes</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">33-modal-system.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">prototype://modal</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Centered dialog frames demonstrating attestation overlays and double-signature panels.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">17-drawer-system.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">prototype://drawer</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Side panel slide-outs tracking tasks, detailed checklists, and evidence attachments.</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-brand-teal-600/10 custom-shadow-soft">
+            <span class="text-[9px] bg-brand-teal-100 text-brand-teal-500 px-2 py-0.5 rounded-full font-medium">47-popover-system.png</span>
+            <h4 class="text-sm font-medium text-brand-teal-600 mt-3">prototype://popover</h4>
+            <p class="text-xs text-brand-neutral-400 mt-1 font-light leading-relaxed">Fuzzy command search triggers, hovering help blocks, and toast alerts.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // Visual transitions for card hover states (just for dashboard visual effects)
+    document.querySelectorAll('.rounded-2xl').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.classList.remove('custom-shadow-soft');
+        card.classList.add('custom-shadow-lift');
+      });
+      card.addEventListener('mouseleave', () => {
+        card.classList.remove('custom-shadow-lift');
+        card.classList.add('custom-shadow-soft');
+      });
+    });
+  </script>
+</body>
+</html>
