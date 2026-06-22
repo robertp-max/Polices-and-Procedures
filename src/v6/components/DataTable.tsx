@@ -17,13 +17,13 @@ export interface DataTableProps<Row extends Record<string, string>> {
 
 export function DataTable<Row extends Record<string, string>>({ columns, label, rows, onRowClick }: DataTableProps<Row>) {
   return (
-    <div className="overflow-hidden rounded-lg border border-hairline bg-white/[.30] shadow-none backdrop-blur-sm">
+    <div className="overflow-hidden rounded-lg border border-card bg-white/[.62] shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] backdrop-blur-xl">
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-xs" aria-label={label}>
-          <thead className="bg-white/[.38] text-tag uppercase tracking-tag text-secondary">
+          <thead className="bg-white/[.54] text-tag uppercase tracking-tag text-secondary">
             <tr>
               {columns.map((column) => (
-                <th className="border-b border-card px-lg py-md font-light" key={String(column.key)} scope="col">
+                <th className="border-b border-hairline px-lg py-md font-light" key={String(column.key)} scope="col">
                   {column.label}
                 </th>
               ))}
@@ -33,7 +33,7 @@ export function DataTable<Row extends Record<string, string>>({ columns, label, 
             {rows.map((row, rowIndex) => (
               <tr
                 className={cx(
-                  'transition duration-fast ease-standard hover:bg-white/[.45]',
+                  'transition duration-fast ease-standard odd:bg-white/[.18] hover:bg-white/[.58]',
                   onRowClick && 'cursor-pointer',
                 )}
                 key={`${label}-${rowIndex}`}

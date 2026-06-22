@@ -73,7 +73,7 @@ export function V6Shell() {
         </div>
       </div>
       <Topbar
-        className="fixed right-0 top-6 z-50"
+        className={isPersonalOpsOpen ? 'fixed right-[404px] top-6 z-50' : 'fixed right-6 top-6 z-50'}
         isPersonalOpsOpen={isPersonalOpsOpen}
         onPersonalOpsToggle={togglePersonalOps}
       />

@@ -47,8 +47,7 @@ export function Topbar({ className, isPersonalOpsOpen, onPersonalOpsToggle }: To
     <div
       className={cx(
         'flex h-12 items-center justify-end overflow-hidden rounded-full border border-tone-orange-border/70 p-1 shadow-[0_10px_24px_rgba(205,78,0,0.14),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-xl transition-[width,transform,box-shadow,background-color] duration-base ease-standard',
-        isExpanded ? 'bg-white/[0.94]' : 'bg-brand-orange',
-        isExpanded ? 'w-[128px] translate-x-0' : 'w-12 translate-x-[32px]',
+        isExpanded ? 'w-[136px] bg-white/[0.94]' : 'w-12 bg-brand-orange',
         className,
       )}
       onFocus={expandDock}

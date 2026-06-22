@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardCheck, GitBranch, Landmark, Workflow } from 'lucide-react';
+import { GitBranch, Landmark, Workflow } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, VeilDrawer, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
 
@@ -94,10 +94,6 @@ interface WorkflowRow extends Record<string, string> {
   workflowId: string;
 }
 
-interface WorkflowCard extends SurfaceCardData {
-  meta: readonly [string, string][];
-}
-
 const workflowMetrics: readonly MetricTileData[] = [
   { label: 'Workflows', value: '42', helper: 'Active library entries', tone: 'teal' },
   { label: 'Event-backed', value: '18', helper: 'Mandatory calendar links', tone: 'green' },
@@ -151,15 +147,10 @@ const workflowRows: readonly WorkflowRow[] = [
   },
 ];
 
-const workflowCards: readonly WorkflowCard[] = [
+const workflowCards: readonly SurfaceCardData[] = [
   {
     body: 'Agenda, attendance, minutes, action tracker, and dashboard move together through packet lock.',
     icon: Workflow,
-    meta: [
-      ['Linked policies', 'QAPI plan, data aggregation, committee minutes'],
-      ['Calendar anchor', 'Quarterly review and governing body packet'],
-      ['Evidence path', 'Minutes, dashboard export, eCIgn certificate'],
-    ],
     progress: 78,
     status: 'active',
     title: 'QAPI committee packet',
@@ -168,11 +159,6 @@ const workflowCards: readonly WorkflowCard[] = [
   {
     body: 'Mobile incident intake routes evidence, supervisor review, and administrator notification in one swimlane.',
     icon: GitBranch,
-    meta: [
-      ['Linked policies', 'Incident reporting, escalation, corrective action'],
-      ['Calendar anchor', 'Incident procedure approval'],
-      ['Evidence path', 'Intake note, supervisor review, notification log'],
-    ],
     progress: 62,
     status: 'review-required',
     title: 'Incident escalation',
@@ -181,30 +167,12 @@ const workflowCards: readonly WorkflowCard[] = [
   {
     body: 'Quarterly governing body packet links calendar, policy, forms, minutes, and eCIgn certificate.',
     icon: Landmark,
-    meta: [
-      ['Linked policies', 'Governing body authority and conflict disclosure'],
-      ['Calendar anchor', 'Governing body pre-read packet'],
-      ['Evidence path', 'Policy packet, minutes, signed approvals'],
-    ],
     progress: 84,
     status: 'ready',
     title: 'Governance cadence',
     tone: 'teal',
   },
 ];
-
-const matrixNotes = [
-  {
-    icon: ClipboardCheck,
-    label: 'Policy links',
-    value: 'Every workflow row carries the policy owner and packet handoff expected by CES.',
-  },
-  {
-    icon: Workflow,
-    label: 'Swimlane ready',
-    value: 'High-priority entries can drill into intake, evidence build, approval, and lock phases.',
-  },
-] as const;
 
 export default function WorkflowsScreen() {
   const navigate = useNavigate();
@@ -227,38 +195,11 @@ export default function WorkflowsScreen() {
               setDrawerOpen(true);
             }}
           />
-
-          <div className="mt-lg grid gap-md tablet-l:grid-cols-2">
-            {matrixNotes.map((note) => {
-              const Icon = note.icon;
-
-              return (
-                <div className="flex items-start gap-md rounded-lg bg-tone-slate-bg p-lg" key={note.label}>
-                  <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
-                    <Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />
-                  </span>
-                  <div className="grid gap-xs">
-                    <h3 className="text-h3 font-light text-ink">{note.label}</h3>
-                    <p className="text-sm font-light text-secondary">{note.value}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </section>
 
         <aside className="grid content-start gap-lg" aria-label="Workflow swimlane cards">
           {workflowCards.map((card) => (
-            <SurfaceCard card={card} key={card.title}>
-              <dl className="grid gap-sm border-t border-hairline pt-md">
-                {card.meta.map(([label, value]) => (
-                  <div className="grid gap-xs" key={label}>
-                    <dt className="text-tag font-light uppercase tracking-tag text-brand-teal">{label}</dt>
-                    <dd className="text-sm font-light text-secondary">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </SurfaceCard>
+            <SurfaceCard card={card} key={card.title} />
           ))}
         </aside>
       </section>

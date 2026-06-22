@@ -222,9 +222,8 @@ const certificateRows = [
 
 const formContextRows = [
   ['Form', 'GV-FM-006 Conflict of Interest Disclosure'],
-  ['Signing workspace', 'eCIgn route context'],
-  ['Hash pageview', 'ecign-workspace'],
-  ['Template family', 'ecign'],
+  ['Signing flow', 'Ordered eCIgn signer sequence'],
+  ['Certificate state', 'Prepared after all signers complete'],
   ['Linked policy', 'GV-COI-003 Business Ethics'],
   ['Retention target', 'Evidence Center certificate archive'],
 ] as const;
@@ -319,10 +318,10 @@ export function EcignWorkspaceScreen() {
                     </span>
                   </label>
                 </div>
-                <FormField help="Static mock value staged for the active signer." id="ecign-typed-signature" label="Typed signature">
-                  {({ describedBy, id, invalid }) => (
+                <FormField help="Prepared for the active signer." id="ecign-typed-signature" label="Typed signature">
+                  {({ 'aria-describedby': ariaDescribedBy, id, invalid }) => (
                     <Input
-                      aria-describedby={describedBy}
+                      aria-describedby={ariaDescribedBy}
                       id={id}
                       invalid={invalid}
                       readOnly

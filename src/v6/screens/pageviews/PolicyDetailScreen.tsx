@@ -178,10 +178,10 @@ export function PolicyDetailScreen() {
       data-route={routeMarker.path}
       data-template={routeMarker.template}
     >
-      <article className="grid gap-xl rounded-lg border border-card bg-surface/90 p-xl shadow-rest backdrop-blur-xl">
+      <article className="relative isolate grid gap-xl overflow-visible rounded-lg border border-card bg-white/[.62] p-xl shadow-rest backdrop-blur-xl">
         <nav
           aria-label="Policy document sections"
-          className="sticky top-0 z-30 -mx-xl -mt-xl flex gap-xl overflow-x-auto rounded-t-lg border-b border-hairline bg-white px-xl pt-xl pb-xs shadow-[0_16px_30px_rgba(0,65,66,0.08)] after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-12 after:h-12 after:bg-gradient-to-b after:from-white after:via-white/95 after:to-transparent"
+          className="sticky top-0 z-30 -mx-xl -mt-xl flex gap-xl overflow-x-auto rounded-t-lg border-b border-hairline bg-white/[.92] px-xl pt-xl pb-xs shadow-[0_16px_30px_rgba(0,65,66,0.08)] backdrop-blur-xl after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-16 after:h-16 after:bg-gradient-to-b after:from-white after:via-white/88 after:to-transparent"
           style={{
             maskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
             WebkitMaskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
@@ -210,7 +210,7 @@ export function PolicyDetailScreen() {
           </Link>
         </nav>
 
-        <section className="grid gap-xl" id="overview-definitions">
+        <section className="grid scroll-mt-28 gap-xl" id="overview-definitions">
           <div className="grid gap-lg rounded-lg border border-card bg-tone-slate-bg/80 p-xl">
             <div className="flex flex-wrap items-start justify-between gap-lg border-b border-hairline pb-lg">
               <div className="grid gap-sm">
@@ -237,7 +237,7 @@ export function PolicyDetailScreen() {
 
           <div className="grid gap-lg desktop:grid-cols-2">
             {policySections.slice(0, 2).map((section, index) => (
-              <section className="rounded-lg border border-card bg-surface p-lg shadow-rest" id={section.id} key={section.id}>
+              <section className="scroll-mt-28 rounded-lg border border-card bg-white/[.56] p-lg shadow-rest backdrop-blur-md" id={section.id} key={section.id}>
                 <div className="mb-md flex items-center gap-sm">
                   <ToneTag tone="teal">{index + 1}</ToneTag>
                   <h3 className="text-h2 font-medium text-ink">{section.title}</h3>
@@ -258,7 +258,7 @@ export function PolicyDetailScreen() {
 
         <div className="grid gap-lg">
           {policySections.slice(2).map((section, index) => (
-            <section className="rounded-lg border border-card bg-tone-slate-bg p-lg shadow-rest" id={section.id} key={section.id}>
+            <section className="scroll-mt-28 rounded-lg border border-card bg-tone-slate-bg/86 p-lg shadow-rest backdrop-blur-md" id={section.id} key={section.id}>
               <div className="mb-md flex flex-wrap items-start justify-between gap-md">
                 <div className="flex items-center gap-sm">
                   <span className="grid h-tap w-tap place-items-center rounded-md bg-surface text-brand-teal">

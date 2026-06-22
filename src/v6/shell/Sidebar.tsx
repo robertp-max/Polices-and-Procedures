@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, matchPath, useLocation } from 'react-router-dom';
 import { cx } from '../utils/classNames';
 import { getRouteChrome, SIDEBAR_SECTIONS } from '../routing/routePresentation';
@@ -10,6 +11,11 @@ export function Sidebar() {
   const currentRoute = shellRoutes.find((route) => Boolean(matchPath({ path: route.path, end: !route.path.endsWith('/*') }, location.pathname)));
   const activeSection = SIDEBAR_SECTIONS.find((section) => currentRoute ? section.hashIds.some((hashId) => hashId === currentRoute.hashId) : false);
   const activeHashId = currentRoute?.hashId;
+
+  useEffect(() => {
+    const activeLink = document.querySelector<HTMLElement>('[data-sidebar-active="true"]');
+    activeLink?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [activeHashId]);
 
   return (
     <aside className="sticky top-0 hidden h-screen w-sidebar shrink-0 overflow-hidden border-r border-hairline bg-white/70 text-ink shadow-[10px_0_28px_rgba(0,65,66,0.06)] backdrop-blur-xl laptop:block">
@@ -66,6 +72,7 @@ export function Sidebar() {
                             ? 'bg-brand-teal-deep text-on-brand shadow-rest'
                             : 'text-brand-teal-deep hover:translate-x-1 hover:bg-surface-hover hover:text-brand-teal',
                         )}
+                        data-sidebar-active={isCurrent ? 'true' : undefined}
                         key={route.hashId}
                         to={routeToPreviewPath(route.path)}
                       >

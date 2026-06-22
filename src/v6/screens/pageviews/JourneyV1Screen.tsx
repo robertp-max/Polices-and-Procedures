@@ -262,7 +262,7 @@ export function JourneyV1Screen() {
               <div className="grid gap-xs">
                 <h2 className="text-h2 font-medium text-ink">Module sequence</h2>
                 <p className="max-w-content text-sm text-muted">
-                  Static v1 lesson cards keep the familiar IDs while surfacing V6 method, policy, status, and readiness.
+                  Lesson cards keep familiar module IDs while surfacing method, policy, status, and readiness.
                 </p>
               </div>
               <div className="flex flex-wrap gap-sm" aria-label="Journey v1 track filters">

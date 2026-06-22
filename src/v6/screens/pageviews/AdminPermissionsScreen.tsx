@@ -103,7 +103,6 @@ const permissionRows: readonly PermissionRow[] = [
 ];
 
 const permissionColumns: readonly DataTableColumn<PermissionRow>[] = [
-  { key: 'permissionKey', label: 'Permission' },
   { key: 'capability', label: 'Capability' },
   { key: 'scope', label: 'Scope' },
   { key: 'rolesUsing', label: 'Roles using it' },
@@ -114,35 +113,35 @@ const permissionColumns: readonly DataTableColumn<PermissionRow>[] = [
 const roleUsageRows: readonly RoleUsageRow[] = [
   {
     governedBy: 'Administrator plus Compliance Officer',
-    permissionSet: 'user.provision, role.assign, policy.approve',
+    permissionSet: 'User administration, role assignment, policy approval',
     readinessStatus: 'locked',
     roleName: 'Platform Owner',
     usage: 'Owns privileged platform controls',
   },
   {
     governedBy: 'Compliance Council',
-    permissionSet: 'audit.export, policy.approve, governance.override',
+    permissionSet: 'Audit export, policy approval, governance override',
     readinessStatus: 'validated',
     roleName: 'Compliance Officer',
     usage: 'Prepares survey packets and lifecycle approvals',
   },
   {
     governedBy: 'QAPI Lead reviewer',
-    permissionSet: 'audit.export, governance.override',
+    permissionSet: 'Audit export, governance override',
     readinessStatus: 'ready',
     roleName: 'QAPI Lead',
     usage: 'Reviews packets, corrective action evidence, and exceptions',
   },
   {
     governedBy: 'Director of Nursing',
-    permissionSet: 'patients.readPhi, forms.sign',
+    permissionSet: 'Assigned patient access, eCIgn signing',
     readinessStatus: 'active',
     roleName: 'Clinical Manager',
     usage: 'Reviews clinical case context and signs assigned forms',
   },
   {
     governedBy: 'HR Credentialing',
-    permissionSet: 'journey.admin, forms.sign',
+    permissionSet: 'Journey administration, eCIgn signing',
     readinessStatus: 'awaiting',
     roleName: 'Onboarding Admin',
     usage: 'Maintains clearance gates and catalog assignments',
@@ -162,7 +161,7 @@ const governanceCards = [
     body: 'High-risk capabilities require a named owner, reviewer, reason code, and audit timestamp before role changes apply.',
     icon: LockKeyhole,
     meta: [
-      ['Dual-control permissions', 'user.provision, role.assign, governance.override'],
+      ['Dual-control permissions', 'User administration, role assignment, governance override'],
       ['Reviewer cadence', 'Weekly for privileged roles, monthly for active roles'],
       ['Evidence output', 'RBAC export attached to survey packet'],
     ],

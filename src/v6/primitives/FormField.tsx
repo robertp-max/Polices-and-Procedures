@@ -2,7 +2,7 @@ import { type ReactNode, useId } from 'react';
 import { cx } from '../utils/classNames';
 
 export interface FormFieldRenderProps {
-  describedBy?: string;
+  'aria-describedby'?: string;
   id: string;
   invalid: boolean;
 }
@@ -39,7 +39,7 @@ export function FormField({
         {label}
         {required ? <span className="ml-xs text-tone-orange-text">Required</span> : null}
       </label>
-      {children({ describedBy, id: fieldId, invalid })}
+      {children({ 'aria-describedby': describedBy, id: fieldId, invalid })}
       {help ? (
         <p className="text-xs text-muted" id={helpId}>
           {help}

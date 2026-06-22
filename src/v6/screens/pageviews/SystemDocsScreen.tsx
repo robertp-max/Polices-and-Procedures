@@ -61,10 +61,10 @@ export function SystemDocsScreen() {
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <Info aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
-              Developer Guide
+              Documentation Guide
             </h3>
             <p className="text-sm text-secondary">
-              Parameters are matched dynamically. Use standard route links under the V6 Shell to view sub-chapters.
+              Use the chapter links under the V6 shell to review operational guidance, evidence paths, and support notes.
             </p>
           </section>
         </aside>

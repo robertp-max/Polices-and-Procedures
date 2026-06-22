@@ -160,11 +160,11 @@ const scopeTiles: readonly ScopeTile[] = [
 ];
 
 const permissionPreview: readonly PermissionPreview[] = [
-  { groups: 'Super Admin', permission: 'user.provision', posture: 'locked' },
-  { groups: 'Compliance Council, QAPI Review', permission: 'audit.export', posture: 'active' },
-  { groups: 'Clinical RN', permission: 'patients.read', posture: 'ready' },
-  { groups: 'Onboarding Operations', permission: 'journey.admin', posture: 'review-required' },
-  { groups: 'Surveyor Read-only', permission: 'policy.surveyorRead', posture: 'approved' },
+  { groups: 'Super Admin', permission: 'User administration', posture: 'locked' },
+  { groups: 'Compliance Council, QAPI Review', permission: 'Audit packet export', posture: 'active' },
+  { groups: 'Clinical RN', permission: 'Assigned patient access', posture: 'ready' },
+  { groups: 'Onboarding Operations', permission: 'Journey administration', posture: 'review-required' },
+  { groups: 'Surveyor Read-only', permission: 'Surveyor viewer access', posture: 'approved' },
 ];
 
 export function AdminGroupsScreen() {
@@ -214,7 +214,7 @@ export function AdminGroupsScreen() {
                 <div>
                   <h2 className="text-h2 font-medium text-ink">Permission matrix preview</h2>
                   <p className="mt-xs text-sm text-muted">
-                    Representative permission keys show which groups can hold sensitive access.
+                    Representative access areas show which groups can hold sensitive permissions.
                   </p>
                 </div>
               </div>
@@ -225,7 +225,7 @@ export function AdminGroupsScreen() {
               {permissionPreview.map((item) => (
                 <div className="rounded-md border border-hairline bg-tone-slate-bg p-md" key={item.permission}>
                   <div className="mb-sm flex flex-wrap items-center justify-between gap-sm">
-                    <span className="font-mono text-xs text-brand-teal">{item.permission}</span>
+                    <span className="text-xs font-medium text-brand-teal">{item.permission}</span>
                     <ToneBadge size="sm" status={item.posture} />
                   </div>
                   <p className="text-sm text-secondary">{item.groups}</p>

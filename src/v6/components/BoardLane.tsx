@@ -29,7 +29,7 @@ export interface BoardLaneProps {
 
 export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
   return (
-    <section className="min-w-[224px] rounded-lg border border-card bg-surface-glass p-md shadow-rest">
+    <section className="min-w-[248px] rounded-lg border border-card bg-white/[.46] p-md shadow-rest backdrop-blur-xl">
       <header className="mb-md flex items-start justify-between gap-md">
         <div>
           <h2 className="text-body font-medium text-ink">{lane.title}</h2>
@@ -41,8 +41,8 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
         {lane.cards.map((card) => (
           <article
             className={cx(
-              'rounded-lg border border-hairline bg-white/[.42] p-md shadow-none backdrop-blur-sm transition duration-fast ease-standard',
-              onCardClick && 'cursor-pointer hover:bg-white/[.58]'
+              'rounded-lg border border-card bg-white/[.58] p-md shadow-[inset_0_1px_0_rgba(255,255,255,0.78)] backdrop-blur-md transition duration-fast ease-standard',
+              onCardClick && 'cursor-pointer hover:bg-white/[.72] hover:shadow-rest'
             )}
             key={card.id}
             onClick={onCardClick ? () => onCardClick(card) : undefined}

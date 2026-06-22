@@ -249,7 +249,7 @@ export function ModulePlayerScreen() {
                   Medication reconciliation scenario
                 </h2>
                 <p className="mt-xs max-w-content text-sm text-muted">
-                  Static player frame for the active module. The route param would select the module content at integration time.
+                  Active module player with lesson content, learner progress, and retry support.
                 </p>
               </div>
               <Badge variant="count">Step 4 of 6</Badge>

@@ -1,12 +1,4 @@
-import { BoardLane, MetricGrid, SurfaceCard, ToneTag, type BoardLaneData, type MetricTileData, type SurfaceCardData } from '../../components';
-import { type Tone } from '../../tokens';
-
-interface ActionSummaryItem {
-  helper: string;
-  label: string;
-  tone: Tone;
-  value: string;
-}
+import { BoardLane, MetricGrid, type BoardLaneData, type MetricTileData } from '../../components';
 
 const taskMetrics: readonly MetricTileData[] = [
   { label: 'Assigned', value: '31', helper: '9 due this week', tone: 'teal' },
@@ -36,18 +28,9 @@ const taskLanes: readonly BoardLaneData[] = [
         title: 'Route CHHA weekend pool',
         tone: 'orange',
       },
-      {
-        chips: ['Orders', 'Signature', 'Blocked'],
-        due: 'Jun 21',
-        id: 'MT-103',
-        owner: 'Compliance Officer',
-        progress: 55,
-        title: 'Physician order signature follow-up',
-        tone: 'amber',
-      },
     ],
     count: 9,
-    title: 'Todo',
+    title: 'Today',
     tone: 'orange',
   },
   {
@@ -70,6 +53,13 @@ const taskLanes: readonly BoardLaneData[] = [
         title: 'Medication reconciliation audit',
         tone: 'teal',
       },
+    ],
+    count: 10,
+    title: 'Clinical Review',
+    tone: 'teal',
+  },
+  {
+    cards: [
       {
         chips: ['Credential', 'Packet', 'Blocked'],
         due: 'Jun 23',
@@ -79,31 +69,22 @@ const taskLanes: readonly BoardLaneData[] = [
         title: 'PT credential renewal packet',
         tone: 'orange',
       },
+      {
+        chips: ['Orders', 'Signature', 'Blocked'],
+        due: 'Jun 21',
+        id: 'MT-213',
+        owner: 'Compliance Officer',
+        progress: 44,
+        title: 'Physician signature packet hold',
+        tone: 'amber',
+      },
     ],
-    count: 10,
-    title: 'In Progress',
-    tone: 'teal',
+    count: 4,
+    title: 'Blocked',
+    tone: 'orange',
   },
   {
     cards: [
-      {
-        chips: ['Discharge', 'Teaching', 'Evidence'],
-        due: 'Jun 24',
-        id: 'MT-307',
-        owner: 'Clinical Manager',
-        progress: 94,
-        title: 'Discharge teaching checklist',
-        tone: 'green',
-      },
-      {
-        chips: ['Wound', 'Photo', 'Evidence'],
-        due: 'Jun 24',
-        id: 'MT-308',
-        owner: 'QAPI Nurse',
-        progress: 88,
-        title: 'Wound photo evidence approved',
-        tone: 'green',
-      },
       {
         chips: ['QAPI', 'Minutes', 'Close'],
         due: 'Jun 25',
@@ -113,39 +94,19 @@ const taskLanes: readonly BoardLaneData[] = [
         title: 'Close QAPI minutes packet',
         tone: 'green',
       },
+      {
+        chips: ['Discharge', 'Teaching', 'Evidence'],
+        due: 'Jun 24',
+        id: 'MT-307',
+        owner: 'Clinical Manager',
+        progress: 94,
+        title: 'Discharge teaching checklist',
+        tone: 'green',
+      },
     ],
     count: 12,
-    title: 'Done',
+    title: 'Ready',
     tone: 'green',
-  },
-];
-
-const actionSummaryCard: SurfaceCardData = {
-  body: 'Personal queue posture for the next same-day actions, evidence follow-up, and close-ready compliance units.',
-  progress: 78,
-  status: 'review-required',
-  title: 'Action summary',
-  tone: 'orange',
-};
-
-const actionSummaryItems: readonly ActionSummaryItem[] = [
-  {
-    helper: 'Start with same-day coverage and order signatures before the afternoon review window.',
-    label: 'Next focus',
-    tone: 'orange',
-    value: '3 urgent tasks',
-  },
-  {
-    helper: 'Ready cards have all requirements complete and can be certified after manager glance.',
-    label: 'Close queue',
-    tone: 'green',
-    value: '12 ready',
-  },
-  {
-    helper: 'Most open cards already carry source proof; four need either evidence or eCIgn.',
-    label: 'Evidence posture',
-    tone: 'teal',
-    value: '87% attached',
   },
 ];
 
@@ -154,55 +115,10 @@ export function MyTasksScreen() {
     <div className="grid gap-xl">
       <MetricGrid metrics={taskMetrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,1fr)_340px]">
-        <section className="grid content-start gap-lg">
-      <div className="grid gap-lg desktop:grid-cols-3">
-            {taskLanes.map((lane) => (
-              <BoardLane key={lane.title} lane={lane} />
-            ))}
-          </div>
-        </section>
-
-        <aside className="grid content-start gap-lg">
-          <SurfaceCard card={actionSummaryCard}>
-            <div className="grid gap-sm">
-              {actionSummaryItems.map((item) => (
-                <div className="rounded-md border border-card bg-tone-slate-bg p-md" key={item.label}>
-                  <div className="mb-sm flex flex-wrap items-center justify-between gap-sm">
-                    <p className="text-tag uppercase tracking-tag text-secondary">{item.label}</p>
-                    <ToneTag tone={item.tone}>{item.value}</ToneTag>
-                  </div>
-                  <p className="text-sm text-muted">{item.helper}</p>
-                </div>
-              ))}
-            </div>
-          </SurfaceCard>
-
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-            <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
-              <div>
-                <h2 className="text-h2 font-medium text-ink">Owner handoffs</h2>
-                <p className="mt-xs text-sm text-muted">Small summary of the people waiting on action.</p>
-              </div>
-              <ToneTag tone="amber">2 escalated</ToneTag>
-            </div>
-            <div className="grid gap-sm">
-              {[
-                ['Clinical Manager', 'SOC backup and discharge checklist', 'orange'],
-                ['QAPI Nurse', 'Medication audit and wound evidence', 'teal'],
-                ['Administrator', 'QAPI minutes packet final glance', 'green'],
-              ].map(([owner, detail, tone]) => (
-                <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-tone-slate-bg p-md" key={owner}>
-                  <div>
-                    <p className="text-sm font-medium text-ink">{owner}</p>
-                    <p className="mt-xs text-xs text-muted">{detail}</p>
-                  </div>
-                  <ToneTag tone={tone as Tone}>owner</ToneTag>
-                </div>
-              ))}
-            </div>
-          </section>
-        </aside>
+      <section className="grid gap-lg desktop:grid-cols-4" aria-label="My task board">
+        {taskLanes.map((lane) => (
+          <BoardLane key={lane.title} lane={lane} />
+        ))}
       </section>
     </div>
   );

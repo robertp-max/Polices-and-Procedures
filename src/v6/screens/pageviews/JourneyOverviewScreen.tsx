@@ -355,7 +355,7 @@ export function JourneyOverviewScreen() {
                 Module cards and steps
               </h2>
               <p className="max-w-content text-sm text-muted">
-                Static journey modules mirror the GAO, role, supervised-visit, and annual steps from the V6 onboarding seed.
+                Journey modules track GAO, role, supervised-visit, and annual readiness steps for active learners.
               </p>
             </div>
             <ToneTag tone="orange">GAO-EXAM locked</ToneTag>

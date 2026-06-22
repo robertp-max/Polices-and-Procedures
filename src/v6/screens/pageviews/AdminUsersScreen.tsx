@@ -414,17 +414,17 @@ export function AdminUsersScreen() {
           >
             <div className="grid gap-sm border-t border-hairline pt-md">
               {[
-                ['Provisioning key', 'user.provision', 'locked'],
-                ['Audit export', 'audit.export', 'validated'],
-                ['Role assignment', 'admin.users.assign', 'review-required'],
-                ['MFA enforcement', 'security.mfa.enforce', 'certified'],
+                ['Provisioning access', 'User administration', 'locked'],
+                ['Audit export', 'Audit packet export', 'validated'],
+                ['Role assignment', 'User role assignment', 'review-required'],
+                ['MFA enforcement', 'Security verification', 'certified'],
               ].map(([label, value, status]) => (
                 <div className="flex flex-wrap items-center justify-between gap-sm" key={value}>
                   <div className="flex min-w-0 items-center gap-sm">
                     <KeyRound aria-hidden="true" className="h-icon-sm w-icon-sm shrink-0 text-brand-teal" />
                     <div className="min-w-0">
                       <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
-                      <p className="truncate font-mono text-xs text-secondary">{value}</p>
+                      <p className="truncate text-xs font-medium text-secondary">{value}</p>
                     </div>
                   </div>
                   <ToneBadge size="sm" status={status} />

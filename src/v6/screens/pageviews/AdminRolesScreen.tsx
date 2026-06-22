@@ -168,11 +168,11 @@ const scopeReviews: readonly ScopeReview[] = [
 ];
 
 const permissionPosture: readonly PermissionPosture[] = [
-  { permission: 'user.provision', posture: 'locked', roles: 'Platform Owner' },
-  { permission: 'audit.export', posture: 'validated', roles: 'Platform Owner, Compliance Officer, QAPI Lead' },
-  { permission: 'journey.admin', posture: 'review-required', roles: 'Onboarding Admin' },
-  { permission: 'patients.read', posture: 'ready', roles: 'Clinical Manager' },
-  { permission: 'policy.surveyorRead', posture: 'approved', roles: 'External Surveyor' },
+  { permission: 'User administration', posture: 'locked', roles: 'Platform Owner' },
+  { permission: 'Audit packet export', posture: 'validated', roles: 'Platform Owner, Compliance Officer, QAPI Lead' },
+  { permission: 'Journey administration', posture: 'review-required', roles: 'Onboarding Admin' },
+  { permission: 'Assigned patient access', posture: 'ready', roles: 'Clinical Manager' },
+  { permission: 'Surveyor viewer access', posture: 'approved', roles: 'External Surveyor' },
 ];
 
 const reviewQueue = [
@@ -229,7 +229,7 @@ export function AdminRolesScreen() {
                 <div>
                   <h2 className="text-h2 font-medium text-ink">Permission posture preview</h2>
                   <p className="mt-xs text-sm text-muted">
-                    Sensitive permission keys stay visible next to the roles allowed to hold them.
+                    Sensitive access areas stay visible next to the roles allowed to hold them.
                   </p>
                 </div>
               </div>
@@ -240,7 +240,7 @@ export function AdminRolesScreen() {
               {permissionPosture.map((item) => (
                 <div className="grid gap-sm py-md first:pt-0 last:pb-0" key={item.permission}>
                   <div className="flex flex-wrap items-center justify-between gap-sm">
-                    <span className="font-mono text-xs text-brand-teal">{item.permission}</span>
+                    <span className="text-xs font-medium text-brand-teal">{item.permission}</span>
                     <ToneBadge size="sm" status={item.posture} />
                   </div>
                   <p className="text-sm text-secondary">{item.roles}</p>

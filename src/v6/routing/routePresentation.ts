@@ -230,7 +230,7 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     description: 'Signing workspace for required forms, signer sequencing, consent readiness, and certificate evidence state.',
     eyebrow: 'Taxonomy',
     icon: FileText,
-    title: 'eCIgn Workspace',
+    title: 'eCIgn Signing Workspace',
   },
   'events-board': {
     description: 'Event execution board grouped by readiness, owner action, evidence state, and survey-facing risk.',
