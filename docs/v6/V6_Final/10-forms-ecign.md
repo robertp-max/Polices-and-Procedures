@@ -3,7 +3,7 @@
 **View Registrations:**
 - `forms-library` (group: "Taxonomy") — Route: `/forms`, Template: `matrix`, Icon: `clipboard-list`
 - `form-viewer` (group: "Taxonomy") — Route: `/forms/:formId`, Template: `form-viewer`, Icon: `clipboard-list`
-- `ecign-workspace` (group: "Taxonomy") — Route: `/forms/:formId` (eCign mode), Template: `ecign`, Icon: `pen-line`
+- `ecign-workspace` (group: "Taxonomy") — Route: `/forms/:formId/esign`, Template: `ecign`, Icon: `pen-line`
 
 **PNG Confirmation:** 
 - `Reference/V6/10-forms-ecign.png` confirmed (96,948 bytes, LastWriteTime 2026-06-19 5:20:47 PM).
@@ -151,7 +151,7 @@ From formsLibraryContent.ts + templates:
 - FormsPage.tsx, FormViewer.tsx, FormSigningWorkspace.tsx (ECIgnWorkspace), FormSignatureFlow.tsx, FormSignatureContext.tsx
 - Data: formsLibraryDataset.ts, formsLibraryContent.ts (and split _*.ts), formsLibraryContent*.ts
 - eCign/: useEcignInstance.ts, api.ts, signerAuthority.ts, signerIdentity.ts, hhcEvidence.ts
-- Routes: /forms/:formId protected by ecign.view feature
+- Routes: `/forms/:formId` is the read/fill form viewer; `/forms/:formId/esign` is the canonical eCIgn signing workspace protected by eCIgn access.
 - Ties to PolicyViewer (linked forms) and Lifecycle (policy approvals may trigger forms/eCign)
 
 **Cross-refs:** See 09-policy-library-viewer.md (library tables, linked forms from policies, viewer sections). Forms feed into eCIgn for attestation/signature packets; eCIgn outputs feed evidence/audit/lock for governance.

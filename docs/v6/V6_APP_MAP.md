@@ -6,7 +6,7 @@ This document is the **canonical route table** for the V6 CareIndeed Home Health
 
 > **Repo (canonical):** All V6 artifacts live in `C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2` (`docs/v6/`, `scripts/check-designless.mjs`, `src/index.css`, `tailwind.config.js`). The live prototype reference is `C:/AI/Git/training/HomeHealth/Policies_and_Procedures/src/policy/pages/Redesign/index.html`.
 
-> **Count:** **56 views = 54 router routes + 2 overlay/auth.** (Corrects the prior "54" undercount, which hid `events-board` and `login-page`.)
+> **Count:** **54 registered route paths in `V6_ROUTES`, including `/login`.** Overlay and personal-ops surfaces are state primitives, not route paths, and are tracked as separate non-route coverage checks.
 
 ---
 
@@ -157,6 +157,8 @@ Each entry: **path → hash-id (canonical key) → template → group.** Templat
 
 - **`/policy-lifecycle`** — hash `policy-lifecycle` — template `lifecycle`
   - Policy Lifecycle: DRAFT → REVIEW → APPROVED → PUBLISHED → ARCHIVED. **No bare `/:policyId`; deep-link is `/policy-lifecycle/:policyId` only** (P1-2).
+- **`/policy-lifecycle/:policyId`** — hash `policy-lifecycle-detail` — template `lifecycle`
+  - Policy Lifecycle Detail: deep-link detail form of the lifecycle workspace. This is the only lifecycle parameter route; bare top-level `/:policyId` remains banned.
 - **`/hubstaff`** — hash `hubstaff` — template `reports`
   - Hubstaff: time-tracking integration flagging visits and documentation timelines.
 - **`/system-documentation/:sectionId`** — hash `system-docs` — template `docs`
@@ -188,7 +190,7 @@ Each entry: **path → hash-id (canonical key) → template → group.** Templat
 
 ## 4. Overlays & Personal Ops (NOT routes)
 
-The prior "Area K: Prototypes & Overlays" listed overlays as fake `prototype://` routes. They are **overlay primitives**, built once in V6-0 (see `V6_DESIGN_VISUALIZATION.md` sec 5), not router routes. They are part of the 56-view count only as the 2 overlay/auth slots conceptually; in the router they are state, not paths.
+The prior "Area K: Prototypes & Overlays" listed overlays as fake `prototype://` routes. They are **overlay primitives**, built once in V6-0 (see `V6_DESIGN_VISUALIZATION.md` sec 5), not router routes. In the router they are state, not paths. `/login` is a real registered route and must not be counted again as an overlay/auth extra.
 
 - **`modal-system`** — VeilModal: full-screen overlays, confirm dialogs, attestation drawers.
 - **`drawer-system`** — VeilDrawer: right-side slide-outs for task descriptions and evidence updates.
@@ -270,7 +272,7 @@ This map is the manual reconciliation bridge between the canonical 56-view route
 
 ## 6. Canonical 56-Row Coverage / State Matrix
 
-This is the **Definition of Done host**. DoD asserts **56/56 green**, and a test must equate the count of router-registered real routes to the count of `is-real-route` rows (54) + 2 overlay/auth = 56.
+This is the **Definition of Done host**. DoD asserts **54/54 registered routes green plus overlay/state coverage green**, and a test must equate `V6_ROUTES.length` to the count of `is-real-route` rows. Overlay/state primitives are asserted separately and must never become router paths.
 
 State coverage is the 6 categories specified once per template: **interaction / empty / loading / error / responsive / permission.** A page is not "covered" until its template's 6 categories are specified. All start at `0/6` and are filled during V6-0 (primitives/states) and Stage C.
 
@@ -328,12 +330,10 @@ State coverage is the 6 categories specified once per template: **interaction / 
 | 50 | `/admin/permissions` | `admin-permissions` | matrix | Admin | PNG | 0/6 | ☐ |
 | 51 | `/admin/users` | `admin-users` | matrix | Admin | PNG | 0/6 | ☐ |
 | 52 | `/surveyor/policy/:policyId` | `surveyor-viewer` | detail | Admin | PNG | 0/6 | ☐ |
-| 53 | `/login` | `login-page` | login | Auth | INFERRED | 0/6 | ☐ |
-| 54 | *(overlay)* | `modal-system` | overlays | Overlay | — | 0/6 | ☐ |
-| 55 | *(overlay)* | `drawer-system` | overlays | Overlay | — | 0/6 | ☐ |
-| 56 | *(overlay)* | `popover-system` | overlays | Overlay | — | 0/6 | ☐ |
+| 53 | `/policy-lifecycle/:policyId` | `policy-lifecycle-detail` | lifecycle | System | PNG | 0/6 | ☐ |
+| 54 | `/login` | `login-page` | login | Auth | INFERRED | 0/6 | ☐ |
 
-> **Real routes = 53 paths above (rows 1–53)** of the 54-route target. The 54th real route is the **root index redirect** to `/dashboard` (router config; not a screen). Rows 54–56 are overlay primitives (state, not paths). Total addressable views = 56.
+> **Real routes = 54 `V6_ROUTES` entries above, including `/login`.** The root index redirect to `/dashboard` is router plumbing and is not an `is-real-route` row. Overlay primitives (`modal-system`, `drawer-system`, `popover-system`, and `personal-ops`) are non-route state coverage checks.
 
 ---
 

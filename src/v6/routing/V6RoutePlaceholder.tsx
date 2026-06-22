@@ -2,7 +2,7 @@ import { Badge } from '../primitives';
 import { type V6RouteDefinition } from './routeRegistry';
 
 export interface V6RoutePlaceholderProps {
-  route?: Omit<V6RouteDefinition, 'phase'>;
+  route?: V6RouteDefinition;
 }
 
 export function V6RoutePlaceholder({ route }: V6RoutePlaceholderProps) {
@@ -16,7 +16,7 @@ export function V6RoutePlaceholder({ route }: V6RoutePlaceholderProps) {
         <h2 className="text-h2 font-medium text-ink">V6 Placeholder</h2>
         <p className="max-w-content text-body font-light text-secondary">
           {route
-            ? `${route.title} is registered in the V6 router. Screen implementation waits for the approved V6-2 phase.`
+            ? `${route.title} is registered in the V6 router, but no representative screen is mapped for this fallback state.`
             : 'This route is not registered in the canonical V6 route table.'}
         </p>
       </div>

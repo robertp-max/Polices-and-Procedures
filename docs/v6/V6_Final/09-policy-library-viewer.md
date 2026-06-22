@@ -3,7 +3,7 @@
 **View Registrations:**
 - `policy-library` (group: "Taxonomy") — Route: `/library`, Template: `matrix` (DataTable), Icon: `book-open`
 - `policy-detail` (group: "Taxonomy") — Route: `/library/:policyId`, Template: `policy-viewer`, Icon: `file-text`
-- `policy-lifecycle` (group: "Taxonomy") — Route: `/policy-lifecycle` (and `/:policyId`), Template: `lifecycle`, Icon: `file-edit`
+- `policy-lifecycle` (group: "System") — Route: `/policy-lifecycle`; detail route `/policy-lifecycle/:policyId`, Template: `lifecycle`, Icon: `file-edit`
 
 **PNG Confirmation:** 
 - `Reference/V6/09-policy-library-viewer.png` confirmed (96,948 bytes, LastWriteTime 2026-06-19 5:20:47 PM).

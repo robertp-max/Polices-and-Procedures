@@ -94,13 +94,13 @@ after step 8. **No page is built before step 9; no logic is reconnected before s
 | **9** | **One representative page per template family** — build exactly one page for each of the ~28 templates as the canonical exemplar. | grok (Stage A) | Renders static with typed mock data on shared primitives |
 | **10** | **Template QA** — for each representative page, specify+verify the 6 state categories (interaction/empty/loading/error/responsive/permission), parity, a11y, responsive — **once per template**. | Opus QA (+ secondary reviewer) | State matrix complete per template; parity + axe + responsive gates green |
 | **11** | **Remaining pages in each family** — data-binding only on the already-QA'd shared template; no new template logic. | grok (Stage A) | Each page matches its template; gate-green |
-| **12** | **Mock-data validation** — typed seed data across all 56 views. | composer | Typed seed compiles; all views render with mock data |
-| **13** | **Screenshot parity sweep** — full pass vs reference PNGs (or `INFERRED` baseline). | Opus QA | Parity checklist (Roboto 300/500, hairlines, two shadows, teal/orange, 292/88 sidebar) green |
+| **12** | **Mock-data validation** — typed mock data across all 54 registered route views, plus non-route state coverage where applicable. | composer | Typed mock data compiles; all route views render without backend reconnection |
+| **13** | **Screenshot parity sweep** — full pass vs reference PNGs (or `INFERRED` baseline). **No logic reconnection in this phase.** Use `V6_PHASE_13_PARITY_RUNBOOK.md` as the worker packet. | Opus QA | Parity checklist (Roboto 300/500, hairlines, two shadows, teal/orange, 292/88 sidebar) green |
 | **14** | **Responsive + a11y verification pass** — full app at 360/768/1024/1280/1536. | Opus QA | Responsive gate (no body h-scroll, 44px targets, tables scroll/stack, boards scroll, calendar agenda) + axe serious/critical = 0 |
 | **15** | **Logic reconnection — per-screen Stage B** — re-include **only** the exact modules each screen needs per `CES_PROCESS_KEEP_MANIFEST`; replace mock selectors with real ones; fix inert broken imports. **Never bulk-include `src/policy/**`.** | composer | Per-screen: gate-green; CES chain intact; no legacy imports |
 | **16** | **Cohesion pass** — enforce the cohesion rules (one token source, one tone vocabulary, one icon family, one DataTable/density, button hierarchy, overlay/motion registry, date utils). | Opus / architect | Cohesion checklist (§8) green app-wide |
 | **17** | **Auth/backend bootstrap (Cognito) + login-page build — LAST** — re-enable auth in `main.tsx`; build the `INFERRED` login-page (glass surface + CareIndeed logo); wire CommandPalette over the VIEW registry. | composer + Opus | Auth flow works; login-page parity; gate-green |
-| **18** | **Hardening** — error/loading/empty states finalized; axe gate in CI; perf (lazy/Suspense, deferred filters, scoped virtualization); README; final full-app sweep. | Opus + composer | Full-app gate + parity sweep; **56/56 coverage asserted** |
+| **18** | **Hardening** — error/loading/empty states finalized; axe gate in CI; perf (lazy/Suspense, deferred filters, scoped virtualization); README; final full-app sweep. | Opus + composer | Full-app gate + parity sweep; **54/54 registered routes + overlay/state coverage asserted** |
 
 ---
 
@@ -153,14 +153,17 @@ icon-size ramp; density; focus-ring.
 
 ## 6. Single canonical matrix — route table = coverage = state-matrix host
 
-**ONE artifact**: route table = coverage matrix = state-matrix host. **56 views = 54 router routes +
-2 overlay/auth.** Identify every screen by its **stable hash-id** (canonical key) — never by path or
-template (templates like matrix/evidence/reports/detail/board are intentionally reused across 3–7
-routes). One path = one component; no query-string routing; no bare top-level `/:param`.
+**ONE artifact**: route table = coverage matrix = state-matrix host. The hard route invariant is
+**54 registered route paths in `V6_ROUTES`, including `/login`**. Overlay and personal-ops surfaces
+are **state primitives**, not route paths, and are tracked as separate non-route coverage checks.
+Identify every screen by its **stable hash-id** (canonical key) — never by path or template
+(templates like matrix/evidence/reports/detail/board are intentionally reused across 3–7 routes).
+One path = one component; no query-string routing; no bare top-level `/:param`.
 
 Each row carries: path · hash · template · group · reference-or-`INFERRED` · owner · phase ·
-state-coverage · done. **Definition of Done asserts 56/56 green**, and a test equates the
-router-registered real-route count to the count of is-real-route rows.
+state-coverage · done. **Definition of Done asserts 54/54 registered routes green plus overlay/state
+coverage green**, and a test equates `V6_ROUTES.length` to the count of is-real-route rows. The root
+index redirect to `/dashboard` is router plumbing, not a coverage row.
 
 ### Real routes (54)
 
@@ -221,12 +224,16 @@ router-registered real-route count to the count of is-real-route rows.
 | 53 | `/policy-lifecycle/:policyId` | policy-lifecycle-detail | lifecycle | System — deep-link form of #43 |
 | 54 | `/login` | login-page | login | Auth — **INFERRED** (no PNG; inherit glass surface + CareIndeed logo from shell; only auth entry; wired in step 17) |
 
-### Overlays / non-route (2 of the 56 = overlay+auth host)
+### Overlay/state registry (non-routes)
 
 - `modal-system (VeilModal)`
 - `drawer-system (VeilDrawer)`
 - `popover-system (CommandPalette/Popover)`
 - `personal-ops` — drawer open/close **state**, NOT a route.
+
+These registry keys are not counted in `V6_REAL_ROUTE_COUNT`. Phase 13 checks them as state
+primitives in their real parent context; they must never become standalone routes. `/login` is a real
+route and is already counted in the 54 route rows above.
 
 > Replaces the old open-ended "(remaining V6_Final surfaces as scoped)" bucket: every dense screen
 > (onboarding-v2 ×6, journey module-player/appendix-f/journey-v1/journey-admin/user-guide,
@@ -312,6 +319,12 @@ transition (no raw ms, no ad-hoc `duration-[n]`, no new cubic-beziers in screen 
 - **Positive fixture:** CI fixture of V6-canonical route strings + V6-native names that MUST pass the
   gate, so it can never regress to blocking valid V6 routes/names.
 
+**Current Phase 13 automation status:** `npm run verify:designless` is the only first-class Stage-C
+gate currently wired in `package.json`; it runs the build, stale-`.js` cleanup, ghost-design checks,
+and the implemented typography/CDN checks. The screenshot parity, axe, responsive, route-count, and
+positive-fixture gates are required by this plan but remain manual/helper-driven until dedicated
+`verify:v6:*` scripts land.
+
 ---
 
 ## 10. Per-screen pipeline (Stage A / B / C)
@@ -329,8 +342,10 @@ reconnects only at Stage B; Stage C is the gated verify.**
 
 ## 11. Definition of done
 
-- **56/56** canonical-matrix rows green (state-coverage complete; `INFERRED` screens built).
-- A test equates router-registered real-route count to is-real-route rows.
+- **54/54** registered route rows green (state-coverage complete; `INFERRED` routes built) plus
+  overlay/state registry coverage green.
+- A test equates `V6_ROUTES.length` to is-real-route rows; overlay/state primitives are asserted
+  separately and are never route paths.
 - Every designed screen renders in V6 light theme with parity to its reference (or `INFERRED`
   baseline), in Roboto 300/500 only.
 - `verify:designless` + typography + CDN + axe + responsive + parity all green in CI; **no** legacy
