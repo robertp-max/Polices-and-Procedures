@@ -463,7 +463,7 @@ function JourneyModuleCard({ index, module }: { index: number; module: JourneyMo
 
   return (
     <article
-      className="grid min-h-[280px] content-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest transition duration-fast ease-standard hover:shadow-hover"
+      className="grid min-h-[240px] content-between gap-md rounded-lg border border-card bg-surface p-lg shadow-rest transition duration-fast ease-standard hover:shadow-hover"
       role="listitem"
     >
       <div className="grid gap-md">

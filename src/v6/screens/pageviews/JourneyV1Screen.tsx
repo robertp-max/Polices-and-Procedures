@@ -360,7 +360,7 @@ function LessonCard({ module, selected }: { module: LessonModule; selected?: boo
   return (
     <article
       className={cx(
-        'grid min-h-[220px] content-between gap-md rounded-lg border p-lg transition duration-fast ease-standard',
+        'grid min-h-[200px] content-between gap-md rounded-lg border p-lg transition duration-fast ease-standard',
         selected ? 'border-brand-teal bg-tone-teal-bg shadow-hover' : 'border-card bg-tone-slate-bg shadow-rest hover:bg-surface-hover',
       )}
     >

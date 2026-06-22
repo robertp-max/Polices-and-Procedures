@@ -216,7 +216,7 @@ const phaseBLearners = [
 
 export function SupervisorScreen() {
   const [selectedLearner, setSelectedLearner] = useState(phaseBLearners[0]);
-  const [learnerPickerOpen, setLearnerPickerOpen] = useState(true);
+  const [learnerPickerOpen, setLearnerPickerOpen] = useState(false);
   const [visitDrawerOpen, setVisitDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
