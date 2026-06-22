@@ -51,7 +51,7 @@ Agents 05-08: Encoding/mojibake/spacing/Markdown formatting
 Agents 09-16: Signed-artifact immutability and hash rule
 Agents 17-22: Drive/Evidence Center parity and source-of-truth logic
 Agents 23-28: Multi-signer state machine and role/tier validation
-Agents 29-34: Failure handling and idempotency
+Agents 29-34: Failure handling and idempotency (latest replacement PASS)
 Agents 35-40: Security/compliance/PHI/logging/authorization
 Agents 41-46: QA gates and negative tests
 Agents 47-52: Data model field completeness
@@ -146,6 +146,34 @@ Agent 18: Drive/Evidence Center parity and source-of-truth logic (replacement fo
 None for the plan. (Generated PLAN_* .txt artifacts remain corrupted from prior process; source plan is clean.)
 
 Full subagent confirmation: All zero-tolerance criteria for Drive/Evidence parity + source-of-truth met post-patches. Group 17-22: PASS.
+
+**Agent 29 (replacement) — Failure handling and idempotency (completed):**
+**1. Agent number and role**  
+Agent 29: Failure handling and idempotency (replacement) in GROK 64-AGENT ZERO-TOLERANCE DOCUMENTATION HARDENING MODE.
+
+**2. PASS**
+
+**3. Exact lines reviewed**  
+Primary plan (full + targeted): docs/v6/V6_Final/QA13b/ECIGN_PATH_B_ARCHITECTURE_READINESS_PLAN_20260622.md (lines 1-348; focused §9 253-275 intro + full 16-row table 257-274, plus §2/§4/§7/§8/§11/§13 cross-refs). Supporting QA13c artifacts read-only.
+
+**4. Findings**  
+- Idempotency for ALL writes (bytes, Drive, metadata, Evidence, audit) keyed by artifactVersionId: §9:255 exact.  
+- All partial failure states MUST preserve canonical artifact bytes unchanged: §9:255 + table.  
+- Recovery never creates new artifactVersionId or regenerates bytes: §9:255 + rows (e.g. 259, 265).  
+- Stale artifactVersionId: dedicated row §9:265.  
+- Replica divergence post-upload: dedicated row §9:268 (reconcile only from primary canonical).  
+- Failure during bytes persist step: dedicated §9:267.  
+- Concurrent race / audit failure after success / partial failure continuity: rows 272-274.  
+- Language: "never recreate, re-derive, regenerate, or alter the canonical artifact bytes" (not PDF).  
+- No PHI/signature images in failure logs: §9:255 + §10 + §11.  
+- Audit continuity / zero-gap: §9:273-274 + §8 + §11:313.  
+- §11 tests cover idempotent recovery, stale artifactVersionId, hash mismatch, forbidden transitions, no-regen, parity, export blocks, etc.  
+All items from original hardening spec covered with strong language. Prior gaps closed.
+
+**5. Required fixes, if any**  
+None for the plan. (Supporting .txt artifacts are historical/weaker.) 
+
+Group 29-34: PASS (replacement).
 
 **Agent 05 -- Encoding/mojibake/spacing/Markdown formatting (completed):**
 **1. Agent 05: Encoding/mojibake/spacing/Markdown formatting**
