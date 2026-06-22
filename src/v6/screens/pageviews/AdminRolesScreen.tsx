@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { ClipboardCheck, FileCheck2, LockKeyhole, ShieldCheck, UserCog } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
+import { cx } from '../../utils/classNames';
 
 interface AdminRoleRow extends Record<string, string> {
   permissionPosture: string;
@@ -101,7 +103,6 @@ const roleRows: readonly AdminRoleRow[] = [
 ];
 
 const roleColumns: readonly DataTableColumn<AdminRoleRow>[] = [
-  { key: 'roleId', label: 'Role ID' },
   { key: 'roleName', label: 'Role' },
   { key: 'privilegeScope', label: 'Privilege scope' },
   { key: 'userGroupLinks', label: 'User-group links' },
@@ -179,10 +180,20 @@ const reviewQueue = [
   ['Last attestation', 'Jun 18, 2026', 'validated'],
   ['Next review', 'Jul 1, 2026', 'upcoming'],
   ['Open exceptions', '2 role scopes', 'review-required'],
-  ['Route marker', '/admin/roles', 'active'],
+  ['Evidence packet', 'Ready for admin review', 'ready'],
 ] as const;
 
+const rolePanelTabs = [
+  { id: 'review', label: 'Review' },
+  { id: 'posture', label: 'Posture' },
+  { id: 'trail', label: 'Trail' },
+] as const;
+
+type RolePanelTabId = (typeof rolePanelTabs)[number]['id'];
+
 export function AdminRolesScreen() {
+  const [activePanel, setActivePanel] = useState<RolePanelTabId>('review');
+
   return (
     <section
       className="grid gap-xl"
@@ -215,12 +226,37 @@ export function AdminRolesScreen() {
           </section>
         </section>
 
-        <aside className="grid content-start gap-lg" aria-label="Admin role review cards">
-          {reviewCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
-          ))}
+        <aside className="grid content-start gap-lg" aria-label="Admin role review panels">
+          <nav aria-label="Role review tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface/90 p-xs shadow-rest backdrop-blur-xl">
+            {rolePanelTabs.map((tab) => (
+              <button
+                aria-selected={activePanel === tab.id}
+                className={cx(
+                  'min-h-tap shrink-0 rounded-md px-md text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                  activePanel === tab.id
+                    ? 'bg-brand-teal text-on-brand shadow-rest'
+                    : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',
+                )}
+                key={tab.id}
+                onClick={() => setActivePanel(tab.id)}
+                role="tab"
+                type="button"
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          {activePanel === 'review' && (
+            <section className="grid gap-md" aria-label="Role review summary" role="tabpanel">
+              {reviewCards.map((card) => (
+                <SurfaceCard card={card} key={card.title} />
+              ))}
+            </section>
+          )}
+
+          {activePanel === 'posture' && (
+            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" role="tabpanel">
             <div className="mb-lg flex items-start justify-between gap-md">
               <div className="grid gap-sm">
                 <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
@@ -247,9 +283,11 @@ export function AdminRolesScreen() {
                 </div>
               ))}
             </div>
-          </section>
+            </section>
+          )}
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          {activePanel === 'trail' && (
+            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" role="tabpanel">
             <div className="mb-lg flex items-start gap-md">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
                 <FileCheck2 aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -272,7 +310,8 @@ export function AdminRolesScreen() {
                 </div>
               ))}
             </div>
-          </section>
+            </section>
+          )}
         </aside>
       </section>
     </section>

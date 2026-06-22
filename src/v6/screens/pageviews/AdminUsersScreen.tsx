@@ -3,6 +3,7 @@ import { BadgeCheck, ClipboardCheck, KeyRound, LockKeyhole, ShieldCheck, Smartph
 import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
+import { cx } from '../../utils/classNames';
 
 interface AdminUserRow extends Record<string, string> {
   accessStatus: string;
@@ -30,6 +31,14 @@ interface AssignmentLane {
   status: string;
   users: string;
 }
+
+interface OverridePermission {
+  desc: string;
+  id: string;
+  label: string;
+}
+
+type OverrideMode = 'default' | 'grant' | 'revoke';
 
 const userMetrics: readonly MetricTileData[] = [
   { label: 'Users', value: '96', helper: 'Active directory accounts', tone: 'teal' },
@@ -108,7 +117,6 @@ const userRows: readonly AdminUserRow[] = [
 ];
 
 const userColumns: readonly DataTableColumn<AdminUserRow>[] = [
-  { key: 'userId', label: 'ID' },
   { key: 'name', label: 'Name' },
   { key: 'role', label: 'Role' },
   { key: 'groups', label: 'Groups' },
@@ -185,8 +193,38 @@ const assignmentLanes: readonly AssignmentLane[] = [
   { group: 'Surveyor Read-only', owner: 'QAPI Lead', status: 'approved', users: '3' },
 ];
 
+const userPanelTabs = [
+  { id: 'security', label: 'Security' },
+  { id: 'assignments', label: 'Assignments' },
+  { id: 'audit', label: 'Audit' },
+] as const;
+
+type UserPanelTabId = (typeof userPanelTabs)[number]['id'];
+
+const overridePermissions: readonly OverridePermission[] = [
+  { id: 'policy-writing', label: 'Policy writing', desc: 'Draft and submit policy revisions' },
+  { id: 'evidence-upload', label: 'Evidence upload', desc: 'Upload documents and audit packets' },
+  { id: 'ecign-signing', label: 'eCIgn signing', desc: 'Clinical preceptor and coordinator signoff' },
+  { id: 'surveyor-viewer-access', label: 'Surveyor viewer access', desc: 'Read-only timeline view for surveyors' },
+  { id: 'user-administration', label: 'User administration', desc: 'Manage user profiles and group roles' },
+];
+
+const overrideOptions: readonly { label: string; mode: OverrideMode; status: string }[] = [
+  { label: 'Default', mode: 'default', status: 'ready' },
+  { label: 'Force Grant', mode: 'grant', status: 'validated' },
+  { label: 'Force Revoke', mode: 'revoke', status: 'review-required' },
+];
+
+const getDefaultOverrides = (): Record<string, OverrideMode> =>
+  overridePermissions.reduce<Record<string, OverrideMode>>((overrides, permission) => {
+    overrides[permission.id] = 'default';
+    return overrides;
+  }, {});
+
 export function AdminUsersScreen() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>('u-compliance-tp');
+  const [activePanel, setActivePanel] = useState<UserPanelTabId>('security');
+  const [overrideModes, setOverrideModes] = useState<Record<string, OverrideMode>>(getDefaultOverrides);
 
   const selectedUser = userRows.find(r => r.userId === selectedUserId);
 
@@ -194,9 +232,11 @@ export function AdminUsersScreen() {
     setSelectedUserId(row.userId === selectedUserId ? null : row.userId);
   };
 
-  const handleOverrideChange = (permissionKey: string, value: string) => {
-    // UI feedback only for prototype
-    console.log(`Setting override: ${permissionKey} = ${value}`);
+  const handleOverrideChange = (permissionId: string, value: OverrideMode) => {
+    setOverrideModes((current) => ({
+      ...current,
+      [permissionId]: value,
+    }));
   };
 
   return (
@@ -218,92 +258,85 @@ export function AdminUsersScreen() {
             onRowClick={handleRowClick}
           />
 
-          {/* User Permission Override Matrix */}
           {selectedUser && (
-            <section className="rounded-lg border border-brand-orange/30 bg-surface p-xl shadow-rest transition duration-normal mt-md">
-              <div className="mb-lg border-b border-hairline pb-sm flex justify-between items-center">
-                <div>
-                  <div className="flex items-center gap-sm">
+            <section className="mt-md rounded-lg border border-tone-orange-border bg-surface p-xl shadow-rest transition duration-normal">
+              <div className="mb-lg flex flex-wrap items-start justify-between gap-lg border-b border-hairline pb-md">
+                <div className="grid gap-xs">
+                  <div className="flex flex-wrap items-center gap-sm">
                     <h3 className="text-h3 font-medium text-ink">Permission Override Matrix</h3>
-                    <span className="text-xs text-muted font-mono">{selectedUser.name} ({selectedUser.userId})</span>
+                    <ToneBadge size="sm" status="review-required" />
                   </div>
-                  <p className="text-xs text-secondary mt-xs">Configure granular access exceptions and dual-signature authorizations.</p>
+                  <p className="text-sm text-secondary">
+                    {selectedUser.name} / {selectedUser.role}
+                  </p>
+                  <p className="max-w-content text-xs text-muted">
+                    Review access exceptions with clear inherited, grant, and revoke states before admin attestation.
+                  </p>
                 </div>
                 <button
                   onClick={() => setSelectedUserId(null)}
-                  className="text-xs font-medium text-brand-teal hover:underline"
+                  className="min-h-tap rounded-md px-md text-xs font-medium text-brand-teal transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
                   type="button"
                 >
-                  Collapse Override Matrix
+                  Close matrix
                 </button>
               </div>
 
-              <div className="rounded-lg border border-hairline bg-transparent overflow-hidden">
-                <table className="min-w-full border-collapse text-left text-xs" aria-label="Permission Override Grid">
-                  <thead className="bg-tone-slate-bg text-tag uppercase tracking-tag text-muted">
-                    <tr>
-                      <th className="border-b border-card px-lg py-md font-light" scope="col">Scope / Permission</th>
-                      <th className="border-b border-card px-lg py-md font-light text-center" scope="col">Default (Inherited)</th>
-                      <th className="border-b border-card px-lg py-md font-light text-center" scope="col">Force Grant</th>
-                      <th className="border-b border-card px-lg py-md font-light text-center" scope="col">Force Revoke</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { key: 'policy.write', label: 'Policy writing', desc: 'Draft and submit policy revisions' },
-                      { key: 'evidence.upload', label: 'Evidence upload', desc: 'Upload documents and audit packets' },
-                      { key: 'ecign.sign', label: 'eCIgn signing', desc: 'Clinical preceptor and coordinator signoff' },
-                      { key: 'surveyor.view', label: 'Surveyor viewer access', desc: 'Read-only timeline view for surveyors' },
-                      { key: 'admin.users', label: 'User administration', desc: 'Manage user profiles and group roles' }
-                    ].map((row) => (
-                      <tr key={row.key} className="border-b border-hairline hover:bg-surface-hover transition duration-fast">
-                        <td className="px-lg py-md leading-body text-secondary">
-                          <div className="font-medium text-ink">{row.label}</div>
-                          <div className="text-[10px] text-muted font-mono mt-xs">{row.key}</div>
-                        </td>
-                        <td className="px-lg py-md text-center">
-                          <input
-                            type="radio"
-                            name={`override-${row.key}`}
-                            value="default"
-                            defaultChecked
-                            onChange={() => handleOverrideChange(row.key, 'default')}
-                          />
-                        </td>
-                        <td className="px-lg py-md text-center">
-                          <input
-                            type="radio"
-                            name={`override-${row.key}`}
-                            value="grant"
-                            onChange={() => handleOverrideChange(row.key, 'grant')}
-                          />
-                        </td>
-                        <td className="px-lg py-md text-center">
-                          <input
-                            type="radio"
-                            name={`override-${row.key}`}
-                            value="revoke"
-                            onChange={() => handleOverrideChange(row.key, 'revoke')}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="overflow-hidden rounded-lg border border-hairline bg-tone-slate-bg" aria-label="Permission override grid">
+                <div className="grid grid-cols-[minmax(0,1fr)_minmax(360px,auto)] gap-md border-b border-hairline px-lg py-sm text-tag uppercase tracking-tag text-muted">
+                  <span>Access area</span>
+                  <span className="text-center">Override state</span>
+                </div>
+                <div className="divide-y divide-hairline bg-surface">
+                  {overridePermissions.map((permission) => (
+                    <div
+                      className="grid gap-md px-lg py-md tablet-l:grid-cols-[minmax(0,1fr)_minmax(360px,auto)]"
+                      key={permission.id}
+                    >
+                      <div className="grid gap-xs">
+                        <p className="text-sm font-medium text-ink">{permission.label}</p>
+                        <p className="text-xs text-secondary">{permission.desc}</p>
+                      </div>
+                      <div className="grid grid-cols-3 gap-xs rounded-md border border-hairline bg-tone-slate-bg p-xs">
+                        {overrideOptions.map((option) => {
+                          const isSelected = overrideModes[permission.id] === option.mode;
+
+                          return (
+                            <button
+                              aria-pressed={isSelected}
+                              className={cx(
+                                'min-h-tap rounded-md border px-sm text-xs font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                                isSelected
+                                  ? 'border-brand-teal bg-brand-teal text-on-brand shadow-rest'
+                                  : 'border-transparent bg-transparent text-secondary hover:bg-surface-hover hover:text-brand-teal',
+                                isSelected && option.mode === 'grant' && 'border-tone-green-border bg-tone-green-bg text-tone-green-text',
+                                isSelected && option.mode === 'revoke' && 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text',
+                              )}
+                              key={option.mode}
+                              onClick={() => handleOverrideChange(permission.id, option.mode)}
+                              type="button"
+                            >
+                              {option.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="mt-md flex justify-end gap-md">
-                <Button size="sm" variant="secondary" onClick={() => setSelectedUserId(null)}>
-                  Discard Changes
+              <div className="mt-md flex flex-wrap justify-end gap-md">
+                <Button size="sm" variant="secondary" onClick={() => setOverrideModes(getDefaultOverrides())}>
+                  Restore Defaults
                 </Button>
                 <Button
                   className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange/95 font-light"
                   size="sm"
                   onClick={() => {
-                    alert('Override matrix updated. Event audit log updated.');
                     setSelectedUserId(null);
                   }}
                 >
-                  Apply & Log Exception
+                  Save Override Draft
                 </Button>
               </div>
             </section>
@@ -327,111 +360,139 @@ export function AdminUsersScreen() {
           </section>
         </section>
 
-        <aside className="grid content-start gap-lg" aria-label="Admin users security cards">
-          {securityCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
-          ))}
+        <aside className="grid content-start gap-lg" aria-label="Admin users security panels">
+          <nav aria-label="User admin tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface/90 p-xs shadow-rest backdrop-blur-xl">
+            {userPanelTabs.map((tab) => (
+              <button
+                aria-selected={activePanel === tab.id}
+                className={cx(
+                  'min-h-tap shrink-0 rounded-md px-md text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                  activePanel === tab.id
+                    ? 'bg-brand-teal text-on-brand shadow-rest'
+                    : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',
+                )}
+                key={tab.id}
+                onClick={() => setActivePanel(tab.id)}
+                role="tab"
+                type="button"
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="mfa-readiness-title">
-            <div className="mb-lg flex items-start justify-between gap-md">
-              <div className="grid gap-sm">
-                <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
-                  <Smartphone aria-hidden="true" className="h-icon-md w-icon-md" />
+          {activePanel === 'security' && (
+            <section className="grid gap-md" aria-label="User security summary" role="tabpanel">
+              {securityCards.map((card) => (
+                <SurfaceCard card={card} key={card.title} />
+              ))}
+
+              <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="mfa-readiness-title">
+                <div className="mb-lg flex items-start justify-between gap-md">
+                  <div className="grid gap-sm">
+                    <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
+                      <Smartphone aria-hidden="true" className="h-icon-md w-icon-md" />
+                    </span>
+                    <div>
+                      <h2 className="text-h2 font-medium text-ink" id="mfa-readiness-title">
+                        MFA and access readiness
+                      </h2>
+                      <p className="mt-xs text-sm text-muted">
+                        Security checks summarize sign-in posture before account changes are approved.
+                      </p>
+                    </div>
+                  </div>
+                  <ToneBadge size="sm" status="certified" />
+                </div>
+
+                <div className="grid gap-sm">
+                  {[
+                    ['Certified MFA', '90 users', 'certified'],
+                    ['Pending enrollment', '4 users', 'pending'],
+                    ['Locked privileged lane', '11 users', 'locked'],
+                    ['Access review ready', '92 accounts', 'ready'],
+                  ].map(([label, value, status]) => (
+                    <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-tone-slate-bg p-md" key={label}>
+                      <div>
+                        <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
+                        <p className="mt-xs text-sm text-ink">{value}</p>
+                      </div>
+                      <ToneBadge size="sm" status={status} />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </section>
+          )}
+
+          {activePanel === 'assignments' && (
+            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="assignment-lanes-title" role="tabpanel">
+              <div className="mb-lg flex items-start gap-md">
+                <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
+                  <UserCog aria-hidden="true" className="h-icon-md w-icon-md" />
                 </span>
                 <div>
-                  <h2 className="text-h2 font-medium text-ink" id="mfa-readiness-title">
-                    MFA and access readiness
+                  <h2 className="text-h2 font-medium text-ink" id="assignment-lanes-title">
+                    Role and group lanes
                   </h2>
                   <p className="mt-xs text-sm text-muted">
-                    Right-side security checks summarize sign-in posture before account changes are approved.
+                    Group owners retain accountability for membership, role scope, and audit-ready user evidence.
                   </p>
                 </div>
               </div>
-              <ToneBadge size="sm" status="certified" />
-            </div>
 
-            <div className="grid gap-sm">
-              {[
-                ['Certified MFA', '90 users', 'certified'],
-                ['Pending enrollment', '4 users', 'pending'],
-                ['Locked privileged lane', '11 users', 'locked'],
-                ['Access review ready', '92 accounts', 'ready'],
-              ].map(([label, value, status]) => (
-                <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-tone-slate-bg p-md" key={label}>
-                  <div>
-                    <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
-                    <p className="mt-xs text-sm text-ink">{value}</p>
+              <div className="divide-y divide-hairline rounded-md border border-hairline bg-tone-slate-bg">
+                {assignmentLanes.map((lane) => (
+                  <div className="grid gap-sm p-md" key={lane.group}>
+                    <div className="flex flex-wrap items-center justify-between gap-sm">
+                      <div>
+                        <p className="text-sm text-ink">{lane.group}</p>
+                        <p className="mt-xs text-xs text-muted">{lane.owner}</p>
+                      </div>
+                      <ToneBadge size="sm" status={lane.status} />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-sm">
+                      <ToneTag tone="slate">{lane.users} users</ToneTag>
+                      <span className="text-xs text-secondary">Role and permission assignment owner</span>
+                    </div>
                   </div>
-                  <ToneBadge size="sm" status={status} />
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="assignment-lanes-title">
-            <div className="mb-lg flex items-start gap-md">
-              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
-                <UserCog aria-hidden="true" className="h-icon-md w-icon-md" />
-              </span>
-              <div>
-                <h2 className="text-h2 font-medium text-ink" id="assignment-lanes-title">
-                  Role and group lanes
-                </h2>
-                <p className="mt-xs text-sm text-muted">
-                  Group owners retain accountability for membership, role scope, and audit-ready user evidence.
-                </p>
+                ))}
               </div>
-            </div>
+            </section>
+          )}
 
-            <div className="grid gap-sm">
-              {assignmentLanes.map((lane) => (
-                <div className="rounded-md border border-hairline bg-tone-slate-bg p-md" key={lane.group}>
-                  <div className="mb-sm flex flex-wrap items-center justify-between gap-sm">
-                    <div>
-                      <p className="text-sm text-ink">{lane.group}</p>
-                      <p className="mt-xs text-xs text-muted">{lane.owner}</p>
+          {activePanel === 'audit' && (
+            <SurfaceCard
+              card={{
+                body: 'Audit packets include group owner, MFA state, last review date, and role assignment changes for survey traceability.',
+                icon: BadgeCheck,
+                progress: 88,
+                status: 'ready',
+                title: 'Audit evidence package',
+                tone: 'teal',
+              }}
+            >
+              <div className="grid gap-sm border-t border-hairline pt-md">
+                {[
+                  ['Provisioning access', 'User administration', 'locked'],
+                  ['Audit export', 'Audit packet export', 'validated'],
+                  ['Role assignment', 'User role assignment', 'review-required'],
+                  ['MFA enforcement', 'Security verification', 'certified'],
+                ].map(([label, value, status]) => (
+                  <div className="flex flex-wrap items-center justify-between gap-sm" key={value}>
+                    <div className="flex min-w-0 items-center gap-sm">
+                      <KeyRound aria-hidden="true" className="h-icon-sm w-icon-sm shrink-0 text-brand-teal" />
+                      <div className="min-w-0">
+                        <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
+                        <p className="truncate text-xs font-medium text-secondary">{value}</p>
+                      </div>
                     </div>
-                    <ToneBadge size="sm" status={lane.status} />
+                    <ToneBadge size="sm" status={status} />
                   </div>
-                  <div className="flex flex-wrap items-center gap-sm">
-                    <ToneTag tone="slate">{lane.users} users</ToneTag>
-                    <span className="text-xs text-secondary">Role and permission assignment owner</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <SurfaceCard
-            card={{
-              body: 'Audit packets include user ID, group owner, MFA state, last review date, and role assignment changes for survey traceability.',
-              icon: BadgeCheck,
-              progress: 88,
-              status: 'ready',
-              title: 'Audit evidence package',
-              tone: 'teal',
-            }}
-          >
-            <div className="grid gap-sm border-t border-hairline pt-md">
-              {[
-                ['Provisioning access', 'User administration', 'locked'],
-                ['Audit export', 'Audit packet export', 'validated'],
-                ['Role assignment', 'User role assignment', 'review-required'],
-                ['MFA enforcement', 'Security verification', 'certified'],
-              ].map(([label, value, status]) => (
-                <div className="flex flex-wrap items-center justify-between gap-sm" key={value}>
-                  <div className="flex min-w-0 items-center gap-sm">
-                    <KeyRound aria-hidden="true" className="h-icon-sm w-icon-sm shrink-0 text-brand-teal" />
-                    <div className="min-w-0">
-                      <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
-                      <p className="truncate text-xs font-medium text-secondary">{value}</p>
-                    </div>
-                  </div>
-                  <ToneBadge size="sm" status={status} />
-                </div>
-              ))}
-            </div>
-          </SurfaceCard>
+                ))}
+              </div>
+            </SurfaceCard>
+          )}
         </aside>
       </section>
     </section>

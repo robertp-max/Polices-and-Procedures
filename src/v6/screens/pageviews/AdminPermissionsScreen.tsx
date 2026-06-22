@@ -6,7 +6,6 @@ import { cx } from '../../utils/classNames';
 
 interface PermissionRow extends Record<string, string> {
   capability: string;
-  permissionKey: string;
   readinessStatus: string;
   riskStatus: string;
   rolesUsing: string;
@@ -26,8 +25,8 @@ interface PermissionGovernanceCard extends SurfaceCardData {
 }
 
 const permissionTabs = [
-  { id: 'matrix', label: 'Permission Matrix' },
-  { id: 'roles', label: 'Roles Using It' },
+  { id: 'matrix', label: 'Matrix' },
+  { id: 'roles', label: 'Roles' },
   { id: 'governance', label: 'Governance' },
   { id: 'evidence', label: 'Evidence' },
   { id: 'control-path', label: 'Control Path' },
@@ -38,7 +37,6 @@ type PermissionTabId = (typeof permissionTabs)[number]['id'];
 const permissionRows: readonly PermissionRow[] = [
   {
     capability: 'Create, deactivate, and reassign platform users',
-    permissionKey: 'user.provision',
     readinessStatus: 'validated',
     riskStatus: 'locked',
     rolesUsing: 'Platform Owner, Security Admin',
@@ -46,7 +44,6 @@ const permissionRows: readonly PermissionRow[] = [
   },
   {
     capability: 'Assign roles, groups, and emergency access windows',
-    permissionKey: 'role.assign',
     readinessStatus: 'ready',
     riskStatus: 'review-required',
     rolesUsing: 'Security Admin, Administrator',
@@ -54,7 +51,6 @@ const permissionRows: readonly PermissionRow[] = [
   },
   {
     capability: 'Approve, publish, and supersede agency policies',
-    permissionKey: 'policy.approve',
     readinessStatus: 'approved',
     riskStatus: 'locked',
     rolesUsing: 'Administrator, Compliance Officer',
@@ -62,7 +58,6 @@ const permissionRows: readonly PermissionRow[] = [
   },
   {
     capability: 'Export evidence packets for survey or QAPI review',
-    permissionKey: 'audit.export',
     readinessStatus: 'ready',
     riskStatus: 'active',
     rolesUsing: 'Compliance Officer, QAPI Lead',
@@ -70,7 +65,6 @@ const permissionRows: readonly PermissionRow[] = [
   },
   {
     capability: 'Complete assigned eCIgn attestations and certificates',
-    permissionKey: 'forms.sign',
     readinessStatus: 'validated',
     riskStatus: 'pending',
     rolesUsing: 'Field RN, Employee, Administrator',
@@ -78,7 +72,6 @@ const permissionRows: readonly PermissionRow[] = [
   },
   {
     capability: 'Edit onboarding catalog, batches, and clearance gates',
-    permissionKey: 'journey.admin',
     readinessStatus: 'awaiting',
     riskStatus: 'review-required',
     rolesUsing: 'Onboarding Admin, HR Credentialing',
@@ -86,7 +79,6 @@ const permissionRows: readonly PermissionRow[] = [
   },
   {
     capability: 'View assigned patient PHI and clinical task context',
-    permissionKey: 'patients.readPhi',
     readinessStatus: 'ready',
     riskStatus: 'attention',
     rolesUsing: 'Clinical Manager, Field RN',
@@ -94,7 +86,6 @@ const permissionRows: readonly PermissionRow[] = [
   },
   {
     capability: 'Open a dual-signature override for blocked workflow gates',
-    permissionKey: 'governance.override',
     readinessStatus: 'review-required',
     riskStatus: 'warning',
     rolesUsing: 'Administrator, QAPI Lead',
@@ -217,15 +208,15 @@ export function AdminPermissionsScreen() {
       data-template="matrix"
     >
       <section className="grid gap-xl rounded-lg border border-card bg-surface/90 p-xl shadow-rest backdrop-blur-xl">
-        <nav aria-label="Permission detail tabs" className="flex gap-lg overflow-x-auto border-b border-hairline pb-xs">
+        <nav aria-label="Permission detail tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface p-xs shadow-rest">
           {permissionTabs.map((tab) => (
             <button
               aria-selected={activeTab === tab.id}
               className={cx(
-                'shrink-0 border-b-2 px-xs pb-md text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                'min-h-tap shrink-0 rounded-md px-md text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                 activeTab === tab.id
-                  ? 'border-brand-teal text-brand-teal'
-                  : 'border-transparent text-secondary hover:border-tone-teal-border hover:text-brand-teal',
+                  ? 'bg-brand-teal text-on-brand shadow-rest'
+                  : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',
               )}
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -317,7 +308,7 @@ export function AdminPermissionsScreen() {
                   Control path
                 </h2>
                 <p className="text-sm font-light text-muted">
-                  RBAC changes flow from permission key to role set, user group, approval evidence, and audit packet.
+                  RBAC changes flow from capability to role set, user group, approval evidence, and audit packet.
                 </p>
               </div>
             </div>
