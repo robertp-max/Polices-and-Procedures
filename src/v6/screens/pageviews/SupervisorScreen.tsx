@@ -112,7 +112,7 @@ const learnerColumns: readonly DataTableColumn<SupervisorLearnerRow>[] = [
   { key: 'name', label: 'Learner' },
   { key: 'role', label: 'Role' },
   { key: 'gaoProgress', label: 'GAO' },
-  { key: 'roleProgress', label: 'Role' },
+  { key: 'roleProgress', label: 'Role modules' },
   { key: 'supervisedVisits', label: 'Visits' },
   { key: 'exceptions', label: 'Exceptions' },
   { key: 'clearanceStatus', label: 'Clearance', status: true },

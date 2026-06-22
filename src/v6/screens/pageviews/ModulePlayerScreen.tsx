@@ -271,7 +271,7 @@ export function ModulePlayerScreen() {
                     <div>
                       <h4 className="text-sm font-medium text-ink">Missed competency topics</h4>
                       {/* Three-column grid */}
-                      <div className="mt-md grid grid-cols-3 gap-md">
+                      <div className="mt-md grid grid-cols-1 tablet-l:grid-cols-3 gap-md">
                         <div className="rounded-md bg-tone-slate-bg p-md text-left">
                           <span className="text-xs text-secondary font-light">Infection control</span>
                           <p className="mt-xs text-sm font-medium text-ink">2 missed</p>
