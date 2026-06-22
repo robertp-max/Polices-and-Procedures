@@ -180,11 +180,11 @@ export default function WorkflowsScreen() {
   const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowRow | null>(null);
 
   return (
-    <section className="grid gap-xl" data-hash-id="workflows">
+    <section className="grid gap-lg" data-hash-id="workflows">
 
       <MetricGrid metrics={workflowMetrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+      <section className="grid gap-lg desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <section aria-label="Workflows library matrix" className="rounded-lg border border-card bg-surface p-xl shadow-rest">
           <DataTable
             columns={workflowColumns}

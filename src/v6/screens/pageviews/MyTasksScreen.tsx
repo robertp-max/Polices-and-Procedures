@@ -115,7 +115,7 @@ export function MyTasksScreen() {
     <div className="grid gap-xl">
       <MetricGrid metrics={taskMetrics} />
 
-      <section className="grid gap-lg desktop:grid-cols-4" aria-label="My task board">
+      <section className="grid gap-md desktop:grid-cols-4" aria-label="My task board">
         {taskLanes.map((lane) => (
           <BoardLane key={lane.title} lane={lane} />
         ))}

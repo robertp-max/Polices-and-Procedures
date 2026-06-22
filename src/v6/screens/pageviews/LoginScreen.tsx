@@ -11,7 +11,7 @@ export function LoginScreen() {
       data-template="login"
     >
       <section className="grid w-full max-w-modal-sm gap-lg rounded-xl border border-card bg-surface-glass p-2xl shadow-rest">
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-2xl">
           <img
             src="/ci-logo-gray.png"
             alt="Care Indeed"

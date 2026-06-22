@@ -1766,7 +1766,7 @@ function DashboardScreen() {
     <div className="grid gap-2xl">
       <MetricGrid metrics={dashboardMetrics} />
 
-      <section className="grid gap-2xl desktop:grid-cols-5">
+      <section className="grid gap-xl desktop:grid-cols-5">
         <section className="rounded-lg border border-card bg-surface p-xl shadow-rest desktop:col-span-3">
           <div className="mb-lg flex items-center justify-between gap-lg">
             <div>
@@ -1805,8 +1805,8 @@ function DashboardScreen() {
                   key={label}
                 >
                   <div className="text-tag font-medium uppercase tracking-tag opacity-80">{label}</div>
-                  <div className="mt-2 text-2xl font-medium tracking-tight">{value}</div>
-                  <div className="mt-1 text-xs font-light leading-relaxed opacity-80">{note}</div>
+                  <div className="mt-sm text-2xl font-medium tracking-tight">{value}</div>
+                  <div className="mt-xs text-xs font-light leading-relaxed opacity-80">{note}</div>
                 </div>
               ))}
             </div>
@@ -2345,7 +2345,7 @@ function BoardScreen() {
           <p className="text-sm text-ink">Sprint 12 - 33 cards - 4 blocked</p>
         </div>
         <div className="overflow-x-hidden pb-sm">
-          <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-3 large:grid-cols-6">
+          <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-6">
             {boardLanes.map((lane) => (
               <BoardLane key={lane.title} lane={lane} />
             ))}
@@ -2471,7 +2471,7 @@ function WorkflowSwimlaneScreen() {
 
   return (
     <div className="grid gap-xl">
-      <section className="grid gap-xl rounded-lg border border-card bg-surface-glass p-xl shadow-rest">
+      <section className="grid gap-lg rounded-lg border border-card bg-surface-glass p-lg shadow-rest">
         <MetricGrid metrics={metrics} />
 
         <div className="flex flex-wrap items-center justify-between gap-lg border-t border-hairline pt-lg">
@@ -2636,7 +2636,7 @@ function ArtifactViewerScreen() {
     <ScreenStack metrics={artifactMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-          <div className="mb-xl flex items-start justify-between gap-lg">
+          <div className="mb-lg flex items-start justify-between gap-lg">
             <div>
               <ToneTag>/artifacts/:artifactId</ToneTag>
               <h2 className="mt-lg text-h2 font-medium text-ink">Evidence Package Summary</h2>
@@ -2743,7 +2743,7 @@ function FormWorkspaceScreen() {
           </div>
         </aside>
         <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-          <div className="mb-xl flex flex-wrap items-start justify-between gap-lg">
+          <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
             <div>
               <ToneTag tone="orange">Interactive form</ToneTag>
               <h2 className="mt-lg text-h2 font-medium text-ink">GV-FM-006 - Conflict of Interest Disclosure</h2>

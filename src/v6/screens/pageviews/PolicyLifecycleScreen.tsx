@@ -50,7 +50,7 @@ export function PolicyLifecycleScreen() {
 
       <section className="grid gap-xl desktop:grid-cols-12">
         <div className="grid content-start gap-lg desktop:col-span-8">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-lg">Horizontal Stage Board</h3>
             <div className="flex flex-wrap gap-md items-center justify-between">
               {stages.map((stage, index) => (
@@ -68,7 +68,7 @@ export function PolicyLifecycleScreen() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md">Active Policies Checklist</h3>
             <p className="text-sm text-secondary">
               Virtualization handles the ~279 active policy lifecycle rows. Use search or filter to target specific codes.
