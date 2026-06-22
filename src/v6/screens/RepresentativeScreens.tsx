@@ -3679,7 +3679,7 @@ function FormWorkspaceScreen() {
             ))}
           </div>
         </aside>
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg bg-surface p-xl shadow-rest">
           <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
             <div>
               <ToneTag tone="orange">Interactive form</ToneTag>
