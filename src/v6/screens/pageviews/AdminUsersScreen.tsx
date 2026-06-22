@@ -122,8 +122,6 @@ const userColumns: readonly DataTableColumn<AdminUserRow>[] = [
   { key: 'groups', label: 'Groups' },
   { key: 'mfaStatus', label: 'MFA', status: true },
   { key: 'accessStatus', label: 'Access', status: true },
-  { key: 'auditStatus', label: 'Audit', status: true },
-  { key: 'readinessStatus', label: 'Readiness', status: true },
   { key: 'lastReview', label: 'Last review' },
 ];
 
