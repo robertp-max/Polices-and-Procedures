@@ -1,4 +1,5 @@
 import { Archive, ClipboardCheck, ClipboardList, FileCheck2, Link2, PenLine, ShieldCheck, Users } from 'lucide-react';
+import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, ToneBadge } from '../../primitives';
 
@@ -7,7 +8,6 @@ interface FormLibraryRow extends Record<string, string> {
   evidence: string;
   formId: string;
   linkedPolicies: string;
-  signers: string;
   status: string;
   title: string;
   type: string;
@@ -17,95 +17,84 @@ interface FormsLibraryCard extends SurfaceCardData {
   meta: readonly [string, string][];
 }
 
+// Domain code → human name. Verified against FORMS_DATASET domainCode values
+// (EN, GV, HR, CL, QA, RM, OP, FN, CO, IT, IS). Unknown codes fall back to the code itself.
+const DOMAIN_NAMES: Record<string, string> = {
+  EN: 'Enterprise',
+  GV: 'Governance',
+  HR: 'Human Resources',
+  CL: 'Clinical',
+  QA: 'Quality',
+  RM: 'Risk Management',
+  OP: 'Operations',
+  FN: 'Finance',
+  IT: 'IT & Security',
+  IS: 'IT & Security',
+  CO: 'Compliance',
+};
+
+const domainName = (code: string): string => DOMAIN_NAMES[code] ?? code;
+
+// Linked-policy summary. "ALL (…)" sentinels pass through verbatim; otherwise a real count.
+const linkedPoliciesLabel = (policies: readonly string[]): string => {
+  const first = policies[0] ?? '';
+  if (first.startsWith('ALL')) return first;
+  const count = policies.length;
+  return count === 1 ? '1 policy' : `${count} policies`;
+};
+
+// Status derived from the real `usage` field (whether the artifact is mandatory).
+const statusFromUsage = (usage: string): string => {
+  switch (usage) {
+    case 'Required':
+      return 'active';
+    case 'Conditional':
+      return 'pending';
+    case 'Optional':
+      return 'draft';
+    default:
+      return usage;
+  }
+};
+
+// Evidence posture derived from real classifications: audit-critical artifacts are
+// validated evidence; everything else is informational.
+const evidenceFromClassifications = (classifications: readonly string[]): string =>
+  classifications.includes('audit_critical') ? 'validated' : 'info';
+
+const toRow = (record: FormRecord): FormLibraryRow => ({
+  domain: domainName(record.domainCode),
+  evidence: evidenceFromClassifications(record.classifications),
+  formId: record.id,
+  linkedPolicies: linkedPoliciesLabel(record.policies),
+  status: statusFromUsage(record.usage),
+  title: record.name,
+  type: record.type,
+});
+
+const formRows: readonly FormLibraryRow[] = FORMS_DATASET.map(toRow);
+
+const totalForms = FORMS_DATASET.length;
+const distinctDomains = new Set(FORMS_DATASET.map((record) => record.domainCode)).size;
+const digitalCandidates = FORMS_DATASET.filter((record) => record.classifications.includes('digital_candidate')).length;
+
 const formsMetrics = [
-  { label: 'Canonical artifacts', value: '361', helper: 'Approved agency form records', tone: 'teal' },
-  { label: 'Runtime records', value: '410', helper: 'Templates, packets, and checklists', tone: 'blue' },
-  { label: 'Domains', value: '10', helper: 'Taxonomy families represented', tone: 'slate' },
-  { label: 'eCIgn candidates', value: '74', helper: 'Ready for signer routing', tone: 'orange' },
+  { label: 'Canonical artifacts', value: String(totalForms), helper: 'Approved agency form records', tone: 'teal' },
+  { label: 'Runtime records', value: String(totalForms), helper: 'Templates, packets, and checklists', tone: 'blue' },
+  { label: 'Domains', value: String(distinctDomains), helper: 'Taxonomy families represented', tone: 'slate' },
+  { label: 'eCIgn candidates', value: String(digitalCandidates), helper: 'Ready for signer routing', tone: 'orange' },
 ] satisfies readonly MetricTileData[];
 
+// Signer metadata column removed: the dataset carries no honest per-form signer
+// roles, and deriving them from `type` would fabricate unique fake strings.
 const formColumns: readonly DataTableColumn<FormLibraryRow>[] = [
   { key: 'formId', label: 'Form ID' },
   { key: 'title', label: 'Form title' },
   { key: 'domain', label: 'Domain' },
   { key: 'type', label: 'Type' },
   { key: 'status', label: 'Status', status: true },
-  { key: 'signers', label: 'Signer metadata' },
   { key: 'evidence', label: 'Evidence', status: true },
   { key: 'linkedPolicies', label: 'Linked policies' },
-];
-
-const formRows: readonly FormLibraryRow[] = [
-  {
-    domain: 'Enterprise',
-    evidence: 'validated',
-    formId: 'EN-FM-001',
-    linkedPolicies: '18 policies',
-    signers: 'All staff acknowledgment',
-    status: 'ready',
-    title: 'Universal Policy Acknowledgment Form',
-    type: 'Attestation',
-  },
-  {
-    domain: 'Governance',
-    evidence: 'awaiting',
-    formId: 'GV-FM-006',
-    linkedPolicies: '6 policies',
-    signers: 'Board member, Administrator',
-    status: 'active',
-    title: 'Conflict of Interest Disclosure',
-    type: 'Interactive',
-  },
-  {
-    domain: 'Human Resources',
-    evidence: 'uploaded',
-    formId: 'HR-FM-014',
-    linkedPolicies: '11 policies',
-    signers: 'Employee, Supervisor',
-    status: 'review-required',
-    title: 'Competency Skills Checklist',
-    type: 'Checklist',
-  },
-  {
-    domain: 'Clinical',
-    evidence: 'validated',
-    formId: 'CL-FM-030',
-    linkedPolicies: '9 policies',
-    signers: 'RN Case Manager',
-    status: 'ready',
-    title: 'Start of Care Visit Checklist',
-    type: 'Digital sheet',
-  },
-  {
-    domain: 'Quality',
-    evidence: 'missing-evidence',
-    formId: 'QA-FM-021',
-    linkedPolicies: '7 policies',
-    signers: 'QAPI Lead',
-    status: 'attention',
-    title: 'QAPI Audit Worksheet',
-    type: 'Audit critical',
-  },
-  {
-    domain: 'Risk Management',
-    evidence: 'uploaded',
-    formId: 'RM-FM-018',
-    linkedPolicies: '5 policies',
-    signers: 'Administrator, Safety Lead',
-    status: 'pending',
-    title: 'Emergency Drill After Action Report',
-    type: 'Packet input',
-  },
-  {
-    domain: 'Operations',
-    evidence: 'complete',
-    formId: 'OP-FM-044',
-    linkedPolicies: '8 policies',
-    signers: 'Scheduler, Clinical Manager',
-    status: 'signed',
-    title: 'Missed Visit Follow-up Log',
-    type: 'Log table',
-  },
 ];
 
 const classificationFilters = [
