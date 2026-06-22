@@ -44,7 +44,7 @@ export function V6Shell() {
         <div className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
           <main
             className={cx(
-              'v6-main-scrollmask min-h-0 flex-1 overflow-auto px-3xl py-3xl',
+              'v6-main-scrollmask min-h-0 flex-1 overflow-auto py-3xl pl-3xl pr-[calc(var(--space-3xl)*3)]',
               hasScrolledMain && 'v6-main-scrollmask--scrolled',
             )}
             id="main-content"
@@ -60,7 +60,7 @@ export function V6Shell() {
         </div>
       </div>
       <Topbar
-        className={isPersonalOpsOpen ? 'fixed right-[404px] top-6 z-50' : 'fixed right-6 top-6 z-50'}
+        className={isPersonalOpsOpen ? 'fixed right-[404px] top-3xl z-50' : 'fixed right-3xl top-3xl z-50'}
         isPersonalOpsOpen={isPersonalOpsOpen}
         onPersonalOpsToggle={togglePersonalOps}
       />

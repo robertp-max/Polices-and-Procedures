@@ -1088,7 +1088,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['Prep', 'GV-GB-001'],
         due: 'May 20',
-        id: 'CEU-1201',
+        id: 'CES-1201',
         owner: 'Compliance Officer',
         progress: 18,
         title: 'Validate governing body roster',
@@ -1097,7 +1097,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['Documentation'],
         due: 'May 22',
-        id: 'CEU-1204',
+        id: 'CES-1204',
         owner: 'DON',
         progress: 24,
         title: 'Queue annual policy manual review',
@@ -1113,7 +1113,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['Ready', 'Evidence'],
         due: 'May 24',
-        id: 'CEU-1241',
+        id: 'CES-1241',
         owner: 'Systems',
         progress: 88,
         title: 'Emergency drill after-action report',
@@ -1122,7 +1122,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['Training'],
         due: 'May 23',
-        id: 'CEU-1243',
+        id: 'CES-1243',
         owner: 'DON',
         progress: 72,
         title: 'HIPAA training completion sweep',
@@ -1138,7 +1138,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['Review', 'QA'],
         due: 'May 19',
-        id: 'CEU-1218',
+        id: 'CES-1218',
         owner: 'Maria Gonzalez, RN',
         progress: 72,
         title: 'QAPI indicator data - Q2 aggregate report',
@@ -1147,7 +1147,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['Clinical', 'Audit'],
         due: 'May 20',
-        id: 'CEU-1220',
+        id: 'CES-1220',
         owner: 'Clinical Manager',
         progress: 54,
         title: '60-day care plan recertification reviews',
@@ -1163,7 +1163,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['Signature', 'GB'],
         due: 'May 21',
-        id: 'CEU-1230',
+        id: 'CES-1230',
         owner: 'Patricia Hale',
         progress: 62,
         title: 'Q2 Governing Body pre-read packet',
@@ -1172,7 +1172,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['eCIgn'],
         due: 'May 21',
-        id: 'CEU-1231',
+        id: 'CES-1231',
         owner: 'Governing Body',
         progress: 68,
         title: 'Incident reporting procedure approval',
@@ -1188,7 +1188,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['Evidence missing'],
         due: 'May 17',
-        id: 'CEU-1232',
+        id: 'CES-1232',
         owner: 'Admin Designee',
         progress: 28,
         title: 'TB screening documentation for contract clinicians',
@@ -1197,7 +1197,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['SLA urgent'],
         due: 'May 16',
-        id: 'CEU-1234',
+        id: 'CES-1234',
         owner: 'Administrator',
         progress: 22,
         title: 'Background check results - 2 pending hires',
@@ -1213,7 +1213,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['Certified'],
         due: 'May 8',
-        id: 'CEU-1240',
+        id: 'CES-1240',
         owner: 'Accounting',
         progress: 100,
         title: 'Personnel file completeness audit - Q1 new hires',
@@ -1222,7 +1222,7 @@ const boardLanes: readonly BoardLaneData[] = [
       {
         chips: ['Locked'],
         due: 'May 16',
-        id: 'CEU-1242',
+        id: 'CES-1242',
         owner: 'DON',
         progress: 100,
         title: 'Medication reconciliation accuracy audit',
@@ -2344,8 +2344,8 @@ function BoardScreen() {
           </div>
           <p className="text-sm text-ink">Sprint 12 - 33 cards - 4 blocked</p>
         </div>
-        <div className="overflow-x-auto pb-sm">
-          <div className="grid min-w-[1380px] grid-cols-6 gap-lg">
+        <div className="overflow-x-hidden pb-sm">
+          <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-3 large:grid-cols-6">
             {boardLanes.map((lane) => (
               <BoardLane key={lane.title} lane={lane} />
             ))}

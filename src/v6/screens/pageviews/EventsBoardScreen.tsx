@@ -312,11 +312,11 @@ export function EventsBoardScreen() {
       </section>
 
       {activeTab === 'board' ? (
-        <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(320px,1fr)]">
-          <div aria-label="Events board lanes" className="overflow-x-auto pb-sm" role="region" tabIndex={0}>
-            <div className="grid gap-lg laptop:flex laptop:min-w-[960px] laptop:items-stretch">
+        <section className="grid gap-xl large:grid-cols-[minmax(0,3fr)_minmax(320px,1fr)]">
+          <div aria-label="Events board lanes" className="min-w-0 overflow-hidden pb-sm" role="region" tabIndex={0}>
+            <div className="grid gap-md tablet-l:grid-cols-2 desktop:grid-cols-4">
               {eventLanes.map((lane) => (
-                <div className="laptop:w-[240px] laptop:flex-none" key={lane.title}>
+                <div className="min-w-0" key={lane.title}>
                   <BoardLane lane={lane} />
                 </div>
               ))}

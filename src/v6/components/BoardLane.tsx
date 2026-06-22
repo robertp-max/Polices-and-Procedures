@@ -29,7 +29,7 @@ export interface BoardLaneProps {
 
 export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
   return (
-    <section className="min-w-[232px] rounded-lg border border-card bg-white/[.58] p-sm shadow-glass-inset backdrop-blur-md">
+    <section className="min-w-0 rounded-lg border border-card bg-white/[.58] p-sm shadow-glass-inset backdrop-blur-md">
       <header className="mb-sm flex items-start justify-between gap-sm px-xs pt-xs">
         <div className="min-w-0">
           <h2 className="text-body font-medium text-ink">{lane.title}</h2>
@@ -41,7 +41,7 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
         {lane.cards.map((card) => (
           <article
             className={cx(
-              'flex min-h-[164px] flex-col rounded-lg border border-card bg-white/[.72] p-sm transition duration-fast ease-standard',
+              'flex min-h-[148px] flex-col rounded-lg border border-card bg-white/[.72] p-sm transition duration-fast ease-standard',
               onCardClick && 'cursor-pointer hover:bg-white'
             )}
             key={card.id}
@@ -64,7 +64,7 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
               </button>
             </div>
             <div className="flex flex-1 flex-col gap-sm">
-              <h3 className="text-sm font-light leading-sm text-ink">{card.title}</h3>
+              <h3 className="line-clamp-2 text-sm font-light leading-sm text-ink">{card.title}</h3>
               <div className="flex justify-between gap-sm text-xs">
                 <span className="min-w-0 truncate text-brand-teal">{card.owner}</span>
                 <span className="text-muted">{card.due}</span>
@@ -73,7 +73,7 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
                 {card.chips.map((chip) => (
                   <span
                     className={cx(
-                      'rounded-sm border px-sm py-xs text-tag uppercase tracking-tag',
+                      'max-w-full truncate rounded-sm border px-sm py-xs text-tag uppercase tracking-tag',
                       card.tone === 'orange' || card.tone === 'amber'
                         ? toneSurfaceClasses.orange
                         : 'border-tone-teal-border bg-white text-brand-teal',
