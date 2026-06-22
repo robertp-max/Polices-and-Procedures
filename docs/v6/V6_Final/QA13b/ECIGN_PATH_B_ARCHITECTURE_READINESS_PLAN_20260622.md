@@ -1,0 +1,291 @@
+# eCIgn Path B — Architecture & Readiness Plan
+
+Documentation-only architecture/readiness plan for **eCIgn Path B**, built around the
+signed-PDF artifact evidence rule. **No code was written or modified to produce this plan.**
+Date: 2026-06-22. Baseline: `v2/designless-baseline` @ `9f0a698`.
+
+> **GATE:** Path B implementation MUST NOT begin until this architecture is reviewed and approved.
+> Path A (source-grounded static eCIgn screen) is checkpointed and remains the current baseline
+> behavior. See `V2_BASELINE_CHECKPOINT_AFTER_ECIGN_PATH_A_20260622.md` and
+> `ECIGN_STAGE_B_READINESS_PLAN.md` (HARD REQUIREMENT section).
+
+---
+
+## 1. Executive summary
+
+Path B is the **live runtime/API reconnection** of the eCIgn Workspace plus the **signing/write
+pipeline** that produces auditable signed artifacts. Unlike Path A (pure client-static structure,
+zero runtime dependency, LOW risk), Path B introduces: a runtime server dependency (`server/ecign`
+store + API), multi-signer write flows, immutable artifact storage, Google Drive publishing, and
+Evidence Center linkage. It is **MED-HIGH** effort/risk: it spans client, server, storage, and
+external integration, and it is **not exercised by the static `verify:designless`/build gate**.
+
+Because Path B touches evidence-of-record and compliance surfaces, **it must not begin until the
+architecture below is approved.** A premature implementation risks fabricating or corrupting signed
+evidence — the exact failure the signed-PDF artifact rule (§2) exists to prevent.
+
+---
+
+## 2. Non-negotiable signed-PDF artifact rule
+
+Path B must follow this rule **exactly** (full text in `ECIGN_STAGE_B_READINESS_PLAN.md`):
+
+- The **canonical signed PDF/artifact is created first** — the exact bytes presented to the signer.
+- The signed artifact is **immutable after signature** (write-once; no overwrite/replace).
+- **Evidence records point to the real canonical signed artifact** (not a regenerated copy, not metadata alone).
+- **Google Drive links point to the same canonical artifact.**
+- **Evidence Center links point to the same canonical artifact.**
+- **Multi-signer flows append/advance versions** (A→B→C) without regenerating or replacing prior signed artifacts.
+- **No post-signature PDF regeneration** — a defective PDF (bad logo/layout/missing image/formatting)
+  at signing time is still the signed record and is preserved as-is.
+- **Metadata may update, but the signed artifact bytes must never be silently rewritten.**
+
+This rule is a **merge gate**: any Path B deliverable that stores only metadata, regenerates a signed
+PDF, or replaces a prior signed version is rejected.
+
+---
+
+## 3. Current Path A baseline assumptions
+
+From the checkpoint, the currently accepted Path A behavior:
+
+- **Canonical artifact creation:** Path A does **not** create artifacts — it renders a source-grounded
+  static model only. Artifact creation is entirely Path B's responsibility (currently absent in the UI).
+- **Artifact metadata:** the canonical metadata SHAPE is known (from `types.ts`:
+  `ECIgnSignatureRecord`, `ECIgnCertificate`) but no per-instance values are shown; they are marked
+  *source-unavailable*.
+- **Google-secured retrieval/write integration:** exists server-side (`server/ecign`,
+  `server/googleEvidence.ts`, `googleDrive`) but is **not wired into the V6 eCIgn screen** in Path A.
+- **Drive / Evidence Center linkage:** the Evidence/Drive metadata model is preserved
+  (`regulatoryExecutionStore.ts` — `attachDriveMetadata`, `folderPath`, `webViewLink`, `driveFileId`)
+  per `EVIDENCE-DRIVE-FINDINGS.md`, but eCIgn-screen linkage is deferred to Path B.
+- **No jsonl drift committed:** running V2 Vite can append to `server/ecign/data/*.jsonl`; this runtime
+  drift is never staged/committed.
+- **No Path B work started:** confirmed — only the static Path A screen is on baseline.
+
+---
+
+## 4. Path B scope
+
+Path B should include:
+
+- **Multi-signer sequencing** — ordered, no-skip signer flow driven by the canonical signer hierarchy.
+- **Signer role hierarchy** — reuse `SIGNER_HIERARCHY_RULES` (owner → reviewer → signer → final approver,
+  governing-body flag) and `ECIgnPermissionRole` ladder for authorization.
+- **Second/third/fourth signer support** — N-signer chains, not just a single signer.
+- **Append-only artifact/version chain** — each signature advances the lineage (A→B→C…) without
+  mutating prior versions.
+- **Immutable signed-artifact retention** — write-once storage with retrievable history.
+- **Evidence Center visibility** — each signed artifact/version surfaces as an evidence record linking
+  to the real file.
+- **Drive metadata parity** — Drive `fileId`/`webUrl`/upload status recorded and consistent with the
+  evidence record and the stored artifact.
+- **Audit trail and certification traceability** — append-only audit chain tying
+  policy/workflow/event/formInstance/artifact/signer together; certificate generation per the
+  `ECIgnCertificate` model.
+- **Configurable retention policy** — policy-confirmed duration (no hardcoded 5/7 years).
+- **Recovery/retry behavior** — idempotent recovery from partial failures (artifact saved but Drive or
+  metadata step failed).
+
+---
+
+## 5. Out of scope
+
+Path B must **not**:
+
+- **No redesign** — keep the V6 visual system; no restyling beyond wiring real data.
+- **No light-mode / theming work.**
+- **No CES/QAPI mock work** — CES/QAPI swimlanes are out of bounds.
+- **No old Mock 5 repo activity** — work only in `Policies_and_Procedures_V2`.
+- **No unrelated V6 design work.**
+- **No replacement of Path A** — Path B builds on the static model; the source-grounded structure stays.
+- **No local/demo fallback reintroduction** — no fabricated signer/status/hash/IP/audit data, no
+  `demoLocalApi` shortcuts that masquerade as real evidence.
+- **No post-signature regeneration** — see §2.
+
+---
+
+## 6. Proposed architecture
+
+```
+                        ┌──────────────────────────────────────────────────────────┐
+                        │  Form signing workspace (V6 eCIgn screen, /forms/:id/esign)│
+                        │  — presents the EXACT PDF bytes to the signer              │
+                        └───────────────────────────┬──────────────────────────────┘
+                                                     │ sign (signer N, role/tier validated)
+                                                     ▼
+                        ┌──────────────────────────────────────────────────────────┐
+                        │  Canonical signed artifact  (bytes shown == bytes stored)  │
+                        │  — created FIRST, hashed (sha256), never re-rendered       │
+                        └───────────────────────────┬──────────────────────────────┘
+                                                     ▼
+                        ┌──────────────────────────────────────────────────────────┐
+                        │  Immutable storage / version record (write-once)           │
+                        │  — artifactVersionId, previousArtifactVersionId (A→B→C)     │
+                        └───────────────────────────┬──────────────────────────────┘
+                                                     ▼
+                        ┌──────────────────────────────────────────────────────────┐
+                        │  Metadata record (index/audit layer — links, never replaces)│
+                        └───────┬───────────────────────────────────────┬──────────┘
+                                ▼                                          ▼
+            ┌───────────────────────────────┐          ┌──────────────────────────────────┐
+            │  Evidence Center               │          │  Google Drive secured file/link    │
+            │  — links to canonical artifact │◀────────▶│  — same canonical artifact bytes   │
+            └───────────────┬───────────────┘          └──────────────────┬─────────────────┘
+                            └───────────────────────┬───────────────────────┘
+                                                     ▼
+                        ┌──────────────────────────────────────────────────────────┐
+                        │  Audit trail (append-only)                                 │
+                        │  — policy / workflow / event / formInstance / artifact /   │
+                        │    signer / version, certificate traceability             │
+                        └──────────────────────────────────────────────────────────┘
+```
+
+All three consumers (storage, Evidence Center, Drive) reference the **same canonical artifact**;
+metadata and audit rows index it and never substitute for it.
+
+---
+
+## 7. Data model readiness
+
+Required metadata fields per signed artifact/version (index/audit layer — the artifact **bytes**
+themselves are stored separately and immutably):
+
+| Field | Purpose |
+|---|---|
+| `artifactId` | Stable identity of the artifact family (the document being signed). |
+| `formInstanceId` | The form instance this artifact belongs to. |
+| `eventId` | Owning regulatory/execution event. |
+| `workflowId` | Owning workflow (if any). |
+| `policyId` | Linked policy. |
+| `signerId` | User who applied this signature. |
+| `signerRole` | Business/workflow role (`SignerRole`). |
+| `signerTier` | Tier in the signer sequence (1..N). |
+| `signatureSequence` | Ordinal position in the signing chain. |
+| `previousArtifactVersionId` | Link to the prior signed version (null for first). |
+| `artifactVersionId` | This version's unique id (append-only chain node). |
+| `sha256` / `hash` | Content hash of the stored signed bytes (tamper-evidence). |
+| `driveFileId` | Google Drive file id for this canonical artifact. |
+| `driveWebUrl` | Drive web link to the same artifact. |
+| `driveUploadStatus` | `pending` / `uploaded` / `failed`. |
+| `evidenceRecordId` | Evidence Center record linking to this artifact. |
+| `retentionPolicyId` | Configurable retention policy reference. |
+| `lockedAt` | Timestamp the artifact became immutable. |
+| `createdAt` | Creation timestamp. |
+| `createdBy` | Actor/service that created the record. |
+| `auditChainId` | Append-only audit chain identifier. |
+
+Constraints: `artifactVersionId` is immutable once written; `previousArtifactVersionId` forms a strict
+append-only chain; `sha256` must match the stored bytes on every read (verification gate).
+
+---
+
+## 8. Multi-signer state machine
+
+States:
+
+- `draft`
+- `prepared_for_signature`
+- `signed_by_tier_1`
+- `signed_by_tier_2`
+- `signed_by_tier_3`
+- `signed_by_tier_4`
+- `final_validated_by_tier_5`
+- `locked`
+- `failed_drive_publish`
+- `failed_metadata_attach`
+- `recovery_required`
+
+**Allowed transitions (happy path):**
+`draft → prepared_for_signature → signed_by_tier_1 → signed_by_tier_2 → signed_by_tier_3 →
+signed_by_tier_4 → final_validated_by_tier_5 → locked`
+(tiers are skippable only when the signer hierarchy for that domain does not require them — the
+sequence advances to the next required tier, never past a required one.)
+
+**Allowed transitions (failure/recovery):**
+- any `signed_by_tier_n` → `failed_drive_publish` → (retry) → `signed_by_tier_n` (idempotent re-publish).
+- any `signed_by_tier_n` → `failed_metadata_attach` → (retry) → `signed_by_tier_n`.
+- `failed_*` → `recovery_required` (manual/automated remediation) → resume prior signed state.
+
+**Forbidden transitions:**
+- Any transition that **mutates or replaces** an already-signed artifact version (no regeneration).
+- Skipping a **required** signer tier.
+- `locked → any` (locked is terminal except an approved retention/disposition workflow).
+- Backward transitions that rewrite earlier signed versions.
+- Advancing to a later tier before the current required tier is `signed`.
+
+---
+
+## 9. Failure handling
+
+| Scenario | Required behavior |
+|---|---|
+| Artifact created but Drive publish failed | State `failed_drive_publish`; artifact + hash already persisted immutably; retry publish idempotently (same `artifactVersionId`); never recreate the PDF. |
+| Drive uploaded but metadata attach failed | State `failed_metadata_attach`; retry attach using stored `driveFileId`; artifact unchanged. |
+| Signer abandons flow | Remain at last completed signed tier (or `prepared_for_signature`); no partial/forged signature recorded. |
+| Role mismatch | Reject signature attempt; no state change; audit the denied attempt. |
+| Duplicate signer attempt | Idempotent: detect existing signature for (artifact, tier, signer); do not create a second version. |
+| Stale `formInstanceId` | Reject; surface "instance changed/expired"; do not sign against stale instance. |
+| Hash mismatch (stored vs expected) | Hard fail; mark `recovery_required`; never overwrite; flag potential tampering. |
+| Retry idempotency | All retries keyed by `artifactVersionId` + step; safe to re-run without duplicating artifacts/records. |
+| Evidence Center missing link | Reconcile from artifact/metadata; backfill `evidenceRecordId`; never fabricate a link. |
+| Drive permission failure | Surface `failed_drive_publish`; do not silently store elsewhere or skip; retain artifact + retry after permission fix. |
+
+---
+
+## 10. Security and compliance rules
+
+- **Role-restricted signing** — only holders of the required `ECIgnPermissionRole` (or higher) may sign.
+- **Signer tier validation** — tier order enforced against the canonical signer hierarchy.
+- **Immutable evidence** — signed artifacts are write-once; bytes never rewritten.
+- **Append-only audit** — audit chain entries are added, never edited or deleted.
+- **No PHI in logs** — logs/metrics must exclude protected health information and signature images.
+- **Google-secured access** — Drive/evidence access via the secured server integration; no public links.
+- **Retention policy** — configurable, policy-confirmed duration (`retentionPolicyId`); no hardcoded value.
+- **Deletion prohibition** — no deletion except an explicitly approved retention/disposition workflow.
+- **Audit-ready traceability** — any signed artifact retrievable and provable by
+  policy / workflow / event / formInstance / artifact / signer / version.
+
+---
+
+## 11. QA gates before implementation
+
+Concrete checklist (all must pass before Path B is considered done):
+
+- [ ] Unit-level artifact/version tests (create, hash, append-only chain integrity).
+- [ ] Integration tests for signer sequence (tier order, no-skip, N-signer chains).
+- [ ] Drive parity tests (stored bytes == Drive file bytes; `driveFileId`/`driveWebUrl` correct).
+- [ ] Evidence Center parity tests (record links to the real canonical artifact).
+- [ ] Refresh/persistence test (state + artifacts survive reload/restart).
+- [ ] Role restriction test (unauthorized role/tier cannot sign).
+- [ ] Failed-upload recovery test (Drive/metadata failure → idempotent retry → consistent state).
+- [ ] Duplicate-sign prevention test (same signer/tier cannot double-sign).
+- [ ] No-regeneration test using **hash comparison** (post-signature bytes/hash unchanged across reads).
+- [ ] Audit trail completeness test (every state change + signer + version captured, append-only).
+- [ ] Final survey packet export test (multi-signer packet exports the real signed artifacts + audit).
+
+---
+
+## 12. Implementation phasing recommendation
+
+- **Phase 0 — architecture approval only** (this document). No code.
+- **Phase 1 — data contract and tests** — define artifact/version/metadata contract + failing tests (TDD); no runtime wiring.
+- **Phase 2 — artifact versioning** — immutable write-once store + append-only A→B→C chain + hash verification.
+- **Phase 3 — signer sequencing** — role/tier-validated multi-signer state machine over the artifact chain.
+- **Phase 4 — Drive/Evidence parity** — publish canonical artifact to Drive + Evidence Center linkage; parity tests green.
+- **Phase 5 — recovery and retention** — idempotent failure recovery + configurable retention policy.
+- **Phase 6 — full QA/UAT** — all §11 gates + survey packet export; sign-off before any baseline merge.
+
+Each phase is independently reviewable; no phase may regress the signed-artifact rule.
+
+---
+
+## 13. Final recommendation
+
+**Implementation should remain BLOCKED pending explicit approval of this architecture.**
+
+Path B is MED-HIGH, evidence-of-record work. Begin only after: (a) this plan is approved, (b) Phase 1
+data contract + tests are agreed, and (c) the signed-PDF artifact rule (§2) is accepted as the
+non-negotiable gate. Until then, the baseline keeps Path A (source-grounded static model) and no
+live signing/write path is introduced. Recommended next step: review/approve this plan, then
+authorize **Phase 1 only** (data contract + tests, no runtime wiring).
