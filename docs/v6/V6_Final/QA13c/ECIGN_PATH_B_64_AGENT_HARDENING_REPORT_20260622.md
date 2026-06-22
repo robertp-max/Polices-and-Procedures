@@ -166,6 +166,132 @@ Summary of results (aggregated from agent outputs so far and direct verification
 - No changes needed to the core plan `.md` content beyond spacing + minor dash consistency.
 These are isolated to review artifacts + whitespace (plan source itself passes most checks). Fix to reach clean PASS for this agent role.
 
+**Agent 06 — Encoding/mojibake/spacing/Markdown formatting (completed):**
+**Agent 06 Report: Encoding / Mojibake / Spacing / Markdown Formatting Audit**
+
+**Plan reviewed (primary):**  
+`docs/v6/V6_Final/QA13b/ECIGN_PATH_B_ARCHITECTURE_READINESS_PLAN_20260622.md` (the eCIgn Path B Architecture & Readiness Plan, containing the diagram in §6).
+
+**Related artifacts inspected:**  
+- `docs/v6/V6_Final/QA13c/PLAN_LINENUMBERED.txt` (line-numbered dump)  
+- `docs/v6/V6_Final/QA13c/PLAN_RAW_CONTENT.txt`  
+- `docs/v6/V6_Final/QA13c/ECIGN_PATH_B_ARCHITECTURE_READINESS_REVIEW_REPORT.md`  
+- `docs/v6/V6_Final/QA13b/ECIGN_STAGE_B_READINESS_PLAN.md` (cross-check, no diagram)  
+- Targeted checks on other v6 plan/docs for mojibake.
+
+**Overall verdict:**  
+Diagram in the source plan **passes clean ASCII**.  
+Source plan itself has **no mojibake**.  
+**Multiple issues** in supporting artifacts, punctuation consistency, spacing, and hard wraps. Zero-tolerance flags raised.
+
+### 1. Diagram – Clean ASCII Check (§6 in source plan)
+**Location:** Lines ~122-148 (inside ``` fence).
+
+```
+Form signing workspace (V6 eCIgn screen, /forms/:id/esign)
+    -- presents the EXACT PDF bytes to the signer
+           |
+           | sign (signer N, role/tier validated)
+           v
+Canonical signed artifact (bytes shown == bytes stored)
+    -- created FIRST, hashed (sha256), NEVER re-rendered
+           |
+           v
+...
+Evidence Center                           Google Drive secured file/link
+-- links to canonical artifact            -- same canonical artifact bytes
+...
+Audit trail (append-only)
+-- policy / workflow / event / formInstance / artifact / signer / version / certificate traceability
+```
+
+- **Pure ASCII?** YES. Only 7-bit ASCII: letters, digits, space, `|`, `-`, `+`, `v`, `>`, `(`, `)`, `/`, `:`, `.`, `=`, etc.
+- No Unicode box-drawing (┌ ├ └ │ ─ etc.), no arrows inside the block.
+- Uses ASCII approximations (`|`, `v`, `->` in one note, `--` connectors).
+- Minor visual note (not encoding): column alignment for Evidence/Drive branches is approximate and font-dependent, but syntactically valid ASCII art.
+- **PASS** for "clean ASCII in diagram".
+
+### 2. Encoding / Mojibake – Source Plan
+- `ECIGN_PATH_B_ARCHITECTURE_READINESS_PLAN_20260622.md`: **CLEAN**. No `�` (U+FFFD) or mojibake sequences anywhere.
+- Uses intentional Unicode punctuation outside the diagram:
+  - Em dash — (multiple, e.g., titles, lists, prose)
+  - Right arrow → (in rules and lists, e.g., "A→B→C", owner → reviewer)
+  - Section sign § (e.g., "§2")
+  - Ellipsis … (limited)
+- No BOM, no high-bit garbage.
+
+**Cross-file:**
+- `ECIGN_STAGE_B_READINESS_PLAN.md`: Clean (same Unicode punctuation style, no diagram).
+
+### 3. Encoding Issues – Supporting Files (Critical)
+- **`PLAN_LINENUMBERED.txt`**: **SEVERE MOJIBAKE CORRUPTION** (pervasive, file-wide).  
+  - Title: `# eCIgn Path B �?" Architecture & Readiness Plan`  
+  - Diagram block (lines ~110-142): Completely destroyed. Intended box/connector characters rendered as repeated garbage:  
+    `�"O�"?�"?�"?�"?�"?...`, `�""�"?�"?...`, `�-�`, `�"��"?`, etc.  
+  - All em-dashes, arrows, quotes, and connectors replaced by `�?` / `�+"` / `�?"` sequences (classic UTF-8 ↔ Windows-1252 / CP1252 mojibake).  
+  - Examples continue through states, transitions, phases, and failure sections (e.g., `draft �+' prepared_for_signature`, `A�+'B�+'C`, `A2` for §2, `�?"` for —).  
+  - **This file is unusable as a reference.** Likely produced by a capture/git-show/terminal-dump with incorrect locale or encoding conversion. Requires regeneration under explicit UTF-8 or deletion.
+
+- `PLAN_RAW_CONTENT.txt`: Broken/incomplete. Contains only a shell command fragment (`dir exists or created; git show HEAD:...`), not plan content. Encoding not relevant but file is corrupt for purpose.
+
+- `ECIGN_PATH_B_ARCHITECTURE_READINESS_REVIEW_REPORT.md`: **Mostly clean**. Contains literal `�?` *only* in quoted findings that describe the artifacts (lines 41, 84). Body text uses proper Unicode (— → §) and is readable. The report correctly flags:
+  - "Minor: line 25 has encoding artifact in raw ("�?")."
+  - "Inconsistent em-dash rendering in raw text (some �? artifacts from encoding)."
+  - "Diagram uses ASCII box drawing with some Unicode arrows (→) and bullets — acceptable but can be normalized for copy-paste safety."
+
+No other `.md`/`.txt` files in `docs/v6/V6_Final/QA13*` or root v6 plans showed embedded mojibake in broad scans.
+
+### 4. Spacing Issues (Source Plan)
+- **Trailing whitespace** (zero-tolerance flags):
+  - Line 324: `... introduced. ` (space after period)
+  - Line 326: `... implementation. ` (space after period)
+- Hard line breaks mid-phrase / mid-sentence (awkward for Markdown/reading):
+  - Lines 321-322: `... (b) Phase 1\ndata contract + tests are agreed...`
+  - Lines 160-161: `... (index/audit layer — the artifact **bytes**\nthemselves are stored separately...`
+- Minor: Some list items and phase descriptions have trailing periods or inconsistent wrapping.
+
+`git diff --check` (per report) was clean at the time of verification; these appear to be post-capture or subtle.
+
+### 5. Markdown Formatting Issues (Source Plan + Related)
+- **Punctuation inconsistency** (across sections):
+  - Arrows: → (prose) vs `->` (diagram + phases like "A->B->C").
+  - Dashes: — (most text) vs `--` (diagram connectors and some bullets).
+  - Section refs: `§2`, `section 2`, `section 11`, "11 gates", "A2" (in corrupted dump).
+- Diagram fence: Correct ``` but no language tag (acceptable for ASCII art).
+- Lists/tables: Well-formed. Tables in §7/§9 use proper `|---|---|` and alignment.
+- Headings: Consistent `## N. Title`.
+- Some bold/emphasis on MUST/REQUIRED is good, but mixed with soft language elsewhere (outside this agent's scope).
+- Long unbroken lines in table cells and final section are acceptable but could be tightened.
+- No duplicate headings, no broken links in the checked sections.
+
+### 6. Summary of Issues & Recommendations (Zero-Tolerance)
+**Encoding/Mojibake:**
+- **Major:** `PLAN_LINENUMBERED.txt` — regenerate or discard. All future numbered/captured dumps must enforce UTF-8 (e.g., explicit `git show | cat` or PowerShell `[System.IO.File]::WriteAllText(..., [Text.Encoding]::UTF8)`).
+- **Minor:** Source plan is clean of mojibake.
+
+**ASCII / Diagram:** Diagram passes. If strict 7-bit ASCII required for the *entire* document (including prose), normalize:
+- — → `--` or `-`
+- → → `->`
+- § → `Sec.` or `section`
+- … → `...`
+
+Current mixed style matches the review report's "acceptable but can be normalized" note.
+
+**Spacing/Markdown:**
+- Remove trailing spaces on lines 324, 326 (and re-verify with `git diff --check`).
+- Rewrap the two flagged mid-phrase breaks into single logical lines (or use explicit continuation).
+- Standardize punctuation style in one pass after wording fixes (per other agents).
+- Consider adding `<!-- markdownlint-disable -->` or project-wide rules if Unicode punctuation is policy.
+
+**Other files:** `PLAN_RAW_CONTENT.txt` should be cleaned or removed if not needed.
+
+**Files with clean diagram + no mojibake in core content:** Source plan (passes role-specific check for diagram).  
+**Files failing:** PLAN_LINENUMBERED.txt (severe).
+
+No issues found that would indicate broad codebase encoding problems (node_modules/dist ignored as generated). Focus was on the plan + review artifacts per role.
+
+Ready for re-audit after fixes. (Agent 06 — Encoding/mojibake/spacing/Markdown formatting.)
+
 **Agent 07 — Encoding/mojibake/spacing/Markdown formatting (completed):**
 Agent 07 — Encoding/mojibake/spacing/Markdown formatting
 Source plan (ECIGN_PATH_B_..._20260622.md): clean UTF8 (only intentional — → § …); 2 trailing spaces (lines 324/326); 1 inconsistent ascii "A->B->C" (line 306) + "section 2" (322) vs §2.
