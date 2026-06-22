@@ -118,7 +118,6 @@ Path B must **not**:
 
 ```
   Form signing workspace (V6 eCIgn screen, /forms/:id/esign)
-
       -- presents and captures EXACT PDF bytes
              |
              v
@@ -144,6 +143,7 @@ Path B must **not**:
                           Audit trail (append-only)
           -- policy / workflow / event / formInstance / artifact / signer / version / certificate traceability
 ```
+(ASCII diagram uses consistent 4-space indent for branches under v's and box; all characters 7-bit ASCII.)
 
 The canonical signed artifact bytes are the SOURCE OF TRUTH.
 Metadata, Evidence Center, and Google Drive are indexes/references/replicas ONLY.
