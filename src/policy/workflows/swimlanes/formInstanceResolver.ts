@@ -117,7 +117,7 @@ export function resolveSwimlaneFormInstances({
 
   for (const formId of formIds) {
     const formInstanceId = stableFormInstanceId(mode, eventId, taskId, formId, sequenceByEventForm, canonicalFormInstanceIds);
-    let initialStatus: any = formInstanceId ? 'pending' : mode === 'event_execution' ? 'blocked' : 'pending';
+    let initialStatus: SwimlaneStatus = formInstanceId ? 'pending' : mode === 'event_execution' ? 'blocked' : 'pending';
     let isMissing = mode === 'event_execution' && !formInstanceId;
     // Use actual live data from store when event known (fixes status mismatch between calendar & swimlane)
     if (eventId && mode === 'event_execution') {
@@ -131,7 +131,9 @@ export function resolveSwimlaneFormInstances({
             isMissing = live === 'missing';
           }
         }
-      } catch {}
+      } catch {
+        // best-effort live data; ignore store access errors and use default status
+      }
     }
     formInstancesById.set(formId, {
       formId,

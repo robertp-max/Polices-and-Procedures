@@ -103,6 +103,5 @@ export function toEvidenceModeLabel(_mode: EvidenceMode): string {
 export function logEvidenceDevWarning(message: string, details?: unknown): void {
   const env = (import.meta as unknown as { env?: Record<string, string | boolean> }).env;
   if (!env?.DEV) return;
-  // eslint-disable-next-line no-console
   console.warn(`[evidence] ${message}`, details ?? '');
 }

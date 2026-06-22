@@ -60,7 +60,6 @@ async function main() {
 }
 
 main().catch(err => {
-  // eslint-disable-next-line no-console
   console.error('[ia:index] failed:', (err as Error)?.message ?? err);
   process.exit(1);
 });

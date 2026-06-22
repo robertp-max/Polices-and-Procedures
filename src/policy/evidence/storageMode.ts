@@ -152,7 +152,6 @@ export function assertNoArtifactPayload(
     if (k in rec && rec[k] != null && rec[k] !== '') {
       const msg = `[storageMode] Persisted-store guard tripped: field "${k}" is not allowed in ${context}.`;
       if (import.meta.env?.DEV) throw new Error(msg);
-      // eslint-disable-next-line no-console
       console.warn(msg);
       return;
     }

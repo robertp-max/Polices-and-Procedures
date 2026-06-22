@@ -213,7 +213,6 @@ ecignRouter.get('/network-info', async (req, res) => {
     return res.json(toNetworkInfoResponse(networkLocation));
   } catch (error) {
     if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
       console.warn('[ecign.network] endpoint_fallback', {
         ip: context.ip || 'Unavailable',
         source: context.source,

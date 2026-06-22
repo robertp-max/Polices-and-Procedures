@@ -23,7 +23,6 @@ function check(label: string, ok: boolean, detail?: string): void {
   checks.push({ label, ok, detail });
   const prefix = ok ? 'PASS' : 'FAIL';
   const suffix = detail ? ` :: ${detail}` : '';
-  // eslint-disable-next-line no-console
   console.log(`${prefix}  ${label}${suffix}`);
 }
 
@@ -113,6 +112,5 @@ check(
 check('canonicalizeTaskSourceId normalizes processFlow prefix', canonicalizeTaskSourceId('processflow:step-1') === 'processFlow:step-1');
 
 const failed = checks.filter(c => !c.ok);
-// eslint-disable-next-line no-console
 console.log(failed.length === 0 ? '\nverify:task-identity OK' : `\nverify:task-identity FAILED (${failed.length})`);
 process.exit(failed.length === 0 ? 0 : 1);

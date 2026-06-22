@@ -1,11 +1,7 @@
 import { AlertCircle, ChevronRight, FolderOpen, KeyRound, PenLine, BadgeCheck, ListChecks } from 'lucide-react';
 import { ToneTag } from '../components';
 
-interface PersonalOpsPanelProps {
-  onClose?: () => void;
-}
-
-export function PersonalOpsPanel({}: PersonalOpsPanelProps) {
+export function PersonalOpsPanel() {
   const focusItems = [
     { title: 'Missing disclosure signature', meta: 'GV-FM-006 - Due today', status: 'Critical', tone: 'orange' as const },
     { title: 'QAPI minutes packet', meta: 'QA-WF-03 - Due Jun 15', status: 'Review', tone: 'teal' as const },
@@ -37,8 +33,8 @@ export function PersonalOpsPanel({}: PersonalOpsPanelProps) {
             { value: '3', label: 'Sign' },
             { value: '7', label: 'Ev' },
             { value: '4', label: 'Rev' }
-          ].map((stat, index) => (
-            <div key={index} className="rounded-lg border border-tone-teal-border bg-surface p-sm text-center shadow-sm">
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-lg border border-tone-teal-border bg-surface p-sm text-center shadow-sm">
               <div className="text-sm font-medium text-brand-teal">{stat.value}</div>
               <div className="text-[8px] font-medium uppercase tracking-wider text-muted mt-xs">{stat.label}</div>
             </div>

@@ -128,7 +128,6 @@ export const pmApi = {
  */
 export function mirror<T>(promise: Promise<T>): void {
   promise.catch(err => {
-    // eslint-disable-next-line no-console
     console.warn('[pm-api mirror failed]', err?.message || err);
   });
 }

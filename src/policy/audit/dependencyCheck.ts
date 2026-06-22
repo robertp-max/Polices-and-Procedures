@@ -110,12 +110,11 @@ export function checkDependencies(
     const isCertified = store.isCertified(dep.id);
     const auditState  = classifyAuditState(dep, today, store);
 
-    let reason: string | undefined;
-    if (!isComplete) {
-      reason = `Upstream not complete — state: ${auditState}`;
-    } else if (!isCertified) {
-      reason = 'Upstream complete but not certified (reviewer flag)';
-    }
+    const reason: string | undefined = !isComplete
+      ? `Upstream not complete — state: ${auditState}`
+      : !isCertified
+      ? 'Upstream complete but not certified (reviewer flag)'
+      : undefined;
 
     upstream.push({
       eventId:     dep.id,

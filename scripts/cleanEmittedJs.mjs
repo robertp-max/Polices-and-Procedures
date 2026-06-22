@@ -20,14 +20,14 @@ async function exists(p) {
 }
 
 async function* walk(dir) {
-  let entries;
-  try { entries = await readdir(dir, { withFileTypes: true }); }
-  catch { return; }
-  for (const e of entries) {
-    const full = join(dir, e.name);
-    if (e.isDirectory()) yield* walk(full);
-    else if (e.isFile() && e.name.endsWith('.js')) yield full;
-  }
+  try {
+    const entries = await readdir(dir, { withFileTypes: true });
+    for (const e of entries) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) yield* walk(full);
+      else if (e.isFile() && e.name.endsWith('.js')) yield full;
+    }
+  } catch { return; }
 }
 
 let removed = 0;

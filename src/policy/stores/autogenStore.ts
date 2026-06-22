@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { REGULATORY_EVENTS, type RegulatoryEvent } from '@/policy/data/regulatoryEvents';
@@ -196,7 +197,12 @@ export const useAutogenStore = create<AutogenState>()(
 
 /** Merge base catalog + generated + triggered for any view that wants the full set. */
 export function useMergedEvents(): RegulatoryEvent[] {
-  const gen = useAutogenStore(s => s.generatedEvents);
-  const trg = useAutogenStore(s => s.triggeredEvents);
-  return dedupeCanonicalCalendarEvents(REGULATORY_EVENTS, gen, trg).events;
+  const { generatedEvents: gen, triggeredEvents: trg } = useAutogenStore((s) => ({
+    generatedEvents: s.generatedEvents,
+    triggeredEvents: s.triggeredEvents,
+  }));
+  return useMemo(
+    () => dedupeCanonicalCalendarEvents(REGULATORY_EVENTS, gen, trg).events,
+    [gen, trg],
+  );
 }

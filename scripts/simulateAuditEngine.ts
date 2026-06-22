@@ -27,8 +27,6 @@
      intend to ship, not the runtime happening to be loaded.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* eslint-disable no-console */
-
 // ─── Domain model (mirrors production shapes, simplified) ──────────
 
 type Domain =
@@ -151,6 +149,38 @@ interface CertificationResult {
   reason: string;
   disposition: CertificationDisposition;
   blockers: ValidationBlocker[];
+}
+
+interface DomainRow {
+  domain: string;
+  total: number;
+  compliant: number;
+  certified: number;
+  certifiedWithException: number;
+  auditReady: number;
+  atRisk: number;
+  missingEvidence: number;
+  pendingApproval: number;
+  overdue: number;
+  blocked: number;
+  notCertifiable: number;
+}
+
+interface SampleInstance {
+  workflowId: string;
+  instanceId: string;
+  domain: string;
+  title: string;
+  condition: string;
+  auditState: string;
+  flags: unknown[];
+  disposition: string;
+  dueDate: string;
+  daysUntilDue: number;
+  slaDaysPastDue: number;
+  missing: string[];
+  reasons: string[];
+  certification: { certified: boolean; reason: string; disposition: string };
 }
 
 // ─── Deterministic RNG for reproducibility ─────────────────────────
@@ -757,7 +787,7 @@ function main() {
   }
 
   // ── Domain breakdown ───────────────────────────────────────────
-  const domainRows: Record<string, any> = {};
+  const domainRows: Record<string, DomainRow> = {};
   for (const inst of instances) {
     const r = reports.get(inst.instanceId)!;
     const row = domainRows[inst.domain] ?? {
@@ -795,7 +825,7 @@ function main() {
     'at-risk', 'missing-evidence', 'pending-approval', 'overdue', 'at-risk',
   ];
   const usedInstanceIds = new Set<string>();
-  const samples: any[] = [];
+  const samples: SampleInstance[] = [];
   for (const cond of sampleConditions) {
     const pickInst =
       instances.find(i => i.condition === cond && !usedInstanceIds.has(i.instanceId))
@@ -828,7 +858,7 @@ function main() {
 
   // ── Critical findings ──────────────────────────────────────────
   const mostCommonFailure = Object.entries(failureCounts).sort((a, b) => b[1] - a[1])[0];
-  const domainRisk = Object.values(domainRows).map((r: any) => ({
+  const domainRisk = Object.values(domainRows).map((r: DomainRow) => ({
     domain: r.domain,
     notCertifiableRate: (r.notCertifiable + r.missingEvidence + r.pendingApproval + r.blocked + r.overdue) / r.total,
   })).sort((a, b) => b.notCertifiableRate - a.notCertifiableRate);

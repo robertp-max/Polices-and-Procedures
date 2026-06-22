@@ -208,9 +208,7 @@ export function useEcignInstance(args: UseInstanceArgs) {
       }
     })();
     return () => { cancelled = true; };
-  // bootstrap once for these props
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [args.domain, args.eventId, args.fieldId, args.formId, args.formVersion, args.formInstanceId, args.parentTaskId, args.workflowInstanceId, useShared, signer.authorityDomains, signer.id, signer.role, signer.tier]);
+  }, [args.domain, args.eventId, args.fieldId, args.formId, args.formVersion, args.formInstanceId, args.parentTaskId, args.workflowInstanceId, useShared, signer.authorityDomains, signer.id, signer.role, signer.tier, captureError]);
 
   /* ── State-machine actions: each calls backend, then refreshes ── */
 

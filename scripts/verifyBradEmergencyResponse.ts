@@ -14,8 +14,6 @@
 import { classifyScenario } from '../server/ia/scenarioClassifier.ts';
 import { classify as sessionClassify } from '../server/ia/session/classifier.ts';
 import { processTurn } from '../server/ia/session/manager.ts';
-import { createSessionState } from '../server/ia/session/store.ts';
-import type { BradSessionState } from '../server/ia/session/types.ts';
 
 const EMERGENCY_LEAD = 'EMERGENCY  Call 911 immediately.';
 
@@ -64,11 +62,6 @@ function wordCount(s: string): number {
   return s.trim().split(/\s+/).filter(Boolean).length;
 }
 
-function hasOnlyOneFollowUpQ(text: string): boolean {
-  const qs = (text.match(/\?/g) || []).length;
-  return qs === 1 && /safe and out of the home right now/i.test(text);
-}
-
 function hasNoEarlySpam(text: string): boolean {
   const lower = text.toLowerCase();
   const bad = ['cl-wf', 'wf-', 'qapi', 'governing body', 'plan of care audit', 'based on available', 'standard-level', 'matched workflow'];
@@ -91,7 +84,7 @@ function run(): number {
     const sessLife = sClass.lifeSafetyFlag === p.expectLife || sClass.urgency === 'critical';
 
     let shapeOk = true;
-    let shapeIssues: string[] = [];
+    const shapeIssues: string[] = [];
     if (p.isEmergency && p.expectLife && (p.expectCategory === 'CLINICIAN_SAFETY' || !p.expectCategory)) {
       const h = m.headline || '';
       if (!checkFirstSentence(h)) { shapeOk = false; shapeIssues.push('headline !starts exact EMERGENCY lead'); }
@@ -116,7 +109,7 @@ function run(): number {
   // Multi-turn chat simulation (active case)
   console.log('\n--- Multi-turn active case continuity test ---');
   const thread = 'test-emerg-' + Date.now();
-  let turn1 = processTurn(thread, 'my client is chasing me around the house he has a knife');
+  const turn1 = processTurn(thread, 'my client is chasing me around the house he has a knife');
   const t1m = classifyScenario(turn1.sessionState.recentMessages[0]?.content || '');
   const t1Ok = turn1.sessionState.lifeSafetyFlag && turn1.sessionState.mode === 'emergency_response' && t1m.lifeSafetyFlag;
   console.log('Turn1 (danger): lifeSafety=', turn1.sessionState.lifeSafetyFlag, 'mode=', turn1.sessionState.mode, 'safetyStatus=', turn1.sessionState.safetyStatus);
@@ -124,19 +117,19 @@ function run(): number {
 
   // Simulate Brad telling the user (record would set followUp)
   // User turn 2: yes I got out
-  let turn2 = processTurn(thread, 'yes I got out');
+  const turn2 = processTurn(thread, 'yes I got out');
   const t2Safe = turn2.sessionState.safetyStatus === 'safe' || turn2.sessionState.locationStatus === 'outside_home';
   console.log('Turn2 (yes got out): safetyStatus=', turn2.sessionState.safetyStatus, 'docStage=', turn2.sessionState.documentationStage);
   if (!t2Safe) { fails++; console.log('  FAIL turn2: did not recognize safe/out'); }
 
   // Turn 3: yes (start incident)
-  let turn3 = processTurn(thread, 'yes');
+  const turn3 = processTurn(thread, 'yes');
   const t3Doc = turn3.sessionState.documentationStage === 'incident_started' || turn3.sessionState.documentationStage === 'incident_needed';
   console.log('Turn3 (yes start report): docStage=', turn3.sessionState.documentationStage);
   if (!t3Doc) { fails++; console.log('  FAIL turn3: did not advance to incident doc stage'); }
 
   // Turn 4: what next?
-  let turn4 = processTurn(thread, 'what next?');
+  const turn4 = processTurn(thread, 'what next?');
   const t4Cont = turn4.sessionState.lifeSafetyFlag && turn4.sessionState.safetyStatus === 'safe';
   console.log('Turn4 (what next): same case continued, safetyStatus=', turn4.sessionState.safetyStatus);
   if (!t4Cont) { fails++; console.log('  FAIL turn4: did not continue same active case'); }

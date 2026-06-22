@@ -7,7 +7,7 @@ import { buildSwimlaneFromWorkflow } from './buildSwimlaneFromWorkflow';
 import { resolveSwimlaneFormInstances } from './formInstanceResolver';
 import { buildCanonicalEventSwimlaneNodeId, buildCanonicalEventSwimlaneTaskId } from './eventSwimlaneIdentity';
 import { buildSwimlaneInstructions, inferSwimlaneTaskPurpose } from './swimlaneInstructions';
-import type { SwimlaneBuildContext, SwimlaneLane, SwimlaneModel, SwimlaneNode, SwimlaneStatus } from './types';
+import type { SwimlaneBuildContext, SwimlaneFormInstance, SwimlaneLane, SwimlaneModel, SwimlaneNode, SwimlaneStatus } from './types';
 import { resolveCanonicalSignaturePath } from '@/policy/ecign/signaturePathResolver';
 import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
@@ -29,8 +29,9 @@ function laneForRole(role: string, lanes: SwimlaneLane[]): SwimlaneLane {
 
 function statusForEventStep(step: Pick<EventProcessStep, 'status' | 'requiredFormIds' | 'id'>, event: RegulatoryEvent, exec: ReturnType<typeof useRegulatoryExecutionStore.getState>): SwimlaneStatus {
   // Prefer live store state over seed template status for actual execution data
-  const live = exec.effectiveStepStatus ? exec.effectiveStepStatus(event, (step as any).id || step.id || '') : undefined;
-  const s = (live as any) || step.status;
+  const ex = exec as { effectiveStepStatus?: (ev: RegulatoryEvent, key: string) => string | undefined };
+  const live = ex.effectiveStepStatus ? ex.effectiveStepStatus(event, (step as { id?: string }).id || step.id || '') : undefined;
+  const s = live ?? step.status;
   if (s === 'complete') return 'complete';
   if (s === 'in-progress') return 'in_progress';
   if (step.requiredFormIds?.length) return 'needs_evidence';
@@ -183,10 +184,10 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
     });
     // Overlay live form status from regulatoryExecutionStore (ensure calendar/swimlane match on live data)
     if (exec.effectiveFormStatus) {
-      formInstances.forEach((fi: any) => {
+      formInstances.forEach((fi: SwimlaneFormInstance) => {
         const liveF = exec.effectiveFormStatus(event, fi.formId);
         if (liveF) {
-          fi.status = (liveF === 'complete' ? 'complete' : liveF === 'in-progress' ? 'in_progress' : liveF === 'missing' ? 'blocked' : 'needs_evidence') as any;
+          fi.status = (liveF === 'complete' ? 'complete' : liveF === 'in-progress' ? 'in_progress' : liveF === 'missing' ? 'blocked' : 'needs_evidence');
           if (liveF === 'complete') fi.missing = false;
         }
       });

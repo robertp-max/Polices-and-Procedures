@@ -71,12 +71,14 @@ check('projection produced at least one task', tasks.length > 0);
    ═══════════════════════════════════════════════════════════════════ */
 console.log('\n[2] Global invariants');
 
-let dupErr: Error | null = null;
-try {
-  assertNoDuplicateTaskIds(tasks);
-} catch (e) {
-  dupErr = e as Error;
-}
+const dupErr: Error | null = (() => {
+  try {
+    assertNoDuplicateTaskIds(tasks);
+    return null;
+  } catch (e) {
+    return e as Error;
+  }
+})();
 check('no duplicate task_ids', dupErr === null, dupErr?.message);
 
 const eventIds = new Set(REGULATORY_EVENTS.map(e => e.id));

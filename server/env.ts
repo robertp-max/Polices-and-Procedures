@@ -29,7 +29,6 @@ const credPath = path.isAbsolute(credPathRaw)
 
 const calendarCredentialsPresent = fs.existsSync(credPath);
 if (!calendarCredentialsPresent) {
-  // eslint-disable-next-line no-console
   console.warn(
     `[env] Google service-account JSON not found at: ${credPath}\n` +
     `      Calendar routes will return auth errors until this file is\n` +

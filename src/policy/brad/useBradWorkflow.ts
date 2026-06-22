@@ -31,6 +31,16 @@ export function useBradWorkflow(
   isReadiness: boolean;
   readiness: ReadinessAnswer | null;
 } {
+  const runtimeInstanceId = runtime?.instanceId;
+  const runtimeCurrentStep = runtime?.currentStep;
+  const runtimeOverdue = runtime?.overdue;
+  const runtimeRisk = runtime?.risk;
+  const runtimeAuditState = runtime?.auditState;
+  const runtimeIsCertified = runtime?.isCertified;
+  const runtimeReadyForCertification = runtime?.readyForCertification;
+  const runtimeMissingForms = runtime?.missingForms?.join(',');
+  const runtimePendingApprovals = runtime?.pendingApprovals?.join(',');
+
   return useMemo(() => {
     if (!query.trim()) {
       return { isWorkflow: false, answer: null, isReadiness: false, readiness: null };
@@ -46,7 +56,7 @@ export function useBradWorkflow(
       return { isWorkflow: false, answer: null, isReadiness: true, readiness };
     }
     return { isWorkflow: false, answer: null, isReadiness: false, readiness: null };
-  }, [query, runtime?.instanceId, runtime?.currentStep, runtime?.overdue, runtime?.risk,
-      runtime?.auditState, runtime?.isCertified, runtime?.readyForCertification,
-      runtime?.missingForms?.join(','), runtime?.pendingApprovals?.join(',')]);
+  }, [query, runtimeInstanceId, runtimeCurrentStep, runtimeOverdue, runtimeRisk,
+      runtimeAuditState, runtimeIsCertified, runtimeReadyForCertification,
+      runtimeMissingForms, runtimePendingApprovals]);
 }

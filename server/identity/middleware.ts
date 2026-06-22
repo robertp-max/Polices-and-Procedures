@@ -31,27 +31,22 @@ export const identityMiddleware: RequestHandler = (req, _res, next) => {
   const correlationId = req.header('x-correlation-id') ?? ulid();
   const requestId = ulid();
 
-  let actor: Actor;
-  let authenticated = false;
-
-  if (userId) {
-    actor = {
-      type: 'user',
-      user_id: userId,
-      display_name: req.header('x-user-display-name') ?? userId,
-      roles: parseList(req.header('x-user-roles')),
-      attributes: {
-        branches: parseList(req.header('x-user-branches')),
-        service_lines: parseList(req.header('x-user-service-lines')),
-        access_classes: parseList(req.header('x-user-access-classes')),
-      },
-      mfa_enrolled: (req.header('x-user-mfa') ?? 'false').toLowerCase() === 'true',
-      identity_assurance: asIal(req.header('x-user-ial') ?? undefined),
-    };
-    authenticated = true;
-  } else {
-    actor = ANONYMOUS_ACTOR;
-  }
+  const authenticated = !!userId;
+  const actor: Actor = userId
+    ? {
+        type: 'user',
+        user_id: userId,
+        display_name: req.header('x-user-display-name') ?? userId,
+        roles: parseList(req.header('x-user-roles')),
+        attributes: {
+          branches: parseList(req.header('x-user-branches')),
+          service_lines: parseList(req.header('x-user-service-lines')),
+          access_classes: parseList(req.header('x-user-access-classes')),
+        },
+        mfa_enrolled: (req.header('x-user-mfa') ?? 'false').toLowerCase() === 'true',
+        identity_assurance: asIal(req.header('x-user-ial') ?? undefined),
+      }
+    : ANONYMOUS_ACTOR;
 
   const session: SessionContext = {
     session_id: sessionId,

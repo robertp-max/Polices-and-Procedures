@@ -101,14 +101,14 @@ export type V6RouteHashId = (typeof V6_ROUTES)[number]['hashId'];
 
 export const V6_REAL_ROUTE_COUNT = V6_ROUTES.length;
 
-export const V6_OVERLAY_REGISTRY = [
+export const _V6_OVERLAY_REGISTRY = [
   { hashId: 'modal-system', title: 'Modal System' },
   { hashId: 'drawer-system', title: 'Drawer System' },
   { hashId: 'popover-system', title: 'Popover System' },
   { hashId: 'personal-ops', title: 'Personal Ops Drawer State' },
 ] as const;
 
-export const EVENT_WORKSPACE_FUTURE_REQUIREMENTS = [
+export const _EVENT_WORKSPACE_FUTURE_REQUIREMENTS = [
   'Brad Draft Packet',
   'Evidence Review',
   'Findings Review',

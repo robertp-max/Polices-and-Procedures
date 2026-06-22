@@ -95,7 +95,6 @@ export function dedupeEventTasksByCanonicalId(tasks: EventTask[], context: strin
   }
   const isViteDev = typeof import.meta !== 'undefined' && !!(import.meta as ImportMeta).env?.DEV;
   if (isViteDev && dupLog.length > 0) {
-    // eslint-disable-next-line no-console
     console.warn(`[taskIdentity] dedupeEventTasksByCanonicalId (${context}): merged duplicate ids`, dupLog);
   }
   return Array.from(byId.values());
@@ -126,7 +125,6 @@ export function normalizeAndDedupeTasksForRender(eventId: string, tasks: EventTa
     const counts = new Map<string, number>();
     for (const id of preIds) counts.set(id, (counts.get(id) ?? 0) + 1);
     const dupes = [...counts.entries()].filter(([, n]) => n > 1).map(([id]) => id);
-    // eslint-disable-next-line no-console
     console.warn(`[taskIdentity] pre-dedupe duplicate ids (${context} / ${eventId})`, dupes);
   }
   const list = dedupeEventTasksByCanonicalId(pass1, `renderDedupe:${context}:${eventId}`);
@@ -147,7 +145,6 @@ export function normalizeAndDedupeTasksForRender(eventId: string, tasks: EventTa
     out.push({ ...task, id: nextId, legacyId: task.legacyId ?? task.id });
   }
   if (isViteDev && dupDetails.length > 0) {
-    // eslint-disable-next-line no-console
     console.warn(`[taskIdentity] normalizeAndDedupeTasksForRender collision repair (${context} / ${eventId})`, dupDetails);
   }
   return out;

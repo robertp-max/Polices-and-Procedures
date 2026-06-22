@@ -44,10 +44,8 @@ try {
   }, JSON.stringify(probe, null, 2));
   await page.waitForTimeout(400);
   await page.screenshot({ path: out, fullPage: true });
-  // eslint-disable-next-line no-console
   console.log('WROTE', out, probe);
 } catch (e) {
-  // eslint-disable-next-line no-console
   console.error('Screenshot skipped:', e.message);
 }
 await browser.close();

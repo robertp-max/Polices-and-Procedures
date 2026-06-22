@@ -46,16 +46,13 @@ function main(): void {
     .filter(routeKey => !actual.has(routeKey));
 
   if (missing.length > 0) {
-    // eslint-disable-next-line no-console
     console.error('[ecign-route-health] Missing backend routes required by frontend eCIgn client:');
     missing.forEach(route => {
-      // eslint-disable-next-line no-console
       console.error(`  - ${route}`);
     });
     process.exit(1);
   }
 
-  // eslint-disable-next-line no-console
   console.log(`[ecign-route-health] OK (${expectedRoutes.length} routes verified).`);
 }
 

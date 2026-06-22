@@ -1,6 +1,5 @@
 import { Layers, Calendar } from 'lucide-react';
 import { MetricGrid, DataTable, SurfaceCard, type MetricTileData, type SurfaceCardData, type DataTableColumn } from '../../components';
-;
 
 interface BatchRow extends Record<string, string> {
   batchId: string;

@@ -120,7 +120,6 @@ export const usePmNotificationStore = create<NotificationState>()(
           }));
           get().ingest(rows);
         } catch (err) {
-          // eslint-disable-next-line no-console
           console.warn('[notificationStore.hydrateFromApi] failed; offline mode', err);
         }
       },
