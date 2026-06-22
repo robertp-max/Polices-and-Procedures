@@ -2325,7 +2325,7 @@ function BoardScreen() {
   return (
     <ScreenStack metrics={boardMetrics}>
       <section className="grid gap-lg">
-        <div className="flex flex-wrap items-center justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
+        <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface p-md shadow-rest">
           <div className="flex flex-wrap gap-sm">
             {['All work', 'Mine', 'Blocked', 'Missing evidence', 'Awaiting signature'].map((label, index) => (
               <button
@@ -2344,8 +2344,8 @@ function BoardScreen() {
           </div>
           <p className="text-sm text-ink">Sprint 12 - 33 cards - 4 blocked</p>
         </div>
-        <div className="overflow-x-hidden pb-sm">
-          <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-3 large:grid-cols-6">
+        <div className="min-w-0 overflow-x-auto overflow-y-hidden pb-sm">
+          <div className="grid min-w-[1160px] grid-cols-6 gap-sm desktop:min-w-0">
             {boardLanes.map((lane) => (
               <BoardLane key={lane.title} lane={lane} />
             ))}
@@ -2470,11 +2470,11 @@ function WorkflowSwimlaneScreen() {
   const [selectedCard, setSelectedCard] = useState<BoardCardData | null>(null);
 
   return (
-    <div className="grid gap-xl">
-      <section className="grid gap-xl rounded-lg border border-card bg-surface-glass p-xl shadow-rest">
+    <div className="grid gap-lg">
+      <section className="grid gap-lg rounded-lg border border-card bg-surface-glass p-lg shadow-rest">
         <MetricGrid metrics={metrics} />
 
-        <div className="flex flex-wrap items-center justify-between gap-lg border-t border-hairline pt-lg">
+        <div className="flex flex-wrap items-center justify-between gap-md border-t border-hairline pt-md">
           <div className="flex flex-wrap gap-sm">
             <ToneTag className="font-medium" tone={event.tone}>
               Swimlane open
@@ -2489,10 +2489,10 @@ function WorkflowSwimlaneScreen() {
           </Button>
         </div>
 
-        <section aria-label="Workflow stage summary" className="grid gap-md desktop:grid-cols-4">
+        <section aria-label="Workflow stage summary" className="grid gap-sm tablet-l:grid-cols-2 desktop:grid-cols-4">
           {lanes.map((lane, index) => (
-            <div className={cx('rounded-lg p-lg shadow-none', toneGlassSurfaceClasses[lane.tone])} key={lane.title}>
-              <div className="mb-md flex items-center justify-between gap-md">
+            <div className={cx('rounded-lg p-md shadow-none', toneGlassSurfaceClasses[lane.tone])} key={lane.title}>
+              <div className="mb-sm flex items-center justify-between gap-sm">
                 <span className="grid h-tap w-tap place-items-center rounded-md bg-white/[.55] text-brand-teal">{index + 1}</span>
                 <span className="text-tag uppercase tracking-tag">{lane.count} cards</span>
               </div>
@@ -2502,11 +2502,11 @@ function WorkflowSwimlaneScreen() {
           ))}
         </section>
 
-        <div className="flex flex-wrap gap-sm rounded-lg border border-hairline bg-white/[.30] p-sm backdrop-blur-sm">
+        <div className="flex gap-sm overflow-x-auto rounded-lg border border-hairline bg-white/[.30] p-sm backdrop-blur-sm">
           {cesCalendarEvents.map((calendarEvent) => (
             <button
               className={cx(
-                'min-h-tap rounded-sm border px-md text-xs font-medium uppercase tracking-tag transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                'min-h-tap shrink-0 rounded-sm border px-md text-xs font-medium uppercase tracking-tag transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                 calendarEvent.workflowId === event.workflowId
                   ? 'border-brand-teal bg-brand-teal text-on-brand'
                   : 'border-hairline bg-white/[.45] text-brand-teal hover:bg-white/[.60]',
@@ -2521,11 +2521,13 @@ function WorkflowSwimlaneScreen() {
         </div>
       </section>
 
-      <section className="grid gap-xl">
-        <div className="grid gap-lg desktop:grid-cols-4">
+      <section className="grid gap-lg">
+        <div className="min-w-0 overflow-x-auto overflow-y-hidden pb-sm">
+          <div className="grid min-w-[920px] gap-sm tablet-l:grid-cols-2 desktop:min-w-0 desktop:grid-cols-4">
           {lanes.map((lane) => (
             <BoardLane key={lane.title} lane={lane} onCardClick={setSelectedCard} />
           ))}
+          </div>
         </div>
       </section>
 

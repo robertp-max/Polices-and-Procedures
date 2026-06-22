@@ -112,10 +112,10 @@ const taskLanes: readonly BoardLaneData[] = [
 
 export function MyTasksScreen() {
   return (
-    <div className="grid gap-xl">
+    <div className="grid gap-lg">
       <MetricGrid metrics={taskMetrics} />
 
-      <section className="grid gap-lg desktop:grid-cols-4" aria-label="My task board">
+      <section className="grid gap-sm tablet-l:grid-cols-2 desktop:grid-cols-4" aria-label="My task board">
         {taskLanes.map((lane) => (
           <BoardLane key={lane.title} lane={lane} />
         ))}
@@ -123,5 +123,3 @@ export function MyTasksScreen() {
     </div>
   );
 }
-
-export default MyTasksScreen;
