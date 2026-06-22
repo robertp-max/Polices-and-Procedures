@@ -2,6 +2,11 @@ import { AlertTriangle, BarChart3, Bot, BookOpen, CalendarClock, CalendarRange, 
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { V3_ExecutionUnitsSeed } from '@/policy/ces/data/V3_CES_SeedData';
+import type { ExecutionUnit } from '@/policy/ces/types';
+import type { EventProcessStep, RegulatoryEvent } from '@/policy/data/regulatoryEvents';
+import { inferPhaseTemplate } from '@/policy/workflows/swimlanes/phaseTemplates';
+import type { SwimlaneStatus } from '@/policy/workflows/swimlanes/types';
 import { Button, ToneBadge } from '../primitives';
 import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
@@ -43,19 +48,6 @@ function titleCaseToken(token: string) {
   }
 
   return token.charAt(0).toUpperCase() + token.slice(1).toLowerCase();
-}
-
-function formatSwimlaneTitle(label: string) {
-  return label
-    .split(/(\s+)/)
-    .map((part) => {
-      if (/^\s+$/.test(part)) {
-        return part;
-      }
-
-      return part.split('-').map(titleCaseToken).join('-');
-    })
-    .join('');
 }
 
 interface ActionRow {
@@ -341,18 +333,28 @@ const detailRail = [
 
 interface CalendarEventData {
   attendees?: readonly string[];
+  bundleCategory?: string;
+  bundleName?: string;
   detail?: string;
   day: number;
   evidenceStatus?: string;
   formsCount?: number;
   id?: string;
   label: string;
+  month?: number;
   nextAction?: string;
   owner: string;
+  primaryDay?: boolean;
   progress: number;
   readiness?: string;
+  recurrencePattern?: string;
   risk?: string;
+  scheduleReason?: string;
+  sourceDate?: string;
   steps?: string;
+  sourceEventId?: string;
+  sourceKind?: 'v1-design' | 'v3-regulatory-event' | 'v3-execution-unit';
+  sourceUnitId?: string;
   swimlane?: CalendarSwimlaneData;
   taskCount?: number;
   tone: Tone;
@@ -509,156 +511,1002 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
   ],
 };
 
-const cesCalendarEvents = [
-  {
-    attendees: ['Governing Body Chair', 'Administrator', 'QAPI Lead'],
-    day: 3,
-    evidenceStatus: 'Owner packet pending source lock',
-    formsCount: 5,
-    id: 'ces-event-governing-body',
-    label: 'Governing Body pre-read packet',
-    nextAction: 'Confirm packet scope and open intake lane',
-    owner: 'Maria Gonzalez, RN',
-    progress: 54,
-    readiness: 'Needs review',
-    risk: 'High',
-    taskCount: 8,
-    tone: 'orange',
-    workflowId: 'governing-body-pre-read-packet',
-  },
-  {
-    attendees: ['DON', 'QAPI Nurse', 'Clinical Manager'],
-    day: 5,
-    evidenceStatus: 'Trend tables attached',
-    formsCount: 3,
-    id: 'ces-event-qapi-aggregate',
-    label: 'QAPI aggregate report review',
-    nextAction: 'Route the report summary for committee review',
-    owner: 'DON',
-    progress: 84,
-    readiness: 'Ready',
-    risk: 'Moderate',
-    taskCount: 5,
-    tone: 'teal',
-    workflowId: 'qapi-aggregate-report-review',
-  },
-  {
-    attendees: ['Admin Designee', 'HR Credentialing'],
-    day: 8,
-    evidenceStatus: 'Two screening records missing',
-    formsCount: 4,
-    id: 'ces-event-tb-gap',
-    label: 'TB screening gap remediation',
-    nextAction: 'Collect missing records and attach evidence',
-    owner: 'Admin Designee',
-    progress: 42,
-    readiness: 'Blocked',
-    risk: 'High',
-    taskCount: 6,
-    tone: 'orange',
-    workflowId: 'tb-screening-gap-remediation',
-  },
-  {
-    attendees: ['QAPI Lead', 'Administrator', 'Compliance Officer'],
-    detail: 'Quarterly QAPI combines clinical indicators, CAPA, committee packet assembly, eCIgn routing, and survey-ready lock.',
-    day: 10,
-    evidenceStatus: 'QAPI packet awaiting approval lane',
-    formsCount: 7,
-    id: 'ces-event-q2-qapi',
-    label: 'Q2 QAPI quarterly review',
-    nextAction: 'Open review lane and route chair signature',
+type LocalRegulatorySourceInput = {
+  cadence: RegulatoryEvent['cadence'];
+  date: string;
+  domain: RegulatoryEvent['domain'];
+  forms: readonly string[];
+  id: string;
+  owner: string;
+  ownerRole: string;
+  policyRefs: readonly string[];
+  summary: string;
+  title: string;
+  urgency?: RegulatoryEvent['urgency'];
+};
+
+function makeLocalRegulatorySource(input: LocalRegulatorySourceInput): RegulatoryEvent {
+  const stepTemplates = [
+    ['Prepare source packet', 'Collect the source reports, roster, or committee packet for this event.', 'complete', -3],
+    ['Validate findings', 'Review exceptions, trends, and owner assignments against the source event scope.', 'in-progress', -1],
+    ['Route owner attestation', 'Confirm the accountable owner and required signer sequence.', 'pending', 0],
+    ['Publish evidence index', 'Attach the final packet, evidence index, and survey-facing audit trail.', 'pending', 1],
+  ] as const;
+
+  return {
+    cadence: input.cadence,
+    date: input.date,
+    domain: input.domain,
+    id: input.id,
+    owner: input.owner,
+    ownerRole: input.ownerRole,
+    policyRefs: [...input.policyRefs],
+    processFlow: stepTemplates.map(([label, description, status, dueOffsetDays], index) => ({
+      description,
+      dueOffsetDays,
+      id: `${input.id}-s${index + 1}`,
+      label,
+      requiredFormIds: index === 3 ? input.forms.map((form) => form.slice(0, 16)) : undefined,
+      status,
+    })),
+    requiredForms: input.forms.map((label, index) => ({
+      id: `${input.id}-form-${index + 1}`,
+      label,
+      status: index === 0 ? 'complete' : index === 1 ? 'in-progress' : 'pending',
+    })),
+    summary: input.summary,
+    title: input.title,
+    urgency: input.urgency ?? 'due-soon',
+  };
+}
+
+const localRegulatorySources: readonly RegulatoryEvent[] = [
+  makeLocalRegulatorySource({
+    cadence: 'Quarterly',
+    date: '2026-04-09',
+    domain: 'Operations',
+    forms: ['Personnel file audit worksheet', 'Credential evidence index'],
+    id: 'evt-personnel-file-q1-audit',
+    owner: 'HR Credentialing',
+    ownerRole: 'HR',
+    policyRefs: ['HR-PF-001'],
+    summary: 'Q1 new-hire personnel file closeout and credential evidence review.',
+    title: 'Personnel File Completeness Audit - Q1 New Hires',
+    urgency: 'complete',
+  }),
+  makeLocalRegulatorySource({
+    cadence: 'Monthly',
+    date: '2026-04-16',
+    domain: 'Clinical',
+    forms: ['OASIS variance report', 'Clinical documentation audit sample'],
+    id: 'evt-oasis-accuracy-apr',
+    owner: 'QAPI Analyst',
+    ownerRole: 'QAPI',
+    policyRefs: ['QA-OASIS-001'],
+    summary: 'April OASIS accuracy sample review and variance scoring.',
+    title: 'OASIS Accuracy Audit - April Sample Review',
+  }),
+  makeLocalRegulatorySource({
+    cadence: 'Monthly',
+    date: '2026-04-23',
+    domain: 'Clinical',
+    forms: ['Infection surveillance log', 'Clinical manager attestation'],
+    id: 'evt-infection-surveillance-apr',
+    owner: 'Clinical Manager',
+    ownerRole: 'Clinical',
+    policyRefs: ['CL-IC-001'],
+    summary: 'April infection-control surveillance closeout.',
+    title: 'Monthly Infection Surveillance Reporting - April',
+  }),
+  makeLocalRegulatorySource({
+    cadence: 'Monthly',
+    date: '2026-06-09',
+    domain: 'Finance',
+    forms: ['Claims denial trend export', 'Revenue-cycle exception sample'],
+    id: 'evt-claims-denial-jun',
+    owner: 'Finance Lead',
+    ownerRole: 'Finance',
+    policyRefs: ['FIN-RC-001'],
+    summary: 'June claims denial root-cause review and exception packet.',
+    title: 'Claims Denial Root Cause Analysis - June Cycle',
+  }),
+  makeLocalRegulatorySource({
+    cadence: 'Quarterly',
+    date: '2026-06-11',
+    domain: 'QAPI',
+    forms: ['HHCAHPS survey administration packet', 'Patient-experience findings summary'],
+    id: 'evt-hhcahps-q2-survey',
     owner: 'QAPI Lead',
-    progress: 58,
+    ownerRole: 'QAPI',
+    policyRefs: ['QA-PG-001', 'QA-PIP-001'],
+    summary: 'Q2 patient-experience survey administration and findings handoff to QAPI.',
+    title: 'HHCAHPS Patient Satisfaction Survey - Q2 Administration',
+    urgency: 'critical',
+  }),
+  makeLocalRegulatorySource({
+    cadence: 'Monthly',
+    date: '2026-06-25',
+    domain: 'Clinical',
+    forms: ['June infection surveillance log', 'Clinical recert exception index'],
+    id: 'evt-infection-surveillance-jun',
+    owner: 'Clinical Manager',
+    ownerRole: 'Clinical',
+    policyRefs: ['CL-IC-001'],
+    summary: 'June infection surveillance closeout and related clinical recert review.',
+    title: 'Monthly Infection Surveillance Reporting - June',
+  }),
+  makeLocalRegulatorySource({
+    cadence: 'Monthly',
+    date: '2026-07-07',
+    domain: 'Clinical',
+    forms: ['Medication reconciliation audit sample', 'Clinical variance worksheet'],
+    id: 'evt-medrec-review-jul',
+    owner: 'QAPI Nurse',
+    ownerRole: 'Clinical',
+    policyRefs: ['CL-MR-001'],
+    summary: 'July medication reconciliation documentation sample and variance review.',
+    title: 'Medication Reconciliation Compliance Review - July',
+  }),
+  makeLocalRegulatorySource({
+    cadence: 'Quarterly',
+    date: '2026-07-16',
+    domain: 'QAPI',
+    forms: ['Q3 QAPI data packet', 'PIP progress tracker'],
+    id: 'evt-qapi-q3-review',
+    owner: 'QAPI Lead',
+    ownerRole: 'QAPI',
+    policyRefs: ['QA-PG-001', 'QA-PIP-001'],
+    summary: 'Q3 QAPI quarterly data review and PIP progress discussion.',
+    title: 'QAPI Committee - Q3 Data Review',
+    urgency: 'critical',
+  }),
+  makeLocalRegulatorySource({
+    cadence: 'Quarterly',
+    date: '2026-07-23',
+    domain: 'Governance',
+    forms: ['Governing body packet', 'Board minutes template'],
+    id: 'evt-gb-q3-meeting',
+    owner: 'Administrator',
+    ownerRole: 'Governing Body',
+    policyRefs: ['GV-GB-001'],
+    summary: 'Q3 governing body oversight packet and minutes workflow.',
+    title: 'Q3 Governing Body Meeting',
+  }),
+  makeLocalRegulatorySource({
+    cadence: 'Annual',
+    date: '2026-08-11',
+    domain: 'Compliance',
+    forms: ['Emergency preparedness tabletop packet', 'After-action report'],
+    id: 'evt-ep-tabletop-aug',
+    owner: 'Compliance Officer',
+    ownerRole: 'Compliance',
+    policyRefs: ['EP-001', 'EP-004'],
+    summary: 'Annual emergency preparedness tabletop exercise and after-action closeout.',
+    title: 'Emergency Preparedness Tabletop Exercise - Annual',
+  }),
+  makeLocalRegulatorySource({
+    cadence: 'Annual',
+    date: '2026-08-20',
+    domain: 'Operations',
+    forms: ['Accreditation readiness checklist', 'Survey gap remediation register'],
+    id: 'evt-accred-readiness-aug',
+    owner: 'Compliance Officer',
+    ownerRole: 'Compliance',
+    policyRefs: ['CO-CP-001'],
+    summary: 'Accreditation survey readiness assessment and remediation plan.',
+    title: 'Accreditation Survey Readiness Assessment',
+    urgency: 'critical',
+  }),
+  makeLocalRegulatorySource({
+    cadence: 'Monthly',
+    date: '2026-08-25',
+    domain: 'Clinical',
+    forms: ['August infection surveillance log', 'Clinical action register'],
+    id: 'evt-infection-surveillance-aug',
+    owner: 'Clinical Manager',
+    ownerRole: 'Clinical',
+    policyRefs: ['CL-IC-001'],
+    summary: 'August infection-control surveillance closeout.',
+    title: 'Monthly Infection Surveillance Reporting - August',
+  }),
+];
+
+const v3RegulatoryEventsById = new Map<string, RegulatoryEvent>(
+  localRegulatorySources.map((event) => [event.id, event])
+);
+
+const v3ExecutionUnitsById = new Map<string, ExecutionUnit>(
+  V3_ExecutionUnitsSeed.map((unit) => [unit.id, unit])
+);
+
+const calendarMonthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
+
+function uniqueStrings(values: readonly (string | undefined | null)[]): string[] {
+  return Array.from(new Set(values.filter((value): value is string => Boolean(value?.trim()))));
+}
+
+function getCalendarMonthLabel(month: number | undefined): string {
+  return calendarMonthLabels[(month ?? 6) - 1] ?? 'Jun';
+}
+
+function getEventMonth(event: CalendarEventData): number {
+  return event.month ?? 6;
+}
+
+function getDaysInCalendarMonth(month: number, year = 2026): number {
+  return new Date(year, month, 0).getDate();
+}
+
+function clampCalendarDay(day: number, month = 6): number {
+  return Math.min(getDaysInCalendarMonth(month), Math.max(1, day));
+}
+
+function dueLabelFromDisplayDay(day: number, offset = 0, month = 6): string {
+  return `${getCalendarMonthLabel(month)} ${clampCalendarDay(day + offset, month)}`;
+}
+
+function formatStatusLabel(status: string): string {
+  return status
+    .split(/[_-]/)
+    .filter(Boolean)
+    .map(titleCaseToken)
+    .join(' ');
+}
+
+function statusTone(status: SwimlaneStatus): Tone {
+  if (status === 'complete' || status === 'locked') return 'green';
+  if (status === 'blocked' || status === 'needs_evidence' || status === 'needs_signature' || status === 'awaiting_reviewer') return 'orange';
+  if (status === 'pending' || status === 'unavailable') return 'amber';
+  return 'teal';
+}
+
+function statusProgress(status: SwimlaneStatus): number {
+  const progressByStatus: Record<SwimlaneStatus, number> = {
+    awaiting_reviewer: 52,
+    blocked: 24,
+    board_ready: 78,
+    complete: 100,
+    in_progress: 64,
+    locked: 100,
+    needs_evidence: 42,
+    needs_signature: 48,
+    pending: 28,
+    ready: 82,
+    unavailable: 8,
+  };
+
+  return progressByStatus[status];
+}
+
+function executionStateTone(unit: ExecutionUnit): Tone {
+  if (unit.complianceState === 'blocked' || unit.complianceState === 'awaiting_signature') return 'orange';
+  if (unit.complianceState === 'completed') return 'green';
+  if (unit.complianceState === 'upcoming') return 'amber';
+  return 'teal';
+}
+
+function executionStateProgress(unit: ExecutionUnit): number {
+  const progressByState: Record<ExecutionUnit['complianceState'], number> = {
+    awaiting_signature: 54,
+    blocked: 34,
+    completed: 100,
+    in_progress: 64,
+    ready: 82,
+    upcoming: 24,
+  };
+
+  return progressByState[unit.complianceState];
+}
+
+function eventProcessProgress(event: RegulatoryEvent): number {
+  if (!event.processFlow.length) return event.urgency === 'complete' ? 100 : 38;
+  const values = event.processFlow.map((step) => {
+    if (step.status === 'complete') return 100;
+    if (step.status === 'in-progress') return 62;
+    return 28;
+  });
+
+  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+function eventRiskLabel(event: RegulatoryEvent | undefined): string | undefined {
+  if (!event?.complianceFlags?.auditRisk) return undefined;
+  return formatStatusLabel(event.complianceFlags.auditRisk);
+}
+
+function eventTone(event: RegulatoryEvent | undefined): Tone {
+  if (!event) return 'teal';
+  if (event.urgency === 'overdue' || event.urgency === 'critical' || event.urgency === 'blocked' || event.urgency === 'missing-evidence') return 'orange';
+  if (event.urgency === 'complete') return 'green';
+  return 'teal';
+}
+
+function processStepStatus(step: EventProcessStep): SwimlaneStatus {
+  if (step.status === 'complete') return 'complete';
+  if (step.status === 'in-progress') return step.requiredFormIds?.length ? 'needs_evidence' : 'in_progress';
+  if (/sign|attest|approve/i.test(`${step.label} ${step.description}`)) return 'needs_signature';
+  if (step.requiredFormIds?.length) return 'needs_evidence';
+  return 'pending';
+}
+
+function phaseIndexForDisplayStep(step: EventProcessStep, index: number, phaseCount: number): number {
+  const text = `${step.label} ${step.description}`.toLowerCase();
+  if (/sign|approve|attest|review/.test(text)) return Math.min(phaseCount, Math.max(1, phaseCount - 2));
+  if (/evidence|file|lock|archive|package|submit/.test(text)) return phaseCount;
+  if (/meeting|conduct|execute|drill/.test(text)) return Math.min(phaseCount, Math.max(2, Math.ceil(phaseCount / 2)));
+  return Math.min(phaseCount, index + 1);
+}
+
+function buildProcessStepChips(sourceEvent: RegulatoryEvent, step: EventProcessStep): readonly string[] {
+  const chips = uniqueStrings([
+    ...(step.requiredFormIds ?? []).slice(0, 2),
+    ...sourceEvent.policyRefs.slice(0, 1),
+  ]);
+
+  return chips.length ? chips : ['Event flow'];
+}
+
+function buildCalendarSwimlaneFromRegulatoryEvent(sourceEvent: RegulatoryEvent, displayEvent: CalendarEventData): CalendarSwimlaneData {
+  const phases = inferPhaseTemplate({ event: sourceEvent });
+  const hasEvidenceLock = Boolean(sourceEvent.requiredForms.length || sourceEvent.approvals?.length || sourceEvent.minutes);
+  const displayMonth = getEventMonth(displayEvent);
+  const laneCards = new Map<string, CalendarSwimlaneTask[]>();
+  const lanes: CalendarSwimlaneLane[] = [];
+
+  sourceEvent.processFlow.forEach((step, index) => {
+    const phase = phases[phaseIndexForDisplayStep(step, index, phases.length) - 1] ?? phases[0];
+    const status = processStepStatus(step);
+    const cards = laneCards.get(phase.id) ?? [];
+    cards.push({
+      chips: buildProcessStepChips(sourceEvent, step),
+      due: dueLabelFromDisplayDay(displayEvent.day, step.dueOffsetDays, displayMonth),
+      id: `${sourceEvent.id}-${step.id}`,
+      owner: sourceEvent.agenda?.standingTopics.find((topic) => topic.id === step.id || step.label.includes(topic.title))?.owner ?? sourceEvent.ownerRole,
+      progress: statusProgress(status),
+      status: formatStatusLabel(status),
+      title: step.label,
+      tone: statusTone(status),
+    });
+    laneCards.set(phase.id, cards);
+  });
+
+  if (hasEvidenceLock) {
+    const phase = phases[phases.length - 1];
+    const blocked = sourceEvent.requiredForms.some((form) => form.status !== 'complete') || sourceEvent.minutes?.status === 'missing';
+    const status: SwimlaneStatus = blocked ? 'blocked' : 'ready';
+    const cards = laneCards.get(phase.id) ?? [];
+    cards.push({
+      chips: uniqueStrings([
+        ...sourceEvent.requiredForms.map((form) => form.formId ?? form.id).slice(0, 3),
+        sourceEvent.minutes ? 'Minutes' : undefined,
+        sourceEvent.approvals?.length ? 'Approval path' : undefined,
+      ]),
+      due: dueLabelFromDisplayDay(displayEvent.day, sourceEvent.minutes?.dueOffsetDays ?? 1, displayMonth),
+      id: `${sourceEvent.id}-final-evidence-lock`,
+      owner: 'Evidence / eCIgn System',
+      progress: statusProgress(status),
+      status: formatStatusLabel(status),
+      title: 'Final evidence package locked',
+      tone: statusTone(status),
+    });
+    laneCards.set(phase.id, cards);
+  }
+
+  for (const phase of phases) {
+    const cards = laneCards.get(phase.id) ?? [];
+    if (!cards.length) continue;
+    const laneTone = cards.some((card) => card.tone === 'orange')
+      ? 'orange'
+      : cards.every((card) => card.tone === 'green')
+        ? 'green'
+        : 'teal';
+
+    lanes.push({
+      title: phase.title,
+      tone: laneTone,
+      note: sourceEvent.summary || sourceEvent.regulatoryDriver || 'Source event process step.',
+      cards,
+    });
+  }
+
+  const taskTotal = sourceEvent.processFlow.length + (hasEvidenceLock ? 1 : 0);
+
+  return {
+    summary: `${displayEvent.label} is sourced from ${sourceEvent.title} (${sourceEvent.id}) and uses its authored process flow, forms, approvals, and evidence lock path.`,
+    metrics: [
+      { label: 'Tasks', value: `${taskTotal}`, helper: 'Source process nodes', tone: 'teal' },
+      { label: 'Source', value: 'V3 event', helper: sourceEvent.id, tone: eventTone(sourceEvent) },
+      { label: 'Forms', value: `${sourceEvent.requiredForms.length}`, helper: 'Required artifacts', tone: sourceEvent.requiredForms.some((form) => form.status === 'missing') ? 'orange' : 'green' },
+      { label: 'Due', value: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth), helper: 'Scheduled display date', tone: 'teal' },
+    ],
+    lanes,
+  };
+}
+
+function buildCalendarSwimlaneFromExecutionUnit(unit: ExecutionUnit, displayEvent: CalendarEventData, sourceEvent?: RegulatoryEvent): CalendarSwimlaneData {
+  const evidence = unit.evidenceStatus;
+  const displayMonth = getEventMonth(displayEvent);
+  const evidenceProgress = evidence.requiredFormsTotal > 0
+    ? Math.round((evidence.requiredFormsComplete / evidence.requiredFormsTotal) * 100)
+    : 100;
+  const signatureProgress = evidence.signaturesRequired > 0
+    ? Math.round((evidence.signaturesComplete / evidence.signaturesRequired) * 100)
+    : 100;
+  const signerChips = unit.requiredSigners.map((signer) => signer.role).slice(0, 3);
+  const sourceTitle = sourceEvent?.title ?? unit.parentEventId;
+
+  return {
+    summary: `${displayEvent.label} is sourced from CES execution unit ${unit.id}${sourceEvent ? ` under ${sourceEvent.id}` : ''}; lanes expose the actual unit state, evidence, signatures, and audit readiness.`,
+    metrics: [
+      { label: 'Tasks', value: '5', helper: 'Execution-unit workflow', tone: 'teal' },
+      { label: 'Source', value: 'CES unit', helper: unit.id, tone: executionStateTone(unit) },
+      { label: 'Evidence', value: `${evidence.requiredFormsComplete}/${evidence.requiredFormsTotal}`, helper: 'Forms complete', tone: evidenceProgress === 100 ? 'green' : 'orange' },
+      { label: 'Due', value: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth), helper: 'Scheduled display date', tone: 'teal' },
+    ],
+    lanes: [
+      {
+        title: 'Source Event',
+        tone: sourceEvent ? eventTone(sourceEvent) : 'teal',
+        note: 'Trace the calendar item back to its regulatory or CES source record.',
+        cards: [
+          {
+            chips: uniqueStrings([unit.sourceType, unit.parentEventId]),
+            due: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth),
+            id: `${unit.id}-source`,
+            owner: sourceEvent?.ownerRole ?? unit.accountableRole ?? unit.owner.role,
+            progress: sourceEvent ? eventProcessProgress(sourceEvent) : executionStateProgress(unit),
+            status: sourceEvent ? formatStatusLabel(sourceEvent.urgency) : formatStatusLabel(unit.complianceState),
+            title: sourceTitle,
+            tone: sourceEvent ? eventTone(sourceEvent) : executionStateTone(unit),
+          },
+        ],
+      },
+      {
+        title: 'Execution Unit',
+        tone: executionStateTone(unit),
+        note: 'Actual CES work item and assigned owner from V3_ExecutionUnitsSeed.',
+        cards: [
+          {
+            chips: uniqueStrings([unit.workflowId, formatStatusLabel(unit.workflowPhase)]),
+            due: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth),
+            id: unit.id,
+            owner: unit.owner.name,
+            progress: executionStateProgress(unit),
+            status: formatStatusLabel(unit.complianceState),
+            title: unit.title,
+            tone: executionStateTone(unit),
+          },
+        ],
+      },
+      {
+        title: 'Evidence Package',
+        tone: evidenceProgress === 100 ? 'green' : 'orange',
+        note: 'Required forms and missing artifacts come directly from the execution-unit evidence status.',
+        cards: [
+          {
+            chips: evidence.missingFormIds.length ? evidence.missingFormIds.slice(0, 3) : ['Forms complete'],
+            due: dueLabelFromDisplayDay(displayEvent.day, 1, displayMonth),
+            id: `${unit.id}-evidence`,
+            owner: unit.reviewerRole ?? unit.owner.role,
+            progress: evidenceProgress,
+            status: evidence.missingFormIds.length ? 'Missing forms' : 'Forms ready',
+            title: `${evidence.requiredFormsComplete}/${evidence.requiredFormsTotal} required forms complete`,
+            tone: evidenceProgress === 100 ? 'green' : 'orange',
+          },
+        ],
+      },
+      {
+        title: 'Signature Path',
+        tone: signatureProgress === 100 ? 'green' : 'orange',
+        note: 'Signer count and roles reflect the seeded eCIgn path for this unit.',
+        cards: [
+          {
+            chips: signerChips.length ? signerChips : ['No signer required'],
+            due: dueLabelFromDisplayDay(displayEvent.day, 2, displayMonth),
+            id: `${unit.id}-signature`,
+            owner: unit.signatureOwner.name,
+            progress: signatureProgress,
+            status: `${evidence.signaturesComplete}/${evidence.signaturesRequired} signatures`,
+            title: 'Complete required eCIgn signature path',
+            tone: signatureProgress === 100 ? 'green' : 'orange',
+          },
+        ],
+      },
+      {
+        title: 'Audit Closeout',
+        tone: unit.auditReadiness === 'ready' && evidence.auditIndexCreated ? 'green' : 'teal',
+        note: 'Closeout shows audit readiness and whether the audit index has been created.',
+        cards: [
+          {
+            chips: uniqueStrings([formatStatusLabel(unit.auditReadiness), unit.sprintId]),
+            due: dueLabelFromDisplayDay(displayEvent.day, 3, displayMonth),
+            id: `${unit.id}-audit-lock`,
+            owner: unit.approver.name,
+            progress: evidence.auditIndexCreated ? 100 : executionStateProgress(unit),
+            status: evidence.auditIndexCreated ? 'Audit index ready' : `${formatStatusLabel(unit.auditReadiness)} audit readiness`,
+            title: 'Publish audit index and close execution trail',
+            tone: unit.auditReadiness === 'not_ready' ? 'orange' : unit.auditReadiness === 'ready' && evidence.auditIndexCreated ? 'green' : 'teal',
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function buildMissingSourceCalendarSwimlane(event: CalendarEventData): CalendarSwimlaneData {
+  const displayMonth = getEventMonth(event);
+
+  return {
+    summary: `${event.label} does not have a mapped CES source event or execution unit. Generic swimlane generation is disabled for CES calendar events.`,
+    metrics: [
+      { label: 'Tasks', value: '1', helper: 'Source mapping required', tone: 'orange' },
+      { label: 'Source', value: 'Missing', helper: event.workflowId ?? event.id ?? 'No workflow id', tone: 'orange' },
+      { label: 'Fallback', value: 'Off', helper: 'No generic lanes', tone: 'green' },
+      { label: 'Due', value: dueLabelFromDisplayDay(event.day, 0, displayMonth), helper: 'Calendar display date', tone: 'teal' },
+    ],
+    lanes: [
+      {
+        title: 'Source Mapping Required',
+        tone: 'orange',
+        note: 'Map this calendar item to a V3 regulatory event, V3 execution unit, or explicit V1 design swimlane before showing execution work.',
+        cards: [
+          {
+            chips: ['No generic fallback'],
+            due: dueLabelFromDisplayDay(event.day, 0, displayMonth),
+            id: `${getCalendarEventKey(event)}-source-missing`,
+            owner: event.owner,
+            progress: 0,
+            status: 'Source missing',
+            title: `Map ${event.label} to an authoritative workflow source`,
+            tone: 'orange',
+          },
+        ],
+      },
+    ],
+  };
+}
+
+interface SourceBackedCesEventInput {
+  bundleCategory?: string;
+  bundleName?: string;
+  day: number;
+  detail?: string;
+  id: string;
+  label: string;
+  month?: number;
+  owner: string;
+  primaryDay?: boolean;
+  preferUnitSwimlane?: boolean;
+  progress?: number;
+  readiness?: string;
+  recurrencePattern?: string;
+  risk?: string;
+  scheduleReason?: string;
+  sourceEventId?: string;
+  sourceUnitId?: string;
+  steps?: string;
+  tone: Tone;
+  workflow?: string;
+  workflowId?: string;
+}
+
+function buildSourceBackedCesEvent(input: SourceBackedCesEventInput): CalendarEventData {
+  const unit = input.sourceUnitId ? v3ExecutionUnitsById.get(input.sourceUnitId) : undefined;
+  const sourceEvent = input.sourceEventId
+    ? v3RegulatoryEventsById.get(input.sourceEventId)
+    : unit?.parentEventId
+      ? v3RegulatoryEventsById.get(unit.parentEventId)
+      : undefined;
+  const useUnitSwimlane = Boolean(input.preferUnitSwimlane || !sourceEvent);
+  const formsCount = unit?.evidenceStatus.requiredFormsTotal ?? sourceEvent?.requiredForms.length ?? 0;
+  const processTaskCount = sourceEvent ? sourceEvent.processFlow.length + (sourceEvent.requiredForms.length ? 1 : 0) : undefined;
+  const taskCount = useUnitSwimlane && unit ? 5 : processTaskCount ?? 1;
+  const progress = input.progress ?? (unit ? executionStateProgress(unit) : sourceEvent ? eventProcessProgress(sourceEvent) : 0);
+  const sourceKind: CalendarEventData['sourceKind'] = useUnitSwimlane && unit ? 'v3-execution-unit' : sourceEvent ? 'v3-regulatory-event' : undefined;
+  const baseEvent: CalendarEventData = {
+    bundleCategory: input.bundleCategory,
+    bundleName: input.bundleName,
+    day: input.day,
+    detail: input.detail ?? sourceEvent?.summary ?? unit?.blockedReason?.label ?? unit?.title,
+    evidenceStatus: unit
+      ? `${unit.evidenceStatus.requiredFormsComplete}/${unit.evidenceStatus.requiredFormsTotal} forms, ${unit.evidenceStatus.signaturesComplete}/${unit.evidenceStatus.signaturesRequired} signatures`
+      : sourceEvent
+        ? `${sourceEvent.requiredForms.length} required forms`
+        : undefined,
+    formsCount,
+    id: input.id,
+    label: input.label,
+    month: input.month ?? (sourceEvent?.date ? Number(sourceEvent.date.slice(5, 7)) : unit?.dueDate ? Number(unit.dueDate.slice(5, 7)) : 6),
+    owner: input.owner,
+    primaryDay: input.primaryDay ?? true,
+    progress,
+    readiness: input.readiness ?? (unit ? formatStatusLabel(unit.complianceState) : sourceEvent ? formatStatusLabel(sourceEvent.urgency) : 'Source missing'),
+    recurrencePattern: input.recurrencePattern ?? sourceEvent?.cadence,
+    risk: input.risk ?? eventRiskLabel(sourceEvent) ?? (unit?.blockedReason ? 'High' : undefined),
+    scheduleReason: input.scheduleReason,
+    sourceDate: sourceEvent?.date ?? unit?.dueDate,
+    sourceEventId: input.sourceEventId ?? sourceEvent?.id,
+    sourceKind,
+    sourceUnitId: input.sourceUnitId,
+    steps: input.steps ?? `${taskCount} tasks`,
+    taskCount,
+    tone: input.tone,
+    workflow: input.workflow ?? sourceEvent?.title ?? unit?.workflowId,
+    workflowId: input.workflowId ?? unit?.workflowId ?? sourceEvent?.workflowId ?? input.id,
+  };
+
+  return {
+    ...baseEvent,
+    swimlane: sourceEvent && !useUnitSwimlane
+      ? buildCalendarSwimlaneFromRegulatoryEvent(sourceEvent, baseEvent)
+      : unit
+        ? buildCalendarSwimlaneFromExecutionUnit(unit, baseEvent, sourceEvent)
+        : buildMissingSourceCalendarSwimlane(baseEvent),
+  };
+}
+
+type ScheduledCesEventInput = Omit<SourceBackedCesEventInput, 'id' | 'label' | 'owner' | 'sourceEventId' | 'sourceUnitId' | 'tone'> & {
+  id?: string;
+  label?: string;
+  owner?: string;
+  sourceEventId?: string;
+  sourceUnitId?: string;
+  tone?: Tone;
+};
+
+function buildScheduledRegulatoryCesEvent(sourceEventId: string, input: ScheduledCesEventInput): CalendarEventData {
+  const sourceEvent = v3RegulatoryEventsById.get(sourceEventId);
+
+  return buildSourceBackedCesEvent({
+    ...input,
+    id: input.id ?? sourceEventId,
+    label: input.label ?? sourceEvent?.title ?? sourceEventId,
+    owner: input.owner ?? sourceEvent?.ownerRole ?? sourceEvent?.owner ?? 'Compliance Officer',
+    sourceEventId,
+    sourceUnitId: input.sourceUnitId,
+    tone: input.tone ?? eventTone(sourceEvent),
+  });
+}
+
+function buildScheduledUnitCesEvent(sourceUnitId: string, input: ScheduledCesEventInput): CalendarEventData {
+  const unit = v3ExecutionUnitsById.get(sourceUnitId);
+
+  return buildSourceBackedCesEvent({
+    ...input,
+    id: input.id ?? sourceUnitId,
+    label: input.label ?? unit?.title ?? sourceUnitId,
+    owner: input.owner ?? unit?.owner.role ?? unit?.owner.name ?? 'Compliance Officer',
+    preferUnitSwimlane: true,
+    sourceUnitId,
+    tone: input.tone ?? (unit ? executionStateTone(unit) : 'teal'),
+    workflowId: input.workflowId ?? unit?.workflowId,
+  });
+}
+
+function isQapiQuarterlyWorkflowKey(value: string | undefined): boolean {
+  if (!value) return false;
+  const key = value.toLowerCase();
+  return key === 'qa-wf-03'
+    || key === 'ces-event-q2-qapi'
+    || key === 'evt-qapi-q2-2026'
+    || key === 'qapi_meeting-20260507-08'
+    || key === 'q2-qapi-quarterly-review'
+    || key.includes('q2 qapi quarterly')
+    || key.includes('qapi quarterly swimlane');
+}
+
+function isQapiQuarterlyEvent(event: CalendarEventData): boolean {
+  return isQapiQuarterlyWorkflowKey(event.id)
+    || isQapiQuarterlyWorkflowKey(event.workflowId)
+    || isQapiQuarterlyWorkflowKey(event.workflow)
+    || (event.label.toLowerCase().includes('qapi') && event.label.toLowerCase().includes('q2 data review'));
+}
+
+function withQapiQuarterlyFlow(event: CalendarEventData): CalendarEventData {
+  if (!isQapiQuarterlyEvent(event)) return event;
+
+  return {
+    ...event,
+    detail: event.detail ?? 'Quarterly QAPI combines clinical indicators, CAPA, committee packet assembly, eCIgn routing, and survey-ready lock.',
+    formsCount: event.formsCount ?? 18,
+    label: 'Q2 QAPI quarterly review',
+    owner: event.owner || 'QAPI Lead',
     readiness: 'Needs review',
     risk: 'High risk',
+    sourceEventId: event.sourceEventId ?? 'evt-qapi-q2-2026',
+    sourceKind: 'v1-design',
+    sourceUnitId: event.sourceUnitId ?? 'ceu-qapi-2026-10-014',
     steps: '21 tasks',
     swimlane: q2QapiSwimlane,
     taskCount: 21,
     tone: 'orange',
     workflow: 'QAPI quarterly swimlane',
-    workflowId: 'q2-qapi-quarterly-review',
-  },
-  {
-    attendees: ['Systems', 'Compliance Officer'],
-    day: 12,
-    evidenceStatus: 'After-action files linked',
-    formsCount: 2,
+    workflowId: 'QA-WF-03',
+  };
+}
+
+const q2QapiCalendarEvent: CalendarEventData = withQapiQuarterlyFlow({
+  bundleCategory: 'QAPI / Governance',
+  bundleName: 'Q2 QAPI quarterly review',
+  day: 7,
+  detail: 'Quarterly QAPI combines clinical indicators, CAPA, committee packet assembly, eCIgn routing, and survey-ready lock.',
+  id: 'qapi_meeting-20260507-08',
+  label: 'Q2 QAPI quarterly review',
+  month: 5,
+  owner: 'QAPI Lead',
+  primaryDay: true,
+  progress: 65,
+  readiness: 'Needs review',
+  recurrencePattern: 'First Thursday',
+  risk: 'High risk',
+  scheduleReason: 'Canonical V1 event occurrence qapi_meeting-20260507-08 opens the QA-WF-03 quarterly QAPI swimlane.',
+  sourceDate: '2026-05-07',
+  steps: '21 tasks',
+  tone: 'orange',
+  workflow: 'QAPI quarterly swimlane',
+  workflowId: 'QA-WF-03',
+});
+
+const cesCalendarEvents: CalendarEventData[] = [
+  buildScheduledRegulatoryCesEvent('evt-personnel-file-q1-audit', {
+    bundleCategory: 'HR / Onboarding / Training',
+    bundleName: 'Q1 personnel file closeout',
+    day: 9,
+    month: 4,
+    recurrencePattern: 'Second Thursday',
+    scheduleReason: 'Moved one day earlier from Friday to the preferred Thursday without missing the audit window.',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-oasis-accuracy-apr', {
+    bundleCategory: 'Clinical',
+    bundleName: 'April clinical documentation audit',
+    day: 16,
+    month: 4,
+    recurrencePattern: 'Third Thursday',
+    scheduleReason: 'Clinical audit work is kept on Thursday and before the original weekend due date.',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-infection-surveillance-apr', {
+    bundleCategory: 'Clinical',
+    bundleName: 'April infection surveillance closeout',
+    day: 23,
+    month: 4,
+    recurrencePattern: 'Fourth Thursday',
+    scheduleReason: 'Monthly surveillance stays on a predictable fourth-Thursday closeout pattern.',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-hr-files-2026-q1', {
+    bundleCategory: 'HR / Onboarding / Training',
+    bundleName: 'Q1 personnel file evidence review',
+    day: 7,
+    month: 5,
+    recurrencePattern: 'First Thursday',
+    scheduleReason: 'Placed on Thursday before the original Friday due date.',
+    sourceUnitId: 'ceu-hr-2026-09-022',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-safety-drill-q2', {
+    bundleCategory: 'Compliance / Evidence',
+    bundleName: 'Q2 safety and infection-control evidence review',
+    day: 14,
+    month: 5,
+    recurrencePattern: 'Second Thursday',
+    scheduleReason: 'Bundled with TB screening because both require DON/Admin evidence review before mid-month deadlines.',
+    sourceUnitId: 'ceu-safety-2026-10-006',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-ipc-tb-2026', {
+    bundleCategory: 'Compliance / Evidence',
+    bundleName: 'Q2 safety and infection-control evidence review',
+    day: 14,
+    id: 'ces-event-tb-gap',
+    label: 'TB screening gap remediation',
+    month: 5,
+    recurrencePattern: 'Second Thursday',
+    scheduleReason: 'Bundled with Q2 safety documentation to use the same DON/Admin evidence-review window.',
+    sourceUnitId: 'ceu-ipc-2026-10-007',
+    tone: 'orange',
+    workflowId: 'wf-ipc-tb-contract-2026-10',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-staff-competency-q2', {
+    bundleCategory: 'HR / Onboarding / Training',
+    bundleName: 'Q2 competency and credential review',
+    day: 19,
+    month: 5,
+    recurrencePattern: 'Third Tuesday',
+    scheduleReason: 'Quarterly competency review stays on the third-Tuesday HR/training cadence.',
+    sourceUnitId: 'ceu-comp-2026-10-011',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-gb-q2-2026', {
+    bundleCategory: 'QAPI / Governance',
+    bundleName: 'Q2 governance and financial oversight review',
+    day: 21,
+    id: 'ces-event-governing-body',
+    label: 'Governing Body pre-read packet',
+    month: 5,
+    owner: 'Maria Gonzalez, RN',
+    recurrencePattern: 'Third Thursday',
+    scheduleReason: 'Governing body and finance records share board attendees and packet evidence.',
+    sourceUnitId: 'ceu-gb-2026-10-001',
+    tone: 'orange',
+    workflowId: 'wf-gb-packet-2026-10',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-financial-oversight-q2', {
+    bundleCategory: 'QAPI / Governance',
+    bundleName: 'Q2 governance and financial oversight review',
+    day: 21,
+    month: 5,
+    recurrencePattern: 'Third Thursday',
+    scheduleReason: 'Bundled with governing body packet because the financial review feeds board oversight.',
+    sourceUnitId: 'ceu-fin-2026-10-016',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-ep-drill-2026', {
+    bundleCategory: 'Compliance / Evidence',
+    bundleName: 'Emergency preparedness after-action review',
+    day: 21,
     id: 'ces-event-emergency-drill',
     label: 'Emergency drill after-action',
-    nextAction: 'Validate corrective action notes',
-    owner: 'Systems',
-    progress: 88,
-    readiness: 'Ready',
-    risk: 'Low',
-    taskCount: 4,
+    month: 5,
+    recurrencePattern: 'Third Thursday',
+    scheduleReason: 'Placed before the weekend due date and paired only as a light evidence-review add-on.',
+    sourceUnitId: 'ceu-ep-2026-10-003',
     tone: 'green',
-    workflowId: 'emergency-drill-after-action',
-  },
-  {
-    attendees: ['Compliance Officer', 'Training Coordinator'],
-    day: 16,
-    evidenceStatus: 'Three attestations missing',
-    formsCount: 3,
+    workflowId: 'wf-ep-afteraction-2026-10',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-infection-surveillance', {
+    bundleCategory: 'Clinical',
+    bundleName: 'May clinical surveillance closeout',
+    day: 26,
+    month: 5,
+    recurrencePattern: 'Fourth Tuesday',
+    scheduleReason: 'Monthly infection surveillance uses the fourth-week clinical closeout pattern.',
+    sourceUnitId: 'ceu-inf-2026-10-005',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-policy-annual-review', {
+    bundleCategory: 'Governance',
+    bundleName: 'Annual policy and procedure approval review',
+    day: 28,
+    month: 5,
+    recurrencePattern: 'Fourth Thursday',
+    scheduleReason: 'Policy review stays on Thursday with governance approvers available.',
+    sourceUnitId: 'ceu-polrev-2026-10-007',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-hipaa-training-2026', {
+    bundleCategory: 'HR / Onboarding / Training',
+    bundleName: 'Annual HIPAA training completion review',
+    day: 28,
     id: 'ces-event-hipaa-sweep',
     label: 'HIPAA training completion sweep',
-    nextAction: 'Request missing attestations before lock',
-    owner: 'Compliance Officer',
-    progress: 62,
-    readiness: 'Action needed',
-    risk: 'Moderate',
-    taskCount: 6,
+    month: 5,
+    recurrencePattern: 'Fourth Thursday',
+    scheduleReason: 'Training evidence is paired with annual policy governance because both need administrator closeout.',
+    sourceUnitId: 'ceu-hipaa-2026-10-001',
     tone: 'orange',
-    workflowId: 'hipaa-training-completion-sweep',
-  },
-  {
-    attendees: ['Clinical Manager', 'DON'],
-    day: 19,
-    evidenceStatus: 'Care plan index ready',
-    formsCount: 4,
-    id: 'ces-event-recert-review',
-    label: '60-day care plan recert reviews',
-    nextAction: 'Review final clinical sign-off',
-    owner: 'Clinical Manager',
-    progress: 90,
-    readiness: 'Ready',
-    risk: 'Low',
-    taskCount: 7,
+    workflowId: 'wf-hipaa-train-2026-10',
+  }),
+  buildScheduledUnitCesEvent('ceu-qapi-2026-10-014', {
+    bundleCategory: 'QAPI / Governance',
+    bundleName: 'QAPI aggregate preparation',
+    day: 2,
+    id: 'ces-event-qapi-aggregate',
+    label: 'QAPI aggregate report review',
+    month: 6,
+    owner: 'DON',
+    recurrencePattern: 'First Tuesday',
+    scheduleReason: 'QAPI data preparation is separated from the high-effort committee review and kept on first Tuesday.',
+    sourceEventId: 'evt-qapi-q2-2026',
     tone: 'teal',
-    workflowId: '60-day-care-plan-recert-reviews',
-  },
-  {
-    attendees: ['DON', 'Policy Admin'],
-    day: 23,
-    evidenceStatus: 'Policy source set attached',
-    formsCount: 2,
+    workflowId: 'wf-qapi-data-2026-10',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-claims-denial-jun', {
+    bundleCategory: 'Finance',
+    bundleName: 'June claims and revenue-cycle review',
+    day: 9,
+    month: 6,
+    recurrencePattern: 'Second Tuesday',
+    scheduleReason: 'Monthly finance review is placed on Tuesday immediately after the source due date.',
+  }),
+  q2QapiCalendarEvent,
+  buildScheduledRegulatoryCesEvent('evt-hhcahps-q2-survey', {
+    bundleCategory: 'QAPI / Governance',
+    bundleName: 'Q2 QAPI committee and patient-experience review',
+    day: 11,
+    month: 6,
+    recurrencePattern: 'Second Thursday',
+    scheduleReason: 'HHCAHPS is bundled with QAPI because patient-experience results feed the QAPI review.',
+  }),
+  buildScheduledUnitCesEvent('ceu-wc-2026-10-003', {
+    bundleCategory: 'Compliance / Evidence',
+    bundleName: 'Policy update signature packet',
+    day: 18,
     id: 'ces-event-wound-protocol',
     label: 'Wound protocol annual update',
-    nextAction: 'Certify annual policy update',
+    month: 6,
     owner: 'DON',
-    progress: 82,
-    readiness: 'Ready',
-    risk: 'Low',
-    taskCount: 4,
+    recurrencePattern: 'Third Thursday',
+    scheduleReason: 'Policy update signatures are grouped on the Thursday approval path.',
     tone: 'teal',
-    workflowId: 'wound-protocol-annual-update',
-  },
-  {
-    attendees: ['Governing Body', 'Compliance Officer'],
-    day: 27,
-    evidenceStatus: 'Approval record waiting signature',
-    formsCount: 3,
+    workflowId: 'wf-wound-protocol-2026-10',
+  }),
+  buildScheduledUnitCesEvent('ceu-inc-2026-10-008', {
+    bundleCategory: 'Compliance / Evidence',
+    bundleName: 'Policy update signature packet',
+    day: 18,
     id: 'ces-event-incident-procedure',
     label: 'Incident procedure approval',
-    nextAction: 'Open approval lane and collect eCIgn',
+    month: 6,
     owner: 'Administrator',
-    progress: 56,
-    readiness: 'Signature hold',
-    risk: 'High',
-    taskCount: 5,
+    recurrencePattern: 'Third Thursday',
+    scheduleReason: 'Shares governing-body signature path with the policy update packet.',
     tone: 'orange',
-    workflowId: 'incident-procedure-approval',
-  },
-] as const satisfies readonly CalendarEventData[];
+    workflowId: 'wf-incident-proc-2026-10',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-infection-surveillance-jun', {
+    bundleCategory: 'Clinical',
+    bundleName: 'June clinical surveillance and recert review',
+    day: 25,
+    month: 6,
+    recurrencePattern: 'Fourth Thursday',
+    scheduleReason: 'Monthly infection surveillance remains on fourth Thursday and is bundled with related clinical recert review.',
+    sourceUnitId: 'ceu-inf-jun-007',
+  }),
+  buildScheduledUnitCesEvent('ceu-cp-2026-10-002', {
+    bundleCategory: 'Clinical',
+    bundleName: 'June clinical surveillance and recert review',
+    day: 25,
+    id: 'ces-event-recert-review',
+    label: '60-day care plan recert reviews',
+    month: 6,
+    owner: 'Clinical Manager',
+    recurrencePattern: 'Fourth Thursday',
+    scheduleReason: 'Care-plan recert review shares clinical evidence with the monthly surveillance closeout.',
+    tone: 'teal',
+    workflowId: 'wf-careplan-60day-2026-10',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-medrec-review-jul', {
+    bundleCategory: 'Clinical',
+    bundleName: 'July medication documentation review',
+    day: 7,
+    month: 7,
+    recurrencePattern: 'First Tuesday',
+    scheduleReason: 'Monthly medication review starts the clinical audit cadence on first Tuesday.',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-qapi-q3-review', {
+    bundleCategory: 'QAPI / Governance',
+    bundleName: 'Q3 QAPI data review',
+    day: 16,
+    month: 7,
+    recurrencePattern: 'Third Thursday',
+    scheduleReason: 'QAPI quarterly review is moved from weekend source date to the nearest prior Thursday.',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-gb-q3-meeting', {
+    bundleCategory: 'QAPI / Governance',
+    bundleName: 'Q3 governing body review',
+    day: 23,
+    month: 7,
+    recurrencePattern: 'Fourth Thursday',
+    scheduleReason: 'Board-style review stays on a Thursday governance cadence.',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-ep-tabletop-aug', {
+    bundleCategory: 'Compliance / Evidence',
+    bundleName: 'Annual emergency preparedness tabletop',
+    day: 11,
+    month: 8,
+    recurrencePattern: 'Second Tuesday',
+    scheduleReason: 'Emergency preparedness exercise starts on Tuesday and keeps Thursday available for survey-readiness work.',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-accred-readiness-aug', {
+    bundleCategory: 'Operations',
+    bundleName: 'Accreditation survey readiness review',
+    day: 20,
+    month: 8,
+    recurrencePattern: 'Third Thursday',
+    scheduleReason: 'High-effort readiness assessment stands alone on Thursday to avoid unrelated heavy clustering.',
+  }),
+  buildScheduledRegulatoryCesEvent('evt-infection-surveillance-aug', {
+    bundleCategory: 'Clinical',
+    bundleName: 'August infection surveillance closeout',
+    day: 25,
+    month: 8,
+    recurrencePattern: 'Fourth Tuesday',
+    scheduleReason: 'Monthly surveillance remains in the fourth week and avoids the accreditation review date.',
+  }),
+].sort((a, b) => (getEventMonth(a) - getEventMonth(b)) || a.day - b.day || a.label.localeCompare(b.label));
 
 const calendarConfigs = {
   'ces-calendar': {
@@ -667,7 +1515,7 @@ const calendarConfigs = {
     metrics: cesCalendarMetrics,
     railTone: 'orange',
     railTitle: 'Upcoming Events',
-    title: 'June 2026',
+    title: 'CES Compliance Calendar',
   },
   'master-calendar': {
     events: calendarEvents,
@@ -691,20 +1539,80 @@ function getCalendarEventKey(event: CalendarEventData): string {
   return event.id ?? `calendar-event-${event.day}-${event.label}`;
 }
 
-function toWorkflowSwimlanePath(event: CalendarEventData): string {
-  return `/workflows/${event.workflowId ?? getCalendarEventKey(event)}/swimlane`;
+function normalizeCalendarLookupKey(value: string | null | undefined): string | undefined {
+  if (!value) return undefined;
+
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
-function getWorkflowEvent(workflowId: string | undefined): CalendarEventData {
-  return cesCalendarEvents.find((event) => event.workflowId === workflowId) ?? cesCalendarEvents[0];
+function getCalendarEventLookupValues(event: CalendarEventData): readonly string[] {
+  return [
+    event.id,
+    event.workflowId,
+    event.sourceEventId,
+    event.sourceUnitId,
+  ].filter((value): value is string => Boolean(value));
+}
+
+function findCalendarEventByLookup(events: readonly CalendarEventData[], value: string | null | undefined): CalendarEventData | undefined {
+  const lookup = normalizeCalendarLookupKey(value);
+  if (!lookup) return undefined;
+
+  return events.find((event) => getCalendarEventLookupValues(event).includes(lookup));
+}
+
+function toWorkflowSwimlanePath(event: CalendarEventData): string {
+  const eventId = getCalendarEventKey(event);
+  const workflowQuery = event.workflowId ? `?workflowId=${encodeURIComponent(event.workflowId)}` : '';
+
+  return `/events/${encodeURIComponent(eventId)}/swimlane${workflowQuery}`;
+}
+
+function getWorkflowEvent(eventId: string | undefined, workflowId?: string | null): CalendarEventData {
+  const normalizedEventId = normalizeCalendarLookupKey(eventId);
+  const normalizedWorkflowId = normalizeCalendarLookupKey(workflowId);
+  const foundByEvent = findCalendarEventByLookup(cesCalendarEvents, normalizedEventId);
+
+  if (foundByEvent) return withQapiQuarterlyFlow(foundByEvent);
+
+  if (isQapiQuarterlyWorkflowKey(normalizedEventId) || isQapiQuarterlyWorkflowKey(normalizedWorkflowId)) {
+    return q2QapiCalendarEvent;
+  }
+
+  const found = findCalendarEventByLookup(cesCalendarEvents, normalizedWorkflowId);
+
+  if (found) return withQapiQuarterlyFlow(found);
+
+  const lookupLabel = normalizedEventId ?? normalizedWorkflowId;
+
+  const missingEvent: CalendarEventData = {
+    day: 1,
+    id: 'workflow-source-missing',
+    label: lookupLabel ? `Workflow ${lookupLabel}` : 'Workflow source missing',
+    owner: 'Compliance Officer',
+    progress: 0,
+    tone: 'orange',
+    workflowId: normalizedWorkflowId ?? normalizedEventId,
+  };
+
+  return {
+    ...missingEvent,
+    swimlane: buildMissingSourceCalendarSwimlane(missingEvent),
+  };
 }
 
 function CalendarEventPreview({
   event,
   anchor,
+  monthLabel,
 }: {
   event: CalendarEventData;
   anchor: { left: number; top: number; placement: 'left' | 'right' | 'left-sidebar' };
+  monthLabel?: string;
 }) {
   const formsCount = event.formsCount ?? 0;
   const taskCount = event.taskCount ?? 0;
@@ -719,6 +1627,8 @@ function CalendarEventPreview({
     top: `${anchor.top}px`,
   };
 
+  const displayMonth = monthLabel ?? 'Jun';
+
   return createPortal(
     <aside
       aria-live="polite"
@@ -732,7 +1642,7 @@ function CalendarEventPreview({
       </div>
       <h3 className="text-h3 font-medium text-ink leading-tight">{event.label}</h3>
       <p className="mt-xs text-xs text-muted">
-        Jun {event.day} - {event.owner}
+        {displayMonth} {event.day} - {event.owner}
       </p>
       <div className="mt-md grid gap-xs grid-cols-2">
         {[
@@ -820,7 +1730,7 @@ function CalendarAgendaList({
                   <div className="flex flex-wrap items-start justify-between gap-md">
                     <div className="min-w-0">
                       <h3 className="text-sm font-medium leading-snug text-brand-teal-deep">{event.label}</h3>
-                      <p className="mt-xs text-xs text-muted">{event.owner} - Jun {event.day}</p>
+                      <p className="mt-xs text-xs text-muted">{event.owner} - {getCalendarMonthLabel(getEventMonth(event))} {event.day}</p>
                     </div>
                     <ToneTag tone={status.tone}>{status.label}</ToneTag>
                   </div>
@@ -835,60 +1745,6 @@ function CalendarAgendaList({
   );
 }
 
-function buildDefaultCalendarSwimlane(event: CalendarEventData): CalendarSwimlaneData {
-  const formsCount = event.formsCount ?? 2;
-  const eventTitle = formatSwimlaneTitle(event.label);
-  const taskTotal = event.taskCount ?? (event.tone === 'orange' ? 8 : 6);
-
-  return {
-    summary: `${eventTitle} opens as a focused compliance swimlane with intake, evidence, review, signature, and final lock tasks.`,
-    metrics: [
-      { label: 'Tasks', value: `${taskTotal}`, helper: 'Generated from event context', tone: 'teal' },
-      { label: 'Owner', value: event.owner, helper: 'Primary accountable party', tone: event.tone === 'orange' ? 'orange' : 'teal' },
-      { label: 'Risk', value: event.risk ?? (event.tone === 'orange' ? 'High' : 'Low'), helper: 'Calendar-derived signal', tone: event.tone === 'orange' ? 'orange' : 'green' },
-      { label: 'Due', value: `Jun ${event.day}`, helper: 'Event target date', tone: 'teal' },
-    ],
-    lanes: [
-      {
-        title: 'Intake',
-        tone: 'teal',
-        note: 'Open the event record and confirm source policies, forms, and owner.',
-        cards: [
-          { id: 'EVT-01', title: `Confirm ${eventTitle} Scope`, owner: event.owner, due: `Jun ${event.day}`, status: 'Ready', chips: ['Event'], progress: 88, tone: 'teal' },
-          { id: 'EVT-02', title: 'Bind source policy and required forms', owner: 'Policy Admin', due: `Jun ${event.day}`, status: 'Ready', chips: ['Policy', `${formsCount} forms`], progress: 72, tone: 'teal' },
-        ],
-      },
-      {
-        title: 'Evidence',
-        tone: event.tone === 'orange' ? 'orange' : 'teal',
-        note: 'Collect artifacts and check the evidence packet for gaps.',
-        cards: [
-          { id: 'EVT-03', title: 'Collect required evidence artifacts', owner: event.owner, due: `Jun ${event.day + 1}`, status: event.tone === 'orange' ? 'Needs review' : 'In progress', chips: ['Evidence'], progress: event.tone === 'orange' ? 46 : 74, tone: event.tone === 'orange' ? 'orange' : 'teal' },
-          { id: 'EVT-04', title: event.evidenceStatus ?? 'Validate content hash and retention metadata', owner: 'Audit Lead', due: `Jun ${event.day + 1}`, status: 'In progress', chips: ['Audit'], progress: 63, tone: 'teal' },
-        ],
-      },
-      {
-        title: 'Review',
-        tone: 'amber',
-        note: 'Route review decisions before signature or certification.',
-        cards: [
-          { id: 'EVT-05', title: 'Manager review and exception note', owner: 'Clinical Manager', due: `Jun ${event.day + 2}`, status: 'Pending', chips: ['Review'], progress: 42, tone: 'orange' },
-          { id: 'EVT-06', title: 'Compliance sign-off readiness check', owner: 'Compliance Officer', due: `Jun ${event.day + 2}`, status: 'Watch', chips: ['Checklist'], progress: 58, tone: 'teal' },
-        ],
-      },
-      {
-        title: 'Lock',
-        tone: 'green',
-        note: 'Finalize the packet and expose the event to audit/survey workflows.',
-        cards: [
-          { id: 'EVT-07', title: 'Route eCIgn certificate and lock packet', owner: 'Administrator', due: `Jun ${event.day + 3}`, status: 'Pending', chips: ['eCIgn'], progress: 36, tone: 'orange' },
-          { id: 'EVT-08', title: 'Publish survey-ready event manifest', owner: 'Compliance Officer', due: `Jun ${event.day + 3}`, status: 'Queued', chips: ['Survey'], progress: 24, tone: 'teal' },
-        ],
-      },
-    ],
-  };
-}
-
 function CalendarSwimlaneInline({
   event,
   events,
@@ -900,7 +1756,7 @@ function CalendarSwimlaneInline({
   onBack: () => void;
   onSelectEvent: (event: CalendarEventData) => void;
 }) {
-  const swimlane = event.swimlane ?? buildDefaultCalendarSwimlane(event);
+  const swimlane = event.swimlane ?? buildMissingSourceCalendarSwimlane(event);
   const lanes = swimlane.lanes;
   const totalTasks = lanes.reduce((sum, lane) => sum + lane.cards.length, 0);
   const eventCarousel = [event, ...events.filter((item) => item.label !== event.label)];
@@ -934,7 +1790,7 @@ function CalendarSwimlaneInline({
                 onClick={() => onSelectEvent(item)}
                 type="button"
               >
-                Jun {item.day} - {item.label}
+                {getCalendarMonthLabel(getEventMonth(item))} {item.day} - {item.label}
               </button>
             );
           })}
@@ -945,7 +1801,7 @@ function CalendarSwimlaneInline({
         <div className="flex flex-wrap items-center justify-between gap-lg border-t border-hairline pt-lg">
           <div className="flex flex-wrap gap-sm">
             <ToneTag tone={event.tone}>{event.readiness ?? 'Swimlane open'}</ToneTag>
-            <ToneTag tone="slate">Jun {event.day}</ToneTag>
+            <ToneTag tone="slate">{getCalendarMonthLabel(getEventMonth(event))} {event.day}</ToneTag>
             <ToneTag tone="teal">{totalTasks} tasks</ToneTag>
           </div>
           <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={onBack} size="sm" variant="secondary">
@@ -1979,7 +2835,20 @@ function PatientDetailScreen() {
 function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
   const config = calendarConfigs[mode];
   const isCesCalendar = mode === 'ces-calendar';
-  const events = [...config.events].sort((a, b) => a.day - b.day);
+  const [searchParams] = useSearchParams();
+  const requestedEventId = isCesCalendar ? searchParams.get('event') : null;
+  const requestedEvent = findCalendarEventByLookup(config.events, requestedEventId);
+  const cesMonthOptions = isCesCalendar
+    ? Array.from(new Set((config.events || []).map(getEventMonth))).sort((a, b) => a - b)
+    : [6];
+  const [cesMonth, setCesMonth] = useState(() => requestedEvent ? getEventMonth(requestedEvent) : 6);
+  const activeCesMonth = isCesCalendar && cesMonthOptions.includes(cesMonth)
+    ? cesMonth
+    : cesMonthOptions[0] ?? 6;
+  const activeMonthLabel = getCalendarMonthLabel(activeCesMonth);
+  const events: CalendarEventData[] = [...(config.events || [])]
+    .filter((event) => !isCesCalendar || getEventMonth(event) === activeCesMonth)
+    .sort((a, b) => a.day - b.day || a.label.localeCompare(b.label));
   const [selectedEvent, setSelectedEvent] = useState<CalendarEventData | null>(null);
   const [agendaMode, setAgendaMode] = useState(isCesCalendar ? 'Month' : 'Week');
   const [resolverEvent, setResolverEvent] = useState<CalendarEventData | null>(
@@ -1989,7 +2858,11 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
   );
   const [activeEventKey, setActiveEventKey] = useState<string | null>(null);
   const [activeEventAnchor, setActiveEventAnchor] = useState<{ left: number; top: number; placement: 'left' | 'right' | 'left-sidebar' } | null>(null);
-  const days = Array.from({ length: 30 }, (_, index) => index + 1);
+  const firstWeekday = isCesCalendar ? new Date(2026, activeCesMonth - 1, 1).getDay() : 0;
+  const days = Array.from({ length: isCesCalendar ? getDaysInCalendarMonth(activeCesMonth) : 30 }, (_, index) => index + 1);
+  const calendarCells: Array<number | null> = isCesCalendar
+    ? [...Array.from({ length: firstWeekday }, () => null), ...days]
+    : days;
 
   const positionEventCard = (element: HTMLElement, event: CalendarEventData, isSidebar: boolean) => {
     const rect = element.getBoundingClientRect();
@@ -2009,7 +2882,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
     } else {
       // Month grid positioning
       const day = event.day;
-      const colIndex = (day - 1) % 7;
+      const colIndex = isCesCalendar ? (firstWeekday + day - 1) % 7 : (day - 1) % 7;
       if (colIndex < 4) {
         // Place on the right of the cell button
         left = rect.right + margin;
@@ -2045,13 +2918,28 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
 
   useEffect(() => {
     setAgendaMode(isCesCalendar ? 'Month' : 'Week');
-    setSelectedEvent(null);
+    if (!requestedEventId) setSelectedEvent(null);
+    setActiveEventKey(null);
+    setActiveEventAnchor(null);
     setResolverEvent(
       mode === 'staffing-calendar'
         ? events.find((event) => event.tone === 'orange' || event.tone === 'amber') ?? null
         : null
     );
-  }, [isCesCalendar, mode]);
+  }, [activeCesMonth, isCesCalendar, mode, requestedEventId]);
+
+  useEffect(() => {
+    if (!isCesCalendar || !requestedEventId) return;
+
+    const targetEvent = findCalendarEventByLookup(config.events, requestedEventId);
+    if (!targetEvent) return;
+
+    setAgendaMode('Month');
+    setCesMonth(getEventMonth(targetEvent));
+    setSelectedEvent(targetEvent);
+    setActiveEventKey(null);
+    setActiveEventAnchor(null);
+  }, [config.events, isCesCalendar, requestedEventId]);
 
   const openCalendarEvent = (event: CalendarEventData) => {
     setActiveEventKey(null);
@@ -2128,8 +3016,30 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
           {isCesCalendar ? (
             <>
               <div className="mb-lg">
-                <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
-                <p className="mt-xs text-sm text-muted">{config.legend}</p>
+                <div className="flex flex-wrap items-end justify-between gap-md">
+                  <div>
+                    <h2 className="text-h2 font-medium text-ink">{activeMonthLabel} 2026 CES Calendar</h2>
+                    <p className="mt-xs text-sm text-muted">{config.legend}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-white/[.36] p-xs">
+                    {cesMonthOptions.map((month) => (
+                      <button
+                        aria-current={month === activeCesMonth ? 'true' : undefined}
+                        className={cx(
+                          'min-h-tap rounded-md px-md text-xs font-medium uppercase tracking-tag transition duration-fast focus-visible:outline-none focus-visible:shadow-focus',
+                          month === activeCesMonth
+                            ? 'bg-brand-teal text-on-brand shadow-rest'
+                            : 'text-brand-teal hover:bg-white/[.55]',
+                        )}
+                        key={month}
+                        onClick={() => setCesMonth(month)}
+                        type="button"
+                      >
+                        {getCalendarMonthLabel(month)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-hairline bg-surface-glass shadow-glass-inset">
               <div className="grid grid-cols-7 text-xs">
@@ -2138,7 +3048,9 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                     {day}
                   </div>
                 ))}
-                {days.map((day) => (
+                {calendarCells.map((day, index) => day === null ? (
+                  <div aria-hidden="true" className="min-h-[156px] border border-hairline bg-white/24" key={`blank-${index}`} />
+                ) : (
                   <div className="relative min-w-0 overflow-hidden min-h-[156px] border border-hairline bg-white/62 p-md !shadow-none transition duration-fast hover:bg-white/86" key={day}>
                     <p className="mb-md text-base font-medium text-brand-teal">{day}</p>
                     <div className="grid gap-xs">
@@ -2156,7 +3068,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                             <div className="relative min-w-0 overflow-hidden" key={key}>
                               <button
                                 aria-describedby={isHovered ? 'ces-event-preview' : undefined}
-                                aria-label={`${event.label}, Jun ${event.day}. Click to open event workspace/swimlane.`}
+                                aria-label={`${event.label}, ${activeMonthLabel} ${event.day}. Click to open event workspace/swimlane.`}
                                 className={cx(
                                   pillClasses,
                                   'block min-w-0 max-w-full w-full overflow-hidden focus-visible:outline-none focus-visible:shadow-focus',
@@ -2190,6 +3102,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                                 <CalendarEventPreview
                                   event={event}
                                   anchor={activeEventAnchor}
+                                  monthLabel={activeMonthLabel}
                                 />
                               )}
                             </div>
@@ -2232,7 +3145,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
               ))}
             </div>
           ) : (
-            <CalendarAgendaList events={events} legend={config.legend} onOpenEvent={openCalendarEvent} title={config.title} />
+            <CalendarAgendaList events={events} legend={config.legend} onOpenEvent={openCalendarEvent} title={isCesCalendar ? `${activeMonthLabel} 2026` : config.title} />
           )}
         </section>
         {!isCesCalendar && <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
@@ -2247,7 +3160,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                 <div className="flex items-start gap-md">
                   <span className={cx('mt-xs h-[76px] w-xs rounded-sm', toneBarClasses[event.tone])} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs text-brand-teal">Jun {event.day}</p>
+                    <p className="text-xs text-brand-teal">{getCalendarMonthLabel(getEventMonth(event))} {event.day}</p>
                     <h3 className="mt-sm text-sm font-medium leading-snug text-brand-teal-deep">{event.label}</h3>
                     <p className="mt-xs text-xs text-muted">{event.owner}</p>
                     <ProgressMeter className="mt-md" tone={event.tone} value={event.progress} />
@@ -2260,7 +3173,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
               return isCesCalendar ? (
                 <div className="relative" key={key}>
                   <button
-                    aria-label={`${event.label}, Jun ${event.day}. Click to open event workspace/swimlane.`}
+                    aria-label={`${event.label}, ${getCalendarMonthLabel(getEventMonth(event))} ${event.day}. Click to open event workspace/swimlane.`}
                     className={cx(
                       'rounded-lg border p-md text-left transition duration-fast ease-standard hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus w-full',
                       isHovered
@@ -2295,6 +3208,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                     <CalendarEventPreview 
                       event={event} 
                       anchor={activeEventAnchor}
+                      monthLabel={getCalendarMonthLabel(getEventMonth(event))}
                     />
                   )}
                 </div>
@@ -2357,114 +3271,37 @@ function BoardScreen() {
 }
 
 function buildWorkflowSwimlane(event: CalendarEventData): readonly BoardLaneData[] {
-  const formsCount = event.formsCount ?? 0;
-  const due = `Jun ${event.day}`;
+  const swimlane = event.swimlane ?? buildMissingSourceCalendarSwimlane(event);
 
-  return [
-    {
-      cards: [
-        {
-          chips: ['Event', 'Scope'],
-          due,
-          id: 'EVT-01',
-          owner: event.owner,
-          progress: 88,
-          title: `Confirm ${event.label} scope`,
-          tone: 'teal',
-        },
-        {
-          chips: ['Policy', `${formsCount} forms`],
-          due,
-          id: 'EVT-02',
-          owner: 'Policy Admin',
-          progress: 78,
-          title: 'Bind source policies and required forms',
-          tone: 'teal',
-        },
-      ],
-      count: 2,
-      title: 'Intake',
-      tone: 'teal',
-    },
-    {
-      cards: [
-        {
-          chips: ['Evidence', 'Packet'],
-          due: `Jun ${event.day + 1}`,
-          id: 'EVT-03',
-          owner: event.owner,
-          progress: event.progress,
-          title: 'Collect required evidence artifacts',
-          tone: event.tone === 'orange' ? 'orange' : 'teal',
-        },
-        {
-          chips: ['Forms', 'Audit trail'],
-          due: `Jun ${event.day + 1}`,
-          id: 'EVT-04',
-          owner: 'Compliance Officer',
-          progress: 66,
-          title: event.evidenceStatus ?? 'Validate evidence status',
-          tone: 'orange',
-        },
-      ],
-      count: 2,
-      title: 'Evidence',
-      tone: 'orange',
-    },
-    {
-      cards: [
-        {
-          chips: ['Readiness', 'Risk'],
-          due: `Jun ${event.day + 2}`,
-          id: 'EVT-05',
-          owner: 'QAPI Lead',
-          progress: 72,
-          title: `Resolve ${event.risk ?? 'current'} risk signal`,
-          tone: event.tone,
-        },
-        {
-          chips: ['Attendees', 'Roles'],
-          due: `Jun ${event.day + 2}`,
-          id: 'EVT-06',
-          owner: 'Administrator',
-          progress: 70,
-          title: 'Confirm attendees and role sequence',
-          tone: 'amber',
-        },
-      ],
-      count: 2,
-      title: 'Review',
-      tone: 'amber',
-    },
-    {
-      cards: [
-        {
-          chips: ['eCIgn', 'Lock'],
-          due: `Jun ${event.day + 3}`,
-          id: 'EVT-07',
-          owner: 'Governing Body',
-          progress: 64,
-          title: 'Route signatures and final packet lock',
-          tone: 'green',
-        },
-      ],
-      count: 1,
-      title: 'Lock',
-      tone: 'green',
-    },
-  ];
+  return swimlane.lanes.map((lane) => ({
+    cards: lane.cards.map((card) => ({
+      chips: card.chips,
+      due: card.due,
+      id: card.id,
+      owner: card.owner,
+      progress: card.progress,
+      title: card.title,
+      tone: card.tone,
+    })),
+    count: lane.cards.length,
+    title: lane.title,
+    tone: lane.tone,
+  }));
 }
 
 function WorkflowSwimlaneScreen() {
-  const { workflowId } = useParams();
+  const { eventId, workflowId: routeWorkflowId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const event = getWorkflowEvent(workflowId);
+  const workflowId = searchParams.get('workflowId') ?? routeWorkflowId;
+  const event = getWorkflowEvent(eventId ?? routeWorkflowId, workflowId);
+  const eventMonthLabel = getCalendarMonthLabel(getEventMonth(event));
   const lanes = buildWorkflowSwimlane(event);
-  const metrics: readonly MetricTileData[] = [
+  const metrics: readonly MetricTileData[] = event.swimlane?.metrics ?? [
     { label: 'Tasks', value: `${event.taskCount ?? 7}`, helper: 'Generated from event context', tone: 'teal' },
     { label: 'Owner', value: event.owner, helper: 'Primary accountable party', tone: 'orange' },
     { label: 'Risk', value: event.risk ?? 'Current', helper: 'Calendar-derived signal', tone: event.tone },
-    { label: 'Due', value: `Jun ${event.day}`, helper: 'Event target date', tone: 'teal' },
+    { label: 'Due', value: `${eventMonthLabel} ${event.day}`, helper: 'Event target date', tone: 'teal' },
   ];
 
   const [selectedCard, setSelectedCard] = useState<BoardCardData | null>(null);
@@ -2480,16 +3317,20 @@ function WorkflowSwimlaneScreen() {
               Swimlane open
             </ToneTag>
             <ToneTag className="font-medium" tone="slate">
-              Jun {event.day}
+              {eventMonthLabel} {event.day}
             </ToneTag>
             <ToneTag className="font-medium">{event.taskCount ?? 7} tasks</ToneTag>
           </div>
-          <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={() => navigate('/ces/calendar')} variant="secondary">
+          <Button
+            iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />}
+            onClick={() => navigate(`/ces/calendar?event=${encodeURIComponent(getCalendarEventKey(event))}`)}
+            variant="secondary"
+          >
             Back to month
           </Button>
         </div>
 
-        <section aria-label="Workflow stage summary" className="grid gap-sm tablet-l:grid-cols-2 desktop:grid-cols-4">
+        <section aria-label="Workflow stage summary" className="grid gap-sm [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))]">
           {lanes.map((lane, index) => (
             <div className={cx('rounded-lg p-md shadow-none', toneGlassSurfaceClasses[lane.tone])} key={lane.title}>
               <div className="mb-sm flex items-center justify-between gap-sm">
@@ -2515,7 +3356,7 @@ function WorkflowSwimlaneScreen() {
               onClick={() => navigate(toWorkflowSwimlanePath(calendarEvent))}
               type="button"
             >
-              Jun {calendarEvent.day} - {calendarEvent.label}
+              {getCalendarMonthLabel(getEventMonth(calendarEvent))} {calendarEvent.day} - {calendarEvent.label}
             </button>
           ))}
         </div>
@@ -2523,10 +3364,16 @@ function WorkflowSwimlaneScreen() {
 
       <section className="grid gap-lg">
         <div className="min-w-0 overflow-x-auto overflow-y-hidden pb-sm">
-          <div className="grid min-w-[920px] gap-sm tablet-l:grid-cols-2 desktop:min-w-0 desktop:grid-cols-4">
-          {lanes.map((lane) => (
-            <BoardLane key={lane.title} lane={lane} onCardClick={setSelectedCard} />
-          ))}
+          <div
+            className="grid gap-sm"
+            style={{
+              gridTemplateColumns: `repeat(${lanes.length}, minmax(220px, 1fr))`,
+              minWidth: `${Math.max(lanes.length * 220, 920)}px`,
+            }}
+          >
+            {lanes.map((lane) => (
+              <BoardLane key={lane.title} lane={lane} onCardClick={setSelectedCard} />
+            ))}
           </div>
         </div>
       </section>

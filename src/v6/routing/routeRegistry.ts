@@ -53,6 +53,7 @@ export const V6_ROUTES = [
   { path: '/ces/events', hashId: 'events-board', template: 'board', group: 'CES', title: 'Events Board', description: 'Clinical event board for critical, at-risk, evidence-ready, and lock-ready work.' },
   { path: '/workflows', hashId: 'workflows', template: 'matrix', group: 'CES', title: 'Workflows', description: 'Workflow library linking domains, policies, evidence, forms, and history.' },
   { path: '/workflows/:workflowId/swimlane', hashId: 'workflow-swimlane', template: 'board', group: 'CES', title: 'Workflow Swimlane', description: 'Workflow swimlane for intake, evidence, review, signature, and lock steps.' },
+  { path: '/events/:eventId/swimlane', hashId: 'workflow-swimlane', template: 'board', group: 'CES', title: 'Workflow Swimlane', description: 'Event workflow swimlane for the selected event occurrence and workflow.' },
   { path: '/compliance/master-controls', hashId: 'master-controls', template: 'matrix', group: 'CES', title: 'Master Controls', description: 'Regulatory control matrix mapped to risk, evidence, and readiness.' },
   { path: '/audit', hashId: 'audit-mode', template: 'evidence', group: 'CES', title: 'Audit Mode', description: 'Read-only audit review surface for missing evidence and packet checks.' },
   { path: '/evidence', hashId: 'evidence-center', template: 'evidence', group: 'CES', title: 'Evidence Center', description: 'Evidence repository for files, hashes, signatures, and audit metadata.' },
