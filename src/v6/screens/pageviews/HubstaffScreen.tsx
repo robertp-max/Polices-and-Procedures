@@ -1,6 +1,5 @@
 import { BarChart3, Clock, Milestone } from 'lucide-react';
 import { MetricGrid, DataTable, SurfaceCard, type MetricTileData, type SurfaceCardData, type DataTableColumn } from '../../components';
-;
 
 interface LogRow extends Record<string, string> {
   logId: string;

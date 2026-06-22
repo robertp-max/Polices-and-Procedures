@@ -251,10 +251,10 @@ export function EventsBoardScreen() {
   const [activeTab, setActiveTab] = useState<'board' | 'evidence'>('board');
 
   return (
-    <div className="grid gap-xl">
+    <div className="grid gap-lg">
       <MetricGrid metrics={eventMetrics} />
 
-      <section className="grid gap-lg">
+      <section className="grid gap-md">
         {/* Premium Segmented Tab Control */}
         <div className="flex justify-start">
           <div className="flex rounded-lg border border-hairline bg-tone-slate-bg/30 p-xs gap-xs">
@@ -284,7 +284,7 @@ export function EventsBoardScreen() {
         </div>
 
         {activeTab === 'board' && (
-          <div className="flex flex-wrap items-center justify-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
+          <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface p-md shadow-rest">
             <div aria-label="Event status filters" className="flex flex-wrap gap-sm">
               {eventFilters.map((filter) => {
                 const Icon = filter.icon;
@@ -312,9 +312,9 @@ export function EventsBoardScreen() {
       </section>
 
       {activeTab === 'board' ? (
-        <section className="grid gap-xl large:grid-cols-[minmax(0,3fr)_minmax(320px,1fr)]">
-          <div aria-label="Events board lanes" className="min-w-0 overflow-hidden pb-sm" role="region" tabIndex={0}>
-            <div className="grid gap-md tablet-l:grid-cols-2 desktop:grid-cols-4">
+        <section className="grid gap-lg large:grid-cols-[minmax(0,1fr)_minmax(270px,320px)]">
+          <div aria-label="Events board lanes" className="min-w-0 overflow-x-auto overflow-y-hidden pb-sm" role="region" tabIndex={0}>
+            <div className="grid min-w-[920px] gap-sm tablet-l:grid-cols-2 desktop:min-w-0 desktop:grid-cols-4">
               {eventLanes.map((lane) => (
                 <div className="min-w-0" key={lane.title}>
                   <BoardLane lane={lane} />
@@ -323,7 +323,7 @@ export function EventsBoardScreen() {
             </div>
           </div>
 
-          <aside className="grid content-start gap-lg">
+          <aside className="grid content-start gap-md">
             {eventHealthCards.map((card) => (
               <SurfaceCard card={card} key={card.title} />
             ))}

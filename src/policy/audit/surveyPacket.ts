@@ -922,13 +922,13 @@ function renderTable(tableLines: string[]): string {
 }
 
 function inline(s: string): string {
-  let out = escHtml(s);
-  out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
-  out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  out = out.replace(/_([^_]+)_/g, '<em>$1</em>');
-  // Color pass/fail markers
-  out = out.replace(/✓ Pass/g, '<span class="pass">✓ Pass</span>');
-  out = out.replace(/✗ Fail/g, '<span class="fail">✗ Fail</span>');
+  const out = escHtml(s)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/_([^_]+)_/g, '<em>$1</em>')
+    // Color pass/fail markers
+    .replace(/✓ Pass/g, '<span class="pass">✓ Pass</span>')
+    .replace(/✗ Fail/g, '<span class="fail">✗ Fail</span>');
   return out;
 }
 
@@ -953,9 +953,8 @@ export interface SurveyRollupHeader {
 export function rollupToSurveyMarkdown(
   header: SurveyRollupHeader,
   packets: SurveyPacket[],
-  events: RegulatoryEvent[],
+  _events: RegulatoryEvent[],
 ): string {
-  void events;
   const ln: string[] = [];
   ln.push(`# ${header.title}`);
   if (header.subtitle) ln.push(`_${header.subtitle}_`);

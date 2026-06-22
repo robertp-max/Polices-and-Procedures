@@ -217,7 +217,6 @@ export const usePmPersonalStore = create<PersonalState>()(
             }
             set({ tasks: next });
           } catch (err) {
-            // eslint-disable-next-line no-console
             console.warn('[personalStore.hydrateFromApi] failed; keeping local cache.', err);
           }
         },

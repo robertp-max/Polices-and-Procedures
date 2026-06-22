@@ -23,6 +23,7 @@ export interface SignedPackageLike {
   status?: string;
   supersededAt?: string;
   driveFileId?: string;
+  driveFolderId?: string;
   driveUploadStatus?: string;
   webViewLink?: string;
 }

@@ -216,22 +216,24 @@ export function dataUrlToBlobUrlForHtml(dataUrl: string): string | undefined {
   if (comma < 0) return undefined;
   const meta = dataUrl.slice(5, comma);
   const payload = dataUrl.slice(comma + 1);
-  let html: string;
-  if (/;base64/i.test(meta)) {
-    try {
-      const binary = atob(payload.replace(/\s/g, ''));
-      const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
-      html = new TextDecoder('utf-8').decode(bytes);
-    } catch {
-      return undefined;
+  const html = (() => {
+    if (/;base64/i.test(meta)) {
+      try {
+        const binary = atob(payload.replace(/\s/g, ''));
+        const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+        return new TextDecoder('utf-8').decode(bytes);
+      } catch {
+        return undefined;
+      }
+    } else {
+      try {
+        return decodeURIComponent(payload);
+      } catch {
+        return undefined;
+      }
     }
-  } else {
-    try {
-      html = decodeURIComponent(payload);
-    } catch {
-      return undefined;
-    }
-  }
+  })();
+  if (html === undefined) return undefined;
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   return URL.createObjectURL(blob);
 }

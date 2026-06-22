@@ -47,6 +47,7 @@ export function useProjectedTasks(scope: 'full' | 'sprint' = 'sprint'): Task[] {
   const generatedEvents = useAutogenStore(s => s.generatedEvents);
   const triggeredEvents = useAutogenStore(s => s.triggeredEvents);
   const sprintWindow = usePmViewSprintStore(s => s.window);
+  const { id: sprintId, startDate, endDate } = sprintWindow;
   const stepStates = useMemo(
     () => Object.fromEntries(Object.entries(rawStepStates).map(([k, v]) => [k, v.status])),
     [rawStepStates],
@@ -61,7 +62,7 @@ export function useProjectedTasks(scope: 'full' | 'sprint' = 'sprint'): Task[] {
       scope === 'full'
         ? allEvents
         : allEvents.filter(e => regulatoryEventOverlapsSprint(e, sprintWindow)),
-    [allEvents, scope, sprintWindow.endDate, sprintWindow.id, sprintWindow.startDate],
+    [allEvents, scope, sprintId, startDate, endDate],
   );
 
   return useMemo(() => {

@@ -46,22 +46,21 @@ function formatSectionBody(rel, text) {
 
 /** @param {string} dir @param {string[]} acc */
 function walkBuilderDocs(dir, acc = []) {
-  let entries;
   try {
-    entries = readdirSync(dir, { withFileTypes: true });
+    const entries = readdirSync(dir, { withFileTypes: true });
+    for (const e of entries) {
+      const p = join(dir, e.name);
+      if (e.isDirectory()) {
+        if (SKIP_DIR.has(e.name)) continue;
+        walkBuilderDocs(p, acc);
+      } else if (e.isFile() && isWalkedDocFile(e.name)) {
+        const rel = relative(BUILDER, p).split(sep).join('/');
+        if (rel.startsWith('_chatGPT/current_state_')) continue;
+        acc.push(p);
+      }
+    }
   } catch {
     return acc;
-  }
-  for (const e of entries) {
-    const p = join(dir, e.name);
-    if (e.isDirectory()) {
-      if (SKIP_DIR.has(e.name)) continue;
-      walkBuilderDocs(p, acc);
-    } else if (e.isFile() && isWalkedDocFile(e.name)) {
-      const rel = relative(BUILDER, p).split(sep).join('/');
-      if (rel.startsWith('_chatGPT/current_state_')) continue;
-      acc.push(p);
-    }
   }
   return acc;
 }
@@ -69,21 +68,20 @@ function walkBuilderDocs(dir, acc = []) {
 /** Extensionless text artifacts in `Builder/_chatGPT/` (e.g. `ACHC-Crosswalk`) are not picked up by extension walk. */
 function appendChatGptExtensionless(paths) {
   const dir = join(BUILDER, '_chatGPT');
-  let entries;
   try {
-    entries = readdirSync(dir, { withFileTypes: true });
+    const entries = readdirSync(dir, { withFileTypes: true });
+    const have = new Set(paths.map((p) => p.toLowerCase()));
+    for (const e of entries) {
+      if (!e.isFile()) continue;
+      if (e.name.startsWith('current_state_')) continue;
+      if (isWalkedDocFile(e.name)) continue;
+      const abs = join(dir, e.name);
+      if (have.has(abs.toLowerCase())) continue;
+      paths.push(abs);
+      have.add(abs.toLowerCase());
+    }
   } catch {
     return;
-  }
-  const have = new Set(paths.map((p) => p.toLowerCase()));
-  for (const e of entries) {
-    if (!e.isFile()) continue;
-    if (e.name.startsWith('current_state_')) continue;
-    if (isWalkedDocFile(e.name)) continue;
-    const abs = join(dir, e.name);
-    if (have.has(abs.toLowerCase())) continue;
-    paths.push(abs);
-    have.add(abs.toLowerCase());
   }
 }
 

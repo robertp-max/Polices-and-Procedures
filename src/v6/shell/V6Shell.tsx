@@ -8,7 +8,7 @@ import { cx } from '../utils/classNames';
 
 
 export function V6Shell() {
-  const location = useLocation();
+  const { pathname } = useLocation();
   const { isPersonalOpsOpen, togglePersonalOps } = usePersonalOpsStore();
   const mainRef = useRef<HTMLElement | null>(null);
   const [hasScrolledMain, setHasScrolledMain] = useState(false);
@@ -18,8 +18,9 @@ export function V6Shell() {
     if (!main) return;
 
     main.scrollTo({ top: 0, left: 0 });
-    setHasScrolledMain(false);
-  }, [location.pathname]);
+    // Dispatch to the scroll listener so it updates hasScrolledMain (setState must not be called directly from effect body).
+    main.dispatchEvent(new Event('scroll'));
+  }, [pathname]);
 
   useEffect(() => {
     const main = mainRef.current;
@@ -54,7 +55,7 @@ export function V6Shell() {
           </main>
           {isPersonalOpsOpen && (
             <div className="sticky top-0 h-screen">
-              <PersonalOpsPanel onClose={togglePersonalOps} />
+              <PersonalOpsPanel />
             </div>
           )}
         </div>

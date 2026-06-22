@@ -7,8 +7,8 @@ import { routeToPreviewPath, V6_ROUTES } from '../routing/routeRegistry';
 const shellRoutes = V6_ROUTES.filter((route) => route.group !== 'Auth');
 
 export function Sidebar() {
-  const location = useLocation();
-  const currentRoute = shellRoutes.find((route) => Boolean(matchPath({ path: route.path, end: !route.path.endsWith('/*') }, location.pathname)));
+  const { pathname } = useLocation();
+  const currentRoute = shellRoutes.find((route) => Boolean(matchPath({ path: route.path, end: !route.path.endsWith('/*') }, pathname)));
   const activeSection = SIDEBAR_SECTIONS.find((section) => currentRoute ? section.hashIds.some((hashId) => hashId === currentRoute.hashId) : false);
   const activeHashId = currentRoute?.hashId;
 

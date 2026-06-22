@@ -474,7 +474,7 @@ export function buildCompletionChecklist(
     .filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx);
 
   // For CES eCign signed_package artifacts, require real Drive metadata to count as complete evidence (no local-only success).
-  const hasRealDriveMetadata = (item: any) => !!(item.driveFileId || item.driveUploadStatus === 'uploaded' || item.webViewLink);
+  const hasRealDriveMetadata = (item: Record<string, unknown>) => !!(item.driveFileId || item.driveUploadStatus === 'uploaded' || item.webViewLink);
   const realEvidenceForCompletion = evidenceList.filter(item => {
     const at = item.artifactType || item.kind;
     const isSignedCanonical = at === 'signed_package' || at === 'signed_form_instance' || at === 'signed_certificate';

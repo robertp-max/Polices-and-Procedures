@@ -3235,7 +3235,6 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           } catch (err) {
             const isQuota = err instanceof DOMException && (err.code === 22 || err.name === 'QuotaExceededError');
             if (import.meta.env.DEV) {
-              // eslint-disable-next-line no-console
               console.warn('[reg-execution] persist skipped (storage). Metadata remains in memory.', isQuota ? 'QuotaExceededError' : err);
             }
           }

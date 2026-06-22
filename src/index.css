@@ -285,6 +285,32 @@ body {
   -webkit-backdrop-filter: blur(16px) saturate(118%) !important;
 }
 
+/* V6 Glassmorphism Edge Hardening: soft inward fade instead of hard white border.
+   The pseudo creates a subtle white-tinted gradient at edges that fades into
+   the card's own tint/fill over ~8-10px. Works for neutral glass and toned cards.
+   Stronger at perimeter, dissolves inward. */
+.bg-surface-glass,
+.glass-toned,
+.bg-surface {
+  position: relative;
+  overflow: hidden;
+}
+.bg-surface-glass::before,
+.glass-toned::before,
+.bg-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  /* edge fade: stronger near border, blends with card tint toward center */
+  background:
+    linear-gradient(to top, rgba(255, 255, 255, 0.26) 0%, transparent 9px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.13) 0%, transparent 7px),
+    linear-gradient(to left, rgba(255, 255, 255, 0.20) 0%, transparent 9px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.11) 0%, transparent 7px);
+}
+
 .v6-main-scrollmask {
   --v6-main-mask-y: linear-gradient(to bottom, black 0, black calc(100% - 42px), transparent 100%);
   --v6-main-mask-x: linear-gradient(to right, transparent 0, black 42px, black calc(100% - 42px), transparent 100%);
@@ -301,7 +327,7 @@ body {
 .shadow-rest,
 .shadow-soft,
 .shadow-hover {
-  border-color: rgba(255, 255, 255, 0.94) !important;
+  /* border softened for glassmorphism edge fade - no hard white */
 }
 
 

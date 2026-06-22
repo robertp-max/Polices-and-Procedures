@@ -26,10 +26,11 @@ function laneForRole(role: string, lanes: SwimlaneLane[]): SwimlaneLane {
   return lane;
 }
 
-function statusForStep(step: WorkflowStep, index: number, exec: any, liveEvent: any): SwimlaneStatus {
+function statusForStep(step: WorkflowStep, index: number, exec: Record<string, unknown>, liveEvent: unknown): SwimlaneStatus {
   // For event mode use live store status if available
-  if (liveEvent && exec.effectiveStepStatus) {
-    const liveS = exec.effectiveStepStatus(liveEvent, `STEP-${String(step.order).padStart(2,'0')}`) || exec.effectiveStepStatus(liveEvent, String(step.order));
+  const ex = exec as { effectiveStepStatus?: (ev: unknown, key: string | number) => string | undefined };
+  if (liveEvent && ex.effectiveStepStatus) {
+    const liveS = ex.effectiveStepStatus(liveEvent, `STEP-${String(step.order).padStart(2,'0')}`) || ex.effectiveStepStatus(liveEvent, String(step.order));
     if (liveS === 'complete') return 'complete';
     if (liveS === 'in-progress') return 'in_progress';
   }

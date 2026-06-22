@@ -116,25 +116,23 @@ for (let p = 0; p < boundaries.length; p += 1) {
   const tailEnd = toSec < n ? starts[toSec] : tail.length;
   const body = tail.slice(tailStart, tailEnd);
 
-  let text;
-  if (partNum === 1) {
-    // Part 1 keeps the full header (file index + metrics)
-    text = prefix + tail.slice(0, tailEnd);
-  } else {
-    const intro = [
-      `# Builder documentation — consolidated export (part ${partNum} of ${actualParts})`,
-      '',
-      `Continuation of **${srcBase}**. Sections ${fromSec + 1}–${toSec} of ${n} (byte-balanced split).`,
-      '',
-      `Source (unchanged): \`Builder/_chatGPT/${srcBase}\``,
-      '',
-      '---',
-      '',
-      MERGED_HEAD,
-      '',
-    ].join('\n');
-    text = intro + (body.length ? body : '\n\n*(No additional merged sections.)*\n');
-  }
+  const text = partNum === 1
+    ? prefix + tail.slice(0, tailEnd)
+    : (() => {
+        const intro = [
+          `# Builder documentation — consolidated export (part ${partNum} of ${actualParts})`,
+          '',
+          `Continuation of **${srcBase}**. Sections ${fromSec + 1}–${toSec} of ${n} (byte-balanced split).`,
+          '',
+          `Source (unchanged): \`Builder/_chatGPT/${srcBase}\``,
+          '',
+          '---',
+          '',
+          MERGED_HEAD,
+          '',
+        ].join('\n');
+        return intro + (body.length ? body : '\n\n*(No additional merged sections.)*\n');
+      })();
 
   writeFileSync(outPath, text, 'utf8');
   const mb = Math.round((text.length / 1024 / 1024) * 100) / 100;

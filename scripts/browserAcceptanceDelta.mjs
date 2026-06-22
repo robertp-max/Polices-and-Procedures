@@ -14,7 +14,6 @@ const results = [];
 const pushResult = (item, status, route, artifactId, screenshot, blocker, fileFixed) => {
   results.push({ item, status, route, artifactId, screenshot, blocker, fileFixed });
   const msg = `${status.padEnd(4)} | ${item} | ${route} | ${artifactId}${blocker ? ` | ${blocker}` : ''}`;
-  // eslint-disable-next-line no-console
   console.log(msg);
 };
 
@@ -275,7 +274,6 @@ const run = async () => {
 };
 
 run().catch((error) => {
-  // eslint-disable-next-line no-console
   console.error('[browserAcceptanceDelta] FAILED:', error instanceof Error ? error.stack || error.message : error);
   process.exit(1);
 });

@@ -253,7 +253,6 @@ export function emitPolicyLinkAudit(p: PolicyLinkAuditPayload): void {
       });
     } catch (err) {
       // Audit emission failures must not break the UI flow; surface to console only.
-      // eslint-disable-next-line no-console
       console.warn('[policyLink] audit emission failed', err);
     }
   })();

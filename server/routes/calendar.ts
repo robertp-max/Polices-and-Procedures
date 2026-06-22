@@ -1,6 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import {
-  listEvents, findByEventId, pingCalendar, resolveCalendarEvent,
+  listEvents, pingCalendar, resolveCalendarEvent,
 } from '../googleCalendar.js';
 import {
   buildEnrichedPlannerPayloadLive,
@@ -57,13 +57,9 @@ calendarRouter.get('/events/by-app/:eventId', asyncHandler(async (req, res) => {
   const eventId = String(req.params.eventId);
   const enrichment = getCesEnrichment(eventId);
   let resolved;
-  let snapshot;
-  let payloadHint;
-  if (enrichment) {
-    const live = await buildEnrichedPlannerPayloadLive(enrichment);
-    payloadHint = live.payload;
-    snapshot = live.snapshot;
-  }
+  const live = enrichment ? await buildEnrichedPlannerPayloadLive(enrichment) : null;
+  const payloadHint = live?.payload;
+  const snapshot = live?.snapshot;
   try {
     resolved = await resolveCalendarEvent(eventId, payloadHint);
   } catch (e) {

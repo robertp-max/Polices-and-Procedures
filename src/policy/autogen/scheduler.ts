@@ -68,13 +68,9 @@ export function occurrences(rule: RecurrenceRule, start: Date, end: Date): Date[
     case 'monthly': {
       let cursor = new Date(start.getFullYear(), start.getMonth(), 1);
       while (cursor <= end) {
-        let date: Date;
-        if (rule.dayOfWeek != null && rule.nth != null) {
-          date = nthWeekdayOfMonth(cursor.getFullYear(), cursor.getMonth(), rule.dayOfWeek, rule.nth);
-        } else {
-          const day = clampDayOfMonth(cursor.getFullYear(), cursor.getMonth(), rule.dayOfMonth ?? 15);
-          date = new Date(cursor.getFullYear(), cursor.getMonth(), day);
-        }
+        const date = (rule.dayOfWeek != null && rule.nth != null)
+          ? nthWeekdayOfMonth(cursor.getFullYear(), cursor.getMonth(), rule.dayOfWeek, rule.nth)
+          : new Date(cursor.getFullYear(), cursor.getMonth(), clampDayOfMonth(cursor.getFullYear(), cursor.getMonth(), rule.dayOfMonth ?? 15));
         pushIfInRange(date);
         cursor = addMonths(cursor, 1);
       }
@@ -86,13 +82,9 @@ export function occurrences(rule: RecurrenceRule, start: Date, end: Date): Date[
       for (let y = start.getFullYear(); y <= end.getFullYear(); y++) {
         for (const m of months) {
           const monthIdx = m - 1;
-          let date: Date;
-          if (rule.dayOfWeek != null && rule.nth != null) {
-            date = nthWeekdayOfMonth(y, monthIdx, rule.dayOfWeek, rule.nth);
-          } else {
-            const day = clampDayOfMonth(y, monthIdx, rule.dayOfMonth ?? 15);
-            date = new Date(y, monthIdx, day);
-          }
+          const date = (rule.dayOfWeek != null && rule.nth != null)
+            ? nthWeekdayOfMonth(y, monthIdx, rule.dayOfWeek, rule.nth)
+            : new Date(y, monthIdx, clampDayOfMonth(y, monthIdx, rule.dayOfMonth ?? 15));
           pushIfInRange(date);
         }
       }

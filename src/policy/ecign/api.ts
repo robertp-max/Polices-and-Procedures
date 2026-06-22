@@ -15,7 +15,7 @@ const ENV = (import.meta as unknown as { env?: Record<string, string | boolean> 
 const REQUESTED_MODE: EcignMode = 'BACKEND_LIVE';
 const ALLOW_LIVE_FALLBACK = false; // hard disabled — no silent local fallback for signed evidence finalization
 
-let resolvedMode: EcignMode = REQUESTED_MODE;
+const resolvedMode: EcignMode = REQUESTED_MODE;
 
 function isDev(): boolean {
   return Boolean(ENV.DEV);
@@ -25,7 +25,6 @@ function isDev(): boolean {
 
 function errorDev(message: string, details?: unknown): void {
   if (!isDev()) return;
-  // eslint-disable-next-line no-console
   console.error(`[ecign] ${message}`, details ?? '');
 }
 
@@ -71,15 +70,10 @@ async function call<T>(path: string, init?: RequestInit, mfaToken?: string): Pro
     throw normalizeUnavailableError(path);
   }
   const headers = authHeaders(mfaToken ? { 'X-MFA-Token': mfaToken } : undefined);
-  let res: Response;
-  try {
-    res = await fetch(`${BASE}${path}`, { ...init, headers: { ...headers, ...(init?.headers ?? {}) } });
-  } catch (error) {
-    throw normalizeUnavailableError(path);
-  }
+  const res: Response = await fetch(`${BASE}${path}`, { ...init, headers: { ...headers, ...(init?.headers ?? {}) } })
+    .catch((_error) => { throw normalizeUnavailableError(path); });
   const text = await res.text();
-  let body: unknown = null;
-  try { body = text ? JSON.parse(text) : null; } catch { body = text; }
+  const body: unknown = (() => { try { return text ? JSON.parse(text) : null; } catch { return text; } })();
   if (res.status >= 500) {
     throw normalizeUnavailableError(path, res.status);
   }

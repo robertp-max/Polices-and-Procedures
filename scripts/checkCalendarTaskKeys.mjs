@@ -72,18 +72,15 @@ const run = async () => {
     duplicateKeyCount: totalDup,
     byRoute: routeResults,
   };
-  // eslint-disable-next-line no-console
   console.log(JSON.stringify(summary, null, 2));
 
   const outPath = path.resolve(root, 'Builder/_system/calendar_duplicate_key_check.json');
   writeFileSync(outPath, JSON.stringify(summary, null, 2));
 
   if (totalDup > 0) {
-    // eslint-disable-next-line no-console
     console.error('FAIL: duplicate React key warnings on one or more routes');
     process.exit(1);
   }
-  // eslint-disable-next-line no-console
   console.log('PASS: no duplicate key warnings on tested route(s)');
   process.exit(0);
 };
@@ -93,7 +90,6 @@ function safeRouteFile(routePath) {
 }
 
 run().catch(err => {
-  // eslint-disable-next-line no-console
   console.error(err);
   process.exit(1);
 });

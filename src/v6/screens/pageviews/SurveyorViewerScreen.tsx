@@ -1,5 +1,4 @@
 import { ShieldCheck, FileText } from 'lucide-react';
-;
 import { Badge } from '../../primitives';
 
 export function SurveyorViewerScreen() {

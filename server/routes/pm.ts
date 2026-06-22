@@ -361,7 +361,7 @@ pmRouter.post('/notifications', asyncH(async (req, res) => {
 }));
 
 pmRouter.post('/notifications/ack', asyncH(async (req, res) => {
-  const { notification_id } = req.body as { user_id?: string; sk?: string; notification_id?: string };
+  const { notification_id } = req.body as { notification_id?: string };
   if (!notification_id) { res.status(400).json({ error: { code: 'bad_request', message: 'notification_id required' } }); return; }
   const data = readJson<{ notifications: StoredNotification[] }>('notifications.json', { notifications: [] });
   const idx = data.notifications.findIndex(n => n.id === notification_id);

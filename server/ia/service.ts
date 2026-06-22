@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { log } from '../logger.js';
 import type {
+  AvailableAction,
   ChatMessage,
   ChatRequest,
   CorpusChunk,
@@ -484,7 +485,7 @@ export class IaService {
     if (!explicitDocRequest && !effectiveLifeSafety) {
       response.linkedReferences = [];
       response.citations = [];
-      response.availableActions = (response.availableActions || []).filter((a: any) => ['generate_action_plan', 'generate_audit_checklist'].includes(a.type));
+      response.availableActions = (response.availableActions || []).filter((a: AvailableAction) => ['generate_action_plan', 'generate_audit_checklist'].includes(a.type));
       response.requiredArtifacts = [];
       if (response.directAnswer && response.directAnswer.includes('App data matches were found')) {
         response.directAnswer = response.directAnswer.replace(/Direct Answer: App data matches were found[^.]*\./, 'Start with the practical step that fits the situation.');

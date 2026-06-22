@@ -32,7 +32,8 @@ const defaultState = {
 
 export const useUiStore = create<UiState>(set => ({
   ...defaultState,
-  setFilter: (key, value) => set({ [key]: value } as Partial<UiState>),
+  setFilter: <K extends keyof UiState>(key: K, value: UiState[K]) =>
+    set({ [key]: value } as Pick<UiState, K>),
   setSortField: sortField => set({ sortField }),
   resetFilters: () => set({ ...defaultState }),
 }));

@@ -49,12 +49,10 @@ async function main(): Promise<void> {
   assert(workspaceSource.includes('uploadEvidence'), 'Missing finalized artifact creation in workspace');
   assert(workspaceSource.includes('captureSignedFormSnapshot'), 'Missing isolated signed snapshot capture in workspace');
 
-  // eslint-disable-next-line no-console
   console.log(`[check:ecign-demo-local] OK (${requiredAuditActions.length} audit markers + fallback and artifact markers verified).`);
 }
 
 main().catch((error) => {
-  // eslint-disable-next-line no-console
   console.error('[check:ecign-demo-local] FAILED:', error instanceof Error ? error.message : error);
   process.exit(1);
 });

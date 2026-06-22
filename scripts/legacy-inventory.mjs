@@ -136,17 +136,17 @@ function scan() {
 
     if (!SCAN_EXT.has(ext)) continue;
     result.files++;
-    let text;
-    try { text = fs.readFileSync(file, 'utf8'); } catch { continue; }
-
-    for (const p of LEGACY_IMPORT_PATTERNS) {
-      const n = countMatches(text, p.re);
-      if (n) { result.legacyImports[p.name].count += n; result.legacyImports[p.name].files.add(rel); }
-    }
-    for (const p of LEGACY_CLASS_PATTERNS) {
-      const n = countMatches(text, p.re);
-      if (n) { result.legacyClasses[p.name].count += n; result.legacyClasses[p.name].files.add(rel); }
-    }
+    try {
+      const text = fs.readFileSync(file, 'utf8');
+      for (const p of LEGACY_IMPORT_PATTERNS) {
+        const n = countMatches(text, p.re);
+        if (n) { result.legacyImports[p.name].count += n; result.legacyImports[p.name].files.add(rel); }
+      }
+      for (const p of LEGACY_CLASS_PATTERNS) {
+        const n = countMatches(text, p.re);
+        if (n) { result.legacyClasses[p.name].count += n; result.legacyClasses[p.name].files.add(rel); }
+      }
+    } catch { continue; }
     for (const p of SHELL_FRAME_VIOLATIONS) {
       const n = countMatches(text, p.re);
       if (n) { result.shellFrameViolations[p.name].count += n; result.shellFrameViolations[p.name].files.add(rel); }

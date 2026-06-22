@@ -63,10 +63,12 @@ function walk(dir, out = []) {
 const problems = [];
 function scan(label, files, patterns) {
   for (const f of files) {
-    let txt; try { txt = fs.readFileSync(f, 'utf8'); } catch { continue; }
-    for (const [name, re] of patterns) {
-      if (re.test(txt)) problems.push(`[${label}] ${name} in ${path.relative(ROOT, f)}`);
-    }
+    try {
+      const txt = fs.readFileSync(f, 'utf8');
+      for (const [name, re] of patterns) {
+        if (re.test(txt)) problems.push(`[${label}] ${name} in ${path.relative(ROOT, f)}`);
+      }
+    } catch { continue; }
   }
 }
 

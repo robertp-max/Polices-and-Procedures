@@ -21,7 +21,6 @@ function check(label: string, ok: boolean, detail?: string): void {
   checks.push({ label, ok, detail });
   const prefix = ok ? 'PASS' : 'FAIL';
   const suffix = detail ? ` :: ${detail}` : '';
-  // eslint-disable-next-line no-console
   console.log(`${prefix}  ${label}${suffix}`);
 }
 
@@ -202,7 +201,6 @@ const ganttCount = projected.length;
 check('kanban task count equals gantt task count under same source filter', kanbanCount === ganttCount, `${kanbanCount} vs ${ganttCount}`);
 
 const failed = checks.filter(c => !c.ok);
-// eslint-disable-next-line no-console
 console.log(`\nSummary: ${checks.length - failed.length} passed, ${failed.length} failed.`);
 if (failed.length > 0) {
   process.exitCode = 1;

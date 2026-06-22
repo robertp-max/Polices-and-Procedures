@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /* ══════════════════════════════════════════════════════════════════════
    Workflow Compiler — markdown → typed data.
 

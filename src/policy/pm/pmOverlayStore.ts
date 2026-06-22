@@ -308,7 +308,6 @@ export const usePmOverlayStore = create<PmOverlayState>()(
             }
             set({ overlays: next });
           } catch (err) {
-            // eslint-disable-next-line no-console
             console.warn('[pmOverlayStore.hydrateFromApi] failed; keeping local cache.', err);
           }
         },

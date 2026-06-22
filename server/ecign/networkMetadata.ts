@@ -45,7 +45,6 @@ const DEV_MODE = process.env.NODE_ENV !== 'production';
 
 function devLog(message: string, details: unknown) {
   if (!DEV_MODE) return;
-  // eslint-disable-next-line no-console
   console.info(`[ecign.network] ${message}`, details);
 }
 

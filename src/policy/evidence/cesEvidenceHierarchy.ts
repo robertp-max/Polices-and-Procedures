@@ -672,22 +672,21 @@ export function buildCesEvidenceHierarchy(input: BuildInput): CesHierarchyBuildR
 
   const yearsMap = new Map<number, YearHierarchyNode>();
   for (const eventNode of eventNodes) {
-    let yearNode = yearsMap.get(eventNode.year);
-    if (!yearNode) {
-      yearNode = { year: eventNode.year, quarters: [], metrics: sumMetrics([]) };
-      yearsMap.set(eventNode.year, yearNode);
+    if (!yearsMap.has(eventNode.year)) {
+      yearsMap.set(eventNode.year, { year: eventNode.year, quarters: [], metrics: sumMetrics([]) });
     }
-    let quarterNode = yearNode.quarters.find(q => q.quarter === eventNode.quarter);
-    if (!quarterNode) {
-      quarterNode = { quarter: eventNode.quarter, months: [], metrics: sumMetrics([]) };
-      yearNode.quarters.push(quarterNode);
-    }
-    let monthNode = quarterNode.months.find(month => month.month === eventNode.month);
-    if (!monthNode) {
+    const yearNode = yearsMap.get(eventNode.year)!;
+    const quarterNode: QuarterHierarchyNode = yearNode.quarters.find(q => q.quarter === eventNode.quarter) || (() => {
+      const q: QuarterHierarchyNode = { quarter: eventNode.quarter, months: [], metrics: sumMetrics([]) };
+      yearNode.quarters.push(q);
+      return q;
+    })();
+    const monthNode: MonthHierarchyNode = quarterNode.months.find(month => month.month === eventNode.month) || (() => {
       const monthLabel = monthFormatter.format(new Date(eventNode.year, eventNode.month, 1));
-      monthNode = { month: eventNode.month, label: monthLabel, events: [], metrics: sumMetrics([]) };
-      quarterNode.months.push(monthNode);
-    }
+      const m: MonthHierarchyNode = { month: eventNode.month, label: monthLabel, events: [], metrics: sumMetrics([]) };
+      quarterNode.months.push(m);
+      return m;
+    })();
     monthNode.events.push(eventNode);
   }
 

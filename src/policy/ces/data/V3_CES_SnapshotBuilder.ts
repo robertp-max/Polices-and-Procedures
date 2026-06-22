@@ -30,7 +30,7 @@ import {
    These correspond to the parentEventId values in V3_ExecutionUnitsSeed.
    ═══════════════════════════════════════════════════════════════ */
 
-const V3_REGULATORY_EVENTS: RegulatoryEvent[] = [
+export const V3_REGULATORY_EVENTS: RegulatoryEvent[] = [
   {
     id: 'evt-gb-q2-2026',
     title: 'Q2 Governing Body Meeting',

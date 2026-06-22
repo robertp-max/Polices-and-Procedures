@@ -33,7 +33,6 @@ function emit(level: Level, message: string, fields?: Record<string, unknown>) {
     msg: message,
     ...(fields ? (redact(fields) as Record<string, unknown>) : {}),
   };
-  // eslint-disable-next-line no-console
   console[level === 'debug' ? 'log' : level](JSON.stringify(line));
 }
 
