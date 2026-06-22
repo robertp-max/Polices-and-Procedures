@@ -28,20 +28,29 @@ evidence — the exact failure the signed-PDF artifact rule (§2) exists to prev
 
 ## 2. Non-negotiable signed-PDF artifact rule
 
-Path B must follow this rule **exactly** (full text in `ECIGN_STAGE_B_READINESS_PLAN.md`):
+The following rules are NON-NEGOTIABLE and apply to all Path B work:
 
-- The **canonical signed PDF/artifact is created first** — the exact bytes presented to the signer.
-- The signed artifact is **immutable after signature** (write-once; no overwrite/replace).
-- **Evidence records point to the real canonical signed artifact** (not a regenerated copy, not metadata alone).
-- **Google Drive links point to the same canonical artifact.**
-- **Evidence Center links point to the same canonical artifact.**
-- **Multi-signer flows append/advance versions** (A→B→C) without regenerating or replacing prior signed artifacts.
-- **No post-signature PDF regeneration** — a defective PDF (bad logo/layout/missing image/formatting)
-  at signing time is still the signed record and is preserved as-is.
-- **Metadata may update, but the signed artifact bytes must never be silently rewritten.**
+- The canonical signed PDF/artifact is created FIRST. The exact bytes presented to the signer become the permanent record.
+- The signed artifact is IMMUTABLE after signature (write-once; no overwrite, no replace, no regeneration).
+- Evidence records MUST point to the real canonical signed artifact (not a regenerated copy, not metadata alone).
+- Google Drive links MUST point to the same canonical artifact.
+- Evidence Center links MUST point to the same canonical artifact.
+- Multi-signer flows MUST append or advance versions (A→B→C) without regenerating or replacing prior signed artifacts.
+- No post-signature PDF regeneration is allowed. A defective PDF at signing time is still the signed record and is preserved as-is.
+- Metadata may update, but the signed artifact bytes MUST never be silently rewritten.
+- The canonical signed artifact bytes are the SOURCE OF TRUTH.
+- Metadata is an index layer only.
+- Google Drive and Evidence Center are references/replicas only. They MUST never hold independent canonical artifacts.
+- Hash comparison is REQUIRED on every read, before certification, and before export to prove immutability.
+- Any hash mismatch BLOCKS certification.
+- Any missing canonical artifact BLOCKS certification.
+- Any Drive/Evidence mismatch BLOCKS certification.
+- Any unsigned regenerated packet is NON-COMPLIANT.
+- Post-signature PDF regeneration is FORBIDDEN.
 
-This rule is a **merge gate**: any Path B deliverable that stores only metadata, regenerates a signed
-PDF, or replaces a prior signed version is rejected.
+This rule set is a MERGE GATE. Any Path B deliverable that violates any of the above (stores only metadata, regenerates a signed PDF after signature, replaces a prior signed version, or fails parity) MUST be rejected.
+
+The canonical artifact bytes are the only acceptable evidence record for survey defensibility.
 
 ---
 
@@ -67,25 +76,28 @@ From the checkpoint, the currently accepted Path A behavior:
 
 ## 4. Path B scope
 
-Path B should include:
+Path B MUST include the following (all items are mandatory; no exceptions):
 
-- **Multi-signer sequencing** — ordered, no-skip signer flow driven by the canonical signer hierarchy.
-- **Signer role hierarchy** — reuse `SIGNER_HIERARCHY_RULES` (owner → reviewer → signer → final approver,
-  governing-body flag) and `ECIgnPermissionRole` ladder for authorization.
-- **Second/third/fourth signer support** — N-signer chains, not just a single signer.
-- **Append-only artifact/version chain** — each signature advances the lineage (A→B→C…) without
-  mutating prior versions.
-- **Immutable signed-artifact retention** — write-once storage with retrievable history.
-- **Evidence Center visibility** — each signed artifact/version surfaces as an evidence record linking
-  to the real file.
-- **Drive metadata parity** — Drive `fileId`/`webUrl`/upload status recorded and consistent with the
-  evidence record and the stored artifact.
-- **Audit trail and certification traceability** — append-only audit chain tying
-  policy/workflow/event/formInstance/artifact/signer together; certificate generation per the
-  `ECIgnCertificate` model.
-- **Configurable retention policy** — policy-confirmed duration (no hardcoded 5/7 years).
-- **Recovery/retry behavior** — idempotent recovery from partial failures (artifact saved but Drive or
-  metadata step failed).
+- Multi-signer sequencing: ordered, no-skip signer flow driven by the canonical signer hierarchy.
+- Signer role hierarchy: reuse SIGNER_HIERARCHY_RULES (owner → reviewer → signer → final approver, governing-body flag) and ECIgnPermissionRole ladder for authorization.
+- Second signer support.
+- Third signer support.
+- Fourth signer support.
+- Tier 5 final validation.
+- Append-only artifact/version chain: each signature advances the lineage (A→B→C…) without mutating prior versions.
+- Immutable signed-artifact retention: write-once storage with retrievable history.
+- Evidence Center visibility: each signed artifact/version surfaces as an evidence record linking to the real file.
+- Google Drive metadata parity: Drive fileId/webUrl/upload status recorded and consistent with the evidence record and the stored artifact.
+- Audit trail traceability.
+- Certification traceability.
+- Configurable retention policy: policy-confirmed duration (no hardcoded 5/7 years).
+- Recovery/retry behavior: idempotent recovery from partial failures (artifact saved but Drive or metadata step failed).
+- Idempotency for all write operations.
+- Role mismatch handling.
+- Duplicate signer prevention.
+- Stale formInstanceId handling.
+- Stale artifactVersionId handling.
+- Hash mismatch handling.
 
 ---
 
@@ -108,41 +120,38 @@ Path B must **not**:
 ## 6. Proposed architecture
 
 ```
-                        ┌──────────────────────────────────────────────────────────┐
-                        │  Form signing workspace (V6 eCIgn screen, /forms/:id/esign)│
-                        │  — presents the EXACT PDF bytes to the signer              │
-                        └───────────────────────────┬──────────────────────────────┘
-                                                     │ sign (signer N, role/tier validated)
-                                                     ▼
-                        ┌──────────────────────────────────────────────────────────┐
-                        │  Canonical signed artifact  (bytes shown == bytes stored)  │
-                        │  — created FIRST, hashed (sha256), never re-rendered       │
-                        └───────────────────────────┬──────────────────────────────┘
-                                                     ▼
-                        ┌──────────────────────────────────────────────────────────┐
-                        │  Immutable storage / version record (write-once)           │
-                        │  — artifactVersionId, previousArtifactVersionId (A→B→C)     │
-                        └───────────────────────────┬──────────────────────────────┘
-                                                     ▼
-                        ┌──────────────────────────────────────────────────────────┐
-                        │  Metadata record (index/audit layer — links, never replaces)│
-                        └───────┬───────────────────────────────────────┬──────────┘
-                                ▼                                          ▼
-            ┌───────────────────────────────┐          ┌──────────────────────────────────┐
-            │  Evidence Center               │          │  Google Drive secured file/link    │
-            │  — links to canonical artifact │◀────────▶│  — same canonical artifact bytes   │
-            └───────────────┬───────────────┘          └──────────────────┬─────────────────┘
-                            └───────────────────────┬───────────────────────┘
-                                                     ▼
-                        ┌──────────────────────────────────────────────────────────┐
-                        │  Audit trail (append-only)                                 │
-                        │  — policy / workflow / event / formInstance / artifact /   │
-                        │    signer / version, certificate traceability             │
-                        └──────────────────────────────────────────────────────────┘
+Form signing workspace (V6 eCIgn screen, /forms/:id/esign)
+    -- presents the EXACT PDF bytes to the signer
+           |
+           | sign (signer N, role/tier validated)
+           v
+Canonical signed artifact (bytes shown == bytes stored)
+    -- created FIRST, hashed (sha256), NEVER re-rendered
+           |
+           v
+Immutable storage / version record (write-once)
+    -- artifactVersionId, previousArtifactVersionId (A->B->C)
+           |
+           v
+Metadata record (index/audit layer -- links only, never replaces the bytes)
+    +---------------------------------------+
+    |                                       |
+    v                                       v
+Evidence Center                           Google Drive secured file/link
+-- links to canonical artifact            -- same canonical artifact bytes
+    |                                       |
+    +-------------------+-------------------+
+                        |
+                        v
+Audit trail (append-only)
+-- policy / workflow / event / formInstance / artifact / signer / version / certificate traceability
 ```
 
-All three consumers (storage, Evidence Center, Drive) reference the **same canonical artifact**;
-metadata and audit rows index it and never substitute for it.
+The canonical signed artifact bytes are the SOURCE OF TRUTH.
+Metadata, Evidence Center, and Google Drive are indexes/references/replicas ONLY.
+Evidence Center and Google Drive MUST NEVER hold independent canonical artifacts.
+All consumers reference the same canonical artifact bytes.
+Metadata and audit rows index it and never substitute for it.
 
 ---
 
@@ -175,8 +184,14 @@ themselves are stored separately and immutably):
 | `createdBy` | Actor/service that created the record. |
 | `auditChainId` | Append-only audit chain identifier. |
 
-Constraints: `artifactVersionId` is immutable once written; `previousArtifactVersionId` forms a strict
-append-only chain; `sha256` must match the stored bytes on every read (verification gate).
+Constraints:
+- artifactVersionId is immutable once written.
+- previousArtifactVersionId forms a strict append-only chain.
+- signatureSequence is 1-based and must be strictly increasing per artifact family.
+- formInstanceId must be immutable once the first signature occurs.
+- sha256 is verified on every read, before certification, and before export.
+- lockedAt is set ONLY after the artifact bytes + metadata + Drive/Evidence parity all succeed.
+- sha256 must match the stored bytes on every read (verification gate).
 
 ---
 
@@ -197,22 +212,29 @@ States:
 - `recovery_required`
 
 **Allowed transitions (happy path):**
-`draft → prepared_for_signature → signed_by_tier_1 → signed_by_tier_2 → signed_by_tier_3 →
-signed_by_tier_4 → final_validated_by_tier_5 → locked`
-(tiers are skippable only when the signer hierarchy for that domain does not require them — the
-sequence advances to the next required tier, never past a required one.)
+draft -> prepared_for_signature -> signed_by_tier_1 -> signed_by_tier_2 -> signed_by_tier_3 ->
+signed_by_tier_4 -> final_validated_by_tier_5 -> locked
+
+Tiers are skippable ONLY when the signer hierarchy for that domain (defined in the active policy snapshot for the event) does not require them. The sequence advances to the next required tier, never past a required one.
 
 **Allowed transitions (failure/recovery):**
-- any `signed_by_tier_n` → `failed_drive_publish` → (retry) → `signed_by_tier_n` (idempotent re-publish).
-- any `signed_by_tier_n` → `failed_metadata_attach` → (retry) → `signed_by_tier_n`.
-- `failed_*` → `recovery_required` (manual/automated remediation) → resume prior signed state.
+- any signed_by_tier_n -> failed_drive_publish -> (retry) -> signed_by_tier_n (idempotent re-publish using same artifactVersionId)
+- any signed_by_tier_n -> failed_metadata_attach -> (retry) -> signed_by_tier_n
+- failed_* -> recovery_required (manual/automated remediation) -> resume prior signed state
 
-**Forbidden transitions:**
-- Any transition that **mutates or replaces** an already-signed artifact version (no regeneration).
-- Skipping a **required** signer tier.
-- `locked → any` (locked is terminal except an approved retention/disposition workflow).
+**Forbidden transitions (hard blocks):**
+- Any transition that mutates or replaces an already-signed artifact version (no regeneration).
+- Skipping a required signer tier.
+- Lower tier validating or signing for a higher tier.
+- Signing a stale artifactVersionId (not the current tip of the chain).
+- Overwriting or replacing any prior signed artifact.
+- Post-signature PDF regeneration.
+- Certifying without Drive/Evidence parity.
+- Certifying with hash mismatch.
+- Certifying with missing audit chain.
+- locked -> any (locked is terminal except through an approved retention/disposition workflow).
 - Backward transitions that rewrite earlier signed versions.
-- Advancing to a later tier before the current required tier is `signed`.
+- Advancing to a later tier before the current required tier is signed.
 
 ---
 
@@ -220,31 +242,37 @@ sequence advances to the next required tier, never past a required one.)
 
 | Scenario | Required behavior |
 |---|---|
-| Artifact created but Drive publish failed | State `failed_drive_publish`; artifact + hash already persisted immutably; retry publish idempotently (same `artifactVersionId`); never recreate the PDF. |
-| Drive uploaded but metadata attach failed | State `failed_metadata_attach`; retry attach using stored `driveFileId`; artifact unchanged. |
-| Signer abandons flow | Remain at last completed signed tier (or `prepared_for_signature`); no partial/forged signature recorded. |
-| Role mismatch | Reject signature attempt; no state change; audit the denied attempt. |
-| Duplicate signer attempt | Idempotent: detect existing signature for (artifact, tier, signer); do not create a second version. |
-| Stale `formInstanceId` | Reject; surface "instance changed/expired"; do not sign against stale instance. |
-| Hash mismatch (stored vs expected) | Hard fail; mark `recovery_required`; never overwrite; flag potential tampering. |
-| Retry idempotency | All retries keyed by `artifactVersionId` + step; safe to re-run without duplicating artifacts/records. |
-| Evidence Center missing link | Reconcile from artifact/metadata; backfill `evidenceRecordId`; never fabricate a link. |
-| Drive permission failure | Surface `failed_drive_publish`; do not silently store elsewhere or skip; retain artifact + retry after permission fix. |
+| Artifact created but Drive publish failed | State failed_drive_publish; artifact + hash already persisted immutably; retry publish idempotently using same artifactVersionId; never recreate the PDF or bytes. |
+| Drive uploaded but metadata attach failed | State failed_metadata_attach; retry attach using stored driveFileId; artifact bytes unchanged. |
+| Signer abandons flow | Remain at last completed signed tier (or prepared_for_signature); no partial/forged signature recorded. |
+| Role mismatch | Reject signature attempt immediately; no state change; audit the denied attempt with role details. |
+| Duplicate signer attempt | Idempotent: detect existing signature for (artifact, tier, signer); do not create a second version or record. |
+| Stale formInstanceId | Reject; surface "instance changed/expired"; do not sign against stale instance. |
+| Stale artifactVersionId | Reject; do not allow signing against non-current version of the chain. |
+| Hash mismatch (stored vs expected) | Hard fail; mark recovery_required; never overwrite; flag potential tampering; block certification. |
+| Retry idempotency | All retries keyed by artifactVersionId + step; safe to re-run without duplicating artifacts/records. |
+| Evidence Center missing link | Reconcile from artifact/metadata; backfill evidenceRecordId; never fabricate a link. |
+| Drive permission failure | Surface failed_drive_publish; do not silently store elsewhere or skip; retain artifact + retry only after permission fix. |
+| Partial failure recovery | All partial states must preserve the canonical artifact bytes. Recovery must never regenerate the signed PDF. |
+| Audit logging of failed attempts | All failures must be logged with non-PHI identifiers only. No PHI or signature images in failure logs. |
+| No PHI or signature images in failure logs | Enforced across all failure paths. |
 
 ---
 
 ## 10. Security and compliance rules
 
-- **Role-restricted signing** — only holders of the required `ECIgnPermissionRole` (or higher) may sign.
-- **Signer tier validation** — tier order enforced against the canonical signer hierarchy.
-- **Immutable evidence** — signed artifacts are write-once; bytes never rewritten.
-- **Append-only audit** — audit chain entries are added, never edited or deleted.
-- **No PHI in logs** — logs/metrics must exclude protected health information and signature images.
-- **Google-secured access** — Drive/evidence access via the secured server integration; no public links.
-- **Retention policy** — configurable, policy-confirmed duration (`retentionPolicyId`); no hardcoded value.
-- **Deletion prohibition** — no deletion except an explicitly approved retention/disposition workflow.
-- **Audit-ready traceability** — any signed artifact retrievable and provable by
-  policy / workflow / event / formInstance / artifact / signer / version.
+- Role-restricted signing is REQUIRED — only holders of the required ECIgnPermissionRole (or higher) may sign.
+- Signer tier validation is REQUIRED — tier order enforced against the canonical signer hierarchy.
+- Immutable evidence is REQUIRED — signed artifacts are write-once; bytes never rewritten.
+- Append-only audit is REQUIRED — audit chain entries are added, never edited or deleted.
+- No PHI in logs is REQUIRED — logs/metrics must exclude protected health information and signature images.
+- Google-secured access is REQUIRED — Drive/evidence access via the secured server integration; no public links.
+- Retention policy is REQUIRED — configurable, policy-confirmed duration (retentionPolicyId); no hardcoded value.
+- Deletion is PROHIBITED except through an explicitly approved retention/disposition workflow that produces a new disposition record.
+- Audit-ready traceability is REQUIRED — any signed artifact must be retrievable and provable by policy / workflow / event / formInstance / artifact / version / signer.
+- Drive links and Evidence Center links MUST NOT bypass authorization.
+- Audit chain MUST survive refresh/reload.
+- Evidence MUST remain survey-defensible at all times.
 
 ---
 
@@ -254,38 +282,49 @@ Concrete checklist (all must pass before Path B is considered done):
 
 - [ ] Unit-level artifact/version tests (create, hash, append-only chain integrity).
 - [ ] Integration tests for signer sequence (tier order, no-skip, N-signer chains).
-- [ ] Drive parity tests (stored bytes == Drive file bytes; `driveFileId`/`driveWebUrl` correct).
+- [ ] Drive parity tests (stored bytes == Drive file bytes; driveFileId/driveWebUrl correct).
 - [ ] Evidence Center parity tests (record links to the real canonical artifact).
 - [ ] Refresh/persistence test (state + artifacts survive reload/restart).
-- [ ] Role restriction test (unauthorized role/tier cannot sign).
-- [ ] Failed-upload recovery test (Drive/metadata failure → idempotent retry → consistent state).
+- [ ] Role restriction tests for tiers 1-5 (unauthorized role/tier cannot sign).
+- [ ] Failed-upload recovery test (Drive/metadata failure -> idempotent retry -> consistent state).
 - [ ] Duplicate-sign prevention test (same signer/tier cannot double-sign).
-- [ ] No-regeneration test using **hash comparison** (post-signature bytes/hash unchanged across reads).
+- [ ] No-regeneration test using hash comparison (post-signature bytes/hash unchanged across reads).
+- [ ] Hash mismatch failure test.
+- [ ] Missing canonical artifact failure test.
+- [ ] Missing Drive link failure test.
+- [ ] Missing Evidence Center link failure test.
+- [ ] Forbidden transition negative tests (including lower tier validating higher, stale version, regeneration, parity failures).
 - [ ] Audit trail completeness test (every state change + signer + version captured, append-only).
-- [ ] Final survey packet export test (multi-signer packet exports the real signed artifacts + audit).
+- [ ] Final survey packet export test (multi-signer packet exports ONLY canonical artifacts + full audit chain).
 
 ---
 
 ## 12. Implementation phasing recommendation
 
-- **Phase 0 — architecture approval only** (this document). No code.
-- **Phase 1 — data contract and tests** — define artifact/version/metadata contract + failing tests (TDD); no runtime wiring.
-- **Phase 2 — artifact versioning** — immutable write-once store + append-only A→B→C chain + hash verification.
-- **Phase 3 — signer sequencing** — role/tier-validated multi-signer state machine over the artifact chain.
-- **Phase 4 — Drive/Evidence parity** — publish canonical artifact to Drive + Evidence Center linkage; parity tests green.
-- **Phase 5 — recovery and retention** — idempotent failure recovery + configurable retention policy.
-- **Phase 6 — full QA/UAT** — all §11 gates + survey packet export; sign-off before any baseline merge.
+- Phase 0 — architecture approval only (this document). No code.
+- Phase 1 — data contract and tests — define artifact/version/metadata contract + failing tests (TDD); NO runtime wiring, NO UI changes, NO server handlers.
+- Phase 2 — artifact versioning — immutable write-once store + append-only A->B->C chain + hash verification.
+- Phase 3 — signer sequencing — role/tier-validated multi-signer state machine over the artifact chain.
+- Phase 4 — Drive/Evidence parity — publish canonical artifact to Drive + Evidence Center linkage; parity tests green. Byte-for-byte comparison required.
+- Phase 5 — recovery and retention — idempotent failure recovery + configurable retention policy.
+- Phase 6 — full QA/UAT — all section 11 gates + survey packet export using only canonical artifacts; sign-off before any baseline merge.
 
 Each phase is independently reviewable; no phase may regress the signed-artifact rule.
+Phase 1 MUST NOT allow any runtime wiring.
 
 ---
 
 ## 13. Final recommendation
 
-**Implementation should remain BLOCKED pending explicit approval of this architecture.**
+**Implementation MUST remain BLOCKED pending explicit approval of this architecture.**
 
 Path B is MED-HIGH, evidence-of-record work. Begin only after: (a) this plan is approved, (b) Phase 1
-data contract + tests are agreed, and (c) the signed-PDF artifact rule (§2) is accepted as the
+data contract + tests are agreed, and (c) the signed-PDF artifact rule (section 2) is accepted as the
 non-negotiable gate. Until then, the baseline keeps Path A (source-grounded static model) and no
-live signing/write path is introduced. Recommended next step: review/approve this plan, then
-authorize **Phase 1 only** (data contract + tests, no runtime wiring).
+live signing/write path is introduced. 
+
+Merge of this document does not authorize implementation. 
+
+Recommended next authorized step: review/approve this plan, then authorize **Phase 1 only** (data contract + tests, no runtime wiring). Phase 1 must not include any runtime wiring, UI changes, server handlers, or integration code.
+
+The signed-PDF artifact rule is the merge gate.
