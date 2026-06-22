@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { V3_ExecutionUnitsSeed } from '@/policy/ces/data/V3_CES_SeedData';
 import type { ExecutionUnit } from '@/policy/ces/types';
-import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, type CorpusPolicy } from '@/policy/data/policyCorpus';
+import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER } from '@/policy/data/policyCorpus';
 import type { EventProcessStep, RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { inferPhaseTemplate } from '@/policy/workflows/swimlanes/phaseTemplates';
 import type { SwimlaneStatus } from '@/policy/workflows/swimlanes/types';
@@ -152,18 +152,14 @@ const dashboardCards: readonly SurfaceCardData[] = [
 // per-row value).
 const policyTierToStatus = (tier: string): string => (tier === 'REQUIRED' ? 'active' : 'draft');
 
-// Representative library matrix: first real policy of each domain, in the
-// canonical framework display order, mapped to the existing columns.
-const policyRows: readonly BasicRow[] = LIFECYCLE_DOMAIN_ORDER.map((domainCode) =>
-  POLICY_CORPUS.find((policy) => policy.domainCode === domainCode),
-)
-  .filter((policy): policy is CorpusPolicy => Boolean(policy))
-  .map((policy) => ({
-    id: policy.id,
-    title: policy.title,
-    owner: policy.ownerSteward,
-    status: policyTierToStatus(policy.tier),
-  }));
+// Full real policy library: every policy in the canonical corpus, mapped to
+// the existing columns. Table search/filter + overflow keep it usable.
+const policyRows: readonly BasicRow[] = POLICY_CORPUS.map((policy) => ({
+  id: policy.id,
+  title: policy.title,
+  owner: policy.ownerSteward,
+  status: policyTierToStatus(policy.tier),
+}));
 
 const policyMetrics: readonly MetricTileData[] = [
   { label: 'Framework Policies', value: String(POLICY_CORPUS.length), helper: 'Canonical corpus', tone: 'teal' },
