@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { V3_ExecutionUnitsSeed } from '@/policy/ces/data/V3_CES_SeedData';
 import type { ExecutionUnit } from '@/policy/ces/types';
+import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, type CorpusPolicy } from '@/policy/data/policyCorpus';
 import type { EventProcessStep, RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { inferPhaseTemplate } from '@/policy/workflows/swimlanes/phaseTemplates';
 import type { SwimlaneStatus } from '@/policy/workflows/swimlanes/types';
@@ -145,20 +146,30 @@ const dashboardCards: readonly SurfaceCardData[] = [
   },
 ];
 
-const policyMetrics: readonly MetricTileData[] = [
-  { label: 'Framework Policies', value: '269', helper: 'Canonical corpus', tone: 'teal' },
-  { label: 'Active', value: '269', helper: 'Published and searchable', tone: 'green' },
-  { label: 'Review Cycle', value: 'Annual', helper: 'Default policy cadence', tone: 'orange' },
-  { label: 'Regulatory Boards', value: '7', helper: 'Mapped sources', tone: 'teal' },
-];
+// Derive a deterministic library status from real corpus fields. The corpus
+// carries no per-record status; every policy is a published REQUIRED-tier
+// record, so REQUIRED -> 'active' (a valid status code, not a fabricated
+// per-row value).
+const policyTierToStatus = (tier: string): string => (tier === 'REQUIRED' ? 'active' : 'draft');
 
-const policyRows: readonly BasicRow[] = [
-  { id: 'GV-GB-001', title: 'Governing Body Authority & Responsibilities', owner: 'Administrator', status: 'active' },
-  { id: 'GV-GB-006', title: 'Conflict of Interest Disclosure', owner: 'Governing Body', status: 'review-required' },
-  { id: 'CL-SD-010', title: 'Start of Care Clinical Assessment', owner: 'DON', status: 'active' },
-  { id: 'QA-QM-004', title: 'QAPI Indicator Review', owner: 'QAPI Nurse', status: 'in-review' },
-  { id: 'HR-CG-021', title: 'Personnel File Completeness', owner: 'HR Credentialing', status: 'approved' },
-  { id: 'RM-EM-003', title: 'Emergency Drill After-Action', owner: 'Compliance Officer', status: 'active' },
+// Representative library matrix: first real policy of each domain, in the
+// canonical framework display order, mapped to the existing columns.
+const policyRows: readonly BasicRow[] = LIFECYCLE_DOMAIN_ORDER.map((domainCode) =>
+  POLICY_CORPUS.find((policy) => policy.domainCode === domainCode),
+)
+  .filter((policy): policy is CorpusPolicy => Boolean(policy))
+  .map((policy) => ({
+    id: policy.id,
+    title: policy.title,
+    owner: policy.ownerSteward,
+    status: policyTierToStatus(policy.tier),
+  }));
+
+const policyMetrics: readonly MetricTileData[] = [
+  { label: 'Framework Policies', value: String(POLICY_CORPUS.length), helper: 'Canonical corpus', tone: 'teal' },
+  { label: 'Active', value: String(POLICY_CORPUS.length), helper: 'Published and searchable', tone: 'green' },
+  { label: 'Review Cycle', value: 'Annual', helper: 'Default policy cadence', tone: 'orange' },
+  { label: 'Domains Mapped', value: String(LIFECYCLE_DOMAIN_ORDER.length), helper: 'Framework taxonomy', tone: 'teal' },
 ];
 
 const tableColumns: readonly DataTableColumn<BasicRow>[] = [

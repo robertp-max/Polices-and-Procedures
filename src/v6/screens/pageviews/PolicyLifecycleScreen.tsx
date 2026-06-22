@@ -1,26 +1,38 @@
 import { BookOpen, AlertTriangle, FileText, ArrowRight } from 'lucide-react';
 import { MetricGrid, SurfaceCard, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
+import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
+
+// Real per-domain policy counts, in canonical framework display order.
+const domainGroups = LIFECYCLE_DOMAIN_ORDER.map((domainCode) => ({
+  code: domainCode,
+  label: DOMAIN_LABEL[domainCode] ?? domainCode,
+  count: POLICY_CORPUS.filter((policy) => policy.domainCode === domainCode).length,
+})).filter((group) => group.count > 0);
+
+const largestDomain = domainGroups.reduce(
+  (max, group) => (group.count > max.count ? group : max),
+  domainGroups[0] ?? { code: '', label: '—', count: 0 },
+);
 
 const metrics = [
-  { label: 'Total policies', value: '279', helper: 'Active and archived corpus', tone: 'teal' },
-  { label: 'In Draft', value: '14', helper: 'Authoring or editing phase', tone: 'orange' },
-  { label: 'In Review', value: '8', helper: 'Committee review queue', tone: 'amber' },
-  { label: 'Approved', value: '252', helper: 'Sealed regulatory consensus', tone: 'green' },
-  { label: 'Archived', value: '5', helper: 'Historical records retained', tone: 'slate' },
+  { label: 'Total policies', value: String(POLICY_CORPUS.length), helper: 'Active and archived corpus', tone: 'teal' },
+  { label: 'Domains', value: String(domainGroups.length), helper: 'Framework taxonomy groups', tone: 'green' },
+  { label: 'Review Cycle', value: 'Annual', helper: 'Default policy cadence', tone: 'amber' },
+  { label: 'Largest domain', value: String(largestDomain.count), helper: largestDomain.label, tone: 'orange' },
 ] satisfies readonly MetricTileData[];
 
-const stages = [
-  { label: 'Draft', count: 14, status: 'active', tone: 'orange' },
-  { label: 'Review', count: 8, status: 'pending', tone: 'amber' },
-  { label: 'Approved', count: 252, status: 'validated', tone: 'green' },
-  { label: 'Published', count: 247, status: 'complete', tone: 'teal' },
-  { label: 'Archived', count: 5, status: 'locked', tone: 'slate' },
-] as const;
+// Domain grouping board: real domains with real counts. The corpus carries no
+// per-record lifecycle status, so every published domain tile reads 'active'.
+const stages = domainGroups.map((group) => ({
+  label: group.label,
+  count: group.count,
+  status: 'active',
+}));
 
 const actionCards = [
   {
-    body: 'Three policies require annual review and signatures before the upcoming ACHC audit cycle.',
+    body: 'Annual policy reviews and signatures are tracked across every framework domain before the next ACHC audit cycle.',
     icon: AlertTriangle,
     progress: 80,
     status: 'review-required',
@@ -51,7 +63,7 @@ export function PolicyLifecycleScreen() {
       <section className="grid gap-xl desktop:grid-cols-12">
         <div className="grid content-start gap-lg desktop:col-span-8">
           <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
-            <h3 className="text-h3 font-medium text-ink mb-lg">Horizontal Stage Board</h3>
+            <h3 className="text-h3 font-medium text-ink mb-lg">Domain Grouping Board</h3>
             <div className="flex flex-wrap gap-md items-center justify-between">
               {stages.map((stage, index) => (
                 <div className="flex items-center gap-md" key={stage.label}>
@@ -71,7 +83,7 @@ export function PolicyLifecycleScreen() {
           <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md">Active Policies Checklist</h3>
             <p className="text-sm text-secondary">
-              Virtualization handles the ~279 active policy lifecycle rows. Use search or filter to target specific codes.
+              Virtualization handles the {POLICY_CORPUS.length} active policy lifecycle rows. Use search or filter to target specific codes.
             </p>
           </section>
         </div>
