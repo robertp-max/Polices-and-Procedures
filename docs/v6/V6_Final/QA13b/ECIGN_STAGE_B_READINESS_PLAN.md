@@ -28,6 +28,53 @@ user must confirm before implementation:
 
 ---
 
+## ⛔ HARD REQUIREMENT — eCIgn Signed Artifact Evidence Rule (NON-NEGOTIABLE)
+
+**This rule gates ANY eCIgn Stage-B merge and ALL Path B / signing-pipeline work. It is not
+optional and must not be reinterpreted, deferred, or satisfied by metadata alone.**
+
+eCIgn evidence must preserve the **actual signed PDF artifact** — the exact bytes presented for
+signing — not just metadata.
+
+- The exact PDF bytes presented to the signer are the **signed artifact of record** and must be
+  saved verbatim.
+- If that PDF had a bad logo, layout issue, rendering defect, missing image, or formatting problem
+  at signing time, **that defective PDF is still the signed record and must be preserved as-is**.
+- **Do not** regenerate, "fix," normalize, or re-render the PDF after signature and present it as
+  the signed artifact. Post-signature regeneration/replacement is prohibited.
+- Metadata (formInstanceId, signer status, hashes, Drive IDs, audit rows) is **only an index/audit
+  layer**. Metadata alone is **not** sufficient evidence.
+- The **Evidence Center must link to the saved signed PDF artifact** itself.
+- Google Drive / evidence storage must **retain the signed PDF artifact bytes**, not just references.
+- **Multi-signer artifact chain (append-only, fully traceable):**
+  - signer 1 signs PDF **version A**
+  - signer 2 signs the same lineage → **version B**
+  - signer 3 signs that lineage → **version C**
+  - every signed version / append-only signature state remains independently retrievable; earlier
+    signed versions are **never** replaced by a later regenerated version.
+- The system must be able to retrieve the actual signed PDF for the **policy-configured retention
+  period**. Retention duration is **configurable and policy-confirmed** — do **not** hardcode
+  "5 years" / "7 years" unless explicitly approved.
+
+**Path B (and any signing/write pipeline) precondition — architecture must define ALL of:**
+1. Canonical PDF artifact creation (the bytes shown for signing == the bytes stored).
+2. Immutable signed-PDF storage (write-once; no overwrite/replace).
+3. Artifact versioning for multiple signers (append-only A→B→C lineage).
+4. Drive / evidence file retention of the artifact bytes (configurable duration).
+5. Evidence Center linkage to the actual signed file (not a regenerated copy).
+6. Audit metadata **linked to** the artifact, never **replacing** it.
+7. Prevention of post-signature PDF regeneration / replacement.
+
+> Relationship to this plan: the readiness plan's **Path B is a read-only display adapter** for the
+> Workspace *screen* and does not itself create artifacts — but it must read from a signing pipeline
+> that already satisfies this rule. Existing sources `captureSignedFormSnapshot.ts` and
+> `pdfAppendUtil.ts` (snapshot + append) are consistent with it; nothing in this plan or the current
+> eCIgn/evidence code **contradicts** it (no PDF regeneration and no hardcoded retention were found).
+> The plan was previously **silent** on artifact-byte preservation; this section closes that gap and
+> makes it a merge gate.
+
+---
+
 ## SOURCE MAP
 
 ### Current V6 eCIgn screen file
@@ -134,6 +181,10 @@ Never invent any of the following — show real (from a wired source) or mark *s
 - **Audit trail** entries.
 - **Approver identity** (and IP / device / hashes / certificate IDs).
 
+Likewise **do not destroy or substitute** the signed artifact: never regenerate/normalize/re-render
+a signed PDF, never replace an earlier signed version, and never present a metadata record in place
+of the actual signed PDF bytes (see the HARD REQUIREMENT above).
+
 ---
 
 ## ACCEPTANCE CRITERIA
@@ -144,6 +195,14 @@ Never invent any of the following — show real (from a wired source) or mark *s
 - Existing Form Viewer and evidence behavior preserved (no regression to `/forms`, Evidence Center, or Drive metadata).
 - CES / QAPI unaffected (no edits outside the eCIgn screen + its read-only adapter).
 - `npm run build`, `npm run verify:designless`, and `tsc` all pass.
+
+**Signed-artifact evidence (HARD gate — required before any Stage-B merge / Path B):**
+- The exact signed PDF bytes are stored immutably as the artifact of record (defects preserved, not "fixed").
+- No post-signature regeneration, normalization, re-render, or replacement of signed PDFs.
+- Multi-signer lineage (A→B→C) is append-only and every signed version is independently retrievable.
+- Evidence Center and Drive/evidence storage link to / retain the **actual signed PDF**, not metadata alone.
+- Audit metadata links to the artifact and never substitutes for it.
+- Retention duration is policy-configurable and confirmed (no hardcoded 5/7-year value without approval).
 
 ---
 
