@@ -813,7 +813,7 @@ function CalendarAgendaList({
           const status = getCalendarAgendaStatus(event);
 
           return (
-            <button className="grid gap-md rounded-lg border border-card bg-white p-lg text-left transition duration-fast focus-visible:outline-none focus-visible:shadow-focus hover:bg-tone-slate-bg" key={getCalendarEventKey(event)} onClick={() => onOpenEvent(event)} type="button">
+            <button className="grid gap-md rounded-lg border border-hairline bg-surface-glass p-lg text-left transition duration-fast focus-visible:outline-none focus-visible:shadow-focus hover:bg-tone-slate-bg" key={getCalendarEventKey(event)} onClick={() => onOpenEvent(event)} type="button">
               <div className="grid items-center gap-lg tablet-p:grid-cols-[56px_minmax(0,1fr)]">
                 <div className="text-sm font-medium text-brand-teal-deep">{calendarAgendaDayLabels[index] ?? 'Day'}</div>
                 <div className="min-w-0">
@@ -907,7 +907,7 @@ function CalendarSwimlaneInline({
 
   return (
     <section className="grid gap-xl" data-calendar-swimlane>
-      <section className="grid gap-xl rounded-lg border border-card bg-surface-glass p-xl shadow-rest">
+      <section className="grid gap-xl rounded-lg border border-hairline bg-surface-glass p-xl shadow-rest">
         <div
           aria-label="CES event carousel"
           className="flex gap-sm overflow-x-auto rounded-lg border border-hairline bg-white/[.30] p-sm backdrop-blur-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -969,7 +969,7 @@ function CalendarSwimlaneInline({
 
       <div className="grid gap-lg">
         {lanes.map((lane, laneIndex) => (
-          <section className="grid gap-lg rounded-lg border border-card bg-surface-glass p-lg shadow-rest laptop:grid-cols-[150px_minmax(0,1fr)] desktop:grid-cols-[180px_minmax(0,1fr)]" key={lane.title}>
+          <section className="grid gap-lg rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest laptop:grid-cols-[150px_minmax(0,1fr)] desktop:grid-cols-[180px_minmax(0,1fr)]" key={lane.title}>
             <aside className={cx('rounded-lg p-lg shadow-none', toneGlassSurfaceClasses[lane.tone])}>
               <div className="flex items-center justify-between gap-md">
                 <span className="grid h-10 w-10 place-items-center rounded-full bg-white/[.55] text-sm font-medium">{laneIndex + 1}</span>
@@ -1767,7 +1767,7 @@ function DashboardScreen() {
       <MetricGrid metrics={dashboardMetrics} />
 
       <section className="grid gap-2xl desktop:grid-cols-5">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest desktop:col-span-3">
+        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest desktop:col-span-3">
           <div className="mb-lg flex items-center justify-between gap-lg">
             <div>
               <h2 className="text-h2 font-medium text-brand-teal-deep">Dashboard work queue</h2>
@@ -1781,7 +1781,7 @@ function DashboardScreen() {
         </section>
 
         <aside className="grid gap-lg desktop:col-span-2">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
             <div className="mb-lg flex items-center justify-between gap-lg">
               <h2 className="text-h2 font-medium text-brand-teal-deep">Dashboard signals</h2>
               <DesignBadge tone="teal">
@@ -1828,7 +1828,7 @@ function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
   return (
     <ScreenStack metrics={profile.metrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(320px,1fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <div className="mb-lg">
             <h2 className="text-h2 font-medium text-ink">{mode === 'clinicians' ? 'Clinician roster' : 'Patient roster'}</h2>
             <p className="mt-xs text-sm text-muted">
@@ -1843,7 +1843,7 @@ function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
             rows={profile.rows}
           />
         </section>
-        <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <div className="mb-xl flex items-start justify-between gap-md">
             <div>
               <h2 className="text-h2 font-medium text-ink">{profile.title}</h2>
@@ -1869,7 +1869,7 @@ function ClinicianDetailScreen() {
   return (
     <ScreenStack metrics={clinicianMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <div className="mb-xl flex items-start justify-between gap-lg">
             <div>
               <ToneTag>/clinicians/:clinicianId</ToneTag>
@@ -1888,7 +1888,7 @@ function ClinicianDetailScreen() {
             ))}
           </div>
         </section>
-        <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <h2 className="mb-lg text-h2 font-medium text-ink">Assigned caseload</h2>
           <DataTable
             columns={[
@@ -1910,7 +1910,7 @@ function PolicyMatrixScreen() {
   return (
     <ScreenStack metrics={policyMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section aria-label="Policy library matrix" className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section aria-label="Policy library matrix" className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <DataTable columns={tableColumns} label="Policy library matrix" rows={policyRows} />
         </section>
         <aside className="grid gap-lg">
@@ -1927,7 +1927,7 @@ function PatientDetailScreen() {
   return (
     <ScreenStack metrics={patientMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <div className="mb-xl flex items-start justify-between gap-lg">
             <div>
               <ToneTag>/patients/:patientId</ToneTag>
@@ -1946,7 +1946,7 @@ function PatientDetailScreen() {
             ))}
           </div>
         </section>
-        <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <div className="mb-lg grid gap-xs">
             <h2 className="text-h2 font-medium text-ink">Care coordination</h2>
             <p className="text-sm text-muted">Version history, linked forms, evidence, and approvals for the active SOC plan.</p>
@@ -2131,7 +2131,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                 <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
                 <p className="mt-xs text-sm text-muted">{config.legend}</p>
               </div>
-              <div className="overflow-hidden rounded-lg border border-card bg-white/65 shadow-glass-inset">
+              <div className="overflow-hidden rounded-lg border border-hairline bg-surface-glass shadow-glass-inset">
               <div className="grid grid-cols-7 text-xs">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                   <div className="border border-hairline bg-tone-teal-bg/45 p-md text-center text-tag uppercase tracking-tag text-brand-teal" key={day}>
@@ -2235,7 +2235,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
             <CalendarAgendaList events={events} legend={config.legend} onOpenEvent={openCalendarEvent} title={config.title} />
           )}
         </section>
-        {!isCesCalendar && <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        {!isCesCalendar && <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <div className="mb-lg flex items-center justify-between gap-md">
             <h2 className="text-h2 font-medium text-ink">{config.railTitle}</h2>
             <ToneTag tone={config.railTone as Tone}>{events.length} active</ToneTag>
@@ -2300,7 +2300,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                 </div>
               ) : (
                 <button
-                  className="rounded-lg border border-card bg-white p-md text-left transition duration-fast focus-visible:outline-none focus-visible:shadow-focus hover:bg-tone-slate-bg"
+                  className="rounded-lg border border-hairline bg-surface-glass p-md text-left transition duration-fast focus-visible:outline-none focus-visible:shadow-focus hover:bg-surface-hover"
                   key={key}
                   onClick={() => openCalendarEvent(event)}
                   type="button"
@@ -2471,7 +2471,7 @@ function WorkflowSwimlaneScreen() {
 
   return (
     <div className="grid gap-lg">
-      <section className="grid gap-lg rounded-lg border border-card bg-surface-glass p-lg shadow-rest">
+      <section className="grid gap-lg rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
         <MetricGrid metrics={metrics} />
 
         <div className="flex flex-wrap items-center justify-between gap-md border-t border-hairline pt-md">
@@ -2597,7 +2597,7 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
   return (
     <ScreenStack metrics={config.metrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
           <p className="mt-xs text-sm text-muted">{config.description}</p>
           <div className="mt-lg grid gap-md">
@@ -2612,7 +2612,7 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
             ))}
           </div>
         </section>
-        <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <h2 className="mb-lg text-h2 font-medium text-ink">Audit packet</h2>
           <div className="grid gap-md tablet-p:grid-cols-2">
             {config.tiles.map(([value, label]) => (
@@ -2637,7 +2637,7 @@ function ArtifactViewerScreen() {
   return (
     <ScreenStack metrics={artifactMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <div className="mb-xl flex items-start justify-between gap-lg">
             <div>
               <ToneTag>/artifacts/:artifactId</ToneTag>
@@ -2700,7 +2700,7 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <section
           aria-label={isCrosswalk ? 'ACHC regulatory crosswalk matrix' : 'ACHC survey checklist matrix'}
-          className="rounded-lg border border-card bg-surface p-xl shadow-rest"
+          className="rounded-lg border border-hairline bg-surface p-xl shadow-rest"
         >
           <DataTable
             columns={[
@@ -2744,7 +2744,7 @@ function FormWorkspaceScreen() {
             ))}
           </div>
         </aside>
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <div className="mb-xl flex flex-wrap items-start justify-between gap-lg">
             <div>
               <ToneTag tone="orange">Interactive form</ToneTag>
@@ -2788,7 +2788,7 @@ function FormWorkspaceScreen() {
               tone: 'orange',
             }}
           />
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
             <h2 className="mb-lg text-h2 font-medium text-ink">Required signers</h2>
             <div className="grid gap-sm">
               {['Thomas Parker', 'Administrator', 'Governing Body Chair'].map((signer, index) => (
@@ -2813,7 +2813,7 @@ function BradScreen() {
   return (
     <ScreenStack metrics={bradMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <div className="mb-lg flex items-center gap-md border-b border-hairline pb-lg">
             <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-brand-teal">
               <Bot aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -2839,7 +2839,7 @@ function DocsScreen() {
   return (
     <ScreenStack metrics={operationsMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(280px,1fr)_minmax(0,3fr)]">
-        <aside className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <h2 className="mb-lg text-h2 font-medium text-ink">Contents</h2>
           <div className="grid gap-sm">
             {guideEntries.map(([title], index) => (
@@ -2856,7 +2856,7 @@ function DocsScreen() {
             ))}
           </div>
         </aside>
-        <article className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <article className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <ToneTag>/journey/guide</ToneTag>
           <h2 className="mt-lg text-h2 font-medium text-ink">User Guide</h2>
           <div className="mt-xl grid gap-lg">
@@ -2877,7 +2877,7 @@ function ReportsScreen() {
   return (
     <ScreenStack metrics={reportMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <h2 className="text-h2 font-medium text-ink">Sprint readiness trend</h2>
           <div className="mt-xl rounded-lg bg-tone-slate-bg p-lg">
             <div className="flex h-[260px] items-end justify-around gap-lg">
@@ -3028,7 +3028,7 @@ function OverlayPanel({
   title: string;
 }) {
   return (
-    <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+    <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
       <div className="mb-lg flex items-start gap-md">
         <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-brand-teal">
           <Icon aria-hidden="true" className="h-icon-md w-icon-md" />
