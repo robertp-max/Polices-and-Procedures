@@ -1,13 +1,13 @@
 import { AlertTriangle, BarChart3, Bot, BookOpen, CalendarClock, CalendarRange, Camera, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, Route, ShieldCheck, Sparkles, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Button, ToneBadge } from '../primitives';
 import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
-import { BoardLane, ChatThread, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type ChatMessageData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen } from './pageviews';
+import { BoardLane, ChatThread, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardLaneData, type ChatMessageData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowSwimlaneScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen } from './pageviews';
 
 type RouteLike = V6RouteDefinition;
 type BasicRow = Record<string, string>;
@@ -689,14 +689,6 @@ const calendarConfigs = {
 
 function getCalendarEventKey(event: CalendarEventData): string {
   return event.id ?? `calendar-event-${event.day}-${event.label}`;
-}
-
-function toWorkflowSwimlanePath(event: CalendarEventData): string {
-  return `/workflows/${event.workflowId ?? getCalendarEventKey(event)}/swimlane`;
-}
-
-function getWorkflowEvent(workflowId: string | undefined): CalendarEventData {
-  return cesCalendarEvents.find((event) => event.workflowId === workflowId) ?? cesCalendarEvents[0];
 }
 
 function CalendarEventPreview({
@@ -2353,239 +2345,6 @@ function BoardScreen() {
         </div>
       </section>
     </ScreenStack>
-  );
-}
-
-function buildWorkflowSwimlane(event: CalendarEventData): readonly BoardLaneData[] {
-  const formsCount = event.formsCount ?? 0;
-  const due = `Jun ${event.day}`;
-
-  return [
-    {
-      cards: [
-        {
-          chips: ['Event', 'Scope'],
-          due,
-          id: 'EVT-01',
-          owner: event.owner,
-          progress: 88,
-          title: `Confirm ${event.label} scope`,
-          tone: 'teal',
-        },
-        {
-          chips: ['Policy', `${formsCount} forms`],
-          due,
-          id: 'EVT-02',
-          owner: 'Policy Admin',
-          progress: 78,
-          title: 'Bind source policies and required forms',
-          tone: 'teal',
-        },
-      ],
-      count: 2,
-      title: 'Intake',
-      tone: 'teal',
-    },
-    {
-      cards: [
-        {
-          chips: ['Evidence', 'Packet'],
-          due: `Jun ${event.day + 1}`,
-          id: 'EVT-03',
-          owner: event.owner,
-          progress: event.progress,
-          title: 'Collect required evidence artifacts',
-          tone: event.tone === 'orange' ? 'orange' : 'teal',
-        },
-        {
-          chips: ['Forms', 'Audit trail'],
-          due: `Jun ${event.day + 1}`,
-          id: 'EVT-04',
-          owner: 'Compliance Officer',
-          progress: 66,
-          title: event.evidenceStatus ?? 'Validate evidence status',
-          tone: 'orange',
-        },
-      ],
-      count: 2,
-      title: 'Evidence',
-      tone: 'orange',
-    },
-    {
-      cards: [
-        {
-          chips: ['Readiness', 'Risk'],
-          due: `Jun ${event.day + 2}`,
-          id: 'EVT-05',
-          owner: 'QAPI Lead',
-          progress: 72,
-          title: `Resolve ${event.risk ?? 'current'} risk signal`,
-          tone: event.tone,
-        },
-        {
-          chips: ['Attendees', 'Roles'],
-          due: `Jun ${event.day + 2}`,
-          id: 'EVT-06',
-          owner: 'Administrator',
-          progress: 70,
-          title: 'Confirm attendees and role sequence',
-          tone: 'amber',
-        },
-      ],
-      count: 2,
-      title: 'Review',
-      tone: 'amber',
-    },
-    {
-      cards: [
-        {
-          chips: ['eCIgn', 'Lock'],
-          due: `Jun ${event.day + 3}`,
-          id: 'EVT-07',
-          owner: 'Governing Body',
-          progress: 64,
-          title: 'Route signatures and final packet lock',
-          tone: 'green',
-        },
-      ],
-      count: 1,
-      title: 'Lock',
-      tone: 'green',
-    },
-  ];
-}
-
-function WorkflowSwimlaneScreen() {
-  const { workflowId } = useParams();
-  const navigate = useNavigate();
-  const event = getWorkflowEvent(workflowId);
-  const lanes = buildWorkflowSwimlane(event);
-  const metrics: readonly MetricTileData[] = [
-    { label: 'Tasks', value: `${event.taskCount ?? 7}`, helper: 'Generated from event context', tone: 'teal' },
-    { label: 'Owner', value: event.owner, helper: 'Primary accountable party', tone: 'orange' },
-    { label: 'Risk', value: event.risk ?? 'Current', helper: 'Calendar-derived signal', tone: event.tone },
-    { label: 'Due', value: `Jun ${event.day}`, helper: 'Event target date', tone: 'teal' },
-  ];
-
-  const [selectedCard, setSelectedCard] = useState<BoardCardData | null>(null);
-
-  return (
-    <div className="grid gap-xl">
-      <section className="grid gap-lg rounded-lg border border-card bg-surface-glass p-lg shadow-rest">
-        <MetricGrid metrics={metrics} />
-
-        <div className="flex flex-wrap items-center justify-between gap-lg border-t border-hairline pt-lg">
-          <div className="flex flex-wrap gap-sm">
-            <ToneTag className="font-medium" tone={event.tone}>
-              Swimlane open
-            </ToneTag>
-            <ToneTag className="font-medium" tone="slate">
-              Jun {event.day}
-            </ToneTag>
-            <ToneTag className="font-medium">{event.taskCount ?? 7} tasks</ToneTag>
-          </div>
-          <Button iconLeft={<CalendarClock aria-hidden="true" className="h-icon-sm w-icon-sm" />} onClick={() => navigate('/ces/calendar')} variant="secondary">
-            Back to month
-          </Button>
-        </div>
-
-        <section aria-label="Workflow stage summary" className="grid gap-md desktop:grid-cols-4">
-          {lanes.map((lane, index) => (
-            <div className={cx('rounded-lg p-lg shadow-none', toneGlassSurfaceClasses[lane.tone])} key={lane.title}>
-              <div className="mb-md flex items-center justify-between gap-md">
-                <span className="grid h-tap w-tap place-items-center rounded-md bg-white/[.55] text-brand-teal">{index + 1}</span>
-                <span className="text-tag uppercase tracking-tag">{lane.count} cards</span>
-              </div>
-              <h3 className="text-body font-medium">{lane.title}</h3>
-              <p className="mt-xs text-sm">{lane.cards.length} execution tasks</p>
-            </div>
-          ))}
-        </section>
-
-        <div className="flex flex-wrap gap-sm rounded-lg border border-hairline bg-white/[.30] p-sm backdrop-blur-sm">
-          {cesCalendarEvents.map((calendarEvent) => (
-            <button
-              className={cx(
-                'min-h-tap rounded-sm border px-md text-xs font-medium uppercase tracking-tag transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                calendarEvent.workflowId === event.workflowId
-                  ? 'border-brand-teal bg-brand-teal text-on-brand'
-                  : 'border-hairline bg-white/[.45] text-brand-teal hover:bg-white/[.60]',
-              )}
-              key={calendarEvent.id}
-              onClick={() => navigate(toWorkflowSwimlanePath(calendarEvent))}
-              type="button"
-            >
-              Jun {calendarEvent.day} - {calendarEvent.label}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="grid gap-xl">
-        <div className="grid gap-lg desktop:grid-cols-4">
-          {lanes.map((lane) => (
-            <BoardLane key={lane.title} lane={lane} onCardClick={setSelectedCard} />
-          ))}
-        </div>
-      </section>
-
-      {selectedCard && (
-        <VeilModal
-          open={!!selectedCard}
-          onClose={() => setSelectedCard(null)}
-          eyebrow="Workflow task detail"
-          title={selectedCard.title}
-          tone="orange"
-          footer={
-            <div className="flex flex-wrap justify-end gap-sm">
-              <Button onClick={() => setSelectedCard(null)} variant="secondary">
-                Close modal
-              </Button>
-              <Button
-                className="border-tone-orange-border bg-tone-orange-bg text-tone-orange-text hover:bg-tone-orange-bg/85"
-                onClick={() => {
-                  setSelectedCard(null);
-                }}
-              >
-                Validate & Complete Step
-              </Button>
-            </div>
-          }
-        >
-          <div className="grid gap-md md:grid-cols-2">
-            <div className="grid gap-xs">
-              {[
-                ['Checklist complete', 'Ready'],
-                ['Evidence packet attached', 'Ready'],
-                ['eCIgn signing ready', 'Awaiting'],
-                ['Audit note reviewed', 'Ready'],
-              ].map(([item, status]) => (
-                <div key={item} className="flex items-center justify-between rounded-md bg-tone-slate-bg p-md text-xs">
-                  <span className="font-light text-secondary">{item}</span>
-                  <ToneBadge status={status === 'Ready' ? 'validated' : 'awaiting'} />
-                </div>
-              ))}
-            </div>
-            <div className="rounded-md border border-card bg-surface p-md flex flex-col gap-sm">
-              <h4 className="text-sm font-medium text-ink">Evidence and signature status</h4>
-              <div className="grid gap-xs text-xs font-light text-secondary">
-                <div className="rounded-md bg-tone-slate-bg p-md">
-                  <span className="text-[10px] font-medium text-brand-teal uppercase block mb-xs">Required file</span>
-                  Q2_QAPI_minutes_packet.pdf
-                </div>
-                <div className="rounded-md bg-tone-slate-bg p-md">
-                  <span className="text-[10px] font-medium text-brand-teal uppercase block mb-xs">eCIgn sequence</span>
-                  Administrator, Governing Body Chair
-                </div>
-                <div className="rounded-md bg-tone-orange-bg border border-tone-orange-border text-tone-orange-text p-md">
-                  Chair signature is pending before final lock.
-                </div>
-              </div>
-            </div>
-          </div>
-        </VeilModal>
-      )}
-    </div>
   );
 }
 

@@ -11,6 +11,7 @@ export { MasterControlsScreen } from './MasterControlsScreen';
 export { MyTasksScreen } from './MyTasksScreen';
 export { PolicyDetailScreen } from './PolicyDetailScreen';
 export { default as WorkflowsScreen } from './WorkflowsScreen';
+export { WorkflowSwimlaneScreen, WorkflowDetailScreen } from './WorkflowDetailAndSwimlaneScreen';
 export { AppendixFScreen } from './AppendixFScreen';
 export { JourneyAdminScreen } from './JourneyAdminScreen';
 export { JourneyOverviewScreen } from './JourneyOverviewScreen';
