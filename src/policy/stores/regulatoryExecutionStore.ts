@@ -442,6 +442,7 @@ interface RegulatoryExecutionState {
   resetEvent: (eventId: string) => void;
   clearAllEvidence: () => void;
   resetAll: () => void;
+  importSnapshotState: (snapshot: Partial<RegulatoryExecutionState>) => void;
 
   /* ── Sandbox reset (Q1/Q2 2026 playground) ── */
   /**
@@ -3222,6 +3223,225 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
 
       resetAllCesSandbox: () => {
         get().resetAllSandboxQ1Q2();
+      },
+
+      importSnapshotState: (snapshot: Partial<RegulatoryExecutionState>) => {
+        if (!snapshot) return;
+        set(state => {
+          // Merge formStates
+          const formStates = { ...state.formStates };
+          if (snapshot.formStates) {
+            Object.entries(snapshot.formStates).forEach(([k, v]) => {
+              if (v) formStates[k] = { ...formStates[k], ...v };
+            });
+          }
+
+          // Merge stepStates
+          const stepStates = { ...state.stepStates };
+          if (snapshot.stepStates) {
+            Object.entries(snapshot.stepStates).forEach(([k, v]) => {
+              if (v) stepStates[k] = { ...stepStates[k], ...v };
+            });
+          }
+
+          // Merge minutesStates
+          const minutesStates = { ...state.minutesStates };
+          if (snapshot.minutesStates) {
+            Object.entries(snapshot.minutesStates).forEach(([k, v]) => {
+              if (v) minutesStates[k] = { ...minutesStates[k], ...v };
+            });
+          }
+
+          // Merge evidence (group/array merge per eventId)
+          const evidence = { ...state.evidence };
+          if (snapshot.evidence) {
+            Object.entries(snapshot.evidence).forEach(([eventId, docs]) => {
+              if (Array.isArray(docs)) {
+                const existingDocs = evidence[eventId] ?? [];
+                const mergedDocs = [...existingDocs];
+                docs.forEach(doc => {
+                  const idx = mergedDocs.findIndex(d => d.id === doc.id);
+                  if (idx >= 0) {
+                    mergedDocs[idx] = { ...mergedDocs[idx], ...doc };
+                  } else {
+                    mergedDocs.push(doc);
+                  }
+                });
+                evidence[eventId] = mergedDocs;
+              }
+            });
+          }
+
+          // Merge approvals (deduplicate by id)
+          const approvals = [...state.approvals];
+          if (Array.isArray(snapshot.approvals)) {
+            snapshot.approvals.forEach(app => {
+              if (app && app.id) {
+                const idx = approvals.findIndex(a => a.id === app.id);
+                if (idx >= 0) {
+                  approvals[idx] = { ...approvals[idx], ...app };
+                } else {
+                  approvals.push(app);
+                }
+              }
+            });
+          }
+
+          // Merge completions
+          const completions = { ...state.completions };
+          if (snapshot.completions) {
+            Object.entries(snapshot.completions).forEach(([k, v]) => {
+              if (v) completions[k] = { ...completions[k], ...v };
+            });
+          }
+
+          // Merge notes
+          const notes = { ...state.notes };
+          if (snapshot.notes) {
+            Object.entries(snapshot.notes).forEach(([eventId, list]) => {
+              if (Array.isArray(list)) {
+                const existingList = notes[eventId] ?? [];
+                const mergedList = [...existingList];
+                list.forEach(note => {
+                  const idx = mergedList.findIndex(n => n.id === note.id);
+                  if (idx >= 0) {
+                    mergedList[idx] = { ...mergedList[idx], ...note };
+                  } else {
+                    mergedList.push(note);
+                  }
+                });
+                notes[eventId] = mergedList;
+              }
+            });
+          }
+
+          // Merge certifications
+          const certifications = { ...state.certifications };
+          if (snapshot.certifications) {
+            Object.entries(snapshot.certifications).forEach(([k, v]) => {
+              if (v) certifications[k] = { ...certifications[k], ...v };
+            });
+          }
+
+          // Merge eventInstancesById
+          const eventInstancesById = { ...state.eventInstancesById };
+          if (snapshot.eventInstancesById) {
+            Object.entries(snapshot.eventInstancesById).forEach(([k, v]) => {
+              if (v) eventInstancesById[k] = { ...eventInstancesById[k], ...v };
+            });
+          }
+
+          // Merge eventInstanceIdsBySourceEventId
+          const eventInstanceIdsBySourceEventId = { ...state.eventInstanceIdsBySourceEventId };
+          if (snapshot.eventInstanceIdsBySourceEventId) {
+            Object.entries(snapshot.eventInstanceIdsBySourceEventId).forEach(([k, v]) => {
+              if (Array.isArray(v)) {
+                eventInstanceIdsBySourceEventId[k] = Array.from(new Set([...(eventInstanceIdsBySourceEventId[k] ?? []), ...v]));
+              }
+            });
+          }
+
+          // Merge taskOverridesByEventId
+          const taskOverridesByEventId = { ...state.taskOverridesByEventId };
+          if (snapshot.taskOverridesByEventId) {
+            Object.entries(snapshot.taskOverridesByEventId).forEach(([eventId, tasks]) => {
+              if (Array.isArray(tasks)) {
+                const existingTasks = taskOverridesByEventId[eventId] ?? [];
+                const mergedTasks = [...existingTasks];
+                tasks.forEach(t => {
+                  const idx = mergedTasks.findIndex(x => x.id === t.id);
+                  if (idx >= 0) {
+                    mergedTasks[idx] = { ...mergedTasks[idx], ...t };
+                  } else {
+                    mergedTasks.push(t);
+                  }
+                });
+                taskOverridesByEventId[eventId] = mergedTasks;
+              }
+            });
+          }
+
+          // Merge taskAuditByEventId
+          const taskAuditByEventId = { ...state.taskAuditByEventId };
+          if (snapshot.taskAuditByEventId) {
+            Object.entries(snapshot.taskAuditByEventId).forEach(([eventId, rows]) => {
+              if (Array.isArray(rows)) {
+                const existingRows = taskAuditByEventId[eventId] ?? [];
+                const mergedRows = [...existingRows];
+                rows.forEach(r => {
+                  const idx = mergedRows.findIndex(x => x.auditId === r.auditId);
+                  if (idx >= 0) {
+                    mergedRows[idx] = { ...mergedRows[idx], ...r };
+                  } else {
+                    mergedRows.push(r);
+                  }
+                });
+                taskAuditByEventId[eventId] = mergedRows;
+              }
+            });
+          }
+
+          // Merge generatedFormInstancesByEventId
+          const generatedFormInstancesByEventId = { ...state.generatedFormInstancesByEventId };
+          if (snapshot.generatedFormInstancesByEventId) {
+            Object.entries(snapshot.generatedFormInstancesByEventId).forEach(([eventId, list]) => {
+              if (Array.isArray(list)) {
+                const existingList = generatedFormInstancesByEventId[eventId] ?? [];
+                const mergedList = [...existingList];
+                list.forEach(fi => {
+                  const idx = mergedList.findIndex(x => x.id === fi.id);
+                  if (idx >= 0) {
+                    mergedList[idx] = { ...mergedList[idx], ...fi };
+                  } else {
+                    mergedList.push(fi);
+                  }
+                });
+                generatedFormInstancesByEventId[eventId] = mergedList;
+              }
+            });
+          }
+
+          // Merge evidenceErrorsByEventId
+          const evidenceErrorsByEventId = { ...state.evidenceErrorsByEventId, ...snapshot.evidenceErrorsByEventId };
+
+          // Merge signerTasksByFormInstanceId
+          const signerTasksByFormInstanceId = { ...state.signerTasksByFormInstanceId };
+          if (snapshot.signerTasksByFormInstanceId) {
+            Object.entries(snapshot.signerTasksByFormInstanceId).forEach(([formInstanceId, list]) => {
+              if (Array.isArray(list)) {
+                const existingList = signerTasksByFormInstanceId[formInstanceId] ?? [];
+                const mergedList = [...existingList];
+                list.forEach(st => {
+                  const idx = mergedList.findIndex(x => x.taskId === st.taskId);
+                  if (idx >= 0) {
+                    mergedList[idx] = { ...mergedList[idx], ...st };
+                  } else {
+                    mergedList.push(st);
+                  }
+                });
+                signerTasksByFormInstanceId[formInstanceId] = mergedList;
+              }
+            });
+          }
+
+          return {
+            formStates,
+            stepStates,
+            minutesStates,
+            evidence,
+            approvals,
+            completions,
+            notes,
+            certifications,
+            eventInstancesById,
+            eventInstanceIdsBySourceEventId,
+            taskOverridesByEventId,
+            taskAuditByEventId,
+            generatedFormInstancesByEventId,
+            evidenceErrorsByEventId,
+            signerTasksByFormInstanceId,
+          };
+        });
       },
     }),
     {
