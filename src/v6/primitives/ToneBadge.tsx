@@ -68,19 +68,20 @@ const iconBySemantic: Partial<Record<StatusIndicatorSemantic, LucideIcon>> = {
 export function ToneBadge({ className, size = 'md', status, ...props }: ToneBadgeProps) {
   const entry = resolveStatus(status);
   const Icon = entry.indicator.kind === 'icon' ? iconBySemantic[entry.indicator.semantic] ?? CircleDot : Circle;
+  const label = props.children ?? entry.label;
 
   return (
     <span
       {...props}
       className={cx(
-        'inline-flex items-center gap-xs rounded-sm border font-medium',
+        'inline-flex items-center gap-xs whitespace-nowrap rounded-sm border font-medium leading-none',
         toneClasses[entry.tone],
         sizeClasses[size],
         className,
       )}
     >
       <Icon aria-hidden="true" className="h-icon-xs w-icon-xs" />
-      <span>{entry.label}</span>
+      <span>{label}</span>
     </span>
   );
 }

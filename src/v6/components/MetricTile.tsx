@@ -17,16 +17,16 @@ export interface MetricTileProps {
 export function MetricTile({ metric }: MetricTileProps) {
   return (
     <article className={cx(
-      'min-h-[125px] rounded-lg border p-4 shadow-rest transition duration-base ease-standard hover:translate-y-[-2px] hover:shadow-hover active:scale-[0.997] sm:p-5',
+      'min-h-[106px] min-w-0 rounded-lg border p-lg shadow-rest transition duration-base ease-standard hover:translate-y-hover-lift hover:shadow-hover active:scale-press',
       toneSurfaceClasses[metric.tone]
     )}>
-      <div className="text-[10px] font-medium uppercase tracking-[0.18em] opacity-75">
+      <div className="truncate text-tag font-medium uppercase tracking-tag opacity-75">
         {metric.label}
       </div>
-      <div className="mt-3 text-3xl font-medium tracking-tight">
+      <div className="mt-sm truncate text-[28px] font-medium leading-none tracking-normal">
         {metric.value}
       </div>
-      <div className="mt-1 text-xs font-light opacity-75">
+      <div className="mt-xs truncate text-xs font-light opacity-75">
         {metric.helper}
       </div>
     </article>
@@ -38,7 +38,7 @@ export function MetricGrid({ metrics, className }: { metrics: readonly MetricTil
   return (
     <section
       className={cx(
-        'grid gap-lg tablet-l:grid-cols-2',
+        'grid gap-md tablet-l:grid-cols-2',
         colCount === 5 ? 'desktop:grid-cols-5' : 'desktop:grid-cols-4',
         className
       )}

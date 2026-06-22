@@ -29,25 +29,25 @@ export interface BoardLaneProps {
 
 export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
   return (
-    <section className="min-w-[248px] rounded-lg border border-card bg-white p-md">
-      <header className="mb-md flex items-start justify-between gap-md">
-        <div>
+    <section className="min-w-[232px] rounded-lg border border-card bg-white/[.58] p-sm shadow-glass-inset backdrop-blur-md">
+      <header className="mb-sm flex items-start justify-between gap-sm px-xs pt-xs">
+        <div className="min-w-0">
           <h2 className="text-body font-medium text-ink">{lane.title}</h2>
           <p className="text-sm text-muted">{lane.count} active cards</p>
         </div>
         <ToneTag tone={lane.tone}>{lane.count}</ToneTag>
       </header>
-      <div className="grid gap-md">
+      <div className="grid gap-sm">
         {lane.cards.map((card) => (
           <article
             className={cx(
-              'rounded-lg border border-card bg-white p-md',
-              onCardClick && 'cursor-pointer hover:bg-tone-slate-bg'
+              'flex min-h-[164px] flex-col rounded-lg border border-card bg-white/[.72] p-sm transition duration-fast ease-standard',
+              onCardClick && 'cursor-pointer hover:bg-white'
             )}
             key={card.id}
             onClick={onCardClick ? () => onCardClick(card) : undefined}
           >
-            <div className="mb-md flex items-center justify-between gap-md">
+            <div className="mb-sm flex items-center justify-between gap-sm">
               <ToneTag tone={card.tone}>{card.id}</ToneTag>
               <button
                 aria-label={`More actions for ${card.title}`}
@@ -63,10 +63,10 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
                 <MoreHorizontal aria-hidden="true" className="h-icon-sm w-icon-sm" />
               </button>
             </div>
-            <div className="grid gap-md">
-              <h3 className="text-body font-light text-ink">{card.title}</h3>
-              <div className="flex justify-between gap-md text-xs">
-                <span className="text-brand-teal">{card.owner}</span>
+            <div className="flex flex-1 flex-col gap-sm">
+              <h3 className="text-sm font-light leading-sm text-ink">{card.title}</h3>
+              <div className="flex justify-between gap-sm text-xs">
+                <span className="min-w-0 truncate text-brand-teal">{card.owner}</span>
                 <span className="text-muted">{card.due}</span>
               </div>
               <div className="flex flex-wrap gap-xs">
@@ -84,7 +84,7 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
                   </span>
                 ))}
               </div>
-              <ProgressMeter tone={card.tone} value={card.progress} />
+              <ProgressMeter className="mt-auto pt-xs" tone={card.tone} value={card.progress} />
             </div>
           </article>
         ))}

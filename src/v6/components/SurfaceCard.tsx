@@ -26,12 +26,12 @@ export function SurfaceCard({ card, children, className }: SurfaceCardProps) {
 
   return (
     <article className={cx(
-      'rounded-lg border border-card bg-white/[.58] p-xl shadow-rest backdrop-blur-xl transition duration-base ease-standard hover:bg-white/[.72] hover:shadow-hover active:scale-[0.997]',
+      'rounded-lg border border-card bg-white/[.54] p-lg shadow-glass-inset backdrop-blur-xl transition duration-base ease-standard hover:bg-white/[.68] hover:shadow-rest active:scale-press',
       className
     )}>
-      <div className="mb-lg flex items-start justify-between gap-md">
+      <div className="mb-md flex min-h-tap items-start justify-between gap-md">
         {Icon ? (
-          <span className={cx('grid h-10 w-10 place-items-center rounded-xl border', toneSurfaceClasses[card.tone])}>
+          <span className={cx('grid h-9 w-9 shrink-0 place-items-center rounded-lg border', toneSurfaceClasses[card.tone])}>
             <Icon aria-hidden="true" className="h-icon-md w-icon-md" />
           </span>
         ) : (
@@ -39,12 +39,12 @@ export function SurfaceCard({ card, children, className }: SurfaceCardProps) {
         )}
         {card.status ? <ToneBadge size="sm" status={card.status} /> : null}
       </div>
-      <div className="grid gap-md">
-        <div className="grid gap-sm">
+      <div className="grid gap-sm">
+        <div className="grid gap-xs">
           <h3 className="text-sm font-medium text-brand-teal-deep">{card.title}</h3>
-          <p className="text-xs font-light leading-relaxed text-muted">{card.body}</p>
+          <p className="text-xs font-light leading-sm text-muted">{card.body}</p>
         </div>
-        {typeof card.progress === 'number' ? <ProgressMeter tone={card.tone} value={card.progress} /> : null}
+        {typeof card.progress === 'number' ? <ProgressMeter className="mt-xs" tone={card.tone} value={card.progress} /> : null}
         {children}
       </div>
     </article>

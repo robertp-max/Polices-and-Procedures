@@ -12,11 +12,10 @@ export function ToneTag({ className, tone = 'teal', ...props }: ToneTagProps) {
     <span
       {...props}
       className={cx(
-        'inline-flex items-center gap-xs rounded-sm border px-sm py-xs text-tag font-light uppercase tracking-tag',
+        'inline-flex items-center gap-xs whitespace-nowrap rounded-sm border px-sm py-xs text-xs font-medium uppercase tracking-tag leading-none',
         toneSurfaceClasses[tone],
         className,
       )}
     />
   );
 }
-

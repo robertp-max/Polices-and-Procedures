@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { useEffect, useId, type ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import { X } from 'lucide-react';
 import { ToneBadge } from '../primitives';
@@ -24,6 +24,19 @@ export function VeilModal({
   footer,
   maxWidthClass = 'max-w-modal-md',
 }: VeilModalProps) {
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose, open]);
+
   if (!open) return null;
 
   return ReactDOM.createPortal(
@@ -34,26 +47,27 @@ export function VeilModal({
         aria-hidden="true" 
       />
       <section 
-        className={`relative z-modal max-h-[90vh] w-full ${maxWidthClass} overflow-y-auto rounded-lg border border-card bg-surface p-xl shadow-hover transition-all`}
+        className={`relative z-modal flex max-h-[90vh] w-full ${maxWidthClass} flex-col overflow-hidden rounded-lg border border-card bg-surface shadow-hover transition-all`}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
       >
-        <div className="flex items-start justify-between gap-md border-b border-hairline pb-lg">
-          <div>
+        <div className="flex shrink-0 items-start justify-between gap-md border-b border-hairline p-lg">
+          <div className="min-w-0">
             <ToneBadge status={tone === 'orange' ? 'attention' : 'active'}>{eyebrow}</ToneBadge>
-            <h3 className="mt-md text-h2 font-medium text-ink">{title}</h3>
+            <h3 className="mt-sm text-h2 font-medium text-ink" id={titleId}>{title}</h3>
           </div>
           <button
             onClick={onClose}
-            className="rounded-md border border-card bg-surface p-sm text-muted hover:text-brand-teal focus:outline-none"
+            className="shrink-0 rounded-md border border-card bg-surface p-sm text-muted transition duration-fast ease-standard hover:text-brand-teal focus:outline-none focus-visible:shadow-focus"
             aria-label="Close modal"
             type="button"
           >
             <X className="h-icon-sm w-icon-sm" />
           </button>
         </div>
-        <div className="mt-xl">{children}</div>
-        {footer && <div className="mt-xl border-t border-hairline pt-lg flex justify-end gap-md">{footer}</div>}
+        <div className="min-h-0 flex-1 overflow-y-auto p-lg">{children}</div>
+        {footer && <div className="flex shrink-0 justify-end gap-md border-t border-hairline p-lg">{footer}</div>}
       </section>
     </div>,
     document.body
