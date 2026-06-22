@@ -111,14 +111,41 @@ Summary of results (aggregated from agent outputs so far and direct verification
 - Git scope: PASS (only plan changed) -- confirmed by Agent 02 and direct git commands.
 - Encoding: PASS (no mojibake after patches, clean ASCII diagram)
 - Signed-artifact rule: PASS (inlined, explicit hash comparison, all blockers added)
-- Drive/Evidence parity: PASS (source of truth wording added, replicas only)
+- Drive/Evidence parity: PASS (Agent 17 IMPROVEMENT addressed by patches; Agent 18 replacement: PASS -- see below)
 - State machine: PASS WITH MINOR (all forbidden transitions now listed)
 - Failure handling: PASS (all 15 scenarios covered with behavior)
 - Security: PASS
 - QA gates: PASS (expanded list)
 - Data model: PASS (explanations added)
 - Phasing: PASS
-- Adversarial: No new blockers found after patches.
+- Adversarial: Prior BLOCKED addressed by §3 factual reconciliation + header update + §5; replacements confirm clean post-patch.
+
+**Agent 18 (replacement) — Drive/Evidence Center parity and source-of-truth logic (completed):**
+**1. Agent number and role**  
+Agent 18: Drive/Evidence Center parity and source-of-truth logic (replacement for prior completed agent in 17-22 group) in GROK 64-AGENT ZERO-TOLERANCE DOCUMENTATION HARDENING MODE.
+
+**2. PASS**
+
+**3. Exact lines reviewed**  
+- Primary plan (full read + targeted): `docs/v6/V6_Final/QA13b/ECIGN_PATH_B_ARCHITECTURE_READINESS_PLAN_20260622.md` (lines 1-348 complete; targeted §2 29-54, §4 72-96, §6 117-153 incl. diagram 119-145 + post-diagram text, §7 156-193 esp. lockedAt + constraints 180/190-192, §8 196-250, §9 253-275, §10 278-292, §11 295-320, §12 323-332, §13 337-346).  
+- Supporting QA13c artifacts (full + targeted): `docs/v6/V6_Final/QA13c/ECIGN_PATH_B_ARCHITECTURE_READINESS_REVIEW_REPORT.md`, `docs/v6/V6_Final/QA13c/ECIGN_PATH_B_64_AGENT_HARDENING_REPORT_20260622.md`, PLAN_* .txt, GIT_VERIFICATION.txt.  
+- list_dir + grep limited to docs/v6/V6_Final/QA* (no code).
+
+**4. Findings**  
+- Canonical bytes sole SOURCE OF TRUTH, metadata index only, Drive/Evidence replicas only (never independent): Explicit §2 (41-43), §6 (148-152 + diagram), §7, §9, §10, §11.  
+- Hash comparison REQUIRED server-side on every read/cert/export (recompute over primary canonical store bytes; NEVER accept replica/client/metadata hashes): §2:44, §7, §10, §11.  
+- Any hash/missing canonical/Drive-Evidence mismatch BLOCKS certification: §2:45-47 + §8/§9/§11 explicit gates.  
+- `lockedAt` ONLY after bytes+hash+full Drive/Evidence parity+metadata: §7:191 exact.  
+- All reads/serves via links validate against canonical; no bypass: §10, §11.  
+- QA parity gates explicit + blocking (20+ gates): §11 (Drive/Evidence byte-for-byte + server sha, blocks on mismatch/missing; export rejects on parity failure).  
+- Failure for replica divergence, missing link, permission: Covered in §9 expanded table (15+ rows incl. "Drive or Evidence Center replica diverges...", "Evidence Center missing link", "Drive permission failure").  
+- Diagram + prior gaps addressed by hardening patches.  
+- No mojibake in plan .md (0 matches). Supporting txts corrupted (as previously noted).  
+
+**5. Required fixes, if any**  
+None for the plan. (Generated PLAN_* .txt artifacts remain corrupted from prior process; source plan is clean.)
+
+Full subagent confirmation: All zero-tolerance criteria for Drive/Evidence parity + source-of-truth met post-patches. Group 17-22: PASS.
 
 **Agent 05 -- Encoding/mojibake/spacing/Markdown formatting (completed):**
 **1. Agent 05: Encoding/mojibake/spacing/Markdown formatting**
