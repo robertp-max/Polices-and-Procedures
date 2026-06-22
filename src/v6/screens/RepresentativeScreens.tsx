@@ -722,7 +722,7 @@ function CalendarEventPreview({
   return createPortal(
     <aside
       aria-live="polite"
-      className="fixed z-popover w-[340px] pointer-events-none rounded-lg border border-card bg-surface p-lg shadow-hover text-ink"
+      className="fixed z-popover w-[340px] pointer-events-none rounded-lg border border-white bg-white p-lg text-ink shadow-rest"
       id="ces-event-preview"
       style={positionStyle}
     >
@@ -813,7 +813,7 @@ function CalendarAgendaList({
           const status = getCalendarAgendaStatus(event);
 
           return (
-            <button className="grid gap-md rounded-lg border border-card bg-surface p-lg text-left shadow-rest transition duration-fast hover:translate-y-[-1px] hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus" key={getCalendarEventKey(event)} onClick={() => onOpenEvent(event)} type="button">
+            <button className="grid gap-md rounded-lg border border-card bg-white p-lg text-left transition duration-fast focus-visible:outline-none focus-visible:shadow-focus hover:bg-tone-slate-bg" key={getCalendarEventKey(event)} onClick={() => onOpenEvent(event)} type="button">
               <div className="grid items-center gap-lg tablet-p:grid-cols-[56px_minmax(0,1fr)]">
                 <div className="text-sm font-medium text-brand-teal-deep">{calendarAgendaDayLabels[index] ?? 'Day'}</div>
                 <div className="min-w-0">
@@ -983,7 +983,7 @@ function CalendarSwimlaneInline({
               style={{ '--lane-card-count': lane.cards.length } as CSSProperties}
             >
               {lane.cards.map((task) => (
-                <article className="min-w-0 rounded-lg border border-hairline bg-white/[.42] p-lg shadow-none backdrop-blur-sm transition duration-fast hover:bg-white/[.58] hover:shadow-rest" key={task.id}>
+                <article className="min-w-0 rounded-lg border border-hairline bg-white p-lg transition duration-fast hover:bg-tone-slate-bg" key={task.id}>
                   <div className="flex items-start justify-between gap-md">
                     <ToneTag tone={task.tone}>{task.id}</ToneTag>
                     <span className={cx('h-2.5 w-2.5 shrink-0 rounded-full', task.tone === 'orange' ? 'bg-brand-orange' : 'bg-brand-teal')} />
@@ -2131,15 +2131,15 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                 <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
                 <p className="mt-xs text-sm text-muted">{config.legend}</p>
               </div>
-              <div className="overflow-hidden rounded-lg border border-card bg-white/65 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+              <div className="overflow-hidden rounded-lg border border-card bg-white/65 shadow-glass-inset">
               <div className="grid grid-cols-7 text-xs">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div className="border-b border-r border-card bg-tone-teal-bg/45 p-md text-center text-tag uppercase tracking-tag text-brand-teal last:border-r-0" key={day}>
+                  <div className="border border-hairline bg-tone-teal-bg/45 p-md text-center text-tag uppercase tracking-tag text-brand-teal" key={day}>
                     {day}
                   </div>
                 ))}
                 {days.map((day) => (
-                  <div className="relative min-w-0 overflow-hidden min-h-[156px] border-b border-r border-card bg-white/62 p-md !shadow-none transition duration-fast hover:bg-white/86" key={day}>
+                  <div className="relative min-w-0 overflow-hidden min-h-[156px] border border-hairline bg-white/62 p-md !shadow-none transition duration-fast hover:bg-white/86" key={day}>
                     <p className="mb-md text-base font-medium text-brand-teal">{day}</p>
                     <div className="grid gap-xs">
                       {events
@@ -2147,7 +2147,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                         .map((event) => {
                           const key = getCalendarEventKey(event);
                           const pillClasses = cx(
-                            'truncate rounded-md px-md py-sm text-left text-xs font-medium text-on-brand shadow-[0_6px_14px_rgba(0,65,66,0.08)] transition duration-fast ease-standard',
+                            'truncate rounded-md px-md py-sm text-left text-xs font-medium text-on-brand transition duration-fast ease-standard',
                             event.tone === 'orange' || event.tone === 'amber' ? 'bg-brand-orange' : 'bg-brand-teal',
                           );
                           const isHovered = activeEventKey === key;
@@ -2159,7 +2159,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                                 aria-label={`${event.label}, Jun ${event.day}. Click to open event workspace/swimlane.`}
                                 className={cx(
                                   pillClasses,
-                                  'block min-w-0 max-w-full w-full overflow-hidden hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus',
+                                  'block min-w-0 max-w-full w-full overflow-hidden focus-visible:outline-none focus-visible:shadow-focus',
                                   isHovered && (event.tone === 'orange' || event.tone === 'amber'
                                     ? 'border border-brand-orange ring-1 ring-brand-orange'
                                     : 'border border-brand-teal ring-1 ring-brand-teal')
@@ -2202,14 +2202,14 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
               </div>
             </>
           ) : agendaMode === 'Month' ? (
-            <div className="grid grid-cols-7 border-l border-t border-card text-xs">
+            <div className="grid grid-cols-7 border-l border-t border-hairline text-xs">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <div className="border-b border-r border-card p-sm text-center text-tag uppercase tracking-tag text-brand-teal" key={day}>
+                <div className="border border-hairline p-sm text-center text-tag uppercase tracking-tag text-brand-teal" key={day}>
                   {day}
                 </div>
               ))}
               {days.map((day) => (
-                <div className="relative min-w-0 overflow-hidden min-h-[112px] border-b border-r border-card bg-surface p-sm !shadow-none" key={day}>
+                <div className="relative min-w-0 overflow-hidden min-h-[112px] border border-hairline bg-surface p-sm !shadow-none" key={day}>
                   <p className="mb-sm text-sm text-brand-teal">{day}</p>
                   <div className="grid gap-xs">
                     {events
@@ -2217,7 +2217,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                       .map((event) => (
                         <button
                           className={cx(
-                            'block min-w-0 max-w-full w-full overflow-hidden truncate rounded-sm px-sm py-xs text-left text-[10px] text-on-brand transition duration-fast ease-standard hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus',
+                            'block min-w-0 max-w-full w-full overflow-hidden truncate rounded-sm px-sm py-xs text-left text-[10px] text-on-brand transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                             event.tone === 'orange' || event.tone === 'amber' ? 'bg-brand-orange' : 'bg-brand-teal'
                           )}
                           key={getCalendarEventKey(event)}
@@ -2300,7 +2300,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
                 </div>
               ) : (
                 <button
-                  className="rounded-lg border border-card bg-surface p-md text-left shadow-rest transition duration-fast hover:translate-y-[-1px] hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus"
+                  className="rounded-lg border border-card bg-white p-md text-left transition duration-fast focus-visible:outline-none focus-visible:shadow-focus hover:bg-tone-slate-bg"
                   key={key}
                   onClick={() => openCalendarEvent(event)}
                   type="button"

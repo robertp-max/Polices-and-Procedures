@@ -181,7 +181,7 @@ export function PolicyDetailScreen() {
       <article className="relative isolate grid gap-xl overflow-visible rounded-lg border border-card bg-white/[.62] p-xl shadow-rest backdrop-blur-xl">
         <nav
           aria-label="Policy document sections"
-          className="sticky top-0 z-30 -mx-xl -mt-xl flex gap-xl overflow-x-auto rounded-t-lg border-b border-hairline bg-white/[.92] px-xl pt-xl pb-xs shadow-[0_16px_30px_rgba(0,65,66,0.08)] backdrop-blur-xl after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-16 after:h-16 after:bg-gradient-to-b after:from-white after:via-white/88 after:to-transparent"
+          className="sticky top-0 z-30 -mx-xl -mt-xl flex gap-xl overflow-x-auto rounded-t-lg border-b border-hairline bg-white/[.92] px-xl pt-xl pb-xs shadow-sticky-tabs backdrop-blur-xl after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-16 after:h-16 after:bg-gradient-to-b after:from-white after:via-white/88 after:to-transparent"
           style={{
             maskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
             WebkitMaskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',

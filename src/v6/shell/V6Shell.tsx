@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar';
 import { PersonalOpsPanel } from './PersonalOpsPanel';
 import { Topbar } from './Topbar';
 import { usePersonalOpsStore } from '../../policy/stores/personalOpsStore';
+import { cx } from '../utils/classNames';
 
 
 export function V6Shell() {
@@ -36,32 +37,18 @@ export function V6Shell() {
     };
   }, []);
 
-  const verticalMask = hasScrolledMain
-    ? 'linear-gradient(to bottom, transparent 0, black 42px, black calc(100% - 42px), transparent 100%)'
-    : 'linear-gradient(to bottom, black 0, black calc(100% - 42px), transparent 100%)';
-  const horizontalMask = 'linear-gradient(to right, transparent 0, black 42px, black calc(100% - 42px), transparent 100%)';
-
   return (
     <div className="flex h-screen overflow-hidden bg-canvas font-light text-ink">
       <Sidebar />
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
           <main
-            className="min-h-0 flex-1 overflow-auto px-3xl py-3xl"
+            className={cx(
+              'v6-main-scrollmask min-h-0 flex-1 overflow-auto px-3xl py-3xl',
+              hasScrolledMain && 'v6-main-scrollmask--scrolled',
+            )}
             id="main-content"
             ref={mainRef}
-            style={{
-              maskImage: [
-                verticalMask,
-                horizontalMask,
-              ].join(', '),
-              maskComposite: 'intersect',
-              WebkitMaskComposite: 'source-in',
-              WebkitMaskImage: [
-                verticalMask,
-                horizontalMask,
-              ].join(', '),
-            }}
           >
             <Outlet />
           </main>

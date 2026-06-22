@@ -29,7 +29,7 @@ export interface BoardLaneProps {
 
 export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
   return (
-    <section className="min-w-[248px] rounded-lg border border-card bg-white/[.46] p-md shadow-rest backdrop-blur-xl">
+    <section className="min-w-[248px] rounded-lg border border-card bg-white p-md">
       <header className="mb-md flex items-start justify-between gap-md">
         <div>
           <h2 className="text-body font-medium text-ink">{lane.title}</h2>
@@ -41,8 +41,8 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
         {lane.cards.map((card) => (
           <article
             className={cx(
-              'rounded-lg border border-card bg-white/[.58] p-md shadow-[inset_0_1px_0_rgba(255,255,255,0.78)] backdrop-blur-md transition duration-fast ease-standard',
-              onCardClick && 'cursor-pointer hover:bg-white/[.72] hover:shadow-rest'
+              'rounded-lg border border-card bg-white p-md',
+              onCardClick && 'cursor-pointer hover:bg-tone-slate-bg'
             )}
             key={card.id}
             onClick={onCardClick ? () => onCardClick(card) : undefined}
@@ -76,7 +76,7 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
                       'rounded-sm border px-sm py-xs text-tag uppercase tracking-tag',
                       card.tone === 'orange' || card.tone === 'amber'
                         ? toneSurfaceClasses.orange
-                        : 'border-tone-teal-border bg-white/[.45] text-brand-teal',
+                        : 'border-tone-teal-border bg-white text-brand-teal',
                     )}
                     key={`${card.id}-${chip}`}
                   >

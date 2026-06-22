@@ -20,7 +20,7 @@ export function PersonalOpsPanel({}: PersonalOpsPanelProps) {
   ];
 
   return (
-    <aside className="relative z-20 flex h-screen w-[380px] shrink-0 flex-col overflow-y-auto border-l border-hairline bg-surface text-ink shadow-[-10px_0_28px_rgba(0,65,66,0.04)]">
+    <aside className="relative z-20 flex h-screen w-[380px] shrink-0 flex-col overflow-y-auto border-l border-hairline bg-surface text-ink shadow-right-rail">
       <header className="border-b border-hairline bg-tone-teal-bg/60 p-lg">
         <div>
           <p className="font-heading text-[10px] font-medium uppercase tracking-[0.2em] text-brand-teal">Personal Operations</p>

@@ -17,7 +17,7 @@ export interface DataTableProps<Row extends Record<string, string>> {
 
 export function DataTable<Row extends Record<string, string>>({ columns, label, rows, onRowClick }: DataTableProps<Row>) {
   return (
-    <div className="overflow-hidden rounded-lg border border-card bg-white/[.62] shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] backdrop-blur-xl">
+    <div className="overflow-hidden rounded-lg border border-card bg-white/[.62] shadow-glass-inset backdrop-blur-xl">
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-xs" aria-label={label}>
           <thead className="bg-white/[.54] text-tag uppercase tracking-tag text-secondary">

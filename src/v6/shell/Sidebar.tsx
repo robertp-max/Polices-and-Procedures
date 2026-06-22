@@ -18,7 +18,7 @@ export function Sidebar() {
   }, [activeHashId]);
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-sidebar shrink-0 overflow-hidden border-r border-hairline bg-white/70 text-ink shadow-[10px_0_28px_rgba(0,65,66,0.06)] backdrop-blur-xl laptop:block">
+    <aside className="sticky top-0 hidden h-screen w-sidebar shrink-0 overflow-hidden border-r border-hairline bg-white/70 text-ink shadow-sidebar backdrop-blur-xl laptop:block">
       <div className="relative z-10 grid gap-lg px-lg pb-lg pt-2xl">
         <div className="flex items-start gap-md">
           <div className="flex items-center gap-sm px-sm" aria-label="Care Indeed">

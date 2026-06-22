@@ -156,6 +156,15 @@
   /* Shadows */
   --shadow-rest: 0 22px 48px -34px rgba(0, 65, 66, 0.26), 0 10px 22px -18px rgba(0, 65, 66, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.86);
   --shadow-hover: 0 28px 58px -34px rgba(0, 65, 66, 0.30), 0 14px 30px -18px rgba(0, 65, 66, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.90);
+  --shadow-sidebar: 10px 0 28px rgba(0, 65, 66, 0.06);
+  --shadow-right-rail: -10px 0 28px rgba(0, 65, 66, 0.04);
+  --shadow-shell-dock: 0 10px 24px rgba(205, 78, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  --shadow-dock-action: 0 8px 18px rgba(205, 78, 0, 0.24);
+  --shadow-personal-active: 0 0 0 5px rgba(255, 213, 79, 0.28), 0 0 24px rgba(255, 213, 79, 0.95), 0 0 54px rgba(255, 171, 0, 0.68);
+  --shadow-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  --shadow-glass-inset-soft: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  --shadow-pill-action: 0 6px 14px rgba(0, 65, 66, 0.08);
+  --shadow-sticky-tabs: 0 16px 30px rgba(0, 65, 66, 0.08);
 
   /* Motion */
   --motion-fast: 120ms;
@@ -274,6 +283,19 @@ body {
 .glass-toned {
   backdrop-filter: blur(16px) saturate(118%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(118%) !important;
+}
+
+.v6-main-scrollmask {
+  --v6-main-mask-y: linear-gradient(to bottom, black 0, black calc(100% - 42px), transparent 100%);
+  --v6-main-mask-x: linear-gradient(to right, transparent 0, black 42px, black calc(100% - 42px), transparent 100%);
+  mask-composite: intersect;
+  mask-image: var(--v6-main-mask-y), var(--v6-main-mask-x);
+  -webkit-mask-composite: source-in;
+  -webkit-mask-image: var(--v6-main-mask-y), var(--v6-main-mask-x);
+}
+
+.v6-main-scrollmask--scrolled {
+  --v6-main-mask-y: linear-gradient(to bottom, transparent 0, black 42px, black calc(100% - 42px), transparent 100%);
 }
 
 .shadow-rest,

@@ -46,7 +46,7 @@ export function Topbar({ className, isPersonalOpsOpen, onPersonalOpsToggle }: To
   return (
     <div
       className={cx(
-        'flex h-12 items-center justify-end overflow-hidden rounded-full border border-tone-orange-border/70 p-1 shadow-[0_10px_24px_rgba(205,78,0,0.14),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-xl transition-[width,transform,box-shadow,background-color] duration-base ease-standard',
+        'flex h-12 items-center justify-end overflow-hidden rounded-full border border-tone-orange-border/70 p-1 shadow-shell-dock backdrop-blur-xl transition-[width,transform,box-shadow,background-color] duration-base ease-standard',
         isExpanded ? 'w-[136px] bg-white/[0.94]' : 'w-12 bg-brand-orange',
         className,
       )}
@@ -74,8 +74,8 @@ export function Topbar({ className, isPersonalOpsOpen, onPersonalOpsToggle }: To
         <IconButton
           aria-label="Open personal operations"
           className={cx(
-            'h-10 w-10 rounded-full border border-orange-200/70 bg-brand-orange p-0 text-white shadow-[0_8px_18px_rgba(205,78,0,0.24)] transition duration-fast hover:bg-brand-orange hover:text-white',
-            isPersonalOpsOpen && 'text-white shadow-[0_0_0_5px_rgba(255,213,79,0.28),0_0_24px_rgba(255,213,79,0.95),0_0_54px_rgba(255,171,0,0.68)]',
+            'h-10 w-10 rounded-full border border-orange-200/70 bg-brand-orange p-0 text-white shadow-dock-action transition duration-fast hover:bg-brand-orange hover:text-white',
+            isPersonalOpsOpen && 'text-white shadow-personal-active',
           )}
           icon={<UserRound aria-hidden="true" className="h-icon-md w-icon-md" />}
           onClick={() => selectAction(() => onPersonalOpsToggle?.())}
