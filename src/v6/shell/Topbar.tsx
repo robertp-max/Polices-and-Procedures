@@ -41,12 +41,12 @@ export function Topbar({ className, isPersonalOpsOpen, onPersonalOpsToggle }: To
   };
 
   const dockButtonClass =
-    'h-9 w-9 rounded-full border-transparent bg-transparent p-0 !text-brand-orange shadow-none transition duration-fast hover:bg-tone-orange-bg hover:!text-brand-orange focus-visible:shadow-focus';
+    'h-9 w-9 rounded-full border-transparent bg-transparent p-0 !text-brand-orange shadow-none transition-all duration-fast ease-standard hover:bg-tone-orange-bg hover:!text-brand-orange focus-visible:shadow-focus';
 
   return (
     <div
       className={cx(
-        'flex h-12 items-center justify-end overflow-hidden rounded-full border border-tone-orange-border/70 p-1 shadow-shell-dock backdrop-blur-xl transition-[width,transform,box-shadow,background-color] duration-base ease-standard',
+        'flex h-12 items-center justify-end overflow-hidden rounded-full border border-tone-orange-border/70 p-1 shadow-shell-dock backdrop-blur-xl transition-[width,transform,box-shadow,background-color,opacity] duration-base ease-standard',
         isExpanded ? 'w-[136px] bg-white/[0.94]' : 'w-12 bg-brand-orange',
         className,
       )}

@@ -26,7 +26,7 @@ export function SurfaceCard({ card, children, className }: SurfaceCardProps) {
 
   return (
     <article className={cx(
-      'rounded-lg border border-card bg-white/[.54] p-lg shadow-glass-inset backdrop-blur-xl transition duration-base ease-standard hover:bg-white/[.68] hover:shadow-rest active:scale-press',
+      'rounded-lg border border-card bg-white/[.54] p-lg shadow-glass-inset backdrop-blur-xl transition-all duration-base ease-standard hover:bg-white/[.68] hover:shadow-hover hover:-translate-y-hover-lift active:scale-press',
       className
     )}>
       <div className="mb-md flex min-h-tap items-start justify-between gap-md">

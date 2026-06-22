@@ -54,7 +54,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         aria-pressed={selected || undefined}
         className={cx(
           'inline-flex items-center justify-center gap-sm rounded-md border font-light tracking-normal',
-          'transition duration-fast ease-standard',
+          'transition-all duration-fast ease-standard',
           'focus-visible:outline-none focus-visible:shadow-focus',
           'active:scale-press disabled:cursor-not-allowed disabled:opacity-60',
           selected && 'shadow-focus',

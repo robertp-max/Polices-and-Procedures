@@ -217,7 +217,7 @@ export function AdminGroupsScreen() {
               <button
                 aria-selected={activePanel === tab.id}
                 className={cx(
-                  'min-h-tap shrink-0 rounded-md px-md text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                  'min-h-tap shrink-0 rounded-md px-md text-sm font-medium transition-all duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus active:scale-press',
                   activePanel === tab.id
                     ? 'bg-brand-teal text-on-brand shadow-rest'
                     : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',

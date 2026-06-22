@@ -1,7 +1,8 @@
-import { useEffect, useId, type ReactNode } from 'react';
+import { useEffect, useId, useState, type ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import { X } from 'lucide-react';
 import { ToneBadge } from '../primitives';
+import { cx } from '../utils/classNames';
 
 export interface VeilModalProps {
   open: boolean;
@@ -25,9 +26,23 @@ export function VeilModal({
   maxWidthClass = 'max-w-modal-md',
 }: VeilModalProps) {
   const titleId = useId();
+  const [shouldRender, setShouldRender] = useState(open);
+  const [isOpen, setIsOpen] = useState(open);
 
   useEffect(() => {
-    if (!open) return undefined;
+    if (open) {
+      setShouldRender(true);
+      const id = window.setTimeout(() => setIsOpen(true), 16);
+      return () => window.clearTimeout(id);
+    } else {
+      setIsOpen(false);
+      const id = window.setTimeout(() => setShouldRender(false), 220);
+      return () => window.clearTimeout(id);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!shouldRender) return undefined;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -35,19 +50,27 @@ export function VeilModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, open]);
+  }, [onClose, shouldRender]);
 
-  if (!open) return null;
+  if (!shouldRender) return null;
+
+  const panelClass = cx(
+    'relative z-modal flex max-h-[90vh] w-full flex-col overflow-hidden rounded-lg border border-card bg-surface shadow-hover transition-all duration-base ease-standard',
+    isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
+  );
 
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 z-backdrop flex items-center justify-center bg-brand-teal/15 p-md backdrop-blur-sm">
+    <div className={cx(
+      'fixed inset-0 z-backdrop flex items-center justify-center bg-brand-teal/15 p-md backdrop-blur-sm transition-opacity duration-base ease-standard',
+      isOpen ? 'opacity-100' : 'opacity-0'
+    )}>
       <div 
         className="fixed inset-0" 
         onClick={onClose} 
         aria-hidden="true" 
       />
       <section 
-        className={`relative z-modal flex max-h-[90vh] w-full ${maxWidthClass} flex-col overflow-hidden rounded-lg border border-card bg-surface shadow-hover transition-all`}
+        className={`${panelClass} ${maxWidthClass}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -59,7 +82,7 @@ export function VeilModal({
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 rounded-md border border-card bg-surface p-sm text-muted transition duration-fast ease-standard hover:text-brand-teal focus:outline-none focus-visible:shadow-focus"
+            className="shrink-0 rounded-md border border-card bg-surface p-sm text-muted transition-all duration-fast ease-standard hover:text-brand-teal focus:outline-none focus-visible:shadow-focus"
             aria-label="Close modal"
             type="button"
           >

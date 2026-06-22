@@ -38,7 +38,7 @@ export function PersonalOpsPanel({}: PersonalOpsPanelProps) {
             { value: '7', label: 'Ev' },
             { value: '4', label: 'Rev' }
           ].map((stat, index) => (
-            <div key={index} className="rounded-lg border border-tone-teal-border bg-surface p-sm text-center shadow-sm">
+            <div key={index} className="rounded-lg border border-tone-teal-border bg-surface p-sm text-center shadow-sm transition-all duration-fast ease-standard hover:shadow-hover hover:border-tone-teal-border">
               <div className="text-sm font-medium text-brand-teal">{stat.value}</div>
               <div className="text-[8px] font-medium uppercase tracking-wider text-muted mt-xs">{stat.label}</div>
             </div>
@@ -55,11 +55,11 @@ export function PersonalOpsPanel({}: PersonalOpsPanelProps) {
             {focusItems.map((item) => (
               <div
                 key={item.title}
-                className="rounded-lg border border-hairline bg-surface p-md shadow-sm transition hover:shadow-md cursor-pointer group"
+                className="rounded-lg border border-hairline bg-surface p-md shadow-rest transition-all duration-fast ease-standard hover:shadow-hover hover:border-tone-teal-border cursor-pointer group"
               >
                 <div className="flex items-center justify-between gap-md">
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium text-brand-teal-deep group-hover:text-brand-teal transition-colors truncate">{item.title}</div>
+                    <div className="text-xs font-medium text-brand-teal-deep group-hover:text-brand-teal transition-colors duration-fast truncate">{item.title}</div>
                     <div className="mt-xs text-[10px] text-muted">{item.meta}</div>
                   </div>
                   <div className="flex items-center gap-xs shrink-0">
@@ -84,7 +84,7 @@ export function PersonalOpsPanel({}: PersonalOpsPanelProps) {
               return (
                 <button
                   key={group.label}
-                  className="rounded-lg border border-hairline bg-surface p-md text-left shadow-sm transition hover:shadow-md hover:border-tone-teal-border"
+                  className="rounded-lg border border-hairline bg-surface p-md text-left shadow-rest transition-all duration-fast ease-standard hover:shadow-hover hover:border-tone-teal-border focus-visible:shadow-focus"
                 >
                   <div className="flex items-center justify-between">
                     <Icon className={`h-icon-sm w-icon-sm ${group.tone === 'orange' ? 'text-brand-orange' : 'text-brand-teal'}`} />

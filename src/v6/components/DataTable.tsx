@@ -33,7 +33,7 @@ export function DataTable<Row extends Record<string, string>>({ columns, label, 
             {rows.map((row, rowIndex) => (
               <tr
                 className={cx(
-                  'transition duration-fast ease-standard hover:bg-white/[.54]',
+                  'transition-all duration-fast ease-standard hover:bg-white/[.54] focus-visible:bg-surface-hover',
                   onRowClick && 'cursor-pointer',
                 )}
                 key={`${label}-${rowIndex}`}
