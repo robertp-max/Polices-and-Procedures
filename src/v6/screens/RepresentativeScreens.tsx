@@ -5,6 +5,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { V3_ExecutionUnitsSeed } from '@/policy/ces/data/V3_CES_SeedData';
 import type { ExecutionUnit } from '@/policy/ces/types';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER } from '@/policy/data/policyCorpus';
+import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import type { EventProcessStep, RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { inferPhaseTemplate } from '@/policy/workflows/swimlanes/phaseTemplates';
 import type { SwimlaneStatus } from '@/policy/workflows/swimlanes/types';
@@ -2212,13 +2213,51 @@ const achcCards: readonly SurfaceCardData[] = [
   },
 ];
 
-const formFields = [
-  ['Full legal name', 'Thomas Parker', 'complete'],
-  ['Title / Role', 'Compliance Officer', 'complete'],
-  ['Date of appointment', '2026-01-08', 'complete'],
-  ['Disclosure type', 'Potential outside relationship', 'review-required'],
-  ['Financial interest', 'Care vendor consulting relationship', 'review-required'],
-] as const;
+// ─── FormWorkspaceScreen real-data wiring (Form Viewer, route /forms/:formId) ───
+// Owned exclusively by FormWorkspaceScreen below. Sources the canonical forms
+// dataset; no per-form instance values exist in the dataset, so the field cards
+// surface honest record metadata and conservatively derived posture tokens.
+const FORM_VIEWER_DATASET = new Map<string, FormRecord>(FORMS_DATASET.map((record) => [record.id, record] as const));
+
+const FORM_VIEWER_DOMAIN_NAMES: Record<string, string> = {
+  EN: 'Enterprise',
+  GV: 'Governance',
+  HR: 'Human Resources',
+  CL: 'Clinical',
+  QA: 'Quality',
+  RM: 'Risk Management',
+  OP: 'Operations',
+  FN: 'Finance',
+  IT: 'IT & Security',
+  IS: 'IT & Security',
+  CO: 'Compliance',
+};
+
+const formViewerDomainName = (code: string): string => FORM_VIEWER_DOMAIN_NAMES[code] ?? code;
+
+// Posture token derived only from the real `usage` field (mandatory vs conditional).
+const formViewerUsageStatus = (usage: string): string => {
+  switch (usage) {
+    case 'Required':
+      return 'ready';
+    case 'Conditional':
+      return 'pending';
+    case 'Optional':
+      return 'draft';
+    default:
+      return 'info';
+  }
+};
+
+// Audit-critical records carry validated evidence posture; others are informational.
+const formViewerEvidenceStatus = (classifications: readonly string[]): string =>
+  classifications.includes('audit_critical') ? 'validated' : 'info';
+
+const formViewerPoliciesLabel = (policies: readonly string[]): string => {
+  const first = policies[0] ?? '';
+  if (first.startsWith('ALL')) return first;
+  return policies.length === 1 ? '1 linked policy' : `${policies.length} linked policies`;
+};
 
 const bradMetrics: readonly MetricTileData[] = [
   { label: 'Risk signals', value: '3', helper: '1 high severity', tone: 'orange' },
@@ -3578,6 +3617,48 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
 }
 
 function FormWorkspaceScreen() {
+  const { formId } = useParams();
+  const record = formId ? FORM_VIEWER_DATASET.get(formId) ?? null : null;
+
+  // No-match / unavailable state: keep the screen's surface, do not crash.
+  if (!record) {
+    return (
+      <ScreenStack metrics={operationsMetrics}>
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <ToneTag tone="orange">Form unavailable</ToneTag>
+          <h2 className="mt-lg text-h2 font-medium text-ink">
+            {formId ? `${formId} - not found` : 'No form selected'}
+          </h2>
+          <p className="mt-md text-sm text-muted">
+            {formId
+              ? 'This form ID is not present in the canonical forms dataset. Return to the Forms Library and open a listed record.'
+              : 'Open a form from the Forms Library to view its workspace.'}
+          </p>
+        </section>
+      </ScreenStack>
+    );
+  }
+
+  // Honest record metadata for the field cards. The dataset carries no per-form
+  // instance values, signer rosters, or status, so we surface real record fields
+  // with conservatively derived posture tokens — nothing fabricated.
+  const usageStatus = formViewerUsageStatus(record.usage);
+  const evidenceStatus = formViewerEvidenceStatus(record.classifications);
+  const recordFields: readonly (readonly [string, string, string])[] = [
+    ['Form ID', record.id, 'info'],
+    ['Form name', record.name, 'info'],
+    ['Type', record.type, 'info'],
+    ['Domain', formViewerDomainName(record.domainCode), 'info'],
+    ['Usage', record.usage, usageStatus],
+    ['Frequency', record.frequency, 'info'],
+    ['Linked policies', formViewerPoliciesLabel(record.policies), 'info'],
+    [
+      'Classifications',
+      record.classifications.length > 0 ? record.classifications.join(', ') : 'None on record',
+      evidenceStatus,
+    ],
+  ];
+
   return (
     <ScreenStack metrics={operationsMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[240px_minmax(0,3fr)_minmax(320px,2fr)]">
@@ -3602,15 +3683,15 @@ function FormWorkspaceScreen() {
           <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
             <div>
               <ToneTag tone="orange">Interactive form</ToneTag>
-              <h2 className="mt-lg text-h2 font-medium text-ink">GV-FM-006 - Conflict of Interest Disclosure</h2>
+              <h2 className="mt-lg text-h2 font-medium text-ink">{record.id} - {record.name}</h2>
               <p className="mt-md text-sm text-muted">
                 Form renderer with section states, validation, linked policy, and required signer logic.
               </p>
             </div>
-            <ToneTag tone="orange">2 fields need review</ToneTag>
+            <ToneTag tone="orange">{record.usage}</ToneTag>
           </div>
           <div className="grid gap-lg">
-            {formFields.map(([label, value, status]) => (
+            {recordFields.map(([label, value, status]) => (
               <article className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={label}>
                 <div className="mb-sm flex items-center justify-between gap-md">
                   <p className="text-tag uppercase tracking-tag text-ink">{label}</p>
@@ -3624,9 +3705,11 @@ function FormWorkspaceScreen() {
         <aside className="grid gap-lg">
           <SurfaceCard
             card={{
-              body: 'GV-GB-001 requires all governing body disclosures before publication.',
+              body:
+                record.policies[0]?.startsWith('ALL')
+                  ? `Linked to ${record.policies[0]}.`
+                  : `Linked to ${formViewerPoliciesLabel(record.policies)}: ${record.policies.join(', ')}.`,
               icon: FileText,
-              progress: 92,
               status: 'ready',
               title: 'Linked policy',
               tone: 'teal',
@@ -3634,27 +3717,17 @@ function FormWorkspaceScreen() {
           />
           <SurfaceCard
             card={{
-              body: '5 complete fields, 2 reviewer fields, and administrator review still pending.',
+              body: `${record.type} form, ${record.usage.toLowerCase()} usage, ${record.frequency.toLowerCase()} frequency. Evidence posture: ${evidenceStatus}.`,
               icon: ClipboardCheck,
-              progress: 64,
-              status: 'review-required',
-              title: 'Validation summary',
-              tone: 'orange',
+              status: usageStatus,
+              title: 'Record summary',
+              tone: usageStatus === 'ready' ? 'teal' : 'orange',
             }}
           />
           <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
             <h2 className="mb-lg text-h2 font-medium text-ink">Required signers</h2>
-            <div className="grid gap-sm">
-              {['Thomas Parker', 'Administrator', 'Governing Body Chair'].map((signer, index) => (
-                <div className="flex items-center justify-between rounded-md bg-tone-slate-bg p-md text-sm text-ink" key={signer}>
-                  {signer}
-                  {index === 0 ? (
-                    <CheckCircle2 aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
-                  ) : (
-                    <span className="h-icon-sm w-icon-sm rounded-sm border border-brand-orange" />
-                  )}
-                </div>
-              ))}
+            <div className="rounded-md bg-tone-slate-bg p-md text-sm text-muted">
+              Signer roster is not carried in the forms dataset for this record. Signer assignment is handled in the eCIgn signing workspace.
             </div>
           </section>
         </aside>
