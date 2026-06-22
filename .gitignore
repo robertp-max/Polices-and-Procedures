@@ -64,3 +64,9 @@ current_state_*.txt
 *_part3.md
 *_part4.md
 *_part5.md
+
+# Large mock artifacts & screenshot outputs
+Builder/DryRuns/**/*.zip
+**/*artifact-snapshot.zip
+tmp-ui-verify-screenshots/
+*.log
