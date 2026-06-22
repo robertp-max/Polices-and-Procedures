@@ -12,9 +12,11 @@ The plan has been hardened. All mojibake removed, language strengthened to MUST,
 ## 2. Git Verification
 
 - Branch: docs/ecign-path-b-readiness-plan
-- HEAD (before final commit in this session): cc5d13b...
-- Tracked status: clean before edits
-- Only the plan document was edited.
+- Latest HEAD after fixes: 357c3d7
+- Previous main commit: 16dbaf1
+- Tracked status: clean (after trailing whitespace trim)
+- Only the plan document and this report edited.
+- git diff --check v2/designless-baseline...HEAD: clean.
 
 ## 3. Files Changed
 
@@ -179,6 +181,33 @@ V6_IMPLEMENTATION_PLAN.md: clean (no mojibake/trailing); minor MD ok but uses in
 **3. Explicit hash comparison: PRESENT (§2 "REQUIRED on every read/before cert/export", §7 sha256 verify gate, §9 mismatch hard-fail, §11 no-regen test)**
 **4. Immutability + no regeneration: PRESENT (write-once; no overwrite/replace; "bytes MUST never be silently rewritten"; "post-signature PDF regeneration is FORBIDDEN")**
 **5. Blockers: Review-report prior weak-§2 note (now addressed); code stores/attaches sha256 (ecign/hashChain, calendar publish) but full read-compare/cert gates not yet wired (Path B unstarted); overall PASS WITH WORDING NOTES**
+
+**Agent 10 — Signed-artifact immutability and hash rule (completed):**
+**Agent 10 Verification — Signed-artifact immutability and hash rule**
+
+**Source of truth wording (verified in plan):**
+- §2: "- The canonical signed artifact bytes are the SOURCE OF TRUTH."
+- §2: "- Metadata is an index layer only."
+- §2: "- Google Drive and Evidence Center are references/replicas only. They MUST never hold independent canonical artifacts."
+- §6: "The canonical signed artifact bytes are the SOURCE OF TRUTH."
+- §6: "Metadata, Evidence Center, and Google Drive are indexes/references/replicas ONLY."
+- §6: "Evidence Center and Google Drive MUST NEVER hold independent canonical artifacts."
+- §6: "All consumers reference the same canonical artifact bytes. Metadata and audit rows index it and never substitute for it."
+- §1/§3 context consistent with canonical bytes only (no independent replicas).
+
+**Certification blockers in the plan (verified):**
+- §2: "- Any hash mismatch BLOCKS certification."
+- §2: "- Any missing canonical artifact BLOCKS certification."
+- §2: "- Any Drive/Evidence mismatch BLOCKS certification."
+- §2: "Hash comparison is REQUIRED on every read, before certification, and before export to prove immutability."
+- §8 (forbidden hard blocks): "Certifying with hash mismatch." "Certifying without Drive/Evidence parity."
+- §9 table: "Hash mismatch (stored vs expected) | Hard fail; mark recovery_required; never overwrite; flag potential tampering; block certification."
+- §11 QA gates (explicit negative tests): "Hash mismatch failure test.", "Missing canonical artifact failure test.", "Missing Drive link failure test.", "Missing Evidence Center link failure test.", "No-regeneration test using hash comparison", "Forbidden transition negative tests (including ... parity failures)".
+- Additional: "lockedAt is set ONLY after the artifact bytes + metadata + Drive/Evidence parity all succeed." "sha256 is verified on every read, before certification, and before export."
+
+**Status:** PASS (strong, explicit, non-negotiable language with no soft "should"/weak phrasing on these items; rules consolidated in §2 as merge gate; consistent with immutability + hash verification requirements).
+
+**Notes (read-only verification):** Current plan (ECIGN_PATH_B_ARCHITECTURE_READINESS_PLAN_20260622.md) incorporates the required wording hardening for source-of-truth + blocker statements. PLAN_LINENUMBERED.txt reflects an earlier snapshot with the deficiencies called out in the review report (e.g., no SOURCE OF TRUTH bullets in its §2, softer language, incomplete blocker phrasing in its §9 hash row). The authoritative plan file is clean and complete for these rules. No contradictions found in §2/§6/§8/§9/§11.
 
 Additional agents are completing in background; their outputs will be appended as received. No critical blockers reported in completed agents.
 
