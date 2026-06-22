@@ -55,7 +55,7 @@ const statsCards = [
 export function OnboardingV2BatchesScreen() {
   return (
     <section
-      className="grid gap-xl"
+      className="grid gap-lg"
       data-group="Onboarding v2"
       data-hash-id="onboarding-v2-batches"
       data-route="/onboarding-v2/batches"
@@ -63,10 +63,10 @@ export function OnboardingV2BatchesScreen() {
     >
       <MetricGrid metrics={metrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid content-start gap-lg desktop:col-span-8">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-            <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
+      <section className="grid gap-lg desktop:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+        <div className="grid content-start gap-md">
+          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+            <div className="mb-md flex flex-wrap items-start justify-between gap-md">
               <div>
                 <h3 className="text-h3 font-medium text-ink">Roster of Batches</h3>
                 <p className="mt-xs text-sm text-muted">All active and historical batches.</p>
@@ -76,8 +76,8 @@ export function OnboardingV2BatchesScreen() {
           </section>
         </div>
 
-        <aside className="grid content-start gap-lg desktop:col-span-4" aria-label="Batch status cards">
-          <div className="grid gap-xs mb-sm">
+        <aside className="grid content-start gap-md" aria-label="Batch status cards">
+          <div className="mb-xs grid gap-xs">
             <h3 className="text-h3 font-medium text-ink">Batch Analytics</h3>
             <p className="text-sm text-muted">Overview of recent batch operations.</p>
           </div>

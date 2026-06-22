@@ -82,7 +82,7 @@ const gateCards = [
 export function OnboardingV2DashboardScreen() {
   return (
     <section
-      className="grid gap-xl"
+      className="grid gap-lg"
       data-group="Onboarding v2"
       data-hash-id="onboarding-v2-dashboard"
       data-route="/onboarding-v2/dashboard"
@@ -90,10 +90,10 @@ export function OnboardingV2DashboardScreen() {
     >
       <MetricGrid metrics={metrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid content-start gap-lg desktop:col-span-8">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-            <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
+      <section className="grid gap-lg desktop:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+        <div className="grid content-start gap-md">
+          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+            <div className="mb-md flex flex-wrap items-start justify-between gap-md">
               <div>
                 <h3 className="text-h3 font-medium text-ink">Active Activation Queue</h3>
                 <p className="mt-xs text-sm text-muted">Subjects currently in the activation process.</p>
@@ -104,14 +104,16 @@ export function OnboardingV2DashboardScreen() {
           </section>
         </div>
 
-        <aside className="grid content-start gap-lg desktop:col-span-4" aria-label="Gate clearance cards">
-          <div className="grid gap-xs mb-sm">
+        <aside className="grid content-start gap-md" aria-label="Gate clearance cards">
+          <div className="mb-xs grid gap-xs">
             <h3 className="text-h3 font-medium text-ink">Clearance Gates Status</h3>
             <p className="text-sm text-muted">Activation tracking across five compliance gates.</p>
           </div>
-          {gateCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
-          ))}
+          <div className="grid gap-md tablet-p:grid-cols-2 desktop:grid-cols-1 large:grid-cols-2">
+            {gateCards.map((card) => (
+              <SurfaceCard card={card} key={card.title} />
+            ))}
+          </div>
         </aside>
       </section>
     </section>

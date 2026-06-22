@@ -17,16 +17,16 @@ const roleOptions = [
 export function OnboardingV2ActivateScreen() {
   return (
     <section
-      className="grid gap-xl"
+      className="grid gap-lg"
       data-group="Onboarding v2"
       data-hash-id="onboarding-v2-activate"
       data-route="/onboarding-v2/activate"
       data-template="detail"
     >
-      <div className="grid gap-xl desktop:grid-cols-3">
-        <div className="grid content-start gap-lg desktop:col-span-2">
-          <form className="grid gap-lg rounded-lg border border-card bg-surface p-xl shadow-rest">
-            <h3 className="text-h3 font-medium text-ink border-b border-hairline pb-sm flex items-center gap-sm">
+      <div className="grid gap-lg desktop:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+        <div className="grid content-start gap-md">
+          <form className="grid gap-md rounded-lg border border-card bg-surface p-lg shadow-rest">
+            <h3 className="flex items-center gap-sm border-b border-hairline pb-sm text-h3 font-medium text-ink">
               <UserPlus aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Activation Details
             </h3>
@@ -57,25 +57,25 @@ export function OnboardingV2ActivateScreen() {
           </form>
         </div>
 
-        <aside className="grid content-start gap-lg" aria-label="Reconciliation preview">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-            <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
+        <aside className="grid content-start gap-md" aria-label="Reconciliation preview">
+          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+            <h3 className="mb-md flex items-center gap-sm text-h3 font-medium text-ink">
               <AlertCircle aria-hidden="true" className="h-icon-sm w-icon-sm text-tone-orange-text" />
               Reconciliation Preview
             </h3>
-            <p className="text-sm text-secondary mb-md">
+            <p className="mb-md text-sm text-secondary">
               Verification locks and gate prerequisites that will be established immediately upon activation.
             </p>
             <div className="grid gap-sm">
-              <div className="rounded-md bg-tone-slate-bg p-md flex items-center justify-between">
+              <div className="flex items-center justify-between rounded-md bg-tone-slate-bg p-sm">
                 <span className="text-sm text-secondary">Gate 1: Background</span>
                 <ToneBadge size="sm" status="pending" />
               </div>
-              <div className="rounded-md bg-tone-slate-bg p-md flex items-center justify-between">
+              <div className="flex items-center justify-between rounded-md bg-tone-slate-bg p-sm">
                 <span className="text-sm text-secondary">Gate 2: Credentials</span>
                 <ToneBadge size="sm" status="locked" />
               </div>
-              <div className="rounded-md bg-tone-slate-bg p-md flex items-center justify-between">
+              <div className="flex items-center justify-between rounded-md bg-tone-slate-bg p-sm">
                 <span className="text-sm text-secondary">Gate 3: Health Screening</span>
                 <ToneBadge size="sm" status="locked" />
               </div>

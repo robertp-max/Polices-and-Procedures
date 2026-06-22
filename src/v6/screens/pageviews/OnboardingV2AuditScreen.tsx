@@ -36,7 +36,7 @@ const rows: readonly AuditRow[] = [
 export function OnboardingV2AuditScreen() {
   return (
     <section
-      className="grid gap-xl"
+      className="grid gap-lg"
       data-group="Onboarding v2"
       data-hash-id="onboarding-v2-audit"
       data-route="/onboarding-v2/audit"
@@ -44,10 +44,10 @@ export function OnboardingV2AuditScreen() {
     >
       <MetricGrid metrics={metrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid content-start gap-lg desktop:col-span-8">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-            <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
+      <section className="grid gap-lg desktop:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+        <div className="grid content-start gap-md">
+          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+            <div className="mb-md flex flex-wrap items-start justify-between gap-md">
               <div>
                 <h3 className="text-h3 font-medium text-ink">Verification Audit Trail</h3>
                 <p className="mt-xs text-sm text-muted">Audited hash state for all active and historical subjects.</p>
@@ -57,8 +57,8 @@ export function OnboardingV2AuditScreen() {
           </section>
         </div>
 
-        <aside className="grid content-start gap-lg desktop:col-span-4" aria-label="Overrides check">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <aside className="grid content-start gap-md" aria-label="Overrides check">
+          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <ScanSearch aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Active Overrides
@@ -84,7 +84,7 @@ export function OnboardingV2AuditScreen() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <FileText aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Audit Integrity Check

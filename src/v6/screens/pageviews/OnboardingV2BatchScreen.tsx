@@ -154,22 +154,22 @@ export function OnboardingV2BatchScreen() {
 
   return (
     <section
-      className="grid gap-xl"
+      className="grid gap-lg"
       data-group="Onboarding v2"
       data-hash-id="onboarding-v2-batch"
       data-route="/onboarding-v2/batches/:batchId"
       data-template="detail"
     >
       {/* Tab Control */}
-      <div className="flex flex-wrap items-center justify-between gap-lg mb-sm">
-        <div className="inline-flex rounded-lg bg-tone-slate-bg p-xs">
+      <div className="flex flex-wrap items-center justify-between gap-md">
+        <div className="inline-flex max-w-full flex-wrap rounded-lg bg-tone-slate-bg p-xs">
           {[
             { id: 'overview', label: 'Gate Overview' },
             { id: 'roster', label: 'Subjects & Evidence' },
           ].map((tab) => (
             <button
               className={cx(
-                'min-h-tap rounded-md px-lg text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                'min-h-tap rounded-md px-md text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                 activeTab === tab.id
                   ? 'bg-surface text-brand-teal shadow-rest'
                   : 'text-secondary hover:bg-surface-hover',
@@ -185,10 +185,10 @@ export function OnboardingV2BatchScreen() {
       </div>
 
       {activeTab === 'overview' ? (
-        <section className="grid gap-xl desktop:grid-cols-12">
+        <section className="grid gap-lg desktop:grid-cols-[minmax(0,2.2fr)_minmax(280px,0.8fr)]">
           {/* Left Column: Gates & checklist */}
-          <div className="grid content-start gap-lg desktop:col-span-8">
-            <section className="grid gap-lg tablet-l:grid-cols-5">
+          <div className="grid content-start gap-md">
+            <section className="grid gap-md tablet-p:grid-cols-2 tablet-l:grid-cols-5">
               {[
                 { key: 'Background', icon: Shield, label: 'Background', status: 'validated' },
                 { key: 'Credentials', icon: Key, label: 'Credentials', status: 'pending' },
@@ -202,7 +202,7 @@ export function OnboardingV2BatchScreen() {
                   <button
                     onClick={() => setSelectedGate(selectedGate === gate.key ? null : gate.key)}
                     className={cx(
-                      'rounded-lg border p-md shadow-rest flex flex-col items-center gap-xs text-center transition duration-fast hover:border-brand-teal/40 hover:bg-surface-hover',
+                      'flex flex-col items-center gap-xs rounded-lg border p-sm text-center shadow-rest transition duration-fast hover:border-brand-teal/40 hover:bg-surface-hover',
                       isSelected ? 'border-brand-teal bg-surface-hover ring-1 ring-brand-teal/30' : 'border-card bg-surface'
                     )}
                     key={gate.label}
@@ -220,7 +220,7 @@ export function OnboardingV2BatchScreen() {
 
             {/* Gate Checklist Expander Panel */}
             {selectedGate && checklistData && (
-              <section className="rounded-lg border border-brand-teal/20 bg-surface p-xl shadow-rest transition duration-normal mt-lg">
+              <section className="mt-md rounded-lg border border-tone-teal-border bg-surface p-lg shadow-rest transition duration-normal">
                 <div className="mb-md flex items-center justify-between border-b border-hairline pb-sm">
                   <div>
                     <h3 className="text-h3 font-medium text-ink">{checklistData.title}</h3>
@@ -234,9 +234,9 @@ export function OnboardingV2BatchScreen() {
                     Collapse Expander
                   </button>
                 </div>
-                <div className="grid gap-md">
+                <div className="grid gap-sm">
                   {checklistData.items.map((item) => (
-                    <div key={item.id} className="flex flex-wrap items-center justify-between gap-md rounded-md bg-tone-slate-bg p-md border border-hairline">
+                    <div key={item.id} className="flex flex-wrap items-center justify-between gap-md rounded-md border border-hairline bg-tone-slate-bg p-sm">
                       <div className="flex items-start gap-md">
                         <span className={cx(
                           'grid h-6 w-6 place-items-center rounded-full mt-xs',
@@ -271,7 +271,7 @@ export function OnboardingV2BatchScreen() {
           </div>
 
           {/* Right Column: Progress & timeline */}
-          <aside className="grid content-start gap-lg desktop:col-span-4">
+          <aside className="grid content-start gap-md">
             <SurfaceCard
               card={{
                 body: 'Overall batch progress calculated across active subjects and cleared gates.',
@@ -285,9 +285,9 @@ export function OnboardingV2BatchScreen() {
               <ProgressMeter label="Batch clearance completion" tone="teal" value={68} />
             </SurfaceCard>
 
-            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+            <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
               <h3 className="text-h3 font-medium text-ink mb-md">Hash-Chain Timeline</h3>
-              <div className="grid gap-md">
+              <div className="grid gap-sm">
                 {timelineEvents.map((event) => (
                   <div className="border-l-2 border-hairline pl-md relative" key={event.label}>
                     <span className="absolute -left-[5px] top-xs h-[8px] w-[8px] rounded-full bg-brand-teal" />
@@ -301,10 +301,10 @@ export function OnboardingV2BatchScreen() {
           </aside>
         </section>
       ) : (
-        <section className="grid gap-xl desktop:grid-cols-12">
-          <div className="grid content-start gap-lg desktop:col-span-8">
-            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-              <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
+        <section className="grid gap-lg">
+          <div className="grid content-start gap-md">
+            <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+              <div className="mb-md flex flex-wrap items-start justify-between gap-md">
                 <div>
                   <h3 className="text-h3 font-medium text-ink">Batch Subjects Roster</h3>
                   <p className="mt-xs text-sm text-muted">Detailed view of subjects in the batch and their gate positions. Click a subject row to inspect evidence logs.</p>
@@ -320,7 +320,7 @@ export function OnboardingV2BatchScreen() {
 
             {/* Evidence / Signature Log */}
             {selectedSubject && evidenceDetails && (
-              <section className="rounded-lg border border-card bg-surface p-xl shadow-rest mt-lg transition duration-normal">
+              <section className="mt-md rounded-lg border border-card bg-surface p-lg shadow-rest transition duration-normal">
                 <div className="mb-md flex flex-wrap items-start justify-between gap-md border-b border-hairline pb-sm">
                   <div>
                     <div className="flex items-center gap-sm">
@@ -336,7 +336,7 @@ export function OnboardingV2BatchScreen() {
                     ].map((tab) => (
                       <button
                         className={cx(
-                          'min-h-tap rounded-md px-lg text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                        'min-h-tap rounded-md px-md text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                           activeSubTab === tab.id 
                             ? 'bg-surface text-brand-teal shadow-rest' 
                             : 'text-secondary hover:bg-surface-hover',
@@ -404,7 +404,7 @@ export function OnboardingV2BatchScreen() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex justify-end mt-sm">
+                    <div className="mt-sm flex justify-end">
                       <Button
                         size="sm"
                         variant="secondary"
@@ -454,8 +454,6 @@ export function OnboardingV2BatchScreen() {
               </section>
             )}
           </div>
-          
-          <aside className="grid content-start gap-lg desktop:col-span-4" />
         </section>
       )}
     </section>

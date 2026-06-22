@@ -59,7 +59,7 @@ export function OnboardingV2GovernanceScreen() {
 
   return (
     <section
-      className="grid gap-xl"
+      className="grid gap-lg"
       data-group="Onboarding v2"
       data-hash-id="onboarding-v2-governance"
       data-route="/onboarding-v2/governance"
@@ -67,10 +67,10 @@ export function OnboardingV2GovernanceScreen() {
     >
       <MetricGrid metrics={metrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid content-start gap-lg desktop:col-span-8">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-            <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
+      <section className="grid gap-lg desktop:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+        <div className="grid content-start gap-md">
+          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+            <div className="mb-md flex flex-wrap items-start justify-between gap-md">
               <div>
                 <h3 className="text-h3 font-medium text-ink">Override Authorizations</h3>
                 <p className="mt-xs text-sm text-muted">Auditable logs of active and signed bypass settings.</p>
@@ -89,8 +89,8 @@ export function OnboardingV2GovernanceScreen() {
           </section>
         </div>
 
-        <aside className="grid content-start gap-lg desktop:col-span-4" aria-label="Governance checks">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <aside className="grid content-start gap-md" aria-label="Governance checks">
+          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <ShieldAlert aria-hidden="true" className="h-icon-sm w-icon-sm text-tone-orange-text" />
               Safety Alerts
@@ -104,7 +104,7 @@ export function OnboardingV2GovernanceScreen() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <BookOpen aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Audit Constraints
