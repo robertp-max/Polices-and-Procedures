@@ -52,7 +52,29 @@ Agents 09-16: Signed-artifact immutability and hash rule
 Agents 17-22: Drive/Evidence Center parity and source-of-truth logic (multiple replacements PASS)
 Agents 23-28: Multi-signer state machine and role/tier validation (replacement PASS)
 Agents 29-34: Failure handling and idempotency (latest replacement PASS)
-Agents 35-40: Security/compliance/PHI/logging/authorization
+Agents 35-40: Security/compliance/PHI/logging/authorization (replacement IMPROVEMENT)
+
+**Agent 35 (replacement) — Security/compliance/PHI/logging/authorization (completed):**
+**1. Agent number and role**  
+Agent 35: Security/compliance/PHI/logging/authorization (replacement) in GROK 64-AGENT ZERO-TOLERANCE DOCUMENTATION HARDENING MODE.
+
+**2. IMPROVEMENT**
+
+**3. Exact lines reviewed**  
+Primary plan full + targeted (§10 278-292 full; cross-refs §2 29-53, §4, §7, §8 196-250, §9 253-275, §11 295-320, §13). QA13c artifacts read-only (plan, hardening report, review report, etc.).
+
+**4. Findings**  
+§10 is substantially hardened (MUST/REQUIRED/FORBIDDEN throughout, infra write-once explicit, audit survives re-link/refresh/restart, no hardcoded retention + resolved at cert + immutable, PDP/PEP + FORBIDDEN bypass, no-PHI/NEVER logged + redaction before persistence/emit, full traceability dimensions, links never substitute/bypass + re-validate, cross-refs to §2 source-of-truth/blocks/created FIRST/replicas, §8 snapshot + permissionSatisfies in happy path, §9 no-PHI in failures, §11 20+ gates incl. role 1-5 negative, no-PHI, retention/deletion, bypass prevention, audit survivability, hash recompute, infra write-once, export blocks on failures). Most zero-tolerance criteria met with strong language. Prior gaps largely closed.
+
+However, remaining doc-only alignment issues:
+- §10.281 still references non-canonical "signerAuthority rules" instead of full "SIGNER_HIERARCHY_RULES + ECIgnPermissionRole + permissionSatisfies".
+- permissionSatisfies + explicit "lower tier CANNOT satisfy higher" + snapshot immutability not fully mandated inside the dedicated §10 bullet list (present in §8 and some §11 but needs reinforcement in §10).
+- §10.285 uses "may appear" (soft) instead of "MUST NOT appear"; "before persistence" vs. "before persistence or emit".
+- §11.300/304 gates need consistent inclusion of permissionSatisfies and "via permissionSatisfies" / snapshotted hierarchy language.
+- Missing explicit cross-ref in §10 tying role/tier/permissionSatisfies back to §2 and §8.
+
+**5. Required fixes, if any**  
+See the exact doc edits applied to address the gaps (plan only; no code changes).
 Agents 41-46: QA gates and negative tests
 Agents 47-52: Data model field completeness
 Agents 53-56: Implementation phasing and approval gates

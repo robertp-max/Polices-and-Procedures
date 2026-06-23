@@ -278,17 +278,18 @@ Idempotency for ALL write operations is REQUIRED (canonical artifact bytes creat
 ## 10. Security and compliance rules
 
 - Role-restricted signing is REQUIRED — only holders of the required `ECIgnPermissionRole` (or higher) MAY sign; unauthorized attempts MUST be rejected with append-only denial audit *before* any signature record or state advance.
-- All role/tier validation MUST execute against SIGNER_HIERARCHY_RULES + signerAuthority rules (minTier, allowedRoles, blocksSelfApproval, etc.) server-side before canonical bytes + sha256 persist or any immutable append.
-- Signer tier validation is REQUIRED — tier order enforced against the canonical signer hierarchy snapshot at prepared_for_signature (immutable for the artifact family).
+- All role/tier validation MUST execute against SIGNER_HIERARCHY_RULES + ECIgnPermissionRole + permissionSatisfies (minTier, allowedRoles, blocksSelfApproval, etc. from the snapshotted hierarchy) server-side before canonical bytes + sha256 persist or any immutable append.
+- Signer tier validation is REQUIRED — tier order enforced against the canonical signer hierarchy snapshot at prepared_for_signature (immutable for the artifact family). Role/tier validation MUST use permissionSatisfies; a lower tier CANNOT satisfy a higher-tier requirement. The canonical signer hierarchy snapshot at prepared_for_signature is immutable for the entire artifact family/chain.
 - Immutable evidence is REQUIRED — signed artifacts are write-once; bytes never rewritten. The canonical bytes storage layer MUST be infrastructure-enforced write-once (WORM/object lock/DB constraint/ACL). Application logic alone is insufficient. Any code path that could UPDATE/overwrite canonical artifact bytes is PROHIBITED.
 - Append-only audit is REQUIRED — audit chain entries are added, never edited or deleted. The append-only audit chain (with sha256/hash verification and artifactVersion lineage) MUST survive and be fully reconstructible/verifiable after full page refresh, server restart, Evidence Center refresh, Drive re-link, or any read path. Mismatch blocks certification/export.
-- No PHI, signature images, or form content may appear in any log, metric, failure state, jsonl append, or audit payload. All eCIgn write paths (including logger + store appends) MUST apply PHI guard + redaction before persistence. Signature images are NEVER logged. All failure paths use only non-PHI identifiers.
+- No PHI, signature images, or form content MUST NOT appear in any log, metric, failure state, jsonl append, or audit payload. All eCIgn write paths (including logger + store appends) MUST apply server-side PHI guard + redaction before persistence or emit. Signature images are NEVER logged. All failure paths use only non-PHI identifiers.
 - Google-secured access is REQUIRED — Drive/evidence access via the secured server integration; no public links. All Drive and Evidence Center links MUST be resolved exclusively through authorized server paths (PDP/PEP + session); Drive files MUST use private/non-public sharing; direct unauthenticated links or bypass via webViewLink/driveWebUrl alone is FORBIDDEN.
 - Retention policy is REQUIRED — configurable, policy-confirmed duration (`retentionPolicyId`); no hardcoded value. retentionPolicyId is resolved from the governing policy/workflow snapshot at certification time and is immutable for the artifact family.
 - Deletion prohibition is REQUIRED — no deletion of any signed artifact bytes or prior version except via explicitly approved retention/disposition workflow that appends a new disposition record only; attempts outside approved workflow are FORBIDDEN and audited.
 - Audit-ready traceability is REQUIRED — any signed artifact retrievable and provable by policy / workflow / event / formInstance / artifactVersionId / signer / signatureSequence / version / certificate / auditChainId / sha256. Metadata/Drive/Evidence links never substitute for or bypass the canonical artifact bytes or authorization gates.
 - Drive links and Evidence Center links MUST NOT bypass authorization; every read/export of a link must re-validate role/tier/permission + recompute server-side sha256 against canonical store bytes; presence of link or metadata alone is never sufficient.
 - All §10 rules are enforced by the same mechanisms that satisfy the signed-PDF artifact rule (hash comparison, server-side recompute, canonical store only).
+- Role/tier/permissionSatisfies validation and snapshot rules are enforced by the same mechanisms that satisfy the signed-PDF artifact rule (§2) and state guards (§8).
 
 ---
 
@@ -297,11 +298,11 @@ Idempotency for ALL write operations is REQUIRED (canonical artifact bytes creat
 Concrete checklist (all must pass before Path B is considered done; all are negative-test oriented where applicable; server-side recompute of sha256 from primary canonical store is mandatory in all relevant gates):
 
 - [ ] Unit-level artifact/version tests (create, hash, append-only chain integrity; including negative: tamper detection, out-of-order/duplicate append rejection, previousArtifactVersionId violation).
-- [ ] Signer sequence integration tests (tier order, no-skip, N-signer chains for 1-5; covers SIGNER_HIERARCHY_RULES + ECIgnPermissionRole).
+- [ ] Signer sequence integration tests (tier order, no-skip, N-signer chains for 1-5; covers SIGNER_HIERARCHY_RULES + ECIgnPermissionRole + permissionSatisfies).
 - [ ] Drive parity tests (Drive file bytes MUST be byte-for-byte identical to primary canonical store bytes for the `artifactVersionId`; sha256 recomputed server-side from canonical only and must match record; `driveFileId`/`driveWebUrl` correct and verified; mismatch blocks certification/export).
 - [ ] Evidence Center parity tests (record MUST link to the real canonical artifact; sha256 and bytes verified server-side from primary immutable store; presence of link or metadata alone is insufficient; mismatch blocks).
 - [ ] Refresh/persistence + verification test (state + artifacts + hash chain + append-only audit fully reconstructible and verifiable after reload/restart; mismatches block).
-- [ ] Role restriction + tier validation negative tests for tiers 1-5 + permission ladder (unauthorized/lower-than-prior cannot sign or force higher; must use snapshotted hierarchy; rejects before any immutable write).
+- [ ] Role restriction + tier validation negative tests for tiers 1-5 + permission ladder (unauthorized/lower-than-prior cannot sign or force higher; must use snapshotted hierarchy via permissionSatisfies; rejects before any immutable write).
 - [ ] Failed-upload recovery + idempotent recovery test from all partial failures (bytes persist through Drive/metadata/Evidence/audit) using artifactVersionId keys — no duplicate artifacts/records/side effects; consistent final state; stale artifactVersionId rejection.
 - [ ] Duplicate-sign prevention test (same signer/tier cannot double-sign; idempotent reject).
 - [ ] No-regeneration test using **hash comparison** (post-signature bytes/hash unchanged across reads; post-signature regeneration FORBIDDEN).
