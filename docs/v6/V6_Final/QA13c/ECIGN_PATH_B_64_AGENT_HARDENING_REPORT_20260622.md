@@ -49,7 +49,7 @@ No other files staged or committed. Generated txts and untracked litter not stag
 Agents 01-04: Git/diff/file-scope verification
 Agents 05-08: Encoding/mojibake/spacing/Markdown formatting
 Agents 09-16: Signed-artifact immutability and hash rule
-Agents 17-22: Drive/Evidence Center parity and source-of-truth logic
+Agents 17-22: Drive/Evidence Center parity and source-of-truth logic (multiple replacements PASS)
 Agents 23-28: Multi-signer state machine and role/tier validation
 Agents 29-34: Failure handling and idempotency (latest replacement PASS)
 Agents 35-40: Security/compliance/PHI/logging/authorization
@@ -145,7 +145,32 @@ Agent 18: Drive/Evidence Center parity and source-of-truth logic (replacement fo
 **5. Required fixes, if any**  
 None for the plan. (Generated PLAN_* .txt artifacts remain corrupted from prior process; source plan is clean.)
 
-Full subagent confirmation: All zero-tolerance criteria for Drive/Evidence parity + source-of-truth met post-patches. Group 17-22: PASS.
+Full subagent confirmation: All zero-tolerance criteria for Drive/Evidence parity + source-of-truth met post-patches. Group 17-22: PASS (multiple agents including this replacement).
+
+**Agent 17 (replacement) — Drive/Evidence Center parity and source-of-truth logic (completed):**
+**1. Agent number and role**  
+Agent 17: Drive/Evidence Center parity and source-of-truth logic (replacement) in GROK 64-AGENT ZERO-TOLERANCE DOCUMENTATION HARDENING MODE.
+
+**2. PASS**
+
+**3. Exact lines reviewed**  
+Primary plan full + targeted (lines 1-348, focused §2 29-54, §6 117-153 diagram+text, §7 lockedAt 191 + constraints, §9 268 replica divergence, §11 301-302/314-315 parity + recompute tests). Supporting QA13c artifacts read-only.
+
+**4. Findings**  
+- SOURCE OF TRUTH + replicas only: §2:41-43, §6:148-152 + diagram ("links to canonical", "same bytes"), repeated in §7/§9/§10/§11.  
+- Server-side sha256 recompute from primary canonical on every read/cert/export; never accept Drive/Evidence hashes: §2:44, §7:190, §10:290-291, §11:315.  
+- Hash / missing canonical / Drive-Evidence mismatch BLOCKS certification: §2:45-47 + §11 gates.  
+- lockedAt ONLY after bytes+hash+full parity+metadata: §7:191 exact.  
+- All reads/links must validate against canonical; no bypass: §10:290, §9:268, §11 gates.  
+- Parity tests explicit and blocking (byte-for-byte + server-side sha; presence of link insufficient): §11:301-302, 314.  
+- Replica divergence: §9:268 ("never serve or treat replica bytes as authoritative; reconcile exclusively from primary canonical store").  
+- Diagram clean ASCII with note. Cross-refs strong.  
+All zero-tolerance source-of-truth + replicas-only + canonical verification requirements satisfied. Pre-patch gaps addressed.
+
+**5. Required fixes, if any**  
+None for the plan.
+
+Group 17-22: PASS.
 
 **Agent 29 (replacement) — Failure handling and idempotency (completed):**
 **1. Agent number and role**  
