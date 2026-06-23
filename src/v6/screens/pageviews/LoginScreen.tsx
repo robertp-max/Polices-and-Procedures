@@ -39,21 +39,22 @@ export function LoginScreen() {
         Back to Dashboard
       </a>
 
-      <section className="relative z-10 grid w-full max-w-[380px] gap-lg rounded-2xl border border-card bg-surface p-xl shadow-hover">
-        <div className="flex justify-center">
+      <section className="relative z-10 w-full max-w-[440px] rounded-[32px] border border-card bg-surface shadow-hover">
+        <div className="p-8">
+        <div className="mb-8 flex justify-center">
           <img
             src="/ci-logo-gray.png"
             alt="Care Indeed"
-            className="h-8 w-auto object-contain"
+            className="h-10 w-auto object-contain"
           />
         </div>
 
-        <div className="grid gap-xs text-center">
-          <h1 className="text-h2 font-medium text-brand-teal-deep">Welcome Back</h1>
+        <div className="mb-8 text-center">
+          <h1 className="text-xl font-medium tracking-normal text-brand-teal-deep">Welcome Back</h1>
           <p className="text-sm font-light text-secondary">Please enter your credentials to continue</p>
         </div>
 
-        <form className="grid gap-lg" noValidate onSubmit={handleSubmit}>
+        <form className="space-y-5" noValidate onSubmit={handleSubmit}>
           <label className="grid gap-sm">
             <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Email Address</span>
             <span className="flex h-control items-center gap-md rounded-xl border border-card bg-surface px-md text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:shadow-focus">
@@ -109,21 +110,24 @@ export function LoginScreen() {
             </label>
           </div>
 
-          <button
-            className="inline-flex h-control items-center justify-center gap-sm rounded-xl border border-transparent bg-brand-teal px-lg text-body font-medium uppercase tracking-tag text-on-brand shadow-none transition duration-fast ease-standard hover:bg-brand-teal-deep focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-70"
-            disabled={loading}
-            type="submit"
-          >
-            <span>{loading ? 'Authenticating' : 'Sign In Securely'}</span>
-            {loading ? <LoaderCircle aria-hidden="true" className="h-icon-sm w-icon-sm animate-spin" /> : null}
-          </button>
+          <div className="pt-2">
+            <button
+              className="inline-flex h-[52px] w-full items-center justify-center gap-sm rounded-2xl border border-transparent bg-brand-teal px-lg text-xs font-medium uppercase tracking-tag text-on-brand shadow-none transition duration-fast ease-standard hover:bg-brand-teal-deep focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={loading}
+              type="submit"
+            >
+              <span>{loading ? 'Authenticating' : 'Sign In Securely'}</span>
+              {loading ? <LoaderCircle aria-hidden="true" className="h-icon-sm w-icon-sm animate-spin" /> : null}
+            </button>
+          </div>
         </form>
 
-        <p className="text-center text-xs font-light text-disabled">
+        <p className="mt-8 text-center text-xs font-light text-disabled">
           Protected by CareIndeed Enterprise Security.
           <br />
           Terms of Service &bull; Privacy Policy
         </p>
+        </div>
       </section>
 
       <div
