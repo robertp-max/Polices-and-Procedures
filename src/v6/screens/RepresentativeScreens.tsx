@@ -3355,6 +3355,16 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
 
 function BoardScreen() {
   const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = useState('All work');
+  const filteredLanes = boardLanes.filter(l => {
+    if (activeFilter === 'All work') return true;
+    if (activeFilter === 'Mine') return l.cards.some(c => c.owner.includes('Manager') || c.owner.includes('Lead'));
+    if (activeFilter === 'Blocked') return l.title.includes('Blocked') || l.title.includes('Awaiting');
+    if (activeFilter === 'Missing evidence') return l.title.includes('Awaiting') || l.title.includes('Blocked');
+    if (activeFilter === 'Awaiting signature') return l.title.includes('Signature');
+    if (activeFilter === 'Awaiting action / evidence') return l.title.includes('Action') || l.title.includes('Evidence');
+    return true;
+  });
   return (
     <ScreenStack metrics={boardMetrics}>
       <section className="grid gap-lg">
@@ -3364,12 +3374,13 @@ function BoardScreen() {
               <button
                 className={cx(
                   'min-h-tap rounded-md border px-md text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                  index === 0
+                  label === activeFilter
                     ? 'border-brand-teal bg-brand-teal text-on-brand'
                     : 'border-card bg-surface text-brand-teal hover:bg-surface-hover',
                 )}
                 key={label}
                 type="button"
+                onClick={() => setActiveFilter(label)}
               >
                 {label}
               </button>
@@ -3379,7 +3390,7 @@ function BoardScreen() {
         </div>
         <div className="overflow-x-hidden pb-sm">
           <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-7">
-            {boardLanes.map((lane) => (
+            {filteredLanes.map((lane) => (
               <BoardLane key={lane.title} lane={lane} onCardClick={(card) => {
                 if (card.awaitingType === 'evidence') navigate('/evidence');
                 else if (card.awaitingType === 'action' || card.id.includes('EVT')) navigate('/workflows');
