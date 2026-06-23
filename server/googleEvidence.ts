@@ -69,10 +69,11 @@ export function sanitizeName(input: string): string {
   return String(input ?? '')
     .normalize('NFKD')
     .replace(/[/\\?%*:|"<>]/g, '-')   // unsafe filename characters
+    // eslint-disable-next-line no-control-regex
     .replace(/[\x00-\x1f\x7f]/g, '')  // control chars
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .replace(/^[.\-]+|[.\-]+$/g, '')
+    .replace(/^[.-]+|[.-]+$/g, '')
     .slice(0, 120)
     || 'unspecified';
 }
