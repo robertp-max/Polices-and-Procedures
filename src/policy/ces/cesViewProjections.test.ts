@@ -19,6 +19,8 @@ import {
   buildEvidenceRows,
   buildAuditRows,
   buildReportMetrics,
+  getControlFromParams,
+  getBucketFromParams,
   FALLBACK_BOARD_LANES,
   FALLBACK_EVENT_LANES,
   FALLBACK_TASK_LANES,
@@ -128,5 +130,21 @@ describe('CES one-pass View Projections (board / events / tasks / calendar / evi
     assert.ok(sum >= 0);
     const reps = buildReportMetrics();
     assert.ok(reps.every(r => typeof r.value === 'string'));
+  });
+
+  it('getControlFromParams extracts control or ref (Phase 2 deep link)', () => {
+    const p1 = new URLSearchParams('control=MC-042');
+    assert.equal(getControlFromParams(p1), 'MC-042');
+    const p2 = new URLSearchParams('ref=EVT-999&foo=bar');
+    assert.equal(getControlFromParams(p2), 'EVT-999');
+    assert.equal(getControlFromParams(null), null);
+    assert.equal(getControlFromParams(new URLSearchParams()), null);
+  });
+
+  it('getBucketFromParams extracts bucket for events-board (Phase 2 deep link)', () => {
+    const p = new URLSearchParams('bucket=Critical');
+    assert.equal(getBucketFromParams(p), 'Critical');
+    assert.equal(getBucketFromParams(new URLSearchParams('other=1')), null);
+    assert.equal(getBucketFromParams(undefined), null);
   });
 });

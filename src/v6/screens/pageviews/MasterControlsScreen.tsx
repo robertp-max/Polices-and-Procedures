@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ClipboardCheck, FolderOpen, ShieldCheck } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { buildCesControlAuditView, FALLBACK_CONTROL_INVENTORY_ROWS, type ControlInventoryRow as _ControlInventoryRow } from '@/policy/ces/cesMasterControlAudit';
@@ -50,6 +51,7 @@ const FALLBACK_METRICS: readonly MetricTileData[] = [
 ];
 
 export function MasterControlsScreen() {
+  const navigate = useNavigate();
   const [rows, setRows] = useState<readonly MasterControlRow[]>(FALLBACK_CONTROL_INVENTORY_ROWS as unknown as readonly MasterControlRow[]);
   const [metrics, setMetrics] = useState<readonly MetricTileData[]>(FALLBACK_METRICS);
 
@@ -84,7 +86,15 @@ export function MasterControlsScreen() {
 
       <section className="grid gap-xl desktop:grid-cols-6" aria-label="Master controls inventory and readiness">
         <div className="grid content-start gap-lg desktop:col-span-4">
-          <DataTable columns={masterControlColumns} label="Master controls inventory matrix" rows={rows} />
+          <DataTable
+            columns={masterControlColumns}
+            label="Master controls inventory matrix"
+            rows={rows}
+            onRowClick={(row) => {
+              const id = (row as any).controlId || (row as any).id || '';
+              navigate(`/evidence-center?control=${encodeURIComponent(id)}`);
+            }}
+          />
         </div>
 
         <aside className="grid content-start gap-lg desktop:col-span-2" aria-label="Master controls context cards">

@@ -456,3 +456,17 @@ export function buildCesAllProjections(_snapshot?: any) {
     reportMetrics: buildReportMetrics(),
   };
 }
+
+// ============================================================
+// Phase 2: pure query-param helpers for deep links (filter-from-query)
+// ============================================================
+
+export function getControlFromParams(params: URLSearchParams | null | undefined): string | null {
+  if (!params) return null;
+  return params.get('control') || params.get('ref') || null;
+}
+
+export function getBucketFromParams(params: URLSearchParams | null | undefined): string | null {
+  if (!params) return null;
+  return params.get('bucket');
+}

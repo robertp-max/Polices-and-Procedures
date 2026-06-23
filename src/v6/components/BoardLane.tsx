@@ -99,7 +99,7 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
                 <p className="text-[10px] text-muted line-clamp-1">{card.meta}</p>
               )}
               {card.awaitingType && (
-                <span className={`inline-block mt-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${card.awaitingType === 'evidence' ? 'border border-teal-200 bg-teal-50 text-teal-700' : 'border border-orange-200 bg-orange-50 text-orange-700'}`}>
+                <span className={`inline-block mt-1 rounded-full px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider ${card.awaitingType === 'evidence' ? 'border border-teal-200 bg-teal-50 text-teal-700' : 'border border-orange-200 bg-orange-50 text-orange-700'}`}>
                   {card.awaitingType === 'evidence' ? '⏳ Awaiting Evidence' : '📋 Awaiting Action'}
                 </span>
               )}

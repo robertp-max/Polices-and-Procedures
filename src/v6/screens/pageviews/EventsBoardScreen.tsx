@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, FileCheck2, Filter, LockKeyhole, ShieldCheck, Users } from 'lucide-react';
 import { BoardLane, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneGlassSurfaceClasses, type BoardLaneData, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
-import { buildEventLanes, FALLBACK_EVENT_LANES } from '@/policy/ces/cesViewProjections';
+import { buildEventLanes, FALLBACK_EVENT_LANES, getBucketFromParams } from '@/policy/ces/cesViewProjections';
 
 // Design cross-ref (Agent 13 background): events-board vs V6_DESIGN.html ~508 (eventsBoardColumns) and ~1334 view.
 // Exact 4-col titles (Critical & Overdue / At Risk / Needs Attention / On Track), card fields (id/title/owner/domain/due/meta/chips/progress/tone/awaitingType/missing),
@@ -122,8 +122,14 @@ const eventLanes: readonly BoardLaneData[] = buildEventLanes() || FALLBACK_EVENT
 
 export function EventsBoardScreen() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<'board' | 'evidence'>('board');
-  const [activeFilter, setActiveFilter] = useState('All events');
+  const [activeFilter, setActiveFilter] = useState(() => {
+    const b = getBucketFromParams(searchParams);
+    // visible pre-filter if bucket param matches a known filter label
+    const known = ['All events', 'Critical', 'Missing evidence', 'Owner gaps', 'Ready to lock'];
+    return b && known.includes(b) ? b : 'All events';
+  });
 
   const filteredLanes = eventLanes.filter(lane => {
     if (activeFilter === 'All events') return true;
@@ -203,7 +209,7 @@ export function EventsBoardScreen() {
             <div className="grid min-w-[920px] gap-sm tablet-l:grid-cols-2 desktop:min-w-0 desktop:grid-cols-4">
               {filteredLanes.map((lane) => (
                 <div className="min-w-0" key={lane.title}>
-                  <BoardLane lane={lane} onCardClick={() => navigate('/evidence')} />
+                  <BoardLane lane={lane} onCardClick={(card) => navigate(`/evidence-center?control=${encodeURIComponent(card?.id || '')}`)} />
                 </div>
               ))}
             </div>

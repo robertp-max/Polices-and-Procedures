@@ -123,3 +123,11 @@ Matches "one-pass as far as safely possible" + hardened spec intent. Ready for h
 ---
 
 *Generated from session analysis + live command execution in the phase13/ces-one-pass worktree.*
+
+## Phase 2 Update (post-checkpoint dbddccb)
+- Query-param deep links (board/master/calendar/events/reports/evidence flows) + visible filters in destinations.
+- Pure `getControlFromParams` / `getBucketFromParams` + tests.
+- Reports now use `buildReportMetrics()`.
+- `verify:ces` npm script + hygiene promoted to hard-fail @ts-nocheck.
+- CES_PHASE_2_REPORT.md added; nav/hook fixes for TS.
+- See CES_PHASE_2_REPORT.md + final gate outputs.

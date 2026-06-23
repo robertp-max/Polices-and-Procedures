@@ -5,7 +5,7 @@
  * Runs 3 core checks + prints PASS/FAIL summaries.
  * Exits non-zero if any hard check fails.
  * - No .js under src/ (respecting gitignore, but flags sibling shadows)
- * - Reports @ts-nocheck count under src/policy/ces/** (Phase 1: WARN not FAIL)
+ * - @ts-nocheck count under src/policy/ces/** (Phase 2: HARD FAIL)
  * - No live Google/Drive/Evidence write patterns (specific APIs only; no broad .update/.patch)
  *
  * Usage: node scripts/check-ces-hygiene.mjs
@@ -111,10 +111,10 @@ for (const f of srcFiles) {
 const check1Pass = jsViolations.length === 0;
 console.log(`CHECK1 no-.js-under-src: ${check1Pass ? 'PASS' : 'FAIL'}${jsViolations.length ? ' — ' + jsViolations.join(', ') : ''}`);
 
-// --- CHECK 2: Report count of @ts-nocheck in src/policy/ces/** (Phase 1: report + WARN, do not fail) ---
+// --- CHECK 2: @ts-nocheck in src/policy/ces/** is HARD FAIL in Phase 2 (promoted) ---
 const tsNocheckCount = countTsNocheckInCes();
-const check2Status = tsNocheckCount === 0 ? 'PASS' : 'WARN';
-console.log(`CHECK2 @ts-nocheck-in-ces: ${check2Status} (count=${tsNocheckCount})`);
+const check2Pass = tsNocheckCount === 0;
+console.log(`CHECK2 @ts-nocheck-in-ces: ${check2Pass ? 'PASS' : 'FAIL'} (count=${tsNocheckCount})`);
 
 // --- CHECK 3: No write-API patterns in CES code + CES screens ---
 const cesTsFiles = walk(CES_DIR).filter(f => /\.(ts|tsx)$/.test(f));
@@ -126,8 +126,8 @@ console.log(`CHECK3 no-google-drive-writes: ${check3Pass ? 'PASS' : 'FAIL'}${wri
 // Summary + exit
 const hardFailures = [];
 if (!check1Pass) hardFailures.push('CHECK1');
+if (!check2Pass) hardFailures.push('CHECK2');
 if (!check3Pass) hardFailures.push('CHECK3');
-// CHECK2 is reported only in Phase 1
 
 if (hardFailures.length > 0) {
   console.error(`CES hygiene FAILED: ${hardFailures.join(', ')}`);

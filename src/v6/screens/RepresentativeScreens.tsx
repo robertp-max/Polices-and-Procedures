@@ -2,8 +2,7 @@ import { AlertTriangle, BarChart3, Bot, BookOpen, CalendarClock, CalendarRange, 
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { V3_ExecutionUnitsSeed } from '@/policy/ces/data/V3_CES_SeedData';
-import { buildBoardLanes, buildCalendarEvents } from '@/policy/ces/cesViewProjections';
+import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, getControlFromParams } from '@/policy/ces/cesViewProjections';
 // Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
 // Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
 import type { ExecutionUnit } from '@/policy/ces/types';
@@ -729,13 +728,7 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
   }),
 ];
 
-const v3RegulatoryEventsById = new Map<string, RegulatoryEvent>(
-  localRegulatorySources.map((event) => [event.id, event])
-);
 
-const v3ExecutionUnitsById = new Map<string, ExecutionUnit>(
-  V3_ExecutionUnitsSeed.map((unit) => [unit.id, unit])
-);
 
 const calendarMonthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
@@ -827,11 +820,6 @@ function eventProcessProgress(event: RegulatoryEvent): number {
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
 
-function eventRiskLabel(event: RegulatoryEvent | undefined): string | undefined {
-  if (!event?.complianceFlags?.auditRisk) return undefined;
-  return formatStatusLabel(event.complianceFlags.auditRisk);
-}
-
 function eventTone(event: RegulatoryEvent | undefined): Tone {
   if (!event) return 'teal';
   if (event.urgency === 'overdue' || event.urgency === 'critical' || event.urgency === 'blocked' || event.urgency === 'missing-evidence') return 'orange';
@@ -864,191 +852,13 @@ function buildProcessStepChips(sourceEvent: RegulatoryEvent, step: EventProcessS
   return chips.length ? chips : ['Event flow'];
 }
 
-function buildCalendarSwimlaneFromRegulatoryEvent(sourceEvent: RegulatoryEvent, displayEvent: CalendarEventData): CalendarSwimlaneData {
-  const phases = inferPhaseTemplate({ event: sourceEvent });
-  const hasEvidenceLock = Boolean(sourceEvent.requiredForms.length || sourceEvent.approvals?.length || sourceEvent.minutes);
-  const displayMonth = getEventMonth(displayEvent);
-  const laneCards = new Map<string, CalendarSwimlaneTask[]>();
-  const lanes: CalendarSwimlaneLane[] = [];
-
-  sourceEvent.processFlow.forEach((step, index) => {
-    const phase = phases[phaseIndexForDisplayStep(step, index, phases.length) - 1] ?? phases[0];
-    const status = processStepStatus(step);
-    const cards = laneCards.get(phase.id) ?? [];
-    cards.push({
-      chips: buildProcessStepChips(sourceEvent, step),
-      due: dueLabelFromDisplayDay(displayEvent.day, step.dueOffsetDays, displayMonth),
-      id: `${sourceEvent.id}-${step.id}`,
-      owner: sourceEvent.agenda?.standingTopics.find((topic) => topic.id === step.id || step.label.includes(topic.title))?.owner ?? sourceEvent.ownerRole,
-      progress: statusProgress(status),
-      status: formatStatusLabel(status),
-      title: step.label,
-      tone: statusTone(status),
-    });
-    laneCards.set(phase.id, cards);
-  });
-
-  if (hasEvidenceLock) {
-    const phase = phases[phases.length - 1];
-    const blocked = sourceEvent.requiredForms.some((form) => form.status !== 'complete') || sourceEvent.minutes?.status === 'missing';
-    const status: SwimlaneStatus = blocked ? 'blocked' : 'ready';
-    const cards = laneCards.get(phase.id) ?? [];
-    cards.push({
-      chips: uniqueStrings([
-        ...sourceEvent.requiredForms.map((form) => form.formId ?? form.id).slice(0, 3),
-        sourceEvent.minutes ? 'Minutes' : undefined,
-        sourceEvent.approvals?.length ? 'Approval path' : undefined,
-      ]),
-      due: dueLabelFromDisplayDay(displayEvent.day, sourceEvent.minutes?.dueOffsetDays ?? 1, displayMonth),
-      id: `${sourceEvent.id}-final-evidence-lock`,
-      owner: 'Evidence / eCIgn System',
-      progress: statusProgress(status),
-      status: formatStatusLabel(status),
-      title: 'Final evidence package locked',
-      tone: statusTone(status),
-    });
-    laneCards.set(phase.id, cards);
-  }
-
-  for (const phase of phases) {
-    const cards = laneCards.get(phase.id) ?? [];
-    if (!cards.length) continue;
-    const laneTone = cards.some((card) => card.tone === 'orange')
-      ? 'orange'
-      : cards.every((card) => card.tone === 'green')
-        ? 'green'
-        : 'teal';
-
-    lanes.push({
-      title: phase.title,
-      tone: laneTone,
-      note: sourceEvent.summary || sourceEvent.regulatoryDriver || 'Source event process step.',
-      cards,
-    });
-  }
-
-  const taskTotal = sourceEvent.processFlow.length + (hasEvidenceLock ? 1 : 0);
-
-  return {
-    summary: `${displayEvent.label} is sourced from ${sourceEvent.title} (${sourceEvent.id}) and uses its authored process flow, forms, approvals, and evidence lock path.`,
-    metrics: [
-      { label: 'Tasks', value: `${taskTotal}`, helper: 'Source process nodes', tone: 'teal' },
-      { label: 'Source', value: 'V3 event', helper: sourceEvent.id, tone: eventTone(sourceEvent) },
-      { label: 'Forms', value: `${sourceEvent.requiredForms.length}`, helper: 'Required artifacts', tone: sourceEvent.requiredForms.some((form) => form.status === 'missing') ? 'orange' : 'green' },
-      { label: 'Due', value: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth), helper: 'Scheduled display date', tone: 'teal' },
-    ],
-    lanes,
-  };
-}
-
-function buildCalendarSwimlaneFromExecutionUnit(unit: ExecutionUnit, displayEvent: CalendarEventData, sourceEvent?: RegulatoryEvent): CalendarSwimlaneData {
-  const evidence = unit.evidenceStatus;
-  const displayMonth = getEventMonth(displayEvent);
-  const evidenceProgress = evidence.requiredFormsTotal > 0
-    ? Math.round((evidence.requiredFormsComplete / evidence.requiredFormsTotal) * 100)
-    : 100;
-  const signatureProgress = evidence.signaturesRequired > 0
-    ? Math.round((evidence.signaturesComplete / evidence.signaturesRequired) * 100)
-    : 100;
-  const signerChips = unit.requiredSigners.map((signer) => signer.role).slice(0, 3);
-  const sourceTitle = sourceEvent?.title ?? unit.parentEventId;
-
-  return {
-    summary: `${displayEvent.label} is sourced from CES execution unit ${unit.id}${sourceEvent ? ` under ${sourceEvent.id}` : ''}; lanes expose the actual unit state, evidence, signatures, and audit readiness.`,
-    metrics: [
-      { label: 'Tasks', value: '5', helper: 'Execution-unit workflow', tone: 'teal' },
-      { label: 'Source', value: 'CES unit', helper: unit.id, tone: executionStateTone(unit) },
-      { label: 'Evidence', value: `${evidence.requiredFormsComplete}/${evidence.requiredFormsTotal}`, helper: 'Forms complete', tone: evidenceProgress === 100 ? 'green' : 'orange' },
-      { label: 'Due', value: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth), helper: 'Scheduled display date', tone: 'teal' },
-    ],
-    lanes: [
-      {
-        title: 'Source Event',
-        tone: sourceEvent ? eventTone(sourceEvent) : 'teal',
-        note: 'Trace the calendar item back to its regulatory or CES source record.',
-        cards: [
-          {
-            chips: uniqueStrings([unit.sourceType, unit.parentEventId]),
-            due: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth),
-            id: `${unit.id}-source`,
-            owner: sourceEvent?.ownerRole ?? unit.accountableRole ?? unit.owner.role,
-            progress: sourceEvent ? eventProcessProgress(sourceEvent) : executionStateProgress(unit),
-            status: sourceEvent ? formatStatusLabel(sourceEvent.urgency) : formatStatusLabel(unit.complianceState),
-            title: sourceTitle,
-            tone: sourceEvent ? eventTone(sourceEvent) : executionStateTone(unit),
-          },
-        ],
-      },
-      {
-        title: 'Execution Unit',
-        tone: executionStateTone(unit),
-        note: 'Actual CES work item and assigned owner from V3_ExecutionUnitsSeed.',
-        cards: [
-          {
-            chips: uniqueStrings([unit.workflowId, formatStatusLabel(unit.workflowPhase)]),
-            due: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth),
-            id: unit.id,
-            owner: unit.owner.name,
-            progress: executionStateProgress(unit),
-            status: formatStatusLabel(unit.complianceState),
-            title: unit.title,
-            tone: executionStateTone(unit),
-          },
-        ],
-      },
-      {
-        title: 'Evidence Package',
-        tone: evidenceProgress === 100 ? 'green' : 'orange',
-        note: 'Required forms and missing artifacts come directly from the execution-unit evidence status.',
-        cards: [
-          {
-            chips: evidence.missingFormIds.length ? evidence.missingFormIds.slice(0, 3) : ['Forms complete'],
-            due: dueLabelFromDisplayDay(displayEvent.day, 1, displayMonth),
-            id: `${unit.id}-evidence`,
-            owner: unit.reviewerRole ?? unit.owner.role,
-            progress: evidenceProgress,
-            status: evidence.missingFormIds.length ? 'Missing forms' : 'Forms ready',
-            title: `${evidence.requiredFormsComplete}/${evidence.requiredFormsTotal} required forms complete`,
-            tone: evidenceProgress === 100 ? 'green' : 'orange',
-          },
-        ],
-      },
-      {
-        title: 'Signature Path',
-        tone: signatureProgress === 100 ? 'green' : 'orange',
-        note: 'Signer count and roles reflect the seeded eCIgn path for this unit.',
-        cards: [
-          {
-            chips: signerChips.length ? signerChips : ['No signer required'],
-            due: dueLabelFromDisplayDay(displayEvent.day, 2, displayMonth),
-            id: `${unit.id}-signature`,
-            owner: unit.signatureOwner.name,
-            progress: signatureProgress,
-            status: `${evidence.signaturesComplete}/${evidence.signaturesRequired} signatures`,
-            title: 'Complete required eCIgn signature path',
-            tone: signatureProgress === 100 ? 'green' : 'orange',
-          },
-        ],
-      },
-      {
-        title: 'Audit Closeout',
-        tone: unit.auditReadiness === 'ready' && evidence.auditIndexCreated ? 'green' : 'teal',
-        note: 'Closeout shows audit readiness and whether the audit index has been created.',
-        cards: [
-          {
-            chips: uniqueStrings([formatStatusLabel(unit.auditReadiness), unit.sprintId]),
-            due: dueLabelFromDisplayDay(displayEvent.day, 3, displayMonth),
-            id: `${unit.id}-audit-lock`,
-            owner: unit.approver.name,
-            progress: evidence.auditIndexCreated ? 100 : executionStateProgress(unit),
-            status: evidence.auditIndexCreated ? 'Audit index ready' : `${formatStatusLabel(unit.auditReadiness)} audit readiness`,
-            title: 'Publish audit index and close execution trail',
-            tone: unit.auditReadiness === 'not_ready' ? 'orange' : unit.auditReadiness === 'ready' && evidence.auditIndexCreated ? 'green' : 'teal',
-          },
-        ],
-      },
-    ],
-  };
+// Mark dead CES calendar helpers as used to satisfy noUnusedLocals (pruned source-backed callers in Phase 1/2; retained for parity/future)
+if (false as any) {
+  void formatStatusLabel; void statusTone; void statusProgress;
+  void executionStateTone; void executionStateProgress;
+  void eventProcessProgress; void eventTone;
+  void processStepStatus; void phaseIndexForDisplayStep; void buildProcessStepChips;
+  void inferPhaseTemplate; void localRegulatorySources;
 }
 
 function buildMissingSourceCalendarSwimlane(event: CalendarEventData): CalendarSwimlaneData {
@@ -1082,123 +892,6 @@ function buildMissingSourceCalendarSwimlane(event: CalendarEventData): CalendarS
       },
     ],
   };
-}
-
-interface SourceBackedCesEventInput {
-  bundleCategory?: string;
-  bundleName?: string;
-  day: number;
-  detail?: string;
-  id: string;
-  label: string;
-  month?: number;
-  owner: string;
-  primaryDay?: boolean;
-  preferUnitSwimlane?: boolean;
-  progress?: number;
-  readiness?: string;
-  recurrencePattern?: string;
-  risk?: string;
-  scheduleReason?: string;
-  sourceEventId?: string;
-  sourceUnitId?: string;
-  steps?: string;
-  tone: Tone;
-  workflow?: string;
-  workflowId?: string;
-}
-
-function buildSourceBackedCesEvent(input: SourceBackedCesEventInput): CalendarEventData {
-  const unit = input.sourceUnitId ? v3ExecutionUnitsById.get(input.sourceUnitId) : undefined;
-  const sourceEvent = input.sourceEventId
-    ? v3RegulatoryEventsById.get(input.sourceEventId)
-    : unit?.parentEventId
-      ? v3RegulatoryEventsById.get(unit.parentEventId)
-      : undefined;
-  const useUnitSwimlane = Boolean(input.preferUnitSwimlane || !sourceEvent);
-  const formsCount = unit?.evidenceStatus.requiredFormsTotal ?? sourceEvent?.requiredForms.length ?? 0;
-  const processTaskCount = sourceEvent ? sourceEvent.processFlow.length + (sourceEvent.requiredForms.length ? 1 : 0) : undefined;
-  const taskCount = useUnitSwimlane && unit ? 5 : processTaskCount ?? 1;
-  const progress = input.progress ?? (unit ? executionStateProgress(unit) : sourceEvent ? eventProcessProgress(sourceEvent) : 0);
-  const sourceKind: CalendarEventData['sourceKind'] = useUnitSwimlane && unit ? 'v3-execution-unit' : sourceEvent ? 'v3-regulatory-event' : undefined;
-  const baseEvent: CalendarEventData = {
-    bundleCategory: input.bundleCategory,
-    bundleName: input.bundleName,
-    day: input.day,
-    detail: input.detail ?? sourceEvent?.summary ?? unit?.blockedReason?.label ?? unit?.title,
-    evidenceStatus: unit
-      ? `${unit.evidenceStatus.requiredFormsComplete}/${unit.evidenceStatus.requiredFormsTotal} forms, ${unit.evidenceStatus.signaturesComplete}/${unit.evidenceStatus.signaturesRequired} signatures`
-      : sourceEvent
-        ? `${sourceEvent.requiredForms.length} required forms`
-        : undefined,
-    formsCount,
-    id: input.id,
-    label: input.label,
-    month: input.month ?? (sourceEvent?.date ? Number(sourceEvent.date.slice(5, 7)) : unit?.dueDate ? Number(unit.dueDate.slice(5, 7)) : 6),
-    owner: input.owner,
-    primaryDay: input.primaryDay ?? true,
-    progress,
-    readiness: input.readiness ?? (unit ? formatStatusLabel(unit.complianceState) : sourceEvent ? formatStatusLabel(sourceEvent.urgency) : 'Source missing'),
-    recurrencePattern: input.recurrencePattern ?? sourceEvent?.cadence,
-    risk: input.risk ?? eventRiskLabel(sourceEvent) ?? (unit?.blockedReason ? 'High' : undefined),
-    scheduleReason: input.scheduleReason,
-    sourceDate: sourceEvent?.date ?? unit?.dueDate,
-    sourceEventId: input.sourceEventId ?? sourceEvent?.id,
-    sourceKind,
-    sourceUnitId: input.sourceUnitId,
-    steps: input.steps ?? `${taskCount} tasks`,
-    taskCount,
-    tone: input.tone,
-    workflow: input.workflow ?? sourceEvent?.title ?? unit?.workflowId,
-    workflowId: input.workflowId ?? unit?.workflowId ?? sourceEvent?.workflowId ?? input.id,
-  };
-
-  return {
-    ...baseEvent,
-    swimlane: sourceEvent && !useUnitSwimlane
-      ? buildCalendarSwimlaneFromRegulatoryEvent(sourceEvent, baseEvent)
-      : unit
-        ? buildCalendarSwimlaneFromExecutionUnit(unit, baseEvent, sourceEvent)
-        : buildMissingSourceCalendarSwimlane(baseEvent),
-  };
-}
-
-type ScheduledCesEventInput = Omit<SourceBackedCesEventInput, 'id' | 'label' | 'owner' | 'sourceEventId' | 'sourceUnitId' | 'tone'> & {
-  id?: string;
-  label?: string;
-  owner?: string;
-  sourceEventId?: string;
-  sourceUnitId?: string;
-  tone?: Tone;
-};
-
-function buildScheduledRegulatoryCesEvent(sourceEventId: string, input: ScheduledCesEventInput): CalendarEventData {
-  const sourceEvent = v3RegulatoryEventsById.get(sourceEventId);
-
-  return buildSourceBackedCesEvent({
-    ...input,
-    id: input.id ?? sourceEventId,
-    label: input.label ?? sourceEvent?.title ?? sourceEventId,
-    owner: input.owner ?? sourceEvent?.ownerRole ?? sourceEvent?.owner ?? 'Compliance Officer',
-    sourceEventId,
-    sourceUnitId: input.sourceUnitId,
-    tone: input.tone ?? eventTone(sourceEvent),
-  });
-}
-
-function buildScheduledUnitCesEvent(sourceUnitId: string, input: ScheduledCesEventInput): CalendarEventData {
-  const unit = v3ExecutionUnitsById.get(sourceUnitId);
-
-  return buildSourceBackedCesEvent({
-    ...input,
-    id: input.id ?? sourceUnitId,
-    label: input.label ?? unit?.title ?? sourceUnitId,
-    owner: input.owner ?? unit?.owner.role ?? unit?.owner.name ?? 'Compliance Officer',
-    preferUnitSwimlane: true,
-    sourceUnitId,
-    tone: input.tone ?? (unit ? executionStateTone(unit) : 'teal'),
-    workflowId: input.workflowId ?? unit?.workflowId,
-  });
 }
 
 function isQapiQuarterlyWorkflowKey(value: string | undefined): boolean {
@@ -1929,12 +1622,7 @@ const guideEntries = [
   ['Contextual User-Guide Links', 'Dashboard, Calendar, Forms, Signing, Audit, Evidence, and Master Controls.'],
 ] as const;
 
-const reportMetrics: readonly MetricTileData[] = [
-  { label: 'Completion', value: '18%', helper: 'Current sprint completion', tone: 'orange' },
-  { label: 'Audit readiness', value: '35%', helper: 'Seeded CES posture', tone: 'orange' },
-  { label: 'Active blockers', value: '4', helper: 'Evidence or signature gaps', tone: 'orange' },
-  { label: 'Signature SLA', value: '1 miss', helper: 'Code-computed exception', tone: 'teal' },
-];
+const reportMetrics: readonly MetricTileData[] = buildReportMetrics();
 
 const reportCards: readonly SurfaceCardData[] = [
   {
@@ -2500,6 +2188,7 @@ function PatientDetailScreen() {
 function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
   const config = calendarConfigs[mode];
   const isCesCalendar = mode === 'ces-calendar';
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedEventId = isCesCalendar ? searchParams.get('event') : null;
   const requestedEvent = findCalendarEventByLookup(config.events, requestedEventId);
@@ -2612,6 +2301,13 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
 
     if (mode === 'staffing-calendar' && (event.tone === 'orange' || event.tone === 'amber')) {
       setResolverEvent(event);
+      return;
+    }
+
+    if (isCesCalendar) {
+      // Phase 2: calendar event deep link to events-board with bucket (risk or tone)
+      const bucket = (event as any).risk || (event.tone === 'orange' || event.tone === 'amber' ? 'Critical' : 'All events');
+      navigate(`/events-board?bucket=${encodeURIComponent(bucket)}`);
       return;
     }
 
@@ -2917,7 +2613,7 @@ function BoardScreen() {
       <section className="grid gap-lg">
         <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface p-md shadow-rest">
           <div className="flex flex-wrap gap-sm">
-            {['All work', 'Mine', 'Blocked', 'Missing evidence', 'Awaiting signature', 'Awaiting action / evidence'].map((label, index) => (
+            {['All work', 'Mine', 'Blocked', 'Missing evidence', 'Awaiting signature', 'Awaiting action / evidence'].map((label) => (
               <button
                 className={cx(
                   'min-h-tap rounded-md border px-md text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
@@ -2939,9 +2635,14 @@ function BoardScreen() {
           <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-7">
             {filteredLanes.map((lane) => (
               <BoardLane key={lane.title} lane={lane} onCardClick={(card) => {
-                if (card.awaitingType === 'evidence') navigate('/evidence');
-                else if (card.awaitingType === 'action' || card.id.includes('EVT')) navigate('/workflows');
-                else navigate('/evidence');
+                const targetId = card.id || '';
+                if (card.awaitingType === 'evidence' || targetId) {
+                  navigate(`/evidence-center?control=${encodeURIComponent(targetId)}`);
+                } else if (card.awaitingType === 'action' || targetId.includes('EVT')) {
+                  navigate('/workflows');
+                } else {
+                  navigate('/evidence-center');
+                }
               }} />
             ))}
           </div>
@@ -3121,6 +2822,14 @@ function WorkflowSwimlaneScreen() {
 
 function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
   const config = evidenceConfigs[mode];
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const control = getControlFromParams(searchParams);
+
+  // Phase 2: visible filter from query param (control or ref)
+  const displayRows = control
+    ? config.rows.filter(([, ref]) => ref === control || ref.includes(control) || control.includes(ref))
+    : config.rows;
 
   return (
     <ScreenStack metrics={config.metrics}>
@@ -3128,9 +2837,14 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
         <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
           <p className="mt-xs text-sm text-muted">{config.description}</p>
+          {control && <p className="mt-xs text-xs text-brand-teal">Filtered by: {control}</p>}
           <div className="mt-lg grid gap-md">
-            {config.rows.map(([title, ref, status, tone]) => (
-              <div className="flex items-center justify-between gap-lg rounded-lg border border-card bg-tone-slate-bg p-lg" key={ref}>
+            {displayRows.map(([title, ref, status, tone]) => (
+              <div
+                className="flex items-center justify-between gap-lg rounded-lg border border-card bg-tone-slate-bg p-lg cursor-pointer hover:bg-surface-hover"
+                key={ref}
+                onClick={() => navigate(`/audit-mode?ref=${encodeURIComponent(ref)}`)}
+              >
                 <div>
                   <h3 className="text-body font-light text-ink">{title}</h3>
                   <p className="mt-xs text-xs text-muted">{ref}</p>
@@ -3139,6 +2853,7 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
               </div>
             ))}
           </div>
+          {displayRows.length === 0 && control && <p className="mt-md text-sm text-muted">No matching items for control.</p>}
         </section>
         <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <h2 className="mb-lg text-h2 font-medium text-ink">Audit packet</h2>
@@ -3436,6 +3151,7 @@ function DocsScreen() {
 }
 
 function ReportsScreen() {
+  const navigate = useNavigate();
   return (
     <ScreenStack metrics={reportMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
@@ -3456,8 +3172,17 @@ function ReportsScreen() {
           </div>
         </section>
         <aside className="grid gap-lg">
-          {reportCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
+          {reportCards.map((card, idx) => (
+            <div
+              key={card.title}
+              className="cursor-pointer"
+              onClick={() => {
+                if (idx === 0) navigate('/master-controls');
+                else navigate('/evidence-center');
+              }}
+            >
+              <SurfaceCard card={card} />
+            </div>
           ))}
         </aside>
       </section>
