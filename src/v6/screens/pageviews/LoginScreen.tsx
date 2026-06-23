@@ -110,7 +110,7 @@ export function LoginScreen() {
           </div>
 
           <button
-            className="inline-flex h-control items-center justify-center gap-sm rounded-xl border border-transparent bg-brand-teal px-lg text-body font-medium uppercase tracking-tag text-on-brand shadow-hover transition duration-fast ease-standard hover:bg-brand-teal-deep focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex h-control items-center justify-center gap-sm rounded-xl border border-transparent bg-brand-teal px-lg text-body font-medium uppercase tracking-tag text-on-brand shadow-rest transition duration-fast ease-standard hover:bg-brand-teal-deep focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-70"
             disabled={loading}
             type="submit"
           >
