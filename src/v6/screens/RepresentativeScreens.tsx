@@ -3,6 +3,7 @@ import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type Reac
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { V3_ExecutionUnitsSeed } from '@/policy/ces/data/V3_CES_SeedData';
+import { buildBoardLanes, buildEventLanes, buildTaskLanes, buildCalendarEvents, buildEvidenceRows, buildAuditRows, buildReportMetrics } from '@/policy/ces/cesViewProjections';
 import { buildBoardLanes, FALLBACK_BOARD_LANES, buildEventLanes, FALLBACK_EVENT_LANES, buildTaskLanes, FALLBACK_TASK_LANES, buildCalendarEvents, FALLBACK_CALENDAR_EVENTS, buildEvidenceRows, FALLBACK_EVIDENCE_ROWS, buildAuditRows, FALLBACK_AUDIT_ROWS, buildReportMetrics, FALLBACK_REPORT_METRICS } from '@/policy/ces/cesViewProjections';
 // Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
 // Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
@@ -1265,15 +1266,9 @@ const q2QapiCalendarEvent: CalendarEventData = withQapiQuarterlyFlow({
   workflowId: 'QA-WF-03',
 });
 
-const cesCalendarEvents: CalendarEventData[] = [
-  buildScheduledRegulatoryCesEvent('evt-personnel-file-q1-audit', {
-    bundleCategory: 'HR / Onboarding / Training',
-    bundleName: 'Q1 personnel file closeout',
-    day: 9,
-    month: 4,
-    recurrencePattern: 'Second Thursday',
-    scheduleReason: 'Moved one day earlier from Friday to the preferred Thursday without missing the audit window.',
-  }),
+const cesCalendarEvents: CalendarEventData[] = buildCalendarEvents(); // 1.4 wired to projection
+  // body of old literal removed; now from projection FALLBACK
+
   buildScheduledRegulatoryCesEvent('evt-oasis-accuracy-apr', {
     bundleCategory: 'Clinical',
     bundleName: 'April clinical documentation audit',
@@ -2416,7 +2411,7 @@ const reportCards: readonly SurfaceCardData[] = [
   },
 ];
 
-const reportBars = [12, 14, 18, 20, 22, 25, 27, 30, 33, 35];
+const reportBars = buildReportMetrics().bars || [12, 14, 18, 20, 22, 25, 27, 30, 33, 35]; // 1.4 wired to projection
 
 export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const [searchParams] = useSearchParams();
