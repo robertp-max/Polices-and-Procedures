@@ -1,4 +1,5 @@
 import { BoardLane, MetricGrid, type BoardLaneData, type MetricTileData } from '../../components';
+import { buildTaskLanes, FALLBACK_TASK_LANES } from '@/policy/ces/cesViewProjections';
 
 const taskMetrics: readonly MetricTileData[] = [
   { label: 'Assigned', value: '31', helper: '9 due this week', tone: 'teal' },
@@ -11,7 +12,7 @@ const taskMetrics: readonly MetricTileData[] = [
 // Cards include meta for BoardLane display; matches design exactly post one-pass alignment. See also V6_DESIGN_RECONCILIATION for my-tasks MATCHED_REFERENCE.
 // Implementation proposals (Agent 18): consider dynamic data from CES seeds/projections for real tasks; add navigation links to ces-board or evidence for integration; ensure 4-col grid and BoardLane meta rendering for design fidelity. Current static but fully aligned.
 
-const taskLanes: readonly BoardLaneData[] = [
+const taskLanes: readonly BoardLaneData[] = buildTaskLanes() || FALLBACK_TASK_LANES; // 1.4 wired
   {
     cards: [
       {

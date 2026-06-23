@@ -4,6 +4,7 @@ import { BoardLane, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneGlassSu
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { buildEventLanes, FALLBACK_EVENT_LANES } from '@/policy/ces/cesViewProjections';
 
 // Design cross-ref (Agent 13 background): events-board vs V6_DESIGN.html ~508 (eventsBoardColumns) and ~1334 view.
 // Exact 4-col titles (Critical & Overdue / At Risk / Needs Attention / On Track), card fields (id/title/owner/domain/due/meta/chips/progress/tone/awaitingType/missing),
@@ -113,7 +114,7 @@ const evidenceSignals: readonly EvidenceSignal[] = [
   },
 ];
 
-const eventLanes: readonly BoardLaneData[] = [
+const eventLanes: readonly BoardLaneData[] = buildEventLanes() || FALLBACK_EVENT_LANES; // 1.4 wired to projection
   {
     cards: [
       {

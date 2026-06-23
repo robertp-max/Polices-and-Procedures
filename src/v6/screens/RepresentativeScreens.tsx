@@ -3,10 +3,9 @@ import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type Reac
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { V3_ExecutionUnitsSeed } from '@/policy/ces/data/V3_CES_SeedData';
-// Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent): V3 seeds supply realistic ExecutionUnits (states, evidence, domains, regulatory) for CES board/my-tasks/calendar/snapshots/projections.
-// Current one-pass: seeds for dynamic parts (cesCalendarEvents via builder, some mappings) + hardcoded boardLanes / eventLanes / taskLanes for exact design visual parity (7-col awaiting/EVT-REV with meta/awaitingType, 4-col events, my-tasks).
-// Gap (this subagent): design's illustrative columns (~409 board, ~508 events, etc.) are not directly emitted from seeds; SnapshotBuilder bridges execution but not view-specific illustrative data.
-// Proposals: dedicated projector from seeds/snapshot (or extended seed data) to emit design-exact lanes for demo + reduced duplication. See V3_CES_SeedData cross-ref.
+import { buildBoardLanes, FALLBACK_BOARD_LANES, buildEventLanes, FALLBACK_EVENT_LANES, buildTaskLanes, FALLBACK_TASK_LANES, buildCalendarEvents, FALLBACK_CALENDAR_EVENTS, buildEvidenceRows, FALLBACK_EVIDENCE_ROWS, buildAuditRows, FALLBACK_AUDIT_ROWS, buildReportMetrics, FALLBACK_REPORT_METRICS } from '@/policy/ces/cesViewProjections';
+// Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
+// Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
 import type { ExecutionUnit } from '@/policy/ces/types';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER } from '@/policy/data/policyCorpus';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
@@ -1961,34 +1960,9 @@ const boardMetrics: readonly MetricTileData[] = [
   { label: 'Certified', value: '9', helper: 'Completed and locked', tone: 'green' },
 ];
 
-const boardLanes: readonly BoardLaneData[] = [
-  // Design cross-ref (Agent 12): matches complianceBoardColumns ~409 (7 cols incl. Awaiting Action/Evidence + exact EVT-REV meta/awaiting cards).
-  // See BoardScreen() and ces-board case for full 7-col grid + filters. Agent 12 proposals captured in case comment.
-  {
-    title: 'Upcoming',
-    tone: 'slate',
-    count: 6,
-    cards: [
-      {
-        chips: ['Prep', 'GV-GB-001'],
-        due: 'May 20',
-        id: 'CES-1201',
-        owner: 'Compliance Officer',
-        progress: 18,
-        title: 'Validate governing body roster',
-        tone: 'teal',
-      },
-      {
-        chips: ['Documentation'],
-        due: 'May 22',
-        id: 'CES-1204',
-        owner: 'DON',
-        progress: 24,
-        title: 'Queue annual policy manual review',
-        tone: 'slate',
-      },
-    ],
-  },
+const boardLanes: readonly BoardLaneData[] = buildBoardLanes(); // seed-driven via projections (FALLBACK inside for parity) 1.4
+// old literal body removed; data now in cesViewProjections.ts FALLBACK_BOARD_LANES
+
   {
     title: 'Ready',
     tone: 'green',
